@@ -1,5 +1,20 @@
+# Copyright 2020 Aristotle University of Thessaloniki
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from abc import ABC, abstractmethod
 import numpy as np
+
 
 class Data(ABC):
     """
@@ -30,7 +45,7 @@ class Data(ABC):
         """
         Getter of data field.
         This returns the internal representation of the data (which might not be a NumPy array).
-        
+
         :return: the actual data held by the object
         :rtype: Type of data
         """
@@ -40,7 +55,7 @@ class Data(ABC):
     def data(self, data):
         """
         Setter for data. This will perform the necessary type checking (if needed).
-        
+
         :param: data to be used for creating a vector
         """
         self.data = data
@@ -74,7 +89,7 @@ class Vector(Data):
     def data(self):
         """
         Getter of data. Vector class returns a float32 NumPy array.
-        
+
         :return: the actual data held by the object
         :rtype: A float32 NumPy array
         """
@@ -87,7 +102,7 @@ class Vector(Data):
     def data(self, data):
         """
         Setter for data.
-        
+
         :param: data to be used for creating a vector
         """
         # Convert input data to a NumPy array
@@ -132,7 +147,7 @@ class Timeseries(Data):
 
     def __init__(self, data=None):
         super().__init__(data)
-        
+
         if data:
             self.data = data
 
@@ -140,7 +155,7 @@ class Timeseries(Data):
     def data(self):
         """
         Getter of data. Vector class returns a float32 NumPy array.
-        
+
         :return: the actual data held by the object
         :rtype: A float32 NumPy array
         """
@@ -153,7 +168,7 @@ class Timeseries(Data):
     def data(self, data):
         """
         Setter for data.
-        
+
         :param: data to be used for creating a vector
         """
         # Convert input data to a NumPy array
