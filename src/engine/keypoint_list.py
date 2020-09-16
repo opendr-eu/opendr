@@ -1,3 +1,17 @@
+# Copyright 2020 Aristotle University of Thessaloniki
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import numpy as np
 import cv2
 from python.engine.target import Target
@@ -124,10 +138,8 @@ def track_poses(previous_poses, current_poses, threshold=3, smooth=False):
                 if current_pose.data[kpt_id, 0] == -1:
                     continue
                 # reuse filter if previous pose has valid filter
-                if (best_matched_pose_id is not None
-                        and previous_poses[best_matched_id].data[kpt_id, 0] != -1):
+                if (best_matched_pose_id is not None and previous_poses[best_matched_id].data[kpt_id, 0] != -1):
                     current_pose.filters[kpt_id] = previous_poses[best_matched_id].filters[kpt_id]
                 current_pose.data[kpt_id, 0] = current_pose.filters[kpt_id][0](current_pose.data[kpt_id, 0])
                 current_pose.data[kpt_id, 1] = current_pose.filters[kpt_id][1](current_pose.data[kpt_id, 1])
             current_pose.bbox = LightweightOpenPoseTarget.get_bbox(current_pose.data)
-
