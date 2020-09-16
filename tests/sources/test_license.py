@@ -22,8 +22,7 @@ import fnmatch
 
 from io import open
 
-APACHE2_LICENSE_C = """
- * Licensed under the Apache License, Version 2.0 (the "License");
+APACHE2_LICENSE_C = """* Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -36,9 +35,7 @@ APACHE2_LICENSE_C = """
  * limitations under the License.
  */"""
 
-APACHE2_LICENSE_CPP = """
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
+APACHE2_LICENSE_CPP = """// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -51,7 +48,6 @@ APACHE2_LICENSE_CPP = """
 // limitations under the License."""
 
 APACHE2_LICENSE_PYTHON = """
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -124,22 +120,19 @@ class TestLicense(unittest.TestCase):
                 content = content_file.read()
                 if source.endswith('.c') or source.endswith('.h'):
                     self.assertTrue(
-                        content.startswith(APACHE2_LICENSE_C),
+                        APACHE2_LICENSE_C in content,
                         msg='Source file "%s" doesn\'t contain the correct Apache 2.0 License:\n%s' %
                             (source, APACHE2_LICENSE_C)
                     )
                 elif source.endswith('.cpp') or source.endswith('.hpp') or source.endswith('.java'):
                     self.assertTrue(
-                        content.startswith(APACHE2_LICENSE_CPP),
+                        APACHE2_LICENSE_CPP in content,
                         msg='Source file "%s" doesn\'t contain the correct Apache 2.0 License:\n%s' %
                             (source, APACHE2_LICENSE_CPP)
                     )
                 elif source.endswith('.py') or source.endswith('Makefile'):
-                    for pythonHeader in PYTHON_OPTIONAL_HEADERS:
-                        if content.startswith(pythonHeader + '\n'):
-                            content = content[len(pythonHeader):].lstrip('\n')
                     self.assertTrue(
-                        content.startswith(APACHE2_LICENSE_PYTHON),
+                        APACHE2_LICENSE_PYTHON in content,
                         msg='Source file "%s" doesn\'t contain the correct Apache 2.0 License:\n%s' %
                             (source, APACHE2_LICENSE_PYTHON)
                     )
