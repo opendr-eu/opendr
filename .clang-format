@@ -4,6 +4,7 @@ AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
 AlignEscapedNewlines: Left
 AlignOperands: true
+AllowAllConstructorInitializersOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
