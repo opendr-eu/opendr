@@ -20,7 +20,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04, macos-10.15]
-        python: [3.8]
         include:
           - os: ubuntu-18.04
             DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-9"
@@ -32,11 +31,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
-    - name: Set up Python ${{ matrix.python }}
+    - name: Set up Python 3.8
       if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python }}
+        python-version: 3.8
     - name: Tests
       if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
       run: |
