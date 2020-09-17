@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from python.engine.learners import Learner
+from engine.learners import Learner
 
 
 class ExampleLearner(Learner):
