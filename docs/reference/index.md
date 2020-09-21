@@ -1,6 +1,6 @@
 # OpenDR Toolkit Reference Manual
 
-Release 0.1
+Release {{ opendr.version }}
 
 %figure
 ![OpenDR](images/opendr_logo.png)
