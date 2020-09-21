@@ -44,16 +44,11 @@ clean-docs:
 
 help:
 	@+echo
-	@+echo -e "\033[32;OpenDR Toolkit Makefile targets:\033[0m"
+	@+echo -e " \033[32;1mOpenDR Toolkit Makefile targets:\033[0m"
 	@+echo
-	@+echo -e "\033[33;1mmake docs\033[0m\t# install documentation dependencies"
+	@+echo -e "\033[33;1mmake release\033[0m\t\t# compile"
+	@+echo -e "\033[33;1mmake debug\033[0m\t\t# compile with gdb debugging symbols"
+	@+echo -e "\033[33;1mmake clean\033[0m\t\t# clean-up the compilation output"
+	@+echo -e "\033[33;1mmake docs\033[0m\t\t# install documentation dependencies"
 	@+echo -e "\033[33;1mmake clean-docs\033[0m\t# cleanup documentation dependencies"
-	@+echo -e "\033[33;1mmake -j$(THREADS) debug\033[0m  \t# compile with gdb debugging symbols"
-	@+echo -e "\033[33;1mmake -j$(THREADS) profile\033[0m\t# compile with gprof profiling information"
-	@+echo -e "\033[33;1mmake -j$(THREADS) distrib\033[0m\t# compile in release mode & create distribution package"
-	@+echo -e "\033[33;1mmake -j$(THREADS) clean\033[0m  \t# cleanu-up the compilation output"
-	@+echo -e "\033[33;1mmake -j$(THREADS) cleanse\033[0m\t# deep clean-up (dependencies are also removed)"
-	@+echo -e "\033[33;1mmake help\033[0m\t\t# display this message and exits"
-	@+echo
-	@+echo -e "\033[32;1mNote:\033[0m You seem to have a processor with $(NUMBER_OF_PROCESSORS) virtual cores,"
-	@+echo -e "      hence the \033[33;1m-j$(THREADS)\033[0m option to speed-up the compilation."
+	@+echo -e "\033[33;1mmake help\033[0m\t\t# display this message and exit"
