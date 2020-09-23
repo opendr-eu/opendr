@@ -1,3 +1,3 @@
 ## Inference and Training API
 
-This section described the Python API for DL inference and training.
+This section describes the Python API for DL inference and training.
