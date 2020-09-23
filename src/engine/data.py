@@ -83,7 +83,7 @@ class Vector(Data):
         super().__init__(data)
 
         if data:
-            self.data(data)
+            self.data = data
 
     @property
     def data(self):
@@ -149,7 +149,7 @@ class Timeseries(Data):
         super().__init__(data)
 
         if data:
-            self.data(data)
+            self.data = data
 
     @property
     def data(self):
