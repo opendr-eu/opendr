@@ -175,7 +175,7 @@ class Timeseries(Data):
         # Note that will also fail for non-numeric data (which is expected)
         data = np.asarray(data, dtype=np.float32)
 
-        # Check if the supplied vector is 1D
+        # Check if the supplied array is 2D
         if len(data.shape) != 2:
             raise ValueError(
                 "Only 2-D arrays are supported by Timeseries. Please supply a data object that can be casted "
