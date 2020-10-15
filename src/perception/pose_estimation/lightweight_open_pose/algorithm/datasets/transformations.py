@@ -26,20 +26,14 @@ class ConvertKeypoints:
         for keypoint in keypoints:  # keypoint[2] == 0: occluded, == 1: visible, == 2: not in image
             if keypoint[0] == keypoint[1] == 0:
                 keypoint[2] = 2
-            if (keypoint[0] < 0
-                    or keypoint[0] >= w
-                    or keypoint[1] < 0
-                    or keypoint[1] >= h):
+            if keypoint[0] < 0 or keypoint[0] >= w or keypoint[1] < 0 or keypoint[1] >= h:
                 keypoint[2] = 2
         for other_label in label['processed_other_annotations']:
             keypoints = other_label['keypoints']
             for keypoint in keypoints:
                 if keypoint[0] == keypoint[1] == 0:
                     keypoint[2] = 2
-                if (keypoint[0] < 0
-                        or keypoint[0] >= w
-                        or keypoint[1] < 0
-                        or keypoint[1] >= h):
+                if keypoint[0] < 0 or keypoint[0] >= w or keypoint[1] < 0 or keypoint[1] >= h:
                     keypoint[2] = 2
         label['keypoints'] = self._convert(label['keypoints'], w, h)
 
@@ -57,10 +51,8 @@ class ConvertKeypoints:
             converted_keypoints[1][2] = 2
         elif keypoints[5][2] == 1 and keypoints[6][2] == 1:
             converted_keypoints[1][2] = 1
-        if (converted_keypoints[1][0] < 0
-                or converted_keypoints[1][0] >= w
-                or converted_keypoints[1][1] < 0
-                or converted_keypoints[1][1] >= h):
+        if converted_keypoints[1][0] < 0 or converted_keypoints[1][0] >= w or converted_keypoints[1][1] < 0 or \
+                converted_keypoints[1][1] >= h:
             converted_keypoints[1][2] = 2
         return converted_keypoints
 

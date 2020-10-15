@@ -119,9 +119,8 @@ class ShuffleUnit(nn.Module):
             # original output channels.
             self.out_channels -= self.in_channels
         else:
-            raise ValueError("Cannot combine tensors with \"{}\"" +
-                             "Only \"add\" and \"concat\" are" +
-                             "supported".format(self.combine))
+            raise ValueError(
+                "Cannot combine tensors with \"{}\" Only \"add\" and \"concat\" are supported".format(self.combine))
 
         # Use a 1x1 grouped or non-grouped convolution to reduce input channels
         # to bottleneck channels, as in a ResNet bottleneck module.

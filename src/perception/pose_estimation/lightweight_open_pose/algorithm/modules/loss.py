@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 def l2_loss(input, target, mask, batch_size):
     loss = (input - target) * mask
     loss = (loss * loss) / 2 / batch_size
