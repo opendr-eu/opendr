@@ -241,7 +241,7 @@ class Flip:
         sample['mask'] = cv2.flip(sample['mask'], 1)
 
         label = sample['label']
-        w, h = label['img_width'], label['img_height']
+        w = label['img_width']
         label['objpos'][0] = w - 1 - label['objpos'][0]
         for keypoint in label['keypoints']:
             keypoint[0] = w - 1 - keypoint[0]
