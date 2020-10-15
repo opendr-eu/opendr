@@ -29,15 +29,14 @@ def prepare_annotations(annotations_per_image, images_info, net_input_size):
     for _, annotations in annotations_per_image.items():
         previous_centers = []
         for annotation in annotations[0]:
-            if (annotation['num_keypoints'] < 5
-                    or annotation['area'] < 32 * 32):
+            if annotation['num_keypoints'] < 5 or annotation['area'] < 32 * 32:
                 continue
             person_center = [annotation['bbox'][0] + annotation['bbox'][2] / 2,
                              annotation['bbox'][1] + annotation['bbox'][3] / 2]
             is_close = False
             for previous_center in previous_centers:
-                distance_to_previous = ((person_center[0] - previous_center[0]) ** 2
-                                        + (person_center[1] - previous_center[1]) ** 2) ** 0.5
+                distance_to_previous = ((person_center[0] - previous_center[0]) ** 2 +
+                                        (person_center[1] - previous_center[1]) ** 2) ** 0.5
                 if distance_to_previous < previous_center[2] * 0.3:
                     is_close = True
                     break
