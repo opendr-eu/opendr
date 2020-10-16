@@ -1,3 +1,20 @@
+# Copyright 1996-2020 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ShuffleNet implementation taken from https://github.com/jaxony/ShuffleNet and modified to work as a backbone
+# for Lightweight Open Pose. It comes with the MIT license included below.
+
 # MIT License
 #
 # Copyright (c) 2017 Jackson Huang
@@ -19,9 +36,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-# ShuffleNet implementation taken from https://github.com/jaxony/ShuffleNet and modified to work as a backbone
-# for Lightweight Open Pose. It comes with the MIT license included above.
 
 import torch
 from torch import nn
