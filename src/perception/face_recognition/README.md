@@ -5,7 +5,7 @@ This folder contains the FaceEvolve algorithm for face recognition in the OpenDR
 ## Sources
 
 The algorithms files are copied from [face.evoLVe: High-Performance Face Recognition Library based on PyTorch](
-https://github.com/ZhaoJ9014/face.evoLVe.PyTorch) with minor modifications listed below:
+https://github.com/ZhaoJ9014/face.evoLVe.PyTorch) with minor modifications.
 
 ## Added Files
 An additional backbone model was added in the `backbone` directory. 
