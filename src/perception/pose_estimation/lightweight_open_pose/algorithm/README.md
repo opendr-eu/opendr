@@ -1,11 +1,12 @@
-# OpenDR Pose Estimation
+# OpenDR Pose Estimation - Lightweight Open Pose
 
-This folder contains the Open Pose[1] algorithm for pose estimation in the OpenDR Toolkit.
+This folder contains the Open Pose[1] algorithm implementation for pose estimation in the OpenDR Toolkit, 
+in the form of Lightweight Open Pose [2].
 
 ## Sources
 
 The algorithms files are copied from [Daniil-Osokin/lightweight-human-pose-estimation.pytorch](
-https://github.com/Daniil-Osokin/lightweight-human-pose-estimation.pytorch) [2] with minor modifications listed below:
+https://github.com/Daniil-Osokin/lightweight-human-pose-estimation.pytorch) with minor modifications listed below:
 
 1. `datasets/coco.py`: PEP8 changes
 2. `datasets/transformations.py`: PEP8 changes
