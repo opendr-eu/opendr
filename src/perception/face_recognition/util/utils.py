@@ -5,7 +5,6 @@ from .verification import evaluate
 
 import numpy as np
 import bcolz
-import io
 import os
 import random
 from PIL import Image
