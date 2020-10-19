@@ -1,4 +1,4 @@
-# OpenDR Pose Estimation
+# OpenDR Face Recognition
 
 This folder contains the FaceEvolve algorithm for face recognition in the OpenDR Toolkit.
 
