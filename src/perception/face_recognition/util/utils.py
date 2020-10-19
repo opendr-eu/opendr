@@ -3,20 +3,12 @@ import torchvision.transforms as transforms
 
 from .verification import evaluate
 
-from datetime import datetime
-import matplotlib.pyplot as plt
 import numpy as np
 import bcolz
 import io
 import os
 import random
 from PIL import Image
-
-plt.switch_backend('agg')
-
-
-def get_time():
-    return (str(datetime.now())[:-10]).replace(' ', '-').replace(':', '-')
 
 
 def l2_norm(input, axis=1):
@@ -206,21 +198,6 @@ def ccrop_batch(imgs_tensor):
     return ccropped_imgs
 
 
-def gen_plot(fpr, tpr):
-    """Create a pyplot plot and save to buffer."""
-    plt.figure()
-    plt.xlabel("FPR", fontsize=14)
-    plt.ylabel("TPR", fontsize=14)
-    plt.title("ROC Curve", fontsize=14)
-    plt.plot(fpr, tpr, linewidth=2)
-    buf = io.BytesIO()
-    plt.savefig(buf, format='jpeg')
-    buf.seek(0)
-    plt.close()
-
-    return buf
-
-
 def perform_val(multi_gpu, device, embedding_size, batch_size, backbone, carray, issame, nrof_folds=10, tta=True):
     if multi_gpu:
         backbone = backbone.module  # unpackage model from DataParallel
@@ -255,17 +232,13 @@ def perform_val(multi_gpu, device, embedding_size, batch_size, backbone, carray,
                 embeddings[idx:] = l2_norm(backbone(ccropped.to(device))).cpu()
 
     tpr, fpr, acc, best_thresholds = evaluate(embeddings, issame, nrof_folds)
-    buf = gen_plot(fpr, tpr)
-    roc_curve = Image.open(buf)
-    roc_curve_tensor = transforms.ToTensor()(roc_curve)
 
-    return acc.mean(), best_thresholds.mean(), roc_curve_tensor
+    return acc.mean(), best_thresholds.mean()
 
 
-def buffer_val(writer, db_name, acc, best_threshold, roc_curve_tensor, epoch):
+def buffer_val(writer, db_name, acc, best_threshold, epoch):
     writer.add_scalar('{}_Accuracy'.format(db_name), acc, epoch)
     writer.add_scalar('{}_Best_Threshold'.format(db_name), best_threshold, epoch)
-    writer.add_image('{}_ROC_Curve'.format(db_name), roc_curve_tensor, epoch)
 
 
 class AverageMeter(object):
