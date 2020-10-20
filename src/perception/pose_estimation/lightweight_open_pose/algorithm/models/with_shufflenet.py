@@ -188,7 +188,6 @@ class ShuffleUnit(nn.Module):
                                     stride=2, padding=1)
 
         out = self.g_conv_1x1_compress(x)
-        # noinspection PyTypeChecker
         out = channel_shuffle(out, self.groups)
         out = self.depthwise_conv3x3(out)
         out = self.bn_after_depthwise(out)
@@ -202,7 +201,7 @@ class ShuffleNet(nn.Module):
     """ShuffleNet implementation.
     """
 
-    def __init__(self, groups=3, in_channels=3):  # , num_classes=1000):
+    def __init__(self, groups=3, in_channels=3):
         """ShuffleNet constructor.
         Arguments:
             groups (int, optional): number of groups to be used in grouped
@@ -211,13 +210,11 @@ class ShuffleNet(nn.Module):
             in_channels (int, optional): number of channels in the input tensor.
                 Default is 3 for RGB image inputs.
         """
-        # num_classes (int, optional): number of classes to predict. Default is 1000 for ImageNet.
         super(ShuffleNet, self).__init__()
 
         self.groups = groups
         self.stage_repeats = [3, 7, 3]
         self.in_channels = in_channels
-        # self.num_classes = num_classes
 
         # index 0 is invalid and should never be called.
         # only used for indexing convenience.
@@ -253,9 +250,6 @@ class ShuffleNet(nn.Module):
         # Undefined as PyTorch's functional API can be used for on-the-fly
         # shape inference if input size is not ImageNet's 224x224
 
-        # Fully-connected classification layer
-        # num_inputs = self.stage_out_channels[-1]
-        # self.fc = nn.Linear(num_inputs, self.num_classes)
         self.init_params()
 
     def init_params(self):
@@ -314,15 +308,10 @@ class ShuffleNet(nn.Module):
         x = self.stage4(x)
 
         # Avg pooling is removed in favor of changing the stride of conv1 + maxpool
-        # With avg pooling, convergence is way to slow based on short tests
+        # With avg pooling, convergence is way too slow based on short tests, but we leave it here for reference
+        # between the original shufflenet and the modifications we made
         # global average pooling layer
         # x = F.avg_pool2d(x, x.data.size()[-2:])
-
-        # flatten for input to fully-connected layer
-        # x = x.view(x.size(0), -1)
-        # x = self.fc(x)
-
-        # return F.log_softmax(x, dim=1)
         return x
 
 
