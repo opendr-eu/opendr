@@ -44,7 +44,7 @@ from PIL import Image as PILImage
 import numpy as np
 import pickle
 import cv2
-
+import onnxruntime as ort
 from tqdm import tqdm
 import os
 import sys
@@ -122,6 +122,7 @@ class FaceRecognition(Learner):
         self.val_after = val_after
         self.data = None
         self.pairs = None
+        self.ort_session = None  # ONNX runtime inference session
 
     def __create_model(self, num_class=0):
         # Create the backbone architecture
@@ -354,7 +355,7 @@ class FaceRecognition(Learner):
         :param save_path: path to save the .pkl file
         :type save_path: str
         """
-        if self._model is None:
+        if self._model is None and self.ort_session is None:
             sys.exit('A model should be loaded first')
         if os.path.exists(os.path.join(save_path, 'reference.pkl')):
             print('Loading Reference')
@@ -367,8 +368,6 @@ class FaceRecognition(Learner):
                 transforms.ToTensor(),
                 transforms.Normalize(mean=self.rgb_mean, std=self.rgb_std)]
             )
-            self.backbone_model.eval()
-            import cv2
             with torch.no_grad():
                 for subdir, dirs, files in os.walk(path):
                     total = 0
@@ -380,8 +379,13 @@ class FaceRecognition(Learner):
                             cv2.cvtColor(inputs, cv2.COLOR_BGR2RGB))
                         )
                         inputs = inputs.unsqueeze(0)
-                        inputs = inputs.to(self.device)
-                        features = self.backbone_model(inputs)
+                        if self.ort_session is not None:
+                            features = self.ort_session.run(None, {'data': np.array(inputs.cpu())})
+                            features = torch.tensor(features[0])
+                        else:
+                            self.backbone_model.eval()
+                            inputs = inputs.to(self.device)
+                            features = self.backbone_model(inputs)
                         features = l2_norm(features)
                         features_sum += features
                     avg_features = features_sum / total
@@ -398,7 +402,7 @@ class FaceRecognition(Learner):
         if not isinstance(img, Image):
             img = Image(img)
         img = img.numpy()
-        if self._model is None:
+        if self._model is None and self.ort_session is None:
             sys.exit('A model should be loaded first')
         transform = transforms.Compose([
             transforms.Resize([int(128 * self.input_size[0] / 112), int(128 * self.input_size[0] / 112)]),
@@ -420,7 +424,12 @@ class FaceRecognition(Learner):
                 img = transform(img)
                 img = img.unsqueeze(0)
                 img = img.to(self.device)
-                features = self.backbone_model(img)
+                if self.ort_session is not None:
+                    features = self.ort_session.run(None, {'data': np.array(img.cpu())})
+                    features = torch.tensor(features[0])
+                else:
+                    self.backbone_model.eval()
+                    features = self.backbone_model(img)
                 features = l2_norm(features)
             for key in self.database:
                 for item in self.database[key]:
@@ -584,8 +593,23 @@ class FaceRecognition(Learner):
                     "No file Head_{} or Backbone_{} found in '{}'. Please Have a Check".format(
                         self.network_head, self.backbone, path))
 
-    def optimize(self, params):
-        pass
+    def load_from_onnx(self, path):
+        self.ort_session = ort.InferenceSession(path)
+
+    def convert_to_onnx(self, output_name, do_constant_folding=False):
+        inp = torch.randn(1, 3, 112, 112).cuda()
+        input_names = ['data']
+        output_names = ['features']
+
+        torch.onnx.export(self.backbone_model, inp, output_name, verbose=True, do_constant_folding=do_constant_folding,
+                          input_names=input_names, output_names=output_names)
+
+    def optimize(self, path, do_constant_folding=False):
+        """
+        Optimize method saves the model in onnx format in the path specified.
+        The saved model can then be used with load_from_onnx() method.
+        """
+        self.convert_to_onnx(path, do_constant_folding)
 
     def reset(self):
         pass
