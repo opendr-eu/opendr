@@ -124,15 +124,10 @@ class MobileNetV2(nn.Module):
         # make it nn.Sequential
         self.features = nn.Sequential(*self.features)
 
-        # # building classifier
-        # self.classifier = nn.Linear(self.last_channel, n_class)
-
         self._initialize_weights()
 
     def forward(self, x):
         x = self.features(x)
-        # x = x.mean(3).mean(2)
-        # x = self.classifier(x)
         return x
 
     def _initialize_weights(self):
