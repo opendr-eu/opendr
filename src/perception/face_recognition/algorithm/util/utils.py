@@ -8,6 +8,7 @@ import bcolz
 import os
 import random
 from PIL import Image
+import sys
 
 
 def l2_norm(input, axis=1):
@@ -93,9 +94,10 @@ def create_pairs(path, number):
 def get_val_data(path, dataset_type):
     if dataset_type in ['lfw', 'cfp_ff', 'cfp_fp', 'agedb_30', 'vgg2_fp']:
         data, pairs = get_val_pair(path, dataset_type)
-    else:
-        path = os.path.join(path, dataset_type)
+    elif dataset_type == 'imagefolder':
         data, pairs = create_pairs(path, 2000)
+    else:
+        sys.exit('dataset_type should be of type imagefolder')
     return data, pairs
 
 

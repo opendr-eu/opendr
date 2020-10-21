@@ -63,12 +63,12 @@ from perception.face_recognition.algorithm.util.utils import make_weights_for_ba
 
 class FaceRecognition(Learner):
     def __init__(self, lr=0.1, iters=120, batch_size=32, optimizer='sgd', device='cuda', threshold=0.0,
-                 backbone='IR_50', network_head='ArcFace', loss='Focal',
-                 temp_path='./temp', mode='backbone_only', backbone_path=None,
+                 backbone='ir_50', network_head='arcface', loss='focal',
+                 temp_path='./temp', mode='backbone_only',
                  checkpoint_after_iter=10, checkpoint_load_iter=0, val_after=10,
                  input_size=None, rgb_mean=None, rgb_std=None, embedding_size=512,
                  weight_decay=5e-4, momentum=0.9, drop_last=True, stages=None,
-                 multi_gpu=False, gpu_id=None, pin_memory=True, num_workers=4,
+                 pin_memory=True, num_workers=4,
                  seed=123):
         super(FaceRecognition, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer,
                                               backbone=backbone, network_head=network_head, temp_path=temp_path,
@@ -92,7 +92,7 @@ class FaceRecognition(Learner):
         self.input_size = input_size
         self.rgb_mean = rgb_mean
         self.rgb_std = rgb_std
-        if self.backbone == 'MobileFaceNet':
+        if self.backbone == 'mobilefacenet':
             self.embedding_size = 128
         else:
             self.embedding_size = embedding_size
@@ -100,8 +100,6 @@ class FaceRecognition(Learner):
         self.momentum = momentum
         self.drop_last = drop_last
         self.stages = stages
-        self.multi_gpu = multi_gpu
-        self.gpu_id = gpu_id
         self.pin_memory = pin_memory
         self.num_workers = num_workers
 
@@ -111,7 +109,6 @@ class FaceRecognition(Learner):
         self.backbone_model = None
         self.epoch = checkpoint_load_iter
 
-        self.backbone_path = backbone_path
         self._model = None
         self.writer = None
         self.logging = False
@@ -128,28 +125,28 @@ class FaceRecognition(Learner):
         # Create the backbone architecture
         self.num_class = num_class
         if self.backbone_model is None:
-            backbone_dict = {'ResNet_50': ResNet_50(self.input_size),
-                             'ResNet_101': ResNet_101(self.input_size),
-                             'ResNet_152': ResNet_152(self.input_size),
-                             'IR_50': IR_50(self.input_size),
-                             'IR_101': IR_101(self.input_size),
-                             'IR_152': IR_152(self.input_size),
-                             'IR_SE_50': IR_SE_50(self.input_size),
-                             'IR_SE_101': IR_SE_101(self.input_size),
-                             'IR_SE_152': IR_SE_152(self.input_size),
-                             'MobileFaceNet': MobileFaceNet(self.input_size)}
+            backbone_dict = {'resnet_50': ResNet_50(self.input_size),
+                             'resnet_101': ResNet_101(self.input_size),
+                             'resnet_152': ResNet_152(self.input_size),
+                             'ir_50': IR_50(self.input_size),
+                             'ir_101': IR_101(self.input_size),
+                             'ir_152': IR_152(self.input_size),
+                             'ir_se_50': IR_SE_50(self.input_size),
+                             'ir_se_101': IR_SE_101(self.input_size),
+                             'ir_se_152': IR_SE_152(self.input_size),
+                             'mobilefacenet': MobileFaceNet(self.input_size)}
             backbone = backbone_dict[self.backbone]
             self.backbone_model = backbone.to(self.device)
         # Create the head architecture
         if self.mode != 'backbone_only':
             head_dict = {
-                'ArcFace': ArcFace(in_features=self.embedding_size, out_features=self.num_class, device_id=self.gpu_id),
-                'CosFace': CosFace(in_features=self.embedding_size, out_features=self.num_class, device_id=self.gpu_id),
-                'SphereFace': SphereFace(in_features=self.embedding_size, out_features=self.num_class,
+                'arcface': ArcFace(in_features=self.embedding_size, out_features=self.num_class, device_id=self.gpu_id),
+                'cosface': CosFace(in_features=self.embedding_size, out_features=self.num_class, device_id=self.gpu_id),
+                'sphereface': SphereFace(in_features=self.embedding_size, out_features=self.num_class,
                                          device_id=self.gpu_id),
-                'Am_softmax': Am_softmax(in_features=self.embedding_size, out_features=self.num_class,
+                'am_softmax': Am_softmax(in_features=self.embedding_size, out_features=self.num_class,
                                          device_id=self.gpu_id),
-                'Classifier': Classifier(in_features=self.embedding_size, out_features=self.num_class,
+                'classifier': Classifier(in_features=self.embedding_size, out_features=self.num_class,
                                          device=self.device)}
             head = head_dict[self.network_head]
             self.network_head_model = head.to(self.device)
@@ -195,7 +192,10 @@ class FaceRecognition(Learner):
                                  std=self.rgb_std),
         ])
 
-        dataset_train = datasets.ImageFolder(os.path.join(dataset.path, dataset.dataset_type), train_transform)
+        if dataset.type != 'imagefolder':
+            sys.exit('dataset should be of type imagefolder')
+
+        dataset_train = datasets.ImageFolder(dataset.path, train_transform)
 
         # create a weighted random sampler to process imbalanced data
         weights = make_weights_for_balanced_classes(dataset_train.imgs, len(dataset_train.classes))
@@ -207,8 +207,8 @@ class FaceRecognition(Learner):
             num_workers=self.num_workers, drop_last=self.drop_last
         )
 
-        loss_dict = {'Focal': FocalLoss(),
-                     'Softmax': nn.CrossEntropyLoss()}
+        loss_dict = {'focal': FocalLoss(),
+                     'softmax': nn.CrossEntropyLoss()}
         criterion = loss_dict[self.loss]
         self.classes = train_loader.dataset.classes
         self.num_class = len(train_loader.dataset.classes)
@@ -217,24 +217,24 @@ class FaceRecognition(Learner):
 
         if self.checkpoint_load_iter != 0:
             if self.mode == 'head_only':
-                head_info = torch.load(os.path.join(self.temp_path, 'checkpoint', 'Head_{}_Iter_{}'.format(
+                head_info = torch.load(os.path.join(self.temp_path, 'checkpoint', 'head_{}_iter_{}'.format(
                     self.network_head, self.epoch)))
                 self.network_head_model.load_state_dict(head_info['head_state_dict'])
             else:
-                backbone_info = torch.load(os.path.join(self.temp_path, 'checkpoint', 'Backbone_{}_Iter_{}'.format(
+                backbone_info = torch.load(os.path.join(self.temp_path, 'checkpoint', 'backbone_{}_iter_{}'.format(
                     self.backbone, self.epoch)))
                 self.backbone_model.load_state_dict(backbone_info['backbone_state_dict'])
-                head_info = torch.load(os.path.join(self.temp_path, 'checkpoint', 'Head_{}_Iter_{}'.format(
+                head_info = torch.load(os.path.join(self.temp_path, 'checkpoint', 'head_{}_iter_{}'.format(
                     self.network_head, self.epoch)))
                 self.network_head_model.load_state_dict(head_info['head_state_dict'])
 
         # separate batch_norm parameters from others
         # do not do weight decay for batch_norm parameters to improve the generalizability
-        if self.backbone.find("IR") >= 0:
+        if self.backbone.find("ir") >= 0:
             backbone_paras_only_bn, backbone_paras_wo_bn = separate_irse_bn_paras(
                 self.backbone_model)
             _, head_paras_wo_bn = separate_irse_bn_paras(self.network_head_model)
-        elif self.backbone == 'MobileFaceNet':
+        elif self.backbone == 'mobilefacenet':
             _, head_paras_wo_bn = separate_mobilenet_bn_paras(self.network_head_model)
         else:
             backbone_paras_only_bn, backbone_paras_wo_bn = separate_resnet_bn_paras(
@@ -253,7 +253,7 @@ class FaceRecognition(Learner):
             optimizer = optim.SGD([{'params': head_paras_wo_bn, 'weight_decay': self.weight_decay}], lr=self.lr,
                                   momentum=self.momentum)
         else:
-            if self.backbone == 'MobileFaceNet':
+            if self.backbone == 'mobilefacenet':
                 optimizer = optim.SGD([{'params': list(self.backbone_model.parameters()) + head_paras_wo_bn,
                                         'weight_decay': self.weight_decay}],
                                       lr=self.lr, momentum=self.momentum)
@@ -444,7 +444,7 @@ class FaceRecognition(Learner):
                         to_keep = to_keep[-1]
             return to_keep
 
-        elif self.network_head == 'Classifier':
+        elif self.network_head == 'classifier':
             self.backbone_model.eval()
             self.network_head_model.eval()
             with torch.no_grad():
@@ -459,12 +459,12 @@ class FaceRecognition(Learner):
                 _, predicted = torch.max(outs.data, 1)
             return self.classes[predicted.item()]
         else:
-            raise NameError('Infer should be called either with backbone_only mode or with a Classifier head')
+            raise NameError('Infer should be called either with backbone_only mode or with a classifier head')
 
     def eval(self, dataset=None):
         if self._model is None:
             sys.exit('A model should be loaded first')
-        if self.network_head != 'Classifier' and self.mode != 'head_only':
+        if self.network_head != 'classifier' and self.mode != 'head_only':
             self.backbone_model.eval()
             if self.data is None or self.pairs is None:
                 self.data, self.pairs = get_val_data(dataset.path, dataset.dataset_type)
@@ -535,11 +535,11 @@ class FaceRecognition(Learner):
                             'current_epoch': self.epoch,
                             'optimizer_state_dict': self.opt.state_dict()}
         if self.mode == 'head_only':
-            torch.save(head_custom_dict, os.path.join(path, "Head_{}_Iter_{}".format(
+            torch.save(head_custom_dict, os.path.join(path, "head_{}_iter_{}".format(
                 self.network_head, self.epoch)))
-        torch.save(backbone_custom_dict, os.path.join(path, "Backbone_{}_Iter_{}".format(
+        torch.save(backbone_custom_dict, os.path.join(path, "backbone_{}_iter_{}".format(
             self.backbone, self.epoch)))
-        torch.save(head_custom_dict, os.path.join(path, "Head_{}_Iter_{}".format(
+        torch.save(head_custom_dict, os.path.join(path, "head_{}_iter_{}".format(
             self.network_head, self.epoch)))
 
     def save(self, path=None):
@@ -555,10 +555,10 @@ class FaceRecognition(Learner):
                             'classes': self.classes,
                             'num_class': self.num_class}
         if self.mode == 'head_only':
-            torch.save(head_custom_dict, os.path.join(path, 'Head_{}'.format(self.network_head)))
+            torch.save(head_custom_dict, os.path.join(path, 'head_{}'.format(self.network_head)))
         else:
-            torch.save(backbone_custom_dict, os.path.join(path, 'Backbone_{}'.format(self.backbone)))
-            torch.save(head_custom_dict, os.path.join(path, 'Head_{}'.format(self.network_head)))
+            torch.save(backbone_custom_dict, os.path.join(path, 'backbone_{}'.format(self.backbone)))
+            torch.save(head_custom_dict, os.path.join(path, 'head_{}'.format(self.network_head)))
 
     def load(self, path=None):
         """
@@ -567,21 +567,21 @@ class FaceRecognition(Learner):
         :type path: str
         """
         if self.mode == 'backbone_only' or self.mode == 'head_only':
-            if os.path.isfile(os.path.join(path, 'Backbone_{}'.format(self.backbone))):
-                backbone_info = torch.load(os.path.join(path, 'Backbone_{}'.format(self.backbone)))
-                print("Loading Backbone '{}'".format(self.backbone))
+            if os.path.isfile(os.path.join(path, 'backbone_{}'.format(self.backbone))):
+                backbone_info = torch.load(os.path.join(path, 'backbone_{}'.format(self.backbone)))
+                print("Loading backbone '{}'".format(self.backbone))
                 self.__create_model(num_class=0)
                 self._model = {self.backbone_model, self.network_head_model}
                 self.backbone_model.load_state_dict(backbone_info['backbone_state_dict'])
                 self.threshold = backbone_info['threshold']
             else:
                 sys.exit("No file Backbone_{} found in '{}'. Please Have a Check".format(self.backbone, path))
-        elif self.network_head == 'Classifier':
-            if os.path.isfile(os.path.join(path, 'Head_{}'.format(self.network_head))) and os.path.isfile(
-                    os.path.join(path, 'Backbone_{}'.format(self.backbone))):
-                print("Loading Backbone '{}' and Head '{}'".format(self.backbone, self.network_head))
-                head_info = torch.load(os.path.join(path, 'Head_{}'.format(self.network_head)))
-                backbone_info = torch.load(os.path.join(path, 'Backbone_{}'.format(self.backbone)))
+        elif self.network_head == 'classifier':
+            if os.path.isfile(os.path.join(path, 'head_{}'.format(self.network_head))) and os.path.isfile(
+                    os.path.join(path, 'backbone_{}'.format(self.backbone))):
+                print("Loading backbone '{}' and head '{}'".format(self.backbone, self.network_head))
+                head_info = torch.load(os.path.join(path, 'head_{}'.format(self.network_head)))
+                backbone_info = torch.load(os.path.join(path, 'backbone_{}'.format(self.backbone)))
                 self.__create_model(num_class=head_info['num_class'])
                 self._model = {self.backbone_model, self.network_head_model}
                 self.network_head_model.load_state_dict(head_info['head_state_dict'])
@@ -590,7 +590,7 @@ class FaceRecognition(Learner):
                 self.threshold = backbone_info['threshold']
             else:
                 sys.exit(
-                    "No file Head_{} or Backbone_{} found in '{}'. Please Have a Check".format(
+                    "No file head_{} or backbone_{} found in '{}'. Please have a check".format(
                         self.network_head, self.backbone, path))
 
     def load_from_onnx(self, path):
