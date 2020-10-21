@@ -19,7 +19,7 @@ The [FaceRecognition](#src.perception.face_recognition.FaceRecognition) class ac
 | |**threshold: *float, default=0.0*** <br /> &nbsp; &nbsp; &nbsp;Specifies the initial learning rate to be used during training.|
 | |**backbone: *{'resnet_50, 'resnet_101', 'resnet_152', 'ir_50', 'ir_101', 'ir_152', 'ir_se_50', 'ir_se_101', 'ir_se_152', 'mobilefacenet'}, default='ir_50'*** <br /> &nbsp; &nbsp; &nbsp;Specifies the backbone architecture.|
 | |**network_head: *{'arcface, 'cosface', 'sphereface', 'am_softmax', 'classifier'}, default='arcface'*** <br /> &nbsp; &nbsp; &nbsp;Specifies the head architecture.|
-| |**loss: *{focal}, default='focal'*** <br /> &nbsp; &nbsp; &nbsp;Specifies the loss to be used during training.|
+| |**loss: *{'focal','softmax'}, default='focal'*** <br /> &nbsp; &nbsp; &nbsp;Specifies the loss to be used during training.|
 | |**temp_path: *{focal}, default='focal'*** <br /> &nbsp; &nbsp; &nbsp;Specifies a temporary path for checkpoints to be saved in.|
 | |**mode: *{'backbone_only, 'head_only', 'full'}, default='backbone_only'*** <br /> &nbsp; &nbsp; &nbsp; The module supports three modes:<br /> <br /> <ul><li>'backbone_only': used for inference. Only the backbone architecture is used, and inference is done through retrieval.<br /><br /></li><li>'head_only': used for training. Only the head architecture will be trained, using a pretrained backbone model.<br /><br /></li><li>'full': used to train a combined model (backbone + head) or to inference with a classifier head.<br /></li></ul>|
 | |**checkpoint_after_iter: *int, default=0*** <br /> &nbsp; &nbsp; &nbsp;Specifies after how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.|  
