@@ -78,7 +78,9 @@ class TestLicense(unittest.TestCase):
             'include'
         ]
 
-        skippedDirectoryPaths = []
+        skippedDirectoryPaths = [
+            'src/perception/pose_estimation/lightweight_open_pose/algorithm'
+        ]
 
         skippedFilePaths = []
 
