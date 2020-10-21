@@ -40,3 +40,45 @@ class Target(BaseTarget):
         self.data = None
         self.confidence = None
         self.action = None
+
+
+class Keypoint(Target):
+    """
+    This target is used for keypoint detection in pose estimation, body part detection, etc.
+    A keypoint is a list with two coordinates [x, y], which gives the x, y position of the
+    keypoints on the image.
+    """
+    def __init__(self, keypoint, confidence=None):
+        super().__init__()
+        self.data = keypoint
+        self.confidence = confidence
+
+    def __str__(self):
+        return str(self.data)
+
+
+class Pose(Target):
+    """
+    This target is used for pose estimation. It contains a list of Keypoints.
+    Refer to kpt_names for keypoint naming.
+    """
+    num_kpts = 18
+    kpt_names = ['nose', 'neck',
+                 'r_sho', 'r_elb', 'r_wri', 'l_sho', 'l_elb', 'l_wri',
+                 'r_hip', 'r_knee', 'r_ank', 'l_hip', 'l_knee', 'l_ank',
+                 'r_eye', 'l_eye',
+                 'r_ear', 'l_ear']
+
+    def __init__(self, keypoints, confidence):
+        super().__init__()
+        self.data = keypoints
+        self.confidence = confidence
+
+    def __str__(self):
+        """Matches kpt_names and keypoints x,y to get the best human-readable format for pose."""
+
+        out_string = ""
+        # noinspection PyUnresolvedReferences
+        for name, kpt in zip(Pose.kpt_names, self.data.tolist()):
+            out_string += name + ": " + str(kpt) + "\n"
+        return out_string
