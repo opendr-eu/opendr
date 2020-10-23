@@ -78,7 +78,9 @@ class TestLicense(unittest.TestCase):
             'include'
         ]
 
-        skippedDirectoryPaths = []
+        skippedDirectoryPaths = [
+            'src/perception/face_recognition/algorithm'
+        ]
 
         skippedFilePaths = []
 
