@@ -59,7 +59,7 @@ from perception.face_recognition.algorithm.loss.focal import FocalLoss
 from perception.face_recognition.algorithm.util.utils import make_weights_for_balanced_classes, get_val_data, \
     separate_irse_bn_paras, separate_mobilenet_bn_paras, l2_norm, \
     separate_resnet_bn_paras, warm_up_lr, schedule_lr, perform_val, buffer_val, AverageMeter, accuracy
-
+from perception.face_recognition.algorithm.align.align import face_align
 
 class FaceRecognition(Learner):
     def __init__(self, lr=0.1, iters=120, batch_size=32, optimizer='sgd', device='cuda', threshold=0.0,
@@ -85,7 +85,9 @@ class FaceRecognition(Learner):
         if stages is None:
             stages = [8, 16, 24]
         if self.device == 'cuda':
-            gpu_id = [0]
+            self.gpu_id = [0]
+        else:
+            self.gpu_id = None
         self.seed = seed
         self.loss = loss
         self.mode = mode
@@ -152,6 +154,10 @@ class FaceRecognition(Learner):
             self.network_head_model = head.to(self.device)
         else:
             self.network_head_model = None
+
+    def align(self, data='./data/imgs2', dest='./temp.aligned', crop_size=112):
+        face_align(data, dest, crop_size)
+        print('DONE')
 
     def fit(self, dataset, val_dataset=None, logging_path='', silent=False, verbose=True):
         """
