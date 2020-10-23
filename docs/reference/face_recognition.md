@@ -13,14 +13,14 @@ The [FaceRecognition](#src.perception.face_recognition.FaceRecognition) class ac
 |:---|:-------------|
 | |**lr: *float, default=0.1*** <br /> &nbsp; &nbsp; &nbsp;Specifies the initial learning rate to be used during training.|
 | |**iters: *int, default=120*** <br /> &nbsp; &nbsp; &nbsp;Specifies the number of iterations the training should be run for.| 
-| |**batch_size: *int, default=32*** <br /> &nbsp; &nbsp; &nbsp;Specifies the initial learning rate to be used during training.|
+| |**batch_size: *int, default=32*** <br /> &nbsp; &nbsp; &nbsp;Specifies the batch size to be used during training.|
 | |**optimizer: *{'sgd'}, default='sgd'*** <br /> &nbsp; &nbsp; &nbsp;Specifies the optimizer to be used during training. Currently supports 'sgd' (stochastic gradient decent).|
 | |**device: *{'cpu', 'cuda'}, default='cuda'*** <br /> &nbsp; &nbsp; &nbsp;Specifies the device to be used. |
-| |**threshold: *float, default=0.0*** <br /> &nbsp; &nbsp; &nbsp;Specifies the initial learning rate to be used during training.|
+| |**threshold: *float, default=0.0*** <br /> &nbsp; &nbsp; &nbsp;Specifies the threshold to whether accept or discard a sample as a match or not.|
 | |**backbone: *{'resnet_50, 'resnet_101', 'resnet_152', 'ir_50', 'ir_101', 'ir_152', 'ir_se_50', 'ir_se_101', 'ir_se_152', 'mobilefacenet'}, default='ir_50'*** <br /> &nbsp; &nbsp; &nbsp;Specifies the backbone architecture.|
 | |**network_head: *{'arcface, 'cosface', 'sphereface', 'am_softmax', 'classifier'}, default='arcface'*** <br /> &nbsp; &nbsp; &nbsp;Specifies the head architecture.|
 | |**loss: *{'focal','softmax'}, default='focal'*** <br /> &nbsp; &nbsp; &nbsp;Specifies the loss to be used during training.|
-| |**temp_path: *{focal}, default='focal'*** <br /> &nbsp; &nbsp; &nbsp;Specifies a temporary path for checkpoints to be saved in.|
+| |**temp_path: *str, default='./temp'*** <br /> &nbsp; &nbsp; &nbsp;Specifies a temporary path for checkpoints to be saved in.|
 | |**mode: *{'backbone_only, 'head_only', 'full'}, default='backbone_only'*** <br /> &nbsp; &nbsp; &nbsp; The module supports three modes:<br /> <br /> <ul><li>'backbone_only': used for inference. Only the backbone architecture is used, and inference is done through retrieval.<br /><br /></li><li>'head_only': used for training. Only the head architecture will be trained, using a pretrained backbone model.<br /><br /></li><li>'full': used to train a combined model (backbone + head) or to inference with a classifier head.<br /></li></ul>|
 | |**checkpoint_after_iter: *int, default=0*** <br /> &nbsp; &nbsp; &nbsp;Specifies after how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.|  
 | |**checkpoint_load_iter: *int, default=0*** <br /> &nbsp; &nbsp; &nbsp;Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.|    
