@@ -602,20 +602,20 @@ class FaceRecognition(Learner):
     def load_from_onnx(self, path):
         self.ort_session = ort.InferenceSession(path)
 
-    def convert_to_onnx(self, output_name, do_constant_folding=False):
+    def convert_to_onnx(self, output_name):
         inp = torch.randn(1, 3, 112, 112).cuda()
         input_names = ['data']
         output_names = ['features']
 
-        torch.onnx.export(self.backbone_model, inp, output_name, verbose=True, do_constant_folding=do_constant_folding,
+        torch.onnx.export(self.backbone_model, inp, output_name, verbose=True, enable_onnx_checker=True,
                           input_names=input_names, output_names=output_names)
 
-    def optimize(self, path, do_constant_folding=False):
+    def optimize(self, path):
         """
         Optimize method saves the model in onnx format in the path specified.
         The saved model can then be used with load_from_onnx() method.
         """
-        self.convert_to_onnx(path, do_constant_folding)
+        self.convert_to_onnx(path)
 
     def reset(self):
         pass
