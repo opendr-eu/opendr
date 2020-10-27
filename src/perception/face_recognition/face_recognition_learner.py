@@ -155,7 +155,7 @@ class FaceRecognition(Learner):
         else:
             self.network_head_model = None
 
-    def align(self, data='./data/imgs2', dest='./temp.aligned', crop_size=112):
+    def align(self, data='', dest='./temp/aligned', crop_size=112):
         face_align(data, dest, crop_size)
         print('DONE')
 
