@@ -100,7 +100,8 @@ class LightweightOpenPoseLearner(Learner):
         self.model_train_state = True
 
     def fit(self, dataset, val_dataset=None, logging_path='', logging_flush_secs=30,
-            silent=False, verbose=True, epochs=None, use_val_subset=True, val_subset_size=250):
+            silent=False, verbose=True, epochs=None, use_val_subset=True, val_subset_size=250,
+             images_folder_name="train2017", annotations_filename="person_keypoints_train2017.json"):
         # Training dataset initialization
         data = self.__prepare_dataset(dataset,
                                       prepared_annotations_name="prepared_train_annotations.pkl",
@@ -375,13 +376,14 @@ class LightweightOpenPoseLearner(Learner):
         # This returns last evaluation's results
         return eval_results
 
-    def eval(self, dataset, silent=False, verbose=True, use_subset=True, subset_size=250):
+    def eval(self, dataset, silent=False, verbose=True, use_subset=True, subset_size=250,
+             images_folder_name="val2017", annotations_filename="person_keypoints_val2017.json"):
         # Validation dataset initialization
         data = self.__prepare_val_dataset(dataset, use_subset=use_subset,
                                           subset_name="val_subset.json",
                                           subset_size=subset_size,
-                                          images_folder_default_name="val2017",
-                                          annotations_filename="person_keypoints_val2017.json",
+                                          images_folder_default_name=images_folder_name,
+                                          annotations_filename=annotations_filename,
                                           verbose=not silent)
         # Model initialization if needed
         if self.model is None and self.checkpoint_load_iter != 0:
