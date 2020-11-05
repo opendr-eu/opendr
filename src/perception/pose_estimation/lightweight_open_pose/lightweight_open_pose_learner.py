@@ -101,7 +101,7 @@ class LightweightOpenPoseLearner(Learner):
 
     def fit(self, dataset, val_dataset=None, logging_path='', logging_flush_secs=30,
             silent=False, verbose=True, epochs=None, use_val_subset=True, val_subset_size=250,
-             images_folder_name="train2017", annotations_filename="person_keypoints_train2017.json"):
+            images_folder_name="train2017", annotations_filename="person_keypoints_train2017.json"):
         # Training dataset initialization
         data = self.__prepare_dataset(dataset,
                                       prepared_annotations_name="prepared_train_annotations.pkl",
