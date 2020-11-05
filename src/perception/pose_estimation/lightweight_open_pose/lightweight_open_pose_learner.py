@@ -1,6 +1,7 @@
 # General imports
 import onnxruntime as ort
 import os
+import shutil
 import cv2
 import torch
 import json
@@ -551,7 +552,8 @@ class LightweightOpenPoseLearner(Learner):
         Save for external usage, using the path saves only the state_dict.
         This will be loaded with self.load, which normally expects a dictionary
         containing key 'state_dict'. If an ort_session (ONNX) is initialized, saves
-        the ONNX model.
+        the ONNX model previously created by self.optimize, by copying it to the path
+        provided.
 
         :param path for the model to be saved
         :type path: str
@@ -561,7 +563,7 @@ class LightweightOpenPoseLearner(Learner):
             torch.save(custom_dict, path)
             print("Saved Pytorch model.")
         else:
-            self.__convert_to_onnx(path)
+            shutil.copy2(self.temp_path + "onnx_model.onnx", path)
             print("Saved ONNX model.")
 
     def __save(self, path, optimizer, scheduler, iter_, current_epoch):
@@ -623,21 +625,23 @@ class LightweightOpenPoseLearner(Learner):
         # onnx.helper.printable_graph(self.model.graph)
 
     def __convert_to_onnx(self, output_name, do_constant_folding=False):
-        inp = torch.randn(1, 3, self.base_height, 344).cuda()
+        width = 344
+        inp = torch.randn(1, 3, self.base_height, width).cuda()
         input_names = ['data']
         output_names = ['stage_0_output_1_heatmaps', 'stage_0_output_0_pafs',
                         'stage_1_output_1_heatmaps', 'stage_1_output_0_pafs']
 
         torch.onnx.export(self.model, inp, output_name, verbose=True, enable_onnx_checker=True,
-                          do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names)
+                          do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names,
+                          dynamic_axes={"data": {3: "width"}})
 
     def optimize(self, do_constant_folding=False):
         """
-        Optimize method saves the model in onnx format in the path specified.
-        The saved model can then be used with load_from_onnx() method.
+        Optimize method converts the model to ONNX format and saves the
+        model in the parent directory defined by self.temp_path. The ONNX model is then loaded.
         """
-        self.__convert_to_onnx(self.temp_path + "onnx_model", do_constant_folding)
-        self.load_from_onnx(self.temp_path + "onnx_model")
+        self.__convert_to_onnx(self.temp_path + "onnx_model.onnx", do_constant_folding)
+        self.load_from_onnx(self.temp_path + "onnx_model.onnx")
 
     def reset(self):
         """This method is not used in this implementation"""
