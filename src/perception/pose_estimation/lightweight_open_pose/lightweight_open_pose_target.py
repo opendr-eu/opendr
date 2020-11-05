@@ -1,8 +1,7 @@
 import numpy as np
 import cv2
-from python.engine.target import Pose
-from python.perception.pose_estimation.lightweight_open_pose.algorithm.modules.one_euro_filter import \
-    OneEuroFilter
+from engine.target import Pose
+from perception.pose_estimation.lightweight_open_pose.algorithm.modules.one_euro_filter import OneEuroFilter
 
 
 class LightweightOpenPoseTarget(Pose):
