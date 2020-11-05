@@ -51,7 +51,7 @@ following public methods:
 
 ---
 
-|fit(dataset, val_dataset, logging_path, logging_flush_secs=30, silent, verbose, epochs, use_val_subset, val_subset_size)|
+|fit(dataset, val_dataset, logging_path, logging_flush_secs, silent, verbose, epochs, use_val_subset, val_subset_size, images_folder_name, annotations_filename)|
 |:---|
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
 
@@ -66,11 +66,13 @@ This method is used for training the algorithm on a train dataset and validating
 | | **epochs: *int, default=None*** <br /> Overrides epochs attribute set in constructor.|
 | | **use_val_subset: *bool, default=True*** <br /> If set to True, a subset of the validation dataset is created and used in evaluation.|
 | | **val_subset_size: *int, default=250*** <br /> Controls the size of the validation subset.|
+| | **images_folder_name: *str, default='train2017'*** <br /> Folder name that contains the dataset images. This folder should be contained in the dataset path provided. Note that this is a folder name, not a path.|
+| | **annotations_filename: *str, default='person_keypoints_train2017.json'*** <br /> Filename of the annotations json file. This file should be contained in the dataset path provided.|
 |**Returns**: | ***dict***<br />Returns stats regarding the last evaluation ran.| 
 
 ---
 
-|eval(dataset, silent=False, verbose=True, use_subset=True, subset_size=250)|
+|eval(dataset, silent, verbose, use_subset, subset_size, images_folder_name, annotations_filename)|
 |:---|
 This method is used to evaluate a trained model on an evaluation dataset.
 
@@ -81,6 +83,8 @@ This method is used to evaluate a trained model on an evaluation dataset.
 | | **verbose: *bool, default=True*** <br /> If set to True, enables the maximum verbosity.|
 | | **use_val_subset: *bool, default=True*** <br /> If set to True, a subset of the validation dataset is created and used in evaluation.|
 | | **val_subset_size: *int, default=250*** <br /> Controls the size of the validation subset.|
+| | **images_folder_name: *str, default='val2017'*** <br /> Folder name that contains the dataset images. This folder should be contained in the dataset path provided. Note that this is a folder name, not a path.|
+| | **annotations_filename: *str, default='person_keypoints_val2017.json'*** <br /> Filename of the annotations json file. This file should be contained in the dataset path provided.|
 |**Returns**: | ***dict***<br />Returns stats regarding evaluation |
 
 ---
@@ -122,7 +126,7 @@ This method is used to load a trained model. Loads the *state_dict* saved with t
 
 |load_from_onnx(path)|
 |:---|
-This method is used to load an optimized ONNX model.
+This method is used to load an optimized ONNX model previously saved.
 
 || | 
 |:---|:-------------|
@@ -130,14 +134,13 @@ This method is used to load an optimized ONNX model.
 
 ---
 
-|optimize(path, do_constant_folding)|
+|optimize(do_constant_folding)|
 |:---|
-This method is used to optimize a trained model to ONNX format.
+This method is used to optimize a trained model to ONNX format which can be then used for inference.
 
 || | 
 |:---|:-------------|
-| Parameters: | **path: *str*** <br /> path of the ONNX model to be loaded.|
-| Parameters: | **do_constant_folding: *bool, default=False*** <br />  If True, the constant-folding optimization is applied to the model during export. Constant-folding optimization will replace some of the ops that have all constant inputs, with pre-computed constant nodes.|
+| Parameters: | **do_constant_folding: *bool, default=False*** <br />  ONNX format optimization. If True, the constant-folding optimization is applied to the model during export. Constant-folding optimization will replace some of the ops that have all constant inputs, with pre-computed constant nodes.|
 
 ---
 
@@ -145,24 +148,28 @@ This method is used to optimize a trained model to ONNX format.
 
 ---
 
-*Training example using an ExternalDataset*
+*Training example using an ExternalDataset. To train properly, the backbone weights need to be present in the defined 
+temp_path. Default backbone is 'mobilenet', whose weights can be found in this [Google Drive](
+https://drive.google.com/file/d/18Ya27IAhILvBHqV_tDp0QjDFvsNNy-hv/view). The training and evaluation dataset should 
+be present in the path provided, along with the .json annotation files. The default COCO 2017 training data can be 
+found [here](https://cocodataset.org/#download) (train, val, annotations).*
 ```python
 from OpenDR.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
     LightweightOpenPoseLearner
 from OpenDR.engine.datasets import ExternalDataset
 
 pose_estimator = LightweightOpenPoseLearner(temp_path='./parent_dir', batch_size=8, device="cuda", 
-                                            num_refinement_stages=1)
+                                            num_refinement_stages=3)
 
 training_dataset = ExternalDataset(path="./data", dataset_type="COCO")
 validation_dataset = ExternalDataset(path="./data", dataset_type="COCO")
 pose_estimator.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path="./logs")
-pose_estimator.save('./saved_models')
+pose_estimator.save('./saved_models/trained_model.pth')
 ```
 
 ---
 
-*Inference example using OpenCV and draw result.*
+*Inference and result drawing example on a test .jpg image using OpenCV.*
 ```python
 import cv2
 from python.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
@@ -176,9 +183,22 @@ for pose in current_poses:
     pose.draw(img)
 img = cv2.addWeighted(orig_img, 0.6, img, 0.4, 0)
 cv2.imshow('Result', img)
-cv2.waitKey(2000)
+cv2.waitKey(0)
 ```
 
+---
+
+*Optimization example for a previously trained model. Inference can be run with the trained model after running 
+self.optimize.*
+```python
+from OpenDR.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
+    LightweightOpenPoseLearner
+
+pose_estimator = LightweightOpenPoseLearner(temp_path='./parent_dir')
+pose_estimator.load("./trained_model.pth")
+pose_estimator.optimize(do_constant_folding=True)
+pose_estimator.save('./saved_models/optimized_model.onnx')
+```
 
 
 - <a id="1">[1]</a>: OpenPose: Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields, 
