@@ -31,10 +31,10 @@ from torchvision import transforms
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
 from engine.data import Image
+from engine.target import Pose
 
 # OpenDR lightweight_open_pose imports
-from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_target \
-    import LightweightOpenPoseTarget, track_poses
+from perception.pose_estimation.lightweight_open_pose.utilities import track_poses
 from perception.pose_estimation.lightweight_open_pose.algorithm.models.with_mobilenet import \
     PoseEstimationWithMobileNet
 from perception.pose_estimation.lightweight_open_pose.algorithm.models.with_mobilenet_v2 import \
@@ -555,7 +555,7 @@ class LightweightOpenPoseLearner(Learner):
                 if pose_entries[n][kpt_id] != -1.0:  # keypoint was found
                     pose_keypoints[kpt_id, 0] = int(all_keypoints[int(pose_entries[n][kpt_id]), 0])
                     pose_keypoints[kpt_id, 1] = int(all_keypoints[int(pose_entries[n][kpt_id]), 1])
-            pose = LightweightOpenPoseTarget(pose_keypoints, pose_entries[n][18])
+            pose = Pose(pose_keypoints, pose_entries[n][18])
             current_poses.append(pose)
 
         if track:
