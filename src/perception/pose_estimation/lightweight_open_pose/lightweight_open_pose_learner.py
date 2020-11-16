@@ -65,7 +65,7 @@ class LightweightOpenPoseLearner(Learner):
     def __init__(self, lr=4e-5, epochs=280, batch_size=80, device='cuda', backbone='mobilenet',
                  lr_schedule='', temp_path='temp', checkpoint_after_iter=5000, checkpoint_load_iter=0,
                  val_after=5000, log_after=100, mobilenetv2_width=1.0, shufflenet_groups=3,
-                 num_refinement_stages=3, batches_per_iter=1,
+                 num_refinement_stages=2, batches_per_iter=1,
                  experiment_name='default', num_workers=8, weights_only=True, output_name='detections.json',
                  multiscale=False, scales=None, visualize=False, base_height=256, stride=8, img_mean=(128, 128, 128),
                  img_scale=1 / 256, pad_value=(0, 0, 0)):
