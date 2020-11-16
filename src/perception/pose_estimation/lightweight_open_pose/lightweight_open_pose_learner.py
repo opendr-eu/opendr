@@ -116,8 +116,42 @@ class LightweightOpenPoseLearner(Learner):
     def fit(self, dataset, val_dataset=None, logging_path='', logging_flush_secs=30,
             silent=False, verbose=True, epochs=None, use_val_subset=True, val_subset_size=250,
             images_folder_name="train2017", annotations_filename="person_keypoints_train2017.json"):
+        """
+        This method is used for training the algorithm on a train dataset and validating on a val dataset.
+
+        :param dataset: object that holds the training dataset
+        :type dataset: ExternalDataset class object or DatasetIterator class object
+        :param val_dataset: object that holds the validation dataset, defaults to 'None'
+        :type val_dataset: ExternalDataset class object or DatasetIterator class object, optional
+        :param logging_path: path to save tensorboard log files. If set to None or '', tensorboard logging is
+            disabled, defaults to ''
+        :type logging_path: str, optional
+        :param logging_flush_secs: how often, in seconds, to flush the tensorboard data to disk, defaults to '30'
+        :type logging_flush_secs: int, optional
+        :param silent: if set to True, disables all printing of training progress reports and other information
+            to STDOUT, defaults to 'False'
+        :type silent: bool, optional
+        :param verbose: if set to True, enables the maximum verbosity, defaults to 'True'
+        :type verbose: bool, optional
+        :param epochs: overrides epochs attribute set in constructor, defaults to 'None'
+        :type epochs: int, optional
+        :param use_val_subset: if set to True, a subset of the validation dataset is created and used in
+            evaluation, defaults to 'True'
+        :type use_val_subset: bool, optional
+        :param val_subset_size: controls the size of the validation subset, defaults to '250'
+        :type val_subset_size: int, optional
+        :param images_folder_name: folder name that contains the dataset images. This folder should be contained in
+            the dataset path provided. Note that this is a folder name, not a path, defaults to 'train2017'
+        :type images_folder_name: str, optional
+        :param annotations_filename: filename of the annotations json file. This file should be contained in the
+            dataset path provided, defaults to 'person_keypoints_train2017.json'
+        :type annotations_filename: str, optional
+
+        :return: returns stats regarding the last evaluation ran
+        :rtype: dict
+        """
         # Training dataset initialization
-        data = self.__prepare_dataset(dataset,
+        data = self.__prepare_dataset(dataset, stride=self.stride,
                                       prepared_annotations_name="prepared_train_annotations.pkl",
                                       images_folder_default_name="train2017",
                                       annotations_filename="person_keypoints_train2017.json",
@@ -392,6 +426,31 @@ class LightweightOpenPoseLearner(Learner):
 
     def eval(self, dataset, silent=False, verbose=True, use_subset=True, subset_size=250,
              images_folder_name="val2017", annotations_filename="person_keypoints_val2017.json"):
+        """
+        This method is used to evaluate a trained model on an evaluation dataset.
+
+        :param dataset: object that holds the evaluation dataset.
+        :type dataset: ExternalDataset class object or DatasetIterator class object
+        :param silent: if set to True, disables all printing of evalutaion progress reports and other information
+            to STDOUT, defaults to 'False'
+        :type silent: bool, optional
+        :param verbose: if set to True, enables the maximum verbosity, defaults to 'True'
+        :type verbose: bool, optional
+        :param use_subset: If set to True, a subset of the validation dataset is created and used in
+            evaluation, defaults to 'True'
+        :type use_subset: bool, optional
+        :param subset_size: Controls the size of the validation subset, defaults to '250'
+        :type subset_size: int, optional
+        :param images_folder_name: Folder name that contains the dataset images. This folder should be contained in
+            the dataset path provided. Note that this is a folder name, not a path, defaults to 'val2017'
+        :type images_folder_name: str, optional
+        :param annotations_filename: Filename of the annotations json file. This file should be contained in the
+            dataset path provided, defaults to 'pesron_keypoints_val2017.json'
+        :type annotations_filename: str, optional
+
+        :returns: returns stats regarding evaluation
+        :rtype: dict
+        """
         # Validation dataset initialization
         data = self.__prepare_val_dataset(dataset, use_subset=use_subset,
                                           subset_name="val_subset.json",
@@ -500,7 +559,22 @@ class LightweightOpenPoseLearner(Learner):
             return {"average_precision": [0.0 for _ in range(5)], "average_recall": [0.0 for _ in range(5)]}
 
     def infer(self, img, upsample_ratio=4, track=True, smooth=True):
-        """This is the original infer_fast function for user usage"""
+        """
+        This method is used to perform pose estimation on an image.
+
+        :param img: image to run inference on
+        :rtype img: engine.data.Image class object
+        :param upsample_ratio: Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing,
+            defaults to 4
+        :type upsample_ratio: int, optional
+        :param track: If True, infer propagates poses ids from previous frame results to track poses, defaults to 'True'
+        :type track: bool, optional
+        :param smooth: If True, smoothing is performed on pose keypoints between frames, defaults to 'True'
+        :type smooth: bool, optional
+        :return: Returns a list of engine.target.Pose objects, where each holds a pose, or returns an empty list if no
+            detections were made.
+        :rtype: list of engine.target.Pose objects
+        """
         if not isinstance(img, Image):
             img = Image(img)
         img = img.numpy()
@@ -627,6 +701,12 @@ class LightweightOpenPoseLearner(Learner):
             self.model.cuda()
 
     def load_from_onnx(self, path):
+        """
+        This method loads an ONNX model from the path provided into an onnxruntime inference sesstion
+
+        :param path: path to ONNX model
+        :type path: str
+        """
         self.ort_session = ort.InferenceSession(path)
 
         # The comments below are the alternative way to use the onnx model, it might be useful in the future
@@ -641,6 +721,14 @@ class LightweightOpenPoseLearner(Learner):
         # onnx.helper.printable_graph(self.model.graph)
 
     def __convert_to_onnx(self, output_name, do_constant_folding=False):
+        """
+        Converts the loaded regular PyTorch model to an ONNX model and saves it to disk.
+
+        :param output_name: path and name to save the model, e.g. "/models/onnx_model.onnx"
+        :type output_name: str
+        :param do_constant_folding: whether to optimize constants, defaults to 'False'
+        :type do_constant_folding: bool, optional
+        """
         width = 344
         inp = torch.randn(1, 3, self.base_height, width).cuda()
         input_names = ['data']
@@ -655,12 +743,15 @@ class LightweightOpenPoseLearner(Learner):
         """
         Optimize method converts the model to ONNX format and saves the
         model in the parent directory defined by self.temp_path. The ONNX model is then loaded.
+
+        :param do_constant_folding: whether to optimize constants, defaults to 'False'
+        :type do_constant_folding: bool, optional
         """
         self.__convert_to_onnx(self.temp_path + "onnx_model.onnx", do_constant_folding)
         self.load_from_onnx(self.temp_path + "onnx_model.onnx")
 
     def reset(self):
-        """This method is not used in this implementation"""
+        """This method is not used in this implementation."""
         return NotImplementedError
 
     def count_parameters(self):
@@ -675,10 +766,20 @@ class LightweightOpenPoseLearner(Learner):
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
     def __infer_eval(self, img):
-        """This infer is normally used during evaluation."""
-        img_mean = self.img_mean  # (128, 128, 128)
-        img_scale = self.img_scale  # 1 / 256
-        pad_value = self.pad_value  # (0, 0, 0)
+        """
+        Internal infer method used for evaluation. This infer can run on multiple scale ratios, depending on
+        the self.scales attribute, performing multiple passes over the image averaging the results. This generally
+        produces better results.
+
+        :param img: Image to run infer on
+        :type img: Image class object
+        """
+        if not isinstance(img, Image):
+            img = Image(img)
+
+        img_mean = self.img_mean  # Defaults to (128, 128, 128)
+        img_scale = self.img_scale  # Defaults to 1 / 256
+        pad_value = self.pad_value  # Defaults to (0, 0, 0)
         base_height = self.base_height  # Defaults to 256
         scales = self.scales  # Defaults to [1]
         stride = self.stride  # Defaults to 8
@@ -716,10 +817,43 @@ class LightweightOpenPoseLearner(Learner):
 
         return avg_heatmaps, avg_pafs, scales_ratios, pad
 
-    def __prepare_dataset(self, dataset, prepared_annotations_name="prepared_train_annotations.pkl",
+    @staticmethod
+    def __prepare_dataset(dataset, stride, prepared_annotations_name="prepared_train_annotations.pkl",
                           images_folder_default_name="train2017",
                           annotations_filename="person_keypoints_train2017.json",
                           verbose=True):
+        """
+        This internal method prepares the train dataset depending on what type of dataset is provided.
+
+        If an ExternalDataset object type is provided, the method tried to prepare the dataset based on the original
+        implementation, supposing that the dataset is in the COCO format. The path provided is searched for the
+        images folder and the annotations file, converts the annotations file into the internal format used if needed
+        and finally the CocoTrainDataset object is returned.
+
+        If the dataset is of the DatasetIterator format, then it's a custom implementation of a dataset and all
+        required operations should be handled by the user, so the dataset object is just returned.
+
+        :param dataset: the dataset
+        :type dataset: ExternalDataset class object or DatasetIterator class object
+        :param stride: the stride attribute of the learner
+        :type stride: int
+        :param prepared_annotations_name: the .pkl file that should contain the converted annotations, defaults
+            to "prepared_train_annotations.pkl"
+        :type prepared_annotations_name: str, optional
+        :param images_folder_default_name: the name of the folder that contains the image files, defaults to "train2017"
+        :type images_folder_default_name: str, optional
+        :param annotations_filename: the .json file that contains the original annotations, defaults
+            to "person_keypoints_train2017.json"
+        :type annotations_filename: str, optional
+        :param verbose: whether to print additional information, defaults to 'True'
+        :type verbose: bool, optional
+
+        :raises UserWarning: UserWarnings with appropriate messages are raised for wrong type of dataset, or wrong paths
+            and filenames
+
+        :return: returns CocoTrainDataset object or custom DatasetIterator implemented by user
+        :rtype: CocoTrainDataset class object or DatasetIterator instance
+        """
         if isinstance(dataset, ExternalDataset):
             if dataset.dataset_type.lower() != "coco":
                 raise UserWarning("dataset_type must be \"COCO\"")
@@ -758,7 +892,7 @@ class LightweightOpenPoseLearner(Learner):
             sigma = 7
             paf_thickness = 1
             return CocoTrainDataset(prepared_train_labels, images_folder,
-                                    self.stride, sigma, paf_thickness,
+                                    stride, sigma, paf_thickness,
                                     transform=transforms.Compose([
                                         ConvertKeypoints(),
                                         Scale(),
@@ -774,7 +908,39 @@ class LightweightOpenPoseLearner(Learner):
                               images_folder_default_name="val2017",
                               annotations_filename="person_keypoints_val2017.json",
                               verbose=True):
+        """
+        This internal method prepares the validation dataset depending on what type of dataset is provided.
 
+        If an ExternalDataset object type is provided, the method tried to prepare the dataset based on the original
+        implementation, supposing that the dataset is in the COCO format. The path provided is searched for the
+        images folder and the annotations file, converts the annotations file into the internal format used if needed
+        and finally the CocoValDataset object is returned.
+
+        If the dataset is of the DatasetIterator format, then it's a custom implementation of a dataset and all
+        required operations should be handled by the user, so the dataset object is just returned.
+
+        :param dataset: the dataset
+        :type dataset: ExternalDataset class object or DatasetIterator class object
+        :param use_subset: whether to return a subset of the validation dataset, defaults to 'False'
+        :type use_subset: bool, optional
+        :param subset_name: the .json file where the validation dataset subset is saved, defaults to "val_subset.json"
+        :type subset_name: str, optional
+        :param subset_size: the size of the subset, defaults to 250
+        :type subset_size: int
+        :param images_folder_default_name: the name of the folder that contains the image files, defaults to "val2017"
+        :type images_folder_default_name: str, optional
+        :param annotations_filename: the .json file that contains the original annotations, defaults
+            to "person_keypoints_val2017.json"
+        :type annotations_filename: str, optional
+        :param verbose: whether to print additional information, defaults to 'True'
+        :type verbose: bool, optional
+
+        :raises UserWarning: UserWarnings with appropriate messages are raised for wrong type of dataset, or wrong paths
+            and filenames
+
+        :return: returns CocoValDataset object or custom DatasetIterator implemented by user
+        :rtype: CocoValDataset class object or DatasetIterator instance
+        """
         if isinstance(dataset, ExternalDataset):
             if dataset.dataset_type.lower() != "coco":
                 raise UserWarning("dataset_type must be \"COCO\"")
