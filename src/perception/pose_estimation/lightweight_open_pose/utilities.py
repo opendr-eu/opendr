@@ -32,6 +32,12 @@ color = [0, 224, 255]
 
 
 def get_bbox(pose):
+    """
+    Return a cv2 bounding box based on the keypoints of the pose provided.
+
+    :param pose: Pose class object
+    :return: bounding box as cv2.boundingRect object
+    """
     found_keypoints = np.zeros((np.count_nonzero(pose.data[:, 0] != -1), 2), dtype=np.int32)
     found_kpt_id = 0
     for kpt_id in range(Pose.num_kpts):
@@ -44,6 +50,12 @@ def get_bbox(pose):
 
 
 def update_id(pose, id_=None):
+    """
+    Increments or updates the id of the provided pose.
+
+    :param pose: Pose class object
+    :param id_: id to set, leave None to increment pose.id by one
+    """
     pose.id = id_
     if pose.id is None:
         pose.id = Pose.last_id + 1
