@@ -172,15 +172,17 @@ pose_estimator.save('./saved_models/trained_model.pth')
 *Inference and result drawing example on a test .jpg image using OpenCV.*
 ```python
 import cv2
-from python.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
+from OpenDR.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
     LightweightOpenPoseLearner
+from OpenDR.perception.pose_estimation.lightweight_open_pose.utilities import draw, get_bbox
+
 pose_estimator = LightweightOpenPoseLearner(device="cuda")
 pose_estimator.load("./trained_models/mobilenetModel.pth")
 img = cv2.imread('./test.jpg')
 orig_img = img.copy()  # Keep original image
 current_poses = pose_estimator.infer(img)
 for pose in current_poses:
-    pose.draw(img)
+    draw(img, pose)
 img = cv2.addWeighted(orig_img, 0.6, img, 0.4, 0)
 cv2.imshow('Result', img)
 cv2.waitKey(0)
@@ -199,6 +201,41 @@ pose_estimator.load("./trained_model.pth")
 pose_estimator.optimize(do_constant_folding=True)
 pose_estimator.save('./saved_models/optimized_model.onnx')
 ```
+
+---
+
+**Notes**
+
+---
+
+For the metrics of the algorithm the COCO dataset evaluation scores are used as explained [here](
+https://cocodataset.org/#keypoints-eval).
+
+Keypoints and how poses are constructed is according to the original method described [here](
+https://github.com/Daniil-Osokin/lightweight-human-pose-estimation.pytorch/blob/master/TRAIN-ON-CUSTOM-DATASET.md).
+
+Pose keypoints ids are matched as:
+
+| Keypoint ID 	| Keypoint name  	| Keypoint abbrev. 	|
+|-------------	|----------------	|------------------	|
+| 0           	| nose           	| nose             	|
+| 1           	| neck           	| neck             	|
+| 2           	| right shoulder 	| r_sho            	|
+| 3           	| right elbow    	| r_elb            	|
+| 4           	| right wrist    	| r_wri            	|
+| 5           	| left shoulder  	| l_sho            	|
+| 6           	| left elbow     	| l_elb            	|
+| 7           	| left wrist     	| l_wri            	|
+| 8           	| right hip      	| r_hip            	|
+| 9           	| right knee     	| r_knee           	|
+| 10          	| right ankle    	| r_ank            	|
+| 11          	| left hip       	| l_hip            	|
+| 12          	| left knee      	| l_knee           	|
+| 13          	| left ankle     	| l_ank            	|
+| 14          	| right eye      	| r_eye            	|
+| 15          	| left eye       	| l_eye            	|
+| 16          	| right ear      	| r_ear            	|
+| 17          	| left ear       	| l_ear            	|
 
 
 - <a id="1">[1]</a>: OpenPose: Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields, 
