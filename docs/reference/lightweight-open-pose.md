@@ -81,8 +81,8 @@ This method is used to evaluate a trained model on an evaluation dataset.
 | Parameters: | **dataset: *object*** <br /> Object that holds the evaluation dataset. Can be of type *ExternalDataset* or a custom dataset inheriting from *DatasetIterator*.| 
 | | **silent: *bool, default=False*** <br /> If set to True, disables all printing of evalutaion progress reports and other information to STDOUT.|
 | | **verbose: *bool, default=True*** <br /> If set to True, enables the maximum verbosity.|
-| | **use_val_subset: *bool, default=True*** <br /> If set to True, a subset of the validation dataset is created and used in evaluation.|
-| | **val_subset_size: *int, default=250*** <br /> Controls the size of the validation subset.|
+| | **val_subset: *bool, default=True*** <br /> If set to True, a subset of the validation dataset is created and used in evaluation.|
+| | **subset_size: *int, default=250*** <br /> Controls the size of the validation subset.|
 | | **images_folder_name: *str, default='val2017'*** <br /> Folder name that contains the dataset images. This folder should be contained in the dataset path provided. Note that this is a folder name, not a path.|
 | | **annotations_filename: *str, default='person_keypoints_val2017.json'*** <br /> Filename of the annotations json file. This file should be contained in the dataset path provided.|
 |**Returns**: | ***dict***<br />Returns stats regarding evaluation |
@@ -99,7 +99,7 @@ This method is used to perform pose estimation on an image.
 | | **upsample_ratio: *int, default=4*** <br /> Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing.|
 | | **track: *bool, default=True*** <br /> If True, infer propagates poses ids from previous frame results to track poses.|
 | | **smooth: *bool, default=True*** <br /> If True, smoothing is performed on pose keypoints between frames.|
-|**Returns**: |***list*** <br /> Returns a list of LightweightOpenPoseTarget objects where each holds a pose or an empty list if no detections were made.|  
+|**Returns**: |***list*** <br /> Returns a list of engine.target.Pose objects, where each holds a pose, or returns an empty list if no detections were made.|  
 
 ---
 
