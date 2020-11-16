@@ -31,13 +31,13 @@ last_id = -1
 color = [0, 224, 255]
 
 
-def get_bbox(keypoints):
-    found_keypoints = np.zeros((np.count_nonzero(keypoints[:, 0] != -1), 2), dtype=np.int32)
+def get_bbox(pose):
+    found_keypoints = np.zeros((np.count_nonzero(pose.data[:, 0] != -1), 2), dtype=np.int32)
     found_kpt_id = 0
     for kpt_id in range(Pose.num_kpts):
-        if keypoints[kpt_id, 0] == -1:
+        if pose.data[kpt_id, 0] == -1:
             continue
-        found_keypoints[found_kpt_id] = keypoints[kpt_id]
+        found_keypoints[found_kpt_id] = pose.data[kpt_id]
         found_kpt_id += 1
     bbox = cv2.boundingRect(found_keypoints)
     return bbox
@@ -86,11 +86,13 @@ def get_similarity(a, b, threshold=0.5):
     :return: number of similar keypoints
     :rtype: int
     """
+    bbox_a = get_bbox(a)
+    bbox_b = get_bbox(b)
     num_similar_kpt = 0
     for kpt_id in range(Pose.num_kpts):
         if a.data[kpt_id, 0] != -1 and b.data[kpt_id, 0] != -1:
             distance = np.sum((a.data[kpt_id] - b.data[kpt_id]) ** 2)
-            area = max(a.bbox[2] * a.bbox[3], b.bbox[2] * b.bbox[3])
+            area = max(bbox_a[2] * bbox_a[3], bbox_b[2] * bbox_b[3])
             similarity = np.exp(-distance / (2 * (area + np.spacing(1)) * vars_[kpt_id]))
             if similarity > threshold:
                 num_similar_kpt += 1
@@ -126,7 +128,7 @@ def track_poses(previous_poses, current_poses, threshold=3, smooth=False):
             mask[best_matched_id] = 0
         else:  # pose not similar to any previous
             best_matched_pose_id = None
-        current_pose.update_id(best_matched_pose_id)
+        update_id(current_pose, best_matched_pose_id)
 
         # Smooth feature needs to use per-pose filters. Filters cannot be saved in OpenDR Pose, due to the fact that
         # they are implementation-specific. Code is commented out until a better solution is found.
