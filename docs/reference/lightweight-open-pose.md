@@ -1,12 +1,11 @@
 ## lightweight_open_pose module
 
-The *lightweight_open_pose* module contains the *LightweightOpenPoseLearner* class, which inherits from the abstract
-class *Learner*.
+The *lightweight_open_pose* module contains the *LightweightOpenPoseLearner* class, which inherits from the abstract class *Learner*.
 
 ### Class LightweightOpenPoseLearner
 Bases: `engine.learners.Learner`
 
-The *LightweightOpenPoseLearner* class is a wrapper of the Open Pose[[1]](#open-pose) implementation found on [Lightweight Open Pose](https://github.com/Daniil-Osokin/lightweight-human-pose-estimation.pytorch) [[2]](#open-pose-2).
+The *LightweightOpenPoseLearner* class is a wrapper of the Open Pose[[1]](#open-pose-1) implementation found on [Lightweight Open Pose](https://github.com/Daniil-Osokin/lightweight-human-pose-estimation.pytorch) [[2]](#open-pose-2).
 It can be used to perform human pose estimation on images (inference) and train new pose estimation models.
 
 The [LightweightOpenPoseLearner](#src.perception.lightweight_open_pose.lightweight_open_pose_learner.py) class has the
