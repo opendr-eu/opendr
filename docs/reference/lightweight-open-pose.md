@@ -12,7 +12,7 @@ It can be used to perform human pose estimation on images (inference) and train 
 The [LightweightOpenPoseLearner](#src.perception.lightweight_open_pose.lightweight_open_pose_learner.py) class has the
 following public methods:
 
-#### LightweightOpenPoseLearner
+#### `LightweightOpenPoseLearner` constructor
 ```python
 LightweightOpenPoseLearner(self, lr, epochs, batch_size, devicea, backbone, lr_schedule, temp_path, checkpoint_after_iter, checkpoint_load_iter, val_after, log_after, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize, base_height, stride, img_mean, img_scale, pad_value)
 ```
@@ -71,7 +71,8 @@ Constructor parameters:
 - **pad_value**: *list, default=(0, 0, 0)*  
   Specifies the pad value based on which the images' width is padded.
 
-#### LightweightOpenPoseLearner.fit
+
+#### `LightweightOpenPoseLearner.fit`
 ```python
 LightweightOpenPoseLearner.fit(self, dataset, val_dataset, logging_path, logging_flush_secs, silent, verbose, epochs, use_val_subset, val_subset_size, images_folder_name, annotations_filename)
 ```
@@ -107,7 +108,7 @@ Parameters:
     Filename of the annotations JSON file.
     This file should be contained in the dataset path provided.
 
-#### LightweightOpenPoseLearner.eval
+#### `LightweightOpenPoseLearner.eval`
 ```python
 LightweightOpenPoseLearner.eval(self, dataset, silent, verbose, use_subset, subset_size, images_folder_name, annotations_filename)
 ```
@@ -134,7 +135,7 @@ Parameters:
   Filename of the annotations JSON file.
   This file should be contained in the dataset path provided.
 
-#### LightweightOpenPoseLearner.infer
+#### `LightweightOpenPoseLearner.infer`
 ```python
 LightweightOpenPoseLearner.infer(img, upsample_ratio, track, smooth)
 ```
@@ -152,7 +153,7 @@ Parameters:
 - **smooth**: *bool, default=True*  
   If True, smoothing is performed on pose keypoints between frames.
 
-#### LightweightOpenPoseLearner.save
+#### `LightweightOpenPoseLearner.save`
 ```python
 LightweightOpenPoseLearner.save(self, path)
 ```
@@ -163,7 +164,7 @@ If [`self.optimize`](#LightweightOpenPoseLearner.optimize) was ran earlier, this
 Parameters:
 - **path**: *str* <br /> Path to save the model.
 
-#### LightweightOpenPoseLearner.load
+#### `LightweightOpenPoseLearner.load`
 ```python
 LightweightOpenPoseLearner.load(self, path)
 ```
@@ -174,7 +175,7 @@ Parameters:
 - **path**: *str*  
   Path of the model to be loaded.
 
-#### LightweightOpenPoseLearner.load_from_onnx
+#### `LightweightOpenPoseLearner.load_from_onnx`
 ```python
 LightweightOpenPoseLearner.load_from_onnx(self, path)
 ```
@@ -184,7 +185,7 @@ Parameters:
 - **path**: *str*  
   Path of the ONNX model to be loaded.
 
-#### LightweightOpenPoseLearner.optimize
+#### `LightweightOpenPoseLearner.optimize`
 ```python
 LightweightOpenPoseLearner.optimize(self, do_constant_folding)
 ```
