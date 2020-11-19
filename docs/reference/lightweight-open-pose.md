@@ -42,7 +42,7 @@ Constructor parameters:
 - **mobilenetv2_width**: *[0.0 - 1.0], default=1.0*  
   If the mobilenetv2 backbone is used, this parameter specified its size.
 - **shufflenet_groups**: *int, default=3*  
-  If the shufflenet backbone is used, it specifieds the number of groups to be used in grouped 1x1 convolutions in each ShuffleUnit.
+  If the shufflenet backbone is used, it specifies the number of groups to be used in grouped 1x1 convolutions in each ShuffleUnit.
 - **num_refinement_states**: *int, default=2*  
   Specifies the number of pose estimation refinement stages are added on the model's head, including the initial stage.
 - **experiment_name**: *str, default='default'*  
@@ -158,7 +158,7 @@ LightweightOpenPoseLearner.save(self, path, verbose)
 ```
 
 This method is used to save a trained model.
-Provided with the path, absolute or relative, including the filename, it creates a directory with the name
+Provided with the path, absolute or relative, **including the filename**, it creates a directory with the name
 of the model provided and saves the model inside with a proper format and a .json file with metadata.
 
 If [`self.optimize`](#LightweightOpenPoseLearner.optimize) was ran previously, it saves the optimized ONNX model in 
@@ -166,30 +166,25 @@ a similar fashion, by copying it from the self.temp_path it was saved previously
 
 Parameters:
 - **path**: *str*  
-  Path to save the model.
+  Path to save the model, including the filename.
 - **verbose**: *bool, default=False*  
   If set to True, prints a message on success.
 
 #### `LightweightOpenPoseLearner.load`
 ```python
-LightweightOpenPoseLearner.load(self, path)
+LightweightOpenPoseLearner.load(self, path, verbose)
 ```
 
-This method is used to load a trained model.
-Loads the `state_dict` saved with the [`LightweightOpenPoseLearner.save`](#LightweightOpenPoseLearner.save) method.  
+This method is used to load a previously saved model from its saved folder.
+Loads the model from inside the directory of the path provided, using the metadata .json file included.
+Note that this method requires a directory path **without a trailing filename**, in contrast with the 
+[`self.save`](#LightweightOpenPoseLearner.save) method. 
+
 Parameters:
 - **path**: *str*  
   Path of the model to be loaded.
-
-#### `LightweightOpenPoseLearner.load_from_onnx`
-```python
-LightweightOpenPoseLearner.load_from_onnx(self, path)
-```
-
-This method is used to load an optimized ONNX model previously saved.  
-Parameters:
-- **path**: *str*  
-  Path of the ONNX model to be loaded.
+- **verbose**: *bool, default=False*  
+  If set to True, prints a message on success.
 
 #### `LightweightOpenPoseLearner.optimize`
 ```python
@@ -232,7 +227,7 @@ Parameters:
   from OpenDR.perception.pose_estimation.lightweight_open_pose.utilities import draw, get_bbox
 
   pose_estimator = LightweightOpenPoseLearner(device="cuda")
-  pose_estimator.load("./trained_models/mobilenetModel.pth")
+  pose_estimator.load("./trained_models/trainedModel")
   img = cv2.imread('./test.jpg')
   orig_img = img.copy()  # Keep original image
   current_poses = pose_estimator.infer(img)
@@ -250,7 +245,7 @@ Parameters:
       LightweightOpenPoseLearner
 
   pose_estimator = LightweightOpenPoseLearner(temp_path='./parent_dir')
-  pose_estimator.load("./trained_model.pth")
+  pose_estimator.load("./trained_model")
   pose_estimator.optimize(do_constant_folding=True)
   pose_estimator.save('./saved_models/optimized_model.onnx')
   ```
