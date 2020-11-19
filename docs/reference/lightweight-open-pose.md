@@ -154,14 +154,21 @@ Parameters:
 
 #### `LightweightOpenPoseLearner.save`
 ```python
-LightweightOpenPoseLearner.save(self, path)
+LightweightOpenPoseLearner.save(self, path, verbose)
 ```
 
 This method is used to save a trained model.
-Saves the current model's `state_dict`.
-If [`self.optimize`](#LightweightOpenPoseLearner.optimize) was ran earlier, this method saves the ONNX model in the path provided.  
+Provided with the path, absolute or relative, including the filename, it creates a directory with the name
+of the model provided and saves the model inside with a proper format and a .json file with metadata.
+
+If [`self.optimize`](#LightweightOpenPoseLearner.optimize) was ran previously, it saves the optimized ONNX model in 
+a similar fashion, by copying it from the self.temp_path it was saved previously during conversion.
+
 Parameters:
-- **path**: *str* <br /> Path to save the model.
+- **path**: *str*  
+  Path to save the model.
+- **verbose**: *bool, default=False*  
+  If set to True, prints a message on success.
 
 #### `LightweightOpenPoseLearner.load`
 ```python
