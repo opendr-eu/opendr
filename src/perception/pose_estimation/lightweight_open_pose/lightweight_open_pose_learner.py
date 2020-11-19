@@ -748,7 +748,7 @@ class LightweightOpenPoseLearner(Learner):
         :type do_constant_folding: bool, optional
         """
         self.__convert_to_onnx(self.temp_path + os.sep + "onnx_model.onnx", do_constant_folding)
-        self.load_from_onnx(self.temp_path + "onnx_model.onnx")
+        self.load_from_onnx(self.temp_path + os.sep + "onnx_model.onnx")
 
     def reset(self):
         """This method is not used in this implementation."""
