@@ -711,11 +711,34 @@ class LightweightOpenPoseLearner(Learner):
                        'scheduler': scheduler.state_dict(), 'iter': iter_, 'current_epoch': current_epoch}
         torch.save(custom_dict, path)
 
-    def load(self, path):
+    def load(self, path, verbose=False):
         """
-        Load implementation is meant for external usage to load a previously saved model for inference.
+        Loads the model from inside the path provided, based on metadata .json filed included.
 
-        :param path: the path of the model to be loaded
+        :param path: path of the directory the model was saved
+        :type path: str
+        :param verbose: whether to print success message or not, defaults to 'False'
+        :type verbose: bool, optional
+        """
+        model_name, _, _ = self.__extract_filename(path)  # Trailing folder name from the path provided
+
+        with open(path + os.sep + model_name + ".json") as metadata_file:
+            metadata = json.load(metadata_file)
+        self.backbone = metadata["backbone"]
+        if not metadata["optimized"]:
+            self.__load_from_pth(path + os.sep + model_name + '.pth')
+            if verbose:
+                print("Loaded Pytorch model.")
+        else:
+            self.__load_from_onnx(path + os.sep + model_name + '.onnx')
+            if verbose:
+                print("Loaded ONNX model.")
+
+    def __load_from_pth(self, path):
+        """
+        This method loads a regular Pytorch model from the path provided into self.model.
+
+        :param path: path to .pth model
         :type path: str
         """
         if self.backbone == "mobilenet":
@@ -735,9 +758,9 @@ class LightweightOpenPoseLearner(Learner):
             self.model.cuda()
         self.model.train(False)
 
-    def load_from_onnx(self, path):
+    def __load_from_onnx(self, path):
         """
-        This method loads an ONNX model from the path provided into an onnxruntime inference sesstion
+        This method loads an ONNX model from the path provided into an onnxruntime inference session.
 
         :param path: path to ONNX model
         :type path: str
@@ -804,7 +827,7 @@ class LightweightOpenPoseLearner(Learner):
             os.makedirs(self.temp_path, exist_ok=True)
             self.__convert_to_onnx(self.temp_path + os.sep + "onnx_model_temp.onnx", do_constant_folding)
 
-        self.load_from_onnx(self.temp_path + os.sep + "onnx_model_temp.onnx")
+        self.__load_from_onnx(self.temp_path + os.sep + "onnx_model_temp.onnx")
 
     def reset(self):
         """This method is not used in this implementation."""
