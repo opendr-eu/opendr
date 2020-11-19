@@ -747,7 +747,7 @@ class LightweightOpenPoseLearner(Learner):
         :param do_constant_folding: whether to optimize constants, defaults to 'False'
         :type do_constant_folding: bool, optional
         """
-        self.__convert_to_onnx(self.temp_path + "onnx_model.onnx", do_constant_folding)
+        self.__convert_to_onnx(self.temp_path + os.sep + "onnx_model.onnx", do_constant_folding)
         self.load_from_onnx(self.temp_path + "onnx_model.onnx")
 
     def reset(self):
