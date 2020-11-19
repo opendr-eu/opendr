@@ -785,8 +785,14 @@ class LightweightOpenPoseLearner(Learner):
         :param do_constant_folding: whether to optimize constants, defaults to 'False'
         :type do_constant_folding: bool, optional
         """
-        self.__convert_to_onnx(self.temp_path + os.sep + "onnx_model.onnx", do_constant_folding)
-        self.load_from_onnx(self.temp_path + os.sep + "onnx_model.onnx")
+        try:
+            self.__convert_to_onnx(self.temp_path + os.sep + "onnx_model_temp.onnx", do_constant_folding)
+        except FileNotFoundError:
+            # Create temp directory
+            os.makedirs(self.temp_path, exist_ok=True)
+            self.__convert_to_onnx(self.temp_path + os.sep + "onnx_model_temp.onnx", do_constant_folding)
+
+        self.load_from_onnx(self.temp_path + os.sep + "onnx_model_temp.onnx")
 
     def reset(self):
         """This method is not used in this implementation."""
