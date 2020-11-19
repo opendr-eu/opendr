@@ -15,6 +15,7 @@
 # General imports
 import onnxruntime as ort
 import os
+import ntpath
 import shutil
 import cv2
 import torch
@@ -637,24 +638,60 @@ class LightweightOpenPoseLearner(Learner):
             self.previous_poses = current_poses
         return current_poses
 
-    def save(self, path):
+    def save(self, path, verbose=False):
         """
-        Save for external usage, using the path saves only the state_dict.
-        This will be loaded with self.load, which normally expects a dictionary
-        containing key 'state_dict'. If an ort_session (ONNX) is initialized, saves
-        the ONNX model previously created by self.optimize, by copying it to the path
-        provided.
+        This method is used to save a trained model.
+        Provided with the path, absolute or relative, including the filename, it creates a directory with the name
+        of the model provided and saves the model inside with a proper format and a .json file with metadata.
 
-        :param path for the model to be saved
+        If self.optimize was ran previously, it saves the optimized ONNX model in a similar fashion, by copying it
+        from the self.temp_path it was saved previously during conversion.
+
+        :param path: for the model to be saved, including the filename
         :type path: str
+        :param verbose: whether to print success message or not, defaults to 'False'
+        :type verbose: bool, optional
         """
+        # Extract filename from path in an OS-generic way
+        head, tail = ntpath.split(path)
+        filename = tail or ntpath.basename(head)  # handle both a/b/c and a/b/c/
+
+        # Also extract filename without extension if extension is provided
+        filename_no_ext = filename.split(sep='.')[0]  # remove extension after '.'
+
+        # Extract path without filename, by removing filename from original path
+        path_no_filename = path.replace(filename, '')  # if path is a/b/c/, this leaves trailing double '/'
+        if tail == '':  # handle case of double '/' by removing one '/'
+            path_no_filename = path_no_filename[0:-1]
+
+        # Create model directory
+        new_path = path_no_filename + filename_no_ext
+        os.makedirs(new_path, exist_ok=True)
+
+        model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
+                          "inference_params": {}, "optimized": None, "optimizer_info": {}}
+
         if self.ort_session is None:
-            custom_dict = {'state_dict': self.model.module.state_dict()}
-            torch.save(custom_dict, path)
-            print("Saved Pytorch model.")
+            model_metadata["model_paths"] = [new_path + os.sep + filename_no_ext + ".pth"]
+            model_metadata["optimized"] = False
+            model_metadata["format"] = "pth"
+
+            custom_dict = {'state_dict': self.model.state_dict()}
+            torch.save(custom_dict, model_metadata["model_paths"][0])
+            if verbose:
+                print("Saved PyTorch model.")
         else:
-            shutil.copy2(self.temp_path + "onnx_model.onnx", path)
-            print("Saved ONNX model.")
+            model_metadata["model_paths"] = [new_path + os.sep + filename_no_ext + ".onnx"]
+            model_metadata["optimized"] = True
+            model_metadata["format"] = "onnx"
+            # Copy already optimized model from temp path
+            shutil.copy2(self.temp_path + os.sep + "onnx_model_temp.onnx", model_metadata["model_paths"][0])
+            model_metadata["optimized"] = True
+            if verbose:
+                print("Saved ONNX model.")
+
+        with open(new_path + os.sep + filename_no_ext + ".json", 'w') as outfile:
+            json.dump(model_metadata, outfile)
 
     def __save(self, path, optimizer, scheduler, iter_, current_epoch):
         """
@@ -699,6 +736,7 @@ class LightweightOpenPoseLearner(Learner):
         load_state(self.model, checkpoint)
         if self.device == "cuda":
             self.model.cuda()
+        self.model.train(False)
 
     def load_from_onnx(self, path):
         """
@@ -720,7 +758,7 @@ class LightweightOpenPoseLearner(Learner):
         # # Print a human readable representation of the graph
         # onnx.helper.printable_graph(self.model.graph)
 
-    def __convert_to_onnx(self, output_name, do_constant_folding=False):
+    def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=False):
         """
         Converts the loaded regular PyTorch model to an ONNX model and saves it to disk.
 
@@ -735,7 +773,7 @@ class LightweightOpenPoseLearner(Learner):
         output_names = ['stage_0_output_1_heatmaps', 'stage_0_output_0_pafs',
                         'stage_1_output_1_heatmaps', 'stage_1_output_0_pafs']
 
-        torch.onnx.export(self.model, inp, output_name, verbose=True, enable_onnx_checker=True,
+        torch.onnx.export(self.model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
                           do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names,
                           dynamic_axes={"data": {3: "width"}})
 
