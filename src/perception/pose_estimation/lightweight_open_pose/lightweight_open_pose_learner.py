@@ -652,16 +652,13 @@ class LightweightOpenPoseLearner(Learner):
         :param verbose: whether to print success message or not, defaults to 'False'
         :type verbose: bool, optional
         """
-        # Extract filename from path in an OS-generic way
-        head, tail = ntpath.split(path)
-        filename = tail or ntpath.basename(head)  # handle both a/b/c and a/b/c/
-
+        filename, _, tail = self.__extract_filename(path)  # Extract filename from path
         # Also extract filename without extension if extension is provided
         filename_no_ext = filename.split(sep='.')[0]  # remove extension after '.'
 
         # Extract path without filename, by removing filename from original path
-        path_no_filename = path.replace(filename, '')  # if path is a/b/c/, this leaves trailing double '/'
-        if tail == '':  # handle case of double '/' by removing one '/'
+        path_no_filename = path.replace(filename, '')  # If path is a/b/c/, this leaves trailing double '/'
+        if tail == '':  # Handle case of double '/' by removing one '/'
             path_no_filename = path_no_filename[0:-1]
 
         # Create model directory
@@ -669,19 +666,19 @@ class LightweightOpenPoseLearner(Learner):
         os.makedirs(new_path, exist_ok=True)
 
         model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
-                          "inference_params": {}, "optimized": None, "optimizer_info": {}}
+                          "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
 
         if self.ort_session is None:
-            model_metadata["model_paths"] = [new_path + os.sep + filename_no_ext + ".pth"]
+            model_metadata["model_paths"] = [filename_no_ext + os.sep + filename_no_ext + ".pth"]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pth"
 
             custom_dict = {'state_dict': self.model.state_dict()}
             torch.save(custom_dict, model_metadata["model_paths"][0])
             if verbose:
-                print("Saved PyTorch model.")
+                print("Saved Pytorch model.")
         else:
-            model_metadata["model_paths"] = [new_path + os.sep + filename_no_ext + ".onnx"]
+            model_metadata["model_paths"] = [filename_no_ext + os.sep + filename_no_ext + ".onnx"]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             # Copy already optimized model from temp path
@@ -757,6 +754,21 @@ class LightweightOpenPoseLearner(Learner):
         #
         # # Print a human readable representation of the graph
         # onnx.helper.printable_graph(self.model.graph)
+
+    @staticmethod
+    def __extract_filename(path):
+        """
+        Extracts the trailing folder name or filename from a path provided in an OS-generic way, also handling
+        cases where the last trailing character is a separator. Returns the folder name and the split head and tail.
+
+        :param path: the path to extract the filename from
+        :type path: str
+        :return: the folder name, the head and tail of the path
+        :rtype: tuple of three strings
+        """
+        head, tail = ntpath.split(path)
+        folder_name = tail or ntpath.basename(head)  # handle both a/b/c and a/b/c/
+        return folder_name, head, tail
 
     def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=False):
         """
