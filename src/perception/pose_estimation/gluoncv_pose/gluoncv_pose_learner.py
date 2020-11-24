@@ -46,6 +46,10 @@ class GluonCVPoseLearner(Learner):
         elif "yolo" in self.backbone:
             self.transform = gcv.data.transforms.presets.yolo.transform_test
 
+        self.detector = get_model(self.backbone, pretrained=True, ctx=self.ctx)
+        self.detector.reset_class(classes=['person'], reuse_weights={'person': 'person'})  # Keep only person class
+        self.detector.hybridize()
+
         # Pose estimator setup
         self.network_head = pose_estimator.lower()
         # TODO add more from https://cv.gluon.ai/model_zoo/pose.html#id46
@@ -54,14 +58,14 @@ class GluonCVPoseLearner(Learner):
             raise ValueError(self.network_head + " not a valid estimator. Supported estimators:" +
                              str(supportedEstimators))
         # Pose estimator dimensions setup
-        self.dims = [256, 192]
+        self.dims = (256, 192)
         # Outlier dimensions based on model hashtags
-        models_dimensions_index = {"ccd24037": [128, 96], "2f544338": [384, 288]}
+        models_dimensions_index = {"ccd24037": (128, 96), "2f544338": (384, 288)}
         if type(pretrained) == bool:
             self.pretrained = pretrained
         else:
             self.pretrained = pretrained
-            # Handle outlier dimensions based on
+            # Handle outlier dimensions based on hashtag
             if self.pretrained in models_dimensions_index.keys():
                 self.dims = models_dimensions_index[self.pretrained]
 
@@ -74,8 +78,51 @@ class GluonCVPoseLearner(Learner):
     def eval(self, dataset):
         pass
 
-    def infer(self, batch):
-        pass
+    def infer(self, img, return_extra=False):
+        if not isinstance(img, Image):
+            img = Image(img)
+        img = img.numpy()
+
+        img = mx.nd.array(img).astype('uint8')
+
+        x, img = self.transform(img, short=512, max_size=350)
+        x = x.as_in_context(self.ctx)
+
+        class_IDs, scores, bounding_boxes = self.detector(x)
+
+        pose_input, upscale_bbox = detector_to_simple_pose(img, class_IDs, scores, bounding_boxes,
+                                                           output_shape=self.dims, ctx=self.ctx)
+
+        poses = []
+        if len(upscale_bbox) > 0:
+            predicted_heatmap = self.model(pose_input)
+            pred_coords, confidence = heatmap_to_coord(predicted_heatmap, upscale_bbox)
+            for pose_coords, pose_conf in zip(pred_coords, confidence):
+                pose = Pose(pose_coords.asnumpy(), pose_conf.asnumpy())
+                # for keypoint, conf in zip(pose_coords, pose_conf):
+                #     print(keypoint.asnumpy(), conf.asnumpy())
+                    # 0, nose
+                    # 1, l_eye
+                    # 2, r_eye
+                    # 3, l_ear
+                    # 4, r_ear
+                    # 5, l_sho
+                    # 6, r_sho
+                    # 7, l_elb
+                    # 8, r_elb
+                    # 9, l_wri
+                    # 10, r_wri
+                    # 11, l_hip
+                    # 12, r_hip
+                    # 13, l_knee
+                    # 14, r_knee
+                    # 15, l_ank
+                    # 16, r_ank
+                poses.append(pose)
+        if return_extra:
+            return poses, class_IDs, bounding_boxes, scores, img
+        else:
+            return poses
 
     def save(self, path):
         pass
@@ -88,3 +135,8 @@ class GluonCVPoseLearner(Learner):
 
     def reset(self):
         pass
+
+
+# learner = GluonCVPoseLearner()
+# print(learner.dims)
+
