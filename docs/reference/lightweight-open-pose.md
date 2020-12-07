@@ -158,10 +158,10 @@ LightweightOpenPoseLearner.save(self, path, verbose)
 ```
 
 This method is used to save a trained model.
-Provided with the path, absolute or relative, **including the filename**, it creates a directory with the name
-of the model provided and saves the model inside with a proper format and a .json file with metadata.
+Provided with the path, absolute or relative, including a *folder* name, it creates a directory with the name
+        of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
 
-If [`self.optimize`](#LightweightOpenPoseLearner.optimize) was ran previously, it saves the optimized ONNX model in 
+If [`self.optimize`](#LightweightOpenPoseLearner.optimize) was run previously, it saves the optimized ONNX model in 
 a similar fashion, by copying it from the self.temp_path it was saved previously during conversion.
 
 Parameters:
@@ -177,8 +177,6 @@ LightweightOpenPoseLearner.load(self, path, verbose)
 
 This method is used to load a previously saved model from its saved folder.
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
-Note that this method requires a directory path **without a trailing filename**, in contrast with the 
-[`self.save`](#LightweightOpenPoseLearner.save) method. 
 
 Parameters:
 - **path**: *str*  
@@ -216,7 +214,7 @@ Parameters:
   training_dataset = ExternalDataset(path="./data", dataset_type="COCO")
   validation_dataset = ExternalDataset(path="./data", dataset_type="COCO")
   pose_estimator.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path="./logs")
-  pose_estimator.save('./saved_models/trained_model.pth')
+  pose_estimator.save('./saved_models/trained_model')
   ```
 
 * **Inference and result drawing example on a test .jpg image using OpenCV.**
@@ -227,7 +225,7 @@ Parameters:
   from OpenDR.perception.pose_estimation.lightweight_open_pose.utilities import draw, get_bbox
 
   pose_estimator = LightweightOpenPoseLearner(device="cuda")
-  pose_estimator.load("./trained_models/trainedModel")
+  pose_estimator.load("./saved_models/trained_model")
   img = cv2.imread('./test.jpg')
   orig_img = img.copy()  # Keep original image
   current_poses = pose_estimator.infer(img)
@@ -245,9 +243,9 @@ Parameters:
       LightweightOpenPoseLearner
 
   pose_estimator = LightweightOpenPoseLearner(temp_path='./parent_dir')
-  pose_estimator.load("./trained_model")
+  pose_estimator.load("./saved_models/trained_model")
   pose_estimator.optimize(do_constant_folding=True)
-  pose_estimator.save('./saved_models/optimized_model.onnx')
+  pose_estimator.save('./saved_models/optimized_model')
   ```
 
 #### Notes
