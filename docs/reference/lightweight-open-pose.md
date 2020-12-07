@@ -159,7 +159,7 @@ LightweightOpenPoseLearner.save(self, path, verbose)
 
 This method is used to save a trained model.
 Provided with the path, absolute or relative, including a *folder* name, it creates a directory with the name
-        of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
+of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
 
 If [`self.optimize`](#LightweightOpenPoseLearner.optimize) was run previously, it saves the optimized ONNX model in 
 a similar fashion, by copying it from the self.temp_path it was saved previously during conversion.
