@@ -713,7 +713,7 @@ class LightweightOpenPoseLearner(Learner):
 
     def load(self, path, verbose=False):
         """
-        Loads the model from inside the path provided, based on metadata .json filed included.
+        Loads the model from inside the path provided, based on the metadata .json file included.
 
         :param path: path of the directory the model was saved
         :type path: str
