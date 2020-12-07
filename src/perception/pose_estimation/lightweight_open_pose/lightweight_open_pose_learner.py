@@ -641,35 +641,36 @@ class LightweightOpenPoseLearner(Learner):
     def save(self, path, verbose=False):
         """
         This method is used to save a trained model.
-        Provided with the path, absolute or relative, including the filename, it creates a directory with the name
-        of the model provided and saves the model inside with a proper format and a .json file with metadata.
+        Provided with the path, absolute or relative, including a *folder* name, it creates a directory with the name
+        of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
 
         If self.optimize was ran previously, it saves the optimized ONNX model in a similar fashion, by copying it
         from the self.temp_path it was saved previously during conversion.
 
-        :param path: for the model to be saved, including the filename
+        :param path: for the model to be saved, including the folder name
         :type path: str
         :param verbose: whether to print success message or not, defaults to 'False'
         :type verbose: bool, optional
         """
-        filename, _, tail = self.__extract_filename(path)  # Extract filename from path
-        # Also extract filename without extension if extension is provided
-        filename_no_ext = filename.split(sep='.')[0]  # remove extension after '.'
+        folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
+        # Also extract folder name without any extension if extension is erroneously provided
+        folder_name_no_ext = folder_name.split(sep='.')[0]
 
-        # Extract path without filename, by removing filename from original path
-        path_no_filename = path.replace(filename, '')  # If path is a/b/c/, this leaves trailing double '/'
-        if tail == '':  # Handle case of double '/' by removing one '/'
-            path_no_filename = path_no_filename[0:-1]
+        # Extract path without folder name, by removing folder name from original path
+        path_no_folder_name = path.replace(folder_name, '')
+        # If tail is '', then path was a/b/c/, which leaves a trailing double '/'
+        if tail == '':
+            path_no_folder_name = path_no_folder_name[0:-1]  # Remove one '/'
 
         # Create model directory
-        new_path = path_no_filename + filename_no_ext
+        new_path = path_no_folder_name + folder_name_no_ext
         os.makedirs(new_path, exist_ok=True)
 
         model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
                           "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
 
         if self.ort_session is None:
-            model_metadata["model_paths"] = [filename_no_ext + os.sep + filename_no_ext + ".pth"]
+            model_metadata["model_paths"] = [folder_name_no_ext + os.sep + folder_name_no_ext + ".pth"]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pth"
 
@@ -678,7 +679,7 @@ class LightweightOpenPoseLearner(Learner):
             if verbose:
                 print("Saved Pytorch model.")
         else:
-            model_metadata["model_paths"] = [filename_no_ext + os.sep + filename_no_ext + ".onnx"]
+            model_metadata["model_paths"] = [folder_name_no_ext + os.sep + folder_name_no_ext + ".onnx"]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             # Copy already optimized model from temp path
@@ -687,7 +688,7 @@ class LightweightOpenPoseLearner(Learner):
             if verbose:
                 print("Saved ONNX model.")
 
-        with open(new_path + os.sep + filename_no_ext + ".json", 'w') as outfile:
+        with open(new_path + os.sep + folder_name_no_ext + ".json", 'w') as outfile:
             json.dump(model_metadata, outfile)
 
     def __save(self, path, optimizer, scheduler, iter_, current_epoch):
@@ -720,7 +721,7 @@ class LightweightOpenPoseLearner(Learner):
         :param verbose: whether to print success message or not, defaults to 'False'
         :type verbose: bool, optional
         """
-        model_name, _, _ = self.__extract_filename(path)  # Trailing folder name from the path provided
+        model_name, _, _ = self.__extract_trailing(path)  # Trailing folder name from the path provided
 
         with open(path + os.sep + model_name + ".json") as metadata_file:
             metadata = json.load(metadata_file)
@@ -779,12 +780,12 @@ class LightweightOpenPoseLearner(Learner):
         # onnx.helper.printable_graph(self.model.graph)
 
     @staticmethod
-    def __extract_filename(path):
+    def __extract_trailing(path):
         """
         Extracts the trailing folder name or filename from a path provided in an OS-generic way, also handling
         cases where the last trailing character is a separator. Returns the folder name and the split head and tail.
 
-        :param path: the path to extract the filename from
+        :param path: the path to extract the trailing filename or folder name from
         :type path: str
         :return: the folder name, the head and tail of the path
         :rtype: tuple of three strings
