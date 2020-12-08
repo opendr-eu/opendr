@@ -68,11 +68,13 @@ class Pose(Target):
                  'r_hip', 'r_knee', 'r_ank', 'l_hip', 'l_knee', 'l_ank',
                  'r_eye', 'l_eye',
                  'r_ear', 'l_ear']
+    last_id = -1
 
     def __init__(self, keypoints, confidence):
         super().__init__()
         self.data = keypoints
         self.confidence = confidence
+        self.id = None
 
     def __str__(self):
         """Matches kpt_names and keypoints x,y to get the best human-readable format for pose."""
