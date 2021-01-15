@@ -804,7 +804,10 @@ class LightweightOpenPoseLearner(Learner):
         :type do_constant_folding: bool, optional
         """
         width = 344
-        inp = torch.randn(1, 3, self.base_height, width).cuda()
+        if self.device == "cuda":
+            inp = torch.randn(1, 3, self.base_height, width).cuda()
+        else:
+            inp = torch.randn(1, 3, self.base_height, width)
         input_names = ['data']
         output_names = ['stage_0_output_1_heatmaps', 'stage_0_output_0_pafs',
                         'stage_1_output_1_heatmaps', 'stage_1_output_0_pafs']
