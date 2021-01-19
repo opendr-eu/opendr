@@ -269,7 +269,8 @@ class LightweightOpenPoseLearner(Learner):
         elif self.checkpoint_load_iter != 0:
             num_iter = self.checkpoint_load_iter
 
-        self.model = DataParallel(self.model)
+        if self.device == "cuda":
+            self.model = DataParallel(self.model)
         self.model.train()
         if self.device == "cuda":
             self.model = self.model.cuda()
