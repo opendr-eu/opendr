@@ -861,6 +861,7 @@ class LightweightOpenPoseLearner(Learner):
         """
         if not isinstance(img, Image):
             img = Image(img)
+        img = img.numpy()
 
         img_mean = self.img_mean  # Defaults to (128, 128, 128)
         img_scale = self.img_scale  # Defaults to 1 / 256
