@@ -154,8 +154,8 @@ class LightweightOpenPoseLearner(Learner):
         # Training dataset initialization
         data = self.__prepare_dataset(dataset, stride=self.stride,
                                       prepared_annotations_name="prepared_train_annotations.pkl",
-                                      images_folder_default_name="train2017",
-                                      annotations_filename="person_keypoints_train2017.json",
+                                      images_folder_default_name=images_folder_name,
+                                      annotations_filename=annotations_filename,
                                       verbose=silent)
         train_loader = DataLoader(data, batch_size=self.batch_size, shuffle=True,
                                   num_workers=self.num_workers)
@@ -536,7 +536,7 @@ class LightweightOpenPoseLearner(Learner):
                 result = run_coco_eval(os.path.join(dataset.path, "val_subset.json"),
                                        self.output_name, verbose=not silent)
             else:
-                result = run_coco_eval(os.path.join(dataset.path, "person_keypoints_val2017.json"),
+                result = run_coco_eval(os.path.join(dataset.path, annotations_filename),
                                        self.output_name, verbose=not silent)
             return {"average_precision": result.stats[0:5], "average_recall": result.stats[5:]}
         else:
