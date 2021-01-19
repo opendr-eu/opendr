@@ -171,15 +171,7 @@ class LightweightOpenPoseLearner(Learner):
 
         # Model initialization
         if self.model is None:
-            # No model loaded, initializing new
-            if self.backbone == "mobilenet":
-                self.model = PoseEstimationWithMobileNet(self.num_refinement_stages)
-            elif self.backbone == "mobilenetv2":
-                self.model = PoseEstimationWithMobileNetV2(self.num_refinement_stages,
-                                                           width_mult=self.mobilenetv2_width)
-            elif self.backbone == "shufflenet":
-                self.model = PoseEstimationWithShuffleNet(self.num_refinement_stages,
-                                                          groups=self.shufflenet_groups)
+            self.init_model()
 
         checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
         if self.checkpoint_after_iter != 0 and not os.path.exists(checkpoints_folder):
@@ -462,14 +454,7 @@ class LightweightOpenPoseLearner(Learner):
         # Model initialization if needed
         if self.model is None and self.checkpoint_load_iter != 0:
             # No model loaded, initializing new
-            if self.backbone == "mobilenet":
-                self.model = PoseEstimationWithMobileNet(self.num_refinement_stages)
-            elif self.backbone == "mobilenetv2":
-                self.model = PoseEstimationWithMobileNetV2(self.num_refinement_stages,
-                                                           width_mult=self.mobilenetv2_width)
-            elif self.backbone == "shufflenet":
-                self.model = PoseEstimationWithShuffleNet(self.num_refinement_stages,
-                                                          groups=self.shufflenet_groups)
+            self.init_model()
             # User set checkpoint_load_iter, so they want to load a checkpoint
             # Try to find the checkpoint_load_iter checkpoint
             checkpoint_name = "checkpoint_iter_" + str(self.checkpoint_load_iter) + ".pth"
@@ -690,6 +675,20 @@ class LightweightOpenPoseLearner(Learner):
 
         with open(new_path + os.sep + folder_name_no_ext + ".json", 'w') as outfile:
             json.dump(model_metadata, outfile)
+
+    def init_model(self):
+        if self.model is None:
+            # No model loaded, initializing new
+            if self.backbone == "mobilenet":
+                self.model = PoseEstimationWithMobileNet(self.num_refinement_stages)
+            elif self.backbone == "mobilenetv2":
+                self.model = PoseEstimationWithMobileNetV2(self.num_refinement_stages,
+                                                           width_mult=self.mobilenetv2_width)
+            elif self.backbone == "shufflenet":
+                self.model = PoseEstimationWithShuffleNet(self.num_refinement_stages,
+                                                          groups=self.shufflenet_groups)
+        else:
+            raise UserWarning("Tried to initialize model while model is already initialized.")
 
     def __save(self, path, optimizer, scheduler, iter_, current_epoch):
         """
