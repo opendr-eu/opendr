@@ -23,8 +23,7 @@ def run_coco_eval(gt_file_path, dt_file_path, verbose=False):
     result = COCOeval(coco_gt, coco_dt, annotation_type)
     result.evaluate()
     result.accumulate()
-    if verbose:
-        result.summarize()
+    result.summarize()
     return result
 
 
