@@ -656,7 +656,8 @@ class LightweightOpenPoseLearner(Learner):
                           "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
 
         if self.ort_session is None:
-            model_metadata["model_paths"] = [folder_name_no_ext + os.sep + folder_name_no_ext + ".pth"]
+            model_metadata["model_paths"] = [path_no_folder_name + os.sep +
+                                             folder_name_no_ext + os.sep + folder_name_no_ext + ".pth"]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pth"
 
@@ -665,7 +666,8 @@ class LightweightOpenPoseLearner(Learner):
             if verbose:
                 print("Saved Pytorch model.")
         else:
-            model_metadata["model_paths"] = [folder_name_no_ext + os.sep + folder_name_no_ext + ".onnx"]
+            model_metadata["model_paths"] = [path_no_folder_name + os.sep +
+                                             folder_name_no_ext + os.sep + folder_name_no_ext + ".onnx"]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             # Copy already optimized model from temp path
