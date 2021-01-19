@@ -52,9 +52,21 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
                            images_folder_name="image", annotations_filename="annotation.json")
         self.assertFalse(torch.equal(m, list(pose_estimator.model.parameters())[0]),
                          msg="Model parameters did not change after running fit.")
+        # Cleanup
+        rmdir(self.temp_dir + os.sep + "default_checkpoints")
 
     def test_eval(self):
-        pass # TODO this
+        pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=self.temp_dir, batch_size=1)
+        eval_dataset = ExternalDataset(path=self.temp_dir + os.sep + "dataset", dataset_type="COCO")
+        pose_estimator.load(self.temp_dir + os.sep + "trainedModel")
+        results_dict = pose_estimator.eval(eval_dataset, use_subset=False, verbose=True, silent=True,
+                                           images_folder_name="image", annotations_filename="annotation.json")
+        self.assertNotEqual(len(results_dict['average_precision']), 0,
+                            msg="Eval results dictionary contains empty list.")
+        self.assertNotEqual(len(results_dict['average_recall']), 0,
+                            msg="Eval results dictionary contains empty list.")
+        # Cleanup
+        rmfile(self.temp_dir + os.sep + "detections.json")
 
     def test_infer(self):
         pose_estimator = LightweightOpenPoseLearner(device="cpu")
@@ -72,6 +84,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         pose_estimator.model = None
         pose_estimator.load(self.temp_dir + os.sep + "testModel")
         self.assertIsNotNone(pose_estimator.model, "model is None after loading pth model.")
+        # Cleanup
         rmdir(self.temp_dir + os.sep + "testModel")
 
     def test_save_load_onnx(self):
