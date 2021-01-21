@@ -18,7 +18,6 @@ import shutil
 import os
 import torch
 from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import LightweightOpenPoseLearner
-from engine.data import Image
 from engine.datasets import ExternalDataset
 
 
@@ -43,7 +42,8 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
     # TODO download all local files needed and clean them up afterwards
 
     def test_fit(self):
-        pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=self.temp_dir, batch_size=1, epochs=1)
+        pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=self.temp_dir, batch_size=1, epochs=1,
+                                                    checkpoint_after_iter=0)
         training_dataset = ExternalDataset(path=self.temp_dir + os.sep + "dataset", dataset_type="COCO")
         pose_estimator.init_model()
         m = list(pose_estimator.model.parameters())[0].clone()
@@ -52,8 +52,6 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
                            images_folder_name="image", annotations_filename="annotation.json")
         self.assertFalse(torch.equal(m, list(pose_estimator.model.parameters())[0]),
                          msg="Model parameters did not change after running fit.")
-        # Cleanup
-        rmdir(self.temp_dir + os.sep + "default_checkpoints")
 
     def test_eval(self):
         pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=self.temp_dir, batch_size=1)
