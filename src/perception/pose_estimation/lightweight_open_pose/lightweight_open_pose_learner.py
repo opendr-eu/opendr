@@ -154,8 +154,8 @@ class LightweightOpenPoseLearner(Learner):
         # Training dataset initialization
         data = self.__prepare_dataset(dataset, stride=self.stride,
                                       prepared_annotations_name="prepared_train_annotations.pkl",
-                                      images_folder_default_name="train2017",
-                                      annotations_filename="person_keypoints_train2017.json",
+                                      images_folder_default_name=images_folder_name,
+                                      annotations_filename=annotations_filename,
                                       verbose=silent)
         train_loader = DataLoader(data, batch_size=self.batch_size, shuffle=True,
                                   num_workers=self.num_workers)
@@ -171,15 +171,7 @@ class LightweightOpenPoseLearner(Learner):
 
         # Model initialization
         if self.model is None:
-            # No model loaded, initializing new
-            if self.backbone == "mobilenet":
-                self.model = PoseEstimationWithMobileNet(self.num_refinement_stages)
-            elif self.backbone == "mobilenetv2":
-                self.model = PoseEstimationWithMobileNetV2(self.num_refinement_stages,
-                                                           width_mult=self.mobilenetv2_width)
-            elif self.backbone == "shufflenet":
-                self.model = PoseEstimationWithShuffleNet(self.num_refinement_stages,
-                                                          groups=self.shufflenet_groups)
+            self.init_model()
 
         checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
         if self.checkpoint_after_iter != 0 and not os.path.exists(checkpoints_folder):
@@ -277,7 +269,8 @@ class LightweightOpenPoseLearner(Learner):
         elif self.checkpoint_load_iter != 0:
             num_iter = self.checkpoint_load_iter
 
-        self.model = DataParallel(self.model)
+        if self.device == "cuda":
+            self.model = DataParallel(self.model)
         self.model.train()
         if self.device == "cuda":
             self.model = self.model.cuda()
@@ -462,14 +455,7 @@ class LightweightOpenPoseLearner(Learner):
         # Model initialization if needed
         if self.model is None and self.checkpoint_load_iter != 0:
             # No model loaded, initializing new
-            if self.backbone == "mobilenet":
-                self.model = PoseEstimationWithMobileNet(self.num_refinement_stages)
-            elif self.backbone == "mobilenetv2":
-                self.model = PoseEstimationWithMobileNetV2(self.num_refinement_stages,
-                                                           width_mult=self.mobilenetv2_width)
-            elif self.backbone == "shufflenet":
-                self.model = PoseEstimationWithShuffleNet(self.num_refinement_stages,
-                                                          groups=self.shufflenet_groups)
+            self.init_model()
             # User set checkpoint_load_iter, so they want to load a checkpoint
             # Try to find the checkpoint_load_iter checkpoint
             checkpoint_name = "checkpoint_iter_" + str(self.checkpoint_load_iter) + ".pth"
@@ -551,7 +537,7 @@ class LightweightOpenPoseLearner(Learner):
                 result = run_coco_eval(os.path.join(dataset.path, "val_subset.json"),
                                        self.output_name, verbose=not silent)
             else:
-                result = run_coco_eval(os.path.join(dataset.path, "person_keypoints_val2017.json"),
+                result = run_coco_eval(os.path.join(dataset.path, annotations_filename),
                                        self.output_name, verbose=not silent)
             return {"average_precision": result.stats[0:5], "average_recall": result.stats[5:]}
         else:
@@ -670,7 +656,8 @@ class LightweightOpenPoseLearner(Learner):
                           "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
 
         if self.ort_session is None:
-            model_metadata["model_paths"] = [folder_name_no_ext + os.sep + folder_name_no_ext + ".pth"]
+            model_metadata["model_paths"] = [path_no_folder_name + os.sep +
+                                             folder_name_no_ext + os.sep + folder_name_no_ext + ".pth"]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pth"
 
@@ -679,7 +666,8 @@ class LightweightOpenPoseLearner(Learner):
             if verbose:
                 print("Saved Pytorch model.")
         else:
-            model_metadata["model_paths"] = [folder_name_no_ext + os.sep + folder_name_no_ext + ".onnx"]
+            model_metadata["model_paths"] = [path_no_folder_name + os.sep +
+                                             folder_name_no_ext + os.sep + folder_name_no_ext + ".onnx"]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             # Copy already optimized model from temp path
@@ -690,6 +678,20 @@ class LightweightOpenPoseLearner(Learner):
 
         with open(new_path + os.sep + folder_name_no_ext + ".json", 'w') as outfile:
             json.dump(model_metadata, outfile)
+
+    def init_model(self):
+        if self.model is None:
+            # No model loaded, initializing new
+            if self.backbone == "mobilenet":
+                self.model = PoseEstimationWithMobileNet(self.num_refinement_stages)
+            elif self.backbone == "mobilenetv2":
+                self.model = PoseEstimationWithMobileNetV2(self.num_refinement_stages,
+                                                           width_mult=self.mobilenetv2_width)
+            elif self.backbone == "shufflenet":
+                self.model = PoseEstimationWithShuffleNet(self.num_refinement_stages,
+                                                          groups=self.shufflenet_groups)
+        else:
+            raise UserWarning("Tried to initialize model while model is already initialized.")
 
     def __save(self, path, optimizer, scheduler, iter_, current_epoch):
         """
@@ -859,6 +861,7 @@ class LightweightOpenPoseLearner(Learner):
         """
         if not isinstance(img, Image):
             img = Image(img)
+        img = img.numpy()
 
         img_mean = self.img_mean  # Defaults to (128, 128, 128)
         img_scale = self.img_scale  # Defaults to 1 / 256
