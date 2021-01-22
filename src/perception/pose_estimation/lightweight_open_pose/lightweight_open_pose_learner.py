@@ -278,6 +278,9 @@ class LightweightOpenPoseLearner(Learner):
         if epochs is not None:
             self.epochs = epochs
         eval_results = {}
+        eval_results_list = []
+        paf_losses = []
+        heatmap_losses = []
         for epochId in range(current_epoch, self.epochs):
             total_losses = [0, 0] * (self.num_refinement_stages + 1)  # heatmaps loss, paf loss per stage
             batch_per_iter_idx = 0
@@ -327,6 +330,13 @@ class LightweightOpenPoseLearner(Learner):
                         pbar.update(1)
                     batch_index += 1
                     continue
+
+                paf_losses.append([])
+                heatmap_losses.append([])
+                for loss_idx in range(len(total_losses) // 2):
+                    paf_losses[-1].append(total_losses[loss_idx * 2 + 1])
+                    heatmap_losses[-1].append(total_losses[loss_idx * 2])
+
                 if self.log_after != 0 and num_iter % self.log_after == 0:
                     if logging:
                         for loss_idx in range(len(total_losses) // 2):
@@ -360,6 +370,7 @@ class LightweightOpenPoseLearner(Learner):
                         pbar.close()  # Close outer tqdm
                     eval_results = self.eval(val_dataset, silent=silent, verbose=eval_verbose,
                                              use_subset=use_val_subset, subset_size=val_subset_size)
+                    eval_results_list.append(eval_results)
                     if not silent:
                         # Re-initialize outer tqdm
                         pbar = tqdm(desc=pbarDesc, initial=batch_index, total=batches,
@@ -415,8 +426,8 @@ class LightweightOpenPoseLearner(Learner):
             scheduler.step()
         if logging:
             file_writer.close()
-        # This returns last evaluation's results
-        return eval_results
+        # Return a dict of lists of PAF and Heatmap losses per stage and a list of all evaluation results dictionaries
+        return {"paf_losses": paf_losses, "heatmap_losses": heatmap_losses, "eval_results_list": eval_results_list}
 
     def eval(self, dataset, silent=False, verbose=True, use_subset=True, subset_size=250,
              images_folder_name="val2017", annotations_filename="person_keypoints_val2017.json"):
