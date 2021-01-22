@@ -116,7 +116,8 @@ class LightweightOpenPoseLearner(Learner):
 
     def fit(self, dataset, val_dataset=None, logging_path='', logging_flush_secs=30,
             silent=False, verbose=True, epochs=None, use_val_subset=True, val_subset_size=250,
-            images_folder_name="train2017", annotations_filename="person_keypoints_train2017.json"):
+            images_folder_name="train2017", annotations_filename="person_keypoints_train2017.json",
+            val_images_folder_name="val2017", val_annotations_filename="person_keypoints_val2017.json"):
         """
         This method is used for training the algorithm on a train dataset and validating on a val dataset.
 
@@ -147,6 +148,12 @@ class LightweightOpenPoseLearner(Learner):
         :param annotations_filename: filename of the annotations json file. This file should be contained in the
             dataset path provided, defaults to 'person_keypoints_train2017.json'
         :type annotations_filename: str, optional
+        :param val_images_folder_name: folder name that contains the validation images. This folder should be contained
+            in the dataset path provided. Note that this is a folder name, not a path, defaults to 'val2017'
+        :type val_images_folder_name: str, optional
+        :param val_annotations_filename: filename of the validation annotations json file. This file should be
+            contained in the dataset path provided, defaults to 'person_keypoints_val2017.json'
+        :type val_annotations_filename: str, optional
 
         :return: returns stats regarding the last evaluation ran
         :rtype: dict
@@ -369,7 +376,9 @@ class LightweightOpenPoseLearner(Learner):
                     if not silent:
                         pbar.close()  # Close outer tqdm
                     eval_results = self.eval(val_dataset, silent=silent, verbose=eval_verbose,
-                                             use_subset=use_val_subset, subset_size=val_subset_size)
+                                             use_subset=use_val_subset, subset_size=val_subset_size,
+                                             images_folder_name=val_images_folder_name,
+                                             annotations_filename=val_annotations_filename)
                     eval_results_list.append(eval_results)
                     if not silent:
                         # Re-initialize outer tqdm
