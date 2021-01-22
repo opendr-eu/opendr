@@ -478,7 +478,7 @@ class LightweightOpenPoseLearner(Learner):
             # else:
             load_state(self.model, checkpoint)
         elif self.model is None:
-            raise AttributeError("self.model is None. Please load a model or checkpoint.")
+            raise AttributeError("self.model is None. Please load a model or set checkpoint_load_iter.")
 
         self.model = self.model.eval()  # Change model state to evaluation
         if self.device == "cuda":
@@ -583,6 +583,8 @@ class LightweightOpenPoseLearner(Learner):
             stage2_heatmaps = torch.tensor(stages_output[-2])
             stage2_pafs = torch.tensor(stages_output[-1])
         else:
+            if self.model is None:
+                raise UserWarning("No model is loaded, cannot run inference. Load a model first using load().")
             if self.model_train_state:
                 self.model.eval()
                 self.model_train_state = False
@@ -638,6 +640,9 @@ class LightweightOpenPoseLearner(Learner):
         :param verbose: whether to print success message or not, defaults to 'False'
         :type verbose: bool, optional
         """
+        if self.model is None and self.ort_session is None:
+            raise UserWarning("No model is loaded, cannot save.")
+
         folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
         # Also extract folder name without any extension if extension is erroneously provided
         folder_name_no_ext = folder_name.split(sep='.')[0]
@@ -826,6 +831,11 @@ class LightweightOpenPoseLearner(Learner):
         :param do_constant_folding: whether to optimize constants, defaults to 'False'
         :type do_constant_folding: bool, optional
         """
+        if self.model is None:
+            raise UserWarning("No model is loaded, cannot optimize. Load or train a model first.")
+        if self.ort_session is not None:
+            raise UserWarning("Model is already optimized in ONNX.")
+
         try:
             self.__convert_to_onnx(self.temp_path + os.sep + "onnx_model_temp.onnx", do_constant_folding)
         except FileNotFoundError:
