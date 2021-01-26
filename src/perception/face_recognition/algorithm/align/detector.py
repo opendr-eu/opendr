@@ -30,14 +30,14 @@ def detect_faces(image, min_face_size=20.0,
     min_length = min(height, width)
 
     min_detection_size = 12
-    factor = 0.707  # sqrt(0.5)
+    factor = 0.707  # Sqrt(0.5)
 
-    # scales for scaling the image
+    # Scales for scaling the image
     scales = []
 
-    # scales the image so that
-    # minimum size that we can detect equals to
-    # minimum face size that we want to detect
+    # Scales the image so that
+    # Minimum size that we can detect equals to
+    # Minimum face size that we want to detect
     m = min_detection_size / min_face_size
     min_length *= m
 
@@ -49,15 +49,15 @@ def detect_faces(image, min_face_size=20.0,
 
     # STAGE 1
 
-    # it will be returned
+    # It will be returned
     bounding_boxes = []
 
-    # run P-Net on different scales
+    # Run P-Net on different scales
     for s in scales:
         boxes = run_first_stage(image, pnet, scale=s, threshold=thresholds[0])
         bounding_boxes.append(boxes)
 
-    # collect boxes (and offsets, and scores) from different scales
+    # Collect boxes (and offsets, and scores) from different scales
     bounding_boxes = [i for i in bounding_boxes if i is not None]
 
     bounding_boxes = np.vstack(bounding_boxes)
@@ -65,9 +65,9 @@ def detect_faces(image, min_face_size=20.0,
     keep = nms(bounding_boxes[:, 0:5], nms_thresholds[0])
     bounding_boxes = bounding_boxes[keep]
 
-    # use offsets predicted by pnet to transform bounding boxes
+    # Use offsets predicted by pnet to transform bounding boxes
     bounding_boxes = calibrate_box(bounding_boxes[:, 0:5], bounding_boxes[:, 5:])
-    # shape [n_boxes, 5]
+    # Shape [n_boxes, 5]
 
     bounding_boxes = convert_to_square(bounding_boxes)
     bounding_boxes[:, 0:4] = np.round(bounding_boxes[:, 0:4])
@@ -75,11 +75,11 @@ def detect_faces(image, min_face_size=20.0,
     # STAGE 2
 
     img_boxes = get_image_boxes(bounding_boxes, image, size=24)
-    # img_boxes = Variable(torch.FloatTensor(img_boxes), volatile = True)
+    # Img_boxes = Variable(torch.FloatTensor(img_boxes), volatile = True)
     img_boxes = torch.FloatTensor(img_boxes)
     output = rnet(img_boxes)
-    offsets = output[0].data.numpy()  # shape [n_boxes, 4]
-    probs = output[1].data.numpy()  # shape [n_boxes, 2]
+    offsets = output[0].data.numpy()  # Shape [n_boxes, 4]
+    probs = output[1].data.numpy()  # Shape [n_boxes, 2]
 
     keep = np.where(probs[:, 1] > thresholds[1])[0]
     bounding_boxes = bounding_boxes[keep]
@@ -99,9 +99,9 @@ def detect_faces(image, min_face_size=20.0,
         return [], []
     img_boxes = (torch.FloatTensor(img_boxes))
     output = onet(img_boxes)
-    landmarks = output[0].data.numpy()  # shape [n_boxes, 10]
-    offsets = output[1].data.numpy()  # shape [n_boxes, 4]
-    probs = output[2].data.numpy()  # shape [n_boxes, 2]
+    landmarks = output[0].data.numpy()  # Shape [n_boxes, 10]
+    offsets = output[1].data.numpy()  # Shape [n_boxes, 4]
+    probs = output[2].data.numpy()  # Shape [n_boxes, 2]
 
     keep = np.where(probs[:, 1] > thresholds[2])[0]
     bounding_boxes = bounding_boxes[keep]
@@ -109,7 +109,7 @@ def detect_faces(image, min_face_size=20.0,
     offsets = offsets[keep]
     landmarks = landmarks[keep]
 
-    # compute landmark points
+    # Compute landmark points
     width = bounding_boxes[:, 2] - bounding_boxes[:, 0] + 1.0
     height = bounding_boxes[:, 3] - bounding_boxes[:, 1] + 1.0
     xmin, ymin = bounding_boxes[:, 0], bounding_boxes[:, 1]

@@ -59,20 +59,20 @@ def _generate_bboxes(probs, offsets, scale, threshold):
         a float numpy array of shape [n_boxes, 9]
     """
 
-    # applying P-Net is equivalent, in some sense, to
-    # moving 12x12 window with stride 2
+    # Applying P-Net is equivalent, in some sense, to
+    # Moving 12x12 window with stride 2
     stride = 2
     cell_size = 12
 
-    # indices of boxes where there is probably a face
+    # Indices of boxes where there is probably a face
     inds = np.where(probs > threshold)
 
     if inds[0].size == 0:
         return np.array([])
 
-    # transformations of bounding boxes
+    # Transformations of bounding boxes
     tx1, ty1, tx2, ty2 = [offsets[0, i, inds[0], inds[1]] for i in range(4)]
-    # they are defined as:
+    # They are defined as:
     # w = x2 - x1 + 1
     # h = y2 - y1 + 1
     # x1_true = x1 + tx1*w
@@ -84,7 +84,7 @@ def _generate_bboxes(probs, offsets, scale, threshold):
     score = probs[inds[0], inds[1]]
 
     # P-Net is applied to scaled images
-    # so we need to rescale bounding boxes back
+    # So we need to rescale bounding boxes back
     bounding_boxes = np.vstack([
         np.round((stride * inds[1] + 1.0) / scale),
         np.round((stride * inds[0] + 1.0) / scale),
@@ -92,6 +92,5 @@ def _generate_bboxes(probs, offsets, scale, threshold):
         np.round((stride * inds[0] + 1.0 + cell_size) / scale),
         score, offsets
     ])
-    # why one is added?
 
     return bounding_boxes.T

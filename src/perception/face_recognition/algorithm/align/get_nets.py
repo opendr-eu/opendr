@@ -18,7 +18,7 @@ class Flatten(nn.Module):
             a float tensor with shape [batch_size, c*h*w].
         """
 
-        # without this pretrained model isn't working
+        # Without this pretrained model isn't working
         x = x.transpose(3, 2).contiguous()
 
         return x.view(x.size(0), -1)
@@ -29,7 +29,7 @@ class PNet(nn.Module):
     def __init__(self):
         super(PNet, self).__init__()
 
-        # suppose we have input with size HxW, then
+        # Suppose we have input with size HxW, then
         # after first layer: H - 2,
         # after pool: ceil((H - 2)/2),
         # after second conv: ceil((H - 2)/2) - 2,
@@ -51,7 +51,7 @@ class PNet(nn.Module):
         self.conv4_1 = nn.Conv2d(32, 2, 1, 1)
         self.conv4_2 = nn.Conv2d(32, 4, 1, 1)
 
-        weights = np.load("./pnet.npy", allow_pickle=True)[()]
+        weights = np.load("../algorithm/align/pnet.npy", allow_pickle=True)[()]
         for n, p in self.named_parameters():
             p.data = torch.FloatTensor(weights[n])
 
@@ -66,7 +66,7 @@ class PNet(nn.Module):
         x = self.features(x)
         a = self.conv4_1(x)
         b = self.conv4_2(x)
-        a = F.softmax(a)
+        a = F.softmax(a, dim=1)
         return b, a
 
 
@@ -95,7 +95,7 @@ class RNet(nn.Module):
         self.conv5_1 = nn.Linear(128, 2)
         self.conv5_2 = nn.Linear(128, 4)
 
-        weights = np.load("./rnet.npy", allow_pickle=True)[()]
+        weights = np.load("../algorithm/align/rnet.npy", allow_pickle=True)[()]
         for n, p in self.named_parameters():
             p.data = torch.FloatTensor(weights[n])
 
@@ -110,7 +110,7 @@ class RNet(nn.Module):
         x = self.features(x)
         a = self.conv5_1(x)
         b = self.conv5_2(x)
-        a = F.softmax(a)
+        a = F.softmax(a, dim=1)
         return b, a
 
 
@@ -145,7 +145,7 @@ class ONet(nn.Module):
         self.conv6_2 = nn.Linear(256, 4)
         self.conv6_3 = nn.Linear(256, 10)
 
-        weights = np.load("./onet.npy", allow_pickle=True)[()]
+        weights = np.load("../algorithm/align/onet.npy", allow_pickle=True)[()]
         for n, p in self.named_parameters():
             p.data = torch.FloatTensor(weights[n])
 
@@ -162,5 +162,5 @@ class ONet(nn.Module):
         a = self.conv6_1(x)
         b = self.conv6_2(x)
         c = self.conv6_3(x)
-        a = F.softmax(a)
+        a = F.softmax(a, dim=1)
         return c, b, a
