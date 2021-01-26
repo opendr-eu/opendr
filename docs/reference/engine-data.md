@@ -64,3 +64,27 @@ The [Vector](#class_engine.data.Vector) class has the following public methods:
 #### numpy()
   Return a  [NumPy](https://numpy.org)-compatible representation of data.
   Given that *data* argument is already internally stored in  [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+
+
+### class engine.data.Image
+Bases: `engine.data.Data`
+
+A class used for representing image data.
+
+The [Image](#class_engine.data.Image) class has the following public methods:
+#### Image(data=None)
+  Construct a new [Image](#class_engine.data.Image) object based on *data*.
+  *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
+
+#### data()
+  Return *data* argument.
+  Return type is uint8 [NumPy](https://numpy.org) array.
+
+#### data(data)
+  Set the internal *data* argument.
+  *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array, where the
+  dimensions can be organized as e.g. (channels, width, height).
+
+#### numpy()
+  Return a  [NumPy](https://numpy.org)-compatible representation of data.
+  Given that *data* argument is already internally stored in  [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
