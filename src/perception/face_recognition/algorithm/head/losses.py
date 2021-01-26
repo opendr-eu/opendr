@@ -60,7 +60,7 @@ class ArcFace(nn.Module):
             phi = torch.where(cosine > 0, phi, cosine)
         else:
             phi = torch.where(cosine > self.th, phi, cosine - self.mm)
-        # --------------------------- convert label to one-hot ---------------------------
+        # --------------------------- Convert label to one-hot ---------------------------
         one_hot = torch.zeros(cosine.size())
         if self.device_id is not None:
             one_hot = one_hot.cuda(self.device_id[0])
@@ -110,7 +110,7 @@ class CosFace(nn.Module):
                 cosine = torch.cat((cosine, F.linear(F.normalize(temp_x), F.normalize(weight)).cuda(self.device_id[0])),
                                    dim=1)
         phi = cosine - self.m
-        # --------------------------- convert label to one-hot ---------------------------
+        # --------------------------- Convert label to one-hot ---------------------------
         one_hot = torch.zeros(cosine.size())
         if self.device_id is not None:
             one_hot = one_hot.cuda(self.device_id[0])
@@ -154,7 +154,7 @@ class SphereFace(nn.Module):
         self.weight = Parameter(torch.FloatTensor(out_features, in_features))
         nn.init.xavier_uniform_(self.weight)
 
-        # duplication formula
+        # Duplication formula
         self.mlambda = [
             lambda x: x ** 0,
             lambda x: x ** 1,
@@ -191,7 +191,7 @@ class SphereFace(nn.Module):
         phi_theta = ((-1.0) ** k) * cos_m_theta - 2 * k
         NormOfFeature = torch.norm(input, 2, 1)
 
-        # --------------------------- convert label to one-hot ---------------------------
+        # --------------------------- Convert label to one-hot ---------------------------
         one_hot = torch.zeros(cos_theta.size())
         if self.device_id is not None:
             one_hot = one_hot.cuda(self.device_id[0])
@@ -237,7 +237,7 @@ class Am_softmax(nn.Module):
         self.device_id = device_id
 
         self.kernel = Parameter(torch.Tensor(in_features, out_features))
-        self.kernel.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)  # initialize kernel
+        self.kernel.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)  # Initialize kernel
 
     def forward(self, embbedings, label):
         if self.device_id is None:
@@ -254,15 +254,15 @@ class Am_softmax(nn.Module):
                 kernel_norm = l2_norm(sub_kernels[i], axis=0).cuda(self.device_id[i])
                 cos_theta = torch.cat((cos_theta, torch.mm(temp_x, kernel_norm).cuda(self.device_id[0])), dim=1)
 
-        cos_theta = cos_theta.clamp(-1, 1)  # for numerical stability
+        cos_theta = cos_theta.clamp(-1, 1)  # For numerical stability
         phi = cos_theta - self.m
         label = label.view(-1, 1)  # size=(B,1)
         index = cos_theta.data * 0.0  # size=(B,Classnum)
         index.scatter_(1, label.data.view(-1, 1), 1)
         index = index.byte()
         output = cos_theta * 1.0
-        output[index] = phi[index]  # only change the correct predicted output
-        output *= self.s  # scale up in order to make softmax work, first introduced in normface
+        output[index] = phi[index]  # Only change the correct predicted output
+        output *= self.s  # Scale up in order to make softmax work, first introduced in normface
 
         return output
 

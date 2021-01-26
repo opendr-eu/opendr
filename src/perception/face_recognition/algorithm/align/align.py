@@ -6,7 +6,7 @@ import os
 from tqdm import tqdm
 
 
-def face_align(data='./data/imgs', dest='./temp/aligned', crop_size=112):
+def face_align(data=None, dest='None', crop_size=112):
     source_root = data
     dest_root = dest
     crop_size = crop_size
@@ -19,7 +19,7 @@ def face_align(data='./data/imgs', dest='./temp/aligned', crop_size=112):
     os.chdir(cwd)
 
     if not os.path.isdir(dest_root):
-        os.mkdir(dest_root)
+        os.makedirs(dest_root)
 
     for subfolder in tqdm(os.listdir(source_root)):
         if not os.path.isdir(os.path.join(dest_root, subfolder)):

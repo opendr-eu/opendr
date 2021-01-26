@@ -6,9 +6,9 @@ from .verification import evaluate
 import numpy as np
 import bcolz
 import os
-import random
 from PIL import Image
 import sys
+import itertools
 
 
 def l2_norm(input, axis=1):
@@ -29,9 +29,9 @@ def make_weights_for_balanced_classes(images, nclasses):
     '''
     count = [0] * nclasses
     for item in images:
-        count[item[1]] += 1  # item is (img-data, label-id)
+        count[item[1]] += 1  # Item is (img-data, label-id)
     weight_per_class = [0.] * nclasses
-    N = float(sum(count))  # total number of images
+    N = float(sum(count))  # Total number of images
     for i in range(nclasses):
         weight_per_class[i] = N / float(count[i])
     weight = [0] * len(images)
@@ -47,34 +47,34 @@ def get_val_pair(path, name):
     return carray, issame
 
 
-def create_pairs(path, number):
-    # Get unique pairs and non pairs balanced
-    print('CREATING PAIRS')
+def create_pairs(path, num_pairs):
+    filelist = []
     pairs = []
-    subfolders = [f.path for f in os.scandir(path) if f.is_dir()]
-    for i in range(number):
-        cnt = 0
-        key1 = subfolders[random.randint(0, len(subfolders) - 1)]
-        key2 = subfolders[random.randint(0, len(subfolders) - 1)]
-        file1 = random.choice(os.listdir(key1))
-        while key2 == key1:
-            key2 = subfolders[random.randint(1, len(subfolders) - 1)]
+    cnt_true = 0
+    cnt_false = 0
 
-        if i % 2 == 0:
-            # get a non pair
-            file2 = random.choice(os.listdir(key2))
-            while [os.path.join(key1, file1), os.path.join(key2, file2), False] in pairs and cnt < 100:
-                cnt += 1
-                file2 = random.choice(os.listdir(key2))
-            pairs.append([os.path.join(key1, file1), os.path.join(key2, file2), False])
+    for root, dirs, files in os.walk(path):
+        for file_1, file_2 in itertools.islice(itertools.combinations(files, 2), num_pairs):
+            if cnt_true < int(num_pairs / 2):
+                cnt_true += 1
+                pairs.append([os.path.join(root, file_1), os.path.join(root, file_2), True])
+            else:
+                break
+        for file in files:
+            filelist.append(os.path.join(root, file))
+
+    for file_1, file_2 in itertools.islice(itertools.combinations(filelist, 2), num_pairs):
+        if os.path.dirname(file_1) != os.path.dirname(file_2):
+            if cnt_false < int(num_pairs / 2) and cnt_false < cnt_true:
+                cnt_false += 1
+                pairs.append([file_1, file_2, False])
+            else:
+                break
         else:
-            # get a true pair
-            file2 = random.choice(os.listdir(key1))
-            while [os.path.join(key1, file1), os.path.join(key1, file2), True] in pairs and cnt < 100:
-                cnt += 1
-                file2 = random.choice(os.listdir(key1))
-            pairs.append([os.path.join(key1, file1), os.path.join(key1, file2), True])
+            continue
+
     transform = transforms.Compose([
+        transforms.Resize([112, 112]),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5, 0.5, 0.5],
                              std=[0.5, 0.5, 0.5])])
@@ -87,15 +87,15 @@ def create_pairs(path, number):
 
     carray = np.array(carray)
     issame = np.array(issame)
-
+    print('Created ', len(pairs), ' pairs')
     return carray, issame
 
 
-def get_val_data(path, dataset_type):
+def get_val_data(path, dataset_type, num_pairs=2000):
     if dataset_type in ['lfw', 'cfp_ff', 'cfp_fp', 'agedb_30', 'vgg2_fp']:
         data, pairs = get_val_pair(path, dataset_type)
     elif dataset_type == 'imagefolder':
-        data, pairs = create_pairs(path, 2000)
+        data, pairs = create_pairs(path, num_pairs)
     else:
         sys.exit('dataset_type should be of type imagefolder')
     return data, pairs
@@ -184,7 +184,7 @@ def hflip_batch(imgs_tensor):
 ccrop = transforms.Compose([
     de_preprocess,
     transforms.ToPILImage(),
-    transforms.Resize([128, 128]),  # smaller side resized
+    transforms.Resize([128, 128]),  # Smaller side resized
     transforms.CenterCrop([112, 112]),
     transforms.ToTensor(),
     transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
@@ -199,12 +199,8 @@ def ccrop_batch(imgs_tensor):
     return ccropped_imgs
 
 
-def perform_val(multi_gpu, device, embedding_size, batch_size, backbone, carray, issame, nrof_folds=10, tta=True):
-    if multi_gpu:
-        backbone = backbone.module  # unpackage model from DataParallel
-        backbone = backbone.to(device)
-    else:
-        backbone = backbone.to(device)
+def perform_val(device, embedding_size, batch_size, backbone, carray, issame, nrof_folds=10, tta=True):
+    backbone = backbone.to(device)
     backbone.eval()  # switch to evaluation mode
 
     idx = 0
