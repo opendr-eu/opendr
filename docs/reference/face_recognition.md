@@ -103,7 +103,7 @@ This method is used to perform face recognition on an image.
 
 |eval(dataset)|
 |:---|
-This method is used to perform face recognition on an image.
+This method is used to evaluate the trained model on an evaluation dataset.
 
 || | 
 |:---|:-------------|
