@@ -57,7 +57,7 @@ from perception.face_recognition.algorithm.backbone.model_resnet import ResNet_5
 from perception.face_recognition.algorithm.backbone.model_irse import IR_50, IR_101, IR_152, IR_SE_50, IR_SE_101, \
     IR_SE_152
 from perception.face_recognition.algorithm.backbone.model_mobilenet import MobileFaceNet
-from perception.face_recognition.algorithm.head.losses import ArcFace, CosFace, SphereFace, Am_softmax, Classifier
+from perception.face_recognition.algorithm.head.losses import ArcFace, CosFace, SphereFace, AMSoftmax, Classifier
 from perception.face_recognition.algorithm.loss.focal import FocalLoss
 from perception.face_recognition.algorithm.util.utils import make_weights_for_balanced_classes, get_val_data, \
     separate_irse_bn_paras, separate_mobilenet_bn_paras, l2_norm, \
