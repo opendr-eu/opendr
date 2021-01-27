@@ -156,7 +156,7 @@ def warp_and_crop_face(src_img,
                        facial_pts,
                        reference_pts=None,
                        crop_size=(96, 112),
-                       align_type='smilarity'):
+                       align_type='similarity'):
     """
     Function:
     ----------

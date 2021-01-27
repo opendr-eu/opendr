@@ -9,7 +9,7 @@ class MatlabCp2tormException(Exception):
             __file__, super.__str__(self))
 
 
-def tformfwd(trans, uv):
+def transform_fwd(trans, uv):
     """
     Function:
     ----------
@@ -35,7 +35,7 @@ def tformfwd(trans, uv):
     return xy
 
 
-def tforminv(trans, uv):
+def transform_inv(trans, uv):
     """
     Function:
     ----------
@@ -54,11 +54,11 @@ def tforminv(trans, uv):
             each row is a pair of inverse-transformed coordinates (x, y)
     """
     Tinv = inv(trans)
-    xy = tformfwd(Tinv, uv)
+    xy = transform_fwd(Tinv, uv)
     return xy
 
 
-def findNonreflectiveSimilarity(uv, xy, options=None):
+def find_non_reflective_similarity(uv, xy, options=None):
     options = {'K': 2}
 
     K = options['K']
@@ -79,7 +79,7 @@ def findNonreflectiveSimilarity(uv, xy, options=None):
         r, _, _, _ = lstsq(X, U, rcond=None)
         r = np.squeeze(r)
     else:
-        raise Exception("cp2tform: two Unique Points Req")
+        raise Exception("cp2transform: two Unique Points Req")
 
     sc = r[0]
     ss = r[1]
@@ -98,14 +98,14 @@ def findNonreflectiveSimilarity(uv, xy, options=None):
     return T, Tinv
 
 
-def findSimilarity(uv, xy, options=None):
+def find_similarity(uv, xy, options=None):
     options = {'K': 2}
 
     #    uv = np.array(uv)
     #    xy = np.array(xy)
 
     # Solve for trans1
-    trans1, trans1_inv = findNonreflectiveSimilarity(uv, xy, options)
+    trans1, trans1_inv = find_non_reflective_similarity(uv, xy, options)
 
     # Solve for trans2
 
@@ -113,9 +113,9 @@ def findSimilarity(uv, xy, options=None):
     xyR = xy
     xyR[:, 0] = -1 * xyR[:, 0]
 
-    trans2r, trans2r_inv = findNonreflectiveSimilarity(uv, xyR, options)
+    trans2r, trans2r_inv = find_non_reflective_similarity(uv, xyR, options)
 
-    # Manually reflect the tform to undo the reflection done on xyR
+    # Manually reflect the transform to undo the reflection done on xyR
     TreflectY = np.array([
         [-1, 0, 0],
         [0, 1, 0],
@@ -125,10 +125,10 @@ def findSimilarity(uv, xy, options=None):
     trans2 = np.dot(trans2r, TreflectY)
 
     # Figure out if trans1 or trans2 is better
-    xy1 = tformfwd(trans1, uv)
+    xy1 = transform_fwd(trans1, uv)
     norm1 = norm(xy1 - xy)
 
-    xy2 = tformfwd(trans2, uv)
+    xy2 = transform_fwd(trans2, uv)
     norm2 = norm(xy2 - xy)
 
     if norm1 <= norm2:
@@ -171,14 +171,14 @@ def get_similarity_transform(src_pts, dst_pts, reflective=True):
     """
 
     if reflective:
-        trans, trans_inv = findSimilarity(src_pts, dst_pts)
+        trans, trans_inv = find_similarity(src_pts, dst_pts)
     else:
-        trans, trans_inv = findNonreflectiveSimilarity(src_pts, dst_pts)
+        trans, trans_inv = find_non_reflective_similarity(src_pts, dst_pts)
 
     return trans, trans_inv
 
 
-def cvt_tform_mat_for_cv2(trans):
+def convert_transform_matrix_for_cv2(trans):
     """
     Function:
     ----------
@@ -238,7 +238,7 @@ def get_similarity_transform_for_cv2(src_pts, dst_pts, reflective=True):
             for cv2.warpAffine()
     """
     trans, trans_inv = get_similarity_transform(src_pts, dst_pts, reflective)
-    cv2_trans = cvt_tform_mat_for_cv2(trans)
+    cv2_trans = convert_transform_matrix_for_cv2(trans)
 
     return cv2_trans
 
@@ -267,14 +267,14 @@ if __name__ == '__main__':
     #       -0.0291    0.6163         0
     #       -0.6163   -0.0291         0
     #       -0.0756    1.9826    1.0000
-    #    xy_m=tformfwd(tform_sim, u,v)
+    #    xy_m=transform_fwd(tform_sim, u,v)
     #
     #    xy_m =
     #
     #       -3.2156    0.0290
     #        1.1833   -9.9143
     #        5.0323    2.8853
-    #    uv_m=tforminv(tform_sim, x,y)
+    #    uv_m=transform_inv(transform_sim, x,y)
     #
     #    uv_m =
     #
@@ -311,8 +311,8 @@ if __name__ == '__main__':
     xy_m = np.dot(uv_aug, trans)
     print(xy_m)
 
-    print("\nxy_m = tformfwd(trans, uv)")
-    xy_m = tformfwd(trans, uv)
+    print("\nxy_m = transform_fwd(trans, uv)")
+    xy_m = transform_fwd(trans, uv)
     print(xy_m)
 
     print("\n---> apply inverse transform to xy")
@@ -323,10 +323,10 @@ if __name__ == '__main__':
     uv_m = np.dot(xy_aug, trans_inv)
     print(uv_m)
 
-    print("\nuv_m = tformfwd(trans_inv, xy)")
-    uv_m = tformfwd(trans_inv, xy)
+    print("\nuv_m = transform_fwd(trans_inv, xy)")
+    uv_m = transform_fwd(trans_inv, xy)
     print(uv_m)
 
-    uv_m = tforminv(trans, xy)
-    print("\nuv_m = tforminv(trans, xy)")
+    uv_m = transform_inv(trans, xy)
+    print("\nuv_m = transform_inv(trans, xy)")
     print(uv_m)

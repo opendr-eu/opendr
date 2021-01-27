@@ -7,7 +7,7 @@ from torch.nn import Parameter
 import math
 
 
-# Support: ['ArcFace', 'CosFace', 'SphereFace', 'Am_softmax', 'Classifier']
+# Support: ['ArcFace', 'CosFace', 'SphereFace', 'AMSoftmax', 'Classifier']
 
 class ArcFace(nn.Module):
     r"""Implement of ArcFace (https://arxiv.org/pdf/1801.07698v1.pdf):
@@ -147,7 +147,7 @@ class SphereFace(nn.Module):
         self.base = 1000.0
         self.gamma = 0.12
         self.power = 1
-        self.LambdaMin = 5.0
+        self.lambda_min = 5.0
         self.iter = 0
         self.device_id = device_id
 
@@ -167,7 +167,7 @@ class SphereFace(nn.Module):
     def forward(self, input, label):
         # lambda = max(lambda_min,base*(1+gamma*iteration)^(-power))
         self.iter += 1
-        self.lamb = max(self.LambdaMin, self.base * (1 + self.gamma * self.iter) ** (-1 * self.power))
+        self.lamb = max(self.lambda_min, self.base * (1 + self.gamma * self.iter) ** (-1 * self.power))
 
         # --------------------------- cos(theta) & phi(theta) ---------------------------
         if self.device_id is None:
@@ -189,7 +189,7 @@ class SphereFace(nn.Module):
         theta = cos_theta.data.acos()
         k = (self.m * theta / 3.14159265).floor()
         phi_theta = ((-1.0) ** k) * cos_m_theta - 2 * k
-        NormOfFeature = torch.norm(input, 2, 1)
+        norm_of_feature = torch.norm(input, 2, 1)
 
         # --------------------------- Convert label to one-hot ---------------------------
         one_hot = torch.zeros(cos_theta.size())
@@ -199,7 +199,7 @@ class SphereFace(nn.Module):
 
         # --------------------------- Calculate output ---------------------------
         output = (one_hot * (phi_theta - cos_theta) / (1 + self.lamb)) + cos_theta
-        output *= NormOfFeature.view(-1, 1)
+        output *= norm_of_feature.view(-1, 1)
 
         return output
 
@@ -217,8 +217,8 @@ def l2_norm(input, axis=1):
     return output
 
 
-class Am_softmax(nn.Module):
-    r"""Implement of Am_softmax (https://arxiv.org/pdf/1801.05599.pdf):
+class AMSoftmax(nn.Module):
+    r"""Implement of AMSoftmax (https://arxiv.org/pdf/1801.05599.pdf):
     Args:
         in_features: size of each input sample
         out_features: size of each output sample
@@ -229,7 +229,7 @@ class Am_softmax(nn.Module):
     """
 
     def __init__(self, in_features, out_features, device_id, m=0.35, s=30.0):
-        super(Am_softmax, self).__init__()
+        super(AMSoftmax, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.m = m
