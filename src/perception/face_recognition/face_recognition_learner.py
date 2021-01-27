@@ -153,7 +153,7 @@ class FaceRecognition(Learner):
                 'sphereface': SphereFace(in_features=self.embedding_size, out_features=self.num_class,
                                          device_id=self.gpu_id),
                 'am_softmax': AMSoftmax(in_features=self.embedding_size, out_features=self.num_class,
-                                         device_id=self.gpu_id),
+                                        device_id=self.gpu_id),
                 'classifier': Classifier(in_features=self.embedding_size, out_features=self.num_class,
                                          device=self.device)}
             head = head_dict[self.network_head]
