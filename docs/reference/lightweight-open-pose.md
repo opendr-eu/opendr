@@ -100,11 +100,18 @@ Parameters:
   - **val_subset_size**: *int, default=250***  
     Controls the size of the validation subset.
   - **images_folder_name**: *str, default='train2017'*  
-    Name that contains the dataset images.
+    Folder name that contains the dataset images.
     This folder should be contained in the dataset path provided.
     Note that this is a folder name, not a path.
   - **annotations_filename**: *str, default='person_keypoints_train2017.json'*  
     Filename of the annotations JSON file.
+    This file should be contained in the dataset path provided.
+  - **val_images_folder_name**: *str, default='val2017'*  
+    Folder name that contains the validation images.
+    This folder should be contained in the dataset path provided.
+    Note that this is a folder name, not a path.
+  - **val_annotations_filename**: *str, default='person_keypoints_val2017.json'*  
+    Filename of the validation annotations JSON file.
     This file should be contained in the dataset path provided.
 
 #### `LightweightOpenPoseLearner.eval`

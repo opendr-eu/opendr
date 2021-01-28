@@ -116,7 +116,8 @@ class LightweightOpenPoseLearner(Learner):
 
     def fit(self, dataset, val_dataset=None, logging_path='', logging_flush_secs=30,
             silent=False, verbose=True, epochs=None, use_val_subset=True, val_subset_size=250,
-            images_folder_name="train2017", annotations_filename="person_keypoints_train2017.json"):
+            images_folder_name="train2017", annotations_filename="person_keypoints_train2017.json",
+            val_images_folder_name="val2017", val_annotations_filename="person_keypoints_val2017.json"):
         """
         This method is used for training the algorithm on a train dataset and validating on a val dataset.
 
@@ -147,6 +148,12 @@ class LightweightOpenPoseLearner(Learner):
         :param annotations_filename: filename of the annotations json file. This file should be contained in the
             dataset path provided, defaults to 'person_keypoints_train2017.json'
         :type annotations_filename: str, optional
+        :param val_images_folder_name: folder name that contains the validation images. This folder should be contained
+            in the dataset path provided. Note that this is a folder name, not a path, defaults to 'val2017'
+        :type val_images_folder_name: str, optional
+        :param val_annotations_filename: filename of the validation annotations json file. This file should be
+            contained in the dataset path provided, defaults to 'person_keypoints_val2017.json'
+        :type val_annotations_filename: str, optional
 
         :return: returns stats regarding the last evaluation ran
         :rtype: dict
@@ -278,6 +285,9 @@ class LightweightOpenPoseLearner(Learner):
         if epochs is not None:
             self.epochs = epochs
         eval_results = {}
+        eval_results_list = []
+        paf_losses = []
+        heatmap_losses = []
         for epochId in range(current_epoch, self.epochs):
             total_losses = [0, 0] * (self.num_refinement_stages + 1)  # heatmaps loss, paf loss per stage
             batch_per_iter_idx = 0
@@ -327,6 +337,13 @@ class LightweightOpenPoseLearner(Learner):
                         pbar.update(1)
                     batch_index += 1
                     continue
+
+                paf_losses.append([])
+                heatmap_losses.append([])
+                for loss_idx in range(len(total_losses) // 2):
+                    paf_losses[-1].append(total_losses[loss_idx * 2 + 1])
+                    heatmap_losses[-1].append(total_losses[loss_idx * 2])
+
                 if self.log_after != 0 and num_iter % self.log_after == 0:
                     if logging:
                         for loss_idx in range(len(total_losses) // 2):
@@ -359,7 +376,10 @@ class LightweightOpenPoseLearner(Learner):
                     if not silent:
                         pbar.close()  # Close outer tqdm
                     eval_results = self.eval(val_dataset, silent=silent, verbose=eval_verbose,
-                                             use_subset=use_val_subset, subset_size=val_subset_size)
+                                             use_subset=use_val_subset, subset_size=val_subset_size,
+                                             images_folder_name=val_images_folder_name,
+                                             annotations_filename=val_annotations_filename)
+                    eval_results_list.append(eval_results)
                     if not silent:
                         # Re-initialize outer tqdm
                         pbar = tqdm(desc=pbarDesc, initial=batch_index, total=batches,
@@ -415,8 +435,8 @@ class LightweightOpenPoseLearner(Learner):
             scheduler.step()
         if logging:
             file_writer.close()
-        # This returns last evaluation's results
-        return eval_results
+        # Return a dict of lists of PAF and Heatmap losses per stage and a list of all evaluation results dictionaries
+        return {"paf_losses": paf_losses, "heatmap_losses": heatmap_losses, "eval_results_list": eval_results_list}
 
     def eval(self, dataset, silent=False, verbose=True, use_subset=True, subset_size=250,
              images_folder_name="val2017", annotations_filename="person_keypoints_val2017.json"):
@@ -478,7 +498,7 @@ class LightweightOpenPoseLearner(Learner):
             # else:
             load_state(self.model, checkpoint)
         elif self.model is None:
-            raise AttributeError("self.model is None. Please load a model or checkpoint.")
+            raise AttributeError("self.model is None. Please load a model or set checkpoint_load_iter.")
 
         self.model = self.model.eval()  # Change model state to evaluation
         if self.device == "cuda":
@@ -583,6 +603,8 @@ class LightweightOpenPoseLearner(Learner):
             stage2_heatmaps = torch.tensor(stages_output[-2])
             stage2_pafs = torch.tensor(stages_output[-1])
         else:
+            if self.model is None:
+                raise UserWarning("No model is loaded, cannot run inference. Load a model first using load().")
             if self.model_train_state:
                 self.model.eval()
                 self.model_train_state = False
@@ -638,6 +660,9 @@ class LightweightOpenPoseLearner(Learner):
         :param verbose: whether to print success message or not, defaults to 'False'
         :type verbose: bool, optional
         """
+        if self.model is None and self.ort_session is None:
+            raise UserWarning("No model is loaded, cannot save.")
+
         folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
         # Also extract folder name without any extension if extension is erroneously provided
         folder_name_no_ext = folder_name.split(sep='.')[0]
@@ -826,6 +851,11 @@ class LightweightOpenPoseLearner(Learner):
         :param do_constant_folding: whether to optimize constants, defaults to 'False'
         :type do_constant_folding: bool, optional
         """
+        if self.model is None:
+            raise UserWarning("No model is loaded, cannot optimize. Load or train a model first.")
+        if self.ort_session is not None:
+            raise UserWarning("Model is already optimized in ONNX.")
+
         try:
             self.__convert_to_onnx(self.temp_path + os.sep + "onnx_model_temp.onnx", do_constant_folding)
         except FileNotFoundError:
