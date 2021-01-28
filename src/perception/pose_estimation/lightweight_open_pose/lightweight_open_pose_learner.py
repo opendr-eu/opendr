@@ -883,7 +883,7 @@ class LightweightOpenPoseLearner(Learner):
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
     def download(self, path=None, mode="pretrained", verbose=False,
-                 ftp_url="ftp://opendrdata.csd.auth.gr/pose_estimation/lightweight_open_pose/"):
+                 url="ftp://opendrdata.csd.auth.gr/pose_estimation/lightweight_open_pose/"):
         """
         Download utility for various Lightweight Open Pose components. Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
@@ -897,8 +897,8 @@ class LightweightOpenPoseLearner(Learner):
         :type mode: str, optional
         :param verbose: Whether to print messages in the console, defaults to False
         :type verbose: bool, optional
-        :param ftp_url: URL of the FTP server, defaults to OpenDR FTP URL
-        :type ftp_url: str, optional
+        :param url: URL of the FTP server, defaults to OpenDR FTP URL
+        :type url: str, optional
         """
         valid_modes = ["weights", "pretrained", "test_data"]
         if mode not in valid_modes:
@@ -915,16 +915,16 @@ class LightweightOpenPoseLearner(Learner):
                 print("Downloading pretrained model...")
             if self.backbone == "mobilenet":
                 if not os.path.exists(os.path.join(path, "trainedModel.json")):
-                    url = os.path.join(ftp_url, "trainedModel/trainedModel.json")
-                    urlretrieve(url, os.path.join(path, "trainedModel.json"))
+                    file_url = os.path.join(url, "trainedModel/trainedModel.json")
+                    urlretrieve(file_url, os.path.join(path, "trainedModel.json"))
                     if verbose:
                         print("Downloaded metadata json.")
                 else:
                     if verbose:
                         print("Metadata json file already exists.")
                 if not os.path.exists(os.path.join(path, "trainedModel.pth")):
-                    url = os.path.join(ftp_url, "trainedModel/trainedModel.pth")
-                    urlretrieve(url, os.path.join(path, "trainedModel.pth"))
+                    file_url = os.path.join(url, "trainedModel/trainedModel.pth")
+                    urlretrieve(file_url, os.path.join(path, "trainedModel.pth"))
                 else:
                     if verbose:
                         print("Trained model .pth file already exists.")
@@ -940,8 +940,8 @@ class LightweightOpenPoseLearner(Learner):
                 print("Downloading weights file...")
             if self.backbone == "mobilenet":
                 if not os.path.exists(os.path.join(self.temp_path, "mobilenet_sgd_68.848.pth.tar")):
-                    url = os.path.join(ftp_url, "mobilenet_sgd_68.848.pth.tar")
-                    urlretrieve(url, os.path.join(self.temp_path, "mobilenet_sgd_68.848.pth.tar"))
+                    file_url = os.path.join(url, "mobilenet_sgd_68.848.pth.tar")
+                    urlretrieve(file_url, os.path.join(self.temp_path, "mobilenet_sgd_68.848.pth.tar"))
                     if verbose:
                         print("Downloaded mobilenet weights.")
                 else:
@@ -949,8 +949,8 @@ class LightweightOpenPoseLearner(Learner):
                         print("Weights file already exists.")
             elif self.backbone == "mobilenetv2":
                 if not os.path.exists(os.path.join(self.temp_path, "mobilenetv2_1.0-f2a8633.pth.tar")):
-                    url = os.path.join(ftp_url, "mobilenetv2_1.0-f2a8633.pth.tar")
-                    urlretrieve(url, os.path.join(self.temp_path, "mobilenetv2_1.0-f2a8633.pth.tar"))
+                    file_url = os.path.join(url, "mobilenetv2_1.0-f2a8633.pth.tar")
+                    urlretrieve(file_url, os.path.join(self.temp_path, "mobilenetv2_1.0-f2a8633.pth.tar"))
                     if verbose:
                         print("Downloaded mobilenetv2 weights.")
                 else:
@@ -958,8 +958,8 @@ class LightweightOpenPoseLearner(Learner):
                         print("Weights file already exists.")
             elif self.backbone == "shufflenet":
                 if not os.path.exists(os.path.join(self.temp_path, "shufflenet.pth.tar")):
-                    url = os.path.join(ftp_url, "shufflenet.pth.tar")
-                    urlretrieve(url, os.path.join(self.temp_path, "shufflenet.pth.tar"))
+                    file_url = os.path.join(url, "shufflenet.pth.tar")
+                    urlretrieve(file_url, os.path.join(self.temp_path, "shufflenet.pth.tar"))
                     if verbose:
                         print("Downloaded shufflenet weights.")
                 else:
@@ -976,11 +976,11 @@ class LightweightOpenPoseLearner(Learner):
             if not os.path.exists(os.path.join(self.temp_path, "dataset", "image")):
                 os.makedirs(os.path.join(self.temp_path, "dataset", "image"))
             # Download annotation file
-            url = os.path.join(ftp_url, "dataset", "annotation.json")
-            urlretrieve(url, os.path.join(self.temp_path, "dataset", "annotation.json"))
+            file_url = os.path.join(url, "dataset", "annotation.json")
+            urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "annotation.json"))
             # Download test image
-            url = os.path.join(ftp_url, "dataset", "image", "000000000785.jpg")
-            urlretrieve(url, os.path.join(self.temp_path, "dataset", "image", "000000000785.jpg"))
+            file_url = os.path.join(url, "dataset", "image", "000000000785.jpg")
+            urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000000785.jpg"))
 
             if verbose:
                 print("Test data download complete.")
