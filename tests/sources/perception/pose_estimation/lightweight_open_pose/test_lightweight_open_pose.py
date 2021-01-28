@@ -36,15 +36,27 @@ def rmdir(_dir):
 
 
 class TestLightweightOpenPoseLearner(unittest.TestCase):
-    temp_dir = "." + os.sep + "tests" + os.sep + "sources" + os.sep + "perception" + os.sep + "pose_estimation" + \
-               os.sep + "lightweight_open_pose"
 
-    # TODO download all local files needed and clean them up afterwards
+    @classmethod
+    def setUpClass(cls):
+        cls.temp_dir = os.path.join(".", "tests", "sources", "perception", "pose_estimation", "lightweight_open_pose")
+        cls.pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
+                                                         checkpoint_after_iter=0)
+        # Download all required files for testing
+        cls.pose_estimator.download(path=os.path.join(cls.temp_dir, "trainedModel"), mode="pretrained")
+        cls.pose_estimator.download(mode="test_data")
+
+    @classmethod
+    def tearDownClass(cls):
+        # Clean up downloaded files
+        rmdir(os.path.join(cls.temp_dir, "trainedModel"))
+        rmdir(os.path.join(cls.temp_dir, "dataset"))
+        rmfile(os.path.join(cls.temp_dir, "mobilenet_sgd_68.848.pth.tar"))  # Fit downloads weights file
 
     def test_fit(self):
         pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=self.temp_dir, batch_size=1, epochs=1,
                                                     checkpoint_after_iter=0)
-        training_dataset = ExternalDataset(path=self.temp_dir + os.sep + "dataset", dataset_type="COCO")
+        training_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "dataset"), dataset_type="COCO")
         pose_estimator.init_model()
         m = list(pose_estimator.model.parameters())[0].clone()
         # TODO check for results return
@@ -55,8 +67,8 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
 
     def test_eval(self):
         pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=self.temp_dir, batch_size=1)
-        eval_dataset = ExternalDataset(path=self.temp_dir + os.sep + "dataset", dataset_type="COCO")
-        pose_estimator.load(self.temp_dir + os.sep + "trainedModel")
+        eval_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "dataset"), dataset_type="COCO")
+        pose_estimator.load(os.path.join(self.temp_dir, "trainedModel"))
         results_dict = pose_estimator.eval(eval_dataset, use_subset=False, verbose=True, silent=True,
                                            images_folder_name="image", annotations_filename="annotation.json")
         self.assertNotEqual(len(results_dict['average_precision']), 0,
@@ -64,46 +76,45 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         self.assertNotEqual(len(results_dict['average_recall']), 0,
                             msg="Eval results dictionary contains empty list.")
         # Cleanup
-        rmfile(self.temp_dir + os.sep + "detections.json")
+        rmfile(os.path.join(self.temp_dir, "detections.json"))
 
     def test_infer(self):
-        pose_estimator = LightweightOpenPoseLearner(device="cpu")
-        pose_estimator.load(self.temp_dir + os.sep + "trainedModel")
-        img = cv2.imread(self.temp_dir + os.sep + "dataset" + os.sep + "image" + os.sep + "000000000785.jpg")
+        self.pose_estimator.load(os.path.join(self.temp_dir, "trainedModel"))
+
+        img = cv2.imread(os.path.join(self.temp_dir, "dataset", "image", "000000000785.jpg"))
         # Default pretrained mobilenet model detects 18 keypoints on img with id 785
-        self.assertGreater(len(pose_estimator.infer(img)[0].data), 0,
+        self.assertGreater(len(self.pose_estimator.infer(img)[0].data), 0,
                            msg="Returned pose must have non-zero number of keypoints.")
-        # TODO cleanup downloaded trainedModel
 
     def test_save_load(self):
         pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=self.temp_dir)
         pose_estimator.init_model()
-        pose_estimator.save(self.temp_dir + os.sep + "testModel")
+        pose_estimator.save(os.path.join(self.temp_dir, "testModel"))
         pose_estimator.model = None
-        pose_estimator.load(self.temp_dir + os.sep + "testModel")
+        pose_estimator.load(os.path.join(self.temp_dir, "testModel"))
         self.assertIsNotNone(pose_estimator.model, "model is None after loading pth model.")
         # Cleanup
-        rmdir(self.temp_dir + os.sep + "testModel")
+        rmdir(os.path.join(self.temp_dir, "testModel"))
 
     def test_save_load_onnx(self):
         pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=self.temp_dir)
         pose_estimator.init_model()
         pose_estimator.optimize()
-        pose_estimator.save(self.temp_dir + os.sep + "testModel")
+        pose_estimator.save(os.path.join(self.temp_dir, "testModel"))
         pose_estimator.model = None
-        pose_estimator.load(self.temp_dir + os.sep + "testModel")
+        pose_estimator.load(os.path.join(self.temp_dir, "testModel"))
         self.assertIsNotNone(pose_estimator.ort_session, "ort_session is None after loading onnx model.")
         # Cleanup
-        rmfile(self.temp_dir + os.sep + "onnx_model_temp.onnx")
-        rmdir(self.temp_dir + os.sep + "testModel")
+        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
+        rmdir(os.path.join(self.temp_dir, "testModel"))
 
     def test_optimize(self):
         pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=self.temp_dir)
-        pose_estimator.load(self.temp_dir + os.sep + "trainedModel")
+        pose_estimator.load(os.path.join(self.temp_dir, "trainedModel"))
         pose_estimator.optimize()
         self.assertIsNotNone(pose_estimator.ort_session)
         # Cleanup
-        rmfile(self.temp_dir + os.sep + "onnx_model_temp.onnx")
+        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
 
 
 if __name__ == "__main__":
