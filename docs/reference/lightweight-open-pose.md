@@ -207,7 +207,7 @@ Parameters:
 
 #### `LightweightOpenPoseLearner.download`
 ```python
-LightweightOpenPoseLearner.download(self, path, mode, verbose, ftp_url)
+LightweightOpenPoseLearner.download(self, path, mode, verbose, url)
 ```
 
 Download utility for various Lightweight Open Pose components. Downloads files depending on mode and
@@ -223,7 +223,7 @@ Parameters:
   What file to download, can be one of "pretrained", "weights", "test_data"
 - **verbose**: *bool, default=False*  
   Whether to print messages in the console.
-- **ftp_url**: *str, default=OpenDR FTP URL*  
+- **url**: *str, default=OpenDR FTP URL*  
   URL of the FTP server.
 
 
