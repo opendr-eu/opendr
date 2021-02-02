@@ -27,12 +27,14 @@ import torch.optim as optim
 from torch.nn import DataParallel
 from tensorboardX import SummaryWriter
 from torchvision import transforms
+from urllib.request import urlretrieve
 
 # OpenDR engine imports
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
 from engine.data import Image
 from engine.target import Pose
+from engine.constants import OPENDR_SERVER_URL
 
 # OpenDR lightweight_open_pose imports
 from perception.pose_estimation.lightweight_open_pose.utilities import track_poses
@@ -163,7 +165,7 @@ class LightweightOpenPoseLearner(Learner):
                                       prepared_annotations_name="prepared_train_annotations.pkl",
                                       images_folder_default_name=images_folder_name,
                                       annotations_filename=annotations_filename,
-                                      verbose=silent)
+                                      verbose=verbose and not silent)
         train_loader = DataLoader(data, batch_size=self.batch_size, shuffle=True,
                                   num_workers=self.num_workers)
         batches = int(len(data) / self.batch_size)
@@ -189,6 +191,7 @@ class LightweightOpenPoseLearner(Learner):
         checkpoint = None
         if self.checkpoint_load_iter == 0:
             # User set checkpoint_load_iter to 0, so they want to train from scratch
+            self.download(mode="weights", verbose=verbose and not silent)
             backbone_weights_path = None
             if self.backbone == "mobilenet":
                 backbone_weights_path = os.path.join(self.parent_dir, "mobilenet_sgd_68.848.pth.tar")
@@ -471,7 +474,7 @@ class LightweightOpenPoseLearner(Learner):
                                           subset_size=subset_size,
                                           images_folder_default_name=images_folder_name,
                                           annotations_filename=annotations_filename,
-                                          verbose=not silent)
+                                          verbose=verbose and not silent)
         # Model initialization if needed
         if self.model is None and self.checkpoint_load_iter != 0:
             # No model loaded, initializing new
@@ -879,6 +882,109 @@ class LightweightOpenPoseLearner(Learner):
         if self.model is None:
             raise UserWarning("Model is not initialized, can't count trainable parameters.")
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+
+    def download(self, path=None, mode="pretrained", verbose=False,
+                 url=OPENDR_SERVER_URL + "pose_estimation/lightweight_open_pose/"):
+        """
+        Download utility for various Lightweight Open Pose components. Downloads files depending on mode and
+        saves them in the path provided. It supports downloading:
+        1) the default mobilenet pretrained model
+        2) mobilenet, mobilenetv2 and shufflenet weights needed for training
+        3) a test dataset with a single COCO image and its annotation
+
+        :param path: Local path to save the files, defaults to self.temp_path if None
+        :type path: str, path, optional
+        :param mode: What file to download, can be one of "pretrained", "weights", "test_data", defaults to "pretrained"
+        :type mode: str, optional
+        :param verbose: Whether to print messages in the console, defaults to False
+        :type verbose: bool, optional
+        :param url: URL of the FTP server, defaults to OpenDR FTP URL
+        :type url: str, optional
+        """
+        valid_modes = ["weights", "pretrained", "test_data"]
+        if mode not in valid_modes:
+            raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
+
+        if path is None:
+            path = self.temp_path
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if mode == "pretrained":
+            if verbose:
+                print("Downloading pretrained model...")
+            if self.backbone == "mobilenet":
+                if not os.path.exists(os.path.join(path, "trainedModel.json")):
+                    file_url = os.path.join(url, "trainedModel/trainedModel.json")
+                    urlretrieve(file_url, os.path.join(path, "trainedModel.json"))
+                    if verbose:
+                        print("Downloaded metadata json.")
+                else:
+                    if verbose:
+                        print("Metadata json file already exists.")
+                if not os.path.exists(os.path.join(path, "trainedModel.pth")):
+                    file_url = os.path.join(url, "trainedModel/trainedModel.pth")
+                    urlretrieve(file_url, os.path.join(path, "trainedModel.pth"))
+                else:
+                    if verbose:
+                        print("Trained model .pth file already exists.")
+            elif self.backbone == "mobilenetv2":
+                raise UserWarning("mobilenetv2 does not support pretrained model.")
+            elif self.backbone == "shufflenet":
+                raise UserWarning("shufflenet does not support pretrained model.")
+            if verbose:
+                print("Pretrained model download complete.")
+
+        elif mode == "weights":
+            if verbose:
+                print("Downloading weights file...")
+            if self.backbone == "mobilenet":
+                if not os.path.exists(os.path.join(self.temp_path, "mobilenet_sgd_68.848.pth.tar")):
+                    file_url = os.path.join(url, "mobilenet_sgd_68.848.pth.tar")
+                    urlretrieve(file_url, os.path.join(self.temp_path, "mobilenet_sgd_68.848.pth.tar"))
+                    if verbose:
+                        print("Downloaded mobilenet weights.")
+                else:
+                    if verbose:
+                        print("Weights file already exists.")
+            elif self.backbone == "mobilenetv2":
+                if not os.path.exists(os.path.join(self.temp_path, "mobilenetv2_1.0-f2a8633.pth.tar")):
+                    file_url = os.path.join(url, "mobilenetv2_1.0-f2a8633.pth.tar")
+                    urlretrieve(file_url, os.path.join(self.temp_path, "mobilenetv2_1.0-f2a8633.pth.tar"))
+                    if verbose:
+                        print("Downloaded mobilenetv2 weights.")
+                else:
+                    if verbose:
+                        print("Weights file already exists.")
+            elif self.backbone == "shufflenet":
+                if not os.path.exists(os.path.join(self.temp_path, "shufflenet.pth.tar")):
+                    file_url = os.path.join(url, "shufflenet.pth.tar")
+                    urlretrieve(file_url, os.path.join(self.temp_path, "shufflenet.pth.tar"))
+                    if verbose:
+                        print("Downloaded shufflenet weights.")
+                else:
+                    if verbose:
+                        print("Weights file already exists.")
+            if verbose:
+                print("Weights file download complete.")
+
+        elif mode == "test_data":
+            if verbose:
+                print("Downloading test data...")
+            if not os.path.exists(os.path.join(self.temp_path, "dataset")):
+                os.makedirs(os.path.join(self.temp_path, "dataset"))
+            if not os.path.exists(os.path.join(self.temp_path, "dataset", "image")):
+                os.makedirs(os.path.join(self.temp_path, "dataset", "image"))
+            # Download annotation file
+            file_url = os.path.join(url, "dataset", "annotation.json")
+            urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "annotation.json"))
+            # Download test image
+            file_url = os.path.join(url, "dataset", "image", "000000000785.jpg")
+            urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000000785.jpg"))
+
+            if verbose:
+                print("Test data download complete.")
 
     def __infer_eval(self, img):
         """
