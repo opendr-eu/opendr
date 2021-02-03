@@ -79,7 +79,7 @@ class TestLicense(unittest.TestCase):
         ]
 
         skippedDirectoryPaths = [
-            'src/perception/pose_estimation/lightweight_open_pose/algorithm'
+            'src/perception/face_recognition/algorithm', 'src/perception/pose_estimation/lightweight_open_pose/algorithm'
         ]
 
         skippedFilePaths = []
