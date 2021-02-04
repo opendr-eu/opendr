@@ -62,7 +62,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         m = list(self.pose_estimator.model.parameters())[0].clone()
         # TODO check for results return
         self.pose_estimator.fit(dataset=training_dataset, silent=True,
-                           images_folder_name="image", annotations_filename="annotation.json")
+                                images_folder_name="image", annotations_filename="annotation.json")
         self.assertFalse(torch.equal(m, list(self.pose_estimator.model.parameters())[0]),
                          msg="Model parameters did not change after running fit.")
 
@@ -70,7 +70,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         eval_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "dataset"), dataset_type="COCO")
         self.pose_estimator.load(os.path.join(self.temp_dir, "trainedModel"))
         results_dict = self.pose_estimator.eval(eval_dataset, use_subset=False, verbose=True, silent=True,
-                                           images_folder_name="image", annotations_filename="annotation.json")
+                                                images_folder_name="image", annotations_filename="annotation.json")
         self.assertNotEqual(len(results_dict['average_precision']), 0,
                             msg="Eval results dictionary contains empty list.")
         self.assertNotEqual(len(results_dict['average_recall']), 0,
