@@ -1,8 +1,6 @@
 pep8
 pyflakes
-numpy==1.17.5
 matplotlib
-cython
 torch==1.7.1
 torchvision==0.8.2
 tensorboardX==2.0
