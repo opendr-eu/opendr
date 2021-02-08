@@ -18,7 +18,7 @@ def read_ini(path):
 # Clear dependencies
 open(dependency_file, 'w').close()
 # Extract generic dependencies
-read_ini('runtime_dependencies.ini')
+read_ini('dependencies.ini')
 # Loop through tools and extract dependencies
 opendr_home = os.environ.get('OPENDR_HOME') 
 for subdir, dirs, files in os.walk(opendr_home + '/src'):
