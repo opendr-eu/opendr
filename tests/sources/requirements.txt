@@ -6,7 +6,7 @@ cython
 torch==1.7.1
 torchvision==0.8.2
 tensorboardX==2.0
-opecv-python==4.5.1.48
+opencv-python==4.5.1.48
 git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
 tqdm==4.54.0
 onnx==1.8.0
