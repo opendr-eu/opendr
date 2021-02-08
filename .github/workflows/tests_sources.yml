@@ -42,4 +42,5 @@ jobs:
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
         pip install -r tests/sources/requirements.txt
         export OPENDR_HOME=$PWD
+        export PYTHONPATH=$PWD/src
         python -m unittest discover -s tests/sources
