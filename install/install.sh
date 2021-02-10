@@ -5,5 +5,5 @@ if [[ $EUID -ne 0 ]]; then
        exit 1
 fi
 
-python linux_runtime_dependencies.py
+python runtime_dependencies.py
 pip install -r python_dependencies.txt
