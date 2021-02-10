@@ -200,7 +200,7 @@ class LightweightOpenPoseLearner(Learner):
             elif self.backbone == "shufflenet":
                 backbone_weights_path = os.path.join(self.parent_dir, "shufflenet.pth.tar")
             try:
-                checkpoint = torch.load(backbone_weights_path)
+                checkpoint = torch.load(backbone_weights_path, map_location=torch.device(self.device))
             except FileNotFoundError as e:
                 e.strerror = "Pretrained weights 'pth.tar' file must be placed in temp_path provided. \n " \
                              "No such file or directory."
@@ -214,7 +214,7 @@ class LightweightOpenPoseLearner(Learner):
             checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
             full_path = os.path.join(checkpoints_folder, checkpoint_name)
             try:
-                checkpoint = torch.load(full_path)
+                checkpoint = torch.load(full_path, map_location=torch.device(self.device))
             except FileNotFoundError as e:
                 e.strerror = "File " + checkpoint_name + " not found inside checkpoints_folder, " \
                                                          "provided checkpoint_load_iter (" + \
@@ -485,7 +485,7 @@ class LightweightOpenPoseLearner(Learner):
             checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
             full_path = os.path.join(checkpoints_folder, checkpoint_name)
             try:
-                checkpoint = torch.load(full_path)
+                checkpoint = torch.load(full_path, map_location=torch.device(self.device))
             except FileNotFoundError as e:
                 e.strerror = "File " + checkpoint_name + " not found inside checkpoints_folder, " \
                                                          "provided checkpoint_load_iter (" + \
@@ -780,7 +780,7 @@ class LightweightOpenPoseLearner(Learner):
         elif self.backbone == "shufflenet":
             self.model = PoseEstimationWithShuffleNet(self.num_refinement_stages,
                                                       groups=self.shufflenet_groups)
-        checkpoint = torch.load(path)
+        checkpoint = torch.load(path, map_location=torch.device(self.device))
         # if self.from_mobilenet:  # TODO see todo on ctor
         #     load_from_mobilenet(self.model, checkpoint)
         # else:
