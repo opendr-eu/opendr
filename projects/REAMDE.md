@@ -61,16 +61,10 @@ The respective procedure is followed for your own dataset with minor modificatio
 
 ## License and Citation
 The usage of this software is under [CC-BY-4.0](https://github.com/Hangz-nju-cuhk/Rotate-and-Render/LICENSE).
-```
-@inproceedings{zhou2020rotate,
-  title     = {Rotate-and-Render: Unsupervised Photorealistic Face Rotation from Single-View Images},
-  author    = {Zhou, Hang and Liu, Jihao and Liu, Ziwei and Liu, Yu and Wang, Xiaogang},
-  booktitle = {IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
-  year      = {2020},
-}
-```
+
 
 ## Acknowledgement
 * The structure of this codebase is borrowed from [SPADE](https://github.com/NVlabs/SPADE).
 * The [SyncBN](https://github.com/vacancy/Synchronized-BatchNorm-PyTorch) module is used in the current code.
 * We directly borrow the [3DDFA](https://github.com/cleardusk/3DDFA) implementation for 3D reconstruction.
+* We directly borrow the code [Rotate-and-Render](https://github.com/Hangz-nju-cuhk/Rotate-and-Render/)
