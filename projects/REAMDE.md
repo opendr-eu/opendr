@@ -30,7 +30,7 @@ pip3 install neural_renderer_pytorch
 #1. Download the [checkpoint](https://cicloud.csd.auth.gr/owncloud/remote.php/webdav/OpenDR/FTP%20Server%20Material/simulation/latest_net_G.zip)
 and put it in ```./checkpoints/rs_model```.
 
-#2.	Clone git the code samples of folder  ```Code ``` in your terminal
+#2.	Clone the code samples of folders  ```Pre-processing/``` , ```experiments/``` in the respective ```3ddfa/Pre-processing```, ```experiments/``` folders of the project ```Rotate-and-Render/``` in  your terminal
 
 ## DEVELOP
 
@@ -48,9 +48,9 @@ b. Or Execute at folder:  ```3ddfa/Pre-processing ``` the following command  ```
 c. Or Execute at folder:  ```3ddfa/Pre-processing ```the following command  ```python3  Do_main_HPID.py ``` with the aforementioned function, for HPID dataset including the respective input/output paths
 
 #4.	
-* Modify ```experiments/v100_test.sh```, the ```--poses``` are the desired degrees (range -90 to 90), choose 0 as frontal face, relative test parameters for generating the facial images in multiple view angles pitch and yaw
+* Modify ```experiments/generate_facial_images.sh```, the ```--poses``` are the desired degrees (range -90 to 90), choose 0 as frontal face, relative test parameters for generating the facial images in multiple view angles pitch and yaw
 
-* Run ```bash experiments/v100_test.sh```, results will be saved at ```./results/```.
+* Run ```bash experiments/generate_facial_images.sh```, results will be saved at ```./results/```.
 
 
 
