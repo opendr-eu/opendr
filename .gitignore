@@ -55,4 +55,6 @@ Thumbs.db
 ###############
 
 /.clang-format
+#Python virtual environment directory
+/venv
 
