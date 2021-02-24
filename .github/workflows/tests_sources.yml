@@ -40,9 +40,8 @@ jobs:
       if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
       run: |
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
-        pip install numpy==1.17.5
-        pip install cython
-        pip install -r tests/sources/requirements.txt
         export OPENDR_HOME=$PWD
-        export PYTHONPATH=$PWD/src
+        export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+        make
+        pip install -r tests/sources/requirements.txt
         python -m unittest discover -s tests/sources
