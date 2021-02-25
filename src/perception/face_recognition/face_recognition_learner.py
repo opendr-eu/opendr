@@ -88,7 +88,7 @@ class FaceRecognition(Learner):
         if rgb_std is None:
             rgb_std = [0.5, 0.5, 0.5]
         if stages is None:
-            stages = [8, 16, 24]
+            stages = [35, 65, 95]
         if self.device == 'cuda':
             self.gpu_id = [0]
         else:
