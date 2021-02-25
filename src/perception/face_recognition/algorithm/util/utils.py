@@ -10,7 +10,7 @@ from PIL import Image
 import sys
 import itertools
 
-from .itterator import FaceRecognitionDataset
+from .iterator import FaceRecognitionDataset
 from torch.utils.data import DataLoader
 
 
