@@ -70,8 +70,8 @@ class LightweightOpenPoseLearner(Learner):
                  val_after=5000, log_after=100, mobilenetv2_width=1.0, shufflenet_groups=3,
                  num_refinement_stages=2, batches_per_iter=1,
                  experiment_name='default', num_workers=8, weights_only=True, output_name='detections.json',
-                 multiscale=False, scales=None, visualize=False, base_height=256, stride=8, img_mean=(128, 128, 128),
-                 img_scale=1 / 256, pad_value=(0, 0, 0)):
+                 multiscale=False, scales=None, visualize=False, base_height=256, stride=8,
+                 img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256), pad_value=(0, 0, 0)):
         super(LightweightOpenPoseLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                          checkpoint_after_iter=checkpoint_after_iter,
                                                          checkpoint_load_iter=checkpoint_load_iter,
@@ -592,7 +592,7 @@ class LightweightOpenPoseLearner(Learner):
         height, width, _ = img.shape
         scale = self.base_height / height
 
-        scaled_img = cv2.resize(img, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+        scaled_img = cv2.resize(img, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
         scaled_img = normalize(scaled_img, self.img_mean, self.img_scale)
         min_dims = [self.base_height, max(scaled_img.shape[1], self.base_height)]
         padded_img, pad = pad_width(scaled_img, self.stride, self.pad_value, min_dims)
