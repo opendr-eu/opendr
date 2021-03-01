@@ -60,7 +60,6 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         self.pose_estimator.model = None
         self.pose_estimator.init_model()
         m = list(self.pose_estimator.model.parameters())[0].clone()
-        # TODO check for results return
         self.pose_estimator.fit(dataset=training_dataset, silent=True,
                                 images_folder_name="image", annotations_filename="annotation.json")
         self.assertFalse(torch.equal(m, list(self.pose_estimator.model.parameters())[0]),
