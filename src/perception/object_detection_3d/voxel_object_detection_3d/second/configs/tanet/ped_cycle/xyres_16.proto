@@ -106,7 +106,7 @@ model: {
 
 
 train_input_reader: {
-  record_file_path: "/home/liuzhe/Kitti/object/kitti_train.tfrecord"
+  record_file_path: "/home/io3/kitti_second/kitti_train.tfrecord"
   class_names: ["Cyclist", "Pedestrian"]
   max_num_epochs : 160
   batch_size: 2
@@ -124,7 +124,7 @@ train_input_reader: {
   groundtruth_points_drop_percentage: 0.0
   groundtruth_drop_max_keep_points: 15
   database_sampler {
-    database_info_path: "/home/liuzhe/Kitti/object/kitti_dbinfos_train.pkl"
+    database_info_path: "/home/io3/kitti_second/kitti_dbinfos_train.pkl"
     sample_groups {
       name_to_max_num {
         key: "Cyclist"
@@ -150,8 +150,8 @@ train_input_reader: {
 
   remove_unknown_examples: false
   remove_environment: false
-  kitti_info_path: "/home/liuzhe/Kitti/object/kitti_infos_train.pkl"
-  kitti_root_path: "/home/liuzhe/Kitti/object"
+  kitti_info_path: "/home/io3/kitti_second/kitti_infos_train.pkl"
+  kitti_root_path: "/home/io3/kitti_second"
 }
 
 train_config: {
@@ -182,7 +182,7 @@ train_config: {
 }
 
 eval_input_reader: {
-  record_file_path: "/home/liuzhe/Kitti/object/kitti_val.tfrecord"
+  record_file_path: "/home/io3/kitti_second/kitti_val.tfrecord"
   class_names: ["Cyclist", "Pedestrian"]
   batch_size: 1 # 2
   max_num_epochs : 160
@@ -192,6 +192,6 @@ eval_input_reader: {
   num_workers: 3
   anchor_area_threshold: 1
   remove_environment: false
-  kitti_info_path: "/home/liuzhe/Kitti/object/kitti_infos_val.pkl"
-  kitti_root_path: "/home/liuzhe/Kitti/object"
+  kitti_info_path: "/home/io3/kitti_second/kitti_infos_val.pkl"
+  kitti_root_path: "/home/io3/kitti_second"
 }

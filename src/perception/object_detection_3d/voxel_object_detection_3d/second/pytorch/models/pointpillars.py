@@ -1,5 +1,5 @@
 """
-PointPillars fork from perception.object_detection_3d.voxel_object_detection_3d.second.
+PointPillars fork from SECOND.
 Code written by Alex Lang and Oscar Beijbom, 2018.
 Licensed under MIT License [see LICENSE].
 """
@@ -8,7 +8,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.utils import get_paddings_indicator
+from second.pytorch.utils import get_paddings_indicator
 from torchplus.nn import Empty
 from torchplus.tools import change_default_args
 

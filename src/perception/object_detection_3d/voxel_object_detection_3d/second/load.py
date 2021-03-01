@@ -35,7 +35,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.utils.progr
 )
 
 
-def load(model_dir, config_path, create_folder=True, result_path=None):
+def load(model_dir, config_path, create_folder=False, result_path=None):
 
     loss_scale = None
 
