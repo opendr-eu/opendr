@@ -13,11 +13,18 @@
 # limitations under the License.
 
 from engine.learners import Learner
+from engine.datasets import ExternalDataset, DatasetIterator
 from perception.object_detection_3d.voxel_object_detection_3d.model_configs import (
     backbones,
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second.load import (
-    load,
+    load as second_load,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.run import (
+    train,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.builder import (
+    input_reader_builder,
 )
 
 
@@ -71,7 +78,44 @@ class VoxelObjectDetection3DLearner(Learner):
         pass
 
     def load(self, path):
-        self.model = load(path, self.model_config_path)
+        (
+            model,
+            input_config,
+            train_config,
+            evaluation_input_config,
+            model_config,
+            train_config,
+            voxel_generator,
+            target_assigner,
+            mixed_optimizer,
+            lr_scheduler,
+            model_dir,
+            eval_checkpoint_dir,
+            float_dtype,
+            loss_scale,
+            result_path,
+            class_names,
+            center_limit_range,
+        ) = second_load(path, self.model_config_path,)
+
+        self.model = model
+        self.input_config = input_config
+        self.train_config = train_config
+        self.evaluation_input_config = evaluation_input_config
+        self.model_config = model_config
+        self.train_config = train_config
+        self.voxel_generator = voxel_generator
+        self.target_assigner = target_assigner
+        self.mixed_optimizer = mixed_optimizer
+        self.lr_scheduler = lr_scheduler
+
+        self.model_dir = model_dir
+        self.eval_checkpoint_dir = eval_checkpoint_dir
+        self.float_dtype = float_dtype
+        self.loss_scale = loss_scale
+        self.result_path = result_path
+        self.class_names = class_names
+        self.center_limit_range = center_limit_range
 
     def optimize(self, params):
         pass
@@ -82,17 +126,178 @@ class VoxelObjectDetection3DLearner(Learner):
     def fit(
         self,
         dataset,
+        refine_weight=2,
+        pickle_result=True,
         val_dataset=None,
-        logging_path="",
+        logging_path=None,
         silent=False,
         verbose=False,
     ):
-        # The fit method's signature requires all of the above arguments to be present. The algorithm-specific
-        # default values can be set here, e.g. set the default value of verbose to True
+
+        input_dataset_iterator, eval_dataset_iterator = self.__prepare_datasets(
+            dataset, val_dataset, self.input_config, self.evaluation_input_config,
+            self.model_config, self.voxel_generator, self.target_assigner
+        )
+
+        train(
+            self.model,
+            self.input_config,
+            self.train_config,
+            self.evaluation_input_config,
+            self.model_config,
+            self.mixed_optimizer,
+            self.lr_scheduler,
+            self.model_dir,
+            self.eval_checkpoint_dir,
+            self.float_dtype,
+            refine_weight,
+            self.loss_scale,
+            self.result_path,
+            pickle_result,
+            self.class_names,
+            self.center_limit_range,
+            input_dataset_iterator=input_dataset_iterator,
+            eval_dataset_iterator=eval_dataset_iterator,
+            log_path=logging_path,
+            silent=silent,
+            verbose=verbose,
+        )
+
+    def eval(
+        self, dataset, logging_path=None, silent=False, verbose=False,
+    ):
         pass
 
-    def eval(self, dataset):
-        pass
+    def __prepare_datasets(
+        self,
+        dataset,
+        val_dataset,
+        input_cfg,
+        eval_input_cfg,
+        model_cfg,
+        voxel_generator,
+        target_assigner,
+    ):
+
+        input_dataset_iterator = None
+        eval_dataset_iterator = None
+
+        if isinstance(dataset, ExternalDataset):
+
+            if dataset.dataset_type.lower() != "kitti":
+                raise ValueError(
+                    "ExternalDataset ("
+                    + str(dataset)
+                    + ") is given as a dataset, but it is not a KITTI dataset"
+                )
+
+            dataset_path = dataset.path
+            input_cfg.kitti_info_path = (
+                dataset_path + "/" + input_cfg.kitti_info_path
+            )
+            input_cfg.kitti_root_path = (
+                dataset_path + "/" + input_cfg.kitti_root_path
+            )
+            input_cfg.record_file_path = (
+                dataset_path + "/" + input_cfg.record_file_path
+            )
+            input_cfg.database_sampler.database_info_path = (
+                dataset_path
+                + "/"
+                + input_cfg.database_sampler.database_info_path
+            )
+
+            input_dataset_iterator = input_reader_builder.build(
+                input_cfg,
+                model_cfg,
+                training=True,
+                voxel_generator=voxel_generator,
+                target_assigner=target_assigner,
+            )
+        elif isinstance(dataset, DatasetIterator):
+            input_dataset_iterator = dataset
+        else:
+            raise ValueError(
+                "dataset parameter should be an ExternalDataset or a DatasetIterator"
+            )
+
+        if isinstance(val_dataset, ExternalDataset):
+
+            val_dataset_path = val_dataset.path
+            if val_dataset.dataset_type.lower() != "kitti":
+                raise ValueError(
+                    "ExternalDataset ("
+                    + str(val_dataset)
+                    + ") is given as a val_dataset, but it is not a KITTI dataset"
+                )
+
+            eval_input_cfg.kitti_info_path = (
+                val_dataset_path + "/" + eval_input_cfg.kitti_info_path
+            )
+            eval_input_cfg.kitti_root_path = (
+                val_dataset_path + "/" + eval_input_cfg.kitti_root_path
+            )
+            eval_input_cfg.record_file_path = (
+                val_dataset_path + "/" + eval_input_cfg.record_file_path
+            )
+            eval_input_cfg.database_sampler.database_info_path = (
+                val_dataset_path
+                + "/"
+                + eval_input_cfg.database_sampler.database_info_path
+            )
+
+            eval_dataset_iterator = input_reader_builder.build(
+                eval_input_cfg,
+                model_cfg,
+                training=False,
+                voxel_generator=voxel_generator,
+                target_assigner=target_assigner,
+            )
+        elif isinstance(val_dataset, DatasetIterator):
+            eval_dataset_iterator = dataset
+        elif val_dataset is None:
+            if isinstance(dataset, ExternalDataset):
+                dataset_path = dataset.path
+                if dataset.dataset_type.lower() != "kitti":
+                    raise ValueError(
+                        "ExternalDataset ("
+                        + str(dataset)
+                        + ") is given as a dataset, but it is not a KITTI dataset"
+                    )
+
+                eval_input_cfg.kitti_info_path = (
+                    dataset_path + "/" + eval_input_cfg.kitti_info_path
+                )
+                eval_input_cfg.kitti_root_path = (
+                    dataset_path + "/" + eval_input_cfg.kitti_root_path
+                )
+                eval_input_cfg.record_file_path = (
+                    dataset_path + "/" + eval_input_cfg.record_file_path
+                )
+                eval_input_cfg.database_sampler.database_info_path = (
+                    dataset_path
+                    + "/"
+                    + eval_input_cfg.database_sampler.database_info_path
+                )
+
+                eval_dataset_iterator = input_reader_builder.build(
+                    eval_input_cfg,
+                    model_cfg,
+                    training=False,
+                    voxel_generator=voxel_generator,
+                    target_assigner=target_assigner,
+                )
+            else:
+                raise ValueError(
+                    "val_dataset is None and can't be derived from"
+                    + " the dataset object because the dataset is not an ExternalDataset"
+                )
+        else:
+            raise ValueError(
+                "dataset parameter should be an ExternalDataset or a DatasetIterator"
+            )
+
+        return input_dataset_iterator, eval_dataset_iterator
 
     def infer(self, batch, tracked_bounding_boxes=None):
         # In this infer dummy implementation, a custom argument is added as optional, so as not to change the basic
@@ -100,21 +305,3 @@ class VoxelObjectDetection3DLearner(Learner):
         # TODO The implementation must make sure it throws an appropriate error if the custom argument is needed and
         #  not provided (None).
         pass
-
-
-# Overriding shared param through constructor, passing a value into a custom parameter
-exampleLearner = ExampleLearner(lr=100.0, custom_param_1="custom value")
-print("lr overridden through constructor   :", exampleLearner.lr)
-print("batch_size default                  :", exampleLearner.batch_size)
-# Overriding shared param after creation
-exampleLearner.batch_size = 999
-print("batch_size overridden after creation:", exampleLearner.batch_size)
-# Printing custom parameters values
-print(
-    "custom_param_1 overridden through constructor:",
-    exampleLearner.custom_param_1,
-)
-print(
-    "custom_param_2                               :",
-    exampleLearner.custom_param_2,
-)

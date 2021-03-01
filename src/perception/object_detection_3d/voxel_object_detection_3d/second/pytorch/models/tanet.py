@@ -9,7 +9,7 @@ import numpy as np
 import yaml
 from easydict import EasyDict as edict
 
-filename = './configs/tanet/tanet.yaml'
+filename = './perception/object_detection_3d/voxel_object_detection_3d/second/configs/tanet/tanet.yaml'
 with open(filename, 'r') as f:
     cfg = edict(yaml.load(f))
 
