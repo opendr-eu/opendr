@@ -22,6 +22,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.load import
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second.run import (
     train,
+    evaluate,
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.builder import (
     input_reader_builder,
@@ -129,14 +130,25 @@ class VoxelObjectDetection3DLearner(Learner):
         refine_weight=2,
         pickle_result=True,
         val_dataset=None,
+        ground_truth_annotations=None,
         logging_path=None,
         silent=False,
         verbose=False,
     ):
 
-        input_dataset_iterator, eval_dataset_iterator = self.__prepare_datasets(
-            dataset, val_dataset, self.input_config, self.evaluation_input_config,
-            self.model_config, self.voxel_generator, self.target_assigner
+        (
+            input_dataset_iterator,
+            eval_dataset_iterator,
+            ground_truth_annotations,
+        ) = self.__prepare_datasets(
+            dataset,
+            val_dataset,
+            self.input_config,
+            self.evaluation_input_config,
+            self.model_config,
+            self.voxel_generator,
+            self.target_assigner,
+            ground_truth_annotations,
         )
 
         train(
@@ -158,15 +170,57 @@ class VoxelObjectDetection3DLearner(Learner):
             self.center_limit_range,
             input_dataset_iterator=input_dataset_iterator,
             eval_dataset_iterator=eval_dataset_iterator,
+            gt_annos=ground_truth_annotations,
             log_path=logging_path,
             silent=silent,
             verbose=verbose,
         )
 
     def eval(
-        self, dataset, logging_path=None, silent=False, verbose=False,
+        self,
+        dataset,
+        pickle_result=True,
+        predict_test=False,
+        ground_truth_annotations=None,
+        logging_path=None,
+        silent=False,
+        verbose=False,
     ):
-        pass
+        (
+            _,
+            eval_dataset_iterator,
+            ground_truth_annotations,
+        ) = self.__prepare_datasets(
+            None,
+            dataset,
+            self.input_config,
+            self.evaluation_input_config,
+            self.model_config,
+            self.voxel_generator,
+            self.target_assigner,
+            ground_truth_annotations,
+            require_dataset=False,
+        )
+
+        evaluate(
+            self.model,
+            self.evaluation_input_config,
+            self.model_config,
+            self.mixed_optimizer,
+            self.model_dir,
+            self.float_dtype,
+            self.result_path,
+            pickle_result,
+            self.class_names,
+            self.center_limit_range,
+            eval_dataset_iterator=eval_dataset_iterator,
+            gt_annos=ground_truth_annotations,
+            display_step=50,
+            predict_test=predict_test,
+            log_path=logging_path,
+            silent=silent,
+            verbose=verbose,
+        )
 
     def __prepare_datasets(
         self,
@@ -177,6 +231,8 @@ class VoxelObjectDetection3DLearner(Learner):
         model_cfg,
         voxel_generator,
         target_assigner,
+        gt_annos,
+        require_dataset=True,
     ):
 
         input_dataset_iterator = None
@@ -217,9 +273,10 @@ class VoxelObjectDetection3DLearner(Learner):
         elif isinstance(dataset, DatasetIterator):
             input_dataset_iterator = dataset
         else:
-            raise ValueError(
-                "dataset parameter should be an ExternalDataset or a DatasetIterator"
-            )
+            if require_dataset or dataset is not None:
+                raise ValueError(
+                    "dataset parameter should be an ExternalDataset or a DatasetIterator"
+                )
 
         if isinstance(val_dataset, ExternalDataset):
 
@@ -253,6 +310,13 @@ class VoxelObjectDetection3DLearner(Learner):
                 voxel_generator=voxel_generator,
                 target_assigner=target_assigner,
             )
+
+            if gt_annos is None:
+                gt_annos = [
+                    info["annos"]
+                    for info in eval_dataset_iterator.dataset.kitti_infos
+                ]
+
         elif isinstance(val_dataset, DatasetIterator):
             eval_dataset_iterator = dataset
         elif val_dataset is None:
@@ -287,6 +351,12 @@ class VoxelObjectDetection3DLearner(Learner):
                     voxel_generator=voxel_generator,
                     target_assigner=target_assigner,
                 )
+
+                if gt_annos is None:
+                    gt_annos = [
+                        info["annos"]
+                        for info in eval_dataset_iterator.dataset.kitti_infos
+                    ]
             else:
                 raise ValueError(
                     "val_dataset is None and can't be derived from"
@@ -294,10 +364,10 @@ class VoxelObjectDetection3DLearner(Learner):
                 )
         else:
             raise ValueError(
-                "dataset parameter should be an ExternalDataset or a DatasetIterator"
+                "val_dataset parameter should be an ExternalDataset or a DatasetIterator or None"
             )
 
-        return input_dataset_iterator, eval_dataset_iterator
+        return input_dataset_iterator, eval_dataset_iterator, gt_annos
 
     def infer(self, batch, tracked_bounding_boxes=None):
         # In this infer dummy implementation, a custom argument is added as optional, so as not to change the basic

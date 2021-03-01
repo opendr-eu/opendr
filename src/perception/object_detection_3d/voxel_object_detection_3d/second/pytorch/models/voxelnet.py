@@ -14,14 +14,14 @@ from torchplus import metrics
 from torchplus.nn import Empty, GroupNorm, Sequential
 from torchplus.ops.array_ops import gather_nd, scatter_nd
 from torchplus.tools import change_default_args
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.core import box_torch_ops
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.core.losses import (WeightedSigmoidClassificationLoss,
+from second.pytorch.core import box_torch_ops
+from second.pytorch.core.losses import (WeightedSigmoidClassificationLoss,
                                           WeightedSmoothL1LocalizationLoss,
                                           WeightedSoftmaxClassificationLoss)
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.pointpillars import PillarFeatureNet, PointPillarsScatter
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.tanet import PillarFeature_TANet, PSA
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.loss_utils import create_refine_loss
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.utils import get_paddings_indicator
+from second.pytorch.models.pointpillars import PillarFeatureNet, PointPillarsScatter
+from second.pytorch.models.tanet import PillarFeature_TANet, PSA
+from second.pytorch.models.loss_utils import create_refine_loss
+from second.pytorch.utils import get_paddings_indicator
 
 
 USING_SCN = False  # default: not use SparseConv
@@ -579,7 +579,7 @@ class VoxelNet(nn.Module):
             "PillarFeature_TANet": PillarFeature_TANet
         }
         vfe_class = vfe_class_dict[vfe_class_name]
-        if vfe_class_name == "PillarFeatureNet" or vfe_class_name == "PillarFeature_TANet":
+        if vfe_class_name == "PillarFeatureNet":
             self.voxel_feature_extractor = vfe_class(
                 num_input_features,
                 use_norm,
@@ -990,7 +990,7 @@ class VoxelNet(nn.Module):
                 label_preds = selected_labels
                 if self._use_direction_classifier:
                     dir_labels = selected_dir_labels
-                    opp_labels = (box_preds[..., -1] > 0) ^ dir_labels.byte()
+                    opp_labels = dir_labels.byte() ^ (box_preds[..., -1] > 0) # (box_preds[..., -1] > 0) ^ dir_labels.byte()
                     box_preds[..., -1] += torch.where(
                         opp_labels,
                         torch.tensor(np.pi).type_as(box_preds),
