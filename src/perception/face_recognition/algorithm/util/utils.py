@@ -1,7 +1,7 @@
 import torch
 import torchvision.transforms as transforms
 
-from .verification import evaluate
+from .verification import evaluate, evaluate_imagefolder
 
 import numpy as np
 import bcolz
@@ -9,6 +9,9 @@ import os
 from PIL import Image
 import sys
 import itertools
+
+from .iterator import FaceRecognitionDataset
+from torch.utils.data import DataLoader
 
 
 def l2_norm(input, axis=1):
@@ -73,22 +76,11 @@ def create_pairs(path, num_pairs):
         else:
             continue
 
-    transform = transforms.Compose([
-        transforms.Resize([112, 112]),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.5, 0.5, 0.5],
-                             std=[0.5, 0.5, 0.5])])
-    carray = []
-    issame = []
-    for i in range(len(pairs)):
-        carray.append(np.asarray(transform(Image.open(pairs[i][0]))))
-        carray.append(np.asarray(transform(Image.open(pairs[i][1]))))
-        issame.append(pairs[i][2])
-
-    carray = np.array(carray)
-    issame = np.array(issame)
     print('Created ', len(pairs), ' pairs')
-    return carray, issame
+    pairs = np.array(pairs)
+    dataset = FaceRecognitionDataset(pairs)
+
+    return dataset, dataset
 
 
 def get_val_data(path, dataset_type, num_pairs=2000):
@@ -233,6 +225,57 @@ def perform_val(device, embedding_size, batch_size, backbone, carray, issame, nr
     return acc.mean(), best_thresholds.mean()
 
 
+def perform_val_imagefolder(device, embedding_size, batch_size, backbone, carray, nrof_folds=10, tta=True,
+                            num_workers=0):
+    backbone = backbone.to(device)
+    backbone.eval()  # switch to evaluation mode
+    idx = 0
+    embeddings1 = np.zeros([len(carray), embedding_size])
+    embeddings2 = np.zeros([len(carray), embedding_size])
+    pairs = []
+    with torch.no_grad():
+        while idx + batch_size <= len(carray):
+            dataloader = DataLoader(carray, batch_size=batch_size,
+                                    shuffle=True, num_workers=num_workers)
+            for data in dataloader:
+                image1 = data['image1']
+                image2 = data['image2']
+                labels = data['label']
+                transform = transforms.Compose([
+                    transforms.Resize([112, 112]),
+                    transforms.ToTensor(),
+                    transforms.Normalize(mean=[0.5, 0.5, 0.5],
+                                         std=[0.5, 0.5, 0.5])])
+                for i in range(len(image1)):
+                    image1[i] = np.array(transform(Image.open(image1[i])))
+                    image2[i] = np.array(transform(Image.open(image2[i])))
+                    if labels[i] == 'True':
+                        pairs.append(True)
+                    else:
+                        pairs.append(False)
+                image1 = torch.tensor(image1)
+                image2 = torch.tensor(image2)
+                if tta:
+                    ccropped = ccrop_batch(image1)
+                    fliped = hflip_batch(ccropped)
+                    emb_batch = backbone(ccropped.to(device)).cpu() + backbone(fliped.to(device)).cpu()
+                    embeddings1[idx:idx + batch_size] = l2_norm(emb_batch)
+                    ccropped = ccrop_batch(image2)
+                    fliped = hflip_batch(ccropped)
+                    emb_batch = backbone(ccropped.to(device)).cpu() + backbone(fliped.to(device)).cpu()
+                    embeddings2[idx:idx + batch_size] = l2_norm(emb_batch)
+                else:
+                    ccropped = ccrop_batch(image1)
+                    embeddings1[idx:idx + batch_size] = l2_norm(backbone(ccropped.to(device))).cpu()
+                    ccropped = ccrop_batch(image2)
+                    embeddings2[idx:idx + batch_size] = l2_norm(backbone(ccropped.to(device))).cpu()
+                idx += batch_size
+
+    tpr, fpr, acc, best_thresholds = evaluate_imagefolder(embeddings1, embeddings2, pairs, nrof_folds)
+
+    return acc.mean(), best_thresholds.mean()
+
+
 def buffer_val(writer, db_name, acc, best_threshold, epoch):
     writer.add_scalar('{}_Accuracy'.format(db_name), acc, epoch)
     writer.add_scalar('{}_Best_Threshold'.format(db_name), best_threshold, epoch)
@@ -268,7 +311,7 @@ def accuracy(output, target, topk=(1,)):
 
     res = []
     for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(0)
+        correct_k = correct[:k].reshape(-1).float().sum(0)
         res.append(correct_k.mul_(100.0 / batch_size))
 
     return res
