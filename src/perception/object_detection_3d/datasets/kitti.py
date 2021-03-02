@@ -2,18 +2,19 @@ from engine.datasets import DatasetIterator, ExternalDataset
 from perception.object_detection_3d.datasets.create_data_kitti import (
     create_kitti_info_file,
     create_reduced_point_cloud,
-    create_groundtruth_database
+    create_groundtruth_database,
 )
 import os
 
-class DatasetSamplerOptions():
 
+class DatasetSamplerOptions:
     def __init__(self):
-        
+
         super().__init__()
 
+
 # class KittiDatasetIterator(DatasetIterator):
-    
+
 #     def __init__(self, kitti_dataset: ExternalDataset):
 
 #         super().__init__()
@@ -24,7 +25,7 @@ class DatasetSamplerOptions():
 #         self.path = kitti_dataset.path
 
 #         self.__prepare_data()
-    
+
 #     def __prepare_data(self):
 
 #         files = os.listdir(self.path)
@@ -45,16 +46,15 @@ class DatasetSamplerOptions():
 #         print(":::Data Ready:::")
 
 #         pass
-    
+
 #     def __getitem__(self, idx):
 #         pass
 
 #     def __len__(self):
 #         return super().__len__()
-        
+
 
 class KittiDataset(ExternalDataset):
-    
     def __init__(self, path):
 
         super().__init__(path, "kitti")
@@ -62,7 +62,7 @@ class KittiDataset(ExternalDataset):
         self.path = path
 
         self.__prepare_data()
-    
+
     def __prepare_data(self):
 
         files = os.listdir(self.path)
@@ -83,7 +83,7 @@ class KittiDataset(ExternalDataset):
         print(":::Data Ready:::")
 
         pass
-    
+
     def __getitem__(self, idx):
         pass
 

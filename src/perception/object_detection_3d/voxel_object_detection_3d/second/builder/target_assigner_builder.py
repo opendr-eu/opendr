@@ -1,9 +1,19 @@
 import numpy as np
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.core.target_assigner import TargetAssigner
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import target_pb2, anchors_pb2
-from perception.object_detection_3d.voxel_object_detection_3d.second.builder import similarity_calculator_builder
-from perception.object_detection_3d.voxel_object_detection_3d.second.builder import anchor_generator_builder
+from perception.object_detection_3d.voxel_object_detection_3d.second.core.target_assigner import (
+    TargetAssigner,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
+    target_pb2,
+    anchors_pb2,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.builder import (
+    similarity_calculator_builder,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.builder import (
+    anchor_generator_builder,
+)
+
 
 def build(target_assigner_config, bv_range, box_coder):
     """Builds a tensor dictionary based on the InputReader config.
@@ -19,15 +29,17 @@ def build(target_assigner_config, bv_range, box_coder):
         ValueError: If no input paths are specified.
     """
     if not isinstance(target_assigner_config, (target_pb2.TargetAssigner)):
-        raise ValueError('input_reader_config not of type '
-                         'input_reader_pb2.InputReader.')
+        raise ValueError(
+            "input_reader_config not of type " "input_reader_pb2.InputReader."
+        )
     anchor_cfg = target_assigner_config.anchor_generators
     anchor_generators = []
     for a_cfg in anchor_cfg:
         anchor_generator = anchor_generator_builder.build(a_cfg)
         anchor_generators.append(anchor_generator)
     similarity_calc = similarity_calculator_builder.build(
-        target_assigner_config.region_similarity_calculator)
+        target_assigner_config.region_similarity_calculator
+    )
     positive_fraction = target_assigner_config.sample_positive_fraction
     if positive_fraction < 0:
         positive_fraction = None
@@ -36,6 +48,6 @@ def build(target_assigner_config, bv_range, box_coder):
         anchor_generators=anchor_generators,
         region_similarity_calculator=similarity_calc,
         positive_fraction=positive_fraction,
-        sample_size=target_assigner_config.sample_size)
+        sample_size=target_assigner_config.sample_size,
+    )
     return target_assigner
-

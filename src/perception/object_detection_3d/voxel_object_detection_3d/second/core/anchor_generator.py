@@ -1,17 +1,21 @@
 import numpy as np
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import box_np_ops
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    box_np_ops,
+)
 
 
 class AnchorGeneratorStride:
-    def __init__(self,
-                 sizes=[1.6, 3.9, 1.56],
-                 anchor_strides=[0.4, 0.4, 1.0],
-                 anchor_offsets=[0.2, -39.8, -1.78],
-                 rotations=[0, np.pi / 2],
-                 class_id=None,
-                 match_threshold=-1,
-                 unmatch_threshold=-1,
-                 dtype=np.float32):
+    def __init__(
+        self,
+        sizes=[1.6, 3.9, 1.56],
+        anchor_strides=[0.4, 0.4, 1.0],
+        anchor_offsets=[0.2, -39.8, -1.78],
+        rotations=[0, np.pi / 2],
+        class_id=None,
+        match_threshold=-1,
+        unmatch_threshold=-1,
+        dtype=np.float32,
+    ):
         self._sizes = sizes
         self._anchor_strides = anchor_strides
         self._anchor_offsets = anchor_offsets
@@ -41,18 +45,26 @@ class AnchorGeneratorStride:
 
     def generate(self, feature_map_size):
         return box_np_ops.create_anchors_3d_stride(
-            feature_map_size, self._sizes, self._anchor_strides,
-            self._anchor_offsets, self._rotations, self._dtype)
+            feature_map_size,
+            self._sizes,
+            self._anchor_strides,
+            self._anchor_offsets,
+            self._rotations,
+            self._dtype,
+        )
+
 
 class AnchorGeneratorRange:
-    def __init__(self,
-                 anchor_ranges,
-                 sizes=[1.6, 3.9, 1.56],
-                 rotations=[0, np.pi / 2],
-                 class_id=None,
-                 match_threshold=-1,
-                 unmatch_threshold=-1,
-                 dtype=np.float32):
+    def __init__(
+        self,
+        anchor_ranges,
+        sizes=[1.6, 3.9, 1.56],
+        rotations=[0, np.pi / 2],
+        class_id=None,
+        match_threshold=-1,
+        unmatch_threshold=-1,
+        dtype=np.float32,
+    ):
         self._sizes = sizes
         self._anchor_ranges = anchor_ranges
         self._rotations = rotations
@@ -81,5 +93,9 @@ class AnchorGeneratorRange:
 
     def generate(self, feature_map_size):
         return box_np_ops.create_anchors_3d_range(
-            feature_map_size, self._anchor_ranges, self._sizes,
-            self._rotations, self._dtype)
+            feature_map_size,
+            self._anchor_ranges,
+            self._sizes,
+            self._rotations,
+            self._dtype,
+        )

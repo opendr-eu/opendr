@@ -3,28 +3,36 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.loader import import_file
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.find import find_cuda_device_arch
+from perception.object_detection_3d.voxel_object_detection_3d.second.utils.loader import (
+    import_file,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.utils.find import (
+    find_cuda_device_arch,
+)
 from .command import CUDALink, Gpp, Nvcc, compile_libraries, out
 
 
 class Pybind11Link(Gpp):
-    def __init__(self,
-                 sources,
-                 target,
-                 std="c++11",
-                 includes: list = None,
-                 defines: dict = None,
-                 cflags: str = None,
-                 libraries: dict = None,
-                 lflags: str = None,
-                 extra_cflags: str = None,
-                 extra_lflags: str = None,
-                 build_directory: str = None):
-        pb11_includes = subprocess.check_output(
-            "python3 -m pybind11 --includes",
-            shell=True).decode('utf8').strip("\n")
-        cflags = cflags or '-fPIC -O3 '
+    def __init__(
+        self,
+        sources,
+        target,
+        std="c++11",
+        includes: list = None,
+        defines: dict = None,
+        cflags: str = None,
+        libraries: dict = None,
+        lflags: str = None,
+        extra_cflags: str = None,
+        extra_lflags: str = None,
+        build_directory: str = None,
+    ):
+        pb11_includes = (
+            subprocess.check_output("python3 -m pybind11 --includes", shell=True)
+            .decode("utf8")
+            .strip("\n")
+        )
+        cflags = cflags or "-fPIC -O3 "
         cflags += pb11_includes
         super().__init__(
             sources,
@@ -38,26 +46,31 @@ class Pybind11Link(Gpp):
             lflags=lflags,
             extra_cflags=extra_cflags,
             extra_lflags=extra_lflags,
-            build_directory=build_directory)
+            build_directory=build_directory,
+        )
 
 
 class Pybind11CUDALink(CUDALink):
-    def __init__(self,
-                 sources,
-                 target,
-                 std="c++11",
-                 includes: list = None,
-                 defines: dict = None,
-                 cflags: str = None,
-                 libraries: dict = None,
-                 lflags: str = None,
-                 extra_cflags: str = None,
-                 extra_lflags: str = None,
-                 build_directory: str = None):
-        pb11_includes = subprocess.check_output(
-            "python3 -m pybind11 --includes",
-            shell=True).decode('utf8').strip("\n")
-        cflags = cflags or '-fPIC -O3 '
+    def __init__(
+        self,
+        sources,
+        target,
+        std="c++11",
+        includes: list = None,
+        defines: dict = None,
+        cflags: str = None,
+        libraries: dict = None,
+        lflags: str = None,
+        extra_cflags: str = None,
+        extra_lflags: str = None,
+        build_directory: str = None,
+    ):
+        pb11_includes = (
+            subprocess.check_output("python3 -m pybind11 --includes", shell=True)
+            .decode("utf8")
+            .strip("\n")
+        )
+        cflags = cflags or "-fPIC -O3 "
         cflags += pb11_includes
         super().__init__(
             sources,
@@ -70,18 +83,21 @@ class Pybind11CUDALink(CUDALink):
             lflags=lflags,
             extra_cflags=extra_cflags,
             extra_lflags=extra_lflags,
-            build_directory=build_directory)
+            build_directory=build_directory,
+        )
 
 
-def load_pb11(sources,
-              target,
-              cwd='.',
-              cuda=False,
-              arch=None,
-              num_workers=4,
-              includes: list = None,
-              build_directory=None,
-              compiler="g++"):
+def load_pb11(
+    sources,
+    target,
+    cwd=".",
+    cuda=False,
+    arch=None,
+    num_workers=4,
+    includes: list = None,
+    build_directory=None,
+    compiler="g++",
+):
     cmd_groups = []
     cmds = []
     outs = []
@@ -99,17 +115,17 @@ def load_pb11(sources,
             main_sources.append(s)
 
     if cuda is True and arch is None:
-        raise ValueError("you must specify arch if sources contains"
-                         " cuda files")
+        raise ValueError("you must specify arch if sources contains" " cuda files")
     cmd_groups.append(cmds)
     if cuda:
         cmd_groups.append(
-            [Pybind11CUDALink(outs + main_sources, target, includes=includes)])
+            [Pybind11CUDALink(outs + main_sources, target, includes=includes)]
+        )
     else:
         cmd_groups.append(
-            [Pybind11Link(outs + main_sources, target, includes=includes)])
+            [Pybind11Link(outs + main_sources, target, includes=includes)]
+        )
     for cmds in cmd_groups:
-        compile_libraries(
-            cmds, cwd, num_workers=num_workers, compiler=compiler)
+        compile_libraries(cmds, cwd, num_workers=num_workers, compiler=compiler)
 
     return import_file(target, add_to_sys=False, disable_warning=True)

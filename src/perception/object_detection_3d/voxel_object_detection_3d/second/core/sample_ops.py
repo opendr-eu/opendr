@@ -6,16 +6,25 @@ from functools import partial, reduce
 import numpy as np
 from skimage import io as imgio
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import preprocess as prep
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import box_np_ops
-from perception.object_detection_3d.voxel_object_detection_3d.second.data import kitti_common as kitti
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    preprocess as prep, )
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    box_np_ops, )
+from perception.object_detection_3d.voxel_object_detection_3d.second.data import (
+    kitti_common as kitti, )
 import copy
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.check import shape_mergeable
+from perception.object_detection_3d.voxel_object_detection_3d.second.utils.check import (
+    shape_mergeable, )
+
 
 class DataBaseSamplerV2:
-    def __init__(self, db_infos, groups, db_prepor=None,
-                 rate=1.0, global_rot_range=None):
+    def __init__(self,
+                 db_infos,
+                 groups,
+                 db_prepor=None,
+                 rate=1.0,
+                 global_rot_range=None):
         for k, v in db_infos.items():
             print(f"load {len(v)} {k} database infos")
 
@@ -73,7 +82,6 @@ class DataBaseSamplerV2:
                             info_dict[group_name] = 1
                 print(info_dict)
 
-
         self._sampler_dict = {}
         for k, v in self._group_db_infos.items():
             self._sampler_dict[k] = prep.BatchSampler(v, k)
@@ -83,8 +91,7 @@ class DataBaseSamplerV2:
                 global_rot_range = [-global_rot_range, global_rot_range]
             else:
                 assert shape_mergeable(global_rot_range, [2])
-            if np.abs(global_rot_range[0] -
-                        global_rot_range[1]) >= 1e-3:
+            if np.abs(global_rot_range[0] - global_rot_range[1]) >= 1e-3:
                 self._enable_global_rot = True
         self._global_rot_range = global_rot_range
 
@@ -92,16 +99,18 @@ class DataBaseSamplerV2:
     def use_group_sampling(self):
         return self._use_group_sampling
 
-    def sample_all(self,
-                   root_path,
-                   gt_boxes,
-                   gt_names,
-                   num_point_features,
-                   random_crop=False,
-                   gt_group_ids=None,
-                   rect=None,
-                   Trv2c=None,
-                   P2=None):
+    def sample_all(
+        self,
+        root_path,
+        gt_boxes,
+        gt_names,
+        num_point_features,
+        random_crop=False,
+        gt_group_ids=None,
+        rect=None,
+        Trv2c=None,
+        P2=None,
+    ):
         sampled_num_dict = {}
         sample_num_per_class = []
         for class_name, max_sample_num in zip(self._sample_classes,
@@ -126,13 +135,14 @@ class DataBaseSamplerV2:
         sampled = []
         sampled_gt_boxes = []
         avoid_coll_boxes = gt_boxes
-        
+
         for class_name, sampled_num in zip(sampled_groups,
                                            sample_num_per_class):
             if sampled_num > 0:
                 if self._use_group_sampling:
                     sampled_cls = self.sample_group(class_name, sampled_num,
-                                                       avoid_coll_boxes, total_group_ids)
+                                                    avoid_coll_boxes,
+                                                    total_group_ids)
                 else:
                     sampled_cls = self.sample_class_v2(class_name, sampled_num,
                                                        avoid_coll_boxes)
@@ -151,7 +161,8 @@ class DataBaseSamplerV2:
                         [avoid_coll_boxes, sampled_gt_box], axis=0)
                     if self._use_group_sampling:
                         if len(sampled_cls) == 1:
-                            sampled_group_ids = np.array(sampled_cls[0]["group_id"])[np.newaxis, ...]
+                            sampled_group_ids = np.array(
+                                sampled_cls[0]["group_id"])[np.newaxis, ...]
                         else:
                             sampled_group_ids = np.stack(
                                 [s["group_id"] for s in sampled_cls], axis=0)
@@ -163,9 +174,9 @@ class DataBaseSamplerV2:
             num_sampled = len(sampled)
             s_points_list = []
             for info in sampled:
-                s_points = np.fromfile(
-                    str(pathlib.Path(root_path) / info["path"]),
-                    dtype=np.float32)
+                s_points = np.fromfile(str(
+                    pathlib.Path(root_path) / info["path"]),
+                                       dtype=np.float32)
                 s_points = s_points.reshape([-1, num_point_features])
                 # if not add_rgb_to_points:
                 #     s_points = s_points[:, :4]
@@ -190,8 +201,8 @@ class DataBaseSamplerV2:
                     mask = prep.mask_points_in_corners(
                         s_points, crop_frustums[i:i + 1]).reshape(-1)
                     num_remove = np.sum(mask)
-                    if num_remove > 0 and (
-                            s_points.shape[0] - num_remove) > 15:
+                    if num_remove > 0 and (s_points.shape[0] -
+                                           num_remove) > 15:
                         s_points = s_points[np.logical_not(mask)]
                     s_points_list_new.append(s_points)
                 s_points_list = s_points_list_new
@@ -200,12 +211,13 @@ class DataBaseSamplerV2:
                 "difficulty": np.array([s["difficulty"] for s in sampled]),
                 "gt_boxes": sampled_gt_boxes,
                 "points": np.concatenate(s_points_list, axis=0),
-                "gt_masks": np.ones((num_sampled, ), dtype=np.bool_)
+                "gt_masks": np.ones((num_sampled, ), dtype=np.bool_),
             }
             if self._use_group_sampling:
                 ret["group_ids"] = np.array([s["group_id"] for s in sampled])
             else:
-                ret["group_ids"] = np.arange(gt_boxes.shape[0], gt_boxes.shape[0] + len(sampled))
+                ret["group_ids"] = np.arange(gt_boxes.shape[0],
+                                             gt_boxes.shape[0] + len(sampled))
         else:
             ret = None
         return ret
@@ -230,7 +242,6 @@ class DataBaseSamplerV2:
             ret = self._sampler_dict[name].sample(num)
             return ret, np.ones((len(ret), ), dtype=np.int64)
 
-
     def sample_class_v2(self, name, num, gt_boxes):
         sampled = self._sampler_dict[name].sample(num)
         sampled = copy.deepcopy(sampled)
@@ -248,14 +259,13 @@ class DataBaseSamplerV2:
         boxes = np.concatenate([gt_boxes, sp_boxes], axis=0).copy()
         if self._enable_global_rot:
             # place samples to any place in a circle.
-            prep.noise_per_object_v3_(
-                boxes,
-                None,
-                valid_mask,
-                0,
-                0,
-                self._global_rot_range,
-                num_try=100)
+            prep.noise_per_object_v3_(boxes,
+                                      None,
+                                      valid_mask,
+                                      0,
+                                      0,
+                                      self._global_rot_range,
+                                      num_try=100)
         sp_boxes_new = boxes[gt_boxes.shape[0]:]
         sp_boxes_bv = box_np_ops.center_to_corner_box2d(
             sp_boxes_new[:, 0:2], sp_boxes_new[:, 3:5], sp_boxes_new[:, 6])
@@ -295,7 +305,7 @@ class DataBaseSamplerV2:
                 gid_map[gid] = sampled_gid
                 s["group_id"] = sampled_gid
                 sampled_gid += 1
-        
+
         num_gt = gt_boxes.shape[0]
         gt_boxes_bv = box_np_ops.center_to_corner_box2d(
             gt_boxes[:, 0:2], gt_boxes[:, 3:5], gt_boxes[:, 6])
@@ -318,7 +328,8 @@ class DataBaseSamplerV2:
                 0,
                 self._global_rot_range,
                 group_ids=group_ids,
-                num_try=100)
+                num_try=100,
+            )
         sp_boxes_new = boxes[gt_boxes.shape[0]:]
         sp_boxes_bv = box_np_ops.center_to_corner_box2d(
             sp_boxes_new[:, 0:2], sp_boxes_new[:, 3:5], sp_boxes_new[:, 6])
@@ -336,10 +347,13 @@ class DataBaseSamplerV2:
             else:
                 for i in range(num):
                     if self._enable_global_rot:
-                        sampled[idx - num_gt + i]["box3d_lidar"][:2] = boxes[idx + i, :2]
-                        sampled[idx - num_gt + i]["box3d_lidar"][-1] = boxes[idx + i, -1]
+                        sampled[idx - num_gt +
+                                i]["box3d_lidar"][:2] = boxes[idx + i, :2]
+                        sampled[idx - num_gt +
+                                i]["box3d_lidar"][-1] = boxes[idx + i, -1]
                         sampled[idx - num_gt + i]["rot_transform"] = (
-                            boxes[idx + i, -1] - sp_boxes[idx + i - num_gt, -1])
+                            boxes[idx + i, -1] -
+                            sp_boxes[idx + i - num_gt, -1])
 
                     valid_samples.append(sampled[idx - num_gt + i])
             idx += num

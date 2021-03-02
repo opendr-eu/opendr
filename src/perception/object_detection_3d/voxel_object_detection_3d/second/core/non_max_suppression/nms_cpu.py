@@ -1,25 +1,36 @@
 import math
 from pathlib import Path
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.buildtools.pybind11_build import load_pb11
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.find import find_cuda_device_arch
+from perception.object_detection_3d.voxel_object_detection_3d.second.utils.buildtools.pybind11_build import (
+    load_pb11,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.utils.find import (
+    find_cuda_device_arch,
+)
 import numba
 import numpy as np
 
 try:
     from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms import (
-        non_max_suppression_cpu, rotate_non_max_suppression_cpu)
+        non_max_suppression_cpu,
+        rotate_non_max_suppression_cpu,
+    )
 except:
     current_dir = Path(__file__).resolve().parents[0]
     load_pb11(
         ["../cc/nms/nms_kernel.cu.cc", "../cc/nms/nms.cc"],
         current_dir / "nms.so",
         current_dir,
-        cuda=True)
+        cuda=True,
+    )
     from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms import (
-        non_max_suppression_cpu, rotate_non_max_suppression_cpu)
+        non_max_suppression_cpu,
+        rotate_non_max_suppression_cpu,
+    )
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import box_np_ops
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    box_np_ops,
+)
 
 
 def nms_cc(dets, thresh):
@@ -32,15 +43,15 @@ def rotate_nms_cc(dets, thresh):
 
     scores = dets[:, 5]
     order = scores.argsort()[::-1].astype(np.int32)  # highest->lowest
-    dets_corners = box_np_ops.center_to_corner_box2d(dets[:, :2], dets[:, 2:4],
-                                                     dets[:, 4])
+    dets_corners = box_np_ops.center_to_corner_box2d(
+        dets[:, :2], dets[:, 2:4], dets[:, 4]
+    )
 
     dets_standup = box_np_ops.corner_to_standup_nd(dets_corners)
 
     standup_iou = box_np_ops.iou_jit(dets_standup, dets_standup, eps=0.0)
     # print(dets_corners.shape, order.shape, standup_iou.shape)
-    return rotate_non_max_suppression_cpu(dets_corners, order, standup_iou,
-                                          thresh)
+    return rotate_non_max_suppression_cpu(dets_corners, order, standup_iou, thresh)
 
 
 @numba.jit(nopython=True)
@@ -57,8 +68,7 @@ def nms_jit(dets, thresh, eps=0.0):
     keep = []
     for _i in range(ndets):
         i = order[_i]  # start with highest score box
-        if suppressed[
-                i] == 1:  # if any box have enough iou with this, remove it
+        if suppressed[i] == 1:  # if any box have enough iou with this, remove it
             continue
         keep.append(i)
         for _j in range(_i + 1, ndets):
@@ -76,7 +86,7 @@ def nms_jit(dets, thresh, eps=0.0):
     return keep
 
 
-@numba.jit('float32[:, :], float32, float32, float32, uint32', nopython=True)
+@numba.jit("float32[:, :], float32, float32, float32, uint32", nopython=True)
 def soft_nms_jit(boxes, sigma=0.5, Nt=0.3, threshold=0.001, method=0):
     N = boxes.shape[0]
     pos = 0
@@ -129,13 +139,12 @@ def soft_nms_jit(boxes, sigma=0.5, Nt=0.3, threshold=0.001, method=0):
             s = boxes[pos, 4]
 
             area = (x2 - x1 + 1) * (y2 - y1 + 1)
-            iw = (min(tx2, x2) - max(tx1, x1) + 1)
+            iw = min(tx2, x2) - max(tx1, x1) + 1
             if iw > 0:
-                ih = (min(ty2, y2) - max(ty1, y1) + 1)
+                ih = min(ty2, y2) - max(ty1, y1) + 1
                 if ih > 0:
-                    ua = float((tx2 - tx1 + 1) * (ty2 - ty1 + 1) + area -
-                               iw * ih)
-                    ov = iw * ih / ua  #iou between max box and detection box
+                    ua = float((tx2 - tx1 + 1) * (ty2 - ty1 + 1) + area - iw * ih)
+                    ov = iw * ih / ua  # iou between max box and detection box
 
                     if method == 1:  # linear
                         if ov > Nt:

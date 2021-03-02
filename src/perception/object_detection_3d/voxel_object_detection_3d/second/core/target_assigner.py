@@ -1,15 +1,21 @@
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import box_np_ops
-from perception.object_detection_3d.voxel_object_detection_3d.second.core.target_ops import create_target_np
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import region_similarity
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    box_np_ops, )
+from perception.object_detection_3d.voxel_object_detection_3d.second.core.target_ops import (
+    create_target_np, )
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    region_similarity, )
 import numpy as np
 
+
 class TargetAssigner:
-    def __init__(self,
-                 box_coder,
-                 anchor_generators,
-                 region_similarity_calculator=None,
-                 positive_fraction=None,
-                 sample_size=512):
+    def __init__(
+        self,
+        box_coder,
+        anchor_generators,
+        region_similarity_calculator=None,
+        positive_fraction=None,
+        sample_size=512,
+    ):
         self._region_similarity_calculator = region_similarity_calculator
         self._box_coder = box_coder
         self._anchor_generators = anchor_generators
@@ -20,15 +26,21 @@ class TargetAssigner:
     def box_coder(self):
         return self._box_coder
 
-    def assign(self,
-               anchors,
-               gt_boxes,
-               anchors_mask=None,
-               gt_classes=None,
-               matched_thresholds=None,
-               unmatched_thresholds=None):
+    def assign(
+        self,
+        anchors,
+        gt_boxes,
+        anchors_mask=None,
+        gt_classes=None,
+        matched_thresholds=None,
+        unmatched_thresholds=None,
+    ):
         if anchors_mask is not None:
-            prune_anchor_fn = lambda _: np.where(anchors_mask)[0]
+
+            def prune_anchor_fn_helper(_):
+                return np.where(anchors_mask)[0]
+
+            prune_anchor_fn = prune_anchor_fn_helper
         else:
             prune_anchor_fn = None
 
@@ -53,7 +65,8 @@ class TargetAssigner:
             positive_fraction=self._positive_fraction,
             rpn_batch_size=self._sample_size,
             norm_by_num_examples=False,
-            box_code_size=self.box_coder.code_size)
+            box_code_size=self.box_coder.code_size,
+        )
 
     def generate_anchors(self, feature_map_size):
         anchors_list = []
@@ -81,7 +94,7 @@ class TargetAssigner:
         return {
             "anchors": anchors,
             "matched_thresholds": matched_thresholds,
-            "unmatched_thresholds": unmatched_thresholds
+            "unmatched_thresholds": unmatched_thresholds,
         }
 
     @property

@@ -4,12 +4,27 @@ import numpy as np
 import torch
 
 import torchplus
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import box_np_ops
-from perception.object_detection_3d.voxel_object_detection_3d.second.core.inference import InferenceContext
-from perception.object_detection_3d.voxel_object_detection_3d.second.builder import target_assigner_builder, voxel_builder
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.builder import box_coder_builder, second_builder
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.voxelnet import VoxelNet
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.train import predict_kitti_to_anno, example_convert_to_torch
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    box_np_ops,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.core.inference import (
+    InferenceContext,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.builder import (
+    target_assigner_builder,
+    voxel_builder,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.builder import (
+    box_coder_builder,
+    second_builder,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.voxelnet import (
+    VoxelNet,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.train import (
+    predict_kitti_to_anno,
+    example_convert_to_torch,
+)
 
 
 class TorchInferenceContext(InferenceContext):
@@ -33,11 +48,13 @@ class TorchInferenceContext(InferenceContext):
         box_coder = box_coder_builder.build(model_cfg.box_coder)
         target_assigner_cfg = model_cfg.target_assigner
         target_assigner = target_assigner_builder.build(
-            target_assigner_cfg, bv_range, box_coder)
+            target_assigner_cfg, bv_range, box_coder
+        )
         self.target_assigner = target_assigner
-        out_size_factor = model_cfg.rpn.layer_strides[0] // model_cfg.rpn.upsample_strides[0]
-        self.net = second_builder.build(model_cfg, voxel_generator,
-                                          target_assigner)
+        out_size_factor = (
+            model_cfg.rpn.layer_strides[0] // model_cfg.rpn.upsample_strides[0]
+        )
+        self.net = second_builder.build(model_cfg, voxel_generator, target_assigner)
         self.net.cuda().eval()
         if train_cfg.enable_mixed_precision:
             self.net.half()
@@ -50,8 +67,7 @@ class TorchInferenceContext(InferenceContext):
         anchors = anchors.reshape([-1, 7])
         matched_thresholds = ret["matched_thresholds"]
         unmatched_thresholds = ret["unmatched_thresholds"]
-        anchors_bv = box_np_ops.rbbox2d_to_near_bbox(
-            anchors[:, [0, 1, 3, 4, 6]])
+        anchors_bv = box_np_ops.rbbox2d_to_near_bbox(anchors[:, [0, 1, 3, 4, 6]])
         self.anchor_cache = {
             "anchors": anchors,
             "anchors_bv": anchors_bv,
@@ -75,9 +91,12 @@ class TorchInferenceContext(InferenceContext):
             float_dtype = torch.float32
 
         result_annos = predict_kitti_to_anno(
-            self.net, example_torch, list(
-                input_cfg.class_names),
-            model_cfg.post_center_limit_range, model_cfg.lidar_input)
+            self.net,
+            example_torch,
+            list(input_cfg.class_names),
+            model_cfg.post_center_limit_range,
+            model_cfg.lidar_input,
+        )
         return result_annos
 
     def _ctx(self):

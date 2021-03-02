@@ -5,15 +5,31 @@ import pyqtgraph.opengl as gl
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QTimer, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QIcon, QMouseEvent, QPainter
-from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
-                             QFormLayout, QGroupBox, QHBoxLayout, QLabel,
-                             QLineEdit, QMainWindow, QPlainTextEdit,
-                             QPushButton, QSizePolicy, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QPlainTextEdit,
+    QPushButton,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 from pyqtgraph.opengl.GLGraphicsItem import GLGraphicsItem
 
 import OpenGL.GL as pygl
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.bbox_plot import GLColor
+from perception.object_detection_3d.voxel_object_detection_3d.second.utils.bbox_plot import (
+    GLColor,
+)
+
 
 class GLLabelItem(GLGraphicsItem):
     def __init__(self, pos=None, text=None, color=None, font=QtGui.QFont()):
@@ -24,11 +40,10 @@ class GLLabelItem(GLGraphicsItem):
         self.text = text
         self.pos = pos
         self.font = font
-        
 
     def setGLViewWidget(self, GLViewWidget):
         self.GLViewWidget = GLViewWidget
-    
+
     def setData(self, pos, text, color, font):
         self.text = text
         self.pos = pos
@@ -74,20 +89,22 @@ def _extend_color_if_necessary(colors, shape, alphas):
 
 def _pltcolor_to_qtcolor(color):
     color_map = {
-        'r': QtCore.Qt.red,
-        'g': QtCore.Qt.green,
-        'b': QtCore.Qt.blue,
-        'k': QtCore.Qt.black,
-        'w': QtCore.Qt.white,
-        'y': QtCore.Qt.yellow,
-        'c': QtCore.Qt.cyan,
-        'm': QtCore.Qt.magenta,
+        "r": QtCore.Qt.red,
+        "g": QtCore.Qt.green,
+        "b": QtCore.Qt.blue,
+        "k": QtCore.Qt.black,
+        "w": QtCore.Qt.white,
+        "y": QtCore.Qt.yellow,
+        "c": QtCore.Qt.cyan,
+        "m": QtCore.Qt.magenta,
     }
     return color_map[color]
 
+
 def _glcolor_to_qtcolor(glcolor):
     color = np.array(gl_color(glcolor)) * 255
-    return QtGui.QColor(*color.astype(np.int32)) 
+    return QtGui.QColor(*color.astype(np.int32))
+
 
 def get_rotation_matrix_3d(angle, axis=0):
     # points: [N, point_size, 3]
@@ -95,18 +112,14 @@ def get_rotation_matrix_3d(angle, axis=0):
     rot_sin = np.sin(angle)
     rot_cos = np.cos(angle)
     if axis == 1:
-        rot_mat_T = np.stack([[rot_cos, 0, -rot_sin], [0, 1, 0],
-                              [rot_sin, 0, rot_cos]])
+        rot_mat_T = np.stack([[rot_cos, 0, -rot_sin], [0, 1, 0], [rot_sin, 0, rot_cos]])
     elif axis == 2 or axis == -1:
-        rot_mat_T = np.stack([[rot_cos, -rot_sin, 0], [rot_sin, rot_cos, 0],
-                              [0, 0, 1]])
+        rot_mat_T = np.stack([[rot_cos, -rot_sin, 0], [rot_sin, rot_cos, 0], [0, 0, 1]])
     elif axis == 0:
-        rot_mat_T = np.stack([[0, rot_cos, -rot_sin], [0, rot_sin, rot_cos],
-                              [1, 0, 0]])
+        rot_mat_T = np.stack([[0, rot_cos, -rot_sin], [0, rot_sin, rot_cos], [1, 0, 0]])
     else:
         raise ValueError("axis should in range")
     return rot_mat_T.T
-
 
 
 def get_C(fov, w, h):
@@ -125,8 +138,9 @@ def get_RT(elevation, azimuth, distance, center):
     rect = np.array([[0, -1, 0], [0, 0, 1], [1, 0, 0]])
     return rect @ R, rect @ T
 
-
     # return R, T
+
+
 def get_RT_(elevation, azimuth, distance, center):
     Ry = get_rotation_matrix_3d(-elevation, axis=1)
     Rz = get_rotation_matrix_3d(-(-azimuth + np.pi), axis=2)
@@ -160,13 +174,15 @@ def device_pos_to_sph(pos, center):
 
 
 def get_lines_for_circle(radius, num_point=100):
-    rads = np.linspace(0, 2*np.pi, num=num_point)
+    rads = np.linspace(0, 2 * np.pi, num=num_point)
     points = np.stack([radius * np.cos(rads), radius * np.sin(rads)], axis=1)
     lines = np.stack([points, points[[*np.arange(1, rads.shape[0]), 0]]], axis=1)
     return lines
 
+
 class KittiGLViewWidget(gl.GLViewWidget):
     mousePressed = pyqtSignal(tuple, name="MousePressed")
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self._named_items = {}
@@ -175,78 +191,88 @@ class KittiGLViewWidget(gl.GLViewWidget):
         self.noRepeatKeys.append(QtCore.Qt.Key_A)
         self.noRepeatKeys.append(QtCore.Qt.Key_D)
         self.w_gl_axis = gl.GLAxisItem(
-            size=None, antialias=True, glOptions='translucent')
+            size=None, antialias=True, glOptions="translucent"
+        )
         self.addItem(self.w_gl_axis)
 
-
-    def scatter(self, name, points, colors=GLColor.Write, alphas=0.5,
-                size=0.1, translucent=False):
+    def scatter(
+        self,
+        name,
+        points,
+        colors=GLColor.Write,
+        alphas=0.5,
+        size=0.1,
+        translucent=False,
+    ):
         # if isinstance(colors, tuple):
         #     colors = gl_color(colors, alphas)
         colors = _extend_color_if_necessary(colors, points.shape[0], alphas)
         if name not in self._named_items:
             w_gl_scatter = gl.GLScatterPlotItem(
-                pos=points, size=size, color=colors, pxMode=False)
+                pos=points, size=size, color=colors, pxMode=False
+            )
             if translucent:
-                w_gl_scatter.setGLOptions('translucent')
+                w_gl_scatter.setGLOptions("translucent")
             self._named_items[name] = w_gl_scatter
             self.addItem(w_gl_scatter)
         else:
             self._named_items[name].setData(
-                pos=points, size=size, color=colors, pxMode=False)
+                pos=points, size=size, color=colors, pxMode=False
+            )
 
-    def circles(self, name, poses, radiuses, colors=GLColor.Red, num_points=100, alphas=1.0,
-                width=1.0, antialias=True):
+    def circles(
+        self,
+        name,
+        poses,
+        radiuses,
+        colors=GLColor.Red,
+        num_points=100,
+        alphas=1.0,
+        width=1.0,
+        antialias=True,
+    ):
         # if isinstance(colors, tuple):
         #     colors = gl_color(colors, alphas)
-        
+
         if not isinstance(radiuses, (list, tuple, np.ndarray)):
             assert isinstance(poses, (list, tuple, np.ndarray))
             radiuses = np.full([len(poses)], radiuses)
         lines_list = []
         for pos, radius in zip(poses, radiuses):
             lines = get_lines_for_circle(radius, num_points)
-            
+
             shape = [lines.shape[0], 2, 1]
             lines_with_z = np.concatenate([lines, np.full(shape, pos[-1])], axis=-1)
             lines_list.append(lines_with_z)
         lines = np.concatenate(lines_list, axis=0)
         return self.lines(name, lines.reshape(-1, 3), colors, alphas, width, antialias)
 
-
-    def lines(self, name, lines, colors, alphas=1.0, width=1.0,
-              antialias=True):
+    def lines(self, name, lines, colors, alphas=1.0, width=1.0, antialias=True):
         if lines is None:
             return
 
         colors = _extend_color_if_necessary(colors, lines.shape[0], alphas)
         if name not in self._named_items:
             w_gl_item = gl.GLLinePlotItem(
-                pos=lines,
-                color=colors,
-                width=width,
-                antialias=antialias,
-                mode='lines')
+                pos=lines, color=colors, width=width, antialias=antialias, mode="lines"
+            )
             self._named_items[name] = w_gl_item
             self.addItem(w_gl_item)
         else:
             self._named_items[name].setData(
-                pos=lines,
-                color=colors,
-                width=width,
-                antialias=antialias,
-                mode='lines')
+                pos=lines, color=colors, width=width, antialias=antialias, mode="lines"
+            )
 
     def surface(self, name, x, y, z, colors, alphas=1.0):
         colors = _extend_color_if_necessary(colors, list(z.shape), alphas)
         if name not in self._named_items:
             w_gl_item = gl.GLSurfacePlotItem(
-                x=x, y=y, z=z, shader=None, colors=colors, glOptions='translucent')
+                x=x, y=y, z=z, shader=None, colors=colors, glOptions="translucent"
+            )
             self._named_items[name] = w_gl_item
             self.addItem(w_gl_item)
         else:
-            self._named_items[name].setData(
-                x=x, y=y, z=z, colors=colors)
+            self._named_items[name].setData(x=x, y=y, z=z, colors=colors)
 
     def labels(self, name, pos, labels, color, size=None, alpha=1.0):
         font = QtGui.QFont()
@@ -263,7 +289,9 @@ class KittiGLViewWidget(gl.GLViewWidget):
             w_gl_item.setGLViewWidget(self)
             self.addItem(w_gl_item)
         else:
-            self._named_items[name].setData(pos=pos, text=labels, color=color, font=font)
+            self._named_items[name].setData(
+                pos=pos, text=labels, color=color, font=font
+            )
 
     def remove(self, name):
         if name in self._named_items:
@@ -273,12 +301,7 @@ class KittiGLViewWidget(gl.GLViewWidget):
             except:
                 print("remove failed.")
 
-    def boxes3d(self,
-                name,
-                boxes,
-                colors,
-                width=1.0,
-                alpha=1.0):
+    def boxes3d(self, name, boxes, colors, width=1.0, alpha=1.0):
         if boxes.shape[0] == 0:
             self.remove(name)
             return
@@ -287,11 +310,34 @@ class KittiGLViewWidget(gl.GLViewWidget):
         total_lines = []
         total_colors = []
         for box, facecolor in zip(boxes, colors):
-            lines = np.array([
-                box[0], box[1], box[1], box[2], box[2], box[3], box[3], box[0],
-                box[1], box[5], box[5], box[4], box[4], box[0], box[2], box[6],
-                box[6], box[7], box[7], box[3], box[5], box[6], box[4], box[7]
-            ])
+            lines = np.array(
+                [
+                    box[0],
+                    box[1],
+                    box[1],
+                    box[2],
+                    box[2],
+                    box[3],
+                    box[3],
+                    box[0],
+                    box[1],
+                    box[5],
+                    box[5],
+                    box[4],
+                    box[4],
+                    box[0],
+                    box[2],
+                    box[6],
+                    box[6],
+                    box[7],
+                    box[7],
+                    box[3],
+                    box[5],
+                    box[6],
+                    box[4],
+                    box[7],
+                ]
+            )
             total_lines.append(lines)
             color = np.array([list(facecolor) for i in range(len(lines))])
             total_colors.append(color)
@@ -303,26 +349,25 @@ class KittiGLViewWidget(gl.GLViewWidget):
             total_colors = None
         self.lines(name, total_lines, total_colors, alphas=alpha, width=width)
 
-    def set_camera_position(self,
-                            center=None,
-                            distance=None,
-                            elevation=None,
-                            azimuth=None):
+    def set_camera_position(
+        self, center=None, distance=None, elevation=None, azimuth=None
+    ):
         if center is not None:
-            self.opts['center'].setX(center[0])
-            self.opts['center'].setY(center[1])
-            self.opts['center'].setZ(center[2])
+            self.opts["center"].setX(center[0])
+            self.opts["center"].setY(center[1])
+            self.opts["center"].setZ(center[2])
         if distance is not None:
-            self.opts['distance'] = distance
+            self.opts["distance"] = distance
         if elevation is not None:
-            self.opts['elevation'] = elevation
+            self.opts["elevation"] = elevation
         if azimuth is not None:
-            self.opts['azimuth'] = azimuth
+            self.opts["azimuth"] = azimuth
         self.update()
 
     def reset_camera(self):
         self.set_camera_position(
-            center=(5, 0, 0), distance=20, azimuth=-180, elevation=30)
+            center=(5, 0, 0), distance=20, azimuth=-180, elevation=30
+        )
         self.update()
 
     def evalKeyState(self):
@@ -366,9 +411,9 @@ class KittiGLViewWidget(gl.GLViewWidget):
     def camera_position(self):
         c = self.opts["center"]
         center = [c.x(), c.y(), c.z()]
-        elevation = self.opts['elevation'] / 180 * np.pi
-        azimuth = self.opts['azimuth'] / 180 * np.pi
-        distance = self.opts['distance']
+        elevation = self.opts["elevation"] / 180 * np.pi
+        azimuth = self.opts["azimuth"] / 180 * np.pi
+        distance = self.opts["distance"]
 
         camera_pos = sph_to_device_pos(elevation, azimuth, distance, center)
         return camera_pos
@@ -390,9 +435,9 @@ class KittiGLViewWidget(gl.GLViewWidget):
         zp = [0, 0, dz]
         c = self.opts["center"]
         center = [c.x(), c.y(), c.z()]
-        elevation = self.opts['elevation'] / 180 * np.pi
-        azimuth = self.opts['azimuth'] / 180 * np.pi
-        distance = self.opts['distance']
+        elevation = self.opts["elevation"] / 180 * np.pi
+        azimuth = self.opts["azimuth"] / 180 * np.pi
+        distance = self.opts["distance"]
         R, T = get_RT_(elevation, azimuth, distance, center)
         dx_world = np.linalg.inv(R) @ (xp)
         dy_world = np.linalg.inv(R) @ (yp)
@@ -409,33 +454,36 @@ class KittiGLViewWidget(gl.GLViewWidget):
         super().mousePressEvent(ev)
         self.mousePressed.emit((ev.x(), ev.y()))
         # print(ev.x(), ev.y())
+
     def mouseReleaseEvent(self, ev):
 
         # Example item selection code:
         # region = (ev.pos().x() - 5, ev.pos().y() - 5, 10, 10)
         # print(self.itemsAt(region))
         c = self.opts["center"]
-        camera_info = (f"fov={self.opts['fov']:.2f}\n"
-                       f"center=[{c.x():.2f}, {c.y():.2f}, {c.z():.2f}]\n"
-                       f"distance={self.opts['distance']:.2f}\n"
-                       f"elevation={self.opts['elevation']:.2f}\n"
-                       f"azimuth={self.opts['azimuth']:.2f}")
+        camera_info = (
+            f"fov={self.opts['fov']:.2f}\n"
+            f"center=[{c.x():.2f}, {c.y():.2f}, {c.z():.2f}]\n"
+            f"distance={self.opts['distance']:.2f}\n"
+            f"elevation={self.opts['elevation']:.2f}\n"
+            f"azimuth={self.opts['azimuth']:.2f}"
+        )
         # print(camera_info)
         # w_norm = self.width() / self.height()
         # h_norm = 1.0
         w_norm = self.width()
         h_norm = self.height()
-        elevation = self.opts['elevation'] / 180 * np.pi
-        azimuth = self.opts['azimuth'] / 180 * np.pi
-        distance = self.opts['distance']
+        elevation = self.opts["elevation"] / 180 * np.pi
+        azimuth = self.opts["azimuth"] / 180 * np.pi
+        distance = self.opts["distance"]
         center = [c.x(), c.y(), c.z()]
         # center = [0, 0, 0]
-        fov = self.opts['fov'] / 180 * np.pi
+        fov = self.opts["fov"] / 180 * np.pi
         # point = [12.35, 1.89, -1.82]
-        point = [0, 0, 0.]
+        point = [0, 0, 0.0]
         ret = world2camera(
-            np.array(point), elevation, azimuth, distance, center, fov, w_norm,
-            h_norm)
+            np.array(point), elevation, azimuth, distance, center, fov, w_norm, h_norm
+        )
         # print(ret[:2] / ret[2])
         # print(ret)
         # print(self.opts['center'])
@@ -445,9 +493,9 @@ class KittiGLViewWidget(gl.GLViewWidget):
         pos = sph_to_device_pos(elevation, azimuth, distance, center)
         # print("camera pos:", pos)
         # print("camera pos inv", device_pos_to_sph(pos, center))
-        ## debugging code: draw the picking region
-        #glViewport(*self.getViewport())
-        #glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT )
-        #region = (region[0], self.height()-(region[1]+region[3]), region[2], region[3])
-        #self.paintGL(region=region)
-        #self.swapBuffers()
+        # debugging code: draw the picking region
+        # glViewport(*self.getViewport())
+        # glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT )
+        # region = (region[0], self.height()-(region[1]+region[3]), region[2], region[3])
+        # self.paintGL(region=region)
+        # self.swapBuffers()

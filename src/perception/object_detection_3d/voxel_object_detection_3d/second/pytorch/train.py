@@ -13,9 +13,14 @@ from tensorboardX import SummaryWriter
 
 import torchplus
 import second.data.kitti_common as kitti
-from perception.object_detection_3d.voxel_object_detection_3d.second.builder import target_assigner_builder, voxel_builder
-from perception.object_detection_3d.voxel_object_detection_3d.second.data.preprocess import merge_second_batch
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import pipeline_pb2
+from perception.object_detection_3d.voxel_object_detection_3d.second.builder import (
+    target_assigner_builder,
+    voxel_builder,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.data.preprocess import (
+    merge_second_batch, )
+from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
+    pipeline_pb2, )
 from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.builder import (
     box_coder_builder,
     input_reader_builder,
@@ -23,11 +28,17 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.bui
     optimizer_builder,
     second_builder,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.eval import get_coco_eval_result, get_official_eval_result
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.progress_bar import ProgressBar
+from perception.object_detection_3d.voxel_object_detection_3d.second.utils.eval import (
+    get_coco_eval_result,
+    get_official_eval_result,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.utils.progress_bar import (
+    ProgressBar, )
 from metrics import AverageMetric, Metric, MetricGroup, RangeMetric, SumMetric
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import box_np_ops
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    box_np_ops, )
 from pytorch.core import box_torch_ops
+
 
 def _get_pos_neg_loss(cls_loss, labels):
     # cls_loss: [N, num_anchors, num_class]
@@ -35,11 +46,9 @@ def _get_pos_neg_loss(cls_loss, labels):
     batch_size = cls_loss.shape[0]
     if cls_loss.shape[-1] == 1 or len(cls_loss.shape) == 2:
         cls_pos_loss = (labels > 0).type_as(cls_loss) * cls_loss.view(
-            batch_size, -1
-        )
+            batch_size, -1)
         cls_neg_loss = (labels == 0).type_as(cls_loss) * cls_loss.view(
-            batch_size, -1
-        )
+            batch_size, -1)
         cls_pos_loss = cls_pos_loss.sum() / batch_size
         cls_neg_loss = cls_neg_loss.sum() / batch_size
     else:
@@ -68,9 +77,9 @@ def flat_nested_json_dict(json_dict, sep=".") -> dict:
     return flatted
 
 
-def example_convert_to_torch(
-    example, dtype=torch.float32, device=None
-) -> dict:
+def example_convert_to_torch(example,
+                             dtype=torch.float32,
+                             device=None) -> dict:
     device = device or torch.device("cuda:0")
     example_torch = {}
     float_names = [
@@ -89,13 +98,13 @@ def example_convert_to_torch(
         if k in float_names:
             example_torch[k] = torch.as_tensor(v, dtype=dtype, device=device)
         elif k in ["coordinates", "labels", "num_points"]:
-            example_torch[k] = torch.as_tensor(
-                v, dtype=torch.int32, device=device
-            )
+            example_torch[k] = torch.as_tensor(v,
+                                               dtype=torch.int32,
+                                               device=device)
         elif k in ["anchors_mask"]:
-            example_torch[k] = torch.as_tensor(
-                v, dtype=torch.uint8, device=device
-            )
+            example_torch[k] = torch.as_tensor(v,
+                                               dtype=torch.uint8,
+                                               device=device)
         else:
             example_torch[k] = v
     return example_torch
@@ -145,9 +154,8 @@ def train(
     bv_range = voxel_generator.point_cloud_range[[0, 1, 3, 4]]
     box_coder = box_coder_builder.build(model_cfg.box_coder)
     target_assigner_cfg = model_cfg.target_assigner
-    target_assigner = target_assigner_builder.build(
-        target_assigner_cfg, bv_range, box_coder
-    )
+    target_assigner = target_assigner_builder.build(target_assigner_cfg,
+                                                    bv_range, box_coder)
     ######################
     # BUILD NET
     ######################
@@ -173,14 +181,12 @@ def train(
     if train_cfg.enable_mixed_precision:
         loss_scale = train_cfg.loss_scale_factor
         mixed_optimizer = torchplus.train.MixedPrecisionWrapper(
-            optimizer, loss_scale
-        )
+            optimizer, loss_scale)
     else:
         mixed_optimizer = optimizer
     # must restore optimizer AFTER using MixedPrecisionWrapper
-    torchplus.train.try_restore_latest_checkpoints(
-        model_dir, [mixed_optimizer]
-    )
+    torchplus.train.try_restore_latest_checkpoints(model_dir,
+                                                   [mixed_optimizer])
     lr_scheduler = lr_scheduler_builder.build(optimizer_cfg, optimizer, gstep)
     if train_cfg.enable_mixed_precision:
         float_dtype = torch.float16
@@ -254,10 +260,7 @@ def train(
     mixed_optimizer.zero_grad()
     try:
         for _ in range(total_loop):
-            if (
-                total_step_elapsed + train_cfg.steps_per_eval
-                > train_cfg.steps
-            ):
+            if total_step_elapsed + train_cfg.steps_per_eval > train_cfg.steps:
                 steps = train_cfg.steps % train_cfg.steps_per_eval
             else:
                 steps = train_cfg.steps_per_eval
@@ -316,11 +319,8 @@ def train(
                 global_step = net.get_global_step()
                 if global_step % display_step == 0:
                     loc_loss_elem = [
-                        float(
-                            loc_loss[:, :, i].sum().detach().cpu().numpy()
-                            / batch_size
-                        )
-                        for i in range(loc_loss.shape[-1])
+                        float(loc_loss[:, :, i].sum().detach().cpu().numpy() /
+                              batch_size) for i in range(loc_loss.shape[-1])
                     ]
                     metrics["step"] = global_step
                     metrics["steptime"] = step_time
@@ -328,40 +328,32 @@ def train(
                     metrics["loss"] = {}
                     metrics["loss"]["loc_elem"] = loc_loss_elem
                     metrics["loss"]["cls_pos_rt"] = float(
-                        cls_pos_loss.detach().cpu().numpy()
-                    )
+                        cls_pos_loss.detach().cpu().numpy())
                     metrics["loss"]["cls_neg_rt"] = float(
-                        cls_neg_loss.detach().cpu().numpy()
-                    )
+                        cls_neg_loss.detach().cpu().numpy())
 
                     ########################################
-                    if (
-                        model_cfg.rpn.module_class_name == "PSA"
-                        or model_cfg.rpn.module_class_name == "RefineDet"
-                    ):
+                    if (model_cfg.rpn.module_class_name == "PSA" or
+                            model_cfg.rpn.module_class_name == "RefineDet"):
                         coarse_loss = ret_dict["coarse_loss"]
                         refine_loss = ret_dict["refine_loss"]
                         metrics["coarse_loss"] = float(
-                            coarse_loss.detach().cpu().numpy()
-                        )
+                            coarse_loss.detach().cpu().numpy())
                         metrics["refine_loss"] = float(
-                            refine_loss.detach().cpu().numpy()
-                        )
+                            refine_loss.detach().cpu().numpy())
                     ########################################
                     # if unlabeled_training:
                     #     metrics["loss"]["diff_rt"] = float(
                     #         diff_loc_loss_reduced.detach().cpu().numpy())
                     if model_cfg.use_direction_classifier:
                         metrics["loss"]["dir_rt"] = float(
-                            dir_loss_reduced.detach().cpu().numpy()
-                        )
+                            dir_loss_reduced.detach().cpu().numpy())
                     metrics["num_vox"] = int(example_torch["voxels"].shape[0])
                     metrics["num_pos"] = int(num_pos)
                     metrics["num_neg"] = int(num_neg)
                     metrics["num_anchors"] = int(num_anchors)
                     metrics["lr"] = float(
-                        mixed_optimizer.param_groups[0]["lr"]
-                    )
+                        mixed_optimizer.param_groups[0]["lr"])
                     metrics["image_idx"] = example["image_idx"][0]
                     flatted_metrics = flat_nested_json_dict(metrics)
                     flatted_summarys = flat_nested_json_dict(metrics, "/")
@@ -388,14 +380,12 @@ def train(
                     print(log_str)
                 ckpt_elasped_time = time.time() - ckpt_start_time
                 if ckpt_elasped_time > train_cfg.save_checkpoints_secs:
-                    torchplus.train.save_models(
-                        model_dir, [net, optimizer], net.get_global_step()
-                    )
+                    torchplus.train.save_models(model_dir, [net, optimizer],
+                                                net.get_global_step())
                     ckpt_start_time = time.time()
             total_step_elapsed += steps
-            torchplus.train.save_models(
-                model_dir, [net, optimizer], net.get_global_step()
-            )
+            torchplus.train.save_models(model_dir, [net, optimizer],
+                                        net.get_global_step())
 
             # Ensure that all evaluation points are saved forever
             torchplus.train.save_models(
@@ -417,16 +407,13 @@ def train(
             print("Generate output labels...")
             print("Generate output labels...", file=logf)
             t = time.time()
-            if (
-                model_cfg.rpn.module_class_name == "PSA"
-                or model_cfg.rpn.module_class_name == "RefineDet"
-            ):
+            if (model_cfg.rpn.module_class_name == "PSA" or
+                    model_cfg.rpn.module_class_name == "RefineDet"):
                 dt_annos_coarse = []
                 dt_annos_refine = []
                 prog_bar = ProgressBar()
                 prog_bar.start(
-                    len(eval_dataset) // eval_input_cfg.batch_size + 1
-                )
+                    len(eval_dataset) // eval_input_cfg.batch_size + 1)
                 for example in iter(eval_dataloader):
                     example = example_convert_to_torch(example, float_dtype)
                     if pickle_result:
@@ -455,8 +442,7 @@ def train(
                 dt_annos = []
                 prog_bar = ProgressBar()
                 prog_bar.start(
-                    len(eval_dataset) // eval_input_cfg.batch_size + 1
-                )
+                    len(eval_dataset) // eval_input_cfg.batch_size + 1)
                 for example in iter(eval_dataloader):
                     example = example_convert_to_torch(example, float_dtype)
                     if pickle_result:
@@ -499,10 +485,8 @@ def train(
             if not pickle_result:
                 dt_annos = kitti.get_label_annos(result_path_step)
 
-            if (
-                model_cfg.rpn.module_class_name == "PSA"
-                or model_cfg.rpn.module_class_name == "RefineDet"
-            ):
+            if (model_cfg.rpn.module_class_name == "PSA" or
+                    model_cfg.rpn.module_class_name == "RefineDet"):
 
                 print("Before Refine:")
                 (
@@ -511,9 +495,10 @@ def train(
                     mAPbev,
                     mAP3d,
                     mAPaos,
-                ) = get_official_eval_result(
-                    gt_annos, dt_annos_coarse, class_names, return_data=True
-                )
+                ) = get_official_eval_result(gt_annos,
+                                             dt_annos_coarse,
+                                             class_names,
+                                             return_data=True)
                 print(result, file=logf)
                 print(result)
                 writer.add_text("eval_result", result, global_step)
@@ -525,9 +510,10 @@ def train(
                     mAPbev,
                     mAP3d,
                     mAPaos,
-                ) = get_official_eval_result(
-                    gt_annos, dt_annos_refine, class_names, return_data=True
-                )
+                ) = get_official_eval_result(gt_annos,
+                                             dt_annos_refine,
+                                             class_names,
+                                             return_data=True)
                 dt_annos = dt_annos_refine
             else:
                 (
@@ -536,9 +522,10 @@ def train(
                     mAPbev,
                     mAP3d,
                     mAPaos,
-                ) = get_official_eval_result(
-                    gt_annos, dt_annos, class_names, return_data=True
-                )
+                ) = get_official_eval_result(gt_annos,
+                                             dt_annos,
+                                             class_names,
+                                             return_data=True)
             print(result, file=logf)
             print(result)
             writer.add_text("eval_result", result, global_step)
@@ -549,21 +536,16 @@ def train(
                     mAPbev[i, 1, 0],
                     global_step,
                 )
-                writer.add_scalar(
-                    "3d_ap:{}".format(class_name), mAP3d[i, 1, 0], global_step
-                )
+                writer.add_scalar("3d_ap:{}".format(class_name),
+                                  mAP3d[i, 1, 0], global_step)
                 writer.add_scalar(
                     "aos_ap:{}".format(class_name),
                     mAPaos[i, 1, 0],
                     global_step,
                 )
-            writer.add_scalar(
-                "bev_map", np.mean(mAPbev[:, 1, 0]), global_step
-            )
+            writer.add_scalar("bev_map", np.mean(mAPbev[:, 1, 0]), global_step)
             writer.add_scalar("3d_map", np.mean(mAP3d[:, 1, 0]), global_step)
-            writer.add_scalar(
-                "aos_map", np.mean(mAPaos[:, 1, 0]), global_step
-            )
+            writer.add_scalar("aos_map", np.mean(mAPaos[:, 1, 0]), global_step)
 
             result = get_coco_eval_result(gt_annos, dt_annos, class_names)
             print(result, file=logf)
@@ -574,15 +556,13 @@ def train(
             writer.add_text("eval_result", result, global_step)
             net.train()
     except Exception as e:
-        torchplus.train.save_models(
-            model_dir, [net, optimizer], net.get_global_step()
-        )
+        torchplus.train.save_models(model_dir, [net, optimizer],
+                                    net.get_global_step())
         logf.close()
         raise e
     # save model before exit
-    torchplus.train.save_models(
-        model_dir, [net, optimizer], net.get_global_step()
-    )
+    torchplus.train.save_models(model_dir, [net, optimizer],
+                                net.get_global_step())
     logf.close()
 
 
@@ -609,8 +589,8 @@ def comput_kitti_output(
             anno = kitti.get_start_result_anno()
             num_example = 0
             for box, box_lidar, bbox, score, label in zip(
-                box_preds, box_preds_lidar, box_2d_preds, scores, label_preds
-            ):
+                    box_preds, box_preds_lidar, box_2d_preds, scores,
+                    label_preds):
                 if not lidar_input:
                     if bbox[0] > image_shape[1] or bbox[1] > image_shape[0]:
                         continue
@@ -620,17 +600,15 @@ def comput_kitti_output(
                 if center_limit_range is not None:
                     limit_range = np.array(center_limit_range)
                     if np.any(box_lidar[:3] < limit_range[:3]) or np.any(
-                        box_lidar[:3] > limit_range[3:]
-                    ):
+                            box_lidar[:3] > limit_range[3:]):
                         continue
                 bbox[2:] = np.minimum(bbox[2:], image_shape[::-1])
                 bbox[:2] = np.maximum(bbox[:2], [0, 0])
                 anno["name"].append(class_names[int(label)])
                 anno["truncated"].append(0.0)
                 anno["occluded"].append(0)
-                anno["alpha"].append(
-                    -np.arctan2(-box_lidar[1], box_lidar[0]) + box[6]
-                )
+                anno["alpha"].append(-np.arctan2(-box_lidar[1], box_lidar[0]) +
+                                     box[6])
                 anno["bbox"].append(bbox)
                 anno["dimensions"].append(box[3:6])
                 anno["location"].append(box[:3])
@@ -653,9 +631,8 @@ def comput_kitti_output(
         else:
             annos.append(kitti.empty_result_anno())
         num_example = annos[-1]["name"].shape[0]
-        annos[-1]["image_idx"] = np.array(
-            [img_idx] * num_example, dtype=np.int64
-        )
+        annos[-1]["image_idx"] = np.array([img_idx] * num_example,
+                                          dtype=np.int64)
 
     return annos
 
@@ -756,15 +733,14 @@ def _predict_kitti_to_file(
             scores = preds_dict["scores"].data.cpu().numpy()
             box_preds_lidar = preds_dict["box3d_lidar"].data.cpu().numpy()
             # write pred to file
-            box_preds = box_preds[
-                :, [0, 1, 2, 4, 5, 3, 6]
-            ]  # lhw->hwl(label file format)
+            box_preds = box_preds[:, [0, 1, 2, 4, 5, 3,
+                                      6]]  # lhw->hwl(label file format)
             label_preds = preds_dict["label_preds"].data.cpu().numpy()
             # label_preds = np.zeros([box_2d_preds.shape[0]], dtype=np.int32)
             result_lines = []
             for box, box_lidar, bbox, score, label in zip(
-                box_preds, box_preds_lidar, box_2d_preds, scores, label_preds
-            ):
+                    box_preds, box_preds_lidar, box_2d_preds, scores,
+                    label_preds):
                 if not lidar_input:
                     if bbox[0] > image_shape[1] or bbox[1] > image_shape[0]:
                         continue
@@ -774,15 +750,13 @@ def _predict_kitti_to_file(
                 if center_limit_range is not None:
                     limit_range = np.array(center_limit_range)
                     if np.any(box_lidar[:3] < limit_range[:3]) or np.any(
-                        box_lidar[:3] > limit_range[3:]
-                    ):
+                            box_lidar[:3] > limit_range[3:]):
                         continue
                 bbox[2:] = np.minimum(bbox[2:], image_shape[::-1])
                 bbox[:2] = np.maximum(bbox[:2], [0, 0])
                 result_dict = {
                     "name": class_names[int(label)],
-                    "alpha": -np.arctan2(-box_lidar[1], box_lidar[0])
-                    + box[6],
+                    "alpha": -np.arctan2(-box_lidar[1], box_lidar[0]) + box[6],
                     "bbox": bbox,
                     "location": box[:3],
                     "dimensions": box[3:6],
@@ -793,25 +767,23 @@ def _predict_kitti_to_file(
                 result_lines.append(result_line)
         else:
             result_lines = []
-        result_file = (
-            f"{result_save_path}/{kitti.get_image_index_str(img_idx)}.txt"
-        )
+        result_file = f"{result_save_path}/{kitti.get_image_index_str(img_idx)}.txt"
         result_str = "\n".join(result_lines)
         with open(result_file, "w") as f:
             f.write(result_str)
 
 
 def evaluate(
-    config_path,
-    model_dir,
-    result_path=None,
-    predict_test=False,
-    ckpt_path=None,
-    ref_detfile=None,
-    pickle_result=True,
-    evaluation_mode="1/2",  # 1/2: take all ground truth boxes, 1/1: take only gt boxes inside voxel range
-    metrics_file_name="eval-metrics.txt",
-    gt_limit_range=None, # remove ground truth objects outside of this range
+        config_path,
+        model_dir,
+        result_path=None,
+        predict_test=False,
+        ckpt_path=None,
+        ref_detfile=None,
+        pickle_result=True,
+        evaluation_mode="1/2",  # 1/2: take all ground truth boxes, 1/1: take only gt boxes inside voxel range
+        metrics_file_name="eval-metrics.txt",
+        gt_limit_range=None,  # remove ground truth objects outside of this range
 ):
     model_dir = pathlib.Path(model_dir)
     if predict_test:
@@ -832,7 +804,7 @@ def evaluate(
     train_cfg = config.train_config
     class_names = list(input_cfg.class_names)
     center_limit_range = model_cfg.post_center_limit_range
-    
+
     if gt_limit_range is None:
         gt_limit_range = center_limit_range
     else:
@@ -845,9 +817,8 @@ def evaluate(
     bv_range = voxel_generator.point_cloud_range[[0, 1, 3, 4]]
     box_coder = box_coder_builder.build(model_cfg.box_coder)
     target_assigner_cfg = model_cfg.target_assigner
-    target_assigner = target_assigner_builder.build(
-        target_assigner_cfg, bv_range, box_coder
-    )
+    target_assigner = target_assigner_builder.build(target_assigner_cfg,
+                                                    bv_range, box_coder)
 
     net = second_builder.build(model_cfg, voxel_generator, target_assigner)
     net.cuda()
@@ -899,30 +870,24 @@ def evaluate(
         2: SumMetric(),
     })
 
-    total_metrics = {
-        "Objects by difficulties": difficulty_metrics
-    }
+    total_metrics = {"Objects by difficulties": difficulty_metrics}
 
-    empty_coarse = [
-        {
-            "name": np.array([], dtype=np.float64),
-            "truncated": np.array([], dtype=np.float64),
-            "occluded": np.array([], dtype=np.float64),
-            "alpha": np.array([], dtype=np.float64),
-            "bbox": np.zeros((0, 4), dtype=np.float64),
-            "dimensions": np.zeros(shape=(0, 3), dtype=np.float64),
-            "location": np.zeros(shape=(0, 3), dtype=np.float64),
-            "rotation_y": np.array([], dtype=np.float64),
-            "score": np.array([], dtype=np.float64),
-            "image_idx": np.array([], dtype=np.int64),
-        }
-    ]
+    empty_coarse = [{
+        "name": np.array([], dtype=np.float64),
+        "truncated": np.array([], dtype=np.float64),
+        "occluded": np.array([], dtype=np.float64),
+        "alpha": np.array([], dtype=np.float64),
+        "bbox": np.zeros((0, 4), dtype=np.float64),
+        "dimensions": np.zeros(shape=(0, 3), dtype=np.float64),
+        "location": np.zeros(shape=(0, 3), dtype=np.float64),
+        "rotation_y": np.array([], dtype=np.float64),
+        "score": np.array([], dtype=np.float64),
+        "image_idx": np.array([], dtype=np.int64),
+    }]
     empty_refine = empty_coarse
 
     if evaluation_mode == "1/2":
-        gt_annos = [
-            info["annos"] for info in eval_dataset.dataset.kitti_infos
-        ]
+        gt_annos = [info["annos"] for info in eval_dataset.dataset.kitti_infos]
     elif evaluation_mode == "1/1":
 
         ogt_annos = [
@@ -948,10 +913,8 @@ def evaluate(
             for i in range(len(annos["location"])):
                 loc = annos["location"][i]
                 lidar_loc = box_np_ops.camera_to_lidar(loc, rect, Trv2c)
-                is_in_range = not (
-                    np.any(lidar_loc < ev_limit_range[:3])
-                    or np.any(lidar_loc > ev_limit_range[3:])
-                )
+                is_in_range = not (np.any(lidar_loc < ev_limit_range[:3]) or
+                                   np.any(lidar_loc > ev_limit_range[3:]))
 
                 if is_in_range or np.all(loc == -1000):
                     in_range_count += 0 if np.all(loc == -1000) else 1
@@ -998,11 +961,8 @@ def evaluate(
                 else:
                     filtered_annos[key] = np.array(filtered_annos[key])
 
-
             for difficulty in filtered_annos["difficulty"]:
-                difficulty_metrics.update({
-                    int(difficulty): 1
-                })
+                difficulty_metrics.update({int(difficulty): 1})
 
             gt_annos.append(filtered_annos)
 
@@ -1017,10 +977,8 @@ def evaluate(
         total_metrics["Objects not in range"] = Metric(not_in_range_count)
         total_metrics["Points in sub-scene"] = points_in_subscene_metric
 
-    if (
-        model_cfg.rpn.module_class_name == "PSA"
-        or model_cfg.rpn.module_class_name == "RefineDet"
-    ):
+    if (model_cfg.rpn.module_class_name == "PSA" or
+            model_cfg.rpn.module_class_name == "RefineDet"):
         dt_annos_coarse = []
         dt_annos_refine = []
         print("Generate output labels...")
@@ -1037,7 +995,8 @@ def evaluate(
                 points_in_subscene_metric.update(0)
                 continue
 
-            points_in_subscene_metric.update(int(sum(example["num_points"]).cpu()))
+            points_in_subscene_metric.update(
+                int(sum(example["num_points"]).cpu()))
 
             tt = time.perf_counter()
 
@@ -1071,12 +1030,8 @@ def evaluate(
             total_count += 1
             bar.print_bar()
 
-        total_detected_coarse = sum(
-            [len(a["alpha"]) for a in dt_annos_coarse]
-        )
-        total_detected_refine = sum(
-            [len(a["alpha"]) for a in dt_annos_refine]
-        )
+        total_detected_coarse = sum([len(a["alpha"]) for a in dt_annos_coarse])
+        total_detected_refine = sum([len(a["alpha"]) for a in dt_annos_refine])
 
         print()
         print(" || total_detected_coarse:", total_detected_coarse)
@@ -1090,7 +1045,8 @@ def evaluate(
         for example in iter(eval_dataloader):
             example = example_convert_to_torch(example, float_dtype)
 
-            points_in_subscene_metric.update(int(sum(example["num_points"]).cpu()))
+            points_in_subscene_metric.update(
+                int(sum(example["num_points"]).cpu()))
 
             tt = time.perf_counter()
 
@@ -1138,17 +1094,14 @@ def evaluate(
         #     info["annos"] for info in eval_dataset.dataset.kitti_infos
         # ]
 
-        print(
-            " || total_objects_gt:", sum([len(a["alpha"]) for a in gt_annos])
-        )
+        print(" || total_objects_gt:",
+              sum([len(a["alpha"]) for a in gt_annos]))
 
         if not pickle_result:
             dt_annos = kitti.get_label_annos(result_path_step)
 
-        if (
-            model_cfg.rpn.module_class_name == "PSA"
-            or model_cfg.rpn.module_class_name == "RefineDet"
-        ):
+        if (model_cfg.rpn.module_class_name == "PSA" or
+                model_cfg.rpn.module_class_name == "RefineDet"):
             print("Before Refine:")
             (
                 result_coarse,
@@ -1157,7 +1110,10 @@ def evaluate(
                 mAP3d_coarse,
                 mAPaos_coarse,
             ) = get_official_eval_result(
-                gt_annos, dt_annos_coarse, class_names, return_data=True,
+                gt_annos,
+                dt_annos_coarse,
+                class_names,
+                return_data=True,
             )
             print(result_coarse)
 
@@ -1169,7 +1125,10 @@ def evaluate(
                 mAP3d_refine,
                 mAPaos_refine,
             ) = get_official_eval_result(
-                gt_annos, dt_annos_refine, class_names, return_data=True,
+                gt_annos,
+                dt_annos_refine,
+                class_names,
+                return_data=True,
             )
             print(result_refine)
             # result = get_coco_eval_result(
@@ -1182,31 +1141,25 @@ def evaluate(
 
             for i, class_name in enumerate(class_names):
                 metric = Metric()
-                metric.update(
-                    [
-                        mAP3d_coarse[i, 0, 0],
-                        mAP3d_coarse[i, 1, 0],
-                        mAP3d_coarse[i, 2, 0],
-                    ]
-                )
-                coarse_3dAP_metrics[
-                    "Coarse " + class_name + " 3D APs"
-                ] = metric
+                metric.update([
+                    mAP3d_coarse[i, 0, 0],
+                    mAP3d_coarse[i, 1, 0],
+                    mAP3d_coarse[i, 2, 0],
+                ])
+                coarse_3dAP_metrics["Coarse " + class_name +
+                                    " 3D APs"] = metric
 
             refine_3dAP_metrics = {}
 
             for i, class_name in enumerate(class_names):
                 metric = Metric()
-                metric.update(
-                    [
-                        mAP3d_refine[i, 0, 0],
-                        mAP3d_refine[i, 1, 0],
-                        mAP3d_refine[i, 2, 0],
-                    ]
-                )
-                coarse_3dAP_metrics[
-                    "Refine " + class_name + " 3D APs"
-                ] = metric
+                metric.update([
+                    mAP3d_refine[i, 0, 0],
+                    mAP3d_refine[i, 1, 0],
+                    mAP3d_refine[i, 2, 0],
+                ])
+                coarse_3dAP_metrics["Refine " + class_name +
+                                    " 3D APs"] = metric
 
             total_metrics = {
                 "FPS": fps_metric,
@@ -1217,25 +1170,28 @@ def evaluate(
             }
 
             log_metrics(
-                model_dir / metrics_file_name, total_metrics,
+                model_dir / metrics_file_name,
+                total_metrics,
             )
             log_metrics(
-                "console", total_metrics,
+                "console",
+                total_metrics,
             )
 
         else:
             result, mAPbbox, mAPbev, mAP3d, mAPaos = get_official_eval_result(
-                gt_annos, dt_annos, class_names, return_data=True
-            )
+                gt_annos, dt_annos, class_names, return_data=True)
             print(result)
 
             result_3dAP_metrics = {}
 
             for i, class_name in enumerate(class_names):
                 metric = Metric()
-                metric.update(
-                    [mAP3d[i, 0, 0], mAP3d[i, 1, 0], mAP3d[i, 2, 0],]
-                )
+                metric.update([
+                    mAP3d[i, 0, 0],
+                    mAP3d[i, 1, 0],
+                    mAP3d[i, 2, 0],
+                ])
                 result_3dAP_metrics[class_name + " 3D APs"] = metric
 
             total_metrics = {
@@ -1246,11 +1202,13 @@ def evaluate(
             }
 
             log_metrics(
-                model_dir / metrics_file_name, total_metrics,
+                model_dir / metrics_file_name,
+                total_metrics,
             )
 
             log_metrics(
-                "console", total_metrics,
+                "console",
+                total_metrics,
             )
 
         # result = get_coco_eval_result(gt_annos, dt_annos, class_names)

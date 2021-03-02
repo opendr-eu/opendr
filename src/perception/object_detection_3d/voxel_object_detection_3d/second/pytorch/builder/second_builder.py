@@ -15,17 +15,23 @@
 """VoxelNet builder.
 """
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import second_pb2
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.builder import losses_builder
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.voxelnet import LossNormType, VoxelNet
+from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
+    second_pb2,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.builder import (
+    losses_builder,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.voxelnet import (
+    LossNormType,
+    VoxelNet,
+)
 
 
-def build(model_cfg: second_pb2.VoxelNet, voxel_generator,
-          target_assigner) -> VoxelNet:
+def build(model_cfg: second_pb2.VoxelNet, voxel_generator, target_assigner) -> VoxelNet:
     """build second pytorch instance.
     """
     if not isinstance(model_cfg, second_pb2.VoxelNet):
-        raise ValueError('model_cfg not of type ' 'second_pb2.VoxelNet.')
+        raise ValueError("model_cfg not of type " "second_pb2.VoxelNet.")
     vfe_num_filters = list(model_cfg.voxel_feature_extractor.num_filters)
     vfe_with_distance = model_cfg.voxel_feature_extractor.with_distance
     grid_size = voxel_generator.grid_size
@@ -56,9 +62,11 @@ def build(model_cfg: second_pb2.VoxelNet, voxel_generator,
         vfe_num_filters=vfe_num_filters,
         middle_class_name=model_cfg.middle_feature_extractor.module_class_name,
         middle_num_filters_d1=list(
-            model_cfg.middle_feature_extractor.num_filters_down1),
+            model_cfg.middle_feature_extractor.num_filters_down1
+        ),
         middle_num_filters_d2=list(
-            model_cfg.middle_feature_extractor.num_filters_down2),
+            model_cfg.middle_feature_extractor.num_filters_down2
+        ),
         rpn_class_name=model_cfg.rpn.module_class_name,
         rpn_layer_nums=list(model_cfg.rpn.layer_nums),
         rpn_layer_strides=list(model_cfg.rpn.layer_strides),
@@ -91,6 +99,6 @@ def build(model_cfg: second_pb2.VoxelNet, voxel_generator,
         cls_loss_ftor=cls_loss_ftor,
         target_assigner=target_assigner,
         voxel_size=voxel_generator.voxel_size,
-        pc_range=voxel_generator.point_cloud_range
+        pc_range=voxel_generator.point_cloud_range,
     )
     return net

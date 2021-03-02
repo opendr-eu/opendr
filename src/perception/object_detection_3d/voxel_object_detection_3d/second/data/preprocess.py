@@ -6,11 +6,16 @@ from collections import defaultdict
 import numpy as np
 from skimage import io as imgio
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import box_np_ops
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import preprocess as prep
-from perception.object_detection_3d.voxel_object_detection_3d.second.core.geometry import points_in_convex_polygon_3d_jit
-from perception.object_detection_3d.voxel_object_detection_3d.second.core.point_cloud.bev_ops import points_to_bev
-from perception.object_detection_3d.voxel_object_detection_3d.second.data import kitti_common as kitti
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    box_np_ops, )
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    preprocess as prep, )
+from perception.object_detection_3d.voxel_object_detection_3d.second.core.geometry import (
+    points_in_convex_polygon_3d_jit, )
+from perception.object_detection_3d.voxel_object_detection_3d.second.core.point_cloud.bev_ops import (
+    points_to_bev, )
+from perception.object_detection_3d.voxel_object_detection_3d.second.data import (
+    kitti_common as kitti, )
 
 
 def merge_second_batch(batch_list, _unused=False):
@@ -22,19 +27,22 @@ def merge_second_batch(batch_list, _unused=False):
     example_merged.pop("num_voxels")
     for key, elems in example_merged.items():
         if key in [
-                'voxels', 'num_points', 'num_gt', 'gt_boxes', 'voxel_labels',
-                'match_indices'
+                "voxels",
+                "num_points",
+                "num_gt",
+                "gt_boxes",
+                "voxel_labels",
+                "match_indices",
         ]:
             ret[key] = np.concatenate(elems, axis=0)
-        elif key == 'match_indices_num':
+        elif key == "match_indices_num":
             ret[key] = np.concatenate(elems, axis=0)
-        elif key == 'coordinates':
+        elif key == "coordinates":
             coors = []
             for i, coor in enumerate(elems):
-                coor_pad = np.pad(
-                    coor, ((0, 0), (1, 0)),
-                    mode='constant',
-                    constant_values=i)
+                coor_pad = np.pad(coor, ((0, 0), (1, 0)),
+                                  mode="constant",
+                                  constant_values=i)
                 coors.append(coor_pad)
             ret[key] = np.concatenate(coors, axis=0)
         else:
@@ -42,45 +50,47 @@ def merge_second_batch(batch_list, _unused=False):
     return ret
 
 
-def prep_pointcloud(input_dict,
-                    root_path,
-                    voxel_generator,
-                    target_assigner,
-                    db_sampler=None,
-                    max_voxels=20000,
-                    class_names=['Car'],
-                    remove_outside_points=False,
-                    training=True,
-                    create_targets=True,
-                    shuffle_points=False,
-                    reduce_valid_area=False,
-                    remove_unknown=False,
-                    gt_rotation_noise=[-np.pi / 3, np.pi / 3],
-                    gt_loc_noise_std=[1.0, 1.0, 1.0],
-                    global_rotation_noise=[-np.pi / 4, np.pi / 4],
-                    global_scaling_noise=[0.95, 1.05],
-                    global_loc_noise_std=(0.2, 0.2, 0.2),
-                    global_random_rot_range=[0.78, 2.35],
-                    generate_bev=False,
-                    without_reflectivity=False,
-                    num_point_features=4,
-                    anchor_area_threshold=1,
-                    gt_points_drop=0.0,
-                    gt_drop_max_keep=10,
-                    remove_points_after_sample=True,
-                    anchor_cache=None,
-                    remove_environment=False,
-                    random_crop=False,
-                    reference_detections=None,
-                    add_rgb_to_points=False,
-                    lidar_input=False,
-                    unlabeled_db_sampler=None,
-                    out_size_factor=2,
-                    min_gt_point_dict=None,
-                    bev_only=False,
-                    use_group_id=False,
-                    out_dtype=np.float32):
-    """convert point cloud to voxels, create targets if ground truths 
+def prep_pointcloud(
+    input_dict,
+    root_path,
+    voxel_generator,
+    target_assigner,
+    db_sampler=None,
+    max_voxels=20000,
+    class_names=["Car"],
+    remove_outside_points=False,
+    training=True,
+    create_targets=True,
+    shuffle_points=False,
+    reduce_valid_area=False,
+    remove_unknown=False,
+    gt_rotation_noise=[-np.pi / 3, np.pi / 3],
+    gt_loc_noise_std=[1.0, 1.0, 1.0],
+    global_rotation_noise=[-np.pi / 4, np.pi / 4],
+    global_scaling_noise=[0.95, 1.05],
+    global_loc_noise_std=(0.2, 0.2, 0.2),
+    global_random_rot_range=[0.78, 2.35],
+    generate_bev=False,
+    without_reflectivity=False,
+    num_point_features=4,
+    anchor_area_threshold=1,
+    gt_points_drop=0.0,
+    gt_drop_max_keep=10,
+    remove_points_after_sample=True,
+    anchor_cache=None,
+    remove_environment=False,
+    random_crop=False,
+    reference_detections=None,
+    add_rgb_to_points=False,
+    lidar_input=False,
+    unlabeled_db_sampler=None,
+    out_size_factor=2,
+    min_gt_point_dict=None,
+    bev_only=False,
+    use_group_id=False,
+    out_dtype=np.float32,
+):
+    """convert point cloud to voxels, create targets if ground truths
     exists.
     """
     points = input_dict["points"]
@@ -102,7 +112,7 @@ def prep_pointcloud(input_dict,
         frustums = box_np_ops.get_frustum_v2(reference_detections, C)
         frustums -= T
         # frustums = np.linalg.inv(R) @ frustums.T
-        frustums = np.einsum('ij, akj->aki', np.linalg.inv(R), frustums)
+        frustums = np.einsum("ij, akj->aki", np.linalg.inv(R), frustums)
         frustums = box_np_ops.camera_to_lidar(frustums, rect, Trv2c)
         surfaces = box_np_ops.corner_to_surfaces_3d_jit(frustums)
         masks = points_in_convex_polygon_3d_jit(points, surfaces)
@@ -143,8 +153,8 @@ def prep_pointcloud(input_dict,
             difficulty = difficulty[keep_mask]
             if group_ids is not None:
                 group_ids = group_ids[keep_mask]
-        gt_boxes_mask = np.array(
-            [n in class_names for n in gt_names], dtype=np.bool_)
+        gt_boxes_mask = np.array([n in class_names for n in gt_names],
+                                 dtype=np.bool_)
         if db_sampler is not None:
             sampled_dict = db_sampler.sample_all(
                 root_path,
@@ -155,7 +165,8 @@ def prep_pointcloud(input_dict,
                 gt_group_ids=group_ids,
                 rect=rect,
                 Trv2c=Trv2c,
-                P2=P2)
+                P2=P2,
+            )
 
             if sampled_dict is not None:
                 sampled_gt_names = sampled_dict["gt_names"]
@@ -194,23 +205,26 @@ def prep_pointcloud(input_dict,
             center_noise_std=gt_loc_noise_std,
             global_random_rot_range=global_random_rot_range,
             group_ids=group_ids,
-            num_try=100)
+            num_try=100,
+        )
         # should remove unrelated objects after noise per object
         gt_boxes = gt_boxes[gt_boxes_mask]
         gt_names = gt_names[gt_boxes_mask]
         if group_ids is not None:
             group_ids = group_ids[gt_boxes_mask]
-        gt_classes = np.array(
-            [class_names.index(n) + 1 for n in gt_names], dtype=np.int32)
+        gt_classes = np.array([class_names.index(n) + 1 for n in gt_names],
+                              dtype=np.int32)
 
         gt_boxes, points = prep.random_flip(gt_boxes, points)
-        gt_boxes, points = prep.global_rotation(
-            gt_boxes, points, rotation=global_rotation_noise)
+        gt_boxes, points = prep.global_rotation(gt_boxes,
+                                                points,
+                                                rotation=global_rotation_noise)
         gt_boxes, points = prep.global_scaling_v2(gt_boxes, points,
                                                   *global_scaling_noise)
 
         # Global translation
-        gt_boxes, points = prep.global_translate(gt_boxes, points, global_loc_noise_std)
+        gt_boxes, points = prep.global_translate(gt_boxes, points,
+                                                 global_loc_noise_std)
 
         bv_range = voxel_generator.point_cloud_range[[0, 1, 3, 4]]
         mask = prep.filter_gt_box_outside_range(gt_boxes, bv_range)
@@ -220,8 +234,9 @@ def prep_pointcloud(input_dict,
             group_ids = group_ids[mask]
 
         # limit rad to [-pi, pi]
-        gt_boxes[:, 6] = box_np_ops.limit_period(
-            gt_boxes[:, 6], offset=0.5, period=2 * np.pi)
+        gt_boxes[:, 6] = box_np_ops.limit_period(gt_boxes[:, 6],
+                                                 offset=0.5,
+                                                 period=2 * np.pi)
 
     if shuffle_points:
         # shuffle is a little slow.
@@ -237,15 +252,15 @@ def prep_pointcloud(input_dict,
         points, max_voxels)
 
     example = {
-        'voxels': voxels,
-        'num_points': num_points,
-        'coordinates': coordinates,
-        "num_voxels": np.array([voxels.shape[0]], dtype=np.int64)
+        "voxels": voxels,
+        "num_points": num_points,
+        "coordinates": coordinates,
+        "num_voxels": np.array([voxels.shape[0]], dtype=np.int64),
     }
     example.update({
-        'rect': rect,
-        'Trv2c': Trv2c,
-        'P2': P2,
+        "rect": rect,
+        "Trv2c": Trv2c,
+        "P2": P2,
     })
     # if not lidar_input:
     feature_map_size = grid_size[:2] // out_size_factor
@@ -261,8 +276,8 @@ def prep_pointcloud(input_dict,
         anchors = anchors.reshape([-1, 7])
         matched_thresholds = ret["matched_thresholds"]
         unmatched_thresholds = ret["unmatched_thresholds"]
-        anchors_bv = box_np_ops.rbbox2d_to_near_bbox(
-            anchors[:, [0, 1, 3, 4, 6]])
+        anchors_bv = box_np_ops.rbbox2d_to_near_bbox(anchors[:,
+                                                             [0, 1, 3, 4, 6]])
     example["anchors"] = anchors
     # print("debug", anchors.shape, matched_thresholds.shape)
     # anchors_bv = anchors_bv.reshape([-1, 4])
@@ -277,7 +292,7 @@ def prep_pointcloud(input_dict,
             dense_voxel_map, anchors_bv, voxel_size, pc_range, grid_size)
         anchors_mask = anchors_area > anchor_area_threshold
         # example['anchors_mask'] = anchors_mask.astype(np.uint8)
-        example['anchors_mask'] = anchors_mask
+        example["anchors_mask"] = anchors_mask
     if generate_bev:
         bev_vxsize = voxel_size.copy()
         bev_vxsize[:2] /= 2
@@ -294,11 +309,12 @@ def prep_pointcloud(input_dict,
             anchors_mask,
             gt_classes=gt_classes,
             matched_thresholds=matched_thresholds,
-            unmatched_thresholds=unmatched_thresholds)
+            unmatched_thresholds=unmatched_thresholds,
+        )
         example.update({
-            'labels': targets_dict['labels'],
-            'reg_targets': targets_dict['bbox_targets'],
-            'reg_weights': targets_dict['bbox_outside_weights'],
+            "labels": targets_dict["labels"],
+            "reg_targets": targets_dict["bbox_targets"],
+            "reg_weights": targets_dict["bbox_outside_weights"],
         })
     return example
 
@@ -308,31 +324,30 @@ def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
     """
     # velodyne_path = str(pathlib.Path(root_path) / info['velodyne_path'])
     # velodyne_path += '_reduced'
-    v_path = pathlib.Path(root_path) / info['velodyne_path']
-    v_path = v_path.parent.parent / (
-        v_path.parent.stem + "_reduced") / v_path.name
+    v_path = pathlib.Path(root_path) / info["velodyne_path"]
+    v_path = v_path.parent.parent / (v_path.parent.stem +
+                                     "_reduced") / v_path.name
 
-    points = np.fromfile(
-        str(v_path), dtype=np.float32,
-        count=-1).reshape([-1, num_point_features])
-    image_idx = info['image_idx']
-    rect = info['calib/R0_rect'].astype(np.float32)
-    Trv2c = info['calib/Tr_velo_to_cam'].astype(np.float32)
-    P2 = info['calib/P2'].astype(np.float32)
+    points = np.fromfile(str(v_path), dtype=np.float32,
+                         count=-1).reshape([-1, num_point_features])
+    image_idx = info["image_idx"]
+    rect = info["calib/R0_rect"].astype(np.float32)
+    Trv2c = info["calib/Tr_velo_to_cam"].astype(np.float32)
+    P2 = info["calib/P2"].astype(np.float32)
 
     input_dict = {
-        'points': points,
-        'rect': rect,
-        'Trv2c': Trv2c,
-        'P2': P2,
-        'image_shape': np.array(info["img_shape"], dtype=np.int32),
-        'image_idx': image_idx,
-        'image_path': info['img_path'],
+        "points": points,
+        "rect": rect,
+        "Trv2c": Trv2c,
+        "P2": P2,
+        "image_shape": np.array(info["img_shape"], dtype=np.int32),
+        "image_idx": image_idx,
+        "image_path": info["img_path"],
         # 'pointcloud_num_features': num_point_features,
     }
 
-    if 'annos' in info:
-        annos = info['annos']
+    if "annos" in info:
+        annos = info["annos"]
         # we need other objects to avoid collision when sample
         annos = kitti.remove_dontcare(annos)
         loc = annos["location"]
@@ -340,21 +355,20 @@ def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
         rots = annos["rotation_y"]
         gt_names = annos["name"]
         # print(gt_names, len(loc))
-        gt_boxes = np.concatenate(
-            [loc, dims, rots[..., np.newaxis]], axis=1).astype(np.float32)
+        gt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]],
+                                  axis=1).astype(np.float32)
         # gt_boxes = box_np_ops.box_camera_to_lidar(gt_boxes, rect, Trv2c)
         difficulty = annos["difficulty"]
         input_dict.update({
-            'gt_boxes': gt_boxes,
-            'gt_names': gt_names,
-            'difficulty': difficulty,
+            "gt_boxes": gt_boxes,
+            "gt_names": gt_names,
+            "difficulty": difficulty,
         })
-        if 'group_ids' in annos:
-            input_dict['group_ids'] = annos["group_ids"]
+        if "group_ids" in annos:
+            input_dict["group_ids"] = annos["group_ids"]
     example = prep_func(input_dict=input_dict)
     example["image_idx"] = image_idx
     example["image_shape"] = input_dict["image_shape"]
     if "anchors_mask" in example:
         example["anchors_mask"] = example["anchors_mask"].astype(np.uint8)
     return example
-

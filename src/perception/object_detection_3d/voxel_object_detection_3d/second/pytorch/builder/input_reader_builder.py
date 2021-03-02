@@ -24,8 +24,12 @@ that wraps the build function.
 
 from torch.utils.data import Dataset
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.builder import dataset_builder
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import input_reader_pb2
+from perception.object_detection_3d.voxel_object_detection_3d.second.builder import (
+    dataset_builder,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
+    input_reader_pb2,
+)
 
 
 class DatasetWrapper(Dataset):
@@ -46,11 +50,9 @@ class DatasetWrapper(Dataset):
         return self._dataset
 
 
-def build(input_reader_config,
-          model_config,
-          training,
-          voxel_generator,
-          target_assigner=None) -> DatasetWrapper:
+def build(
+    input_reader_config, model_config, training, voxel_generator, target_assigner=None
+) -> DatasetWrapper:
     """Builds a tensor dictionary based on the InputReader config.
 
     Args:
@@ -64,9 +66,11 @@ def build(input_reader_config,
         ValueError: If no input paths are specified.
     """
     if not isinstance(input_reader_config, input_reader_pb2.InputReader):
-        raise ValueError('input_reader_config not of type '
-                         'input_reader_pb2.InputReader.')
-    dataset = dataset_builder.build(input_reader_config, model_config,
-                                    training, voxel_generator, target_assigner)
+        raise ValueError(
+            "input_reader_config not of type " "input_reader_pb2.InputReader."
+        )
+    dataset = dataset_builder.build(
+        input_reader_config, model_config, training, voxel_generator, target_assigner
+    )
     dataset = DatasetWrapper(dataset)
     return dataset

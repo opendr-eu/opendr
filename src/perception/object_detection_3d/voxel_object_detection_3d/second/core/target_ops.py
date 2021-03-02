@@ -16,31 +16,31 @@ def unmap(data, count, inds, fill=0):
         return data
 
     if len(data.shape) == 1:
-        ret = np.empty((count, ), dtype=data.dtype)
+        ret = np.empty((count,), dtype=data.dtype)
         ret.fill(fill)
         ret[inds] = data
     else:
-        ret = np.empty((count, ) + data.shape[1:], dtype=data.dtype)
+        ret = np.empty((count,) + data.shape[1:], dtype=data.dtype)
         ret.fill(fill)
         ret[inds, :] = data
     return ret
 
 
-
-
-def create_target_np(all_anchors,
-                     gt_boxes,
-                     similarity_fn,
-                     box_encoding_fn,
-                     prune_anchor_fn=None,
-                     gt_classes=None,
-                     matched_threshold=0.6,
-                     unmatched_threshold=0.45,
-                     bbox_inside_weight=None,
-                     positive_fraction=None,
-                     rpn_batch_size=300,
-                     norm_by_num_examples=False,
-                     box_code_size=7):
+def create_target_np(
+    all_anchors,
+    gt_boxes,
+    similarity_fn,
+    box_encoding_fn,
+    prune_anchor_fn=None,
+    gt_classes=None,
+    matched_threshold=0.6,
+    unmatched_threshold=0.45,
+    bbox_inside_weight=None,
+    positive_fraction=None,
+    rpn_batch_size=300,
+    norm_by_num_examples=False,
+    box_code_size=7,
+):
     """Modified from FAIR detectron.
     Args:
         all_anchors: [num_of_anchors, box_ndim] float tensor.
@@ -80,15 +80,15 @@ def create_target_np(all_anchors,
         inds_inside = None
     num_inside = len(inds_inside) if inds_inside is not None else total_anchors
     box_ndim = all_anchors.shape[1]
-    logger.debug('total_anchors: {}'.format(total_anchors))
-    logger.debug('inds_inside: {}'.format(num_inside))
-    logger.debug('anchors.shape: {}'.format(anchors.shape))
+    logger.debug("total_anchors: {}".format(total_anchors))
+    logger.debug("inds_inside: {}".format(num_inside))
+    logger.debug("anchors.shape: {}".format(anchors.shape))
     if gt_classes is None:
         gt_classes = np.ones([gt_boxes.shape[0]], dtype=np.int32)
     # Compute anchor labels:
     # label=1 is positive, 0 is negative, -1 is don't care (ignore)
-    labels = np.empty((num_inside, ), dtype=np.int32)
-    gt_ids = np.empty((num_inside, ), dtype=np.int32)
+    labels = np.empty((num_inside,), dtype=np.int32)
+    gt_ids = np.empty((num_inside,), dtype=np.int32)
     labels.fill(-1)
     gt_ids.fill(-1)
     if len(gt_boxes) > 0 and anchors.shape[0] > 0:
@@ -97,21 +97,21 @@ def create_target_np(all_anchors,
         # Map from anchor to gt box that has highest overlap
         anchor_to_gt_argmax = anchor_by_gt_overlap.argmax(axis=1)
         # For each anchor, amount of overlap with most overlapping gt box
-        anchor_to_gt_max = anchor_by_gt_overlap[np.arange(num_inside),
-                                                anchor_to_gt_argmax]  #
+        anchor_to_gt_max = anchor_by_gt_overlap[
+            np.arange(num_inside), anchor_to_gt_argmax
+        ]  #
         # Map from gt box to an anchor that has highest overlap
         gt_to_anchor_argmax = anchor_by_gt_overlap.argmax(axis=0)
         # For each gt box, amount of overlap with most overlapping anchor
         gt_to_anchor_max = anchor_by_gt_overlap[
-            gt_to_anchor_argmax,
-            np.arange(anchor_by_gt_overlap.shape[1])]
+            gt_to_anchor_argmax, np.arange(anchor_by_gt_overlap.shape[1])
+        ]
         # must remove gt which doesn't match any anchor.
         empty_gt_mask = gt_to_anchor_max == 0
         gt_to_anchor_max[empty_gt_mask] = -1
         # Find all anchors that share the max overlap amount
         # (this includes many ties)
-        anchors_with_max_overlap = np.where(
-            anchor_by_gt_overlap == gt_to_anchor_max)[0]
+        anchors_with_max_overlap = np.where(anchor_by_gt_overlap == gt_to_anchor_max)[0]
         # Fg label: for each gt use anchors with highest overlap
         # (including ties)
         gt_inds_force = anchor_to_gt_argmax[anchors_with_max_overlap]
@@ -138,7 +138,8 @@ def create_target_np(all_anchors,
         num_fg = int(positive_fraction * rpn_batch_size)
         if len(fg_inds) > num_fg:
             disable_inds = npr.choice(
-                fg_inds, size=(len(fg_inds) - num_fg), replace=False)
+                fg_inds, size=(len(fg_inds) - num_fg), replace=False
+            )
             labels[disable_inds] = -1
             fg_inds = np.where(labels > 0)[0]
 
@@ -158,14 +159,14 @@ def create_target_np(all_anchors,
             labels[bg_inds] = 0
             # re-enable anchors_with_max_overlap
             labels[anchors_with_max_overlap] = gt_classes[gt_inds_force]
-    bbox_targets = np.zeros(
-        (num_inside, box_code_size), dtype=all_anchors.dtype)
+    bbox_targets = np.zeros((num_inside, box_code_size), dtype=all_anchors.dtype)
     if len(gt_boxes) > 0 and anchors.shape[0] > 0:
         # print(anchors[fg_inds, :].shape, gt_boxes[anchor_to_gt_argmax[fg_inds], :].shape)
         # bbox_targets[fg_inds, :] = box_encoding_fn(
         #     anchors[fg_inds, :], gt_boxes[anchor_to_gt_argmax[fg_inds], :])
         bbox_targets[fg_inds, :] = box_encoding_fn(
-            gt_boxes[anchor_to_gt_argmax[fg_inds], :], anchors[fg_inds, :])
+            gt_boxes[anchor_to_gt_argmax[fg_inds], :], anchors[fg_inds, :]
+        )
     # Bbox regression loss has the form:
     #   loss(x) = weight_outside * L(weight_inside * x)
     # Inside weights allow us to set zero loss on an element-wise basis
@@ -181,7 +182,7 @@ def create_target_np(all_anchors,
     # Outside weights are used to scale each element-wise loss so the final
     # average over the mini-batch is correct
     # bbox_outside_weights = np.zeros((num_inside, box_ndim), dtype=np.float32)
-    bbox_outside_weights = np.zeros((num_inside, ), dtype=all_anchors.dtype)
+    bbox_outside_weights = np.zeros((num_inside,), dtype=all_anchors.dtype)
     # uniform weighting of examples (given non-uniform sampling)
     if norm_by_num_examples:
         num_examples = np.sum(labels >= 0)  # neg + pos
@@ -198,7 +199,8 @@ def create_target_np(all_anchors,
         # bbox_inside_weights = unmap(
         #     bbox_inside_weights, total_anchors, inds_inside, fill=0)
         bbox_outside_weights = unmap(
-            bbox_outside_weights, total_anchors, inds_inside, fill=0)
+            bbox_outside_weights, total_anchors, inds_inside, fill=0
+        )
     # return labels, bbox_targets, bbox_outside_weights
     ret = {
         "labels": labels,
