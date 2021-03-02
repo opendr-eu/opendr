@@ -1,7 +1,11 @@
 import numpy as np
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.core.voxel_generator import VoxelGenerator
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import voxel_generator_pb2
+from perception.object_detection_3d.voxel_object_detection_3d.second.core.voxel_generator import (
+    VoxelGenerator,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
+    voxel_generator_pb2,
+)
 
 
 def build(voxel_config):
@@ -18,11 +22,13 @@ def build(voxel_config):
         ValueError: If no input paths are specified.
     """
     if not isinstance(voxel_config, (voxel_generator_pb2.VoxelGenerator)):
-        raise ValueError('input_reader_config not of type '
-                         'input_reader_pb2.InputReader.')
+        raise ValueError(
+            "input_reader_config not of type " "input_reader_pb2.InputReader."
+        )
     voxel_generator = VoxelGenerator(
         voxel_size=list(voxel_config.voxel_size),
         point_cloud_range=list(voxel_config.point_cloud_range),
         max_num_points=voxel_config.max_number_of_points_per_voxel,
-        max_voxels=20000)
+        max_voxels=20000,
+    )
     return voxel_generator

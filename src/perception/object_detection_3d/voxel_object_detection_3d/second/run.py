@@ -7,19 +7,16 @@ import torchplus
 from google.protobuf import text_format
 
 from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
-    pipeline_pb2,
-)
+    pipeline_pb2, )
 import second.data.kitti_common as kitti
 from perception.object_detection_3d.voxel_object_detection_3d.second.builder import (
     target_assigner_builder,
     voxel_builder,
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second.data.preprocess import (
-    merge_second_batch,
-)
+    merge_second_batch, )
 from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
-    pipeline_pb2,
-)
+    pipeline_pb2, )
 from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.builder import (
     box_coder_builder,
     input_reader_builder,
@@ -32,14 +29,14 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.utils.eval 
     get_official_eval_result,
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second.utils.progress_bar import (
-    ProgressBar,
-)
+    ProgressBar, )
 import pickle
+from perception.object_detection_3d.voxel_object_detection_3d.logger import Logger
 
 
-def example_convert_to_torch(
-    example, dtype=torch.float32, device=None
-) -> dict:
+def example_convert_to_torch(example,
+                             dtype=torch.float32,
+                             device=None) -> dict:
     device = device or torch.device("cuda:0")
     example_torch = {}
     float_names = [
@@ -58,13 +55,13 @@ def example_convert_to_torch(
         if k in float_names:
             example_torch[k] = torch.as_tensor(v, dtype=dtype, device=device)
         elif k in ["coordinates", "labels", "num_points"]:
-            example_torch[k] = torch.as_tensor(
-                v, dtype=torch.int32, device=device
-            )
+            example_torch[k] = torch.as_tensor(v,
+                                               dtype=torch.int32,
+                                               device=device)
         elif k in ["anchors_mask"]:
-            example_torch[k] = torch.as_tensor(
-                v, dtype=torch.uint8, device=device
-            )
+            example_torch[k] = torch.as_tensor(v,
+                                               dtype=torch.uint8,
+                                               device=device)
         else:
             example_torch[k] = v
     return example_torch
@@ -79,21 +76,17 @@ def train(
     mixed_optimizer,
     lr_scheduler,
     model_dir,
-    eval_checkpoint_dir,
     float_dtype,
     refine_weight,
     loss_scale,
-    result_path,
-    pickle_result,
     class_names,
     center_limit_range,
     input_dataset_iterator,
     eval_dataset_iterator,
     gt_annos,
     display_step=50,
-    log_path=None,
-    silent=False,
-    verbose=False,
+    log=print,
+    auto_save=False,
 ):
     ######################
     # PREPARE INPUT
@@ -102,7 +95,11 @@ def train(
     def _worker_init_fn(worker_id):
         time_seed = np.array(time.time(), dtype=np.int32)
         np.random.seed(time_seed + worker_id)
-        print(f"WORKER {worker_id} seed:", np.random.get_state()[1][0])
+        log(
+            Logger.LOG_WHEN_VERBOSE,
+            f"WORKER {worker_id} seed:",
+            np.random.get_state()[1][0],
+        )
 
     dataloader = torch.utils.data.DataLoader(
         input_dataset_iterator,
@@ -126,8 +123,8 @@ def train(
     ######################
     # TRAINING
     ######################
-    log_path = log_path if log_path is not None else model_dir / "log.txt"
-    logf = open(log_path, "a")
+    # log_path = log_path if log_path is not None else model_dir / "log.txt"
+    # logf = open(log_path, "a")
     # logf.write(proto_str)
     # logf.write("\n")
     # summary_dir = model_dir / "summary"
@@ -157,7 +154,7 @@ def train(
                 try:
                     example = next(data_iter)
                 except StopIteration:
-                    print("end epoch")
+                    log(Logger.LOG_WHEN_NORMAL, "end epoch")
                     if clear_metrics_every_epoch:
                         net.clear_metrics()
                     data_iter = iter(dataloader)
@@ -207,11 +204,8 @@ def train(
                 global_step = net.get_global_step()
                 if global_step % display_step == 0:
                     loc_loss_elem = [
-                        float(
-                            loc_loss[:, :, i].sum().detach().cpu().numpy()
-                            / batch_size
-                        )
-                        for i in range(loc_loss.shape[-1])
+                        float(loc_loss[:, :, i].sum().detach().cpu().numpy() /
+                              batch_size) for i in range(loc_loss.shape[-1])
                     ]
                     metrics["step"] = global_step
                     metrics["steptime"] = step_time
@@ -219,40 +213,32 @@ def train(
                     metrics["loss"] = {}
                     metrics["loss"]["loc_elem"] = loc_loss_elem
                     metrics["loss"]["cls_pos_rt"] = float(
-                        cls_pos_loss.detach().cpu().numpy()
-                    )
+                        cls_pos_loss.detach().cpu().numpy())
                     metrics["loss"]["cls_neg_rt"] = float(
-                        cls_neg_loss.detach().cpu().numpy()
-                    )
+                        cls_neg_loss.detach().cpu().numpy())
 
                     ########################################
-                    if (
-                        model_cfg.rpn.module_class_name == "PSA"
-                        or model_cfg.rpn.module_class_name == "RefineDet"
-                    ):
+                    if (model_cfg.rpn.module_class_name == "PSA" or
+                            model_cfg.rpn.module_class_name == "RefineDet"):
                         coarse_loss = ret_dict["coarse_loss"]
                         refine_loss = ret_dict["refine_loss"]
                         metrics["coarse_loss"] = float(
-                            coarse_loss.detach().cpu().numpy()
-                        )
+                            coarse_loss.detach().cpu().numpy())
                         metrics["refine_loss"] = float(
-                            refine_loss.detach().cpu().numpy()
-                        )
+                            refine_loss.detach().cpu().numpy())
                     ########################################
                     # if unlabeled_training:
                     #     metrics["loss"]["diff_rt"] = float(
                     #         diff_loc_loss_reduced.detach().cpu().numpy())
                     if model_cfg.use_direction_classifier:
                         metrics["loss"]["dir_rt"] = float(
-                            dir_loss_reduced.detach().cpu().numpy()
-                        )
+                            dir_loss_reduced.detach().cpu().numpy())
                     metrics["num_vox"] = int(example_torch["voxels"].shape[0])
                     metrics["num_pos"] = int(num_pos)
                     metrics["num_neg"] = int(num_neg)
                     metrics["num_anchors"] = int(num_anchors)
                     metrics["lr"] = float(
-                        mixed_optimizer.param_groups[0]["lr"]
-                    )
+                        mixed_optimizer.param_groups[0]["lr"])
                     metrics["image_idx"] = example["image_idx"][0]
                     # flatted_metrics = flat_nested_json_dict(metrics)
                     # flatted_summarys = flat_nested_json_dict(metrics, "/")
@@ -275,151 +261,142 @@ def train(
                         else:
                             metrics_str_list.append(f"{k}={v}")
                     log_str = ", ".join(metrics_str_list)
-                    print(log_str, file=logf)
-                    print(log_str)
+                    log(Logger.LOG_WHEN_NORMAL, log_str)
                 ckpt_elasped_time = time.time() - ckpt_start_time
                 if ckpt_elasped_time > train_cfg.save_checkpoints_secs:
-                    torchplus.train.save_models(
-                        model_dir,
-                        [net, mixed_optimizer],
-                        net.get_global_step(),
-                    )
+
+                    if auto_save:
+                        torchplus.train.save_models(
+                            model_dir,
+                            [net, mixed_optimizer],
+                            net.get_global_step(),
+                        )
                     ckpt_start_time = time.time()
             total_step_elapsed += steps
-            torchplus.train.save_models(
-                model_dir, [net, mixed_optimizer], net.get_global_step()
-            )
-
-            # Ensure that all evaluation points are saved forever
-            torchplus.train.save_models(
-                eval_checkpoint_dir,
-                [net, mixed_optimizer],
-                net.get_global_step(),
-                max_to_keep=100,
-            )
+            if auto_save:
+                torchplus.train.save_models(model_dir, [net, mixed_optimizer],
+                                            net.get_global_step())
 
             net.eval()
-            result_path_step = result_path / f"step_{net.get_global_step()}"
-            result_path_step.mkdir(parents=True, exist_ok=True)
-            print("#################################")
-            print("#################################", file=logf)
-            print("# EVAL")
-            print("# EVAL", file=logf)
-            print("#################################")
-            print("#################################", file=logf)
-            print("Generate output labels...")
-            print("Generate output labels...", file=logf)
+            # result_path_step = result_path / f"step_{net.get_global_step()}"
+            # result_path_step.mkdir(parents=True, exist_ok=True)
+            log(Logger.LOG_WHEN_VERBOSE, "#################################")
+            log(Logger.LOG_WHEN_VERBOSE, "# EVAL")
+            log(Logger.LOG_WHEN_VERBOSE, "#################################")
+            log(Logger.LOG_WHEN_NORMAL, "Generate output labels...")
             t = time.time()
             if (
-                model_cfg.rpn.module_class_name == "PSA"
-                or model_cfg.rpn.module_class_name == "RefineDet"
+                model_cfg.rpn.module_class_name == "PSA" or
+                model_cfg.rpn.module_class_name == "RefineDet"
             ):
                 dt_annos_coarse = []
                 dt_annos_refine = []
                 prog_bar = ProgressBar()
                 prog_bar.start(
-                    len(input_dataset_iterator) // eval_input_cfg.batch_size
-                    + 1
-                )
+                    len(input_dataset_iterator) // eval_input_cfg.batch_size +
+                    1)
                 for example in iter(eval_dataloader):
                     example = example_convert_to_torch(example, float_dtype)
-                    if pickle_result:
-                        coarse, refine = predict_kitti_to_anno(
-                            net,
-                            example,
-                            class_names,
-                            center_limit_range,
-                            model_cfg.lidar_input,
-                            use_coarse_to_fine=True,
-                        )
-                        dt_annos_coarse += coarse
-                        dt_annos_refine += refine
-                    else:
-                        _predict_kitti_to_file(
-                            net,
-                            example,
-                            result_path_step,
-                            class_names,
-                            center_limit_range,
-                            model_cfg.lidar_input,
-                            use_coarse_to_fine=True,
-                        )
-                    prog_bar.print_bar()
+                    # if pickle_result:
+                    coarse, refine = predict_kitti_to_anno(
+                        net,
+                        example,
+                        class_names,
+                        center_limit_range,
+                        model_cfg.lidar_input,
+                        use_coarse_to_fine=True,
+                    )
+                    dt_annos_coarse += coarse
+                    dt_annos_refine += refine
+                    # else:
+                    #     _predict_kitti_to_file(
+                    #         net,
+                    #         example,
+                    #         result_path_step,
+                    #         class_names,
+                    #         center_limit_range,
+                    #         model_cfg.lidar_input,
+                    #         use_coarse_to_fine=True,
+                    #     )
+                    prog_bar.print_bar(log=lambda *x, **y: log(
+                        Logger.LOG_WHEN_NORMAL, *x, **y))
             else:
                 dt_annos = []
                 prog_bar = ProgressBar()
                 prog_bar.start(
-                    len(input_dataset_iterator) // eval_input_cfg.batch_size
-                    + 1
-                )
+                    len(input_dataset_iterator) // eval_input_cfg.batch_size +
+                    1)
                 for example in iter(eval_dataloader):
                     example = example_convert_to_torch(example, float_dtype)
-                    if pickle_result:
-                        dt_annos += predict_kitti_to_anno(
-                            net,
-                            example,
-                            class_names,
-                            center_limit_range,
-                            model_cfg.lidar_input,
-                            use_coarse_to_fine=False,
-                        )
-                    else:
-                        _predict_kitti_to_file(
-                            net,
-                            example,
-                            result_path_step,
-                            class_names,
-                            center_limit_range,
-                            model_cfg.lidar_input,
-                            use_coarse_to_fine=False,
-                        )
+                    # if pickle_result:
+                    dt_annos += predict_kitti_to_anno(
+                        net,
+                        example,
+                        class_names,
+                        center_limit_range,
+                        model_cfg.lidar_input,
+                        use_coarse_to_fine=False,
+                    )
+                    # else:
+                    #     _predict_kitti_to_file(
+                    #         net,
+                    #         example,
+                    #         result_path_step,
+                    #         class_names,
+                    #         center_limit_range,
+                    #         model_cfg.lidar_input,
+                    #         use_coarse_to_fine=False,
+                    #     )
 
-                    prog_bar.print_bar()
+                    prog_bar.print_bar(log=lambda *x, **y: log(
+                        Logger.LOG_WHEN_NORMAL, *x, **y))
 
             sec_per_ex = len(input_dataset_iterator) / (time.time() - t)
-            print(f"avg forward time per example: {net.avg_forward_time:.3f}")
-            print(
-                f"avg postprocess time per example: {net.avg_postprocess_time:.3f}"
+            log(
+                Logger.LOG_WHEN_NORMAL,
+                f"avg forward time per example: {net.avg_forward_time:.3f}",
+            )
+            log(
+                Logger.LOG_WHEN_NORMAL,
+                f"avg postprocess time per example: {net.avg_postprocess_time:.3f}",
             )
 
             net.clear_time_metrics()
-            print(f"generate label finished({sec_per_ex:.2f}/s). start eval:")
-            print(
+            log(
+                Logger.LOG_WHEN_NORMAL,
                 f"generate label finished({sec_per_ex:.2f}/s). start eval:",
-                file=logf,
             )
-            if not pickle_result:
-                dt_annos = kitti.get_label_annos(result_path_step)
+            # if not pickle_result:
+            #     dt_annos = kitti.get_label_annos(result_path_step)
 
-            if (
-                model_cfg.rpn.module_class_name == "PSA"
-                or model_cfg.rpn.module_class_name == "RefineDet"
-            ):
+            if (model_cfg.rpn.module_class_name == "PSA" or
+                    model_cfg.rpn.module_class_name == "RefineDet"):
 
-                print("Before Refine:")
+                log(Logger.LOG_WHEN_NORMAL, "Before Refine:")
                 (
                     result,
                     mAPbbox,
                     mAPbev,
                     mAP3d,
                     mAPaos,
-                ) = get_official_eval_result(
-                    gt_annos, dt_annos_coarse, class_names, return_data=True
-                )
-                print(result, file=logf)
-                print(result)
+                ) = get_official_eval_result(gt_annos,
+                                             dt_annos_coarse,
+                                             class_names,
+                                             return_data=True)
+                log(Logger.LOG_WHEN_NORMAL, result)
                 # writer.add_text("eval_result", result, global_step)
 
-                print("After Refine:")
+                log(Logger.LOG_WHEN_NORMAL, "After Refine:")
                 (
                     result,
                     mAPbbox,
                     mAPbev,
                     mAP3d,
                     mAPaos,
-                ) = get_official_eval_result(
-                    gt_annos, dt_annos_refine, class_names, return_data=True
-                )
+                ) = get_official_eval_result(gt_annos,
+                                             dt_annos_refine,
+                                             class_names,
+                                             return_data=True)
                 dt_annos = dt_annos_refine
             else:
                 (
@@ -428,52 +405,23 @@ def train(
                     mAPbev,
                     mAP3d,
                     mAPaos,
-                ) = get_official_eval_result(
-                    gt_annos, dt_annos, class_names, return_data=True
-                )
-            print(result, file=logf)
-            print(result)
-            # writer.add_text("eval_result", result, global_step)
+                ) = get_official_eval_result(gt_annos,
+                                             dt_annos,
+                                             class_names,
+                                             return_data=True)
+            log(Logger.LOG_WHEN_NORMAL, result)
 
-            # for i, class_name in enumerate(class_names):
-            #     writer.add_scalar(
-            #         "bev_ap:{}".format(class_name),
-            #         mAPbev[i, 1, 0],
-            #         global_step,
-            #     )
-            #     writer.add_scalar(
-            #         "3d_ap:{}".format(class_name), mAP3d[i, 1, 0], global_step
-            #     )
-            #     writer.add_scalar(
-            #         "aos_ap:{}".format(class_name),
-            #         mAPaos[i, 1, 0],
-            #         global_step,
-            #     )
-            # writer.add_scalar("bev_map", np.mean(mAPbev[:, 1, 0]), global_step)
-            # writer.add_scalar("3d_map", np.mean(mAP3d[:, 1, 0]), global_step)
-            # writer.add_scalar("aos_map", np.mean(mAPaos[:, 1, 0]), global_step)
-
-            # result = get_coco_eval_result(gt_annos, dt_annos, class_names)
-            # print(result, file=logf)
-            # print(result)
-            if pickle_result:
-                with open(result_path_step / "result.pkl", "wb") as f:
-                    pickle.dump(dt_annos, f)
-            # writer.add_text("eval_result", result, global_step)
             net.train()
-    except ValueError as e:
+    except Exception as e:
+
+        if auto_save:
+            torchplus.train.save_models(model_dir, [net, mixed_optimizer],
+                                        net.get_global_step())
         raise e
-    # except Exception as e:
-    #     torchplus.train.save_models(
-    #         model_dir, [net, mixed_optimizer], net.get_global_step()
-    #     )
-    #     logf.close()
-    #     raise e
-    # save model before exit
-    torchplus.train.save_models(
-        model_dir, [net, mixed_optimizer], net.get_global_step()
-    )
-    logf.close()
+
+    if auto_save:
+        torchplus.train.save_models(model_dir, [net, mixed_optimizer],
+                                    net.get_global_step())
 
 
 def evaluate(
@@ -483,26 +431,14 @@ def evaluate(
     mixed_optimizer,
     model_dir,
     float_dtype,
-    result_path,
-    pickle_result,
     class_names,
     center_limit_range,
     eval_dataset_iterator,
     gt_annos,
     display_step=50,
     predict_test=False,
-    log_path=None,
-    silent=False,
-    verbose=False,
+    log=print,
 ):
-    if predict_test:
-        result_name = "predict_test"
-    else:
-        result_name = "eval_results"
-    if result_path is None:
-        result_path = model_dir / result_name
-    else:
-        result_path = pathlib.Path(result_path)
 
     eval_dataloader = torch.utils.data.DataLoader(
         eval_dataset_iterator,
@@ -514,111 +450,91 @@ def evaluate(
     )
 
     net.eval()
-    result_path_step = result_path / f"step_{net.get_global_step()}"
-    result_path_step.mkdir(parents=True, exist_ok=True)
     t = time.time()
 
-    if (
-        model_cfg.rpn.module_class_name == "PSA"
-        or model_cfg.rpn.module_class_name == "RefineDet"
-    ):
+    if (model_cfg.rpn.module_class_name == "PSA" or
+            model_cfg.rpn.module_class_name == "RefineDet"):
         dt_annos_coarse = []
         dt_annos_refine = []
-        print("Generate output labels...")
+        log(Logger.LOG_WHEN_NORMAL, "Generate output labels...")
         bar = ProgressBar()
         bar.start(len(eval_dataloader) // eval_input_cfg.batch_size + 1)
         for example in iter(eval_dataloader):
             example = example_convert_to_torch(example, float_dtype)
-            if pickle_result:
-                coarse, refine = predict_kitti_to_anno(
-                    net,
-                    example,
-                    class_names,
-                    center_limit_range,
-                    model_cfg.lidar_input,
-                    use_coarse_to_fine=True,
-                    global_set=None,
-                )
-                dt_annos_coarse += coarse
-                dt_annos_refine += refine
-            else:
-                _predict_kitti_to_file(
-                    net,
-                    example,
-                    result_path_step,
-                    class_names,
-                    center_limit_range,
-                    model_cfg.lidar_input,
-                    use_coarse_to_fine=True,
-                )
-            bar.print_bar()
+            coarse, refine = predict_kitti_to_anno(
+                net,
+                example,
+                class_names,
+                center_limit_range,
+                model_cfg.lidar_input,
+                use_coarse_to_fine=True,
+                global_set=None,
+            )
+            dt_annos_coarse += coarse
+            dt_annos_refine += refine
+            bar.print_bar(
+                log=lambda *x, **y: log(Logger.LOG_WHEN_NORMAL, *x, **y))
     else:
         dt_annos = []
-        print("Generate output labels...")
+        log(Logger.LOG_WHEN_NORMAL, "Generate output labels...")
         bar = ProgressBar()
         bar.start(len(eval_dataloader) // eval_input_cfg.batch_size + 1)
         for example in iter(eval_dataloader):
             example = example_convert_to_torch(example, float_dtype)
-            if pickle_result:
-                dt_annos += predict_kitti_to_anno(
-                    net,
-                    example,
-                    class_names,
-                    center_limit_range,
-                    model_cfg.lidar_input,
-                    use_coarse_to_fine=False,
-                    global_set=None,
-                )
-            else:
-                _predict_kitti_to_file(
-                    net,
-                    example,
-                    result_path_step,
-                    class_names,
-                    center_limit_range,
-                    model_cfg.lidar_input,
-                    use_coarse_to_fine=False,
-                )
-            bar.print_bar()
+            dt_annos += predict_kitti_to_anno(
+                net,
+                example,
+                class_names,
+                center_limit_range,
+                model_cfg.lidar_input,
+                use_coarse_to_fine=False,
+                global_set=None,
+            )
+            bar.print_bar(
+                log=lambda *x, **y: log(Logger.LOG_WHEN_NORMAL, *x, **y))
 
     sec_per_example = len(eval_dataloader) / (time.time() - t)
-    print(f"generate label finished({sec_per_example:.2f}/s). start eval:")
+    log(
+        Logger.LOG_WHEN_NORMAL,
+        f"generate label finished({sec_per_example:.2f}/s). start eval:",
+    )
 
-    print(f"avg forward time per example: {net.avg_forward_time:.3f}")
-    print(f"avg postprocess time per example: {net.avg_postprocess_time:.3f}")
+    log(
+        Logger.LOG_WHEN_NORMAL,
+        f"avg forward time per example: {net.avg_forward_time:.3f}",
+    )
+    log(
+        Logger.LOG_WHEN_NORMAL,
+        f"avg postprocess time per example: {net.avg_postprocess_time:.3f}",
+    )
     if not predict_test:
-        if not pickle_result:
-            dt_annos = kitti.get_label_annos(result_path_step)
 
-        if (
-            model_cfg.rpn.module_class_name == "PSA"
-            or model_cfg.rpn.module_class_name == "RefineDet"
-        ):
-            print("Before Refine:")
-            result_coarse = get_official_eval_result(
-                gt_annos, dt_annos_coarse, class_names
-            )
-            print(result_coarse)
+        if (model_cfg.rpn.module_class_name == "PSA" or
+                model_cfg.rpn.module_class_name == "RefineDet"):
+            log(Logger.LOG_WHEN_NORMAL, "Before Refine:")
+            result_coarse = get_official_eval_result(gt_annos, dt_annos_coarse,
+                                                     class_names)
+            log(Logger.LOG_WHEN_NORMAL, result_coarse)
 
-            print("After Refine:")
-            result_refine = get_official_eval_result(
-                gt_annos, dt_annos_refine, class_names
-            )
-            print(result_refine)
-            # result = get_coco_eval_result(
-            #     gt_annos, dt_annos_refine, class_names
-            # )
+            log(Logger.LOG_WHEN_NORMAL, "After Refine:")
+            (
+                result_refine,
+                mAPbbox,
+                mAPbev,
+                mAP3d,
+                mAPaos,
+            ) = get_official_eval_result(gt_annos,
+                                         dt_annos_refine,
+                                         class_names,
+                                         return_data=True)
+            log(Logger.LOG_WHEN_NORMAL, result_refine)
             dt_annos = dt_annos_refine
-            # print(result)
         else:
-            result = get_official_eval_result(gt_annos, dt_annos, class_names)
-            print(result)
+            result, mAPbbox, mAPbev, mAP3d, mAPaos = get_official_eval_result(
+                gt_annos, dt_annos, class_names, return_data=True)
+            log(Logger.LOG_WHEN_NORMAL, result)
 
-        # result = get_coco_eval_result(gt_annos, dt_annos, class_names)
-        # print(result)
-        if pickle_result:
-            with open(result_path_step / "result.pkl", "wb") as f:
-                pickle.dump(dt_annos, f)
+        return mAPbbox, mAPbev, mAP3d, mAPaos
 
 
 def comput_kitti_output(
@@ -644,8 +560,8 @@ def comput_kitti_output(
             anno = kitti.get_start_result_anno()
             num_example = 0
             for box, box_lidar, bbox, score, label in zip(
-                box_preds, box_preds_lidar, box_2d_preds, scores, label_preds
-            ):
+                    box_preds, box_preds_lidar, box_2d_preds, scores,
+                    label_preds):
                 if not lidar_input:
                     if bbox[0] > image_shape[1] or bbox[1] > image_shape[0]:
                         continue
@@ -655,17 +571,15 @@ def comput_kitti_output(
                 if center_limit_range is not None:
                     limit_range = np.array(center_limit_range)
                     if np.any(box_lidar[:3] < limit_range[:3]) or np.any(
-                        box_lidar[:3] > limit_range[3:]
-                    ):
+                            box_lidar[:3] > limit_range[3:]):
                         continue
                 bbox[2:] = np.minimum(bbox[2:], image_shape[::-1])
                 bbox[:2] = np.maximum(bbox[:2], [0, 0])
                 anno["name"].append(class_names[int(label)])
                 anno["truncated"].append(0.0)
                 anno["occluded"].append(0)
-                anno["alpha"].append(
-                    -np.arctan2(-box_lidar[1], box_lidar[0]) + box[6]
-                )
+                anno["alpha"].append(-np.arctan2(-box_lidar[1], box_lidar[0]) +
+                                     box[6])
                 anno["bbox"].append(bbox)
                 anno["dimensions"].append(box[3:6])
                 anno["location"].append(box[:3])
@@ -688,9 +602,8 @@ def comput_kitti_output(
         else:
             annos.append(kitti.empty_result_anno())
         num_example = annos[-1]["name"].shape[0]
-        annos[-1]["image_idx"] = np.array(
-            [img_idx] * num_example, dtype=np.int64
-        )
+        annos[-1]["image_idx"] = np.array([img_idx] * num_example,
+                                          dtype=np.int64)
 
     return annos
 
@@ -767,15 +680,14 @@ def _predict_kitti_to_file(
             scores = preds_dict["scores"].data.cpu().numpy()
             box_preds_lidar = preds_dict["box3d_lidar"].data.cpu().numpy()
             # write pred to file
-            box_preds = box_preds[
-                :, [0, 1, 2, 4, 5, 3, 6]
-            ]  # lhw->hwl(label file format)
+            box_preds = box_preds[:, [0, 1, 2, 4, 5, 3,
+                                      6]]  # lhw->hwl(label file format)
             label_preds = preds_dict["label_preds"].data.cpu().numpy()
             # label_preds = np.zeros([box_2d_preds.shape[0]], dtype=np.int32)
             result_lines = []
             for box, box_lidar, bbox, score, label in zip(
-                box_preds, box_preds_lidar, box_2d_preds, scores, label_preds
-            ):
+                    box_preds, box_preds_lidar, box_2d_preds, scores,
+                    label_preds):
                 if not lidar_input:
                     if bbox[0] > image_shape[1] or bbox[1] > image_shape[0]:
                         continue
@@ -785,8 +697,7 @@ def _predict_kitti_to_file(
                 if center_limit_range is not None:
                     limit_range = np.array(center_limit_range)
                     if np.any(box_lidar[:3] < limit_range[:3]) or np.any(
-                        box_lidar[:3] > limit_range[3:]
-                    ):
+                            box_lidar[:3] > limit_range[3:]):
                         continue
                 bbox[2:] = np.minimum(bbox[2:], image_shape[::-1])
                 bbox[:2] = np.maximum(bbox[:2], [0, 0])
@@ -803,9 +714,7 @@ def _predict_kitti_to_file(
                 result_lines.append(result_line)
         else:
             result_lines = []
-        result_file = (
-            f"{result_save_path}/{kitti.get_image_index_str(img_idx)}.txt"
-        )
+        result_file = f"{result_save_path}/{kitti.get_image_index_str(img_idx)}.txt"
         result_str = "\n".join(result_lines)
         with open(result_file, "w") as f:
             f.write(result_str)

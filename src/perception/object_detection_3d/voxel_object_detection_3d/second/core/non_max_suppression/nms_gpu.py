@@ -5,35 +5,39 @@ import numba
 import numpy as np
 from numba import cuda
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.buildtools.pybind11_build import load_pb11
+from perception.object_detection_3d.voxel_object_detection_3d.second.utils.buildtools.pybind11_build import (
+    load_pb11, )
 
 try:
-    from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms import non_max_suppression
+    from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms import (
+        non_max_suppression, )
 except:
     current_dir = Path(__file__).resolve().parents[0]
     load_pb11(
         ["../cc/nms/nms_kernel.cu.cc", "../cc/nms/nms.cc"],
         current_dir / "nms.so",
         current_dir,
-        cuda=True)
-    from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms import non_max_suppression
+        cuda=True,
+    )
+    from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms import (
+        non_max_suppression, )
 
 
-@cuda.jit('(float32[:], float32[:])', device=True, inline=True)
+@cuda.jit("(float32[:], float32[:])", device=True, inline=True)
 def iou_device(a, b):
     left = max(a[0], b[0])
     right = min(a[2], b[2])
     top = max(a[1], b[1])
     bottom = min(a[3], b[3])
-    width = max(right - left + 1, 0.)
-    height = max(bottom - top + 1, 0.)
+    width = max(right - left + 1, 0.0)
+    height = max(bottom - top + 1, 0.0)
     interS = width * height
     Sa = (a[2] - a[0] + 1) * (a[3] - a[1] + 1)
     Sb = (b[2] - b[0] + 1) * (b[3] - b[1] + 1)
     return interS / (Sa + Sb - interS)
 
 
-@cuda.jit('(int64, float32, float32[:, :], uint64[:])')
+@cuda.jit("(int64, float32, float32[:, :], uint64[:])")
 def nms_kernel_v2(n_boxes, nms_overlap_thresh, dev_boxes, dev_mask):
     threadsPerBlock = 8 * 8
     row_start = cuda.blockIdx.y
@@ -41,34 +45,34 @@ def nms_kernel_v2(n_boxes, nms_overlap_thresh, dev_boxes, dev_mask):
     tx = cuda.threadIdx.x
     row_size = min(n_boxes - row_start * threadsPerBlock, threadsPerBlock)
     col_size = min(n_boxes - col_start * threadsPerBlock, threadsPerBlock)
-    block_boxes = cuda.shared.array(
-        shape=(threadsPerBlock, 5), dtype=numba.float32)
+    block_boxes = cuda.shared.array(shape=(threadsPerBlock, 5),
+                                    dtype=numba.float32)
     dev_box_idx = threadsPerBlock * col_start + tx
-    if (tx < col_size):
+    if tx < col_size:
         block_boxes[tx, 0] = dev_boxes[dev_box_idx, 0]
         block_boxes[tx, 1] = dev_boxes[dev_box_idx, 1]
         block_boxes[tx, 2] = dev_boxes[dev_box_idx, 2]
         block_boxes[tx, 3] = dev_boxes[dev_box_idx, 3]
         block_boxes[tx, 4] = dev_boxes[dev_box_idx, 4]
     cuda.syncthreads()
-    if (cuda.threadIdx.x < row_size):
+    if cuda.threadIdx.x < row_size:
         cur_box_idx = threadsPerBlock * row_start + cuda.threadIdx.x
         # cur_box = dev_boxes + cur_box_idx * 5;
         i = 0
         t = 0
         start = 0
-        if (row_start == col_start):
+        if row_start == col_start:
             start = tx + 1
         for i in range(start, col_size):
-            if (iou_device(dev_boxes[cur_box_idx], block_boxes[i]) >
-                    nms_overlap_thresh):
+            if iou_device(dev_boxes[cur_box_idx],
+                          block_boxes[i]) > nms_overlap_thresh:
                 t |= 1 << i
-        col_blocks = ((n_boxes) // (threadsPerBlock) + (
-            (n_boxes) % (threadsPerBlock) > 0))
+        col_blocks = (n_boxes) // (threadsPerBlock) + ((n_boxes) %
+                                                       (threadsPerBlock) > 0)
         dev_mask[cur_box_idx * col_blocks + col_start] = t
 
 
-@cuda.jit('(int64, float32, float32[:], uint64[:])')
+@cuda.jit("(int64, float32, float32[:], uint64[:])")
 def nms_kernel(n_boxes, nms_overlap_thresh, dev_boxes, dev_mask):
     threadsPerBlock = 8 * 8
     row_start = cuda.blockIdx.y
@@ -78,27 +82,29 @@ def nms_kernel(n_boxes, nms_overlap_thresh, dev_boxes, dev_mask):
     col_size = min(n_boxes - col_start * threadsPerBlock, threadsPerBlock)
     block_boxes = cuda.shared.array(shape=(64 * 5, ), dtype=numba.float32)
     dev_box_idx = threadsPerBlock * col_start + tx
-    if (tx < col_size):
+    if tx < col_size:
         block_boxes[tx * 5 + 0] = dev_boxes[dev_box_idx * 5 + 0]
         block_boxes[tx * 5 + 1] = dev_boxes[dev_box_idx * 5 + 1]
         block_boxes[tx * 5 + 2] = dev_boxes[dev_box_idx * 5 + 2]
         block_boxes[tx * 5 + 3] = dev_boxes[dev_box_idx * 5 + 3]
         block_boxes[tx * 5 + 4] = dev_boxes[dev_box_idx * 5 + 4]
     cuda.syncthreads()
-    if (tx < row_size):
+    if tx < row_size:
         cur_box_idx = threadsPerBlock * row_start + tx
         # cur_box = dev_boxes + cur_box_idx * 5;
         t = 0
         start = 0
-        if (row_start == col_start):
+        if row_start == col_start:
             start = tx + 1
         for i in range(start, col_size):
-            iou = iou_device(dev_boxes[cur_box_idx * 5:cur_box_idx * 5 + 4],
-                             block_boxes[i * 5:i * 5 + 4])
-            if (iou > nms_overlap_thresh):
+            iou = iou_device(
+                dev_boxes[cur_box_idx * 5:cur_box_idx * 5 + 4],
+                block_boxes[i * 5:i * 5 + 4],
+            )
+            if iou > nms_overlap_thresh:
                 t |= 1 << i
-        col_blocks = ((n_boxes) // (threadsPerBlock) + (
-            (n_boxes) % (threadsPerBlock) > 0))
+        col_blocks = (n_boxes) // (threadsPerBlock) + ((n_boxes) %
+                                                       (threadsPerBlock) > 0)
         dev_mask[cur_box_idx * col_blocks + col_start] = t
 
 
@@ -128,13 +134,11 @@ def nms_postprocess(keep_out, mask_host, boxes_num):
 
 
 def nms_gpu(dets, nms_overlap_thresh, device_id=0):
-    """nms in gpu. 
-    
+    """nms in gpu.
     Args:
         dets ([type]): [description]
         nms_overlap_thresh ([type]): [description]
         device_id ([type], optional): Defaults to 0. [description]
-    
     Returns:
         [type]: [description]
     """
@@ -149,14 +153,16 @@ def nms_gpu(dets, nms_overlap_thresh, device_id=0):
     col_blocks = div_up(boxes_num, threadsPerBlock)
     cuda.select_device(device_id)
     mask_host = np.zeros((boxes_num * col_blocks, ), dtype=np.uint64)
-    blockspergrid = (div_up(boxes_num, threadsPerBlock),
-                     div_up(boxes_num, threadsPerBlock))
+    blockspergrid = (
+        div_up(boxes_num, threadsPerBlock),
+        div_up(boxes_num, threadsPerBlock),
+    )
     stream = cuda.stream()
     with stream.auto_synchronize():
         boxes_dev = cuda.to_device(boxes_host.reshape([-1]), stream)
         mask_dev = cuda.to_device(mask_host, stream)
-        nms_kernel[blockspergrid, threadsPerBlock, stream](
-            boxes_num, nms_overlap_thresh, boxes_dev, mask_dev)
+        nms_kernel[blockspergrid, threadsPerBlock,
+                   stream](boxes_num, nms_overlap_thresh, boxes_dev, mask_dev)
         mask_dev.copy_to_host(mask_host, stream=stream)
     # stream.synchronize()
     num_out = nms_postprocess(keep_out, mask_host, boxes_num)
@@ -176,23 +182,26 @@ def nms_gpu_cc(dets, nms_overlap_thresh, device_id=0):
     return list(order[keep])
 
 
-@cuda.jit('(float32[:], float32[:], float32[:])', device=True, inline=True)
+@cuda.jit("(float32[:], float32[:], float32[:])", device=True, inline=True)
 def trangle_area(a, b, c):
-    return (
-        (a[0] - c[0]) * (b[1] - c[1]) - (a[1] - c[1]) * (b[0] - c[0])) / 2.0
+    return ((a[0] - c[0]) * (b[1] - c[1]) - (a[1] - c[1]) *
+            (b[0] - c[0])) / 2.0
 
 
-@cuda.jit('(float32[:], int32)', device=True, inline=True)
+@cuda.jit("(float32[:], int32)", device=True, inline=True)
 def area(int_pts, num_of_inter):
     area_val = 0.0
     for i in range(num_of_inter - 2):
         area_val += abs(
-            trangle_area(int_pts[:2], int_pts[2 * i + 2:2 * i + 4],
-                         int_pts[2 * i + 4:2 * i + 6]))
+            trangle_area(
+                int_pts[:2],
+                int_pts[2 * i + 2:2 * i + 4],
+                int_pts[2 * i + 4:2 * i + 6],
+            ))
     return area_val
 
 
-@cuda.jit('(float32[:], int32)', device=True, inline=True)
+@cuda.jit("(float32[:], int32)", device=True, inline=True)
 def sort_vertex_in_convex_polygon(int_pts, num_of_inter):
     if num_of_inter > 0:
         center = cuda.local.array((2, ), dtype=numba.float32)
@@ -232,10 +241,9 @@ def sort_vertex_in_convex_polygon(int_pts, num_of_inter):
                 int_pts[j * 2 + 1] = ty
 
 
-@cuda.jit(
-    '(float32[:], float32[:], int32, int32, float32[:])',
-    device=True,
-    inline=True)
+@cuda.jit("(float32[:], float32[:], int32, int32, float32[:])",
+          device=True,
+          inline=True)
 def line_segment_intersection(pts1, pts2, i, j, temp_pts):
     A = cuda.local.array((2, ), dtype=numba.float32)
     B = cuda.local.array((2, ), dtype=numba.float32)
@@ -278,10 +286,9 @@ def line_segment_intersection(pts1, pts2, i, j, temp_pts):
     return False
 
 
-@cuda.jit(
-    '(float32[:], float32[:], int32, int32, float32[:])',
-    device=True,
-    inline=True)
+@cuda.jit("(float32[:], float32[:], int32, int32, float32[:])",
+          device=True,
+          inline=True)
 def line_segment_intersection_v1(pts1, pts2, i, j, temp_pts):
     a = cuda.local.array((2, ), dtype=numba.float32)
     b = cuda.local.array((2, ), dtype=numba.float32)
@@ -320,7 +327,7 @@ def line_segment_intersection_v1(pts1, pts2, i, j, temp_pts):
     return True
 
 
-@cuda.jit('(float32, float32, float32[:])', device=True, inline=True)
+@cuda.jit("(float32, float32, float32[:])", device=True, inline=True)
 def point_in_quadrilateral(pt_x, pt_y, corners):
     ab0 = corners[2] - corners[0]
     ab1 = corners[3] - corners[1]
@@ -339,7 +346,7 @@ def point_in_quadrilateral(pt_x, pt_y, corners):
     return abab >= abap and abap >= 0 and adad >= adap and adap >= 0
 
 
-@cuda.jit('(float32[:], float32[:], float32[:])', device=True, inline=True)
+@cuda.jit("(float32[:], float32[:], float32[:])", device=True, inline=True)
 def quadrilateral_intersection(pts1, pts2, int_pts):
     num_of_inter = 0
     for i in range(4):
@@ -363,7 +370,7 @@ def quadrilateral_intersection(pts1, pts2, int_pts):
     return num_of_inter
 
 
-@cuda.jit('(float32[:], float32[:])', device=True, inline=True)
+@cuda.jit("(float32[:], float32[:])", device=True, inline=True)
 def rbbox_to_corners(corners, rbbox):
     # generate clockwise corners and rotate it clockwise
     angle = rbbox[4]
@@ -389,7 +396,7 @@ def rbbox_to_corners(corners, rbbox):
                 1] = -a_sin * corners_x[i] + a_cos * corners_y[i] + center_y
 
 
-@cuda.jit('(float32[:], float32[:])', device=True, inline=True)
+@cuda.jit("(float32[:], float32[:])", device=True, inline=True)
 def inter(rbbox1, rbbox2):
     corners1 = cuda.local.array((8, ), dtype=numba.float32)
     corners2 = cuda.local.array((8, ), dtype=numba.float32)
@@ -406,7 +413,7 @@ def inter(rbbox1, rbbox2):
     return area(intersection_corners, num_intersection)
 
 
-@cuda.jit('(float32[:], float32[:])', device=True, inline=True)
+@cuda.jit("(float32[:], float32[:])", device=True, inline=True)
 def devRotateIoU(rbox1, rbox2):
     area1 = rbox1[2] * rbox1[3]
     area2 = rbox2[2] * rbox2[3]
@@ -414,7 +421,7 @@ def devRotateIoU(rbox1, rbox2):
     return area_inter / (area1 + area2 - area_inter)
 
 
-@cuda.jit('(int64, float32, float32[:], uint64[:])')
+@cuda.jit("(int64, float32, float32[:], uint64[:])")
 def rotate_nms_kernel(n_boxes, nms_overlap_thresh, dev_boxes, dev_mask):
     threadsPerBlock = 8 * 8
     row_start = cuda.blockIdx.y
@@ -424,7 +431,7 @@ def rotate_nms_kernel(n_boxes, nms_overlap_thresh, dev_boxes, dev_mask):
     col_size = min(n_boxes - col_start * threadsPerBlock, threadsPerBlock)
     block_boxes = cuda.shared.array(shape=(64 * 6, ), dtype=numba.float32)
     dev_box_idx = threadsPerBlock * col_start + tx
-    if (tx < col_size):
+    if tx < col_size:
         block_boxes[tx * 6 + 0] = dev_boxes[dev_box_idx * 6 + 0]
         block_boxes[tx * 6 + 1] = dev_boxes[dev_box_idx * 6 + 1]
         block_boxes[tx * 6 + 2] = dev_boxes[dev_box_idx * 6 + 2]
@@ -432,33 +439,33 @@ def rotate_nms_kernel(n_boxes, nms_overlap_thresh, dev_boxes, dev_mask):
         block_boxes[tx * 6 + 4] = dev_boxes[dev_box_idx * 6 + 4]
         block_boxes[tx * 6 + 5] = dev_boxes[dev_box_idx * 6 + 5]
     cuda.syncthreads()
-    if (tx < row_size):
+    if tx < row_size:
         cur_box_idx = threadsPerBlock * row_start + tx
         # cur_box = dev_boxes + cur_box_idx * 5;
         t = 0
         start = 0
-        if (row_start == col_start):
+        if row_start == col_start:
             start = tx + 1
         for i in range(start, col_size):
-            iou = devRotateIoU(dev_boxes[cur_box_idx * 6:cur_box_idx * 6 + 5],
-                               block_boxes[i * 6:i * 6 + 5])
+            iou = devRotateIoU(
+                dev_boxes[cur_box_idx * 6:cur_box_idx * 6 + 5],
+                block_boxes[i * 6:i * 6 + 5],
+            )
             # print('iou', iou, cur_box_idx, i)
-            if (iou > nms_overlap_thresh):
+            if iou > nms_overlap_thresh:
                 t |= 1 << i
-        col_blocks = ((n_boxes) // (threadsPerBlock) + (
-            (n_boxes) % (threadsPerBlock) > 0))
+        col_blocks = (n_boxes) // (threadsPerBlock) + ((n_boxes) %
+                                                       (threadsPerBlock) > 0)
         dev_mask[cur_box_idx * col_blocks + col_start] = t
 
 
 def rotate_nms_gpu(dets, nms_overlap_thresh, device_id=0):
-    """nms in gpu. WARNING: this function can provide right result 
+    """nms in gpu. WARNING: this function can provide right result
     but its performance isn't be tested
-    
     Args:
         dets ([type]): [description]
         nms_overlap_thresh ([type]): [description]
         device_id ([type], optional): Defaults to 0. [description]
-    
     Returns:
         [type]: [description]
     """
@@ -474,21 +481,24 @@ def rotate_nms_gpu(dets, nms_overlap_thresh, device_id=0):
     cuda.select_device(device_id)
     # mask_host shape: boxes_num * col_blocks * sizeof(np.uint64)
     mask_host = np.zeros((boxes_num * col_blocks, ), dtype=np.uint64)
-    blockspergrid = (div_up(boxes_num, threadsPerBlock),
-                     div_up(boxes_num, threadsPerBlock))
+    blockspergrid = (
+        div_up(boxes_num, threadsPerBlock),
+        div_up(boxes_num, threadsPerBlock),
+    )
     stream = cuda.stream()
     with stream.auto_synchronize():
         boxes_dev = cuda.to_device(boxes_host.reshape([-1]), stream)
         mask_dev = cuda.to_device(mask_host, stream)
-        rotate_nms_kernel[blockspergrid, threadsPerBlock, stream](
-            boxes_num, nms_overlap_thresh, boxes_dev, mask_dev)
+        rotate_nms_kernel[blockspergrid, threadsPerBlock,
+                          stream](boxes_num, nms_overlap_thresh, boxes_dev,
+                                  mask_dev)
         mask_dev.copy_to_host(mask_host, stream=stream)
     num_out = nms_postprocess(keep_out, mask_host, boxes_num)
     keep = keep_out[:num_out]
     return list(order[keep])
 
 
-@cuda.jit('(int64, int64, float32[:], float32[:], float32[:])', fastmath=False)
+@cuda.jit("(int64, int64, float32[:], float32[:], float32[:])", fastmath=False)
 def rotate_iou_kernel(N, K, dev_boxes, dev_query_boxes, dev_iou):
     threadsPerBlock = 8 * 8
     row_start = cuda.blockIdx.x
@@ -501,13 +511,13 @@ def rotate_iou_kernel(N, K, dev_boxes, dev_query_boxes, dev_iou):
 
     dev_query_box_idx = threadsPerBlock * col_start + tx
     dev_box_idx = threadsPerBlock * row_start + tx
-    if (tx < col_size):
+    if tx < col_size:
         block_qboxes[tx * 5 + 0] = dev_query_boxes[dev_query_box_idx * 5 + 0]
         block_qboxes[tx * 5 + 1] = dev_query_boxes[dev_query_box_idx * 5 + 1]
         block_qboxes[tx * 5 + 2] = dev_query_boxes[dev_query_box_idx * 5 + 2]
         block_qboxes[tx * 5 + 3] = dev_query_boxes[dev_query_box_idx * 5 + 3]
         block_qboxes[tx * 5 + 4] = dev_query_boxes[dev_query_box_idx * 5 + 4]
-    if (tx < row_size):
+    if tx < row_size:
         block_boxes[tx * 5 + 0] = dev_boxes[dev_box_idx * 5 + 0]
         block_boxes[tx * 5 + 1] = dev_boxes[dev_box_idx * 5 + 1]
         block_boxes[tx * 5 + 2] = dev_boxes[dev_box_idx * 5 + 2]
@@ -516,7 +526,8 @@ def rotate_iou_kernel(N, K, dev_boxes, dev_query_boxes, dev_iou):
     cuda.syncthreads()
     if tx < row_size:
         for i in range(col_size):
-            offset = row_start * threadsPerBlock * K + col_start * threadsPerBlock + tx * K + i
+            offset = (row_start * threadsPerBlock * K +
+                      col_start * threadsPerBlock + tx * K + i)
             dev_iou[offset] = devRotateIoU(block_qboxes[i * 5:i * 5 + 5],
                                            block_boxes[tx * 5:tx * 5 + 5])
 
@@ -526,13 +537,11 @@ def rotate_iou_gpu(boxes, query_boxes, device_id=0):
     (take 5ms in one example with numba.cuda code).
     convert from [this project](
         https://github.com/hongzhenwang/RRPN-revise/tree/master/lib/rotation).
-    
     Args:
-        boxes (float tensor: [N, 5]): rbboxes. format: centers, dims, 
+        boxes (float tensor: [N, 5]): rbboxes. format: centers, dims,
             angles(clockwise when positive)
         query_boxes (float tensor: [K, 5]): [description]
         device_id (int, optional): Defaults to 0. [description]
-    
     Returns:
         [type]: [description]
     """
@@ -553,13 +562,13 @@ def rotate_iou_gpu(boxes, query_boxes, device_id=0):
         boxes_dev = cuda.to_device(boxes.reshape([-1]), stream)
         query_boxes_dev = cuda.to_device(query_boxes.reshape([-1]), stream)
         iou_dev = cuda.to_device(iou.reshape([-1]), stream)
-        rotate_iou_kernel[blockspergrid, threadsPerBlock, stream](
-            N, K, boxes_dev, query_boxes_dev, iou_dev)
+        rotate_iou_kernel[blockspergrid, threadsPerBlock,
+                          stream](N, K, boxes_dev, query_boxes_dev, iou_dev)
         iou_dev.copy_to_host(iou.reshape([-1]), stream=stream)
     return iou.astype(boxes.dtype)
 
 
-@cuda.jit('(float32[:], float32[:], int32)', device=True, inline=True)
+@cuda.jit("(float32[:], float32[:], int32)", device=True, inline=True)
 def devRotateIoUEval(rbox1, rbox2, criterion=-1):
     area1 = rbox1[2] * rbox1[3]
     area2 = rbox2[2] * rbox2[3]
@@ -574,9 +583,8 @@ def devRotateIoUEval(rbox1, rbox2, criterion=-1):
         return area_inter
 
 
-@cuda.jit(
-    '(int64, int64, float32[:], float32[:], float32[:], int32)',
-    fastmath=False)
+@cuda.jit("(int64, int64, float32[:], float32[:], float32[:], int32)",
+          fastmath=False)
 def rotate_iou_kernel_eval(N,
                            K,
                            dev_boxes,
@@ -594,13 +602,13 @@ def rotate_iou_kernel_eval(N,
 
     dev_query_box_idx = threadsPerBlock * col_start + tx
     dev_box_idx = threadsPerBlock * row_start + tx
-    if (tx < col_size):
+    if tx < col_size:
         block_qboxes[tx * 5 + 0] = dev_query_boxes[dev_query_box_idx * 5 + 0]
         block_qboxes[tx * 5 + 1] = dev_query_boxes[dev_query_box_idx * 5 + 1]
         block_qboxes[tx * 5 + 2] = dev_query_boxes[dev_query_box_idx * 5 + 2]
         block_qboxes[tx * 5 + 3] = dev_query_boxes[dev_query_box_idx * 5 + 3]
         block_qboxes[tx * 5 + 4] = dev_query_boxes[dev_query_box_idx * 5 + 4]
-    if (tx < row_size):
+    if tx < row_size:
         block_boxes[tx * 5 + 0] = dev_boxes[dev_box_idx * 5 + 0]
         block_boxes[tx * 5 + 1] = dev_boxes[dev_box_idx * 5 + 1]
         block_boxes[tx * 5 + 2] = dev_boxes[dev_box_idx * 5 + 2]
@@ -609,10 +617,13 @@ def rotate_iou_kernel_eval(N,
     cuda.syncthreads()
     if tx < row_size:
         for i in range(col_size):
-            offset = row_start * threadsPerBlock * K + col_start * threadsPerBlock + tx * K + i
-            dev_iou[offset] = devRotateIoUEval(block_qboxes[i * 5:i * 5 + 5],
-                                               block_boxes[tx * 5:tx * 5 + 5],
-                                               criterion)
+            offset = (row_start * threadsPerBlock * K +
+                      col_start * threadsPerBlock + tx * K + i)
+            dev_iou[offset] = devRotateIoUEval(
+                block_qboxes[i * 5:i * 5 + 5],
+                block_boxes[tx * 5:tx * 5 + 5],
+                criterion,
+            )
 
 
 def rotate_iou_gpu_eval(boxes, query_boxes, criterion=-1, device_id=0):
@@ -620,13 +631,11 @@ def rotate_iou_gpu_eval(boxes, query_boxes, criterion=-1, device_id=0):
     (take 5ms in one example with numba.cuda code).
     convert from [this project](
         https://github.com/hongzhenwang/RRPN-revise/tree/master/lib/rotation).
-    
     Args:
-        boxes (float tensor: [N, 5]): rbboxes. format: centers, dims, 
+        boxes (float tensor: [N, 5]): rbboxes. format: centers, dims,
             angles(clockwise when positive)
         query_boxes (float tensor: [K, 5]): [description]
         device_id (int, optional): Defaults to 0. [description]
-    
     Returns:
         [type]: [description]
     """
@@ -647,7 +656,8 @@ def rotate_iou_gpu_eval(boxes, query_boxes, criterion=-1, device_id=0):
         boxes_dev = cuda.to_device(boxes.reshape([-1]), stream)
         query_boxes_dev = cuda.to_device(query_boxes.reshape([-1]), stream)
         iou_dev = cuda.to_device(iou.reshape([-1]), stream)
-        rotate_iou_kernel_eval[blockspergrid, threadsPerBlock, stream](
-            N, K, boxes_dev, query_boxes_dev, iou_dev, criterion)
+        rotate_iou_kernel_eval[blockspergrid, threadsPerBlock,
+                               stream](N, K, boxes_dev, query_boxes_dev,
+                                       iou_dev, criterion)
         iou_dev.copy_to_host(iou.reshape([-1]), stream=stream)
     return iou.astype(boxes.dtype)

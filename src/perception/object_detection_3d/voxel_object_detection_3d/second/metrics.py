@@ -34,7 +34,7 @@ class AverageMetric(Metric):
 
     def get(self):
 
-        if (len(self.value) <= 0):
+        if len(self.value) <= 0:
             return None
 
         return sum(self.value) / len(self.value)
@@ -61,7 +61,6 @@ class SumMetric(Metric):
 
     def clear(self):
         self.value = self.initial_value
-
 
 
 class MaxMetric(Metric):
@@ -148,9 +147,7 @@ class MetricGroup(Metric):
             if key in self.metrics:
                 self.metrics[key].update(value)
             else:
-                raise ValueError(
-                    "No metric '" + key + "' in this metric group"
-                )
+                raise ValueError("No metric '" + key + "' in this metric group")
 
     def get(self):
 

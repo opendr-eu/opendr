@@ -9,24 +9,29 @@ from pathlib import Path
 
 import fire
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.find import find_cuda, find_cuda_device_arch
+from perception.object_detection_3d.voxel_object_detection_3d.second.utils.find import (
+    find_cuda,
+    find_cuda_device_arch,
+)
 
 
 class Gpp:
-    def __init__(self,
-                 sources,
-                 target,
-                 std="c++11",
-                 includes: list = None,
-                 defines: dict = None,
-                 cflags: str = None,
-                 compiler="g++",
-                 link=False,
-                 libraries: dict = None,
-                 lflags: str = None,
-                 extra_cflags: str = None,
-                 extra_lflags: str = None,
-                 build_directory: str = None):
+    def __init__(
+        self,
+        sources,
+        target,
+        std="c++11",
+        includes: list = None,
+        defines: dict = None,
+        cflags: str = None,
+        compiler="g++",
+        link=False,
+        libraries: dict = None,
+        lflags: str = None,
+        extra_cflags: str = None,
+        extra_lflags: str = None,
+        build_directory: str = None,
+    ):
         if not isinstance(sources, (list, tuple)):
             sources = [sources]
         if build_directory is not None:
@@ -45,14 +50,14 @@ class Gpp:
         self.target = str(target)
         self.std = std
         self.includes = includes or []
-        self.cflags = cflags or '-fPIC -O3'
+        self.cflags = cflags or "-fPIC -O3"
         self.defines = defines or {}
         self.compiler = compiler
         self.link = link
         self.libraries = libraries or {}
-        self.lflags = lflags or ''
-        self.extra_cflags = extra_cflags or ''
-        self.extra_lflags = extra_lflags or ''
+        self.lflags = lflags or ""
+        self.extra_cflags = extra_cflags or ""
+        self.extra_lflags = extra_lflags or ""
 
     def shell(self, target: str = None, compiler: str = None):
         defines = [f"-D {n}={v}" for n, v in self.defines.items()]
@@ -68,12 +73,14 @@ class Gpp:
         else:
             string += " -c "
         target = target or self.target
-        string += (f"-o {target} {' '.join(self.sources)} "
-                   f"{' '.join(defines)} "
-                   f"{' '.join(includes)} "
-                   f"{self.cflags} {self.extra_cflags}"
-                   f"{' '.join(libraries)} "
-                   f"{self.lflags} {self.extra_lflags}")
+        string += (
+            f"-o {target} {' '.join(self.sources)} "
+            f"{' '.join(defines)} "
+            f"{' '.join(includes)} "
+            f"{self.cflags} {self.extra_cflags}"
+            f"{' '.join(libraries)} "
+            f"{self.lflags} {self.extra_lflags}"
+        )
         return re.sub(r" +", r" ", string)
 
 
@@ -101,28 +108,32 @@ class Link:
         string = f"{self.compiler} -r "
         if target is None:
             target = self.target
-        string += (f"-o {target} {' '.join(self.outs)} ")
+        string += f"-o {target} {' '.join(self.outs)} "
         return string
 
 
 class Nvcc(Gpp):
-    def __init__(self,
-                 sources,
-                 target,
-                 arch=None,
-                 std="c++11",
-                 includes: list = None,
-                 defines: dict = None,
-                 cflags: str = None,
-                 extra_cflags: str = None,
-                 extra_lflags: str = None,
-                 build_directory: str = None):
+    def __init__(
+        self,
+        sources,
+        target,
+        arch=None,
+        std="c++11",
+        includes: list = None,
+        defines: dict = None,
+        cflags: str = None,
+        extra_cflags: str = None,
+        extra_lflags: str = None,
+        build_directory: str = None,
+    ):
         if arch is None:
             arch = find_cuda_device_arch()
             if arch is None:
                 raise ValueError("you must specify arch if use cuda.")
 
-        cflags = cflags or f"-x cu -Xcompiler -fPIC -arch={arch} --expt-relaxed-constexpr"
+        cflags = (
+            cflags or f"-x cu -Xcompiler -fPIC -arch={arch} --expt-relaxed-constexpr"
+        )
         try:
             cuda_home = find_cuda()
         except:
@@ -141,22 +152,25 @@ class Nvcc(Gpp):
             compiler="nvcc",
             extra_cflags=extra_cflags,
             extra_lflags=extra_lflags,
-            build_directory=build_directory)
+            build_directory=build_directory,
+        )
 
 
 class CUDALink(Gpp):
-    def __init__(self,
-                 sources,
-                 target,
-                 std="c++11",
-                 includes: list = None,
-                 defines: dict = None,
-                 cflags: str = None,
-                 libraries: dict = None,
-                 lflags: str = None,
-                 extra_cflags: str = None,
-                 extra_lflags: str = None,
-                 build_directory: str = None):
+    def __init__(
+        self,
+        sources,
+        target,
+        std="c++11",
+        includes: list = None,
+        defines: dict = None,
+        cflags: str = None,
+        libraries: dict = None,
+        lflags: str = None,
+        extra_cflags: str = None,
+        extra_lflags: str = None,
+        build_directory: str = None,
+    ):
         includes = includes or []
         defines = defines or {}
         libraries = libraries or {}
@@ -183,7 +197,8 @@ class CUDALink(Gpp):
             lflags=lflags,
             extra_cflags=extra_cflags,
             extra_lflags=extra_lflags,
-            build_directory=build_directory)
+            build_directory=build_directory,
+        )
 
 
 class NodeState(Enum):
@@ -256,22 +271,18 @@ def compile_func(cmd, code_folder, compiler):
     return ret
 
 
-def compile_libraries(cmds,
-                      code_folder=None,
-                      compiler: str = None,
-                      num_workers=-1):
+def compile_libraries(cmds, code_folder=None, compiler: str = None, num_workers=-1):
     if num_workers == -1:
         num_workers = min(len(cmds), multiprocessing.cpu_count())
     # for cmd in cmds:
     #     print(cmd.shell())
     if num_workers == 0:
         rets = map(
-            partial(compile_func, code_folder=code_folder, compiler=compiler),
-            cmds)
+            partial(compile_func, code_folder=code_folder, compiler=compiler), cmds
+        )
     else:
         with ProcessPoolExecutor(num_workers) as pool:
-            func = partial(
-                compile_func, code_folder=code_folder, compiler=compiler)
+            func = partial(compile_func, code_folder=code_folder, compiler=compiler)
             rets = pool.map(func, cmds)
 
     if any([r.returncode != 0 for r in rets]):

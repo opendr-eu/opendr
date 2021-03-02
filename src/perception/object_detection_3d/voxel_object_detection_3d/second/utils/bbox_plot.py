@@ -8,12 +8,18 @@ from mpl_toolkits.mplot3d.art3d import Line3DCollection, Poly3DCollection
 from pyqtgraph.opengl.GLGraphicsItem import GLGraphicsItem
 from pyqtgraph.Qt import QtCore, QtGui
 
+from perception.object_detection_3d.voxel_object_detection_3d.second.core.box_np_ops import (
+    minmax_to_corner_3d,
+)
+
+
 class FORMAT(Enum):
     """enum that indicate format of a bbox
     """
-    Center = 'format_bbox_centor'
-    Corner = 'format_bbox_corner'
-    Length = 'format_bbox_length'
+
+    Center = "format_bbox_centor"
+    Corner = "format_bbox_corner"
+    Length = "format_bbox_length"
 
 
 class GLColor(Enum):
@@ -43,18 +49,21 @@ def corner_to_length(bboxes):
         bboxes = bboxes.reshape([1, -1])
     ndim = bboxes.shape[1] // 2
     return np.concatenate(
-        [bboxes[:, :ndim], bboxes[:, ndim:] - bboxes[:, :ndim]], axis=1)
+        [bboxes[:, :ndim], bboxes[:, ndim:] - bboxes[:, :ndim]], axis=1
+    )
 
 
-def draw_bbox_in_ax(ax,
-                    bboxes,
-                    rotations=None,
-                    fmt=FORMAT.Corner,
-                    labels=None,
-                    label_size='small',
-                    edgecolors='r',
-                    linestyle='dashed',
-                    alpha=0.5):
+def draw_bbox_in_ax(
+    ax,
+    bboxes,
+    rotations=None,
+    fmt=FORMAT.Corner,
+    labels=None,
+    label_size="small",
+    edgecolors="r",
+    linestyle="dashed",
+    alpha=0.5,
+):
     if rotations is None:
         rotations = np.zeros([bboxes.shape[0]])
     else:
@@ -65,8 +74,7 @@ def draw_bbox_in_ax(ax,
         edgecolors = [edgecolors for i in range(len(bboxes))]
     if fmt == FORMAT.Corner:
         bboxes = corner_to_length(bboxes)
-    for bbox, rot, e_color, label in zip(bboxes, rotations, edgecolors,
-                                         labels):
+    for bbox, rot, e_color, label in zip(bboxes, rotations, edgecolors, labels):
         rect_p = patches.Rectangle(
             bbox[:2],
             bbox[2],
@@ -75,7 +83,8 @@ def draw_bbox_in_ax(ax,
             fill=False,
             edgecolor=e_color,
             linestyle=linestyle,
-            alpha=alpha)
+            alpha=alpha,
+        )
         ax.add_patch(rect_p)
         if label is not None:
             t = ax.text(
@@ -85,12 +94,12 @@ def draw_bbox_in_ax(ax,
                 ha="left",
                 va="bottom",
                 color=e_color,
-                size=label_size)
+                size=label_size,
+            )
     return ax
 
 
-
-def draw_3d_bbox_in_ax(ax, bboxes, colors='r', alpha=0.5, image_shape=None):
+def draw_3d_bbox_in_ax(ax, bboxes, colors="r", alpha=0.5, image_shape=None):
     # assume bboxes has right format.
     if not isinstance(colors, list):
         colors = [colors for i in range(len(bboxes))]
@@ -108,12 +117,9 @@ def draw_3d_bbox_in_ax(ax, bboxes, colors='r', alpha=0.5, image_shape=None):
     return ax
 
 
-def draw_2d_bbox_in_ax(ax,
-                       bboxes,
-                       colors='r',
-                       alpha=0.5,
-                       with_arrow=True,
-                       behind_axes=[0, 1]):
+def draw_2d_bbox_in_ax(
+    ax, bboxes, colors="r", alpha=0.5, with_arrow=True, behind_axes=[0, 1]
+):
     # assume bboxes has right format. [N, 4, 2]
     if not isinstance(colors, list):
         colors = [colors for i in range(len(bboxes))]
@@ -123,12 +129,12 @@ def draw_2d_bbox_in_ax(ax,
         if with_arrow:
             center = np.mean(box, axis=0)
             start = np.mean(
-                np.concatenate([center[np.newaxis, ...], box[behind_axes]]),
-                axis=0)
+                np.concatenate([center[np.newaxis, ...], box[behind_axes]]), axis=0
+            )
             front_axes = [i for i in range(4) if i not in behind_axes]
             end = np.mean(
-                np.concatenate([center[np.newaxis, ...], box[front_axes]]),
-                axis=0)
+                np.concatenate([center[np.newaxis, ...], box[front_axes]]), axis=0
+            )
             ax.arrow(
                 start[0],
                 start[1],
@@ -137,32 +143,32 @@ def draw_2d_bbox_in_ax(ax,
                 head_width=0.2,
                 head_length=0.2,
                 fc=color,
-                ec=color)
+                ec=color,
+            )
     return ax
 
 
-def draw_3d_bbox_in_3dax(ax, bboxes, colors='r', alpha=0.25, facecolors=None):
+def draw_3d_bbox_in_3dax(ax, bboxes, colors="r", alpha=0.25, facecolors=None):
     if not isinstance(colors, list):
         colors = [colors for i in range(len(bboxes))]
     if not isinstance(facecolors, list):
         facecolors = [facecolors for i in range(len(bboxes))]
 
     for box, color, facecolor in zip(bboxes, colors, facecolors):
-        ax.scatter3D(box[:, 0], box[:, 1], box[:, 2], marker='.', color=color)
-        verts = np.array([
-            [box[0], box[1], box[2], box[3]],
-            [box[4], box[5], box[6], box[7]],
-            [box[0], box[3], box[7], box[4]],
-            [box[1], box[2], box[6], box[5]],
-            [box[0], box[1], box[5], box[4]],
-            [box[3], box[2], box[6], box[7]],
-        ])
+        ax.scatter3D(box[:, 0], box[:, 1], box[:, 2], marker=".", color=color)
+        verts = np.array(
+            [
+                [box[0], box[1], box[2], box[3]],
+                [box[4], box[5], box[6], box[7]],
+                [box[0], box[3], box[7], box[4]],
+                [box[1], box[2], box[6], box[5]],
+                [box[0], box[1], box[5], box[4]],
+                [box[3], box[2], box[6], box[7]],
+            ]
+        )
         mp3dcoll = Poly3DCollection(
-            verts,
-            linewidths=1,
-            edgecolors=color,
-            alpha=alpha,
-            facecolors=facecolor)
+            verts, linewidths=1, edgecolors=color, alpha=alpha, facecolors=facecolor
+        )
         mp3dcoll.set_facecolor(facecolor)
         mp3dcoll.set_edgecolor(color)
         mp3dcoll.set_alpha(alpha)
@@ -237,19 +243,16 @@ class GLLabelItem(GLGraphicsItem):
 
 def _pltcolor_to_qtcolor(color):
     color_map = {
-        'r': QtCore.Qt.red,
-        'g': QtCore.Qt.green,
-        'b': QtCore.Qt.blue,
-        'k': QtCore.Qt.black,
-        'w': QtCore.Qt.white,
-        'y': QtCore.Qt.yellow,
-        'c': QtCore.Qt.cyan,
-        'm': QtCore.Qt.magenta,
+        "r": QtCore.Qt.red,
+        "g": QtCore.Qt.green,
+        "b": QtCore.Qt.blue,
+        "k": QtCore.Qt.black,
+        "w": QtCore.Qt.white,
+        "y": QtCore.Qt.yellow,
+        "c": QtCore.Qt.cyan,
+        "m": QtCore.Qt.magenta,
     }
     return color_map[color]
-
-
-from perception.object_detection_3d.voxel_object_detection_3d.second.core.box_np_ops import minmax_to_corner_3d
 
 
 def draw_bounding_box(widget, box_minmax, color):
@@ -257,15 +260,17 @@ def draw_bounding_box(widget, box_minmax, color):
     return draw_3d_bboxlines_in_pyqt(widget, bbox, color)
 
 
-def draw_3d_bboxlines_in_pyqt(widget,
-                              bboxes,
-                              colors=GLColor.Green,
-                              width=1.0,
-                              labels=None,
-                              alpha=1.0,
-                              label_color='r',
-                              line_item=None,
-                              label_item=None):
+def draw_3d_bboxlines_in_pyqt(
+    widget,
+    bboxes,
+    colors=GLColor.Green,
+    width=1.0,
+    labels=None,
+    alpha=1.0,
+    label_color="r",
+    line_item=None,
+    label_item=None,
+):
     if bboxes.shape[0] == 0:
         bboxes = np.zeros([0, 8, 3])
     if not isinstance(colors, (list, np.ndarray)):
@@ -277,11 +282,34 @@ def draw_3d_bboxlines_in_pyqt(widget,
     total_lines = []
     total_colors = []
     for box, facecolor in zip(bboxes, colors):
-        lines = np.array([
-            box[0], box[1], box[1], box[2], box[2], box[3], box[3], box[0],
-            box[1], box[5], box[5], box[4], box[4], box[0], box[2], box[6],
-            box[6], box[7], box[7], box[3], box[5], box[6], box[4], box[7]
-        ])
+        lines = np.array(
+            [
+                box[0],
+                box[1],
+                box[1],
+                box[2],
+                box[2],
+                box[3],
+                box[3],
+                box[0],
+                box[1],
+                box[5],
+                box[5],
+                box[4],
+                box[4],
+                box[0],
+                box[2],
+                box[6],
+                box[6],
+                box[7],
+                box[7],
+                box[3],
+                box[5],
+                box[6],
+                box[4],
+                box[7],
+            ]
+        )
         total_lines.append(lines)
         color = np.array([list(facecolor) for i in range(len(lines))])
         total_colors.append(color)
@@ -297,7 +325,8 @@ def draw_3d_bboxlines_in_pyqt(widget,
             color=total_colors,
             width=width,
             antialias=True,
-            mode='lines')
+            mode="lines",
+        )
         widget.addItem(line_item)
     else:
         line_item.setData(
@@ -305,7 +334,8 @@ def draw_3d_bboxlines_in_pyqt(widget,
             color=total_colors,
             width=width,
             antialias=True,
-            mode='lines')
+            mode="lines",
+        )
     label_color_qt = _pltcolor_to_qtcolor(label_color)
     if labels is not None:
         if label_item is None:
@@ -313,8 +343,7 @@ def draw_3d_bboxlines_in_pyqt(widget,
             label_item.setGLViewWidget(widget)
             widget.addItem(label_item)
         else:
-            label_item.setData(
-                pos=bboxes[:, 0, :], text=labels, color=label_color_qt)
+            label_item.setData(pos=bboxes[:, 0, :], text=labels, color=label_color_qt)
     """
     for box, label in zip(bboxes, labels):
         if label is not None:
@@ -331,15 +360,17 @@ def draw_3d_bboxlines_in_pyqt(widget,
     return line_item, label_item
 
 
-def draw_bboxlines_in_pyqt(widget,
-                           bboxes,
-                           colors=GLColor.Green,
-                           width=1.0,
-                           labels=None,
-                           alpha=1.0,
-                           label_color='r',
-                           line_item=None,
-                           label_item=None):
+def draw_bboxlines_in_pyqt(
+    widget,
+    bboxes,
+    colors=GLColor.Green,
+    width=1.0,
+    labels=None,
+    alpha=1.0,
+    label_color="r",
+    line_item=None,
+    label_item=None,
+):
     if bboxes.shape[0] == 0:
         return
     if not isinstance(colors, list):
@@ -352,7 +383,8 @@ def draw_bboxlines_in_pyqt(widget,
     total_colors = []
     for box, facecolor in zip(bboxes, colors):
         lines = np.array(
-            [box[0], box[1], box[1], box[2], box[2], box[3], box[3], box[0]])
+            [box[0], box[1], box[1], box[2], box[2], box[3], box[3], box[0]]
+        )
         total_lines.append(lines)
         color = np.array([list(facecolor) for i in range(len(lines))])
         total_colors.append(color)
@@ -364,7 +396,8 @@ def draw_bboxlines_in_pyqt(widget,
             color=total_colors,
             width=width,
             antialias=True,
-            mode='lines')
+            mode="lines",
+        )
         widget.addItem(line_item)
     else:
         line_item.setData(
@@ -372,7 +405,8 @@ def draw_bboxlines_in_pyqt(widget,
             color=total_colors,
             width=width,
             antialias=True,
-            mode='lines')
+            mode="lines",
+        )
     label_color_qt = _pltcolor_to_qtcolor(label_color)
     if labels is not None:
         if label_item is None:
@@ -380,27 +414,28 @@ def draw_bboxlines_in_pyqt(widget,
             label_item.setGLViewWidget(widget)
             widget.addItem(label_item)
         else:
-            label_item.setData(
-                pos=bboxes[:, 0, :], text=labels, color=label_color_qt)
+            label_item.setData(pos=bboxes[:, 0, :], text=labels, color=label_color_qt)
 
     return line_item, label_item
 
 
 def _3d_bbox_to_mesh(bboxes):
-    bbox_faces = np.array([
-        [0, 1, 2],
-        [0, 2, 3],
-        [4, 5, 6],
-        [4, 6, 7],
-        [0, 4, 7],
-        [0, 7, 3],
-        [1, 5, 6],
-        [1, 6, 2],
-        [3, 2, 6],
-        [3, 6, 7],
-        [0, 1, 5],
-        [0, 5, 4],
-    ])
+    bbox_faces = np.array(
+        [
+            [0, 1, 2],
+            [0, 2, 3],
+            [4, 5, 6],
+            [4, 6, 7],
+            [0, 4, 7],
+            [0, 7, 3],
+            [1, 5, 6],
+            [1, 6, 2],
+            [3, 2, 6],
+            [3, 6, 7],
+            [0, 1, 5],
+            [0, 5, 4],
+        ]
+    )
     verts_list = []
     faces_list = []
     for i, bbox in enumerate(bboxes):
@@ -412,51 +447,66 @@ def _3d_bbox_to_mesh(bboxes):
     return verts, faces
 
 
-def draw_3d_bbox_meshes_in_pyqt(widget,
-                                bboxes,
-                                colors=GLColor.Gray,
-                                alpha=1.0,
-                                edgecolors=None):
+def draw_3d_bbox_meshes_in_pyqt(
+    widget, bboxes, colors=GLColor.Gray, alpha=1.0, edgecolors=None
+):
     verts, faces = _3d_bbox_to_mesh(bboxes)
     if not isinstance(colors, list):
         if isinstance(colors, GLColor):
             colors = gl_color(colors, alpha)
         colors = np.array([colors for i in range(len(verts))])
-    m1 = gl.GLMeshItem(
-        vertexes=verts, faces=faces, faceColors=colors, smooth=False)
-    m1.setGLOptions('additive')
+    m1 = gl.GLMeshItem(vertexes=verts, faces=faces, faceColors=colors, smooth=False)
+    m1.setGLOptions("additive")
     widget.addItem(m1)
     return widget
 
 
-def draw_3d_bboxlines_in_pyqt_v1(widget,
-                                 bboxes,
-                                 colors=(0.0, 1.0, 0.0, 1.0),
-                                 width=1.0,
-                                 labels=None,
-                                 label_color='r'):
+def draw_3d_bboxlines_in_pyqt_v1(
+    widget, bboxes, colors=(0.0, 1.0, 0.0, 1.0), width=1.0, labels=None, label_color="r"
+):
     if not isinstance(colors, list):
         colors = [colors for i in range(len(bboxes))]
     if not isinstance(labels, list):
         labels = [labels for i in range(len(bboxes))]
     for box, facecolor, label in zip(bboxes, colors, labels):
-        lines = np.array([
-            box[0], box[1], box[1], box[2], box[2], box[3], box[3], box[0],
-            box[1], box[5], box[5], box[4], box[4], box[0], box[2], box[6],
-            box[6], box[7], box[7], box[3], box[5], box[6], box[4], box[7]
-        ])
+        lines = np.array(
+            [
+                box[0],
+                box[1],
+                box[1],
+                box[2],
+                box[2],
+                box[3],
+                box[3],
+                box[0],
+                box[1],
+                box[5],
+                box[5],
+                box[4],
+                box[4],
+                box[0],
+                box[2],
+                box[6],
+                box[6],
+                box[7],
+                box[7],
+                box[3],
+                box[5],
+                box[6],
+                box[4],
+                box[7],
+            ]
+        )
         color = np.array([list(facecolor) for i in range(len(lines))])
         plt = gl.GLLinePlotItem(
-            pos=lines, color=color, width=width, antialias=True, mode='lines')
+            pos=lines, color=color, width=width, antialias=True, mode="lines"
+        )
         widget.addItem(plt)
         if label is not None:
             label_color_qt = _pltcolor_to_qtcolor(label_color)
             t = GLTextItem(
-                X=box[0, 0],
-                Y=box[0, 1],
-                Z=box[0, 2],
-                text=label,
-                color=label_color_qt)
+                X=box[0, 0], Y=box[0, 1], Z=box[0, 2], text=label, color=label_color_qt
+            )
             t.setGLViewWidget(widget)
             widget.addItem(t)
 

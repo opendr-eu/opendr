@@ -1,7 +1,11 @@
 import numpy as np
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import region_similarity
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import similarity_pb2
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    region_similarity,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
+    similarity_pb2,
+)
 
 
 def build(similarity_config):
@@ -16,16 +20,17 @@ def build(similarity_config):
     Raises:
         ValueError: when using an unsupported input data type.
     """
-    similarity_type = similarity_config.WhichOneof('region_similarity')
-    if similarity_type == 'rotate_iou_similarity':
+    similarity_type = similarity_config.WhichOneof("region_similarity")
+    if similarity_type == "rotate_iou_similarity":
         return region_similarity.RotateIouSimilarity()
-    elif similarity_type == 'nearest_iou_similarity':
+    elif similarity_type == "nearest_iou_similarity":
         return region_similarity.NearestIouSimilarity()
-    elif similarity_type == 'distance_similarity':
+    elif similarity_type == "distance_similarity":
         cfg = similarity_config.distance_similarity
         return region_similarity.DistanceSimilarity(
             distance_norm=cfg.distance_norm,
             with_rotation=cfg.with_rotation,
-            rotation_alpha=cfg.rotation_alpha)
+            rotation_alpha=cfg.rotation_alpha,
+        )
     else:
         raise ValueError("unknown similarity type")

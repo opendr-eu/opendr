@@ -5,10 +5,18 @@ from functools import partial
 
 import numpy as np
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import box_np_ops
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import preprocess as prep
-from perception.object_detection_3d.voxel_object_detection_3d.second.data import kitti_common as kitti
-from perception.object_detection_3d.voxel_object_detection_3d.second.data.preprocess import _read_and_prep_v9
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    box_np_ops,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+    preprocess as prep,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.data import (
+    kitti_common as kitti,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.data.preprocess import (
+    _read_and_prep_v9,
+)
 
 
 class Dataset(object):
@@ -25,13 +33,19 @@ class Dataset(object):
         raise NotImplementedError
 
 
-
 class KittiDataset(Dataset):
-    def __init__(self, info_path, root_path, num_point_features,
-                 target_assigner, feature_map_size, prep_func):
-        with open(info_path, 'rb') as f:
+    def __init__(
+        self,
+        info_path,
+        root_path,
+        num_point_features,
+        target_assigner,
+        feature_map_size,
+        prep_func,
+    ):
+        with open(info_path, "rb") as f:
             infos = pickle.load(f)
-        #self._kitti_infos = kitti.filter_infos_by_used_classes(infos, class_names)
+        # self._kitti_infos = kitti.filter_infos_by_used_classes(infos, class_names)
         self._root_path = root_path
         self._kitti_infos = infos
         self._num_point_features = num_point_features
@@ -43,8 +57,7 @@ class KittiDataset(Dataset):
         anchors = anchors.reshape([-1, 7])
         matched_thresholds = ret["matched_thresholds"]
         unmatched_thresholds = ret["unmatched_thresholds"]
-        anchors_bv = box_np_ops.rbbox2d_to_near_bbox(
-            anchors[:, [0, 1, 3, 4, 6]])
+        anchors_bv = box_np_ops.rbbox2d_to_near_bbox(anchors[:, [0, 1, 3, 4, 6]])
         anchor_cache = {
             "anchors": anchors,
             "anchors_bv": anchors_bv,
@@ -65,4 +78,5 @@ class KittiDataset(Dataset):
             info=self._kitti_infos[idx],
             root_path=self._root_path,
             num_point_features=self._num_point_features,
-            prep_func=self._prep_func)
+            prep_func=self._prep_func,
+        )

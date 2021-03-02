@@ -3,7 +3,8 @@ from pathlib import Path
 import sys
 import os
 import logging
-logger = logging.getLogger('second.utils.loader')
+
+logger = logging.getLogger("second.utils.loader")
 
 CUSTOM_LOADED_MODULES = {}
 
@@ -28,20 +29,19 @@ def _get_regular_import_name(path, module_paths):
         try:
             relative_path = path.relative_to(Path(mp))
             parts = list((relative_path.parent / relative_path.stem).parts)
-            module_name = '.'.join([mp.stem] + parts)
+            module_name = ".".join([mp.stem] + parts)
             return module_name
         except:
             pass
     return None
 
 
-def import_file(path, name: str = None, add_to_sys=True,
-                disable_warning=False):
+def import_file(path, name: str = None, add_to_sys=True, disable_warning=False):
     global CUSTOM_LOADED_MODULES
     path = Path(path)
     module_name = path.stem
     try:
-        user_paths = os.environ['PYTHONPATH'].split(os.pathsep)
+        user_paths = os.environ["PYTHONPATH"].split(os.pathsep)
     except KeyError:
         user_paths = []
     possible_paths = _get_possible_module_path(user_paths)
@@ -54,14 +54,16 @@ def import_file(path, name: str = None, add_to_sys=True,
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     if not disable_warning:
-        logger.warning((
-            f"Failed to perform regular import for file {path}. "
-            "this means this file isn't in any folder in PYTHONPATH "
-            "or don't have __init__.py in that project. "
-            "directly file import may fail and some reflecting features are "
-            "disabled even if import succeed. please add your project to PYTHONPATH "
-            "or add __init__.py to ensure this file can be regularly imported. "
-        ))
+        logger.warning(
+            (
+                f"Failed to perform regular import for file {path}. "
+                "this means this file isn't in any folder in PYTHONPATH "
+                "or don't have __init__.py in that project. "
+                "directly file import may fail and some reflecting features are "
+                "disabled even if import succeed. please add your project to PYTHONPATH "
+                "or add __init__.py to ensure this file can be regularly imported. "
+            )
+        )
 
     if add_to_sys:  # this will enable find objects defined in a file.
         # avoid replace system modules.

@@ -1,7 +1,9 @@
 import numpy as np
 
+
 def is_array_like(x):
     return isinstance(x, (list, tuple, np.ndarray))
+
 
 def shape_mergeable(x, expected_shape):
     mergeable = True

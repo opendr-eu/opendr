@@ -9,8 +9,8 @@ import numpy as np
 import yaml
 from easydict import EasyDict as edict
 
-filename = './perception/object_detection_3d/voxel_object_detection_3d/second/configs/tanet/tanet.yaml'
-with open(filename, 'r') as f:
+filename = "./perception/object_detection_3d/voxel_object_detection_3d/second/configs/tanet/tanet.yaml"
+with open(filename, "r") as f:
     cfg = edict(yaml.load(f))
 
 
@@ -21,7 +21,7 @@ class PALayer(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(dim_pa, dim_pa // reduction_pa),
             nn.ReLU(inplace=True),
-            nn.Linear(dim_pa // reduction_pa, dim_pa)
+            nn.Linear(dim_pa // reduction_pa, dim_pa),
         )
 
     def forward(self, x):
@@ -38,7 +38,7 @@ class CALayer(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(dim_ca, dim_ca // reduction_ca),
             nn.ReLU(inplace=True),
-            nn.Linear(dim_ca // reduction_ca, dim_ca)
+            nn.Linear(dim_ca // reduction_ca, dim_ca),
         )
 
     def forward(self, x):
@@ -52,8 +52,8 @@ class CALayer(nn.Module):
 class PACALayer(nn.Module):
     def __init__(self, dim_ca, dim_pa, reduction_r):
         super(PACALayer, self).__init__()
-        self.pa = PALayer(dim_pa,  dim_pa // reduction_r)
-        self.ca = CALayer(dim_ca,  dim_ca // reduction_r)
+        self.pa = PALayer(dim_pa, dim_pa // reduction_r)
+        self.ca = CALayer(dim_ca, dim_ca // reduction_r)
         self.sig = nn.Sigmoid()
 
     def forward(self, x):
@@ -64,31 +64,31 @@ class PACALayer(nn.Module):
         out = torch.mul(x, paca_normal_weight)
         return out, paca_normal_weight
 
+
 # Voxel-wise attention for each voxel
 class VALayer(nn.Module):
     def __init__(self, c_num, p_num):
         super(VALayer, self).__init__()
-        self.fc1 = nn.Sequential(
-            nn.Linear(c_num + 3, 1),
-            nn.ReLU(inplace=True)
-        )
+        self.fc1 = nn.Sequential(nn.Linear(c_num + 3, 1),
+                                 nn.ReLU(inplace=True))
 
         self.fc2 = nn.Sequential(
-            nn.Linear(p_num, 1),    ########################
+            nn.Linear(p_num, 1),
             nn.ReLU(inplace=True)
         )
 
         self.sigmod = nn.Sigmoid()
 
     def forward(self, voxel_center, paca_feat):
-        '''
+        """
         :param voxel_center: size (K,1,3)
         :param SACA_Feat: size (K,N,C)
         :return: voxel_attention_weight: size (K,1,1)
-        '''
+        """
         voxel_center_repeat = voxel_center.repeat(1, paca_feat.shape[1], 1)
         # print(voxel_center_repeat.shape)
-        voxel_feat_concat = torch.cat([paca_feat, voxel_center_repeat], dim=-1)  # K,N,C---> K,N,(C+3)
+        voxel_feat_concat = torch.cat([paca_feat, voxel_center_repeat],
+                                      dim=-1)  # K,N,C---> K,N,(C+3)
 
         feat_2 = self.fc1(voxel_feat_concat)  # K,N,(C+3)--->K,N,1
         feat_2 = feat_2.permute(0, 2, 1).contiguous()  # K,N,1--->K,1,N
@@ -100,19 +100,27 @@ class VALayer(nn.Module):
         return voxel_attention_weight
 
 
-
 class VoxelFeature_TA(nn.Module):
-    def __init__(self,dim_ca=cfg.TA.INPUT_C_DIM,dim_pa=cfg.TA.NUM_POINTS_IN_VOXEL,
-                 reduction_r = cfg.TA.REDUCTION_R,boost_c_dim = cfg.TA.BOOST_C_DIM,
-                 use_paca_weight = cfg.TA.USE_PACA_WEIGHT):
+    def __init__(
+        self,
+        dim_ca=cfg.TA.INPUT_C_DIM,
+        dim_pa=cfg.TA.NUM_POINTS_IN_VOXEL,
+        reduction_r=cfg.TA.REDUCTION_R,
+        boost_c_dim=cfg.TA.BOOST_C_DIM,
+        use_paca_weight=cfg.TA.USE_PACA_WEIGHT,
+    ):
         super(VoxelFeature_TA, self).__init__()
-        self.PACALayer1 = PACALayer(dim_ca=dim_ca, dim_pa=dim_pa, reduction_r=reduction_r)
-        self.PACALayer2 = PACALayer(dim_ca=boost_c_dim, dim_pa=dim_pa, reduction_r=reduction_r)
+        self.PACALayer1 = PACALayer(dim_ca=dim_ca,
+                                    dim_pa=dim_pa,
+                                    reduction_r=reduction_r)
+        self.PACALayer2 = PACALayer(dim_ca=boost_c_dim,
+                                    dim_pa=dim_pa,
+                                    reduction_r=reduction_r)
         self.voxel_attention1 = VALayer(c_num=dim_ca, p_num=dim_pa)
         self.voxel_attention2 = VALayer(c_num=boost_c_dim, p_num=dim_pa)
         self.use_paca_weight = use_paca_weight
         self.FC1 = nn.Sequential(
-            nn.Linear(2*dim_ca, boost_c_dim),
+            nn.Linear(2 * dim_ca, boost_c_dim),
             nn.ReLU(inplace=True),
         )
         self.FC2 = nn.Sequential(
@@ -121,7 +129,7 @@ class VoxelFeature_TA(nn.Module):
         )
 
     def forward(self, voxel_center, x):
-        paca1,paca_normal_weight1 = self.PACALayer1(x)
+        paca1, paca_normal_weight1 = self.PACALayer1(x)
         voxel_attention1 = self.voxel_attention1(voxel_center, paca1)
         if self.use_paca_weight:
             paca1_feat = voxel_attention1 * paca1 * paca_normal_weight1
@@ -130,7 +138,7 @@ class VoxelFeature_TA(nn.Module):
         out1 = torch.cat([paca1_feat, x], dim=2)
         out1 = self.FC1(out1)
 
-        paca2,paca_normal_weight2 = self.PACALayer2(out1)
+        paca2, paca_normal_weight2 = self.PACALayer2(out1)
         voxel_attention2 = self.voxel_attention2(voxel_center, paca2)
         if self.use_paca_weight:
             paca2_feat = voxel_attention2 * paca2 * paca_normal_weight2
@@ -142,17 +150,18 @@ class VoxelFeature_TA(nn.Module):
         return out
 
 
-
-## PillarFeature_TANet is modified from pointpillars.PillarFeatureNet
+# PillarFeature_TANet is modified from pointpillars.PillarFeatureNet
 # by introducing Triple Attention
 class PillarFeature_TANet(nn.Module):
-    def __init__(self,
-                 num_input_features=4,
-                 use_norm=True,
-                 num_filters=(64,),
-                 with_distance=False,
-                 voxel_size=(0.2, 0.2, 4),
-                 pc_range=(0, -40, -3, 70.4, 40, 1)):
+    def __init__(
+            self,
+            num_input_features=4,
+            use_norm=True,
+            num_filters=(64, ),
+            with_distance=False,
+            voxel_size=(0.2, 0.2, 4),
+            pc_range=(0, -40, -3, 70.4, 40, 1),
+    ):
         """
         Pillar Feature Net with Tripe attention.
         The network prepares the pillar features and performs forward pass through PFNLayers. This net performs a
@@ -166,7 +175,7 @@ class PillarFeature_TANet(nn.Module):
         """
 
         super().__init__()
-        self.name = 'PillarFeature_TANet'
+        self.name = "PillarFeature_TANet"
         assert len(num_filters) > 0
         num_input_features += 5
         if with_distance:
@@ -187,7 +196,11 @@ class PillarFeature_TANet(nn.Module):
                 last_layer = False
             else:
                 last_layer = True
-            pfn_layers.append(PFNLayer(in_filters, out_filters, use_norm, last_layer=last_layer))
+            pfn_layers.append(
+                PFNLayer(in_filters,
+                         out_filters,
+                         use_norm,
+                         last_layer=last_layer))
         self.pfn_layers = nn.ModuleList(pfn_layers)
 
         # Need pillar (voxel) size and x/y offset in order to calculate pillar offset
@@ -199,13 +212,16 @@ class PillarFeature_TANet(nn.Module):
     def forward(self, features, num_voxels, coors):
 
         # Find distance of x, y, and z from cluster center
-        points_mean = features[:, :, :3].sum(dim=1, keepdim=True) / num_voxels.type_as(features).view(-1, 1, 1)
+        points_mean = features[:, :, :3].sum(
+            dim=1, keepdim=True) / num_voxels.type_as(features).view(-1, 1, 1)
         f_cluster = features[:, :, :3] - points_mean
 
         # Find distance of x, y, and z from pillar center
         f_center = torch.zeros_like(features[:, :, :2])
-        f_center[:, :, 0] = features[:, :, 0] - (coors[:, 3].float().unsqueeze(1) * self.vx + self.x_offset)
-        f_center[:, :, 1] = features[:, :, 1] - (coors[:, 2].float().unsqueeze(1) * self.vy + self.y_offset)
+        f_center[:, :, 0] = features[:, :, 0] - (
+            coors[:, 3].float().unsqueeze(1) * self.vx + self.x_offset)
+        f_center[:, :, 1] = features[:, :, 1] - (
+            coors[:, 2].float().unsqueeze(1) * self.vy + self.y_offset)
 
         # Combine together feature decorations
         features_ls = [features, f_cluster, f_center]
@@ -230,28 +246,27 @@ class PillarFeature_TANet(nn.Module):
         return features.squeeze()
 
 
-
-
-#Our Coarse-to-Fine network
+# Our Coarse-to-Fine network
 class PSA(nn.Module):
-    def __init__(self,
-                 use_norm=True,
-                 num_class=2,
-                 layer_nums=[3, 5, 5],
-                 layer_strides=[2, 2, 2],
-                 num_filters=[128, 128, 256],
-                 upsample_strides=[1, 2, 4],
-                 num_upsample_filters=[256, 256, 256],
-                 num_input_filters=128,
-                 num_anchor_per_loc=2,
-                 encode_background_as_zeros=True,
-                 use_direction_classifier=True,
-                 use_groupnorm=False,
-                 num_groups=32,
-                 use_bev=False,
-                 box_code_size=7,
-                 name='psa'):
-
+    def __init__(
+        self,
+        use_norm=True,
+        num_class=2,
+        layer_nums=[3, 5, 5],
+        layer_strides=[2, 2, 2],
+        num_filters=[128, 128, 256],
+        upsample_strides=[1, 2, 4],
+        num_upsample_filters=[256, 256, 256],
+        num_input_filters=128,
+        num_anchor_per_loc=2,
+        encode_background_as_zeros=True,
+        use_direction_classifier=True,
+        use_groupnorm=False,
+        num_groups=32,
+        use_bev=False,
+        box_code_size=7,
+        name="psa",
+    ):
         """
         :param use_norm:
         :param num_class:
@@ -271,9 +286,9 @@ class PSA(nn.Module):
         :param name:
         """
         super(PSA, self).__init__()
-        self._num_anchor_per_loc = num_anchor_per_loc   ## 2
+        self._num_anchor_per_loc = num_anchor_per_loc  # 2
         self._use_direction_classifier = use_direction_classifier  # True
-        self._use_bev = use_bev   # False
+        self._use_bev = use_bev  # False
         assert len(layer_nums) == 3
         assert len(layer_strides) == len(layer_nums)
         assert len(num_filters) == len(layer_nums)
@@ -281,16 +296,18 @@ class PSA(nn.Module):
         assert len(num_upsample_filters) == len(layer_nums)
         factors = []
         for i in range(len(layer_nums)):
-            assert int(np.prod(layer_strides[:i + 1])) % upsample_strides[i] == 0
-            factors.append(np.prod(layer_strides[:i + 1]) // upsample_strides[i])
+            assert int(np.prod(
+                layer_strides[:i + 1])) % upsample_strides[i] == 0
+            factors.append(
+                np.prod(layer_strides[:i + 1]) // upsample_strides[i])
         assert all([x == factors[0] for x in factors])
-        if use_norm:   # True
+        if use_norm:  # True
             if use_groupnorm:
-                BatchNorm2d = change_default_args(
-                    num_groups=num_groups, eps=1e-3)(GroupNorm)
+                BatchNorm2d = change_default_args(num_groups=num_groups,
+                                                  eps=1e-3)(GroupNorm)
             else:
-                BatchNorm2d = change_default_args(
-                    eps=1e-3, momentum=0.01)(nn.BatchNorm2d)
+                BatchNorm2d = change_default_args(eps=1e-3, momentum=0.01)(
+                    nn.BatchNorm2d)
             Conv2d = change_default_args(bias=False)(nn.Conv2d)
             ConvTranspose2d = change_default_args(bias=False)(
                 nn.ConvTranspose2d)
@@ -318,8 +335,10 @@ class PSA(nn.Module):
 
         self.block1 = Sequential(
             nn.ZeroPad2d(1),
-            Conv2d(
-                num_input_filters, num_filters[0], 3, stride=layer_strides[0]),
+            Conv2d(num_input_filters,
+                   num_filters[0],
+                   3,
+                   stride=layer_strides[0]),
             BatchNorm2d(num_filters[0]),
             nn.ReLU(),
         )
@@ -333,17 +352,17 @@ class PSA(nn.Module):
                 num_filters[0],
                 num_upsample_filters[0],
                 upsample_strides[0],
-                stride=upsample_strides[0]),
+                stride=upsample_strides[0],
+            ),
             BatchNorm2d(num_upsample_filters[0]),
             nn.ReLU(),
         )
         self.block2 = Sequential(
             nn.ZeroPad2d(1),
-            Conv2d(
-                block2_input_filters,
-                num_filters[1],
-                3,
-                stride=layer_strides[1]),
+            Conv2d(block2_input_filters,
+                   num_filters[1],
+                   3,
+                   stride=layer_strides[1]),
             BatchNorm2d(num_filters[1]),
             nn.ReLU(),
         )
@@ -357,7 +376,8 @@ class PSA(nn.Module):
                 num_filters[1],
                 num_upsample_filters[1],
                 upsample_strides[1],
-                stride=upsample_strides[1]),
+                stride=upsample_strides[1],
+            ),
             BatchNorm2d(num_upsample_filters[1]),
             nn.ReLU(),
         )
@@ -377,7 +397,8 @@ class PSA(nn.Module):
                 num_filters[2],
                 num_upsample_filters[2],
                 upsample_strides[2],
-                stride=upsample_strides[2]),
+                stride=upsample_strides[2],
+            ),
             BatchNorm2d(num_upsample_filters[2]),
             nn.ReLU(),
         )
@@ -386,56 +407,96 @@ class PSA(nn.Module):
         else:
             num_cls = num_anchor_per_loc * (num_class + 1)
         self.conv_cls = nn.Conv2d(sum(num_upsample_filters), num_cls, 1)
-        self.conv_box = nn.Conv2d(
-            sum(num_upsample_filters), num_anchor_per_loc * box_code_size, 1)
+        self.conv_box = nn.Conv2d(sum(num_upsample_filters),
+                                  num_anchor_per_loc * box_code_size, 1)
         if use_direction_classifier:
-            self.conv_dir_cls = nn.Conv2d(
-                sum(num_upsample_filters), num_anchor_per_loc * 2, 1)
+            self.conv_dir_cls = nn.Conv2d(sum(num_upsample_filters),
+                                          num_anchor_per_loc * 2, 1)
 
+        self.bottle_conv = nn.Conv2d(sum(num_upsample_filters),
+                                     sum(num_upsample_filters) // 3, 1)
 
-        ###################  refine
-        self.bottle_conv = nn.Conv2d(sum(num_upsample_filters), sum(num_upsample_filters)//3, 1)
+        self.block1_dec2x = nn.MaxPool2d(kernel_size=2)  # C=64
+        self.block1_dec4x = nn.MaxPool2d(kernel_size=4)  # C=64
 
-        self.block1_dec2x = nn.MaxPool2d(kernel_size=2)   ### C=64
-        self.block1_dec4x = nn.MaxPool2d(kernel_size=4)   ### C=64
+        self.block2_dec2x = nn.MaxPool2d(kernel_size=2)  # C=128
+        self.block2_inc2x = ConvTranspose2d(
+            num_filters[1],
+            num_filters[0] // 2,
+            upsample_strides[1],
+            stride=upsample_strides[1],
+        )  # C=32
 
-        self.block2_dec2x = nn.MaxPool2d(kernel_size=2)  ### C=128
-        self.block2_inc2x = ConvTranspose2d(num_filters[1],num_filters[0]//2,upsample_strides[1],stride=upsample_strides[1])  ### C=32
+        self.block3_inc2x = ConvTranspose2d(
+            num_filters[2],
+            num_filters[1] // 2,
+            upsample_strides[1],
+            stride=upsample_strides[1],
+        )  # C=64
+        self.block3_inc4x = ConvTranspose2d(
+            num_filters[2],
+            num_filters[0] // 2,
+            upsample_strides[2],
+            stride=upsample_strides[2],
+        )  # C=32
 
-        self.block3_inc2x = ConvTranspose2d(num_filters[2],num_filters[1]//2,upsample_strides[1],stride=upsample_strides[1])    #### C=64
-        self.block3_inc4x = ConvTranspose2d(num_filters[2],num_filters[0]//2,upsample_strides[2],stride=upsample_strides[2])   #### C=32
-
-        self.fusion_block1 = nn.Conv2d(num_filters[0]+num_filters[0]//2+num_filters[0]//2, num_filters[0], 1)
-        self.fusion_block2 = nn.Conv2d(num_filters[0]+num_filters[1]+num_filters[1]//2, num_filters[1], 1)
-        self.fusion_block3 = nn.Conv2d(num_filters[0]+num_filters[1]+num_filters[2], num_filters[2], 1)
-
+        self.fusion_block1 = nn.Conv2d(
+            num_filters[0] + num_filters[0] // 2 + num_filters[0] // 2,
+            num_filters[0],
+            1,
+        )
+        self.fusion_block2 = nn.Conv2d(
+            num_filters[0] + num_filters[1] + num_filters[1] // 2,
+            num_filters[1], 1)
+        self.fusion_block3 = nn.Conv2d(
+            num_filters[0] + num_filters[1] + num_filters[2], num_filters[2],
+            1)
 
         self.refine_up1 = Sequential(
-            ConvTranspose2d(num_filters[0],num_upsample_filters[0], upsample_strides[0],stride=upsample_strides[0]),
+            ConvTranspose2d(
+                num_filters[0],
+                num_upsample_filters[0],
+                upsample_strides[0],
+                stride=upsample_strides[0],
+            ),
             BatchNorm2d(num_upsample_filters[0]),
             nn.ReLU(),
         )
         self.refine_up2 = Sequential(
-            ConvTranspose2d(num_filters[1],num_upsample_filters[1],upsample_strides[1],stride=upsample_strides[1]),
+            ConvTranspose2d(
+                num_filters[1],
+                num_upsample_filters[1],
+                upsample_strides[1],
+                stride=upsample_strides[1],
+            ),
             BatchNorm2d(num_upsample_filters[1]),
             nn.ReLU(),
         )
         self.refine_up3 = Sequential(
-            ConvTranspose2d(num_filters[2],num_upsample_filters[2],upsample_strides[2], stride=upsample_strides[2]),
+            ConvTranspose2d(
+                num_filters[2],
+                num_upsample_filters[2],
+                upsample_strides[2],
+                stride=upsample_strides[2],
+            ),
             BatchNorm2d(num_upsample_filters[2]),
             nn.ReLU(),
         )
 
-        #######
         C_Bottle = cfg.PSA.C_Bottle
         C = cfg.PSA.C_Reudce
 
         self.RF1 = Sequential(  # 3*3
-            Conv2d(C_Bottle*2, C, kernel_size=1, stride=1),
+            Conv2d(C_Bottle * 2, C, kernel_size=1, stride=1),
             BatchNorm2d(C),
             nn.ReLU(inplace=True),
-            Conv2d(C, C_Bottle*2, kernel_size=3, stride=1, padding=1, dilation=1),
-            BatchNorm2d(C_Bottle*2),
+            Conv2d(C,
+                   C_Bottle * 2,
+                   kernel_size=3,
+                   stride=1,
+                   padding=1,
+                   dilation=1),
+            BatchNorm2d(C_Bottle * 2),
             nn.ReLU(inplace=True),
         )
 
@@ -443,31 +504,43 @@ class PSA(nn.Module):
             Conv2d(C_Bottle, C, kernel_size=3, stride=1, padding=1),
             BatchNorm2d(C),
             nn.ReLU(inplace=True),
-            Conv2d(C, C_Bottle, kernel_size=3, stride=1, padding=1, dilation=1),
+            Conv2d(C, C_Bottle, kernel_size=3, stride=1, padding=1,
+                   dilation=1),
             BatchNorm2d(C_Bottle),
             nn.ReLU(inplace=True),
         )
 
         self.RF3 = Sequential(  # 7*7
-            Conv2d(C_Bottle//2, C, kernel_size=3, stride=1, padding=1),
+            Conv2d(C_Bottle // 2, C, kernel_size=3, stride=1, padding=1),
             BatchNorm2d(C),
             nn.ReLU(inplace=True),
             Conv2d(C, C, kernel_size=3, stride=1, padding=1),
             BatchNorm2d(C),
             nn.ReLU(inplace=True),
-            Conv2d(C, C_Bottle//2, kernel_size=3, stride=1, padding=1),
-            BatchNorm2d(C_Bottle//2),
+            Conv2d(C, C_Bottle // 2, kernel_size=3, stride=1, padding=1),
+            BatchNorm2d(C_Bottle // 2),
             nn.ReLU(inplace=True),
         )
 
-        self.concat_conv1 = nn.Conv2d(num_filters[1], num_filters[1], kernel_size=3, padding=1)  ## kernel_size=3
-        self.concat_conv2 = nn.Conv2d(num_filters[1], num_filters[1], kernel_size=3, padding=1)
-        self.concat_conv3 = nn.Conv2d(num_filters[1], num_filters[1], kernel_size=3, padding=1)
+        self.concat_conv1 = nn.Conv2d(num_filters[1],
+                                      num_filters[1],
+                                      kernel_size=3,
+                                      padding=1)
+        self.concat_conv2 = nn.Conv2d(num_filters[1],
+                                      num_filters[1],
+                                      kernel_size=3,
+                                      padding=1)
+        self.concat_conv3 = nn.Conv2d(num_filters[1],
+                                      num_filters[1],
+                                      kernel_size=3,
+                                      padding=1)
 
-        self.refine_cls = nn.Conv2d(sum(num_upsample_filters),num_cls, 1)
-        self.refine_loc = nn.Conv2d(sum(num_upsample_filters),num_anchor_per_loc * box_code_size, 1)
+        self.refine_cls = nn.Conv2d(sum(num_upsample_filters), num_cls, 1)
+        self.refine_loc = nn.Conv2d(sum(num_upsample_filters),
+                                    num_anchor_per_loc * box_code_size, 1)
         if use_direction_classifier:
-            self.refine_dir = nn.Conv2d(sum(num_upsample_filters),num_anchor_per_loc * 2, 1)
+            self.refine_dir = nn.Conv2d(sum(num_upsample_filters),
+                                        num_anchor_per_loc * 2, 1)
 
     def forward(self, x, bev=None):
         x1 = self.block1(x)
@@ -493,8 +566,6 @@ class PSA(nn.Module):
             dir_cls_preds = dir_cls_preds.permute(0, 2, 3, 1).contiguous()
             ret_dict["dir_cls_preds"] = dir_cls_preds
 
-
-        ###############Refine:
         blottle_conv = self.bottle_conv(coarse_feat)
 
         x1_dec2x = self.block1_dec2x(x1)
@@ -506,13 +577,13 @@ class PSA(nn.Module):
         x3_inc2x = self.block3_inc2x(x3)
         x3_inc4x = self.block3_inc4x(x3)
 
-        concat_block1 = torch.cat([x1,x2_inc2x,x3_inc4x], dim=1)
+        concat_block1 = torch.cat([x1, x2_inc2x, x3_inc4x], dim=1)
         fusion_block1 = self.fusion_block1(concat_block1)
 
-        concat_block2 = torch.cat([x1_dec2x,x2,x3_inc2x], dim=1)
+        concat_block2 = torch.cat([x1_dec2x, x2, x3_inc2x], dim=1)
         fusion_block2 = self.fusion_block2(concat_block2)
 
-        concat_block3 = torch.cat([x1_dec4x,x2_dec2x,x3], dim=1)
+        concat_block3 = torch.cat([x1_dec4x, x2_dec2x, x3], dim=1)
         fusion_block3 = self.fusion_block3(concat_block3)
 
         refine_up1 = self.RF3(fusion_block1)
@@ -522,7 +593,6 @@ class PSA(nn.Module):
         refine_up3 = self.RF1(fusion_block3)
         refine_up3 = self.refine_up3(refine_up3)
 
-
         branch1_sum_wise = refine_up1 + blottle_conv
         branch2_sum_wise = refine_up2 + blottle_conv
         branch3_sum_wise = refine_up3 + blottle_conv
@@ -531,19 +601,21 @@ class PSA(nn.Module):
         concat_conv2 = self.concat_conv2(branch2_sum_wise)
         concat_conv3 = self.concat_conv3(branch3_sum_wise)
 
-        PSA_output = torch.cat([concat_conv1,concat_conv2,concat_conv3], dim=1)
+        PSA_output = torch.cat([concat_conv1, concat_conv2, concat_conv3],
+                               dim=1)
 
         refine_cls_preds = self.refine_cls(PSA_output)
         refine_loc_preds = self.refine_loc(PSA_output)
 
         refine_loc_preds = refine_loc_preds.permute(0, 2, 3, 1).contiguous()
         refine_cls_preds = refine_cls_preds.permute(0, 2, 3, 1).contiguous()
-        ret_dict["Refine_loc_preds"] =  refine_loc_preds
-        ret_dict["Refine_cls_preds"] =  refine_cls_preds
+        ret_dict["Refine_loc_preds"] = refine_loc_preds
+        ret_dict["Refine_cls_preds"] = refine_cls_preds
 
         if self._use_direction_classifier:
             refine_dir_preds = self.refine_dir(PSA_output)
-            refine_dir_preds = refine_dir_preds.permute(0, 2, 3, 1).contiguous()
+            refine_dir_preds = refine_dir_preds.permute(0, 2, 3,
+                                                        1).contiguous()
             ret_dict["Refine_dir_preds"] = refine_dir_preds
 
         return ret_dict

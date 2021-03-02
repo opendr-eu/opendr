@@ -1,8 +1,12 @@
 import numpy as np
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import box_coder_pb2
+from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
+    box_coder_pb2,
+)
 from perception.object_detection_3d.voxel_object_detection_3d.second.core.anchor_generator import (
-    AnchorGeneratorStride, AnchorGeneratorRange)
+    AnchorGeneratorStride,
+    AnchorGeneratorRange,
+)
 
 
 def build(anchor_config):
@@ -17,9 +21,9 @@ def build(anchor_config):
   Raises:
     ValueError: when using an unsupported input data type.
   """
-    ag_type = anchor_config.WhichOneof('anchor_generator')
+    ag_type = anchor_config.WhichOneof("anchor_generator")
 
-    if ag_type == 'anchor_generator_stride':
+    if ag_type == "anchor_generator_stride":
         config = anchor_config.anchor_generator_stride
         ag = AnchorGeneratorStride(
             sizes=list(config.sizes),
@@ -28,9 +32,10 @@ def build(anchor_config):
             rotations=list(config.rotations),
             match_threshold=config.matched_threshold,
             unmatch_threshold=config.unmatched_threshold,
-            class_id=config.class_name)
+            class_id=config.class_name,
+        )
         return ag
-    elif ag_type == 'anchor_generator_range':
+    elif ag_type == "anchor_generator_range":
         config = anchor_config.anchor_generator_range
         ag = AnchorGeneratorRange(
             sizes=list(config.sizes),
@@ -38,7 +43,8 @@ def build(anchor_config):
             rotations=list(config.rotations),
             match_threshold=config.matched_threshold,
             unmatch_threshold=config.unmatched_threshold,
-            class_id=config.class_name)
+            class_id=config.class_name,
+        )
         return ag
     else:
         raise ValueError(" unknown anchor generator type")

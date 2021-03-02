@@ -4,16 +4,18 @@ import math
 
 
 @numba.jit(nopython=True)
-def _points_to_bevmap_reverse_kernel(points,
-                                     voxel_size,
-                                     coors_range,
-                                     coor_to_voxelidx,
-                                     # coors_2d,
-                                     bev_map,
-                                     height_lowers,
-                                     # density_norm_num=16,
-                                     with_reflectivity=False,
-                                     max_voxels=40000):
+def _points_to_bevmap_reverse_kernel(
+    points,
+    voxel_size,
+    coors_range,
+    coor_to_voxelidx,
+    # coors_2d,
+    bev_map,
+    height_lowers,
+    # density_norm_num=16,
+    with_reflectivity=False,
+    max_voxels=40000,
+):
     # put all computations to one loop.
     # we shouldn't create large array in main jit code, otherwise
     # reduce performance
@@ -49,8 +51,8 @@ def _points_to_bevmap_reverse_kernel(points,
             # coors_2d[voxelidx] = coor[1:]
         bev_map[-1, coor[1], coor[2]] += 1
         height_norm = bev_map[coor[0], coor[1], coor[2]]
-        incomimg_height_norm = (
-            points[i, 2] - height_lowers[coor[0]]) / height_slice_size
+        incomimg_height_norm = (points[i, 2] -
+                                height_lowers[coor[0]]) / height_slice_size
         if incomimg_height_norm > height_norm:
             bev_map[coor[0], coor[1], coor[2]] = incomimg_height_norm
             if with_reflectivity:
@@ -58,16 +60,17 @@ def _points_to_bevmap_reverse_kernel(points,
     # return voxel_num
 
 
-def points_to_bev(points,
-                  voxel_size,
-                  coors_range,
-                  with_reflectivity=False,
-                  density_norm_num=16,
-                  max_voxels=40000):
+def points_to_bev(
+    points,
+    voxel_size,
+    coors_range,
+    with_reflectivity=False,
+    density_norm_num=16,
+    max_voxels=40000,
+):
     """convert kitti points(N, 4) to a bev map. return [C, H, W] map.
     this function based on algorithm in points_to_voxel.
     takes 5ms in a reduced pointcloud with voxel_size=[0.1, 0.1, 0.8]
-
     Args:
         points: [N, ndim] float tensor. points[:, :3] contain xyz points and
             points[:, 3] contain reflectivity.
@@ -76,10 +79,10 @@ def points_to_bev(points,
             format: xyzxyz, minmax
         with_reflectivity: bool. if True, will add a intensity map to bev map.
     Returns:
-        bev_map: [num_height_maps + 1(2), H, W] float tensor. 
-            `WARNING`: bev_map[-1] is num_points map, NOT density map, 
-            because calculate density map need more time in cpu rather than gpu. 
-            if with_reflectivity is True, bev_map[-2] is intensity map. 
+        bev_map: [num_height_maps + 1(2), H, W] float tensor.
+            `WARNING`: bev_map[-1] is num_points map, NOT density map,
+            because calculate density map need more time in cpu rather than gpu.
+            if with_reflectivity is True, bev_map[-2] is intensity map.
     """
     if not isinstance(voxel_size, np.ndarray):
         voxel_size = np.array(voxel_size, dtype=points.dtype)
@@ -92,12 +95,21 @@ def points_to_bev(points,
     # coors_2d = np.zeros(shape=(max_voxels, 2), dtype=np.int32)
     bev_map_shape = list(voxelmap_shape)
     bev_map_shape[0] += 1
-    height_lowers = np.linspace(
-        coors_range[2], coors_range[5], voxelmap_shape[0], endpoint=False)
+    height_lowers = np.linspace(coors_range[2],
+                                coors_range[5],
+                                voxelmap_shape[0],
+                                endpoint=False)
     if with_reflectivity:
         bev_map_shape[0] += 1
     bev_map = np.zeros(shape=bev_map_shape, dtype=points.dtype)
     _points_to_bevmap_reverse_kernel(
-        points, voxel_size, coors_range, coor_to_voxelidx, bev_map,
-        height_lowers, with_reflectivity, max_voxels)
+        points,
+        voxel_size,
+        coors_range,
+        coor_to_voxelidx,
+        bev_map,
+        height_lowers,
+        with_reflectivity,
+        max_voxels,
+    )
     return bev_map

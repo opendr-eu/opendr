@@ -22,19 +22,25 @@ Detection configuration framework, they should define their own builder function
 that wraps the build function.
 """
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import input_reader_pb2
-from perception.object_detection_3d.voxel_object_detection_3d.second.data.dataset import KittiDataset
-from perception.object_detection_3d.voxel_object_detection_3d.second.data.preprocess import prep_pointcloud
+from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
+    input_reader_pb2,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.data.dataset import (
+    KittiDataset,
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second.data.preprocess import (
+    prep_pointcloud,
+)
 import numpy as np
-from perception.object_detection_3d.voxel_object_detection_3d.second.builder import dbsampler_builder
+from perception.object_detection_3d.voxel_object_detection_3d.second.builder import (
+    dbsampler_builder,
+)
 from functools import partial
 
 
-def build(input_reader_config,
-          model_config,
-          training,
-          voxel_generator,
-          target_assigner=None):
+def build(
+    input_reader_config, model_config, training, voxel_generator, target_assigner=None
+):
     """Builds a tensor dictionary based on the InputReader config.
 
     Args:
@@ -48,12 +54,15 @@ def build(input_reader_config,
         ValueError: If no input paths are specified.
     """
     if not isinstance(input_reader_config, input_reader_pb2.InputReader):
-        raise ValueError('input_reader_config not of type '
-                         'input_reader_pb2.InputReader.')
+        raise ValueError(
+            "input_reader_config not of type " "input_reader_pb2.InputReader."
+        )
     generate_bev = model_config.use_bev
     without_reflectivity = model_config.without_reflectivity
     num_point_features = model_config.num_point_features
-    out_size_factor = model_config.rpn.layer_strides[0] // model_config.rpn.upsample_strides[0]
+    out_size_factor = (
+        model_config.rpn.layer_strides[0] // model_config.rpn.upsample_strides[0]
+    )
 
     cfg = input_reader_config
     db_sampler_cfg = input_reader_config.database_sampler
@@ -86,8 +95,7 @@ def build(input_reader_config,
         global_rotation_noise=list(cfg.global_rotation_uniform_noise),
         global_scaling_noise=list(cfg.global_scaling_uniform_noise),
         global_loc_noise_std=(0.2, 0.2, 0.2),
-        global_random_rot_range=list(
-            cfg.global_random_rotation_range_per_object),
+        global_random_rot_range=list(cfg.global_random_rotation_range_per_object),
         db_sampler=db_sampler,
         unlabeled_db_sampler=u_db_sampler,
         generate_bev=generate_bev,
@@ -99,13 +107,15 @@ def build(input_reader_config,
         remove_points_after_sample=cfg.remove_points_after_sample,
         remove_environment=cfg.remove_environment,
         use_group_id=cfg.use_group_id,
-        out_size_factor=out_size_factor)
+        out_size_factor=out_size_factor,
+    )
     dataset = KittiDataset(
         info_path=cfg.kitti_info_path,
         root_path=cfg.kitti_root_path,
         num_point_features=num_point_features,
         target_assigner=target_assigner,
         feature_map_size=feature_map_size,
-        prep_func=prep_func)
+        prep_func=prep_func,
+    )
 
     return dataset

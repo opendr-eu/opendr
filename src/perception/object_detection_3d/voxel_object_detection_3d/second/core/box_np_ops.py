@@ -1,16 +1,21 @@
 import numba
 from pathlib import Path
 import numpy as np
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.buildtools.pybind11_build import load_pb11
+from perception.object_detection_3d.voxel_object_detection_3d.second.utils.buildtools.pybind11_build import (
+    load_pb11, )
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.core.geometry import points_in_convex_polygon_3d_jit
-from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms_gpu import rotate_iou_gpu_eval
+from perception.object_detection_3d.voxel_object_detection_3d.second.core.geometry import (
+    points_in_convex_polygon_3d_jit, )
+from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms_gpu import (
+    rotate_iou_gpu_eval, )
 
 try:
-    from perception.object_detection_3d.voxel_object_detection_3d.second.core import box_ops_cc
+    from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
+        box_ops_cc, )
 except:
     current_dir = Path(__file__).resolve().parents[0]
-    box_ops_cc = load_pb11(["./cc/box_ops.cc"], current_dir / "box_ops_cc.so", current_dir)
+    box_ops_cc = load_pb11(["./cc/box_ops.cc"], current_dir / "box_ops_cc.so",
+                           current_dir)
 
 
 def riou_cc(rbboxes, qrbboxes, standup_thresh=0.0):
@@ -27,12 +32,15 @@ def riou_cc(rbboxes, qrbboxes, standup_thresh=0.0):
                                 standup_thresh)
 
 
-def second_box_encode(boxes, anchors, encode_angle_to_vector=False, smooth_dim=False):
+def second_box_encode(boxes,
+                      anchors,
+                      encode_angle_to_vector=False,
+                      smooth_dim=False):
     """box encode for VoxelNet in lidar
     Args:
         boxes ([N, 7] Tensor): normal boxes: x, y, z, w, l, h, r
         anchors ([N, 7] Tensor): anchors
-        encode_angle_to_vector: bool. increase aos performance, 
+        encode_angle_to_vector: bool. increase aos performance,
             decrease other performance.
     """
     # need to convert boxes to z-center format
@@ -66,7 +74,10 @@ def second_box_encode(boxes, anchors, encode_angle_to_vector=False, smooth_dim=F
         return np.concatenate([xt, yt, zt, wt, lt, ht, rt], axis=-1)
 
 
-def second_box_decode(box_encodings, anchors, encode_angle_to_vector=False, smooth_dim=False):
+def second_box_decode(box_encodings,
+                      anchors,
+                      encode_angle_to_vector=False,
+                      smooth_dim=False):
     """box decode for VoxelNet in lidar
     Args:
         boxes ([N, 7] Tensor): normal boxes: x, y, z, w, l, h, r
@@ -103,12 +114,16 @@ def second_box_decode(box_encodings, anchors, encode_angle_to_vector=False, smoo
     zg = zg - hg / 2
     return np.concatenate([xg, yg, zg, wg, lg, hg, rg], axis=-1)
 
-def bev_box_encode(boxes, anchors, encode_angle_to_vector=False, smooth_dim=False):
+
+def bev_box_encode(boxes,
+                   anchors,
+                   encode_angle_to_vector=False,
+                   smooth_dim=False):
     """box encode for VoxelNet in lidar
     Args:
         boxes ([N, 7] Tensor): normal boxes: x, y, z, w, l, h, r
         anchors ([N, 7] Tensor): anchors
-        encode_angle_to_vector: bool. increase aos performance, 
+        encode_angle_to_vector: bool. increase aos performance,
             decrease other performance.
     """
     # need to convert boxes to z-center format
@@ -136,7 +151,10 @@ def bev_box_encode(boxes, anchors, encode_angle_to_vector=False, smooth_dim=Fals
         return np.concatenate([xt, yt, wt, lt, rt], axis=-1)
 
 
-def bev_box_decode(box_encodings, anchors, encode_angle_to_vector=False, smooth_dim=False):
+def bev_box_decode(box_encodings,
+                   anchors,
+                   encode_angle_to_vector=False,
+                   smooth_dim=False):
     """box decode for VoxelNet in lidar
     Args:
         boxes ([N, 7] Tensor): normal boxes: x, y, z, w, l, h, r
@@ -167,24 +185,22 @@ def bev_box_decode(box_encodings, anchors, encode_angle_to_vector=False, smooth_
         rg = rt + ra
     return np.concatenate([xg, yg, wg, lg, rg], axis=-1)
 
+
 def corners_nd(dims, origin=0.5):
     """generate relative box corners based on length per dim and
-    origin point. 
-    
+    origin point.
     Args:
         dims (float array, shape=[N, ndim]): array of length per dim
         origin (list or array or float): origin point relate to smallest point.
-    
     Returns:
-        float array, shape=[N, 2 ** ndim, ndim]: returned corners. 
+        float array, shape=[N, 2 ** ndim, ndim]: returned corners.
         point layout example: (2d) x0y0, x0y1, x1y0, x1y1;
             (3d) x0y0z0, x0y0z1, x0y1z0, x0y1z1, x1y0z0, x1y0z1, x1y1z0, x1y1z1
             where x0 < x1, y0 < y1, z0 < z1
     """
     ndim = int(dims.shape[1])
-    corners_norm = np.stack(
-        np.unravel_index(np.arange(2**ndim), [2] * ndim), axis=1).astype(
-            dims.dtype)
+    corners_norm = np.stack(np.unravel_index(np.arange(2**ndim), [2] * ndim),
+                            axis=1).astype(dims.dtype)
     # now corners_norm has format: (2d) x0y0, x0y1, x1y0, x1y1
     # (3d) x0y0z0, x0y0z1, x0y1z0, x0y1z1, x1y0z0, x1y0z1, x1y1z0, x1y1z1
     # so need to convert to a format which is convenient to do other computing.
@@ -210,15 +226,23 @@ def corners_2d_jit(dims, origin=0.5):
         (1, 2**ndim, ndim))
     return corners
 
+
 @numba.njit
 def corners_3d_jit(dims, origin=0.5):
     ndim = 3
-    corners_norm = np.array([0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1], dtype=dims.dtype).reshape((8, 3))
+    corners_norm = np.array(
+        [
+            0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1,
+            1, 1
+        ],
+        dtype=dims.dtype,
+    ).reshape((8, 3))
     corners_norm = corners_norm[[0, 1, 3, 2, 4, 5, 7, 6]]
     corners_norm = corners_norm - np.array(origin, dtype=dims.dtype)
     corners = dims.reshape((-1, 1, ndim)) * corners_norm.reshape(
         (1, 2**ndim, ndim))
     return corners
+
 
 @numba.njit
 def corner_to_standup_nd_jit(boxes_corner):
@@ -263,18 +287,27 @@ def rotation_3d_in_axis(points, angles, axis=0):
     ones = np.ones_like(rot_cos)
     zeros = np.zeros_like(rot_cos)
     if axis == 1:
-        rot_mat_T = np.stack([[rot_cos, zeros, -rot_sin], [zeros, ones, zeros],
-                              [rot_sin, zeros, rot_cos]])
+        rot_mat_T = np.stack([
+            [rot_cos, zeros, -rot_sin],
+            [zeros, ones, zeros],
+            [rot_sin, zeros, rot_cos],
+        ])
     elif axis == 2 or axis == -1:
-        rot_mat_T = np.stack([[rot_cos, -rot_sin, zeros],
-                              [rot_sin, rot_cos, zeros], [zeros, zeros, ones]])
+        rot_mat_T = np.stack([
+            [rot_cos, -rot_sin, zeros],
+            [rot_sin, rot_cos, zeros],
+            [zeros, zeros, ones],
+        ])
     elif axis == 0:
-        rot_mat_T = np.stack([[zeros, rot_cos, -rot_sin],
-                              [zeros, rot_sin, rot_cos], [ones, zeros, zeros]])
+        rot_mat_T = np.stack([
+            [zeros, rot_cos, -rot_sin],
+            [zeros, rot_sin, rot_cos],
+            [ones, zeros, zeros],
+        ])
     else:
         raise ValueError("axis should in range")
 
-    return np.einsum('aij,jka->aik', points, rot_mat_T)
+    return np.einsum("aij,jka->aik", points, rot_mat_T)
 
 
 def rotation_points_single_angle(points, angle, axis=0):
@@ -284,15 +317,18 @@ def rotation_points_single_angle(points, angle, axis=0):
     if axis == 1:
         rot_mat_T = np.array(
             [[rot_cos, 0, -rot_sin], [0, 1, 0], [rot_sin, 0, rot_cos]],
-            dtype=points.dtype)
+            dtype=points.dtype,
+        )
     elif axis == 2 or axis == -1:
         rot_mat_T = np.array(
             [[rot_cos, -rot_sin, 0], [rot_sin, rot_cos, 0], [0, 0, 1]],
-            dtype=points.dtype)
+            dtype=points.dtype,
+        )
     elif axis == 0:
         rot_mat_T = np.array(
             [[1, 0, 0], [0, rot_cos, -rot_sin], [0, rot_sin, rot_cos]],
-            dtype=points.dtype)
+            dtype=points.dtype,
+        )
     else:
         raise ValueError("axis should in range")
 
@@ -301,34 +337,30 @@ def rotation_points_single_angle(points, angle, axis=0):
 
 def rotation_2d(points, angles):
     """rotation 2d points based on origin point clockwise when angle positive.
-    
     Args:
         points (float array, shape=[N, point_size, 2]): points to be rotated.
         angles (float array, shape=[N]): rotation angle.
-
     Returns:
         float array: same shape as points
     """
     rot_sin = np.sin(angles)
     rot_cos = np.cos(angles)
     rot_mat_T = np.stack([[rot_cos, -rot_sin], [rot_sin, rot_cos]])
-    return np.einsum('aij,jka->aik', points, rot_mat_T)
+    return np.einsum("aij,jka->aik", points, rot_mat_T)
 
 
 def rotation_box(box_corners, angle):
     """rotation 2d points based on origin point clockwise when angle positive.
-    
     Args:
         points (float array, shape=[N, point_size, 2]): points to be rotated.
         angle (float): rotation angle.
-
     Returns:
         float array: same shape as points
     """
     rot_sin = np.sin(angle)
     rot_cos = np.cos(angle)
-    rot_mat_T = np.array(
-        [[rot_cos, -rot_sin], [rot_sin, rot_cos]], dtype=box_corners.dtype)
+    rot_mat_T = np.array([[rot_cos, -rot_sin], [rot_sin, rot_cos]],
+                         dtype=box_corners.dtype)
     return box_corners @ rot_mat_T
 
 
@@ -338,7 +370,6 @@ def center_to_corner_box3d(centers,
                            origin=[0.5, 1.0, 0.5],
                            axis=1):
     """convert kitti locations, dimensions and angles to corners
-    
     Args:
         centers (float array, shape=[N, 3]): locations in kitti label file.
         dims (float array, shape=[N, 3]): dimensions in kitti label file.
@@ -363,12 +394,10 @@ def center_to_corner_box3d(centers,
 def center_to_corner_box2d(centers, dims, angles=None, origin=0.5):
     """convert kitti locations, dimensions and angles to corners.
     format: center(xy), dims(xy), angles(clockwise when positive)
-    
     Args:
         centers (float array, shape=[N, 2]): locations in kitti label file.
         dims (float array, shape=[N, 2]): dimensions in kitti label file.
         angles (float array, shape=[N]): rotation_y in kitti label file.
-    
     Returns:
         [type]: [description]
     """
@@ -407,12 +436,11 @@ def box2d_to_corner_jit(boxes):
 
 
 def rbbox3d_to_corners(rbboxes, origin=[0.5, 0.5, 0.0], axis=2):
-    return center_to_corner_box3d(
-        rbboxes[..., :3],
-        rbboxes[..., 3:6],
-        rbboxes[..., 6],
-        origin,
-        axis=axis)
+    return center_to_corner_box3d(rbboxes[..., :3],
+                                  rbboxes[..., 3:6],
+                                  rbboxes[..., 6],
+                                  origin,
+                                  axis=axis)
 
 
 def rbbox3d_to_bev_corners(rbboxes, origin=0.5):
@@ -480,8 +508,8 @@ def get_frustum(bbox_image, C, near_clip=0.001, far_clip=100):
     fku = C[0, 0]
     fkv = -C[1, 1]
     u0v0 = C[0:2, 2]
-    z_points = np.array(
-        [near_clip] * 4 + [far_clip] * 4, dtype=C.dtype)[:, np.newaxis]
+    z_points = np.array([near_clip] * 4 + [far_clip] * 4,
+                        dtype=C.dtype)[:, np.newaxis]
     b = bbox_image
     box_corners = np.array(
         [[b[0], b[1]], [b[0], b[3]], [b[2], b[3]], [b[2], b[1]]],
@@ -490,8 +518,8 @@ def get_frustum(bbox_image, C, near_clip=0.001, far_clip=100):
         [fku / near_clip, -fkv / near_clip], dtype=C.dtype)
     far_box_corners = (box_corners - u0v0) / np.array(
         [fku / far_clip, -fkv / far_clip], dtype=C.dtype)
-    ret_xy = np.concatenate(
-        [near_box_corners, far_box_corners], axis=0)  # [8, 2]
+    ret_xy = np.concatenate([near_box_corners, far_box_corners],
+                            axis=0)  # [8, 2]
     ret_xyz = np.concatenate([ret_xy, z_points], axis=1)
     return ret_xyz
 
@@ -501,32 +529,32 @@ def get_frustum_v2(bboxes, C, near_clip=0.001, far_clip=100):
     fkv = -C[1, 1]
     u0v0 = C[0:2, 2]
     num_box = bboxes.shape[0]
-    z_points = np.array(
-        [near_clip] * 4 + [far_clip] * 4,
-        dtype=C.dtype)[np.newaxis, :, np.newaxis]
+    z_points = np.array([near_clip] * 4 + [far_clip] * 4,
+                        dtype=C.dtype)[np.newaxis, :, np.newaxis]
     z_points = np.tile(z_points, [num_box, 1, 1])
     box_corners = minmax_to_corner_2d_v2(bboxes)
     near_box_corners = (box_corners - u0v0) / np.array(
         [fku / near_clip, -fkv / near_clip], dtype=C.dtype)
     far_box_corners = (box_corners - u0v0) / np.array(
         [fku / far_clip, -fkv / far_clip], dtype=C.dtype)
-    ret_xy = np.concatenate(
-        [near_box_corners, far_box_corners], axis=1)  # [8, 2]
+    ret_xy = np.concatenate([near_box_corners, far_box_corners],
+                            axis=1)  # [8, 2]
     ret_xyz = np.concatenate([ret_xy, z_points], axis=-1)
     return ret_xyz
 
 
-def create_anchors_3d_stride(feature_size,
-                             sizes=[1.6, 3.9, 1.56],
-                             anchor_strides=[0.4, 0.4, 0.0],
-                             anchor_offsets=[0.2, -39.8, -1.78],
-                             rotations=[0, np.pi / 2],
-                             dtype=np.float32):
+def create_anchors_3d_stride(
+    feature_size,
+    sizes=[1.6, 3.9, 1.56],
+    anchor_strides=[0.4, 0.4, 0.0],
+    anchor_offsets=[0.2, -39.8, -1.78],
+    rotations=[0, np.pi / 2],
+    dtype=np.float32,
+):
     """
     Args:
         feature_size: list [D, H, W](zyx)
         sizes: [N, 3] list of list or array, size of anchors, xyz
-
     Returns:
         anchors: [*feature_size, num_sizes, num_rots, 7] tensor.
     """
@@ -541,8 +569,11 @@ def create_anchors_3d_stride(feature_size,
     x_centers = x_centers * x_stride + x_offset
     sizes = np.reshape(np.array(sizes, dtype=dtype), [-1, 3])
     rotations = np.array(rotations, dtype=dtype)
-    rets = np.meshgrid(
-        x_centers, y_centers, z_centers, rotations, indexing='ij')
+    rets = np.meshgrid(x_centers,
+                       y_centers,
+                       z_centers,
+                       rotations,
+                       indexing="ij")
     tile_shape = [1] * 5
     tile_shape[-2] = int(sizes.shape[0])
     for i in range(len(rets)):
@@ -557,11 +588,13 @@ def create_anchors_3d_stride(feature_size,
     return np.transpose(ret, [2, 1, 0, 3, 4, 5])
 
 
-def create_anchors_3d_range(feature_size,
-                            anchor_range,
-                            sizes=[1.6, 3.9, 1.56],
-                            rotations=[0, np.pi / 2],
-                            dtype=np.float32):
+def create_anchors_3d_range(
+    feature_size,
+    anchor_range,
+    sizes=[1.6, 3.9, 1.56],
+    rotations=[0, np.pi / 2],
+    dtype=np.float32,
+):
     """
     Args:
         feature_size: list [D, H, W](zyx)
@@ -571,16 +604,25 @@ def create_anchors_3d_range(feature_size,
         anchors: [*feature_size, num_sizes, num_rots, 7] tensor.
     """
     anchor_range = np.array(anchor_range, dtype)
-    z_centers = np.linspace(
-        anchor_range[2], anchor_range[5], feature_size[0], dtype=dtype)
-    y_centers = np.linspace(
-        anchor_range[1], anchor_range[4], feature_size[1], dtype=dtype)
-    x_centers = np.linspace(
-        anchor_range[0], anchor_range[3], feature_size[2], dtype=dtype)
+    z_centers = np.linspace(anchor_range[2],
+                            anchor_range[5],
+                            feature_size[0],
+                            dtype=dtype)
+    y_centers = np.linspace(anchor_range[1],
+                            anchor_range[4],
+                            feature_size[1],
+                            dtype=dtype)
+    x_centers = np.linspace(anchor_range[0],
+                            anchor_range[3],
+                            feature_size[2],
+                            dtype=dtype)
     sizes = np.reshape(np.array(sizes, dtype=dtype), [-1, 3])
     rotations = np.array(rotations, dtype=dtype)
-    rets = np.meshgrid(
-        x_centers, y_centers, z_centers, rotations, indexing='ij')
+    rets = np.meshgrid(x_centers,
+                       y_centers,
+                       z_centers,
+                       rotations,
+                       indexing="ij")
     tile_shape = [1] * 5
     tile_shape[-2] = int(sizes.shape[0])
     for i in range(len(rets)):
@@ -652,7 +694,7 @@ def remove_outside_points(points, rect, Trv2c, P2, image_shape):
 
 @numba.jit(nopython=True)
 def iou_jit(boxes, query_boxes, eps=0.0):
-    """calculate box iou. note that jit version runs 2x faster than cython in 
+    """calculate box iou. note that jit version runs 2x faster than cython in
     my machine!
     Parameters
     ----------
@@ -666,8 +708,8 @@ def iou_jit(boxes, query_boxes, eps=0.0):
     K = query_boxes.shape[0]
     overlaps = np.zeros((N, K), dtype=boxes.dtype)
     for k in range(K):
-        box_area = ((query_boxes[k, 2] - query_boxes[k, 0] + eps) *
-                    (query_boxes[k, 3] - query_boxes[k, 1] + eps))
+        box_area = (query_boxes[k, 2] - query_boxes[k, 0] +
+                    eps) * (query_boxes[k, 3] - query_boxes[k, 1] + eps)
         for n in range(N):
             iw = (min(boxes[n, 2], query_boxes[k, 2]) -
                   max(boxes[n, 0], query_boxes[k, 0]) + eps)
@@ -675,9 +717,9 @@ def iou_jit(boxes, query_boxes, eps=0.0):
                 ih = (min(boxes[n, 3], query_boxes[k, 3]) -
                       max(boxes[n, 1], query_boxes[k, 1]) + eps)
                 if ih > 0:
-                    ua = (
-                        (boxes[n, 2] - boxes[n, 0] + eps) *
-                        (boxes[n, 3] - boxes[n, 1] + eps) + box_area - iw * ih)
+                    ua = ((boxes[n, 2] - boxes[n, 0] + eps) *
+                          (boxes[n, 3] - boxes[n, 1] + eps) + box_area -
+                          iw * ih)
                     overlaps[n, k] = iw * ih / ua
     return overlaps
 
@@ -689,8 +731,11 @@ def points_in_rbbox(points, rbbox, lidar=True):
     else:
         origin = [0.5, 1.0, 0.5]
         h_axis = 1
-    rbbox_corners = center_to_corner_box3d(
-        rbbox[:, :3], rbbox[:, 3:6], rbbox[:, 6], origin=origin, axis=h_axis)
+    rbbox_corners = center_to_corner_box3d(rbbox[:, :3],
+                                           rbbox[:, 3:6],
+                                           rbbox[:, 6],
+                                           origin=origin,
+                                           axis=h_axis)
     surfaces = corner_to_surfaces_3d(rbbox_corners)
     indices = points_in_convex_polygon_3d_jit(points[:, :3], surfaces)
     return indices
@@ -700,11 +745,10 @@ def points_in_rbbox(points, rbbox, lidar=True):
 def corner_to_surfaces_3d(corners):
     """convert 3d box corners from corner function above
     to surfaces that normal vectors all direct to internal.
-
     Args:
-        corners (float array, [N, 8, 3]): 3d box corners. 
+        corners (float array, [N, 8, 3]): 3d box corners.
     Returns:
-        surfaces (float array, [N, 6, 4, 3]): 
+        surfaces (float array, [N, 6, 4, 3]):
     """
     # box_corners: [N, 8, 3], must from corner functions in this module
     surfaces = np.array([
@@ -722,11 +766,10 @@ def corner_to_surfaces_3d(corners):
 def corner_to_surfaces_3d_jit(corners):
     """convert 3d box corners from corner function above
     to surfaces that normal vectors all direct to internal.
-
     Args:
-        corners (float array, [N, 8, 3]): 3d box corners. 
+        corners (float array, [N, 8, 3]): 3d box corners.
     Returns:
-        surfaces (float array, [N, 6, 4, 3]): 
+        surfaces (float array, [N, 6, 4, 3]):
     """
     # box_corners: [N, 8, 3], must from corner functions in this module
     num_boxes = corners.shape[0]
@@ -755,7 +798,7 @@ def image_box_region_area(img_cumsum, bbox):
     Iabcd = ID-IB-IC+IA
     Args:
         img_cumsum: [M, H, W](yx) cumsumed image.
-        bbox: [N, 4](xyxy) bounding box, 
+        bbox: [N, 4](xyxy) bounding box,
     """
     N = bbox.shape[0]
     M = img_cumsum.shape[0]
@@ -777,22 +820,17 @@ def sparse_sum_for_anchors_mask(coors, shape):
 
 
 @numba.jit(nopython=True)
-def fused_get_anchors_area(dense_map, anchors_bv, stride, offset,
-                           grid_size):
+def fused_get_anchors_area(dense_map, anchors_bv, stride, offset, grid_size):
     anchor_coor = np.zeros(anchors_bv.shape[1:], dtype=np.int32)
     grid_size_x = grid_size[0] - 1
     grid_size_y = grid_size[1] - 1
     N = anchors_bv.shape[0]
     ret = np.zeros((N), dtype=dense_map.dtype)
     for i in range(N):
-        anchor_coor[0] = np.floor(
-            (anchors_bv[i, 0] - offset[0]) / stride[0])
-        anchor_coor[1] = np.floor(
-            (anchors_bv[i, 1] - offset[1]) / stride[1])
-        anchor_coor[2] = np.floor(
-            (anchors_bv[i, 2] - offset[0]) / stride[0])
-        anchor_coor[3] = np.floor(
-            (anchors_bv[i, 3] - offset[1]) / stride[1])
+        anchor_coor[0] = np.floor((anchors_bv[i, 0] - offset[0]) / stride[0])
+        anchor_coor[1] = np.floor((anchors_bv[i, 1] - offset[1]) / stride[1])
+        anchor_coor[2] = np.floor((anchors_bv[i, 2] - offset[0]) / stride[0])
+        anchor_coor[3] = np.floor((anchors_bv[i, 3] - offset[1]) / stride[1])
         anchor_coor[0] = max(anchor_coor[0], 0)
         anchor_coor[1] = max(anchor_coor[1], 0)
         anchor_coor[2] = min(anchor_coor[2], grid_size_x)
@@ -824,26 +862,28 @@ def distance_similarity(points,
                     if with_rotation:
                         dist_rot = np.abs(
                             np.sin(points[n, -1] - qpoints[k, -1]))
-                        dists[
-                            n,
-                            k] = 1 - rot_alpha_1 * dist_normed - rot_alpha * dist_rot
+                        dists[n, k] = (1 - rot_alpha_1 * dist_normed -
+                                       rot_alpha * dist_rot)
                     else:
                         dists[n, k] = 1 - dist_normed
     return dists
 
 
 def box3d_to_bbox(box3d, rect, Trv2c, P2):
-    box_corners = center_to_corner_box3d(box3d[:, :3], box3d[:, 3:6], box3d[:, 6], [0.5, 1.0, 0.5], axis=1)
-    box_corners_in_image = project_to_image(
-                    box_corners, P2)
+    box_corners = center_to_corner_box3d(box3d[:, :3],
+                                         box3d[:, 3:6],
+                                         box3d[:, 6], [0.5, 1.0, 0.5],
+                                         axis=1)
+    box_corners_in_image = project_to_image(box_corners, P2)
     # box_corners_in_image: [N, 8, 2]
     minxy = np.min(box_corners_in_image, axis=1)
     maxxy = np.max(box_corners_in_image, axis=1)
     bbox = np.concatenate([minxy, maxxy], axis=1)
     return bbox
 
+
 def assign_label_to_voxel(gt_boxes, coors, voxel_size, coors_range):
-    """assign a 0/1 label to each voxel based on whether 
+    """assign a 0/1 label to each voxel based on whether
     the center of voxel is in gt_box. LIDAR.
     """
     voxel_size = np.array(voxel_size, dtype=gt_boxes.dtype)
@@ -856,10 +896,12 @@ def assign_label_to_voxel(gt_boxes, coors, voxel_size, coors_range):
         gt_boxes[:, 3:6] + voxel_size,
         gt_boxes[:, 6],
         origin=[0.5, 0.5, 0],
-        axis=2)
+        axis=2,
+    )
     gt_surfaces = corner_to_surfaces_3d(gt_box_corners)
     ret = points_in_convex_polygon_3d_jit(voxel_centers, gt_surfaces)
     return np.any(ret, axis=1).astype(np.int64)
+
 
 def change_box3d_center_(box3d, src, dst):
     dst = np.array(dst, dtype=box3d.dtype)

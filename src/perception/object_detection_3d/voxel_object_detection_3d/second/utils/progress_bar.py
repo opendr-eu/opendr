@@ -7,22 +7,22 @@ import numpy as np
 
 
 def progress_str(val, *args, width=20, with_ptg=True):
-    val = max(0., min(val, 1.))
+    val = max(0.0, min(val, 1.0))
     assert width > 1
     pos = round(width * val) - 1
     if with_ptg is True:
-        log = '[{}%]'.format(max_point_str(val * 100.0, 4))
-    log += '['
+        log = "[{}%]".format(max_point_str(val * 100.0, 4))
+    log += "["
     for i in range(width):
         if i < pos:
-            log += '='
+            log += "="
         elif i == pos:
-            log += '>'
+            log += ">"
         else:
-            log += '.'
-    log += ']'
+            log += "."
+    log += "]"
     for arg in args:
-        log += '[{}]'.format(arg)
+        log += "[{}]".format(arg)
     return log
 
 
@@ -32,15 +32,17 @@ def second_to_time_str(second, omit_hours_if_possible=True):
     h, m = divmod(m, 60)
     if omit_hours_if_possible:
         if h == 0:
-            return '{:02d}:{:02d}'.format(m, s)
-    return '{:02d}:{:02d}:{:02d}'.format(h, m, s)
+            return "{:02d}:{:02d}".format(m, s)
+    return "{:02d}:{:02d}:{:02d}".format(h, m, s)
 
 
-def progress_bar_iter(task_list, width=20, with_ptg=True, step_time_average=50, name=None):
+def progress_bar_iter(
+    task_list, width=20, with_ptg=True, step_time_average=50, name=None
+):
     total_step = len(task_list)
     step_times = []
     start_time = 0.0
-    name = '' if name is None else f"[{name}]"
+    name = "" if name is None else f"[{name}]"
     for i, task in enumerate(task_list):
         t = time.time()
         yield task
@@ -51,24 +53,22 @@ def progress_bar_iter(task_list, width=20, with_ptg=True, step_time_average=50, 
         speed_str = "{:.2f}it/s".format(1 / average_step_time)
         remain_time = (total_step - i) * average_step_time
         remain_time_str = second_to_time_str(remain_time)
-        time_str = start_time_str + '>' + remain_time_str
+        time_str = start_time_str + ">" + remain_time_str
         prog_str = progress_str(
-            (i + 1) / total_step,
-            speed_str,
-            time_str,
-            width=width,
-            with_ptg=with_ptg)
-        print(name + prog_str + '   ', end='\r')
+            (i + 1) / total_step, speed_str, time_str, width=width, with_ptg=with_ptg
+        )
+        print(name + prog_str + "   ", end="\r")
     print("")
 
 
 list_bar = progress_bar_iter
 
+
 def enumerate_bar(task_list, width=20, with_ptg=True, step_time_average=50, name=None):
     total_step = len(task_list)
     step_times = []
     start_time = 0.0
-    name = '' if name is None else f"[{name}]"
+    name = "" if name is None else f"[{name}]"
     for i, task in enumerate(task_list):
         t = time.time()
         yield i, task
@@ -79,14 +79,11 @@ def enumerate_bar(task_list, width=20, with_ptg=True, step_time_average=50, name
         speed_str = "{:.2f}it/s".format(1 / average_step_time)
         remain_time = (total_step - i) * average_step_time
         remain_time_str = second_to_time_str(remain_time)
-        time_str = start_time_str + '>' + remain_time_str
+        time_str = start_time_str + ">" + remain_time_str
         prog_str = progress_str(
-            (i + 1) / total_step,
-            speed_str,
-            time_str,
-            width=width,
-            with_ptg=with_ptg)
-        print(name + prog_str + '   ', end='\r')
+            (i + 1) / total_step, speed_str, time_str, width=width, with_ptg=with_ptg
+        )
+        print(name + prog_str + "   ", end="\r")
     print("")
 
 
@@ -105,8 +102,8 @@ def max_point_str(val, max_point):
 
 
 class Unit(enum.Enum):
-    Iter = 'iter'
-    Byte = 'byte'
+    Iter = "iter"
+    Byte = "byte"
 
 
 def convert_size(size_bytes):
@@ -121,11 +118,9 @@ def convert_size(size_bytes):
 
 
 class ProgressBar:
-    def __init__(self,
-                 width=20,
-                 with_ptg=True,
-                 step_time_average=50,
-                 speed_unit=Unit.Iter):
+    def __init__(
+        self, width=20, with_ptg=True, step_time_average=50, speed_unit=Unit.Iter
+    ):
         self._width = width
         self._with_ptg = with_ptg
         self._step_time_average = step_time_average
@@ -143,14 +138,13 @@ class ProgressBar:
         self._total_size = total_size
         self._progress = 0
 
-    def print_bar(self, finished_size=1, pre_string=None, post_string=None):
+    def print_bar(self, finished_size=1, pre_string=None, post_string=None, log=print):
         self._step_times.append(time.time() - self._current_time)
         self._finished_sizes.append(finished_size)
         self._time_elapsed += self._step_times[-1]
         start_time_str = second_to_time_str(self._time_elapsed)
         time_per_size = np.array(self._step_times[-self._step_time_average:])
-        time_per_size /= np.array(
-            self._finished_sizes[-self._step_time_average:])
+        time_per_size /= np.array(self._finished_sizes[-self._step_time_average:])
         average_step_time = np.mean(time_per_size) + 1e-6
         if self._speed_unit == Unit.Iter:
             speed_str = "{:.2f}it/s".format(1 / average_step_time)
@@ -161,20 +155,21 @@ class ProgressBar:
             raise ValueError("unknown speed unit")
         remain_time = (self._total_size - self._progress) * average_step_time
         remain_time_str = second_to_time_str(remain_time)
-        time_str = start_time_str + '>' + remain_time_str
+        time_str = start_time_str + ">" + remain_time_str
         prog_str = progress_str(
             (self._progress + 1) / self._total_size,
             speed_str,
             time_str,
             width=self._width,
-            with_ptg=self._with_ptg)
+            with_ptg=self._with_ptg,
+        )
         self._progress += finished_size
         if pre_string is not None:
             prog_str = pre_string + prog_str
         if post_string is not None:
             prog_str += post_string
         if self._progress >= self._total_size:
-            print(prog_str + '   ')
+            log(prog_str + "   ")
         else:
-            print(prog_str + '   ', end='\r')
+            log(prog_str + "   ", end="\r")
         self._current_time = time.time()

@@ -5,15 +5,17 @@ import numpy as np
 
 
 @numba.jit(nopython=True)
-def _points_to_voxel_reverse_kernel(points,
-                                    voxel_size,
-                                    coors_range,
-                                    num_points_per_voxel,
-                                    coor_to_voxelidx,
-                                    voxels,
-                                    coors,
-                                    max_points=35,
-                                    max_voxels=20000):
+def _points_to_voxel_reverse_kernel(
+    points,
+    voxel_size,
+    coors_range,
+    num_points_per_voxel,
+    coor_to_voxelidx,
+    voxels,
+    coors,
+    max_points=35,
+    max_voxels=20000,
+):
     # put all computations to one loop.
     # we shouldn't create large array in main jit code, otherwise
     # reduce performance
@@ -52,16 +54,19 @@ def _points_to_voxel_reverse_kernel(points,
             num_points_per_voxel[voxelidx] += 1
     return voxel_num
 
+
 @numba.jit(nopython=True)
-def _points_to_voxel_kernel(points,
-                            voxel_size,
-                            coors_range,
-                            num_points_per_voxel,
-                            coor_to_voxelidx,
-                            voxels,
-                            coors,
-                            max_points=35,
-                            max_voxels=20000):
+def _points_to_voxel_kernel(
+    points,
+    voxel_size,
+    coors_range,
+    num_points_per_voxel,
+    coor_to_voxelidx,
+    voxels,
+    coors,
+    max_points=35,
+    max_voxels=20000,
+):
     # need mutex if write in cuda, but numba.cuda don't support mutex.
     # in addition, pytorch don't support cuda in dataloader(tensorflow support this).
     # put all computations to one loop.
@@ -105,13 +110,13 @@ def _points_to_voxel_kernel(points,
 
 
 def points_to_voxel(points,
-                     voxel_size,
-                     coors_range,
-                     max_points=35,
-                     reverse_index=True,
-                     max_voxels=20000):
+                    voxel_size,
+                    coors_range,
+                    max_points=35,
+                    reverse_index=True,
+                    max_voxels=20000):
     """convert kitti points(N, >=3) to voxels. This version calculate
-    everything in one loop. now it takes only 4.2ms(complete point cloud) 
+    everything in one loop. now it takes only 4.2ms(complete point cloud)
     with jit and 3.2ghz cpu.(don't calculate other features)
     Note: this function in ubuntu seems faster than windows 10.
 
@@ -123,7 +128,7 @@ def points_to_voxel(points,
             format: xyzxyz, minmax
         max_points: int. indicate maximum points contained in a voxel.
         reverse_index: boolean. indicate whether return reversed coordinates.
-            if points has xyz format and reverse_index is True, output 
+            if points has xyz format and reverse_index is True, output
             coordinates will be zyx format, but points in features always
             xyz format.
         max_voxels: int. indicate maximum voxels this function create.
@@ -146,18 +151,34 @@ def points_to_voxel(points,
     # don't create large array in jit(nopython=True) code.
     num_points_per_voxel = np.zeros(shape=(max_voxels, ), dtype=np.int32)
     coor_to_voxelidx = -np.ones(shape=voxelmap_shape, dtype=np.int32)
-    voxels = np.zeros(
-        shape=(max_voxels, max_points, points.shape[-1]), dtype=points.dtype)
+    voxels = np.zeros(shape=(max_voxels, max_points, points.shape[-1]),
+                      dtype=points.dtype)
     coors = np.zeros(shape=(max_voxels, 3), dtype=np.int32)
     if reverse_index:
         voxel_num = _points_to_voxel_reverse_kernel(
-            points, voxel_size, coors_range, num_points_per_voxel,
-            coor_to_voxelidx, voxels, coors, max_points, max_voxels)
+            points,
+            voxel_size,
+            coors_range,
+            num_points_per_voxel,
+            coor_to_voxelidx,
+            voxels,
+            coors,
+            max_points,
+            max_voxels,
+        )
 
     else:
         voxel_num = _points_to_voxel_kernel(
-            points, voxel_size, coors_range, num_points_per_voxel,
-            coor_to_voxelidx, voxels, coors, max_points, max_voxels)
+            points,
+            voxel_size,
+            coors_range,
+            num_points_per_voxel,
+            coor_to_voxelidx,
+            voxels,
+            coors,
+            max_points,
+            max_voxels,
+        )
 
     coors = coors[:voxel_num]
     voxels = voxels[:voxel_num]
