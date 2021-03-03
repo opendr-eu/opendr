@@ -1,7 +1,6 @@
 import torch
 
 import pathlib
-import torchplus
 from google.protobuf import text_format
 import shutil
 
@@ -18,6 +17,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.bui
     optimizer_builder,
     second_builder,
 )
+from perception.object_detection_3d.voxel_object_detection_3d import torchplus
 
 
 def create_model(config_path, device, log=print):

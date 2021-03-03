@@ -2,8 +2,6 @@ import torch
 import numpy as np
 import time
 
-import torchplus
-
 import second.data.kitti_common as kitti
 
 from perception.object_detection_3d.voxel_object_detection_3d.second.data.preprocess import (
@@ -15,6 +13,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.utils.eval 
 from perception.object_detection_3d.voxel_object_detection_3d.second.utils.progress_bar import (
     ProgressBar, )
 from perception.object_detection_3d.voxel_object_detection_3d.logger import Logger
+from perception.object_detection_3d.voxel_object_detection_3d import torchplus
 
 
 def example_convert_to_torch(example,

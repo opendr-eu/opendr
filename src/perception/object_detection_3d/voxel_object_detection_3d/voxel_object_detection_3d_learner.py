@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torchplus
 import pathlib
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
@@ -29,6 +28,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.bui
 from perception.object_detection_3d.voxel_object_detection_3d.logger import (
     Logger, )
 from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.tanet import set_tanet_config
+from perception.object_detection_3d.voxel_object_detection_3d import torchplus
 
 
 class VoxelObjectDetection3DLearner(Learner):
