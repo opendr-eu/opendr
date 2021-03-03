@@ -1,4 +1,4 @@
-# Copyright 1996-2020 OpenDR European Project
+# Copyright 2020-2021 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,12 +27,14 @@ import torch.optim as optim
 from torch.nn import DataParallel
 from tensorboardX import SummaryWriter
 from torchvision import transforms
+from urllib.request import urlretrieve
 
 # OpenDR engine imports
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
 from engine.data import Image
 from engine.target import Pose
+from engine.constants import OPENDR_SERVER_URL
 
 # OpenDR lightweight_open_pose imports
 from perception.pose_estimation.lightweight_open_pose.utilities import track_poses
@@ -68,8 +70,8 @@ class LightweightOpenPoseLearner(Learner):
                  val_after=5000, log_after=100, mobilenetv2_width=1.0, shufflenet_groups=3,
                  num_refinement_stages=2, batches_per_iter=1,
                  experiment_name='default', num_workers=8, weights_only=True, output_name='detections.json',
-                 multiscale=False, scales=None, visualize=False, base_height=256, stride=8, img_mean=(128, 128, 128),
-                 img_scale=1 / 256, pad_value=(0, 0, 0)):
+                 multiscale=False, scales=None, visualize=False, base_height=256, stride=8,
+                 img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256), pad_value=(0, 0, 0)):
         super(LightweightOpenPoseLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                          checkpoint_after_iter=checkpoint_after_iter,
                                                          checkpoint_load_iter=checkpoint_load_iter,
@@ -116,7 +118,8 @@ class LightweightOpenPoseLearner(Learner):
 
     def fit(self, dataset, val_dataset=None, logging_path='', logging_flush_secs=30,
             silent=False, verbose=True, epochs=None, use_val_subset=True, val_subset_size=250,
-            images_folder_name="train2017", annotations_filename="person_keypoints_train2017.json"):
+            images_folder_name="train2017", annotations_filename="person_keypoints_train2017.json",
+            val_images_folder_name="val2017", val_annotations_filename="person_keypoints_val2017.json"):
         """
         This method is used for training the algorithm on a train dataset and validating on a val dataset.
 
@@ -147,6 +150,12 @@ class LightweightOpenPoseLearner(Learner):
         :param annotations_filename: filename of the annotations json file. This file should be contained in the
             dataset path provided, defaults to 'person_keypoints_train2017.json'
         :type annotations_filename: str, optional
+        :param val_images_folder_name: folder name that contains the validation images. This folder should be contained
+            in the dataset path provided. Note that this is a folder name, not a path, defaults to 'val2017'
+        :type val_images_folder_name: str, optional
+        :param val_annotations_filename: filename of the validation annotations json file. This file should be
+            contained in the dataset path provided, defaults to 'person_keypoints_val2017.json'
+        :type val_annotations_filename: str, optional
 
         :return: returns stats regarding the last evaluation ran
         :rtype: dict
@@ -156,7 +165,7 @@ class LightweightOpenPoseLearner(Learner):
                                       prepared_annotations_name="prepared_train_annotations.pkl",
                                       images_folder_default_name=images_folder_name,
                                       annotations_filename=annotations_filename,
-                                      verbose=silent)
+                                      verbose=verbose and not silent)
         train_loader = DataLoader(data, batch_size=self.batch_size, shuffle=True,
                                   num_workers=self.num_workers)
         batches = int(len(data) / self.batch_size)
@@ -182,6 +191,7 @@ class LightweightOpenPoseLearner(Learner):
         checkpoint = None
         if self.checkpoint_load_iter == 0:
             # User set checkpoint_load_iter to 0, so they want to train from scratch
+            self.download(mode="weights", verbose=verbose and not silent)
             backbone_weights_path = None
             if self.backbone == "mobilenet":
                 backbone_weights_path = os.path.join(self.parent_dir, "mobilenet_sgd_68.848.pth.tar")
@@ -278,6 +288,9 @@ class LightweightOpenPoseLearner(Learner):
         if epochs is not None:
             self.epochs = epochs
         eval_results = {}
+        eval_results_list = []
+        paf_losses = []
+        heatmap_losses = []
         for epochId in range(current_epoch, self.epochs):
             total_losses = [0, 0] * (self.num_refinement_stages + 1)  # heatmaps loss, paf loss per stage
             batch_per_iter_idx = 0
@@ -327,6 +340,13 @@ class LightweightOpenPoseLearner(Learner):
                         pbar.update(1)
                     batch_index += 1
                     continue
+
+                paf_losses.append([])
+                heatmap_losses.append([])
+                for loss_idx in range(len(total_losses) // 2):
+                    paf_losses[-1].append(total_losses[loss_idx * 2 + 1])
+                    heatmap_losses[-1].append(total_losses[loss_idx * 2])
+
                 if self.log_after != 0 and num_iter % self.log_after == 0:
                     if logging:
                         for loss_idx in range(len(total_losses) // 2):
@@ -359,7 +379,10 @@ class LightweightOpenPoseLearner(Learner):
                     if not silent:
                         pbar.close()  # Close outer tqdm
                     eval_results = self.eval(val_dataset, silent=silent, verbose=eval_verbose,
-                                             use_subset=use_val_subset, subset_size=val_subset_size)
+                                             use_subset=use_val_subset, subset_size=val_subset_size,
+                                             images_folder_name=val_images_folder_name,
+                                             annotations_filename=val_annotations_filename)
+                    eval_results_list.append(eval_results)
                     if not silent:
                         # Re-initialize outer tqdm
                         pbar = tqdm(desc=pbarDesc, initial=batch_index, total=batches,
@@ -415,8 +438,8 @@ class LightweightOpenPoseLearner(Learner):
             scheduler.step()
         if logging:
             file_writer.close()
-        # This returns last evaluation's results
-        return eval_results
+        # Return a dict of lists of PAF and Heatmap losses per stage and a list of all evaluation results dictionaries
+        return {"paf_losses": paf_losses, "heatmap_losses": heatmap_losses, "eval_results_list": eval_results_list}
 
     def eval(self, dataset, silent=False, verbose=True, use_subset=True, subset_size=250,
              images_folder_name="val2017", annotations_filename="person_keypoints_val2017.json"):
@@ -451,7 +474,7 @@ class LightweightOpenPoseLearner(Learner):
                                           subset_size=subset_size,
                                           images_folder_default_name=images_folder_name,
                                           annotations_filename=annotations_filename,
-                                          verbose=not silent)
+                                          verbose=verbose and not silent)
         # Model initialization if needed
         if self.model is None and self.checkpoint_load_iter != 0:
             # No model loaded, initializing new
@@ -478,7 +501,7 @@ class LightweightOpenPoseLearner(Learner):
             # else:
             load_state(self.model, checkpoint)
         elif self.model is None:
-            raise AttributeError("self.model is None. Please load a model or checkpoint.")
+            raise AttributeError("self.model is None. Please load a model or set checkpoint_load_iter.")
 
         self.model = self.model.eval()  # Change model state to evaluation
         if self.device == "cuda":
@@ -569,7 +592,7 @@ class LightweightOpenPoseLearner(Learner):
         height, width, _ = img.shape
         scale = self.base_height / height
 
-        scaled_img = cv2.resize(img, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+        scaled_img = cv2.resize(img, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
         scaled_img = normalize(scaled_img, self.img_mean, self.img_scale)
         min_dims = [self.base_height, max(scaled_img.shape[1], self.base_height)]
         padded_img, pad = pad_width(scaled_img, self.stride, self.pad_value, min_dims)
@@ -583,6 +606,8 @@ class LightweightOpenPoseLearner(Learner):
             stage2_heatmaps = torch.tensor(stages_output[-2])
             stage2_pafs = torch.tensor(stages_output[-1])
         else:
+            if self.model is None:
+                raise UserWarning("No model is loaded, cannot run inference. Load a model first using load().")
             if self.model_train_state:
                 self.model.eval()
                 self.model_train_state = False
@@ -638,6 +663,9 @@ class LightweightOpenPoseLearner(Learner):
         :param verbose: whether to print success message or not, defaults to 'False'
         :type verbose: bool, optional
         """
+        if self.model is None and self.ort_session is None:
+            raise UserWarning("No model is loaded, cannot save.")
+
         folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
         # Also extract folder name without any extension if extension is erroneously provided
         folder_name_no_ext = folder_name.split(sep='.')[0]
@@ -656,8 +684,8 @@ class LightweightOpenPoseLearner(Learner):
                           "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
 
         if self.ort_session is None:
-            model_metadata["model_paths"] = [path_no_folder_name + os.sep +
-                                             folder_name_no_ext + os.sep + folder_name_no_ext + ".pth"]
+            model_metadata["model_paths"] = [os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext +
+                                                          ".pth")]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pth"
 
@@ -666,17 +694,17 @@ class LightweightOpenPoseLearner(Learner):
             if verbose:
                 print("Saved Pytorch model.")
         else:
-            model_metadata["model_paths"] = [path_no_folder_name + os.sep +
-                                             folder_name_no_ext + os.sep + folder_name_no_ext + ".onnx"]
+            model_metadata["model_paths"] = [os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext +
+                                                          ".onnx")]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             # Copy already optimized model from temp path
-            shutil.copy2(self.temp_path + os.sep + "onnx_model_temp.onnx", model_metadata["model_paths"][0])
+            shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"), model_metadata["model_paths"][0])
             model_metadata["optimized"] = True
             if verbose:
                 print("Saved ONNX model.")
 
-        with open(new_path + os.sep + folder_name_no_ext + ".json", 'w') as outfile:
+        with open(os.path.join(new_path, folder_name_no_ext + ".json"), 'w') as outfile:
             json.dump(model_metadata, outfile)
 
     def init_model(self):
@@ -725,15 +753,15 @@ class LightweightOpenPoseLearner(Learner):
         """
         model_name, _, _ = self.__extract_trailing(path)  # Trailing folder name from the path provided
 
-        with open(path + os.sep + model_name + ".json") as metadata_file:
+        with open(os.path.join(path, model_name + ".json")) as metadata_file:
             metadata = json.load(metadata_file)
         self.backbone = metadata["backbone"]
         if not metadata["optimized"]:
-            self.__load_from_pth(path + os.sep + model_name + '.pth')
+            self.__load_from_pth(os.path.join(path, model_name + '.pth'))
             if verbose:
                 print("Loaded Pytorch model.")
         else:
-            self.__load_from_onnx(path + os.sep + model_name + '.onnx')
+            self.__load_from_onnx(os.path.join(path, model_name + '.onnx'))
             if verbose:
                 print("Loaded ONNX model.")
 
@@ -826,14 +854,19 @@ class LightweightOpenPoseLearner(Learner):
         :param do_constant_folding: whether to optimize constants, defaults to 'False'
         :type do_constant_folding: bool, optional
         """
+        if self.model is None:
+            raise UserWarning("No model is loaded, cannot optimize. Load or train a model first.")
+        if self.ort_session is not None:
+            raise UserWarning("Model is already optimized in ONNX.")
+
         try:
-            self.__convert_to_onnx(self.temp_path + os.sep + "onnx_model_temp.onnx", do_constant_folding)
+            self.__convert_to_onnx(os.path.join(self.temp_path, "onnx_model_temp.onnx"), do_constant_folding)
         except FileNotFoundError:
             # Create temp directory
             os.makedirs(self.temp_path, exist_ok=True)
-            self.__convert_to_onnx(self.temp_path + os.sep + "onnx_model_temp.onnx", do_constant_folding)
+            self.__convert_to_onnx(os.path.join(self.temp_path, "onnx_model_temp.onnx"), do_constant_folding)
 
-        self.__load_from_onnx(self.temp_path + os.sep + "onnx_model_temp.onnx")
+        self.__load_from_onnx(os.path.join(self.temp_path, "onnx_model_temp.onnx"))
 
     def reset(self):
         """This method is not used in this implementation."""
@@ -849,6 +882,109 @@ class LightweightOpenPoseLearner(Learner):
         if self.model is None:
             raise UserWarning("Model is not initialized, can't count trainable parameters.")
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+
+    def download(self, path=None, mode="pretrained", verbose=False,
+                 url=OPENDR_SERVER_URL + "pose_estimation/lightweight_open_pose/"):
+        """
+        Download utility for various Lightweight Open Pose components. Downloads files depending on mode and
+        saves them in the path provided. It supports downloading:
+        1) the default mobilenet pretrained model
+        2) mobilenet, mobilenetv2 and shufflenet weights needed for training
+        3) a test dataset with a single COCO image and its annotation
+
+        :param path: Local path to save the files, defaults to self.temp_path if None
+        :type path: str, path, optional
+        :param mode: What file to download, can be one of "pretrained", "weights", "test_data", defaults to "pretrained"
+        :type mode: str, optional
+        :param verbose: Whether to print messages in the console, defaults to False
+        :type verbose: bool, optional
+        :param url: URL of the FTP server, defaults to OpenDR FTP URL
+        :type url: str, optional
+        """
+        valid_modes = ["weights", "pretrained", "test_data"]
+        if mode not in valid_modes:
+            raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
+
+        if path is None:
+            path = self.temp_path
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if mode == "pretrained":
+            if verbose:
+                print("Downloading pretrained model...")
+            if self.backbone == "mobilenet":
+                if not os.path.exists(os.path.join(path, "trainedModel.json")):
+                    file_url = os.path.join(url, "trainedModel/trainedModel.json")
+                    urlretrieve(file_url, os.path.join(path, "trainedModel.json"))
+                    if verbose:
+                        print("Downloaded metadata json.")
+                else:
+                    if verbose:
+                        print("Metadata json file already exists.")
+                if not os.path.exists(os.path.join(path, "trainedModel.pth")):
+                    file_url = os.path.join(url, "trainedModel/trainedModel.pth")
+                    urlretrieve(file_url, os.path.join(path, "trainedModel.pth"))
+                else:
+                    if verbose:
+                        print("Trained model .pth file already exists.")
+            elif self.backbone == "mobilenetv2":
+                raise UserWarning("mobilenetv2 does not support pretrained model.")
+            elif self.backbone == "shufflenet":
+                raise UserWarning("shufflenet does not support pretrained model.")
+            if verbose:
+                print("Pretrained model download complete.")
+
+        elif mode == "weights":
+            if verbose:
+                print("Downloading weights file...")
+            if self.backbone == "mobilenet":
+                if not os.path.exists(os.path.join(self.temp_path, "mobilenet_sgd_68.848.pth.tar")):
+                    file_url = os.path.join(url, "mobilenet_sgd_68.848.pth.tar")
+                    urlretrieve(file_url, os.path.join(self.temp_path, "mobilenet_sgd_68.848.pth.tar"))
+                    if verbose:
+                        print("Downloaded mobilenet weights.")
+                else:
+                    if verbose:
+                        print("Weights file already exists.")
+            elif self.backbone == "mobilenetv2":
+                if not os.path.exists(os.path.join(self.temp_path, "mobilenetv2_1.0-f2a8633.pth.tar")):
+                    file_url = os.path.join(url, "mobilenetv2_1.0-f2a8633.pth.tar")
+                    urlretrieve(file_url, os.path.join(self.temp_path, "mobilenetv2_1.0-f2a8633.pth.tar"))
+                    if verbose:
+                        print("Downloaded mobilenetv2 weights.")
+                else:
+                    if verbose:
+                        print("Weights file already exists.")
+            elif self.backbone == "shufflenet":
+                if not os.path.exists(os.path.join(self.temp_path, "shufflenet.pth.tar")):
+                    file_url = os.path.join(url, "shufflenet.pth.tar")
+                    urlretrieve(file_url, os.path.join(self.temp_path, "shufflenet.pth.tar"))
+                    if verbose:
+                        print("Downloaded shufflenet weights.")
+                else:
+                    if verbose:
+                        print("Weights file already exists.")
+            if verbose:
+                print("Weights file download complete.")
+
+        elif mode == "test_data":
+            if verbose:
+                print("Downloading test data...")
+            if not os.path.exists(os.path.join(self.temp_path, "dataset")):
+                os.makedirs(os.path.join(self.temp_path, "dataset"))
+            if not os.path.exists(os.path.join(self.temp_path, "dataset", "image")):
+                os.makedirs(os.path.join(self.temp_path, "dataset", "image"))
+            # Download annotation file
+            file_url = os.path.join(url, "dataset", "annotation.json")
+            urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "annotation.json"))
+            # Download test image
+            file_url = os.path.join(url, "dataset", "image", "000000000785.jpg")
+            urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000000785.jpg"))
+
+            if verbose:
+                print("Test data download complete.")
 
     def __infer_eval(self, img):
         """
