@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import torchplus
 from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
     box_np_ops,
 )
@@ -19,6 +18,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.tra
     predict_kitti_to_anno,
     example_convert_to_torch,
 )
+from perception.object_detection_3d.voxel_object_detection_3d import torchplus
 
 
 class TorchInferenceContext(InferenceContext):
