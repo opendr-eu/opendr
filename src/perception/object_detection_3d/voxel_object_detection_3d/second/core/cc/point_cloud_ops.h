@@ -1,22 +1,18 @@
 #pragma once
-#include <pybind11/pybind11.h>
-#include <algorithm>
-#include <pybind11/stl.h>
-#include <iostream>
 #include <math.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <algorithm>
+#include <iostream>
 #include <tuple>
 #include <unordered_map>
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-template <typename DType, int NDim>
-int points_to_voxel(py::array_t<DType> points, py::array_t<DType> voxels,
-                       py::array_t<int> coors,
-                       py::array_t<int> num_points_per_voxel,
-                       py::array_t<int> coor_to_voxelidx,
-                       std::vector<DType> voxel_size,
-                       std::vector<DType> coors_range, int max_points,
-                       int max_voxels) {
+template<typename DType, int NDim>
+int points_to_voxel(py::array_t<DType> points, py::array_t<DType> voxels, py::array_t<int> coors,
+                    py::array_t<int> num_points_per_voxel, py::array_t<int> coor_to_voxelidx, std::vector<DType> voxel_size,
+                    std::vector<DType> coors_range, int max_points, int max_voxels) {
   auto points_rw = points.template mutable_unchecked<2>();
   auto voxels_rw = voxels.template mutable_unchecked<3>();
   auto coors_rw = coors.mutable_unchecked<2>();
@@ -32,8 +28,7 @@ int points_to_voxel(py::array_t<DType> points, py::array_t<DType> voxels,
   int c;
   int grid_size[NDim];
   for (int i = 0; i < NDim; ++i) {
-    grid_size[i] =
-        round((coors_range[NDim + i] - coors_range[i]) / voxel_size[i]);
+    grid_size[i] = round((coors_range[NDim + i] - coors_range[i]) / voxel_size[i]);
   }
   int voxelidx, num;
   for (int i = 0; i < N; ++i) {

@@ -1,6 +1,5 @@
 import time
 from enum import Enum
-from functools import reduce
 
 import numpy as np
 
@@ -11,12 +10,10 @@ from torch.nn import functional as F
 import torchplus
 from torchplus import metrics
 from torchplus.nn import Empty, GroupNorm, Sequential
-from torchplus.ops.array_ops import gather_nd, scatter_nd
+from torchplus.ops.array_ops import scatter_nd
 from torchplus.tools import change_default_args
 from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.core import box_torch_ops
 from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.core.losses import (
-    WeightedSigmoidClassificationLoss,
-    WeightedSmoothL1LocalizationLoss,
     WeightedSoftmaxClassificationLoss,
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.pointpillars import (
@@ -214,13 +211,13 @@ class SparseMiddleExtractor(nn.Module):
     ):
         super(SparseMiddleExtractor, self).__init__()
         self.name = name
-        if use_norm:
-            BatchNorm1d = change_default_args(eps=1e-3,
-                                              momentum=0.01)(nn.BatchNorm1d)
-            Linear = change_default_args(bias=False)(nn.Linear)
-        else:
-            BatchNorm1d = Empty
-            Linear = change_default_args(bias=True)(nn.Linear)
+        # if use_norm:
+        #     BatchNorm1d = change_default_args(eps=1e-3,
+        #                                       momentum=0.01)(nn.BatchNorm1d)
+        #     Linear = change_default_args(bias=False)(nn.Linear)
+        # else:
+        #     BatchNorm1d = Empty
+        #     Linear = change_default_args(bias=True)(nn.Linear)
         sparse_shape = np.array(output_shape[1:4]) + [1, 0, 0]
         # sparse_shape[0] = 11
         print(sparse_shape)
@@ -1077,7 +1074,7 @@ class VoxelNet(nn.Module):
                     #     ~(dir_labels.byte())).type_as(box_preds) * np.pi
                 final_box_preds = box_preds
                 final_scores = scores
-                final_labels = label_preds
+                # final_labels = label_preds
                 final_box_preds_camera = box_torch_ops.box_lidar_to_camera(
                     final_box_preds, rect, Trv2c)
                 locs = final_box_preds_camera[:, :3]

@@ -30,7 +30,6 @@ import torch
 from torch import nn
 from torch.autograd import Variable
 from torch.nn import functional as F
-import torchplus
 
 
 def indices_to_dense_vector(indices,

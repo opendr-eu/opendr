@@ -1,10 +1,5 @@
-import numpy as np
-
 from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
     region_similarity,
-)
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
-    similarity_pb2,
 )
 
 

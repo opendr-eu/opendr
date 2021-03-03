@@ -1,11 +1,8 @@
-import numpy as np
-
 from perception.object_detection_3d.voxel_object_detection_3d.second.core.target_assigner import (
     TargetAssigner,
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
     target_pb2,
-    anchors_pb2,
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second.builder import (
     similarity_calculator_builder,

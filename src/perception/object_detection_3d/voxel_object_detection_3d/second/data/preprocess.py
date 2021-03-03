@@ -1,10 +1,7 @@
 import pathlib
-import pickle
-import time
 from collections import defaultdict
 
 import numpy as np
-from skimage import io as imgio
 
 from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
     box_np_ops, )
@@ -104,8 +101,8 @@ def prep_pointcloud(
     rect = input_dict["rect"]
     Trv2c = input_dict["Trv2c"]
     P2 = input_dict["P2"]
-    unlabeled_training = unlabeled_db_sampler is not None
-    image_idx = input_dict["image_idx"]
+    # unlabeled_training = unlabeled_db_sampler is not None
+    # image_idx = input_dict["image_idx"]
 
     if reference_detections is not None:
         C, R, T = box_np_ops.projection_matrix_to_CRT_kitti(P2)

@@ -1,8 +1,3 @@
-import numpy as np
-
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
-    box_coder_pb2,
-)
 from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.core.box_coders import (
     BevBoxCoderTorch,
     GroundBox3dCoderTorch,

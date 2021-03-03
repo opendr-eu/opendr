@@ -31,7 +31,6 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.data.datase
 from perception.object_detection_3d.voxel_object_detection_3d.second.data.preprocess import (
     prep_pointcloud,
 )
-import numpy as np
 from perception.object_detection_3d.voxel_object_detection_3d.second.builder import (
     dbsampler_builder,
 )

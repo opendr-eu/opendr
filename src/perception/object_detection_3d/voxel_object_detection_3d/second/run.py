@@ -2,35 +2,18 @@ import torch
 import numpy as np
 import time
 
-import pathlib
 import torchplus
-from google.protobuf import text_format
 
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
-    pipeline_pb2, )
 import second.data.kitti_common as kitti
-from perception.object_detection_3d.voxel_object_detection_3d.second.builder import (
-    target_assigner_builder,
-    voxel_builder,
-)
+
 from perception.object_detection_3d.voxel_object_detection_3d.second.data.preprocess import (
     merge_second_batch, )
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
-    pipeline_pb2, )
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.builder import (
-    box_coder_builder,
-    input_reader_builder,
-    lr_scheduler_builder,
-    optimizer_builder,
-    second_builder,
-)
+
 from perception.object_detection_3d.voxel_object_detection_3d.second.utils.eval import (
-    get_coco_eval_result,
     get_official_eval_result,
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second.utils.progress_bar import (
     ProgressBar, )
-import pickle
 from perception.object_detection_3d.voxel_object_detection_3d.logger import Logger
 
 

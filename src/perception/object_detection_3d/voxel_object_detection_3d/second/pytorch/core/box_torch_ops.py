@@ -1,15 +1,10 @@
 import math
-from functools import reduce
 
 import numpy as np
 import torch
-from torch import FloatTensor as FTensor
 from torch import stack as tstack
 
-import torchplus
 from torchplus.tools import torch_to_np_dtype
-from perception.object_detection_3d.voxel_object_detection_3d.second.core.box_np_ops import (
-    iou_jit, )
 
 from numba.cuda.cudadrv.error import CudaSupportError
 try:
@@ -277,7 +272,6 @@ def rotation_points_single_angle(points, angle, axis=0):
     # points: [N, 3]
     rot_sin = math.sin(angle)
     rot_cos = math.cos(angle)
-    point_type = torchplus.get_tensor_class(points)
     if axis == 1:
         rot_mat_T = torch.stack([
             torch.tensor([rot_cos, 0, -rot_sin],
@@ -432,12 +426,9 @@ def multiclass_nms(
     selected_per_class = []
     assert len(boxes.shape) == 3, "bbox must have shape [N, num_cls, 7]"
     assert len(scores.shape) == 2, "score must have shape [N, num_cls]"
-    num_class = scores.shape[1]
     if not (boxes.shape[1] == scores.shape[1] or boxes.shape[1] == 1):
         raise ValueError("second dimension of boxes must be either 1 or equal "
                          "to the second dimension of scores")
-    num_boxes = boxes.shape[0]
-    num_scores = scores.shape[0]
     num_classes = scores.shape[1]
     boxes_ids = range(num_classes) if boxes.shape[1] > 1 else [0] * num_classes
     for class_idx, boxes_idx in zip(range(num_classes), boxes_ids):

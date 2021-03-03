@@ -1,6 +1,5 @@
 import pickle
 
-import second.core.preprocess as prep
 from perception.object_detection_3d.voxel_object_detection_3d.second.builder import (
     preprocess_builder,
 )

@@ -1,10 +1,7 @@
 import logging
 
-import numba
 import numpy as np
 import numpy.random as npr
-
-import second.core.box_np_ops as box_np_ops
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +76,6 @@ def create_target_np(
         anchors = all_anchors
         inds_inside = None
     num_inside = len(inds_inside) if inds_inside is not None else total_anchors
-    box_ndim = all_anchors.shape[1]
     logger.debug("total_anchors: {}".format(total_anchors))
     logger.debug("inds_inside: {}".format(num_inside))
     logger.debug("anchors.shape: {}".format(anchors.shape))

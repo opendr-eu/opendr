@@ -28,7 +28,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.data.prepro
 )
 
 
-DEVICE = "cpu"
+DEVICE = "cuda:0"
 
 
 def rmfile(path):
@@ -123,19 +123,19 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
     #     for name, config in self.car_configs.items():
     #         test_model(name, config)
 
-    # def test_eval(self):
-    #     def test_model(name, config):
-    #         model_path = os.path.join(self.temp_dir, "test_eval_" + name)
-    #         dataset = KittiDataset(self.dataset_path, self.subsets_path)
+    def test_eval(self):
+        def test_model(name, config):
+            model_path = os.path.join(self.temp_dir, "test_eval_" + name)
+            dataset = KittiDataset(self.dataset_path, self.subsets_path)
 
-    #         learner = VoxelObjectDetection3DLearner(model_config_path=config, device=DEVICE)
-    #         learner.load(model_path)
-    #         mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset)
+            learner = VoxelObjectDetection3DLearner(model_config_path=config, device=DEVICE)
+            learner.load(model_path)
+            mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset)
 
-    #         self.assertTrue(mAPbbox[0][0][0] > 80 and mAPbbox[0][0][0] < 95)
+            self.assertTrue(mAPbbox[0][0][0] > 80 and mAPbbox[0][0][0] < 95)
 
-    #     for name, config in self.car_configs.items():
-    #         test_model(name, config)
+        for name, config in self.car_configs.items():
+            test_model(name, config)
 
     def test_infer(self):
         def test_model(name, config):

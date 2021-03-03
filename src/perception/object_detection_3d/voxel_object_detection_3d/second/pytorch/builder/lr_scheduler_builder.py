@@ -16,7 +16,6 @@
 """Functions to build DetectionModel training optimizers."""
 
 from torchplus.train import learning_schedules
-import torch
 
 
 def build(optimizer_config, optimizer, last_step=-1):
