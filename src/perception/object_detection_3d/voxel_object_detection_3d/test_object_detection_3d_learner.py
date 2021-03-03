@@ -4,6 +4,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detec
     VoxelObjectDetection3DLearner,
 )
 import torch
+import os
 
 
 def test_training():
@@ -17,12 +18,13 @@ def test_training():
 
 
 def test_training_short():
-    dataset_path = "/data/sets/opendr_kitti"
+    dataset_path = "/data/sets/opendr_mini_kitti"
+    subsets_path = "./perception/object_detection_3d/datasets/mini_kitti_subsets"
     tanet_path = "./perception/object_detection_3d/voxel_object_detection_3d/models/short_learning_tanet_16_car_4"
     tanet_config_path = "./perception/object_detection_3d/voxel_object_detection_3d/second/configs/tanet/car/test_short.proto"
-    dataset = KittiDataset(dataset_path)
+    dataset = KittiDataset(dataset_path, subsets_path)
 
-    learner = VoxelObjectDetection3DLearner(model_config_path=tanet_config_path)
+    learner = VoxelObjectDetection3DLearner(model_config_path=tanet_config_path, device="cpu")
     # learner.load(tanet_path)
     starting_param = list(learner.model.parameters())[0].clone()
     learner.fit(dataset, auto_save=True, model_dir=tanet_path, verbose=True)
@@ -54,20 +56,41 @@ def test_training_pointpillars_short():
     learner.fit(dataset)
 
 
-def test_eval():
-    dataset_path = "/data/sets/opendr_kitti"
+def test_optimize():
+    dataset_path = "/data/sets/opendr_mini_kitti"
     tanet_path = (
         "./perception/object_detection_3d/voxel_object_detection_3d/models/tanet_16_car"
     )
     # tanet_path = "/home/io/Detection/Models/tanet/car_tr_1/car_trained_model"
     tanet_config_path = "./perception/object_detection_3d/voxel_object_detection_3d/second/configs/tanet/car/xyres_16.proto"
-    dataset = KittiDataset(dataset_path)
+    dataset = KittiDataset(dataset_path, kitti_subsets_path=os.path.join(
+            ".", "src", "perception", "object_detection_3d",
+            "datasets", "mini_kitti_subsets"))
 
-    learner = VoxelObjectDetection3DLearner(model_config_path=tanet_config_path)
+    learner = VoxelObjectDetection3DLearner(model_config_path=tanet_config_path, device="cuda:0")
     learner.load(tanet_path, logging_path=tanet_path + "/lololog.txt")
     mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset)
 
-    print(mAP3d[0][0][0] > 85 and mAP3d[0][0][0] < 90)
+    print(mAPbbox[0][0][0] > 80 and mAPbbox[0][0][0] < 95)
+    pass
+
+
+def test_eval():
+    dataset_path = "/data/sets/opendr_mini_kitti"
+    tanet_path = (
+        "./perception/object_detection_3d/voxel_object_detection_3d/models/tanet_16_car"
+    )
+    # tanet_path = "/home/io/Detection/Models/tanet/car_tr_1/car_trained_model"
+    tanet_config_path = "./perception/object_detection_3d/voxel_object_detection_3d/second/configs/tanet/car/xyres_16.proto"
+    dataset = KittiDataset(dataset_path, kitti_subsets_path=os.path.join(
+            ".", "src", "perception", "object_detection_3d",
+            "datasets", "mini_kitti_subsets"))
+
+    learner = VoxelObjectDetection3DLearner(model_config_path=tanet_config_path, device="cpu")
+    learner.load(tanet_path, logging_path=tanet_path + "/lololog.txt")
+    mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset)
+
+    print(mAPbbox[0][0][0] > 80 and mAPbbox[0][0][0] < 95)
     pass
 
 
@@ -81,15 +104,12 @@ def test_infer():
     )
 
     dataset_path = "/data/sets/opendr_kitti"
-    tanet_path = (
-        "./perception/object_detection_3d/voxel_object_detection_3d/models/tanet_16_car"
-    )
-    # tanet_path = "/home/io/Detection/Models/tanet/car_tr_1/car_trained_model"
-    tanet_config_path = "./perception/object_detection_3d/voxel_object_detection_3d/second/configs/tanet/car/xyres_16.proto"
+    pp_path = "./perception/object_detection_3d/voxel_object_detection_3d/models/learning_pointpillars_16_car"
+    pp_config_path = "./perception/object_detection_3d/voxel_object_detection_3d/second/configs/pointpillars/car/test_short.proto"
     dataset = KittiDataset(dataset_path)
 
-    learner = VoxelObjectDetection3DLearner(model_config_path=tanet_config_path)
-    learner.load(tanet_path)
+    learner = VoxelObjectDetection3DLearner(model_config_path=pp_config_path)
+    learner.load(pp_path)
 
     (_, eval_dataset_iterator, ground_truth_annotations,) = learner._prepare_datasets(
         None,
@@ -121,5 +141,6 @@ def test_infer():
     pass
 
 
+# test_optimize()
 # test_infer()
-test_training_short()
+test_eval()

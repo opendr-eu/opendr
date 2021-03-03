@@ -68,19 +68,22 @@ def _calculate_num_points_in_gt(
 
 
 def create_kitti_info_file(
-    data_path, save_path=None, create_trainval=False, relative_path=True
+    data_path, kitti_subsets_path, save_path=None, create_trainval=False, relative_path=True
 ):
+
+    kitti_subsets_path = pathlib.Path(kitti_subsets_path)
+
     train_img_ids = _read_imageset_file(
-        "./perception/object_detection_3d/datasets/kitti_subsets/train.txt"
+        kitti_subsets_path / "train.txt"
     )
     val_img_ids = _read_imageset_file(
-        "./perception/object_detection_3d/datasets/kitti_subsets/val.txt"
+        kitti_subsets_path / "val.txt"
     )
     trainval_img_ids = _read_imageset_file(
         "./perception/object_detection_3d/datasets/kitti_subsets/trainval.txt"
     )
     test_img_ids = _read_imageset_file(
-        "./perception/object_detection_3d/datasets/kitti_subsets/test.txt"
+       kitti_subsets_path / "test.txt"
     )
 
     print("Generate info. this may take several minutes.")

@@ -6,8 +6,8 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.utils.build
 
 from perception.object_detection_3d.voxel_object_detection_3d.second.core.geometry import (
     points_in_convex_polygon_3d_jit, )
-from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms_gpu import (
-    rotate_iou_gpu_eval, )
+# from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms_gpu import (
+#     rotate_iou_gpu_eval, )
 
 try:
     from perception.object_detection_3d.voxel_object_detection_3d.second.core import (

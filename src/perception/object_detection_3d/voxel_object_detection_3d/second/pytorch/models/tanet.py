@@ -1,17 +1,41 @@
 import torch
 from torch import nn
-from second.pytorch.utils import get_paddings_indicator
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.utils import get_paddings_indicator
 from torchplus.tools import change_default_args
 from torchplus.nn import Empty, GroupNorm, Sequential
-from second.pytorch.models.pointpillars import PFNLayer
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.pointpillars import PFNLayer
 import numpy as np
 
 import yaml
 from easydict import EasyDict as edict
 
-filename = "./perception/object_detection_3d/voxel_object_detection_3d/second/configs/tanet/tanet.yaml"
-with open(filename, "r") as f:
-    cfg = edict(yaml.load(f))
+cfg = edict(yaml.safe_load('''
+Network: TANet      # RefineDet ...
+
+
+# config for extracting the voxel feature with TA module
+TA:
+
+    INPUT_C_DIM: 9
+    BOOST_C_DIM: 64  # or 32
+    NUM_POINTS_IN_VOXEL: 100
+    REDUCTION_R: 8
+    # Note: Our released model need set " USE_PACA_WEIGHT: False"
+    # When training model, setting " USE_PACA_WEIGHT: True" may be more stable
+    USE_PACA_WEIGHT: False #True
+
+PSA:
+    C_Bottle: 128
+    C_Reudce: 32
+'''))
+
+
+def set_tanet_config(path):
+    global cfg
+
+    filename = path
+    with open(filename, "r") as f:
+        cfg = edict(yaml.load(f))
 
 
 # Point-wise attention for each voxel

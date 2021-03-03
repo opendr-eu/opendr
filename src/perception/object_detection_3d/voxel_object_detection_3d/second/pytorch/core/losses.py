@@ -118,12 +118,12 @@ class WeightedL2LocalizationLoss(Loss):
 
   Loss[b,a] = .5 * ||weights[b,a] * (prediction[b,a,:] - target[b,a,:])||^2
   """
-    def __init__(self, code_weights=None):
+    def __init__(self, code_weights=None, device=None):
         super().__init__()
         if code_weights is not None:
             self._code_weights = np.array(code_weights, dtype=np.float32)
             self._code_weights = Variable(
-                torch.from_numpy(self._code_weights).cuda())
+                torch.from_numpy(self._code_weights).to(device))
         else:
             self._code_weights = None
 
@@ -159,13 +159,13 @@ class WeightedSmoothL1LocalizationLoss(Loss):
 
   See also Equation (3) in the Fast R-CNN paper by Ross Girshick (ICCV 2015)
   """
-    def __init__(self, sigma=3.0, code_weights=None, codewise=True):
+    def __init__(self, sigma=3.0, code_weights=None, codewise=True, device=None):
         super().__init__()
         self._sigma = sigma
         if code_weights is not None:
             self._code_weights = np.array(code_weights, dtype=np.float32)
             self._code_weights = Variable(
-                torch.from_numpy(self._code_weights).cuda())
+                torch.from_numpy(self._code_weights).to(device))
         else:
             self._code_weights = None
         self._codewise = codewise

@@ -23,7 +23,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.protos impo
 )
 
 
-def build(loss_config):
+def build(loss_config, device):
     """Build losses based on the config.
 
   Builds classification, localization losses and optionally a hard example miner
@@ -43,7 +43,7 @@ def build(loss_config):
     ValueError: If hard_example_miner is used with sigmoid_focal_loss.
   """
     classification_loss = _build_classification_loss(loss_config.classification_loss)
-    localization_loss = _build_localization_loss(loss_config.localization_loss)
+    localization_loss = _build_localization_loss(loss_config.localization_loss, device)
     classification_weight = loss_config.classification_weight
     localization_weight = loss_config.localization_weight
     hard_example_miner = None
@@ -87,7 +87,7 @@ def build_faster_rcnn_classification_loss(loss_config):
     return losses.WeightedSoftmaxClassificationLoss(logit_scale=config.logit_scale)
 
 
-def _build_localization_loss(loss_config):
+def _build_localization_loss(loss_config, device):
     """Builds a localization loss based on the loss config.
 
   Args:
@@ -118,7 +118,7 @@ def _build_localization_loss(loss_config):
             code_weight = None
         else:
             code_weight = config.code_weight
-        return losses.WeightedSmoothL1LocalizationLoss(config.sigma, code_weight)
+        return losses.WeightedSmoothL1LocalizationLoss(config.sigma, code_weight, device)
 
     raise ValueError("Empty loss config.")
 

@@ -13,19 +13,19 @@ from torchplus import metrics
 from torchplus.nn import Empty, GroupNorm, Sequential
 from torchplus.ops.array_ops import gather_nd, scatter_nd
 from torchplus.tools import change_default_args
-from second.pytorch.core import box_torch_ops
-from second.pytorch.core.losses import (
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.core import box_torch_ops
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.core.losses import (
     WeightedSigmoidClassificationLoss,
     WeightedSmoothL1LocalizationLoss,
     WeightedSoftmaxClassificationLoss,
 )
-from second.pytorch.models.pointpillars import (
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.pointpillars import (
     PillarFeatureNet,
     PointPillarsScatter,
 )
-from second.pytorch.models.tanet import PillarFeature_TANet, PSA
-from second.pytorch.models.loss_utils import create_refine_loss
-from second.pytorch.utils import get_paddings_indicator
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.tanet import PillarFeature_TANet, PSA
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.loss_utils import create_refine_loss
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.utils import get_paddings_indicator
 
 USING_SCN = False  # default: not use SparseConv
 
@@ -606,6 +606,8 @@ class VoxelNet(nn.Module):
         self._cls_loss_weight = cls_loss_weight
         self._loc_loss_weight = loc_loss_weight
 
+        self.device = None
+
         vfe_class_dict = {
             "VoxelFeatureExtractor": VoxelFeatureExtractor,
             "VoxelFeatureExtractorV2": VoxelFeatureExtractorV2,
@@ -891,11 +893,11 @@ class VoxelNet(nn.Module):
                 }
         else:
             if self.rpn_class_name == "PSA" or self.rpn_class_name == "RefineDet":
-                coarse_output = self.predict_coarse(example, preds_dict)
-                refine_output = self.predict_refine(example, preds_dict)
+                coarse_output = self.predict_coarse(example, preds_dict, self.device)
+                refine_output = self.predict_refine(example, preds_dict, self.device)
                 return coarse_output, refine_output
             else:
-                return self.predict_coarse(example, preds_dict)
+                return self.predict_coarse(example, preds_dict, self.device)
 
     def compute_predict(
         self,
@@ -908,6 +910,7 @@ class VoxelNet(nn.Module):
         batch_imgidx,
         batch_anchors_mask,
         num_class_with_bg,
+        device,
     ):
         predictions_dicts = []
         for (
@@ -1044,6 +1047,7 @@ class VoxelNet(nn.Module):
                         pre_max_size=self._nms_pre_max_size,
                         post_max_size=self._nms_post_max_size,
                         iou_threshold=self._nms_iou_threshold,
+                        device=device
                     )
                 else:
                     selected = None
@@ -1114,7 +1118,7 @@ class VoxelNet(nn.Module):
             predictions_dicts.append(predictions_dict)
         return predictions_dicts
 
-    def predict_coarse(self, example, preds_dict):
+    def predict_coarse(self, example, preds_dict, device):
         t = time.time()
         batch_size = example["anchors"].shape[0]
         batch_anchors = example["anchors"].view(batch_size, -1, 7)
@@ -1159,11 +1163,12 @@ class VoxelNet(nn.Module):
             batch_imgidx,
             batch_anchors_mask,
             num_class_with_bg,
+            device=device
         )
         self._total_postprocess_time += time.time() - t
         return predictions_dicts
 
-    def predict_refine(self, example, preds_dict):
+    def predict_refine(self, example, preds_dict, device):
         t = time.time()
         batch_size = example["anchors"].shape[0]
         batch_anchors = example["anchors"].view(batch_size, -1, 7)
@@ -1222,6 +1227,7 @@ class VoxelNet(nn.Module):
             batch_imgidx,
             batch_anchors_mask,
             num_class_with_bg,
+            device=device
         )
         self._total_postprocess_time += time.time() - t
         return predictions_dicts
