@@ -1,6 +1,6 @@
 import torch
 import torchplus
-from second.pytorch.core import box_torch_ops
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.core import box_torch_ops
 from enum import Enum
 
 PI = 3.141592653589793

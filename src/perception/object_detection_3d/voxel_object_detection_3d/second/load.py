@@ -8,35 +8,19 @@ import shutil
 from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
     pipeline_pb2,
 )
-import second.data.kitti_common as kitti
 from perception.object_detection_3d.voxel_object_detection_3d.second.builder import (
     target_assigner_builder,
     voxel_builder,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second.data.preprocess import (
-    merge_second_batch,
-)
-from perception.object_detection_3d.voxel_object_detection_3d.second.protos import (
-    pipeline_pb2,
-)
 from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.builder import (
     box_coder_builder,
-    input_reader_builder,
     lr_scheduler_builder,
     optimizer_builder,
     second_builder,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.eval import (
-    get_coco_eval_result,
-    get_official_eval_result,
-)
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.progress_bar import (
-    ProgressBar,
-)
-from perception.object_detection_3d.voxel_object_detection_3d.logger import Logger
 
 
-def create_model(config_path, log=print):
+def create_model(config_path, device, log=print):
 
     loss_scale = None
 
@@ -66,9 +50,9 @@ def create_model(config_path, log=print):
     # BUILD NET
     ######################
     center_limit_range = model_cfg.post_center_limit_range
-    net = second_builder.build(model_cfg, voxel_generator, target_assigner)
-    net.cuda()
-    # net_train = torch.nn.DataParallel(net).cuda()
+    net = second_builder.build(model_cfg, voxel_generator, target_assigner, device)
+    net.to(device)
+    net.device = device
     log("num_trainable parameters:", len(list(net.parameters())))
     for n, p in net.named_parameters():
         log(n, p.shape)
@@ -111,7 +95,7 @@ def create_model(config_path, log=print):
     )
 
 
-def load(model_dir, config_path, create_folder=False, result_path=None, log=print):
+def load(model_dir, config_path, device, create_folder=False, result_path=None, log=print):
 
     loss_scale = None
 
@@ -152,9 +136,9 @@ def load(model_dir, config_path, create_folder=False, result_path=None, log=prin
     # BUILD NET
     ######################
     center_limit_range = model_cfg.post_center_limit_range
-    net = second_builder.build(model_cfg, voxel_generator, target_assigner)
-    net.cuda()
-    # net_train = torch.nn.DataParallel(net).cuda()
+    net = second_builder.build(model_cfg, voxel_generator, target_assigner, device=device)
+    net.to(device)
+    net.device = device
     log("num_trainable parameters:", len(list(net.parameters())))
     for n, p in net.named_parameters():
         log(n, p.shape)
@@ -162,7 +146,7 @@ def load(model_dir, config_path, create_folder=False, result_path=None, log=prin
     # BUILD OPTIMIZER
     ######################
     # we need global_step to create lr_scheduler, so restore net first.
-    torchplus.train.try_restore_latest_checkpoints(model_dir, [net])
+    torchplus.train.try_restore_latest_checkpoints(model_dir, [net], device=device)
     gstep = net.get_global_step() - 1
     optimizer_cfg = train_cfg.optimizer
     if train_cfg.enable_mixed_precision:
@@ -176,7 +160,7 @@ def load(model_dir, config_path, create_folder=False, result_path=None, log=prin
     else:
         mixed_optimizer = optimizer
     # must restore optimizer AFTER using MixedPrecisionWrapper
-    torchplus.train.try_restore_latest_checkpoints(model_dir, [mixed_optimizer])
+    torchplus.train.try_restore_latest_checkpoints(model_dir, [mixed_optimizer], device=device)
     lr_scheduler = lr_scheduler_builder.build(optimizer_cfg, optimizer, gstep)
     if train_cfg.enable_mixed_precision:
         float_dtype = torch.float16

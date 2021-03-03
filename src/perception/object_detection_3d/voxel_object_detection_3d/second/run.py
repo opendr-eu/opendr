@@ -84,6 +84,7 @@ def train(
     input_dataset_iterator,
     eval_dataset_iterator,
     gt_annos,
+    device,
     display_step=50,
     log=print,
     auto_save=False,
@@ -159,7 +160,7 @@ def train(
                         net.clear_metrics()
                     data_iter = iter(dataloader)
                     example = next(data_iter)
-                example_torch = example_convert_to_torch(example, float_dtype)
+                example_torch = example_convert_to_torch(example, float_dtype, device=device)
 
                 batch_size = example["anchors"].shape[0]
 
@@ -296,7 +297,7 @@ def train(
                     len(input_dataset_iterator) // eval_input_cfg.batch_size +
                     1)
                 for example in iter(eval_dataloader):
-                    example = example_convert_to_torch(example, float_dtype)
+                    example = example_convert_to_torch(example, float_dtype, device=device)
                     # if pickle_result:
                     coarse, refine = predict_kitti_to_anno(
                         net,
@@ -327,7 +328,7 @@ def train(
                     len(input_dataset_iterator) // eval_input_cfg.batch_size +
                     1)
                 for example in iter(eval_dataloader):
-                    example = example_convert_to_torch(example, float_dtype)
+                    example = example_convert_to_torch(example, float_dtype, device=device)
                     # if pickle_result:
                     dt_annos += predict_kitti_to_anno(
                         net,
@@ -435,7 +436,7 @@ def evaluate(
     center_limit_range,
     eval_dataset_iterator,
     gt_annos,
-    display_step=50,
+    device,
     predict_test=False,
     log=print,
 ):
@@ -460,7 +461,7 @@ def evaluate(
         bar = ProgressBar()
         bar.start(len(eval_dataloader) // eval_input_cfg.batch_size + 1)
         for example in iter(eval_dataloader):
-            example = example_convert_to_torch(example, float_dtype)
+            example = example_convert_to_torch(example, float_dtype, device=device)
             coarse, refine = predict_kitti_to_anno(
                 net,
                 example,
@@ -480,7 +481,7 @@ def evaluate(
         bar = ProgressBar()
         bar.start(len(eval_dataloader) // eval_input_cfg.batch_size + 1)
         for example in iter(eval_dataloader):
-            example = example_convert_to_torch(example, float_dtype)
+            example = example_convert_to_torch(example, float_dtype, device=device)
             dt_annos += predict_kitti_to_anno(
                 net,
                 example,

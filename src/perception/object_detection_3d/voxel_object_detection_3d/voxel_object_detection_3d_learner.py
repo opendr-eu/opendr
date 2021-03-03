@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import torch
 import torchplus
 import pathlib
 from engine.learners import Learner
@@ -28,11 +29,13 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.bui
     input_reader_builder, )
 from perception.object_detection_3d.voxel_object_detection_3d.logger import (
     Logger, )
+from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.tanet import set_tanet_config
 
 
 class VoxelObjectDetection3DLearner(Learner):
     def __init__(
         self,
+        model_config_path,
         lr=0.001,
         iters=10,
         batch_size=64,
@@ -43,10 +46,10 @@ class VoxelObjectDetection3DLearner(Learner):
         checkpoint_after_iter=0,
         checkpoint_load_iter=0,
         temp_path="",
-        device="cuda",
+        device="cuda:0",
         threshold=0.0,
         scale=1.0,
-        model_config_path=None,
+        tanet_config_path=None,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelObjectDetection3DLearner, self).__init__(
@@ -70,6 +73,9 @@ class VoxelObjectDetection3DLearner(Learner):
         self.eval_checkpoint_dir = None
         self.result_path = None
 
+        if tanet_config_path is not None:
+            set_tanet_config(tanet_config_path)
+
         self.__create_model()
 
     def save(self, path, max_to_keep=100):
@@ -83,6 +89,9 @@ class VoxelObjectDetection3DLearner(Learner):
             self.model.get_global_step(),
             max_to_keep=max_to_keep,
         )
+
+        if self.model_dir is None:
+            self.model_dir = path
 
     def load(
         self,
@@ -113,6 +122,7 @@ class VoxelObjectDetection3DLearner(Learner):
         ) = second_load(
             path,
             self.model_config_path,
+            device=self.device,
             log=lambda *x: logger.log(Logger.LOG_WHEN_VERBOSE, *x),
         )
 
@@ -135,9 +145,6 @@ class VoxelObjectDetection3DLearner(Learner):
         self.center_limit_range = center_limit_range
 
         logger.close()
-
-    def optimize(self, params):
-        pass
 
     def reset(self):
         pass
@@ -203,6 +210,7 @@ class VoxelObjectDetection3DLearner(Learner):
             log=logger.log,
             auto_save=auto_save,
             display_step=display_step,
+            device=self.device,
         )
 
         logger.close()
@@ -246,9 +254,9 @@ class VoxelObjectDetection3DLearner(Learner):
             self.center_limit_range,
             eval_dataset_iterator=eval_dataset_iterator,
             gt_annos=ground_truth_annotations,
-            display_step=50,
             predict_test=predict_test,
             log=logger.log,
+            device=self.device,
         )
 
         logger.close()
@@ -265,6 +273,9 @@ class VoxelObjectDetection3DLearner(Learner):
         result = self.model(batch)
 
         return result
+
+    def optimize(self, do_constant_folding=False):
+        pass
 
     def _prepare_datasets(
         self,
@@ -410,7 +421,7 @@ class VoxelObjectDetection3DLearner(Learner):
             loss_scale,
             class_names,
             center_limit_range,
-        ) = second_create_model(self.model_config_path, )
+        ) = second_create_model(self.model_config_path, device=self.device)
 
         self.model = model
         self.input_config = input_config

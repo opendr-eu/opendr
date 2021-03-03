@@ -1,13 +1,13 @@
 model: {
   second: {
     voxel_generator {
-      point_cloud_range : [0, -39.68, -3, 69.12, 39.68, 1]
-      voxel_size : [0.16, 0.16, 4]
+      point_cloud_range : [0, -19.84, -2.5, 47.36, 19.84, 0.5]
+      voxel_size : [0.16, 0.16, 3]
       max_number_of_points_per_voxel : 100
     }
-    num_class: 1
+    num_class: 2
     voxel_feature_extractor: {
-      module_class_name: "PillarFeatureNet"
+      module_class_name: "PillarFeature_TANet"
       num_filters: [64]
       with_distance: false
     }
@@ -15,9 +15,9 @@ model: {
       module_class_name: "PointPillarsScatter"
     }
     rpn: {
-      module_class_name: "RPN"
+      module_class_name: "PSA"
       layer_nums: [3, 5, 5]
-      layer_strides: [2, 2, 2]
+      layer_strides: [1, 2, 2]
       num_filters: [64, 128, 256]
       upsample_strides: [1, 2, 4]
       num_upsample_filters: [128, 128, 128]
@@ -55,7 +55,7 @@ model: {
 
     loss_norm_type: NormByNumPositives
     # Postprocess
-    post_center_limit_range: [0, -39.68, -5, 69.12, 39.68, 5]
+    post_center_limit_range: [0, -19.84, -2.5, 47.36, 19.84, 0.5]
     use_rotate_nms: false
     use_multi_class_nms: false
     nms_pre_max_size: 1000
@@ -74,15 +74,25 @@ model: {
     }
     target_assigner: {
       anchor_generators: {
-         anchor_generator_stride: {
-           sizes: [1.6, 3.9, 1.56] # wlh
-           strides: [0.32, 0.32, 0.0] # if generate only 1 z_center, z_stride will be ignored
-           offsets: [0.16, -39.52, -1.78] # origin_offset + strides / 2
-           rotations: [0, 1.57] # 0, pi/2
-           matched_threshold : 0.6
-           unmatched_threshold : 0.45
-         }
-       }
+        anchor_generator_stride: {
+          sizes: [0.6, 1.76, 1.73] # wlh
+          strides: [0.16, 0.16, 0.0] # if generate only 1 z_center, z_stride will be ignored
+          offsets: [0.08, -19.76, -1.465] # origin_offset + strides / 2
+          rotations: [0, 1.57] # 0, pi/2
+          matched_threshold : 0.5
+          unmatched_threshold : 0.35
+        }
+      }
+      anchor_generators: {
+        anchor_generator_stride: {
+          sizes: [0.6, 0.8, 1.73] # wlh
+          strides: [0.16, 0.16, 0.0] # if generate only 1 z_center, z_stride will be ignored
+          offsets: [0.08, -19.76, -1.465] # origin_offset + strides / 2
+          rotations: [0, 1.57] # 0, pi/2
+          matched_threshold : 0.5
+          unmatched_threshold : 0.35
+        }
+      }
 
       sample_positive_fraction : -1
       sample_size : 512
@@ -97,7 +107,7 @@ model: {
 
 train_input_reader: {
   record_file_path: "kitti_train.tfrecord"
-  class_names: ["Car"]
+  class_names: ["Cyclist", "Pedestrian"]
   max_num_epochs : 160
   batch_size: 2
   prefetch_size : 25
@@ -117,14 +127,14 @@ train_input_reader: {
     database_info_path: "kitti_dbinfos_train.pkl"
     sample_groups {
       name_to_max_num {
-        key: "Car"
-        value: 15
+        key: "Cyclist"
+        value: 8
       }
     }
     database_prep_steps {
       filter_by_min_num_points {
         min_num_point_pairs {
-          key: "Car"
+          key: "Cyclist"
           value: 5
         }
       }
@@ -162,9 +172,9 @@ train_config: {
   }
   inter_op_parallelism_threads: 4
   intra_op_parallelism_threads: 4
-  steps: 100 # 1856 steps per epoch * 160 epochs
+  steps: 100         # 296960 = 1856 steps per epoch * 160 epochs
   steps_per_eval: 100 # 1856 steps per epoch * 5 epochs
-  save_checkpoints_secs : 300 # half hour
+  save_checkpoints_secs : 1800 # half hour
   save_summary_steps : 10
   enable_mixed_precision: false
   loss_scale_factor : 512.0
@@ -173,9 +183,9 @@ train_config: {
 
 eval_input_reader: {
   record_file_path: "kitti_val.tfrecord"
-  class_names: ["Car"]
-  batch_size: 1
-  max_num_epochs : 2
+  class_names: ["Cyclist", "Pedestrian"]
+  batch_size: 1 # 2
+  max_num_epochs : 160
   prefetch_size : 25
   max_number_of_voxels: 12000
   shuffle_points: false

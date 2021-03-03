@@ -10,11 +10,16 @@ import torchplus
 from torchplus.tools import torch_to_np_dtype
 from perception.object_detection_3d.voxel_object_detection_3d.second.core.box_np_ops import (
     iou_jit, )
-from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms_gpu import (
-    nms_gpu,
-    rotate_iou_gpu,
-    rotate_nms_gpu,
-)
+
+from numba.cuda.cudadrv.error import CudaSupportError
+try:
+    from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms_gpu import (
+        nms_gpu as nms_gpu_or_cc
+    )
+except CudaSupportError:
+    from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms_cpu import (
+        nms_cc as nms_gpu_or_cc)
+
 from perception.object_detection_3d.voxel_object_detection_3d.second.core.non_max_suppression.nms_cpu import (
     rotate_nms_cc, )
 
@@ -468,7 +473,8 @@ def nms(bboxes,
         scores,
         pre_max_size=None,
         post_max_size=None,
-        iou_threshold=0.5):
+        iou_threshold=0.5,
+        device=None):
     if pre_max_size is not None:
         num_keeped_scores = scores.shape[0]
         pre_max_size = min(num_keeped_scores, pre_max_size)
@@ -479,22 +485,23 @@ def nms(bboxes,
     if len(dets_np) == 0:
         keep = np.array([], dtype=np.int64)
     else:
-        ret = np.array(nms_gpu(dets_np, iou_threshold), dtype=np.int64)
+        ret = np.array(nms_gpu_or_cc(dets_np, iou_threshold), dtype=np.int64)
         keep = ret[:post_max_size]
     if keep.shape[0] == 0:
         return None
     if pre_max_size is not None:
-        keep = torch.from_numpy(keep).long().cuda()
+        keep = torch.from_numpy(keep).long().to(device)
         return indices[keep]
     else:
-        return torch.from_numpy(keep).long().cuda()
+        return torch.from_numpy(keep).long().to(device)
 
 
 def rotate_nms(rbboxes,
                scores,
                pre_max_size=None,
                post_max_size=None,
-               iou_threshold=0.5):
+               iou_threshold=0.5,
+               device=None):
     if pre_max_size is not None:
         num_keeped_scores = scores.shape[0]
         pre_max_size = min(num_keeped_scores, pre_max_size)
@@ -510,7 +517,7 @@ def rotate_nms(rbboxes,
     if keep.shape[0] == 0:
         return None
     if pre_max_size is not None:
-        keep = torch.from_numpy(keep).long().cuda()
+        keep = torch.from_numpy(keep).long().to(device)
         return indices[keep]
     else:
-        return torch.from_numpy(keep).long().cuda()
+        return torch.from_numpy(keep).long().to(device)

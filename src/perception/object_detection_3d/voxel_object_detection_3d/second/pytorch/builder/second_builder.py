@@ -27,7 +27,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.mod
 )
 
 
-def build(model_cfg: second_pb2.VoxelNet, voxel_generator, target_assigner) -> VoxelNet:
+def build(model_cfg: second_pb2.VoxelNet, voxel_generator, target_assigner, device) -> VoxelNet:
     """build second pytorch instance.
     """
     if not isinstance(model_cfg, second_pb2.VoxelNet):
@@ -48,7 +48,7 @@ def build(model_cfg: second_pb2.VoxelNet, voxel_generator, target_assigner) -> V
     }
     loss_norm_type = loss_norm_type_dict[model_cfg.loss_norm_type]
 
-    losses = losses_builder.build(model_cfg.loss)
+    losses = losses_builder.build(model_cfg.loss, device)
     encode_rad_error_by_sin = model_cfg.encode_rad_error_by_sin
     cls_loss_ftor, loc_loss_ftor, cls_weight, loc_weight, _ = losses
     pos_cls_weight = model_cfg.pos_class_weight
