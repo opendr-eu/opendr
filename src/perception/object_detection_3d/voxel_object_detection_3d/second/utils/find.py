@@ -62,9 +62,12 @@ def find_cuda():
             except Exception:
                 cuda_home = None
     if cuda_home is None:
-        raise RuntimeError(
+        print(
             "No CUDA runtime is found, using CUDA_HOME='{}'".format(cuda_home)
         )
+        # raise RuntimeError(
+        #     "No CUDA runtime is found, using CUDA_HOME='{}'".format(cuda_home)
+        # )
     return cuda_home
 
 
