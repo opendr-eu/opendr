@@ -172,7 +172,7 @@ OpenDR project doesn't require to assign the copyright of your contributions, yo
 You can copy and paste the Apache 2.0 license summary from below
 
 ```
-// Copyright 1996-2020 OpenDR European Project
+// Copyright 2020-2021 OpenDR European Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
