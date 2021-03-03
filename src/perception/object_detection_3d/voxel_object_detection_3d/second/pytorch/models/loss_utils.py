@@ -295,11 +295,11 @@ def create_refine_loss(
     new_gt = box_torch_ops.second_box_encode(de_gt_boxes, de_coarse_boxes)
 
     if encode_background_as_zeros:
-        coarse_conf = coarse_cls_preds.view(batch_size, -1, num_class)
+        # coarse_conf = coarse_cls_preds.view(batch_size, -1, num_class)
         refine_conf = refine_cls_preds.view(batch_size, -1, num_class)
 
     else:
-        coarse_conf = coarse_cls_preds.view(batch_size, -1, num_class + 1)
+        # coarse_conf = coarse_cls_preds.view(batch_size, -1, num_class + 1)
         refine_conf = refine_cls_preds.view(batch_size, -1, num_class + 1)
 
     cls_targets = cls_targets.squeeze(-1)
@@ -368,7 +368,7 @@ def create_refine_loss_V2(
 
         anchors = anchor_batch[i, :, :]
         coarse_box_preds = coarse_box_batch_preds[i, :, :]
-        refine_box_preds = refine_box_batch_preds[i, :, :]
+        # refine_box_preds = refine_box_batch_preds[i, :, :]
 
         de_coarse_boxes = box_torch_ops.second_box_decode(
             coarse_box_preds, anchors)
@@ -382,7 +382,7 @@ def create_refine_loss_V2(
         vaild_anchors = torch.arange(len(anchors_mask))[anchors_mask]
 
         num_inside = len(vaild_anchors)
-        total_anchors = anchors.shape[0]
+        # total_anchors = anchors.shape[0]
         coarse_boxes = anchors[vaild_anchors, :]
 
         matched_threshold = 0.6 * torch.ones(num_inside).cuda()
@@ -480,12 +480,12 @@ def create_refine_loss_V2(
     cls_targets = cls_targets.unsqueeze(-1)
 
     if encode_background_as_zeros:
-        coarse_conf = coarse_cls_batch_preds.view(batch_size, -1, num_class)
+        # coarse_conf = coarse_cls_batch_preds.view(batch_size, -1, num_class)
         refine_conf = refine_cls_batch_preds.view(batch_size, -1, num_class)
 
     else:
-        coarse_conf = coarse_cls_batch_preds.view(batch_size, -1,
-                                                  num_class + 1)
+        # coarse_conf = coarse_cls_batch_preds.view(batch_size, -1,
+        #                                           num_class + 1)
         refine_conf = refine_cls_batch_preds.view(batch_size, -1,
                                                   num_class + 1)
 

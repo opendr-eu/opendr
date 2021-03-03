@@ -1,5 +1,3 @@
-import numpy as np
-
 from perception.object_detection_3d.voxel_object_detection_3d.second.core.voxel_generator import (
     VoxelGenerator,
 )

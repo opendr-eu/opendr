@@ -1,9 +1,5 @@
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
-    box_np_ops, )
 from perception.object_detection_3d.voxel_object_detection_3d.second.core.target_ops import (
     create_target_np, )
-from perception.object_detection_3d.voxel_object_detection_3d.second.core import (
-    region_similarity, )
 import numpy as np
 
 

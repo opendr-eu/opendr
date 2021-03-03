@@ -1,5 +1,4 @@
 import multiprocessing
-import os
 import re
 import subprocess
 from concurrent.futures import ProcessPoolExecutor
@@ -7,7 +6,6 @@ from enum import Enum
 from functools import partial
 from pathlib import Path
 
-import fire
 
 from perception.object_detection_3d.voxel_object_detection_3d.second.utils.find import (
     find_cuda,

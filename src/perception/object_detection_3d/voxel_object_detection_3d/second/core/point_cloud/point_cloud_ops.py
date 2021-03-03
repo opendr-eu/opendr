@@ -1,4 +1,3 @@
-import time
 
 import numba
 import numpy as np
@@ -79,8 +78,6 @@ def _points_to_voxel_kernel(
     # grid_size = np.round(grid_size).astype(np.int64)(np.int32)
     grid_size = np.round(grid_size, 0, grid_size).astype(np.int32)
 
-    lower_bound = coors_range[:3]
-    upper_bound = coors_range[3:]
     coor = np.zeros(shape=(3, ), dtype=np.int32)
     voxel_num = 0
     failed = False

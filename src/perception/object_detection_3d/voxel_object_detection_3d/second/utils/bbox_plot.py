@@ -1,10 +1,9 @@
 from enum import Enum
 
 import matplotlib.patches as patches
-import matplotlib.pyplot as plt
 import numpy as np
 import pyqtgraph.opengl as gl
-from mpl_toolkits.mplot3d.art3d import Line3DCollection, Poly3DCollection
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from pyqtgraph.opengl.GLGraphicsItem import GLGraphicsItem
 from pyqtgraph.Qt import QtCore, QtGui
 
@@ -87,7 +86,7 @@ def draw_bbox_in_ax(
         )
         ax.add_patch(rect_p)
         if label is not None:
-            t = ax.text(
+            ax.text(
                 bbox[0],
                 bbox[1],
                 label,
@@ -498,10 +497,10 @@ def draw_3d_bboxlines_in_pyqt_v1(
             ]
         )
         color = np.array([list(facecolor) for i in range(len(lines))])
-        plt = gl.GLLinePlotItem(
+        plta = gl.GLLinePlotItem(
             pos=lines, color=color, width=width, antialias=True, mode="lines"
         )
-        widget.addItem(plt)
+        widget.addItem(plta)
         if label is not None:
             label_color_qt = _pltcolor_to_qtcolor(label_color)
             t = GLTextItem(

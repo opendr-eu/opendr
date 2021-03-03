@@ -1,11 +1,7 @@
-import math
 from pathlib import Path
 
 from perception.object_detection_3d.voxel_object_detection_3d.second.utils.buildtools.pybind11_build import (
     load_pb11,
-)
-from perception.object_detection_3d.voxel_object_detection_3d.second.utils.find import (
-    find_cuda_device_arch,
 )
 import numba
 import numpy as np
@@ -136,7 +132,6 @@ def soft_nms_jit(boxes, sigma=0.5, Nt=0.3, threshold=0.001, method=0):
             y1 = boxes[pos, 1]
             x2 = boxes[pos, 2]
             y2 = boxes[pos, 3]
-            s = boxes[pos, 4]
 
             area = (x2 - x1 + 1) * (y2 - y1 + 1)
             iw = min(tx2, x2) - max(tx1, x1) + 1

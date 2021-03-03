@@ -1,29 +1,26 @@
 #ifndef BOX_OPS_H
 #define BOX_OPS_H
 
+#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <algorithm>
 #include <boost/geometry.hpp>
-#include <pybind11/numpy.h>
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-template<typename DType, typename ShapeContainer>
-inline py::array_t<DType> constant(ShapeContainer shape, DType value){
-    // create ROWMAJOR array.
-    py::array_t<DType> array(shape);
-    std::fill(array.mutable_data(), array.mutable_data() + array.size(), value);
-    return array;
+template<typename DType, typename ShapeContainer> inline py::array_t<DType> constant(ShapeContainer shape, DType value) {
+  // create ROWMAJOR array.
+  py::array_t<DType> array(shape);
+  std::fill(array.mutable_data(), array.mutable_data() + array.size(), value);
+  return array;
 }
 
-template<typename DType>
-inline py::array_t<DType> zeros(std::vector<long int> shape){
-    return constant<DType, std::vector<long int>>(shape, 0);
+template<typename DType> inline py::array_t<DType> zeros(std::vector<long int> shape) {
+  return constant<DType, std::vector<long int>>(shape, 0);
 }
-template <typename DType>
-py::array_t<DType>
-rbbox_iou(py::array_t<DType> box_corners, py::array_t<DType> qbox_corners,
-          py::array_t<DType> standup_iou, DType standup_thresh) {
+template<typename DType>
+py::array_t<DType> rbbox_iou(py::array_t<DType> box_corners, py::array_t<DType> qbox_corners, py::array_t<DType> standup_iou,
+                             DType standup_thresh) {
   namespace bg = boost::geometry;
   typedef bg::model::point<DType, 2, bg::cs::cartesian> point_t;
   typedef bg::model::polygon<point_t> polygon_t;
@@ -49,16 +46,11 @@ rbbox_iou(py::array_t<DType> box_corners, py::array_t<DType> qbox_corners,
       bg::append(poly, point_t(box_corners_r(n, 2, 0), box_corners_r(n, 2, 1)));
       bg::append(poly, point_t(box_corners_r(n, 3, 0), box_corners_r(n, 3, 1)));
       bg::append(poly, point_t(box_corners_r(n, 0, 0), box_corners_r(n, 0, 1)));
-      bg::append(qpoly,
-                 point_t(qbox_corners_r(k, 0, 0), qbox_corners_r(k, 0, 1)));
-      bg::append(qpoly,
-                 point_t(qbox_corners_r(k, 1, 0), qbox_corners_r(k, 1, 1)));
-      bg::append(qpoly,
-                 point_t(qbox_corners_r(k, 2, 0), qbox_corners_r(k, 2, 1)));
-      bg::append(qpoly,
-                 point_t(qbox_corners_r(k, 3, 0), qbox_corners_r(k, 3, 1)));
-      bg::append(qpoly,
-                 point_t(qbox_corners_r(k, 0, 0), qbox_corners_r(k, 0, 1)));
+      bg::append(qpoly, point_t(qbox_corners_r(k, 0, 0), qbox_corners_r(k, 0, 1)));
+      bg::append(qpoly, point_t(qbox_corners_r(k, 1, 0), qbox_corners_r(k, 1, 1)));
+      bg::append(qpoly, point_t(qbox_corners_r(k, 2, 0), qbox_corners_r(k, 2, 1)));
+      bg::append(qpoly, point_t(qbox_corners_r(k, 3, 0), qbox_corners_r(k, 3, 1)));
+      bg::append(qpoly, point_t(qbox_corners_r(k, 0, 0), qbox_corners_r(k, 0, 1)));
 
       bg::intersection(poly, qpoly, poly_inter);
 
@@ -78,6 +70,5 @@ rbbox_iou(py::array_t<DType> box_corners, py::array_t<DType> qbox_corners,
   }
   return overlaps;
 }
-
 
 #endif
