@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2020 Cyberbotics Ltd.
+# Copyright 2020-2021 Cyberbotics Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -81,7 +81,8 @@ class TestLicense(unittest.TestCase):
         skippedDirectoryPaths = [
             'src/perception/pose_estimation/lightweight_open_pose/algorithm',
             'src/perception/object_detection_3d/voxel_object_detection_3d/second',
-            'src/perception/object_detection_3d/voxel_object_detection_3d/torchplus'
+            'src/perception/object_detection_3d/voxel_object_detection_3d/torchplus',
+            'src/perception/face_recognition/algorithm'
         ]
 
         skippedFilePaths = []
