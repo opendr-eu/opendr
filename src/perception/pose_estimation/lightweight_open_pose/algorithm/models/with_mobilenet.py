@@ -94,12 +94,12 @@ class PoseEstimationWithMobileNet(nn.Module):
             stride_val = 2
         self.model = nn.Sequential(
             conv(3, 32, stride=2, bias=False),
-            conv_dw(32, 64),
+            conv_dw(32, 64, stride=stride_val),
             conv_dw(64, 128, stride=2),
             conv_dw(128, 128),
             conv_dw(128, 256, stride=2),
             conv_dw(256, 256),
-            conv_dw(256, 512, stride=stride_val),  # conv4_2
+            conv_dw(256, 512),  # conv4_2
             conv_dw(512, 512, dilation=2, padding=2),
             conv_dw(512, 512),
             conv_dw(512, 512),
