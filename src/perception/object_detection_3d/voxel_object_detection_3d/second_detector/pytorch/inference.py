@@ -18,7 +18,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.py
     predict_kitti_to_anno,
     example_convert_to_torch,
 )
-from perception.object_detection_3d.voxel_object_detection_3d import torchplus
+import torchplus
 
 
 class TorchInferenceContext(InferenceContext):
@@ -29,7 +29,7 @@ class TorchInferenceContext(InferenceContext):
 
     def _build(self):
         config = self.config
-        model_cfg = config.model.second_detector
+        model_cfg = config.model.second
         train_cfg = config.train_config
         voxel_generator = voxel_builder.build(model_cfg.voxel_generator)
         bv_range = voxel_generator.point_cloud_range[[0, 1, 3, 4]]
@@ -73,7 +73,7 @@ class TorchInferenceContext(InferenceContext):
 
     def _inference(self, example):
         input_cfg = self.config.eval_input_reader
-        model_cfg = self.config.model.second_detector
+        model_cfg = self.config.model.second
         example_torch = example_convert_to_torch(example)
 
         result_annos = predict_kitti_to_anno(

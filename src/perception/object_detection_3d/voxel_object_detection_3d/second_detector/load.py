@@ -17,7 +17,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.py
     optimizer_builder,
     second_builder,
 )
-from perception.object_detection_3d.voxel_object_detection_3d import torchplus
+import torchplus
 
 
 def create_model(config_path, device, log=print):
@@ -30,7 +30,7 @@ def create_model(config_path, device, log=print):
         text_format.Merge(proto_str, config)
     input_cfg = config.train_input_reader
     eval_input_cfg = config.eval_input_reader
-    model_cfg = config.model.second_detector
+    model_cfg = config.model.second
     train_cfg = config.train_config
     class_names = list(input_cfg.class_names)
     ######################
@@ -115,7 +115,7 @@ def load(model_dir, config_path, device, create_folder=False, result_path=None, 
     shutil.copyfile(config_path, str(model_dir / config_file_bkp))
     input_cfg = config.train_input_reader
     eval_input_cfg = config.eval_input_reader
-    model_cfg = config.model.second_detector
+    model_cfg = config.model.second
     train_cfg = config.train_config
 
     class_names = list(input_cfg.class_names)

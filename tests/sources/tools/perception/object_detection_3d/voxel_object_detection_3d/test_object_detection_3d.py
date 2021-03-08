@@ -56,24 +56,24 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
         cls.config_tanet_car = os.path.join(".", "src", "perception",
                                             "object_detection_3d",
                                             "voxel_object_detection_3d",
-                                            "second", "configs", "tanet",
+                                            "second_detector", "configs", "tanet",
                                             "car", "test_short.proto")
 
         cls.config_tanet_ped_cycle = os.path.join(".", "src", "perception",
                                                   "object_detection_3d",
                                                   "voxel_object_detection_3d",
-                                                  "second", "configs", "tanet",
+                                                  "second_detector", "configs", "tanet",
                                                   "ped_cycle",
                                                   "test_short.proto")
 
         cls.config_pointpillars_car = os.path.join(
             ".", "src", "perception", "object_detection_3d",
-            "voxel_object_detection_3d", "second", "configs", "pointpillars",
+            "voxel_object_detection_3d", "second_detector", "configs", "pointpillars",
             "car", "test_short.proto")
 
         cls.config_pointpillars_ped_cycle = os.path.join(
             ".", "src", "perception", "object_detection_3d",
-            "voxel_object_detection_3d", "second", "configs", "pointpillars",
+            "voxel_object_detection_3d", "second_detector", "configs", "pointpillars",
             "ped_cycle", "test_short.proto")
 
         cls.subsets_path = os.path.join(

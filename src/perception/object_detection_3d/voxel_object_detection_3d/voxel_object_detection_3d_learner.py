@@ -28,7 +28,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.py
 from perception.object_detection_3d.voxel_object_detection_3d.logger import (
     Logger, )
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.tanet import set_tanet_config
-from perception.object_detection_3d.voxel_object_detection_3d import torchplus
+import torchplus
 
 
 class VoxelObjectDetection3DLearner(Learner):
