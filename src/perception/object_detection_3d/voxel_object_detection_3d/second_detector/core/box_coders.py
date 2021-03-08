@@ -41,11 +41,11 @@ class GroundBox3dCoder(BoxCoder):
         return 8 if self.vec_encode else 7
 
     def _encode(self, boxes, anchors):
-        return box_np_ops.second_detector_box_encode(boxes, anchors, self.vec_encode,
+        return box_np_ops.second_box_encode(boxes, anchors, self.vec_encode,
                                             self.linear_dim)
 
     def _decode(self, encodings, anchors):
-        return box_np_ops.second_detector_box_decode(encodings, anchors,
+        return box_np_ops.second_box_decode(encodings, anchors,
                                             self.vec_encode, self.linear_dim)
 
 

@@ -37,10 +37,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
         'econd/protos/voxel_generator.proto"\xff\x0b\n\x08VoxelNet\x12\x11\n\tnum_clas' +
         's\x18\x01 \x01(\r\x12N\n\x17voxel_feature_extractor\x18\x02 \x01(\x0b\x32-.seco' +
         'nd.protos.VoxelNet.VoxelFeatureExtractor\x12P\n\x18middle_feature_extract' +
-        'or\x18\x03 \x01(\x0b\x32..second_detector.protos.VoxelNet.MiddleFeatureExtractor' +
-        '\x12(\n\x03rpn\x18\x04 \x01(\x0b\x32\x1b.second_detector.protos.VoxelNet.RP' +
+        'or\x18\x03 \x01(\x0b\x32..second.protos.VoxelNet.MiddleFeatureExtractor' +
+        '\x12(\n\x03rpn\x18\x04 \x01(\x0b\x32\x1b.second.protos.VoxelNet.RP' +
         'N\x12\x19\n\x11use_sigmoid_score\x18\x05 \x01(\x08\x12!\n\x04loss\x18\x06 ' +
-        '\x01(\x0b\x32\x13.second_detector.protos.Loss\x12\x1f\n\x17\x65ncode_rad_error_by_sin' +
+        '\x01(\x0b\x32\x13.second.protos.Loss\x12\x1f\n\x17\x65ncode_rad_error_by_sin' +
         '\x18\x07 \x01(\x08\x12"\n\x1a\x65ncode_background_as_zeros\x18\x08 \x01' +
         '(\x08\x12\x1a\n\x12use_aux_classifier\x18\t \x01(\x08\x12\x16\n\x0euse_rota' +
         'te_nms\x18\n \x01(\x08\x12\x1b\n\x13use_multi_class_nms\x18\x0b \x01(' +
@@ -50,13 +50,13 @@ DESCRIPTOR = _descriptor.FileDescriptor(
         'nter_limit_range\x18\x10 \x03(\x02\x12 \n\x18use_direction_classifier\x18\x11 ' +
         '\x01(\x08\x12\x1d\n\x15\x64irection_loss_weight\x18\x12 \x01(\x02\x12\x18\n\x10p' +
         'os_class_weight\x18\x13 \x01(\x02\x12\x18\n\x10neg_class_weight\x18\x14 \x01' +
-        '(\x02\x12<\n\x0eloss_norm_type\x18\x15 \x01(\x0e\x32$.second_detector.protos.VoxelNe' +
+        '(\x02\x12<\n\x0eloss_norm_type\x18\x15 \x01(\x0e\x32$.second.protos.VoxelNe' +
         't.LossNormType\x12\x0f\n\x07use_bev\x18\x16 \x01(\x08\x12\x1c\n\x14without_r' +
         'eflectivity\x18\x17 \x01(\x08\x12\x1e\n\x16\x65ncode_angle_to_vector\x18\x18 ' +
-        '\x01(\x08\x12*\n\tbox_coder\x18\x19 \x01(\x0b\x32\x17.second_detector.protos.BoxCod' +
-        'er\x12\x36\n\x0ftarget_assigner\x18\x1a \x01(\x0b\x32\x1d.second_detector.protos.Target' +
+        '\x01(\x08\x12*\n\tbox_coder\x18\x19 \x01(\x0b\x32\x17.second.protos.BoxCod' +
+        'er\x12\x36\n\x0ftarget_assigner\x18\x1a \x01(\x0b\x32\x1d.second.protos.Target' +
         'Assigner\x12\x13\n\x0blidar_input\x18\x1b \x01(\x08\x12\x1a\n\x12num_point_featu' +
-        'res\x18\x1c \x01(\r\x12\x36\n\x0fvoxel_generator\x18\x1d \x01(\x0b\x32\x1d.second_detector' +
+        'res\x18\x1c \x01(\r\x12\x36\n\x0fvoxel_generator\x18\x1d \x01(\x0b\x32\x1d.second' +
         '.protos.VoxelGenerator\x1a^\n\x15VoxelFeatureExtractor\x12\x19\n\x11module_cla' +
         'ss_name\x18\x01 \x01(\t\x12\x13\n\x0bnum_filters\x18\x02 \x03(\r\x12\x15\n\rwi' +
         'th_distance\x18\x03 \x01(\x08\x1ai\n\x16MiddleFeatureExtractor\x12\x19\n\x11module_' +
@@ -1007,7 +1007,7 @@ VoxelNet = _reflection.GeneratedProtocolMessageType(
             (_message.Message,),
             dict(
                 DESCRIPTOR=_VOXELNET_VOXELFEATUREEXTRACTOR,
-                __module__="second.protos.second_detector_pb2"
+                __module__="second.protos.second_pb2"
                 # @@protoc_insertion_point(class_scope:second.protos.VoxelNet.VoxelFeatureExtractor)
             ),
         ),
@@ -1016,7 +1016,7 @@ VoxelNet = _reflection.GeneratedProtocolMessageType(
             (_message.Message,),
             dict(
                 DESCRIPTOR=_VOXELNET_MIDDLEFEATUREEXTRACTOR,
-                __module__="second.protos.second_detector_pb2"
+                __module__="second.protos.second_pb2"
                 # @@protoc_insertion_point(class_scope:second.protos.VoxelNet.MiddleFeatureExtractor)
             ),
         ),
@@ -1025,12 +1025,12 @@ VoxelNet = _reflection.GeneratedProtocolMessageType(
             (_message.Message,),
             dict(
                 DESCRIPTOR=_VOXELNET_RPN,
-                __module__="second.protos.second_detector_pb2"
+                __module__="second.protos.second_pb2"
                 # @@protoc_insertion_point(class_scope:second.protos.VoxelNet.RPN)
             ),
         ),
         DESCRIPTOR=_VOXELNET,
-        __module__="second.protos.second_detector_pb2"
+        __module__="second.protos.second_pb2"
         # @@protoc_insertion_point(class_scope:second.protos.VoxelNet)
     ),
 )

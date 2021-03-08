@@ -28,11 +28,11 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     serialized_pb=_b(
         '\n\x19second/protos/train.proto\x12\rsecond.protos\x1a\x1dsecond/protos/optimi' +
         'zer.proto\x1a\x1esecond/protos/preprocess.proto"\x92\x01\n\x0bRegularizer\x12\x36\n\x0el1_re' +
-        'gularizer\x18\x01 \x01(\x0b\x32\x1c.second_detector.protos.L1RegularizerH\x00\x12\x36\n\x0el2_regu' +
-        'larizer\x18\x02 \x01(\x0b\x32\x1c.second_detector.protos.L2RegularizerH\x00\x42\x13\n\x11regular' +
+        'gularizer\x18\x01 \x01(\x0b\x32\x1c.second.protos.L1RegularizerH\x00\x12\x36\n\x0el2_regu' +
+        'larizer\x18\x02 \x01(\x0b\x32\x1c.second.protos.L2RegularizerH\x00\x42\x13\n\x11regular' +
         'izer_oneof"\x1f\n\rL1Regularizer\x12\x0e\n\x06weight\x18\x01 \x01(\x02"\x1f\n\rL2Regular' +
         'izer\x12\x0e\n\x06weight\x18\x01 \x01(\x02"\xc6\x02\n\x0bTrainConfig\x12+\n\toptim' +
-        'izer\x18\x01 \x01(\x0b\x32\x18.second_detector.protos.Optimizer\x12$\n\x1cinter_op_parallelism_' +
+        'izer\x18\x01 \x01(\x0b\x32\x18.second.protos.Optimizer\x12$\n\x1cinter_op_parallelism_' +
         'threads\x18\x03 \x01(\r\x12$\n\x1cintra_op_parallelism_threads\x18\x04 \x01(\r\x12\r\n\x05ste' +
         'ps\x18\x05 \x01(\r\x12\x16\n\x0esteps_per_eval\x18\x06 \x01(\r\x12\x1d\n\x15save_checkpoin' +
         'ts_secs\x18\x07 \x01(\r\x12\x1a\n\x12save_summary_steps\x18\x08 \x01(\r\x12\x1e\n\x16\x65nabl' +
