@@ -71,7 +71,7 @@ class LightweightOpenPoseLearner(Learner):
                  val_after=5000, log_after=100, mobilenet_use_stride=True, mobilenetv2_width=1.0, shufflenet_groups=3,
                  num_refinement_stages=2, batches_per_iter=1,
                  experiment_name='default', num_workers=8, weights_only=True, output_name='detections.json',
-                 multiscale=False, scales=None, visualize=False, base_height=256, stride=8,
+                 multiscale=False, scales=None, visualize=False, base_height=256,
                  img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256), pad_value=(0, 0, 0)):
         super(LightweightOpenPoseLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                          checkpoint_after_iter=checkpoint_after_iter,
@@ -111,9 +111,9 @@ class LightweightOpenPoseLearner(Learner):
         self.multiscale = multiscale  # If set to true, overwrites self.scales to [0.5, 1.0, 1.5, 2.0]
         self.scales = scales
         if self.use_stride:
-            self.stride = stride * 2
+            self.stride = 8 * 2
         else:
-            self.stride = stride
+            self.stride = 8
         self.img_mean = img_mean
         self.img_scale = img_scale
         self.pad_value = pad_value
