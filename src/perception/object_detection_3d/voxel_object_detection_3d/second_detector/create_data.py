@@ -1,19 +1,7 @@
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import pathlib
 import pickle
 
+import fire
 import numpy as np
 
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
@@ -77,20 +65,11 @@ def _calculate_num_points_in_gt(
 
 
 def create_kitti_info_file(
-    data_path, kitti_subsets_path, save_path=None, create_trainval=False, relative_path=True
+    data_path, save_path=None, create_trainval=False, relative_path=True
 ):
-
-    kitti_subsets_path = pathlib.Path(kitti_subsets_path)
-
-    train_img_ids = _read_imageset_file(
-        kitti_subsets_path / "train.txt"
-    )
-    val_img_ids = _read_imageset_file(
-        kitti_subsets_path / "val.txt"
-    )
-    test_img_ids = _read_imageset_file(
-       kitti_subsets_path / "test.txt"
-    )
+    train_img_ids = _read_imageset_file("./data/ImageSets/train.txt")
+    val_img_ids = _read_imageset_file("./data/ImageSets/val.txt")
+    test_img_ids = _read_imageset_file("./data/ImageSets/test.txt")
 
     print("Generate info. this may take several minutes.")
     if save_path is None:
@@ -326,3 +305,7 @@ def create_groundtruth_database(
 
     with open(db_info_save_path, "wb") as f:
         pickle.dump(all_db_infos, f)
+
+
+if __name__ == "__main__":
+    fire.Fire()
