@@ -1,0 +1,15 @@
+{
+    "root":"/home/io/Detection/Tracking/FairMOT/src/data",
+    "train":
+    {
+        "mot17":"./src/data/mot17.train"
+    },
+    "test_emb":
+    {
+        "mot17":"./src/data/mot17.train"
+    },
+    "test":
+    {
+        "mot17":"./src/data/mot17.train"
+    }
+}
