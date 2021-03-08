@@ -78,6 +78,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         rmfile(os.path.join(self.temp_dir, "detections.json"))
 
     def test_infer(self):
+        self.pose_estimator.model = None
         self.pose_estimator.load(os.path.join(self.temp_dir, "trainedModel"))
 
         img = cv2.imread(os.path.join(self.temp_dir, "dataset", "image", "000000000785.jpg"))
