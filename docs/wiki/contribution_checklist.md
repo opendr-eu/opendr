@@ -38,4 +38,5 @@ Reviewers: Please check all these points for each PR.
 9. Appropriate tests to ensure that my code runs correctly (at least one interface check that checks that model works correctly with OpenDR datatypes and at least one functionality check with a pre-trained model).
 10. Documentation has been included.
 11. At least one pre-trained model is provided.
+12. A meaningful name has been used for the PR.
 
