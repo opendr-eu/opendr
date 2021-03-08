@@ -147,8 +147,7 @@ def track_poses(previous_poses, current_poses, threshold=3, smooth=False):
                 if current_pose.data[kpt_id, 0] == -1:
                     continue
                 # reuse filter if previous pose has valid filter
-                if (best_matched_pose_id is not None
-                        and previous_poses[best_matched_id].data[kpt_id, 0] != -1):
+                if best_matched_pose_id is not None and previous_poses[best_matched_id].data[kpt_id, 0] != -1:
                     current_pose.filters[kpt_id] = previous_poses[best_matched_id].filters[kpt_id]
                 current_pose.data[kpt_id, 0] = current_pose.filters[kpt_id][0](current_pose.data[kpt_id, 0])
                 current_pose.data[kpt_id, 1] = current_pose.filters[kpt_id][1](current_pose.data[kpt_id, 1])
