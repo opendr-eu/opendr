@@ -1,6 +1,6 @@
 # OpenDR Contribution Checklist
 
-This file provides an overview of things that each contributing partner should check before starting a PR. This list would be also useful for the review process, allowing code maintainers to ensure that a minimum standard regarding the code quality and functionality.
+This file provides an overview of things that each contributing partner should check before starting a PR. This list would be also useful for the review process, allowing code maintainers to ensure that minimum standards regarding the code quality and functionality are met.
 
 
 ## Components expected from a contribution
