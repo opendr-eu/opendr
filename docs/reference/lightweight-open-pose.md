@@ -13,7 +13,7 @@ following public methods:
 
 #### `LightweightOpenPoseLearner` constructor
 ```python
-LightweightOpenPoseLearner(self, lr, epochs, batch_size, devicea, backbone, lr_schedule, temp_path, checkpoint_after_iter, checkpoint_load_iter, val_after, log_after, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize, base_height, stride, img_mean, img_scale, pad_value)
+LightweightOpenPoseLearner(self, lr, epochs, batch_size, devicea, backbone, lr_schedule, temp_path, checkpoint_after_iter, checkpoint_load_iter, val_after, log_after, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize, base_height, img_mean, img_scale, pad_value)
 ```
 
 Constructor parameters:
@@ -61,8 +61,6 @@ Constructor parameters:
   Specifies whether the images along with the poses will be shown, one by one during evaluation.
 - **base_height**: *int, default=256*  
   Specifies the height, based on which the images will be resized before performing the forward pass.
-- **stride**: *int, default=8*  
-  Specifies the stride based on which padding will be performed.
 - **img_mean**: *list, default=(128, 128, 128)]*  
   Specifies the mean based on which the images are normalized.
 - **img_scale**: *float, default=1/256*  
