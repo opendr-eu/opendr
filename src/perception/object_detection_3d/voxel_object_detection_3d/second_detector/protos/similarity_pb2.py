@@ -22,10 +22,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     serialized_pb=_b(
         '\n\x1esecond/protos/similarity.proto\x12\rsecond.protos"\xff\x01\n\x1a' +
         'RegionSimilarityCalculator\x12\x43\n\x15rotate_iou_similarity\x18\x01 ' +
-        '\x01(\x0b\x32".second_detector.protos.RotateIouSimilarityH\x00\x12\x45\n\x16near' +
+        '\x01(\x0b\x32".second.protos.RotateIouSimilarityH\x00\x12\x45\n\x16near' +
         'est_iou_similarity\x18\x02' +
-        ' \x01(\x0b\x32#.second_detector.protos.NearestIouSimilarityH\x00\x12@\n\x13\x64i' +
-        'stance_similarity\x18\x03 \x01(\x0b\x32!.second_detector.protos.DistanceSimilari' +
+        ' \x01(\x0b\x32#.second.protos.NearestIouSimilarityH\x00\x12@\n\x13\x64i' +
+        'stance_similarity\x18\x03 \x01(\x0b\x32!.second.protos.DistanceSimilari' +
         'tyH\x00\x42\x13\n\x11region_similarity"\x15\n\x13RotateIouSimilarity"' +
         '\x16\n\x14NearestIouSimilarity"Z\n\x12\x44istanceSimilarity\x12\x15\n\r' +
         'distance_norm\x18\x01 \x01(\x02\x12\x15\n\rwith_rotation\x18\x02 ' +

@@ -32,10 +32,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
         'es\x18\x02 \x03(\x02\x12\x15\n\ranchor_ranges\x18\x03 \x03(\x02\x12\x11\n\tr' +
         'otations\x18\x04 \x03(\x02\x12\x19\n\x11matched_threshold\x18\x05 \x01(\x02\x12\x1b\n\x13unmatch' +
         'ed_threshold\x18\x06 \x01(\x02"\x82\x02\n\x19\x41nchorGeneratorCollection\x12G\n\x17\x61nchor_' +
-        'generator_stride\x18\x01 \x01(\x0b\x32$.second_detector.protos.AnchorGeneratorSt' +
-        'rideH\x00\x12\x45\n\x16\x61nchor_generator_range\x18\x02 \x01(\x0b\x32#.second_detector.pr' +
+        'generator_stride\x18\x01 \x01(\x0b\x32$.second.protos.AnchorGeneratorSt' +
+        'rideH\x00\x12\x45\n\x16\x61nchor_generator_range\x18\x02 \x01(\x0b\x32#.second.pr' +
         'otos.AnchorGeneratorRangeH\x00\x12\x41\n\x14\x61nchor_generator_' +
-        'old\x18\x03 \x01(\x0b\x32!.second_detector.protos.AnchorGeneratorOldH\x00\x42\x12\n\x10\x61nchor' +
+        'old\x18\x03 \x01(\x0b\x32!.second.protos.AnchorGeneratorOldH\x00\x42\x12\n\x10\x61nchor' +
         '_generator"\xa8\x01\n\x16\x41nchorGenerator_depara\x12\x12\n\nclass_' +
         'name\x18\x01 \x01(\t\x12\r\n\x05sizes\x18\x02 \x03(\x02\x12\x0f\n\x07stride' +
         's\x18\x03 \x03(\x02\x12\x0f\n\x07offsets\x18\x04 \x03(\x02\x12\x11\n\trot' +

@@ -26,14 +26,14 @@ DESCRIPTOR = _descriptor.FileDescriptor(
         'obal_scaling_max\x18\x04 \x01(\x02\x12,\n$random_noise_per_groundtruth_min_rad\x18\x05 \x01(\x02\x12,\n$random' +
         '_noise_per_groundtruth_max_rad\x18\x06 \x01(\x02\x12\x31\n)random_noise_per_groundtruth_po' +
         'sition_std\x18\x07 \x01(\x02"\xd6\x01\n\x19\x44\x61tabasePreprocessingStep\x12\x43\n\x14\x66ilter_' +
-        'by_difficulty\x18\x01 \x01(\x0b\x32#.second_detector.protos.DBFilterByDifficultyH\x00\x12U\n\x18\x66ilte' +
-        'r_by_min_num_points\x18\x02 \x01(\x0b\x32\x31.second_detector.protos.DBFilterByMinNumPointInGroundTru' +
+        'by_difficulty\x18\x01 \x01(\x0b\x32#.second.protos.DBFilterByDifficultyH\x00\x12U\n\x18\x66ilte' +
+        'r_by_min_num_points\x18\x02 \x01(\x0b\x32\x31.second.protos.DBFilterByMinNumPointInGroundTru' +
         'thH\x00\x42\x1d\n\x1b\x64\x61tabase_preprocessing_step"4\n\x14\x44\x42\x46ilterByDiff' +
         'iculty\x12\x1c\n\x14removed_difficulties\x18\x01 \x03(\x05"\xc3\x01\n"DBFilterByMinNumPo' +
-        'intInGroundTruth\x12\x64\n\x13min_num_point_pairs\x18\x01 \x03(\x0b\x32G.second_detector.protos.DBF' +
+        'intInGroundTruth\x12\x64\n\x13min_num_point_pairs\x18\x01 \x03(\x0b\x32G.second.protos.DBF' +
         'ilterByMinNumPointInGroundTruth.MinNumPointPairsEntry\x1a\x37\n\x15MinNumPointPairsE' +
         'ntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\r:\x02\x38\x01"\xb5\x01\n\x11P' +
-        'reprocessingStep\x12\x43\n\x15random_global_scaling\x18\x01 \x01(\x0b\x32".second_detector.pr' +
+        'reprocessingStep\x12\x43\n\x15random_global_scaling\x18\x01 \x01(\x0b\x32".second.pr' +
         'otos.RandomGlobalScalingH\x00\x12\x45\n\x16random_global_rotation\x18\x02 \x01(\x0b\x32#.secon' +
         'd.protos.RandomGlobalRotationH\x00\x42\x14\n\x12preprocessing_step";\n\x13RandomGloba' +
         'lScaling\x12\x11\n\tmin_scale\x18\x01 \x01(\x02\x12\x11\n\tmax_scale\x18\x02 \x01(\x02"8\n\x14Rand' +

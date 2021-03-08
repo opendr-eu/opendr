@@ -32,7 +32,7 @@ class InferenceContext:
         P2 = info["calib/P2"]
         Trv2c = info["calib/Tr_velo_to_cam"]
         input_cfg = self.config.eval_input_reader
-        model_cfg = self.config.model.second_detector
+        model_cfg = self.config.model.second
 
         input_dict = {
             "points": points,

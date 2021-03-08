@@ -32,10 +32,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
         '\n\x1csecond/protos/pipeline.proto\x12\rsecond.protos\x1a second/prot' +
         'os/input_reader.proto\x1a\x19second/protos/model.proto\x1a\x19second/protos/tr' +
         'ain.proto"\xe8\x01\n\x17TrainEvalPipelineConfig\x12,\n\x05model\x18\x01 \x01(' +
-        '\x0b\x32\x1d.second_detector.protos.DetectionModel\x12\x36\n\x12train_input_reader\x18\x02 ' +
-        '\x01(\x0b\x32\x1a.second_detector.protos.InputReader\x12\x30\n\x0ctrain_config\x18\x03 \x01' +
-        '(\x0b\x32\x1a.second_detector.protos.TrainConfig\x12\x35\n\x11\x65val_input_reader\x18\x04 ' +
-        '\x01(\x0b\x32\x1a.second_detector.protos.InputReaderb\x06proto3'
+        '\x0b\x32\x1d.second.protos.DetectionModel\x12\x36\n\x12train_input_reader\x18\x02 ' +
+        '\x01(\x0b\x32\x1a.second.protos.InputReader\x12\x30\n\x0ctrain_config\x18\x03 \x01' +
+        '(\x0b\x32\x1a.second.protos.TrainConfig\x12\x35\n\x11\x65val_input_reader\x18\x04 ' +
+        '\x01(\x0b\x32\x1a.second.protos.InputReaderb\x06proto3'
     ),
     dependencies=[
         second_dot_protos_dot_input__reader__pb2.DESCRIPTOR,

@@ -20,8 +20,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     serialized_options=None,
     serialized_pb=_b(
         '\n\x1dsecond/protos/optimizer.proto\x12\rsecond.protos"\x89\x02\n\tOptimiz' +
-        'er\x12=\n\x12rms_prop_optimizer\x18\x01 \x01(\x0b\x32\x1f.second_detector.protos.RMSPropOp' +
-        'timizerH\x00\x12>\n\x12momentum_optimizer\x18\x02 \x01(\x0b\x32 .second_detector.protos.M' +
+        'er\x12=\n\x12rms_prop_optimizer\x18\x01 \x01(\x0b\x32\x1f.second.protos.RMSPropOp' +
+        'timizerH\x00\x12>\n\x12momentum_optimizer\x18\x02 \x01(\x0b\x32 .second.protos.M' +
         'omentumOptimizerH\x00\x12\x36\n\x0e\x61\x64\x61m_optimizer\x18\x03 \x01(\x0b\x32\x1c.sec' +
         'ond.protos.AdamOptimizerH\x00\x12\x1a\n\x12use_moving_avera' +
         'ge\x18\x04 \x01(\x08\x12\x1c\n\x14moving_average_decay\x18\x05 \x01(\x02\x42\x0b\n\toptimi' +
@@ -29,22 +29,22 @@ DESCRIPTOR = _descriptor.FileDescriptor(
         'econd.protos.LearningRate\x12 \n\x18momentum_optimizer_va' +
         'lue\x18\x02 \x01(\x02\x12\r\n\x05\x64\x65\x63\x61y\x18\x03 \x01(\x02\x12\x0f\n\x07\x65psilo' +
         'n\x18\x04 \x01(\x02\x12\x14\n\x0cweight_decay\x18\x05 \x01(\x02"\x7f\n\x11Mom' +
-        'entumOptimizer\x12\x32\n\rlearning_rate\x18\x01 \x01(\x0b\x32\x1b.second_detector.protos' +
+        'entumOptimizer\x12\x32\n\rlearning_rate\x18\x01 \x01(\x0b\x32\x1b.second.protos' +
         '.LearningRate\x12 \n\x18momentum_optimizer_value\x18\x02 \x01(\x02\x12\x14\n\x0cwe' +
         'ight_decay\x18\x03 \x01(\x02"Y\n\rAdamOptimizer\x12\x32\n\rlearning_rat' +
-        'e\x18\x01 \x01(\x0b\x32\x1b.second_detector.protos.LearningRate\x12\x14\n\x0cweight_d' +
+        'e\x18\x01 \x01(\x0b\x32\x1b.second.protos.LearningRate\x12\x14\n\x0cweight_d' +
         'ecay\x18\x02 \x01(\x02"\xd8\x02\n\x0cLearningRate\x12\x45\n\x16\x63onstant' +
-        '_learning_rate\x18\x01 \x01(\x0b\x32#.second_detector.protos.ConstantLearningR' +
+        '_learning_rate\x18\x01 \x01(\x0b\x32#.second.protos.ConstantLearningR' +
         'ateH\x00\x12V\n\x1f\x65xponential_decay_learning_rate\x18\x02 \x01(\x0b\x32+.secon' +
         'd.protos.ExponentialDecayLearningRateH\x00\x12J\n\x19manual_step_learning_rat' +
-        'e\x18\x03 \x01(\x0b\x32%.second_detector.protos.ManualStepLearningRateH\x00\x12L\n\x1a\x63osine' +
-        '_decay_learning_rate\x18\x04 \x01(\x0b\x32&.second_detector.protos.CosineDecayLearning' +
+        'e\x18\x03 \x01(\x0b\x32%.second.protos.ManualStepLearningRateH\x00\x12L\n\x1a\x63osine' +
+        '_decay_learning_rate\x18\x04 \x01(\x0b\x32&.second.protos.CosineDecayLearning' +
         'RateH\x00\x42\x0f\n\rlearning_rate"-\n\x14\x43onstantLearningRate\x12\x15\n\rlea' +
         'rning_rate\x18\x01 \x01(\x02"{\n\x1c\x45xponentialDecayLearningRate\x12\x1d\n\x15ini' +
         'tial_learning_rate\x18\x01 \x01(\x02\x12\x13\n\x0b\x64\x65\x63\x61y_st' +
         'eps\x18\x02 \x01(\r\x12\x14\n\x0c\x64\x65\x63\x61y_factor\x18\x03 \x01(\x02\x12\x11\n\tsta' +
         'ircase\x18\x04 \x01(\x08"\xc2\x01\n\x16ManualStepLearningRate\x12\x1d\n\x15initia' +
-        'l_learning_rate\x18\x01 \x01(\x02\x12L\n\x08schedule\x18\x02 \x03(\x0b\x32:.second_detector' +
+        'l_learning_rate\x18\x01 \x01(\x02\x12L\n\x08schedule\x18\x02 \x03(\x0b\x32:.second' +
         '.protos.ManualStepLearningRate.LearningRateSchedule\x1a;\n\x14LearningRateSc' +
         'hedule\x12\x0c\n\x04step\x18\x01 \x01(\r\x12\x15\n\rlearning_' +
         'rate\x18\x02 \x01(\x02"~\n\x17\x43osineDecayLearningRate\x12\x1a\n\x12lea' +

@@ -37,7 +37,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
         '_size\x18\x03 \x01(\r\x12\x16\n\x0emax_n' +
         'um_epochs\x18\x04 \x01(\r\x12\x15\n\rprefetch_size\x18\x05 \x01(\r\x12\x1c\n\x14max_n' +
         'umber_of_voxels\x18\x06 \x01(\r\x12\x36\n\x0ftarge' +
-        't_assigner\x18\x07 \x01(\x0b\x32\x1d.second_detector.protos.TargetAssigner\x12\x17\n\x0fkitti' +
+        't_assigner\x18\x07 \x01(\x0b\x32\x1d.second.protos.TargetAssigner\x12\x17\n\x0fkitti' +
         '_info_path\x18\x08 \x01(\t\x12\x17\n\x0fkitti_ro' +
         'ot_path\x18\t \x01(\t\x12\x16\n\x0eshuffle_points\x18\n \x01(\x08\x12*\n"groundtr' +
         'uth_localization_noise_std\x18\x0b \x03(\x02\x12*\n"groundt' +
@@ -51,10 +51,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
         'e_environment\x18\x15 \x01(\x08\x12\x1a\n\x12u' +
         'nlabeled_training\x18\x16 \x01(\x08\x12/\n\'global_random_rotation_range_per_obj' +
         'ect\x18\x17 \x03(\x02\x12\x45\n\x13\x64\x61tabase_prep' +
-        '_steps\x18\x18 \x03(\x0b\x32(.second_detector.protos.DatabasePreproces' +
+        '_steps\x18\x18 \x03(\x0b\x32(.second.protos.DatabasePreproces' +
         'singStep\x12\x30\n\x10\x64\x61tabase_sampler\x18\x19 \x01(\x0b\x32\x16.sec' +
         'ond.protos.Sampler\x12\x14\n\x0cuse_group_id\x18\x1a \x01(\x08\x12:\n\x1aunla' +
-        'beled_database_sampler\x18\x1b \x01(\x0b\x32\x16.second_detector.p' +
+        'beled_database_sampler\x18\x1b \x01(\x0b\x32\x16.second.p' +
         'rotos.Samplerb\x06proto3'
     ),
     dependencies=[

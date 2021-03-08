@@ -28,10 +28,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     serialized_pb=_b(
         '\n\x1asecond/protos/target.proto\x12\rsecond.protos\x1a\x1bsecond/protos/anchors.pro' +
         'to\x1a\x1esecond/protos/similarity.proto"\x89\x02\n\x0eTargetAssigner\x12\x43\n\x11\x61ncho' +
-        'r_generators\x18\x01 \x03(\x0b\x32(.second_detector.protos.AnchorGeneratorCollection\x12 \n\x18sampl' +
+        'r_generators\x18\x01 \x03(\x0b\x32(.second.protos.AnchorGeneratorCollection\x12 \n\x18sampl' +
         'e_positive_fraction\x18\x02 \x01(\x02\x12\x13\n\x0bsample_size\x18\x03 \x01(\r\x12\x16\n\x0euse' +
         '_rotate_iou\x18\x04 \x01(\x08\x12\x12\n\nclass_name\x18\x05 \x01(\t\x12O\n\x1cregion_similar' +
-        'ity_calculator\x18\x06 \x01(\x0b\x32).second_detector.protos.RegionSimilarityCalculatorb\x06proto3'
+        'ity_calculator\x18\x06 \x01(\x0b\x32).second.protos.RegionSimilarityCalculatorb\x06proto3'
     ),
     dependencies=[
         second_dot_protos_dot_anchors__pb2.DESCRIPTOR,

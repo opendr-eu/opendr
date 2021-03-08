@@ -21,23 +21,23 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     serialized_options=None,
     serialized_pb=_b(
         '\n\x1asecond/protos/losses.proto\x12\rsecond.protos"\xfb\x01\n\x04Loss\x12:\n\x11localiza' +
-        'tion_loss\x18\x01 \x01(\x0b\x32\x1f.second_detector.protos.LocalizationLoss\x12>\n\x13\x63lassification_l' +
-        'oss\x18\x02 \x01(\x0b\x32!.second_detector.protos.ClassificationLoss\x12;\n\x12hard_example_mine' +
-        'r\x18\x03 \x01(\x0b\x32\x1f.second_detector.protos.HardExampleMiner\x12\x1d\n\x15\x63lassification_' +
+        'tion_loss\x18\x01 \x01(\x0b\x32\x1f.second.protos.LocalizationLoss\x12>\n\x13\x63lassification_l' +
+        'oss\x18\x02 \x01(\x0b\x32!.second.protos.ClassificationLoss\x12;\n\x12hard_example_mine' +
+        'r\x18\x03 \x01(\x0b\x32\x1f.second.protos.HardExampleMiner\x12\x1d\n\x15\x63lassification_' +
         'weight\x18\x04 \x01(\x02\x12\x1b\n\x13localization_weight\x18\x05 \x01(\x02"\xd9\x01\n\x10Locali' +
-        'zationLoss\x12@\n\x0bweighted_l2\x18\x01 \x01(\x0b\x32).second_detector.protos.WeightedL2Localization' +
-        'LossH\x00\x12M\n\x12weighted_smooth_l1\x18\x02 \x01(\x0b\x32/.second_detector.protos.WeightedSmoothL1L' +
+        'zationLoss\x12@\n\x0bweighted_l2\x18\x01 \x01(\x0b\x32).second.protos.WeightedL2Localization' +
+        'LossH\x00\x12M\n\x12weighted_smooth_l1\x18\x02 \x01(\x0b\x32/.second.protos.WeightedSmoothL1L' +
         'ocalizationLossH\x00\x12\x1f\n\x17\x65ncode_rad_error_by_sin\x18\x03 \x01(\x08\x42\x13\n\x11local' +
         'ization_loss"L\n\x1aWeightedL2LocalizationLoss\x12\x19\n\x11\x61nchorwise_out' +
         'put\x18\x01 \x01(\x08\x12\x13\n\x0b\x63ode_weight\x18\x02 \x03(\x02"a\n WeightedSmoothL1Loc' +
         'alizationLoss\x12\x19\n\x11\x61nchorwise_output\x18\x01 \x01(\x08\x12\r\n\x05sigm' +
         'a\x18\x02 \x01(\x02\x12\x13\n\x0b\x63ode_weight\x18\x03 \x03(\x02"\xbf\x03\n\x12\x43lassif' +
-        'icationLoss\x12L\n\x10weighted_sigmoid\x18\x01 \x01(\x0b\x32\x30.second_detector.protos.WeightedSigm' +
-        'oidClassificationLossH\x00\x12L\n\x10weighted_softmax\x18\x02 \x01(\x0b\x32\x30.second_detector.pr' +
+        'icationLoss\x12L\n\x10weighted_sigmoid\x18\x01 \x01(\x0b\x32\x30.second.protos.WeightedSigm' +
+        'oidClassificationLossH\x00\x12L\n\x10weighted_softmax\x18\x02 \x01(\x0b\x32\x30.second.pr' +
         'otos.WeightedSoftmaxClassificationLossH\x00\x12T\n\x14\x62ootstrapped_sigmoid\x18\x03 \x01(\x0b\x32\x34.s' +
         'econd.protos.BootstrappedSigmoidClassificationLossH\x00\x12O\n\x16weighted_sigmoid_foc' +
-        'al\x18\x04 \x01(\x0b\x32-.second_detector.protos.SigmoidFocalClassificationLossH\x00\x12O\n\x16weight' +
-        'ed_softmax_focal\x18\x05 \x01(\x0b\x32-.second_detector.protos.SoftmaxFocalClassification' +
+        'al\x18\x04 \x01(\x0b\x32-.second.protos.SigmoidFocalClassificationLossH\x00\x12O\n\x16weight' +
+        'ed_softmax_focal\x18\x05 \x01(\x0b\x32-.second.protos.SoftmaxFocalClassification' +
         'LossH\x00\x42\x15\n\x13\x63lassification_loss">\n!WeightedSigmoidClassification' +
         'Loss\x12\x19\n\x11\x61nchorwise_output\x18\x01 \x01(\x08"Y\n\x1eSigmoidFocalCla' +
         'ssificationLoss\x12\x19\n\x11\x61nchorwise_output\x18\x01 \x01(\x08\x12\r\n\x05ga' +
@@ -49,7 +49,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
         'ha\x18\x01 \x01(\x02\x12\x16\n\x0ehard_bootstrap\x18\x02 \x01(\x08\x12\x19\n\x11\x61ncho' +
         'rwise_output\x18\x03 \x01(\x08"\x82\x02\n\x10HardExampleMiner\x12\x19\n\x11num_hard_exa' +
         'mples\x18\x01 \x01(\x05\x12\x15\n\riou_threshold\x18\x02 \x01(\x02\x12;\n\tloss_' +
-        'type\x18\x03 \x01(\x0e\x32(.second_detector.protos.HardExampleMiner.LossType\x12"\n\x1amax_negativ' +
+        'type\x18\x03 \x01(\x0e\x32(.second.protos.HardExampleMiner.LossType\x12"\n\x1amax_negativ' +
         'es_per_positive\x18\x04 \x01(\x05\x12\x1f\n\x17min_negatives_per_image\x18\x05 \x01(\x05":\n\x08Los' +
         'sType\x12\x08\n\x04\x42OTH\x10\x00\x12\x12\n\x0e\x43LASSIFICATI' +
         'ON\x10\x01\x12\x10\n\x0cLOCALIZATION\x10\x02\x62\x06proto3'

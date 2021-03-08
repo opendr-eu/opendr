@@ -24,7 +24,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     serialized_options=None,
     serialized_pb=_b(
         '\n\x19second/protos/model.proto\x12\rsecond.protos\x1a\x1asecond/protos/secon' +
-        'd.proto"D\n\x0e\x44\x65tectionModel\x12)\n\x06second\x18\x01 \x01(\x0b\x32\x17.second_detector' +
+        'd.proto"D\n\x0e\x44\x65tectionModel\x12)\n\x06second\x18\x01 \x01(\x0b\x32\x17.second' +
         '.protos.VoxelNetH\x00\x42\x07\n\x05modelb\x06proto3'
     ),
     dependencies=[second_dot_protos_dot_second__pb2.DESCRIPTOR],
@@ -40,7 +40,7 @@ _DETECTIONMODEL = _descriptor.Descriptor(
     fields=[
         _descriptor.FieldDescriptor(
             name="second",
-            full_name="second.protos.DetectionModel.second_detector",
+            full_name="second.protos.DetectionModel.second",
             index=0,
             number=1,
             type=11,

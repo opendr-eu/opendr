@@ -24,11 +24,11 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     serialized_options=None,
     serialized_pb=_b(
         '\n\x1bsecond/protos/sampler.proto\x12\rsecond.protos\x1a\x1esecond/protos/preprocess.p' +
-        'roto"}\n\x05Group\x12?\n\x0fname_to_max_num\x18\x01 \x03(\x0b\x32&.second_detector.protos.Group.NameT' +
+        'roto"}\n\x05Group\x12?\n\x0fname_to_max_num\x18\x01 \x03(\x0b\x32&.second.protos.Group.NameT' +
         'oMaxNumEntry\x1a\x33\n\x11NameToMaxNumEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05val' +
         'ue\x18\x02 \x01(\r:\x02\x38\x01"\xd8\x01\n\x07Sampler\x12\x1a\n\x12\x64\x61tabase_info_p' +
-        'ath\x18\x01 \x01(\t\x12+\n\rsample_groups\x18\x02 \x03(\x0b\x32\x14.second_detector.protos.G' +
-        'roup\x12\x45\n\x13\x64\x61tabase_prep_steps\x18\x03 \x03(\x0b\x32(.second_detector.protos.DatabasePr' +
+        'ath\x18\x01 \x01(\t\x12+\n\rsample_groups\x18\x02 \x03(\x0b\x32\x14.second.protos.G' +
+        'roup\x12\x45\n\x13\x64\x61tabase_prep_steps\x18\x03 \x03(\x0b\x32(.second.protos.DatabasePr' +
         'eprocessingStep\x12/\n\'global_random_rotation_range_per_obje' +
         'ct\x18\x04 \x03(\x02\x12\x0c\n\x04rate\x18\x05 \x01(\x02\x62\x06proto3'
     ),

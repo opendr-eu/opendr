@@ -10,12 +10,12 @@ import torch
 
 class GroundBox3dCoderTorch(GroundBox3dCoder):
     def encode_torch(self, boxes, anchors):
-        return box_torch_ops.second_detector_box_encode(
+        return box_torch_ops.second_box_encode(
             boxes, anchors, self.vec_encode, self.linear_dim
         )
 
     def decode_torch(self, boxes, anchors):
-        return box_torch_ops.second_detector_box_decode(
+        return box_torch_ops.second_box_decode(
             boxes, anchors, self.vec_encode, self.linear_dim
         )
 

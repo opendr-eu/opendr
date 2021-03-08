@@ -20,8 +20,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     serialized_options=None,
     serialized_pb=_b(
         '\n\x1dsecond/protos/box_coder.proto\x12\rsecond.protos"\x8b\x01\n\x08\x42oxCo' +
-        'der\x12=\n\x12ground_box3d_coder\x18\x01 \x01(\x0b\x32\x1f.second_detector.protos.GroundBox3dC' +
-        'oderH\x00\x12\x33\n\rbev_box_coder\x18\x02 \x01(\x0b\x32\x1a.second_detector.protos.BevBoxCode' +
+        'der\x12=\n\x12ground_box3d_coder\x18\x01 \x01(\x0b\x32\x1f.second.protos.GroundBox3dC' +
+        'oderH\x00\x12\x33\n\rbev_box_coder\x18\x02 \x01(\x0b\x32\x1a.second.protos.BevBoxCode' +
         'rH\x00\x42\x0b\n\tbox_coder"C\n\x10GroundBox3dCoder\x12\x12\n\nlinear_dim\x18\x01 ' +
         '\x01(\x08\x12\x1b\n\x13\x65ncode_angle_vector\x18\x02 \x01(\x08"`\n\x0b\x42\x65vBox' +
         'Coder\x12\x12\n\nlinear_dim\x18\x01 \x01(\x08\x12\x1b\n\x13\x65ncode_angle_vecto' +
