@@ -15,19 +15,19 @@
 import pathlib
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
-from perception.object_detection_3d.voxel_object_detection_3d.second.load import (
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.load import (
     load as second_load,
     create_model as second_create_model,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second.run import (
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.run import (
     train,
     evaluate,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.builder import (
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.builder import (
     input_reader_builder, )
 from perception.object_detection_3d.voxel_object_detection_3d.logger import (
     Logger, )
-from perception.object_detection_3d.voxel_object_detection_3d.second.pytorch.models.tanet import set_tanet_config
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.tanet import set_tanet_config
 from perception.object_detection_3d.voxel_object_detection_3d import torchplus
 
 

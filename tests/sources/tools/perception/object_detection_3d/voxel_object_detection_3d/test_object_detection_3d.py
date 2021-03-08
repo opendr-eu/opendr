@@ -20,10 +20,10 @@ from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detec
     VoxelObjectDetection3DLearner
 )
 from perception.object_detection_3d.datasets.kitti import KittiDataset
-from perception.object_detection_3d.voxel_object_detection_3d.second.run import (
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.run import (
     example_convert_to_torch,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second.data.preprocess import (
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
     merge_second_batch,
 )
 
