@@ -530,7 +530,7 @@ def comput_kitti_output(
 ):
     annos = []
     for i, preds_dict in enumerate(predictions_dicts):
-        image_shape = batch_image_shape[i]
+        image_shape = batch_image_shape[i] if batch_image_shape is not None else None
         img_idx = preds_dict["image_idx"]
         if preds_dict["bbox"] is not None:
             box_2d_preds = preds_dict["bbox"].detach().cpu().numpy()
@@ -591,6 +591,59 @@ def comput_kitti_output(
     return annos
 
 
+def compute_lidar_kitti_output(
+    predictions_dicts,
+    center_limit_range,
+    class_names,
+    global_set,
+):
+    annos = []
+    for i, preds_dict in enumerate(predictions_dicts):
+        if preds_dict["box3d_lidar"] is not None:
+            scores = preds_dict["scores"].detach().cpu().numpy()
+            box_preds_lidar = preds_dict["box3d_lidar"].detach().cpu().numpy()
+            label_preds = preds_dict["label_preds"].detach().cpu().numpy()
+            anno = kitti.get_start_result_anno()
+            num_example = 0
+            for box_lidar, score, label in zip(
+                box_preds_lidar, scores, label_preds
+            ):
+                if center_limit_range is not None:
+                    limit_range = np.array(center_limit_range)
+                    if np.any(box_lidar[:3] < limit_range[:3]) or np.any(
+                            box_lidar[:3] > limit_range[3:]):
+                        continue
+                anno["name"].append(class_names[int(label)])
+                anno["truncated"].append(0.0)
+                anno["occluded"].append(0)
+                anno["alpha"].append(-np.arctan2(-box_lidar[1], box_lidar[0]) + box_lidar[6])
+                anno["bbox"].append(None)
+                anno["dimensions"].append(box_lidar[3:6])
+                anno["location"].append(box_lidar[:3])
+                anno["rotation_y"].append(box_lidar[6])
+                if global_set is not None:
+                    for i in range(100000):
+                        if score in global_set:
+                            score -= 1 / 100000
+                        else:
+                            global_set.add(score)
+                            break
+                anno["score"].append(score)
+
+                num_example += 1
+            if num_example != 0:
+                anno = {n: np.stack(v) for n, v in anno.items()}
+                annos.append(anno)
+            else:
+                annos.append(kitti.empty_result_anno())
+        else:
+            annos.append(kitti.empty_result_anno())
+        num_example = annos[-1]["name"].shape[0]
+        annos[-1]["image_idx"] = np.array([None] * num_example)
+
+    return annos
+
+
 def predict_kitti_to_anno(
     net,
     example,
@@ -600,7 +653,7 @@ def predict_kitti_to_anno(
     use_coarse_to_fine=True,
     global_set=None,
 ):
-    batch_image_shape = example["image_shape"]
+    batch_image_shape = example["image_shape"] if "image_shape" in example else None
     # batch_imgidx = example["image_idx"]
 
     if use_coarse_to_fine:
