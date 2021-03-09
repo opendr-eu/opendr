@@ -43,7 +43,7 @@ def create_prep_func(
     training,
     voxel_generator,
     target_assigner=None,
-    infer=False,
+    use_sampler=True,
 ):
 
     generate_bev = model_config.use_bev
@@ -52,11 +52,11 @@ def create_prep_func(
     cfg = input_reader_config
     db_sampler_cfg = input_reader_config.database_sampler
     db_sampler = None
-    if (not infer) and len(db_sampler_cfg.sample_groups) > 0:  # enable sample
+    if use_sampler and len(db_sampler_cfg.sample_groups) > 0:  # enable sample
         db_sampler = dbsampler_builder.build(db_sampler_cfg)
     u_db_sampler_cfg = input_reader_config.unlabeled_database_sampler
     u_db_sampler = None
-    if (not infer) and len(u_db_sampler_cfg.sample_groups) > 0:  # enable sample
+    if use_sampler and len(u_db_sampler_cfg.sample_groups) > 0:  # enable sample
         u_db_sampler = dbsampler_builder.build(u_db_sampler_cfg)
 
     num_point_features = model_config.num_point_features

@@ -60,6 +60,41 @@ class DatasetIterator(Dataset):
         pass
 
 
+class MappedDatasetIterator(DatasetIterator):
+    """
+    MappedDatasetIterator allows to transform elements of the original DatasetIterator
+
+    This class provides the following abstract methods:
+    - __getitem__(i), a getter that allows for retrieving the i-th sample of the dataset, along with its annotation
+    - __len__(), which allows for getting the size of the dataset
+    """
+    def __init__(self, original, map_function):
+        super().__init__()
+        self.map_function = map_function
+        self.original = original
+
+    def __getitem__(self, idx):
+        """
+        This method is used for loading the idx-th sample of a dataset along with its annotation.
+
+        :param idx: the index of the sample to load
+        :return: the idx-th sample and its annotation
+        :rtype: Tuple of (Data, Target)
+        """
+
+        return self.map_function(self.original[idx])
+
+    def __len__(self):
+        """
+        This method returns the size of the dataset.
+
+        :return: the size of the dataset
+        :rtype: int
+        """
+
+        return len(self.original)
+
+
 class ExternalDataset(Dataset):
     """
     ExternalDataset provides a way for handling well-known external dataset formats
