@@ -15,13 +15,13 @@
 import pathlib
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
+from engine.data import PointCloud
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.load import (
     load as second_load,
     create_model as second_create_model,
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.run import (
-    train,
-    evaluate,
+    compute_lidar_kitti_output, evaluate, example_convert_to_torch, train
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.builder import (
     input_reader_builder, )
@@ -29,6 +29,12 @@ from perception.object_detection_3d.voxel_object_detection_3d.logger import (
     Logger, )
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.tanet import set_tanet_config
 import torchplus
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import _prep_v9_infer
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder.dataset_builder import create_prep_func
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
+    merge_second_batch,
+)
+from engine.target import BoundingBox3DList
 
 
 class VoxelObjectDetection3DLearner(Learner):
@@ -71,6 +77,7 @@ class VoxelObjectDetection3DLearner(Learner):
         self.model_dir = None
         self.eval_checkpoint_dir = None
         self.result_path = None
+        self.infer_point_cloud_mapper = None
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -262,14 +269,61 @@ class VoxelObjectDetection3DLearner(Learner):
 
         return result
 
-    def infer(self, batch):
+    def infer(self, point_clouds):
 
         if self.model is None:
             raise ValueError("No model loaded or created")
 
-        self.model.eval()
+        if self.infer_point_cloud_mapper is None:
+            prep_func = create_prep_func(
+                self.input_config,
+                self.model_config,
+                False,
+                self.voxel_generator,
+                self.target_assigner,
+                infer=True,
+            )
 
-        result = self.model(batch)
+            def infer_point_cloud_mapper(x):
+                return _prep_v9_infer(x, prep_func)
+
+            self.infer_point_cloud_mapper = infer_point_cloud_mapper
+            self.model.eval()
+
+        input_data = None
+
+        if isinstance(point_clouds, PointCloud):
+            input_data = merge_second_batch(
+                [self.infer_point_cloud_mapper(point_clouds.data)]
+            )
+        elif isinstance(point_clouds, list):
+            input_data = merge_second_batch(
+                [self.infer_point_cloud_mapper(x.data) for x in point_clouds]
+            )
+        else:
+            return ValueError(
+                "point_clouds should be a PointCloud or a list of PointCloud"
+            )
+
+        output = self.model(example_convert_to_torch(
+            input_data,
+            self.float_dtype,
+            device=self.device,
+        ))
+
+        if (
+            self.model_config.rpn.module_class_name == "PSA" or
+            self.model_config.rpn.module_class_name == "RefineDet"
+        ):
+            output = output[-1]
+
+        annotations = compute_lidar_kitti_output(
+            output, self.center_limit_range, self.class_names, None)
+
+        result = [BoundingBox3DList.from_kitti(anno) for anno in annotations]
+
+        if isinstance(point_clouds, PointCloud):
+            return result[0]
 
         return result
 

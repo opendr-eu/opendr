@@ -37,45 +37,33 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.bu
 from functools import partial
 
 
-def build(
-    input_reader_config, model_config, training, voxel_generator, target_assigner=None
+def create_prep_func(
+    input_reader_config,
+    model_config,
+    training,
+    voxel_generator,
+    target_assigner=None,
+    infer=False,
 ):
-    """Builds a tensor dictionary based on the InputReader config.
 
-    Args:
-        input_reader_config: A input_reader_pb2.InputReader object.
-
-    Returns:
-        A tensor dict based on the input_reader_config.
-
-    Raises:
-        ValueError: On invalid input reader proto.
-        ValueError: If no input paths are specified.
-    """
-    if not isinstance(input_reader_config, input_reader_pb2.InputReader):
-        raise ValueError(
-            "input_reader_config not of type " "input_reader_pb2.InputReader."
-        )
     generate_bev = model_config.use_bev
     without_reflectivity = model_config.without_reflectivity
-    num_point_features = model_config.num_point_features
-    out_size_factor = (
-        model_config.rpn.layer_strides[0] // model_config.rpn.upsample_strides[0]
-    )
 
     cfg = input_reader_config
     db_sampler_cfg = input_reader_config.database_sampler
     db_sampler = None
-    if len(db_sampler_cfg.sample_groups) > 0:  # enable sample
+    if (not infer) and len(db_sampler_cfg.sample_groups) > 0:  # enable sample
         db_sampler = dbsampler_builder.build(db_sampler_cfg)
     u_db_sampler_cfg = input_reader_config.unlabeled_database_sampler
     u_db_sampler = None
-    if len(u_db_sampler_cfg.sample_groups) > 0:  # enable sample
+    if (not infer) and len(u_db_sampler_cfg.sample_groups) > 0:  # enable sample
         u_db_sampler = dbsampler_builder.build(u_db_sampler_cfg)
-    grid_size = voxel_generator.grid_size
-    # [352, 400]
-    feature_map_size = grid_size[:2] // out_size_factor
-    feature_map_size = [*feature_map_size, 1][::-1]
+
+    num_point_features = model_config.num_point_features
+    out_size_factor = (
+        model_config.rpn.layer_strides[0]
+        // model_config.rpn.upsample_strides[0]
+    )
 
     prep_func = partial(
         prep_pointcloud,
@@ -94,7 +82,9 @@ def build(
         global_rotation_noise=list(cfg.global_rotation_uniform_noise),
         global_scaling_noise=list(cfg.global_scaling_uniform_noise),
         global_loc_noise_std=(0.2, 0.2, 0.2),
-        global_random_rot_range=list(cfg.global_random_rotation_range_per_object),
+        global_random_rot_range=list(
+            cfg.global_random_rotation_range_per_object
+        ),
         db_sampler=db_sampler,
         unlabeled_db_sampler=u_db_sampler,
         generate_bev=generate_bev,
@@ -108,6 +98,54 @@ def build(
         use_group_id=cfg.use_group_id,
         out_size_factor=out_size_factor,
     )
+
+    return prep_func
+
+
+def build(
+    input_reader_config,
+    model_config,
+    training,
+    voxel_generator,
+    target_assigner=None,
+):
+    """Builds a tensor dictionary based on the InputReader config.
+
+    Args:
+        input_reader_config: A input_reader_pb2.InputReader object.
+
+    Returns:
+        A tensor dict based on the input_reader_config.
+
+    Raises:
+        ValueError: On invalid input reader proto.
+        ValueError: If no input paths are specified.
+    """
+    if not isinstance(input_reader_config, input_reader_pb2.InputReader):
+        raise ValueError(
+            "input_reader_config not of type " "input_reader_pb2.InputReader."
+        )
+    num_point_features = model_config.num_point_features
+    out_size_factor = (
+        model_config.rpn.layer_strides[0]
+        // model_config.rpn.upsample_strides[0]
+    )
+
+    cfg = input_reader_config
+
+    grid_size = voxel_generator.grid_size
+    # [352, 400]
+    feature_map_size = grid_size[:2] // out_size_factor
+    feature_map_size = [*feature_map_size, 1][::-1]
+
+    prep_func = create_prep_func(
+        input_reader_config,
+        model_config,
+        training,
+        voxel_generator,
+        target_assigner,
+    )
+
     dataset = KittiDataset(
         info_path=cfg.kitti_info_path,
         root_path=cfg.kitti_root_path,
