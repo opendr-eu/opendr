@@ -130,7 +130,7 @@ class BoundingBox3D(Target):
         result["truncated"] = np.array([self.data["truncated"]])
         result["occluded"] = np.array([self.data["occluded"]])
         result["alpha"] = np.array([self.data["alpha"]])
-        result["bbox2d"] = np.array([self.data["bbox2d"]])
+        result["bbox"] = np.array([self.data["bbox2d"]])
         result["dimensions"] = np.array([self.data["dimensions"]])
         result["location"] = np.array([self.data["location"]])
         result["rotation_y"] = np.array([self.data["rotation_y"]])
@@ -145,7 +145,7 @@ class BoundingBox3D(Target):
 class BoundingBox3DList(Target):
     """
     This target is used for 3D Object Detection. It contains a list of BoundingBox3D targets
-    A bounding box is described by its location (x, y, z), dimensions (w, h, d) and rotation (along vertical y axis)
+    A bounding box is described by its location (x, y, z), dimensions (l, h, w) and rotation (along vertical (y) axis)
     Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
     truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
     observation angle of an object (alpha).
@@ -214,15 +214,15 @@ class BoundingBox3DList(Target):
                 result["rotation_y"].append(box.data["rotation_y"])
                 result["score"].append(box.confidence)
 
-            result["name"] = np.array([result["name"]])
-            result["truncated"] = np.array([result["truncated"]])
-            result["occluded"] = np.array([result["occluded"]])
-            result["alpha"] = np.array([result["alpha"]])
-            result["bbox"] = np.array([result["bbox"]])
-            result["dimensions"] = np.array([result["dimensions"]])
-            result["location"] = np.array([result["location"]])
-            result["rotation_y"] = np.array([result["rotation_y"]])
-            result["score"] = np.array([result["score"]])
+            result["name"] = np.array(result["name"])
+            result["truncated"] = np.array(result["truncated"])
+            result["occluded"] = np.array(result["occluded"])
+            result["alpha"] = np.array(result["alpha"])
+            result["bbox"] = np.array(result["bbox"])
+            result["dimensions"] = np.array(result["dimensions"])
+            result["location"] = np.array(result["location"])
+            result["rotation_y"] = np.array(result["rotation_y"])
+            result["score"] = np.array(result["score"])
 
         return result
 

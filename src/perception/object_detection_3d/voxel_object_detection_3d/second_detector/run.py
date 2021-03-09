@@ -70,10 +70,17 @@ def train(
     display_step=50,
     log=print,
     auto_save=False,
+    image_shape=None
 ):
     ######################
     # PREPARE INPUT
     ######################
+
+    take_gt_annos_from_example = False
+
+    if gt_annos is None:
+        take_gt_annos_from_example = True
+        gt_annos = []
 
     def _worker_init_fn(worker_id):
         time_seed = np.array(time.time(), dtype=np.int32)
@@ -222,7 +229,7 @@ def train(
                     metrics["num_anchors"] = int(num_anchors)
                     metrics["lr"] = float(
                         mixed_optimizer.param_groups[0]["lr"])
-                    metrics["image_idx"] = example["image_idx"][0]
+                    metrics["image_idx"] = example["image_idx"][0] if "image_idx" in example else 0
                     # flatted_metrics = flat_nested_json_dict(metrics)
                     # flatted_summarys = flat_nested_json_dict(metrics, "/")
                     # for k, v in flatted_summarys.items():
@@ -279,6 +286,10 @@ def train(
                     len(input_dataset_iterator) // eval_input_cfg.batch_size +
                     1)
                 for example in iter(eval_dataloader):
+
+                    if take_gt_annos_from_example:
+                        gt_annos += list(example["annos"])
+
                     example = example_convert_to_torch(example, float_dtype, device=device)
                     # if pickle_result:
                     coarse, refine = predict_kitti_to_anno(
@@ -288,6 +299,7 @@ def train(
                         center_limit_range,
                         model_cfg.lidar_input,
                         use_coarse_to_fine=True,
+                        image_shape=image_shape,
                     )
                     dt_annos_coarse += coarse
                     dt_annos_refine += refine
@@ -310,6 +322,10 @@ def train(
                     len(input_dataset_iterator) // eval_input_cfg.batch_size +
                     1)
                 for example in iter(eval_dataloader):
+
+                    if take_gt_annos_from_example:
+                        gt_annos += list(example["annos"])
+
                     example = example_convert_to_torch(example, float_dtype, device=device)
                     # if pickle_result:
                     dt_annos += predict_kitti_to_anno(
@@ -319,6 +335,7 @@ def train(
                         center_limit_range,
                         model_cfg.lidar_input,
                         use_coarse_to_fine=False,
+                        image_shape=image_shape,
                     )
                     # else:
                     #     _predict_kitti_to_file(
@@ -395,7 +412,7 @@ def train(
             log(Logger.LOG_WHEN_NORMAL, result)
 
             net.train()
-    except Exception as e:
+    except ValueError as e:
 
         if auto_save:
             torchplus.train.save_models(model_dir, [net, mixed_optimizer],
@@ -421,7 +438,14 @@ def evaluate(
     device,
     predict_test=False,
     log=print,
+    image_shape=None,
 ):
+
+    take_gt_annos_from_example = False
+
+    if gt_annos is None:
+        take_gt_annos_from_example = True
+        gt_annos = []
 
     eval_dataloader = torch.utils.data.DataLoader(
         eval_dataset_iterator,
@@ -443,6 +467,10 @@ def evaluate(
         bar = ProgressBar()
         bar.start(len(eval_dataloader) // eval_input_cfg.batch_size + 1)
         for example in iter(eval_dataloader):
+
+            if take_gt_annos_from_example:
+                gt_annos += list(example["annos"])
+
             example = example_convert_to_torch(example, float_dtype, device=device)
             coarse, refine = predict_kitti_to_anno(
                 net,
@@ -452,6 +480,7 @@ def evaluate(
                 model_cfg.lidar_input,
                 use_coarse_to_fine=True,
                 global_set=None,
+                image_shape=image_shape,
             )
             dt_annos_coarse += coarse
             dt_annos_refine += refine
@@ -463,6 +492,10 @@ def evaluate(
         bar = ProgressBar()
         bar.start(len(eval_dataloader) // eval_input_cfg.batch_size + 1)
         for example in iter(eval_dataloader):
+
+            if take_gt_annos_from_example:
+                gt_annos += list(example["annos"])
+
             example = example_convert_to_torch(example, float_dtype, device=device)
             dt_annos += predict_kitti_to_anno(
                 net,
@@ -472,6 +505,7 @@ def evaluate(
                 model_cfg.lidar_input,
                 use_coarse_to_fine=False,
                 global_set=None,
+                image_shape=image_shape,
             )
             bar.print_bar(
                 log=lambda *x, **y: log(Logger.LOG_WHEN_NORMAL, *x, **y))
@@ -531,7 +565,7 @@ def comput_kitti_output(
     annos = []
     for i, preds_dict in enumerate(predictions_dicts):
         image_shape = batch_image_shape[i] if batch_image_shape is not None else None
-        img_idx = preds_dict["image_idx"]
+        img_idx = preds_dict["image_idx"] if preds_dict["image_idx"] is not None else 0
         if preds_dict["bbox"] is not None:
             box_2d_preds = preds_dict["bbox"].detach().cpu().numpy()
             box_preds = preds_dict["box3d_camera"].detach().cpu().numpy()
@@ -652,9 +686,11 @@ def predict_kitti_to_anno(
     lidar_input=False,
     use_coarse_to_fine=True,
     global_set=None,
+    image_shape=None
 ):
-    batch_image_shape = example["image_shape"] if "image_shape" in example else None
-    # batch_imgidx = example["image_idx"]
+    batch_image_shape = example["image_shape"] if "image_shape" in example else (
+        [image_shape] * len(example["labels"])
+    )
 
     if use_coarse_to_fine:
         predictions_dicts_coarse, predictions_dicts_refine = net(example)

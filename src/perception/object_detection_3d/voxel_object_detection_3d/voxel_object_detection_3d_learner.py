@@ -14,7 +14,7 @@
 
 import pathlib
 from engine.learners import Learner
-from engine.datasets import ExternalDataset, DatasetIterator
+from engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetIterator
 from engine.data import PointCloud
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.load import (
     load as second_load,
@@ -29,7 +29,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.logger import (
     Logger, )
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.tanet import set_tanet_config
 import torchplus
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import _prep_v9_infer
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import _prep_v9, _prep_v9_infer
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder.dataset_builder import create_prep_func
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
     merge_second_batch,
@@ -166,6 +166,7 @@ class VoxelObjectDetection3DLearner(Learner):
         verbose=False,
         model_dir=None,
         auto_save=False,
+        image_shape=(1224, 370),
     ):
 
         logger = Logger(silent, verbose, logging_path)
@@ -217,6 +218,7 @@ class VoxelObjectDetection3DLearner(Learner):
             auto_save=auto_save,
             display_step=display_step,
             device=self.device,
+            image_shape=image_shape,
         )
 
         logger.close()
@@ -229,6 +231,7 @@ class VoxelObjectDetection3DLearner(Learner):
         logging_path=None,
         silent=False,
         verbose=False,
+        image_shape=(1224, 370),
     ):
 
         logger = Logger(silent, verbose, logging_path)
@@ -263,6 +266,7 @@ class VoxelObjectDetection3DLearner(Learner):
             predict_test=predict_test,
             log=logger.log,
             device=self.device,
+            image_shape=image_shape,
         )
 
         logger.close()
@@ -281,7 +285,7 @@ class VoxelObjectDetection3DLearner(Learner):
                 False,
                 self.voxel_generator,
                 self.target_assigner,
-                infer=True,
+                use_sampler=False,
             )
 
             def infer_point_cloud_mapper(x):
@@ -343,6 +347,30 @@ class VoxelObjectDetection3DLearner(Learner):
         require_dataset=True,
     ):
 
+        def create_map_point_cloud_dataset_func(include_annotation_in_example):
+
+            prep_func = create_prep_func(
+                input_cfg, model_cfg, True,
+                voxel_generator, target_assigner,
+                use_sampler=False,
+            )
+
+            def map(data):
+                point_cloud_with_calibration, target = data
+                point_cloud = point_cloud_with_calibration.data
+                calib = point_cloud_with_calibration.calib
+
+                annotation = target.kitti()
+
+                example = _prep_v9(point_cloud, calib, prep_func, annotation)
+
+                if include_annotation_in_example:
+                    example["annos"] = annotation
+
+                return example
+
+            return map
+
         input_dataset_iterator = None
         eval_dataset_iterator = None
 
@@ -372,7 +400,10 @@ class VoxelObjectDetection3DLearner(Learner):
                 target_assigner=target_assigner,
             )
         elif isinstance(dataset, DatasetIterator):
-            input_dataset_iterator = dataset
+            input_dataset_iterator = MappedDatasetIterator(
+                dataset,
+                create_map_point_cloud_dataset_func(False),
+            )
         else:
             if require_dataset or dataset is not None:
                 raise ValueError(
@@ -413,7 +444,10 @@ class VoxelObjectDetection3DLearner(Learner):
                 ]
 
         elif isinstance(val_dataset, DatasetIterator):
-            eval_dataset_iterator = dataset
+            eval_dataset_iterator = MappedDatasetIterator(
+                val_dataset,
+                create_map_point_cloud_dataset_func(True),
+            )
         elif val_dataset is None:
             if isinstance(dataset, ExternalDataset):
                 dataset_path = dataset.path
