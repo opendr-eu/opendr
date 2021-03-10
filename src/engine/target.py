@@ -138,8 +138,11 @@ class BoundingBox3D(Target):
 
         return result
 
+    def __repr__(self):
+        return "BoundingBox3D " + str(self)
+
     def __str__(self):
-        return str(self.data)
+        return str(self.kitti())
 
 
 class BoundingBox3DList(Target):
@@ -225,6 +228,12 @@ class BoundingBox3DList(Target):
             result["score"] = np.array(result["score"])
 
         return result
+
+    def __len__(self):
+        return len(self.data)
+
+    def __repr__(self):
+        return "BoundingBox3DList " + str(self)
 
     def __str__(self):
         return str(self.kitti())

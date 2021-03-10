@@ -20,8 +20,12 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.py
     PillarFeatureNet,
     PointPillarsScatter,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.tanet import PillarFeature_TANet, PSA
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.loss_utils import create_refine_loss
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.tanet import (
+    PillarFeature_TANet, PSA
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.loss_utils import (
+    create_refine_loss
+)
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.utils import get_paddings_indicator
 
 USING_SCN = False  # default: not use SparseConv
@@ -743,7 +747,6 @@ class VoxelNet(nn.Module):
                         preds_dict["Refine_loc_preds"] = torch.tensor(preds[3], device=self.device)
                         preds_dict["Refine_cls_preds"] = torch.tensor(preds[4], device=self.device)
                         preds_dict["Refine_dir_preds"] = torch.tensor(preds[5], device=self.device)
-
 
         # preds_dict["voxel_features"] = voxel_features
         # preds_dict["spatial_features"] = spatial_features

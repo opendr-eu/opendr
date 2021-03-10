@@ -13,7 +13,6 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.ut
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.progress_bar import (
     ProgressBar, )
 from perception.object_detection_3d.voxel_object_detection_3d.logger import Logger
-import torchplus
 
 
 def example_convert_to_torch(example,

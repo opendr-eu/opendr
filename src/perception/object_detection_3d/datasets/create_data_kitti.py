@@ -26,14 +26,6 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.ut
     list_bar as prog_bar,
 )
 
-"""
-Note: tqdm has problem in my system(win10), so use my progress bar
-try:
-    from tqdm import tqdm as prog_bar
-except ImportError:
-    from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.progress_bar import progress_bar_iter as prog_bar
-"""
-
 
 def _read_imageset_file(path):
     with open(path, "r") as f:

@@ -19,16 +19,11 @@ import torch
 from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner
 )
-from perception.object_detection_3d.datasets.kitti import KittiDataset
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.run import (
-    example_convert_to_torch,
-)
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
-    merge_second_batch,
-)
+from perception.object_detection_3d.datasets.point_clouds import PointCloudsDatasetIterator
+from perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
 
 
-DEVICE = "cpu"
+DEVICE = "cuda:0"
 
 
 def rmfile(path):
@@ -48,7 +43,7 @@ def rmdir(_dir):
 class TestVoxelObjectDetection3DLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.temp_dir = os.path.join(".", "tests", "sources", "tools",
+        cls.temp_dir = os.path.join("tests", "sources", "tools",
                                     "perception", "object_detection_3d",
                                     "voxel_object_detection_3d",
                                     "voxel_object_detection_3d_temp")
@@ -101,9 +96,10 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
     def tearDownClass(cls):
         # Clean up downloaded files
 
-        for name in cls.all_configs.keys():
-            rmdir(os.path.join(cls.temp_dir, "test_fit_" + name))
+        # for name in cls.all_configs.keys():
+        #     rmdir(os.path.join(cls.temp_dir, "test_fit_" + name))
         rmdir(os.path.join(cls.temp_dir))
+        pass
 
     def test_fit(self):
 
@@ -111,12 +107,48 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             model_path = os.path.join(self.temp_dir, "test_fit_" + name)
             dataset = KittiDataset(self.dataset_path, self.subsets_path)
 
-            learner = VoxelObjectDetection3DLearner(model_config_path=config, device=DEVICE)
+            learner = VoxelObjectDetection3DLearner(
+                model_config_path=config, device=DEVICE,
+                checkpoint_after_iter=90,
+            )
 
             starting_param = list(learner.model.parameters())[0].clone()
-            learner.fit(dataset,
-                        auto_save=True,
-                        model_dir=model_path)
+            learner.fit(
+                dataset,
+                model_dir=model_path
+            )
+            new_param = list(learner.model.parameters())[0].clone()
+            self.assertFalse(torch.equal(starting_param, new_param))
+
+        for name, config in self.car_configs.items():
+            test_model(name, config)
+
+    def test_fit_iterator(self):
+        def test_model(name, config):
+            model_path = os.path.join(self.temp_dir, "test_fit_iterator_" + name)
+            dataset = LabeledPointCloudsDatasetIterator(
+                self.dataset_path + "/training/velodyne_reduced",
+                self.dataset_path + "/training/label_2",
+                self.dataset_path + "/training/calib",
+            )
+
+            val_dataset = LabeledPointCloudsDatasetIterator(
+                self.dataset_path + "/training/velodyne_reduced",
+                self.dataset_path + "/training/label_2",
+                self.dataset_path + "/training/calib",
+            )
+
+            learner = VoxelObjectDetection3DLearner(
+                model_config_path=config, device=DEVICE,
+                checkpoint_after_iter=90,
+            )
+
+            starting_param = list(learner.model.parameters())[0].clone()
+            learner.fit(
+                dataset,
+                val_dataset=val_dataset,
+                model_dir=model_path
+            )
             new_param = list(learner.model.parameters())[0].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
 
@@ -125,11 +157,11 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
     def test_eval(self):
         def test_model(name, config):
-            model_path = os.path.join(self.temp_dir, "test_eval_" + name)
+            # model_path = os.path.join(self.temp_dir, "test_eval_" + name)
             dataset = KittiDataset(self.dataset_path, self.subsets_path)
 
             learner = VoxelObjectDetection3DLearner(model_config_path=config, device=DEVICE)
-            learner.load(model_path)
+            # learner.load(model_path)
             mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset)
 
             # self.assertTrue(mAPbbox[0][0][0] > 80 and mAPbbox[0][0][0] < 95)
@@ -140,77 +172,83 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
     def test_infer(self):
         def test_model(name, config):
-            model_path = os.path.join(self.temp_dir, "test_eval_" + name)
-            dataset = KittiDataset(self.dataset_path, self.subsets_path)
 
-            learner = VoxelObjectDetection3DLearner(model_config_path=config, device=DEVICE)
-            learner.load(model_path)
+            dataset = PointCloudsDatasetIterator(self.dataset_path + "/testing/velodyne_reduced")
 
-            (_, eval_dataset_iterator, ground_truth_annotations,) = learner._prepare_datasets(
-                None,
-                dataset,
-                learner.input_config,
-                learner.evaluation_input_config,
-                learner.model_config,
-                learner.voxel_generator,
-                learner.target_assigner,
-                None,
-                require_dataset=False,
-            )
-
-            eval_dataloader = torch.utils.data.DataLoader(
-                eval_dataset_iterator,
-                batch_size=learner.evaluation_input_config.batch_size,
-                shuffle=False,
-                num_workers=learner.evaluation_input_config.num_workers,
-                pin_memory=False,
-                collate_fn=merge_second_batch,
+            learner = VoxelObjectDetection3DLearner(
+                model_config_path=config, device=DEVICE
             )
 
             result = learner.infer(
-                example_convert_to_torch(next(iter(eval_dataloader)), learner.float_dtype, device=learner.device)
+                dataset[0]
             )
 
-            if len(result) == 2:
-                self.assertTrue(len(result[1][0]["bbox"]) > 0)
-            else:
-                self.assertTrue(len(result[0]["bbox"]) > 0)
+            result = learner.infer(
+                dataset[0]
+            )
+
+            self.assertTrue(len(result) > 0)
+
+            result = learner.infer(
+                [dataset[0], dataset[1], dataset[2], dataset[3]]
+            )
+            self.assertTrue(len(result) == 4)
+            self.assertTrue(len(result[0]) > 0)
 
         for name, config in self.car_configs.items():
             test_model(name, config)
 
-    # def test_save_load(self):
-    #     self.pose_estimator.model = None
-    #     self.pose_estimator.ort_session = None
-    #     self.pose_estimator.init_model()
-    #     self.pose_estimator.save(os.path.join(self.temp_dir, "testModel"))
-    #     self.pose_estimator.model = None
-    #     self.pose_estimator.load(os.path.join(self.temp_dir, "testModel"))
-    #     self.assertIsNotNone(self.pose_estimator.model, "model is None after loading pth model.")
-    #     # Cleanup
-    #     rmdir(os.path.join(self.temp_dir, "testModel"))
+    def test_save(self):
+        def test_model(name, config):
+            model_path = os.path.join(self.temp_dir, "test_save_" + name)
+            save_path = os.path.join(model_path, "save")
 
-    # def test_save_load_onnx(self):
-    #     self.pose_estimator.model = None
-    #     self.pose_estimator.ort_session = None
-    #     self.pose_estimator.init_model()
-    #     self.pose_estimator.optimize()
-    #     self.pose_estimator.save(os.path.join(self.temp_dir, "testModel"))
-    #     self.pose_estimator.model = None
-    #     self.pose_estimator.load(os.path.join(self.temp_dir, "testModel"))
-    #     self.assertIsNotNone(self.pose_estimator.ort_session, "ort_session is None after loading onnx model.")
-    #     # Cleanup
-    #     rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
-    #     rmdir(os.path.join(self.temp_dir, "testModel"))
+            learner = VoxelObjectDetection3DLearner(
+                model_config_path=config, device=DEVICE
+            )
+            learner.save(save_path, True)
+            starting_param_1 = list(learner.model.parameters())[0].clone()
 
-    # def test_optimize(self):
-    #     self.pose_estimator.model = None
-    #     self.pose_estimator.ort_session = None
-    #     self.pose_estimator.load(os.path.join(self.temp_dir, "trainedModel"))
-    #     self.pose_estimator.optimize()
-    #     self.assertIsNotNone(self.pose_estimator.ort_session)
-    #     # Cleanup
-    #     rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
+            learner2 = VoxelObjectDetection3DLearner(
+                model_config_path=config, device=DEVICE
+            )
+            starting_param_2 = list(learner2.model.parameters())[0].clone()
+            learner2.load(save_path)
+
+            new_param = list(learner2.model.parameters())[0].clone()
+            self.assertFalse(torch.equal(starting_param_1, starting_param_2))
+            self.assertTrue(torch.equal(starting_param_1, new_param))
+
+        for name, config in self.car_configs.items():
+            test_model(name, config)
+
+    def test_optimize(self):
+        def test_model(name, config):
+            model_path = os.path.join(self.temp_dir, "test_optimize_" + name)
+
+            dataset = PointCloudsDatasetIterator(self.dataset_path + "/testing/velodyne_reduced")
+
+            learner = VoxelObjectDetection3DLearner(
+                model_config_path=config, device=DEVICE
+            )
+            learner.optimize()
+
+            result = learner.infer(
+                dataset[0]
+            )
+            self.assertTrue(len(result) > 0)
+
+            learner.save(model_path)
+
+            learner2 = VoxelObjectDetection3DLearner(
+                model_config_path=config, device=DEVICE
+            )
+            learner2.load(model_path, True)
+
+            self.assertTrue(learner2.model.rpn_ort_session is not None)
+
+        for name, config in self.car_configs.items():
+            test_model(name, config)
 
 
 if __name__ == "__main__":
