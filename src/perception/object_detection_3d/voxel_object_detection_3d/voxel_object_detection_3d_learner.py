@@ -195,19 +195,24 @@ class VoxelObjectDetection3DLearner(Learner):
         with open(os.path.join(path, model_name + ".json")) as metadata_file:
             metadata = json.load(metadata_file)
 
-        self.__load_from_pth(self.model.voxel_feature_extractor, os.path.join(path, model_name + '_vfe.pth'))
-        self.__load_from_pth(self.model.middle_feature_extractor, os.path.join(path, model_name + '_mfe.pth'))
-        if verbose:
-            print("Loaded Pytorch VFE and MFE sub-model.")
-
-        if not metadata["optimized"]:
-            self.__load_from_pth(self.model.rpn, os.path.join(path, model_name + '_rpn.pth'))
+        if len(metadata["model_paths"]) == 1:
+            self.__load_from_pth(self.model, metadata["model_paths"][0], True)
             if verbose:
-                print("Loaded Pytorch RPN sub-model.")
+                print("Loaded Pytorch model.")
         else:
-            self.__load_rpn_from_onnx(os.path.join(path, model_name + '_rpn.onnx'))
+            self.__load_from_pth(self.model.voxel_feature_extractor, metadata["model_paths"][0])
+            self.__load_from_pth(self.model.middle_feature_extractor, metadata["model_paths"][1])
             if verbose:
-                print("Loaded ONNX RPN sub-model.")
+                print("Loaded Pytorch VFE and MFE sub-model.")
+
+            if not metadata["optimized"]:
+                self.__load_from_pth(self.model.rpn, metadata["model_paths"][2])
+                if verbose:
+                    print("Loaded Pytorch RPN sub-model.")
+            else:
+                self.__load_rpn_from_onnx(metadata["model_paths"][2])
+                if verbose:
+                    print("Loaded ONNX RPN sub-model.")
 
     def reset(self):
         pass
@@ -475,9 +480,9 @@ class VoxelObjectDetection3DLearner(Learner):
         # # Print a human readable representation of the graph
         # onnx.helper.printable_graph(self.model.graph)
 
-    def __load_from_pth(self, model, path):
+    def __load_from_pth(self, model, path, use_original_dict=False):
         all_params = torch.load(path, map_location=self.device)
-        model.load_state_dict(all_params["state_dict"])
+        model.load_state_dict(all_params if use_original_dict else all_params["state_dict"])
 
     def __prepare_datasets(
         self,
