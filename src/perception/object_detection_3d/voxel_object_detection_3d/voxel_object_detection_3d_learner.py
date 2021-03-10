@@ -15,6 +15,7 @@
 import os
 import json
 import torch
+import ntpath
 import shutil
 import pathlib
 import onnxruntime as ort
@@ -23,7 +24,6 @@ from engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetItera
 from engine.data import PointCloud
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.load import (
     create_model as second_create_model,
-    load as second_load,
     load_from_checkpoint,
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.run import (
@@ -93,12 +93,13 @@ class VoxelObjectDetection3DLearner(Learner):
         self.model_dir = None
         self.eval_checkpoint_dir = None
         self.infer_point_cloud_mapper = None
-        self.rpn_ort_session = None  # ONNX runtime inference session
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
 
         self.__create_model()
+
+        self.model.rpn_ort_session = None  # ONNX runtime inference session
 
     def save(self, path, verbose=False):
         """
@@ -121,7 +122,7 @@ class VoxelObjectDetection3DLearner(Learner):
         folder_name_no_ext = folder_name.split(sep='.')[0]
 
         # Extract path without folder name, by removing folder name from original path
-        path_no_folder_name = path.replace(folder_name, '')
+        path_no_folder_name = ''.join(path.rsplit(folder_name, 1))
         # If tail is '', then path was a/b/c/, which leaves a trailing double '/'
         if tail == '':
             path_no_folder_name = path_no_folder_name[0:-1]  # Remove one '/'
@@ -131,9 +132,9 @@ class VoxelObjectDetection3DLearner(Learner):
         os.makedirs(new_path, exist_ok=True)
 
         model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
-                          "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
+                          "inference_params": {}, "optimized": None, "optimizer_info": {}}
 
-        if self.rpn_ort_session is None:
+        if self.model.rpn_ort_session is None:
             model_metadata["model_paths"] = [
                 os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_vfe.pth"),
                 os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_rpn.pth")
@@ -146,7 +147,7 @@ class VoxelObjectDetection3DLearner(Learner):
             }, model_metadata["model_paths"][0])
             torch.save({
                 'state_dict': self.model.rpn.state_dict()
-            }, model_metadata["model_paths"][0])
+            }, model_metadata["model_paths"][1])
             if verbose:
                 print("Saved Pytorch VFE and RPN sub-models.")
         else:
@@ -175,55 +176,31 @@ class VoxelObjectDetection3DLearner(Learner):
         verbose=False,
         logging_path=None,
     ):
-        logger = Logger(silent, verbose, logging_path)
+        """
+        Loads the model from inside the path provided, based on the metadata .json file included.
+        :param path: path of the directory the model was saved
+        :type path: str
+        :param verbose: whether to print success message or not, defaults to 'False'
+        :type verbose: bool, optional
+        """
 
-        (
-            model,
-            input_config,
-            train_config,
-            evaluation_input_config,
-            model_config,
-            train_config,
-            voxel_generator,
-            target_assigner,
-            mixed_optimizer,
-            lr_scheduler,
-            model_dir,
-            float_dtype,
-            loss_scale,
-            result_path,
-            class_names,
-            center_limit_range,
-        ) = second_load(
-            path,
-            self.model_config_path,
-            device=self.device,
-            optimizer_name=self.optimizer,
-            optimizer_params=self.optimizer_params,
-            lr=self.lr,
-            lr_schedule_name=self.lr_schedule,
-            lr_schedule_params=self.lr_schedule_params,
-            log=lambda *x: logger.log(Logger.LOG_WHEN_VERBOSE, *x),
-        )
+        model_name, _, _ = self.__extract_trailing(path)  # Trailing folder name from the path provided
 
-        self.model = model
-        self.input_config = input_config
-        self.train_config = train_config
-        self.evaluation_input_config = evaluation_input_config
-        self.model_config = model_config
-        self.train_config = train_config
-        self.voxel_generator = voxel_generator
-        self.target_assigner = target_assigner
-        self.mixed_optimizer = mixed_optimizer
-        self.lr_scheduler = lr_scheduler
+        with open(os.path.join(path, model_name + ".json")) as metadata_file:
+            metadata = json.load(metadata_file)
 
-        self.model_dir = model_dir
-        self.float_dtype = float_dtype
-        self.loss_scale = loss_scale
-        self.class_names = class_names
-        self.center_limit_range = center_limit_range
+        self.__load_from_pth(self.model.voxel_feature_extractor, os.path.join(path, model_name + '_vfe.pth'))
+        if verbose:
+            print("Loaded Pytorch VFE sub-model.")
 
-        logger.close()
+        if not metadata["optimized"]:
+            self.__load_from_pth(self.model.rpn, os.path.join(path, model_name + '_rpn.pth'))
+            if verbose:
+                print("Loaded Pytorch RPN sub-model.")
+        else:
+            self.__load_rpn_from_onnx(os.path.join(path, model_name + '.onnx'))
+            if verbose:
+                print("Loaded ONNX RPN sub-model.")
 
     def reset(self):
         pass
@@ -427,14 +404,14 @@ class VoxelObjectDetection3DLearner(Learner):
         """
         if self.model is None:
             raise UserWarning("No model is loaded, cannot optimize. Load or train a model first.")
-        if self.rpn_ort_session is not None:
+        if self.model.rpn_ort_session is not None:
             raise UserWarning("Model is already optimized in ONNX.")
 
         input_shape = [
             1,
             self.model.middle_feature_extractor.nchannels,
+            self.model.middle_feature_extractor.ny,
             self.model.middle_feature_extractor.nx,
-            self.model.middle_feature_extractor.nchannels
         ]
 
         has_refine = self.model.rpn_class_name in ["PSA", "RefineDet"]
@@ -467,7 +444,7 @@ class VoxelObjectDetection3DLearner(Learner):
             output_names.append("Refine_dir_preds")
 
         torch.onnx.export(
-            self.model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
+            self.model.rpn, inp, output_name, verbose=verbose, enable_onnx_checker=True,
             do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names
         )
 
@@ -478,7 +455,7 @@ class VoxelObjectDetection3DLearner(Learner):
         :param path: path to ONNX model
         :type path: str
         """
-        self.rpn_ort_session = ort.InferenceSession(path)
+        self.model.rpn_ort_session = ort.InferenceSession(path)
 
         # The comments below are the alternative way to use the onnx model, it might be useful in the future
         # depending on how ONNX saving/loading will be implemented across the toolkit.
@@ -490,6 +467,10 @@ class VoxelObjectDetection3DLearner(Learner):
         #
         # # Print a human readable representation of the graph
         # onnx.helper.printable_graph(self.model.graph)
+
+    def __load_from_pth(self, model, path):
+        all_params = torch.load(path, map_location=self.device)
+        model.load_state_dict(all_params["state_dict"])
 
     def _prepare_datasets(
         self,
@@ -688,3 +669,17 @@ class VoxelObjectDetection3DLearner(Learner):
         self.loss_scale = loss_scale
         self.class_names = class_names
         self.center_limit_range = center_limit_range
+
+    @staticmethod
+    def __extract_trailing(path):
+        """
+        Extracts the trailing folder name or filename from a path provided in an OS-generic way, also handling
+        cases where the last trailing character is a separator. Returns the folder name and the split head and tail.
+        :param path: the path to extract the trailing filename or folder name from
+        :type path: str
+        :return: the folder name, the head and tail of the path
+        :rtype: tuple of three strings
+        """
+        head, tail = ntpath.split(path)
+        folder_name = tail or ntpath.basename(head)  # handle both a/b/c and a/b/c/
+        return folder_name, head, tail
