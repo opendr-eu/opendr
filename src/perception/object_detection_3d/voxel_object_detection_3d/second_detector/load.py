@@ -1,8 +1,6 @@
 import torch
 
-import pathlib
 from google.protobuf import text_format
-import shutil
 
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
     pipeline_pb2,

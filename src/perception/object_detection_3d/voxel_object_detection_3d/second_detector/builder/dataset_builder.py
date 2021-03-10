@@ -61,8 +61,8 @@ def create_prep_func(
 
     num_point_features = model_config.num_point_features
     out_size_factor = (
-        model_config.rpn.layer_strides[0]
-        // model_config.rpn.upsample_strides[0]
+        model_config.rpn.layer_strides[0] //
+        model_config.rpn.upsample_strides[0]
     )
 
     prep_func = partial(
@@ -127,8 +127,8 @@ def build(
         )
     num_point_features = model_config.num_point_features
     out_size_factor = (
-        model_config.rpn.layer_strides[0]
-        // model_config.rpn.upsample_strides[0]
+        model_config.rpn.layer_strides[0] //
+        model_config.rpn.upsample_strides[0]
     )
 
     cfg = input_reader_config

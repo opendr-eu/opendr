@@ -400,4 +400,4 @@ class PointCloudWithCalibration(PointCloud):
         :return: a human-friendly string-based representation of the data
         :rtype: str
         """
-        return "Points: " + str(self.data) + "\nCalib:" + str(self.calib) 
+        return "Points: " + str(self.data) + "\nCalib:" + str(self.calib)
