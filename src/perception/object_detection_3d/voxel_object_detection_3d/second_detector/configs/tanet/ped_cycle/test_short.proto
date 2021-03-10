@@ -155,21 +155,7 @@ train_input_reader: {
 }
 
 train_config: {
-  optimizer: {
-    adam_optimizer: {
-      learning_rate: {
-        exponential_decay_learning_rate: {
-          initial_learning_rate: 0.0002
-          decay_steps: 27840 # 1856 steps per epoch * 15 epochs
-          decay_factor: 0.8
-          staircase: true
-        }
-      }
-      weight_decay: 0.0001
-    }
-    use_moving_average: false
 
-  }
   inter_op_parallelism_threads: 4
   intra_op_parallelism_threads: 4
   steps: 100         # 296960 = 1856 steps per epoch * 160 epochs
