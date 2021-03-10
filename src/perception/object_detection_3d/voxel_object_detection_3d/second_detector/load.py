@@ -74,7 +74,7 @@ def create_model(
         mixed_optimizer = torchplus.train.MixedPrecisionWrapper(optimizer, loss_scale)
     else:
         mixed_optimizer = optimizer
-    lr_scheduler = lr_scheduler_builder.build_online(lr_schedule_name, lr_schedule_params, optimizer, gstep)
+    lr_scheduler = lr_scheduler_builder.build_online(lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep)
     if train_cfg.enable_mixed_precision:
         float_dtype = torch.float16
     else:
@@ -86,7 +86,6 @@ def create_model(
         train_cfg,
         eval_input_cfg,
         model_cfg,
-        train_cfg,
         voxel_generator,
         target_assigner,
         mixed_optimizer,
@@ -96,6 +95,15 @@ def create_model(
         class_names,
         center_limit_range,
     )
+
+
+def load_from_checkpoint(net, mixed_optimizer, path, lr_schedule_name, lr_schedule_params, device=None):
+    all_params = torch.load(path, map_location=device)
+    net.load_state_dict(all_params["net"])
+    mixed_optimizer.load_state_dict(all_params["optimizer"])
+    gstep = net.get_global_step() - 1
+    lr_scheduler = lr_scheduler_builder.build_online(lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep)
+    return lr_scheduler
 
 
 def load(
