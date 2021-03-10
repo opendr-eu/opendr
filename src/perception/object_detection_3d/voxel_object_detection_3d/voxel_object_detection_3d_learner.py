@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import json
+import torch
+import shutil
 import pathlib
+import onnxruntime as ort
 from engine.learners import Learner
 from engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetIterator
 from engine.data import PointCloud
@@ -28,7 +33,6 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.py
 from perception.object_detection_3d.voxel_object_detection_3d.logger import (
     Logger, )
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.tanet import set_tanet_config
-import torchplus
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import _prep_v9, _prep_v9_infer
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder.dataset_builder import create_prep_func
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
@@ -41,11 +45,11 @@ class VoxelObjectDetection3DLearner(Learner):
     def __init__(
         self,
         model_config_path,
-        lr=0.001,
+        lr=0.0002,
         iters=10,
         batch_size=64,
-        optimizer="sgd",
-        lr_schedule="",
+        optimizer="adam_optimizer",
+        lr_schedule="exponential_decay_learning_rate",
         backbone="tanet_16",
         network_head="",
         checkpoint_after_iter=0,
@@ -55,6 +59,14 @@ class VoxelObjectDetection3DLearner(Learner):
         threshold=0.0,
         scale=1.0,
         tanet_config_path=None,
+        optimizer_params={
+            "weight_decay": 0.0001,
+        },
+        lr_schedule_params={
+            "decay_steps": 27840,
+            "decay_factor": 0.8,
+            "staircase": True,
+        }
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelObjectDetection3DLearner, self).__init__(
@@ -74,30 +86,87 @@ class VoxelObjectDetection3DLearner(Learner):
         )
 
         self.model_config_path = model_config_path
+        self.optimizer_params = optimizer_params
+        self.lr_schedule_params = lr_schedule_params
+
         self.model_dir = None
         self.eval_checkpoint_dir = None
         self.result_path = None
         self.infer_point_cloud_mapper = None
+        self.rpn_ort_session = None  # ONNX runtime inference session
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
 
         self.__create_model()
 
-    def save(self, path, max_to_keep=100):
+    def save(self, path, verbose=False):
+        """
+        This method is used to save a trained model.
+        Provided with the path, absolute or relative, including a *folder* name, it creates a directory with the name
+        of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
+        If self.optimize was ran previously, it saves the optimized ONNX model in a similar fashion, by copying it
+        from the self.temp_path it was saved previously during conversion.
+        :param path: for the model to be saved, including the folder name
+        :type path: str
+        :param verbose: whether to print success message or not, defaults to 'False'
+        :type verbose: bool, optional
+        """
 
-        path = pathlib.Path(path)
-        path.mkdir(parents=True, exist_ok=True)
+        if self.model is None and self.ort_session is None:
+            raise UserWarning("No model is loaded, cannot save.")
 
-        torchplus.train.save_models(
-            path,
-            [self.model, self.mixed_optimizer],
-            self.model.get_global_step(),
-            max_to_keep=max_to_keep,
-        )
+        folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
+        # Also extract folder name without any extension if extension is erroneously provided
+        folder_name_no_ext = folder_name.split(sep='.')[0]
 
-        if self.model_dir is None:
-            self.model_dir = path
+        # Extract path without folder name, by removing folder name from original path
+        path_no_folder_name = path.replace(folder_name, '')
+        # If tail is '', then path was a/b/c/, which leaves a trailing double '/'
+        if tail == '':
+            path_no_folder_name = path_no_folder_name[0:-1]  # Remove one '/'
+
+        # Create model directory
+        new_path = path_no_folder_name + folder_name_no_ext
+        os.makedirs(new_path, exist_ok=True)
+
+        model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
+                          "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
+
+        if self.rpn_ort_session is None:
+            model_metadata["model_paths"] = [
+                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_vfe.pth"),
+                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_rpn.pth")
+            ]
+            model_metadata["optimized"] = False
+            model_metadata["format"] = "pth"
+
+            torch.save({
+                'state_dict': self.model.voxel_feature_extractor.state_dict()
+            }, model_metadata["model_paths"][0])
+            torch.save({
+                'state_dict': self.model.rpn.state_dict()
+            }, model_metadata["model_paths"][0])
+            if verbose:
+                print("Saved Pytorch VFE and RPN sub-models.")
+        else:
+            model_metadata["model_paths"] = [
+                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_vfe.pth"),
+                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_rpn.onnx")
+            ]
+            model_metadata["optimized"] = True
+            model_metadata["format"] = "onnx"
+
+            torch.save({
+                'state_dict': self.model.voxel_feature_extractor.state_dict()
+            }, model_metadata["model_paths"][0])
+            # Copy already optimized model from temp path
+            shutil.copy2(os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"), model_metadata["model_paths"][1])
+            if verbose:
+                print("Saved Pytorch VFE and ONNX RPN sub-models.")
+
+        with open(os.path.join(new_path, folder_name_no_ext + ".json"), 'w') as outfile:
+            json.dump(model_metadata, outfile)
 
     def load(
         self,
@@ -129,6 +198,11 @@ class VoxelObjectDetection3DLearner(Learner):
             path,
             self.model_config_path,
             device=self.device,
+            optimizer_name=self.optimizer,
+            optimizer_params=self.optimizer_params,
+            lr=self.lr,
+            lr_schedule_name=self.lr_schedule,
+            lr_schedule_params=self.lr_schedule_params,
             log=lambda *x: logger.log(Logger.LOG_WHEN_VERBOSE, *x),
         )
 
@@ -332,7 +406,77 @@ class VoxelObjectDetection3DLearner(Learner):
         return result
 
     def optimize(self, do_constant_folding=False):
-        pass
+        """
+        Optimize method converts the model to ONNX format and saves the
+        model in the parent directory defined by self.temp_path. The ONNX model is then loaded.
+        :param do_constant_folding: whether to optimize constants, defaults to 'False'
+        :type do_constant_folding: bool, optional
+        """
+        if self.model is None:
+            raise UserWarning("No model is loaded, cannot optimize. Load or train a model first.")
+        if self.rpn_ort_session is not None:
+            raise UserWarning("Model is already optimized in ONNX.")
+
+        input_shape = [
+            1,
+            self.model.middle_feature_extractor.nchannels,
+            self.model.middle_feature_extractor.nx,
+            self.model.middle_feature_extractor.nchannels
+        ]
+
+        has_refine = self.model.rpn_class_name in ["PSA", "RefineDet"]
+
+        try:
+            self.__convert_rpn_to_onnx(
+                input_shape, has_refine,
+                os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"), do_constant_folding
+            )
+        except FileNotFoundError:
+            # Create temp directory
+            os.makedirs(self.temp_path, exist_ok=True)
+            self.__convert_rpn_to_onnx(
+                input_shape, has_refine,
+                os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"), do_constant_folding
+            )
+
+        self.__load_rpn_from_onnx(os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"))
+
+    def __convert_rpn_to_onnx(self, input_shape, has_refine, output_name, do_constant_folding=False, verbose=False):
+        inp = torch.randn(input_shape).to(self.device)
+        input_names = ["data"]
+        output_names = [
+            "box_preds", "cls_preds", "dir_cls_preds"
+        ]
+
+        if has_refine:
+            output_names.append("Refine_loc_preds")
+            output_names.append("Refine_cls_preds")
+            output_names.append("Refine_dir_preds")
+
+        torch.onnx.export(
+            self.model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
+            do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names
+        )
+
+    def __load_rpn_from_onnx(self, path):
+        """
+        This method loads an ONNX model from the path provided into an onnxruntime inference session.
+
+        :param path: path to ONNX model
+        :type path: str
+        """
+        self.rpn_ort_session = ort.InferenceSession(path)
+
+        # The comments below are the alternative way to use the onnx model, it might be useful in the future
+        # depending on how ONNX saving/loading will be implemented across the toolkit.
+        # # Load the ONNX model
+        # self.model = onnx.load(path)
+        #
+        # # Check that the IR is well formed
+        # onnx.checker.check_model(self.model)
+        #
+        # # Print a human readable representation of the graph
+        # onnx.helper.printable_graph(self.model.graph)
 
     def _prepare_datasets(
         self,
@@ -508,7 +652,14 @@ class VoxelObjectDetection3DLearner(Learner):
             loss_scale,
             class_names,
             center_limit_range,
-        ) = second_create_model(self.model_config_path, device=self.device)
+        ) = second_create_model(
+            self.model_config_path, device=self.device,
+            optimizer_name=self.optimizer,
+            optimizer_params=self.optimizer_params,
+            lr=self.lr,
+            lr_schedule_name=self.lr_schedule,
+            lr_schedule_params=self.lr_schedule_params,
+        )
 
         self.model = model
         self.input_config = input_config

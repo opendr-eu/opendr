@@ -73,6 +73,46 @@ def build(optimizer_config, params, name=None):
     return optimizer
 
 
+def build_online(optimizer_type, config, lr, params, name=None):
+
+    optimizer = None
+
+    if optimizer_type == "rms_prop_optimizer":
+        optimizer = torch.optim.RMSprop(
+            params,
+            lr=lr,
+            alpha=config["decay"],
+            momentum=config["momentum_optimizer_value"],
+            eps=config["epsilon"],
+            weight_decay=config["weight_decay"],
+        )
+
+    if optimizer_type == "momentum_optimizer":
+        optimizer = torch.optim.SGD(
+            params,
+            lr=lr,
+            momentum=config["momentum_optimizer_value"],
+            weight_decay=config["weight_decay"],
+        )
+
+    if optimizer_type == "adam_optimizer":
+        optimizer = torch.optim.Adam(
+            params,
+            lr=lr,
+            weight_decay=config["weight_decay"],
+        )
+
+    if optimizer is None:
+        raise ValueError("Optimizer %s not supported." % optimizer_type)
+
+    if name is None:
+        # assign a name to optimizer for checkpoint system
+        optimizer.name = optimizer_type
+    else:
+        optimizer.name = name
+    return optimizer
+
+
 def _get_base_lr_by_lr_scheduler(learning_rate_config):
     base_lr = None
     learning_rate_type = learning_rate_config.WhichOneof("learning_rate")

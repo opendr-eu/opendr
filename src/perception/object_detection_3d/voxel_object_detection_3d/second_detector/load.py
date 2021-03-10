@@ -20,7 +20,11 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.py
 import torchplus
 
 
-def create_model(config_path, device, log=print):
+def create_model(
+    config_path, device, optimizer_name,
+    optimizer_params, lr, lr_schedule_name, lr_schedule_params,
+    log=print
+):
 
     loss_scale = None
 
@@ -60,18 +64,17 @@ def create_model(config_path, device, log=print):
     # BUILD OPTIMIZER
     ######################
     gstep = net.get_global_step() - 1
-    optimizer_cfg = train_cfg.optimizer
     if train_cfg.enable_mixed_precision:
         net.half()
         net.metrics_to_float()
         net.convert_norm_to_float(net)
-    optimizer = optimizer_builder.build(optimizer_cfg, net.parameters())
+    optimizer = optimizer_builder.build_online(optimizer_name, optimizer_params, lr, net.parameters())
     if train_cfg.enable_mixed_precision:
         loss_scale = train_cfg.loss_scale_factor
         mixed_optimizer = torchplus.train.MixedPrecisionWrapper(optimizer, loss_scale)
     else:
         mixed_optimizer = optimizer
-    lr_scheduler = lr_scheduler_builder.build(optimizer_cfg, optimizer, gstep)
+    lr_scheduler = lr_scheduler_builder.build_online(lr_schedule_name, lr_schedule_params, optimizer, gstep)
     if train_cfg.enable_mixed_precision:
         float_dtype = torch.float16
     else:
@@ -95,7 +98,11 @@ def create_model(config_path, device, log=print):
     )
 
 
-def load(model_dir, config_path, device, create_folder=False, result_path=None, log=print):
+def load(
+    model_dir, config_path, device, optimizer_name,
+    optimizer_params, lr, lr_schedule_name, lr_schedule_params,
+    create_folder=False, result_path=None, log=print
+):
 
     loss_scale = None
 
@@ -148,12 +155,11 @@ def load(model_dir, config_path, device, create_folder=False, result_path=None, 
     # we need global_step to create lr_scheduler, so restore net first.
     torchplus.train.try_restore_latest_checkpoints(model_dir, [net], device=device)
     gstep = net.get_global_step() - 1
-    optimizer_cfg = train_cfg.optimizer
     if train_cfg.enable_mixed_precision:
         net.half()
         net.metrics_to_float()
         net.convert_norm_to_float(net)
-    optimizer = optimizer_builder.build(optimizer_cfg, net.parameters())
+    optimizer = optimizer_builder.build_online(optimizer_name, optimizer_params, lr, net.parameters())
     if train_cfg.enable_mixed_precision:
         loss_scale = train_cfg.loss_scale_factor
         mixed_optimizer = torchplus.train.MixedPrecisionWrapper(optimizer, loss_scale)
@@ -161,7 +167,7 @@ def load(model_dir, config_path, device, create_folder=False, result_path=None, 
         mixed_optimizer = optimizer
     # must restore optimizer AFTER using MixedPrecisionWrapper
     torchplus.train.try_restore_latest_checkpoints(model_dir, [mixed_optimizer], device=device)
-    lr_scheduler = lr_scheduler_builder.build(optimizer_cfg, optimizer, gstep)
+    lr_scheduler = lr_scheduler_builder.build_online(lr_schedule_name, lr_schedule_params, optimizer, gstep)
     if train_cfg.enable_mixed_precision:
         float_dtype = torch.float16
     else:
