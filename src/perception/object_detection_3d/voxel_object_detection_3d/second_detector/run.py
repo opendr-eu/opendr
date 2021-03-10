@@ -67,6 +67,8 @@ def train(
     eval_dataset_iterator,
     gt_annos,
     device,
+    checkpoint_after_iter,
+    checkpoints_path,
     display_step=50,
     log=print,
     auto_save=False,
@@ -124,7 +126,6 @@ def train(
     total_step_elapsed = 0
     # remain_steps = train_cfg.steps - net.get_global_step()
     t = time.time()
-    ckpt_start_time = t
 
     total_loop = train_cfg.steps // train_cfg.steps_per_eval + 1
     # total_loop = remain_steps // train_cfg.steps_per_eval + 1
@@ -133,295 +134,281 @@ def train(
     if train_cfg.steps % train_cfg.steps_per_eval == 0:
         total_loop -= 1
     mixed_optimizer.zero_grad()
-    try:
-        for _ in range(total_loop):
-            if total_step_elapsed + train_cfg.steps_per_eval > train_cfg.steps:
-                steps = train_cfg.steps % train_cfg.steps_per_eval
+    for _ in range(total_loop):
+        if total_step_elapsed + train_cfg.steps_per_eval > train_cfg.steps:
+            steps = train_cfg.steps % train_cfg.steps_per_eval
+        else:
+            steps = train_cfg.steps_per_eval
+        for step in range(steps):
+            lr_scheduler.step()
+            try:
+                example = next(data_iter)
+            except StopIteration:
+                log(Logger.LOG_WHEN_NORMAL, "end epoch")
+                if clear_metrics_every_epoch:
+                    net.clear_metrics()
+                data_iter = iter(dataloader)
+                example = next(data_iter)
+            example_torch = example_convert_to_torch(example, float_dtype, device=device)
+
+            batch_size = example["anchors"].shape[0]
+
+            ret_dict = net(example_torch, refine_weight)
+
+            # box_preds = ret_dict["box_preds"]
+            cls_preds = ret_dict["cls_preds"]
+            loss = ret_dict["loss"].mean()
+            cls_loss_reduced = ret_dict["cls_loss_reduced"].mean()
+            loc_loss_reduced = ret_dict["loc_loss_reduced"].mean()
+            cls_pos_loss = ret_dict["cls_pos_loss"]
+            cls_neg_loss = ret_dict["cls_neg_loss"]
+            loc_loss = ret_dict["loc_loss"]
+            # cls_loss = ret_dict["cls_loss"]
+            dir_loss_reduced = ret_dict["dir_loss_reduced"]
+            cared = ret_dict["cared"]
+            labels = example_torch["labels"]
+            if train_cfg.enable_mixed_precision:
+                loss *= loss_scale
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
+            mixed_optimizer.step()
+            mixed_optimizer.zero_grad()
+            net.update_global_step()
+            net_metrics = net.update_metrics(
+                cls_loss_reduced,
+                loc_loss_reduced,
+                cls_preds,
+                labels,
+                cared,
+            )
+
+            step_time = time.time() - t
+            t = time.time()
+            metrics = {}
+            num_pos = int((labels > 0)[0].float().sum().cpu().numpy())
+            num_neg = int((labels == 0)[0].float().sum().cpu().numpy())
+            if "anchors_mask" not in example_torch:
+                num_anchors = example_torch["anchors"].shape[1]
             else:
-                steps = train_cfg.steps_per_eval
-            for step in range(steps):
-                lr_scheduler.step()
-                try:
-                    example = next(data_iter)
-                except StopIteration:
-                    log(Logger.LOG_WHEN_NORMAL, "end epoch")
-                    if clear_metrics_every_epoch:
-                        net.clear_metrics()
-                    data_iter = iter(dataloader)
-                    example = next(data_iter)
-                example_torch = example_convert_to_torch(example, float_dtype, device=device)
+                num_anchors = int(example_torch["anchors_mask"][0].sum())
+            global_step = net.get_global_step()
+            if global_step % display_step == 0:
+                loc_loss_elem = [
+                    float(loc_loss[:, :, i].sum().detach().cpu().numpy() /
+                          batch_size) for i in range(loc_loss.shape[-1])
+                ]
+                metrics["step"] = global_step
+                metrics["steptime"] = step_time
+                metrics.update(net_metrics)
+                metrics["loss"] = {}
+                metrics["loss"]["loc_elem"] = loc_loss_elem
+                metrics["loss"]["cls_pos_rt"] = float(
+                    cls_pos_loss.detach().cpu().numpy())
+                metrics["loss"]["cls_neg_rt"] = float(
+                    cls_neg_loss.detach().cpu().numpy())
 
-                batch_size = example["anchors"].shape[0]
-
-                ret_dict = net(example_torch, refine_weight)
-
-                # box_preds = ret_dict["box_preds"]
-                cls_preds = ret_dict["cls_preds"]
-                loss = ret_dict["loss"].mean()
-                cls_loss_reduced = ret_dict["cls_loss_reduced"].mean()
-                loc_loss_reduced = ret_dict["loc_loss_reduced"].mean()
-                cls_pos_loss = ret_dict["cls_pos_loss"]
-                cls_neg_loss = ret_dict["cls_neg_loss"]
-                loc_loss = ret_dict["loc_loss"]
-                # cls_loss = ret_dict["cls_loss"]
-                dir_loss_reduced = ret_dict["dir_loss_reduced"]
-                cared = ret_dict["cared"]
-                labels = example_torch["labels"]
-                if train_cfg.enable_mixed_precision:
-                    loss *= loss_scale
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
-                mixed_optimizer.step()
-                mixed_optimizer.zero_grad()
-                net.update_global_step()
-                net_metrics = net.update_metrics(
-                    cls_loss_reduced,
-                    loc_loss_reduced,
-                    cls_preds,
-                    labels,
-                    cared,
-                )
-
-                step_time = time.time() - t
-                t = time.time()
-                metrics = {}
-                num_pos = int((labels > 0)[0].float().sum().cpu().numpy())
-                num_neg = int((labels == 0)[0].float().sum().cpu().numpy())
-                if "anchors_mask" not in example_torch:
-                    num_anchors = example_torch["anchors"].shape[1]
-                else:
-                    num_anchors = int(example_torch["anchors_mask"][0].sum())
-                global_step = net.get_global_step()
-                if global_step % display_step == 0:
-                    loc_loss_elem = [
-                        float(loc_loss[:, :, i].sum().detach().cpu().numpy() /
-                              batch_size) for i in range(loc_loss.shape[-1])
-                    ]
-                    metrics["step"] = global_step
-                    metrics["steptime"] = step_time
-                    metrics.update(net_metrics)
-                    metrics["loss"] = {}
-                    metrics["loss"]["loc_elem"] = loc_loss_elem
-                    metrics["loss"]["cls_pos_rt"] = float(
-                        cls_pos_loss.detach().cpu().numpy())
-                    metrics["loss"]["cls_neg_rt"] = float(
-                        cls_neg_loss.detach().cpu().numpy())
-
-                    ########################################
-                    if (model_cfg.rpn.module_class_name == "PSA" or
-                            model_cfg.rpn.module_class_name == "RefineDet"):
-                        coarse_loss = ret_dict["coarse_loss"]
-                        refine_loss = ret_dict["refine_loss"]
-                        metrics["coarse_loss"] = float(
-                            coarse_loss.detach().cpu().numpy())
-                        metrics["refine_loss"] = float(
-                            refine_loss.detach().cpu().numpy())
-                    ########################################
-                    # if unlabeled_training:
-                    #     metrics["loss"]["diff_rt"] = float(
-                    #         diff_loc_loss_reduced.detach().cpu().numpy())
-                    if model_cfg.use_direction_classifier:
-                        metrics["loss"]["dir_rt"] = float(
-                            dir_loss_reduced.detach().cpu().numpy())
-                    metrics["num_vox"] = int(example_torch["voxels"].shape[0])
-                    metrics["num_pos"] = int(num_pos)
-                    metrics["num_neg"] = int(num_neg)
-                    metrics["num_anchors"] = int(num_anchors)
-                    metrics["lr"] = float(
-                        mixed_optimizer.param_groups[0]["lr"])
-                    metrics["image_idx"] = example["image_idx"][0] if "image_idx" in example else 0
-                    # flatted_metrics = flat_nested_json_dict(metrics)
-                    # flatted_summarys = flat_nested_json_dict(metrics, "/")
-                    # for k, v in flatted_summarys.items():
-                    #     if isinstance(v, (list, tuple)):
-                    #         v = {str(i): e for i, e in enumerate(v)}
-                    #         writer.add_scalars(k, v, global_step)
-                    #     else:
-                    #         writer.add_scalar(k, v, global_step)
-                    metrics_str_list = []
-                    for k, v in metrics.items():
-                        if isinstance(v, float):
-                            metrics_str_list.append(f"{k}={v:.3}")
-                        elif isinstance(v, (list, tuple)):
-                            if v and isinstance(v[0], float):
-                                v_str = ", ".join([f"{e:.3}" for e in v])
-                                metrics_str_list.append(f"{k}=[{v_str}]")
-                            else:
-                                metrics_str_list.append(f"{k}={v}")
+                ########################################
+                if (model_cfg.rpn.module_class_name == "PSA" or
+                        model_cfg.rpn.module_class_name == "RefineDet"):
+                    coarse_loss = ret_dict["coarse_loss"]
+                    refine_loss = ret_dict["refine_loss"]
+                    metrics["coarse_loss"] = float(
+                        coarse_loss.detach().cpu().numpy())
+                    metrics["refine_loss"] = float(
+                        refine_loss.detach().cpu().numpy())
+                ########################################
+                # if unlabeled_training:
+                #     metrics["loss"]["diff_rt"] = float(
+                #         diff_loc_loss_reduced.detach().cpu().numpy())
+                if model_cfg.use_direction_classifier:
+                    metrics["loss"]["dir_rt"] = float(
+                        dir_loss_reduced.detach().cpu().numpy())
+                metrics["num_vox"] = int(example_torch["voxels"].shape[0])
+                metrics["num_pos"] = int(num_pos)
+                metrics["num_neg"] = int(num_neg)
+                metrics["num_anchors"] = int(num_anchors)
+                metrics["lr"] = float(
+                    mixed_optimizer.param_groups[0]["lr"])
+                metrics["image_idx"] = example["image_idx"][0] if "image_idx" in example else 0
+                # flatted_metrics = flat_nested_json_dict(metrics)
+                # flatted_summarys = flat_nested_json_dict(metrics, "/")
+                # for k, v in flatted_summarys.items():
+                #     if isinstance(v, (list, tuple)):
+                #         v = {str(i): e for i, e in enumerate(v)}
+                #         writer.add_scalars(k, v, global_step)
+                #     else:
+                #         writer.add_scalar(k, v, global_step)
+                metrics_str_list = []
+                for k, v in metrics.items():
+                    if isinstance(v, float):
+                        metrics_str_list.append(f"{k}={v:.3}")
+                    elif isinstance(v, (list, tuple)):
+                        if v and isinstance(v[0], float):
+                            v_str = ", ".join([f"{e:.3}" for e in v])
+                            metrics_str_list.append(f"{k}=[{v_str}]")
                         else:
                             metrics_str_list.append(f"{k}={v}")
-                    log_str = ", ".join(metrics_str_list)
-                    log(Logger.LOG_WHEN_NORMAL, log_str)
-                ckpt_elasped_time = time.time() - ckpt_start_time
-                if ckpt_elasped_time > train_cfg.save_checkpoints_secs:
+                    else:
+                        metrics_str_list.append(f"{k}={v}")
+                log_str = ", ".join(metrics_str_list)
+                log(Logger.LOG_WHEN_NORMAL, log_str)
 
-                    if auto_save:
-                        torchplus.train.save_models(
-                            model_dir,
-                            [net, mixed_optimizer],
-                            net.get_global_step(),
-                        )
-                    ckpt_start_time = time.time()
-            total_step_elapsed += steps
-            if auto_save:
-                torchplus.train.save_models(model_dir, [net, mixed_optimizer],
-                                            net.get_global_step())
+            if checkpoint_after_iter > 0 and global_step % checkpoint_after_iter == 0:
 
-            net.eval()
-            # result_path_step = result_path / f"step_{net.get_global_step()}"
-            # result_path_step.mkdir(parents=True, exist_ok=True)
-            log(Logger.LOG_WHEN_VERBOSE, "#################################")
-            log(Logger.LOG_WHEN_VERBOSE, "# EVAL")
-            log(Logger.LOG_WHEN_VERBOSE, "#################################")
-            log(Logger.LOG_WHEN_NORMAL, "Generate output labels...")
-            t = time.time()
-            if (
-                model_cfg.rpn.module_class_name == "PSA" or
-                model_cfg.rpn.module_class_name == "RefineDet"
-            ):
-                dt_annos_coarse = []
-                dt_annos_refine = []
-                prog_bar = ProgressBar()
-                prog_bar.start(
-                    len(input_dataset_iterator) // eval_input_cfg.batch_size +
-                    1)
-                for example in iter(eval_dataloader):
+                save_path = checkpoints_path / f"checkpoint_{global_step}.pth"
 
-                    if take_gt_annos_from_example:
-                        gt_annos += list(example["annos"])
+                torch.save({
+                    "net": net.state_dict(),
+                    "optimizer": mixed_optimizer.state_dict()
+                }, save_path)
 
-                    example = example_convert_to_torch(example, float_dtype, device=device)
-                    # if pickle_result:
-                    coarse, refine = predict_kitti_to_anno(
-                        net,
-                        example,
-                        class_names,
-                        center_limit_range,
-                        model_cfg.lidar_input,
-                        use_coarse_to_fine=True,
-                        image_shape=image_shape,
-                    )
-                    dt_annos_coarse += coarse
-                    dt_annos_refine += refine
-                    # else:
-                    #     _predict_kitti_to_file(
-                    #         net,
-                    #         example,
-                    #         result_path_step,
-                    #         class_names,
-                    #         center_limit_range,
-                    #         model_cfg.lidar_input,
-                    #         use_coarse_to_fine=True,
-                    #     )
-                    prog_bar.print_bar(log=lambda *x, **y: log(
-                        Logger.LOG_WHEN_NORMAL, *x, **y))
-            else:
-                dt_annos = []
-                prog_bar = ProgressBar()
-                prog_bar.start(
-                    len(input_dataset_iterator) // eval_input_cfg.batch_size +
-                    1)
-                for example in iter(eval_dataloader):
+        total_step_elapsed += steps
 
-                    if take_gt_annos_from_example:
-                        gt_annos += list(example["annos"])
+        net.eval()
+        # result_path_step = result_path / f"step_{net.get_global_step()}"
+        # result_path_step.mkdir(parents=True, exist_ok=True)
+        log(Logger.LOG_WHEN_VERBOSE, "#################################")
+        log(Logger.LOG_WHEN_VERBOSE, "# EVAL")
+        log(Logger.LOG_WHEN_VERBOSE, "#################################")
+        log(Logger.LOG_WHEN_NORMAL, "Generate output labels...")
+        t = time.time()
+        if (
+            model_cfg.rpn.module_class_name == "PSA" or
+            model_cfg.rpn.module_class_name == "RefineDet"
+        ):
+            dt_annos_coarse = []
+            dt_annos_refine = []
+            prog_bar = ProgressBar()
+            prog_bar.start(
+                len(input_dataset_iterator) // eval_input_cfg.batch_size +
+                1)
+            for example in iter(eval_dataloader):
 
-                    example = example_convert_to_torch(example, float_dtype, device=device)
-                    # if pickle_result:
-                    dt_annos += predict_kitti_to_anno(
-                        net,
-                        example,
-                        class_names,
-                        center_limit_range,
-                        model_cfg.lidar_input,
-                        use_coarse_to_fine=False,
-                        image_shape=image_shape,
-                    )
-                    # else:
-                    #     _predict_kitti_to_file(
-                    #         net,
-                    #         example,
-                    #         result_path_step,
-                    #         class_names,
-                    #         center_limit_range,
-                    #         model_cfg.lidar_input,
-                    #         use_coarse_to_fine=False,
-                    #     )
+                if take_gt_annos_from_example:
+                    gt_annos += list(example["annos"])
 
-                    prog_bar.print_bar(log=lambda *x, **y: log(
-                        Logger.LOG_WHEN_NORMAL, *x, **y))
+                example = example_convert_to_torch(example, float_dtype, device=device)
+                # if pickle_result:
+                coarse, refine = predict_kitti_to_anno(
+                    net,
+                    example,
+                    class_names,
+                    center_limit_range,
+                    model_cfg.lidar_input,
+                    use_coarse_to_fine=True,
+                    image_shape=image_shape,
+                )
+                dt_annos_coarse += coarse
+                dt_annos_refine += refine
+                # else:
+                #     _predict_kitti_to_file(
+                #         net,
+                #         example,
+                #         result_path_step,
+                #         class_names,
+                #         center_limit_range,
+                #         model_cfg.lidar_input,
+                #         use_coarse_to_fine=True,
+                #     )
+                prog_bar.print_bar(log=lambda *x, **y: log(
+                    Logger.LOG_WHEN_NORMAL, *x, **y))
+        else:
+            dt_annos = []
+            prog_bar = ProgressBar()
+            prog_bar.start(
+                len(input_dataset_iterator) // eval_input_cfg.batch_size +
+                1)
+            for example in iter(eval_dataloader):
 
-            sec_per_ex = len(input_dataset_iterator) / (time.time() - t)
-            log(
-                Logger.LOG_WHEN_NORMAL,
-                f"avg forward time per example: {net.avg_forward_time:.3f}",
-            )
-            log(
-                Logger.LOG_WHEN_NORMAL,
-                f"avg postprocess time per example: {net.avg_postprocess_time:.3f}",
-            )
+                if take_gt_annos_from_example:
+                    gt_annos += list(example["annos"])
 
-            net.clear_time_metrics()
-            log(
-                Logger.LOG_WHEN_NORMAL,
-                f"generate label finished({sec_per_ex:.2f}/s). start eval:",
-            )
-            # if not pickle_result:
-            #     dt_annos = kitti.get_label_annos(result_path_step)
+                example = example_convert_to_torch(example, float_dtype, device=device)
+                # if pickle_result:
+                dt_annos += predict_kitti_to_anno(
+                    net,
+                    example,
+                    class_names,
+                    center_limit_range,
+                    model_cfg.lidar_input,
+                    use_coarse_to_fine=False,
+                    image_shape=image_shape,
+                )
+                # else:
+                #     _predict_kitti_to_file(
+                #         net,
+                #         example,
+                #         result_path_step,
+                #         class_names,
+                #         center_limit_range,
+                #         model_cfg.lidar_input,
+                #         use_coarse_to_fine=False,
+                #     )
 
-            if (model_cfg.rpn.module_class_name == "PSA" or
-                    model_cfg.rpn.module_class_name == "RefineDet"):
+                prog_bar.print_bar(log=lambda *x, **y: log(
+                    Logger.LOG_WHEN_NORMAL, *x, **y))
 
-                log(Logger.LOG_WHEN_NORMAL, "Before Refine:")
-                (
-                    result,
-                    mAPbbox,
-                    mAPbev,
-                    mAP3d,
-                    mAPaos,
-                ) = get_official_eval_result(gt_annos,
-                                             dt_annos_coarse,
-                                             class_names,
-                                             return_data=True)
-                log(Logger.LOG_WHEN_NORMAL, result)
-                # writer.add_text("eval_result", result, global_step)
+        sec_per_ex = len(input_dataset_iterator) / (time.time() - t)
+        log(
+            Logger.LOG_WHEN_NORMAL,
+            f"avg forward time per example: {net.avg_forward_time:.3f}",
+        )
+        log(
+            Logger.LOG_WHEN_NORMAL,
+            f"avg postprocess time per example: {net.avg_postprocess_time:.3f}",
+        )
 
-                log(Logger.LOG_WHEN_NORMAL, "After Refine:")
-                (
-                    result,
-                    mAPbbox,
-                    mAPbev,
-                    mAP3d,
-                    mAPaos,
-                ) = get_official_eval_result(gt_annos,
-                                             dt_annos_refine,
-                                             class_names,
-                                             return_data=True)
-                dt_annos = dt_annos_refine
-            else:
-                (
-                    result,
-                    mAPbbox,
-                    mAPbev,
-                    mAP3d,
-                    mAPaos,
-                ) = get_official_eval_result(gt_annos,
-                                             dt_annos,
-                                             class_names,
-                                             return_data=True)
+        net.clear_time_metrics()
+        log(
+            Logger.LOG_WHEN_NORMAL,
+            f"generate label finished({sec_per_ex:.2f}/s). start eval:",
+        )
+        # if not pickle_result:
+        #     dt_annos = kitti.get_label_annos(result_path_step)
+
+        if (model_cfg.rpn.module_class_name == "PSA" or
+                model_cfg.rpn.module_class_name == "RefineDet"):
+
+            log(Logger.LOG_WHEN_NORMAL, "Before Refine:")
+            (
+                result,
+                mAPbbox,
+                mAPbev,
+                mAP3d,
+                mAPaos,
+            ) = get_official_eval_result(gt_annos,
+                                         dt_annos_coarse,
+                                         class_names,
+                                         return_data=True)
             log(Logger.LOG_WHEN_NORMAL, result)
+            # writer.add_text("eval_result", result, global_step)
 
-            net.train()
-    except ValueError as e:
+            log(Logger.LOG_WHEN_NORMAL, "After Refine:")
+            (
+                result,
+                mAPbbox,
+                mAPbev,
+                mAP3d,
+                mAPaos,
+            ) = get_official_eval_result(gt_annos,
+                                         dt_annos_refine,
+                                         class_names,
+                                         return_data=True)
+            dt_annos = dt_annos_refine
+        else:
+            (
+                result,
+                mAPbbox,
+                mAPbev,
+                mAP3d,
+                mAPaos,
+            ) = get_official_eval_result(gt_annos,
+                                         dt_annos,
+                                         class_names,
+                                         return_data=True)
+        log(Logger.LOG_WHEN_NORMAL, result)
 
-        if auto_save:
-            torchplus.train.save_models(model_dir, [net, mixed_optimizer],
-                                        net.get_global_step())
-        raise e
-
-    if auto_save:
-        torchplus.train.save_models(model_dir, [net, mixed_optimizer],
-                                    net.get_global_step())
+        net.train()
 
 
 def evaluate(

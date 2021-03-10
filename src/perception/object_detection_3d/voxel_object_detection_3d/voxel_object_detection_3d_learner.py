@@ -22,8 +22,9 @@ from engine.learners import Learner
 from engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetIterator
 from engine.data import PointCloud
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.load import (
-    load as second_load,
     create_model as second_create_model,
+    load as second_load,
+    load_from_checkpoint,
 )
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.run import (
     compute_lidar_kitti_output, evaluate, example_convert_to_torch, train
@@ -91,7 +92,6 @@ class VoxelObjectDetection3DLearner(Learner):
 
         self.model_dir = None
         self.eval_checkpoint_dir = None
-        self.result_path = None
         self.infer_point_cloud_mapper = None
         self.rpn_ort_session = None  # ONNX runtime inference session
 
@@ -220,7 +220,6 @@ class VoxelObjectDetection3DLearner(Learner):
         self.model_dir = model_dir
         self.float_dtype = float_dtype
         self.loss_scale = loss_scale
-        self.result_path = result_path
         self.class_names = class_names
         self.center_limit_range = center_limit_range
 
@@ -239,7 +238,6 @@ class VoxelObjectDetection3DLearner(Learner):
         silent=False,
         verbose=False,
         model_dir=None,
-        auto_save=False,
         image_shape=(1224, 370),
     ):
 
@@ -251,9 +249,12 @@ class VoxelObjectDetection3DLearner(Learner):
             model_dir.mkdir(parents=True, exist_ok=True)
             self.model_dir = model_dir
 
-        if self.model_dir is None and auto_save is True:
+        if self.model_dir is None and (
+            self.checkpoint_load_iter != 0 or
+            self.checkpoint_after_iter != 0
+        ):
             raise ValueError(
-                "Can not use auto_save if model_dir is None and load was not called before"
+                "Can not use checkpoint_load_iter or checkpoint_after_iter if model_dir is None and load was not called before"
             )
 
         (
@@ -270,6 +271,17 @@ class VoxelObjectDetection3DLearner(Learner):
             self.target_assigner,
             ground_truth_annotations,
         )
+
+        checkpoints_path = self.model_dir / "checkpoints"
+        if self.checkpoint_after_iter != 0 or self.checkpoint_load_iter != 0:
+            checkpoints_path.mkdir(exist_ok=True)
+
+        if self.checkpoint_load_iter != 0:
+            self.lr_scheduler = load_from_checkpoint(
+                self.model, self.mixed_optimizer,
+                checkpoints_path / f"checkpoint_{self.checkpoint_load_iter}.pth",
+                self.lr_schedule, self.lr_schedule_params, self.device
+            )
 
         train(
             self.model,
@@ -289,7 +301,8 @@ class VoxelObjectDetection3DLearner(Learner):
             eval_dataset_iterator=eval_dataset_iterator,
             gt_annos=ground_truth_annotations,
             log=logger.log,
-            auto_save=auto_save,
+            checkpoint_after_iter=self.checkpoint_after_iter,
+            checkpoints_path=checkpoints_path,
             display_step=display_step,
             device=self.device,
             image_shape=image_shape,
@@ -643,7 +656,6 @@ class VoxelObjectDetection3DLearner(Learner):
             train_config,
             evaluation_input_config,
             model_config,
-            train_config,
             voxel_generator,
             target_assigner,
             mixed_optimizer,
