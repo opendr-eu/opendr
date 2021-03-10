@@ -245,7 +245,7 @@ class VoxelObjectDetection3DLearner(Learner):
             input_dataset_iterator,
             eval_dataset_iterator,
             ground_truth_annotations,
-        ) = self._prepare_datasets(
+        ) = self.__prepare_datasets(
             dataset,
             val_dataset,
             self.input_config,
@@ -311,7 +311,7 @@ class VoxelObjectDetection3DLearner(Learner):
             _,
             eval_dataset_iterator,
             ground_truth_annotations,
-        ) = self._prepare_datasets(
+        ) = self.__prepare_datasets(
             None,
             dataset,
             self.input_config,
@@ -479,7 +479,7 @@ class VoxelObjectDetection3DLearner(Learner):
         all_params = torch.load(path, map_location=self.device)
         model.load_state_dict(all_params["state_dict"])
 
-    def _prepare_datasets(
+    def __prepare_datasets(
         self,
         dataset,
         val_dataset,
