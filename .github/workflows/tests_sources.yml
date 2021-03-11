@@ -36,8 +36,15 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
-    - name: Tests
+    - name: Test Sources
       if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
+      run: |
+        ${{ matrix.DEPENDENCIES_INSTALLATION }}
+        export OPENDR_HOME=$PWD
+        pip install -r tests/requirements.txt
+        python -m unittest discover -s tests
+    - name: Test Sources and Tools
+      if: matrix.os == 'ubuntu-20.04'
       run: |
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
         export OPENDR_HOME=$PWD
