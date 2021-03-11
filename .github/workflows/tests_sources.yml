@@ -43,7 +43,7 @@ jobs:
         export OPENDR_HOME=$PWD
         pip install -r tests/requirements.txt
         python -m unittest discover -s tests
-    - name: Test Sources and Tools
+    - name: Test API
       if: matrix.os == 'ubuntu-20.04'
       run: |
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
