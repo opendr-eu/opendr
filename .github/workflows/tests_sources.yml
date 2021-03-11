@@ -49,6 +49,6 @@ jobs:
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
         export OPENDR_HOME=$PWD
         export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
-        make
+        make install_opendr_dependencies
         pip install -r tests/sources/requirements.txt
         python -m unittest discover -s tests/sources

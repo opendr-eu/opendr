@@ -10,3 +10,4 @@ pip install ConfigParser numpy cython
 python runtime_dependencies.py
 # install dependencies one by one to prevent interdependency errors
 cat python_dependencies.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 python -m pip install
+cat linux_runtime_dependencies.txt | xargs sudo apt-get install

@@ -24,12 +24,12 @@ ifeq ($(MAKECMDGOALS),)
 MAKECMDGOALS = release
 endif
 
-.PHONY: release opendr_dependencies
+.PHONY: release install_opendr_dependencies
 
 release: opendr_dependencies
 
-opendr_dependencies:
-	@+echo "#"; echo "# * dependencies *"; echo "#"
+install_opendr_dependencies:
+	@+echo "#"; echo "# * Install Dependencies *"; echo "#"
 	@+cd dependencies; ./install.sh
 
 help:

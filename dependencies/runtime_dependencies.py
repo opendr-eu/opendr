@@ -22,21 +22,29 @@ import os
 from pip._internal import main as pip
 from configparser import ConfigParser
 
-dependency_file = "python_dependencies.txt"
-
+python_file = "python_dependencies.txt"
+linux_runtime_file = "linux_runtime_dependencies.txt"
 
 def read_ini(path):
     parser = ConfigParser()
     parser.read(path)
-    python_dependencies = parser.get('runtime', 'python')
-    if python_dependencies:
-        for package in python_dependencies.split():
-            f = open(dependency_file, "a")
-            f.write(package + '\n')
+    if parser.has_option('runtime', 'python'):
+        python_dependencies = parser.get('runtime', 'python')
+        if python_dependencies:
+            for package in python_dependencies.split():
+                f = open(python_file, "a")
+                f.write(package + '\n')
+    if parser.has_option('runtime', 'linux'):
+        linux_dependencies = parser.get('runtime', 'linux')
+        if linux_dependencies:
+            for package in linux_dependencies.split():
+                f = open(linux_runtime_file, "a")
+                f.write(package + '\n')
 
 
 # Clear dependencies
-open(dependency_file, 'w').close()
+open(python_file, 'w').close()
+open(linux_runtime_file, 'w').close()
 # Extract generic dependencies
 read_ini('dependencies.ini')
 # Loop through tools and extract dependencies
