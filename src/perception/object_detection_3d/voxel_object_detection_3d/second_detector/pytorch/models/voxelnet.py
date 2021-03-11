@@ -7,11 +7,13 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-import torchplus
-from torchplus import metrics
-from torchplus.nn import Empty, GroupNorm, Sequential
-from torchplus.ops.array_ops import scatter_nd
-from torchplus.tools import change_default_args
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.nn import one_hot as tp_one_hot
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet import metrics
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.nn import (
+    Empty, GroupNorm, Sequential
+)
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.ops.array_ops import scatter_nd
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.tools import change_default_args
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.core import box_torch_ops
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.core.losses import (
     WeightedSoftmaxClassificationLoss,
@@ -1377,9 +1379,10 @@ def create_loss(
     else:
         cls_preds = cls_preds.view(batch_size, -1, num_class + 1)
     cls_targets = cls_targets.squeeze(-1)
-    one_hot_targets = torchplus.nn.one_hot(cls_targets,
-                                           depth=num_class + 1,
-                                           dtype=box_preds.dtype)
+    one_hot_targets = tp_one_hot(
+        cls_targets,
+        depth=num_class + 1,
+        dtype=box_preds.dtype)
     if encode_background_as_zeros:
         one_hot_targets = one_hot_targets[..., 1:]
     if encode_rad_error_by_sin:
@@ -1455,7 +1458,8 @@ def get_direction_target(anchors, reg_targets, one_hot=True):
     rot_gt = reg_targets[..., -1] + anchors[..., -1]
     dir_cls_targets = (rot_gt > 0).long()
     if one_hot:
-        dir_cls_targets = torchplus.nn.one_hot(dir_cls_targets,
-                                               2,
-                                               dtype=anchors.dtype)
+        dir_cls_targets = tp_one_hot(
+            dir_cls_targets,
+            2,
+            dtype=anchors.dtype)
     return dir_cls_targets

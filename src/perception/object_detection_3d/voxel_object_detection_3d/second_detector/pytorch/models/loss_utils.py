@@ -1,5 +1,5 @@
 import torch
-import torchplus
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.nn import one_hot
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.core import box_torch_ops
 from enum import Enum
 
@@ -303,9 +303,10 @@ def create_refine_loss(
         refine_conf = refine_cls_preds.view(batch_size, -1, num_class + 1)
 
     cls_targets = cls_targets.squeeze(-1)
-    one_hot_targets = torchplus.nn.one_hot(cls_targets,
-                                           depth=num_class + 1,
-                                           dtype=refine_box_preds.dtype)
+    one_hot_targets = one_hot(
+        cls_targets,
+        depth=num_class + 1,
+        dtype=refine_box_preds.dtype)
     if encode_background_as_zeros:  # True
         one_hot_targets = one_hot_targets[..., 1:]
     if encode_rad_error_by_sin:
@@ -490,9 +491,10 @@ def create_refine_loss_V2(
                                                   num_class + 1)
 
     cls_targets = cls_targets.squeeze(-1)
-    one_hot_targets = torchplus.nn.one_hot(cls_targets,
-                                           depth=num_class + 1,
-                                           dtype=refine_box_batch_preds.dtype)
+    one_hot_targets = one_hot(
+        cls_targets,
+        depth=num_class + 1,
+        dtype=refine_box_batch_preds.dtype)
     if encode_background_as_zeros:  # True
         one_hot_targets = one_hot_targets[..., 1:]
     if encode_rad_error_by_sin:
