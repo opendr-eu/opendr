@@ -8,7 +8,7 @@ try:
     from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms_gpu import (
         rotate_iou_gpu_eval,
     )
-except CudaSupportError:
+except (CudaSupportError, ValueError):
     def rotate_iou_gpu_eval(boxes, qboxes, criterion):
         return np.zeros((boxes.shape[0], qboxes.shape[0]))
 

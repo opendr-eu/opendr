@@ -11,7 +11,7 @@ try:
     from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms_gpu import (
         nms_gpu as nms_gpu_or_cc
     )
-except CudaSupportError:
+except (CudaSupportError, ValueError):
     from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms_cpu import (
         nms_cc as nms_gpu_or_cc)
 
