@@ -48,7 +48,6 @@ if len(sys.argv) > 1:
     section = sys.argv[1]
 if section not in ["runtime", "compilation"]:
     sys.exit("Invalid dependencies type: " + section + ".\nExpected: [runtime, compilation]")
-print(section)
 
 # Clear dependencies
 if os.path.exists(python_file):

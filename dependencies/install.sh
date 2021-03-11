@@ -9,7 +9,6 @@ TYPE="runtime"
 if [ "$#" -ge 1 ]; then
        TYPE=$1
 fi
-echo "Type" $TYPE
 
 pip install ConfigParser numpy cython
 
