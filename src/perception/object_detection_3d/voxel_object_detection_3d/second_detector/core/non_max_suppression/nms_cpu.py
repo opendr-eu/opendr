@@ -15,7 +15,7 @@ except:
     current_dir = Path(__file__).resolve().parents[0]
     load_pb11(
         # ["../cc/nms/nms_kernel.cu.cc", "../cc/nms/nms.cc"],
-        ["../cc/nms/nms.cc"],
+        ["../cc/nms/nms_cpu_only.cc"],
         current_dir / "nms.so",
         current_dir,
         # cuda=True,
