@@ -23,7 +23,7 @@ from perception.object_detection_3d.datasets.point_clouds import PointCloudsData
 from perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
 
 
-DEVICE = "cuda:0" if torch.cuda.is_available else "cpu"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 
 def rmfile(path):
