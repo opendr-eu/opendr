@@ -9,8 +9,8 @@ from torch import nn
 from torch.nn import functional as F
 
 from second.pytorch.utils import get_paddings_indicator
-from torchplus.nn import Empty
-from torchplus.tools import change_default_args
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.nn import Empty
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.tools import change_default_args
 
 
 class PFNLayer(nn.Module):

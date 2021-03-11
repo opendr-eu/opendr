@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch import stack as tstack
 
-from torchplus.tools import torch_to_np_dtype
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.tools import torch_to_np_dtype
 
 from numba.cuda.cudadrv.error import CudaSupportError
 try:

@@ -15,7 +15,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.py
     optimizer_builder,
     second_builder,
 )
-import torchplus
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train import MixedPrecisionWrapper
 
 
 def create_model(
@@ -69,7 +69,7 @@ def create_model(
     optimizer = optimizer_builder.build_online(optimizer_name, optimizer_params, lr, net.parameters())
     if train_cfg.enable_mixed_precision:
         loss_scale = train_cfg.loss_scale_factor
-        mixed_optimizer = torchplus.train.MixedPrecisionWrapper(optimizer, loss_scale)
+        mixed_optimizer = MixedPrecisionWrapper(optimizer, loss_scale)
     else:
         mixed_optimizer = optimizer
     lr_scheduler = lr_scheduler_builder.build_online(lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep)

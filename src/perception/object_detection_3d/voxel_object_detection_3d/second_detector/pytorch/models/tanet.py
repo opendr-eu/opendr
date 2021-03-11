@@ -1,8 +1,10 @@
 import torch
 from torch import nn
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.utils import get_paddings_indicator
-from torchplus.tools import change_default_args
-from torchplus.nn import Empty, GroupNorm, Sequential
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.tools import change_default_args
+from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.nn import (
+    Empty, GroupNorm, Sequential
+)
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.pointpillars import PFNLayer
 import numpy as np
 
