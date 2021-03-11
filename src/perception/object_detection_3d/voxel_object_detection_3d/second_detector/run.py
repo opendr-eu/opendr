@@ -2,8 +2,7 @@ import torch
 import numpy as np
 import time
 
-import second.data.kitti_common as kitti
-
+import perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.kitti_common as kitti
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
     merge_second_batch, )
 
