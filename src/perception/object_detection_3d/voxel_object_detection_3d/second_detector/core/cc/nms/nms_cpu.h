@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <boost/geometry.hpp>
 #include <vector>
+namespace py = pybind11;
+using namespace pybind11::literals;
 template<typename DType, typename ShapeContainer> inline py::array_t<DType> constant(ShapeContainer shape, DType value) {
   // create ROWMAJOR array.
   py::array_t<DType> array(shape);
