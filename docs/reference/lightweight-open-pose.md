@@ -13,7 +13,7 @@ following public methods:
 
 #### `LightweightOpenPoseLearner` constructor
 ```python
-LightweightOpenPoseLearner(self, lr, epochs, batch_size, devicea, backbone, lr_schedule, temp_path, checkpoint_after_iter, checkpoint_load_iter, val_after, log_after, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize, base_height, stride, img_mean, img_scale, pad_value)
+LightweightOpenPoseLearner(self, lr, epochs, batch_size, device, backbone, lr_schedule, temp_path, checkpoint_after_iter, checkpoint_load_iter, val_after, log_after, mobilenet_use_stride, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize, base_height, img_mean, img_scale, pad_value)
 ```
 
 Constructor parameters:
@@ -39,12 +39,16 @@ Constructor parameters:
   Specifies per how many training iterations a validation should be run.
 - **log_after**: *int, default=100*  
   Specifies per how many training iterations the log files will be updated.
+- **mobilenet_use_stride**: *bool, default=True*  
+  Whether to add an additional stride value in the mobilenet model, which reduces accuracy but increases inference speed. 
 - **mobilenetv2_width**: *[0.0 - 1.0], default=1.0*  
   If the mobilenetv2 backbone is used, this parameter specified its size.
 - **shufflenet_groups**: *int, default=3*  
   If the shufflenet backbone is used, it specifies the number of groups to be used in grouped 1x1 convolutions in each ShuffleUnit.
-- **num_refinement_states**: *int, default=2*  
+- **num_refinement_stages**: *int, default=2*  
   Specifies the number of pose estimation refinement stages are added on the model's head, including the initial stage.
+- **batches_per_iter**: *int, default=1*  
+  Specifies per how many batches a backward optimizer step is performed.
 - **experiment_name**: *str, default='default'*  
   String name to attach to checkpoints.
 - **num_workers**: *int, default=8*  
@@ -61,8 +65,6 @@ Constructor parameters:
   Specifies whether the images along with the poses will be shown, one by one during evaluation.
 - **base_height**: *int, default=256*  
   Specifies the height, based on which the images will be resized before performing the forward pass.
-- **stride**: *int, default=8*  
-  Specifies the stride based on which padding will be performed.
 - **img_mean**: *list, default=(128, 128, 128)]*  
   Specifies the mean based on which the images are normalized.
 - **img_scale**: *float, default=1/256*  
