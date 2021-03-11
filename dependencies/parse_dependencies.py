@@ -17,26 +17,44 @@
 
 # Loop through the src folder and generate the dependencies list
 
-
 import os
-from pip._internal import main as pip
+import sys
 from configparser import ConfigParser
 
-dependency_file = "python_dependencies.txt"
+python_file = "python_dependencies.txt"
+linux_file = "linux_dependencies.txt"
 
 
 def read_ini(path):
     parser = ConfigParser()
     parser.read(path)
-    python_dependencies = parser.get('runtime', 'python')
-    if python_dependencies:
-        for package in python_dependencies.split():
-            f = open(dependency_file, "a")
-            f.write(package + '\n')
+    if parser.has_option(section, 'python'):
+        python_dependencies = parser.get(section, 'python')
+        if python_dependencies:
+            for package in python_dependencies.split():
+                f = open(python_file, "a")
+                f.write(package + '\n')
+    if parser.has_option(section, 'linux'):
+        linux_dependencies = parser.get(section, 'linux')
+        if linux_dependencies:
+            for package in linux_dependencies.split():
+                f = open(linux_file, "a")
+                f.write(package + '\n')
 
+
+# Parse arguments
+section = "runtime"
+if len(sys.argv) > 1:
+    section = sys.argv[1]
+if section not in ["runtime", "compilation"]:
+    sys.exit("Invalid dependencies type: " + section + ".\nExpected: [runtime, compilation]")
 
 # Clear dependencies
-open(dependency_file, 'w').close()
+if os.path.exists(python_file):
+    os.remove(python_file)
+if os.path.exists(linux_file):
+    os.remove(linux_file)
+
 # Extract generic dependencies
 read_ini('dependencies.ini')
 # Loop through tools and extract dependencies
