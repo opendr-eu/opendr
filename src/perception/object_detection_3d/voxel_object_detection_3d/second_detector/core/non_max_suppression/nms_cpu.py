@@ -14,10 +14,12 @@ try:
 except:
     current_dir = Path(__file__).resolve().parents[0]
     load_pb11(
-        ["../cc/nms/nms_kernel.cu.cc", "../cc/nms/nms.cc"],
+        # ["../cc/nms/nms_kernel.cu.cc", "../cc/nms/nms.cc"],
+        ["../cc/nms/nms.cc"],
         current_dir / "nms.so",
         current_dir,
-        cuda=True,
+        # cuda=True,
+        cuda=False,
     )
     from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
         non_max_suppression_cpu,
