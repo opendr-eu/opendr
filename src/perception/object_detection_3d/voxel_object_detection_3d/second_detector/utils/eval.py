@@ -396,6 +396,10 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50):
         num_parts: int. a parameter for fast calculate algorithm
     """
     assert len(gt_annos) == len(dt_annos)
+
+    if len(gt_annos) <= num_parts:
+        num_parts = 1
+
     total_dt_num = np.stack([len(a["name"]) for a in dt_annos], 0)
     total_gt_num = np.stack([len(a["name"]) for a in gt_annos], 0)
     num_examples = len(gt_annos)
@@ -636,6 +640,10 @@ def eval_class_v3(
         dict of recall, precision and aos
     """
     assert len(gt_annos) == len(dt_annos)
+
+    if len(gt_annos) <= num_parts:
+        num_parts = 1
+
     num_examples = len(gt_annos)
     split_parts = get_split_parts(num_examples, num_parts)
 

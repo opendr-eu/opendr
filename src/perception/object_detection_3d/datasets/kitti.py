@@ -68,26 +68,32 @@ class KittiDataset(ExternalDataset):
             print("Downloading KITTI Dataset zip file from", url, "to", download_path)
 
             start_time = 0
+            last_print = 0
 
             def reporthook(count, block_size, total_size):
                 nonlocal start_time
+                nonlocal last_print
                 if count == 0:
                     start_time = time.time()
+                    last_print = start_time
                     return
+
                 duration = time.time() - start_time
                 progress_size = int(count * block_size)
                 speed = int(progress_size / (1024 * duration))
-                print(
-                    "\r%d MB, %d KB/s, %d seconds passed" %
-                    (progress_size / (1024 * 1024), speed, duration),
-                    end=''
-                )
+                if time.time() - last_print >= 1:
+                    last_print = time.time()
+                    print(
+                        "\r%d MB, %d KB/s, %d seconds passed" %
+                        (progress_size / (1024 * 1024), speed, duration),
+                        end=''
+                    )
 
             zip_path = os.path.join(download_path, "dataset.zip")
             urlretrieve(url, zip_path, reporthook=reporthook)
             print()
 
-            print("Extarcting KITTI Dataset from zip file")
+            print("Extracting KITTI Dataset from zip file")
             with ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(download_path)
 

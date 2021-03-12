@@ -636,7 +636,6 @@ class VoxelNet(nn.Module):
                 with_distance=with_distance,
             )
 
-        print("middle_class_name", middle_class_name)
         if middle_class_name == "PointPillarsScatter":
             self.middle_feature_extractor = PointPillarsScatter(
                 output_shape=output_shape,
@@ -1284,11 +1283,11 @@ class VoxelNet(nn.Module):
 
     @property
     def avg_forward_time(self):
-        return self._total_forward_time / self._total_inference_count
+        return self._total_forward_time / max(1, self._total_inference_count)
 
     @property
     def avg_postprocess_time(self):
-        return self._total_postprocess_time / self._total_inference_count
+        return self._total_postprocess_time / max(1, self._total_inference_count)
 
     def clear_time_metrics(self):
         self._total_forward_time = 0.0

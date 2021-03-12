@@ -70,7 +70,8 @@ def train(
     display_step=50,
     log=print,
     auto_save=False,
-    image_shape=None
+    image_shape=None,
+    evaluate=True,
 ):
     ######################
     # PREPARE INPUT
@@ -262,89 +263,90 @@ def train(
 
         total_step_elapsed += steps
 
-        net.eval()
-        # result_path_step = result_path / f"step_{net.get_global_step()}"
-        # result_path_step.mkdir(parents=True, exist_ok=True)
-        log(Logger.LOG_WHEN_VERBOSE, "#################################")
-        log(Logger.LOG_WHEN_VERBOSE, "# EVAL")
-        log(Logger.LOG_WHEN_VERBOSE, "#################################")
-        log(Logger.LOG_WHEN_NORMAL, "Generate output labels...")
-        t = time.time()
-        if (
-            model_cfg.rpn.module_class_name == "PSA" or
-            model_cfg.rpn.module_class_name == "RefineDet"
-        ):
-            dt_annos_coarse = []
-            dt_annos_refine = []
-            prog_bar = ProgressBar()
-            prog_bar.start(
-                len(input_dataset_iterator) // eval_input_cfg.batch_size +
-                1)
-            for example in iter(eval_dataloader):
+        if evaluate:
+            net.eval()
+            # result_path_step = result_path / f"step_{net.get_global_step()}"
+            # result_path_step.mkdir(parents=True, exist_ok=True)
+            log(Logger.LOG_WHEN_VERBOSE, "#################################")
+            log(Logger.LOG_WHEN_VERBOSE, "# EVAL")
+            log(Logger.LOG_WHEN_VERBOSE, "#################################")
+            log(Logger.LOG_WHEN_NORMAL, "Generate output labels...")
+            t = time.time()
+            if (
+                model_cfg.rpn.module_class_name == "PSA" or
+                model_cfg.rpn.module_class_name == "RefineDet"
+            ):
+                dt_annos_coarse = []
+                dt_annos_refine = []
+                prog_bar = ProgressBar()
+                prog_bar.start(
+                    len(input_dataset_iterator) // eval_input_cfg.batch_size +
+                    1)
+                for example in iter(eval_dataloader):
 
-                if take_gt_annos_from_example:
-                    gt_annos += list(example["annos"])
+                    if take_gt_annos_from_example:
+                        gt_annos += list(example["annos"])
 
-                example = example_convert_to_torch(example, float_dtype, device=device)
-                # if pickle_result:
-                coarse, refine = predict_kitti_to_anno(
-                    net,
-                    example,
-                    class_names,
-                    center_limit_range,
-                    model_cfg.lidar_input,
-                    use_coarse_to_fine=True,
-                    image_shape=image_shape,
-                )
-                dt_annos_coarse += coarse
-                dt_annos_refine += refine
-                # else:
-                #     _predict_kitti_to_file(
-                #         net,
-                #         example,
-                #         result_path_step,
-                #         class_names,
-                #         center_limit_range,
-                #         model_cfg.lidar_input,
-                #         use_coarse_to_fine=True,
-                #     )
-                prog_bar.print_bar(log=lambda *x, **y: log(
-                    Logger.LOG_WHEN_NORMAL, *x, **y))
-        else:
-            dt_annos = []
-            prog_bar = ProgressBar()
-            prog_bar.start(
-                len(input_dataset_iterator) // eval_input_cfg.batch_size +
-                1)
-            for example in iter(eval_dataloader):
+                    example = example_convert_to_torch(example, float_dtype, device=device)
+                    # if pickle_result:
+                    coarse, refine = predict_kitti_to_anno(
+                        net,
+                        example,
+                        class_names,
+                        center_limit_range,
+                        model_cfg.lidar_input,
+                        use_coarse_to_fine=True,
+                        image_shape=image_shape,
+                    )
+                    dt_annos_coarse += coarse
+                    dt_annos_refine += refine
+                    # else:
+                    #     _predict_kitti_to_file(
+                    #         net,
+                    #         example,
+                    #         result_path_step,
+                    #         class_names,
+                    #         center_limit_range,
+                    #         model_cfg.lidar_input,
+                    #         use_coarse_to_fine=True,
+                    #     )
+                    prog_bar.print_bar(log=lambda *x, **y: log(
+                        Logger.LOG_WHEN_NORMAL, *x, **y))
+            else:
+                dt_annos = []
+                prog_bar = ProgressBar()
+                prog_bar.start(
+                    len(input_dataset_iterator) // eval_input_cfg.batch_size +
+                    1)
+                for example in iter(eval_dataloader):
 
-                if take_gt_annos_from_example:
-                    gt_annos += list(example["annos"])
+                    if take_gt_annos_from_example:
+                        gt_annos += list(example["annos"])
 
-                example = example_convert_to_torch(example, float_dtype, device=device)
-                # if pickle_result:
-                dt_annos += predict_kitti_to_anno(
-                    net,
-                    example,
-                    class_names,
-                    center_limit_range,
-                    model_cfg.lidar_input,
-                    use_coarse_to_fine=False,
-                    image_shape=image_shape,
-                )
-                # else:
-                #     _predict_kitti_to_file(
-                #         net,
-                #         example,
-                #         result_path_step,
-                #         class_names,
-                #         center_limit_range,
-                #         model_cfg.lidar_input,
-                #         use_coarse_to_fine=False,
-                #     )
+                    example = example_convert_to_torch(example, float_dtype, device=device)
+                    # if pickle_result:
+                    dt_annos += predict_kitti_to_anno(
+                        net,
+                        example,
+                        class_names,
+                        center_limit_range,
+                        model_cfg.lidar_input,
+                        use_coarse_to_fine=False,
+                        image_shape=image_shape,
+                    )
+                    # else:
+                    #     _predict_kitti_to_file(
+                    #         net,
+                    #         example,
+                    #         result_path_step,
+                    #         class_names,
+                    #         center_limit_range,
+                    #         model_cfg.lidar_input,
+                    #         use_coarse_to_fine=False,
+                    #     )
 
-                prog_bar.print_bar(log=lambda *x, **y: log(
-                    Logger.LOG_WHEN_NORMAL, *x, **y))
+                    prog_bar.print_bar(log=lambda *x, **y: log(
+                        Logger.LOG_WHEN_NORMAL, *x, **y))
 
         sec_per_ex = len(input_dataset_iterator) / (time.time() - t)
         log(
@@ -364,47 +366,49 @@ def train(
         # if not pickle_result:
         #     dt_annos = kitti.get_label_annos(result_path_step)
 
-        if (model_cfg.rpn.module_class_name == "PSA" or
-                model_cfg.rpn.module_class_name == "RefineDet"):
+        if evaluate:
 
-            log(Logger.LOG_WHEN_NORMAL, "Before Refine:")
-            (
-                result,
-                mAPbbox,
-                mAPbev,
-                mAP3d,
-                mAPaos,
-            ) = get_official_eval_result(gt_annos,
-                                         dt_annos_coarse,
-                                         class_names,
-                                         return_data=True)
+            if (model_cfg.rpn.module_class_name == "PSA" or
+                    model_cfg.rpn.module_class_name == "RefineDet"):
+
+                log(Logger.LOG_WHEN_NORMAL, "Before Refine:")
+                (
+                    result,
+                    mAPbbox,
+                    mAPbev,
+                    mAP3d,
+                    mAPaos,
+                ) = get_official_eval_result(gt_annos,
+                                            dt_annos_coarse,
+                                            class_names,
+                                            return_data=True)
+                log(Logger.LOG_WHEN_NORMAL, result)
+                # writer.add_text("eval_result", result, global_step)
+
+                log(Logger.LOG_WHEN_NORMAL, "After Refine:")
+                (
+                    result,
+                    mAPbbox,
+                    mAPbev,
+                    mAP3d,
+                    mAPaos,
+                ) = get_official_eval_result(gt_annos,
+                                            dt_annos_refine,
+                                            class_names,
+                                            return_data=True)
+                dt_annos = dt_annos_refine
+            else:
+                (
+                    result,
+                    mAPbbox,
+                    mAPbev,
+                    mAP3d,
+                    mAPaos,
+                ) = get_official_eval_result(gt_annos,
+                                            dt_annos,
+                                            class_names,
+                                            return_data=True)
             log(Logger.LOG_WHEN_NORMAL, result)
-            # writer.add_text("eval_result", result, global_step)
-
-            log(Logger.LOG_WHEN_NORMAL, "After Refine:")
-            (
-                result,
-                mAPbbox,
-                mAPbev,
-                mAP3d,
-                mAPaos,
-            ) = get_official_eval_result(gt_annos,
-                                         dt_annos_refine,
-                                         class_names,
-                                         return_data=True)
-            dt_annos = dt_annos_refine
-        else:
-            (
-                result,
-                mAPbbox,
-                mAPbev,
-                mAP3d,
-                mAPaos,
-            ) = get_official_eval_result(gt_annos,
-                                         dt_annos,
-                                         class_names,
-                                         return_data=True)
-        log(Logger.LOG_WHEN_NORMAL, result)
 
         net.train()
 
@@ -424,6 +428,7 @@ def evaluate(
     predict_test=False,
     log=print,
     image_shape=None,
+    count=None
 ):
 
     take_gt_annos_from_example = False
@@ -469,6 +474,10 @@ def evaluate(
             )
             dt_annos_coarse += coarse
             dt_annos_refine += refine
+
+            if count is not None and len(dt_annos_refine) >= count:
+                break
+
             bar.print_bar(
                 log=lambda *x, **y: log(Logger.LOG_WHEN_NORMAL, *x, **y))
     else:
@@ -492,8 +501,21 @@ def evaluate(
                 global_set=None,
                 image_shape=image_shape,
             )
+
+            if count is not None and len(dt_annos) >= count:
+                break
+
             bar.print_bar(
                 log=lambda *x, **y: log(Logger.LOG_WHEN_NORMAL, *x, **y))
+
+    if count is not None:
+        if (
+            model_cfg.rpn.module_class_name == "PSA" or
+            model_cfg.rpn.module_class_name == "RefineDet"
+        ):
+            gt_annos = gt_annos[:len(dt_annos_refine)]
+        else:
+            gt_annos = gt_annos[:len(dt_annos)]
 
     sec_per_example = len(eval_dataloader) / (time.time() - t)
     log(
