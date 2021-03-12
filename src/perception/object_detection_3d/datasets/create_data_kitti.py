@@ -25,6 +25,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.da
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.progress_bar import (
     list_bar as prog_bar,
 )
+import os
 
 
 def _read_imageset_file(path):
@@ -173,6 +174,9 @@ def _create_reduced_point_cloud(data_path, info_path, save_path=None, back=False
             save_filename = (
                 v_path.parent.parent / (v_path.parent.stem + "_reduced") / v_path.name
             )
+
+            os.makedirs(v_path.parent.parent / (v_path.parent.stem + "_reduced"), exist_ok=True)
+
             # save_filename = str(v_path) + '_reduced'
             if back:
                 save_filename += "_back"

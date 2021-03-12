@@ -75,6 +75,13 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             ".", "src", "perception", "object_detection_3d",
             "datasets", "mini_kitti_subsets")
 
+        cls.download_model_names = {
+            "tanet_car": "tanet_car_xyres_16",
+            "tanet_ped_cycle": "tanet_ped_cycle_xyres_16",
+            "pointpillars_car": "pointpillars_car_xyres_16",
+            "pointpillars_ped_cycle": "pointpillars_ped_cycle_xyres_16",
+        }
+
         cls.all_configs = {
             "tanet_car": cls.config_tanet_car,
             "tanet_ped_cycle": cls.config_tanet_ped_cycle,
@@ -86,18 +93,19 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             "pointpillars_car": cls.config_pointpillars_car,
         }
 
-        # cls.dataset_path = os.path.join("/", "data", "sets", "opendr_kitti")
-        cls.dataset_path = os.path.join("/", "data", "sets", "opendr_mini_kitti")
+        cls.dataset_path = KittiDataset.download_mini_kitti(
+            cls.temp_dir, True, cls.subsets_path
+        ).path
 
-        # Download all required files for testing
-        # cls.pose_estimator.download(path=os.path.join(cls.temp_dir, "tanet_xyres_16_pretrained"))
+        for model_name in cls.download_model_names.values():
+            VoxelObjectDetection3DLearner.download(
+                model_name, cls.temp_dir
+            )
 
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
 
-        # for name in cls.all_configs.keys():
-        #     rmdir(os.path.join(cls.temp_dir, "test_fit_" + name))
         rmdir(os.path.join(cls.temp_dir))
         pass
 
@@ -157,15 +165,14 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
     def test_eval(self):
         def test_model(name, config):
-            # model_path = os.path.join(self.temp_dir, "test_eval_" + name)
+            model_path = os.path.join(self.temp_dir, self.download_model_names[name])
             dataset = KittiDataset(self.dataset_path, self.subsets_path)
 
             learner = VoxelObjectDetection3DLearner(model_config_path=config, device=DEVICE)
-            # learner.load(model_path)
+            learner.load(model_path)
             mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset)
 
-            # self.assertTrue(mAPbbox[0][0][0] > 80 and mAPbbox[0][0][0] < 95)
-            self.assertTrue(mAPbbox[0][0][0] >= 0 and mAPbbox[0][0][0] < 95)
+            self.assertTrue(mAPbbox[0][0][0] > 80 and mAPbbox[0][0][0] < 95)
 
         for name, config in self.car_configs.items():
             test_model(name, config)
@@ -177,10 +184,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
             learner = VoxelObjectDetection3DLearner(
                 model_config_path=config, device=DEVICE
-            )
-
-            result = learner.infer(
-                dataset[0]
             )
 
             result = learner.infer(

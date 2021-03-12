@@ -40,6 +40,8 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.da
     merge_second_batch,
 )
 from engine.target import BoundingBox3DList
+from engine.constants import OPENDR_SERVER_URL
+from urllib.request import urlretrieve
 
 
 class VoxelObjectDetection3DLearner(Learner):
@@ -442,6 +444,55 @@ class VoxelObjectDetection3DLearner(Learner):
             )
 
         self.__load_rpn_from_onnx(os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"))
+
+    @staticmethod
+    def download(model_name, path, server_url=None):
+
+        if server_url is not None and model_name not in [
+            "pointpillars_car_xyres_16",
+            "pointpillars_ped_cycle_xyres_16",
+            "tanet_car_xyres_16",
+            "tanet_ped_cycle_xyres_16",
+        ]:
+            raise ValueError("Unknown model_name: " + model_name)
+
+        os.makedirs(path, exist_ok=True)
+
+        if server_url is None:
+            server_url = os.path.join(
+                OPENDR_SERVER_URL, "perception", "object_detection_3d",
+                "voxel_object_detection_3d"
+            )
+
+        url = os.path.join(
+            server_url, model_name
+        )
+
+        model_dir = os.path.join(path, model_name)
+        os.makedirs(model_dir, exist_ok=True)
+
+        urlretrieve(os.path.join(
+            url, model_name + ".json"
+        ), os.path.join(
+            model_dir, model_name + ".json"
+        ))
+
+        try:
+            urlretrieve(os.path.join(
+                url, model_name + ".pth"
+            ), os.path.join(
+                model_dir, model_name + ".pth"
+            ))
+        except Exception:
+            urlretrieve(os.path.join(
+                url, model_name + ".tckpt"
+            ), os.path.join(
+                model_dir, model_name + ".pth"
+            ))
+
+        print("Downloaded model", model_name, "to", model_dir)
+
+        return model_dir
 
     def __convert_rpn_to_onnx(self, input_shape, has_refine, output_name, do_constant_folding=False, verbose=False):
         inp = torch.randn(input_shape).to(self.device)
