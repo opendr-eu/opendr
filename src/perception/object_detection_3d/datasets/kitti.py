@@ -25,6 +25,14 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.da
     get_label_anno,
     _extend_matrix,
 )
+from urllib.request import urlretrieve
+import time
+from zipfile import ZipFile
+from engine.constants import OPENDR_SERVER_URL
+
+
+DEFAULT_KITTI_SUBSETS_PATH = "./perception/object_detection_3d/datasets/kitti_subsets"
+MINI_KITTI_SUBSETS_PATH = "./perception/object_detection_3d/datasets/mini_kitti_subsets"
 
 
 class DatasetSamplerOptions:
@@ -37,7 +45,7 @@ class KittiDataset(ExternalDataset):
     def __init__(
         self,
         path,
-        kitti_subsets_path="./perception/object_detection_3d/datasets/kitti_subsets",
+        kitti_subsets_path=DEFAULT_KITTI_SUBSETS_PATH,
     ):
 
         super().__init__(path, "kitti")
@@ -46,6 +54,65 @@ class KittiDataset(ExternalDataset):
         self.kitti_subsets_path = kitti_subsets_path
 
         self.__prepare_data()
+
+    @staticmethod
+    def download(
+        url, download_path, dataset_sub_path=".", file_format="zip",
+        create_dir=False, kitti_subsets_path=DEFAULT_KITTI_SUBSETS_PATH
+    ):
+
+        if file_format == "zip":
+            if create_dir:
+                os.makedirs(download_path, exist_ok=True)
+
+            print("Downloading KITTI Dataset zip file from", url, "to", download_path)
+
+            start_time = 0
+
+            def reporthook(count, block_size, total_size):
+                nonlocal start_time
+                if count == 0:
+                    start_time = time.time()
+                    return
+                duration = time.time() - start_time
+                progress_size = int(count * block_size)
+                speed = int(progress_size / (1024 * duration))
+                print(
+                    "\r%d MB, %d KB/s, %d seconds passed" %
+                    (progress_size / (1024 * 1024), speed, duration),
+                    end=''
+                )
+
+            zip_path = os.path.join(download_path, "dataset.zip")
+            urlretrieve(url, zip_path, reporthook=reporthook)
+            print()
+
+            print("Extarcting KITTI Dataset from zip file")
+            with ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(download_path)
+
+            os.remove(zip_path)
+
+            return KittiDataset(
+                os.path.join(download_path, dataset_sub_path),
+                kitti_subsets_path
+            )
+
+        else:
+            raise ValueError("Unsupported file_format: " + file_format)
+
+    @staticmethod
+    def download_mini_kitti(
+        download_path, create_dir=False,
+        kitti_subsets_path=MINI_KITTI_SUBSETS_PATH,
+    ):
+        return KittiDataset.download(
+            os.path.join(OPENDR_SERVER_URL, "perception", "object_detection_3d", "opendr_mini_kitti.zip"),
+            download_path,
+            create_dir=create_dir,
+            dataset_sub_path="opendr_mini_kitti",
+            kitti_subsets_path=kitti_subsets_path
+        )
 
     def __prepare_data(self):
 
