@@ -378,10 +378,11 @@ def train(
                     mAPbev,
                     mAP3d,
                     mAPaos,
-                ) = get_official_eval_result(gt_annos,
-                                            dt_annos_coarse,
-                                            class_names,
-                                            return_data=True)
+                ) = get_official_eval_result(
+                    gt_annos,
+                    dt_annos_coarse,
+                    class_names,
+                    return_data=True)
                 log(Logger.LOG_WHEN_NORMAL, result)
                 # writer.add_text("eval_result", result, global_step)
 
@@ -392,10 +393,11 @@ def train(
                     mAPbev,
                     mAP3d,
                     mAPaos,
-                ) = get_official_eval_result(gt_annos,
-                                            dt_annos_refine,
-                                            class_names,
-                                            return_data=True)
+                ) = get_official_eval_result(
+                    gt_annos,
+                    dt_annos_refine,
+                    class_names,
+                    return_data=True)
                 dt_annos = dt_annos_refine
             else:
                 (
@@ -404,10 +406,11 @@ def train(
                     mAPbev,
                     mAP3d,
                     mAPaos,
-                ) = get_official_eval_result(gt_annos,
-                                            dt_annos,
-                                            class_names,
-                                            return_data=True)
+                ) = get_official_eval_result(
+                    gt_annos,
+                    dt_annos,
+                    class_names,
+                    return_data=True)
             log(Logger.LOG_WHEN_NORMAL, result)
 
         net.train()
