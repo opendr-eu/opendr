@@ -230,6 +230,7 @@ class VoxelObjectDetection3DLearner(Learner):
         verbose=False,
         model_dir=None,
         image_shape=(1224, 370),
+        evaluate=True,
     ):
 
         logger = Logger(silent, verbose, logging_path)
@@ -297,6 +298,7 @@ class VoxelObjectDetection3DLearner(Learner):
             display_step=display_step,
             device=self.device,
             image_shape=image_shape,
+            evaluate=evaluate,
         )
 
         logger.close()
@@ -310,6 +312,7 @@ class VoxelObjectDetection3DLearner(Learner):
         silent=False,
         verbose=False,
         image_shape=(1224, 370),
+        count=None,
     ):
 
         logger = Logger(silent, verbose, logging_path)
@@ -345,6 +348,7 @@ class VoxelObjectDetection3DLearner(Learner):
             log=logger.log,
             device=self.device,
             image_shape=image_shape,
+            count=count,
         )
 
         logger.close()

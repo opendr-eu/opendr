@@ -158,7 +158,7 @@ train_config: {
 
   inter_op_parallelism_threads: 4
   intra_op_parallelism_threads: 4
-  steps: 100 # 1856 steps per epoch * 160 epochs
+  steps: 2 # 1856 steps per epoch * 160 epochs
   steps_per_eval: 100 # 1856 steps per epoch * 5 epochs
   save_checkpoints_secs : 1800 # half hour
   save_summary_steps : 10

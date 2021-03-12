@@ -21,7 +21,7 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.to
 def create_model(
     config_path, device, optimizer_name,
     optimizer_params, lr, lr_schedule_name, lr_schedule_params,
-    log=print
+    log=print, verbose=False
 ):
 
     loss_scale = None
@@ -55,9 +55,11 @@ def create_model(
     net = second_builder.build(model_cfg, voxel_generator, target_assigner, device)
     net.to(device)
     net.device = device
-    log("num_trainable parameters:", len(list(net.parameters())))
-    for n, p in net.named_parameters():
-        log(n, p.shape)
+
+    if verbose:
+        log("num_trainable parameters:", len(list(net.parameters())))
+        for n, p in net.named_parameters():
+            log(n, p.shape)
     ######################
     # BUILD OPTIMIZER
     ######################
