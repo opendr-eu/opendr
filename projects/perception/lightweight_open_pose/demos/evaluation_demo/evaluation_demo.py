@@ -67,29 +67,30 @@ class CustomValDataset(DatasetIterator):
             self.data = CocoValDataset(val_labels_file, images_folder)
 
 
-use_external_dataset = True  # Whether to use an ExternalDataset or the CustomDataset created above
-parent_dir = "." + os.sep
+if __name__ == '__main__':
+    use_external_dataset = True  # Whether to use an ExternalDataset or the CustomDataset created above
+    parent_dir = "." + os.sep
 
-# path_to_data: path where the data are stored. Inside this folder the val2017 folder is expected if validating on
-# COCO2017, as well as the person_keypoints_val2017.json file
-path_to_data = ".." + os.sep + "data"
+    # path_to_data: path where the data are stored. Inside this folder the val2017 folder is expected if validating on
+    # COCO2017, as well as the person_keypoints_val2017.json file
+    path_to_data = ".." + os.sep + "data"
 
-device = "cuda"
-num_refinement_stages = 2  # 0, 1, 2 or 3 refinement stages, more means better metrics and slower speed
+    device = "cuda"
+    num_refinement_stages = 2  # 0, 1, 2 or 3 refinement stages, more means better metrics and slower speed
 
-use_validation_subset = True  # Whether to create a subset of the validation set
-validation_subset_size = 250  # The number of images contained in the subset
+    use_validation_subset = True  # Whether to create a subset of the validation set
+    validation_subset_size = 250  # The number of images contained in the subset
 
-pose_estimator = LightweightOpenPoseLearner(temp_path=parent_dir, device=device,
-                                            num_refinement_stages=num_refinement_stages)
-if use_external_dataset:
-    validation_dataset = ExternalDataset(path=path_to_data, dataset_type="COCO")
-else:
-    validation_dataset = CustomValDataset(path=path_to_data, use_subset=use_validation_subset,
-                                          subset_size=validation_subset_size)
+    pose_estimator = LightweightOpenPoseLearner(temp_path=parent_dir, device=device,
+                                                num_refinement_stages=num_refinement_stages)
+    if use_external_dataset:
+        validation_dataset = ExternalDataset(path=path_to_data, dataset_type="COCO")
+    else:
+        validation_dataset = CustomValDataset(path=path_to_data, use_subset=use_validation_subset,
+                                              subset_size=validation_subset_size)
 
-pose_estimator.download(path="trainedModel", verbose=True)
-pose_estimator.load("trainedModel")
+    pose_estimator.download(path="trainedModel", verbose=True)
+    pose_estimator.load("trainedModel")
 
-pose_estimator.eval(validation_dataset,
-                    use_subset=use_validation_subset, subset_size=validation_subset_size)
+    pose_estimator.eval(validation_dataset,
+                        use_subset=use_validation_subset, subset_size=validation_subset_size)
