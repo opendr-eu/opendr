@@ -2,11 +2,11 @@ from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_lear
     LightweightOpenPoseLearner
 from webcam_fps_test import webcamTester
 
-onnx = True
+onnx = False
 device = "cuda"  # "cpu", "cuda"
 
 pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=2, mobilenet_use_stride=False)
-pose_estimator.download(path="trainedModel")
+pose_estimator.download(path="trainedModel", verbose=True)
 
 pose_estimator.load("trainedModel")
 if onnx:
