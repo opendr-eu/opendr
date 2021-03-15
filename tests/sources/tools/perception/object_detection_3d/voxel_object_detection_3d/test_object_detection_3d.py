@@ -101,10 +101,14 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             cls.temp_dir, True, cls.subsets_path
         ).path
 
+        print("Dataset downloaded", file=sys.stderr)
+
         for model_name in cls.download_model_names.values():
             VoxelObjectDetection3DLearner.download(
                 model_name, cls.temp_dir
             )
+
+        print("Models downloaded", file=sys.stderr)
 
     @classmethod
     def tearDownClass(cls):
@@ -133,6 +137,8 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             )
             new_param = list(learner.model.parameters())[0].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
+
+            print("Fit", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
             test_model(name, config)
@@ -166,6 +172,8 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             )
             new_param = list(learner.model.parameters())[0].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
+
+            print("Fit iterator", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
             test_model(name, config)
