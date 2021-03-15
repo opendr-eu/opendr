@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import unittest
 import shutil
 import os
@@ -26,6 +27,7 @@ from perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledP
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 print("Using device:", DEVICE)
+print("Using device:", DEVICE, file=sys.stderr)
 
 
 def rmfile(path):
