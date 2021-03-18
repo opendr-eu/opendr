@@ -77,7 +77,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
         cls.subsets_path = os.path.join(
             ".", "src", "perception", "object_detection_3d",
-            "datasets", "mini_kitti_subsets")
+            "datasets", "nano_kitti_subsets")
 
         cls.download_model_names = {
             "tanet_car": "tanet_car_xyres_16",
@@ -97,7 +97,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             "pointpillars_car": cls.config_pointpillars_car,
         }
 
-        cls.dataset_path = KittiDataset.download_mini_kitti(
+        cls.dataset_path = KittiDataset.download_nano_kitti(
             cls.temp_dir, True, cls.subsets_path
         ).path
 
@@ -208,9 +208,9 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             self.assertTrue(len(result) > 0)
 
             result = learner.infer(
-                [dataset[0], dataset[1], dataset[2], dataset[3]]
+                [dataset[0], dataset[1], dataset[2]]
             )
-            self.assertTrue(len(result) == 4)
+            self.assertTrue(len(result) == 3)
             self.assertTrue(len(result[0]) > 0)
 
         for name, config in self.car_configs.items():

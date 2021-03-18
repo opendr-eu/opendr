@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import os
+import shutil
 import numpy as np
 from engine.datasets import ExternalDataset, DatasetIterator
 from engine.data import PointCloudWithCalibration
@@ -33,6 +34,7 @@ from engine.constants import OPENDR_SERVER_URL
 
 DEFAULT_KITTI_SUBSETS_PATH = "./perception/object_detection_3d/datasets/kitti_subsets"
 MINI_KITTI_SUBSETS_PATH = "./perception/object_detection_3d/datasets/mini_kitti_subsets"
+NANO_KITTI_SUBSETS_PATH = "./perception/object_detection_3d/datasets/nano_kitti_subsets"
 
 
 class DatasetSamplerOptions:
@@ -58,7 +60,8 @@ class KittiDataset(ExternalDataset):
     @staticmethod
     def download(
         url, download_path, dataset_sub_path=".", file_format="zip",
-        create_dir=False, kitti_subsets_path=DEFAULT_KITTI_SUBSETS_PATH
+        create_dir=False, kitti_subsets_path=DEFAULT_KITTI_SUBSETS_PATH,
+        copy_training_to_testing=False,
     ):
 
         if file_format == "zip":
@@ -99,6 +102,11 @@ class KittiDataset(ExternalDataset):
 
             os.remove(zip_path)
 
+            if copy_training_to_testing:
+                shutil.copytree(
+                    os.path.join(download_path, dataset_sub_path, "training"),
+                    os.path.join(download_path, dataset_sub_path, "testing"))
+
             return KittiDataset(
                 os.path.join(download_path, dataset_sub_path),
                 kitti_subsets_path
@@ -118,6 +126,20 @@ class KittiDataset(ExternalDataset):
             create_dir=create_dir,
             dataset_sub_path="opendr_mini_kitti",
             kitti_subsets_path=kitti_subsets_path
+        )
+
+    @staticmethod
+    def download_nano_kitti(
+        download_path, create_dir=False,
+        kitti_subsets_path=NANO_KITTI_SUBSETS_PATH,
+    ):
+        return KittiDataset.download(
+            os.path.join(OPENDR_SERVER_URL, "perception", "object_detection_3d", "opendr_nano_kitti.zip"),
+            download_path,
+            create_dir=create_dir,
+            dataset_sub_path="opendr_nano_kitti",
+            kitti_subsets_path=kitti_subsets_path,
+            copy_training_to_testing=True,
         )
 
     def __prepare_data(self):
