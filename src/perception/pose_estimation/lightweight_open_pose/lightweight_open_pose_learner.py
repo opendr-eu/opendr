@@ -886,7 +886,7 @@ class LightweightOpenPoseLearner(Learner):
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
     def download(self, path=None, mode="pretrained", verbose=False,
-                 url=OPENDR_SERVER_URL + "pose_estimation/lightweight_open_pose/"):
+                 url=OPENDR_SERVER_URL + "perception/pose_estimation/lightweight_open_pose/"):
         """
         Download utility for various Lightweight Open Pose components. Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
