@@ -247,7 +247,8 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             dataset = PointCloudsDatasetIterator(self.dataset_path + "/testing/velodyne_reduced")
 
             learner = VoxelObjectDetection3DLearner(
-                model_config_path=config, device=DEVICE
+                model_config_path=config, device=DEVICE,
+                temp_path=self.temp_dir
             )
             learner.optimize()
 
