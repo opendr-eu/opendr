@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
+
 
 class BaseTarget:
     """
@@ -84,3 +86,154 @@ class Pose(Target):
         for name, kpt in zip(Pose.kpt_names, self.data.tolist()):
             out_string += name + ": " + str(kpt) + "\n"
         return out_string
+
+
+class BoundingBox3D(Target):
+    """
+    This target is used for 3D Object Detection.
+    A bounding box is described by its location (x, y, z), dimensions (w, h, d) and rotation (along vertical y axis)
+    Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
+    truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
+    observation angle of an object (alpha).
+    keypoints on the image.
+    """
+    def __init__(
+        self,
+        name,
+        truncated,
+        occluded,
+        alpha,
+        bbox2d,
+        dimensions,
+        location,
+        rotation_y,
+        score=0,
+    ):
+        super().__init__()
+        self.data = {
+            "name": name,
+            "truncated": truncated,
+            "occluded": occluded,
+            "alpha": alpha,
+            "bbox2d": bbox2d,
+            "dimensions": dimensions,
+            "location": location,
+            "rotation_y": rotation_y,
+        }
+        self.confidence = score
+
+    def kitti(self):
+
+        result = {}
+
+        result["name"] = np.array([self.data["name"]])
+        result["truncated"] = np.array([self.data["truncated"]])
+        result["occluded"] = np.array([self.data["occluded"]])
+        result["alpha"] = np.array([self.data["alpha"]])
+        result["bbox"] = np.array([self.data["bbox2d"]])
+        result["dimensions"] = np.array([self.data["dimensions"]])
+        result["location"] = np.array([self.data["location"]])
+        result["rotation_y"] = np.array([self.data["rotation_y"]])
+        result["score"] = np.array([self.confidence])
+
+        return result
+
+    def __repr__(self):
+        return "BoundingBox3D " + str(self)
+
+    def __str__(self):
+        return str(self.kitti())
+
+
+class BoundingBox3DList(Target):
+    """
+    This target is used for 3D Object Detection. It contains a list of BoundingBox3D targets
+    A bounding box is described by its location (x, y, z), dimensions (l, h, w) and rotation (along vertical (y) axis)
+    Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
+    truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
+    observation angle of an object (alpha).
+    keypoints on the image.
+    """
+    def __init__(
+        self,
+        boundingBoxes3D
+    ):
+        super().__init__()
+        self.data = boundingBoxes3D
+        self.confidence = np.mean([box.confidence for box in self.data])
+
+    @staticmethod
+    def from_kitti(boxes_kitti):
+
+        count = len(boxes_kitti["name"])
+
+        boxes3d = []
+
+        for i in range(count):
+            box3d = BoundingBox3D(
+                boxes_kitti["name"][i],
+                boxes_kitti["truncated"][i],
+                boxes_kitti["occluded"][i],
+                boxes_kitti["alpha"][i],
+                boxes_kitti["bbox"][i],
+                boxes_kitti["dimensions"][i],
+                boxes_kitti["location"][i],
+                boxes_kitti["rotation_y"][i],
+                boxes_kitti["score"][i],
+            )
+
+            boxes3d.append(box3d)
+
+        return BoundingBox3DList(boxes3d)
+
+    def kitti(self):
+
+        result = {
+            "name": [],
+            "truncated": [],
+            "occluded": [],
+            "alpha": [],
+            "bbox": [],
+            "dimensions": [],
+            "location": [],
+            "rotation_y": [],
+            "score": [],
+        }
+
+        if len(self.data) == 0:
+            return result
+        elif len(self.data) == 1:
+            return self.data[0].kitti()
+        else:
+
+            for box in self.data:
+                result["name"].append(box.data["name"])
+                result["truncated"].append(box.data["truncated"])
+                result["occluded"].append(box.data["occluded"])
+                result["alpha"].append(box.data["alpha"])
+                result["bbox"].append(box.data["bbox2d"])
+                result["dimensions"].append(box.data["dimensions"])
+                result["location"].append(box.data["location"])
+                result["rotation_y"].append(box.data["rotation_y"])
+                result["score"].append(box.confidence)
+
+            result["name"] = np.array(result["name"])
+            result["truncated"] = np.array(result["truncated"])
+            result["occluded"] = np.array(result["occluded"])
+            result["alpha"] = np.array(result["alpha"])
+            result["bbox"] = np.array(result["bbox"])
+            result["dimensions"] = np.array(result["dimensions"])
+            result["location"] = np.array(result["location"])
+            result["rotation_y"] = np.array(result["rotation_y"])
+            result["score"] = np.array(result["score"])
+
+        return result
+
+    def __len__(self):
+        return len(self.data)
+
+    def __repr__(self):
+        return "BoundingBox3DList " + str(self)
+
+    def __str__(self):
+        return str(self.kitti())

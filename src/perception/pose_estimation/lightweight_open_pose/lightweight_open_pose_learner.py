@@ -37,6 +37,7 @@ from engine.target import Pose
 from engine.constants import OPENDR_SERVER_URL
 
 # OpenDR lightweight_open_pose imports
+from perception.pose_estimation.lightweight_open_pose.filtered_pose import FilteredPose
 from perception.pose_estimation.lightweight_open_pose.utilities import track_poses
 from perception.pose_estimation.lightweight_open_pose.algorithm.models.with_mobilenet import \
     PoseEstimationWithMobileNet
@@ -67,10 +68,10 @@ cv2.ocl.setUseOpenCL(False)  # To prevent freeze of DataLoader
 class LightweightOpenPoseLearner(Learner):
     def __init__(self, lr=4e-5, epochs=280, batch_size=80, device='cuda', backbone='mobilenet',
                  lr_schedule='', temp_path='temp', checkpoint_after_iter=5000, checkpoint_load_iter=0,
-                 val_after=5000, log_after=100, mobilenetv2_width=1.0, shufflenet_groups=3,
+                 val_after=5000, log_after=100, mobilenet_use_stride=True, mobilenetv2_width=1.0, shufflenet_groups=3,
                  num_refinement_stages=2, batches_per_iter=1,
                  experiment_name='default', num_workers=8, weights_only=True, output_name='detections.json',
-                 multiscale=False, scales=None, visualize=False, base_height=256, stride=8,
+                 multiscale=False, scales=None, visualize=False, base_height=256,
                  img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256), pad_value=(0, 0, 0)):
         super(LightweightOpenPoseLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                          checkpoint_after_iter=checkpoint_after_iter,
@@ -89,6 +90,8 @@ class LightweightOpenPoseLearner(Learner):
         supportedBackbones = ["mobilenet", "mobilenetv2", "shufflenet"]
         if self.backbone not in supportedBackbones:
             raise ValueError(self.backbone + " not a valid backbone. Supported backbones:" + str(supportedBackbones))
+        if self.backbone == "mobilenet":
+            self.use_stride = mobilenet_use_stride
         if self.backbone == "mobilenetv2":
             self.mobilenetv2_width = mobilenetv2_width
         if self.backbone == "shufflenet":
@@ -107,7 +110,10 @@ class LightweightOpenPoseLearner(Learner):
             scales = [1]
         self.multiscale = multiscale  # If set to true, overwrites self.scales to [0.5, 1.0, 1.5, 2.0]
         self.scales = scales
-        self.stride = stride
+        if self.use_stride:
+            self.stride = 8 * 2
+        else:
+            self.stride = 8
         self.img_mean = img_mean
         self.img_scale = img_scale
         self.pad_value = pad_value
@@ -200,7 +206,7 @@ class LightweightOpenPoseLearner(Learner):
             elif self.backbone == "shufflenet":
                 backbone_weights_path = os.path.join(self.parent_dir, "shufflenet.pth.tar")
             try:
-                checkpoint = torch.load(backbone_weights_path)
+                checkpoint = torch.load(backbone_weights_path, map_location=torch.device(self.device))
             except FileNotFoundError as e:
                 e.strerror = "Pretrained weights 'pth.tar' file must be placed in temp_path provided. \n " \
                              "No such file or directory."
@@ -214,7 +220,7 @@ class LightweightOpenPoseLearner(Learner):
             checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
             full_path = os.path.join(checkpoints_folder, checkpoint_name)
             try:
-                checkpoint = torch.load(full_path)
+                checkpoint = torch.load(full_path, map_location=torch.device(self.device))
             except FileNotFoundError as e:
                 e.strerror = "File " + checkpoint_name + " not found inside checkpoints_folder, " \
                                                          "provided checkpoint_load_iter (" + \
@@ -485,7 +491,7 @@ class LightweightOpenPoseLearner(Learner):
             checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
             full_path = os.path.join(checkpoints_folder, checkpoint_name)
             try:
-                checkpoint = torch.load(full_path)
+                checkpoint = torch.load(full_path, map_location=torch.device(self.device))
             except FileNotFoundError as e:
                 e.strerror = "File " + checkpoint_name + " not found inside checkpoints_folder, " \
                                                          "provided checkpoint_load_iter (" + \
@@ -641,7 +647,10 @@ class LightweightOpenPoseLearner(Learner):
                 if pose_entries[n][kpt_id] != -1.0:  # keypoint was found
                     pose_keypoints[kpt_id, 0] = int(all_keypoints[int(pose_entries[n][kpt_id]), 0])
                     pose_keypoints[kpt_id, 1] = int(all_keypoints[int(pose_entries[n][kpt_id]), 1])
-            pose = Pose(pose_keypoints, pose_entries[n][18])
+            if smooth:
+                pose = FilteredPose(pose_keypoints, pose_entries[n][18])
+            else:
+                pose = Pose(pose_keypoints, pose_entries[n][18])
             current_poses.append(pose)
 
         if track:
@@ -711,7 +720,7 @@ class LightweightOpenPoseLearner(Learner):
         if self.model is None:
             # No model loaded, initializing new
             if self.backbone == "mobilenet":
-                self.model = PoseEstimationWithMobileNet(self.num_refinement_stages)
+                self.model = PoseEstimationWithMobileNet(self.num_refinement_stages, use_stride=self.use_stride)
             elif self.backbone == "mobilenetv2":
                 self.model = PoseEstimationWithMobileNetV2(self.num_refinement_stages,
                                                            width_mult=self.mobilenetv2_width)
@@ -772,15 +781,8 @@ class LightweightOpenPoseLearner(Learner):
         :param path: path to .pth model
         :type path: str
         """
-        if self.backbone == "mobilenet":
-            self.model = PoseEstimationWithMobileNet(self.num_refinement_stages)
-        elif self.backbone == "mobilenetv2":
-            self.model = PoseEstimationWithMobileNetV2(self.num_refinement_stages,
-                                                       width_mult=self.mobilenetv2_width)
-        elif self.backbone == "shufflenet":
-            self.model = PoseEstimationWithShuffleNet(self.num_refinement_stages,
-                                                      groups=self.shufflenet_groups)
-        checkpoint = torch.load(path)
+        self.init_model()
+        checkpoint = torch.load(path, map_location=torch.device(self.device))
         # if self.from_mobilenet:  # TODO see todo on ctor
         #     load_from_mobilenet(self.model, checkpoint)
         # else:
@@ -884,7 +886,7 @@ class LightweightOpenPoseLearner(Learner):
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
     def download(self, path=None, mode="pretrained", verbose=False,
-                 url=OPENDR_SERVER_URL + "pose_estimation/lightweight_open_pose/"):
+                 url=OPENDR_SERVER_URL + "perception/pose_estimation/lightweight_open_pose/"):
         """
         Download utility for various Lightweight Open Pose components. Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
