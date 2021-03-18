@@ -267,3 +267,137 @@ class Image(Data):
         :rtype: str
         """
         return str(self.data)
+
+
+class PointCloud(Data):
+    """
+    A class used for representing point cloud data.
+
+    This class provides abstract methods for:
+    - returning a NumPy compatible representation of data (numpy())
+    """
+
+    def __init__(self, data=None):
+        super().__init__(data)
+
+        if data is not None:
+            self.data = data
+
+    @property
+    def data(self):
+        """
+        Getter of data. PointCloud class returns a float32 NumPy array.
+
+        :return: the actual data held by the object
+        :rtype: A float32 NumPy array in form [length x channels] where channels can be xyz[ref][rgb+]
+        """
+        if self._data is None:
+            raise ValueError("Point Cloud is empty")
+
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """
+        Setter for data.
+
+        :param: data to be used for creating a point cloud
+        """
+        # Convert input data to a NumPy array
+        # Note that will also fail for non-numeric data (which is expected)
+        data = np.asarray(data, dtype=np.uint8)
+
+        # Check if the supplied array is 2D, e.g. (length, channels)
+        if len(data.shape) != 2:
+            raise ValueError(
+                "Only 2-D arrays are supported by PointCloud. Please supply a data object that can be casted "
+                "into a 2-D NumPy array.")
+
+        self._data = data
+
+    def numpy(self):
+        """
+        Returns a NumPy-compatible representation of data.
+
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        # Since this class stores the data as NumPy arrays, we can directly return the data
+        return self.data
+
+    def __str__(self):
+        """
+        Returns a human-friendly string-based representation of the data.
+
+        :return: a human-friendly string-based representation of the data
+        :rtype: str
+        """
+        return "Points: " + str(self.data)
+
+
+class PointCloudWithCalibration(PointCloud):
+    """
+    A class used for representing point cloud data with camera-lidar calibration matricies.
+
+    This class provides abstract methods for:
+    - returning a NumPy compatible representation of data (numpy())
+    """
+
+    def __init__(self, data=None, calib=None):
+        super().__init__(data)
+
+        if data is not None:
+            self.data = data
+
+        self.calib = calib
+
+    @property
+    def data(self):
+        """
+        Getter of data. PointCloudWithCalibration class returns a float32 NumPy array representing a point cloud.
+
+        :return: the actual data held by the object
+        :rtype: A float32 NumPy array in form [length x channels] where channels can be xyz[ref][rgb+]
+        """
+        if self._data is None:
+            raise ValueError("Point Cloud is empty")
+
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """
+        Setter for data.
+
+        :param: data to be used for creating a point cloud
+        """
+        # Convert input data to a NumPy array
+        # Note that will also fail for non-numeric data (which is expected)
+        data = np.asarray(data, dtype=np.float32)
+
+        # Check if the supplied array is 2D, e.g. (length, channels)
+        if len(data.shape) != 2:
+            raise ValueError(
+                "Only 2-D arrays are supported by PointCloud. Please supply a data object that can be casted "
+                "into a 2-D NumPy array.")
+
+        self._data = data
+
+    def numpy(self):
+        """
+        Returns a NumPy-compatible representation of data.
+
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        # Since this class stores the data as NumPy arrays, we can directly return the data
+        return self.data
+
+    def __str__(self):
+        """
+        Returns a human-friendly string-based representation of the data.
+
+        :return: a human-friendly string-based representation of the data
+        :rtype: str
+        """
+        return "Points: " + str(self.data) + "\nCalib:" + str(self.calib)

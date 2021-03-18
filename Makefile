@@ -24,13 +24,17 @@ ifeq ($(MAKECMDGOALS),)
 MAKECMDGOALS = release
 endif
 
-.PHONY: release opendr_dependencies
+.PHONY: release install_compilation_dependencies install_runtime_dependencies
 
-release: opendr_dependencies
+release: install_compilation_dependencies
 
-opendr_dependencies:
-	@+echo "#"; echo "# * dependencies *"; echo "#"
-	@+cd dependencies; ./install.sh
+install_runtime_dependencies:
+	@+echo "#"; echo "# * Install Runtime Dependencies *"; echo "#"
+	@+cd dependencies; ./install.sh runtime
+
+install_compilation_dependencies:
+	@+echo "#"; echo "# * Install Compilation Dependencies *"; echo "#"
+	@+cd dependencies; ./install.sh compilation
 
 help:
 	@+echo
