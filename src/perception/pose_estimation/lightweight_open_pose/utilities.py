@@ -142,17 +142,12 @@ def track_poses(previous_poses, current_poses, threshold=3, smooth=False):
             best_matched_pose_id = None
         update_id(current_pose, best_matched_pose_id)
 
-        # Smooth feature needs to use per-pose filters. Filters cannot be saved in OpenDR Pose, due to the fact that
-        # they are implementation-specific. Code is commented out until a better solution is found.
-
-        # if smooth:
-        #     for kpt_id in range(Pose.num_kpts):
-        #         if current_pose.data[kpt_id, 0] == -1:
-        #             continue
-        #         # reuse filter if previous pose has valid filter
-        #         if (best_matched_pose_id is not None
-        #                 and previous_poses[best_matched_id].data[kpt_id, 0] != -1):
-        #             current_pose.filters[kpt_id] = previous_poses[best_matched_id].filters[kpt_id]
-        #         current_pose.data[kpt_id, 0] = current_pose.filters[kpt_id][0](current_pose.data[kpt_id, 0])
-        #         current_pose.data[kpt_id, 1] = current_pose.filters[kpt_id][1](current_pose.data[kpt_id, 1])
-        #     current_pose.bbox = get_bbox(current_pose.data)
+        if smooth:
+            for kpt_id in range(Pose.num_kpts):
+                if current_pose.data[kpt_id, 0] == -1:
+                    continue
+                # reuse filter if previous pose has valid filter
+                if best_matched_pose_id is not None and previous_poses[best_matched_id].data[kpt_id, 0] != -1:
+                    current_pose.filters[kpt_id] = previous_poses[best_matched_id].filters[kpt_id]
+                current_pose.data[kpt_id, 0] = current_pose.filters[kpt_id][0](current_pose.data[kpt_id, 0])
+                current_pose.data[kpt_id, 1] = current_pose.filters[kpt_id][1](current_pose.data[kpt_id, 1])

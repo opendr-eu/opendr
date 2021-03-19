@@ -29,7 +29,8 @@ from sklearn.decomposition import PCA
 import sklearn
 
 
-# Support: ['calculate_roc', 'calculate_accuracy', 'calculate_val', 'calculate_val_far', 'evaluate']
+# Support: ['calculate_roc', 'calculate_accuracy', 'calculate_val', 'calculate_val_far', 'evaluate',
+#           'evaluate_imagefolder]
 
 
 def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame, nrof_folds=10, pca=0):
@@ -101,6 +102,14 @@ def evaluate(embeddings, actual_issame, nrof_folds=10, pca=0):
     thresholds = np.arange(0, 4, 0.01)
     embeddings1 = embeddings[0::2]
     embeddings2 = embeddings[1::2]
+    tpr, fpr, accuracy, best_thresholds = calculate_roc(thresholds, embeddings1, embeddings2, np.asarray(actual_issame),
+                                                        nrof_folds=nrof_folds, pca=pca)
+    return tpr, fpr, accuracy, best_thresholds
+
+
+def evaluate_imagefolder(embeddings1, embeddings2, actual_issame, nrof_folds=10, pca=0):
+    # Calculate evaluation metrics
+    thresholds = np.arange(0, 4, 0.01)
     tpr, fpr, accuracy, best_thresholds = calculate_roc(thresholds, embeddings1, embeddings2, np.asarray(actual_issame),
                                                         nrof_folds=nrof_folds, pca=pca)
     return tpr, fpr, accuracy, best_thresholds
