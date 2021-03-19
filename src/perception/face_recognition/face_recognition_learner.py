@@ -61,7 +61,8 @@ from perception.face_recognition.algorithm.head.losses import ArcFace, CosFace, 
 from perception.face_recognition.algorithm.loss.focal import FocalLoss
 from perception.face_recognition.algorithm.util.utils import make_weights_for_balanced_classes, get_val_data, \
     separate_irse_bn_paras, separate_mobilenet_bn_paras, l2_norm, \
-    separate_resnet_bn_paras, warm_up_lr, schedule_lr, perform_val, buffer_val, AverageMeter, accuracy
+    separate_resnet_bn_paras, warm_up_lr, schedule_lr, perform_val, perform_val_imagefolder, buffer_val, AverageMeter,\
+    accuracy
 from perception.face_recognition.algorithm.align.align import face_align
 
 
@@ -87,7 +88,7 @@ class FaceRecognition(Learner):
         if rgb_std is None:
             rgb_std = [0.5, 0.5, 0.5]
         if stages is None:
-            stages = [8, 16, 24]
+            stages = [35, 65, 95]
         if self.device == 'cuda':
             self.gpu_id = [0]
         else:
@@ -507,13 +508,17 @@ class FaceRecognition(Learner):
             raise UserWarning('A model should be loaded first')
         if self.network_head != 'classifier' and self.mode != 'head_only':
             self.backbone_model.eval()
-            if self.data is None or self.pairs is None:
-                self.data, self.pairs = get_val_data(dataset.path, dataset.dataset_type, num_pairs)
+            self.data, self.pairs = get_val_data(dataset.path, dataset.dataset_type, num_pairs)
             print("=" * 60)
             print("Perform Evaluation on " + dataset.dataset_type)
-            eval_accuracy, best_threshold = perform_val(self.device, self.embedding_size,
-                                                        self.batch_size, self.backbone_model, self.data,
-                                                        self.pairs)
+            if dataset.dataset_type == 'imagefolder':
+                eval_accuracy, best_threshold = perform_val_imagefolder(self.device, self.embedding_size,
+                                                                        self.batch_size, self.backbone_model, self.data,
+                                                                        self.num_workers)
+            else:
+                eval_accuracy, best_threshold = perform_val(self.device, self.embedding_size,
+                                                            self.batch_size, self.backbone_model, self.data,
+                                                            self.pairs)
 
             self.threshold = float(best_threshold)
             if self.logging:
@@ -584,8 +589,8 @@ class FaceRecognition(Learner):
             self.network_head, self.epoch)))
 
     def download(self, path=None):
-        if self.mode == 'backbone_only':
-            if not os.path.exists(os.path.join(path, 'backbone_{}'.format(self.backbone))):
+        if self.mode == 'backbone_only' or self.mode == 'finetune':
+            if not os.path.exists(os.path.join(path, 'backbone_' + self.backbone + '.pth')):
                 url = 'ftp://opendrdata.csd.auth.gr/face_recognition/'
                 url_backbone = os.path.join(url, 'backbone_' + self.backbone + '.pth')
                 url_backbone_json = os.path.join(url, 'backbone_' + self.backbone + '.json')
@@ -609,7 +614,8 @@ class FaceRecognition(Learner):
         if not os.path.exists(path):
             os.makedirs(path)
 
-        if self.mode == 'backbone_only' or self.mode == 'full' and self.network_head != 'classifier':
+        if self.mode == 'backbone_only' or self.mode == 'finetune' or \
+                (self.mode == 'full' and self.network_head != 'classifier'):
             self.__save_backbone(path)
         else:
             if self.mode == 'head_only':
@@ -678,7 +684,7 @@ class FaceRecognition(Learner):
         :param path: the path of the model to be loaded
         :type path: str
         """
-        if self.mode == 'backbone_only' or self.mode == 'head_only':
+        if self.mode in ['backbone_only', 'head_only', 'finetune']:
             print("Loading backbone '{}'".format(self.backbone))
             self.__load_backbone(path)
         elif self.network_head == 'classifier' and self.mode == 'full':
