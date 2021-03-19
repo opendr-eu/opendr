@@ -23,6 +23,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from engine.learners import Learner
+from engine.target import SpeechCommand
 from perception.speech_recognition.edgespeechnets.algorithm.audioutils import get_mfcc
 import perception.speech_recognition.edgespeechnets.algorithm.models as models
 
@@ -202,9 +203,12 @@ class EdgesSpeechNetsLearner(Learner):
         if len(batch.shape) == 1:
             batch = np.expand_dims(batch, 0)
         output = self._get_model_output(batch)
-        prediction = output.max(1, keepdim=True)[1]
-        batch_predictions = prediction.to("cpu").squeeze(1).numpy()
-        return batch_predictions
+        prediction = output.max(1, keepdim=True)
+        batch_predictions = []
+        for target, confidence in zip(prediction[1], prediction[0].exp()):
+            batch_predictions.append(SpeechCommand(target.item(), confidence=confidence.item()))
+            print(batch_predictions[-1])
+        return batch_predictions[0] if len(batch_predictions) == 1 else batch_predictions
 
     def save(self, path):
         if not os.path.isdir(path):
