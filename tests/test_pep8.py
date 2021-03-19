@@ -166,6 +166,8 @@ class TestCodeFormat(unittest.TestCase):
             paths=self.files,
             reporter=CustomReport,
         )
+        black_ignores = ("E203", "E231", "E251", "E501", "W503")
+        checker.options.ignore = checker.options.ignore + black_ignores
         checker.options.max_line_length = 128
         report = checker.check_files()
         self.assertEqual(
