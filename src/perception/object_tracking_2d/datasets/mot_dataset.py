@@ -9,10 +9,13 @@ import copy
 import numpy as np
 import torch
 from collections import OrderedDict
-from engine.datasets import ExternalDataset
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 import shutil
+from engine.data import FloatImage
+from engine.target import TrackingBoundingBox2DList
+from engine.datasets import ExternalDataset, DatasetIterator
+from torchvision.transforms import transforms as T
 
 
 DEFAULT_MOT20_SUBSETS_PATH = {
@@ -85,6 +88,217 @@ class MotDataset(ExternalDataset):
             )
         else:
             raise ValueError("Unsupported file_format: " + file_format)
+
+
+class MotDatasetIterator(DatasetIterator):  # for training
+    default_resolution = [1088, 608]
+    mean = None
+    std = None
+    num_classes = 1
+
+    def __init__(
+        self,
+        root,
+        paths,
+        down_ratio=4,
+        max_objects=500,
+        ltrb=True,
+        mse_loss=False,
+        img_size=(1088, 608),
+        augment=False,
+        transforms=T.Compose([T.ToTensor()]),
+    ):
+        # dataset_names = paths.keys()
+        self.img_files = OrderedDict()
+        self.label_files = OrderedDict()
+        self.tid_num = OrderedDict()
+        self.tid_start_index = OrderedDict()
+        self.num_classes = 1
+
+        for ds, path in paths.items():
+            with open(path, "r") as file:
+                self.img_files[ds] = file.readlines()
+                self.img_files[ds] = [
+                    osp.join(root, x.strip()) for x in self.img_files[ds]
+                ]
+                self.img_files[ds] = list(
+                    filter(lambda x: len(x) > 0, self.img_files[ds])
+                )
+
+            self.label_files[ds] = [
+                x.replace("images", "labels_with_ids")
+                .replace(".png", ".txt")
+                .replace(".jpg", ".txt")
+                for x in self.img_files[ds]
+            ]
+
+        for ds, label_paths in self.label_files.items():
+            max_index = -1
+            for lp in label_paths:
+                lb = np.loadtxt(lp)
+                if len(lb) < 1:
+                    continue
+                if len(lb.shape) < 2:
+                    img_max = lb[1]
+                else:
+                    img_max = np.max(lb[:, 1])
+                if img_max > max_index:
+                    max_index = img_max
+            self.tid_num[ds] = max_index + 1
+
+        last_index = 0
+        for i, (k, v) in enumerate(self.tid_num.items()):
+            self.tid_start_index[k] = last_index
+            last_index += v
+
+        self.nID = int(last_index + 1)
+        self.nds = [len(x) for x in self.img_files.values()]
+        self.cds = [sum(self.nds[:i]) for i in range(len(self.nds))]
+        self.nF = sum(self.nds)
+        self.width = img_size[0]
+        self.height = img_size[1]
+        self.max_objs = max_objects
+        self.down_ratio = down_ratio
+        self.ltrb = ltrb
+        self.mse_loss = mse_loss
+        self.augment = augment
+        self.transforms = transforms
+
+        print("=" * 80)
+        print("dataset iterator summary")
+        print(self.tid_num)
+        print("total # identities:", self.nID)
+        print("start index")
+        print(self.tid_start_index)
+        print("=" * 80)
+
+    def __getitem__(self, files_index):
+
+        for i, c in enumerate(self.cds):
+            if files_index >= c:
+                ds = list(self.label_files.keys())[i]
+                start_index = c
+
+        img_path = self.img_files[ds][files_index - start_index]
+        label_path = self.label_files[ds][files_index - start_index]
+
+        imgs, labels, img_path, (input_h, input_w) = self.get_data(
+            img_path, label_path
+        )
+
+        for i, _ in enumerate(labels):
+            if labels[i, 1] > -1:
+                labels[i, 1] += self.tid_start_index[ds]
+
+        return (
+            FloatImage(imgs), TrackingBoundingBox2DList.from_mot(labels)
+        )
+
+    def get_data(self, img_path, label_path):
+        height = self.height
+        width = self.width
+        img = cv2.imread(img_path)  # BGR
+        if img is None:
+            raise ValueError("File corrupt {}".format(img_path))
+        augment_hsv = True
+        if self.augment and augment_hsv:
+            # SV augmentation by 50%
+            fraction = 0.50
+            img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            S = img_hsv[:, :, 1].astype(np.float32)
+            V = img_hsv[:, :, 2].astype(np.float32)
+
+            a = (random.random() * 2 - 1) * fraction + 1
+            S *= a
+            if a > 1:
+                np.clip(S, a_min=0, a_max=255, out=S)
+
+            a = (random.random() * 2 - 1) * fraction + 1
+            V *= a
+            if a > 1:
+                np.clip(V, a_min=0, a_max=255, out=V)
+
+            img_hsv[:, :, 1] = S.astype(np.uint8)
+            img_hsv[:, :, 2] = V.astype(np.uint8)
+            cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)
+
+        h, w, _ = img.shape
+        img, ratio, padw, padh = letterbox(img, height=height, width=width)
+
+        # Load labels
+        if os.path.isfile(label_path):
+            labels0 = np.loadtxt(label_path, dtype=np.float32).reshape(-1, 6)
+
+            # Normalized xywh to pixel xyxy format
+            labels = labels0.copy()
+            labels[:, 2] = (
+                ratio * w * (labels0[:, 2] - labels0[:, 4] / 2) + padw
+            )
+            labels[:, 3] = (
+                ratio * h * (labels0[:, 3] - labels0[:, 5] / 2) + padh
+            )
+            labels[:, 4] = (
+                ratio * w * (labels0[:, 2] + labels0[:, 4] / 2) + padw
+            )
+            labels[:, 5] = (
+                ratio * h * (labels0[:, 3] + labels0[:, 5] / 2) + padh
+            )
+        else:
+            labels = np.array([])
+
+        # Augment image and labels
+        if self.augment:
+            img, labels, M = random_affine(
+                img,
+                labels,
+                degrees=(-5, 5),
+                translate=(0.10, 0.10),
+                scale=(0.50, 1.20),
+            )
+
+        plotFlag = False
+        if plotFlag:
+            import matplotlib
+
+            matplotlib.use("Agg")
+            import matplotlib.pyplot as plt
+
+            plt.figure(figsize=(50, 50))
+            plt.imshow(img[:, :, ::-1])
+            plt.plot(
+                labels[:, [1, 3, 3, 1, 1]].T,
+                labels[:, [2, 2, 4, 4, 2]].T,
+                ".-",
+            )
+            plt.axis("off")
+            plt.savefig("test.jpg")
+            time.sleep(10)
+
+        nL = len(labels)
+        if nL > 0:
+            # convert xyxy to xywh
+            labels[:, 2:6] = xyxy2xywh(labels[:, 2:6].copy())  # / height
+            labels[:, 2] /= width
+            labels[:, 3] /= height
+            labels[:, 4] /= width
+            labels[:, 5] /= height
+        if self.augment:
+            # random left-right flip
+            lr_flip = True
+            if lr_flip & (random.random() > 0.5):
+                img = np.fliplr(img)
+                if nL > 0:
+                    labels[:, 2] = 1 - labels[:, 2]
+
+        img = np.ascontiguousarray(img[:, :, ::-1])  # BGR to RGB
+
+        if self.transforms is not None:
+            img = self.transforms(img)
+
+        return img, labels, img_path, (h, w)
+
+    def __len__(self):
+        return self.nF  # number of batches
 
 
 class LoadImages:  # for inference
@@ -565,12 +779,14 @@ class JointDataset(LoadImagesAndLabels):  # for training
         imgs, labels, img_path, (input_h, input_w) = self.get_data(
             img_path, label_path
         )
+
         for i, _ in enumerate(labels):
             if labels[i, 1] > -1:
                 labels[i, 1] += self.tid_start_index[ds]
 
         return process(
-            imgs, labels, self.ltrb, self.down_ratio,
+            FloatImage(imgs), TrackingBoundingBox2DList.from_mot(labels),
+            self.ltrb, self.down_ratio,
             self.max_objs, self.num_classes, self.mse_loss
         )
 
@@ -659,6 +875,10 @@ class DetDataset(LoadImagesAndLabels):  # for training
 
 
 def process(imgs, labels, ltrb, down_ratio, max_objs, num_classes, mse_loss):
+
+    imgs = imgs.numpy()
+    labels = labels.mot(with_confidence=False)
+
     output_h = imgs.shape[1] // down_ratio
     output_w = imgs.shape[2] // down_ratio
     num_classes = num_classes
