@@ -10,6 +10,7 @@ def scatter(inputs, target_gpus, dim=0, chunk_sizes=None):
     references to objects that are not variables. Does not
     support Tensors.
     """
+
     def scatter_map(obj):
         if isinstance(obj, Variable):
             return Scatter.apply(target_gpus, chunk_sizes, dim, obj)

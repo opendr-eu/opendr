@@ -9,6 +9,82 @@ import copy
 import numpy as np
 import torch
 from collections import OrderedDict
+from engine.datasets import ExternalDataset
+from urllib.request import urlretrieve
+from zipfile import ZipFile
+import shutil
+
+
+DEFAULT_MOT20_SUBSETS_PATH = {
+    "mot20": "./perception/object_tracking_2d/datasets/data/mot20.train"
+}
+
+
+class MotDataset(ExternalDataset):
+    def __init__(
+        self,
+        path,
+    ):
+
+        super().__init__(path, "mot")
+
+        self.path = path
+
+    @staticmethod
+    def download(
+        url, download_path, dataset_sub_path=".", file_format="zip",
+        create_dir=False,
+        copy_training_to_testing=False,
+    ):
+
+        if file_format == "zip":
+            if create_dir:
+                os.makedirs(download_path, exist_ok=True)
+
+            print("Downloading KITTI Dataset zip file from", url, "to", download_path)
+
+            start_time = 0
+            last_print = 0
+
+            def reporthook(count, block_size, total_size):
+                nonlocal start_time
+                nonlocal last_print
+                if count == 0:
+                    start_time = time.time()
+                    last_print = start_time
+                    return
+
+                duration = time.time() - start_time
+                progress_size = int(count * block_size)
+                speed = int(progress_size / (1024 * duration))
+                if time.time() - last_print >= 1:
+                    last_print = time.time()
+                    print(
+                        "\r%d MB, %d KB/s, %d seconds passed" %
+                        (progress_size / (1024 * 1024), speed, duration),
+                        end=''
+                    )
+
+            zip_path = os.path.join(download_path, "dataset.zip")
+            urlretrieve(url, zip_path, reporthook=reporthook)
+            print()
+
+            print("Extracting KITTI Dataset from zip file")
+            with ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(download_path)
+
+            os.remove(zip_path)
+
+            if copy_training_to_testing:
+                shutil.copytree(
+                    os.path.join(download_path, dataset_sub_path, "training"),
+                    os.path.join(download_path, dataset_sub_path, "testing"))
+
+            return MotDataset(
+                os.path.join(download_path, dataset_sub_path),
+            )
+        else:
+            raise ValueError("Unsupported file_format: " + file_format)
 
 
 class LoadImages:  # for inference
@@ -493,80 +569,10 @@ class JointDataset(LoadImagesAndLabels):  # for training
             if labels[i, 1] > -1:
                 labels[i, 1] += self.tid_start_index[ds]
 
-        output_h = imgs.shape[1] // self.down_ratio
-        output_w = imgs.shape[2] // self.down_ratio
-        num_classes = self.num_classes
-        num_objs = labels.shape[0]
-        hm = np.zeros((num_classes, output_h, output_w), dtype=np.float32)
-        if self.ltrb:
-            wh = np.zeros((self.max_objs, 4), dtype=np.float32)
-        else:
-            wh = np.zeros((self.max_objs, 2), dtype=np.float32)
-        reg = np.zeros((self.max_objs, 2), dtype=np.float32)
-        ind = np.zeros((self.max_objs,), dtype=np.int64)
-        reg_mask = np.zeros((self.max_objs,), dtype=np.uint8)
-        ids = np.zeros((self.max_objs,), dtype=np.int64)
-        bbox_xys = np.zeros((self.max_objs, 4), dtype=np.float32)
-
-        draw_gaussian = (
-            draw_msra_gaussian if self.mse_loss else draw_umich_gaussian
+        return process(
+            imgs, labels, self.ltrb, self.down_ratio,
+            self.max_objs, self.num_classes, self.mse_loss
         )
-        for k in range(num_objs):
-            label = labels[k]
-            bbox = label[2:]
-            cls_id = int(label[0])
-            bbox[[0, 2]] = bbox[[0, 2]] * output_w
-            bbox[[1, 3]] = bbox[[1, 3]] * output_h
-            bbox_amodal = copy.deepcopy(bbox)
-            bbox_amodal[0] = bbox_amodal[0] - bbox_amodal[2] / 2.0
-            bbox_amodal[1] = bbox_amodal[1] - bbox_amodal[3] / 2.0
-            bbox_amodal[2] = bbox_amodal[0] + bbox_amodal[2]
-            bbox_amodal[3] = bbox_amodal[1] + bbox_amodal[3]
-            bbox[0] = np.clip(bbox[0], 0, output_w - 1)
-            bbox[1] = np.clip(bbox[1], 0, output_h - 1)
-            h = bbox[3]
-            w = bbox[2]
-
-            bbox_xy = copy.deepcopy(bbox)
-            bbox_xy[0] = bbox_xy[0] - bbox_xy[2] / 2
-            bbox_xy[1] = bbox_xy[1] - bbox_xy[3] / 2
-            bbox_xy[2] = bbox_xy[0] + bbox_xy[2]
-            bbox_xy[3] = bbox_xy[1] + bbox_xy[3]
-
-            if h > 0 and w > 0:
-                radius = gaussian_radius((math.ceil(h), math.ceil(w)))
-                radius = max(0, int(radius))
-                radius = 6 if self.mse_loss else radius
-                # radius = max(1, int(radius)) if self.opt.mse_loss else radius
-                ct = np.array([bbox[0], bbox[1]], dtype=np.float32)
-                ct_int = ct.astype(np.int32)
-                draw_gaussian(hm[cls_id], ct_int, radius)
-                if self.ltrb:
-                    wh[k] = (
-                        ct[0] - bbox_amodal[0],
-                        ct[1] - bbox_amodal[1],
-                        bbox_amodal[2] - ct[0],
-                        bbox_amodal[3] - ct[1],
-                    )
-                else:
-                    wh[k] = 1.0 * w, 1.0 * h
-                ind[k] = ct_int[1] * output_w + ct_int[0]
-                reg[k] = ct - ct_int
-                reg_mask[k] = 1
-                ids[k] = label[1]
-                bbox_xys[k] = bbox_xy
-
-        ret = {
-            "input": imgs,
-            "hm": hm,
-            "reg_mask": reg_mask,
-            "ind": ind,
-            "wh": wh,
-            "reg": reg,
-            "ids": ids,
-            "bbox": bbox_xys,
-        }
-        return ret
 
 
 class DetDataset(LoadImagesAndLabels):  # for training
@@ -650,6 +656,83 @@ class DetDataset(LoadImagesAndLabels):  # for training
                 labels[i, 1] += self.tid_start_index[ds]
 
         return imgs, labels0, img_path, (h, w)
+
+
+def process(imgs, labels, ltrb, down_ratio, max_objs, num_classes, mse_loss):
+    output_h = imgs.shape[1] // down_ratio
+    output_w = imgs.shape[2] // down_ratio
+    num_classes = num_classes
+    num_objs = labels.shape[0]
+    hm = np.zeros((num_classes, output_h, output_w), dtype=np.float32)
+    if ltrb:
+        wh = np.zeros((max_objs, 4), dtype=np.float32)
+    else:
+        wh = np.zeros((max_objs, 2), dtype=np.float32)
+    reg = np.zeros((max_objs, 2), dtype=np.float32)
+    ind = np.zeros((max_objs,), dtype=np.int64)
+    reg_mask = np.zeros((max_objs,), dtype=np.uint8)
+    ids = np.zeros((max_objs,), dtype=np.int64)
+    bbox_xys = np.zeros((max_objs, 4), dtype=np.float32)
+
+    draw_gaussian = (
+        draw_msra_gaussian if mse_loss else draw_umich_gaussian
+    )
+    for k in range(num_objs):
+        label = labels[k]
+        bbox = label[2:]
+        cls_id = int(label[0])
+        bbox[[0, 2]] = bbox[[0, 2]] * output_w
+        bbox[[1, 3]] = bbox[[1, 3]] * output_h
+        bbox_amodal = copy.deepcopy(bbox)
+        bbox_amodal[0] = bbox_amodal[0] - bbox_amodal[2] / 2.0
+        bbox_amodal[1] = bbox_amodal[1] - bbox_amodal[3] / 2.0
+        bbox_amodal[2] = bbox_amodal[0] + bbox_amodal[2]
+        bbox_amodal[3] = bbox_amodal[1] + bbox_amodal[3]
+        bbox[0] = np.clip(bbox[0], 0, output_w - 1)
+        bbox[1] = np.clip(bbox[1], 0, output_h - 1)
+        h = bbox[3]
+        w = bbox[2]
+
+        bbox_xy = copy.deepcopy(bbox)
+        bbox_xy[0] = bbox_xy[0] - bbox_xy[2] / 2
+        bbox_xy[1] = bbox_xy[1] - bbox_xy[3] / 2
+        bbox_xy[2] = bbox_xy[0] + bbox_xy[2]
+        bbox_xy[3] = bbox_xy[1] + bbox_xy[3]
+
+        if h > 0 and w > 0:
+            radius = gaussian_radius((math.ceil(h), math.ceil(w)))
+            radius = max(0, int(radius))
+            radius = 6 if mse_loss else radius
+            # radius = max(1, int(radius)) if self.opt.mse_loss else radius
+            ct = np.array([bbox[0], bbox[1]], dtype=np.float32)
+            ct_int = ct.astype(np.int32)
+            draw_gaussian(hm[cls_id], ct_int, radius)
+            if ltrb:
+                wh[k] = (
+                    ct[0] - bbox_amodal[0],
+                    ct[1] - bbox_amodal[1],
+                    bbox_amodal[2] - ct[0],
+                    bbox_amodal[3] - ct[1],
+                )
+            else:
+                wh[k] = 1.0 * w, 1.0 * h
+            ind[k] = ct_int[1] * output_w + ct_int[0]
+            reg[k] = ct - ct_int
+            reg_mask[k] = 1
+            ids[k] = label[1]
+            bbox_xys[k] = bbox_xy
+
+    ret = {
+        "input": imgs,
+        "hm": hm,
+        "reg_mask": reg_mask,
+        "ind": ind,
+        "wh": wh,
+        "reg": reg,
+        "ids": ids,
+        "bbox": bbox_xys,
+    }
+    return ret
 
 
 def gaussian_radius(det_size, min_overlap=0.7):

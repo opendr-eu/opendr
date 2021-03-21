@@ -237,3 +237,166 @@ class BoundingBox3DList(Target):
 
     def __str__(self):
         return str(self.kitti())
+
+
+class BoundingBox2D(Target):
+    """
+    This target is used for 2D Object Detection.
+    A bounding box is described by the left-top corner and its width and height.
+    """
+    def __init__(
+        self,
+        left,
+        top,
+        width,
+        height,
+        score=0,
+        frame=-1,
+    ):
+        super().__init__()
+        self.left = left
+        self.top = top
+        self.width = width
+        self.height = height
+        self.confidence = score
+        self.frame = frame
+
+    def mot(self):
+
+        result = np.array([
+            self.frame,
+            self.left,
+            self.top,
+            self.width,
+            self.height,
+            self.score,
+        ])
+
+        return result
+
+    def __repr__(self):
+        return "BoundingBox2D " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
+
+
+class BoundingBox2DList(Target):
+    """
+    This target is used for 2D Object Detection.
+    A bounding box is described by the left-top corner and its width and height.
+    """
+    def __init__(
+        self,
+        boxes,
+    ):
+        super().__init__()
+        self.data = boxes
+        self.confidence = np.mean([box.confidence for box in self.data])
+
+    def mot(self):
+
+        result = np.array([
+            box.mot() for box in self.data
+        ])
+
+        return result
+
+    def __repr__(self):
+        return "BoundingBox2DList " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
+
+
+class TrackingBoundingBox2D(Target):
+    """
+    This target is used for 2D Object Tracking.
+    A tracking bounding box is described by id, the left-top corner and its width and height.
+    """
+    def __init__(
+        self,
+        left,
+        top,
+        width,
+        height,
+        id,
+        score=0,
+        frame=-1,
+    ):
+        super().__init__()
+        self.left = left
+        self.top = top
+        self.width = width
+        self.height = height
+        self.id = id
+        self.confidence = score
+        self.frame = frame
+
+    @staticmethod
+    def from_mot(data):
+        return TrackingBoundingBox2D(
+            data[2],
+            data[3],
+            data[4],
+            data[5],
+            data[1],
+            data[6] if len(data) > 6 else 0,
+            data[0],
+        )
+
+    def mot(self):
+
+        result = np.array([
+            self.frame,
+            self.id,
+            self.left,
+            self.top,
+            self.width,
+            self.height,
+            self.score,
+        ])
+
+        return result
+
+    def __repr__(self):
+        return "TrackingBoundingBox2D " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
+
+
+class TrackingBoundingBox2DList(Target):
+    """
+    This target is used for 2D Object Tracking.
+    A bounding box is described by the left and top corners and its width and height.
+    """
+    def __init__(
+        self,
+        boxes,
+    ):
+        super().__init__()
+        self.data = boxes
+        self.confidence = np.mean([box.confidence for box in self.data])
+
+    @staticmethod
+    def from_mot(data):
+        boxes = []
+        for box in data:
+            boxes.append(TrackingBoundingBox2D.from_mot(box))
+
+        return TrackingBoundingBox2DList(boxes)
+
+    def mot(self):
+
+        result = np.array([
+            box.mot() for box in self.data
+        ])
+
+        return result
+
+    def __repr__(self):
+        return "TrackingBoundingBox2DList " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
