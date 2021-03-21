@@ -7,6 +7,7 @@ from torch.nn.parallel.parallel_apply import parallel_apply
 
 from .scatter_gather import scatter_kwargs
 
+
 class _DataParallel(Module):
     r"""Implements data parallelism at the module level.
 
@@ -41,7 +42,9 @@ class _DataParallel(Module):
 
     # TODO: update notes/cuda.rst when this class handles 8+ GPUs well
 
-    def __init__(self, module, device_ids=None, output_device=None, dim=0, chunk_sizes=None):
+    def __init__(
+        self, module, device_ids=None, output_device=None, dim=0, chunk_sizes=None,
+    ):
         super(_DataParallel, self).__init__()
 
         if not torch.cuda.is_available():
@@ -67,7 +70,7 @@ class _DataParallel(Module):
         inputs, kwargs = self.scatter(inputs, kwargs, self.device_ids, self.chunk_sizes)
         if len(self.device_ids) == 1:
             return self.module(*inputs[0], **kwargs[0])
-        replicas = self.replicate(self.module, self.device_ids[:len(inputs)])
+        replicas = self.replicate(self.module, self.device_ids[: len(inputs)])
         outputs = self.parallel_apply(replicas, inputs, kwargs)
         return self.gather(outputs, self.output_device)
 
@@ -75,16 +78,22 @@ class _DataParallel(Module):
         return replicate(module, device_ids)
 
     def scatter(self, inputs, kwargs, device_ids, chunk_sizes):
-        return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim, chunk_sizes=self.chunk_sizes)
+        return scatter_kwargs(
+            inputs, kwargs, device_ids, dim=self.dim, chunk_sizes=self.chunk_sizes,
+        )
 
     def parallel_apply(self, replicas, inputs, kwargs):
-        return parallel_apply(replicas, inputs, kwargs, self.device_ids[:len(replicas)])
+        return parallel_apply(
+            replicas, inputs, kwargs, self.device_ids[: len(replicas)]
+        )
 
     def gather(self, outputs, output_device):
         return gather(outputs, output_device, dim=self.dim)
 
 
-def data_parallel(module, inputs, device_ids=None, output_device=None, dim=0, module_kwargs=None):
+def data_parallel(
+    module, inputs, device_ids=None, output_device=None, dim=0, module_kwargs=None,
+):
     r"""Evaluates module(input) in parallel across the GPUs given in device_ids.
 
     This is the functional version of the DataParallel module.
@@ -111,10 +120,11 @@ def data_parallel(module, inputs, device_ids=None, output_device=None, dim=0, mo
     inputs, module_kwargs = scatter_kwargs(inputs, module_kwargs, device_ids, dim)
     if len(device_ids) == 1:
         return module(*inputs[0], **module_kwargs[0])
-    used_device_ids = device_ids[:len(inputs)]
+    used_device_ids = device_ids[: len(inputs)]
     replicas = replicate(module, used_device_ids)
     outputs = parallel_apply(replicas, inputs, module_kwargs, used_device_ids)
     return gather(outputs, output_device, dim)
+
 
 def DataParallel(module, device_ids=None, output_device=None, dim=0, chunk_sizes=None):
     if chunk_sizes is None:

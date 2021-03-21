@@ -12,21 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pathlib
+import os
+import json
+import torch
+import ntpath
+import shutil
+import onnxruntime as ort
+from torchvision.transforms import transforms as T
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
 from perception.object_tracking_2d.logger import Logger
 from perception.object_tracking_2d.datasets.mot_dataset import JointDataset
+from perception.object_tracking_2d.fair_mot.algorithm.lib.models.model import create_model
+from perception.object_tracking_2d.fair_mot.algorithm.run import train
+from perception.object_tracking_2d.fair_mot.algorithm.load import load_from_checkpoint
+
 
 class ObjectTracking2DFairMotLearner(Learner):
     def __init__(
         self,
-        lr=0.001,
-        iters=10,
-        batch_size=64,
-        optimizer="sgd",
+        lr=0.0001,
+        iters=-1,
+        batch_size=4,
+        optimizer="adam",
         lr_schedule="",
-        backbone="tanet_16",
+        backbone="dla_34",
         network_head="",
         checkpoint_after_iter=0,
         checkpoint_load_iter=0,
@@ -34,6 +44,24 @@ class ObjectTracking2DFairMotLearner(Learner):
         device="cuda:0",
         threshold=0.0,
         scale=1.0,
+        lr_step=[20],
+        head_conv=256,
+        ltrb=True,
+        num_classes=1,
+        reg_offset=True,
+        gpus=[0],
+        num_workers=4,
+        mse_loss=False,
+        reg_loss='l1',
+        dense_wh=False,
+        cat_spec_wh=False,
+        reid_dim=128,
+        norm_wh=False,
+        wh_weight=0.1,
+        off_weight=1,
+        id_weight=1,
+        num_epochs=30,
+        hm_weight=1,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(ObjectTracking2DFairMotLearner, self).__init__(
@@ -52,21 +80,123 @@ class ObjectTracking2DFairMotLearner(Learner):
             scale=scale,
         )
 
+        self.ltrb = ltrb
+        self.head_conv = head_conv
+        self.num_classes = num_classes
+        self.reid_dim = reid_dim
+        self.reg_offset = reg_offset
+        self.gpus = gpus
+        self.num_workers = num_workers
+        self.mse_loss = mse_loss
+        self.reg_loss = reg_loss
+        self.dense_wh = dense_wh
+        self.cat_spec_wh = cat_spec_wh
+        self.reid_dim = reid_dim
+        self.norm_wh = norm_wh
+        self.wh_weight = wh_weight
+        self.off_weight = off_weight
+        self.id_weight = id_weight
+        self.num_epochs = num_epochs
+        self.lr_step = lr_step
+        self.hm_weight = hm_weight
+
+        main_batch_size = self.batch_size // len(self.gpus)
+        rest_batch_size = (self.batch_size - main_batch_size)
+        self.chunk_sizes = [main_batch_size]
+
+        for i in range(len(self.gpus) - 1):
+            worker_chunk_size = rest_batch_size // (len(self.gpus) - 1)
+            if i < rest_batch_size % (len(self.gpus) - 1):
+                worker_chunk_size += 1
+            self.chunk_sizes.append(worker_chunk_size)
+
         self.__create_model()
 
-    def save(self, path):
-        pass
+    def save(self, path, verbose=False):
+        """
+        This method is used to save a trained model.
+        Provided with the path, absolute or relative, including a *folder* name, it creates a directory with the name
+        of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
+        If self.optimize was ran previously, it saves the optimized ONNX model in a similar fashion, by copying it
+        from the self.temp_path it was saved previously during conversion.
+        :param path: for the model to be saved, including the folder name
+        :type path: str
+        :param verbose: whether to print success message or not, defaults to 'False'
+        :type verbose: bool, optional
+        """
+
+        if self.model is None and self.ort_session is None:
+            raise UserWarning("No model is loaded, cannot save.")
+
+        folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
+        # Also extract folder name without any extension if extension is erroneously provided
+        folder_name_no_ext = folder_name.split(sep='.')[0]
+
+        # Extract path without folder name, by removing folder name from original path
+        path_no_folder_name = ''.join(path.rsplit(folder_name, 1))
+        # If tail is '', then path was a/b/c/, which leaves a trailing double '/'
+        if tail == '':
+            path_no_folder_name = path_no_folder_name[0:-1]  # Remove one '/'
+
+        # Create model directory
+        new_path = path_no_folder_name + folder_name_no_ext
+        os.makedirs(new_path, exist_ok=True)
+
+        model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
+                          "inference_params": {}, "optimized": None, "optimizer_info": {}}
+
+        if self.model.ort_session is None:
+            model_metadata["model_paths"] = [
+                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + ".pth"),
+            ]
+            model_metadata["optimized"] = False
+            model_metadata["format"] = "pth"
+
+            torch.save({
+                'state_dict': self.model.state_dict()
+            }, model_metadata["model_paths"][0])
+            if verbose:
+                print("Saved Pytorch model.")
+        else:
+            model_metadata["model_paths"] = [
+                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + ".onnx")
+            ]
+            model_metadata["optimized"] = True
+            model_metadata["format"] = "onnx"
+
+            shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"), model_metadata["model_paths"][0])
+            if verbose:
+                print("Saved ONNX model.")
+
+        with open(os.path.join(new_path, folder_name_no_ext + ".json"), 'w') as outfile:
+            json.dump(model_metadata, outfile)
 
     def load(
         self,
         path,
-        silent=False,
         verbose=False,
-        logging_path=None,
     ):
-        logger = Logger(silent, verbose, logging_path)
+        """
+        Loads the model from inside the path provided, based on the metadata .json file included.
+        :param path: path of the directory the model was saved
+        :type path: str
+        :param verbose: whether to print success message or not, defaults to 'False'
+        :type verbose: bool, optional
+        """
 
-        logger.close()
+        model_name, _, _ = self.__extract_trailing(path)  # Trailing folder name from the path provided
+
+        with open(os.path.join(path, model_name + ".json")) as metadata_file:
+            metadata = json.load(metadata_file)
+
+        if not metadata["optimized"]:
+            self.__load_from_pth(self.model, metadata["model_paths"][0])
+            if verbose:
+                print("Loaded Pytorch model.")
+        else:
+            self.__load_rpn_from_onnx(metadata["model_paths"][0])
+            if verbose:
+                print("Loaded ONNX model.")
 
     def reset(self):
         pass
@@ -79,28 +209,21 @@ class ObjectTracking2DFairMotLearner(Learner):
         logging_path=None,
         silent=False,
         verbose=False,
-        model_dir=None,
-        auto_save=False,
         train_split_paths=None,
         val_split_paths=None,
+        resume_optimizer=False,
+        nID=None
     ):
 
         if train_split_paths is None:
             train_split_paths = {
-                "mot20": "./perception/object_tracking_2d/datasets/data/mot20.train"
+                "mot20": "./perception/object_tracking_2d/datasets/splits/mot20.train"
             }
 
+        if val_split_paths is None:
+            val_split_paths = train_split_paths
+
         logger = Logger(silent, verbose, logging_path)
-
-        # if model_dir is not None:
-        #     model_dir = pathlib.Path(model_dir)
-        #     model_dir.mkdir(parents=True, exist_ok=True)
-        #     self.model_dir = model_dir
-
-        # if self.model_dir is None and auto_save is True:
-        #     raise ValueError(
-        #         "Can not use auto_save if model_dir is None and load was not called before"
-        #     )
 
         (
             input_dataset_iterator,
@@ -110,6 +233,58 @@ class ObjectTracking2DFairMotLearner(Learner):
             val_dataset,
             train_split_paths,
             val_split_paths,
+        )
+
+        if nID is None:
+            nID = input_dataset_iterator.nID
+
+        checkpoints_path = os.path.join(self.temp_path, "checkpoints")
+        if self.checkpoint_after_iter != 0 or self.checkpoint_load_iter != 0:
+            os.makedirs(checkpoints_path, exist_ok=True)
+
+        start_epoch = 0
+
+        if self.checkpoint_load_iter != 0:
+            _, _, start_epoch = load_from_checkpoint(
+                self.model, os.path.join(checkpoints_path, f"checkpoint_{self.checkpoint_load_iter}.pth"),
+                self.model_optimizer, resume_optimizer, self.lr, self.lr_step, log=logger.log,
+            )
+
+        train(
+            self.model,
+            self.model_optimizer,
+            input_dataset_iterator,
+            eval_dataset_iterator,
+            self.batch_size,
+            self.num_workers,
+            self.gpus,
+            self.chunk_sizes,
+            self.iters,
+            "train",  # exp_id,
+            self.device,
+            silent,  # hide_data_time,
+            1 if verbose else (-1 if silent else 10),  # print_iter,
+            self.mse_loss,
+            self.reg_loss,
+            self.dense_wh,
+            self.cat_spec_wh,
+            self.reid_dim,
+            nID,
+            self.norm_wh,
+            1,  # num_stack,
+            self.wh_weight,
+            self.off_weight,
+            self.id_weight,
+            self.num_epochs,
+            self.lr_step,
+            self.temp_path,
+            self.lr,
+            self.reg_offset,
+            self.hm_weight,
+            checkpoints_path,
+            self.checkpoint_after_iter,
+            start_epoch,
+            log=logger.log,
         )
 
         logger.close()
@@ -140,8 +315,77 @@ class ObjectTracking2DFairMotLearner(Learner):
 
         return result
 
-    def optimize(self, do_constant_folding=False):
-        pass
+    def optimize(self, do_constant_folding=False, img_size=(1088, 608), optimizable_dcn_v2=False):
+        """
+        Optimize method converts the model to ONNX format and saves the
+        model in the parent directory defined by self.temp_path. The ONNX model is then loaded.
+        :param do_constant_folding: whether to optimize constants, defaults to 'False'
+        :type do_constant_folding: bool, optional
+        """
+
+        if not optimizable_dcn_v2:
+            raise Exception("Can not optimize the model while DCNv2 implementation is not optimizable")
+
+        if self.model is None:
+            raise UserWarning("No model is loaded, cannot optimize. Load or train a model first.")
+        if self.model.ort_session is not None:
+            raise UserWarning("Model is already optimized in ONNX.")
+
+        input_shape = [
+            1,
+            3,
+            img_size[1],
+            img_size[0],
+        ]
+
+        try:
+            self.__convert_to_onnx(
+                input_shape,
+                os.path.join(self.temp_path, "onnx_model_temp.onnx"), do_constant_folding
+            )
+        except FileNotFoundError:
+            # Create temp directory
+            os.makedirs(self.temp_path, exist_ok=True)
+            self.__convert_rpn_to_onnx(
+                input_shape,
+                os.path.join(self.temp_path, "onnx_model_temp.onnx"), do_constant_folding
+            )
+
+        self.__load_rpn_from_onnx(os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"))
+
+    def __convert_to_onnx(self, input_shape, output_name, do_constant_folding=False, verbose=False):
+        inp = torch.randn(input_shape).to(self.device)
+        input_names = ["data"]
+        output_names = self.heads.keys()
+
+        torch.onnx.export(
+            self.model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
+            do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names
+        )
+
+    def __load_from_onnx(self, path):
+        """
+        This method loads an ONNX model from the path provided into an onnxruntime inference session.
+
+        :param path: path to ONNX model
+        :type path: str
+        """
+        self.model.rpn_ort_session = ort.InferenceSession(path)
+
+        # The comments below are the alternative way to use the onnx model, it might be useful in the future
+        # depending on how ONNX saving/loading will be implemented across the toolkit.
+        # # Load the ONNX model
+        # self.model = onnx.load(path)
+        #
+        # # Check that the IR is well formed
+        # onnx.checker.check_model(self.model)
+        #
+        # # Print a human readable representation of the graph
+        # onnx.helper.printable_graph(self.model.graph)
+
+    def __load_from_pth(self, model, path, use_original_dict=False):
+        all_params = torch.load(path, map_location=self.device)
+        model.load_state_dict(all_params if use_original_dict else all_params["state_dict"])
 
     def _prepare_datasets(
         self,
@@ -163,9 +407,11 @@ class ObjectTracking2DFairMotLearner(Learner):
                     "ExternalDataset (" + str(dataset) +
                     ") is given as a dataset, but it is not a MOT dataset")
 
+            transforms = T.Compose([T.ToTensor()])
             input_dataset_iterator = JointDataset(
                 dataset_path,
                 train_split_paths,
+                augment=True, transforms=transforms,
             )
         elif isinstance(dataset, DatasetIterator):
             input_dataset_iterator = dataset
@@ -184,9 +430,11 @@ class ObjectTracking2DFairMotLearner(Learner):
                     ") is given as a val_dataset, but it is not a MOT dataset"
                 )
 
+            transforms = T.Compose([T.ToTensor()])
             eval_dataset_iterator = JointDataset(
                 val_dataset_path,
                 val_split_paths,
+                augment=False, transforms=transforms,
             )
 
         elif isinstance(val_dataset, DatasetIterator):
@@ -200,9 +448,11 @@ class ObjectTracking2DFairMotLearner(Learner):
                         ") is given as a dataset, but it is not a MOT dataset"
                     )
 
+                transforms = T.Compose([T.ToTensor()])
                 eval_dataset_iterator = JointDataset(
                     dataset_path,
                     val_split_paths,
+                    augment=False, transforms=transforms,
                 )
 
             else:
@@ -218,4 +468,34 @@ class ObjectTracking2DFairMotLearner(Learner):
         return input_dataset_iterator, eval_dataset_iterator
 
     def __create_model(self):
-        pass
+
+        heads = {
+            'hm': self.num_classes,
+            'wh': 2 if not self.ltrb else 4,
+            'id': self.reid_dim
+        }
+        if self.reg_offset:
+            heads.update({'reg': 2})
+
+        self.heads = heads
+
+        self.model = create_model(self.backbone, heads, self.head_conv)
+        self.model.to(self.device)
+        self.model.ort_session = None
+        self.model.heads_names = heads.keys()
+
+        self.model_optimizer = torch.optim.Adam(self.model.parameters(), self.lr)
+
+    @staticmethod
+    def __extract_trailing(path):
+        """
+        Extracts the trailing folder name or filename from a path provided in an OS-generic way, also handling
+        cases where the last trailing character is a separator. Returns the folder name and the split head and tail.
+        :param path: the path to extract the trailing filename or folder name from
+        :type path: str
+        :return: the folder name, the head and tail of the path
+        :rtype: tuple of three strings
+        """
+        head, tail = ntpath.split(path)
+        folder_name = tail or ntpath.basename(head)  # handle both a/b/c and a/b/c/
+        return folder_name, head, tail

@@ -16,33 +16,43 @@ from scipy import interpolate
 import numpy as np
 from torchvision.transforms import transforms as T
 import torch.nn.functional as F
-from models.model import create_model, load_model
+from perception.object_tracking_2d.fair_mot.algorithm.lib.models.model import (
+    create_model,
+    load_model,
+)
 from datasets.dataset.jde import JointDataset, collate_fn
-from models.utils import _tranpose_and_gather_feat
-from utils.utils import xywh2xyxy, ap_per_class, bbox_iou
+from perception.object_tracking_2d.fair_mot.algorithm.lib.models.utils import (
+    _tranpose_and_gather_feat,
+)
+from perception.object_tracking_2d.fair_mot.algorithm.lib.utils.utils import (
+    xywh2xyxy,
+    ap_per_class,
+    bbox_iou,
+)
 from opts import opts
-from models.decode import mot_decode
-from utils.post_process import ctdet_post_process
+from perception.object_tracking_2d.fair_mot.algorithm.lib.models.decode import (
+    mot_decode,
+)
+from perception.object_tracking_2d.fair_mot.algorithm.lib.utils.post_process import (
+    ctdet_post_process,
+)
 
 
 def test_emb(
-        opt,
-        batch_size=16,
-        img_size=(1088, 608),
-        print_interval=40,
+    opt, batch_size=16, img_size=(1088, 608), print_interval=40,
 ):
     data_cfg = opt.data_cfg
     f = open(data_cfg)
     data_cfg_dict = json.load(f)
     f.close()
     nC = 1
-    test_paths = data_cfg_dict['test_emb']
-    dataset_root = data_cfg_dict['root']
+    test_paths = data_cfg_dict["test_emb"]
+    dataset_root = data_cfg_dict["root"]
     if opt.gpus[0] >= 0:
-        opt.device = torch.device('cuda')
+        opt.device = torch.device("cuda")
     else:
-        opt.device = torch.device('cpu')
-    print('Creating model...')
+        opt.device = torch.device("cpu")
+    print("Creating model...")
     model = create_model(opt.arch, opt.heads, opt.head_conv)
     model = load_model(model, opt.load_model)
     # model = torch.nn.DataParallel(model)
@@ -51,19 +61,22 @@ def test_emb(
 
     # Get dataloader
     transforms = T.Compose([T.ToTensor()])
-    dataset = JointDataset(opt, dataset_root, test_paths, img_size, augment=False, transforms=transforms)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False,
-                                             num_workers=8, drop_last=False)
+    dataset = JointDataset(
+        opt, dataset_root, test_paths, img_size, augment=False, transforms=transforms
+    )
+    dataloader = torch.utils.data.DataLoader(
+        dataset, batch_size=batch_size, shuffle=False, num_workers=8, drop_last=False
+    )
     embedding, id_labels = [], []
-    print('Extracting pedestrain features...')
+    print("Extracting pedestrain features...")
     for batch_i, batch in enumerate(dataloader):
         t = time.time()
-        output = model(batch['input'].cuda())[-1]
-        id_head = _tranpose_and_gather_feat(output['id'], batch['ind'].cuda())
-        id_head = id_head[batch['reg_mask'].cuda() > 0].contiguous()
+        output = model(batch["input"].cuda())[-1]
+        id_head = _tranpose_and_gather_feat(output["id"], batch["ind"].cuda())
+        id_head = id_head[batch["reg_mask"].cuda() > 0].contiguous()
         emb_scale = math.sqrt(2) * math.log(opt.nID - 1)
         id_head = emb_scale * F.normalize(id_head)
-        id_target = batch['ids'].cuda()[batch['reg_mask'].cuda() > 0]
+        id_target = batch["ids"].cuda()[batch["reg_mask"].cuda() > 0]
 
         for i in range(0, id_head.shape[0]):
             if len(id_head.shape) == 0:
@@ -76,10 +89,12 @@ def test_emb(
 
         if batch_i % print_interval == 0:
             print(
-                'Extracting {}/{}, # of instances {}, time {:.2f} sec.'.format(batch_i, len(dataloader), len(id_labels),
-                                                                               time.time() - t))
+                "Extracting {}/{}, # of instances {}, time {:.2f} sec.".format(
+                    batch_i, len(dataloader), len(id_labels), time.time() - t
+                )
+            )
 
-    print('Computing pairwise similairity...')
+    print("Computing pairwise similairity...")
     if len(embedding) < 1:
         return None
     embedding = torch.stack(embedding, dim=0).cuda()
@@ -101,11 +116,12 @@ def test_emb(
     interp = interpolate.interp1d(far, tar)
     tar_at_far = [interp(x) for x in far_levels]
     for f, fa in enumerate(far_levels):
-        print('TPR@FAR={:.7f}: {:.4f}'.format(fa, tar_at_far[f]))
+        print("TPR@FAR={:.7f}: {:.4f}".format(fa, tar_at_far[f]))
     return tar_at_far
 
-if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
+if __name__ == "__main__":
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     opt = opts().init()
     with torch.no_grad():
         tpr = test_emb(opt, batch_size=4)
