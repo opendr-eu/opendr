@@ -261,16 +261,26 @@ class BoundingBox2D(Target):
         self.confidence = score
         self.frame = frame
 
-    def mot(self):
+    def mot(self, with_confidence=True):
 
-        result = np.array([
-            self.frame,
-            self.left,
-            self.top,
-            self.width,
-            self.height,
-            self.score,
-        ])
+        if with_confidence:
+            result = np.array([
+                self.frame,
+                self.left,
+                self.top,
+                self.width,
+                self.height,
+                self.confidence,
+            ], dtype=np.float32)
+        else:
+            result = np.array([
+                self.frame,
+                self.left,
+                self.top,
+                self.width,
+                self.height,
+                self.confidence,
+            ], dtype=np.float32)
 
         return result
 
@@ -294,10 +304,10 @@ class BoundingBox2DList(Target):
         self.data = boxes
         self.confidence = np.mean([box.confidence for box in self.data])
 
-    def mot(self):
+    def mot(self, with_confidence=True):
 
         result = np.array([
-            box.mot() for box in self.data
+            box.mot(with_confidence) for box in self.data
         ])
 
         return result
@@ -345,17 +355,27 @@ class TrackingBoundingBox2D(Target):
             data[0],
         )
 
-    def mot(self):
+    def mot(self, with_confidence=True):
 
-        result = np.array([
-            self.frame,
-            self.id,
-            self.left,
-            self.top,
-            self.width,
-            self.height,
-            self.score,
-        ])
+        if with_confidence:
+            result = np.array([
+                self.frame,
+                self.id,
+                self.left,
+                self.top,
+                self.width,
+                self.height,
+                self.confidence,
+            ], dtype=np.float32)
+        else:
+            result = np.array([
+                self.frame,
+                self.id,
+                self.left,
+                self.top,
+                self.width,
+                self.height,
+            ], dtype=np.float32)
 
         return result
 
@@ -387,10 +407,10 @@ class TrackingBoundingBox2DList(Target):
 
         return TrackingBoundingBox2DList(boxes)
 
-    def mot(self):
+    def mot(self, with_confidence=True):
 
         result = np.array([
-            box.mot() for box in self.data
+            box.mot(with_confidence) for box in self.data
         ])
 
         return result

@@ -20,12 +20,13 @@ import shutil
 import onnxruntime as ort
 from torchvision.transforms import transforms as T
 from engine.learners import Learner
-from engine.datasets import ExternalDataset, DatasetIterator
+from engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetIterator
 from perception.object_tracking_2d.logger import Logger
 from perception.object_tracking_2d.datasets.mot_dataset import JointDataset
 from perception.object_tracking_2d.fair_mot.algorithm.lib.models.model import create_model
 from perception.object_tracking_2d.fair_mot.algorithm.run import train
 from perception.object_tracking_2d.fair_mot.algorithm.load import load_from_checkpoint
+from perception.object_tracking_2d.datasets.mot_dataset import process as process_dataset
 
 
 class ObjectTracking2DFairMotLearner(Learner):
@@ -62,6 +63,8 @@ class ObjectTracking2DFairMotLearner(Learner):
         id_weight=1,
         num_epochs=30,
         hm_weight=1,
+        down_ratio=4,
+        max_objs=500,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(ObjectTracking2DFairMotLearner, self).__init__(
@@ -99,6 +102,8 @@ class ObjectTracking2DFairMotLearner(Learner):
         self.num_epochs = num_epochs
         self.lr_step = lr_step
         self.hm_weight = hm_weight
+        self.down_ratio = down_ratio
+        self.max_objs = max_objs
 
         main_batch_size = self.batch_size // len(self.gpus)
         rest_batch_size = (self.batch_size - main_batch_size)
@@ -236,7 +241,7 @@ class ObjectTracking2DFairMotLearner(Learner):
         )
 
         if nID is None:
-            nID = input_dataset_iterator.nID
+            nID = input_dataset_iterator.nID if hasattr(input_dataset_iterator, "nID") else dataset.nID
 
         checkpoints_path = os.path.join(self.temp_path, "checkpoints")
         if self.checkpoint_after_iter != 0 or self.checkpoint_load_iter != 0:
@@ -411,10 +416,20 @@ class ObjectTracking2DFairMotLearner(Learner):
             input_dataset_iterator = JointDataset(
                 dataset_path,
                 train_split_paths,
-                augment=True, transforms=transforms,
+                down_ratio=self.down_ratio,
+                max_objects=self.max_objs,
+                ltrb=self.ltrb,
+                mse_loss=self.mse_loss,
+                augment=False, transforms=transforms,
             )
         elif isinstance(dataset, DatasetIterator):
-            input_dataset_iterator = dataset
+            input_dataset_iterator = MappedDatasetIterator(
+                dataset,
+                lambda d: process_dataset(
+                    d[0], d[1], self.ltrb, self.down_ratio,
+                    self.max_objs, self.num_classes, self.mse_loss
+                )
+            )
         else:
             if require_dataset or dataset is not None:
                 raise ValueError(
@@ -434,11 +449,21 @@ class ObjectTracking2DFairMotLearner(Learner):
             eval_dataset_iterator = JointDataset(
                 val_dataset_path,
                 val_split_paths,
+                down_ratio=self.down_ratio,
+                max_objects=self.max_objs,
+                ltrb=self.ltrb,
+                mse_loss=self.mse_loss,
                 augment=False, transforms=transforms,
             )
 
         elif isinstance(val_dataset, DatasetIterator):
-            eval_dataset_iterator = dataset
+            eval_dataset_iterator = MappedDatasetIterator(
+                val_dataset,
+                lambda d: process_dataset(
+                    d[0], d[1], self.ltrb, self.down_ratio,
+                    self.max_objs, self.num_classes, self.mse_loss
+                )
+            )
         elif val_dataset is None:
             if isinstance(dataset, ExternalDataset):
                 dataset_path = dataset.path
@@ -452,6 +477,10 @@ class ObjectTracking2DFairMotLearner(Learner):
                 eval_dataset_iterator = JointDataset(
                     dataset_path,
                     val_split_paths,
+                    down_ratio=self.down_ratio,
+                    max_objects=self.max_objs,
+                    ltrb=self.ltrb,
+                    mse_loss=self.mse_loss,
                     augment=False, transforms=transforms,
                 )
 
