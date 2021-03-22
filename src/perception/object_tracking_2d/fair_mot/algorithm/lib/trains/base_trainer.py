@@ -185,7 +185,7 @@ class BaseTrainer(object):
         raise NotImplementedError
 
     def val(self, epoch, data_loader):
-        return self.run_epoch("val", epoch, data_loader)
+        return self.run_epoch("val", epoch, data_loader, -1, None)
 
     def train(self, epoch, data_loader, save_iter, save, log=print):
         return self.run_epoch("train", epoch, data_loader, save_iter, save, log)

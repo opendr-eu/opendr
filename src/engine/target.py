@@ -415,6 +415,9 @@ class TrackingBoundingBox2DList(Target):
 
         return result
 
+    def __len__(self):
+        return len(self.data)
+
     def __repr__(self):
         return "TrackingBoundingBox2DList " + str(self)
 

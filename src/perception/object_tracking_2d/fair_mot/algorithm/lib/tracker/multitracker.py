@@ -1,32 +1,22 @@
 import numpy as np
-from numba import jit
 from collections import deque
-import itertools
-import os
-import os.path as osp
-import time
 import torch
-import cv2
 import torch.nn.functional as F
 
-from perception.object_tracking_2d.fair_mot.algorithm.lib.models.model import (
-    create_model,
-    load_model,
-)
 from perception.object_tracking_2d.fair_mot.algorithm.lib.models.decode import (
     mot_decode,
 )
-from tracking_utils.utils import *
-from tracking_utils.log import logger
-from tracking_utils.kalman_filter import KalmanFilter
-from perception.object_tracking_2d.fair_mot.algorithm.lib.models import *
-from tracker import matching
+
+# from perception.object_tracking_2d.fair_mot.algorithm.lib.tracking_utils.utils import *
+from perception.object_tracking_2d.fair_mot.algorithm.lib.tracking_utils.kalman_filter import (
+    KalmanFilter,
+)
+from perception.object_tracking_2d.fair_mot.algorithm.lib.tracker import (
+    matching,
+)
 from .basetrack import BaseTrack, TrackState
 from perception.object_tracking_2d.fair_mot.algorithm.lib.utils.post_process import (
     ctdet_post_process,
-)
-from perception.object_tracking_2d.fair_mot.algorithm.lib.utils.image import (
-    get_affine_transform,
 )
 from perception.object_tracking_2d.fair_mot.algorithm.lib.models.utils import (
     _tranpose_and_gather_feat,
@@ -58,7 +48,9 @@ class STrack(BaseTrack):
         if self.smooth_feat is None:
             self.smooth_feat = feat
         else:
-            self.smooth_feat = self.alpha * self.smooth_feat + (1 - self.alpha) * feat
+            self.smooth_feat = (
+                self.alpha * self.smooth_feat + (1 - self.alpha) * feat
+            )
         self.features.append(feat)
         self.smooth_feat /= np.linalg.norm(self.smooth_feat)
 
@@ -188,33 +180,43 @@ class STrack(BaseTrack):
         return ret
 
     def __repr__(self):
-        return "OT_{}_({}-{})".format(self.track_id, self.start_frame, self.end_frame)
+        return "OT_{}_({}-{})".format(
+            self.track_id, self.start_frame, self.end_frame
+        )
 
 
 class JDETracker(object):
-    def __init__(self, opt, frame_rate=30):
-        self.opt = opt
-        if opt.gpus[0] >= 0:
-            opt.device = torch.device("cuda")
-        else:
-            opt.device = torch.device("cpu")
-        print("Creating model...")
-        self.model = create_model(opt.arch, opt.heads, opt.head_conv)
-        self.model = load_model(self.model, opt.load_model)
-        self.model = self.model.to(opt.device)
-        self.model.eval()
+    def __init__(
+        self,
+        model,
+        conf_thres,
+        track_buffer,
+        max_objs,
+        image_mean,
+        image_std,
+        down_ratio,
+        num_classes,
+        reg_offset,
+        ltrb,
+        frame_rate=30,
+    ):
+        self.model = model
 
         self.tracked_stracks = []  # type: list[STrack]
         self.lost_stracks = []  # type: list[STrack]
         self.removed_stracks = []  # type: list[STrack]
 
         self.frame_id = 0
-        self.det_thresh = opt.conf_thres
-        self.buffer_size = int(frame_rate / 30.0 * opt.track_buffer)
+        self.det_thresh = conf_thres
+        self.buffer_size = int(frame_rate / 30.0 * track_buffer)
         self.max_time_lost = self.buffer_size
-        self.max_per_image = opt.K
-        self.mean = np.array(opt.mean, dtype=np.float32).reshape(1, 1, 3)
-        self.std = np.array(opt.std, dtype=np.float32).reshape(1, 1, 3)
+        self.max_per_image = max_objs
+        self.mean = np.array(image_mean, dtype=np.float32).reshape(1, 1, 3)
+        self.std = np.array(image_std, dtype=np.float32).reshape(1, 1, 3)
+        self.down_ratio = down_ratio
+        self.num_classes = num_classes
+        self.reg_offset = reg_offset
+        self.ltrb = ltrb
 
         self.kalman_filter = KalmanFilter()
 
@@ -227,26 +229,26 @@ class JDETracker(object):
             [meta["s"]],
             meta["out_height"],
             meta["out_width"],
-            self.opt.num_classes,
+            self.num_classes,
         )
-        for j in range(1, self.opt.num_classes + 1):
+        for j in range(1, self.num_classes + 1):
             dets[0][j] = np.array(dets[0][j], dtype=np.float32).reshape(-1, 5)
         return dets[0]
 
     def merge_outputs(self, detections):
         results = {}
-        for j in range(1, self.opt.num_classes + 1):
+        for j in range(1, self.num_classes + 1):
             results[j] = np.concatenate(
                 [detection[j] for detection in detections], axis=0
             ).astype(np.float32)
 
         scores = np.hstack(
-            [results[j][:, 4] for j in range(1, self.opt.num_classes + 1)]
+            [results[j][:, 4] for j in range(1, self.num_classes + 1)]
         )
         if len(scores) > self.max_per_image:
             kth = len(scores) - self.max_per_image
             thresh = np.partition(scores, kth)[kth]
-            for j in range(1, self.opt.num_classes + 1):
+            for j in range(1, self.num_classes + 1):
                 keep_inds = results[j][:, 4] >= thresh
                 results[j] = results[j][keep_inds]
         return results
@@ -267,8 +269,8 @@ class JDETracker(object):
         meta = {
             "c": c,
             "s": s,
-            "out_height": inp_height // self.opt.down_ratio,
-            "out_width": inp_width // self.opt.down_ratio,
+            "out_height": inp_height // self.down_ratio,
+            "out_width": inp_width // self.down_ratio,
         }
 
         """ Step 1: Network forward, get detections & embeddings"""
@@ -279,8 +281,10 @@ class JDETracker(object):
             id_feature = output["id"]
             id_feature = F.normalize(id_feature, dim=1)
 
-            reg = output["reg"] if self.opt.reg_offset else None
-            dets, inds = mot_decode(hm, wh, reg=reg, ltrb=self.opt.ltrb, K=self.opt.K)
+            reg = output["reg"] if self.reg_offset else None
+            dets, inds = mot_decode(
+                hm, wh, reg=reg, ltrb=self.ltrb, K=self.max_per_image
+            )
             id_feature = _tranpose_and_gather_feat(id_feature, inds)
             id_feature = id_feature.squeeze(0)
             id_feature = id_feature.cpu().numpy()
@@ -288,21 +292,9 @@ class JDETracker(object):
         dets = self.post_process(dets, meta)
         dets = self.merge_outputs([dets])[1]
 
-        remain_inds = dets[:, 4] > self.opt.conf_thres
+        remain_inds = dets[:, 4] > self.det_thresh
         dets = dets[remain_inds]
         id_feature = id_feature[remain_inds]
-
-        # vis
-        """
-        for i in range(0, dets.shape[0]):
-            bbox = dets[i][0:4]
-            cv2.rectangle(img0, (bbox[0], bbox[1]),
-                          (bbox[2], bbox[3]),
-                          (0, 255, 0), 2)
-        cv2.imshow('dets', img0)
-        cv2.waitKey(0)
-        id0 = id0-1
-        """
 
         if len(dets) > 0:
             """Detections"""
@@ -330,8 +322,12 @@ class JDETracker(object):
         STrack.multi_predict(strack_pool)
         dists = matching.embedding_distance(strack_pool, detections)
         # dists = matching.iou_distance(strack_pool, detections)
-        dists = matching.fuse_motion(self.kalman_filter, dists, strack_pool, detections)
-        matches, u_track, u_detection = matching.linear_assignment(dists, thresh=0.4)
+        dists = matching.fuse_motion(
+            self.kalman_filter, dists, strack_pool, detections
+        )
+        matches, u_track, u_detection = matching.linear_assignment(
+            dists, thresh=0.4
+        )
 
         for itracked, idet in matches:
             track = strack_pool[itracked]
@@ -351,7 +347,9 @@ class JDETracker(object):
             if strack_pool[i].state == TrackState.Tracked
         ]
         dists = matching.iou_distance(r_tracked_stracks, detections)
-        matches, u_track, u_detection = matching.linear_assignment(dists, thresh=0.5)
+        matches, u_track, u_detection = matching.linear_assignment(
+            dists, thresh=0.5
+        )
 
         for itracked, idet in matches:
             track = r_tracked_stracks[itracked]
@@ -401,29 +399,36 @@ class JDETracker(object):
         self.tracked_stracks = [
             t for t in self.tracked_stracks if t.state == TrackState.Tracked
         ]
-        self.tracked_stracks = joint_stracks(self.tracked_stracks, activated_starcks)
-        self.tracked_stracks = joint_stracks(self.tracked_stracks, refind_stracks)
-        self.lost_stracks = sub_stracks(self.lost_stracks, self.tracked_stracks)
+        self.tracked_stracks = joint_stracks(
+            self.tracked_stracks, activated_starcks
+        )
+        self.tracked_stracks = joint_stracks(
+            self.tracked_stracks, refind_stracks
+        )
+        self.lost_stracks = sub_stracks(
+            self.lost_stracks, self.tracked_stracks
+        )
         self.lost_stracks.extend(lost_stracks)
-        self.lost_stracks = sub_stracks(self.lost_stracks, self.removed_stracks)
+        self.lost_stracks = sub_stracks(
+            self.lost_stracks, self.removed_stracks
+        )
         self.removed_stracks.extend(removed_stracks)
         self.tracked_stracks, self.lost_stracks = remove_duplicate_stracks(
             self.tracked_stracks, self.lost_stracks
         )
         # get scores of lost tracks
-        output_stracks = [track for track in self.tracked_stracks if track.is_activated]
-
-        logger.debug("===========Frame {}==========".format(self.frame_id))
-        logger.debug(
-            "Activated: {}".format([track.track_id for track in activated_starcks])
-        )
-        logger.debug("Refind: {}".format([track.track_id for track in refind_stracks]))
-        logger.debug("Lost: {}".format([track.track_id for track in lost_stracks]))
-        logger.debug(
-            "Removed: {}".format([track.track_id for track in removed_stracks])
-        )
+        output_stracks = [
+            track for track in self.tracked_stracks if track.is_activated
+        ]
 
         return output_stracks
+
+    def reset(self):
+        self.tracked_stracks = []  # type: list[STrack]
+        self.lost_stracks = []  # type: list[STrack]
+        self.removed_stracks = []  # type: list[STrack]
+
+        self.frame_id = 0
 
 
 def joint_stracks(tlista, tlistb):

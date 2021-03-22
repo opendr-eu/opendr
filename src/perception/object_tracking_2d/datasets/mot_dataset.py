@@ -1,3 +1,19 @@
+# Copyright 2020-2021 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# JointDataset, DetDataset, LoadImages, LoadVideo, LoadImagesAndLabels and splits folder are taken from FairMOT
+
 import glob
 import math
 import os
@@ -11,16 +27,12 @@ import torch
 from collections import OrderedDict
 from urllib.request import urlretrieve
 from zipfile import ZipFile
-import shutil
-from engine.data import FloatImage
+from engine.constants import OPENDR_SERVER_URL
+from engine.data import FloatImage, Image
 from engine.target import TrackingBoundingBox2DList
 from engine.datasets import ExternalDataset, DatasetIterator
 from torchvision.transforms import transforms as T
-
-
-DEFAULT_MOT20_SUBSETS_PATH = {
-    "mot20": "./perception/object_tracking_2d/datasets/data/mot20.train"
-}
+from perception.object_tracking_2d.fair_mot.algorithm.gen_labels_mot import gen_labels_mot
 
 
 class MotDataset(ExternalDataset):
@@ -33,18 +45,19 @@ class MotDataset(ExternalDataset):
 
         self.path = path
 
+        self.__prepare_dataset()
+
     @staticmethod
     def download(
         url, download_path, dataset_sub_path=".", file_format="zip",
         create_dir=False,
-        copy_training_to_testing=False,
     ):
 
         if file_format == "zip":
             if create_dir:
                 os.makedirs(download_path, exist_ok=True)
 
-            print("Downloading KITTI Dataset zip file from", url, "to", download_path)
+            print("Downloading MOT20 Dataset zip file from", url, "to", download_path)
 
             start_time = 0
             last_print = 0
@@ -72,16 +85,11 @@ class MotDataset(ExternalDataset):
             urlretrieve(url, zip_path, reporthook=reporthook)
             print()
 
-            print("Extracting KITTI Dataset from zip file")
+            print("Extracting MOT20 Dataset from zip file")
             with ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(download_path)
 
             os.remove(zip_path)
-
-            if copy_training_to_testing:
-                shutil.copytree(
-                    os.path.join(download_path, dataset_sub_path, "training"),
-                    os.path.join(download_path, dataset_sub_path, "testing"))
 
             return MotDataset(
                 os.path.join(download_path, dataset_sub_path),
@@ -89,8 +97,177 @@ class MotDataset(ExternalDataset):
         else:
             raise ValueError("Unsupported file_format: " + file_format)
 
+    @staticmethod
+    def download_nano_mot20(
+        download_path, create_dir=False,
+    ):
+        return MotDataset.download(
+            os.path.join(OPENDR_SERVER_URL, "perception", "object_tracking_2d", "nano_MOT20.zip"),
+            download_path,
+            create_dir=create_dir,
+            dataset_sub_path=".",
+        )
 
-class MotDatasetIterator(DatasetIterator):  # for training
+    def __prepare_dataset(self):
+
+        datasets = os.listdir(self.path)
+
+        for dataset in datasets:
+            seq_root = os.path.join(self.path, dataset, "images/train")
+            label_root = os.path.join(self.path, dataset, "labels_with_ids/train")
+
+            if not os.path.exists(label_root):
+                gen_labels_mot(seq_root, label_root)
+
+
+class RawMotDatasetIterator(DatasetIterator):
+    default_resolution = [1088, 608]
+    mean = None
+    std = None
+    num_classes = 1
+
+    def __init__(
+        self,
+        root,
+        paths,
+        down_ratio=4,
+        max_objects=500,
+        ltrb=True,
+        mse_loss=False,
+        img_size=(1088, 608),
+    ):
+        # dataset_names = paths.keys()
+        self.img_files = OrderedDict()
+        self.label_files = OrderedDict()
+        self.tid_num = OrderedDict()
+        self.tid_start_index = OrderedDict()
+        self.num_classes = 1
+
+        for ds, path in paths.items():
+            with open(path, "r") as file:
+                self.img_files[ds] = file.readlines()
+                self.img_files[ds] = [
+                    osp.join(root, x.strip()) for x in self.img_files[ds]
+                ]
+                self.img_files[ds] = list(
+                    filter(lambda x: len(x) > 0, self.img_files[ds])
+                )
+
+            self.label_files[ds] = [
+                x.replace("images", "labels_with_ids")
+                .replace(".png", ".txt")
+                .replace(".jpg", ".txt")
+                for x in self.img_files[ds]
+            ]
+
+        for ds, label_paths in self.label_files.items():
+            max_index = -1
+            for lp in label_paths:
+                lb = np.loadtxt(lp)
+                if len(lb) < 1:
+                    continue
+                if len(lb.shape) < 2:
+                    img_max = lb[1]
+                else:
+                    img_max = np.max(lb[:, 1])
+                if img_max > max_index:
+                    max_index = img_max
+            self.tid_num[ds] = max_index + 1
+
+        last_index = 0
+        for i, (k, v) in enumerate(self.tid_num.items()):
+            self.tid_start_index[k] = last_index
+            last_index += v
+
+        self.nID = int(last_index + 1)
+        self.nds = [len(x) for x in self.img_files.values()]
+        self.cds = [sum(self.nds[:i]) for i in range(len(self.nds))]
+        self.nF = sum(self.nds)
+        self.width = img_size[0]
+        self.height = img_size[1]
+        self.max_objs = max_objects
+        self.down_ratio = down_ratio
+        self.ltrb = ltrb
+        self.mse_loss = mse_loss
+
+    def __getitem__(self, files_index):
+
+        for i, c in enumerate(self.cds):
+            if files_index >= c:
+                ds = list(self.label_files.keys())[i]
+                start_index = c
+
+        img_path = self.img_files[ds][files_index - start_index]
+        label_path = self.label_files[ds][files_index - start_index]
+
+        imgs, labels, img_path, (input_h, input_w) = self.get_data(
+            img_path, label_path
+        )
+
+        for i, _ in enumerate(labels):
+            if labels[i, 1] > -1:
+                labels[i, 1] += self.tid_start_index[ds]
+
+        return (
+            Image(imgs), TrackingBoundingBox2DList.from_mot(labels)
+        )
+
+    def get_data(self, img_path, label_path):
+        height = self.height
+        width = self.width
+        img = cv2.imread(img_path)  # BGR
+        if img is None:
+            raise ValueError("File corrupt {}".format(img_path))
+
+        h, w, _ = img.shape
+        shape = img.shape[:2]
+        ratio = min(float(height) / shape[0], float(width) / shape[1])
+        new_shape = (
+            round(shape[1] * ratio),
+            round(shape[0] * ratio),
+        )  # new_shape = [width, height]
+        padw = (width - new_shape[0]) / 2  # width padding
+        padh = (height - new_shape[1]) / 2  # height padding
+
+        # Load labels
+        if os.path.isfile(label_path):
+            labels0 = np.loadtxt(label_path, dtype=np.float32).reshape(-1, 6)
+
+            # Normalized xywh to pixel xyxy format
+            labels = labels0.copy()
+            labels[:, 2] = (
+                ratio * w * (labels0[:, 2] - labels0[:, 4] / 2) + padw
+            )
+            labels[:, 3] = (
+                ratio * h * (labels0[:, 3] - labels0[:, 5] / 2) + padh
+            )
+            labels[:, 4] = (
+                ratio * w * (labels0[:, 2] + labels0[:, 4] / 2) + padw
+            )
+            labels[:, 5] = (
+                ratio * h * (labels0[:, 3] + labels0[:, 5] / 2) + padh
+            )
+        else:
+            labels = np.array([])
+
+        nL = len(labels)
+        if nL > 0:
+            # convert xyxy to xywh
+            labels[:, 2:6] = xyxy2xywh(labels[:, 2:6].copy())  # / height
+            labels[:, 2] /= width
+            labels[:, 3] /= height
+            labels[:, 4] /= width
+            labels[:, 5] /= height
+
+        img = np.ascontiguousarray(img[:, :, ::-1].transpose(2, 0, 1))  # BGR to RGB
+
+        return img, labels, img_path, (h, w)
+
+    def __len__(self):
+        return self.nF  # number of batches
+
+
+class MotDatasetIterator(DatasetIterator):
     default_resolution = [1088, 608]
     mean = None
     std = None
@@ -980,7 +1157,7 @@ def gaussian_radius(det_size, min_overlap=0.7):
 
 def gaussian2D(shape, sigma=1):
     m, n = [(ss - 1.0) / 2.0 for ss in shape]
-    y, x = np.ogrid[-m : m + 1, -n : n + 1]
+    y, x = np.ogrid[-m: m + 1, -n: n + 1]
 
     h = np.exp(-(x * x + y * y) / (2 * sigma * sigma))
     h[h < np.finfo(h.dtype).eps * h.max()] = 0
@@ -998,9 +1175,9 @@ def draw_umich_gaussian(heatmap, center, radius, k=1):
     left, right = min(x, radius), min(width - x, radius + 1)
     top, bottom = min(y, radius), min(height - y, radius + 1)
 
-    masked_heatmap = heatmap[y - top : y + bottom, x - left : x + right]
+    masked_heatmap = heatmap[y - top: y + bottom, x - left: x + right]
     masked_gaussian = gaussian[
-        radius - top : radius + bottom, radius - left : radius + right
+        radius - top: radius + bottom, radius - left: radius + right
     ]
     if (
         min(masked_gaussian.shape) > 0 and min(masked_heatmap.shape) > 0
@@ -1015,8 +1192,8 @@ def draw_dense_reg(regmap, heatmap, center, value, radius, is_offset=False):
     value = np.array(value, dtype=np.float32).reshape(-1, 1, 1)
     dim = value.shape[0]
     reg = (
-        np.ones((dim, diameter * 2 + 1, diameter * 2 + 1), dtype=np.float32)
-        * value
+        np.ones((dim, diameter * 2 + 1, diameter * 2 + 1), dtype=np.float32) *
+        value
     )
     if is_offset and dim == 2:
         delta = np.arange(diameter * 2 + 1) - radius
@@ -1030,13 +1207,13 @@ def draw_dense_reg(regmap, heatmap, center, value, radius, is_offset=False):
     left, right = min(x, radius), min(width - x, radius + 1)
     top, bottom = min(y, radius), min(height - y, radius + 1)
 
-    masked_heatmap = heatmap[y - top : y + bottom, x - left : x + right]
-    masked_regmap = regmap[:, y - top : y + bottom, x - left : x + right]
+    masked_heatmap = heatmap[y - top: y + bottom, x - left: x + right]
+    masked_regmap = regmap[:, y - top: y + bottom, x - left: x + right]
     masked_gaussian = gaussian[
-        radius - top : radius + bottom, radius - left : radius + right
+        radius - top: radius + bottom, radius - left: radius + right
     ]
     masked_reg = reg[
-        :, radius - top : radius + bottom, radius - left : radius + right
+        :, radius - top: radius + bottom, radius - left: radius + right
     ]
     if (
         min(masked_gaussian.shape) > 0 and min(masked_heatmap.shape) > 0
@@ -1045,7 +1222,7 @@ def draw_dense_reg(regmap, heatmap, center, value, radius, is_offset=False):
             1, masked_gaussian.shape[0], masked_gaussian.shape[1]
         )
         masked_regmap = (1 - idx) * masked_regmap + idx * masked_reg
-    regmap[:, y - top : y + bottom, x - left : x + right] = masked_regmap
+    regmap[:, y - top: y + bottom, x - left: x + right] = masked_regmap
     return regmap
 
 
@@ -1067,9 +1244,9 @@ def draw_msra_gaussian(heatmap, center, sigma):
     g_y = max(0, -ul[1]), min(br[1], w) - ul[1]
     img_x = max(0, ul[0]), min(br[0], h)
     img_y = max(0, ul[1]), min(br[1], w)
-    heatmap[img_y[0] : img_y[1], img_x[0] : img_x[1]] = np.maximum(
-        heatmap[img_y[0] : img_y[1], img_x[0] : img_x[1]],
-        g[g_y[0] : g_y[1], g_x[0] : g_x[1]],
+    heatmap[img_y[0]: img_y[1], img_x[0]: img_x[1]] = np.maximum(
+        heatmap[img_y[0]: img_y[1], img_x[0]: img_x[1]],
+        g[g_y[0]: g_y[1], g_x[0]: g_x[1]],
     )
     return heatmap
 

@@ -2,7 +2,6 @@ import os.path as osp
 import os
 import cv2
 import json
-import numpy as np
 
 
 def mkdirs(d):
@@ -33,9 +32,9 @@ def gen_labels_crowd(data_root, label_root, ann_root):
         img_height, img_width = img.shape[0:2]
         for i in range(len(anns)):
             if (
-                "extra" in anns[i]
-                and "ignore" in anns[i]["extra"]
-                and anns[i]["extra"]["ignore"] == 1
+                "extra" in anns[i] and
+                "ignore" in anns[i]["extra"] and
+                anns[i]["extra"]["ignore"] == 1
             ):
                 continue
             x, y, w, h = anns[i]["fbox"]
