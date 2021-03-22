@@ -1,3 +1,5 @@
+# Copyright 2020-2021 OpenDR European Project
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,12 +14,15 @@
 
 import os
 import torch
+import numpy as np
 from perception.object_tracking_2d.fair_mot.algorithm.lib.trains.mot import MotTrainer
 from perception.object_tracking_2d.logger import Logger
+from perception.object_tracking_2d.fair_mot.algorithm.lib.tracking_utils.evaluation import Evaluator
 
 
 def train(
     model,
+    infer,
     optimizer,
     train_dataset,
     val_dataset,
@@ -50,20 +55,12 @@ def train(
     checkpoints_path,
     checkpoint_after_iter,
     start_epoch,
+    val_epochs=5,
     log=print,
 ):
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=num_workers,
-        pin_memory=True,
-        drop_last=True,
-    )
-
-    eval_loader = torch.utils.data.DataLoader(
-        val_dataset,
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
@@ -113,6 +110,11 @@ def train(
     for epoch in range(start_epoch + 1, num_epochs + 1):
         log_dict_train, _ = trainer.train(epoch, train_loader, checkpoint_after_iter, save, log)
         log(Logger.LOG_WHEN_NORMAL, "epoch: {} |".format(epoch))
+
+        if val_epochs > 0:
+            if epoch % val_epochs == 0:
+                result = evaluate(infer, val_dataset, "evaluation " + str(epoch))
+                log(Logger.LOG_WHEN_NORMAL, result)
         if epoch in lr_step:
             lr = lr * (0.1 ** (lr_step.index(epoch) + 1))
             log(Logger.LOG_WHEN_NORMAL, "Drop LR to", lr)
@@ -120,3 +122,57 @@ def train(
                 param_group["lr"] = lr
 
     print()
+
+
+def evaluate(
+    infer,
+    val_dataset,
+    name="default",
+):
+
+    gt_targets = []
+    output_targets = []
+    evaluator = Evaluator()
+
+    frame_id = 0
+
+    for frame_id in range(len(val_dataset)):
+        image, target = val_dataset[frame_id]
+        output_target = infer(image, frame_id)
+        output_targets.append(output_target)
+        gt_targets.append(target)
+
+    gt_tlwhs = [
+        [
+            np.array([t.top, t.left, t.width, t.height])
+            for t in ts.data
+        ] for ts in gt_targets
+    ]
+    output_tlwhs = [
+        [
+            np.array([t.top, t.left, t.width, t.height])
+            for t in ts.data
+        ] for ts in output_targets
+    ]
+
+    gt_ids = [
+        [
+            t.id for t in ts.data
+        ] for ts in gt_targets
+    ]
+    output_ids = [
+        [
+            t.id for t in ts.data
+        ] for ts in output_targets
+    ]
+
+    acc = evaluator.eval_all(
+        gt_tlwhs,
+        gt_ids,
+        output_tlwhs,
+        output_ids,
+    )
+
+    summary = Evaluator.get_summary([acc], [name])
+
+    return summary

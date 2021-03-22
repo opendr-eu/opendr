@@ -17,16 +17,22 @@ import json
 import torch
 import ntpath
 import shutil
+import numpy as np
 import onnxruntime as ort
 from torchvision.transforms import transforms as T
 from engine.learners import Learner
 from engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetIterator
 from perception.object_tracking_2d.logger import Logger
-from perception.object_tracking_2d.datasets.mot_dataset import JointDataset
+from perception.object_tracking_2d.datasets.mot_dataset import JointDataset, RawMotDatasetIterator
 from perception.object_tracking_2d.fair_mot.algorithm.lib.models.model import create_model
-from perception.object_tracking_2d.fair_mot.algorithm.run import train
+from perception.object_tracking_2d.fair_mot.algorithm.run import train, evaluate
 from perception.object_tracking_2d.fair_mot.algorithm.load import load_from_checkpoint
-from perception.object_tracking_2d.datasets.mot_dataset import process as process_dataset
+from perception.object_tracking_2d.datasets.mot_dataset import letterbox, process as process_dataset
+from perception.object_tracking_2d.fair_mot.algorithm.lib.tracker.multitracker import JDETracker
+from engine.data import Image
+from engine.target import TrackingBoundingBox2D, TrackingBoundingBox2DList
+from engine.constants import OPENDR_SERVER_URL
+from urllib.request import urlretrieve
 
 
 class ObjectTracking2DFairMotLearner(Learner):
@@ -43,7 +49,7 @@ class ObjectTracking2DFairMotLearner(Learner):
         checkpoint_load_iter=0,
         temp_path="",
         device="cuda:0",
-        threshold=0.0,
+        threshold=0.3,
         scale=1.0,
         lr_step=[20],
         head_conv=256,
@@ -65,6 +71,11 @@ class ObjectTracking2DFairMotLearner(Learner):
         hm_weight=1,
         down_ratio=4,
         max_objs=500,
+        track_buffer=30,
+        image_mean=[0.408, 0.447, 0.47],
+        image_std=[0.289, 0.274, 0.278],
+        frame_rate=30,
+        min_box_area=100,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(ObjectTracking2DFairMotLearner, self).__init__(
@@ -104,6 +115,12 @@ class ObjectTracking2DFairMotLearner(Learner):
         self.hm_weight = hm_weight
         self.down_ratio = down_ratio
         self.max_objs = max_objs
+        self.track_buffer = track_buffer
+        self.image_mean = image_mean
+        self.image_mean = image_mean
+        self.image_std = image_std
+        self.frame_rate = frame_rate
+        self.min_box_area = min_box_area
 
         main_batch_size = self.batch_size // len(self.gpus)
         rest_batch_size = (self.batch_size - main_batch_size)
@@ -204,12 +221,13 @@ class ObjectTracking2DFairMotLearner(Learner):
                 print("Loaded ONNX model.")
 
     def reset(self):
-        pass
+        self.tracker.reset()
 
     def fit(
         self,
         dataset,
         val_dataset=None,
+        val_epochs=-1,
         refine_weight=2,
         logging_path=None,
         silent=False,
@@ -238,6 +256,7 @@ class ObjectTracking2DFairMotLearner(Learner):
             val_dataset,
             train_split_paths,
             val_split_paths,
+            require_val_dataset=val_epochs > 0,
         )
 
         if nID is None:
@@ -257,6 +276,7 @@ class ObjectTracking2DFairMotLearner(Learner):
 
         train(
             self.model,
+            self.infer,
             self.model_optimizer,
             input_dataset_iterator,
             eval_dataset_iterator,
@@ -289,6 +309,7 @@ class ObjectTracking2DFairMotLearner(Learner):
             checkpoints_path,
             self.checkpoint_after_iter,
             start_epoch,
+            val_epochs=val_epochs,
             log=logger.log,
         )
 
@@ -297,7 +318,7 @@ class ObjectTracking2DFairMotLearner(Learner):
     def eval(
         self,
         dataset,
-        predict_test=False,
+        val_split_paths=None,
         logging_path=None,
         silent=False,
         verbose=False,
@@ -305,20 +326,94 @@ class ObjectTracking2DFairMotLearner(Learner):
 
         logger = Logger(silent, verbose, logging_path)
 
+        (
+            _,
+            eval_dataset_iterator,
+        ) = self._prepare_datasets(
+            None,
+            dataset,
+            None,
+            val_split_paths,
+            require_dataset=False,
+        )
+
+        result = evaluate(self.infer, dataset)
+
+        logger.log(Logger.LOG_WHEN_NORMAL, result)
+
         logger.close()
 
         return result
 
-    def infer(self, batch):
+    def infer(self, batch, frame_ids=None, img_size=(1088, 608)):
 
         if self.model is None:
             raise ValueError("No model loaded or created")
 
         self.model.eval()
 
-        result = self.model(batch)
+        is_single_image = False
 
-        return result
+        if isinstance(batch, Image):
+            batch = [batch]
+            is_single_image = True
+        elif not isinstance(batch, list):
+            raise ValueError("Input batch should be an engine.Image or a list of engine.Image")
+
+        if frame_ids is None:
+            frame_ids = [-1] * len(batch)
+        elif is_single_image:
+            frame_ids = [frame_ids]
+
+        results = []
+
+        for image, frame_id in zip(batch, frame_ids):
+
+            img0 = image.numpy().transpose(1, 2, 0)[..., ::-1]  # BGR
+            img, _, _, _ = letterbox(img0, height=img_size[1], width=img_size[0])
+
+            # Normalize RGB
+            img = img[:, :, ::-1].transpose(2, 0, 1)
+            img = np.ascontiguousarray(img, dtype=np.float32)
+            img /= 255.0
+
+            blob = torch.from_numpy(img).to(self.device).unsqueeze(0)
+
+            online_targets = self.tracker.update(blob, img0)
+            online_tlwhs = []
+            online_ids = []
+            online_scores = []
+            for t in online_targets:
+                tlwh = t.tlwh
+                tid = t.track_id
+                vertical = tlwh[2] / tlwh[3] > 1.6
+                if tlwh[2] * tlwh[3] > self.min_box_area and not vertical:
+                    online_tlwhs.append(tlwh)
+                    online_ids.append(tid)
+                    online_scores.append(t.score)
+
+            result = TrackingBoundingBox2DList([
+                TrackingBoundingBox2D(
+                    top=tlwh[0],
+                    left=tlwh[1],
+                    width=tlwh[2],
+                    height=tlwh[3],
+                    id=id,
+                    score=score,
+                    frame=frame_id,
+                ) for tlwh, id, score in zip(
+                    online_tlwhs,
+                    online_ids,
+                    online_scores
+                )
+            ])
+
+            results.append(result)
+
+        if is_single_image:
+            results = results[0]
+
+        return results
 
     def optimize(self, do_constant_folding=False, img_size=(1088, 608), optimizable_dcn_v2=False):
         """
@@ -357,6 +452,53 @@ class ObjectTracking2DFairMotLearner(Learner):
             )
 
         self.__load_rpn_from_onnx(os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"))
+
+    @staticmethod
+    def download(model_name, path, server_url=None):
+
+        if server_url is not None and model_name not in [
+            "crowdhuman_dla34",
+            "fairmot_dla34",
+        ]:
+            raise ValueError("Unknown model_name: " + model_name)
+
+        os.makedirs(path, exist_ok=True)
+
+        if server_url is None:
+            server_url = os.path.join(
+                OPENDR_SERVER_URL, "perception", "object_tracking_2d",
+                "fair_mot"
+            )
+
+        url = os.path.join(
+            server_url, model_name
+        )
+
+        model_dir = os.path.join(path, model_name)
+        os.makedirs(model_dir, exist_ok=True)
+
+        urlretrieve(os.path.join(
+            url, model_name + ".json"
+        ), os.path.join(
+            model_dir, model_name + ".json"
+        ))
+
+        try:
+            urlretrieve(os.path.join(
+                url, model_name + ".pth"
+            ), os.path.join(
+                model_dir, model_name + ".pth"
+            ))
+        except Exception:
+            urlretrieve(os.path.join(
+                url, model_name + ".tckpt"
+            ), os.path.join(
+                model_dir, model_name + ".pth"
+            ))
+
+        print("Downloaded model", model_name, "to", model_dir)
+
+        return model_dir
 
     def __convert_to_onnx(self, input_shape, output_name, do_constant_folding=False, verbose=False):
         inp = torch.randn(input_shape).to(self.device)
@@ -399,6 +541,7 @@ class ObjectTracking2DFairMotLearner(Learner):
         train_split_paths,
         val_split_paths,
         require_dataset=True,
+        require_val_dataset=True,
     ):
 
         input_dataset_iterator = None
@@ -445,50 +588,42 @@ class ObjectTracking2DFairMotLearner(Learner):
                     ") is given as a val_dataset, but it is not a MOT dataset"
                 )
 
-            transforms = T.Compose([T.ToTensor()])
-            eval_dataset_iterator = JointDataset(
+            eval_dataset_iterator = RawMotDatasetIterator(
                 val_dataset_path,
                 val_split_paths,
                 down_ratio=self.down_ratio,
                 max_objects=self.max_objs,
                 ltrb=self.ltrb,
                 mse_loss=self.mse_loss,
-                augment=False, transforms=transforms,
             )
 
         elif isinstance(val_dataset, DatasetIterator):
-            eval_dataset_iterator = MappedDatasetIterator(
-                val_dataset,
-                lambda d: process_dataset(
-                    d[0], d[1], self.ltrb, self.down_ratio,
-                    self.max_objs, self.num_classes, self.mse_loss
-                )
-            )
+            eval_dataset_iterator = val_dataset
         elif val_dataset is None:
             if isinstance(dataset, ExternalDataset):
-                dataset_path = dataset.path
+                val_dataset_path = dataset.path
                 if dataset.dataset_type.lower() != "mot":
                     raise ValueError(
                         "ExternalDataset (" + str(dataset) +
                         ") is given as a dataset, but it is not a MOT dataset"
                     )
 
-                transforms = T.Compose([T.ToTensor()])
-                eval_dataset_iterator = JointDataset(
-                    dataset_path,
+                eval_dataset_iterator = RawMotDatasetIterator(
+                    val_dataset_path,
                     val_split_paths,
                     down_ratio=self.down_ratio,
                     max_objects=self.max_objs,
                     ltrb=self.ltrb,
                     mse_loss=self.mse_loss,
-                    augment=False, transforms=transforms,
                 )
 
-            else:
+            elif require_val_dataset:
                 raise ValueError(
                     "val_dataset is None and can't be derived from" +
                     " the dataset object because the dataset is not an ExternalDataset"
                 )
+            else:
+                eval_dataset_iterator = input_dataset_iterator
         else:
             raise ValueError(
                 "val_dataset parameter should be an ExternalDataset or a DatasetIterator or None"
@@ -514,6 +649,20 @@ class ObjectTracking2DFairMotLearner(Learner):
         self.model.heads_names = heads.keys()
 
         self.model_optimizer = torch.optim.Adam(self.model.parameters(), self.lr)
+
+        self.tracker = JDETracker(
+            self.model,
+            self.threshold,
+            self.track_buffer,
+            self.max_objs,
+            self.image_mean,
+            self.image_std,
+            self.down_ratio,
+            self.num_classes,
+            self.reg_offset,
+            self.ltrb,
+            self.frame_rate,
+        )
 
     @staticmethod
     def __extract_trailing(path):

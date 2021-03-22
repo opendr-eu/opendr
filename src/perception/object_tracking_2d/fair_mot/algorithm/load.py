@@ -1,3 +1,5 @@
+# Copyright 2020-2021 OpenDR European Project
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,9 +13,6 @@
 # limitations under the License.
 
 import torch
-from perception.object_tracking_2d.fair_mot.algorithm.lib.trains.mot import (
-    MotTrainer,
-)
 from perception.object_tracking_2d.logger import Logger
 
 
@@ -38,10 +37,10 @@ def load_from_checkpoint(
 
     # check loaded parameters and created model parameters
     msg = (
-        "If you see this, your model does not fully load the "
-        + "pre-trained weight. Please make sure "
-        + "you have correctly specified --arch xxx "
-        + "or set the correct --num_classes for your own dataset."
+        "If you see this, your model does not fully load the " +
+        "pre-trained weight. Please make sure " +
+        "you have correctly specified --arch xxx " +
+        "or set the correct --num_classes for your own dataset."
     )
     for k in state_dict:
         if k in model_state_dict:
