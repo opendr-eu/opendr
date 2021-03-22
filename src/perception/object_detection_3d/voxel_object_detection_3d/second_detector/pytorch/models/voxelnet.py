@@ -1067,7 +1067,7 @@ class VoxelNet(nn.Module):
                     dir_labels = selected_dir_labels
                     opp_labels = dir_labels.byte() ^ (
                         box_preds[..., -1] > 0
-                    )  (box_preds[..., -1] > 0) ^ dir_labels.byte()
+                    )
                     box_preds[..., -1] += torch.where(
                         opp_labels,
                         torch.tensor(np.pi).type_as(box_preds),
