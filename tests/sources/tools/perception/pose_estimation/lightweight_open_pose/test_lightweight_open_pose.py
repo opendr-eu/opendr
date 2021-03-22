@@ -44,7 +44,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         cls.pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
                                                         checkpoint_after_iter=0)
         # Download all required files for testing
-        cls.pose_estimator.download(path=os.path.join(cls.temp_dir, "trainedModel"), mode="pretrained")
+        cls.pose_estimator.download(mode="pretrained")
         cls.pose_estimator.download(mode="test_data")
 
     @classmethod

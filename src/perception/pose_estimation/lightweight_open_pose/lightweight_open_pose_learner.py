@@ -914,8 +914,15 @@ class LightweightOpenPoseLearner(Learner):
             os.makedirs(path)
 
         if mode == "pretrained":
+            # Create model's folder
+            path = os.path.join(path, "trainedModel")
+            if not os.path.exists(path):
+                os.makedirs(path)
+
             if verbose:
                 print("Downloading pretrained model...")
+
+            # Download the model's files
             if self.backbone == "mobilenet":
                 if not os.path.exists(os.path.join(path, "trainedModel.json")):
                     file_url = os.path.join(url, "trainedModel/trainedModel.json")
