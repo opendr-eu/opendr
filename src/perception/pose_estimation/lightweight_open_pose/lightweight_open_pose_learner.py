@@ -914,20 +914,27 @@ class LightweightOpenPoseLearner(Learner):
             os.makedirs(path)
 
         if mode == "pretrained":
+            # Create model's folder
+            path = os.path.join(path, "mobilenet_openpose")
+            if not os.path.exists(path):
+                os.makedirs(path)
+
             if verbose:
                 print("Downloading pretrained model...")
+
+            # Download the model's files
             if self.backbone == "mobilenet":
-                if not os.path.exists(os.path.join(path, "trainedModel.json")):
-                    file_url = os.path.join(url, "trainedModel/trainedModel.json")
-                    urlretrieve(file_url, os.path.join(path, "trainedModel.json"))
+                if not os.path.exists(os.path.join(path, "mobilenet_openpose.json")):
+                    file_url = os.path.join(url, "mobilenet_openpose/mobilenet_openpose.json")
+                    urlretrieve(file_url, os.path.join(path, "mobilenet_openpose.json"))
                     if verbose:
                         print("Downloaded metadata json.")
                 else:
                     if verbose:
                         print("Metadata json file already exists.")
-                if not os.path.exists(os.path.join(path, "trainedModel.pth")):
-                    file_url = os.path.join(url, "trainedModel/trainedModel.pth")
-                    urlretrieve(file_url, os.path.join(path, "trainedModel.pth"))
+                if not os.path.exists(os.path.join(path, "mobilenet_openpose.pth")):
+                    file_url = os.path.join(url, "mobilenet_openpose/mobilenet_openpose.pth")
+                    urlretrieve(file_url, os.path.join(path, "mobilenet_openpose.pth"))
                 else:
                     if verbose:
                         print("Trained model .pth file already exists.")
