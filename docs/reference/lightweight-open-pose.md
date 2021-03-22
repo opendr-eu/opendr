@@ -261,7 +261,7 @@ Parameters:
 
   pose_estimator = LightweightOpenPoseLearner(device="cuda", temp_path='./parent_dir')
   pose_estimator.download()  # Download the default pretrained mobilenet model in the temp_path
-  pose_estimator.load("./parent_dir/trainedModel")
+  pose_estimator.load("./parent_dir/mobilenet_openpose")
   pose_estimator.download(mode="test_data")  # Download a test data taken from COCO2017
 
   img = cv2.imread('./parent_dir/dataset/image/000000000785.jpg')
@@ -283,7 +283,7 @@ Parameters:
   pose_estimator = LightweightOpenPoseLearner(temp_path='./parent_dir')
   
   pose_estimator.download()  # Download the default pretrained mobilenet model in the temp_path
-  pose_estimator.load("./parent_dir/trainedModel")
+  pose_estimator.load("./parent_dir/mobilenet_openpose")
   pose_estimator.optimize(do_constant_folding=True)
   pose_estimator.save('./parent_dir/optimized_model')
   ```

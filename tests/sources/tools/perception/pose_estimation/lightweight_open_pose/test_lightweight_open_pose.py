@@ -50,7 +50,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
-        rmdir(os.path.join(cls.temp_dir, "trainedModel"))
+        rmdir(os.path.join(cls.temp_dir, "mobilenet_openpose"))
         rmdir(os.path.join(cls.temp_dir, "dataset"))
         rmfile(os.path.join(cls.temp_dir, "mobilenet_sgd_68.848.pth.tar"))  # Fit downloads weights file
         rmdir(os.path.join(cls.temp_dir))
@@ -67,7 +67,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
 
     def test_eval(self):
         eval_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "dataset"), dataset_type="COCO")
-        self.pose_estimator.load(os.path.join(self.temp_dir, "trainedModel"))
+        self.pose_estimator.load(os.path.join(self.temp_dir, "mobilenet_openpose"))
         results_dict = self.pose_estimator.eval(eval_dataset, use_subset=False, verbose=True, silent=True,
                                                 images_folder_name="image", annotations_filename="annotation.json")
         self.assertNotEqual(len(results_dict['average_precision']), 0,
@@ -79,7 +79,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
 
     def test_infer(self):
         self.pose_estimator.model = None
-        self.pose_estimator.load(os.path.join(self.temp_dir, "trainedModel"))
+        self.pose_estimator.load(os.path.join(self.temp_dir, "mobilenet_openpose"))
 
         img = cv2.imread(os.path.join(self.temp_dir, "dataset", "image", "000000000785.jpg"))
         # Default pretrained mobilenet model detects 18 keypoints on img with id 785
@@ -113,7 +113,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
     def test_optimize(self):
         self.pose_estimator.model = None
         self.pose_estimator.ort_session = None
-        self.pose_estimator.load(os.path.join(self.temp_dir, "trainedModel"))
+        self.pose_estimator.load(os.path.join(self.temp_dir, "mobilenet_openpose"))
         self.pose_estimator.optimize()
         self.assertIsNotNone(self.pose_estimator.ort_session)
         # Cleanup
