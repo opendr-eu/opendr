@@ -5,5 +5,5 @@ This folder contains the OpenDR Learner class implemented for the 3D Object Dete
 ## Sources
 
 Large parts of the Learner code are taken from [happinesslz/TANet](
-https://github.com/happinesslz/TANet) (which is based on PointPillars and SECOND code) with modifications to make them compatible 
+https://github.com/happinesslz/TANet) (which is based on PointPillars and SECOND code, the folder is second_detector) with modifications to make them compatible 
 with OpenDR specifications.
