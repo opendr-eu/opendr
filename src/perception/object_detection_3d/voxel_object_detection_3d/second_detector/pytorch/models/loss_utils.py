@@ -59,9 +59,6 @@ def compute_iou_loss(pred_reg, target_reg, cls_weights, thre, weights):
                             iou_tmp.new().resize_(iou_tmp.shape).fill_(1e-4))
         iou_loss = -torch.log(iou_tmp)
         iou_loss = iou_loss.mean()
-        # print('valid_num:', pos.sum()/pred_reg.shape[0])
-        # print('weights:',weights.sum()/pred_reg.shape[0])
-
     else:
         iou_loss = cls_weights.mean().new().resize_(
             cls_weights.mean().shape).fill_(0.0)
@@ -295,11 +292,9 @@ def create_refine_loss(
     new_gt = box_torch_ops.second_box_encode(de_gt_boxes, de_coarse_boxes)
 
     if encode_background_as_zeros:
-        # coarse_conf = coarse_cls_preds.view(batch_size, -1, num_class)
         refine_conf = refine_cls_preds.view(batch_size, -1, num_class)
 
     else:
-        # coarse_conf = coarse_cls_preds.view(batch_size, -1, num_class + 1)
         refine_conf = refine_cls_preds.view(batch_size, -1, num_class + 1)
 
     cls_targets = cls_targets.squeeze(-1)
@@ -310,7 +305,6 @@ def create_refine_loss(
     if encode_background_as_zeros:  # True
         one_hot_targets = one_hot_targets[..., 1:]
     if encode_rad_error_by_sin:
-        # sin(a - b) = sinacosb-cosasinb
         box_preds, reg_targets = add_sin_difference(refine_box_preds, new_gt)
     refine_loc_losses = loc_loss_ftor(
         box_preds, reg_targets, weights=reg_weights)  # [N, M]    # [2,70400,7]
@@ -319,19 +313,10 @@ def create_refine_loss(
                                       one_hot_targets,
                                       weights=cls_weights)  # [N, M]
 
-    ##############################
-    # ## if cfg.USE_IOU_LOSS:
-    # coarse_iou_loss = compute_iou_loss(de_coarse_boxes, de_gt_boxes, coarse_conf, thre = 0.7, weights=reg_weights_ori)
-    # de_refine_boxes =  box_torch_ops.second_box_decode(refine_box_preds, de_coarse_boxes)
-    # refine_iou_loss = compute_iou_loss(de_refine_boxes, de_gt_boxes, refine_conf, thre = 0.7, weights=reg_weights_ori)
-    # #############################
-    # if cfg.USE_CORNER_LOSS:
-    # corner_loss_sum = corners_loss(de_refine_boxes, de_gt_boxes, weights=reg_weights)
-
     return (
         refine_loc_losses,
         refine_cls_losses,
-    )  # ,coarse_iou_loss, refine_iou_loss #, 0.5*corner_loss_sum
+    )
 
 
 def create_refine_loss_V2(
@@ -351,7 +336,6 @@ def create_refine_loss_V2(
 
     batch_size = example["anchors"].shape[0]
     batch_anchors_shape = example["anchors"].shape
-    # coordinates = example['coordinates']
     gt_batch_boxes = example["gt_boxes"]
     gt_batch_classes = example["gt_classes"]
     anchors_batch_mask = example["anchors_mask"]
@@ -369,7 +353,6 @@ def create_refine_loss_V2(
 
         anchors = anchor_batch[i, :, :]
         coarse_box_preds = coarse_box_batch_preds[i, :, :]
-        # refine_box_preds = refine_box_batch_preds[i, :, :]
 
         de_coarse_boxes = box_torch_ops.second_box_decode(
             coarse_box_preds, anchors)
@@ -383,7 +366,6 @@ def create_refine_loss_V2(
         vaild_anchors = torch.arange(len(anchors_mask))[anchors_mask]
 
         num_inside = len(vaild_anchors)
-        # total_anchors = anchors.shape[0]
         coarse_boxes = anchors[vaild_anchors, :]
 
         matched_threshold = 0.6 * torch.ones(num_inside).cuda()
@@ -431,7 +413,6 @@ def create_refine_loss_V2(
             labels[pos_inds] = gt_classes[gt_inds]
             gt_ids[pos_inds] = gt_inds
 
-            # bg_inds = np.where(anchor_to_gt_max < unmatched_threshold)[0]
             bg_inds = anchor_to_gt_max < unmatched_threshold
         else:
             bg_inds = torch.arange(num_inside)
@@ -458,17 +439,8 @@ def create_refine_loss_V2(
                                            dtype=coarse_boxes.dtype).cuda()
         bbox_outside_weights[labels > 0] = 1.0
 
-        # ret_label = -torch.ones(total_anchors, dtype=torch.int32)
-        # ret_label[vaild_anchors] = labels
-
-        # ret_bbox = torch.zeros(anchors.shape, dtype=torch.float32)
-        # ret_bbox[vaild_anchors, :] = bbox_targets
-
         batch_out_True_bbox[i, vaild_anchors, :] = bbox_targets
         batch_out_True_label[i, vaild_anchors] = labels
-
-    # ret_outside_weight = torch.zeros(total_anchors, dtype=torch.float32)
-    # ret_outside_weight[vaild_anchors] = bbox_outside_weights
 
     cls_weights, reg_weights, cared = prepare_loss_weights(
         batch_out_True_label,
@@ -481,12 +453,9 @@ def create_refine_loss_V2(
     cls_targets = cls_targets.unsqueeze(-1)
 
     if encode_background_as_zeros:
-        # coarse_conf = coarse_cls_batch_preds.view(batch_size, -1, num_class)
         refine_conf = refine_cls_batch_preds.view(batch_size, -1, num_class)
 
     else:
-        # coarse_conf = coarse_cls_batch_preds.view(batch_size, -1,
-        #                                           num_class + 1)
         refine_conf = refine_cls_batch_preds.view(batch_size, -1,
                                                   num_class + 1)
 
@@ -498,7 +467,6 @@ def create_refine_loss_V2(
     if encode_background_as_zeros:  # True
         one_hot_targets = one_hot_targets[..., 1:]
     if encode_rad_error_by_sin:
-        # sin(a - b) = sinacosb-cosasinb
         box_preds, reg_targets = add_sin_difference(refine_box_batch_preds,
                                                     batch_out_True_bbox)
     refine_loc_losses = loc_loss_ftor(

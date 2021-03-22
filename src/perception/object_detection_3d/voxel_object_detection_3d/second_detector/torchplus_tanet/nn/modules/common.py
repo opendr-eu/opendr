@@ -53,9 +53,6 @@ class Sequential(torch.nn.Module):
         self.add_module(name, module)
 
     def forward(self, input):
-        # i = 0
         for module in self._modules.values():
-            # print(i)
             input = module(input)
-            # i += 1
         return input

@@ -48,7 +48,6 @@ class BatchSampler:
     def sample(self, num):
         indices = self._sample(num)
         return [self._sampled_list[i] for i in indices]
-        # return np.random.choice(self._sampled_list, num)
 
 
 class DataBasePreprocessing:
@@ -120,7 +119,6 @@ def random_crop_frustum(
     C, R, T = box_np_ops.projection_matrix_to_CRT_kitti(P2)
     frustums = box_np_ops.get_frustum_v2(crop_bboxes, C)
     frustums -= T
-    # frustums = np.linalg.inv(R) @ frustums.T
     frustums = np.einsum("ij, akj->aki", np.linalg.inv(R), frustums)
     frustums = box_np_ops.camera_to_lidar(frustums, rect, Trv2c)
 
@@ -256,7 +254,6 @@ def noise_per_box(boxes, valid_mask, loc_noises, rot_noises):
     current_corners = np.zeros((4, 2), dtype=boxes.dtype)
     rot_mat_T = np.zeros((2, 2), dtype=boxes.dtype)
     success_mask = -np.ones((num_boxes,), dtype=np.int64)
-    # print(valid_mask)
     for i in range(num_boxes):
         if valid_mask[i]:
             for j in range(num_tests):
@@ -268,7 +265,6 @@ def noise_per_box(boxes, valid_mask, loc_noises, rot_noises):
                     current_corners.reshape(1, 4, 2), box_corners
                 )
                 coll_mat[0, i] = False
-                # print(coll_mat)
                 if not coll_mat.any():
                     success_mask[i] = j
                     box_corners[i] = current_corners
@@ -290,7 +286,6 @@ def noise_per_box_group(boxes, valid_mask, loc_noises, rot_noises, group_nums):
     current_corners = np.zeros((max_group_num, 4, 2), dtype=boxes.dtype)
     rot_mat_T = np.zeros((2, 2), dtype=boxes.dtype)
     success_mask = -np.ones((num_boxes,), dtype=np.int64)
-    # print(valid_mask)
     idx = 0
     for num in group_nums:
         if valid_mask[idx]:
@@ -347,7 +342,6 @@ def noise_per_box_group_v2_(
     corners_norm -= np.array([0.5, 0.5], dtype=boxes.dtype)
     corners_norm = corners_norm.reshape(4, 2)
 
-    # print(valid_mask)
     idx = 0
     for num in group_nums:
         if valid_mask[idx]:
@@ -623,8 +617,6 @@ def noise_per_object_v3_(
         valid_mask = np.ones((num_boxes,), dtype=np.bool_)
     center_noise_std = np.array(center_noise_std, dtype=gt_boxes.dtype)
     loc_noises = np.random.normal(scale=center_noise_std, size=[num_boxes, num_try, 3])
-    # loc_noises = np.random.uniform(
-    #     -center_noise_std, center_noise_std, size=[num_boxes, num_try, 3])
     rot_noises = np.random.uniform(
         rotation_perturb[0], rotation_perturb[1], size=[num_boxes, num_try]
     )
@@ -745,8 +737,6 @@ def noise_per_object_v2_(
         valid_mask = np.ones((num_boxes,), dtype=np.bool_)
     center_noise_std = np.array(center_noise_std, dtype=gt_boxes.dtype)
     loc_noises = np.random.normal(scale=center_noise_std, size=[num_boxes, num_try, 3])
-    # loc_noises = np.random.uniform(
-    #     -center_noise_std, center_noise_std, size=[num_boxes, num_try, 3])
     rot_noises = np.random.uniform(
         rotation_perturb[0], rotation_perturb[1], size=[num_boxes, num_try]
     )
@@ -855,7 +845,6 @@ def box_collision_test(boxes, qboxes, clockwise=True):
         (boxes, boxes[:, slices, :]), axis=2
     )  # [N, 4, 2(line), 2(xy)]
     lines_qboxes = np.stack((qboxes, qboxes[:, slices, :]), axis=2)
-    # vec = np.zeros((2,), dtype=boxes.dtype)
     boxes_standup = box_np_ops.corner_to_standup_nd_jit(boxes)
     qboxes_standup = box_np_ops.corner_to_standup_nd_jit(qboxes)
     for i in range(N):

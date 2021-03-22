@@ -101,14 +101,11 @@ def prep_pointcloud(
     rect = input_dict["rect"] if "rect" in input_dict else None
     Trv2c = input_dict["Trv2c"] if "Trv2c" in input_dict else None
     P2 = input_dict["P2"] if "P2" in input_dict else None
-    # unlabeled_training = unlabeled_db_sampler is not None
-    # image_idx = input_dict["image_idx"]
 
     if reference_detections is not None:
         C, R, T = box_np_ops.projection_matrix_to_CRT_kitti(P2)
         frustums = box_np_ops.get_frustum_v2(reference_detections, C)
         frustums -= T
-        # frustums = np.linalg.inv(R) @ frustums.T
         frustums = np.einsum("ij, akj->aki", np.linalg.inv(R), frustums)
         frustums = box_np_ops.camera_to_lidar(frustums, rect, Trv2c)
         surfaces = box_np_ops.corner_to_surfaces_3d_jit(frustums)
@@ -128,7 +125,6 @@ def prep_pointcloud(
             group_ids = group_ids[selected]
         points = prep.remove_points_outside_boxes(points, gt_boxes)
     if training:
-        # print(gt_names)
         selected = kitti.drop_arrays_by_name(gt_names, ["DontCare"])
         gt_boxes = gt_boxes[selected]
         gt_names = gt_names[selected]
@@ -170,9 +166,7 @@ def prep_pointcloud(
                 sampled_gt_boxes = sampled_dict["gt_boxes"]
                 sampled_points = sampled_dict["points"]
                 sampled_gt_masks = sampled_dict["gt_masks"]
-                # gt_names = gt_names[gt_boxes_mask].tolist()
                 gt_names = np.concatenate([gt_names, sampled_gt_names], axis=0)
-                # gt_names += [s["name"] for s in sampled]
                 gt_boxes = np.concatenate([gt_boxes, sampled_gt_boxes])
                 gt_boxes_mask = np.concatenate(
                     [gt_boxes_mask, sampled_gt_masks], axis=0)
@@ -185,7 +179,6 @@ def prep_pointcloud(
                         points, sampled_gt_boxes)
 
                 points = np.concatenate([sampled_points, points], axis=0)
-        # unlabeled_mask = np.zeros((gt_boxes.shape[0], ), dtype=np.bool_)
         if without_reflectivity:
             used_point_axes = list(range(num_point_features))
             used_point_axes.pop(3)
@@ -261,7 +254,6 @@ def prep_pointcloud(
             "Trv2c": Trv2c,
             "P2": P2,
         })
-    # if not lidar_input:
     feature_map_size = grid_size[:2] // out_size_factor
     feature_map_size = [*feature_map_size, 1][::-1]
     if anchor_cache is not None:
@@ -278,8 +270,6 @@ def prep_pointcloud(
         anchors_bv = box_np_ops.rbbox2d_to_near_bbox(anchors[:,
                                                              [0, 1, 3, 4, 6]])
     example["anchors"] = anchors
-    # print("debug", anchors.shape, matched_thresholds.shape)
-    # anchors_bv = anchors_bv.reshape([-1, 4])
     anchors_mask = None
     if anchor_area_threshold >= 0:
         coors = coordinates
@@ -290,7 +280,6 @@ def prep_pointcloud(
         anchors_area = box_np_ops.fused_get_anchors_area(
             dense_voxel_map, anchors_bv, voxel_size, pc_range, grid_size)
         anchors_mask = anchors_area > anchor_area_threshold
-        # example['anchors_mask'] = anchors_mask.astype(np.uint8)
         example["anchors_mask"] = anchors_mask
     if generate_bev:
         bev_vxsize = voxel_size.copy()
@@ -321,8 +310,6 @@ def prep_pointcloud(
 def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
     """read data from KITTI-format infos, then call prep function.
     """
-    # velodyne_path = str(pathlib.Path(root_path) / info['velodyne_path'])
-    # velodyne_path += '_reduced'
     v_path = pathlib.Path(root_path) / info["velodyne_path"]
     v_path = v_path.parent.parent / (v_path.parent.stem +
                                      "_reduced") / v_path.name
@@ -342,7 +329,6 @@ def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
         "image_shape": np.array(info["img_shape"], dtype=np.int32),
         "image_idx": image_idx,
         "image_path": info["img_path"],
-        # 'pointcloud_num_features': num_point_features,
     }
 
     if "annos" in info:
@@ -353,10 +339,8 @@ def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
         dims = annos["dimensions"]
         rots = annos["rotation_y"]
         gt_names = annos["name"]
-        # print(gt_names, len(loc))
         gt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]],
                                   axis=1).astype(np.float32)
-        # gt_boxes = box_np_ops.box_camera_to_lidar(gt_boxes, rect, Trv2c)
         difficulty = annos["difficulty"]
         input_dict.update({
             "gt_boxes": gt_boxes,
@@ -392,10 +376,8 @@ def _prep_v9(points, calib, prep_func, annos=None):
         dims = annos["dimensions"]
         rots = annos["rotation_y"]
         gt_names = annos["name"]
-        # print(gt_names, len(loc))
         gt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]],
                                   axis=1).astype(np.float32)
-        # gt_boxes = box_np_ops.box_camera_to_lidar(gt_boxes, rect, Trv2c)
         difficulty = annos["difficulty"] if "difficulty" in annos else compute_difficulty(annos)
         input_dict.update({
             "gt_boxes": gt_boxes,

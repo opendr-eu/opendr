@@ -56,9 +56,6 @@ def second_box_encode(boxes,
         rt = rg - ra
         return torch.cat([xt, yt, zt, wt, lt, ht, rt], dim=-1)
 
-    # rt = rg - ra
-    # return torch.cat([xt, yt, zt, wt, lt, ht, rt], dim=-1)
-
 
 def second_box_decode(box_encodings,
                       anchors,
@@ -78,7 +75,6 @@ def second_box_decode(box_encodings,
     else:
         xt, yt, zt, wt, lt, ht, rt = torch.split(box_encodings, 1, dim=-1)
 
-    # xt, yt, zt, wt, lt, ht, rt = torch.split(box_encodings, 1, dim=-1)
     za = za + ha / 2
     diagonal = torch.sqrt(la**2 + wa**2)
     xg = xt * diagonal + xa
@@ -137,9 +133,6 @@ def bev_box_encode(boxes,
         rt = rg - ra
         return torch.cat([xt, yt, wt, lt, rt], dim=-1)
 
-    # rt = rg - ra
-    # return torch.cat([xt, yt, zt, wt, lt, ht, rt], dim=-1)
-
 
 def bev_box_decode(box_encodings,
                    anchors,
@@ -157,7 +150,6 @@ def bev_box_decode(box_encodings,
     else:
         xt, yt, wt, lt, rt = torch.split(box_encodings, 1, dim=-1)
 
-    # xt, yt, zt, wt, lt, ht, rt = torch.split(box_encodings, 1, dim=-1)
     diagonal = torch.sqrt(la**2 + wa**2)
     xg = xt * diagonal + xa
     yg = yt * diagonal + ya
@@ -374,7 +366,6 @@ def project_to_image(points_3d, proj_mat):
     points_shape = np.concatenate([points_num, [1]], axis=0).tolist()
     points_4 = torch.cat(
         [points_3d, torch.zeros(*points_shape).type_as(points_3d)], dim=-1)
-    # point_2d = points_4 @ tf.transpose(proj_mat, [1, 0])
     point_2d = torch.matmul(points_4, proj_mat.t())
     point_2d_res = point_2d[..., :2] / point_2d[..., 2:3]
     return point_2d_res
