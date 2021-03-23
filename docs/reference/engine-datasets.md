@@ -33,7 +33,7 @@ The [DatasetIterator](#class-engine.datasets.DatasetIterator) class has the foll
 ### Class engine.datasets.MappedDatasetIterator
 Bases: `engine.datasets.DatasetIterator`
 
-MappedDatasetIterator allows to transform elements of the original DatasetIterator
+MappedDatasetIterator allows to transform elements of the original DatasetIterator.
 
 The [MappedDatasetIterator](#class-engine.datasets.MappedDatasetIterator) class has the following public methods:
 
@@ -70,3 +70,23 @@ The [ExternalDataset](#class-engine.datasets.ExternalDataset) class has the foll
 #### dataset_type(value)
   Set the internal *dataset_type* argument.
   *dataset_type* is expected to be an str.
+
+
+### Class engine.datasets.PointCloudsDatasetIterator
+Bases: `engine.datasets.DatasetIterator`
+
+PointCloudsDatasetIterator allows to load point cloud data from disk stored in a numpy format
+
+The [PointCloudsDatasetIterator](#class-engine.datasets.PointCloudsDatasetIterator) class has the following public methods:
+#### Pose(path, num_point_features=4)
+  Construct a new [PointCloudsDatasetIterator](#class-engine.datasets.PointCloudsDatasetIterator) object based on *path* and *num_point_features*.
+  *path* is expected to be an str.
+  *num_point_features* is expected to be a number representing the number of features per point.
+
+#### __getitem__(idx)
+  This method is used for loading the idx-th sample of a dataset along with its annotation.
+  Returns a [PointCloud](#class_engine.data.PointCloud).
+
+#### __len__()
+  This method returns the size of the dataset.
+
