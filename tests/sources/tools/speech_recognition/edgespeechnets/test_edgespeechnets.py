@@ -21,6 +21,7 @@ import numpy as np
 import torch as t
 
 from perception.speech_recognition.edgespeechnets.edgespeechnets_learner import EdgesSpeechNetsLearner
+from engine.data import Timeseries
 from engine.datasets import DatasetIterator
 from engine.target import SpeechCommand
 
@@ -72,13 +73,13 @@ class EdgeSpeechNetsTest(unittest.TestCase):
         self.assertTrue(0.0 <= results["test_total_loss"], "Test total loss is negative")
 
     def test_infer_batch(self):
-        batch = np.ones((TEST_INFER_LENGTH, TEST_SIGNAL_LENGTH))
+        batch = [Timeseries(np.ones((1, TEST_SIGNAL_LENGTH))) for _ in range(TEST_INFER_LENGTH)]
         results = self.learner.infer(batch)
         self.assertTrue(len(results) == TEST_INFER_LENGTH)
         self.assertTrue(all([isinstance(x, SpeechCommand) for x in results]))
 
     def test_infer_pure_signal(self):
-        signal = np.ones(TEST_SIGNAL_LENGTH)
+        signal = Timeseries(np.ones((1, TEST_SIGNAL_LENGTH)))
         result = self.learner.infer(signal)
         self.assertTrue(isinstance(result, SpeechCommand))
 

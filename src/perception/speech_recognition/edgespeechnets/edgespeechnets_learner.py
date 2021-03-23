@@ -22,6 +22,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
+from engine.data import Timeseries
 from engine.learners import Learner
 from engine.target import SpeechCommand
 from perception.speech_recognition.edgespeechnets.algorithm.audioutils import get_mfcc
@@ -200,14 +201,17 @@ class EdgesSpeechNetsLearner(Learner):
 
     def infer(self, batch):
         self.model.eval()
-        if len(batch.shape) == 1:
-            batch = np.expand_dims(batch, 0)
-        output = self._get_model_output(batch)
+        if isinstance(batch, list):
+            data = np.vstack([series.numpy() for series in batch])
+        elif isinstance(batch, Timeseries):
+            data = batch.numpy()
+        else:
+            raise TypeError("infer requires Timeseries or list of Timeseries as input.")
+        output = self._get_model_output(data)
         prediction = output.max(1, keepdim=True)
         batch_predictions = []
         for target, confidence in zip(prediction[1], prediction[0].exp()):
             batch_predictions.append(SpeechCommand(target.item(), confidence=confidence.item()))
-            print(batch_predictions[-1])
         return batch_predictions[0] if len(batch_predictions) == 1 else batch_predictions
 
     def save(self, path):
