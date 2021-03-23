@@ -306,7 +306,6 @@ class VoxelObjectDetection3DLearner(Learner):
     def eval(
         self,
         dataset,
-        predict_test=False,
         ground_truth_annotations=None,
         logging_path=None,
         silent=False,
@@ -344,7 +343,7 @@ class VoxelObjectDetection3DLearner(Learner):
             self.center_limit_range,
             eval_dataset_iterator=eval_dataset_iterator,
             gt_annos=ground_truth_annotations,
-            predict_test=predict_test,
+            predict_test=False,
             log=logger.log,
             device=self.device,
             image_shape=image_shape,
