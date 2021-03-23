@@ -53,7 +53,6 @@ class DataBaseSamplerV2:
                 self._sample_classes += group_names
                 self._sample_max_nums += list(group_info.values())
                 self._group_name_to_names.append((group_name, group_names))
-                # self._group_name_to_names[group_name] = group_names
                 for name in group_names:
                     for item in db_infos[name]:
                         gid = item["group_id"]
@@ -173,18 +172,12 @@ class DataBaseSamplerV2:
                     pathlib.Path(root_path) / info["path"]),
                                        dtype=np.float32)
                 s_points = s_points.reshape([-1, num_point_features])
-                # if not add_rgb_to_points:
-                #     s_points = s_points[:, :4]
                 if "rot_transform" in info:
                     rot = info["rot_transform"]
                     s_points[:, :3] = box_np_ops.rotation_points_single_angle(
                         s_points[:, :3], rot, axis=2)
                 s_points[:, :3] += info["box3d_lidar"][:3]
                 s_points_list.append(s_points)
-                # print(pathlib.Path(info["path"]).stem)
-            # gt_bboxes = np.stack([s["bbox"] for s in sampled], axis=0)
-            # if np.random.choice([False, True], replace=False, p=[0.3, 0.7]):
-            # do random crop.
             if random_crop:
                 s_points_list_new = []
                 gt_bboxes = box_np_ops.box3d_to_bbox(sampled_gt_boxes, rect,
@@ -266,7 +259,6 @@ class DataBaseSamplerV2:
             sp_boxes_new[:, 0:2], sp_boxes_new[:, 3:5], sp_boxes_new[:, 6])
 
         total_bv = np.concatenate([gt_boxes_bv, sp_boxes_bv], axis=0)
-        # coll_mat = collision_test_allbox(total_bv)
         coll_mat = prep.box_collision_test(total_bv, total_bv)
         diag = np.arange(total_bv.shape[0])
         coll_mat[diag, diag] = False
@@ -329,7 +321,6 @@ class DataBaseSamplerV2:
         sp_boxes_bv = box_np_ops.center_to_corner_box2d(
             sp_boxes_new[:, 0:2], sp_boxes_new[:, 3:5], sp_boxes_new[:, 6])
         total_bv = np.concatenate([gt_boxes_bv, sp_boxes_bv], axis=0)
-        # coll_mat = collision_test_allbox(total_bv)
         coll_mat = prep.box_collision_test(total_bv, total_bv)
         diag = np.arange(total_bv.shape[0])
         coll_mat[diag, diag] = False

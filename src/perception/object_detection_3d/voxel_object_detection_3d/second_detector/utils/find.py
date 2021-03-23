@@ -65,15 +65,12 @@ def find_cuda():
         print(
             "No CUDA runtime is found, using CUDA_HOME='{}'".format(cuda_home)
         )
-        # raise RuntimeError(
-        #     "No CUDA runtime is found, using CUDA_HOME='{}'".format(cuda_home)
-        # )
+
     return cuda_home
 
 
 def find_cuda_device_arch():
     if sys.platform == "win32":
-        # TODO: add windows support
         return None
     cuda_home = find_cuda()
     if cuda_home is None:
@@ -101,7 +98,6 @@ def find_cuda_device_arch():
                 f.write(source)
                 f.flush()
                 try:
-                    # TODO: add windows support
                     cmd = (
                         f"g++ {f.name} -o {f_path.stem}"
                         f" -I{cuda_home / 'include'} -L{cuda_home / 'lib64'} -lcudart"
@@ -128,7 +124,6 @@ def find_cuda_device_arch():
                 .rstrip("\r\n")
                 .split(" ")[-1]
             )
-        # assert len(arch) == 2
         arch_list = [int(s) for s in arch.split(".")]
         arch_int = arch_list[0] * 10 + arch_list[1]
         find_work_arch = False
@@ -161,7 +156,6 @@ def find_cuda_device_arch():
 
 def get_gpu_memory_usage():
     if sys.platform == "win32":
-        # TODO: add windows support
         return None
     cuda_home = find_cuda()
     if cuda_home is None:
@@ -192,7 +186,6 @@ def get_gpu_memory_usage():
         f.write(source)
         f.flush()
         try:
-            # TODO: add windows support
             cmd = (
                 f"g++ {f.name} -o {f_path.stem} -std=c++11"
                 f" -I{cuda_home / 'include'} -L{cuda_home / 'lib64'} -lcudart"
@@ -212,4 +205,3 @@ def get_gpu_memory_usage():
 
 if __name__ == "__main__":
     print(find_cuda_device_arch())
-    # fire.Fire()

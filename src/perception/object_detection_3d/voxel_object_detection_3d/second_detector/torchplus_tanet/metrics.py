@@ -111,20 +111,15 @@ class Precision(nn.Module):
             weights = weights.float()
 
         pred_trues = pred_labels > 0
-        # pred_falses = pred_labels == 0
         trues = labels > 0
         falses = labels == 0
         true_positives = (weights * (trues & pred_trues).float()).sum()
-        # true_negatives = (weights * (falses & pred_falses).float()).sum()
         false_positives = (weights * (falses & pred_trues).float()).sum()
-        # false_negatives = (weights * (trues & pred_falses).float()).sum()
         count = true_positives + false_positives
-        # print(count, true_positives)
         if count > 0:
             self.count += count
             self.total += true_positives
         return self.value.cpu()
-        # return (total /  num_examples.data).cpu()
 
     @property
     def value(self):
@@ -168,17 +163,13 @@ class Recall(nn.Module):
         pred_trues = pred_labels == 1
         pred_falses = pred_labels == 0
         trues = labels == 1
-        # falses = labels == 0
         true_positives = (weights * (trues & pred_trues).float()).sum()
-        # true_negatives = (weights * (falses & pred_falses).float()).sum()
-        # false_positives = (weights * (falses & pred_trues).float()).sum()
         false_negatives = (weights * (trues & pred_falses).float()).sum()
         count = true_positives + false_negatives
         if count > 0:
             self.count += count
             self.total += true_positives
         return self.value.cpu()
-        # return (total /  num_examples.data).cpu()
 
     @property
     def value(self):
@@ -247,25 +238,12 @@ class PrecisionRecall(nn.Module):
             # this don't support softmax
             assert self._use_sigmoid_score is True
             total_scores = torch.sigmoid(preds)
-            # scores, label_preds = torch.max(total_scores, dim=1)
         else:
             if self._use_sigmoid_score:
                 total_scores = torch.sigmoid(preds)[..., 1:]
             else:
                 total_scores = F.softmax(preds, dim=-1)[..., 1:]
-        """
-        if preds.shape[self._dim] == 1:  # BCE
-            scores = torch.sigmoid(preds)
-        else:
-            # assert preds.shape[
-            #     self._dim] == 2, "precision only support 2 class"
-            # TODO: add support for [N, C, ...] format.
-            # TODO: add multiclass support
-            if self._use_sigmoid_score:
-                scores = torch.sigmoid(preds)[:, ..., 1:].sum(-1)
-            else:
-                scores = F.softmax(preds, dim=self._dim)[:, ..., 1:].sum(-1)
-        """
+
         scores = torch.max(total_scores, dim=-1)[0]
         if weights is None:
             weights = (labels != self._ignore_idx).float()
@@ -285,7 +263,6 @@ class PrecisionRecall(nn.Module):
                 self.prec_total[i] += tp
 
         return self.value
-        # return (total /  num_examples.data).cpu()
 
     @property
     def value(self):

@@ -35,7 +35,6 @@ class KittiDataset(Dataset):
     ):
         with open(info_path, "rb") as f:
             infos = pickle.load(f)
-        # self._kitti_infos = kitti.filter_infos_by_used_classes(infos, class_names)
         self._root_path = root_path
         self._kitti_infos = infos
         self._num_point_features = num_point_features

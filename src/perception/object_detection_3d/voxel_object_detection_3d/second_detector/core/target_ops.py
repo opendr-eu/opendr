@@ -120,15 +120,12 @@ def create_target_np(
         gt_ids[pos_inds] = gt_inds
         bg_inds = np.where(anchor_to_gt_max < unmatched_threshold)[0]
     else:
-        # labels[:] = 0
         bg_inds = np.arange(num_inside)
     fg_inds = np.where(labels > 0)[0]
     fg_max_overlap = None
     if len(gt_boxes) > 0 and anchors.shape[0] > 0:
         fg_max_overlap = anchor_to_gt_max[fg_inds]
     gt_pos_ids = gt_ids[fg_inds]
-    # bg_inds = np.where(anchor_to_gt_max < unmatched_threshold)[0]
-    # bg_inds = np.where(labels == 0)[0]
     # subsample positive labels if we have too many
     if positive_fraction is not None:
         num_fg = int(positive_fraction * rpn_batch_size)
@@ -143,7 +140,6 @@ def create_target_np(
         # (samples with replacement, but since the set of bg inds is large most
         # samples will not have repeats)
         num_bg = rpn_batch_size - np.sum(labels > 0)
-        # print(num_fg, num_bg, len(bg_inds) )
         if len(bg_inds) > num_bg:
             enable_inds = bg_inds[npr.randint(len(bg_inds), size=num_bg)]
             labels[enable_inds] = 0
@@ -157,9 +153,6 @@ def create_target_np(
             labels[anchors_with_max_overlap] = gt_classes[gt_inds_force]
     bbox_targets = np.zeros((num_inside, box_code_size), dtype=all_anchors.dtype)
     if len(gt_boxes) > 0 and anchors.shape[0] > 0:
-        # print(anchors[fg_inds, :].shape, gt_boxes[anchor_to_gt_argmax[fg_inds], :].shape)
-        # bbox_targets[fg_inds, :] = box_encoding_fn(
-        #     anchors[fg_inds, :], gt_boxes[anchor_to_gt_argmax[fg_inds], :])
         bbox_targets[fg_inds, :] = box_encoding_fn(
             gt_boxes[anchor_to_gt_argmax[fg_inds], :], anchors[fg_inds, :]
         )
@@ -169,15 +162,12 @@ def create_target_np(
     # Bbox regression is only trained on positive examples so we set their
     # weights to 1.0 (or otherwise if config is different) and 0 otherwise
     # NOTE: we don't need bbox_inside_weights, remove it.
-    # bbox_inside_weights = np.zeros((num_inside, box_ndim), dtype=np.float32)
-    # bbox_inside_weights[labels == 1, :] = [1.0] * box_ndim
 
     # The bbox regression loss only averages by the number of images in the
     # mini-batch, whereas we need to average by the total number of example
     # anchors selected
     # Outside weights are used to scale each element-wise loss so the final
     # average over the mini-batch is correct
-    # bbox_outside_weights = np.zeros((num_inside, box_ndim), dtype=np.float32)
     bbox_outside_weights = np.zeros((num_inside,), dtype=all_anchors.dtype)
     # uniform weighting of examples (given non-uniform sampling)
     if norm_by_num_examples:
@@ -186,7 +176,6 @@ def create_target_np(
         bbox_outside_weights[labels > 0] = 1.0 / num_examples
     else:
         bbox_outside_weights[labels > 0] = 1.0
-    # bbox_outside_weights[labels == 0, :] = 1.0 / num_examples
 
     # Map up to original set of anchors
     if inds_inside is not None:
@@ -197,7 +186,6 @@ def create_target_np(
         bbox_outside_weights = unmap(
             bbox_outside_weights, total_anchors, inds_inside, fill=0
         )
-    # return labels, bbox_targets, bbox_outside_weights
     ret = {
         "labels": labels,
         "bbox_targets": bbox_targets,
