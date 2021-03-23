@@ -1,4 +1,4 @@
-
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -55,10 +55,8 @@ def _calculate_num_points_in_gt(
                 points_v, rect, Trv2c, P2, info["img_shape"]
             )
 
-        # points_v = points_v[points_v[:, 0] > 0]
         annos = info["annos"]
         num_obj = len([n for n in annos["name"] if n != "DontCare"])
-        # annos = kitti.filter_kitti_anno(annos, ['DontCare'])
         dims = annos["dimensions"][:num_obj]
         loc = annos["location"][:num_obj]
         rots = annos["rotation_y"][:num_obj]
@@ -148,10 +146,6 @@ def _create_reduced_point_cloud(data_path, info_path, save_path=None, back=False
         rect = info["calib/R0_rect"]
         P2 = info["calib/P2"]
         Trv2c = info["calib/Tr_velo_to_cam"]
-        # first remove z < 0 points
-        # keep = points_v[:, -1] > 0
-        # points_v = points_v[keep]
-        # then remove outside.
         if back:
             points_v[:, 0] = -points_v[:, 0]
         points_v = box_np_ops.remove_outside_points(
@@ -232,7 +226,6 @@ def create_groundtruth_database(
     for info in prog_bar(kitti_infos):
         velodyne_path = info["velodyne_path"]
         if relative_path:
-            # velodyne_path = str(root_path / velodyne_path) + "_reduced"
             velodyne_path = str(root_path / velodyne_path)
         num_features = 4
         if "pointcloud_num_features" in info:
