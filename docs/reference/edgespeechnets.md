@@ -78,10 +78,10 @@ This method is used for training the algorithm on a train dataset and validating
 containing stats regarding the last evaluation ran.  
 Parameters:
 
-- **dataset**: *object*  
+- **dataset**: *DatasetIterator*  
   Object that holds the training dataset. Will be converted used by a PyTorch Dataloader. Can be anything that can be
   passed to Dataloader as a dataset, but a safe way is to inherit it from DatasetIterator.
-- **val_dataset**: *object, default=None*  
+- **val_dataset**: *DatasetIterator, default=None*  
   Object that holds the validation dataset. Same rules apply as above.
 - **logging_path**: *str, default=''*  
   Path to save TensorBoard log files. If set to None or '', TensorBoard logging is disabled.
@@ -100,7 +100,7 @@ This method is used to evaluate a trained model on an evaluation dataset. Return
 regarding evaluation.  
 Parameters:
 
-- **dataset**: *object*  
+- **dataset**: *DatasetIterator*  
   Object that holds the training dataset. Will be used by a PyTorch Dataloader. Can be anything that can be passed to
   Dataloader as a dataset, but a safe way is to inherit it from DatasetIterator.
 
@@ -114,7 +114,7 @@ This method is used to classify signals. Can be used to infer a single utterance
 
 Parameters:
 
-- **batch**: *object*  
+- **batch**: *Timeseries* or *List*[*Timeseries*]   
   Numpy signal of shape (x, ) or (n, x) where x is the audio and n is the number of signals to be classified.
 
 #### `EdgeSpeechNetsLearner.save`
@@ -145,13 +145,14 @@ Parameters:
 
 #### Examples
 
-* **Training example using randomized data in place of recorded samples.** 
+* **Training example using randomized data in place of recorded samples.**
 
   ```python
   import numpy as np
+  import os
   
-  from OpenDR.perception.speech_recognition.edgespeechnets.edgespeechnets_learner from EdgeSpeechNetsLearner
   from OpenDR.engine.datasets import DatasetIterator
+  from OpenDR.perception.speech_recognition.edgespeechnets.edgespeechnets_learner from EdgeSpeechNetsLearner
   
   class RandomDataset(DatasetIterator):
       def __init__(self):
@@ -161,7 +162,7 @@ Parameters:
           return 64
   
       def __getitem__(self, item):
-          return np.random.rand(16000)np.random.choice(10)
+          return np.random.rand(16000), np.random.choice(10)
   
   learner = EdgeSpeechNetsLearner(output_clases_n=10, iters=10, architecture="A")
   training_dataset = RandomDataset()
@@ -170,23 +171,26 @@ Parameters:
   results = learner.fit(dataset=training_dataset, val_dataset=validation_dataset)
   # Print the validation accuracy of the last epoch and save the model to a file
   print(results[10]["validation_results"]["test_accuracy"])
-  learner.save("model.pth")
+  learner.save(os.path.join(".", "example", "directory", "path", "model"))
   ```
-  
+
 * **Load an existing model and infer a sample from an existing file.**
   ```python
   import librosa
   import numpy as np
   
+  from OpenDR.engine.data import Timeseries
   from OpenDR.perception.speech_recognition.edgespeechnets.edgespeechnets_learner from EdgeSpeechNetsLearner
   
   learner = EdgeSpeechNetsLearner(output_clases_n=10, architecture="A")
-  learner.load("model.pth")
+  learner.load(os.path.join(".", "example", "directory", "path", "model"))
 
   signal, sampling_rate = librosa.load("command.wav", sr=learner.sample_rate)
-  result = learner.infer(signal)
-  print(result[0])
+  timeseries = Timeseries(signal)
+  result = learner.infer(timeseries)
+  print(result)
   ```
+
 #### References
 
 <a name="edgespeechnets-arxiv" href="https://arxiv.org/abs/1810.08559">[1]</a> EdgeSpeechNets: Highly Efficient Deep
