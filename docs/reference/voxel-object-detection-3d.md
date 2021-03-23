@@ -288,7 +288,7 @@ Parameters:
   from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner
   )
-  from perception.object_detection_3d.datasets.point_clouds import PointCloudsDatasetIterator
+  from engine.datasets import PointCloudsDatasetIterator
 
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "tanet_car"
@@ -336,7 +336,7 @@ Parameters:
   from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner
   )
-  from perception.object_detection_3d.datasets.point_clouds import PointCloudsDatasetIterator
+  from engine.datasets import PointCloudsDatasetIterator
 
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "tanet_car"
