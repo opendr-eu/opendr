@@ -12,8 +12,8 @@
 # limitations under the License.
 
 import os
-import shutil
 import numpy as np
+from distutils.dir_util import copy_tree
 from engine.datasets import ExternalDataset, DatasetIterator
 from engine.data import PointCloudWithCalibration
 from engine.target import BoundingBox3DList
@@ -103,7 +103,7 @@ class KittiDataset(ExternalDataset):
             os.remove(zip_path)
 
             if copy_training_to_testing:
-                shutil.copytree(
+                copy_tree(
                     os.path.join(download_path, dataset_sub_path, "training"),
                     os.path.join(download_path, dataset_sub_path, "testing"))
 
