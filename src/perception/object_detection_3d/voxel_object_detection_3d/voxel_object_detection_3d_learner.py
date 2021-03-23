@@ -116,7 +116,7 @@ class VoxelObjectDetection3DLearner(Learner):
         :type verbose: bool, optional
         """
 
-        if self.model is None and self.ort_session is None:
+        if self.model is None:
             raise UserWarning("No model is loaded, cannot save.")
 
         folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
