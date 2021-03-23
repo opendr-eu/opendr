@@ -229,10 +229,10 @@ class EdgesSpeechNetsLearner(Learner):
                     "inference_params": {"sample_rate": self.sample_rate},
                     "optimized": False,
                     "optimizer_info": {}}
-
         t.save(self.model.state_dict(), model_path)
         with open(os.path.join(path, folder_basename + ".json"), "w") as jsonfile:
             json.dump(metadata, jsonfile)
+        return True
 
     def load(self, path):
         if not os.path.isdir(path):
