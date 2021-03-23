@@ -91,11 +91,10 @@ class Pose(Target):
 class BoundingBox3D(Target):
     """
     This target is used for 3D Object Detection.
-    A bounding box is described by its location (x, y, z), dimensions (w, h, d) and rotation (along vertical y axis)
+    A bounding box is described by its location (x, y, z), dimensions (w, h, d) and rotation (along vertical y axis).
     Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
     truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
     observation angle of an object (alpha).
-    keypoints on the image.
     """
     def __init__(
         self,
@@ -147,12 +146,11 @@ class BoundingBox3D(Target):
 
 class BoundingBox3DList(Target):
     """
-    This target is used for 3D Object Detection. It contains a list of BoundingBox3D targets
-    A bounding box is described by its location (x, y, z), dimensions (l, h, w) and rotation (along vertical (y) axis)
+    This target is used for 3D Object Detection. It contains a list of BoundingBox3D targets.
+    A bounding box is described by its location (x, y, z), dimensions (l, h, w) and rotation (along vertical (y) axis).
     Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
     truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
     observation angle of an object (alpha).
-    keypoints on the image.
     """
     def __init__(
         self,
