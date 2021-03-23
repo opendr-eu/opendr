@@ -36,10 +36,8 @@ def get_thresholds(scores: np.ndarray, num_gt, num_sample_pts=41):
             i < (len(scores) - 1)
         ):
             continue
-        # recall = l_recall
         thresholds.append(score)
         current_recall += 1 / (num_sample_pts - 1.0)
-    # print(len(thresholds), len(scores), num_gt)
     return thresholds
 
 
@@ -84,7 +82,6 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
             (gt_anno["truncated"][i] > MAX_TRUNCATION[difficulty]) or
             (height <= MIN_HEIGHT[difficulty])
         ):
-            # if gt_anno["difficulty"][i] > difficulty or gt_anno["difficulty"][i] == -1:
             ignore = True
         if valid_class == 1 and not ignore:
             ignored_gt.append(0)
@@ -93,7 +90,6 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
             ignored_gt.append(1)
         else:
             ignored_gt.append(-1)
-        # for i in range(num_gt):
         if gt_anno["name"][i] == "DontCare":
             dc_bboxes.append(gt_anno["bbox"][i])
     for i in range(num_dt):
@@ -206,7 +202,6 @@ def compute_statistics_jit(
     dt_alphas = dt_datas[:, 4]
     gt_alphas = gt_datas[:, 4]
     dt_bboxes = dt_datas[:, :4]
-    # gt_bboxes = gt_datas[:, :4]
 
     assigned_detection = [False] * det_size
     ignored_threshold = [False] * det_size
@@ -216,8 +211,6 @@ def compute_statistics_jit(
                 ignored_threshold[i] = True
     NO_DETECTION = -10000000
     tp, fp, fn, similarity = 0, 0, 0, 0
-    # thresholds = [0.0]
-    # delta = [0.0]
     thresholds = np.zeros((gt_size,))
     thresh_idx = 0
     delta = np.zeros((gt_size,))
@@ -275,11 +268,9 @@ def compute_statistics_jit(
         elif valid_detection != NO_DETECTION:
             # only a tp add a threshold.
             tp += 1
-            # thresholds.append(dt_scores[det_idx])
             thresholds[thresh_idx] = dt_scores[det_idx]
             thresh_idx += 1
             if compute_aos:
-                # delta.append(gt_alphas[i] - dt_alphas[det_idx])
                 delta[delta_idx] = gt_alphas[i] - dt_alphas[det_idx]
                 delta_idx += 1
 
@@ -310,12 +301,8 @@ def compute_statistics_jit(
         fp -= nstuff
         if compute_aos:
             tmp = np.zeros((fp + delta_idx,))
-            # tmp = [0] * fp
             for i in range(delta_idx):
                 tmp[i + fp] = (1.0 + np.cos(delta[i])) / 2.0
-                # tmp.append((1.0 + np.cos(delta[i])) / 2.0)
-            # assert len(tmp) == fp + tp
-            # assert len(delta) == tp
             if tp > 0 or fp > 0:
                 similarity = np.sum(tmp)
             else:

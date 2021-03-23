@@ -207,10 +207,6 @@ def _sigmoid_cross_entropy_with_logits(logits, labels):
     # to be compatible with tensorflow, we don't use ignore_idx
     loss = torch.clamp(logits, min=0) - logits * labels.type_as(logits)
     loss += torch.log1p(torch.exp(-torch.abs(logits)))
-    # transpose_param = [0] + [param[-1]] + param[1:-1]
-    # logits = logits.permute(*transpose_param)
-    # loss_ftor = nn.NLLLoss(reduce=False)
-    # loss = loss_ftor(F.logsigmoid(logits), labels)
     return loss
 
 

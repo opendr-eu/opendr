@@ -1,3 +1,17 @@
+# Copyright 2020-2021 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import torch
 import numpy as np
 import time
@@ -114,20 +128,10 @@ def train(
     ######################
     # TRAINING
     ######################
-    # log_path = log_path if log_path is not None else model_dir / "log.txt"
-    # logf = open(log_path, "a")
-    # logf.write(proto_str)
-    # logf.write("\n")
-    # summary_dir = model_dir / "summary"
-    # summary_dir.mkdir(parents=True, exist_ok=True)
-    # writer = SummaryWriter(str(summary_dir))
-
     total_step_elapsed = 0
-    # remain_steps = train_cfg.steps - net.get_global_step()
     t = time.time()
 
     total_loop = train_cfg.steps // train_cfg.steps_per_eval + 1
-    # total_loop = remain_steps // train_cfg.steps_per_eval + 1
     clear_metrics_every_epoch = train_cfg.clear_metrics_every_epoch
 
     if train_cfg.steps % train_cfg.steps_per_eval == 0:
@@ -154,7 +158,6 @@ def train(
 
             ret_dict = net(example_torch, refine_weight)
 
-            # box_preds = ret_dict["box_preds"]
             cls_preds = ret_dict["cls_preds"]
             loss = ret_dict["loss"].mean()
             cls_loss_reduced = ret_dict["cls_loss_reduced"].mean()
@@ -162,7 +165,6 @@ def train(
             cls_pos_loss = ret_dict["cls_pos_loss"]
             cls_neg_loss = ret_dict["cls_neg_loss"]
             loc_loss = ret_dict["loc_loss"]
-            # cls_loss = ret_dict["cls_loss"]
             dir_loss_reduced = ret_dict["dir_loss_reduced"]
             cared = ret_dict["cared"]
             labels = example_torch["labels"]
@@ -216,9 +218,6 @@ def train(
                     metrics["refine_loss"] = float(
                         refine_loss.detach().cpu().numpy())
                 ########################################
-                # if unlabeled_training:
-                #     metrics["loss"]["diff_rt"] = float(
-                #         diff_loc_loss_reduced.detach().cpu().numpy())
                 if model_cfg.use_direction_classifier:
                     metrics["loss"]["dir_rt"] = float(
                         dir_loss_reduced.detach().cpu().numpy())
@@ -229,14 +228,6 @@ def train(
                 metrics["lr"] = float(
                     mixed_optimizer.param_groups[0]["lr"])
                 metrics["image_idx"] = example["image_idx"][0] if "image_idx" in example else 0
-                # flatted_metrics = flat_nested_json_dict(metrics)
-                # flatted_summarys = flat_nested_json_dict(metrics, "/")
-                # for k, v in flatted_summarys.items():
-                #     if isinstance(v, (list, tuple)):
-                #         v = {str(i): e for i, e in enumerate(v)}
-                #         writer.add_scalars(k, v, global_step)
-                #     else:
-                #         writer.add_scalar(k, v, global_step)
                 metrics_str_list = []
                 for k, v in metrics.items():
                     if isinstance(v, float):
@@ -265,8 +256,6 @@ def train(
 
         if evaluate:
             net.eval()
-            # result_path_step = result_path / f"step_{net.get_global_step()}"
-            # result_path_step.mkdir(parents=True, exist_ok=True)
             log(Logger.LOG_WHEN_VERBOSE, "#################################")
             log(Logger.LOG_WHEN_VERBOSE, "# EVAL")
             log(Logger.LOG_WHEN_VERBOSE, "#################################")
@@ -288,7 +277,6 @@ def train(
                         gt_annos += list(example["annos"])
 
                     example = example_convert_to_torch(example, float_dtype, device=device)
-                    # if pickle_result:
                     coarse, refine = predict_kitti_to_anno(
                         net,
                         example,
@@ -300,16 +288,6 @@ def train(
                     )
                     dt_annos_coarse += coarse
                     dt_annos_refine += refine
-                    # else:
-                    #     _predict_kitti_to_file(
-                    #         net,
-                    #         example,
-                    #         result_path_step,
-                    #         class_names,
-                    #         center_limit_range,
-                    #         model_cfg.lidar_input,
-                    #         use_coarse_to_fine=True,
-                    #     )
                     prog_bar.print_bar(log=lambda *x, **y: log(
                         Logger.LOG_WHEN_NORMAL, *x, **y))
             else:
@@ -324,7 +302,6 @@ def train(
                         gt_annos += list(example["annos"])
 
                     example = example_convert_to_torch(example, float_dtype, device=device)
-                    # if pickle_result:
                     dt_annos += predict_kitti_to_anno(
                         net,
                         example,
@@ -334,17 +311,6 @@ def train(
                         use_coarse_to_fine=False,
                         image_shape=image_shape,
                     )
-                    # else:
-                    #     _predict_kitti_to_file(
-                    #         net,
-                    #         example,
-                    #         result_path_step,
-                    #         class_names,
-                    #         center_limit_range,
-                    #         model_cfg.lidar_input,
-                    #         use_coarse_to_fine=False,
-                    #     )
-
                     prog_bar.print_bar(log=lambda *x, **y: log(
                         Logger.LOG_WHEN_NORMAL, *x, **y))
 
@@ -363,8 +329,6 @@ def train(
             Logger.LOG_WHEN_NORMAL,
             f"generate label finished({sec_per_ex:.2f}/s). start eval:",
         )
-        # if not pickle_result:
-        #     dt_annos = kitti.get_label_annos(result_path_step)
 
         if evaluate:
 
@@ -384,7 +348,6 @@ def train(
                     class_names,
                     return_data=True)
                 log(Logger.LOG_WHEN_NORMAL, result)
-                # writer.add_text("eval_result", result, global_step)
 
                 log(Logger.LOG_WHEN_NORMAL, "After Refine:")
                 (
@@ -583,7 +546,6 @@ def comput_kitti_output(
             box_preds_lidar = preds_dict["box3d_lidar"].detach().cpu().numpy()
             # write pred to file
             label_preds = preds_dict["label_preds"].detach().cpu().numpy()
-            # label_preds = np.zeros([box_2d_preds.shape[0]], dtype=np.int32)
             anno = kitti.get_start_result_anno()
             num_example = 0
             for box, box_lidar, bbox, score, label in zip(
@@ -594,7 +556,6 @@ def comput_kitti_output(
                         continue
                     if bbox[2] < 0 or bbox[3] < 0:
                         continue
-                # print(img_shape)
                 if center_limit_range is not None:
                     limit_range = np.array(center_limit_range)
                     if np.any(box_lidar[:3] < limit_range[:3]) or np.any(
@@ -704,7 +665,6 @@ def predict_kitti_to_anno(
 
     if use_coarse_to_fine:
         predictions_dicts_coarse, predictions_dicts_refine = net(example)
-        # t = time.time()
         annos_coarse = comput_kitti_output(
             predictions_dicts_coarse,
             batch_image_shape,
@@ -746,13 +706,11 @@ def _predict_kitti_to_file(
     use_coarse_to_fine=True,
 ):
     batch_image_shape = example["image_shape"]
-    # batch_imgidx = example["image_idx"]
     if use_coarse_to_fine:
         _, predictions_dicts_refine = net(example)
         predictions_dicts = predictions_dicts_refine
     else:
         predictions_dicts = net(example)
-    # t = time.time()
     for i, preds_dict in enumerate(predictions_dicts):
         image_shape = batch_image_shape[i]
         img_idx = preds_dict["image_idx"]
@@ -765,7 +723,6 @@ def _predict_kitti_to_file(
             box_preds = box_preds[:, [0, 1, 2, 4, 5, 3,
                                       6]]  # lhw->hwl(label file format)
             label_preds = preds_dict["label_preds"].data.cpu().numpy()
-            # label_preds = np.zeros([box_2d_preds.shape[0]], dtype=np.int32)
             result_lines = []
             for box, box_lidar, bbox, score, label in zip(
                     box_preds, box_preds_lidar, box_2d_preds, scores,
@@ -775,7 +732,6 @@ def _predict_kitti_to_file(
                         continue
                     if bbox[2] < 0 or bbox[3] < 0:
                         continue
-                # print(img_shape)
                 if center_limit_range is not None:
                     limit_range = np.array(center_limit_range)
                     if np.any(box_lidar[:3] < limit_range[:3]) or np.any(

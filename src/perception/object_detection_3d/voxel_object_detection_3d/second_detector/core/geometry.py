@@ -83,14 +83,11 @@ def is_line_segment_cross(lines1, lines2):
 
 @numba.jit(nopython=False)
 def surface_equ_3d_jit(polygon_surfaces):
-    # return [a, b, c], d in ax+by+cz+d=0
     # polygon_surfaces: [num_polygon, num_surfaces, num_points_of_polygon, 3]
     surface_vec = polygon_surfaces[:, :, :2, :] - polygon_surfaces[:, :,
                                                                    1:3, :]
     # normal_vec: [..., 3]
     normal_vec = np.cross(surface_vec[:, :, 0, :], surface_vec[:, :, 1, :])
-    # print(normal_vec.shape, points[..., 0, :].shape)
-    # d = -np.inner(normal_vec, points[..., 0, :])
     d = np.einsum("aij, aij->ai", normal_vec, polygon_surfaces[:, :, 0, :])
     return normal_vec, -d
 
