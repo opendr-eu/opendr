@@ -161,6 +161,7 @@ class ExternalDataset(Dataset):
         else:
             self._dataset_type = value
 
+
 class PointCloudsDatasetIterator(DatasetIterator):
     def __init__(self, path, num_point_features=4):
         super().__init__()
