@@ -10,6 +10,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# The functions are taken from TANet code
 
 import pathlib
 import pickle
@@ -85,7 +87,7 @@ def create_kitti_info_file(
        kitti_subsets_path / "test.txt"
     )
 
-    print("Generate info. this may take several minutes.")
+    print("Generate info. This may take several minutes.")
     if save_path is None:
         save_path = pathlib.Path(data_path)
     else:
@@ -116,20 +118,6 @@ def create_kitti_info_file(
     print(f"Kitti info val file is saved to {filename}")
     with open(filename, "wb") as f:
         pickle.dump(kitti_infos_val, f)
-    """
-    if create_trainval:
-        kitti_infos_trainval = kitti.get_kitti_image_info(
-            data_path,
-            training=True,
-            velodyne=True,
-            calib=True,
-            image_ids=trainval_img_ids,
-            relative_path=relative_path)
-        filename = save_path / 'kitti_infos_trainval.pkl'
-        print(f"Kitti info trainval file is saved to {filename}")
-        with open(filename, 'wb') as f:
-            pickle.dump(kitti_infos_trainval, f)
-    """
     filename = save_path / "kitti_infos_trainval.pkl"
     print(f"Kitti info trainval file is saved to {filename}")
     with open(filename, "wb") as f:
@@ -177,7 +165,6 @@ def _create_reduced_point_cloud(data_path, info_path, save_path=None, back=False
 
             os.makedirs(v_path.parent.parent / (v_path.parent.stem + "_reduced"), exist_ok=True)
 
-            # save_filename = str(v_path) + '_reduced'
             if back:
                 save_filename += "_back"
         else:
@@ -304,12 +291,9 @@ def create_groundtruth_database(
                     "box3d_lidar": rbbox_lidar[i],
                     "num_points_in_gt": gt_points.shape[0],
                     "difficulty": difficulty[i],
-                    # "group_id": -1,
-                    # "bbox": bboxes[i],
                 }
 
                 local_group_id = group_ids[i]
-                # if local_group_id >= 0:
                 if local_group_id not in group_dict:
                     group_dict[local_group_id] = group_counter
                     group_counter += 1
