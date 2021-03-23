@@ -123,12 +123,12 @@ Parameters:
 EdgeSpeechNetsLearner.save(self, path)
 ```
 
-This method saves the model to `path`. While not enforced, the convention is to save the model to .pt files.
+This method saves the model the directory provided by in provided `path`.
 
 Parameters:
 
 - **path**: *str*  
-  Path to save the model.
+  Path to the directory where the model should be saved. Does not need to exist before the function call.
 
 #### `EdgeSpeechNetsLearner.load`
 
@@ -136,12 +136,13 @@ Parameters:
 EdgeSpeechNetsLearner.load(self, path)
 ```
 
-This method loads the model from `path`.
+This method loads the model from the directory provided by `path`. In practice the same path as provided to `save` 
+beforehand.
 
 Parameters:
 
 - **path**: *str*  
-  Path to the model to be loaded.
+  Path to the model directory to be loaded.
 
 #### Examples
 
