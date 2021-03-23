@@ -88,3 +88,51 @@ The [Image](#class_engine.data.Image) class has the following public methods:
 #### numpy()
   Return a  [NumPy](https://numpy.org)-compatible representation of data.
   Given that *data* argument is already internally stored in  [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+
+
+### class engine.data.PointCloud
+Bases: `engine.data.Data`
+
+A class used for representing point cloud data.
+
+The [PointCloud](#class_engine.data.PointCloud) class has the following public methods:
+#### PointCloud(data=None)
+  Construct a new [PointCloud](#class_engine.data.PointCloud) object based on *data*.
+  *data* is expected to be a 2-D array that can be casted into a 2-D [NumPy](https://numpy.org) array.
+
+#### data()
+  Return *data* argument.
+  Return type is float32 [NumPy](https://numpy.org) array.
+
+#### data(data)
+  Set the internal *data* argument.
+  *data* is expected to be a 2-D array that can be casted into a 2-D [NumPy](https://numpy.org) array, where the
+  dimensions can be organized as e.g. (number_of_points, channels).
+
+#### numpy()
+  Return a  [NumPy](https://numpy.org)-compatible representation of data.
+  Given that *data* argument is already internally stored in  [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+
+### class engine.data.PointCloudWithCalibration
+Bases: `engine.data.PointCloud`
+
+A class used for representing point cloud data with a corresponding lidar-camera callibration data.
+
+The [PointCloud](#class_engine.data.PointCloud) class has the following public methods:
+#### PointCloudWithCalibration(data=None, calib=None)
+  Construct a new [PointCloudWithCalibration](#class_engine.data.PointCloud) object based on *data*.
+  *data* is expected to be a 2-D array that can be casted into a 2-D [NumPy](https://numpy.org) array.
+  *calib* is expected to be a dict with P, R0_rect, Tr_velo_to_cam and Tr_imu_to_velo fields.
+
+#### data()
+  Return *data* argument.
+  Return type is float32 [NumPy](https://numpy.org) array.
+
+#### data(data)
+  Set the internal *data* argument.
+  *data* is expected to be a 2-D array that can be casted into a 2-D [NumPy](https://numpy.org) array, where the
+  dimensions can be organized as e.g. (number_of_points, channels).
+
+#### numpy()
+  Return a  [NumPy](https://numpy.org)-compatible representation of data.
+  Given that *data* argument is already internally stored in  [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
