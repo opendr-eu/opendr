@@ -65,7 +65,7 @@ class DatasetIterator(Dataset):
 
 class MappedDatasetIterator(DatasetIterator):
     """
-    MappedDatasetIterator allows to transform elements of the original DatasetIterator
+    MappedDatasetIterator allows to transform elements of the original DatasetIterator.
 
     This class provides the following abstract methods:
     - __getitem__(i), a getter that allows for retrieving the i-th sample of the dataset, along with its annotation
