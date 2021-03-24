@@ -84,7 +84,7 @@ observation angle of an object (alpha).
 
 The [BoundingBox3DList](#class_engine.target.BoundingBox3DList) class has the following public methods:
 #### BoundingBox3D(name, truncated, occluded, alpha, bbox2d, dimensions, location, rotation_y, score=0)
-  Construct a new [BoundingBox3DList](#class_engine.target.BoundingBox3DList) object based on the *boundingBoxes3D*.
+  Construct a new [BoundingBox3DList](#class_engine.target.BoundingBox3DList) object based on the *bounding_boxes_3d*.
   *name* is expected to be a list of [BoundingBox3D](#class_engine.target.BoundingBox3D).
 #### kitti()
   Return the annotation in KITTI format.
