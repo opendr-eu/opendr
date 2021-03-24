@@ -154,10 +154,10 @@ class BoundingBox3DList(Target):
     """
     def __init__(
         self,
-        boundingBoxes3D
+        bounding_boxes_3d
     ):
         super().__init__()
-        self.data = boundingBoxes3D
+        self.data = bounding_boxes_3d
         self.confidence = np.mean([box.confidence for box in self.data])
 
     @staticmethod
