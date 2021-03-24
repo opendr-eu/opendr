@@ -22,24 +22,22 @@ Constructor parameters:
   Specifies the path to the [proto](#proto) file describing the model structure and the training procedure.
 - **lr**: *float, default=0.0002*  
   Specifies the initial learning rate to be used during training.
-- **device**: *{'cpu', 'cuda'}, default='cuda'*  
-  Specifies the device to be used.
+- **optimizer**: *str {'rms_prop_optimizer', 'momentum_optimizer', 'adam_optimizer'}, default=adam_optimizer*  
+  Specifies the optimizer type that should be used.
 - **lr_schedule**: *str {'constant_learning_rate', 'exponential_decay_learning_rate', 'manual_step_learning_rate', 'cosine_decay_learning_rate'}, default='exponential_decay_learning_rate'*  
   Specifies the learning rate scheduler.
-- **temp_path**: *str, default=''*  
-  Specifies a path where the algorithm saves the onnx optimized model (if needed).
 - **checkpoint_after_iter**: *int, default=0*
   Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
 - **checkpoint_load_iter**: *int, default=0*  
   Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
+- **temp_path**: *str, default=''*  
+  Specifies a path where the algorithm saves the onnx optimized model (if needed).
+- **device**: *{'cpu', 'cuda', 'cuda:x'}, default='cuda:0'*  
+  Specifies the device to be used.
 - **num_workers**: *int, default=8*  
   Specifies the number of workers to be used by the data loader.
-- **weights_only**: *bool, default=True*  
-  If True, only the model weights will be loaded; it won't load optimizer, scheduler, num_iter, current_epoch information.
 - **tanet_config_path**: *str, default=None*  
-  Specifies if the config for TANet should be different from the standart one (None for standart).
-- **optimizer**: *str {'rms_prop_optimizer', 'momentum_optimizer', 'adam_optimizer'}, default=adam_optimizer*  
-  Specifies if the config for TANet should be different from the standart one (None for standart).
+  Specifies if the configuration file for TANet should be different from the standard one (`None` for standard).
 - **optimizer_params**: *dict, default={
       "weight_decay": 0.0001,
   }*  
@@ -52,6 +50,12 @@ Constructor parameters:
 - **batch_size**: *int, default=64*
   Skipped. The batch size is described in a [proto](#proto) file.
 - **backbone**: *str, default='tanet_16'*  
+  Skipped. The structure of a model is described in a [proto](#proto) file.
+- **network_head**: *str, default='tanet_16'*  
+  Skipped. The structure of a model is described in a [proto](#proto) file.
+- **threshold**: *float, default=0.0*  
+  Skipped. The structure of a model is described in a [proto](#proto) file.
+- **scale**: *float, default=1.0*  
   Skipped. The structure of a model is described in a [proto](#proto) file.
 
 
@@ -67,14 +71,16 @@ Parameters:
     Can be of type `ExternalDataset` (with type="kitti") or a custom dataset inheriting from `DatasetIterator`.
   - **val_dataset**: *object, default=None*
     Object that holds the validation dataset. If None, and the dataset is an `ExternalDataset`, dataset will be used to sample evaluation inputs. Can be of type `ExternalDataset` (with type="kitti") or a custom dataset inheriting from `DatasetIterator`.
-  - **logging_path**: *str, default=None*  
-    Path to save log files. If set to None, only the console will be used for logging.
-  - **silent**: *bool, default=False*  
-    If set to True, disables all printing of training progress reports and other information to STDOUT.
   - **refine_weight**: *float, default=2***  
     Defines the weight for the refinement part in the loss (for TANet).
   - **ground_truth_annotations**: *list of BoundingBox3DList, default=None*  
     Can be used to provide modified ground truth annotations.
+  - **logging_path**: *str, default=None*  
+    Path to save log files. If set to None, only the console will be used for logging.
+  - **silent**: *bool, default=False*  
+    If set to True, disables all printing of training progress reports and other information to STDOUT.
+  - **verbose**: *bool, default=False*  
+    If set to True, enables maximum verbosity.
   - **model_dir**: *str, default=None***  
     Can be used for storing and loading checkpoints. 
   - **image_shape**: *(int, int), default=(1224, 370)***  
@@ -402,7 +408,7 @@ Proto files can be found in [voxel_object_detection_3d/second_detector/configs](
   - **encode_rad_error_by_sin**:
     Specifies if the sin function should be used for rad error.
   - **use_direction_classifier**:
-    Specifies if a separate branc should be created to classify direction of the object.
+    Specifies if a separate branch should be created to classify direction of the object.
   - **direction_loss_weight**:
     Specifies the loss weight for direction classifier.
   - **pos_class_weight**:
