@@ -87,7 +87,7 @@ The [Image](#class_engine.data.Image) class has the following public methods:
 
 #### numpy()
   Return a  [NumPy](https://numpy.org)-compatible representation of data.
-  Given that *data* argument is already internally stored in  [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+  Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
 
 
 ### class engine.data.PointCloud
@@ -111,14 +111,14 @@ The [PointCloud](#class_engine.data.PointCloud) class has the following public m
 
 #### numpy()
   Return a  [NumPy](https://numpy.org)-compatible representation of data.
-  Given that *data* argument is already internally stored in  [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+  Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
 
 ### class engine.data.PointCloudWithCalibration
 Bases: `engine.data.PointCloud`
 
 A class used for representing point cloud data with a corresponding lidar-camera callibration data.
 
-The [PointCloud](#class_engine.data.PointCloud) class has the following public methods:
+The [PointCloudWithCalibration](#class_engine.data.PointCloudWithCalibration) class has the following public methods:
 #### PointCloudWithCalibration(data=None, calib=None)
   Construct a new [PointCloudWithCalibration](#class_engine.data.PointCloud) object based on *data*.
   *data* is expected to be a 2-D array that can be casted into a 2-D [NumPy](https://numpy.org) array.
@@ -135,4 +135,4 @@ The [PointCloud](#class_engine.data.PointCloud) class has the following public m
 
 #### numpy()
   Return a  [NumPy](https://numpy.org)-compatible representation of data.
-  Given that *data* argument is already internally stored in  [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+  Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
