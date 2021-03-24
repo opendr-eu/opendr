@@ -14,11 +14,11 @@ following public methods:
 
 #### `VoxelObjectDetection3DLearner` constructor
 ```python
-VoxelObjectDetection3DLearner(self, model_config_path, lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, scale,  tanet_config_path, optimizer_params, lr_schedule_params)
+VoxelObjectDetection3DLearner(self, model_config_path, lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, scale, tanet_config_path, optimizer_params, lr_schedule_params)
 ```
 
 Constructor parameters:
-- **model_config_path**: *string
+- **model_config_path**: *string*
   Specifies the path to the [proto](#proto) file describing the model structure and the training procedure.
 - **lr**: *float, default=0.0002*  
   Specifies the initial learning rate to be used during training.
@@ -26,7 +26,7 @@ Constructor parameters:
   Specifies the device to be used.
 - **lr_schedule**: *str {'constant_learning_rate', 'exponential_decay_learning_rate', 'manual_step_learning_rate', 'cosine_decay_learning_rate'}, default='exponential_decay_learning_rate'*  
   Specifies the learning rate scheduler.
-- **temp_path**: *str, default='temp'*  
+- **temp_path**: *str, default=''*  
   Specifies a path where the algorithm saves the onnx optimized model (if needed).
 - **checkpoint_after_iter**: *int, default=0*
   Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
@@ -44,14 +44,14 @@ Constructor parameters:
       "weight_decay": 0.0001,
   }*  
   Specifies the parameters for the used optimizer.
-    - adam_optimizer uses "weight_decay" values
-    - momentum_optimizer uses "momentum_optimizer_value", "weight_decay" values
-    - rms_prop_optimizer uses "decay", "momentum_optimizer_value", "epsilon", "weight_decay" values
-- **iters**:
+    - `adam_optimizer` uses "weight_decay" values
+    - `momentum_optimizer` uses "momentum_optimizer_value", "weight_decay" values
+    - `rms_prop_optimizer` uses "decay", "momentum_optimizer_value", "epsilon", "weight_decay" values
+- **iters**: *int, default=10*  
   Skipped. The number of training iterations is described in a [proto](#proto) file.
-- **batch_size**: *int, default=80*
+- **batch_size**: *int, default=64*
   Skipped. The batch size is described in a [proto](#proto) file.
-- **backbone**:
+- **backbone**: *str, default='tanet_16'*  
   Skipped. The structure of a model is described in a [proto](#proto) file.
 
 
@@ -67,19 +67,19 @@ Parameters:
     Can be of type `ExternalDataset` (with type="kitti") or a custom dataset inheriting from `DatasetIterator`.
   - **val_dataset**: *object, default=None*
     Object that holds the validation dataset. If None, and the dataset is an `ExternalDataset`, dataset will be used to sample evaluation inputs. Can be of type `ExternalDataset` (with type="kitti") or a custom dataset inheriting from `DatasetIterator`.
-  - **logging_path**: *str, default=''*  
+  - **logging_path**: *str, default=None*  
     Path to save log files. If set to None, only the console will be used for logging.
   - **silent**: *bool, default=False*  
     If set to True, disables all printing of training progress reports and other information to STDOUT.
   - **refine_weight**: *float, default=2***  
-    Defines the weight for the refinement part in the loss (for TANet)
+    Defines the weight for the refinement part in the loss (for TANet).
   - **ground_truth_annotations**: *list of BoundingBox3DList, default=None*  
     Can be used to provide modified ground truth annotations.
   - **model_dir**: *str, default=None***  
     Can be used for storing and loading checkpoints. 
   - **image_shape**: *(int, int), default=(1224, 370)***  
     Camera image shape for KITTI evaluation.
-  - **evaluate**: *str, default='train2017'*  
+  - **evaluate**: *str, default=True*  
     Should the evaluation be run during training.
 
 #### `VoxelObjectDetection3DLearner.eval`
@@ -97,11 +97,10 @@ Parameters:
   Can be used to provide modified ground truth annotations.
 - **silent**: *bool, default=False*  
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
-- **verbose**: *bool, default=True*  
+- **verbose**: *bool, default=False*  
   If set to True, enables the maximum verbosity.
 - **image_shape**: *(int, int), default=(1224, 370)***  
   Camera image shape for KITTI evaluation.
-  If set to True, enables the maximum verbosity.
 - **count**: *int, default=None***  
   Specifies the number of frames to be used for evaluation. If None, the full dataset is used.
 
@@ -123,11 +122,11 @@ VoxelObjectDetection3DLearner.save(self, path, verbose)
 ```
 
 This method is used to save a trained model.
-Provided with the path "/my/path/name" (absolute or relative), it creates the "name" directory, if it does not already 
-exist. Inside this folder, the model is saved as "name_vfe.pth", "name_mfe.pth", and "name_rpn.pth" or "name_rpn.onnx" and the metadata file as "name.json". If the directory
-already exists, the files are overwritten.
+Provided with the path "/my/path/name" (absolute or relative), it creates the "name" directory, if it does not already exist.
+Inside this folder, the model is saved as "name_vfe.pth", "name_mfe.pth", and "name_rpn.pth" or "name_rpn.onnx" and the metadata file as "name.json".
+If the directory already exists, the files are overwritten.
 
-If [`self.optimize`](#VoxelObjectDetection3DLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously during conversion.
+If [`self.optimize`](#VoxelObjectDetection3DLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the `self.temp_path` it was saved previously during conversion.
 
 Parameters:
 - **path**: *str*  
@@ -159,7 +158,8 @@ This method is used to optimize a trained model to ONNX format which can be then
 Parameters:
 - **do_constant_folding**: *bool, default=False*  
   ONNX format optimization.
-  If True, the constant-folding optimization is applied to the model during export. Constant-folding optimization will replace some of the ops that have all constant inputs, with pre-computed constant nodes.
+  If True, the constant-folding optimization is applied to the model during export.
+  Constant-folding optimization will replace some of the operations that have all constant inputs, with pre-computed constant nodes.
 
 #### `VoxelObjectDetection3DLearner.download`
 ```python
@@ -173,7 +173,7 @@ Parameters:
 - **model_name**: *str {'pointpillars_car_xyres_16', 'pointpillars_ped_cycle_xyres_16', 'tanet_car_xyres_16', 'tanet_ped_cycle_xyres_16'}*
   The name of the model to download.
 - **path**: *str*
-  Local path to save the files
+  Local path to save the downloaded files.
 - **server_url**: *str, default=None*  
   URL of the pretrained models directory on an FTP server. If None, OpenDR FTP URL is used.
 
@@ -226,7 +226,7 @@ Parameters:
   ```
 
 * **Training example using a `DatasetIterator`**.  
-  If the DatasetIterator is given as a dataset, val_dataset should be specified.
+  If the DatasetIterator is given as a dataset, `val_dataset` should be specified.
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
@@ -329,7 +329,7 @@ Parameters:
   ```
 
 * **Optimization example for a previously trained model.**
-  Inference can be run with the trained model after running self.optimize.
+  Inference can be run with the trained model after running `self.optimize`.
   ```python
   import os
   import torch
@@ -386,9 +386,9 @@ Proto files can be found in [voxel_object_detection_3d/second_detector/configs](
       - **max_number_of_points_per_voxel**:
         Specifies the maximum number of points to be used in one voxel.
   - **num_class**:
-    Specifies the number of classes to detect
+    Specifies the number of classes to detect.
   - **voxel_feature_extractor**:
-    Specifies the name and parameters of the voxel feature extractor layer that generates voxel-wise features
+    Specifies the name and parameters of the voxel feature extractor layer that generates voxel-wise features.
   - **middle_feature_extractor**:
     Specifies the name and parameters of the middle feature extractor layer that creates 2D pseudo-image.
   - **rpn**:
@@ -410,7 +410,7 @@ Proto files can be found in [voxel_object_detection_3d/second_detector/configs](
   - **neg_class_weight**:
     Specifies the loss weight for negative classes.
   - **loss_norm_type**:
-    Specifies the loss normaliztion type.
+    Specifies the loss normalization type.
   - **post_center_limit_range**:
     Specifies the limit range of the predicted object centers in [minx, miny, minz, maxx, maxy, maxz] format in meters.
   - **use_rotate_nms**:
@@ -434,15 +434,15 @@ Proto files can be found in [voxel_object_detection_3d/second_detector/configs](
       - **rotations**:
         Specifies anchor rotation range in [min, max] format in radiances.
 - **train_input_reader**:
-  Specifies tha data generation process for training
+  Specifies tha data generation process for training.
   - **record_file_path**:
-    Specifies the relative file path for kitti_train.tfrecord generated during data preprocessing
+    Specifies the relative file path for kitti_train.tfrecord generated during data preprocessing.
   - **class_names**:
-    Specifies the class names that should be used in the training of a current model
+    Specifies the class names that should be used in the training of a current model.
   - **max_num_epochs**:
-    Specifies the max number of epochs for training
+    Specifies the max number of epochs for training.
   - **batch_size**:
-    Specifies the batch size
+    Specifies the batch size.
   - **prefetch_size**:
     Specifies the number of prefetched data.
   - **max_number_of_voxels**:
@@ -463,21 +463,21 @@ Proto files can be found in [voxel_object_detection_3d/second_detector/configs](
     Specifies the sapling strategy from the dataset
 
 - **train_config**:
-  Specifies the training procedure parameters
+  Specifies the training procedure parameters.
   - **steps**:
-    Specifies the number of steps to train the model
+    Specifies the number of steps to train the model.
   - **steps_per_eval**:
-    Specifies the number of steps for evaluation
+    Specifies the number of steps for evaluation.
 - **eval_input_reader**:
-  Specifies tha data generation process for evaluation
+  Specifies tha data generation process for evaluation.
   - **record_file_path**:
-    Specifies the relative file path for kitti_val.tfrecord generated during data preprocessing
+    Specifies the relative file path for kitti_val.tfrecord generated during data preprocessing.
   - **class_names**:
-    Specifies the class names that should be used in the training of a current model
+    Specifies the class names that should be used in the training of a current model.
   - **max_num_epochs**:
-    Specifies the max number of epochs for training
+    Specifies the max number of epochs for training.
   - **batch_size**:
-    Specifies the batch size
+    Specifies the batch size.
   - **prefetch_size**:
     Specifies the number of prefetched data.
   - **max_number_of_voxels**:

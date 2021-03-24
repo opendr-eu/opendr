@@ -76,7 +76,7 @@ The [BoundingBox3D](#class_engine.target.BoundingBox3D) class has the following 
 ### class engine.target.BoundingBox3DList
 Bases: `engine.target.Target`
 
-This target is used for 3D Object Detection. It contains a list of BoundingBox3D targets.
+This target is used for 3D object detection. It contains a list of BoundingBox3D targets.
 A bounding box is described by its location (x, y, z), dimensions (l, h, w) and rotation (along vertical (y) axis).
 Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
 truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
