@@ -88,5 +88,5 @@ The [BoundingBox3DList](#class_engine.target.BoundingBox3DList) class has the fo
   *name* is expected to be a list of [BoundingBox3D](#class_engine.target.BoundingBox3D).
 #### kitti()
   Return the annotation in KITTI format.
-#### from_kitti()
-  Static method that constructs [BoundingBox3DList](#class_engine.target.BoundingBox3DList) from the object with KITTI annotation.
+#### from_kitti(boxes_kitti)
+  Static method that constructs [BoundingBox3DList](#class_engine.target.BoundingBox3DList) from the `boxes_kitti` object with KITTI annotation.
