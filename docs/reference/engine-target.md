@@ -69,6 +69,7 @@ The [BoundingBox3D](#class_engine.target.BoundingBox3D) class has the following 
   - *dimensions* is expected to be a list of numbers describing the 3D size of an object.
   - *location* is expected to be a list of numbers describing the 3D location of an object.
   - *rotation_y* is expected to be a number describing the rotation of an object along the vertical axis.
+  - *score* is expected to be a number describing the prediction confidence.
 #### kitti()
   Return the annotation in KITTI format.
 
@@ -83,9 +84,9 @@ truncation (truncated) and occlusion (occluded) levels, the name of an object (n
 observation angle of an object (alpha).
 
 The [BoundingBox3DList](#class_engine.target.BoundingBox3DList) class has the following public methods:
-#### BoundingBox3D(name, truncated, occluded, alpha, bbox2d, dimensions, location, rotation_y, score=0)
+#### BoundingBox3DList(bounding_boxes_3d)
   Construct a new [BoundingBox3DList](#class_engine.target.BoundingBox3DList) object based on the *bounding_boxes_3d*.
-  *name* is expected to be a list of [BoundingBox3D](#class_engine.target.BoundingBox3D).
+  *bounding_boxes_3d* is expected to be a list of [BoundingBox3D](#class_engine.target.BoundingBox3D).
 #### kitti()
   Return the annotation in KITTI format.
 #### from_kitti(boxes_kitti)
