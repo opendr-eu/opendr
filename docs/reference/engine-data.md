@@ -122,7 +122,11 @@ The [PointCloudWithCalibration](#class_engine.data.PointCloudWithCalibration) cl
 #### PointCloudWithCalibration(data=None, calib=None)
   Construct a new [PointCloudWithCalibration](#class_engine.data.PointCloud) object based on *data*.
   *data* is expected to be a 2-D array that can be casted into a 2-D [NumPy](https://numpy.org) array.
-  *calib* is expected to be a dict with P, R0_rect, Tr_velo_to_cam and Tr_imu_to_velo fields.
+  *calib* is expected to be a dictionary  with `P`, `R0_rect`, `Tr_velo_to_cam` and `Tr_imu_to_velo` matrices in [NumPy](https://numpy.org)-compatible format.
+  - The `P\[x\]` matrices project a point in the rectified referenced camera coordinate to the `camera\[x\]` image.
+  - `R0_rect` is the rectifying rotation for reference coordinate system.
+  - `Tr_velo_to_cam` maps a point in point cloud coordinate system to reference coordinate system.
+  - `Tr_imu_to_velo` maps a point in IMU coordinate system t0 point cloud coordinate system.
 
 #### data()
   Return *data* argument.
