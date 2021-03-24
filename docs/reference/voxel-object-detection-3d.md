@@ -34,8 +34,6 @@ Constructor parameters:
   Specifies a path where the algorithm saves the onnx optimized model (if needed).
 - **device**: *{'cpu', 'cuda', 'cuda:x'}, default='cuda:0'*  
   Specifies the device to be used.
-- **num_workers**: *int, default=8*  
-  Specifies the number of workers to be used by the data loader.
 - **tanet_config_path**: *str, default=None*  
   Specifies if the configuration file for TANet should be different from the standard one (`None` for standard).
 - **optimizer_params**: *dict, default={
