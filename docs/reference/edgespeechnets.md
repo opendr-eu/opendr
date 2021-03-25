@@ -117,7 +117,7 @@ This method is used to classify signals. Can be used to infer a single utterance
 Parameters:
 
 - **batch**: *Timeseries* or *List*[*Timeseries*]   
-  Numpy signal of shape (x, ) or (n, x) where x is the audio and n is the number of signals to be classified.
+  Either a Timeseries or a list of Timeseries. 
 
 #### `EdgeSpeechNetsLearner.save`
 
