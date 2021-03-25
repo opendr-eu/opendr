@@ -377,6 +377,9 @@ class TrackingBoundingBox2D(Target):
 
         return result
 
+    def boudning_box(self):
+        return BoundingBox2D(self.left, self.top, self.width, self.height, self.confidence, self.frame)
+
     def __repr__(self):
         return "TrackingBoundingBox2D " + str(self)
 
@@ -412,6 +415,9 @@ class TrackingBoundingBox2DList(Target):
         ])
 
         return result
+
+    def boudning_box_list(self):
+        return BoundingBox2DList([box.boudning_box() for box in self.data])
 
     def __len__(self):
         return len(self.data)
