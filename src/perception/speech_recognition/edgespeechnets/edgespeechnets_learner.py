@@ -29,7 +29,7 @@ from perception.speech_recognition.edgespeechnets.algorithm.audioutils import ge
 import perception.speech_recognition.edgespeechnets.algorithm.models as models
 
 
-class EdgesSpeechNetsLearner(Learner):
+class EdgeSpeechNetsLearner(Learner):
     allowed_architectures = ["A", "B", "C", "D"]
 
     def __init__(self,
@@ -47,11 +47,11 @@ class EdgesSpeechNetsLearner(Learner):
                  preprocess_to_mfcc=True,
                  sample_rate=16000
                  ):
-        super(EdgesSpeechNetsLearner, self).__init__(lr=lr, iters=iters, batch_size=batch_size,
-                                                     optimizer=optimizer,
-                                                     checkpoint_after_iter=checkpoint_after_iter,
-                                                     checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
-                                                     device=device)
+        super(EdgeSpeechNetsLearner, self).__init__(lr=lr, iters=iters, batch_size=batch_size,
+                                                    optimizer=optimizer,
+                                                    checkpoint_after_iter=checkpoint_after_iter,
+                                                    checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
+                                                    device=device)
         self.logger = logging.getLogger("EdgeSpeechNetsLearner")
         self.momentum = momentum
         self.sample_rate = sample_rate
@@ -59,7 +59,7 @@ class EdgesSpeechNetsLearner(Learner):
 
         self.architecture = architecture
         self.output_classes_n = output_classes_n
-        self.model = EdgesSpeechNetsLearner._get_model(self.architecture, self.output_classes_n)
+        self.model = EdgeSpeechNetsLearner._get_model(self.architecture, self.output_classes_n)
         self.loss = nn.NLLLoss()
 
         self.model.to(self.device)
@@ -76,9 +76,9 @@ class EdgesSpeechNetsLearner(Learner):
 
     @architecture.setter
     def architecture(self, value: str):
-        if type(value) is not str or value.upper() not in EdgesSpeechNetsLearner.allowed_architectures:
+        if type(value) is not str or value.upper() not in EdgeSpeechNetsLearner.allowed_architectures:
             raise TypeError(
-                f"EdgeSpeechNet architecture should be one of: {*EdgesSpeechNetsLearner.allowed_architectures,}")
+                f"EdgeSpeechNet architecture should be one of: {*EdgeSpeechNetsLearner.allowed_architectures,}")
         self._architecture = value.upper()
 
     @property
