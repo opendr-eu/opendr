@@ -39,8 +39,9 @@ Constructor parameters:
 - **epochs**: *int, default=30*  
   Specifies the number of epochs the training should run for.
 - **batch_size**: *int, default=64*  
-  Specifies number of images to be bundled up in a batch during training. This heavily affects memory usage, adjust
-  according to your system. Should always be equal to or higher than the number of used CUDA devices.
+  Specifies number of images to be bundled up in a batch during training.
+  This heavily affects memory usage, adjust according to your system.
+  Should always be equal to or higher than the number of used CUDA devices.
 - **optimizer**: *{'sgd'}, default='sgd'*  
   Specifies the optimizer to be used. Currently, only SGD is supported.
 - **checkpoint_after_iter**: *int, default=0*  
@@ -57,11 +58,12 @@ Constructor parameters:
 - **momentum**: *float, default=0.9*  
   Specifies the momentum for the SGD optimizer.
 - **preprocess_to_mfcc**: *bool, default=True*  
-  Specifies whether the learner should transform the input to a MFCC. If the input is already converted to a 2D signal,
-  turn this off. Expects a 1D signal if set to true.
+  Specifies whether the learner should transform the input to a MFCC.
+  If the input is already converted to a 2D signal,  turn this off.
+  Expects a 1D signal if set to true.
 - **sample_rate**: *int, default=16000*  
-  Specifies the assumed sampling rate for the input signals used in the MFCC conversion. Does nothing if
-  *preprocess_to_mfcc* is set to false.
+  Specifies the assumed sampling rate for the input signals used in the MFCC conversion.
+  Does nothing if  *preprocess_to_mfcc* is set to false.
 
 #### `EdgeSpeechNetsLearner.fit`
 
@@ -74,8 +76,8 @@ EdgeSpeechNetsLearner.fit(self,
                           verbose)
 ```
 
-This method is used for training the algorithm on a train dataset and validating on a val dataset. Returns a dictionary
-containing stats regarding the last evaluation ran.  
+This method is used for training the algorithm on a train dataset and validating on a val dataset.
+Returns a dictionary containing stats regarding the last evaluation ran.
 Parameters:
 
 - **dataset**: *DatasetIterator*  
@@ -85,7 +87,7 @@ Parameters:
   Object that holds the validation dataset. Same rules apply as above.
 - **logging_path**: *str, default=''*  
   Path to save TensorBoard log files. If set to None or '', TensorBoard logging is disabled.
-- **silent**: *bool, default=False*  
+- **silent**: *bool, default=True*  
   If set to True, disables all printing of training progress reports and other information to STDOUT.
 - **verbose**: *bool, default=True*  
   If set to True, enables additional log messages regarding model training.
@@ -96,13 +98,13 @@ Parameters:
 EdgeSpeechNetsLearner.eval(self, dataset)
 ```
 
-This method is used to evaluate a trained model on an evaluation dataset. Returns a dictionary containing stats
-regarding evaluation.  
+This method is used to evaluate a trained model on an evaluation dataset.
+Returns a dictionary containing stats regarding evaluation.  
 Parameters:
 
 - **dataset**: *DatasetIterator*  
-  Object that holds the training dataset. Will be used by a PyTorch Dataloader. Can be anything that can be passed to
-  Dataloader as a dataset, but a safe way is to inherit it from DatasetIterator.
+  Object that holds the training dataset. Will be used by a PyTorch Dataloader.
+  Can be anything that can be passed to Dataloader as a dataset, but a safe way is to inherit it from DatasetIterator.
 
 #### `EdgeSpeechNetsLearner.infer`
 
@@ -123,7 +125,7 @@ Parameters:
 EdgeSpeechNetsLearner.save(self, path)
 ```
 
-This method saves the model the directory provided by in provided `path`.
+This method saves the model the in the directory provided by `path`.
 
 Parameters:
 
@@ -136,8 +138,8 @@ Parameters:
 EdgeSpeechNetsLearner.load(self, path)
 ```
 
-This method loads the model from the directory provided by `path`. In practice the same path as provided to `save` 
-beforehand.
+This method loads the model from the directory provided by `path`.
+In practice the same path as provided to `save` beforehand.
 
 Parameters:
 
