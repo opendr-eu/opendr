@@ -49,7 +49,7 @@ Constructor parameters:
   Specifies per how many training iterations a checkpoint should be saved. If set to 0 no checkpoints will be saved.
   Saves the models to the `temp_path` as "EdgeSpeechNet\<Architecture\>-\<epoch\>.pt"
 - **checkpoint_load_iter**: *int, default=0*   
-  Specified a checkpoint to load based on the number for iterations before fitting.   
+  Specifies a checkpoint to load based on the number of iterations before fitting.
   If set to 0 no checkpoint will be loaded.
 - **temp_path**: *str, default='temp'*  
   Specifies the path to the directory where the checkpoints will be saved.
@@ -129,7 +129,7 @@ Parameters:
 EdgeSpeechNetsLearner.save(self, path)
 ```
 
-This method saves the model the in the directory provided by `path`.
+This method saves the model in the directory provided by `path`.
 
 Parameters:
 
