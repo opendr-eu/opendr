@@ -57,7 +57,6 @@ def nms_kernel_v2(n_boxes, nms_overlap_thresh, dev_boxes, dev_mask):
     cuda.syncthreads()
     if cuda.threadIdx.x < row_size:
         cur_box_idx = threadsPerBlock * row_start + cuda.threadIdx.x
-        # cur_box = dev_boxes + cur_box_idx * 5;
         i = 0
         t = 0
         start = 0
@@ -91,7 +90,6 @@ def nms_kernel(n_boxes, nms_overlap_thresh, dev_boxes, dev_mask):
     cuda.syncthreads()
     if tx < row_size:
         cur_box_idx = threadsPerBlock * row_start + tx
-        # cur_box = dev_boxes + cur_box_idx * 5;
         t = 0
         start = 0
         if row_start == col_start:
@@ -126,10 +124,8 @@ def nms_postprocess(keep_out, mask_host, boxes_num):
         if not (remv[nblock] & mask):
             keep_out[num_to_keep] = i
             num_to_keep += 1
-            # unsigned long long *p = &mask_host[0] + i * col_blocks;
             for j in range(nblock, col_blocks):
                 remv[j] |= mask_host[i * col_blocks + j]
-                # remv[j] |= p[j];
     return num_to_keep
 
 
@@ -164,7 +160,6 @@ def nms_gpu(dets, nms_overlap_thresh, device_id=0):
         nms_kernel[blockspergrid, threadsPerBlock,
                    stream](boxes_num, nms_overlap_thresh, boxes_dev, mask_dev)
         mask_dev.copy_to_host(mask_host, stream=stream)
-    # stream.synchronize()
     num_out = nms_postprocess(keep_out, mask_host, boxes_num)
     keep = keep_out[:num_out]
     return list(order[keep])
@@ -408,7 +403,6 @@ def inter(rbbox1, rbbox2):
     num_intersection = quadrilateral_intersection(corners1, corners2,
                                                   intersection_corners)
     sort_vertex_in_convex_polygon(intersection_corners, num_intersection)
-    # print(intersection_corners.reshape([-1, 2])[:num_intersection])
 
     return area(intersection_corners, num_intersection)
 
@@ -441,7 +435,6 @@ def rotate_nms_kernel(n_boxes, nms_overlap_thresh, dev_boxes, dev_mask):
     cuda.syncthreads()
     if tx < row_size:
         cur_box_idx = threadsPerBlock * row_start + tx
-        # cur_box = dev_boxes + cur_box_idx * 5;
         t = 0
         start = 0
         if row_start == col_start:
@@ -451,7 +444,6 @@ def rotate_nms_kernel(n_boxes, nms_overlap_thresh, dev_boxes, dev_mask):
                 dev_boxes[cur_box_idx * 6:cur_box_idx * 6 + 5],
                 block_boxes[i * 6:i * 6 + 5],
             )
-            # print('iou', iou, cur_box_idx, i)
             if iou > nms_overlap_thresh:
                 t |= 1 << i
         col_blocks = (n_boxes) // (threadsPerBlock) + ((n_boxes) %

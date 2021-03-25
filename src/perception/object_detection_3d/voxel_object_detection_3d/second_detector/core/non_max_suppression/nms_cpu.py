@@ -78,7 +78,6 @@ def nms_jit(dets, thresh, eps=0.0):
             h = max(min(y2[i], y2[j]) - max(y1[i], y1[j]) + eps, 0.0)
             inter = w * h
             ovr = inter / (areas[i] + areas[j] - inter)
-            # ovr = inter / areas[j]
             if ovr >= thresh:
                 suppressed[j] = 1
     return keep

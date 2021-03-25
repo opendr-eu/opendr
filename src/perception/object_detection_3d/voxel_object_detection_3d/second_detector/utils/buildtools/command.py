@@ -272,8 +272,6 @@ def compile_func(cmd, code_folder, compiler):
 def compile_libraries(cmds, code_folder=None, compiler: str = None, num_workers=-1):
     if num_workers == -1:
         num_workers = min(len(cmds), multiprocessing.cpu_count())
-    # for cmd in cmds:
-    #     print(cmd.shell())
     if num_workers == 0:
         rets = map(
             partial(compile_func, code_folder=code_folder, compiler=compiler), cmds

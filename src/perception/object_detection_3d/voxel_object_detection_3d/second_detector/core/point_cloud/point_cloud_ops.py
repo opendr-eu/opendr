@@ -19,12 +19,9 @@ def _points_to_voxel_reverse_kernel(
     # we shouldn't create large array in main jit code, otherwise
     # reduce performance
     N = points.shape[0]
-    # ndim = points.shape[1] - 1
     ndim = 3
     ndim_minus_1 = ndim - 1
     grid_size = (coors_range[3:] - coors_range[:3]) / voxel_size
-    # np.round(grid_size)
-    # grid_size = np.round(grid_size).astype(np.int64)(np.int32)
     grid_size = np.round(grid_size, 0, grid_size).astype(np.int32)
     coor = np.zeros(shape=(3, ), dtype=np.int32)
     voxel_num = 0
@@ -72,10 +69,8 @@ def _points_to_voxel_kernel(
     # we shouldn't create large array in main jit code, otherwise
     # decrease performance
     N = points.shape[0]
-    # ndim = points.shape[1] - 1
     ndim = 3
     grid_size = (coors_range[3:] - coors_range[:3]) / voxel_size
-    # grid_size = np.round(grid_size).astype(np.int64)(np.int32)
     grid_size = np.round(grid_size, 0, grid_size).astype(np.int32)
 
     coor = np.zeros(shape=(3, ), dtype=np.int32)
@@ -180,8 +175,6 @@ def points_to_voxel(points,
     coors = coors[:voxel_num]
     voxels = voxels[:voxel_num]
     num_points_per_voxel = num_points_per_voxel[:voxel_num]
-    # voxels[:, :, -3:] = voxels[:, :, :3] - \
-    #     voxels[:, :, :3].sum(axis=1, keepdims=True)/num_points_per_voxel.reshape(-1, 1, 1)
     return voxels, coors, num_points_per_voxel
 
 
