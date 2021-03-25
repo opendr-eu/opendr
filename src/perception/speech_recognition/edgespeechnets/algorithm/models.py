@@ -1,4 +1,4 @@
-# Copyright 2020 Aristotle University of Thessaloniki
+# Copyright 2020 Tampere University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
