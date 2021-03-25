@@ -13,6 +13,9 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
+import os
+import numpy as np
+from engine.data import PointCloud
 
 
 class Dataset(ABC):
@@ -58,6 +61,41 @@ class DatasetIterator(Dataset):
         :rtype: int
         """
         pass
+
+
+class MappedDatasetIterator(DatasetIterator):
+    """
+    MappedDatasetIterator allows to transform elements of the original DatasetIterator.
+
+    This class provides the following methods:
+    - __getitem__(i), a getter that allows for retrieving the i-th sample of the dataset, along with its annotation
+    - __len__(), which allows for getting the size of the dataset
+    """
+    def __init__(self, original, map_function):
+        super().__init__()
+        self.map_function = map_function
+        self.original = original
+
+    def __getitem__(self, idx):
+        """
+        This method is used for loading the idx-th sample of a dataset along with its annotation.
+
+        :param idx: the index of the sample to load
+        :return: the idx-th sample and its annotation
+        :rtype: Tuple of (Data, Target)
+        """
+
+        return self.map_function(self.original[idx])
+
+    def __len__(self):
+        """
+        This method returns the size of the dataset.
+
+        :return: the size of the dataset
+        :rtype: int
+        """
+
+        return len(self.original)
 
 
 class ExternalDataset(Dataset):
@@ -122,3 +160,22 @@ class ExternalDataset(Dataset):
             raise ValueError('dataset_type should be a str')
         else:
             self._dataset_type = value
+
+
+class PointCloudsDatasetIterator(DatasetIterator):
+    def __init__(self, path, num_point_features=4):
+        super().__init__()
+
+        self.path = path
+        self.num_point_features = num_point_features
+        self.files = os.listdir(path)
+
+    def __getitem__(self, idx):
+        data = np.fromfile(
+            str(self.path + "/" + self.files[idx]), dtype=np.float32, count=-1
+        ).reshape([-1, self.num_point_features])
+
+        return PointCloud(data)
+
+    def __len__(self):
+        return len(self.files)
