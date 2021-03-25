@@ -155,6 +155,12 @@ class EdgeSpeechNetsLearner(Learner):
 
     def fit(self, dataset, val_dataset=None, logging_path='', silent=True, verbose=True):
         dataloader = DataLoader(dataset, batch_size=self.batch_size, pin_memory=self.device == "cuda", shuffle=True)
+        if not self.checkpoint_load_iter == 0:
+            checkpoint_filename = os.path.join(self.temp_path + f"EdgeSpeechNet{self.architecture}-{self.checkpoint_load_iter}.pth")
+            if os.path.exists(checkpoint_filename):
+                self.load(checkpoint_filename)
+            else:
+                print(f"No loadable checkpoint found for iteration {self.checkpoint_load_iter}")
         self.model.train()
         statistics = {}
         for epoch in range(1, self.iters + 1):
