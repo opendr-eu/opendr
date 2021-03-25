@@ -271,7 +271,7 @@ class Image(Data):
 
 class FloatImage(Data):
     """
-    A class used for representing image data.
+    A class used for representing image data in float32 format.
 
     This class provides abstract methods for:
     - returning a NumPy compatible representation of data (numpy())
