@@ -338,7 +338,6 @@ class PoseHighResolutionNet(nn.Module):
         logger.info("=> init weights from normal distribution")
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                # nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
                 nn.init.normal_(m.weight, std=0.001)
                 for name, _ in m.named_parameters():
                     if name in ["bias"]:
@@ -356,16 +355,6 @@ class PoseHighResolutionNet(nn.Module):
 
         last_inp_channels = np.int(np.sum(pre_stage_channels))
 
-        # self.last_layer = nn.Sequential(
-        # nn.Conv2d(
-        # in_channels=last_inp_channels,
-        # out_channels=64,
-        # kernel_size=1,
-        # stride=1,
-        # padding=0),
-        # nn.BatchNorm2d(64, momentum=BN_MOMENTUM),
-        # nn.ReLU(inplace=True),
-        # )
         head_conv = 256
         for head in self.heads:
             classes = self.heads[head]

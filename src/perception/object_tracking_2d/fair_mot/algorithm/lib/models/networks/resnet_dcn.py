@@ -126,8 +126,6 @@ def fill_fc_weights(layers):
     for m in layers.modules():
         if isinstance(m, nn.Conv2d):
             nn.init.normal_(m.weight, std=0.001)
-            # torch.nn.init.kaiming_normal_(m.weight.data, nonlinearity='relu')
-            # torch.nn.init.xavier_normal_(m.weight.data)
             if m.bias is not None:
                 nn.init.constant_(m.bias, 0)
 
@@ -237,10 +235,7 @@ class PoseResNet(nn.Module):
                 dilation=1,
                 deformable_groups=1,
             )
-            # fc = nn.Conv2d(self.inplanes, planes,
-            #         kernel_size=3, stride=1,
-            #         padding=1, dilation=1, bias=False)
-            # fill_fc_weights(fc)
+
             up = nn.ConvTranspose2d(
                 in_channels=planes,
                 out_channels=planes,
