@@ -31,8 +31,6 @@ def _tranpose_and_gather_feat(feat, ind):
 
 def flip_tensor(x):
     return torch.flip(x, [3])
-    # tmp = x.detach().cpu().numpy()[..., ::-1].copy()
-    # return torch.from_numpy(tmp).to(x.device)
 
 
 def flip_lr(x, flip_idx):

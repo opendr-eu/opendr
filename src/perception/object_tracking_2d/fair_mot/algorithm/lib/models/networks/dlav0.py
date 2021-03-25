@@ -122,8 +122,6 @@ class BottleneckX(nn.Module):
     def __init__(self, inplanes, planes, stride=1, dilation=1):
         super(BottleneckX, self).__init__()
         cardinality = BottleneckX.cardinality
-        # dim = int(math.floor(planes * (BottleneckV5.expansion / 64.0)))
-        # bottle_planes = dim * cardinality
         bottle_planes = planes * cardinality // 32
         self.conv1 = nn.Conv2d(inplanes, bottle_planes, kernel_size=1, bias=False)
         self.bn1 = BatchNorm(bottle_planes)
@@ -659,8 +657,6 @@ def fill_fc_weights(layers):
     for m in layers.modules():
         if isinstance(m, nn.Conv2d):
             nn.init.normal_(m.weight, std=0.001)
-            # torch.nn.init.kaiming_normal_(m.weight.data, nonlinearity='relu')
-            # torch.nn.init.xavier_normal_(m.weight.data)
             if m.bias is not None:
                 nn.init.constant_(m.bias, 0)
 
@@ -748,9 +744,7 @@ class DLASeg(nn.Module):
 
     def forward(self, x):
         x = self.base(x)
-        x = self.dla_up(x[self.first_level :])
-        # x = self.fc(x)
-        # y = self.softmax(self.up(x))
+        x = self.dla_up(x[self.first_level:])
         ret = {}
         for head in self.heads:
             ret[head] = self.__getattr__(head)(x)

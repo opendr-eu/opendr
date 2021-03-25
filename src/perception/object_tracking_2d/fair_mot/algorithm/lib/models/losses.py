@@ -151,7 +151,6 @@ class RegL1Loss(nn.Module):
     def forward(self, output, mask, ind, target):
         pred = _tranpose_and_gather_feat(output, ind)
         mask = mask.unsqueeze(2).expand_as(pred).float()
-        # loss = F.l1_loss(pred * mask, target * mask, reduction='elementwise_mean')
         loss = F.l1_loss(pred * mask, target * mask, size_average=False)
         loss = loss / (mask.sum() + 1e-4)
         return loss
@@ -164,7 +163,6 @@ class NormRegL1Loss(nn.Module):
     def forward(self, output, mask, ind, target):
         pred = _tranpose_and_gather_feat(output, ind)
         mask = mask.unsqueeze(2).expand_as(pred).float()
-        # loss = F.l1_loss(pred * mask, target * mask, reduction='elementwise_mean')
         pred = pred / (target + 1e-4)
         target = target * 0 + 1
         loss = F.l1_loss(pred * mask, target * mask, size_average=False)
@@ -179,7 +177,6 @@ class RegWeightedL1Loss(nn.Module):
     def forward(self, output, mask, ind, target):
         pred = _tranpose_and_gather_feat(output, ind)
         mask = mask.float()
-        # loss = F.l1_loss(pred * mask, target * mask, reduction='elementwise_mean')
         loss = F.l1_loss(pred * mask, target * mask, size_average=False)
         loss = loss / (mask.sum() + 1e-4)
         return loss
@@ -223,7 +220,6 @@ def compute_rot_loss(output, target_bin, target_res, mask):
     # target_bin: (B, 128, 2) [bin1_cls, bin2_cls]
     # target_res: (B, 128, 2) [bin1_res, bin2_res]
     # mask: (B, 128, 1)
-    # import pdb; pdb.set_trace()
     output = output.view(-1, 8)
     target_bin = target_bin.view(-1, 2)
     target_res = target_res.view(-1, 2)
@@ -278,7 +274,6 @@ class TripletLoss(nn.Module):
             targets: ground truth labels with shape (num_classes)
         """
         n = inputs.size(0)
-        # inputs = 1. * inputs / (torch.norm(inputs, 2, dim=-1, keepdim=True).expand_as(inputs) + 1e-12)
         # Compute pairwise distance, replace by the official when merged
         dist = torch.pow(inputs, 2).sum(dim=1, keepdim=True).expand(n, n)
         dist = dist + dist.t()

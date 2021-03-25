@@ -125,8 +125,6 @@ class BottleneckX(nn.Module):
     def __init__(self, inplanes, planes, stride=1, dilation=1):
         super(BottleneckX, self).__init__()
         cardinality = BottleneckX.cardinality
-        # dim = int(math.floor(planes * (BottleneckV5.expansion / 64.0)))
-        # bottle_planes = dim * cardinality
         bottle_planes = planes * cardinality // 32
         self.conv1 = nn.Conv2d(inplanes, bottle_planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(bottle_planes, momentum=BN_MOMENTUM)
@@ -329,14 +327,6 @@ class DLA(nn.Module):
             root_residual=residual_root,
         )
 
-        # for m in self.modules():
-        #     if isinstance(m, nn.Conv2d):
-        #         n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-        #         m.weight.data.normal_(0, math.sqrt(2. / n))
-        #     elif isinstance(m, nn.BatchNorm2d):
-        #         m.weight.data.fill_(1)
-        #         m.bias.data.zero_()
-
     def _make_level(self, block, inplanes, planes, blocks, stride=1):
         downsample = None
         if stride != 1 or inplanes != planes:
@@ -383,7 +373,6 @@ class DLA(nn.Module):
         return y
 
     def load_pretrained_model(self, data="imagenet", name="dla34", hash="ba72cf86"):
-        # fc = self.fc
         if name.endswith(".pth"):
             model_weights = torch.load(data + name)
         else:
@@ -399,7 +388,6 @@ class DLA(nn.Module):
             bias=True,
         )
         self.load_state_dict(model_weights)
-        # self.fc = fc
 
 
 def dla34(pretrained=True, **kwargs):  # DLA-34
@@ -443,7 +431,6 @@ class DeformConv(nn.Module):
         self.actf = nn.Sequential(
             nn.BatchNorm2d(cho, momentum=BN_MOMENTUM), nn.ReLU(inplace=True)
         )
-        # self.conv = DCN(chi, cho, kernel_size=(3,3), stride=1, padding=1, dilation=1, deformable_groups=1)
         self.conv = nn.Conv2d(
             chi, cho, kernel_size=3, stride=1, padding=1, bias=False, dilation=1
         )

@@ -48,7 +48,6 @@ def _topk(scores, K=40):
 def mot_decode(heat, wh, reg=None, ltrb=False, K=100):
     batch, cat, height, width = heat.size()
 
-    # heat = torch.sigmoid(heat)
     # perform nms on heatmaps
     heat = _nms(heat)
 

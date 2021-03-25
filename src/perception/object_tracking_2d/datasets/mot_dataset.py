@@ -136,7 +136,6 @@ class RawMotDatasetIterator(DatasetIterator):
         mse_loss=False,
         img_size=(1088, 608),
     ):
-        # dataset_names = paths.keys()
         self.img_files = OrderedDict()
         self.label_files = OrderedDict()
         self.tid_num = OrderedDict()
@@ -225,7 +224,7 @@ class RawMotDatasetIterator(DatasetIterator):
         new_shape = (
             round(shape[1] * ratio),
             round(shape[0] * ratio),
-        )  # new_shape = [width, height]
+        )
         padw = (width - new_shape[0]) / 2  # width padding
         padh = (height - new_shape[1]) / 2  # height padding
 
@@ -285,7 +284,6 @@ class MotDatasetIterator(DatasetIterator):
         augment=False,
         transforms=T.Compose([T.ToTensor()]),
     ):
-        # dataset_names = paths.keys()
         self.img_files = OrderedDict()
         self.label_files = OrderedDict()
         self.tid_num = OrderedDict()
@@ -521,7 +519,6 @@ class LoadImages:  # for inference
         img = np.ascontiguousarray(img, dtype=np.float32)
         img /= 255.0
 
-        # cv2.imwrite(img_path + '.letterbox.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # save letterbox image
         return img_path, img, img0
 
     def __getitem__(self, idx):
@@ -587,7 +584,6 @@ class LoadVideo:  # for inference
         img = np.ascontiguousarray(img, dtype=np.float32)
         img /= 255.0
 
-        # cv2.imwrite(img_path + '.letterbox.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # save letterbox image
         return self.count, img, img0
 
     def __len__(self):
@@ -759,7 +755,6 @@ def random_affine(
     shear=(-2, 2),
     borderValue=(127.5, 127.5, 127.5),
 ):
-    # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-10, 10))
     # https://medium.com/uruvideo/dataset-augmentation-with-random-homographies-a8f4b44830d4
 
     border = 0  # width of added border (optional)
@@ -769,7 +764,6 @@ def random_affine(
     # Rotation and Scale
     R = np.eye(3)
     a = random.random() * (degrees[1] - degrees[0]) + degrees[0]
-    # a += random.choice([-180, -90, 0, 90])  # 90deg rotations added to small rotations
     s = random.random() * (scale[1] - scale[0]) + scale[0]
     R[:2] = cv2.getRotationMatrix2D(
         angle=a, center=(img.shape[1] / 2, img.shape[0] / 2), scale=s
@@ -842,11 +836,6 @@ def random_affine(
                 .T
             )
 
-            # reject warped points outside of image
-            # np.clip(xy[:, 0], 0, width, out=xy[:, 0])
-            # np.clip(xy[:, 2], 0, width, out=xy[:, 2])
-            # np.clip(xy[:, 1], 0, height, out=xy[:, 1])
-            # np.clip(xy[:, 3], 0, height, out=xy[:, 3])
             w = xy[:, 2] - xy[:, 0]
             h = xy[:, 3] - xy[:, 1]
             area = w * h
@@ -879,7 +868,6 @@ class JointDataset(LoadImagesAndLabels):  # for training
         augment=False,
         transforms=None,
     ):
-        # dataset_names = paths.keys()
         self.img_files = OrderedDict()
         self.label_files = OrderedDict()
         self.tid_num = OrderedDict()
@@ -973,7 +961,6 @@ class DetDataset(LoadImagesAndLabels):  # for training
         self, root, paths, img_size=(1088, 608), augment=False, transforms=None
     ):
 
-        # dataset_names = paths.keys()
         self.img_files = OrderedDict()
         self.label_files = OrderedDict()
         self.tid_num = OrderedDict()
@@ -1100,7 +1087,6 @@ def process(imgs, labels, ltrb, down_ratio, max_objs, num_classes, mse_loss):
             radius = gaussian_radius((math.ceil(h), math.ceil(w)))
             radius = max(0, int(radius))
             radius = 6 if mse_loss else radius
-            # radius = max(1, int(radius)) if self.opt.mse_loss else radius
             ct = np.array([bbox[0], bbox[1]], dtype=np.float32)
             ct_int = ct.astype(np.int32)
             draw_gaussian(hm[cls_id], ct_int, radius)

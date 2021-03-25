@@ -7,7 +7,6 @@ from perception.object_tracking_2d.fair_mot.algorithm.lib.models.decode import (
     mot_decode,
 )
 
-# from perception.object_tracking_2d.fair_mot.algorithm.lib.tracking_utils.utils import *
 from perception.object_tracking_2d.fair_mot.algorithm.lib.tracking_utils.kalman_filter import (
     KalmanFilter,
 )
@@ -89,7 +88,6 @@ class STrack(BaseTrack):
         self.state = TrackState.Tracked
         if frame_id == 1:
             self.is_activated = True
-        # self.is_activated = True
         self.frame_id = frame_id
         self.start_frame = frame_id
 
@@ -317,11 +315,8 @@ class JDETracker(object):
         """ Step 2: First association, with embedding"""
         strack_pool = joint_stracks(tracked_stracks, self.lost_stracks)
         # Predict the current location with KF
-        # for strack in strack_pool:
-        # strack.predict()
         STrack.multi_predict(strack_pool)
         dists = matching.embedding_distance(strack_pool, detections)
-        # dists = matching.iou_distance(strack_pool, detections)
         dists = matching.fuse_motion(
             self.kalman_filter, dists, strack_pool, detections
         )

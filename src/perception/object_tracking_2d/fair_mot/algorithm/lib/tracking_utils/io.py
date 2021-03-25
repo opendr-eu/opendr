@@ -106,11 +106,6 @@ def read_mot_results(filename, is_gt, is_ignore):
                 else:
                     score = float(linelist[6])
 
-                # if box_size > 7000:
-                # if box_size <= 7000 or box_size >= 15000:
-                # if box_size < 15000:
-                # continue
-
                 tlwh = tuple(map(float, linelist[2:6]))
                 target_id = int(linelist[1])
 

@@ -81,7 +81,6 @@ class MotLoss(torch.nn.Module):
         self.nID = nID
         self.classifier = nn.Linear(self.emb_dim, self.nID)
         self.IDLoss = nn.CrossEntropyLoss(ignore_index=-1)
-        # self.TriLoss = TripletLoss()
         self.emb_scale = math.sqrt(2) * math.log(self.nID - 1)
         self.s_det = nn.Parameter(-1.85 * torch.ones(1))
         self.s_id = nn.Parameter(-1.05 * torch.ones(1))
@@ -119,8 +118,6 @@ class MotLoss(torch.nn.Module):
                 id_output = self.classifier(id_head).contiguous()
                 id_loss += self.IDLoss(id_output, id_target)
 
-        # loss = opt.hm_weight * hm_loss + opt.wh_weight * wh_loss + opt.off_weight * off_loss + opt.id_weight * id_loss
-
         det_loss = (
             self.hm_weight * hm_loss
             + self.wh_weight * wh_loss
@@ -133,9 +130,6 @@ class MotLoss(torch.nn.Module):
             + (self.s_det + self.s_id)
         )
         loss *= 0.5
-        # loss = det_loss
-
-        # print(loss, hm_loss, wh_loss, off_loss, id_loss)
 
         loss_stats = {
             "loss": loss,

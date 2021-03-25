@@ -271,7 +271,6 @@ def build_targets_max(target, anchor_wh, nA, nC, nGh, nGw):
         if nTb == 0:
             continue
 
-        # gxy, gwh = t[:, 1:3] * nG, t[:, 3:5] * nG
         gxy, gwh = t[:, 1:3].clone(), t[:, 3:5].clone()
         gxy[:, 0] = gxy[:, 0] * nGw
         gxy[:, 1] = gxy[:, 1] * nGh
@@ -279,10 +278,6 @@ def build_targets_max(target, anchor_wh, nA, nC, nGh, nGw):
         gwh[:, 1] = gwh[:, 1] * nGh
         gi = torch.clamp(gxy[:, 0], min=0, max=nGw - 1).long()
         gj = torch.clamp(gxy[:, 1], min=0, max=nGh - 1).long()
-
-        # Get grid box indices and prevent overflows (i.e. 13.01 on 13 anchors)
-        # gi, gj = torch.clamp(gxy.long(), min=0, max=nG - 1).t()
-        # gi, gj = gxy.long().t()
 
         # iou of targets-anchors (using wh only)
         box1 = gwh
@@ -299,13 +294,12 @@ def build_targets_max(target, anchor_wh, nA, nC, nGh, nGw):
 
             # Unique anchor selection
             u = torch.stack((gi, gj, a), 0)[:, iou_order]
-            # _, first_unique = np.unique(u, axis=1, return_index=True)  # first unique indices
             first_unique = return_torch_unique_index(
                 u, torch.unique(u, dim=1)
             )  # torch alternative
             i = iou_order[first_unique]
             # best anchor must share significant commonality (iou) with target
-            i = i[iou_best[i] > 0.60]  # TODO: examine arbitrary threshold
+            i = i[iou_best[i] > 0.60]
             if len(i) == 0:
                 continue
 
@@ -328,7 +322,6 @@ def build_targets_max(target, anchor_wh, nA, nC, nGh, nGw):
 
         # Width and height
         twh[b, a, gj, gi] = torch.log(gwh / anchor_wh[a])  # yolo method
-        # twh[b, a, gj, gi] = torch.sqrt(gwh / anchor_wh[a]) / 2 # power method
 
         # One-hot encoding of label
         tcls[b, a, gj, gi, tc] = 1
