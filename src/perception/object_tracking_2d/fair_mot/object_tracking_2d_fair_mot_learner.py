@@ -1,4 +1,4 @@
-# Copyright 2020 Aristotle University of Thessaloniki
+# Copyright 2020-2021 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ class ObjectTracking2DFairMotLearner(Learner):
         checkpoint_after_iter=0,
         checkpoint_load_iter=0,
         temp_path="",
-        device="cuda:0",
+        device="cuda",
         threshold=0.3,
         scale=1.0,
         lr_step=[20],
@@ -228,7 +228,6 @@ class ObjectTracking2DFairMotLearner(Learner):
         dataset,
         val_dataset=None,
         val_epochs=-1,
-        refine_weight=2,
         logging_path=None,
         silent=False,
         verbose=False,
@@ -240,7 +239,9 @@ class ObjectTracking2DFairMotLearner(Learner):
 
         if train_split_paths is None:
             train_split_paths = {
-                "mot20": "./perception/object_tracking_2d/datasets/splits/mot20.train"
+                "mot20": os.path.join(
+                    "perception", "object_tracking_2d", "datasets", "splits", "mot20.train"
+                )
             }
 
         if val_split_paths is None:
