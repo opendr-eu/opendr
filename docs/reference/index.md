@@ -17,3 +17,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 
 - [Inference and Training API](inference-and-training-api.md)
     - [engine.data Module](engine-data.md)
+    - [engine.datasets Module](engine-datasets.md)
+    - [engine.target Module](engine-target.md)
+    - [lightweight-open-pose Module](lightweight-open-pose.md)
+    - [voxel-object-detection-3d Module](voxel-object-detection-3d.md)
