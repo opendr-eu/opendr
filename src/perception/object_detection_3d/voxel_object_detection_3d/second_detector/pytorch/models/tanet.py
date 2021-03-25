@@ -351,7 +351,6 @@ class PSA(nn.Module):
                 Conv2d(6, 32, 3, padding=1),
                 BatchNorm2d(32),
                 nn.ReLU(),
-                # nn.MaxPool2d(2, 2),
                 Conv2d(32, 64, 3, padding=1),
                 BatchNorm2d(64),
                 nn.ReLU(),

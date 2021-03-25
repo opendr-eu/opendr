@@ -13,6 +13,9 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
+import os
+import numpy as np
+from engine.data import PointCloud
 
 
 class Dataset(ABC):
@@ -62,9 +65,9 @@ class DatasetIterator(Dataset):
 
 class MappedDatasetIterator(DatasetIterator):
     """
-    MappedDatasetIterator allows to transform elements of the original DatasetIterator
+    MappedDatasetIterator allows to transform elements of the original DatasetIterator.
 
-    This class provides the following abstract methods:
+    This class provides the following methods:
     - __getitem__(i), a getter that allows for retrieving the i-th sample of the dataset, along with its annotation
     - __len__(), which allows for getting the size of the dataset
     """
@@ -157,3 +160,22 @@ class ExternalDataset(Dataset):
             raise ValueError('dataset_type should be a str')
         else:
             self._dataset_type = value
+
+
+class PointCloudsDatasetIterator(DatasetIterator):
+    def __init__(self, path, num_point_features=4):
+        super().__init__()
+
+        self.path = path
+        self.num_point_features = num_point_features
+        self.files = os.listdir(path)
+
+    def __getitem__(self, idx):
+        data = np.fromfile(
+            str(self.path + "/" + self.files[idx]), dtype=np.float32, count=-1
+        ).reshape([-1, self.num_point_features])
+
+        return PointCloud(data)
+
+    def __len__(self):
+        return len(self.files)
