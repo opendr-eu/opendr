@@ -90,6 +90,30 @@ The [Image](#class_engine.data.Image) class has the following public methods:
   Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
 
 
+### class engine.data.FloatImage
+Bases: `engine.data.Data`
+
+A class used for representing image data in float32 format.
+
+The [FloatImage](#class_engine.data.FloatImage) class has the following public methods:
+#### FloatImage(data=None)
+  Construct a new [FloatImage](#class_engine.data.FloatImage) object based on *data*.
+  *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
+
+#### data()
+  Return *data* argument.
+  Return type is float32 [NumPy](https://numpy.org) array.
+
+#### data(data)
+  Set the internal *data* argument.
+  *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array, where the
+  dimensions can be organized as e.g. (channels, width, height).
+
+#### numpy()
+  Return a  [NumPy](https://numpy.org)-compatible representation of data.
+  Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+
+
 ### class engine.data.PointCloud
 Bases: `engine.data.Data`
 
