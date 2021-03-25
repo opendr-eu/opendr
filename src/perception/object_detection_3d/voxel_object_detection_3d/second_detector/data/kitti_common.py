@@ -151,7 +151,6 @@ def get_kitti_image_info(
     relative_path=True,
     with_imageshape=True,
 ):
-    # image_infos = []
     root_path = pathlib.Path(path)
     if not isinstance(image_ids, list):
         image_ids = list(range(image_ids))
@@ -607,9 +606,6 @@ def get_label_anno(label_path):
     })
     with open(label_path, "r") as f:
         lines = f.readlines()
-    # if len(lines) == 0 or len(lines[0]) < 15:
-    #     content = []
-    # else:
     content = [line.strip().split(" ") for line in lines]
     num_objects = len([x[0] for x in content if x[0] != "DontCare"])
     annotations["name"] = np.array([x[0] for x in content])

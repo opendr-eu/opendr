@@ -145,9 +145,6 @@ def _build_classification_loss(loss_config):
 
     if loss_type == "weighted_sigmoid_focal":
         config = loss_config.weighted_sigmoid_focal
-        # alpha = None
-        # if config.HasField('alpha'):
-        #   alpha = config.alpha
         if config.alpha > 0:
             alpha = config.alpha
         else:
@@ -155,9 +152,6 @@ def _build_classification_loss(loss_config):
         return losses.SigmoidFocalClassificationLoss(gamma=config.gamma, alpha=alpha)
     if loss_type == "weighted_softmax_focal":
         config = loss_config.weighted_softmax_focal
-        # alpha = None
-        # if config.HasField('alpha'):
-        #   alpha = config.alpha
         if config.alpha > 0:
             alpha = config.alpha
         else:

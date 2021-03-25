@@ -305,7 +305,7 @@ class PointCloud(Data):
         """
         # Convert input data to a NumPy array
         # Note that will also fail for non-numeric data (which is expected)
-        data = np.asarray(data, dtype=np.uint8)
+        data = np.asarray(data, dtype=np.float32)
 
         # Check if the supplied array is 2D, e.g. (length, channels)
         if len(data.shape) != 2:

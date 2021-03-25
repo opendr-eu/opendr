@@ -8,10 +8,8 @@ def _points_to_bevmap_reverse_kernel(
     voxel_size,
     coors_range,
     coor_to_voxelidx,
-    # coors_2d,
     bev_map,
     height_lowers,
-    # density_norm_num=16,
     with_reflectivity=False,
     max_voxels=40000,
 ):
@@ -20,11 +18,8 @@ def _points_to_bevmap_reverse_kernel(
     # reduce performance
     N = points.shape[0]
     ndim = points.shape[1] - 1
-    # ndim = 3
     ndim_minus_1 = ndim - 1
     grid_size = (coors_range[3:] - coors_range[:3]) / voxel_size
-    # np.round(grid_size)
-    # grid_size = np.round(grid_size).astype(np.int64)(np.int32)
     grid_size = np.round(grid_size, 0, grid_size).astype(np.int32)
     height_slice_size = voxel_size[-1]
     coor = np.zeros(shape=(3, ), dtype=np.int32)  # DHW
@@ -47,7 +42,6 @@ def _points_to_bevmap_reverse_kernel(
                 break
             voxel_num += 1
             coor_to_voxelidx[coor[0], coor[1], coor[2]] = voxelidx
-            # coors_2d[voxelidx] = coor[1:]
         bev_map[-1, coor[1], coor[2]] += 1
         height_norm = bev_map[coor[0], coor[1], coor[2]]
         incomimg_height_norm = (points[i, 2] -
@@ -56,7 +50,6 @@ def _points_to_bevmap_reverse_kernel(
             bev_map[coor[0], coor[1], coor[2]] = incomimg_height_norm
             if with_reflectivity:
                 bev_map[-2, coor[1], coor[2]] = points[i, 3]
-    # return voxel_num
 
 
 def points_to_bev(
@@ -91,7 +84,6 @@ def points_to_bev(
     voxelmap_shape = tuple(np.round(voxelmap_shape).astype(np.int32).tolist())
     voxelmap_shape = voxelmap_shape[::-1]  # DHW format
     coor_to_voxelidx = -np.ones(shape=voxelmap_shape, dtype=np.int32)
-    # coors_2d = np.zeros(shape=(max_voxels, 2), dtype=np.int32)
     bev_map_shape = list(voxelmap_shape)
     bev_map_shape[0] += 1
     height_lowers = np.linspace(coors_range[2],

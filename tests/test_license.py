@@ -80,7 +80,7 @@ class TestLicense(unittest.TestCase):
 
         skippedDirectoryPaths = [
             'src/perception/pose_estimation/lightweight_open_pose/algorithm',
-            'src/perception/object_detection_3d/voxel_object_detection_3d/second',
+            'src/perception/object_detection_3d/voxel_object_detection_3d/second_detector',
             'src/perception/face_recognition/algorithm'
         ]
 
