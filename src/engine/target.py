@@ -277,7 +277,6 @@ class BoundingBox2D(Target):
                 self.top,
                 self.width,
                 self.height,
-                self.confidence,
             ], dtype=np.float32)
 
         return result
