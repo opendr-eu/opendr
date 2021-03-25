@@ -91,3 +91,78 @@ The [BoundingBox3DList](#class_engine.target.BoundingBox3DList) class has the fo
   Return the annotation in KITTI format.
 #### from_kitti(boxes_kitti)
   Static method that constructs [BoundingBox3DList](#class_engine.target.BoundingBox3DList) from the `boxes_kitti` object with KITTI annotation.
+
+
+### class engine.target.BoundingBox2D
+Bases: `engine.target.Target`
+
+This target is used for 2D Object Detection.
+A bounding box is described by the left-top corner and its width and height.
+
+The [BoundingBox2D](#class_engine.target.BoundingBox2D) class has the following public methods:
+#### BoundingBox2D(name, left, top, width, height, score=0, frame=-1)
+  Construct a new [BoundingBox2D](#class_engine.target.BoundingBox2D) object based on the given data.
+  - *left* is expected to be a number representing the x position of the left-top corner.
+  - *top* is expected to be a number representing the y position of the left-top corner.
+  - *width* is expected to be a number representing the width of the box.
+  - *height* is expected to be a number representing the height of the box.
+  - *score* is expected to be a number describing the prediction confidence.
+  - *frame* is expected to be a number describing the frame number.
+#### mot(with_confidence=True)
+  Return the annotation in MOT format.
+
+
+### class engine.target.BoundingBox2DList
+Bases: `engine.target.Target`
+
+This target is used for 2D Object Detection.
+A bounding box is described by the left-top corner and its width and height.
+
+The [BoundingBox2DList](#class_engine.target.BoundingBox2DList) class has the following public methods:
+#### BoundingBox2DList(name, boxes)
+  Construct a new [BoundingBox2DList](#class_engine.target.BoundingBox2DList) object based on the given data.
+  - *boxes* is expected to be a list of [BoundingBox2D](#class_engine.target.BoundingBox2D).
+#### mot(with_confidence=True)
+  Return the annotation in MOT format.
+  
+
+### class engine.target.TrackingBoundingBox2D
+Bases: `engine.target.Target`
+
+This target is used for 2D Object Detection.
+A bounding box is described by the left-top corner and its width and height.
+
+The [TrackingBoundingBox2D](#class_engine.target.TrackingBoundingBox2D) class has the following public methods:
+#### TrackingBoundingBox2D(name, left, top, width, height, id, score=0, frame=-1)
+  Construct a new [TrackingBoundingBox2D](#class_engine.target.TrackingBoundingBox2D) object based on the given data.
+  - *left* is expected to be a number representing the x position of the left-top corner.
+  - *top* is expected to be a number representing the y position of the left-top corner.
+  - *width* is expected to be a number representing the width of the box.
+  - *height* is expected to be a number representing the height of the box.
+  - *id* is expected to be a number representing the object id.
+  - *score* is expected to be a number describing the prediction confidence.
+  - *frame* is expected to be a number describing the frame number.
+#### from_mot(data)
+   Static method that constructs [TrackingBoundingBox2D](#class_engine.target.TrackingBoundingBox2D) from the `data` object with MOT annotation.
+#### mot(with_confidence=True)
+  Return the annotation in MOT format.
+#### boudning_box()
+  Return the [BoundingBox2D](#class_engine.target.BoundingBox2D) object constructed from this object.
+
+
+### class engine.target.TrackingBoundingBox2DList
+Bases: `engine.target.Target`
+
+This target is used for 2D Object Detection.
+A bounding box is described by the left-top corner and its width and height.
+
+The [TrackingBoundingBox2DList](#class_engine.target.TrackingBoundingBox2DList) class has the following public methods:
+#### TrackingBoundingBox2DList(name, boxes)
+  Construct a new [TrackingBoundingBox2DList](#class_engine.target.TrackingBoundingBox2DList) object based on the given data.
+  - *boxes* is expected to be a list of [TrackingBoundingBox2D](#class_engine.target.TrackingBoundingBox2D).
+#### from_mot(data)
+  Static method that constructs [TrackingBoundingBox2DList](#class_engine.target.TrackingBoundingBox2DList) from the `data` object with MOT annotation.
+#### mot(with_confidence=True)
+  Return the annotation in MOT format.
+#### boudning_box_list()
+  Return the [BoundingBox2DList](#class_engine.target.BoundingBox2DList) object constructed from this object.
