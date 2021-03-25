@@ -20,7 +20,7 @@ import unittest
 import numpy as np
 import torch as t
 
-from perception.speech_recognition.edgespeechnets.edgespeechnets_learner import EdgesSpeechNetsLearner
+from perception.speech_recognition.edgespeechnets.edgespeechnets_learner import EdgeSpeechNetsLearner
 from engine.data import Timeseries
 from engine.datasets import DatasetIterator
 from engine.target import SpeechCommand
@@ -51,7 +51,7 @@ class EdgeSpeechNetsTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.learner = EdgesSpeechNetsLearner(device="cpu", output_classes_n=TEST_CLASSES_N, iters=TEST_EPOCHS)
+        cls.learner = EdgeSpeechNetsLearner(device="cpu", output_classes_n=TEST_CLASSES_N, iters=TEST_EPOCHS)
 
     @classmethod
     def tearDownClass(cls):
