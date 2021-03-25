@@ -1,4 +1,4 @@
-
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,9 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# parse_calib function and dataset preprocessing functions are taken from TANet.
+# kitti_subsets are taken from TANet and are modified for mini and nano kitti subsets.
+
 import os
-import shutil
 import numpy as np
+from distutils.dir_util import copy_tree
 from engine.datasets import ExternalDataset, DatasetIterator
 from engine.data import PointCloudWithCalibration
 from engine.target import BoundingBox3DList
@@ -103,7 +106,7 @@ class KittiDataset(ExternalDataset):
             os.remove(zip_path)
 
             if copy_training_to_testing:
-                shutil.copytree(
+                copy_tree(
                     os.path.join(download_path, dataset_sub_path, "training"),
                     os.path.join(download_path, dataset_sub_path, "testing"))
 
