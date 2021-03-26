@@ -30,7 +30,6 @@ class TestIO(unittest.TestCase):
         )
         cls.temp_dir.mkdir(exist_ok=True, parents=True)
 
-
     @classmethod
     def tearDownClass(cls):
         try:
@@ -41,8 +40,8 @@ class TestIO(unittest.TestCase):
     def test_bump_version(self):
 
         def write_data(path: Path):
-            with path.open("w", encoding ="utf-8") as f:
-                json.dump({"dummy":42}, f)
+            with path.open("w", encoding="utf-8") as f:
+                json.dump({"dummy": 42}, f)
 
         p1 = self.temp_dir / "dummy_file.json"
         p2 = self.temp_dir / "dummy_file_1.json"
@@ -72,6 +71,6 @@ class TestIO(unittest.TestCase):
         assert io.bump_version(p1) == p3
         assert io.bump_version(p2) == p3
 
-    
+
 if __name__ == "__main__":
     unittest.main()

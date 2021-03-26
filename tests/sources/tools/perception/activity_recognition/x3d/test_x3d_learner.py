@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-import shutil
+# import shutil
 from perception.activity_recognition.x3d.x3d_learner import X3DLearner
 
 # from engine.datasets import ExternalDataset
@@ -57,7 +57,6 @@ class TestX3DLearner(unittest.TestCase):
             self.x3d_learner.model, "model is None after loading pth model."
         )
         assert self.x3d_learner.batch_size == 1
-
 
     # def test_fit(self):
     #     training_dataset = ExternalDataset(
