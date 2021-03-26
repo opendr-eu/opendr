@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# import os
 import json
-import re
 import torch
 import yaml
 from pathlib import Path
@@ -118,13 +116,13 @@ class X3DLearner(Learner):
 
     def load_model_weights(self, weights_path: str = None) -> Dict[str, Any]:
         weights_path = (
-            Path(weights_path) 
-            if weights_path 
+            Path(weights_path)
+            if weights_path
             else Path(self.temp_path) / "weights" / f"x3d_{self.backbone}.pyth"
         )
 
         assert (
-            weights_path.is_file() and weights_path.suffix in {".pyth",".pth",".onnx"}
+            weights_path.is_file() and weights_path.suffix in {".pyth", ".pth", ".onnx"}
         ), (
             f"weights_path ({str(weights_path)}) should be a .pth or .onnx file."
             "Pretrained weights can be downloaded using `X3DLearner.download(...)`"
