@@ -264,6 +264,9 @@ class BoundingBox3DList(Target):
     def boxes(self):
         return self.data
 
+    def __getitem__(self, idx):
+        return self.boxes[idx]
+
     def __len__(self):
         return len(self.data)
 
@@ -493,6 +496,9 @@ class TrackingBoundingBox3DList(Target):
 
     def bounding_box_3d_list(self):
         return BoundingBox3DList([box.bounding_box_3d() for box in self.data])
+
+    def __getitem__(self, idx):
+        return self.boxes[idx]
 
     def __len__(self):
         return len(self.data)
