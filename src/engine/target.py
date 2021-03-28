@@ -138,27 +138,35 @@ class BoundingBox3D(Target):
 
         return result
 
+    @property
     def name(self):
         return self.data["name"]
 
+    @property
     def truncated(self):
         return self.data["truncated"]
 
+    @property
     def occluded(self):
         return self.data["occluded"]
 
+    @property
     def alpha(self):
         return self.data["alpha"]
 
+    @property
     def bbox2d(self):
         return self.data["bbox2d"]
 
+    @property
     def dimensions(self):
         return self.data["dimensions"]
 
+    @property
     def location(self):
         return self.data["location"]
 
+    @property
     def rotation_y(self):
         return self.data["rotation_y"]
 
