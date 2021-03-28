@@ -306,6 +306,7 @@ class TrackingBoundingBox3D(Target):
             "bbox2d": bbox2d,
             "dimensions": dimensions,
             "location": location,
+            "rotation_y": rotation_y,
             "id": id,
             "frame": frame,
         }
