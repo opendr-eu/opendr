@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import numpy as np
+from typing import List
 
 
 class BaseTarget:
@@ -137,6 +138,30 @@ class BoundingBox3D(Target):
 
         return result
 
+    def name(self):
+        return self.data["name"]
+
+    def truncated(self):
+        return self.data["truncated"]
+
+    def occluded(self):
+        return self.data["occluded"]
+
+    def alpha(self):
+        return self.data["alpha"]
+
+    def bbox2d(self):
+        return self.data["bbox2d"]
+
+    def dimensions(self):
+        return self.data["dimensions"]
+
+    def location(self):
+        return self.data["location"]
+
+    def rotation_y(self):
+        return self.data["rotation_y"]
+
     def __repr__(self):
         return "BoundingBox3D " + str(self)
 
@@ -157,7 +182,7 @@ class BoundingBox3DList(Target):
         bounding_boxes_3d
     ):
         super().__init__()
-        self.data = bounding_boxes_3d
+        self.data: List[BoundingBox3D] = bounding_boxes_3d
         self.confidence = np.mean([box.confidence for box in self.data])
 
     @staticmethod
@@ -226,6 +251,10 @@ class BoundingBox3DList(Target):
             result["score"] = np.array(result["score"])
 
         return result
+
+    @property
+    def boxes(self):
+        return self.data
 
     def __len__(self):
         return len(self.data)
