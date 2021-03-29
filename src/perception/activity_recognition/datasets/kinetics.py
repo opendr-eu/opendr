@@ -27,7 +27,6 @@ from perception.activity_recognition.datasets.utils import decoder
 from perception.activity_recognition.datasets.utils.transforms import standard_video_transforms
 import av
 
-cache = Memory(Path(getcwd()) / ".cache", verbose=1).cache
 logger = getLogger(__file__)
 
 
@@ -52,6 +51,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         temporal_downsampling=1,
         split="train",
         video_transform=None,
+        use_caching=False
     ):
         """
         Kinetics dataset
@@ -63,11 +63,12 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         Args:
             path (str): path directory of the Kinetics dataset folder, containing subfolders "data" and "splits"
             frames_per_clip (int): number of frames in a clip
-            step_between_clips (int): number of frames between each clip
-            temporal_downsampling (int): rate of downsampling in time
-            split (str, optional): Which split to use (Options are ["train", "val", "test"])
+            step_between_clips (int): number of frames between each clip. Defaults to 1.
+            temporal_downsampling (int): rate of downsampling in time. Defaults to 1.
+            split (str, optional): Which split to use (Options are ["train", "val", "test"]). Defaults to "train".
             video_transform (callable, optional): A function/transform that takes in a TxHxWxC video
-                and returns a transformed version. If None, a standard video transform will be applied.
+                and returns a transformed version. If None, a standard video transform will be applied. Defaults to None.
+            use_caching (bool): Cache long-running operations. Defaults to False.
 
         """
         ExternalDataset.__init__(self, path=str(path), dataset_type="kinetics")
@@ -97,6 +98,10 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
             train_transform, eval_transform = standard_video_transforms()
             self.video_transform = train_transform if self.split == "train" else eval_transform
 
+        validate_splits = Memory(Path(getcwd()) / ".cache", verbose=1).cache(
+            _validate_splits
+        ) if use_caching else _validate_splits
+
         (
             self.labels,
             self.file_paths,
@@ -105,7 +110,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
             self.classes,
             _,  # num_not_found,
             self.video_inds,
-        ) = _validate_splits(
+        ) = validate_splits(
             self.root_path,
             self.annotation_path,
             split
@@ -221,7 +226,6 @@ def _make_path_name(
     return (p, label) if p.exists() else None
 
 
-@cache  # Possibly long-running operation, cache it for the next time
 def _validate_splits(
     root: str,
     annotation_path: str,
