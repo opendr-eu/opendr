@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import numpy as np
-from typing import List
 
 
 class BaseTarget:
@@ -190,7 +189,7 @@ class BoundingBox3DList(Target):
         bounding_boxes_3d
     ):
         super().__init__()
-        self.data: List[BoundingBox3D] = bounding_boxes_3d
+        self.data = bounding_boxes_3d
         self.confidence = np.mean([box.confidence for box in self.data])
 
     @staticmethod
@@ -277,7 +276,7 @@ class BoundingBox3DList(Target):
         return str(self.kitti())
 
 
-class TrackingBoundingBox3D(Target):
+class TrackingBoundingBox3D(BoundingBox3D):
     """
     This target is used for 3D Object Tracking.
     A tracking bounding box is described by frame, id, its location (x, y, z),
@@ -300,7 +299,6 @@ class TrackingBoundingBox3D(Target):
         score=0,
         frame=-1,
     ):
-        super().__init__()
         self.data = {
             "name": name,
             "truncated": truncated,
@@ -334,38 +332,6 @@ class TrackingBoundingBox3D(Target):
             result["frame"] = np.array([self.data["frame"]])
 
         return result
-
-    @property
-    def name(self):
-        return self.data["name"]
-
-    @property
-    def truncated(self):
-        return self.data["truncated"]
-
-    @property
-    def occluded(self):
-        return self.data["occluded"]
-
-    @property
-    def alpha(self):
-        return self.data["alpha"]
-
-    @property
-    def bbox2d(self):
-        return self.data["bbox2d"]
-
-    @property
-    def dimensions(self):
-        return self.data["dimensions"]
-
-    @property
-    def location(self):
-        return self.data["location"]
-
-    @property
-    def rotation_y(self):
-        return self.data["rotation_y"]
 
     @property
     def frame(self):
@@ -403,7 +369,7 @@ class TrackingBoundingBox3DList(Target):
         tracking_bounding_boxes_3d
     ):
         super().__init__()
-        self.data: List[TrackingBoundingBox3D] = tracking_bounding_boxes_3d
+        self.data = tracking_bounding_boxes_3d
         self.confidence = np.mean([box.confidence for box in self.data])
 
     @staticmethod

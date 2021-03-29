@@ -25,6 +25,7 @@ from engine.target import TrackingBoundingBox3DList
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.box_np_ops import (
     center_to_corner_box3d,
 )
+from perception.object_tracking_3d.ab3dmot.logger import Logger
 from numba.cuda.cudadrv.error import CudaSupportError
 
 try:
@@ -120,11 +121,18 @@ class TrackingEvaluator(object):
     def __init__(
         self,
         cls,
+        n_sequences,
+        n_frames,
         min_overlap=0.5,
         max_truncation=0,
         min_height=25,
         max_occlusion=2,
+        log=print,
     ):
+
+        self.n_sequences = n_sequences
+        self.n_frames = n_frames
+        self.log = log
 
         # class to evaluate, i.e. pedestrian or car
         self.cls = cls
@@ -253,7 +261,9 @@ class TrackingEvaluator(object):
             classes = ["pedestrian", "person_sitting"]
         else:
             classes = [cls.lower()]
-        classes += ["dontcare"]
+
+        if loading_groundtruth:
+            classes += ["dontcare"]
 
         # construct objectDetections object to hold detection data
         t_data = TrackingData()
@@ -267,15 +277,19 @@ class TrackingEvaluator(object):
             ids = []
             n_in_seq = 0
             id_frame_cache = []
-            f_data = [[] for x in range(len(input_seq_data))]
 
-            input_seq_data: TrackingBoundingBox3DList = input_seq_data
+            input_seq_boxes = []
 
-            for trackingBoundingBox3D in input_seq_data.boxes:
+            for boxList in input_seq_data:
+                input_seq_boxes += boxList.boxes
+
+            f_data = [[] for x in range(input_seq_boxes[-1].frame + 1)]
+
+            for trackingBoundingBox3D in input_seq_boxes:
                 # KITTI tracking benchmark data format:
                 # (frame,tracklet_id,objectType,truncation,occlusion,alpha,x1,y1,x2,y2,h,w,l,X,Y,Z,ry)
 
-                if not any([s for s in classes if s in trackingBoundingBox3D.name.lower()]):
+                if not any([s for s in classes if s == trackingBoundingBox3D.name.lower()]):
                     continue
                 # get fields from table
                 t_data.frame = int(trackingBoundingBox3D.frame)
@@ -315,7 +329,7 @@ class TrackingEvaluator(object):
                     raise ValueError(
                         "track ids are not unique for sequence %d: frame %d"
                         % (seq, t_data.frame) + (
-                            "track id %d occured at least twice for this frame"
+                            " track id %d occured at least twice for this frame"
                             % t_data.track_id
                         )
                     )
@@ -323,8 +337,8 @@ class TrackingEvaluator(object):
                 f_data[t_data.frame].append(copy.copy(t_data))
 
                 if (
-                    t_data.track_id not in ids
-                    and t_data.obj_type != "dontcare"
+                    t_data.track_id not in ids and
+                    t_data.obj_type != "dontcare"
                 ):
                     ids.append(t_data.track_id)
                     n_trajectories += 1
@@ -332,23 +346,23 @@ class TrackingEvaluator(object):
 
                 # check if uploaded data provides information for 2D and 3D evaluation
                 if (
-                    not loading_groundtruth
-                    and eval_2d is True
-                    and (
-                        t_data.x1 == -1
-                        or t_data.x2 == -1
-                        or t_data.y1 == -1
-                        or t_data.y2 == -1
+                    not loading_groundtruth and
+                    eval_2d is True and
+                    (
+                        t_data.x1 == -1 or
+                        t_data.x2 == -1 or
+                        t_data.y1 == -1 or
+                        t_data.y2 == -1
                     )
                 ):
                     eval_2d = False
                 if (
-                    not loading_groundtruth
-                    and eval_3d is True
-                    and (
-                        t_data.X == -1000
-                        or t_data.Y == -1000
-                        or t_data.Z == -1000
+                    not loading_groundtruth and
+                    eval_3d is True and
+                    (
+                        t_data.X == -1000 or
+                        t_data.Y == -1000 or
+                        t_data.Z == -1000
                     )
                 ):
                     eval_3d = False
@@ -395,11 +409,18 @@ class TrackingEvaluator(object):
             If the criterion is 'a', overlap = (a inter b) / a, where b should be a dontcare area.
         """
 
-        result = iou3D([
-            center_to_corner_box3d([a.X, a.Y, a.Z], [a.length, a.w, a.h], [a.yaw])
-        ], [
-            center_to_corner_box3d([b.X, b.Y, b.Z], [b.length, b.w, b.h], [b.yaw]),
-        ])
+        result = iou3D(
+            center_to_corner_box3d(
+                np.array([a.X, a.Y, a.Z]).reshape(1, -1),
+                np.array([a.h, a.w, a.length]).reshape(1, -1),
+                np.array([a.yaw])
+            ),
+            center_to_corner_box3d(
+                np.array([b.X, b.Y, b.Z]).reshape(1, -1),
+                np.array([b.h, b.w, b.length]).reshape(1, -1),
+                np.array([b.yaw])
+            )
+        )
 
         return np.sum(result)
 
@@ -420,6 +441,10 @@ class TrackingEvaluator(object):
         # groundtruth and tracker contain lists for every single frame containing lists of KITTI format detections
         fr, ids = 0, 0
         for seq_idx in range(len(self.groundtruth)):
+            self.log(
+                Logger.LOG_WHEN_NORMAL, "Computing metrics " + self.cls +
+                "[" + str(seq_idx + 1) + "/" + str(len(self.groundtruth)) + "]", end='\r'
+            )
             seq_gt = self.groundtruth[seq_idx]
             seq_dc = self.dcareas[seq_idx]  # don't care areas
             seq_tracker = self.tracker[seq_idx]
@@ -442,6 +467,7 @@ class TrackingEvaluator(object):
             n_trs = 0
 
             for f in range(len(seq_gt)):
+
                 g = seq_gt[f]
                 dc = seq_dc[f]
 
@@ -536,12 +562,12 @@ class TrackingEvaluator(object):
 
                     tt_height = abs(tt.y1 - tt.y2)
                     if (
-                        (self.cls == "car" and tt.obj_type == "van")
-                        or (
-                            self.cls == "pedestrian"
-                            and tt.obj_type == "person_sitting"
-                        )
-                        or tt_height <= self.min_height
+                        (self.cls == "car" and tt.obj_type == "van") or
+                        (
+                            self.cls == "pedestrian" and
+                            tt.obj_type == "person_sitting"
+                        ) or
+                        tt_height <= self.min_height
                     ) and not tt.valid:
                         nignoredtracker += 1
                         tt.ignored = True
@@ -568,12 +594,12 @@ class TrackingEvaluator(object):
                 for gg in g:
                     if gg.tracker < 0:
                         if (
-                            gg.occlusion > self.max_occlusion
-                            or gg.truncation > self.max_truncation
-                            or (self.cls == "car" and gg.obj_type == "van")
-                            or (
-                                self.cls == "pedestrian"
-                                and gg.obj_type == "person_sitting"
+                            gg.occlusion > self.max_occlusion or
+                            gg.truncation > self.max_truncation or
+                            (self.cls == "car" and gg.obj_type == "van") or
+                            (
+                                self.cls == "pedestrian" and
+                                gg.obj_type == "person_sitting"
                             )
                         ):
                             seq_ignored[gg.track_id][-1] = True
@@ -582,12 +608,12 @@ class TrackingEvaluator(object):
 
                     elif gg.tracker >= 0:
                         if (
-                            gg.occlusion > self.max_occlusion
-                            or gg.truncation > self.max_truncation
-                            or (self.cls == "car" and gg.obj_type == "van")
-                            or (
-                                self.cls == "pedestrian"
-                                and gg.obj_type == "person_sitting"
+                            gg.occlusion > self.max_occlusion or
+                            gg.truncation > self.max_truncation or
+                            (self.cls == "car" and gg.obj_type == "van") or
+                            (
+                                self.cls == "pedestrian" and
+                                gg.obj_type == "person_sitting"
                             )
                         ):
 
@@ -637,18 +663,18 @@ class TrackingEvaluator(object):
                 # false positives = tracker bboxes - associated tracker bboxes
                 # mismatches (mme_t)
                 tmpfp += (
-                    len(t)
-                    - tmptp
-                    - nignoredtracker
-                    - nignoredtp
-                    + nignoredpairs
+                    len(t) -
+                    tmptp -
+                    nignoredtracker -
+                    nignoredtp +
+                    nignoredpairs
                 )
                 self.fp += (
-                    len(t)
-                    - tmptp
-                    - nignoredtracker
-                    - nignoredtp
-                    + nignoredpairs
+                    len(t) -
+                    tmptp -
+                    nignoredtracker -
+                    nignoredtp +
+                    nignoredpairs
                 )
                 # tmpfp   = len(t) - tmptp - nignoredtp # == len(t) - (tp - ignoredtp) - ignoredtp
                 # self.fp += len(t) - tmptp - nignoredtp
@@ -688,11 +714,11 @@ class TrackingEvaluator(object):
                         "Something went wrong! nGroundtruth is not TP+FN"
                     )
                 if (
-                    tmptp
-                    + tmpfp
-                    + nignoredtp
-                    + nignoredtracker
-                    - nignoredpairs
+                    tmptp +
+                    tmpfp +
+                    nignoredtp +
+                    nignoredtracker -
+                    nignoredpairs
                     is not len(t)
                 ):
                     raise NameError(
@@ -770,19 +796,19 @@ class TrackingEvaluator(object):
                         continue
                     lgt += 1
                     if (
-                        last_id != g[f]
-                        and last_id != -1
-                        and g[f] != -1
-                        and g[f - 1] != -1
+                        last_id != g[f] and
+                        last_id != -1 and
+                        g[f] != -1 and
+                        g[f - 1] != -1
                     ):
                         tmpId_switches += 1
                         self.id_switches += 1
                     if (
-                        f < len(g) - 1
-                        and g[f - 1] != g[f]
-                        and last_id != -1
-                        and g[f] != -1
-                        and g[f + 1] != -1
+                        f < len(g) - 1 and
+                        g[f - 1] != g[f] and
+                        last_id != -1 and
+                        g[f] != -1 and
+                        g[f + 1] != -1
                     ):
                         tmpFragments += 1
                         self.fragments += 1
@@ -791,11 +817,11 @@ class TrackingEvaluator(object):
                         last_id = g[f]
                 # handle last frame; tracked state is handled in for loop (g[f]!=-1)
                 if (
-                    len(g) > 1
-                    and g[f - 1] != g[f]
-                    and last_id != -1
-                    and g[f] != -1
-                    and not ign_g[f]
+                    len(g) > 1 and
+                    g[f - 1] != g[f] and
+                    last_id != -1 and
+                    g[f] != -1 and
+                    not ign_g[f]
                 ):
                     tmpFragments += 1
                     self.fragments += 1
@@ -832,9 +858,9 @@ class TrackingEvaluator(object):
             self.F1 = 0.0
         else:
             self.F1 = (
-                2.0
-                * (self.precision * self.recall)
-                / (self.precision + self.recall)
+                2.0 *
+                (self.precision * self.recall) /
+                (self.precision + self.recall)
             )
         if sum(self.n_frames) == 0:
             self.FAR = "n/a"
@@ -883,32 +909,32 @@ class TrackingEvaluator(object):
         summary += (
             self.print_entry(
                 "Multiple Object Tracking Accuracy (MOTA)", self.MOTA
-            )
-            + "\n"
+            ) +
+            "\n"
         )
         summary += (
             self.print_entry(
                 "Multiple Object Tracking Precision (MOTP)", self.MOTP
-            )
-            + "\n"
+            ) +
+            "\n"
         )
         summary += (
             self.print_entry(
                 "Multiple Object Tracking Accuracy (MOTAL)", self.MOTAL
-            )
-            + "\n"
+            ) +
+            "\n"
         )
         summary += (
             self.print_entry(
                 "Multiple Object Detection Accuracy (MODA)", self.MODA
-            )
-            + "\n"
+            ) +
+            "\n"
         )
         summary += (
             self.print_entry(
                 "Multiple Object Detection Precision (MODP)", self.MODP
-            )
-            + "\n"
+            ) +
+            "\n"
         )
         summary += "\n"
         summary += self.print_entry("Recall", self.recall) + "\n"
@@ -932,8 +958,8 @@ class TrackingEvaluator(object):
         summary += (
             self.print_entry(
                 "Ground Truth Objects (Total)", self.n_gt + self.n_igt
-            )
-            + "\n"
+            ) +
+            "\n"
         )
         summary += (
             self.print_entry("Ignored Ground Truth Objects", self.n_igt) + "\n"
@@ -941,8 +967,8 @@ class TrackingEvaluator(object):
         summary += (
             self.print_entry(
                 "Ground Truth Trajectories", self.n_gt_trajectories
-            )
-            + "\n"
+            ) +
+            "\n"
         )
         summary += "\n"
         summary += self.print_entry("Tracker Objects (Total)", self.n_tr) + "\n"
@@ -950,8 +976,8 @@ class TrackingEvaluator(object):
             self.print_entry("Ignored Tracker Objects", self.n_itr) + "\n"
         )
         summary += (
-            self.print_entry("Tracker Trajectories", self.n_tr_trajectories)
-            + "\n"
+            self.print_entry("Tracker Trajectories", self.n_tr_trajectories) +
+            "\n"
         )
         summary += "=" * 80
 
@@ -974,7 +1000,11 @@ class TrackingEvaluator(object):
         return s_out
 
 
-def evaluate(predictions: List[TrackingBoundingBox3DList], ground_truths: List[TrackingBoundingBox3DList]):
+def evaluate(
+    predictions: List[List[TrackingBoundingBox3DList]],
+    ground_truths: List[List[TrackingBoundingBox3DList]],
+    log=print
+):
 
     results = {
         "car": None,
@@ -983,7 +1013,11 @@ def evaluate(predictions: List[TrackingBoundingBox3DList], ground_truths: List[T
     }
 
     for c in ("car", "pedestrian", "cyclist"):
-        evaluator = TrackingEvaluator(cls=c)
+        evaluator = TrackingEvaluator(
+            cls=c, n_sequences=len(ground_truths),
+            n_frames=[len(a) for a in ground_truths],
+            log=log,
+        )
         # load tracker data and check provided classes
 
         evaluator.load_predictions(predictions)

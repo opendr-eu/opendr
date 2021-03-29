@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import json
-import torch
-from typing import List, Optional
 from engine.learners import Learner
-from engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetIterator
-from engine.target import BoundingBox3DList, TrackingBoundingBox3D, TrackingBoundingBox3DList
+from engine.datasets import DatasetIterator
+from engine.target import BoundingBox3DList
 from perception.object_tracking_3d.ab3dmot.algorithm.ab3dmot import AB3DMOT
+from perception.object_tracking_3d.ab3dmot.algorithm.evaluate import evaluate as evaluate_kitti_tracking
 from perception.object_tracking_3d.ab3dmot.logger import Logger
 
 
@@ -82,11 +79,29 @@ class ObjectTracking3DAb3dmotLearner(Learner):
         logging_path=None,
         silent=False,
         verbose=False,
-        image_shape=(1224, 370),
-        count=None,
+        count=None
     ):
 
         logger = Logger(silent, verbose, logging_path)
+
+        if not isinstance(dataset, DatasetIterator):
+            raise ValueError("dataset should be a DatasetIterator")
+
+        if count is None:
+            count = len(dataset)
+
+        predictions = []
+        ground_truths = []
+
+        for i in range(count):
+            self.reset()
+            input, ground_truth = dataset[i]
+            predictions.append(self.infer(input))
+            ground_truths.append(ground_truth)
+
+            logger.log(Logger.LOG_WHEN_NORMAL, "Computing tracklets [" + str(i + 1) + "/" + str(count) + "]", end='\r')
+
+        result = evaluate_kitti_tracking(predictions, ground_truths, log=logger.log)
 
         logger.close()
 
