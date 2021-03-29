@@ -12,15 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cv2
-import time
+
 from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
     LightweightOpenPoseLearner
-from perception.pose_estimation.lightweight_open_pose.utilities import draw
 import argparse
 from os.path import join
-from tqdm import tqdm
-import numpy as np
 from engine.datasets import ExternalDataset
 
 if __name__ == '__main__':

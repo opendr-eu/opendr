@@ -65,7 +65,7 @@ if __name__ == '__main__':
     # If pynvml is available, try to get memory stats for cuda
     try:
         if 'cuda' in device:
-            from pynvml import *
+            from pynvml import nvmlInit, nvmlDeviceGetMemoryInfo, nvmlDeviceGetHandleByIndex
 
             nvmlInit()
             info = nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(0))
