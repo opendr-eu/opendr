@@ -20,6 +20,8 @@ import os
 from pathlib import Path
 from engine.learners import Learner
 from utils.io import bump_version
+from torch import onnx
+import onnxruntime as ort
 
 from engine.datasets import Dataset
 
@@ -97,6 +99,7 @@ class X3DLearner(Learner):
         self.seed = seed
         self.num_classes = num_classes
         self.loss = loss
+        self.ort_session = None
         torch.manual_seed(self.seed)
 
         self.load_model_hparams(self.backbone)
@@ -137,6 +140,9 @@ class X3DLearner(Learner):
             f"weights_path ({str(weights_path)}) should be a .pth or .onnx file."
             "Pretrained weights can be downloaded using `X3DLearner.download(...)`"
         )
+        if weights_path.suffix == ".onnx":
+            return self.load_onnx(weights_path)
+
         logger.debug(f"Loading X3DLearner model weights from {str(weights_path)}")
 
         # Check for configuration mismatches, loading only matching weights
@@ -203,15 +209,19 @@ class X3DLearner(Learner):
         root_path = Path(path)
         root_path.mkdir(parents=True, exist_ok=True)
         name = f"x3d_{self.backbone}"
-        weights_path = bump_version(root_path / f"model_{name}.pth")
+        ext = ".onnx" if self.ort_session else ".pth"
+        weights_path = bump_version(root_path / f"model_{name}{ext}")
         meta_path = bump_version(root_path / f"{name}.json")
 
         logger.info(f"Saving X3DLearner model weights to {str(weights_path)}")
-        torch.save(self.model.state_dict(), weights_path)
+        if self.ort_session:
+            self.save_onnx(weights_path)
+        else:
+            torch.save(self.model.state_dict(), weights_path)
 
         logger.info(f"Saving X3DLearner meta-data to {str(meta_path)}")
         meta_data = {
-            "model_paths": str(weights_path),
+            "model_paths": weights_path.name,
             "framework": "pytorch",
             "format": "pth",
             "has_data": False,
@@ -220,7 +230,7 @@ class X3DLearner(Learner):
                 "network_head": self.network_head,
                 "threshold": self.threshold,
             },
-            "optimized": False,
+            "optimized": bool(self.ort_session),
             "optimizer_info": {
                 "lr": self.lr,
                 "iters": self.iters,
@@ -283,7 +293,7 @@ class X3DLearner(Learner):
             seed=optimizer_info["seed"],
         )
 
-        weights_path = Path(meta_data["model_paths"])
+        weights_path = path.parent / meta_data["model_paths"]
         self.load_model_weights(weights_path)
 
         return self
@@ -387,7 +397,7 @@ class X3DLearner(Learner):
                     prefix="",
                 )
             ],
-            logger=get_logger(),
+            logger=_experiment_logger(),
         )
         self.trainer.limit_train_batches = steps or self.trainer.limit_train_batches
         self.trainer.limit_val_batches = steps or self.trainer.limit_val_batches
@@ -417,7 +427,7 @@ class X3DLearner(Learner):
         if not hasattr(self, "trainer"):
             self.trainer = pl.Trainer(
                 gpus=1 if self.device == "cuda" else 0,
-                logger=get_logger(),
+                logger=_experiment_logger(),
             )
         self.trainer.limit_test_batches = steps or self.trainer.limit_test_batches
         results = self.trainer.test(self.model, test_dataloader)
@@ -433,14 +443,59 @@ class X3DLearner(Learner):
         return result
 
     def optimize(self, do_constant_folding=False):
+        """Optimize model execution.
+        This is acoomplished by saving to the ONNX format and loading the optimized model.
+
+        Args:
+            do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.
         """
-        Optimize method converts the model to ONNX format and saves the
-        model in the parent directory defined by self.temp_path. The ONNX model is then loaded.
-        :param do_constant_folding: whether to optimize constants, defaults to 'False'
-        :type do_constant_folding: bool, optional
+
+        if getattr(self.model, "rpn_ort_session", None):
+            logger.info("Model is already optimized. Skipping redundant optimization")
+            return
+
+        path = Path(os.getcwd()) / "outputs" / f"x3d_{self.backbone}.onnx"
+        if not path.exists():
+            self.save_onnx(path, do_constant_folding)
+        self.load_onnx(path)
+
+    def save_onnx(self, path: Union[str, Path], do_constant_folding=False, verbose=False):
+        """Save model in the ONNX format
+
+        Args:
+            path (Union[str, Path]): Directory in which to save ONNX model
+            do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.
         """
-        ...
+        path.parent.mkdir(exist_ok=True, parents=True)
+
+        C = 3  # RGB
+        T = self.model_hparams["frames_per_clip"]
+        S = self.model_hparams["image_size"]
+        example_input = torch.randn(1, C, T, S, S).to(device=self.device)
+
+        self.model.eval()
+        self.model.to(device=self.device)
+
+        logger.info(f"Saving model to ONNX format at {str(path)}")
+        onnx.export(
+            self.model,
+            example_input,
+            path,
+            input_names=["video"],
+            output_names=["classes"],
+            do_constant_folding=do_constant_folding,
+            verbose=verbose,
+        )
+
+    def load_onnx(self, path: Union[str, Path]):
+        """Loads ONNX model into an onnxruntime inference session.
+
+        Args:
+            path (Union[str, Path]): Path to ONNX model
+        """
+        logger.info(f"Loading ONNX runtime inference session from {str(path)}")
+        self.ort_session = ort.InferenceSession(str(path))
 
 
-def get_logger():
+def _experiment_logger():
     return pl.loggers.TensorBoardLogger(save_dir=Path(os.getcwd()) / "logs", name="x3d")
