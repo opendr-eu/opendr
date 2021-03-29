@@ -52,7 +52,7 @@ The [Pose](#class_engine.target.Pose) class has the following public methods:
 ### class engine.target.BoundingBox3D
 Bases: `engine.target.Target`
 
-This target is used for 3D Object Detection.
+This target is used for 3D object detection and tracking.
 A bounding box is described by its location (x, y, z), dimensions (w, h, d) and rotation (along vertical y axis).
 Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
 truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
@@ -72,12 +72,21 @@ The [BoundingBox3D](#class_engine.target.BoundingBox3D) class has the following 
   - *score* is expected to be a number describing the prediction confidence.
 #### kitti()
   Return the annotation in KITTI format.
-
+#### name()
+  Property. Returns the `name` value of the bounding box.
+#### occluded()
+  Property. Returns the `occluded` value of the bounding box.
+#### alpha()
+  Property. Returns the `alpha` value of the bounding box.
+#### location()
+  Property. Returns the `location` value of the bounding box.
+#### rotation_y()
+  Property. Returns the `rotation_y` value of the bounding box.
 
 ### class engine.target.BoundingBox3DList
 Bases: `engine.target.Target`
 
-This target is used for 3D object detection. It contains a list of BoundingBox3D targets.
+This target is used for 3D object detection and tracking. It contains a list of BoundingBox3D targets.
 A bounding box is described by its location (x, y, z), dimensions (l, h, w) and rotation (along vertical (y) axis).
 Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
 truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
@@ -89,5 +98,75 @@ The [BoundingBox3DList](#class_engine.target.BoundingBox3DList) class has the fo
   *bounding_boxes_3d* is expected to be a list of [BoundingBox3D](#class_engine.target.BoundingBox3D).
 #### kitti()
   Return the annotation in KITTI format.
+#### boxes()
+  Property. Returns the list of [BoundingBox3D](#class_engine.target.BoundingBox3D) boxes.
+#### from_kitti(boxes_kitti)
+  Static method that constructs [BoundingBox3DList](#class_engine.target.BoundingBox3DList) from the `boxes_kitti` object with KITTI annotation.
+
+
+### class engine.target.TrackingBoundingBox3D
+Bases: `engine.target.BoundingBox3D`
+
+This target is used for 3D object tracking.
+A tracking bounding box is described by frame, id, its location (x, y, z), dimensions (w, h, d) and rotation (along vertical y axis).
+Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
+truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
+observation angle of an object (alpha).
+
+The [TrackingBoundingBox3D](#class_engine.target.TrackingBoundingBox3D) class has the following public methods:
+#### TrackingBoundingBox3D(name, truncated, occluded, alpha, bbox2d, dimensions, location, rotation_y, id, score=0, frame=-1)
+  Construct a new [TrackingBoundingBox3D](#class_engine.target.TrackingBoundingBox3D) object based on the given data.
+  - *name* is expected to be a string with the name of detected object.
+  - *truncated* is expected to be a number describing the truncation level of an object.
+  - *occluded* is expected to be a number describing the occlusion level of an object.
+  - *alpha* is expected to be a number describing the observation angle.
+  - *bbox2d* is expected to be a list of numbers describing the 2D bounding box of an object in image plane.
+  - *dimensions* is expected to be a list of numbers describing the 3D size of an object.
+  - *location* is expected to be a list of numbers describing the 3D location of an object.
+  - *rotation_y* is expected to be a number describing the rotation of an object along the vertical axis.
+  - *id* is a unique object id associated with the current box.
+  - *score* is expected to be a number describing the prediction confidence.
+  - *frame* is an index of a frame for this box.
+#### kitti(with_tracking_info=True)
+  Return the annotation in KITTI format.
+  - If *with_tracking_info* is true, `frame` and `id` data are also returned. 
+#### bounding_box_3d()
+  Return the [BoundingBox3D](#class_engine.target.BoundingBox3D) object constructed from this object by discarding `frame` and `id` data.
+#### name()
+  Property. Returns the `name` value of the bounding box.
+#### occluded()
+  Property. Returns the `occluded` value of the bounding box.
+#### alpha()
+  Property. Returns the `alpha` value of the bounding box.
+#### location()
+  Property. Returns the `location` value of the bounding box.
+#### rotation_y()
+  Property. Returns the `rotation_y` value of the bounding box.
+#### frame()
+  Property. Returns the `frame` value of the bounding box.
+#### id()
+  Property. Returns the `id` value of the bounding box.
+
+
+### class engine.target.TrackingBoundingBox3DList
+Bases: `engine.target.Target`
+
+This target is used for 3D object detection and tracking. It contains a list of TrackingBoundingBox3DList targets.
+A tracking bounding box is described by frame, id, its location (x, y, z), dimensions (l, h, w) and rotation (along vertical (y) axis).
+Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
+truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
+observation angle of an object (alpha).
+
+The [TrackingBoundingBox3DList](#class_engine.target.TrackingBoundingBox3DList) class has the following public methods:
+#### TrackingBoundingBox3DList(bounding_boxes_3d)
+  Construct a new [TrackingBoundingBox3DList](#class_engine.target.TrackingBoundingBox3DList) object based on the *bounding_boxes_3d*.
+  *bounding_boxes_3d* is expected to be a list of [TrackingBoundingBox3D](#class_engine.target.TrackingBoundingBox3D).
+#### kitti(with_tracking_info=True)
+  Return the annotation in KITTI format.
+  - If *with_tracking_info* is true, `frame` and `id` data are also returned. 
+#### boxes()
+  Property. Returns the list of [TrackingBoundingBox3D](#class_engine.target.TrackingBoundingBox3D) boxes.
+#### bounding_box_3d_list()
+  Returns the [BoundingBox3DList](#class_engine.target.BoundingBox3DList) object cunstructed from this object by discarding `frame` and `id` data.
 #### from_kitti(boxes_kitti)
   Static method that constructs [BoundingBox3DList](#class_engine.target.BoundingBox3DList) from the `boxes_kitti` object with KITTI annotation.
