@@ -421,12 +421,16 @@ class X3DLearner(Learner):
             )
         self.trainer.limit_test_batches = steps or self.trainer.limit_test_batches
         results = self.trainer.test(self.model, test_dataloader)
-        if type(results) in {list}:
-            results = results[-1]
+        results = {
+            "accuracy": results[-1]["test/acc"],
+            "loss": results[-1]["test/loss"],
+        }
         return results
 
-    def infer(self, data_batch: torch.Tensor):
-        ...
+    def infer(self, batch: torch.Tensor):
+        self.model.eval()
+        result = self.model.forward(batch)
+        return result
 
     def optimize(self, do_constant_folding=False):
         """

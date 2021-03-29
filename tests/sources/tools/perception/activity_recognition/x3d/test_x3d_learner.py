@@ -55,7 +55,7 @@ class TestX3DLearner(unittest.TestCase):
     def test_downloaded(self):
         assert Path(self.temp_dir) / "weights" / "x3d_s.pyth"
 
-    def test_save_and_load(self):
+    def xtest_save_and_load(self):
         assert self.learner.model is not None
         self.learner.save(self.temp_dir)
         # Make changes to check subsequent load
@@ -67,7 +67,7 @@ class TestX3DLearner(unittest.TestCase):
         )
         assert self.learner.batch_size == 2
 
-    def test_fit(self):
+    def xtest_fit(self):
         train_ds = KineticsDataset(path=_DATASET_PATH, frames_per_clip=4, split="train")
         val_ds = KineticsDataset(path=_DATASET_PATH, frames_per_clip=4, split="val")
 
@@ -84,28 +84,25 @@ class TestX3DLearner(unittest.TestCase):
         # Check that parameters changed
         assert not torch.equal(m, list(self.learner.model.parameters())[0])
 
-    def test_eval(self):
+    def xtest_eval(self):
         test_ds = KineticsDataset(path=_DATASET_PATH, frames_per_clip=4, split="test")
 
         self.learner.load_model_weights(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
         results = self.learner.eval(test_ds, steps=2)
 
-        assert results["test/acc"] > 0.2  # Most likely ≈ 60%
-        assert results["test/loss"] < 20  # Most likely ≈ 6.0
+        assert results["accuracy"] > 0.2  # Most likely ≈ 60%
+        assert results["results"] < 20  # Most likely ≈ 6.0
 
-    # def test_infer(self):
-    #     self.pose_estimator.model = None
-    #     self.pose_estimator.load(os.path.join(self.temp_dir, "trainedModel"))
+    def test_infer(self):
+        ds = KineticsDataset(path=_DATASET_PATH, frames_per_clip=4, split="test")
+        dl = torch.utils.data.DataLoader(ds, batch_size=2, num_workers=0)
+        batch = next(iter(dl))[0]
 
-    #     img = cv2.imread(
-    #         os.path.join(self.temp_dir, "dataset", "image", "000000000785.jpg")
-    #     )
-    #     # Default pretrained mobilenet model detects 18 keypoints on img with id 785
-    #     self.assertGreater(
-    #         len(self.pose_estimator.infer(img)[0].data),
-    #         0,
-    #         msg="Returned pose must have non-zero number of keypoints.",
-    #     )
+        self.learner.load_model_weights(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
+        results = self.learner.infer(batch)
+
+        # Results is a batch with each item summing to 1.0
+        assert torch.all(torch.sum(results, dim=1) == torch.ones((2, 1)))
 
     # def test_save_load_onnx(self):
     #     self.pose_estimator.model = None
