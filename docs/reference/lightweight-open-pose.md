@@ -28,7 +28,7 @@ Constructor parameters:
 - **backbone**: *{'mobilenet, 'mobilenetv2', 'shufflenet'}, default='mobilenet'*  
     Specifies the backbone architecture.
 - **lr_schedule**: *str, default=' '*  
-  Specifies the learning rate scheduler.
+  Specifies the learning rate scheduler. Please provide a function that is expected to receive as a sole argument the used optimizer.
 - **temp_path**: *str, default='temp'*  
   Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files. Moreover the JSON file that contains the evaluation detections is saved here.
 - **checkpoint_after_iter**: *int, default=5000*  
@@ -40,7 +40,7 @@ Constructor parameters:
 - **log_after**: *int, default=100*  
   Specifies per how many training iterations the log files will be updated.
 - **mobilenet_use_stride**: *bool, default=True*  
-  Whether to add an additional stride value in the mobilenet model, which reduces accuracy but increases inference speed. 
+  Whether to add an additional stride value in the mobilenet model, which reduces accuracy but increases inference speed.
 - **mobilenetv2_width**: *[0.0 - 1.0], default=1.0*  
   If the mobilenetv2 backbone is used, this parameter specified its size.
 - **shufflenet_groups**: *int, default=3*  
@@ -71,6 +71,8 @@ Constructor parameters:
   Specifies the scale based on which the images are normalized.
 - **pad_value**: *list, default=(0, 0, 0)*  
   Specifies the pad value based on which the images' width is padded.
+- **half_precision**: *bool, default=False*  
+  Enables inference using half (fp16) precision instead of single (fp32) precision. Valid only for GPU-based inference.   
 
 
 #### `LightweightOpenPoseLearner.fit`
