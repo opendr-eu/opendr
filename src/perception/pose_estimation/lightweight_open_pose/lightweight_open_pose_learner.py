@@ -886,7 +886,7 @@ class LightweightOpenPoseLearner(Learner):
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
     def download(self, path=None, mode="pretrained", verbose=False,
-                 url=OPENDR_SERVER_URL + "pose_estimation/lightweight_open_pose/"):
+                 url=OPENDR_SERVER_URL + "perception/pose_estimation/lightweight_open_pose/"):
         """
         Download utility for various Lightweight Open Pose components. Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
@@ -914,20 +914,27 @@ class LightweightOpenPoseLearner(Learner):
             os.makedirs(path)
 
         if mode == "pretrained":
+            # Create model's folder
+            path = os.path.join(path, "mobilenet_openpose")
+            if not os.path.exists(path):
+                os.makedirs(path)
+
             if verbose:
                 print("Downloading pretrained model...")
+
+            # Download the model's files
             if self.backbone == "mobilenet":
-                if not os.path.exists(os.path.join(path, "trainedModel.json")):
-                    file_url = os.path.join(url, "trainedModel/trainedModel.json")
-                    urlretrieve(file_url, os.path.join(path, "trainedModel.json"))
+                if not os.path.exists(os.path.join(path, "mobilenet_openpose.json")):
+                    file_url = os.path.join(url, "mobilenet_openpose/mobilenet_openpose.json")
+                    urlretrieve(file_url, os.path.join(path, "mobilenet_openpose.json"))
                     if verbose:
                         print("Downloaded metadata json.")
                 else:
                     if verbose:
                         print("Metadata json file already exists.")
-                if not os.path.exists(os.path.join(path, "trainedModel.pth")):
-                    file_url = os.path.join(url, "trainedModel/trainedModel.pth")
-                    urlretrieve(file_url, os.path.join(path, "trainedModel.pth"))
+                if not os.path.exists(os.path.join(path, "mobilenet_openpose.pth")):
+                    file_url = os.path.join(url, "mobilenet_openpose/mobilenet_openpose.pth")
+                    urlretrieve(file_url, os.path.join(path, "mobilenet_openpose.pth"))
                 else:
                     if verbose:
                         print("Trained model .pth file already exists.")
