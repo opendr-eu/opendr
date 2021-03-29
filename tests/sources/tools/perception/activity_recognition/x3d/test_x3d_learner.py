@@ -13,14 +13,23 @@
 # limitations under the License.
 
 import unittest
-# import shutil
+import torch
+import shutil
 from perception.activity_recognition.x3d.x3d_learner import X3DLearner
+from perception.activity_recognition.datasets.kinetics import KineticsDataset
 
-# from engine.datasets import ExternalDataset
 from pathlib import Path
 from logging import getLogger
 
+# Temporary for debugging. TODO: Remove
+import sys
+if "/Users/au478108/Projects/opendr_internal/src" not in sys.path:
+    sys.path.append("/Users/au478108/Projects/opendr_internal/src")
+
+
 logger = getLogger(__name__)
+
+_DATASET_PATH = Path("/Users/au478108/Projects/datasets/kinetics400micro")
 
 
 class TestX3DLearner(unittest.TestCase):
@@ -32,49 +41,48 @@ class TestX3DLearner(unittest.TestCase):
 
         # Download all required files for testing
         X3DLearner.download(path=Path(cls.temp_dir) / "weights", model_weights={"xs"})
-        cls.x3d_learner = X3DLearner(
-            device="cpu", temp_path=str(cls.temp_dir), batch_size=1, backbone="xs",
+        cls.learner = X3DLearner(
+            device="cpu", temp_path=str(cls.temp_dir), iters=1, batch_size=2, backbone="xs", num_workers=0,
         )
 
-    # @classmethod
-    # def tearDownClass(cls):
-    #     try:
-    #         shutil.rmtree(str(cls.tmp_dir))
-    #     except OSError as e:
-    #         logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            shutil.rmtree(str(cls.temp_dir))
+        except OSError as e:
+            logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
 
     def test_downloaded(self):
         assert Path(self.temp_dir) / "weights" / "x3d_s.pyth"
 
     def test_save_and_load(self):
-        assert self.x3d_learner.model is not None
-        self.x3d_learner.save(self.temp_dir)
+        assert self.learner.model is not None
+        self.learner.save(self.temp_dir)
         # Make changes to check subsequent load
-        self.x3d_learner.model = None
-        self.x3d_learner.batch_size = 42
-        self.x3d_learner.load(self.temp_dir)
+        self.learner.model = None
+        self.learner.batch_size = 42
+        self.learner.load(self.temp_dir)
         self.assertIsNotNone(
-            self.x3d_learner.model, "model is None after loading pth model."
+            self.learner.model, "model is None after loading pth model."
         )
-        assert self.x3d_learner.batch_size == 1
+        assert self.learner.batch_size == 1
 
-    # def test_fit(self):
-    #     training_dataset = ExternalDataset(
-    #         path=os.path.join(self.temp_dir, "dataset"), dataset_type="COCO"
-    #     )
-    #     self.pose_estimator.model = None
-    #     self.pose_estimator.init_model()
-    #     m = list(self.pose_estimator.model.parameters())[0].clone()
-    #     self.pose_estimator.fit(
-    #         dataset=training_dataset,
-    #         silent=True,
-    #         images_folder_name="image",
-    #         annotations_filename="annotation.json",
-    #     )
-    #     self.assertFalse(
-    #         torch.equal(m, list(self.pose_estimator.model.parameters())[0]),
-    #         msg="Model parameters did not change after running fit.",
-    #     )
+    def test_fit(self):
+        train_ds = KineticsDataset(path=_DATASET_PATH, frames_per_clip=4, split="train")
+        val_ds = KineticsDataset(path=_DATASET_PATH, frames_per_clip=4, split="val")
+
+        # Initialize with random parameters
+        self.learner.model = None
+        self.learner.init_model()
+
+        # Store prior parameters
+        m = list(self.learner.model.parameters())[0].clone()
+
+        # Fit model
+        self.learner.fit(dataset=train_ds, val_dataset=val_ds, steps=1)
+
+        # Check that parameters changed
+        assert not torch.equal(m, list(self.learner.model.parameters())[0])
 
     # def test_eval(self):
     #     eval_dataset = ExternalDataset(
