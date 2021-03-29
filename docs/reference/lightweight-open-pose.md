@@ -28,7 +28,7 @@ Constructor parameters:
 - **backbone**: *{'mobilenet, 'mobilenetv2', 'shufflenet'}, default='mobilenet'*  
     Specifies the backbone architecture.
 - **lr_schedule**: *str, default=' '*  
-  Specifies the learning rate scheduler. Please provide a function that is expected to receive as a sole argument the used optimizer.
+  Specifies the learning rate scheduler. Please provide a function that expects to receive as a sole argument the used optimizer.
 - **temp_path**: *str, default='temp'*  
   Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files. Moreover the JSON file that contains the evaluation detections is saved here.
 - **checkpoint_after_iter**: *int, default=5000*  
