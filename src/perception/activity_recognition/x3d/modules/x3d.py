@@ -3,14 +3,16 @@
 
 import math
 import torch
+import torch.nn.functional as F
 from torch import Tensor
 from .head_helper import X3DHead
 from .resnet_helper import ResStage
 from .stem_helper import VideoModelStem
 from .weight_init_helper import init_weights
+import pytorch_lightning as pl
 
 
-class X3D(torch.nn.Module):
+class X3D(pl.LightningModule):
     """
     X3D model,
     adapted from https://github.com/facebookresearch/SlowFast
@@ -39,9 +41,11 @@ class X3D(torch.nn.Module):
         head_batchnorm: bool,
         fc_std_init: float,
         final_batchnorm_zero_init: bool,
+        loss_name="cross_entropy",
     ):
-        torch.nn.Module.__init__(self)
+        super().__init__()
         self.norm_module = torch.nn.BatchNorm3d
+        self.loss_name = loss_name
 
         exp_stage = 2.0
         self.dim_conv1 = conv1_dim
@@ -141,6 +145,27 @@ class X3D(torch.nn.Module):
         for module in self.children():
             x = module(x)
         return x
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        x = self.forward(x)
+        loss = getattr(F, self.loss_name, F.cross_entropy)(x, y)
+        self.log('train/loss', loss)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        x, y = batch
+        x = self.forward(x)
+        loss = getattr(F, self.loss_name, F.cross_entropy)(x, y)
+        self.log('val/loss', loss)
+        return loss
+
+    def test_step(self, batch, batch_idx):
+        x, y = batch
+        x = self.forward(x)
+        loss = getattr(F, self.loss_name, F.cross_entropy)(x, y)
+        self.log('test/loss', loss)
+        return loss
 
 
 def _round_width(width, multiplier, min_depth=8, divisor=8):
