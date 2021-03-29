@@ -34,12 +34,7 @@ from typing import Any, Iterable, Union, Dict
 
 logger = getLogger(__name__)
 
-_MODEL_NAMES = {
-    "xs",
-    "s",
-    "m",
-    "l",
-}
+_MODEL_NAMES = {"xs", "s", "m", "l"}
 
 
 class X3DLearner(Learner):
@@ -58,8 +53,6 @@ class X3DLearner(Learner):
         device="cuda",
         threshold=0.0,  # Not used
         loss="cross_entropy",
-        rgb_mean=None,
-        rgb_std=None,
         weight_decay=1e-5,
         momentum=0.9,
         drop_last=True,
@@ -106,11 +99,20 @@ class X3DLearner(Learner):
         self.loss = loss
         torch.manual_seed(self.seed)
 
-        self.__load_model_hparams(self.backbone)
+        self.load_model_hparams(self.backbone)
         self.init_model()
         logger.debug("X3DLearner initialised")
 
-    def __load_model_hparams(self, model_name: str = None) -> Dict[str, Any]:
+    def load_model_hparams(self, model_name: str = None) -> Dict[str, Any]:
+        """Load hyperparameters for an X3D model
+
+        Args:
+            model_name (str, optional): Name of the model (one of {"xs", "s", "m", "l"}).
+                If none, `self.backbon`e is used. Defaults to None.
+
+        Returns:
+            Dict[str, Any]: Dictionary with model hyperparameters
+        """
         model_name = model_name or self.backbone
         assert (
             model_name in _MODEL_NAMES
@@ -120,12 +122,14 @@ class X3DLearner(Learner):
             self.model_hparams = yaml.load(f, Loader=yaml.FullLoader)
         return self.model_hparams
 
-    def load_model_weights(self, weights_path: str = None) -> Dict[str, Any]:
-        weights_path = (
-            Path(weights_path)
-            if weights_path
-            else Path(self.temp_path) / "weights" / f"x3d_{self.backbone}.pyth"
-        )
+    def load_model_weights(self, weights_path: Union[str, Path]):
+        """Load pretrained model weights
+
+        Args:
+            weights_path (Union[str, Path]): path to model weights file.
+                Type of file must be one of {".pyth", ".pth", ".onnx"}
+        """
+        weights_path = Path(weights_path)
 
         assert (
             weights_path.is_file() and weights_path.suffix in {".pyth", ".pth", ".onnx"}
@@ -137,7 +141,9 @@ class X3DLearner(Learner):
 
         # Check for configuration mismatches, loading only matching weights
         new_model_state = self.model.state_dict()
-        loaded_state_dict = torch.load(weights_path)
+        loaded_state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
+        if "model_state" in loaded_state_dict:  # As found in the official pretrained X3D models
+            loaded_state_dict = loaded_state_dict["model_state"]
 
         def size_ok(k):
             return new_model_state[k].size() == loaded_state_dict[k].size()
@@ -181,19 +187,20 @@ class X3DLearner(Learner):
         )
         return self.model
 
-    def save(self, path: Union[str, Path]=None) -> "X3DLearner":
-        """
-        Save model weights and metadata to path.
-        The saved model paths can be loaded using `self.load`.
-        :param path: directory path for the model to be saved
-        :type path: Union[str, Path]
-        """
+    def save(self, path: Union[str, Path]) -> "X3DLearner":
+        """Save model weights and metadata to path.
 
+        Args:
+            path (Union[str, Path]): directory in which to save data.
+
+        Returns:
+            X3DLearner: self
+        """
         assert hasattr(
             self, "model"
         ), "Cannot save model because no model was found. Did you forget to call `__init__`?"
 
-        root_path = Path(path) if path else Path(self.temp_path)
+        root_path = Path(path)
         root_path.mkdir(parents=True, exist_ok=True)
         name = f"x3d_{self.backbone}"
         weights_path = bump_version(root_path / f"model_{name}.pth")
@@ -370,8 +377,6 @@ class X3DLearner(Learner):
 
         self.trainer = pl.Trainer(
             max_epochs=epochs or self.iters,
-            limit_train_batches=steps or 1.0,
-            limit_val_batches=steps or 1.0,
             gpus=1 if self.device == "cuda" else 0,
             callbacks=[
                 pl.callbacks.ModelCheckpoint(
@@ -382,19 +387,23 @@ class X3DLearner(Learner):
                     prefix="",
                 )
             ],
-            logger=pl.loggers.TensorBoardLogger(save_dir=Path(os.getcwd()) / "logs", name="x3d"),
+            logger=get_logger(),
         )
+        self.trainer.limit_train_batches = steps or self.trainer.limit_train_batches
+        self.trainer.limit_val_batches = steps or self.trainer.limit_val_batches
+
         self.trainer.fit(self.model, train_dataloader, val_dataloader)
 
-    def eval(self, dataset):
-        """
-        This method is used to evaluate the algorithm on a dataset
-        and returns stats regarding the evaluation ran.
+    def eval(self, dataset: Dataset, steps: int=None) -> Dict[str, Any]:
+        """Evaluate the model on the dataset
 
-        :param dataset: Object that holds the dataset to evaluate the algorithm on
-        :type dataset: Dataset class type
-        :return: Returns stats regarding evaluation
-        :rtype: dict
+        Args:
+            dataset (Dataset): Dataset on which to evaluate model
+            steps (int, optional): Number of validation batches to evaluate.
+                If none, all batches are evaluated. Defaults to None.
+
+        Returns:
+            Dict[str, Any]: Evaluation statistics
         """
         test_dataloader = torch.utils.data.DataLoader(
             dataset,
@@ -408,11 +417,15 @@ class X3DLearner(Learner):
         if not hasattr(self, "trainer"):
             self.trainer = pl.Trainer(
                 gpus=1 if self.device == "cuda" else 0,
-                logger=pl.loggers.TensorBoardLogger(save_dir=Path(os.getcwd() / "logs"), name="x3d")
+                logger=get_logger(),
             )
-        self.trainer.test(self.model, test_dataloader)
+        self.trainer.limit_test_batches = steps or self.trainer.limit_test_batches
+        results = self.trainer.test(self.model, test_dataloader)
+        if type(results) in {list}:
+            results = results[-1]
+        return results
 
-    def infer(self, point_clouds):
+    def infer(self, data_batch: torch.Tensor):
         ...
 
     def optimize(self, do_constant_folding=False):
@@ -423,3 +436,7 @@ class X3DLearner(Learner):
         :type do_constant_folding: bool, optional
         """
         ...
+
+
+def get_logger():
+    return pl.loggers.TensorBoardLogger(save_dir=Path(os.getcwd()) / "logs", name="x3d")

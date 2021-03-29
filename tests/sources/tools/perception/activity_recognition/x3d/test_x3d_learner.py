@@ -14,22 +14,22 @@
 
 import unittest
 import torch
-import shutil
+# import shutil
+# Temporary for debugging. TODO: Remove
+# import sys
+# if "/Users/au478108/Projects/opendr_internal/src" not in sys.path:
+#     sys.path.append("/Users/au478108/Projects/opendr_internal/src")
+
 from perception.activity_recognition.x3d.x3d_learner import X3DLearner
 from perception.activity_recognition.datasets.kinetics import KineticsDataset
 
 from pathlib import Path
 from logging import getLogger
 
-# Temporary for debugging. TODO: Remove
-import sys
-if "/Users/au478108/Projects/opendr_internal/src" not in sys.path:
-    sys.path.append("/Users/au478108/Projects/opendr_internal/src")
-
-
 logger = getLogger(__name__)
 
 _DATASET_PATH = Path("/Users/au478108/Projects/datasets/kinetics400micro")
+_BACKBONE = "xs"
 
 
 class TestX3DLearner(unittest.TestCase):
@@ -40,17 +40,17 @@ class TestX3DLearner(unittest.TestCase):
         )
 
         # Download all required files for testing
-        X3DLearner.download(path=Path(cls.temp_dir) / "weights", model_weights={"xs"})
+        X3DLearner.download(path=Path(cls.temp_dir) / "weights", model_weights={_BACKBONE})
         cls.learner = X3DLearner(
-            device="cpu", temp_path=str(cls.temp_dir), iters=1, batch_size=2, backbone="xs", num_workers=0,
+            device="cpu", temp_path=str(cls.temp_dir), iters=1, batch_size=2, backbone=_BACKBONE, num_workers=0,
         )
 
-    @classmethod
-    def tearDownClass(cls):
-        try:
-            shutil.rmtree(str(cls.temp_dir))
-        except OSError as e:
-            logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
+    # @classmethod
+    # def tearDownClass(cls):
+    #     try:
+    #         shutil.rmtree(str(cls.temp_dir))
+    #     except OSError as e:
+    #         logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
 
     def test_downloaded(self):
         assert Path(self.temp_dir) / "weights" / "x3d_s.pyth"
@@ -65,7 +65,7 @@ class TestX3DLearner(unittest.TestCase):
         self.assertIsNotNone(
             self.learner.model, "model is None after loading pth model."
         )
-        assert self.learner.batch_size == 1
+        assert self.learner.batch_size == 2
 
     def test_fit(self):
         train_ds = KineticsDataset(path=_DATASET_PATH, frames_per_clip=4, split="train")
@@ -84,31 +84,14 @@ class TestX3DLearner(unittest.TestCase):
         # Check that parameters changed
         assert not torch.equal(m, list(self.learner.model.parameters())[0])
 
-    # def test_eval(self):
-    #     eval_dataset = ExternalDataset(
-    #         path=os.path.join(self.temp_dir, "dataset"), dataset_type="COCO"
-    #     )
-    #     self.pose_estimator.load(os.path.join(self.temp_dir, "trainedModel"))
-    #     results_dict = self.pose_estimator.eval(
-    #         eval_dataset,
-    #         use_subset=False,
-    #         verbose=True,
-    #         silent=True,
-    #         images_folder_name="image",
-    #         annotations_filename="annotation.json",
-    #     )
-    #     self.assertNotEqual(
-    #         len(results_dict["average_precision"]),
-    #         0,
-    #         msg="Eval results dictionary contains empty list.",
-    #     )
-    #     self.assertNotEqual(
-    #         len(results_dict["average_recall"]),
-    #         0,
-    #         msg="Eval results dictionary contains empty list.",
-    #     )
-    #     # Cleanup
-    #     rmfile(os.path.join(self.temp_dir, "detections.json"))
+    def test_eval(self):
+        test_ds = KineticsDataset(path=_DATASET_PATH, frames_per_clip=4, split="test")
+
+        self.learner.load_model_weights(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
+        results = self.learner.eval(test_ds, steps=2)
+
+        assert results["test/acc"] > 0.2  # Most likely ≈ 60%
+        assert results["test/loss"] < 20  # Most likely ≈ 6.0
 
     # def test_infer(self):
     #     self.pose_estimator.model = None
