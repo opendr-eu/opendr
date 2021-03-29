@@ -26,7 +26,7 @@ import onnxruntime as ort
 from engine.datasets import Dataset
 
 # from engine.data import Video  # TODO: impl in engine.data
-from perception.activity_recognition.x3d.modules.x3d import X3D
+from perception.activity_recognition.x3d.algorithm.x3d import X3D
 import pytorch_lightning as pl
 
 # from engine.constants import OPENDR_SERVER_URL
