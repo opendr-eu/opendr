@@ -151,6 +151,7 @@ class X3D(pl.LightningModule):
         x = self.forward(x)
         loss = getattr(F, self.loss_name, F.cross_entropy)(x, y)
         self.log('train/loss', loss)
+        self.log('train/acc', _accuracy(x, y))
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -158,6 +159,7 @@ class X3D(pl.LightningModule):
         x = self.forward(x)
         loss = getattr(F, self.loss_name, F.cross_entropy)(x, y)
         self.log('val/loss', loss)
+        self.log('val/acc', _accuracy(x, y))
         return loss
 
     def test_step(self, batch, batch_idx):
@@ -165,7 +167,12 @@ class X3D(pl.LightningModule):
         x = self.forward(x)
         loss = getattr(F, self.loss_name, F.cross_entropy)(x, y)
         self.log('test/loss', loss)
+        self.log('test/acc', _accuracy(x, y))
         return loss
+
+
+def _accuracy(x: Tensor, y: Tensor):
+    return torch.sum(x.argmax(dim=1) == y) / len(y)
 
 
 def _round_width(width, multiplier, min_depth=8, divisor=8):

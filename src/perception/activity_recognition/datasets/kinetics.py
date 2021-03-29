@@ -156,7 +156,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
                 self.temporal_downsampling,
                 self.frames_per_clip,
                 clip_idx=temporal_clip_idx,
-                num_clips=self.num_ensemble_views if self.split == "test" else 1,
+                num_clips=1,
                 video_meta=self.video_meta[idx],
                 target_fps=self.target_fps,
                 backend="pyav",
