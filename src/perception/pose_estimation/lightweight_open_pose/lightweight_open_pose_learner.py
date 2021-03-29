@@ -72,7 +72,8 @@ class LightweightOpenPoseLearner(Learner):
                  num_refinement_stages=2, batches_per_iter=1,
                  experiment_name='default', num_workers=8, weights_only=True, output_name='detections.json',
                  multiscale=False, scales=None, visualize=False, base_height=256,
-                 img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256), pad_value=(0, 0, 0)):
+                 img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256), pad_value=(0, 0, 0),
+                 half_precision=False):
         super(LightweightOpenPoseLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                          checkpoint_after_iter=checkpoint_after_iter,
                                                          checkpoint_load_iter=checkpoint_load_iter,
@@ -87,11 +88,15 @@ class LightweightOpenPoseLearner(Learner):
         self.experiment_name = experiment_name
         self.num_workers = num_workers
         self.backbone = backbone.lower()
+        self.half = half_precision
+
         supportedBackbones = ["mobilenet", "mobilenetv2", "shufflenet"]
         if self.backbone not in supportedBackbones:
             raise ValueError(self.backbone + " not a valid backbone. Supported backbones:" + str(supportedBackbones))
         if self.backbone == "mobilenet":
             self.use_stride = mobilenet_use_stride
+        else:
+            self.use_stride = None
         if self.backbone == "mobilenetv2":
             self.mobilenetv2_width = mobilenetv2_width
         if self.backbone == "shufflenet":
@@ -263,7 +268,7 @@ class LightweightOpenPoseLearner(Learner):
         drop_after_epoch = [100, 200, 260]
 
         if self.lr_schedule != '':
-            scheduler = self.lr_schedule
+            scheduler = self.lr_schedule(optimizer)
         else:
             scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=drop_after_epoch, gamma=0.333)
 
@@ -445,6 +450,9 @@ class LightweightOpenPoseLearner(Learner):
         if logging:
             file_writer.close()
         # Return a dict of lists of PAF and Heatmap losses per stage and a list of all evaluation results dictionaries
+        if self.half and self.device == 'cuda':
+            self.model.half()
+
         return {"paf_losses": paf_losses, "heatmap_losses": heatmap_losses, "eval_results_list": eval_results_list}
 
     def eval(self, dataset, silent=False, verbose=True, use_subset=True, subset_size=250,
@@ -512,6 +520,8 @@ class LightweightOpenPoseLearner(Learner):
         self.model = self.model.eval()  # Change model state to evaluation
         if self.device == "cuda":
             self.model = self.model.cuda()
+            if self.half:
+                self.model.half()
 
         if self.multiscale:
             self.scales = [0.5, 1.0, 1.5, 2.0]
@@ -606,6 +616,8 @@ class LightweightOpenPoseLearner(Learner):
         tensor_img = torch.from_numpy(padded_img).permute(2, 0, 1).unsqueeze(0).float()
         if self.device == "cuda":
             tensor_img = tensor_img.cuda()
+            if self.half:
+                tensor_img = tensor_img.half()
 
         if self.ort_session is not None:
             stages_output = self.ort_session.run(None, {'data': np.array(tensor_img.cpu())})
@@ -622,9 +634,13 @@ class LightweightOpenPoseLearner(Learner):
             stage2_pafs = stages_output[-1]
 
         heatmaps = np.transpose(stage2_heatmaps.squeeze().cpu().data.numpy(), (1, 2, 0))
+        if self.half:
+            heatmaps = np.float32(heatmaps)
         heatmaps = cv2.resize(heatmaps, (0, 0), fx=upsample_ratio, fy=upsample_ratio, interpolation=cv2.INTER_CUBIC)
 
         pafs = np.transpose(stage2_pafs.squeeze().cpu().data.numpy(), (1, 2, 0))
+        if self.half:
+            pafs = np.float32(pafs)
         pafs = cv2.resize(pafs, (0, 0), fx=upsample_ratio, fy=upsample_ratio, interpolation=cv2.INTER_CUBIC)
 
         total_keypoints_num = 0
@@ -693,22 +709,23 @@ class LightweightOpenPoseLearner(Learner):
                           "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
 
         if self.ort_session is None:
-            model_metadata["model_paths"] = [os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext +
+            model_metadata["model_paths"] = [os.path.join(folder_name_no_ext, folder_name_no_ext +
                                                           ".pth")]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pth"
 
             custom_dict = {'state_dict': self.model.state_dict()}
-            torch.save(custom_dict, model_metadata["model_paths"][0])
+            torch.save(custom_dict, os.path.join(path_no_folder_name, model_metadata["model_paths"][0]))
             if verbose:
                 print("Saved Pytorch model.")
         else:
-            model_metadata["model_paths"] = [os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext +
+            model_metadata["model_paths"] = [os.path.join(folder_name_no_ext, folder_name_no_ext +
                                                           ".onnx")]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             # Copy already optimized model from temp path
-            shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"), model_metadata["model_paths"][0])
+            shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"),
+                         os.path.join(path_no_folder_name, model_metadata["model_paths"][0]))
             model_metadata["optimized"] = True
             if verbose:
                 print("Saved ONNX model.")
@@ -789,6 +806,8 @@ class LightweightOpenPoseLearner(Learner):
         load_state(self.model, checkpoint)
         if self.device == "cuda":
             self.model.cuda()
+            if self.half:
+                self.model.half()
         self.model.train(False)
 
     def __load_from_onnx(self, path):
@@ -915,7 +934,7 @@ class LightweightOpenPoseLearner(Learner):
 
         if mode == "pretrained":
             # Create model's folder
-            path = os.path.join(path, "mobilenet_openpose")
+            path = os.path.join(path, "openpose_default")
             if not os.path.exists(path):
                 os.makedirs(path)
 
@@ -924,17 +943,17 @@ class LightweightOpenPoseLearner(Learner):
 
             # Download the model's files
             if self.backbone == "mobilenet":
-                if not os.path.exists(os.path.join(path, "mobilenet_openpose.json")):
-                    file_url = os.path.join(url, "mobilenet_openpose/mobilenet_openpose.json")
-                    urlretrieve(file_url, os.path.join(path, "mobilenet_openpose.json"))
+                if not os.path.exists(os.path.join(path, "openpose_default.json")):
+                    file_url = os.path.join(url, "openpose_default/openpose_default.json")
+                    urlretrieve(file_url, os.path.join(path, "openpose_default.json"))
                     if verbose:
                         print("Downloaded metadata json.")
                 else:
                     if verbose:
                         print("Metadata json file already exists.")
-                if not os.path.exists(os.path.join(path, "mobilenet_openpose.pth")):
-                    file_url = os.path.join(url, "mobilenet_openpose/mobilenet_openpose.pth")
-                    urlretrieve(file_url, os.path.join(path, "mobilenet_openpose.pth"))
+                if not os.path.exists(os.path.join(path, "openpose_default.pth")):
+                    file_url = os.path.join(url, "openpose_default/openpose_default.pth")
+                    urlretrieve(file_url, os.path.join(path, "openpose_default.pth"))
                 else:
                     if verbose:
                         print("Trained model .pth file already exists.")
@@ -1030,10 +1049,14 @@ class LightweightOpenPoseLearner(Learner):
             tensor_img = torch.from_numpy(padded_img).permute(2, 0, 1).unsqueeze(0).float()
             if self.device == "cuda":
                 tensor_img = tensor_img.cuda()
+                if self.half:
+                    tensor_img = tensor_img.half()
             stages_output = self.model(tensor_img)
 
             stage2_heatmaps = stages_output[-2]
             heatmaps = np.transpose(stage2_heatmaps.squeeze().cpu().data.numpy(), (1, 2, 0))
+            if self.half:
+                heatmaps = np.float32(heatmaps)
             heatmaps = cv2.resize(heatmaps, (0, 0), fx=stride, fy=stride, interpolation=cv2.INTER_CUBIC)
             heatmaps = heatmaps[pad[0]:heatmaps.shape[0] - pad[2], pad[1]:heatmaps.shape[1] - pad[3]:, :]
             heatmaps = cv2.resize(heatmaps, (width, height), interpolation=cv2.INTER_CUBIC)
@@ -1041,6 +1064,8 @@ class LightweightOpenPoseLearner(Learner):
 
             stage2_pafs = stages_output[-1]
             pafs = np.transpose(stage2_pafs.squeeze().cpu().data.numpy(), (1, 2, 0))
+            if self.half:
+                pafs = np.float32(pafs)
             pafs = cv2.resize(pafs, (0, 0), fx=stride, fy=stride, interpolation=cv2.INTER_CUBIC)
             pafs = pafs[pad[0]:pafs.shape[0] - pad[2], pad[1]:pafs.shape[1] - pad[3], :]
             pafs = cv2.resize(pafs, (width, height), interpolation=cv2.INTER_CUBIC)
