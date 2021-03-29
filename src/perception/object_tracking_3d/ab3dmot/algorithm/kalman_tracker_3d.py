@@ -76,7 +76,7 @@ class KalmanTracker3D():
         # [x, y, z, rotation_y, l, w, h]
         self.kalman_filter.x[:measurment_dimensions] = np.array([
             *location, rotation_y, *dimensions
-        ])
+        ]).reshape(-1, 1)
 
         self.name = boundingBox3D.name
         self.bbox2d = boundingBox3D.bbox2d

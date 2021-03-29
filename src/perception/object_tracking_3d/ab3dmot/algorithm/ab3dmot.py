@@ -13,8 +13,7 @@
 # limitations under the License.
 
 import numpy as np
-from typing import List
-from engine.target import BoundingBox3DList, TrackingBoundingBox3D, TrackingBoundingBox3DList
+from engine.target import BoundingBox3DList, TrackingBoundingBox3DList
 from scipy.optimize import linear_sum_assignment
 from perception.object_tracking_3d.ab3dmot.algorithm.kalman_tracker_3d import KalmanTracker3D
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.box_np_ops import (
@@ -47,7 +46,7 @@ class AB3DMOT():
         self.max_staleness = max_staleness
         self.min_updates = min_updates
         self.frame = frame
-        self.tracklets: List[KalmanTracker3D] = []
+        self.tracklets = []
         self.last_tracklet_id = 1
         self.iou_threshold = iou_threshold
 
@@ -60,46 +59,51 @@ class AB3DMOT():
 
     def update(self, detections: BoundingBox3DList):
 
-        predictions = np.zeros([len(self.tracklets), self.measurment_dimensions])
+        if len(detections) > 0:
 
-        for i, tracklet in enumerate(self.tracklets):
-            box = tracklet.predict().reshape(-1)
-            predictions[i] = [*box]
+            predictions = np.zeros([len(self.tracklets), self.measurment_dimensions])
 
-        detection_corners = center_to_corner_box3d(
-            [box.location for box in detections.boxes],
-            [box.dimensions for box in detections.boxes],
-            [box.rotation_y for box in detections.boxes],
-        )
+            for i, tracklet in enumerate(self.tracklets):
+                box = tracklet.predict().reshape(-1)[:self.measurment_dimensions]
+                predictions[i] = [*box]
 
-        prediction_corners = center_to_corner_box3d(
-            predictions[:, :3],
-            predictions[:, 4:],
-            predictions[:, 3:4],
-        )
-
-        (
-            matched_pairs,
-            unmatched_detections,
-            unmatched_predictions
-        ) = associate(detection_corners, prediction_corners, self.iou_threshold)
-
-        for d, p in matched_pairs:
-            self.tracklets[p].update(detections[d])
-
-        for d in unmatched_detections:
-            self.last_tracklet_id += 1
-            tracklet = KalmanTracker3D(
-                detections[d], self.last_tracklet_id, self.frame,
-                self.state_dimensions, self.measurment_dimensions,
-                self.state_transition_matrix, self.measurement_function_matrix,
-                self.covariance_matrix, self.process_uncertainty_matrix
+            detection_corners = center_to_corner_box3d(
+                np.array([box.location for box in detections.boxes]),
+                np.array([box.dimensions for box in detections.boxes]),
+                np.array([box.rotation_y for box in detections.boxes]),
             )
-            self.tracklets.append(tracklet)
+
+            if len(predictions) > 0:
+                prediction_corners = center_to_corner_box3d(
+                    predictions[:, :3],
+                    predictions[:, 4:],
+                    predictions[:, 3],
+                )
+            else:
+                prediction_corners = np.zeros((0, 8, 3))
+
+            (
+                matched_pairs,
+                unmatched_detections,
+                unmatched_predictions
+            ) = associate(detection_corners, prediction_corners, self.iou_threshold)
+
+            for d, p in matched_pairs:
+                self.tracklets[p].update(detections[d], self.frame)
+
+            for d in unmatched_detections:
+                self.last_tracklet_id += 1
+                tracklet = KalmanTracker3D(
+                    detections[d], self.last_tracklet_id, self.frame,
+                    self.state_dimensions, self.measurment_dimensions,
+                    self.state_transition_matrix, self.measurement_function_matrix,
+                    self.covariance_matrix, self.process_uncertainty_matrix
+                )
+                self.tracklets.append(tracklet)
 
         old_tracklets = self.tracklets
         self.tracklets = []
-        tracked_boxes: List[TrackingBoundingBox3D] = []
+        tracked_boxes = []
 
         for tracklet in old_tracklets:
 
@@ -149,7 +153,7 @@ def associate(detection_corners, prediction_corners, iou_threshold):
         else:
             matched_pairs.append([detection_id, prediction_id])
 
-    if len(matched_pairs <= 0):
+    if len(matched_pairs) <= 0:
         matched_pairs = np.zeros((0, 2), dtype=np.int32)
     else:
         matched_pairs = np.array(matched_pairs, dtype=np.int32)
