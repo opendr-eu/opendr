@@ -8,9 +8,9 @@ import numpy as np
 import torch
 import torchvision.io as io
 
-from ride.utils.logging import getLogger
+from logging import getLogger
 
-logger = getLogger(__name__, log_once=True)
+logger = getLogger(__name__)
 
 
 def temporal_sampling(frames, start_idx, end_idx, num_samples):
