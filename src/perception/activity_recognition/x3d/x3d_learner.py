@@ -46,25 +46,39 @@ class X3DLearner(Learner):
         iters=10,  # Epochs
         batch_size=64,
         optimizer="adam",
-        lr_schedule="",  # Not used
         backbone="s",
-        network_head="classification",  # Not used
-        checkpoint_after_iter=0,
-        checkpoint_load_iter=0,
+        network_head="classification",
         temp_path="",
         device="cuda",
-        threshold=0.0,  # Not used
         loss="cross_entropy",
         weight_decay=1e-5,
         momentum=0.9,
         drop_last=True,
-        pin_memory=True,
+        pin_memory=False,
         num_workers=0,
         seed=123,
         num_classes=400,
         *args,
         **kwargs,
     ):
+        """Initialise the X3DLearner
+
+        Args:
+            lr (float, optional): Learning rate during optimization. Defaults to 1e-3.
+            iters (int, optional): Number of epochs to train for. Defaults to 10.
+            optimizer (str, optional): Name of optimizer to use ("sgd" or "adam"). Defaults to "adam".
+            network_head (str, optional): Head of network (only "classification" is currently available).
+                Defaults to "classification".
+            temp_path (str, optional): Path in which to store temporary files. Defaults to "".
+            device (str, optional): Name of computational device ("cpu" or "cuda"). Defaults to "cuda".
+            weight_decay ([type], optional): Weight decay used for optimization. Defaults to 1e-5.
+            momentum (float, optional): Momentum used for optimization. Defaults to 0.9.
+            drop_last (bool, optional): Drop last data point if a batch cannot be filled. Defaults to True.
+            pin_memory (bool, optional): Pin memory in dataloader. Defaults to False.
+            num_workers (int, optional): Number of workers in dataloader. Defaults to 0.
+            seed (int, optional): Random seed. Defaults to 123.
+            num_classes (int, optional): Number of classes to predict among. Defaults to 400.
+        """
         assert (
             backbone in _MODEL_NAMES
         ), f"Invalid model selected. Choose one of {_MODEL_NAMES}."
@@ -80,14 +94,14 @@ class X3DLearner(Learner):
             iters=iters,
             batch_size=batch_size,
             optimizer=optimizer,
-            lr_schedule=lr_schedule,
+            lr_schedule="",
             backbone=backbone,
             network_head=network_head,
             temp_path=temp_path,
-            checkpoint_after_iter=checkpoint_after_iter,
-            checkpoint_load_iter=checkpoint_load_iter,
+            checkpoint_after_iter=0,
+            checkpoint_load_iter=0,
             device=device,
-            threshold=threshold,
+            threshold=0.0,
         )
         logger.debug("X3DLearner initialising")
 
@@ -129,7 +143,7 @@ class X3DLearner(Learner):
         """Load pretrained model weights
 
         Args:
-            weights_path (Union[str, Path]): path to model weights file.
+            weights_path (Union[str, Path]): Path to model weights file.
                 Type of file must be one of {".pyth", ".pth", ".onnx"}
         """
         weights_path = Path(weights_path)
@@ -162,6 +176,8 @@ class X3DLearner(Learner):
         names_not_loaded = set(new_model_state.keys()) - set(to_load.keys())
         if len(names_not_loaded) > 0:
             logger.warning(f"Some model weight could not be loaded: {names_not_loaded}")
+
+        return self
 
     def init_model(self) -> X3D:
         """Initialise model with random parameters
@@ -197,7 +213,7 @@ class X3DLearner(Learner):
         """Save model weights and metadata to path.
 
         Args:
-            path (Union[str, Path]): directory in which to save data.
+            path (Union[str, Path]): Directory in which to save model weights and meta data.
 
         Returns:
             X3DLearner: self
@@ -253,10 +269,13 @@ class X3DLearner(Learner):
         return self
 
     def load(self, path: Union[str, Path]) -> "X3DLearner":
-        """
-        Loads the model from the provided, based on the metadata.json file included.
-        :param path: path of the metadata json file or the folder containing it
-        :type path: str
+        """Load model.
+
+        Args:
+            path (Union[str, Path]): Path to metadata file in json format
+
+        Returns:
+            X3DLearner: self
         """
         path = Path(path)
         if path.is_dir():
@@ -300,19 +319,19 @@ class X3DLearner(Learner):
 
     @staticmethod
     def download(
-        path: Union[str, Path], model_weights: Iterable[str] = _MODEL_NAMES
+        path: Union[str, Path], model_names: Iterable[str] = _MODEL_NAMES
     ):
         """Download pretrained X3D models
 
         Args:
             path (Union[str, Path], optional): Directory in which to store model weights. Defaults to None.
-            model_weights (Iterable[str], optional): iterable with model names to download.
+            model_names (Iterable[str], optional): iterable with model names to download.
                 The iterable may contain {"xs", "s", "m", "l"}.
                 Defaults to _MODEL_NAMES.
         """
         path = Path(path)
         path.mkdir(parents=True, exist_ok=True)
-        for m in model_weights:
+        for m in model_names:
             assert m in _MODEL_NAMES
             filename = path / f"x3d_{m}.pyth"
             if filename.exists():
@@ -346,16 +365,16 @@ class X3DLearner(Learner):
             batch_size=self.batch_size,
             num_workers=self.num_workers,
             shuffle=True,
-            pin_memory=self.num_workers > 1,
-            drop_last=True,
+            pin_memory=self.pin_memory,
+            drop_last=self.drop_last,
         )
         val_dataloader = torch.utils.data.DataLoader(
             val_dataset,
             batch_size=self.batch_size,
             num_workers=self.num_workers,
             shuffle=False,
-            pin_memory=self.num_workers > 1,
-            drop_last=True,
+            pin_memory=self.pin_memory,
+            drop_last=self.drop_last,
         ) if val_dataset else None
 
         optimisation_metric = "val/loss" if val_dataset else "train/loss"
@@ -410,7 +429,7 @@ class X3DLearner(Learner):
         Args:
             dataset (Dataset): Dataset on which to evaluate model
             steps (int, optional): Number of validation batches to evaluate.
-                If none, all batches are evaluated. Defaults to None.
+                If None, all batches are evaluated. Defaults to None.
 
         Returns:
             Dict[str, Any]: Evaluation statistics
@@ -420,7 +439,7 @@ class X3DLearner(Learner):
             batch_size=self.batch_size,
             num_workers=self.num_workers,
             shuffle=False,
-            pin_memory=self.num_workers > 1,
+            pin_memory=self.pin_memory,
             drop_last=False,
         )
 
@@ -437,7 +456,15 @@ class X3DLearner(Learner):
         }
         return results
 
-    def infer(self, batch: torch.Tensor):
+    def infer(self, batch: torch.Tensor) -> torch.Tensor:
+        """Run inference on a batch of data
+
+        Args:
+            batch (torch.Tensor): Batch of video-clips. The batch should have shape (B, 3, T, H, W).
+
+        Returns:
+            torch.Tensor: Network output
+        """
         self.model.eval()
         result = self.model.forward(batch)
         return result
@@ -454,7 +481,7 @@ class X3DLearner(Learner):
             logger.info("Model is already optimized. Skipping redundant optimization")
             return
 
-        path = Path(os.getcwd()) / "outputs" / f"x3d_{self.backbone}.onnx"
+        path = Path(self.temp_path or os.getcwd()) / "weights" / f"x3d_{self.backbone}.onnx"
         if not path.exists():
             self.save_onnx(path, do_constant_folding)
         self.load_onnx(path)

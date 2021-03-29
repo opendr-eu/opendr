@@ -40,7 +40,7 @@ class TestX3DLearner(unittest.TestCase):
         )
 
         # Download all required files for testing
-        X3DLearner.download(path=Path(cls.temp_dir) / "weights", model_weights={_BACKBONE})
+        X3DLearner.download(path=Path(cls.temp_dir) / "weights", model_names={_BACKBONE})
         cls.learner = X3DLearner(
             device="cpu", temp_path=str(cls.temp_dir), iters=1, batch_size=2, backbone=_BACKBONE, num_workers=0,
         )
@@ -48,7 +48,6 @@ class TestX3DLearner(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         try:
-            shutil.rmtree(str(".cache"))
             shutil.rmtree(str(cls.temp_dir))
         except OSError as e:
             logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
