@@ -12,20 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from engine.datasets import ExternalDataset, DatasetIterator
+import av
+import json
+import random
 import torch
+import zipfile
+from os import getcwd
+from engine.datasets import ExternalDataset, DatasetIterator
 from pathlib import Path
 from logging import getLogger
 from tqdm.contrib.concurrent import process_map
 from functools import partial
-from typing import List, Optional, Tuple
-import json
+from typing import List, Optional, Tuple, Union
 from joblib import Memory
-from os import getcwd
-import random
 from perception.activity_recognition.datasets.utils import decoder
 from perception.activity_recognition.datasets.utils.transforms import standard_video_transforms
-import av
+from engine.constants import OPENDR_SERVER_URL
+from urllib.request import urlretrieve
 
 logger = getLogger(__file__)
 
@@ -197,6 +200,29 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         :rtype: int
         """
         return len(self.file_paths)
+
+    @staticmethod
+    def download_mini(path: Union[str, Path]):
+        """Download mini version of dataset
+
+        Args:
+            path (Union[str, Path]): Directory in which to store dataset
+        """
+        path.mkdir(parents=True, exist_ok=True)
+
+        url = str(
+            Path(OPENDR_SERVER_URL) /
+            "perception" / "activity_recognition" / "datasets" / "kinetics400micro.zip"
+        )
+        zip_path = str(Path(path) / "kinetics400micro.zip")
+        unzip_path = str(Path(path) / "kinetics400micro")
+
+        logger.info(f"Downloading Kinetics400 mini from {url}")
+        urlretrieve(url=url, filename=zip_path)
+
+        logger.info(f"Unzipping Kinetics400 mini to {(unzip_path)}")
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(unzip_path)
 
 
 def _make_path_name(

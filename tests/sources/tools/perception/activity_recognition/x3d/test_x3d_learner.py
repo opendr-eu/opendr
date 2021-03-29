@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# # Temporary for debugging. TODO: Remove
-# import sys
-# if "/Users/au478108/Projects/opendr_internal/src" not in sys.path:
-#     sys.path.append("/Users/au478108/Projects/opendr_internal/src")
 import shutil
 import torch
 import unittest
@@ -28,22 +24,23 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
-_DATASET_PATH = Path("/Users/au478108/Projects/datasets/kinetics400micro")
 _BACKBONE = "xs"
 
 
 class TestX3DLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.temp_dir = Path(
-            "./tests/sources/tools/perception/activity_recognition/x3d/temp"
-        )
+        cls.temp_dir = Path("./tests/sources/tools/perception/activity_recognition/x3d/temp")
 
-        # Download all required files for testing
+        # Download model weights
         X3DLearner.download(path=Path(cls.temp_dir) / "weights", model_names={_BACKBONE})
         cls.learner = X3DLearner(
             device="cpu", temp_path=str(cls.temp_dir), iters=1, batch_size=2, backbone=_BACKBONE, num_workers=0,
         )
+
+        # Download mini dataset
+        cls.dataset_path = cls.temp_dir / "datasets" / "kinetics400mini"
+        KineticsDataset.download_mini(cls.temp_dir / "datasets")
 
     @classmethod
     def tearDownClass(cls):
@@ -68,8 +65,8 @@ class TestX3DLearner(unittest.TestCase):
         assert self.learner.batch_size == 2
 
     def test_fit(self):
-        train_ds = KineticsDataset(path=_DATASET_PATH, frames_per_clip=4, split="train")
-        val_ds = KineticsDataset(path=_DATASET_PATH, frames_per_clip=4, split="val")
+        train_ds = KineticsDataset(path=self.dataset_path, frames_per_clip=4, split="train")
+        val_ds = KineticsDataset(path=self.dataset_path, frames_per_clip=4, split="val")
 
         # Initialize with random parameters
         self.learner.model = None
@@ -85,7 +82,7 @@ class TestX3DLearner(unittest.TestCase):
         assert not torch.equal(m, list(self.learner.model.parameters())[0])
 
     def test_eval(self):
-        test_ds = KineticsDataset(path=_DATASET_PATH, frames_per_clip=4, split="test")
+        test_ds = KineticsDataset(path=self.dataset_path, frames_per_clip=4, split="test")
 
         self.learner.load_model_weights(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
         results = self.learner.eval(test_ds, steps=2)
@@ -94,7 +91,7 @@ class TestX3DLearner(unittest.TestCase):
         assert results["loss"] < 20  # Most likely ≈ 6.0
 
     def test_infer(self):
-        ds = KineticsDataset(path=_DATASET_PATH, frames_per_clip=4, split="test")
+        ds = KineticsDataset(path=self.dataset_path, frames_per_clip=4, split="test")
         dl = torch.utils.data.DataLoader(ds, batch_size=2, num_workers=0)
         batch = next(iter(dl))[0]
 
