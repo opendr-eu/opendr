@@ -1,3 +1,17 @@
+# Copyright 2020-2021 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import cv2
 import time
 from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
@@ -8,7 +22,6 @@ from os.path import join
 from tqdm import tqdm
 import numpy as np
 from engine.datasets import ExternalDataset
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -29,7 +42,8 @@ if __name__ == '__main__':
         half_precision = False
 
     pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
-                                                mobilenet_use_stride=stride, half_precision=half_precision)
+                                                mobilenet_use_stride=stride,
+                                                half_precision=half_precision)
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
@@ -42,9 +56,6 @@ if __name__ == '__main__':
     eval_dataset = ExternalDataset(path=join("temp", "dataset"), dataset_type="COCO")
 
     results_dict = pose_estimator.eval(eval_dataset, use_subset=False, verbose=True, silent=True,
-                                            images_folder_name="image", annotations_filename="annotation.json")
+                                       images_folder_name="image", annotations_filename="annotation.json")
 
     print("Evaluation results = ", results_dict)
-
-
-
