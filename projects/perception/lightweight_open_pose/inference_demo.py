@@ -13,14 +13,11 @@
 # limitations under the License.
 
 import cv2
-import time
 from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
     LightweightOpenPoseLearner
 from perception.pose_estimation.lightweight_open_pose.utilities import draw
 import argparse
 from os.path import join
-from tqdm import tqdm
-import numpy as np
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
