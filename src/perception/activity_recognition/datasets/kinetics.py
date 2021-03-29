@@ -23,21 +23,25 @@ import json
 from joblib import Memory
 from os import getcwd
 import random
-from .utils import decoder
-from .utils import video_container as container
+from perception.activity_recognition.datasets.utils import decoder
+from perception.activity_recognition.datasets.utils.transforms import standard_video_transforms
 import av
 
-cache = Memory(Path(getcwd() / ".cache"), verbose=1).cache
+cache = Memory(Path(getcwd()) / ".cache", verbose=1).cache
 logger = getLogger(__file__)
 
 
-class Kinetics(ExternalDataset, DatasetIterator, torch.utils.data.Dataset):
+class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset):
     """
     Kinetics dataset for Trimmed Activity Recognition
 
     It has multiple versions available which are identified by their number of classes (400, 600, 700)
 
-    <https://deepmind.com/research/open-source/open-source-datasets/kinetics/>
+    Splits can be downloaded from:
+    https://deepmind.com/research/open-source/open-source-datasets/kinetics/
+
+    Videos must be downloaded using a YouTube crawler, e.g.:
+    https://github.com/LukasHedegaard/youtube-dataset-downloader
     """
 
     def __init__(
@@ -62,15 +66,13 @@ class Kinetics(ExternalDataset, DatasetIterator, torch.utils.data.Dataset):
             step_between_clips (int): number of frames between each clip
             temporal_downsampling (int): rate of downsampling in time
             split (str, optional): Which split to use (Options are ["train", "val", "test"])
-            video_transform (callable, optional): A function/transform that  takes in a TxHxWxC video
-                and returns a transformed version
+            video_transform (callable, optional): A function/transform that takes in a TxHxWxC video
+                and returns a transformed version. If None, a standard video transform will be applied.
 
         """
-        super().__init__()
-
-        # Fulfill the ExternalDataset interface
-        self.path = path
-        self.dataset_type = "kinetics"
+        ExternalDataset.__init__(self, path=str(path), dataset_type="kinetics")
+        DatasetIterator.__init__(self)
+        torch.utils.data.Dataset.__init__(self)
 
         self.root_path = Path(path) / "data"
         self.annotation_path = Path(path) / "splits"
@@ -88,7 +90,12 @@ class Kinetics(ExternalDataset, DatasetIterator, torch.utils.data.Dataset):
         self.step_between_clips = step_between_clips
         self.target_fps = 30
         self.temporal_downsampling = temporal_downsampling
-        self.video_transform = video_transform
+
+        if video_transform:
+            self.video_transform = video_transform
+        else:
+            train_transform, eval_transform = standard_video_transforms()
+            self.video_transform = train_transform if self.split == "train" else eval_transform
 
         (
             self.labels,
@@ -124,7 +131,7 @@ class Kinetics(ExternalDataset, DatasetIterator, torch.utils.data.Dataset):
         frames = None
         for _ in range(self.num_retries):
             try:
-                video_container = container._get_video_container(
+                video_container = _get_video_container(
                     self.file_paths[idx], multi_thread_decode=False, backend="pyav",
                 )
             except Exception as e:
@@ -184,7 +191,7 @@ class Kinetics(ExternalDataset, DatasetIterator, torch.utils.data.Dataset):
         :return: the size of the dataset
         :rtype: int
         """
-        pass
+        return len(self.file_paths)
 
 
 def _make_path_name(
