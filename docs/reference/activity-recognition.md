@@ -1,6 +1,6 @@
 ## activity_recognition module
 
-The *activity_recognition* module contains the *X3DLearner* class, which inherits from the abstract class *Learner*.
+The *activity_recognition* module contains the *X3DLearner* and *CoX3DLearner* classes, which inherit from the abstract class *Learner*.
 
 
 ### Class X3DLearner
@@ -14,12 +14,12 @@ X3D is a family of efficient models for video recognition, attaining state-of-th
 Pretrained X3D models are available [here](https://github.com/facebookresearch/SlowFast/blob/master/MODEL_ZOO.md).
 On [Kinetics-400](https://deepmind.com/research/open-source/kinetics), they achieve the following 1-clip accuracy:
 
-| Model  |  Top1(3) Accuracy |  
-| :---:  | :-----------:     | 
-| X3D-XS | 54.68 (77.52)     |
-| X3D-S  | 60.88 (82.52)     |
-| X3D-M  | 63.84 (84.27)     |
-| X3D-L  | 65.93 (85.60)     |
+| Model  | Accuracy |  
+| :---:  | :------: | 
+| X3D-XS | 54.68    |
+| X3D-S  | 60.88    |
+| X3D-M  | 63.84    |
+| X3D-L  | 65.93    |
 
 
 The [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py) class has the
@@ -109,8 +109,10 @@ This method is used to perform pose estimation on an image.
 Returns a list of `engine.target.Category` objects, where each holds a category.
 
 Parameters:
-- **batch**: *torch.Tenstor*  
-  Batch of video-clips. The batch should have shape (B, 3, T, S, S), where B is the batch size, T is the clip length, and S is the spatial size in pixels.
+- **batch**: *Union[engine.data.Video, List[engine.data.Video], torch.Tensor]*  
+  Video or batch of videos.
+  The video should have shape (3, T, H, W). If a batch is supplied, its shape should be (B, 3, T, H, W).
+  Here, B is the batch size, T is the clip length, and S is the spatial size in pixels.
 
 
 #### `X3DLearner.save`
@@ -213,6 +215,183 @@ Parameters:
   ```
 
 
+
+
+#### References
+<a name="x3d" href="https://arxiv.org/abs/2004.04730">[1]</a> X3D: Expanding Architectures for Efficient Video Recognition,
+[arXiv](https://arxiv.org/abs/2004.04730).  
+
+
+
+
+
+
+
+
+### Class CoX3DLearner
+Bases: `engine.learners.Learner`
+
+The *CoX3DLearner* class is a wrapper of CoX3D, the Continual version X3D.
+It is used to train Human Activity Recognition models on RGB video clips and run inference frame-wise (one image at a time).
+
+Continual networks introduce an alternative computational model, which lets a 3D-CNN (which otherwise must take a video-clip as input) compute outputs frame-by-frame.
+This greatly speeds up inference in online-prediction, where predictions are computed for each new input-frame.
+CoX3D is fully weight-compatible with pretrained X3D models.
+
+Pretrained X3D models are available [here](https://github.com/facebookresearch/SlowFast/blob/master/MODEL_ZOO.md).
+On [Kinetics-400](https://deepmind.com/research/open-source/kinetics) using extended temporal window sizes, they achieve the following 1-clip accuracy when running in steady-state:
+
+
+| Model     | Accuracy |  
+| :---:     | :------: | 
+| X3D-S_64  | 67.33    |
+| X3D-M_64  | 71.03    |
+| X3D-L_64  | 71.61    |
+
+
+The [CoX3DLearner](#src.perception.activity_recognition.cox3d.modules.cox3d.cox3d_learner.py) class has the
+following public methods:
+
+#### `CoX3DLearner` constructor
+```python
+X3DLearner(self, lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, loss, weight_decay, momentum, drop_last, pin_memory, num_workers, seed, num_classes)
+```
+
+Constructor parameters:
+  - **lr**: *float, default=1e-3*  
+    Learning rate during optimization. 
+  - **iters**: *int, default=10*  
+    Number of epochs to train for. 
+  - **optimizer**: *str, default="adam"*  
+    Name of optimizer to use ("sgd" or "adam"). 
+  - **network_head**: *str, default="classification"*  
+    Head of network (only "classification" is currently available). 
+  - **temp_path**: *str, default=""*  
+    Path in which to store temporary files. 
+  - **device**: *str, default="cuda"*  
+    Name of computational device ("cpu" or "cuda"). 
+  - **weight_decay**: *[type], default=1e-5*  
+    Weight decay used for optimization. 
+  - **momentum**: *float, default=0.9*  
+    Momentum used for optimization. 
+  - **drop_last**: *bool, default=True*  
+    Drop last data point if a batch cannot be filled. 
+  - **pin_memory**: *bool, default=False*  
+    Pin memory in dataloader. 
+  - **num_workers**: *int, default=0*  
+    Number of workers in dataloader. 
+  - **seed**: *int, default=123*  
+    Random seed. 
+  - **num_classes**: *int, default=400*  
+    Number of classes to predict among. 
+  - **temporal_window_size**: *int, default=None*  
+    Size of the final global average pooling.
+    If None, size will be automically chosen according to the backbone. Defaults to None.
+
+
+#### `CoX3DLearner.fit`
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+
+
+#### `CoX3DLearner.eval`
+Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+
+
+#### `CoX3DLearner.infer`
+```python
+X3DLearner.infer(batch)
+```
+
+This method is used to perform pose estimation on an image.
+Returns a list of `engine.target.Pose` objects, where each holds a pose, or returns an empty list if no detection were made.  
+
+Parameters:
+- **batch**: *Union[engine.data.Image, List[engine.data.Image], torch.Tensor]*  
+  Image or batch of images.
+  The image should have shape (3, H, W). If a batch is supplied, its shape should be (B, 3, H, W).
+  Here, B is the batch size and S is the spatial size in pixels.
+
+
+#### `CoX3DLearner.save`
+Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+
+
+#### `CoX3DLearner.load`
+Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+
+
+#### `CoX3DLearner.load_model_weights`
+Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+
+
+#### `CoX3DLearner.optimize`
+Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+
+
+#### `CoX3DLearner.download`
+Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+
+
+#### Examples
+
+* **Fit model**.  
+
+  ```python
+  from OpenDR.perception.activity_recognition.cox3d.cox3d_learner import X3DLearner
+  from OpenDR.perception.activity_recognition.datasets.kinetics import KineticsDataset
+
+  learner = CoX3DLearner(backbone="s", device="cpu")
+  train_ds = KineticsDataset(path="./datasets/kinetics400", frames_per_clip=4, split="train")
+  val_ds = KineticsDataset(path="./datasets/kinetics400", frames_per_clip=4, split="val")
+  learner.fit(dataset=train_ds, val_dataset=val_ds, logging_path="./logs")
+  learner.save('./saved_models/trained_model')
+  ```
+
+* **Evaluate model**.  
+
+  ```python
+  from OpenDR.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
+  from OpenDR.perception.activity_recognition.datasets.kinetics import KineticsDataset
+
+  learner = CoX3DLearner(backbone="s", device="cpu")
+  test_ds = KineticsDataset(path="./datasets/kinetics400", frames_per_clip=4, split="test")
+  results = self.learner.eval(test_ds)  # Dict with accuracy and loss
+  ```
+
+
+* **Download pretrained model weights and initialize.**
+
+  ```python
+  from OpenDR.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
+  from pathlib import Path
+
+  weights_path = Path("./weights/")
+  CoX3DLearner.download(path=weights_path, model_names={"s"})
+  assert (weights_path / "x3d_s.pyth").exists()
+  learner = CoX3DLearner(backbone="s", device="cpu").load_model_weights(weights_path)
+  ```
+
+* **Run frame-wise inference using extended temporal window size.**
+
+  ```python
+  from OpenDR.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
+  from pathlib import Path
+
+  learner = CoX3DLearner(backbone="s", temporal_window_size=64).load_model_weights(weights_path)
+
+  # Prepare batch of images
+  dl = torch.utils.data.DataLoader(
+      KineticsDataset(path="./datasets/kinetics400", frames_per_clip=4, split="train"), 
+      batch_size=2, 
+      num_workers=0
+  )
+  video_batch = next(iter(dl))[0][:, :, 0] 
+
+  for i in range(video_batch.shape[2]):
+      image_batch = batch[:, :, i]
+      result = learner.infer(image_batch)
+      ...
+  ```
 
 
 #### References
