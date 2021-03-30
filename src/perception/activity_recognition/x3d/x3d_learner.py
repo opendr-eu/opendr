@@ -29,7 +29,6 @@ from engine.datasets import Dataset
 from perception.activity_recognition.x3d.algorithm.x3d import X3D
 import pytorch_lightning as pl
 
-# from engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 from logging import getLogger
 from typing import Any, Iterable, Union, Dict, List
@@ -103,7 +102,6 @@ class X3DLearner(Learner):
             device=device,
             threshold=0.0,
         )
-        logger.debug("X3DLearner initialising")
 
         self.weight_decay = weight_decay
         self.momentum = momentum
@@ -118,7 +116,6 @@ class X3DLearner(Learner):
 
         self.load_model_hparams(self.backbone)
         self.init_model()
-        logger.debug("X3DLearner initialised")
 
     def load_model_hparams(self, model_name: str = None) -> Dict[str, Any]:
         """Load hyperparameters for an X3D model
@@ -152,12 +149,12 @@ class X3DLearner(Learner):
             weights_path.is_file() and weights_path.suffix in {".pyth", ".pth", ".onnx"}
         ), (
             f"weights_path ({str(weights_path)}) should be a .pth or .onnx file."
-            "Pretrained weights can be downloaded using `X3DLearner.download(...)`"
+            "Pretrained weights can be downloaded using `self.download(...)`"
         )
         if weights_path.suffix == ".onnx":
             return self.load_onnx(weights_path)
 
-        logger.debug(f"Loading X3DLearner model weights from {str(weights_path)}")
+        logger.debug(f"Loading model weights from {str(weights_path)}")
 
         # Check for configuration mismatches, loading only matching weights
         new_model_state = self.model.state_dict()
@@ -209,14 +206,14 @@ class X3DLearner(Learner):
         )
         return self.model
 
-    def save(self, path: Union[str, Path]) -> "X3DLearner":
+    def save(self, path: Union[str, Path]):
         """Save model weights and metadata to path.
 
         Args:
             path (Union[str, Path]): Directory in which to save model weights and meta data.
 
         Returns:
-            X3DLearner: self
+            self
         """
         assert hasattr(
             self, "model"
@@ -229,13 +226,13 @@ class X3DLearner(Learner):
         weights_path = bump_version(root_path / f"model_{name}{ext}")
         meta_path = bump_version(root_path / f"{name}.json")
 
-        logger.info(f"Saving X3DLearner model weights to {str(weights_path)}")
+        logger.info(f"Saving model weights to {str(weights_path)}")
         if self.ort_session:
             self.save_onnx(weights_path)
         else:
             torch.save(self.model.state_dict(), weights_path)
 
-        logger.info(f"Saving X3DLearner meta-data to {str(meta_path)}")
+        logger.info(f"Saving meta-data to {str(meta_path)}")
         meta_data = {
             "model_paths": weights_path.name,
             "framework": "pytorch",
@@ -268,14 +265,14 @@ class X3DLearner(Learner):
 
         return self
 
-    def load(self, path: Union[str, Path]) -> "X3DLearner":
+    def load(self, path: Union[str, Path]):
         """Load model.
 
         Args:
             path (Union[str, Path]): Path to metadata file in json format
 
         Returns:
-            X3DLearner: self
+            self
         """
         path = Path(path)
         if path.is_dir():
@@ -495,6 +492,17 @@ class X3DLearner(Learner):
             self.save_onnx(path, do_constant_folding)
         self.load_onnx(path)
 
+    @property
+    def example_input(self):
+        C = 3  # RGB
+        T = self.model_hparams["frames_per_clip"]
+        S = self.model_hparams["image_size"]
+        return torch.randn(1, C, T, S, S).to(device=self.device)
+
+    @example_input.setter
+    def example_input(self):
+        raise ValueError("example_input is set thorugh 'frames_per_clip' 'image_size' in `self.model_hparams`")
+
     def save_onnx(self, path: Union[str, Path], do_constant_folding=False, verbose=False):
         """Save model in the ONNX format
 
@@ -504,18 +512,13 @@ class X3DLearner(Learner):
         """
         path.parent.mkdir(exist_ok=True, parents=True)
 
-        C = 3  # RGB
-        T = self.model_hparams["frames_per_clip"]
-        S = self.model_hparams["image_size"]
-        example_input = torch.randn(1, C, T, S, S).to(device=self.device)
-
         self.model.eval()
         self.model.to(device=self.device)
 
         logger.info(f"Saving model to ONNX format at {str(path)}")
         onnx.export(
             self.model,
-            example_input,
+            self.example_input,
             path,
             input_names=["video"],
             output_names=["classes"],
