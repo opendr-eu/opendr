@@ -539,6 +539,7 @@ class X3DLearner(Learner):
             output_names=["classes"],
             do_constant_folding=do_constant_folding,
             verbose=verbose,
+            opset_version=11,
         )
 
     def _load_onnx(self, path: Union[str, Path]):
