@@ -73,7 +73,7 @@ class CoX3DLearner(X3DLearner):
             lr, iters, batch_size, optimizer, backbone, network_head, temp_path, device, loss, weight_decay,
             momentum, drop_last, pin_memory, num_workers, seed, num_classes, *args, **kwargs,
         )
-        self.temporal_window_size = temporal_window_size or self.model_hparams["frames_per_clip"]
+        self.temporal_window_size = temporal_window_size
 
     def init_model(self) -> CoX3D:
         """Initialise model with random parameters
@@ -87,7 +87,7 @@ class CoX3DLearner(X3DLearner):
         self.model = CoX3D(
             dim_in=3,
             image_size=self.model_hparams["image_size"],
-            frames_per_clip=self.model_hparams["frames_per_clip"],
+            frames_per_clip=self.temporal_window_size or self.model_hparams["frames_per_clip"],
             num_classes=self.num_classes,
             conv1_dim=self.model_hparams["conv1_dim"],
             conv5_dim=self.model_hparams["conv5_dim"],
