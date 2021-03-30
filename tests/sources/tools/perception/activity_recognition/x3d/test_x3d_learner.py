@@ -18,7 +18,7 @@ import unittest
 
 from perception.activity_recognition.x3d.x3d_learner import X3DLearner
 from perception.activity_recognition.datasets.kinetics import KineticsDataset
-
+from engine.data import Video
 from pathlib import Path
 from logging import getLogger
 
@@ -96,10 +96,19 @@ class TestX3DLearner(unittest.TestCase):
         batch = next(iter(dl))[0]
 
         self.learner.load_model_weights(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
-        results = self.learner.infer(batch)
 
+        # Input is Tensor
+        results1 = self.learner.infer(batch)
         # Results is a batch with each item summing to 1.0
-        assert torch.all(torch.sum(results, dim=1) == torch.ones((2, 1)))
+        assert torch.all(torch.sum(results1, dim=1) == torch.ones((2, 1)))
+
+        # Input is Video
+        results2 = self.learner.infer(Video(batch[0]))
+        assert torch.allclose(results1[0], results2)
+
+        # Input is List[Video]
+        results3 = self.learner.infer([Video(v) for v in batch])
+        assert torch.allclose(results1, results3)
 
     # Redundant test: Same code is executed internally in `test_optimize`
     # def test_save_load_onnx(self):

@@ -23,16 +23,16 @@ from utils.io import bump_version
 from torch import onnx
 import onnxruntime as ort
 
+from engine.data import Video
 from engine.datasets import Dataset
 
-# from engine.data import Video  # TODO: impl in engine.data
 from perception.activity_recognition.x3d.algorithm.x3d import X3D
 import pytorch_lightning as pl
 
 # from engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 from logging import getLogger
-from typing import Any, Iterable, Union, Dict
+from typing import Any, Iterable, Union, Dict, List
 
 logger = getLogger(__name__)
 
@@ -456,15 +456,24 @@ class X3DLearner(Learner):
         }
         return results
 
-    def infer(self, batch: torch.Tensor) -> torch.Tensor:
+    def infer(self, batch: Union[Video, List[Video], torch.Tensor]) -> torch.Tensor:
         """Run inference on a batch of data
 
         Args:
-            batch (torch.Tensor): Batch of video-clips. The batch should have shape (B, 3, T, H, W).
+            batch (torch.Tensor): Video or batch of video-clips.
+                The video should have shape (3, T, H, W). If a batch is supplied, its shape should be (B, 3, T, H, W).
 
         Returns:
             torch.Tensor: Network output
         """
+        # Cast to torch tensor
+        if type(batch) is Video:
+            batch = [batch]
+        if type(batch) is list:
+            batch = torch.stack([torch.tensor(v.data) for v in batch])
+
+        batch = batch.to(device=self.device, dtype=torch.float)
+
         self.model.eval()
         result = self.model.forward(batch)
         return result

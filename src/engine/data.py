@@ -269,6 +269,72 @@ class Image(Data):
         return str(self.data)
 
 
+class Video(Data):
+    """
+    A class used for representing video data.
+
+    This class provides abstract methods for:
+    - returning a NumPy compatible representation of data (numpy())
+    """
+
+    def __init__(self, data=None):
+        super().__init__(data)
+
+        if data is not None:
+            self.data = data
+
+    @property
+    def data(self):
+        """
+        Getter of data. Video class returns a float32 NumPy array.
+
+        :return: the actual data held by the object
+        :rtype: A float32 NumPy array
+        """
+        if self._data is None:
+            raise ValueError("Video is empty")
+
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """
+        Setter for data.
+
+        :param: data to be used for creating a vector
+        """
+        # Convert input data to a NumPy array
+        # Note that will also fail for non-numeric data (which is expected)
+        data = np.asarray(data, dtype=np.float32)
+
+        # Check if the supplied vector is 4D, e.g. (channels, time, height, width)
+        if len(data.shape) != 4:
+            raise ValueError(
+                "Only 4-D arrays are supported by Image. Please supply a data object that can be casted "
+                "into a 4-D NumPy array.")
+
+        self._data = data
+
+    def numpy(self):
+        """
+        Returns a NumPy-compatible representation of data.
+
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        # Since this class stores the data as NumPy arrays, we can directly return the data
+        return self.data
+
+    def __str__(self):
+        """
+        Returns a human-friendly string-based representation of the data.
+
+        :return: a human-friendly string-based representation of the data
+        :rtype: str
+        """
+        return str(self.data)
+
+
 class PointCloud(Data):
     """
     A class used for representing point cloud data.
