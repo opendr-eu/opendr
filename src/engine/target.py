@@ -244,22 +244,22 @@ class BoundingBox2D(Target):
     """
     def __init__(
         self,
+        name,
         left,
         top,
         width,
         height,
         score=0,
-        frame=-1,
     ):
         super().__init__()
+        self.name = name
         self.left = left
         self.top = top
         self.width = width
         self.height = height
         self.confidence = score
-        self.frame = frame
 
-    def mot(self, with_confidence=True):
+    def mot(self, with_confidence=True, frame=-1):
 
         if with_confidence:
             result = np.array([
@@ -309,6 +309,16 @@ class BoundingBox2DList(Target):
 
         return result
 
+    @property
+    def boxes(self):
+        return self.data
+
+    def __getitem__(self, idx):
+        return self.boxes[idx]
+
+    def __len__(self):
+        return len(self.data)
+
     def __repr__(self):
         return "BoundingBox2DList " + str(self)
 
@@ -323,6 +333,7 @@ class TrackingBoundingBox2D(Target):
     """
     def __init__(
         self,
+        name,
         left,
         top,
         width,
@@ -332,6 +343,7 @@ class TrackingBoundingBox2D(Target):
         frame=-1,
     ):
         super().__init__()
+        self.name = name
         self.left = left
         self.top = top
         self.width = width
@@ -417,6 +429,13 @@ class TrackingBoundingBox2DList(Target):
 
     def boudning_box_list(self):
         return BoundingBox2DList([box.boudning_box() for box in self.data])
+
+    @property
+    def boxes(self):
+        return self.data
+
+    def __getitem__(self, idx):
+        return self.boxes[idx]
 
     def __len__(self):
         return len(self.data)
