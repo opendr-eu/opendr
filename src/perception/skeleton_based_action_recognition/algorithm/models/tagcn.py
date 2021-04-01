@@ -1,0 +1,188 @@
+"""
+Modified based on: https://github.com/open-mmlab/mmskeleton
+"""
+
+import math
+import numpy as np
+import torch
+import torch.nn as nn
+from torch.autograd import Variable
+from perception.skeleton_based_action_recognition.algorithm.graphs.nturgbd import NTUGraph
+from perception.skeleton_based_action_recognition.algorithm.graphs.kinetics import KineticsGraph
+
+
+def weights_init(module_, bs=1):
+    if isinstance(module_, nn.Conv2d) and bs == 1:
+        nn.init.kaiming_normal_(module_.weight, mode='fan_out')
+        nn.init.constant_(module_.bias, 0)
+    elif isinstance(module_, nn.Conv2d) and bs != 1:
+        nn.init.normal_(module_.weight, 0,
+                        math.sqrt(2. / (module_.weight.size(0) * module_.weight.size(1) * module_.weight.size(2) * bs)))
+        nn.init.constant_(module_.bias, 0)
+    elif isinstance(module_, nn.BatchNorm2d):
+        nn.init.constant_(module_.weight, bs)
+        nn.init.constant_(module_.bias, 0)
+    elif isinstance(module_, nn.Linear):
+        nn.init.normal_(module_.weight, 0, math.sqrt(2. / bs))
+
+
+class GraphConvolution(nn.Module):
+    def __init__(self, in_channels, out_channels, A, cuda_):
+        super(GraphConvolution, self).__init__()
+
+        self.cuda_ = cuda_
+        self.graph_attn = nn.Parameter(torch.from_numpy(A.astype(np.float32)))
+        nn.init.constant_(self.graph_attn, 1e-6)
+        self.A = Variable(torch.from_numpy(A.astype(np.float32)), requires_grad=False)
+        self.num_subset = 3
+        self.g_conv = nn.ModuleList()
+        for i in range(self.num_subset):
+            self.g_conv.append(nn.Conv2d(in_channels, out_channels, 1))
+            weights_init(self.g_conv[i], bs=self.num_subset)
+
+        if in_channels != out_channels:
+            self.gcn_residual = nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, 1),
+                nn.BatchNorm2d(out_channels)
+            )
+        else:
+            self.gcn_residual = lambda x: x
+        weights_init(self.gcn_residual[0], bs=1)
+        weights_init(self.gcn_residual[1], bs=1)
+
+        self.bn = nn.BatchNorm2d(out_channels)
+        weights_init(self.bn, bs=1e-6)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        N, C, T, V = x.size()
+        if self.cuda_:
+            A = self.A.cuda(x.get_device())
+        else:
+            A = self.A
+        A = A + self.graph_attn
+        hidden_ = None
+        for i in range(self.num_subset):
+            x_a = x.view(N, C * T, V)
+            z = self.g_conv[i](torch.matmul(x_a, A[i]).view(N, C, T, V))
+            hidden_ = z + hidden_ if hidden_ is not None else z
+        hidden_ = self.bn(hidden_)
+        hidden_ += self.gcn_residual(x)
+        return self.relu(hidden_)
+
+
+class TemporalConvolution(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=9, stride=1):
+        super(TemporalConvolution, self).__init__()
+
+        pad = int((kernel_size - 1) / 2)
+        self.t_conv = nn.Conv2d(in_channels, out_channels, kernel_size=(kernel_size, 1),
+                                padding=(pad, 0), stride=(stride, 1))
+        self.bn = nn.BatchNorm2d(out_channels)
+        weights_init(self.t_conv, bs=1)
+        weights_init(self.bn, bs=1)
+
+    def forward(self, x):
+        x = self.bn(self.t_conv(x))
+        return x
+
+
+class TempAttnUnit(nn.Module):
+    def __init__(self, num_frames=300, num_selected_frames=100, cuda_=False):
+        super(TempAttnUnit, self).__init__()
+
+        self.cuda_ = cuda_
+        self.num_selected_frames = num_selected_frames
+        self.fc_attn_block = nn.Linear(num_frames, num_frames)
+        weights_init(self.fc_attn_block, bs=num_frames)
+        self.sigmoid = nn.Sigmoid()
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        N, C, T, V, M = x.size()
+        attn = x.mean(4).mean(2).mean(1)  # output is of size N*1*1*T*1
+        attn = self.fc_attn_block(attn)  # output os size N*T
+        attn = self.sigmoid(attn)
+        tmp = torch.ones([N, M, C, T, V], dtype=torch.float32)
+        if self.cuda_:
+            tmp = tmp.cuda()
+        attn = attn.reshape(N, 1, 1, T, 1)
+        mask_ = tmp * attn
+        # broadcast. mask_size: N*C*T*V
+        mask_ = mask_.view(N * M, C, T, V)
+        x = x * mask_
+        x = self.relu(x)
+        # select a subset of frames
+        _, indices = torch.sort(mask_, 2, descending=True)
+        sub_frames = indices[:, :, :self.num_selected_frames, :]
+        sorted_selection, mask = torch.sort(sub_frames, dim=2)
+        x = torch.gather(x, dim=2, index=sorted_selection)
+        return x
+
+
+class ST_GCN_block(nn.Module):
+    def __init__(self, in_channels, out_channels, A, cuda_=False, stride=1, residual=True):
+        super(ST_GCN_block, self).__init__()
+
+        self.gcn = GraphConvolution(in_channels, out_channels, A, cuda_)
+        self.tcn = TemporalConvolution(out_channels, out_channels, stride=stride)
+        self.relu = nn.ReLU()
+        if not residual:
+            self.residual = lambda x: 0
+        elif (in_channels == out_channels) and (stride == 1):
+            self.residual = lambda x: x
+        else:
+            self.residual = TemporalConvolution(in_channels, out_channels, kernel_size=1, stride=stride)
+
+    def forward(self, x):
+        x = self.tcn(self.gcn(x)) + self.residual(x)
+        return self.relu(x)
+
+
+class TAGCN(nn.Module):
+    def __init__(self, dataset_name='nturgbd_cv', num_frames=300, num_selected_frames=100, in_channels=3, cuda_=False):
+        super(TAGCN, self).__init__()
+
+        if dataset_name == 'nturgbd_cv' or dataset_name == 'nturgbd_cs':
+            num_class = 60
+            num_point = 25
+            num_person = 2
+            in_channels = 3
+            self.graph = NTUGraph()
+        elif dataset_name == 'kinetics':
+            num_class = 400
+            num_point = 18
+            num_person = 2
+            in_channels = 2
+            self.graph = KineticsGraph()
+
+        A = self.graph.A
+        self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point)
+        weights_init(self.data_bn, bs=1)
+
+        self.layers = nn.ModuleDict(
+            {'layer{1}': GraphConvolution(3, 64, A, cuda_),
+             'layer{2}': GraphConvolution(64, 64, A, cuda_),
+             'layer{3}': TempAttnUnit(num_frames, num_selected_frames, cuda_),
+             'layer{4}': ST_GCN_block(64, 128, A, cuda_, stride=2),
+             'layer{5}': ST_GCN_block(128, 128, A, cuda_),
+             'layer{6}': ST_GCN_block(128, 256, A, cuda_, stride=2),
+             'layer{7}': ST_GCN_block(256, 256, A, cuda_)
+             }
+        )
+
+        self.fc = nn.Linear(256, num_class)
+        weights_init(self.fc, bs=num_class)
+
+    def forward(self, x):
+        N, C, T, V, M = x.size()
+        x = x.permute(0, 4, 3, 1, 2).contiguous().view(N, M * V * C, T)
+        x = self.data_bn(x)
+        x = x.view(N, M, V, C, T).permute(0, 1, 3, 4, 2).contiguous().view(N * M, C, T, V)
+        for i in range(len(self.layers)):
+            x = self.layers['layer' + str(i+1)](x)
+        # N*M,C,T,V
+        c_new = x.size(1)
+        x = x.view(N, M, c_new, -1)
+        x = x.mean(3).mean(1)
+        return self.fc(x)

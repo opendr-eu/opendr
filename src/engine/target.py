@@ -257,3 +257,19 @@ class SpeechCommand(Target):
             return f"Class {self.data} speech command with confidence {self.confidence}"
         else:
             return f"Class {self.data} speech command"
+
+
+class ActionCategory(Target):
+    """
+    This target is used for skeleton-based action detection.
+    """
+    def __init__(self, actioncategory, confidence=None):
+        super().__init__()
+        self.data = actioncategory
+        self.confidence = confidence
+        # self.action_names = ['']
+
+    def __str__(self):
+        # action_name = self.action_names[self.data]
+        # return action_name
+        return str(self.data)
