@@ -48,7 +48,8 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         cls.logging_path = LOG_PATH_
         cls.stgcn_action_classifier = STGCNLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
                                                    checkpoint_after_iter=1, val_batch_size=1,
-                                                   dataset_name='nturgbd_cv', experiment_name='baseline_nturgbd')
+                                                   dataset_name='nturgbd_cv', experiment_name='stgcn_nturgbd',
+                                                   method_name='stgcn')
         # Download all required files for testing
         '''cls.Pretrained_MODEL_PATH = cls.stgcn_action_classifier.download(
             mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models"))
@@ -102,8 +103,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.stgcn_action_classifier.load(model_saved_path, model_name)
         model_output = self.stgcn_action_classifier.infer(test_data)
         self.assertIsNotNone(model_output, msg="The model output is None")
-        # self.assertEqual(torch.sum(model_output, dim=1), 1,
-        # msg="The sum of class probabilities should be equal to 1.")
 
     def test_save_load(self):
         self.stgcn_action_classifier.model = None
