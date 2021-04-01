@@ -109,7 +109,7 @@ class ST_GCN_block(nn.Module):
 
 
 class STGCN(nn.Module):
-    def __init__(self, dataset_name='nturgbd_cv', in_channels=3, cuda_=False):
+    def __init__(self, dataset_name='nturgbd_cv', cuda_=False):
         super(STGCN, self).__init__()
 
         if dataset_name == 'nturgbd_cv' or dataset_name == 'nturgbd_cs':

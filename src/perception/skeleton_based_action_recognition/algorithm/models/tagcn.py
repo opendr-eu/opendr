@@ -140,7 +140,7 @@ class ST_GCN_block(nn.Module):
 
 
 class TAGCN(nn.Module):
-    def __init__(self, dataset_name='nturgbd_cv', num_frames=300, num_selected_frames=100, in_channels=3, cuda_=False):
+    def __init__(self, dataset_name='nturgbd_cv', num_frames=300, num_selected_frames=100, cuda_=False):
         super(TAGCN, self).__init__()
 
         if dataset_name == 'nturgbd_cv' or dataset_name == 'nturgbd_cs':

@@ -7,8 +7,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from perception.skeleton_based_action_recognition.algorithm.graphs.nturgbd import NTUGraph
-from perception.skeleton_based_action_recognition.algorithm.graphs.kinetics import KineticsGraph
 
 
 def weights_init(module_, bs=1):
@@ -27,28 +25,29 @@ def weights_init(module_, bs=1):
 
 
 class GraphConvolution(nn.Module):
-    def __init__(self, in_channels, out_channels, A, cuda_):
+    def __init__(self, in_channels, out_channels, graph_dim1, graph_dim2, symmetric, cuda_):
         super(GraphConvolution, self).__init__()
 
         self.cuda_ = cuda_
-        self.graph_attn = nn.Parameter(torch.ones(A.size()))
-        self.graph_attn = Variable(self.graph_attn.astype(np.float32), requires_grad=False)
-        # self.graph_attn = nn.Parameter(torch.from_numpy(A.astype(np.float32)))
-        # nn.init.constant_(self.graph_attn, 1)
-        self.A = Variable(torch.from_numpy(A.astype(np.float32)), requires_grad=False)
         self.num_subset = 3
+        self.symmetric = symmetric
+        self.rand_graph = nn.Parameter(torch.from_numpy(
+            np.random.rand(self.num_subset, graph_dim1, graph_dim2).astype(np.float32)))
         self.g_conv = nn.ModuleList()
         for i in range(self.num_subset):
             self.g_conv.append(nn.Conv2d(in_channels, out_channels, 1))
             weights_init(self.g_conv[i], bs=self.num_subset)
 
-        if in_channels != out_channels:
+        if graph_dim1 != graph_dim2:
             self.gcn_residual = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, 1),
+                nn.Conv2d(in_channels, out_channels, kernel_size=(graph_dim2, graph_dim1)),
                 nn.BatchNorm2d(out_channels)
             )
         else:
-            self.gcn_residual = lambda x: x
+            self.gcn_residual = nn.Sequential(
+                    nn.Conv2d(in_channels, out_channels, kernel_size=(1, 1)),
+                    nn.BatchNorm2d(out_channels)
+            )
         weights_init(self.gcn_residual[0], bs=1)
         weights_init(self.gcn_residual[1], bs=1)
 
@@ -58,11 +57,12 @@ class GraphConvolution(nn.Module):
 
     def forward(self, x):
         N, C, T, V = x.size()
+        A = self.rand_graph
+        if self.symmetric:
+            for i in range(self.num_subset):
+                A[i, :, :] = torch.matmul(self.rand_graph[i, :, :], torch.transpose(self.rand_graph[i, :, :], 1, -1))
         if self.cuda_:
-            A = self.A.cuda(x.get_device())
-        else:
-            A = self.A
-        A = A * self.graph_attn
+            A = A.cuda(x.get_device())
         hidden_ = None
         for i in range(self.num_subset):
             x_a = x.view(N, C * T, V)
@@ -74,11 +74,11 @@ class GraphConvolution(nn.Module):
 
 
 class TemporalConvolution(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size=9, stride=1):
+    def __init__(self, in_channels, out_channels, kernel_size_joint=1, kernel_size_=9, stride=1):
         super(TemporalConvolution, self).__init__()
 
-        pad = int((kernel_size - 1) / 2)
-        self.t_conv = nn.Conv2d(in_channels, out_channels, kernel_size=(kernel_size, 1),
+        pad = int((kernel_size_ - 1) / 2)
+        self.t_conv = nn.Conv2d(in_channels, out_channels, kernel_size=(kernel_size_, kernel_size_joint),
                                 padding=(pad, 0), stride=(stride, 1))
         self.bn = nn.BatchNorm2d(out_channels)
         weights_init(self.t_conv, bs=1)
@@ -90,18 +90,19 @@ class TemporalConvolution(nn.Module):
 
 
 class ST_GCN_block(nn.Module):
-    def __init__(self, in_channels, out_channels, A, cuda_=False, stride=1, residual=True):
+    def __init__(self, in_channels, out_channels, graph_dim1=25, graph_dim2=25, symmetric=False, cuda_=False, stride=1, residual=True):
         super(ST_GCN_block, self).__init__()
 
-        self.gcn = GraphConvolution(in_channels, out_channels, A, cuda_)
+        self.gcn = GraphConvolution(in_channels, out_channels, graph_dim1, graph_dim2, symmetric, cuda_)
         self.tcn = TemporalConvolution(out_channels, out_channels, stride=stride)
         self.relu = nn.ReLU()
         if not residual:
             self.residual = lambda x: 0
-        elif (in_channels == out_channels) and (stride == 1):
-            self.residual = lambda x: x
         else:
-            self.residual = TemporalConvolution(in_channels, out_channels, kernel_size=1, stride=stride)
+            if graph_dim1 != graph_dim2:
+                self.residual = TemporalConvolution(in_channels, out_channels, kernel_size_joint=graph_dim1, stride=stride)
+            else:
+                self.residual = TemporalConvolution(in_channels, out_channels, kernel_size_joint=1, stride=stride)
 
     def forward(self, x):
         x = self.tcn(self.gcn(x)) + self.residual(x)
@@ -109,7 +110,7 @@ class ST_GCN_block(nn.Module):
 
 
 class STBLN(nn.Module):
-    def __init__(self, dataset_name='nturgbd_cv', in_channels=3, cuda_=False):
+    def __init__(self, dataset_name='nturgbd_cv', symmetric=False, cuda_=False):
         super(STBLN, self).__init__()
 
         if dataset_name == 'nturgbd_cv' or dataset_name == 'nturgbd_cs':
@@ -117,29 +118,26 @@ class STBLN(nn.Module):
             num_point = 25
             num_person = 2
             in_channels = 3
-            self.graph = NTUGraph()
         elif dataset_name == 'kinetics':
             num_class = 400
             num_point = 18
             num_person = 2
             in_channels = 2
-            self.graph = KineticsGraph()
 
-        A = self.graph.A
         self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point)
         weights_init(self.data_bn, bs=1)
 
         self.layers = nn.ModuleDict(
-            {'layer{1}': ST_GCN_block(3, 64, A, cuda_, residual=False),
-             'layer{2}': ST_GCN_block(64, 64, A, cuda_),
-             'layer{3}': ST_GCN_block(64, 64, A, cuda_),
-             'layer{4}': ST_GCN_block(64, 64, A, cuda_),
-             'layer{5}': ST_GCN_block(64, 128, A, cuda_, stride=2),
-             'layer{6}': ST_GCN_block(128, 128, A, cuda_),
-             'layer{7}': ST_GCN_block(128, 128, A, cuda_),
-             'layer{8}': ST_GCN_block(128, 256, A, cuda_, stride=2),
-             'layer{9}': ST_GCN_block(256, 256, A, cuda_),
-             'layer{10}': ST_GCN_block(256, 256, A, cuda_)}
+            {'layer{1}': ST_GCN_block(3, 64, num_point, num_point, symmetric, cuda_, residual=False),
+             'layer{2}': ST_GCN_block(64, 64, num_point, num_point, symmetric, cuda_),
+             'layer{3}': ST_GCN_block(64, 64, num_point, num_point, symmetric, cuda_),
+             'layer{4}': ST_GCN_block(64, 64, num_point, num_point, symmetric, cuda_),
+             'layer{5}': ST_GCN_block(64, 128, num_point, 1, symmetric, cuda_, stride=2),
+             'layer{6}': ST_GCN_block(128, 128, 1, 1, symmetric, cuda_),
+             'layer{7}': ST_GCN_block(128, 128, 1, 1, symmetric, cuda_),
+             'layer{8}': ST_GCN_block(128, 256, 1, 1, symmetric, cuda_, stride=2),
+             'layer{9}': ST_GCN_block(256, 256, 1, 1, symmetric, cuda_),
+             'layer{10}': ST_GCN_block(256, 256, 1, 1, symmetric, cuda_)}
         )
 
         self.fc = nn.Linear(256, num_class)
