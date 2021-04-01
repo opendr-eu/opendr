@@ -17,7 +17,7 @@ import shutil
 import os
 import torch
 import numpy as np
-from perception.skeleton_based_action_recognition.STGCN_Learner import STGCNLearner
+from perception.skeleton_based_action_recognition.stgcn_learner import STGCNLearner
 from engine.datasets import ExternalDataset
 
 
