@@ -395,6 +395,7 @@ class ObjectTracking2DFairMotLearner(Learner):
 
             result = TrackingBoundingBox2DList([
                 TrackingBoundingBox2D(
+                    name=0,
                     top=tlwh[0],
                     left=tlwh[1],
                     width=tlwh[2],
