@@ -52,7 +52,8 @@ class STGCNLearner(Learner):
                  checkpoint_after_iter=500, checkpoint_load_iter=0, temp_path='temp',
                  device='cuda', num_workers=32, epochs=50, experiment_name='baseline_nturgbd',
                  device_ind='None', val_batch_size=256, drop_after_epoch=[30, 40],
-                 dataset_name='nturgbd_cv', start_epoch=0):
+                 dataset_name='nturgbd_cv', method_name='stgcn', stbln_symmetric=False, num_frames= 300,
+                 num_subframes=100, start_epoch=0):
         super(STGCNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                            checkpoint_after_iter=checkpoint_after_iter,
                                            checkpoint_load_iter=checkpoint_load_iter,
@@ -78,9 +79,20 @@ class STGCNLearner(Learner):
         self.logging = False
         self.best_acc = 0
         self.start_epoch = start_epoch
+        self.method_name = method_name
+        self.stbln_symmetric = stbln_symmetric
+        self.num_frames = num_frames
+        self.num_subframes = num_subframes
+
+        if self.num_subframes > self.num_frames:
+            raise ValueError('number of subframes should be smaller than number of frames.')
+
         if self.dataset_name is None:
             raise ValueError(self.dataset_name +
                              "is not a valid dataset name. Supported datasets: nturgbd_cv, nturgbd_cs, kinetics")
+        if self.method_name is None or self.method_name not in ['stgcn', 'tagcn', 'stbln']:
+            raise ValueError(self.method_name +
+                             "is not a valid dataset name. Supported methods: stgcn, tagcn, stbln")
 
         if self.device == 'cuda':
             self.output_device = self.device_ind[0] if type(self.device_ind) is list else self.device_ind
@@ -391,18 +403,30 @@ class STGCNLearner(Learner):
 
     def init_model(self):
         """Initializes the imported model."""
-        if self.logging:
-            shutil.copy2(inspect.getfile(STGCN), self.logging_path)
+        cuda_ = (self.device == 'cuda')
+
+        if self.method_name == 'stgcn':
+            self.model = STGCN(self.dataset_name, cuda_=cuda_)
+            if self.logging:
+                shutil.copy2(inspect.getfile(STGCN), self.logging_path)
+        elif self.method_name == 'tagcn':
+            self.model = TAGCN(self.dataset_name, self.num_frames, self.num_subframes, cuda_=cuda_)
+            if self.logging:
+                shutil.copy2(inspect.getfile(TAGCN), self.logging_path)
+        elif self.method_name == 'stbln':
+            self.model = STBLN(self.dataset_name, self.stbln_symmetric, cuda_=cuda_)
+            if self.logging:
+                shutil.copy2(inspect.getfile(STBLN), self.logging_path)
+        self.loss = nn.CrossEntropyLoss()
+
         if self.device == 'cuda':
-            self.model = STGCN(self.dataset_name, cuda_=True).cuda(self.output_device)
+            self.model = self.model.cuda(self.output_device)
             if type(self.device_ind) is list:
                 if len(self.device_ind) > 1:
                     self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
                                                  output_device=self.output_device)
-            self.loss = nn.CrossEntropyLoss().cuda(self.output_device)
-        else:
-            self.model = STGCN(self.dataset_name, cuda_=False)
-            self.loss = nn.CrossEntropyLoss()
+            self.loss = self.loss.cuda(self.output_device)
+
         print(self.model)
 
     def infer(self, SkeletonSeq_batch):

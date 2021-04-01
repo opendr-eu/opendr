@@ -157,5 +157,3 @@ class STGCN(nn.Module):
         x = x.view(N, M, c_new, -1)
         x = x.mean(3).mean(1)
         return self.fc(x)
-
-
