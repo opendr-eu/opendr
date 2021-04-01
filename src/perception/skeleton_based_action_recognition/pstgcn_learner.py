@@ -41,9 +41,7 @@ from engine.target import ActionCategory
 from engine.constants import OPENDR_SERVER_URL
 
 # OpenDR skeleton_based_action_recognition imports
-from perception.skeleton_based_action_recognition.algorithm.models.stgcn import STGCN
-from perception.skeleton_based_action_recognition.algorithm.models.tagcn import TAGCN
-from perception.skeleton_based_action_recognition.algorithm.models.stbln import STBLN
+from perception.skeleton_based_action_recognition.algorithm.models.pstgcn import PSTGCN
 from perception.skeleton_based_action_recognition.algorithm.datasets.feeder import Feeder
 
 
@@ -53,7 +51,8 @@ class STGCNLearner(Learner):
                  device='cuda', num_workers=32, epochs=50, experiment_name='baseline_nturgbd',
                  device_ind='None', val_batch_size=256, drop_after_epoch=[30, 40],
                  start_epoch=0, dataset_name='nturgbd_cv',
-                 method_name='stgcn', stbln_symmetric=False, num_frames= 300, num_subframes=100):
+                 blocksize=20, numblocks=10, numlayers=10, topology=[],
+                 layer_threshold=1e-4, block_threshold=1e-4):
         super(STGCNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                            checkpoint_after_iter=checkpoint_after_iter,
                                            checkpoint_load_iter=checkpoint_load_iter,
@@ -79,10 +78,12 @@ class STGCNLearner(Learner):
         self.logging = False
         self.best_acc = 0
         self.start_epoch = start_epoch
-        self.method_name = method_name
-        self.stbln_symmetric = stbln_symmetric
-        self.num_frames = num_frames
-        self.num_subframes = num_subframes
+        self.blocksize = blocksize
+        self.numblocks = numblocks
+        self.numlayers = numlayers
+        self.topology = topology
+        self.layer_threshold = layer_threshold
+        self.block_threshold = block_threshold
 
         if self.num_subframes > self.num_frames:
             raise ValueError('number of subframes should be smaller than number of frames.')
@@ -133,10 +134,8 @@ class STGCNLearner(Learner):
         :return: returns stats regarding the last evaluation ran
         :rtype: dict
         """
-        self.logging_path = logging_path
-        self.global_step = 0
-        self.best_acc = 0
         # Tensorboard logging
+        self.logging_path = logging_path
         if self.logging_path != '' and self.logging_path is not None:
             self.logging = True
             self.tensorboard_logging_path = os.path.join(self.logging_path, self.experiment_name + '_tensorboard')
@@ -147,121 +146,162 @@ class STGCNLearner(Learner):
                 self.val_writer = SummaryWriter(os.path.join(self.tensorboard_logging_path, 'test'), 'test')
         else:
             self.logging = False
-        # Initialize the model
-        if self.model is None:
-            self.init_model()
-        # Load the model from a checkpoint
-        checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
-        if self.checkpoint_after_iter != 0 and not os.path.exists(checkpoints_folder):
-            os.makedirs(checkpoints_folder)  # Checkpoints folder was just created
-        if self.checkpoint_load_iter != 0:
-            checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
-            checkpoint_name = self.experiment_name + '-' + str(self.epochs - 1) + '-' + str(int(
-                self.checkpoint_load_iter)) + '.pt'
-            checkpoint_path = os.path.join(checkpoints_folder, checkpoint_name)
-            self.__load_from_pt(checkpoint_path)
-        if verbose:
-            print("Model trainable parameters:", self.count_parameters())
-        # set the optimizer
-        if self.optimizer_name == 'sgd':
-            self.optimizer_ = optim.SGD(
-                self.model.parameters(),
-                lr=self.lr,
-                momentum=momentum,
-                nesterov=nesterov,
-                weight_decay=weight_decay)
-        elif self.optimizer_name == 'adam':
-            self.optimizer_ = optim.Adam(
-                self.model.parameters(),
-                lr=self.lr,
-                weight_decay=weight_decay)
-        else:
-            raise ValueError(self.optimizer_ + "is not a valid optimizer name. Supported optimizers: sgd, adam")
 
-        if self.lr_schedule != '':
-            scheduler = self.lr_schedule
-        else:
-            scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer_, milestones=self.drop_after_epoch, gamma=0.1,
-                                                       last_epoch=-1, verbose=True)
-        # load data
-        traindata = self.__prepare_dataset(dataset,
-                                           data_filename=train_data_filename,
-                                           labels_filename=train_labels_filename,
-                                           verbose=verbose and not silent)
-
-        train_loader = DataLoader(dataset=traindata,
-                                  batch_size=self.batch_size,
-                                  shuffle=True,
-                                  num_workers=self.num_workers,
-                                  drop_last=True,
-                                  worker_init_fn=self.init_seed(1))
-        # start training
-        self.global_step = self.start_epoch * len(train_loader) / self.batch_size
-        # self.checkpoint_after_iter = int(len(train_loader) / self.batch_size)
-        for epoch in range(self.start_epoch, self.epochs):
-            self.model.train()
-            self.print_log('Training epoch: {}'.format(epoch + 1))
-            # save_model = ((self.global_step + 1) % self.checkpoint_after_iter == 0) or (epoch + 1 == self.epochs)
-            save_model = ((epoch + 1) % self.checkpoint_after_iter == 0) or (epoch + 1 == self.epochs)
-            loss_value = []
-            if self.logging:
-                self.train_writer.add_scalar('epoch', epoch, self.global_step)
-            self.record_time()
-            timer = dict(dataloader=0.001, model=0.001, statistics=0.001)
-            process = tqdm(train_loader)
-            for batch_idx, (data, label, index) in enumerate(process):
-                self.global_step += 1
-                # get data
-                if self.device == 'cuda':
-                    data = Variable(data.float().cuda(self.output_device), requires_grad=False)
-                    label = Variable(label.long().cuda(self.output_device), requires_grad=False)
+        # start building the model progressively
+        loss_layer_old = 1e+10
+        loss_block_old = 1e+10
+        loss_layer_new = 1e+10
+        for layer_iter in range(self.numlayers):
+            # add a new layer
+            self.topology.append(0)
+            for block_iter in range(self.numblocks):
+                print('######################################################################\n')
+                print('layer.' + str(layer_iter) + '_block.' + str(block_iter))
+                print('\n######################################################################\n')
+                # add a new block
+                self.topology[layer_iter] = self.topology[layer_iter] + 1
+                # build the model and initialize it with random parameters
+                self.init_model()
+                if verbose:
+                    print("Model trainable parameters:", self.count_parameters())
+                # set the optimizer
+                if self.optimizer_name == 'sgd':
+                    self.optimizer_ = optim.SGD(
+                        self.model.parameters(),
+                        lr=self.lr,
+                        momentum=momentum,
+                        nesterov=nesterov,
+                        weight_decay=weight_decay)
+                elif self.optimizer_name == 'adam':
+                    self.optimizer_ = optim.Adam(
+                        self.model.parameters(),
+                        lr=self.lr,
+                        weight_decay=weight_decay)
                 else:
-                    data = Variable(data.float(), requires_grad=False)
-                    label = Variable(label.long(), requires_grad=False)
-                timer['dataloader'] += self.split_time()
-
-                # forward
-                output = self.model(data)
-                if isinstance(output, tuple):
-                    output, l1 = output
-                    l1 = l1.mean()
+                    raise ValueError(
+                        self.optimizer_ + "is not a valid optimizer name. Supported optimizers: sgd, adam")
+                if self.lr_schedule != '':
+                    scheduler = self.lr_schedule
                 else:
-                    l1 = 0
-                loss = self.loss(output, label) + l1
+                    scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer_, milestones=self.drop_after_epoch,
+                                                               gamma=0.1,
+                                                               last_epoch=-1, verbose=True)
+                # load data
+                traindata = self.__prepare_dataset(dataset,
+                                                   data_filename=train_data_filename,
+                                                   labels_filename=train_labels_filename,
+                                                   verbose=verbose and not silent)
 
-                # backward
-                self.optimizer_.zero_grad()
-                loss.backward()
-                self.optimizer_.step()
-                loss_value.append(loss.data.item())
-                timer['model'] += self.split_time()
+                train_loader = DataLoader(dataset=traindata,
+                                          batch_size=self.batch_size,
+                                          shuffle=True,
+                                          num_workers=self.num_workers,
+                                          drop_last=True,
+                                          worker_init_fn=self.init_seed(1))
 
-                value, predict_label = torch.max(output.data, 1)
-                acc = torch.mean((predict_label == label.data).float())
-                if self.logging:
-                    self.train_writer.add_scalar('acc', acc, self.global_step)
-                    self.train_writer.add_scalar('loss', loss.data.item(), self.global_step)
-                    self.train_writer.add_scalar('loss_l1', l1, self.global_step)
+                # initialize the previous layers or blocks with trained weights
+                if layer_iter > 0 or block_iter > 0:
+                    if block_iter == 0:
+                        checkpoint_name = self.experiment_name + '-' + str(
+                                        len(self.topology) - 1) + '-' + str(self.topology[-2])
+                    else:
+                        checkpoint_name = self.experiment_name + '-' + str(
+                                        len(self.topology)) + '-' + str(self.topology[-1] - 1)
 
-                # statistics
-                self.lr = self.optimizer_.param_groups[0]['lr']
-                if self.logging:
-                    self.train_writer.add_scalar('lr', self.lr, self.global_step)
-                timer['statistics'] += self.split_time()
+                    checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
+                    self.ort_session = None
+                    self.load(checkpoints_folder, checkpoint_name)
 
-            # statistics of time consumption and loss
-            proportion = {k: '{:02d}%'.format(int(round(v * 100 / sum(timer.values()))))
-                          for k, v in timer.items()}
-            self.print_log('\t Mean training loss: {:.4f}.'.format(np.mean(loss_value)))
-            self.print_log('\t Time consumption: [Data]{dataloader}, [Network]{model}'.format(**proportion))
-            if save_model:
-                checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
-                checkpoint_name = self.experiment_name + '-' + str(epoch) + '-' + str(int(self.global_step))
-                self.ort_session = None
-                self.save(path=checkpoints_folder, model_name=checkpoint_name)
-            self.eval(val_dataset, epoch, val_data_filename=val_data_filename, val_labels_filename=val_labels_filename)
-            scheduler.step()
-        print('best accuracy: ', self.best_acc, ' model_name: ', self.experiment_name)
+                # start training
+                self.best_acc = 0
+                self.global_step = self.start_epoch * len(train_loader) / self.batch_size
+                for epoch in range(self.start_epoch, self.epochs):
+                    self.model.train()
+                    self.print_log('Training epoch: {}'.format(epoch + 1))
+                    save_model = (epoch + 1 == self.epochs)
+                    loss_value = []
+                    if self.logging:
+                        self.train_writer.add_scalar('epoch', epoch, self.global_step)
+                    self.record_time()
+                    timer = dict(dataloader=0.001, model=0.001, statistics=0.001)
+                    process = tqdm(train_loader)
+                    for batch_idx, (data, label, index) in enumerate(process):
+                        self.global_step += 1
+                        # get data
+                        if self.device == 'cuda':
+                            data = Variable(data.float().cuda(self.output_device), requires_grad=False)
+                            label = Variable(label.long().cuda(self.output_device), requires_grad=False)
+                        else:
+                            data = Variable(data.float(), requires_grad=False)
+                            label = Variable(label.long(), requires_grad=False)
+                        timer['dataloader'] += self.split_time()
+
+                        # forward
+                        output = self.model(data)
+                        if isinstance(output, tuple):
+                            output, l1 = output
+                            l1 = l1.mean()
+                        else:
+                            l1 = 0
+                        loss = self.loss(output, label) + l1
+
+                        # backward
+                        self.optimizer_.zero_grad()
+                        loss.backward()
+                        self.optimizer_.step()
+                        loss_value.append(loss.data.item())
+                        timer['model'] += self.split_time()
+
+                        value, predict_label = torch.max(output.data, 1)
+                        acc = torch.mean((predict_label == label.data).float())
+                        if self.logging:
+                            self.train_writer.add_scalar('acc', acc, self.global_step)
+                            self.train_writer.add_scalar('loss', loss.data.item(), self.global_step)
+                            self.train_writer.add_scalar('loss_l1', l1, self.global_step)
+
+                        # statistics
+                        self.lr = self.optimizer_.param_groups[0]['lr']
+                        if self.logging:
+                            self.train_writer.add_scalar('lr', self.lr, self.global_step)
+                        timer['statistics'] += self.split_time()
+
+                    # statistics of time consumption and loss
+                    proportion = {k: '{:02d}%'.format(int(round(v * 100 / sum(timer.values()))))
+                                  for k, v in timer.items()}
+                    self.print_log('\t Mean training loss: {:.4f}.'.format(np.mean(loss_value)))
+                    self.print_log('\t Time consumption: [Data]{dataloader}, [Network]{model}'.format(**proportion))
+                    if save_model:
+                        checkpoints_folder = os.path.join(self.parent_dir,
+                                                          '{}_checkpoints'.format(self.experiment_name))
+                        checkpoint_name = self.experiment_name + '-' + str(
+                                        len(self.topology)) + '-' + str(self.topology[-1])
+                        self.ort_session = None
+                        self.save(path=checkpoints_folder, model_name=checkpoint_name)
+                    self.eval(val_dataset, epoch, val_data_filename=val_data_filename,
+                              val_labels_filename=val_labels_filename)
+                    scheduler.step()
+
+                # training the model with a new block is finished with following performance:
+                print('best accuracy: ', self.best_acc, ' model_name: ', self.experiment_name)
+                loss_block_new = np.mean(loss_value)
+                if block_iter > 0:
+                    loss_b = -1 * (loss_block_new - loss_block_old) / loss_block_old
+                    if loss_b <= self.block_threshold:
+                        self.topology[layer_iter] = self.topology[layer_iter] - 1
+                        print('block' + str(block_iter) + 'of layer' + str(layer_iter) + 'is removed \n')
+                        print('block progression is stopped in layer' + str(layer_iter))
+                        break
+                loss_block_old = loss_block_new
+                loss_layer_new = loss_block_new
+            if layer_iter > 0:
+                loss_l = -1 * (loss_layer_new - loss_layer_old) / loss_layer_old
+                if loss_l <= self.layer_threshold:
+                    self.topology.pop()
+                    print('layer' + str(layer_iter) + 'is removed \n')
+                    print('layer progression is stopped')
+                    break
+            loss_layer_old = loss_layer_new
+        np.save(os.path.join(self.logging_path, 'Topology.npy'), self.topology)
 
     def eval(self, val_dataset, epoch=0, silent=False, verbose=True,
              val_data_filename='val_joints.npy', val_labels_filename='val_labels.pkl', save_score=False,
@@ -403,30 +443,18 @@ class STGCNLearner(Learner):
 
     def init_model(self):
         """Initializes the imported model."""
-        cuda_ = (self.device == 'cuda')
-
-        if self.method_name == 'stgcn':
-            self.model = STGCN(self.dataset_name, cuda_=cuda_)
-            if self.logging:
-                shutil.copy2(inspect.getfile(STGCN), self.logging_path)
-        elif self.method_name == 'tagcn':
-            self.model = TAGCN(self.dataset_name, self.num_frames, self.num_subframes, cuda_=cuda_)
-            if self.logging:
-                shutil.copy2(inspect.getfile(TAGCN), self.logging_path)
-        elif self.method_name == 'stbln':
-            self.model = STBLN(self.dataset_name, self.stbln_symmetric, cuda_=cuda_)
-            if self.logging:
-                shutil.copy2(inspect.getfile(STBLN), self.logging_path)
-        self.loss = nn.CrossEntropyLoss()
-
+        if self.logging:
+            shutil.copy2(inspect.getfile(PSTGCN), self.logging_path)
         if self.device == 'cuda':
-            self.model = self.model.cuda(self.output_device)
+            self.model = PSTGCN(self.dataset_name, self.topology, self.blocksize, cuda_=True).cuda(self.output_device)
             if type(self.device_ind) is list:
                 if len(self.device_ind) > 1:
                     self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
                                                  output_device=self.output_device)
-            self.loss = self.loss.cuda(self.output_device)
-
+            self.loss = nn.CrossEntropyLoss().cuda(self.output_device)
+        else:
+            self.model = PSTGCN(self.dataset_name, self.topology, self.blocksize, cuda_=False)
+            self.loss = nn.CrossEntropyLoss()
         print(self.model)
 
     def infer(self, SkeletonSeq_batch):
@@ -600,6 +628,7 @@ class STGCNLearner(Learner):
         :param verbose: whether to print success message or not, defaults to 'True'
         :type verbose: bool, optional
         """
+
         if path is not None:
             self.print_log('Load weights from {}.'.format(path))
             try:
@@ -615,18 +644,44 @@ class STGCNLearner(Learner):
                     [[k.split('module.')[-1], v.cuda(self.output_device)] for k, v in weights.items()])
             else:
                 weights = OrderedDict([[k.split('module.')[-1], v] for k, v in weights.items()])
-                # keys = list(weights.keys())
-            try:
+            old_keys = list(weights.keys())
+            if self.model is None and len(self.topology) == 0:
+                raise ValueError('the model is not built yet and it cannot be initialized.'
+                                 'please run fit function first, to build the model or '
+                                 'define a topology for the model.')
+            elif self.model is None and len(self.topology) != 0:
                 self.init_model()
-                self.model.load_state_dict(weights)
-            except Exception:
-                state = self.model.state_dict()
-                diff = list(set(state.keys()).difference(set(weights.keys())))
-                print('Could not find these weights:')
-                for d in diff:
-                    print('  ' + d)
-                state.update(weights)
-                self.model.load_state_dict(state)
+
+            for current_key in self.model.state_dict():
+                if 'graph_attn' in current_key:
+                    if current_key in old_keys:
+                        new_state_dict = OrderedDict({current_key: weights[current_key]})
+                        self.model.load_state_dict(new_state_dict, strict=False)
+                if ('g_conv' or 'gcn_residual' or 'tcn.t_conv.bias' or 'residual' or 'bn.weight' or 'bn.bias' or
+                    'bn.running_mean' or 'bn.running_var') in current_key:
+                    if current_key in old_keys:
+                        A = self.model.state_dict()[current_key]
+                        old_sh = weights[current_key].shape
+                        print('old_sh', old_sh)
+                        A[:old_sh[0]] = weights[current_key]
+                        new_state_dict = OrderedDict({current_key: A})
+                        self.model.load_state_dict(new_state_dict, strict=False)
+                if 'tcn.t_conv.weight' in current_key:
+                    if current_key in old_keys:
+                        A = self.model.state_dict()[current_key]
+                        old_sh = weights[current_key].shape
+                        A[:old_sh[0], :old_sh[1]] = weights[current_key]
+                        new_state_dict = OrderedDict({current_key: A})
+                        self.model.load_state_dict(new_state_dict, strict=False)
+                block_iter = len(self.topology[-1] -1)
+                if ('fc.weight' in current_key) and (block_iter > 0):
+                    if current_key in old_keys:
+                        A = self.model.state_dict()[current_key]
+                        old_sh = weights[current_key].shape
+                        A[:old_sh[0], :old_sh[1]] = weights[current_key]
+                        new_state_dict = OrderedDict({current_key: A})
+                        self.model.load_state_dict(new_state_dict, strict=False)
+
             if self.device == "cuda":
                 self.model = self.model.cuda(self.output_device)
 
@@ -638,35 +693,9 @@ class STGCNLearner(Learner):
         """
         self.ort_session = onnxruntime.InferenceSession(path)
 
-        # I might merge this function with __convert_to_onnx
-        '''# Load the ONNX model
-        onnx_model = onnx.load(path)
-        onnx.checker.check_model(onnx_model)
+    def progressive_arch_search(self):
 
-        ort_session = onnxruntime.InferenceSession(path)
-
-        def to_numpy(tensor):
-            return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
-
-        # compute ONNX Runtime output prediction
-        ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(onnx_input)}
-        ort_outs = ort_session.run(None, ort_inputs)
-
-        # compare ONNX Runtime and PyTorch results
-        np.testing.assert_allclose(to_numpy(torch_out), ort_outs[0], rtol=1e-03, atol=1e-05)
-
-        print("Exported model has been tested with ONNXRuntime, and the result looks good!")'''
-
-        # The comments below are the alternative way to use the onnx model, it might be useful in the future
-        # depending on how ONNX saving/loading will be implemented across the toolkit.
-        # # Load the ONNX model
-        # self.model = onnx.load(path)
-        #
-        # # Check that the IR is well formed
-        # onnx.checker.check_model(self.model)
-        #
-        # # Print a human readable representation of the graph
-        # onnx.helper.printable_graph(self.model.graph)
+                train_loss, train_acc = self.fit()
 
     def download(self, path=None, mode="pretrained", verbose=False,
                  url=OPENDR_SERVER_URL + "skeleton_based_action_recognition/"):

@@ -29,7 +29,6 @@ def weights_init(module_, bs=1):
 class GraphConvolution(nn.Module):
     def __init__(self, in_channels, out_channels, A, cuda_):
         super(GraphConvolution, self).__init__()
-
         self.cuda_ = cuda_
         self.graph_attn = nn.Parameter(torch.from_numpy(A.astype(np.float32)))
         nn.init.constant_(self.graph_attn, 1e-6)
