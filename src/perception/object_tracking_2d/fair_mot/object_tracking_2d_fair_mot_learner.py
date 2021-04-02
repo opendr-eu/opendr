@@ -275,7 +275,7 @@ class ObjectTracking2DFairMotLearner(Learner):
                 self.model_optimizer, resume_optimizer, self.lr, self.lr_step, log=logger.log,
             )
 
-        train(
+        last_eval_result = train(
             self.model,
             self.infer,
             self.model_optimizer,
@@ -315,6 +315,8 @@ class ObjectTracking2DFairMotLearner(Learner):
         )
 
         logger.close()
+
+        return last_eval_result
 
     def eval(
         self,
