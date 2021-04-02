@@ -170,3 +170,15 @@ The [TrackingBoundingBox3DList](#class_engine.target.TrackingBoundingBox3DList) 
   Returns the [BoundingBox3DList](#class_engine.target.BoundingBox3DList) object cunstructed from this object by discarding `frame` and `id` data.
 #### from_kitti(boxes_kitti)
   Static method that constructs [BoundingBox3DList](#class_engine.target.BoundingBox3DList) from the `boxes_kitti` object with KITTI annotation.
+
+
+### class engine.target.SpeechCommand
+Bases: `engine.target.Target`
+
+This target is used for speech command recognition. Contains the predicted class or ground truth
+and optionally the prediction confidence.
+
+The [SpeechCommand](#class_engine.target.SpeechCommand) class has the following public methods:
+#### SpeechCommand(prediction, confidence=None)
+Construct a new [SpeechCommand](#class_engine.target.SpeechCommand) object based from *prediction*.
+*prediction* is expected to be an integer designating the class and optional *confidence* a float between 0 and 1.

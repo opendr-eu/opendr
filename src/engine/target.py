@@ -23,6 +23,7 @@ class BaseTarget:
 
     Classes that are only used either for ground truth annotations or algorithm outputs must inherit this class.
     """
+
     def __init__(self):
         pass
 
@@ -37,6 +38,7 @@ class Target(BaseTarget):
     All the classes should implement the corresponding setter/getter functions to ensure that the necessary
     type checking is performed (if there is no other technical obstacle to this, e.g., negative performance impact).
     """
+
     def __init__(self):
         super().__init__()
         self.data = None
@@ -50,6 +52,7 @@ class Keypoint(Target):
     A keypoint is a list with two coordinates [x, y], which gives the x, y position of the
     keypoints on the image.
     """
+
     def __init__(self, keypoint, confidence=None):
         super().__init__()
         self.data = keypoint
@@ -96,17 +99,18 @@ class BoundingBox3D(Target):
     truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
     observation angle of an object (alpha).
     """
+
     def __init__(
-        self,
-        name,
-        truncated,
-        occluded,
-        alpha,
-        bbox2d,
-        dimensions,
-        location,
-        rotation_y,
-        score=0,
+            self,
+            name,
+            truncated,
+            occluded,
+            alpha,
+            bbox2d,
+            dimensions,
+            location,
+            rotation_y,
+            score=0,
     ):
         super().__init__()
         self.data = {
@@ -122,7 +126,6 @@ class BoundingBox3D(Target):
         self.confidence = score
 
     def kitti(self):
-
         result = {}
 
         result["name"] = np.array([self.data["name"]])
@@ -184,9 +187,10 @@ class BoundingBox3DList(Target):
     truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
     observation angle of an object (alpha).
     """
+
     def __init__(
-        self,
-        bounding_boxes_3d
+            self,
+            bounding_boxes_3d
     ):
         super().__init__()
         self.data = bounding_boxes_3d
@@ -474,3 +478,21 @@ class TrackingBoundingBox3DList(Target):
 
     def __str__(self):
         return str(self.kitti(True))
+
+
+class SpeechCommand(Target):
+    """
+    This target is used for speech command recognition. Contains the predicted class or ground truth
+    and optionally the prediction confidence.
+    """
+
+    def __init__(self, prediction, confidence=None):
+        super().__init__()
+        self.data = prediction
+        self.confidence = confidence
+
+    def __str__(self):
+        if self.confidence is not None:
+            return f"Class {self.data} speech command with confidence {self.confidence}"
+        else:
+            return f"Class {self.data} speech command"
