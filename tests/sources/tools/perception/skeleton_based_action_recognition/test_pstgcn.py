@@ -134,6 +134,30 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         # Cleanup
         rmdir(os.path.join(self.temp_dir, "test_save_load"))
 
+    def test_multi_stream_eval(self):
+        # call generate bone
+        validation_dataset_joints = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
+        validation_dataset_bones = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
+        model_saved_path = self.Pretrained_MODEL_PATH
+        self.pstgcn_action_classifier.topology = [1]
+        model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
+            self.topology[-1])  # pstgcn_nturgbd-1-1 --> because the model has only one layer and one block
+        self.pstgcn_action_classifier.load(model_saved_path, model_name)
+        scores = []
+        score_joints = self.pstgcn_action_classifier.eval(validation_dataset_joints, val_data_filename='val_joints.npy',
+                                                   val_labels_filename='val_labels.pkl')
+        score_bones = self.pstgcn_action_classifier.eval(validation_dataset_bones, val_data_filename='val_joints.npy',
+                                                   val_labels_filename='val_labels.pkl')
+        scores.append(score_joints)
+        scores.append(score_bones)
+        acc_1, acc_5, total_score = self.pstgcn_action_classifier.multi_stream_eval(validation_dataset_joints, scores)
+        self.assertIsNotNone(acc_1, "top_1 accuracy is None after ensembling")
+        self.assertIsNotNone(acc_5, "top_5 accuracy is None after ensembling")
+        self.assertNotEqual(total_score, score_joints,
+                            msg="the classification scores is not changed after ensembling")
+
+
+
     def test_optimize(self):
         model_saved_path = self.Pretrained_MODEL_PATH
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
@@ -165,7 +189,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
         rmdir(os.path.join(self.temp_dir, "testOnnxModel"))
         self.pstgcn_action_classifier.ort_session = None
-
 
 
 if __name__ == "__main__":

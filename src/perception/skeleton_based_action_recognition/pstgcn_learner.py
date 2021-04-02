@@ -700,9 +700,30 @@ class PSTGCNLearner(Learner):
         """
         self.ort_session = onnxruntime.InferenceSession(path)
 
-    def progressive_arch_search(self):
-
-                train_loss, train_acc = self.fit()
+    def multi_stream_eval(self, dataset, scores):
+        """
+        :param scores: a list of score arrays. Each array in the list contains the evaluation results for a dataset.
+        :type scores: a list of score arrays.
+        :param dataset: ExternalDataset class object.
+        :type dataset: object that holds the validation dataset
+        :return: the top_k classification results
+        """
+        valdata = self.__prepare_dataset(dataset,
+                                         data_filename=val_data_filename,
+                                         labels_filename=val_labels_filename,
+                                         verbose=verbose and not silent)
+        val_loader = DataLoader(dataset=valdata,
+                                batch_size=self.val_batch_size,
+                                shuffle=False,
+                                num_workers=self.num_workers,
+                                drop_last=False,
+                                worker_init_fn=self.init_seed(1))
+        total_score = 0
+        for i in range(len(scores)):
+            total_score += scores[i]
+        accuracy_top1 = val_loader.dataset.top_k(total_score, 1)
+        accuracy_top5 = val_loader.dataset.top_k(total_score, 1)
+        return accuracy_top1, accuracy_top5, total_score
 
     def download(self, path=None, mode="pretrained", verbose=False,
                  url=OPENDR_SERVER_URL + "skeleton_based_action_recognition/"):
