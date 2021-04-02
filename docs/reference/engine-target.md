@@ -171,3 +171,14 @@ The [TrackingBoundingBox2DList](#class_engine.target.TrackingBoundingBox2DList) 
   Return the [BoundingBox2DList](#class_engine.target.BoundingBox2DList) object constructed from this object.
 #### boxes()
   Property. Returns the list of [TrackingBoundingBox2D](#class_engine.target.TrackingBoundingBox2D) boxess.
+
+### class engine.target.SpeechCommand
+Bases: `engine.target.Target`
+
+This target is used for speech command recognition. Contains the predicted class or ground truth
+and optionally the prediction confidence.
+
+The [SpeechCommand](#class_engine.target.SpeechCommand) class has the following public methods:
+#### SpeechCommand(prediction, confidence=None)
+Construct a new [SpeechCommand](#class_engine.target.SpeechCommand) object based from *prediction*.
+*prediction* is expected to be an integer designating the class and optional *confidence* a float between 0 and 1.
