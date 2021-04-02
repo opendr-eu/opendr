@@ -140,3 +140,27 @@ The [PointCloudWithCalibration](#class_engine.data.PointCloudWithCalibration) cl
 #### numpy()
   Return a  [NumPy](https://numpy.org)-compatible representation of data.
   Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+
+
+### class engine.data.SkeletonSequence
+Bases: `engine.data.Data`
+
+A class used for representing a sequence of body skeletons in a video.
+
+The [SkeletonSequence](#class_engine.data.SkeletonSequence) class has the following public methods:
+#### SkeletonSequence(data=None)
+  Construct a new [SkeletonSequence](#class_engine.data.SkeletonSequence) object based on *data*.
+  *data* is expected to be a 5-D array that can be casted into a 5-D [NumPy](https://numpy.org) array.
+
+#### data()
+  Return *data* argument.
+  Return type is uint8 [NumPy](https://numpy.org) array.
+
+#### data(data)
+  Set the internal *data* argument.
+  *data* is expected to be a 5-D array that can be casted into a 5-D [NumPy](https://numpy.org) array, where the
+  dimensions can be organized as e.g. (num_samples, channels, frames, joints, persons).
+
+#### numpy()
+  Return a  [NumPy](https://numpy.org)-compatible representation of data.
+  Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.

@@ -420,7 +420,7 @@ class SkeletonSequence(Data):
     @property
     def data(self):
         """
-        Getter of data. Image class returns a float32 NumPy array.
+        Getter of data. SkeletonSequence class returns a float32 NumPy array.
 
         :return: the actual data held by the object
         :rtype: A float32 NumPy array
@@ -441,7 +441,7 @@ class SkeletonSequence(Data):
         # Note that will also fail for non-numeric data (which is expected)
         data = np.asarray(data, dtype=np.float32)
 
-        # Check if the supplied vector is 4D, e.g. (channels, frames, joints, persons)
+        # Check if the supplied vector is 5D, e.g. (num_samples, channels, frames, joints, persons)
         if len(data.shape) != 5:
             raise ValueError(
                 "Only 5-D arrays are supported by SkeletonSequence. Please supply a data object that can be casted "
