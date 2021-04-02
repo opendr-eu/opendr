@@ -107,14 +107,16 @@ def train(
             f"checkpoint_{iter}.pth"
         ))
 
+    last_eval_result = {}
+
     for epoch in range(start_epoch + 1, num_epochs + 1):
         log_dict_train, _ = trainer.train(epoch, train_loader, checkpoint_after_iter, save, log)
         log(Logger.LOG_WHEN_NORMAL, "epoch: {} |".format(epoch))
 
         if val_epochs > 0:
             if epoch % val_epochs == 0:
-                result = evaluate(infer, val_dataset, "evaluation " + str(epoch))
-                log(Logger.LOG_WHEN_NORMAL, result)
+                last_eval_result = evaluate(infer, val_dataset, "evaluation " + str(epoch))
+                log(Logger.LOG_WHEN_NORMAL, last_eval_result)
         if epoch in lr_step:
             lr = lr * (0.1 ** (lr_step.index(epoch) + 1))
             log(Logger.LOG_WHEN_NORMAL, "Drop LR to", lr)
@@ -122,6 +124,7 @@ def train(
                 param_group["lr"] = lr
 
     print()
+    return last_eval_result
 
 
 def evaluate(
