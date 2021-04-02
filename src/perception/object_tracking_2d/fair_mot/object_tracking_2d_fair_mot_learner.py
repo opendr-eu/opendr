@@ -30,7 +30,7 @@ from perception.object_tracking_2d.fair_mot.algorithm.load import load_from_chec
 from perception.object_tracking_2d.datasets.mot_dataset import letterbox, process as process_dataset
 from perception.object_tracking_2d.fair_mot.algorithm.lib.tracker.multitracker import JDETracker
 from engine.data import Image
-from engine.target import TrackingBoundingBox2D, TrackingBoundingBox2DList
+from engine.target import TrackingAnnotation, TrackingAnnotationList
 from engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 
@@ -393,8 +393,8 @@ class ObjectTracking2DFairMotLearner(Learner):
                     online_ids.append(tid)
                     online_scores.append(t.score)
 
-            result = TrackingBoundingBox2DList([
-                TrackingBoundingBox2D(
+            result = TrackingAnnotationList([
+                TrackingAnnotation(
                     name=0,
                     top=tlwh[0],
                     left=tlwh[1],
