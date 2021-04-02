@@ -241,7 +241,7 @@ class BoundingBox3DList(Target):
         return str(self.kitti())
 
 
-class BoundingBox2D(Target):
+class BoundingBox(Target):
     """
     This target is used for 2D Object Detection.
     A bounding box is described by the left-top corner and its width and height.
@@ -286,13 +286,13 @@ class BoundingBox2D(Target):
         return result
 
     def __repr__(self):
-        return "BoundingBox2D " + str(self)
+        return "BoundingBox " + str(self)
 
     def __str__(self):
         return str(self.mot())
 
 
-class BoundingBox2DList(Target):
+class BoundingBoxList(Target):
     """
     This target is used for 2D Object Detection.
     A bounding box is described by the left-top corner and its width and height.
@@ -324,13 +324,13 @@ class BoundingBox2DList(Target):
         return len(self.data)
 
     def __repr__(self):
-        return "BoundingBox2DList " + str(self)
+        return "BoundingBoxList " + str(self)
 
     def __str__(self):
         return str(self.mot())
 
 
-class TrackingBoundingBox2D(Target):
+class TrackingAnnotation(Target):
     """
     This target is used for 2D Object Tracking.
     A tracking bounding box is described by id, the left-top corner and its width and height.
@@ -358,7 +358,7 @@ class TrackingBoundingBox2D(Target):
 
     @staticmethod
     def from_mot(data):
-        return TrackingBoundingBox2D(
+        return TrackingAnnotation(
             data[2],
             data[3],
             data[4],
@@ -393,16 +393,16 @@ class TrackingBoundingBox2D(Target):
         return result
 
     def boudning_box(self):
-        return BoundingBox2D(self.left, self.top, self.width, self.height, self.confidence, self.frame)
+        return BoundingBox(self.left, self.top, self.width, self.height, self.confidence, self.frame)
 
     def __repr__(self):
-        return "TrackingBoundingBox2D " + str(self)
+        return "TrackingAnnotation " + str(self)
 
     def __str__(self):
         return str(self.mot())
 
 
-class TrackingBoundingBox2DList(Target):
+class TrackingAnnotationList(Target):
     """
     This target is used for 2D Object Tracking.
     A bounding box is described by the left and top corners and its width and height.
@@ -419,9 +419,9 @@ class TrackingBoundingBox2DList(Target):
     def from_mot(data):
         boxes = []
         for box in data:
-            boxes.append(TrackingBoundingBox2D.from_mot(box))
+            boxes.append(TrackingAnnotation.from_mot(box))
 
-        return TrackingBoundingBox2DList(boxes)
+        return TrackingAnnotationList(boxes)
 
     def mot(self, with_confidence=True):
 
@@ -432,7 +432,7 @@ class TrackingBoundingBox2DList(Target):
         return result
 
     def boudning_box_list(self):
-        return BoundingBox2DList([box.boudning_box() for box in self.data])
+        return BoundingBoxList([box.boudning_box() for box in self.data])
 
     @property
     def boxes(self):
@@ -445,7 +445,7 @@ class TrackingBoundingBox2DList(Target):
         return len(self.data)
 
     def __repr__(self):
-        return "TrackingBoundingBox2DList " + str(self)
+        return "TrackingAnnotationList " + str(self)
 
     def __str__(self):
         return str(self.mot())

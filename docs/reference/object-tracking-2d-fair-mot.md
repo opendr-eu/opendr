@@ -148,7 +148,7 @@ ObjectTracking2DFairMotLearner.infer(self, batch, frame_ids, img_size)
 ```
 
 This method is used to 2d object tracking on an image.
-Returns a list of `engine.target.TrackingBoundingBox2DList` objects if the list of `engine.data.Image` is given or a single `engine.target.TrackingBoundingBox2DList` if a single `engine.data.Image` is given.
+Returns a list of `engine.target.TrackingAnnotationList` objects if the list of `engine.data.Image` is given or a single `engine.target.TrackingAnnotationList` if a single `engine.data.Image` is given.
 
 Parameters:
 - **batch**: *engine.data.Image* or a *list of engine.data.Image*  
