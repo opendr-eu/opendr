@@ -45,7 +45,7 @@ from perception.skeleton_based_action_recognition.algorithm.models.pstgcn import
 from perception.skeleton_based_action_recognition.algorithm.datasets.feeder import Feeder
 
 
-class STGCNLearner(Learner):
+class PSTGCNLearner(Learner):
     def __init__(self, lr=1e-1, batch_size=128, optimizer_name='sgd', lr_schedule='',
                  checkpoint_after_iter=500, checkpoint_load_iter=0, temp_path='temp',
                  device='cuda', num_workers=32, epochs=50, experiment_name='baseline_nturgbd',
@@ -53,7 +53,7 @@ class STGCNLearner(Learner):
                  start_epoch=0, dataset_name='nturgbd_cv',
                  blocksize=20, numblocks=10, numlayers=10, topology=[],
                  layer_threshold=1e-4, block_threshold=1e-4):
-        super(STGCNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
+        super(PSTGCNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                            checkpoint_after_iter=checkpoint_after_iter,
                                            checkpoint_load_iter=checkpoint_load_iter,
                                            temp_path=temp_path, device=device)
@@ -146,162 +146,111 @@ class STGCNLearner(Learner):
                 self.val_writer = SummaryWriter(os.path.join(self.tensorboard_logging_path, 'test'), 'test')
         else:
             self.logging = False
+        # set the optimizer
+        if self.optimizer_name == 'sgd':
+            self.optimizer_ = optim.SGD(
+                self.model.parameters(),
+                lr=self.lr,
+                momentum=momentum,
+                nesterov=nesterov,
+                weight_decay=weight_decay)
+        elif self.optimizer_name == 'adam':
+            self.optimizer_ = optim.Adam(
+                self.model.parameters(),
+                lr=self.lr,
+                weight_decay=weight_decay)
+        else:
+            raise ValueError(
+                self.optimizer_ + "is not a valid optimizer name. Supported optimizers: sgd, adam")
+        if self.lr_schedule != '':
+            scheduler = self.lr_schedule
+        else:
+            scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer_, milestones=self.drop_after_epoch,
+                                                       gamma=0.1,
+                                                       last_epoch=-1, verbose=True)
+        # load data
+        traindata = self.__prepare_dataset(dataset,
+                                           data_filename=train_data_filename,
+                                           labels_filename=train_labels_filename,
+                                           verbose=verbose and not silent)
 
-        # start building the model progressively
-        loss_layer_old = 1e+10
-        loss_block_old = 1e+10
-        loss_layer_new = 1e+10
-        for layer_iter in range(self.numlayers):
-            # add a new layer
-            self.topology.append(0)
-            for block_iter in range(self.numblocks):
-                print('######################################################################\n')
-                print('layer.' + str(layer_iter) + '_block.' + str(block_iter))
-                print('\n######################################################################\n')
-                # add a new block
-                self.topology[layer_iter] = self.topology[layer_iter] + 1
-                # build the model and initialize it with random parameters
-                self.init_model()
-                if verbose:
-                    print("Model trainable parameters:", self.count_parameters())
-                # set the optimizer
-                if self.optimizer_name == 'sgd':
-                    self.optimizer_ = optim.SGD(
-                        self.model.parameters(),
-                        lr=self.lr,
-                        momentum=momentum,
-                        nesterov=nesterov,
-                        weight_decay=weight_decay)
-                elif self.optimizer_name == 'adam':
-                    self.optimizer_ = optim.Adam(
-                        self.model.parameters(),
-                        lr=self.lr,
-                        weight_decay=weight_decay)
+        train_loader = DataLoader(dataset=traindata,
+                                  batch_size=self.batch_size,
+                                  shuffle=True,
+                                  num_workers=self.num_workers,
+                                  drop_last=True,
+                                  worker_init_fn=self.init_seed(1))
+
+        # start training
+        self.best_acc = 0
+        self.global_step = self.start_epoch * len(train_loader) / self.batch_size
+        for epoch in range(self.start_epoch, self.epochs):
+            self.model.train()
+            self.print_log('Training epoch: {}'.format(epoch + 1))
+            save_model = (epoch + 1 == self.epochs)
+            loss_value = []
+            if self.logging:
+                self.train_writer.add_scalar('epoch', epoch, self.global_step)
+            self.record_time()
+            timer = dict(dataloader=0.001, model=0.001, statistics=0.001)
+            process = tqdm(train_loader)
+            for batch_idx, (data, label, index) in enumerate(process):
+                self.global_step += 1
+                # get data
+                if self.device == 'cuda':
+                    data = Variable(data.float().cuda(self.output_device), requires_grad=False)
+                    label = Variable(label.long().cuda(self.output_device), requires_grad=False)
                 else:
-                    raise ValueError(
-                        self.optimizer_ + "is not a valid optimizer name. Supported optimizers: sgd, adam")
-                if self.lr_schedule != '':
-                    scheduler = self.lr_schedule
+                    data = Variable(data.float(), requires_grad=False)
+                    label = Variable(label.long(), requires_grad=False)
+                timer['dataloader'] += self.split_time()
+
+                # forward
+                output = self.model(data)
+                if isinstance(output, tuple):
+                    output, l1 = output
+                    l1 = l1.mean()
                 else:
-                    scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer_, milestones=self.drop_after_epoch,
-                                                               gamma=0.1,
-                                                               last_epoch=-1, verbose=True)
-                # load data
-                traindata = self.__prepare_dataset(dataset,
-                                                   data_filename=train_data_filename,
-                                                   labels_filename=train_labels_filename,
-                                                   verbose=verbose and not silent)
+                    l1 = 0
+                loss = self.loss(output, label) + l1
 
-                train_loader = DataLoader(dataset=traindata,
-                                          batch_size=self.batch_size,
-                                          shuffle=True,
-                                          num_workers=self.num_workers,
-                                          drop_last=True,
-                                          worker_init_fn=self.init_seed(1))
+                # backward
+                self.optimizer_.zero_grad()
+                loss.backward()
+                self.optimizer_.step()
+                loss_value.append(loss.data.item())
+                timer['model'] += self.split_time()
 
-                # initialize the previous layers or blocks with trained weights
-                if layer_iter > 0 or block_iter > 0:
-                    if block_iter == 0:
-                        checkpoint_name = self.experiment_name + '-' + str(
-                                        len(self.topology) - 1) + '-' + str(self.topology[-2])
-                    else:
-                        checkpoint_name = self.experiment_name + '-' + str(
-                                        len(self.topology)) + '-' + str(self.topology[-1] - 1)
+                value, predict_label = torch.max(output.data, 1)
+                acc = torch.mean((predict_label == label.data).float())
+                if self.logging:
+                    self.train_writer.add_scalar('acc', acc, self.global_step)
+                    self.train_writer.add_scalar('loss', loss.data.item(), self.global_step)
+                    self.train_writer.add_scalar('loss_l1', l1, self.global_step)
 
-                    checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
-                    self.ort_session = None
-                    self.load(checkpoints_folder, checkpoint_name)
+                # statistics
+                self.lr = self.optimizer_.param_groups[0]['lr']
+                if self.logging:
+                    self.train_writer.add_scalar('lr', self.lr, self.global_step)
+                timer['statistics'] += self.split_time()
 
-                # start training
-                self.best_acc = 0
-                self.global_step = self.start_epoch * len(train_loader) / self.batch_size
-                for epoch in range(self.start_epoch, self.epochs):
-                    self.model.train()
-                    self.print_log('Training epoch: {}'.format(epoch + 1))
-                    save_model = (epoch + 1 == self.epochs)
-                    loss_value = []
-                    if self.logging:
-                        self.train_writer.add_scalar('epoch', epoch, self.global_step)
-                    self.record_time()
-                    timer = dict(dataloader=0.001, model=0.001, statistics=0.001)
-                    process = tqdm(train_loader)
-                    for batch_idx, (data, label, index) in enumerate(process):
-                        self.global_step += 1
-                        # get data
-                        if self.device == 'cuda':
-                            data = Variable(data.float().cuda(self.output_device), requires_grad=False)
-                            label = Variable(label.long().cuda(self.output_device), requires_grad=False)
-                        else:
-                            data = Variable(data.float(), requires_grad=False)
-                            label = Variable(label.long(), requires_grad=False)
-                        timer['dataloader'] += self.split_time()
-
-                        # forward
-                        output = self.model(data)
-                        if isinstance(output, tuple):
-                            output, l1 = output
-                            l1 = l1.mean()
-                        else:
-                            l1 = 0
-                        loss = self.loss(output, label) + l1
-
-                        # backward
-                        self.optimizer_.zero_grad()
-                        loss.backward()
-                        self.optimizer_.step()
-                        loss_value.append(loss.data.item())
-                        timer['model'] += self.split_time()
-
-                        value, predict_label = torch.max(output.data, 1)
-                        acc = torch.mean((predict_label == label.data).float())
-                        if self.logging:
-                            self.train_writer.add_scalar('acc', acc, self.global_step)
-                            self.train_writer.add_scalar('loss', loss.data.item(), self.global_step)
-                            self.train_writer.add_scalar('loss_l1', l1, self.global_step)
-
-                        # statistics
-                        self.lr = self.optimizer_.param_groups[0]['lr']
-                        if self.logging:
-                            self.train_writer.add_scalar('lr', self.lr, self.global_step)
-                        timer['statistics'] += self.split_time()
-
-                    # statistics of time consumption and loss
-                    proportion = {k: '{:02d}%'.format(int(round(v * 100 / sum(timer.values()))))
-                                  for k, v in timer.items()}
-                    self.print_log('\t Mean training loss: {:.4f}.'.format(np.mean(loss_value)))
-                    self.print_log('\t Time consumption: [Data]{dataloader}, [Network]{model}'.format(**proportion))
-                    if save_model:
-                        checkpoints_folder = os.path.join(self.parent_dir,
-                                                          '{}_checkpoints'.format(self.experiment_name))
-                        checkpoint_name = self.experiment_name + '-' + str(
-                                        len(self.topology)) + '-' + str(self.topology[-1])
-                        self.ort_session = None
-                        self.save(path=checkpoints_folder, model_name=checkpoint_name)
-                    self.eval(val_dataset, epoch, val_data_filename=val_data_filename,
-                              val_labels_filename=val_labels_filename)
-                    scheduler.step()
-
-                # training the model with a new block is finished with following performance:
-                print('best accuracy: ', self.best_acc, ' model_name: ', self.experiment_name)
-                loss_block_new = np.mean(loss_value)
-                if block_iter > 0:
-                    loss_b = -1 * (loss_block_new - loss_block_old) / loss_block_old
-                    if loss_b <= self.block_threshold:
-                        self.topology[layer_iter] = self.topology[layer_iter] - 1
-                        print('block' + str(block_iter) + 'of layer' + str(layer_iter) + 'is removed \n')
-                        print('block progression is stopped in layer' + str(layer_iter))
-                        break
-                loss_block_old = loss_block_new
-                loss_layer_new = loss_block_new
-            if layer_iter > 0:
-                loss_l = -1 * (loss_layer_new - loss_layer_old) / loss_layer_old
-                if loss_l <= self.layer_threshold:
-                    self.topology.pop()
-                    print('layer' + str(layer_iter) + 'is removed \n')
-                    print('layer progression is stopped')
-                    break
-            loss_layer_old = loss_layer_new
-        np.save(os.path.join(self.logging_path, 'Topology.npy'), self.topology)
+            # statistics of time consumption and loss
+            proportion = {k: '{:02d}%'.format(int(round(v * 100 / sum(timer.values()))))
+                          for k, v in timer.items()}
+            self.print_log('\t Mean training loss: {:.4f}.'.format(np.mean(loss_value)))
+            self.print_log('\t Time consumption: [Data]{dataloader}, [Network]{model}'.format(**proportion))
+            if save_model:
+                checkpoints_folder = os.path.join(self.parent_dir,
+                                                  '{}_checkpoints'.format(self.experiment_name))
+                checkpoint_name = self.experiment_name + '-' + str(
+                                len(self.topology)) + '-' + str(self.topology[-1])
+                self.ort_session = None
+                self.save(path=checkpoints_folder, model_name=checkpoint_name)
+            self.eval(val_dataset, epoch, val_data_filename=val_data_filename,
+                      val_labels_filename=val_labels_filename)
+            scheduler.step()
+        print('best accuracy: ', self.best_acc, ' model_name: ', self.experiment_name)
+        return np.mean(loss_value)
 
     def eval(self, val_dataset, epoch=0, silent=False, verbose=True,
              val_data_filename='val_joints.npy', val_labels_filename='val_labels.pkl', save_score=False,
@@ -443,21 +392,79 @@ class STGCNLearner(Learner):
 
     def init_model(self):
         """Initializes the imported model."""
-        if self.logging:
-            shutil.copy2(inspect.getfile(PSTGCN), self.logging_path)
-        if self.device == 'cuda':
-            self.model = PSTGCN(self.dataset_name, self.topology, self.blocksize, cuda_=True).cuda(self.output_device)
-            if type(self.device_ind) is list:
-                if len(self.device_ind) > 1:
-                    self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
-                                                 output_device=self.output_device)
-            self.loss = nn.CrossEntropyLoss().cuda(self.output_device)
+        if len(self.topology) == 0:
+            raise ValueError('The topology is empty! it should at least have one layer and one block')
         else:
-            self.model = PSTGCN(self.dataset_name, self.topology, self.blocksize, cuda_=False)
-            self.loss = nn.CrossEntropyLoss()
-        print(self.model)
+            if self.logging:
+                shutil.copy2(inspect.getfile(PSTGCN), self.logging_path)
+            if self.device == 'cuda':
+                self.model = PSTGCN(self.dataset_name, self.topology, self.blocksize, cuda_=True).cuda(self.output_device)
+                if type(self.device_ind) is list:
+                    if len(self.device_ind) > 1:
+                        self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
+                                                     output_device=self.output_device)
+                self.loss = nn.CrossEntropyLoss().cuda(self.output_device)
+            else:
+                self.model = PSTGCN(self.dataset_name, self.topology, self.blocksize, cuda_=False)
+                self.loss = nn.CrossEntropyLoss()
+            print(self.model)
 
-    def infer(self, SkeletonSeq_batch):
+    def network_builder(self, dataset, val_dataset, verbose=True, train_data_filename='train_joints.npy',
+                        train_labels_filename='train_labels.pkl', val_data_filename="val_joints.npy",
+                        val_labels_filename="val_labels.pkl"):
+        # start building the model progressively
+        loss_layer_old = 1e+10
+        loss_block_old = 1e+10
+        loss_layer_new = 1e+10
+        for layer_iter in range(self.numlayers):
+            # add a new layer
+            self.topology.append(0)
+            for block_iter in range(self.numblocks):
+                print('######################################################################\n')
+                print('layer.' + str(layer_iter) + '_block.' + str(block_iter))
+                print('\n######################################################################\n')
+                # add a new block
+                self.topology[layer_iter] = self.topology[layer_iter] + 1
+                # build the model and initialize it with random parameters
+                self.init_model()
+                if verbose:
+                    print("Model trainable parameters:", self.count_parameters())
+                if layer_iter > 0 or block_iter > 0:
+                    if block_iter == 0:
+                        checkpoint_name = self.experiment_name + '-' + str(
+                                        len(self.topology) - 1) + '-' + str(self.topology[-2])
+                    else:
+                        checkpoint_name = self.experiment_name + '-' + str(
+                                        len(self.topology)) + '-' + str(self.topology[-1] - 1)
+
+                    checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
+                    self.ort_session = None
+                    self.load(checkpoints_folder, checkpoint_name)
+
+                loss_block_new = self.fit(dataset, val_dataset, train_data_filename=train_data_filename,
+                                          train_labels_filename=train_labels_filename,
+                                          val_data_filename=val_data_filename,
+                                          val_labels_filename=val_labels_filename)
+                if block_iter > 0:
+                    loss_b = -1 * (loss_block_new - loss_block_old) / loss_block_old
+                    if loss_b <= self.block_threshold:
+                        self.topology[layer_iter] = self.topology[layer_iter] - 1
+                        print('block' + str(block_iter) + 'of layer' + str(layer_iter) + 'is removed \n')
+                        print('block progression is stopped in layer' + str(layer_iter))
+                        break
+                loss_block_old = loss_block_new
+                loss_layer_new = loss_block_new
+            if layer_iter > 0:
+                loss_l = -1 * (loss_layer_new - loss_layer_old) / loss_layer_old
+                if loss_l <= self.layer_threshold:
+                    self.topology.pop()
+                    print('layer' + str(layer_iter) + 'is removed \n')
+                    print('layer progression is stopped')
+                    break
+            loss_layer_old = loss_layer_new
+        np.save(os.path.join(self.parent_dir, 'Topology.npy'), self.topology)
+
+    def infer(self, skeletonseq_batch):
         """
         This method performs inference on the batch provided.
         :param skeletonseq_batch: Object that holds a batch of data to run inference on.
@@ -467,16 +474,16 @@ class STGCNLearner(Learner):
         :rtype: list of Target class type objects.
         """
 
-        if not isinstance(SkeletonSeq_batch, SkeletonSequence):
-            SkeletonSeq_batch = SkeletonSequence(SkeletonSeq_batch)
-        SkeletonSeq_batch = torch.from_numpy(SkeletonSeq_batch.numpy())
+        if not isinstance(skeletonseq_batch, SkeletonSequence):
+            skeletonseq_batch = SkeletonSequence(skeletonseq_batch)
+        skeletonseq_batch = torch.from_numpy(skeletonseq_batch.numpy())
 
         if self.device == "cuda":
-            SkeletonSeq_batch = Variable(SkeletonSeq_batch.float().cuda(self.output_device), requires_grad=False)
+            skeletonseq_batch = Variable(skeletonseq_batch.float().cuda(self.output_device), requires_grad=False)
         else:
-            SkeletonSeq_batch = Variable(SkeletonSeq_batch.float(), requires_grad=False)
+            skeletonseq_batch = Variable(skeletonseq_batch.float(), requires_grad=False)
         if self.ort_session is not None:
-            output = self.ort_session.run(None, {'data': np.array(SkeletonSeq_batch.cpu())})
+            output = self.ort_session.run(None, {'data': np.array(skeletonseq_batch.cpu())})
         else:
             if self.model is None:
                 raise UserWarning("No model is loaded, cannot run inference. Load a model first using load().")
@@ -484,7 +491,7 @@ class STGCNLearner(Learner):
                 self.model.eval()
                 self.model_train_state = False
             with torch.no_grad():
-                output = self.model(SkeletonSeq_batch)
+                output = self.model(skeletonseq_batch)
         if isinstance(output, tuple):
             output, l1 = output
         else:
