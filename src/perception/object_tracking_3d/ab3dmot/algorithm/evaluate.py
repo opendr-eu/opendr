@@ -20,7 +20,7 @@ import numpy as np
 from typing import List
 from munkres import Munkres
 from collections import defaultdict
-from engine.target import TrackingBoundingBox3DList
+from engine.target import TrackingAnnotation3DList
 
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.box_np_ops import (
     center_to_corner_box3d,
@@ -218,7 +218,7 @@ class TrackingEvaluator(object):
         self.gt_trajectories = [[] for x in range(self.n_sequences)]
         self.ign_trajectories = [[] for x in range(self.n_sequences)]
 
-    def load_ground_truths(self, ground_truths: List[TrackingBoundingBox3DList]):
+    def load_ground_truths(self, ground_truths: List[TrackingAnnotation3DList]):
         """
             Helper function to load ground truth.
         """
@@ -231,7 +231,7 @@ class TrackingEvaluator(object):
             return False
         return True
 
-    def load_predictions(self, predictions: List[TrackingBoundingBox3DList]):
+    def load_predictions(self, predictions: List[TrackingAnnotation3DList]):
         """
             Helper function to load tracker data.
         """
@@ -246,7 +246,7 @@ class TrackingEvaluator(object):
         return True
 
     def _load_data(
-        self, input_sequences: List[TrackingBoundingBox3DList], cls, min_score=-1000, loading_groundtruth=False
+        self, input_sequences: List[TrackingAnnotation3DList], cls, min_score=-1000, loading_groundtruth=False
     ):
         """
             Generic loader for ground truth and tracking data.
@@ -285,35 +285,35 @@ class TrackingEvaluator(object):
 
             f_data = [[] for x in range(input_seq_boxes[-1].frame + 1)]
 
-            for trackingBoundingBox3D in input_seq_boxes:
+            for TrackingAnnotation3D in input_seq_boxes:
                 # KITTI tracking benchmark data format:
                 # (frame,tracklet_id,objectType,truncation,occlusion,alpha,x1,y1,x2,y2,h,w,l,X,Y,Z,ry)
 
-                if not any([s for s in classes if s == trackingBoundingBox3D.name.lower()]):
+                if not any([s for s in classes if s == TrackingAnnotation3D.name.lower()]):
                     continue
                 # get fields from table
-                t_data.frame = int(trackingBoundingBox3D.frame)
-                t_data.track_id = int(trackingBoundingBox3D.id)
-                t_data.obj_type = trackingBoundingBox3D.name.lower()  # object type [car, pedestrian, cyclist, ...]
+                t_data.frame = int(TrackingAnnotation3D.frame)
+                t_data.track_id = int(TrackingAnnotation3D.id)
+                t_data.obj_type = TrackingAnnotation3D.name.lower()  # object type [car, pedestrian, cyclist, ...]
                 t_data.truncation = int(
-                    trackingBoundingBox3D.truncated
+                    TrackingAnnotation3D.truncated
                 )  # truncation [-1,0,1,2]
                 t_data.occlusion = int(
-                    trackingBoundingBox3D.occluded
+                    TrackingAnnotation3D.occluded
                 )  # occlusion  [-1,0,1,2]
-                t_data.obs_angle = float(trackingBoundingBox3D.alpha)  # observation angle [rad]
-                t_data.x1 = float(trackingBoundingBox3D.bbox2d[0])  # left   [px]
-                t_data.y1 = float(trackingBoundingBox3D.bbox2d[1])  # top    [px]
-                t_data.x2 = float(trackingBoundingBox3D.bbox2d[2])  # right  [px]
-                t_data.y2 = float(trackingBoundingBox3D.bbox2d[3])  # bottom [px]
-                t_data.h = float(trackingBoundingBox3D.dimensions[0])  # height [m]
-                t_data.w = float(trackingBoundingBox3D.dimensions[1])  # width  [m]
-                t_data.length = float(trackingBoundingBox3D.dimensions[2])  # length [m]
-                t_data.X = float(trackingBoundingBox3D.location[0])  # X [m]
-                t_data.Y = float(trackingBoundingBox3D.location[1])  # Y [m]
-                t_data.Z = float(trackingBoundingBox3D.location[2])  # Z [m]
-                t_data.yaw = float(trackingBoundingBox3D.rotation_y)  # yaw angle [rad]
-                t_data.score = float(trackingBoundingBox3D.confidence)
+                t_data.obs_angle = float(TrackingAnnotation3D.alpha)  # observation angle [rad]
+                t_data.x1 = float(TrackingAnnotation3D.bbox2d[0])  # left   [px]
+                t_data.y1 = float(TrackingAnnotation3D.bbox2d[1])  # top    [px]
+                t_data.x2 = float(TrackingAnnotation3D.bbox2d[2])  # right  [px]
+                t_data.y2 = float(TrackingAnnotation3D.bbox2d[3])  # bottom [px]
+                t_data.h = float(TrackingAnnotation3D.dimensions[0])  # height [m]
+                t_data.w = float(TrackingAnnotation3D.dimensions[1])  # width  [m]
+                t_data.length = float(TrackingAnnotation3D.dimensions[2])  # length [m]
+                t_data.X = float(TrackingAnnotation3D.location[0])  # X [m]
+                t_data.Y = float(TrackingAnnotation3D.location[1])  # Y [m]
+                t_data.Z = float(TrackingAnnotation3D.location[2])  # Z [m]
+                t_data.yaw = float(TrackingAnnotation3D.rotation_y)  # yaw angle [rad]
+                t_data.score = float(TrackingAnnotation3D.confidence)
 
                 # do not consider objects marked as invalid
                 if t_data.track_id is -1 and t_data.obj_type != "dontcare":
@@ -1001,8 +1001,8 @@ class TrackingEvaluator(object):
 
 
 def evaluate(
-    predictions: List[List[TrackingBoundingBox3DList]],
-    ground_truths: List[List[TrackingBoundingBox3DList]],
+    predictions: List[List[TrackingAnnotation3DList]],
+    ground_truths: List[List[TrackingAnnotation3DList]],
     log=print
 ):
 

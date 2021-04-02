@@ -14,7 +14,7 @@
 
 import numpy as np
 from filterpy.kalman import KalmanFilter
-from engine.target import BoundingBox3D, TrackingBoundingBox3D
+from engine.target import BoundingBox3D, TrackingAnnotation3D
 
 
 class KalmanTracker3D():
@@ -132,7 +132,7 @@ class KalmanTracker3D():
         return self.kalman_filter.x
 
     def tracking_bounding_box_3d(self, frame):
-        return TrackingBoundingBox3D(
+        return TrackingAnnotation3D(
             self.name, self.truncated, self.occluded,
             self.alpha, self.bbox2d,
             self.kalman_filter.x[4:].reshape(-1),
