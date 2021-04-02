@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from collections import OrderedDict
 import numpy as np
+import os
 
 
 class Flatten(nn.Module):
@@ -25,17 +26,15 @@ class Flatten(nn.Module):
 
 
 class PNet(nn.Module):
-
     def __init__(self):
         super(PNet, self).__init__()
-
         # Suppose we have input with size HxW, then
         # after first layer: H - 2,
         # after pool: ceil((H - 2)/2),
         # after second conv: ceil((H - 2)/2) - 2,
         # after last conv: ceil((H - 2)/2) - 4,
         # and the same for W
-
+        current_file_dir = os.path.dirname(__file__)
         self.features = nn.Sequential(OrderedDict([
             ('conv1', nn.Conv2d(3, 10, 3, 1)),
             ('prelu1', nn.PReLU(10)),
@@ -50,8 +49,7 @@ class PNet(nn.Module):
 
         self.conv4_1 = nn.Conv2d(32, 2, 1, 1)
         self.conv4_2 = nn.Conv2d(32, 4, 1, 1)
-
-        weights = np.load("../algorithm/align/pnet.npy", allow_pickle=True)[()]
+        weights = np.load(os.path.join(current_file_dir, "pnet.npy"), allow_pickle=True)[()]
         for n, p in self.named_parameters():
             p.data = torch.FloatTensor(weights[n])
 
@@ -71,10 +69,9 @@ class PNet(nn.Module):
 
 
 class RNet(nn.Module):
-
     def __init__(self):
         super(RNet, self).__init__()
-
+        current_file_dir = os.path.dirname(__file__)
         self.features = nn.Sequential(OrderedDict([
             ('conv1', nn.Conv2d(3, 28, 3, 1)),
             ('prelu1', nn.PReLU(28)),
@@ -94,8 +91,8 @@ class RNet(nn.Module):
 
         self.conv5_1 = nn.Linear(128, 2)
         self.conv5_2 = nn.Linear(128, 4)
-
-        weights = np.load("../algorithm/align/rnet.npy", allow_pickle=True)[()]
+        # weights = np.load("../algorithm/align/rnet.npy", allow_pickle=True)[()]
+        weights = np.load(os.path.join(current_file_dir, "rnet.npy"), allow_pickle=True)[()]
         for n, p in self.named_parameters():
             p.data = torch.FloatTensor(weights[n])
 
@@ -115,10 +112,9 @@ class RNet(nn.Module):
 
 
 class ONet(nn.Module):
-
     def __init__(self):
         super(ONet, self).__init__()
-
+        current_file_dir = os.path.dirname(__file__)
         self.features = nn.Sequential(OrderedDict([
             ('conv1', nn.Conv2d(3, 32, 3, 1)),
             ('prelu1', nn.PReLU(32)),
@@ -144,8 +140,8 @@ class ONet(nn.Module):
         self.conv6_1 = nn.Linear(256, 2)
         self.conv6_2 = nn.Linear(256, 4)
         self.conv6_3 = nn.Linear(256, 10)
-
-        weights = np.load("../algorithm/align/onet.npy", allow_pickle=True)[()]
+        # weights = np.load("../algorithm/align/onet.npy", allow_pickle=True)[()]
+        weights = np.load(os.path.join(current_file_dir, "onet.npy"), allow_pickle=True)[()]
         for n, p in self.named_parameters():
             p.data = torch.FloatTensor(weights[n])
 

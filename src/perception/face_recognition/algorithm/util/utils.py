@@ -80,16 +80,17 @@ def create_pairs(path, num_pairs):
     pairs = np.array(pairs)
     dataset = FaceRecognitionDataset(pairs)
 
-    return dataset, dataset
+    return dataset
 
 
 def get_val_data(path, dataset_type, num_pairs=2000):
     if dataset_type in ['lfw', 'cfp_ff', 'cfp_fp', 'agedb_30', 'vgg2_fp']:
         data, pairs = get_val_pair(path, dataset_type)
     elif dataset_type == 'imagefolder':
-        data, pairs = create_pairs(path, num_pairs)
+        data = create_pairs(path, num_pairs)
+        return data
     else:
-        sys.exit('dataset_type should be of type imagefolder')
+        sys.exit('dataset_type not supported')
     return data, pairs
 
 
