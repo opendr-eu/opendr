@@ -64,7 +64,7 @@ ObjectTracking3DAb3dmotLearner.infer(self, bounding_boxes_3d_list)
 ```
 
 This method is used to perform 3d object tracking on a list of 3D bounding boxes predictions.
-Returns a list of [TrackingBoundingBox3D](#class_engine.target.TrackingBoundingBox3D) objects if the list of [BoundingBox3DList](#class_engine.target.BoundingBox3DList) is given or a single [TrackingBoundingBox3D](#class_engine.target.TrackingBoundingBox3D) if a single [BoundingBox3DList](#class_engine.target.BoundingBox3DList) is given.
+Returns a list of [TrackingAnnotation3D](#class_engine.target.TrackingAnnotation3D) objects if the list of [BoundingBox3DList](#class_engine.target.BoundingBox3DList) is given or a single [TrackingAnnotation3D](#class_engine.target.TrackingAnnotation3D) if a single [BoundingBox3DList](#class_engine.target.BoundingBox3DList) is given.
 
 Parameters:
 - **bounding_boxes_3d_list**: *[BoundingBox3DList](#class_engine.target.BoundingBox3DList)* or a list of *[BoundingBox3DList](#class_engine.target.BoundingBox3DList)***  

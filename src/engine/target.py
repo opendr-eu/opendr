@@ -280,7 +280,7 @@ class BoundingBox3DList(Target):
         return str(self.kitti())
 
 
-class TrackingBoundingBox3D(BoundingBox3D):
+class TrackingAnnotation3D(BoundingBox3D):
     """
     This target is used for 3D Object Tracking.
     A tracking bounding box is described by frame, id, its location (x, y, z),
@@ -353,15 +353,15 @@ class TrackingBoundingBox3D(BoundingBox3D):
         )
 
     def __repr__(self):
-        return "TrackingBoundingBox3D " + str(self)
+        return "TrackingAnnotation3D " + str(self)
 
     def __str__(self):
         return str(self.kitti(True))
 
 
-class TrackingBoundingBox3DList(Target):
+class TrackingAnnotation3DList(Target):
     """
-    This target is used for 3D Object Tracking. It contains a list of TrackingBoundingBox3D targets.
+    This target is used for 3D Object Tracking. It contains a list of TrackingAnnotation3D targets.
     A tracking bounding box is described by frame, id, its location (x, y, z),
     dimensions (l, h, w) and rotation (along vertical (y) axis).
     Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
@@ -387,7 +387,7 @@ class TrackingBoundingBox3DList(Target):
         tracking_boxes_3d = []
 
         for i in range(count):
-            box3d = TrackingBoundingBox3D(
+            box3d = TrackingAnnotation3D(
                 boxes_kitti["name"][i],
                 boxes_kitti["truncated"][i],
                 boxes_kitti["occluded"][i],
@@ -403,7 +403,7 @@ class TrackingBoundingBox3DList(Target):
 
             tracking_boxes_3d.append(box3d)
 
-        return TrackingBoundingBox3DList(tracking_boxes_3d)
+        return TrackingAnnotation3DList(tracking_boxes_3d)
 
     def kitti(self, with_tracking_info=True):
 
@@ -474,7 +474,7 @@ class TrackingBoundingBox3DList(Target):
         return len(self.data)
 
     def __repr__(self):
-        return "TrackingBoundingBox3DList " + str(self)
+        return "TrackingAnnotation3DList " + str(self)
 
     def __str__(self):
         return str(self.kitti(True))

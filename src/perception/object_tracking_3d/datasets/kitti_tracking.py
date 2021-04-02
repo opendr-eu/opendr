@@ -22,7 +22,7 @@ import time
 from zipfile import ZipFile
 from urllib.request import urlretrieve
 from engine.constants import OPENDR_SERVER_URL
-from engine.target import BoundingBox3D, BoundingBox3DList, TrackingBoundingBox3D, TrackingBoundingBox3DList
+from engine.target import BoundingBox3D, BoundingBox3DList, TrackingAnnotation3D, TrackingAnnotation3DList
 from engine.datasets import DatasetIterator
 
 
@@ -136,7 +136,7 @@ class KittiTrackingDatasetIterator(DatasetIterator):
 
                 if format == "tracking":
                     if return_format == "tracking":
-                        box = TrackingBoundingBox3D(
+                        box = TrackingAnnotation3D(
                             name=fields[2],
                             truncated=int(float(fields[3])),
                             occluded=int(float(fields[4])),
@@ -191,7 +191,7 @@ class KittiTrackingDatasetIterator(DatasetIterator):
                         raise ValueError("return_format should be tracking or detection")
                 elif format == "detection":
                     if return_format == "tracking":
-                        box = TrackingBoundingBox3D(
+                        box = TrackingAnnotation3D(
                             name=fields[1],
                             truncated=int(float(fields[2])),
                             occluded=int(float(fields[3])),
@@ -258,9 +258,9 @@ class KittiTrackingDatasetIterator(DatasetIterator):
 
                 for frame in range(max_frame):
                     if frame in results:
-                        result.append(TrackingBoundingBox3DList(results[frame]))
+                        result.append(TrackingAnnotation3DList(results[frame]))
                     else:
-                        result.append(TrackingBoundingBox3DList([]))
+                        result.append(TrackingAnnotation3DList([]))
 
                 return result
             elif return_format == "detection":
