@@ -352,7 +352,7 @@ class PSTGCNLearner(Learner):
         if save_score and self.logging:
             with open('{}/epoch{}_{}_score.pkl'.format(self.logging_path, epoch + 1, 'val'), 'wb') as f:
                 pickle.dump(score_dict, f)
-        return score_dict
+        return score
 
     @staticmethod
     def __prepare_dataset(dataset, data_filename="train_joints.npy",
@@ -409,9 +409,9 @@ class PSTGCNLearner(Learner):
                 self.loss = nn.CrossEntropyLoss()
             print(self.model)
 
-    def network_builder(self, dataset, val_dataset, verbose=True, train_data_filename='train_joints.npy',
+    def network_builder(self, dataset, val_dataset, train_data_filename='train_joints.npy',
                         train_labels_filename='train_labels.pkl', val_data_filename="val_joints.npy",
-                        val_labels_filename="val_labels.pkl"):
+                        val_labels_filename="val_labels.pkl", verbose=True):
         # start building the model progressively
         loss_layer_old = 1e+10
         loss_block_old = 1e+10

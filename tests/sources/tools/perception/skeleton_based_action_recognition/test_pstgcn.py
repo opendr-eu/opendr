@@ -49,16 +49,16 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         cls.pstgcn_action_classifier = PSTGCNLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
                                                      checkpoint_after_iter=1, val_batch_size=1,
                                                      dataset_name='nturgbd_cv', experiment_name='pstgcn_nturgbd',
-                                                     blocksize=20, numblocks=10, numlayers=10, topology=[],
+                                                     blocksize=20, numblocks=1, numlayers=2, topology=[],
                                                      layer_threshold=1e-4, block_threshold=1e-4)
         # Download all required files for testing
-        '''cls.Pretrained_MODEL_PATH = cls.stgcn_action_classifier.download(
+        '''cls.Pretrained_MODEL_PATH = cls.pstgcn_action_classifier.download(
             mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models"))
-        cls.Train_DATASET_PATH = cls.stgcn_action_classifier.download(
+        cls.Train_DATASET_PATH = cls.pstgcn_action_classifier.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data"))
-        cls.Val_DATASET_PATH = cls.stgcn_action_classifier.download(
+        cls.Val_DATASET_PATH = cls.pstgcn_action_classifier.download(
             mode="val_data", path=os.path.join(cls.temp_dir, "data"))
-        cls.Test_DATASET_PATH = cls.stgcn_action_classifier.download(
+        cls.Test_DATASET_PATH = cls.pstgcn_action_classifier.download(
             mode="test_data", path=os.path.join(cls.temp_dir, "data"))'''
 
         cls.Pretrained_MODEL_PATH = os.path.join(cls.temp_dir, "pretrained_models")
@@ -73,16 +73,24 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         rmdir(os.path.join(cls.temp_dir, "data"))
         rmdir(os.path.join(cls.temp_dir))
 
-
     def test_network_builder(self):
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="NTURGBD")
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.pstgcn_action_classifier.topology = []
-        self.pstgcn_action_classifier.network_builder
+        topology_before = self.pstgcn_action_classifier.topology
+        self.pstgcn_action_classifier.network_builder(dataset=training_dataset, val_dataset=validation_dataset,
+                                                      train_data_filename='train_joints.npy',
+                                                      train_labels_filename='train_labels.pkl',
+                                                      val_data_filename="val_joints.npy",
+                                                      val_labels_filename="val_labels.pkl")
+        topology_after = self.pstgcn_action_classifier.topology
+        self.assertFalse(torch.equal(topology_before, topology_after),
+                         msg="Model topology did not change after running network_builder.")
+
     def test_fit(self):
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="NTURGBD")
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
-        self.pstgcn_action_classifier.model = None
+        self.pstgcn_action_classifier.topology = [1]
         self.pstgcn_action_classifier.init_model()
         m = list(self.pstgcn_action_classifier.model.parameters())[0].clone()
         self.pstgcn_action_classifier.fit(dataset=training_dataset, val_dataset=validation_dataset, silent=True,
@@ -94,42 +102,62 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
 
     def test_eval(self):
         model_saved_path = self.Pretrained_MODEL_PATH
-        model_name = 'PretrainedModel'
+        self.pstgcn_action_classifier.topology = [1]
+        model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
+                     self.topology[-1]) # pstgcn_nturgbd-1-1 --> because the model has only one layer and one block
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.pstgcn_action_classifier.load(model_saved_path, model_name)
-        score_dict = self.pstgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
+        score = self.pstgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
                                                         val_labels_filename='val_labels.pkl')
-        self.assertNotEqual(len(score_dict), 0,
+        self.assertNotEqual(len(score), 0,
                             msg="Eval results dictionary contains empty list.")
 
     def test_infer(self):
         test_data = np.load(self.Test_DATASET_PATH)
         model_saved_path = self.Pretrained_MODEL_PATH
-        model_name = 'PretrainedModel'
-        self.pstgcn_action_classifier.model = None
+        model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
+            self.topology[-1])  # pstgcn_nturgbd-1-1 --> because the model has only one layer and one block
+        self.pstgcn_action_classifier.topology = [1]
         self.pstgcn_action_classifier.load(model_saved_path, model_name)
         model_output = self.pstgcn_action_classifier.infer(test_data)
         self.assertIsNotNone(model_output, msg="The model output is None")
 
     def test_save_load(self):
-        self.pstgcn_action_classifier.model = None
+        self.pstgcn_action_classifier.topology = [1]
         self.pstgcn_action_classifier.ort_session = None
         self.pstgcn_action_classifier.init_model()
         self.pstgcn_action_classifier.save(path=os.path.join(self.temp_dir, "test_save_load"), model_name='testModel')
         self.pstgcn_action_classifier.model = None
+        self.pstgcn_action_classifier.topology = [1]
         self.pstgcn_action_classifier.load(path=os.path.join(self.temp_dir, "test_save_load"), model_name='testModel')
         self.assertIsNotNone(self.pstgcn_action_classifier.model, "model is None after loading pt model.")
         # Cleanup
         rmdir(os.path.join(self.temp_dir, "test_save_load"))
 
+    def test_optimize(self):
+        model_saved_path = self.Pretrained_MODEL_PATH
+        model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
+            self.topology[-1])
+        self.pstgcn_action_classifier.topology = [1]
+        self.pstgcn_action_classifier.ort_session = None
+        self.pstgcn_action_classifier.init_model()
+        self.pstgcn_action_classifier.load(model_saved_path, model_name)
+        self.pstgcn_action_classifier.optimize()
+        self.assertIsNotNone(self.pstgcn_action_classifier.ort_session,
+                             "ort_session is None after optimizing the pretrained model.")
+        # Cleanup
+        self.pstgcn_action_classifier.ort_session = None
+        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
+
     def test_save_load_onnx(self):
-        self.pstgcn_action_classifier.model = None
+        self.pstgcn_action_classifier.topology = [1]
         self.pstgcn_action_classifier.ort_session = None
         self.pstgcn_action_classifier.init_model()
         self.pstgcn_action_classifier.optimize()
         self.pstgcn_action_classifier.save(path=os.path.join(self.temp_dir, "test_save_load"),
                                            model_name='onnx_model_temp')
         self.pstgcn_action_classifier.model = None
+        self.pstgcn_action_classifier.topology = [1]
         self.pstgcn_action_classifier.load(path=os.path.join(self.temp_dir, "test_save_load"),
                                            model_name='onnx_model_temp')
         self.assertIsNotNone(self.pstgcn_action_classifier.ort_session, "ort_session is None after loading onnx model.")
@@ -138,18 +166,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         rmdir(os.path.join(self.temp_dir, "testOnnxModel"))
         self.pstgcn_action_classifier.ort_session = None
 
-    def test_optimize(self):
-        model_saved_path = self.Pretrained_MODEL_PATH
-        model_name = 'PretrainedModel'
-        self.pstgcn_action_classifier.model = None
-        self.pstgcn_action_classifier.ort_session = None
-        self.pstgcn_action_classifier.load(model_saved_path, model_name)
-        self.pstgcn_action_classifier.optimize()
-        self.assertIsNotNone(self.pstgcn_action_classifier.ort_session,
-                             "ort_session is None after optimizing the pretrained model.")
-        # Cleanup
-        self.pstgcn_action_classifier.ort_session = None
-        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
 
 
 if __name__ == "__main__":
