@@ -169,24 +169,27 @@ class ObjectTracking2DFairMotLearner(Learner):
 
         if self.model.ort_session is None:
             model_metadata["model_paths"] = [
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + ".pth"),
+                folder_name_no_ext + ".pth",
             ]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pth"
 
             torch.save({
                 'state_dict': self.model.state_dict()
-            }, model_metadata["model_paths"][0])
+            }, os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][0]))
             if verbose:
                 print("Saved Pytorch model.")
         else:
             model_metadata["model_paths"] = [
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + ".onnx")
+                folder_name_no_ext + ".onnx"
             ]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
 
-            shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"), model_metadata["model_paths"][0])
+            shutil.copy2(
+                os.path.join(self.temp_path, "onnx_model_temp.onnx"),
+                os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][0])
+            )
             if verbose:
                 print("Saved ONNX model.")
 
@@ -212,11 +215,11 @@ class ObjectTracking2DFairMotLearner(Learner):
             metadata = json.load(metadata_file)
 
         if not metadata["optimized"]:
-            self.__load_from_pth(self.model, metadata["model_paths"][0])
+            self.__load_from_pth(self.model, os.path.join(path, metadata["model_paths"][0]))
             if verbose:
                 print("Loaded Pytorch model.")
         else:
-            self.__load_rpn_from_onnx(metadata["model_paths"][0])
+            self.__load_rpn_from_onnx(os.path.join(path, metadata["model_paths"][0]))
             if verbose:
                 print("Loaded ONNX model.")
 
