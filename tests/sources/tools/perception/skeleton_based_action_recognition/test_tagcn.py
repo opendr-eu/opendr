@@ -81,7 +81,8 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.tagcn_action_classifier.fit(dataset=training_dataset, val_dataset=validation_dataset, silent=True,
                                          train_data_filename='train_joints.npy',
                                          train_labels_filename='train_labels.pkl', val_data_filename="val_joints.npy",
-                                         val_labels_filename="val_labels.pkl")
+                                         val_labels_filename="val_labels.pkl",
+                                         skeleton_data_type='joint')
         self.assertFalse(torch.equal(m, list(self.tagcn_action_classifier.model.parameters())[0]),
                          msg="Model parameters did not change after running fit.")
 
@@ -91,9 +92,30 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.tagcn_action_classifier.load(model_saved_path, model_name)
         score_dict = self.tagcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
-                                                       val_labels_filename='val_labels.pkl')
+                                                       val_labels_filename='val_labels.pkl',
+                                                       skeleton_data_type='joint')
         self.assertNotEqual(len(score_dict), 0,
                             msg="Eval results dictionary contains empty list.")
+
+    def test_multi_stream_eval(self):
+        model_saved_path = self.Pretrained_MODEL_PATH
+        model_name = 'PretrainedModel'
+        validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
+        self.pstgcn_action_classifier.load(model_saved_path, model_name)
+        scores = []
+        score_joints = self.pstgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
+                                                          val_labels_filename='val_labels.pkl',
+                                                          skeleton_data_type='joint')
+        score_bones = self.pstgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
+                                                         val_labels_filename='val_labels.pkl',
+                                                         skeleton_data_type='bone')
+        scores = [score_joints, score_bones]
+        total_score = self.pstgcn_action_classifier.multi_stream_eval(validation_dataset, scores,
+                                                                                    data_filename='val_joints.npy',
+                                                                                    labels_filename='val_labels.pkl'
+                                                                                    )
+        self.assertNotEqual(total_score, score_joints,
+                            msg="the classification scores is not changed after ensembling")
 
     def test_infer(self):
         test_data = np.load(self.Test_DATASET_PATH)

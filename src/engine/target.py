@@ -267,9 +267,6 @@ class ActionCategory(Target):
         super().__init__()
         self.data = actioncategory
         self.confidence = confidence
-        # self.action_names = ['']
 
     def __str__(self):
-        # action_name = self.action_names[self.data]
-        # return action_name
         return str(self.data)

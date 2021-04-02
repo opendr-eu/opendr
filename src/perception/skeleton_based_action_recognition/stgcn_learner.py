@@ -96,12 +96,12 @@ class STGCNLearner(Learner):
 
         if self.device == 'cuda':
             self.output_device = self.device_ind[0] if type(self.device_ind) is list else self.device_ind
-        self.init_seed(1)
+        self.__init_seed(1)
 
     def fit(self, dataset, val_dataset, logging_path='', silent=False, verbose=True,
             momentum=0.9, nesterov=True, weight_decay=0.0001, train_data_filename='train_joints.npy',
             train_labels_filename='train_labels.pkl', val_data_filename="val_joints.npy",
-            val_labels_filename="val_labels.pkl"):
+            val_labels_filename="val_labels.pkl", skeleton_data_type='joint'):
         """
         This method is used for training the algorithm on a train dataset and validating on a val dataset.
         :param dataset: object that holds the training dataset
@@ -161,7 +161,7 @@ class STGCNLearner(Learner):
             checkpoint_path = os.path.join(checkpoints_folder, checkpoint_name)
             self.__load_from_pt(checkpoint_path)
         if verbose:
-            print("Model trainable parameters:", self.count_parameters())
+            print("Model trainable parameters:", self.__count_parameters())
         # set the optimizer
         if self.optimizer_name == 'sgd':
             self.optimizer_ = optim.SGD(
@@ -187,6 +187,7 @@ class STGCNLearner(Learner):
         traindata = self.__prepare_dataset(dataset,
                                            data_filename=train_data_filename,
                                            labels_filename=train_labels_filename,
+                                           skeleton_data_type=skeleton_data_type,
                                            verbose=verbose and not silent)
 
         train_loader = DataLoader(dataset=traindata,
@@ -194,19 +195,19 @@ class STGCNLearner(Learner):
                                   shuffle=True,
                                   num_workers=self.num_workers,
                                   drop_last=True,
-                                  worker_init_fn=self.init_seed(1))
+                                  worker_init_fn=self.__init_seed(1))
         # start training
         self.global_step = self.start_epoch * len(train_loader) / self.batch_size
         # self.checkpoint_after_iter = int(len(train_loader) / self.batch_size)
         for epoch in range(self.start_epoch, self.epochs):
             self.model.train()
-            self.print_log('Training epoch: {}'.format(epoch + 1))
+            self.__print_log('Training epoch: {}'.format(epoch + 1))
             # save_model = ((self.global_step + 1) % self.checkpoint_after_iter == 0) or (epoch + 1 == self.epochs)
             save_model = ((epoch + 1) % self.checkpoint_after_iter == 0) or (epoch + 1 == self.epochs)
             loss_value = []
             if self.logging:
                 self.train_writer.add_scalar('epoch', epoch, self.global_step)
-            self.record_time()
+            self.__record_time()
             timer = dict(dataloader=0.001, model=0.001, statistics=0.001)
             process = tqdm(train_loader)
             for batch_idx, (data, label, index) in enumerate(process):
@@ -218,7 +219,7 @@ class STGCNLearner(Learner):
                 else:
                     data = Variable(data.float(), requires_grad=False)
                     label = Variable(label.long(), requires_grad=False)
-                timer['dataloader'] += self.split_time()
+                timer['dataloader'] += self.__split_time()
 
                 # forward
                 output = self.model(data)
@@ -234,7 +235,7 @@ class STGCNLearner(Learner):
                 loss.backward()
                 self.optimizer_.step()
                 loss_value.append(loss.data.item())
-                timer['model'] += self.split_time()
+                timer['model'] += self.__split_time()
 
                 value, predict_label = torch.max(output.data, 1)
                 acc = torch.mean((predict_label == label.data).float())
@@ -247,13 +248,13 @@ class STGCNLearner(Learner):
                 self.lr = self.optimizer_.param_groups[0]['lr']
                 if self.logging:
                     self.train_writer.add_scalar('lr', self.lr, self.global_step)
-                timer['statistics'] += self.split_time()
+                timer['statistics'] += self.__split_time()
 
             # statistics of time consumption and loss
             proportion = {k: '{:02d}%'.format(int(round(v * 100 / sum(timer.values()))))
                           for k, v in timer.items()}
-            self.print_log('\t Mean training loss: {:.4f}.'.format(np.mean(loss_value)))
-            self.print_log('\t Time consumption: [Data]{dataloader}, [Network]{model}'.format(**proportion))
+            self.__print_log('\t Mean training loss: {:.4f}.'.format(np.mean(loss_value)))
+            self.__print_log('\t Time consumption: [Data]{dataloader}, [Network]{model}'.format(**proportion))
             if save_model:
                 checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
                 checkpoint_name = self.experiment_name + '-' + str(epoch) + '-' + str(int(self.global_step))
@@ -264,8 +265,8 @@ class STGCNLearner(Learner):
         print('best accuracy: ', self.best_acc, ' model_name: ', self.experiment_name)
 
     def eval(self, val_dataset, epoch=0, silent=False, verbose=True,
-             val_data_filename='val_joints.npy', val_labels_filename='val_labels.pkl', save_score=False,
-             wrong_file=None, result_file=None, show_topk=[1, 5]):
+             val_data_filename='val_joints.npy', val_labels_filename='val_labels.pkl', skeleton_data_type='joint',
+             save_score=False, wrong_file=None, result_file=None, show_topk=[1, 5]):
         """
         This method is used for evaluating the algorithm on a val dataset.
         :param val_dataset: object that holds the val dataset
@@ -303,15 +304,16 @@ class STGCNLearner(Learner):
         valdata = self.__prepare_dataset(val_dataset,
                                          data_filename=val_data_filename,
                                          labels_filename=val_labels_filename,
+                                         skeleton_data_type=skeleton_data_type,
                                          verbose=verbose and not silent)
         val_loader = DataLoader(dataset=valdata,
                                 batch_size=self.val_batch_size,
                                 shuffle=False,
                                 num_workers=self.num_workers,
                                 drop_last=False,
-                                worker_init_fn=self.init_seed(1))
+                                worker_init_fn=self.__init_seed(1))
         self.model.eval()
-        self.print_log('Eval epoch: {}'.format(epoch + 1))
+        self.__print_log('Eval epoch: {}'.format(epoch + 1))
         loss_value = []
         score_frag = []
         process = tqdm(val_loader)
@@ -355,10 +357,10 @@ class STGCNLearner(Learner):
             self.val_writer.add_scalar('acc', accuracy, self.global_step)
 
         score_dict = dict(zip(val_loader.dataset.sample_name, score))
-        self.print_log('\tMean {} loss of {} batches: {}.'.format(
+        self.__print_log('\tMean {} loss of {} batches: {}.'.format(
             'val', len(val_loader), np.mean(loss_value)))
         for k in show_topk:
-            self.print_log('\tTop{}: {:.2f}%'.format(
+            self.__print_log('\tTop{}: {:.2f}%'.format(
                 k, 100 * val_loader.dataset.top_k(score, k)))
         if save_score and self.logging:
             with open('{}/epoch{}_{}_score.pkl'.format(self.logging_path, epoch + 1, 'val'), 'wb') as f:
@@ -463,8 +465,7 @@ class STGCNLearner(Learner):
             output = output
         value, predict_label = torch.max(output.data, 1)
         category = ActionCategory(predict_label, value)
-        print(category)
-        return output.data
+        return category.confidence
 
     def optimize(self, do_constant_folding=False):
         """
@@ -601,7 +602,7 @@ class STGCNLearner(Learner):
         :type verbose: bool, optional
         """
         if path is not None:
-            self.print_log('Load weights from {}.'.format(path))
+            self.__print_log('Load weights from {}.'.format(path))
             try:
                 weights = torch.load(path)
             except FileNotFoundError as e:
@@ -638,35 +639,41 @@ class STGCNLearner(Learner):
         """
         self.ort_session = onnxruntime.InferenceSession(path)
 
-        # I might merge this function with __convert_to_onnx
-        '''# Load the ONNX model
-        onnx_model = onnx.load(path)
-        onnx.checker.check_model(onnx_model)
+    def multi_stream_eval(self, dataset, scores, data_filename='val_joints.npy',
+                          labels_filename='val_labels.pkl', skeleton_data_type='joint',
+                          verbose=True, silent=True):
+        """
+        :param scores: a list of score arrays. Each array in the list contains the evaluation results for a dataset.
+        :type scores: a list of score arrays.
+        :param dataset: ExternalDataset class object.
+        :type dataset: object that holds the validation dataset
+        :return: the top_k classification results
+        """
+        valdata = self.__prepare_dataset(dataset,
+                                         data_filename=data_filename,
+                                         labels_filename=labels_filename,
+                                         skeleton_data_type=skeleton_data_type,
+                                         verbose=verbose and not silent)
+        val_loader = DataLoader(dataset=valdata,
+                                batch_size=self.val_batch_size,
+                                shuffle=False,
+                                num_workers=self.num_workers,
+                                drop_last=False,
+                                worker_init_fn=self.__init_seed(1))
+        total_score = 0
+        for i in range(len(scores)):
+            total_score += scores[i]
+        accuracy_top1 = val_loader.dataset.top_k(total_score, 1)
+        accuracy_top5 = val_loader.dataset.top_k(total_score, 1)
 
-        ort_session = onnxruntime.InferenceSession(path)
-
-        def to_numpy(tensor):
-            return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
-
-        # compute ONNX Runtime output prediction
-        ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(onnx_input)}
-        ort_outs = ort_session.run(None, ort_inputs)
-
-        # compare ONNX Runtime and PyTorch results
-        np.testing.assert_allclose(to_numpy(torch_out), ort_outs[0], rtol=1e-03, atol=1e-05)
-
-        print("Exported model has been tested with ONNXRuntime, and the result looks good!")'''
-
-        # The comments below are the alternative way to use the onnx model, it might be useful in the future
-        # depending on how ONNX saving/loading will be implemented across the toolkit.
-        # # Load the ONNX model
-        # self.model = onnx.load(path)
-        #
-        # # Check that the IR is well formed
-        # onnx.checker.check_model(self.model)
-        #
-        # # Print a human readable representation of the graph
-        # onnx.helper.printable_graph(self.model.graph)
+        if self.logging:
+            self.__print_log('\tMulti_Stream_Top{}: {:.2f}%'.format(
+                1, 100 * accuracy_top1))
+            self.__print_log('\tMulti_Stream_Top{}: {:.2f}%'.format(
+                5, 100 * accuracy_top5))
+            with open('{}/multistream_score.pkl'.format(self.logging_path), 'wb') as f:
+                pickle.dump(total_score, f)
+        return total_score
 
     def download(self, path=None, mode="pretrained", verbose=False,
                  url=OPENDR_SERVER_URL + "skeleton_based_action_recognition/"):
@@ -783,16 +790,16 @@ class STGCNLearner(Learner):
 
         return downloaded_files_path
 
-    def record_time(self):
+    def __record_time(self):
         self.cur_time = time.time()
         return self.cur_time
 
-    def split_time(self):
+    def __split_time(self):
         split_time = time.time() - self.cur_time
-        self.record_time()
+        self.__record_time()
         return split_time
 
-    def print_log(self, str_log, print_time=True):
+    def __print_log(self, str_log, print_time=True):
         if print_time:
             localtime = time.asctime(time.localtime(time.time()))
             str_log = "[ " + localtime + ' ] ' + str_log
@@ -801,7 +808,7 @@ class STGCNLearner(Learner):
             with open('{}/log.txt'.format(self.logging_path), 'a') as f:
                 print(str, file=f)
 
-    def count_parameters(self):
+    def __count_parameters(self):
         """
         Returns the number of the model's trainable parameters.
         :return: number of trainable parameters
@@ -811,7 +818,7 @@ class STGCNLearner(Learner):
             raise UserWarning("Model is not initialized, can't count trainable parameters.")
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
-    def init_seed(self, seed):
+    def __init_seed(self, seed):
         if self.device == "cuda":
             torch.cuda.manual_seed_all(seed)
             torch.backends.cudnn.enabled = True
@@ -820,7 +827,6 @@ class STGCNLearner(Learner):
         torch.manual_seed(seed)
         np.random.seed(seed)
         random.seed(seed)
-        # torch.backends.cudnn.enabled = False
 
     def reset(self):
         """This method is not used in this implementation."""
