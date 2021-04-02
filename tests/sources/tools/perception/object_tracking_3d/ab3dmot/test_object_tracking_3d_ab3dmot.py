@@ -81,6 +81,7 @@ class TestObjectTracking3DAb3dmot(unittest.TestCase):
         learner = ObjectTracking3DAb3dmotLearner()
         result = learner.infer(self.dataset[0][0][:5])
 
+        # 5 input images are given, so 5 non-empty outputs should be returned
         self.assertTrue(len(result) == 5)
         self.assertTrue(len(result[0]) > 0)
 
