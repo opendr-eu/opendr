@@ -275,6 +275,3 @@ class Category(Target):
             return f"Class {self.data} with confidence {self.confidence}"
         else:
             return f"Class {self.data} "
-
-
-

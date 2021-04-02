@@ -16,7 +16,6 @@ import numpy as np
 import os
 import shutil
 import unittest
-import torch
 from perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
 from engine.datasets import ExternalDataset
 
@@ -41,8 +40,8 @@ class TestFaceRecognitionLearner(unittest.TestCase):
     def setUpClass(cls):
         # cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "face_recognition", "face_recognition_temp")
         cls.temp_dir = './face_recognition_temp'
-        cls.recognizer = FaceRecognitionLearner(backbone='mobilefacenet',mode='backbone_only', device="cpu", temp_path=cls.temp_dir,
-                                                batch_size=10, checkpoint_after_iter=0)
+        cls.recognizer = FaceRecognitionLearner(backbone='mobilefacenet', mode='backbone_only', device="cpu",
+                                                temp_path=cls.temp_dir, batch_size=10, checkpoint_after_iter=0)
         # Download all required files for testing
         cls.recognizer.download(cls.temp_dir, mode='pretrained')
         cls.recognizer.download(cls.temp_dir, mode="test_data")
@@ -117,7 +116,7 @@ class TestFaceRecognitionLearner(unittest.TestCase):
         self.assertIsNotNone(self.recognizer.ort_backbone_session)
         self.recognizer.ort_backbone_session = None
         # Cleanup
-        rmfile(os.path.join(self.temp_dir, 'onnx_' +self.recognizer.backbone + '_backbone_model.onnx'))
+        rmfile(os.path.join(self.temp_dir, 'onnx_' + self.recognizer.backbone + '_backbone_model.onnx'))
 
     def test_download(self):
         download_path = os.path.join(self.temp_dir, 'downloaded')
