@@ -702,35 +702,33 @@ class LightweightOpenPoseLearner(Learner):
             path_no_folder_name = path_no_folder_name[0:-1]  # Remove one '/'
 
         # Create model directory
-        new_path = path_no_folder_name + folder_name_no_ext
-        os.makedirs(new_path, exist_ok=True)
+        full_path_to_model_folder = path_no_folder_name + folder_name_no_ext
+        os.makedirs(full_path_to_model_folder, exist_ok=True)
 
         model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
                           "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
 
         if self.ort_session is None:
-            model_metadata["model_paths"] = [os.path.join(folder_name_no_ext, folder_name_no_ext +
-                                                          ".pth")]
+            model_metadata["model_paths"] = [os.path.join(folder_name_no_ext + ".pth")]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pth"
 
             custom_dict = {'state_dict': self.model.state_dict()}
-            torch.save(custom_dict, os.path.join(path_no_folder_name, model_metadata["model_paths"][0]))
+            torch.save(custom_dict, os.path.join(full_path_to_model_folder, model_metadata["model_paths"][0]))
             if verbose:
                 print("Saved Pytorch model.")
         else:
-            model_metadata["model_paths"] = [os.path.join(folder_name_no_ext, folder_name_no_ext +
-                                                          ".onnx")]
+            model_metadata["model_paths"] = [os.path.join(folder_name_no_ext + ".onnx")]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             # Copy already optimized model from temp path
             shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"),
-                         os.path.join(path_no_folder_name, model_metadata["model_paths"][0]))
+                         os.path.join(full_path_to_model_folder, model_metadata["model_paths"][0]))
             model_metadata["optimized"] = True
             if verbose:
                 print("Saved ONNX model.")
 
-        with open(os.path.join(new_path, folder_name_no_ext + ".json"), 'w') as outfile:
+        with open(os.path.join(full_path_to_model_folder, folder_name_no_ext + ".json"), 'w') as outfile:
             json.dump(model_metadata, outfile)
 
     def init_model(self):
@@ -781,13 +779,14 @@ class LightweightOpenPoseLearner(Learner):
 
         with open(os.path.join(path, model_name + ".json")) as metadata_file:
             metadata = json.load(metadata_file)
+
         self.backbone = metadata["backbone"]
         if not metadata["optimized"]:
-            self.__load_from_pth(os.path.join(path, model_name + '.pth'))
+            self.__load_from_pth(os.path.join(path, metadata['model_paths'][0]))
             if verbose:
                 print("Loaded Pytorch model.")
         else:
-            self.__load_from_onnx(os.path.join(path, model_name + '.onnx'))
+            self.__load_from_onnx(os.path.join(path, metadata['model_paths'][0]))
             if verbose:
                 print("Loaded ONNX model.")
 
