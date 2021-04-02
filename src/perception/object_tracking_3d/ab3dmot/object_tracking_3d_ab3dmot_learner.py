@@ -52,13 +52,13 @@ class ObjectTracking3DAb3dmotLearner(Learner):
         self.__create_model()
 
     def save(self, path):
-        pass
+        raise NotImplementedError("The AB3DMOT Learner does not support saving")
 
     def load(
         self,
         path,
     ):
-        pass
+        raise NotImplementedError("The AB3DMOT Learner does not support loading")
 
     def reset(self):
         self.model.reset()
@@ -71,7 +71,7 @@ class ObjectTracking3DAb3dmotLearner(Learner):
         silent=False,
         verbose=False,
     ):
-        pass
+        raise NotImplementedError("The AB3DMOT Learner does not support training")
 
     def eval(
         self,
@@ -135,7 +135,7 @@ class ObjectTracking3DAb3dmotLearner(Learner):
         return results
 
     def optimize(self):
-        pass
+        raise Exception("The AB3DMOT Learner does not support optimization")
 
     def __create_model(self):
 

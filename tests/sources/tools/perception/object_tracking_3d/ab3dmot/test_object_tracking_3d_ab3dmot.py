@@ -55,7 +55,17 @@ class TestObjectTracking3DAb3dmot(unittest.TestCase):
         # Clean up downloaded files
 
         rmdir(os.path.join(cls.temp_dir))
-        pass
+
+    def test_unsupported(self):
+
+        learner = ObjectTracking3DAb3dmotLearner()
+
+        with self.assertRaises(NotImplementedError):
+            learner.save(None)
+        with self.assertRaises(NotImplementedError):
+            learner.load(None)
+        with self.assertRaises(NotImplementedError):
+            learner.fit(None)
 
     def test_eval(self):
 
