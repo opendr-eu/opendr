@@ -66,7 +66,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
         ]
 
         cls.dataset_path = MotDataset.download_nano_mot20(
-            cls.temp_dir, True
+            os.path.join(cls.temp_dir, "dataset"), True
         ).path
 
         print("Dataset downloaded", file=sys.stderr)
