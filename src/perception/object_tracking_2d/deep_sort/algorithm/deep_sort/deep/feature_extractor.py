@@ -2,7 +2,6 @@ import torch
 import torchvision.transforms as transforms
 import numpy as np
 import cv2
-import logging
 
 from .model import Net
 

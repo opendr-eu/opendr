@@ -402,7 +402,7 @@ class ImageWithDetections(Image):
         :return: a human-friendly string-based representation of the data
         :rtype: str
         """
-        return "ImageWithDetections " + str(self.data) + str(self.boundingBoxList) 
+        return "ImageWithDetections " + str(self.data) + str(self.boundingBoxList)
 
 
 class PointCloud(Data):

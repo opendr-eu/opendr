@@ -2,9 +2,9 @@ import os
 import numpy as np
 import copy
 import motmetrics as mm
+from utils.io import read_results, unzip_objs
 
 mm.lap.default_solver = "lap"
-from utils.io import read_results, unzip_objs
 
 
 class Evaluator(object):
@@ -64,9 +64,9 @@ class Evaluator(object):
         self.acc.update(gt_ids, trk_ids, iou_distance)
 
         if (
-            rtn_events
-            and iou_distance.size > 0
-            and hasattr(self.acc, "last_mot_events")
+            rtn_events and
+            iou_distance.size > 0 and
+            hasattr(self.acc, "last_mot_events")
         ):
             events = (
                 self.acc.last_mot_events

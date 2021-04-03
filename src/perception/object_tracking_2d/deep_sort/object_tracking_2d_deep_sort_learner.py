@@ -17,7 +17,6 @@ import json
 import torch
 import ntpath
 import shutil
-import numpy as np
 import onnxruntime as ort
 from PIL import Image as PilImage
 from torchvision.transforms import transforms as T
@@ -29,7 +28,6 @@ from perception.object_tracking_2d.deep_sort.algorithm.run import train
 from perception.object_tracking_2d.fair_mot.algorithm.run import evaluate
 from perception.object_tracking_2d.deep_sort.algorithm.deep_sort_tracker import DeepSortTracker
 from engine.data import Image, ImageWithDetections
-from engine.target import TrackingAnnotation, TrackingAnnotationList
 from engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 
@@ -463,7 +461,9 @@ class ObjectTracking2DDeepSortLearner(Learner):
                         ") is given as a dataset, but it is not a Market1501 dataset"
                     )
 
-                eval_dataset_iterator = map_dataset(Market1501DatasetIterator(os.path.join(val_dataset_path, "bounding_box_test")))
+                eval_dataset_iterator = map_dataset(Market1501DatasetIterator(
+                    os.path.join(val_dataset_path, "bounding_box_test")
+                ))
 
             elif require_val_dataset:
                 raise ValueError(

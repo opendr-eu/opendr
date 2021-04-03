@@ -1,4 +1,3 @@
-import numpy as np
 import cv2
 
 palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
