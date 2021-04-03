@@ -37,7 +37,7 @@ from urllib.request import urlretrieve
 class ObjectTracking2DDeepSortLearner(Learner):
     def __init__(
         self,
-        lr=0.0001,
+        lr=0.1,
         iters=-1,
         batch_size=4,
         optimizer="sgd",
@@ -329,8 +329,7 @@ class ObjectTracking2DDeepSortLearner(Learner):
     def download(model_name, path, server_url=None):
 
         if server_url is None and model_name not in [
-            "crowdhuman_dla34",
-            "fairmot_dla34",
+            "deep_sort",
         ]:
             raise ValueError("Unknown model_name: " + model_name)
 

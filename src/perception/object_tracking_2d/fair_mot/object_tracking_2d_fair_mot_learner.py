@@ -464,7 +464,8 @@ class ObjectTracking2DFairMotLearner(Learner):
     def download(model_name, path, server_url=None):
 
         if server_url is None and model_name not in [
-            "deep_sort",
+            "crowdhuman_dla34",
+            "fairmot_dla34",
         ]:
             raise ValueError("Unknown model_name: " + model_name)
 
