@@ -149,7 +149,7 @@ The [TrackingAnnotation](#class_engine.target.TrackingAnnotation) class has the 
    Static method that constructs [TrackingAnnotation](#class_engine.target.TrackingAnnotation) from the `data` object with MOT annotation.
 #### mot(with_confidence=True)
   Return the annotation in MOT format.
-#### boudning_box()
+#### bounding_box()
   Return the [BoundingBox](#class_engine.target.BoundingBox) object constructed from this object.
 
 
@@ -167,7 +167,7 @@ The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class 
   Static method that constructs [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) from the `data` object with MOT annotation.
 #### mot(with_confidence=True)
   Return the annotation in MOT format.
-#### boudning_box_list()
+#### bounding_box_list()
   Return the [BoundingBoxList](#class_engine.target.BoundingBoxList) object constructed from this object.
 #### boxes()
   Property. Returns the list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) boxess.

@@ -43,7 +43,7 @@ Constructor parameters:
 - **head_conv**: *int, default=256*
   Specifies the number of channels for the network head.
 - **ltrb**: *bool, default=True*
-  Specifies if to regress left, top, right, bottom of a boudning box.
+  Specifies if to regress left, top, right, bottom of a bounding box.
 - **num_classes**: *int, default=1*
   Specifies the number of classes to track.
 - **reg_offset**: *bool, default=True*

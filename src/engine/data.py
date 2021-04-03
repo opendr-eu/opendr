@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from engine.target import BoundingBox2DList
+from engine.target import BoundingBoxList
 import numpy as np
 
 
@@ -344,11 +344,14 @@ class ImageWithDetections(Image):
     - returning a NumPy compatible representation of data (numpy())
     """
 
-    def __init__(self, image, boundingBox2DList: BoundingBox2DList):
-        super().__init__(image)
+    def __init__(self, image, boundingBoxList: BoundingBoxList):
+        super().__init__()
 
-        self.data = image
-        self.boundingBox2DList = boundingBox2DList
+        if isinstance(image, Image):
+            self.data = image.numpy()
+        else:
+            self.data = image
+        self.boundingBoxList = boundingBoxList
 
     @property
     def data(self):
@@ -399,7 +402,7 @@ class ImageWithDetections(Image):
         :return: a human-friendly string-based representation of the data
         :rtype: str
         """
-        return "ImageWithDetections " + str(self.data) + str(self.boundingBox2DList) 
+        return "ImageWithDetections " + str(self.data) + str(self.boundingBoxList) 
 
 
 class PointCloud(Data):
