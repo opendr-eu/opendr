@@ -71,9 +71,10 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
-        #rmdir(os.path.join(cls.temp_dir, "pretrained_models"))
-        rmdir(os.path.join(cls.temp_dir, "data"))
-        #rmdir(os.path.join(cls.temp_dir))
+        # rmdir(os.path.join(cls.temp_dir, "pretrained_models"))
+        # rmdir(os.path.join(cls.temp_dir, "data"))
+        # rmdir(os.path.join(cls.temp_dir))
+        print('we are in tearDownClass')
 
     def test_fit(self):
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="NTURGBD")
