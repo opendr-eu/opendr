@@ -52,19 +52,17 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                                      blocksize=20, numblocks=1, numlayers=1, topology=[],
                                                      layer_threshold=1e-4, block_threshold=1e-4)
         # Download all required files for testing
-        '''cls.Pretrained_MODEL_PATH = cls.pstgcn_action_classifier.download(
-            mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models"))
         cls.Train_DATASET_PATH = cls.pstgcn_action_classifier.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data"))
         cls.Val_DATASET_PATH = cls.pstgcn_action_classifier.download(
             mode="val_data", path=os.path.join(cls.temp_dir, "data"))
         cls.Test_DATASET_PATH = cls.pstgcn_action_classifier.download(
-            mode="test_data", path=os.path.join(cls.temp_dir, "data"))'''
+            mode="test_data", path=os.path.join(cls.temp_dir, "data"))
 
         cls.experiment_name = 'pstgcn_nturgbd'
-        cls.Train_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
+        '''cls.Train_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
         cls.Val_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
-        cls.Test_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv', 'val_joints.npy')
+        cls.Test_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv', 'val_joints.npy')'''
 
     @classmethod
     def tearDownClass(cls):

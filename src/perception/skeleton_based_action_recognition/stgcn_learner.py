@@ -680,7 +680,7 @@ class STGCNLearner(Learner):
         return total_score
 
     def download(self, path=None, mode="pretrained", verbose=False,
-                 url=OPENDR_SERVER_URL + "skeleton_based_action_recognition/"):
+                 url=OPENDR_SERVER_URL + "perception/skeleton_based_action_recognition/"):
         """
         Download utility for various skeleton_based_action_recognition components. Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
@@ -736,7 +736,7 @@ class STGCNLearner(Learner):
                 print("Downloading train data...")
             if not os.path.exists(os.path.join(path, self.dataset_name, "train_joints.npy")):
                 # Download train data
-                file_url = os.path.join(url, self.dataset_name, "train_joints.npy")
+                file_url = os.path.join(url, 'data', self.dataset_name, "train_joints.npy")
                 urlretrieve(file_url,
                             os.path.join(path, self.dataset_name, "train_joints.npy"))
             else:
@@ -744,7 +744,7 @@ class STGCNLearner(Learner):
                     print("train_data file already exists.")
             # Download labels
             if not os.path.exists(os.path.join(path, self.dataset_name, "train_labels.pkl")):
-                file_url = os.path.join(url, self.dataset_name, "train_labels.pkl")
+                file_url = os.path.join(url, 'data', self.dataset_name, "train_labels.pkl")
                 urlretrieve(file_url,
                             os.path.join(path, self.dataset_name, "train_labels.pkl"))
             else:
@@ -759,7 +759,7 @@ class STGCNLearner(Learner):
                 print("Downloading validation data...")
             if not os.path.exists(os.path.join(path, self.dataset_name, "val_joints.npy")):
                 # Download val data
-                file_url = os.path.join(url, self.dataset_name, "val_joints.npy")
+                file_url = os.path.join(url, 'data', self.dataset_name, "val_joints.npy")
                 urlretrieve(file_url,
                             os.path.join(path, self.dataset_name, "val_joints.npy"))
             else:
@@ -767,7 +767,7 @@ class STGCNLearner(Learner):
                     print("val_data file already exists.")
             # Download labels
             if not os.path.exists(os.path.join(path, self.dataset_name, "val_labels.pkl")):
-                file_url = os.path.join(url, self.dataset_name, "val_labels.pkl")
+                file_url = os.path.join(url, 'data', self.dataset_name, "val_labels.pkl")
                 urlretrieve(file_url,
                             os.path.join(path, self.dataset_name, "val_labels.pkl"))
             else:
@@ -782,7 +782,7 @@ class STGCNLearner(Learner):
                 print("Downloading test data...")
             if not os.path.exists(os.path.join(path, self.dataset_name, "val_joints.npy")):
                 # Download test data
-                file_url = os.path.join(url, self.dataset_name, "val_joints.npy")
+                file_url = os.path.join(url, 'data', self.dataset_name, "val_joints.npy")
                 urlretrieve(file_url,
                             os.path.join(path, self.dataset_name, "val_joints.npy"))
             else:
