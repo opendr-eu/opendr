@@ -61,7 +61,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
             mode="test_data", path=os.path.join(cls.temp_dir, "data"))'''
 
         cls.experiment_name = 'tagcn_nturgbd'
-        #cls.Pretrained_MODEL_PATH = os.path.join(cls.temp_dir, "pretrained_models")
         cls.Train_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
         cls.Val_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
         cls.Test_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv', 'val_joints.npy')
@@ -94,8 +93,8 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.tagcn_action_classifier.load(model_saved_path, model_name)
         score = self.tagcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
-                                                       val_labels_filename='val_labels.pkl',
-                                                       skeleton_data_type='joint')
+                                                  val_labels_filename='val_labels.pkl',
+                                                  keleton_data_type='joint')
         self.assertNotEqual(len(score), 0,
                             msg="Eval results contains empty list.")
 
@@ -165,7 +164,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         # Cleanup
         self.tagcn_action_classifier.ort_session = None
         rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
-        rmfile(os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name)))
 
 
 if __name__ == "__main__":

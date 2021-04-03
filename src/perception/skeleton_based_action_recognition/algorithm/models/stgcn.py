@@ -30,8 +30,6 @@ class GraphConvolution(nn.Module):
     def __init__(self, in_channels, out_channels, A, cuda_):
         super(GraphConvolution, self).__init__()
         self.cuda_ = cuda_
-        #self.graph_attn = nn.Parameter(torch.ones(A.size()))
-        #self.graph_attn = Variable(self.graph_attn.astype(np.float32), requires_grad=False)
         self.graph_attn = nn.Parameter(torch.from_numpy(A.astype(np.float32)))
         nn.init.constant_(self.graph_attn, 1)
         self.A = Variable(torch.from_numpy(A.astype(np.float32)), requires_grad=False)

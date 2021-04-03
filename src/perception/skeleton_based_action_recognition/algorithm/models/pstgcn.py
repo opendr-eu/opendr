@@ -139,7 +139,8 @@ class PSTGCN(nn.Module):
         self.num_layers = len(self.topology)
         self.block_size = block_size
         self.layers = nn.ModuleDict(
-            {'layer{}'.format(i): ST_GCN_block(self.topology, self.block_size, i, A, in_channels, cuda_) for i in range(self.num_layers)})
+            {'layer{}'.format(i): ST_GCN_block(self.topology, self.block_size, i, A, in_channels, cuda_) for i in range(
+             self.num_layers)})
 
         self.fc = nn.Linear(self.block_size * self.topology[-1], num_class)
         weights_init(self.fc, bs=num_class)

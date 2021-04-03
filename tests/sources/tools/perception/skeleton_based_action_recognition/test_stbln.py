@@ -103,7 +103,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         model_name = 'stbln_nturgbd-0-10'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.stbln_action_classifier.load(model_saved_path, model_name)
-        scores = []
         score_joints = self.stbln_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
                                                          val_labels_filename='val_labels.pkl',
                                                          skeleton_data_type='joint')

@@ -53,7 +53,7 @@ class STGCNLearner(Learner):
                  device='cuda', num_workers=32, epochs=50, experiment_name='baseline_nturgbd',
                  device_ind='None', val_batch_size=256, drop_after_epoch=[30, 40],
                  start_epoch=0, dataset_name='nturgbd_cv',
-                 method_name='stgcn', stbln_symmetric=False, num_frames= 300, num_subframes=100):
+                 method_name='stgcn', stbln_symmetric=False, num_frames=300, num_subframes=100):
         super(STGCNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                            checkpoint_after_iter=checkpoint_after_iter,
                                            checkpoint_load_iter=checkpoint_load_iter,

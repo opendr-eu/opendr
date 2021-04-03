@@ -62,7 +62,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
             mode="test_data", path=os.path.join(cls.temp_dir, "data"))'''
 
         cls.experiment_name = 'pstgcn_nturgbd'
-        # cls.Pretrained_MODEL_PATH = os.path.join(cls.temp_dir, "pretrained_models")
         cls.Train_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
         cls.Val_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
         cls.Test_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv', 'val_joints.npy')
@@ -108,7 +107,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
         self.pstgcn_action_classifier.topology = [1]
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
-                     self.pstgcn_action_classifier.topology[-1]) # pstgcn_nturgbd-1-1 --> because the model has only one layer and one block
+                     self.pstgcn_action_classifier.topology[-1])
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.pstgcn_action_classifier.load(model_saved_path, model_name)
         score = self.pstgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
@@ -120,7 +119,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         test_data = np.load(self.Test_DATASET_PATH)
         model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
-            self.pstgcn_action_classifier.topology[-1])  # pstgcn_nturgbd-1-1 --> because the model has only one layer and one block
+            self.pstgcn_action_classifier.topology[-1])
         self.pstgcn_action_classifier.topology = [1]
         self.pstgcn_action_classifier.load(model_saved_path, model_name)
         model_output = self.pstgcn_action_classifier.infer(test_data)
@@ -143,7 +142,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
         self.pstgcn_action_classifier.topology = [1]
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
-            self.pstgcn_action_classifier.topology[-1])  # pstgcn_nturgbd-1-1 --> because the model has only one layer and one block
+                     self.pstgcn_action_classifier.topology[-1])
         self.pstgcn_action_classifier.load(model_saved_path, model_name)
         score_joints = self.pstgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
                                                           val_labels_filename='val_labels.pkl',
@@ -189,7 +188,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.pstgcn_action_classifier.ort_session = None
         rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
         rmdir(os.path.join(self.temp_dir, "test_save_load"))
-        rmfile(os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name)))
 
 
 if __name__ == "__main__":

@@ -89,7 +89,8 @@ class TemporalConvolution(nn.Module):
 
 
 class ST_GCN_block(nn.Module):
-    def __init__(self, in_channels, out_channels, graph_dim1=25, graph_dim2=25, symmetric=False, cuda_=False, stride=1, residual=True):
+    def __init__(self, in_channels, out_channels, graph_dim1=25, graph_dim2=25, symmetric=False, cuda_=False,
+                 stride=1, residual=True):
         super(ST_GCN_block, self).__init__()
 
         self.gcn = GraphConvolution(in_channels, out_channels, graph_dim1, graph_dim2, symmetric, cuda_)
@@ -99,7 +100,8 @@ class ST_GCN_block(nn.Module):
             self.residual = lambda x: 0
         else:
             if graph_dim1 != graph_dim2:
-                self.residual = TemporalConvolution(in_channels, out_channels, kernel_size_joint=graph_dim1, stride=stride)
+                self.residual = TemporalConvolution(in_channels, out_channels, kernel_size_joint=graph_dim1,
+                                                    stride=stride)
             else:
                 self.residual = TemporalConvolution(in_channels, out_channels, kernel_size_joint=1, stride=stride)
 

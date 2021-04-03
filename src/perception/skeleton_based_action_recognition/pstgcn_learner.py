@@ -54,9 +54,9 @@ class PSTGCNLearner(Learner):
                  blocksize=20, numblocks=10, numlayers=10, topology=[],
                  layer_threshold=1e-4, block_threshold=1e-4):
         super(PSTGCNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
-                                           checkpoint_after_iter=checkpoint_after_iter,
-                                           checkpoint_load_iter=checkpoint_load_iter,
-                                           temp_path=temp_path, device=device)
+                                            checkpoint_after_iter=checkpoint_after_iter,
+                                            checkpoint_load_iter=checkpoint_load_iter,
+                                            temp_path=temp_path, device=device)
         self.device = device
         self.device_ind = device_ind
         self.parent_dir = temp_path
@@ -663,7 +663,7 @@ class PSTGCNLearner(Learner):
                         new_state_dict = OrderedDict({current_key: weights[current_key]})
                         self.model.load_state_dict(new_state_dict, strict=False)
                 if ('g_conv' or 'gcn_residual' or 'tcn.t_conv.bias' or 'residual' or 'bn.weight' or 'bn.bias' or
-                    'bn.running_mean' or 'bn.running_var') in current_key:
+                   'bn.running_mean' or 'bn.running_var') in current_key:
                     if current_key in old_keys:
                         A = self.model.state_dict()[current_key]
                         old_sh = weights[current_key].shape
