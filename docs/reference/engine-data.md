@@ -90,6 +90,31 @@ The [Image](#class_engine.data.Image) class has the following public methods:
   Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
 
 
+### class engine.data.ImageWithDetections
+Bases: `engine.data.Image`
+
+A class used for representing image data.
+
+The [ImageWithDetections](#class_engine.data.ImageWithDetections) class has the following public methods:
+#### ImageWithDetections( image, boundingBoxList)
+  Construct a new [ImageWithDetections](#class_engine.data.ImageWithDetections) object based on provided data.
+  - *image* is expected to be an [Image](#class_engine.data.Image) or a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
+  - *boundingBoxList* is expected to be a [BoundingBoxList](#class_engine.target.BoundingBoxList).
+
+#### data()
+  Return *data* argument.
+  Return type is uint8 [NumPy](https://numpy.org) array.
+
+#### data(data)
+  Set the internal *data* argument.
+  *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array, where the
+  dimensions can be organized as e.g. (channels, width, height).
+
+#### numpy()
+  Return a  [NumPy](https://numpy.org)-compatible representation of data.
+  Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+
+
 ### class engine.data.FloatImage
 Bases: `engine.data.Data`
 
