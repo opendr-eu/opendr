@@ -45,10 +45,10 @@ class GraphConvolution(nn.Module):
                 nn.Conv2d(in_channels, out_channels, 1),
                 nn.BatchNorm2d(out_channels)
             )
+            weights_init(self.gcn_residual[0], bs=1)
+            weights_init(self.gcn_residual[1], bs=1)
         else:
             self.gcn_residual = lambda x: x
-        weights_init(self.gcn_residual[0], bs=1)
-        weights_init(self.gcn_residual[1], bs=1)
 
         self.bn = nn.BatchNorm2d(out_channels)
         weights_init(self.bn, bs=1e-6)
@@ -99,17 +99,17 @@ class TempAttnUnit(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self, x):
-        N, C, T, V, M = x.size()
-        attn = x.mean(4).mean(2).mean(1)  # output is of size N*1*1*T*1
+        N, C, T, V = x.size()
+        attn = x.mean(3).mean(1)  # output is of size N*1*T*1
         attn = self.fc_attn_block(attn)  # output os size N*T
         attn = self.sigmoid(attn)
-        tmp = torch.ones([N, M, C, T, V], dtype=torch.float32)
+        tmp = torch.ones([N, C, T, V], dtype=torch.float32)
         if self.cuda_:
             tmp = tmp.cuda()
-        attn = attn.reshape(N, 1, 1, T, 1)
+        attn = attn.reshape(N, 1, T, 1)
         mask_ = tmp * attn
         # broadcast. mask_size: N*C*T*V
-        mask_ = mask_.view(N * M, C, T, V)
+        mask_ = mask_.view(N, C, T, V)
         x = x * mask_
         x = self.relu(x)
         # select a subset of frames
@@ -161,13 +161,13 @@ class TAGCN(nn.Module):
         weights_init(self.data_bn, bs=1)
 
         self.layers = nn.ModuleDict(
-            {'layer{1}': GraphConvolution(3, 64, A, cuda_),
-             'layer{2}': GraphConvolution(64, 64, A, cuda_),
-             'layer{3}': TempAttnUnit(num_frames, num_selected_frames, cuda_),
-             'layer{4}': ST_GCN_block(64, 128, A, cuda_, stride=2),
-             'layer{5}': ST_GCN_block(128, 128, A, cuda_),
-             'layer{6}': ST_GCN_block(128, 256, A, cuda_, stride=2),
-             'layer{7}': ST_GCN_block(256, 256, A, cuda_)
+            {'layer1': GraphConvolution(3, 64, A, cuda_),
+             'layer2': GraphConvolution(64, 64, A, cuda_),
+             'layer3': TempAttnUnit(num_frames, num_selected_frames, cuda_),
+             'layer4': ST_GCN_block(64, 128, A, cuda_, stride=2),
+             'layer5': ST_GCN_block(128, 128, A, cuda_),
+             'layer6': ST_GCN_block(128, 256, A, cuda_, stride=2),
+             'layer7': ST_GCN_block(256, 256, A, cuda_)
              }
         )
 

@@ -50,6 +50,8 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                                    checkpoint_after_iter=1, val_batch_size=1,
                                                    dataset_name='nturgbd_cv', experiment_name='stgcn_nturgbd',
                                                    method_name='stgcn')
+
+
         # Download all required files for testing
         '''cls.Pretrained_MODEL_PATH = cls.stgcn_action_classifier.download(
             mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models"))
@@ -60,7 +62,8 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         cls.Test_DATASET_PATH = cls.stgcn_action_classifier.download(
             mode="test_data", path=os.path.join(cls.temp_dir, "data"))'''
 
-        cls.Pretrained_MODEL_PATH = os.path.join(cls.temp_dir, "pretrained_models")
+        cls.experiment_name = 'stgcn_nturgbd'
+        # cls.Pretrained_MODEL_PATH = os.path.join(cls.temp_dir, '{}_checkpoints'.format(cls.experiment_name))
         cls.Train_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
         cls.Val_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
         cls.Test_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv', 'val_joints.npy')
@@ -68,9 +71,9 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
-        rmdir(os.path.join(cls.temp_dir, "pretrained_models"))
+        #rmdir(os.path.join(cls.temp_dir, "pretrained_models"))
         rmdir(os.path.join(cls.temp_dir, "data"))
-        rmdir(os.path.join(cls.temp_dir))
+        #rmdir(os.path.join(cls.temp_dir))
 
     def test_fit(self):
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="NTURGBD")
@@ -87,40 +90,38 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                          msg="Model parameters did not change after running fit.")
 
     def test_eval(self):
-        model_saved_path = self.Pretrained_MODEL_PATH
-        model_name = 'PretrainedModel'
+        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
+        model_name = 'stgcn_nturgbd-0-10'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.stgcn_action_classifier.load(model_saved_path, model_name)
-        score_dict = self.stgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
+        score = self.stgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
                                                        val_labels_filename='val_labels.pkl',
                                                        skeleton_data_type='joint')
-        self.assertNotEqual(len(score_dict), 0,
-                            msg="Eval results dictionary contains empty list.")
+        self.assertNotEqual(len(score), 0,
+                            msg="Eval results contains empty list.")
 
     def test_multi_stream_eval(self):
-        model_saved_path = self.Pretrained_MODEL_PATH
-        model_name = 'PretrainedModel'
+        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
+        model_name = 'stgcn_nturgbd-0-10'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
-        self.pstgcn_action_classifier.load(model_saved_path, model_name)
-        scores = []
-        score_joints = self.pstgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
-                                                          val_labels_filename='val_labels.pkl',
-                                                          skeleton_data_type='joint')
-        score_bones = self.pstgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
+        self.stgcn_action_classifier.load(model_saved_path, model_name)
+        score_joints = self.stgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
                                                          val_labels_filename='val_labels.pkl',
-                                                         skeleton_data_type='bone')
+                                                         skeleton_data_type='joint')
+        score_bones = self.stgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
+                                                        val_labels_filename='val_labels.pkl',
+                                                        skeleton_data_type='bone')
         scores = [score_joints, score_bones]
-        total_score = self.pstgcn_action_classifier.multi_stream_eval(validation_dataset, scores,
-                                                                      data_filename='val_joints.npy',
-                                                                      labels_filename='val_labels.pkl'
+        total_score = self.stgcn_action_classifier.multi_stream_eval(validation_dataset, scores,
+                                                                     data_filename='val_joints.npy',
+                                                                     labels_filename='val_labels.pkl'
                                                                       )
-        self.assertNotEqual(total_score, score_joints,
-                            msg="the classification scores is not changed after ensembling")
+        self.assertNotEqual(len(total_score), 0, msg="results of multi-stream-eval contains empty list.")
 
     def test_infer(self):
         test_data = np.load(self.Test_DATASET_PATH)
-        model_saved_path = self.Pretrained_MODEL_PATH
-        model_name = 'PretrainedModel'
+        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
+        model_name = 'stgcn_nturgbd-0-10'
         self.stgcn_action_classifier.model = None
         self.stgcn_action_classifier.load(model_saved_path, model_name)
         model_output = self.stgcn_action_classifier.infer(test_data)
@@ -150,12 +151,12 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertIsNotNone(self.stgcn_action_classifier.ort_session, "ort_session is None after loading onnx model.")
         # Cleanup
         rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
-        rmdir(os.path.join(self.temp_dir, "testOnnxModel"))
+        rmdir(os.path.join(self.temp_dir, "test_save_load"))
         self.stgcn_action_classifier.ort_session = None
 
     def test_optimize(self):
-        model_saved_path = self.Pretrained_MODEL_PATH
-        model_name = 'PretrainedModel'
+        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
+        model_name = 'stgcn_nturgbd-0-10'
         self.stgcn_action_classifier.model = None
         self.stgcn_action_classifier.ort_session = None
         self.stgcn_action_classifier.load(model_saved_path, model_name)
@@ -165,6 +166,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         # Cleanup
         self.stgcn_action_classifier.ort_session = None
         rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
+        rmfile(os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name)))
 
 
 if __name__ == "__main__":

@@ -44,10 +44,10 @@ class GraphConvolution(nn.Module):
                 nn.Conv2d(in_channels, out_channels, 1),
                 nn.BatchNorm2d(out_channels)
             )
+            weights_init(self.gcn_residual[0], bs=1)
+            weights_init(self.gcn_residual[1], bs=1)
         else:
             self.gcn_residual = lambda x: x
-        weights_init(self.gcn_residual[0], bs=1)
-        weights_init(self.gcn_residual[1], bs=1)
 
         self.bn = nn.BatchNorm2d(out_channels)
         weights_init(self.bn, bs=1e-6)

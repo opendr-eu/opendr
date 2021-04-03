@@ -61,7 +61,8 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         cls.Test_DATASET_PATH = cls.pstgcn_action_classifier.download(
             mode="test_data", path=os.path.join(cls.temp_dir, "data"))'''
 
-        cls.Pretrained_MODEL_PATH = os.path.join(cls.temp_dir, "pretrained_models")
+        cls.experiment_name = 'pstgcn_nturgbd'
+        # cls.Pretrained_MODEL_PATH = os.path.join(cls.temp_dir, "pretrained_models")
         cls.Train_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
         cls.Val_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
         cls.Test_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv', 'val_joints.npy')
@@ -69,23 +70,25 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
-        rmdir(os.path.join(cls.temp_dir, "pretrained_models"))
-        rmdir(os.path.join(cls.temp_dir, "data"))
-        rmdir(os.path.join(cls.temp_dir))
+        # rmdir(os.path.join(cls.temp_dir, "pretrained_models"))
+        # rmdir(os.path.join(cls.temp_dir, "data"))
+        # rmdir(os.path.join(cls.temp_dir))
+        print('we are in tearDownClass')
 
     def test_network_builder(self):
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="NTURGBD")
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.pstgcn_action_classifier.topology = []
-        topology_before = self.pstgcn_action_classifier.topology
+        topology_before = []
         self.pstgcn_action_classifier.network_builder(dataset=training_dataset, val_dataset=validation_dataset,
                                                       train_data_filename='train_joints.npy',
                                                       train_labels_filename='train_labels.pkl',
                                                       val_data_filename="val_joints.npy",
-                                                      val_labels_filename="val_labels.pkl")
+                                                      val_labels_filename="val_labels.pkl",
+                                                      skeleton_data_type='joint')
         topology_after = self.pstgcn_action_classifier.topology
-        self.assertFalse(torch.equal(topology_before, topology_after),
-                         msg="Model topology did not change after running network_builder.")
+        self.assertNotEqual(len(topology_before), len(topology_after),
+                            msg="Model topology did not change after running network_builder.")
 
     def test_fit(self):
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="NTURGBD")
@@ -102,23 +105,22 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                          msg="Model parameters did not change after running fit.")
 
     def test_eval(self):
-        model_saved_path = self.Pretrained_MODEL_PATH
+        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
         self.pstgcn_action_classifier.topology = [1]
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
-                     self.topology[-1]) # pstgcn_nturgbd-1-1 --> because the model has only one layer and one block
+                     self.pstgcn_action_classifier.topology[-1]) # pstgcn_nturgbd-1-1 --> because the model has only one layer and one block
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.pstgcn_action_classifier.load(model_saved_path, model_name)
         score = self.pstgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
                                                    val_labels_filename='val_labels.pkl',
                                                    skeleton_data_type='joint')
-        self.assertNotEqual(len(score), 0,
-                            msg="Eval results dictionary contains empty list.")
+        self.assertNotEqual(len(score), 0, msg="Eval results contains empty list.")
 
     def test_infer(self):
         test_data = np.load(self.Test_DATASET_PATH)
-        model_saved_path = self.Pretrained_MODEL_PATH
+        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
-            self.topology[-1])  # pstgcn_nturgbd-1-1 --> because the model has only one layer and one block
+            self.pstgcn_action_classifier.topology[-1])  # pstgcn_nturgbd-1-1 --> because the model has only one layer and one block
         self.pstgcn_action_classifier.topology = [1]
         self.pstgcn_action_classifier.load(model_saved_path, model_name)
         model_output = self.pstgcn_action_classifier.infer(test_data)
@@ -138,12 +140,11 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
 
     def test_multi_stream_eval(self):
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
-        model_saved_path = self.Pretrained_MODEL_PATH
+        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
         self.pstgcn_action_classifier.topology = [1]
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
-            self.topology[-1])  # pstgcn_nturgbd-1-1 --> because the model has only one layer and one block
+            self.pstgcn_action_classifier.topology[-1])  # pstgcn_nturgbd-1-1 --> because the model has only one layer and one block
         self.pstgcn_action_classifier.load(model_saved_path, model_name)
-        scores = []
         score_joints = self.pstgcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
                                                           val_labels_filename='val_labels.pkl',
                                                           skeleton_data_type='joint')
@@ -155,15 +156,12 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                                                       data_filename='val_joints.npy',
                                                                       labels_filename='val_labels.pkl'
                                                                       )
-        self.assertNotEqual(total_score, score_joints,
-                            msg="the classification scores is not changed after ensembling")
-
-
+        self.assertNotEqual(len(total_score), 0, msg="results of multi-stream-eval contains empty list.")
 
     def test_optimize(self):
-        model_saved_path = self.Pretrained_MODEL_PATH
+        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
-            self.topology[-1])
+            self.pstgcn_action_classifier.topology[-1])
         self.pstgcn_action_classifier.topology = [1]
         self.pstgcn_action_classifier.ort_session = None
         self.pstgcn_action_classifier.init_model()
@@ -188,9 +186,10 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                            model_name='onnx_model_temp')
         self.assertIsNotNone(self.pstgcn_action_classifier.ort_session, "ort_session is None after loading onnx model.")
         # Cleanup
-        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
-        rmdir(os.path.join(self.temp_dir, "testOnnxModel"))
         self.pstgcn_action_classifier.ort_session = None
+        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
+        rmdir(os.path.join(self.temp_dir, "test_save_load"))
+        rmfile(os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name)))
 
 
 if __name__ == "__main__":

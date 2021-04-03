@@ -29,12 +29,11 @@ def weights_init(module_, bs=1):
 class GraphConvolution(nn.Module):
     def __init__(self, in_channels, out_channels, A, cuda_):
         super(GraphConvolution, self).__init__()
-
         self.cuda_ = cuda_
-        self.graph_attn = nn.Parameter(torch.ones(A.size()))
-        self.graph_attn = Variable(self.graph_attn.astype(np.float32), requires_grad=False)
-        # self.graph_attn = nn.Parameter(torch.from_numpy(A.astype(np.float32)))
-        # nn.init.constant_(self.graph_attn, 1)
+        #self.graph_attn = nn.Parameter(torch.ones(A.size()))
+        #self.graph_attn = Variable(self.graph_attn.astype(np.float32), requires_grad=False)
+        self.graph_attn = nn.Parameter(torch.from_numpy(A.astype(np.float32)))
+        nn.init.constant_(self.graph_attn, 1)
         self.A = Variable(torch.from_numpy(A.astype(np.float32)), requires_grad=False)
         self.num_subset = 3
         self.g_conv = nn.ModuleList()
@@ -47,10 +46,10 @@ class GraphConvolution(nn.Module):
                 nn.Conv2d(in_channels, out_channels, 1),
                 nn.BatchNorm2d(out_channels)
             )
+            weights_init(self.gcn_residual[0], bs=1)
+            weights_init(self.gcn_residual[1], bs=1)
         else:
             self.gcn_residual = lambda x: x
-        weights_init(self.gcn_residual[0], bs=1)
-        weights_init(self.gcn_residual[1], bs=1)
 
         self.bn = nn.BatchNorm2d(out_channels)
         weights_init(self.bn, bs=1e-6)
@@ -130,16 +129,16 @@ class STGCN(nn.Module):
         weights_init(self.data_bn, bs=1)
 
         self.layers = nn.ModuleDict(
-            {'layer{1}': ST_GCN_block(3, 64, A, cuda_, residual=False),
-             'layer{2}': ST_GCN_block(64, 64, A, cuda_),
-             'layer{3}': ST_GCN_block(64, 64, A, cuda_),
-             'layer{4}': ST_GCN_block(64, 64, A, cuda_),
-             'layer{5}': ST_GCN_block(64, 128, A, cuda_, stride=2),
-             'layer{6}': ST_GCN_block(128, 128, A, cuda_),
-             'layer{7}': ST_GCN_block(128, 128, A, cuda_),
-             'layer{8}': ST_GCN_block(128, 256, A, cuda_, stride=2),
-             'layer{9}': ST_GCN_block(256, 256, A, cuda_),
-             'layer{10}': ST_GCN_block(256, 256, A, cuda_)}
+            {'layer1': ST_GCN_block(3, 64, A, cuda_, residual=False),
+             'layer2': ST_GCN_block(64, 64, A, cuda_),
+             'layer3': ST_GCN_block(64, 64, A, cuda_),
+             'layer4': ST_GCN_block(64, 64, A, cuda_),
+             'layer5': ST_GCN_block(64, 128, A, cuda_, stride=2),
+             'layer6': ST_GCN_block(128, 128, A, cuda_),
+             'layer7': ST_GCN_block(128, 128, A, cuda_),
+             'layer8': ST_GCN_block(128, 256, A, cuda_, stride=2),
+             'layer9': ST_GCN_block(256, 256, A, cuda_),
+             'layer10': ST_GCN_block(256, 256, A, cuda_)}
         )
 
         self.fc = nn.Linear(256, num_class)

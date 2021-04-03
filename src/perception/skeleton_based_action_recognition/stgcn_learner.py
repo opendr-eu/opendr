@@ -365,11 +365,12 @@ class STGCNLearner(Learner):
         if save_score and self.logging:
             with open('{}/epoch{}_{}_score.pkl'.format(self.logging_path, epoch + 1, 'val'), 'wb') as f:
                 pickle.dump(score_dict, f)
-        return score_dict
+        return score
 
     @staticmethod
     def __prepare_dataset(dataset, data_filename="train_joints.npy",
                           labels_filename="train_labels.pkl",
+                          skeleton_data_type='joint',
                           verbose=True):
         """
         This internal method prepares the train dataset depending on what type of dataset is provided.
@@ -399,7 +400,9 @@ class STGCNLearner(Learner):
             labels_path = os.path.join(dataset.path, labels_filename)
             if verbose:
                 print('Dataset path is set. Loading feeder...')
-            return Feeder(data_path, labels_path)
+            return Feeder(data_path=data_path, label_path=labels_path, skeleton_data_type=skeleton_data_type,
+                          data_name=dataset.dataset_type.lower())
+
         elif isinstance(dataset, DatasetIterator):
             return dataset
 
@@ -497,9 +500,9 @@ class STGCNLearner(Learner):
         """
         # Input to the model
         if self.dataset_name == 'nturgbd_cv' or self.dataset_name == 'nturgbd_cs':
-            c, t, v, m = [3, 150, 25, 2]
+            c, t, v, m = [3, 300, 25, 2]
         elif self.dataset_name == 'kinetics':
-            c, t, v, m = [2, 150, 18, 2]
+            c, t, v, m = [2, 300, 18, 2]
         else:
             raise ValueError(self.dataset_name + "is not a valid dataset name. Supported datasets: nturgbd_cv,"
                                                  " nturgbd_cs, kinetics")
@@ -515,6 +518,7 @@ class STGCNLearner(Learner):
                           onnx_input,  # model input (or a tuple for multiple inputs)
                           output_name,  # where to save the model (can be a file or file-like object)
                           verbose=verbose,
+                          opset_version=11,
                           enable_onnx_checker=True,
                           do_constant_folding=do_constant_folding,
                           input_names=['onnx_input'],  # the model's input names
@@ -831,44 +835,3 @@ class STGCNLearner(Learner):
     def reset(self):
         """This method is not used in this implementation."""
         return NotImplementedError
-
-
-if __name__ == '__main__':
-    temp_dir = './my_temp_dir'
-    learner_ = STGCNLearner(device="cpu", temp_path=temp_dir, batch_size=1, epochs=1,
-                            checkpoint_after_iter=1, val_batch_size=1,
-                            dataset_name='nturgbd_cv', experiment_name='baseline_nturgbd')
-
-    training_dataset = ExternalDataset(path='./my_temp_dir/data', dataset_type='nturgbd')
-    validation_dataset = ExternalDataset(path='./my_temp_dir/data', dataset_type='nturgbd')
-    learner_.fit(dataset=training_dataset, val_dataset=validation_dataset, silent=True,
-                 train_data_filename='train_joints.npy',
-                 train_labels_filename='train_labels.pkl', val_data_filename="val_joints.npy",
-                 val_labels_filename="val_labels.pkl")
-
-    data = np.load('./my_temp_dir/data/ntu_cv/train_joints.npy')
-    test_data = data[0, :, :, :, :]
-    model_saved_path = './my_temp_dir/baseline_nturgbd_checkpoints'
-    model_name = 'baseline_nturgbd-0-100'
-    learner_.model = None
-    learner_.ort_session = None
-    learner_.init_model()
-    learner_.save(path=os.path.join('./my_temp_dir', "test_save_load"), model_name='testModel')
-    print('saving is done!')
-    learner_.model = None
-    learner_.load(path=os.path.join('./my_temp_dir', "test_save_load"), model_name='testModel')
-    # learner_.load(model_saved_path, model_name)
-    print('loading is done')
-    model_output = learner_.infer(test_data)
-    print('inference is done')
-
-    learner_.model = None
-    learner_.ort_session = None
-    learner_.init_model()
-    learner_.optimize()
-    print('optimize is done')
-    learner_.save(path=os.path.join('./my_temp_dir', "test_save_load"), model_name='testONNXModel')
-    learner_.model = None
-    learner_.load(path=os.path.join('./my_temp_dir', "test_save_load"), model_name='testONNXModel')
-    print('save_load_onnx is done')
-    print(learner_.ort_session)

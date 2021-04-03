@@ -85,16 +85,9 @@ class PSTGCNLearner(Learner):
         self.layer_threshold = layer_threshold
         self.block_threshold = block_threshold
 
-        if self.num_subframes > self.num_frames:
-            raise ValueError('number of subframes should be smaller than number of frames.')
-
         if self.dataset_name is None:
             raise ValueError(self.dataset_name +
                              "is not a valid dataset name. Supported datasets: nturgbd_cv, nturgbd_cs, kinetics")
-        if self.method_name is None or self.method_name not in ['stgcn', 'tagcn', 'stbln']:
-            raise ValueError(self.method_name +
-                             "is not a valid dataset name. Supported methods: stgcn, tagcn, stbln")
-
         if self.device == 'cuda':
             self.output_device = self.device_ind[0] if type(self.device_ind) is list else self.device_ind
         self.__init_seed(1)
@@ -389,7 +382,8 @@ class PSTGCNLearner(Learner):
             labels_path = os.path.join(dataset.path, labels_filename)
             if verbose:
                 print('Dataset path is set. Loading feeder...')
-            return Feeder(data_path, labels_path, skeleton_data_type, dataset.dataset_type.lower())
+            return Feeder(data_path=data_path, label_path=labels_path, skeleton_data_type=skeleton_data_type,
+                          data_name=dataset.dataset_type.lower())
         elif isinstance(dataset, DatasetIterator):
             return dataset
 
@@ -401,20 +395,22 @@ class PSTGCNLearner(Learner):
             if self.logging:
                 shutil.copy2(inspect.getfile(PSTGCN), self.logging_path)
             if self.device == 'cuda':
-                self.model = PSTGCN(self.dataset_name, self.topology, self.blocksize, cuda_=True).cuda(self.output_device)
+                self.model = PSTGCN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.blocksize,
+                                    cuda_=True).cuda(self.output_device)
                 if type(self.device_ind) is list:
                     if len(self.device_ind) > 1:
                         self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
                                                      output_device=self.output_device)
                 self.loss = nn.CrossEntropyLoss().cuda(self.output_device)
             else:
-                self.model = PSTGCN(self.dataset_name, self.topology, self.blocksize, cuda_=False)
+                self.model = PSTGCN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.blocksize,
+                                    cuda_=False)
                 self.loss = nn.CrossEntropyLoss()
             print(self.model)
 
     def network_builder(self, dataset, val_dataset, train_data_filename='train_joints.npy',
                         train_labels_filename='train_labels.pkl', val_data_filename="val_joints.npy",
-                        val_labels_filename="val_labels.pkl", verbose=True):
+                        val_labels_filename="val_labels.pkl", skeleton_data_type='joint', verbose=True):
         # start building the model progressively
         loss_layer_old = 1e+10
         loss_block_old = 1e+10
@@ -447,7 +443,8 @@ class PSTGCNLearner(Learner):
                 loss_block_new = self.fit(dataset, val_dataset, train_data_filename=train_data_filename,
                                           train_labels_filename=train_labels_filename,
                                           val_data_filename=val_data_filename,
-                                          val_labels_filename=val_labels_filename)
+                                          val_labels_filename=val_labels_filename,
+                                          skeleton_data_type=skeleton_data_type)
                 if block_iter > 0:
                     loss_b = -1 * (loss_block_new - loss_block_old) / loss_block_old
                     if loss_b <= self.block_threshold:
@@ -681,7 +678,7 @@ class PSTGCNLearner(Learner):
                         A[:old_sh[0], :old_sh[1]] = weights[current_key]
                         new_state_dict = OrderedDict({current_key: A})
                         self.model.load_state_dict(new_state_dict, strict=False)
-                block_iter = len(self.topology[-1] -1)
+                block_iter = self.topology[-1]-1
                 if ('fc.weight' in current_key) and (block_iter > 0):
                     if current_key in old_keys:
                         A = self.model.state_dict()[current_key]
@@ -893,44 +890,3 @@ class PSTGCNLearner(Learner):
     def reset(self):
         """This method is not used in this implementation."""
         return NotImplementedError
-
-
-if __name__ == '__main__':
-    temp_dir = './my_temp_dir'
-    learner_ = STGCNLearner(device="cpu", temp_path=temp_dir, batch_size=1, epochs=1,
-                            checkpoint_after_iter=1, val_batch_size=1,
-                            dataset_name='nturgbd_cv', experiment_name='baseline_nturgbd')
-
-    training_dataset = ExternalDataset(path='./my_temp_dir/data', dataset_type='nturgbd')
-    validation_dataset = ExternalDataset(path='./my_temp_dir/data', dataset_type='nturgbd')
-    learner_.fit(dataset=training_dataset, val_dataset=validation_dataset, silent=True,
-                 train_data_filename='train_joints.npy',
-                 train_labels_filename='train_labels.pkl', val_data_filename="val_joints.npy",
-                 val_labels_filename="val_labels.pkl")
-
-    data = np.load('./my_temp_dir/data/ntu_cv/train_joints.npy')
-    test_data = data[0, :, :, :, :]
-    model_saved_path = './my_temp_dir/baseline_nturgbd_checkpoints'
-    model_name = 'baseline_nturgbd-0-100'
-    learner_.model = None
-    learner_.ort_session = None
-    learner_.init_model()
-    learner_.save(path=os.path.join('./my_temp_dir', "test_save_load"), model_name='testModel')
-    print('saving is done!')
-    learner_.model = None
-    learner_.load(path=os.path.join('./my_temp_dir', "test_save_load"), model_name='testModel')
-    # learner_.load(model_saved_path, model_name)
-    print('loading is done')
-    model_output = learner_.infer(test_data)
-    print('inference is done')
-
-    learner_.model = None
-    learner_.ort_session = None
-    learner_.init_model()
-    learner_.optimize()
-    print('optimize is done')
-    learner_.save(path=os.path.join('./my_temp_dir', "test_save_load"), model_name='testONNXModel')
-    learner_.model = None
-    learner_.load(path=os.path.join('./my_temp_dir', "test_save_load"), model_name='testONNXModel')
-    print('save_load_onnx is done')
-    print(learner_.ort_session)

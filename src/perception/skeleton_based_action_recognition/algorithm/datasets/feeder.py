@@ -148,9 +148,11 @@ class Feeder(Dataset):
 
         # if we need bone or motion data instead of joints
         if self.data_name == 'nturgbd':
-            joint_pairs = NTUGraph.in_edge
+            graph = NTUGraph()
+            joint_pairs = graph.in_edge
         elif self.data_name == 'kinetics':
-            joint_pairs = KineticsGraph.in_edge
+            graph = KineticsGraph()
+            joint_pairs = graph.in_edge
         N, C, T, V, M = self.data.shape
         if self.skeleton_data_type == 'bone':
             bones = np.zeros((N, C, T, V, M))
