@@ -35,7 +35,6 @@ def rmdir(_dir):
         print("Error: %s - %s." % (e.filename, e.strerror))
 
 
-# PATH_ = os.path.join(".", "tests", "sources", "tools", "perception", "skeleton_based_action_recognition")
 # LOG_PATH_ = os.path.join(".", "tests", "sources", "tools", "perception", "skeleton_based_action_recognition", "logs")
 PATH_ = './tests/sources/tools/perception/skeleton_based_action_recognition'
 LOG_PATH_ = ''
@@ -51,7 +50,10 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                                      dataset_name='nturgbd_cv', experiment_name='pstgcn_nturgbd',
                                                      blocksize=20, numblocks=1, numlayers=1, topology=[],
                                                      layer_threshold=1e-4, block_threshold=1e-4)
+        cls.experiment_name = 'pstgcn_nturgbd'
         # Download all required files for testing
+        cls.Pretrained_MODEL_PATH = cls.stgcn_action_classifier.download(
+            mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models"))
         cls.Train_DATASET_PATH = cls.pstgcn_action_classifier.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data"))
         cls.Val_DATASET_PATH = cls.pstgcn_action_classifier.download(
@@ -59,15 +61,11 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         cls.Test_DATASET_PATH = cls.pstgcn_action_classifier.download(
             mode="test_data", path=os.path.join(cls.temp_dir, "data"))
 
-        cls.experiment_name = 'pstgcn_nturgbd'
-        '''cls.Train_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
-        cls.Val_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
-        cls.Test_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv', 'val_joints.npy')'''
-
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
         rmdir(os.path.join(cls.temp_dir, "data"))
+        rmdir(os.path.join(cls.temp_dir, "pretrained_models"))
 
     def test_network_builder(self):
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="NTURGBD")
@@ -99,7 +97,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                          msg="Model parameters did not change after running fit.")
 
     def test_eval(self):
-        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
+        model_saved_path = self.Pretrained_MODEL_PATH
         self.pstgcn_action_classifier.topology = [1]
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
                      self.pstgcn_action_classifier.topology[-1])
@@ -112,7 +110,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
 
     def test_infer(self):
         test_data = np.load(self.Test_DATASET_PATH)
-        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
+        model_saved_path = self.Pretrained_MODEL_PATH
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
             self.pstgcn_action_classifier.topology[-1])
         self.pstgcn_action_classifier.topology = [1]
@@ -134,7 +132,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
 
     def test_multi_stream_eval(self):
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
-        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
+        model_saved_path = self.Pretrained_MODEL_PATH
         self.pstgcn_action_classifier.topology = [1]
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
                      self.pstgcn_action_classifier.topology[-1])
@@ -153,7 +151,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertNotEqual(len(total_score), 0, msg="results of multi-stream-eval contains empty list.")
 
     def test_optimize(self):
-        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
+        model_saved_path = self.Pretrained_MODEL_PATH
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
             self.pstgcn_action_classifier.topology[-1])
         self.pstgcn_action_classifier.topology = [1]

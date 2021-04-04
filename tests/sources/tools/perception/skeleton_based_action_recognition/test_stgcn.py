@@ -35,7 +35,6 @@ def rmdir(_dir):
         print("Error: %s - %s." % (e.filename, e.strerror))
 
 
-# PATH_ = os.path.join(".", "tests", "sources", "tools", "perception", "skeleton_based_action_recognition")
 # LOG_PATH_ = os.path.join(".", "tests", "sources", "tools", "perception", "skeleton_based_action_recognition", "logs")
 PATH_ = './tests/sources/tools/perception/skeleton_based_action_recognition'
 LOG_PATH_ = ''
@@ -50,8 +49,10 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                                    checkpoint_after_iter=1, val_batch_size=1,
                                                    dataset_name='nturgbd_cv', experiment_name='stgcn_nturgbd',
                                                    method_name='stgcn')
-
+        cls.experiment_name = 'stgcn_nturgbd'
         # Download all required files for testing
+        cls.Pretrained_MODEL_PATH = cls.stgcn_action_classifier.download(
+            mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models"))
         cls.Train_DATASET_PATH = cls.stgcn_action_classifier.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data"))
         cls.Val_DATASET_PATH = cls.stgcn_action_classifier.download(
@@ -59,15 +60,11 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         cls.Test_DATASET_PATH = cls.stgcn_action_classifier.download(
             mode="test_data", path=os.path.join(cls.temp_dir, "data"))
 
-        cls.experiment_name = 'stgcn_nturgbd'
-        '''cls.Train_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
-        cls.Val_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv')
-        cls.Test_DATASET_PATH = os.path.join(cls.temp_dir, "data", 'nturgbd_cv', 'val_joints.npy')'''
-
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
         rmdir(os.path.join(cls.temp_dir, "data"))
+        rmdir(os.path.join(cls.temp_dir, "pretrained_models"))
 
     def test_fit(self):
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="NTURGBD")
@@ -84,7 +81,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                          msg="Model parameters did not change after running fit.")
 
     def test_eval(self):
-        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
+        model_saved_path = self.Pretrained_MODEL_PATH
         model_name = 'stgcn_nturgbd-0-10'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.stgcn_action_classifier.load(model_saved_path, model_name)
@@ -95,7 +92,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                             msg="Eval results contains empty list.")
 
     def test_multi_stream_eval(self):
-        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
+        model_saved_path = self.Pretrained_MODEL_PATH
         model_name = 'stgcn_nturgbd-0-10'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.stgcn_action_classifier.load(model_saved_path, model_name)
@@ -114,7 +111,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
 
     def test_infer(self):
         test_data = np.load(self.Test_DATASET_PATH)
-        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
+        model_saved_path = self.Pretrained_MODEL_PATH
         model_name = 'stgcn_nturgbd-0-10'
         self.stgcn_action_classifier.model = None
         self.stgcn_action_classifier.load(model_saved_path, model_name)
@@ -149,7 +146,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.stgcn_action_classifier.ort_session = None
 
     def test_optimize(self):
-        model_saved_path = os.path.join(self.temp_dir, '{}_checkpoints'.format(self.experiment_name))
+        model_saved_path = self.Pretrained_MODEL_PATH
         model_name = 'stgcn_nturgbd-0-10'
         self.stgcn_action_classifier.model = None
         self.stgcn_action_classifier.ort_session = None

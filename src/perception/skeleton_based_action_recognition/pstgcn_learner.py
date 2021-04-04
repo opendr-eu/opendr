@@ -766,24 +766,28 @@ class PSTGCNLearner(Learner):
             if verbose:
                 print("Downloading pretrained model...")
             # download the .json model
-            if not os.path.exists(os.path.join(path, "PretrainedModel.json")):
-                file_url = os.path.join(url, "PretrainedModel/PretrainedModel.json")
-                urlretrieve(file_url, os.path.join(path, "PretrainedModel.json"))
+            if not os.path.exists(os.path.join(path, '{}_checkpoints'.format(self.experiment_name),
+                                               self.experiment_name + '-1-1.json')):
+                file_url = os.path.join(url, 'pretrained_models', self.experiment_name + '-1-1.json')
+                urlretrieve(file_url, os.path.join(path, '{}_checkpoints'.format(self.experiment_name),
+                                                   self.experiment_name + '-1-1.json'))
                 if verbose:
                     print("Downloaded metadata json.")
             else:
                 if verbose:
                     print("Metadata json file already exists.")
             # download the .pt model
-            if not os.path.exists(os.path.join(path, "PretrainedModel.pt")):
-                file_url = os.path.join(url, "PretrainedModel/PretrainedModel.pt")
-                urlretrieve(file_url, os.path.join(path, "PretrainedModel.pt"))
+            if not os.path.exists(os.path.join(path, '{}_checkpoints'.format(self.experiment_name),
+                                               self.experiment_name + '-1-1.pt')):
+                file_url = os.path.join(url, 'pretrained_models', self.experiment_name + '-1-1.pt')
+                urlretrieve(file_url, os.path.join(path, '{}_checkpoints'.format(self.experiment_name),
+                                                   self.experiment_name + '-1-1.pt'))
             else:
                 if verbose:
                     print("Trained model.pt file already exists.")
             if verbose:
                 print("Pretrained model download complete.")
-            downloaded_files_path = path
+            downloaded_files_path = os.path.join(path, '{}_checkpoints'.format(self.experiment_name))
 
         elif mode == "train_data":
             if verbose:
