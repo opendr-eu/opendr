@@ -709,7 +709,7 @@ class LightweightOpenPoseLearner(Learner):
                           "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
 
         if self.ort_session is None:
-            model_metadata["model_paths"] = [os.path.join(folder_name_no_ext + ".pth")]
+            model_metadata["model_paths"] = [folder_name_no_ext + ".pth"]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pth"
 
