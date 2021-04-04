@@ -799,7 +799,7 @@ class FaceRecognitionLearner(Learner):
             if os.path.exists(os.path.join(path, 'backbone_' + self.backbone + '.pth')):
                 self.__create_model(num_class=0)
                 self.backbone_model.load_state_dict(torch.load(
-                    os.path.join(path, 'backbone_' + self.backbone + '.pth')))
+                    os.path.join(path, 'backbone_' + self.backbone + '.pth'), map_location=torch.device(self.device)))
                 self._model = {self.backbone_model, self.network_head_model}
             else:
                 raise UserWarning('No backbone_' + self.backbone + '.pth found. Please have a check')
