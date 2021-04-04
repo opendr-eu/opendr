@@ -53,7 +53,7 @@ class TestFaceRecognitionLearner(unittest.TestCase):
         rmdir(cls.temp_dir)
 
     def test_fit(self):
-        recognizer = FaceRecognitionLearner(backbone='mobilefacenet', mode='full', device="cuda",
+        recognizer = FaceRecognitionLearner(backbone='mobilefacenet', mode='full', device="cpu",
                                             temp_path=self.temp_dir, iters=2,
                                             batch_size=2, checkpoint_after_iter=0)
         dataset_path = os.path.join(self.temp_dir, 'test_data/images')
