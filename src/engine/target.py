@@ -90,6 +90,22 @@ class Pose(Target):
             out_string += name + ": " + str(kpt) + "\n"
         return out_string
 
+    def __getitem__(self, key):
+        """  Allows for accessing keypoint position using either integers or keypoint names """
+        if isinstance(key, int):
+            if key >= Pose.num_kpts or key < 0:
+                raise ValueError('Pose supports ' + str(Pose.num_kpts) + ' keypoints. Keypoint id ' + str(
+                    key) + ' is not within the supported range')
+            else:
+                return self.data[key]
+        elif isinstance(key, str):
+            try:
+                position = Pose.kpt_names.index(key)
+                return self.data[position]
+            except:
+                raise ValueError('Keypoint ' + key + ' not supported.')
+        else:
+            raise ValueError('Only string and integers are supported for retrieving keypoints.')
 
 class BoundingBox3D(Target):
     """
