@@ -90,7 +90,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
             dataset = MotDataset(self.dataset_path)
 
             learner = ObjectTracking2DFairMotLearner(
-                iters=3,
+                iters=1,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
@@ -101,7 +101,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
 
             learner.fit(
                 dataset,
-                val_epochs=1,
+                val_epochs=-1,
                 train_split_paths=self.train_split_paths,
                 val_split_paths=self.train_split_paths,
                 verbose=True,
@@ -120,7 +120,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
             eval_dataset = RawMotDatasetIterator(self.dataset_path, self.train_split_paths)
 
             learner = ObjectTracking2DFairMotLearner(
-                iters=3,
+                iters=1,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
@@ -132,7 +132,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
             learner.fit(
                 dataset,
                 val_dataset=eval_dataset,
-                val_epochs=1,
+                val_epochs=-1,
                 train_split_paths=self.train_split_paths,
                 val_split_paths=self.train_split_paths,
                 verbose=True,
@@ -151,7 +151,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
             eval_dataset = RawMotDatasetIterator(self.dataset_path, self.train_split_paths)
 
             learner = ObjectTracking2DFairMotLearner(
-                iters=3,
+                iters=1,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
@@ -171,7 +171,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
             eval_dataset = RawMotDatasetIterator(self.dataset_path, self.train_split_paths)
 
             learner = ObjectTracking2DFairMotLearner(
-                iters=3,
+                iters=1,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
@@ -199,7 +199,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
             save_path = os.path.join(model_path, "save")
 
             learner = ObjectTracking2DFairMotLearner(
-                iters=3,
+                iters=1,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
@@ -210,7 +210,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
             starting_param_1 = list(learner.model.parameters())[0].clone()
 
             learner2 = ObjectTracking2DFairMotLearner(
-                iters=3,
+                iters=1,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
@@ -228,7 +228,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
         def test_model(name):
 
             learner = ObjectTracking2DFairMotLearner(
-                iters=3,
+                iters=1,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
