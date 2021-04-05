@@ -90,7 +90,7 @@ def get_val_data(path, dataset_type, num_pairs=2000):
         data = create_pairs(path, num_pairs)
         return data
     else:
-        sys.exit('dataset_type not supported')
+        raise UserWarning('dataset_type not supported')
     return data, pairs
 
 
