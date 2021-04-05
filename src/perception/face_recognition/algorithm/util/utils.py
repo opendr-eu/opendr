@@ -7,7 +7,6 @@ import numpy as np
 import bcolz
 import os
 from PIL import Image
-import sys
 import itertools
 
 from .iterator import FaceRecognitionDataset
