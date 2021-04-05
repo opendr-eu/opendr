@@ -28,7 +28,7 @@ from collections import OrderedDict
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 from engine.constants import OPENDR_SERVER_URL
-from engine.data import FloatImage, Image
+from engine.data import Image
 from engine.target import TrackingAnnotationList
 from engine.datasets import ExternalDataset, DatasetIterator
 from torchvision.transforms import transforms as T
@@ -366,7 +366,7 @@ class MotDatasetIterator(DatasetIterator):
                 labels[i, 1] += self.tid_start_index[ds]
 
         return (
-            FloatImage(imgs), TrackingAnnotationList.from_mot(labels)
+            Image(imgs, dtype=np.float32), TrackingAnnotationList.from_mot(labels)
         )
 
     def get_data(self, img_path, label_path):
@@ -950,7 +950,7 @@ class JointDataset(LoadImagesAndLabels):  # for training
                 labels[i, 1] += self.tid_start_index[ds]
 
         return process(
-            FloatImage(imgs), TrackingAnnotationList.from_mot(labels),
+            Image(imgs, dtype=np.float32), TrackingAnnotationList.from_mot(labels),
             self.ltrb, self.down_ratio,
             self.max_objs, self.num_classes, self.mse_loss
         )
