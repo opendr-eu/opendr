@@ -336,7 +336,7 @@ class ObjectTracking2DDeepSortLearner(Learner):
         if server_url is None:
             server_url = os.path.join(
                 OPENDR_SERVER_URL, "perception", "object_tracking_2d",
-                "fair_mot"
+                "deep_sort"
             )
 
         url = os.path.join(

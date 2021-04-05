@@ -77,10 +77,10 @@ class TestObjectTracking2DDeepSortLearner(unittest.TestCase):
 
         print("Dataset downloaded", file=sys.stderr)
 
-        # for model_name in cls.model_names:
-        #     ObjectTracking2DDeepSortLearner.download(
-        #         model_name, cls.temp_dir
-        #     )
+        for model_name in cls.model_names:
+            ObjectTracking2DDeepSortLearner.download(
+                model_name, cls.temp_dir
+            )
 
         print("Models downloaded", file=sys.stderr)
 
