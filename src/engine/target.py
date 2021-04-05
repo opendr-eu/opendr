@@ -107,6 +107,7 @@ class Pose(Target):
         else:
             raise ValueError('Only string and integers are supported for retrieving keypoints.')
 
+
 class BoundingBox3D(Target):
     """
     This target is used for 3D Object Detection.
