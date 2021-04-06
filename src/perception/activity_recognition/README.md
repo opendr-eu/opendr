@@ -35,6 +35,12 @@ __BibTeX__:
 
 ## Datasets
 
+### UCF-101
+[UCF-101](https://www.crcv.ucf.edu/data/UCF101.php) is prepared by directly downloading and unpacking [data](http://storage.googleapis.com/thumos14_files/UCF101_videos.zip) and [annotations](https://www.crcv.ucf.edu/data/UCF101/UCF101TrainTestSplits-RecognitionTask.zip).
+
+### HMDB-51
+[HMDB-51](https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/) is prepared by directly downloading and unpacking [data](http://serre-lab.clps.brown.edu/wp-content/uploads/2013/10/hmdb51_org.rar) and [annotations](http://serre-lab.clps.brown.edu/wp-content/uploads/2013/10/test_train_splits.rar).
+
 ### Kinetics-400
 [Kinetics](https://deepmind.com/research/open-source/kinetics) is a large-scale dataset for Trimmed Human Activity Recognition, consisting of 10 second videos collected from YouTube, ranging over 400 classes.
 Due to it's origin, a direct download of the complete dataset is not possible.

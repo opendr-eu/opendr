@@ -36,6 +36,14 @@ install_compilation_dependencies:
 	@+echo "#"; echo "# * Install Compilation Dependencies *"; echo "#"
 	@+cd dependencies; ./install.sh compilation
 
+styletest:
+	@+echo "Testing file licences and code-style"
+	@+python3 -m unittest discover -s tests
+
+unittest:
+	@+echo "Performing unit tests"
+	@+python3 -m unittest discover -s tests/sources/tools/perception/activity_recognition/cox3d
+
 help:
 	@+echo
 	@+echo -e "\033[32;1mOpenDR Makefile targets:\033[0m"
