@@ -133,9 +133,9 @@ Parameters:
   Path to metadata file in json format or to weights path.
 
 
-#### `X3DLearner.__load_model_weights`
+#### `X3DLearner._load_model_weights`
 ```python
-X3DLearner.__load_model_weights(self, weights_path)
+X3DLearner._load_model_weights(self, weights_path)
 ```
 
 Load trained model weighs directly (e.g. from [X3D model zoo](https://github.com/facebookresearch/SlowFast/blob/master/MODEL_ZOO.md).
@@ -209,7 +209,7 @@ Parameters:
   weights_path = Path("./weights/")
   X3DLearner.download(path=weights_path, model_names={"xs"})
   assert (weights_path / "x3d_xs.pyth").exists()
-  learner = X3DLearner(backbone="xs", device="cpu").__load_model_weights(weights_path)
+  learner = X3DLearner(backbone="xs", device="cpu").load(weights_path)
   ```
 
 

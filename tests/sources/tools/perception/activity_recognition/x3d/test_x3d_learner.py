@@ -118,11 +118,11 @@ class TestX3DLearner(unittest.TestCase):
     #     if path.exists():
     #         path.unlink()
     #     assert not path.exists()
-    #     self.learner.__save_onnx(path)
+    #     self.learner._save_onnx(path)
     #     assert path.exists()
     #     # Load
     #     assert getattr(self.learner, "ort_session", None) == None
-    #     self.learner.__load_onnx(path)
+    #     self.learner._load_onnx(path)
     #     assert getattr(self.learner, "ort_session", None) != None
     #     # Clean up
     #     self.learner.ort_session = None
