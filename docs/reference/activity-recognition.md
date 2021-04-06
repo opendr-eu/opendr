@@ -96,7 +96,7 @@ X3DLearner.infer(batch)
 ```
 
 This method is used to perform pose estimation on an image.
-Returns a list of `engine.target.Pose` objects, where each holds a pose, or returns an empty list if no detection were made.  
+Returns a list of `engine.target.Category` objects, where each holds a category.
 
 Parameters:
 - **batch**: *torch.Tenstor*  
