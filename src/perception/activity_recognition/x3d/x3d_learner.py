@@ -25,6 +25,7 @@ import onnxruntime as ort
 
 from engine.data import Video
 from engine.datasets import Dataset
+from engine.target import Category
 
 from perception.activity_recognition.x3d.algorithm.x3d import X3D
 import pytorch_lightning as pl
@@ -453,7 +454,7 @@ class X3DLearner(Learner):
         }
         return results
 
-    def infer(self, batch: Union[Video, List[Video], torch.Tensor]) -> torch.Tensor:
+    def infer(self, batch: Union[Video, List[Video], torch.Tensor]) -> List[Category]:
         """Run inference on a batch of data
 
         Args:
@@ -472,8 +473,9 @@ class X3DLearner(Learner):
         batch = batch.to(device=self.device, dtype=torch.float)
 
         self.model.eval()
-        result = self.model.forward(batch)
-        return result
+        results = self.model.forward(batch)
+        results = [Category(r) for r in results]
+        return results
 
     def optimize(self, do_constant_folding=False):
         """Optimize model execution.
