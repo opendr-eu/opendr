@@ -158,7 +158,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                              "ort_session is None after optimizing the pretrained model.")
         # Cleanup
         self.stgcn_action_classifier.ort_session = None
-        rmfile(os.path.join(self.temp_dir, self.experiment_name, "onnx_model_temp.onnx"))
+        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
 
 
 if __name__ == "__main__":

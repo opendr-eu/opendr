@@ -520,10 +520,10 @@ class PSTGCNLearner(Learner):
         except FileNotFoundError:
             # Create temp directory
             os.makedirs(os.path.join(self.parent_dir, self.experiment_name), exist_ok=True)
-            self.__convert_to_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"),
+            self.__convert_to_onnx(os.path.join(self.parent_dir, "onnx_model_temp.onnx"),
                                    do_constant_folding)
 
-        self.__load_from_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"))
+        self.__load_from_onnx(os.path.join(self.parent_dir, "onnx_model_temp.onnx"))
 
     def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=False):
         """
