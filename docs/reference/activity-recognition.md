@@ -294,7 +294,7 @@ Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d
 
 
 #### `CoX3DLearner.eval`
-Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
 
 
 #### `CoX3DLearner.infer`
@@ -313,23 +313,23 @@ Parameters:
 
 
 #### `CoX3DLearner.save`
-Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
 
 
 #### `CoX3DLearner.load`
-Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
 
 
-#### `CoX3DLearner.load_model_weights`
-Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+#### `CoX3DLearner._load_model_weights`
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
 
 
 #### `CoX3DLearner.optimize`
-Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
 
 
 #### `CoX3DLearner.download`
-Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
 
 
 #### Examples
@@ -368,7 +368,7 @@ Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3
   weights_path = Path("./weights/")
   CoX3DLearner.download(path=weights_path, model_names={"s"})
   assert (weights_path / "x3d_s.pyth").exists()
-  learner = CoX3DLearner(backbone="s", device="cpu").load_model_weights(weights_path)
+  learner = CoX3DLearner(backbone="s", device="cpu").load(weights_path)
   ```
 
 * **Run frame-wise inference using extended temporal window size.**
@@ -377,7 +377,7 @@ Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3
   from OpenDR.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
   from pathlib import Path
 
-  learner = CoX3DLearner(backbone="s", temporal_window_size=64).load_model_weights(weights_path)
+  learner = CoX3DLearner(backbone="s", temporal_window_size=64).load(weights_path)
 
   # Prepare batch of images
   dl = torch.utils.data.DataLoader(
@@ -471,7 +471,7 @@ Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d
 
 
 #### `CoX3DLearner.eval`
-Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
 
 
 #### `CoX3DLearner.infer`
@@ -490,23 +490,23 @@ Parameters:
 
 
 #### `CoX3DLearner.save`
-Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
 
 
 #### `CoX3DLearner.load`
-Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
 
 
 #### `CoX3DLearner.load_model_weights`
-Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
 
 
 #### `CoX3DLearner.optimize`
-Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
 
 
 #### `CoX3DLearner.download`
-Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
 
 
 #### Examples
@@ -545,7 +545,7 @@ Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3
   weights_path = Path("./weights/")
   CoX3DLearner.download(path=weights_path, model_names={"s"})
   assert (weights_path / "x3d_s.pyth").exists()
-  learner = CoX3DLearner(backbone="s", device="cpu").load_model_weights(weights_path)
+  learner = CoX3DLearner(backbone="s", device="cpu").load(weights_path)
   ```
 
 * **Run frame-wise inference using extended temporal window size.**
@@ -554,7 +554,7 @@ Inherited from  [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3
   from OpenDR.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
   from pathlib import Path
 
-  learner = CoX3DLearner(backbone="s", temporal_window_size=64).load_model_weights(weights_path)
+  learner = CoX3DLearner(backbone="s", temporal_window_size=64).load(weights_path)
 
   # Prepare batch of images
   dl = torch.utils.data.DataLoader(
