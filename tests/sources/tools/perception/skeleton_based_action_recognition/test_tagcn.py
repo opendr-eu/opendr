@@ -87,7 +87,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.tagcn_action_classifier.load(model_saved_path, model_name)
         score = self.tagcn_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
                                                   val_labels_filename='val_labels.pkl',
-                                                  keleton_data_type='joint')
+                                                  skeleton_data_type='joint')
         self.assertNotEqual(len(score), 0,
                             msg="Eval results contains empty list.")
 
