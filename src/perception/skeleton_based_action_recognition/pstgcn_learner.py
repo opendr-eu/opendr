@@ -768,6 +768,8 @@ class PSTGCNLearner(Learner):
             os.makedirs(path)
         if not os.path.exists(os.path.join(path, self.dataset_name)):
             os.makedirs(os.path.join(path, self.dataset_name))
+        if not os.path.exists(os.path.join(path, '{}_checkpoints'.format(self.experiment_name))):
+            os.makedirs(os.path.join(path, '{}_checkpoints'.format(self.experiment_name)))
 
         if mode == "pretrained":
             if verbose:
