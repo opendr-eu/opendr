@@ -15,6 +15,7 @@
 import torch
 
 from engine import data
+from engine.target import Category
 
 from perception.activity_recognition.cox3d.algorithm.cox3d import CoX3D
 from perception.activity_recognition.x3d.x3d_learner import X3DLearner
@@ -73,7 +74,7 @@ class CoX3DLearner(X3DLearner):
             lr, iters, batch_size, optimizer, backbone, network_head, temp_path, device, loss, weight_decay,
             momentum, drop_last, pin_memory, num_workers, seed, num_classes, *args, **kwargs,
         )
-        self.temporal_window_size = temporal_window_size
+        self.temporal_window_size = temporal_window_size or self.model_hparams["frames_per_clip"]
 
     def init_model(self) -> CoX3D:
         """Initialise model with random parameters
@@ -87,7 +88,7 @@ class CoX3DLearner(X3DLearner):
         self.model = CoX3D(
             dim_in=3,
             image_size=self.model_hparams["image_size"],
-            frames_per_clip=self.temporal_window_size or self.model_hparams["frames_per_clip"],
+            frames_per_clip=getattr(self, "temporal_window_size", self.model_hparams["frames_per_clip"]),
             num_classes=self.num_classes,
             conv1_dim=self.model_hparams["conv1_dim"],
             conv5_dim=self.model_hparams["conv5_dim"],
@@ -106,12 +107,12 @@ class CoX3DLearner(X3DLearner):
         return self.model
 
     @property
-    def example_input(self):
+    def _example_input(self):
         C = 3  # RGB
         S = self.model_hparams["image_size"]
         return torch.randn(1, C, S, S).to(device=self.device)
 
-    def infer(self, batch: Union[data.Image, List[data.Image], torch.Tensor]) -> torch.Tensor:
+    def infer(self, batch: Union[data.Image, List[data.Image], torch.Tensor]) -> List[Category]:
         """Run inference on a batch of data
 
         Args:
@@ -119,7 +120,7 @@ class CoX3DLearner(X3DLearner):
                 The image should have shape (3, H, W). If a batch is supplied, its shape should be (B, 3, H, W).
 
         Returns:
-            torch.Tensor: Network output
+            List[target.Category]: List of output categories
         """
         # Cast to torch tensor
         if type(batch) is data.Image:
@@ -130,5 +131,6 @@ class CoX3DLearner(X3DLearner):
         batch = batch.to(device=self.device, dtype=torch.float)
 
         self.model.eval()
-        result = self.model.forward(batch)
-        return result
+        results = self.model.forward(batch)
+        results = [Category(r) for r in results]
+        return results
