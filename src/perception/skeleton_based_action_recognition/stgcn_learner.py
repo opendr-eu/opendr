@@ -566,7 +566,7 @@ class STGCNLearner(Learner):
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             # Copy already optimized model from temp path
-            shutil.copy2(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"),
+            shutil.copy2(os.path.join(self.parent_dir, "onnx_model_temp.onnx"),
                          model_metadata["model_paths"][0])
             model_metadata["optimized"] = True
             if verbose:
