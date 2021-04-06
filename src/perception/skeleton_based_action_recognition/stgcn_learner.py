@@ -483,7 +483,7 @@ class STGCNLearner(Learner):
                                    do_constant_folding)
         except FileNotFoundError:
             # Create temp directory
-            os.makedirs(self.parent_dir, exist_ok=True)
+            os.makedirs(os.path.join(self.parent_dir, self.experiment_name), exist_ok=True)
             self.__convert_to_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"),
                                    do_constant_folding)
 
