@@ -139,6 +139,13 @@ class PSTGCNLearner(Learner):
                 self.val_writer = SummaryWriter(os.path.join(self.tensorboard_logging_path, 'test'), 'test')
         else:
             self.logging = False
+
+        if self.device == 'cuda':
+            if type(self.device_ind) is list:
+                if len(self.device_ind) > 1:
+                    self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
+                                                 output_device=self.output_device)
+
         # set the optimizer
         if self.optimizer_name == 'sgd':
             self.optimizer_ = optim.SGD(
@@ -397,10 +404,6 @@ class PSTGCNLearner(Learner):
             if self.device == 'cuda':
                 self.model = PSTGCN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.blocksize,
                                     cuda_=True).cuda(self.output_device)
-                if type(self.device_ind) is list:
-                    if len(self.device_ind) > 1:
-                        self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
-                                                     output_device=self.output_device)
                 self.loss = nn.CrossEntropyLoss().cuda(self.output_device)
             else:
                 self.model = PSTGCN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.blocksize,
@@ -689,6 +692,10 @@ class PSTGCNLearner(Learner):
 
             if self.device == "cuda":
                 self.model = self.model.cuda(self.output_device)
+                if type(self.device_ind) is list:
+                    if len(self.device_ind) > 1:
+                        self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
+                                                     output_device=self.output_device)
 
     def __load_from_onnx(self, path):
         """
@@ -868,7 +875,7 @@ class PSTGCNLearner(Learner):
         print(str_log)
         if self.logging:
             with open('{}/log.txt'.format(self.logging_path), 'a') as f:
-                print(str, file=f)
+                print(str_log, file=f)
 
     def __count_parameters(self):
         """

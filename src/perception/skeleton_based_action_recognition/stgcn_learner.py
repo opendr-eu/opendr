@@ -150,6 +150,13 @@ class STGCNLearner(Learner):
         # Initialize the model
         if self.model is None:
             self.init_model()
+            if self.device == 'cuda':
+                self.model = self.model.cuda(self.output_device)
+                if type(self.device_ind) is list:
+                    if len(self.device_ind) > 1:
+                        self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
+                                                     output_device=self.output_device)
+                self.loss = self.loss.cuda(self.output_device)
         # Load the model from a checkpoint
         checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
         if self.checkpoint_after_iter != 0 and not os.path.exists(checkpoints_folder):
@@ -409,7 +416,6 @@ class STGCNLearner(Learner):
     def init_model(self):
         """Initializes the imported model."""
         cuda_ = (self.device == 'cuda')
-
         if self.method_name == 'stgcn':
             self.model = STGCN(self.dataset_name, cuda_=cuda_)
             if self.logging:
@@ -423,15 +429,6 @@ class STGCNLearner(Learner):
             if self.logging:
                 shutil.copy2(inspect.getfile(STBLN), self.logging_path)
         self.loss = nn.CrossEntropyLoss()
-
-        if self.device == 'cuda':
-            self.model = self.model.cuda(self.output_device)
-            if type(self.device_ind) is list:
-                if len(self.device_ind) > 1:
-                    self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
-                                                 output_device=self.output_device)
-            self.loss = self.loss.cuda(self.output_device)
-
         print(self.model)
 
     def infer(self, SkeletonSeq_batch):
@@ -634,6 +631,11 @@ class STGCNLearner(Learner):
                 self.model.load_state_dict(state)
             if self.device == "cuda":
                 self.model = self.model.cuda(self.output_device)
+                if type(self.device_ind) is list:
+                    if len(self.device_ind) > 1:
+                        self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
+                                                     output_device=self.output_device)
+                self.loss = self.loss.cuda(self.output_device)
 
     def __load_from_onnx(self, path):
         """
@@ -814,7 +816,7 @@ class STGCNLearner(Learner):
         print(str_log)
         if self.logging:
             with open('{}/log.txt'.format(self.logging_path), 'a') as f:
-                print(str, file=f)
+                print(str_log, file=f)
 
     def __count_parameters(self):
         """
