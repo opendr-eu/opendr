@@ -142,8 +142,8 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                           model_name='onnx_model_temp')
         self.assertIsNotNone(self.stbln_action_classifier.ort_session, "ort_session is None after loading onnx model.")
         # Cleanup
-        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
-        rmdir(os.path.join(self.temp_dir, "test_save_load"))
+        rmfile(os.path.join(self.temp_dir, self.experiment_name, "onnx_model_temp.onnx"))
+        rmdir(os.path.join(self.temp_dir, self.experiment_name))
         self.stbln_action_classifier.ort_session = None
 
     def test_optimize(self):
