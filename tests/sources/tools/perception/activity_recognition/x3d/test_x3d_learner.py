@@ -84,7 +84,7 @@ class TestX3DLearner(unittest.TestCase):
     def test_eval(self):
         test_ds = KineticsDataset(path=self.dataset_path, frames_per_clip=4, split="test")
 
-        self.learner.load_model_weights(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
+        self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
         results = self.learner.eval(test_ds, steps=2)
 
         assert results["accuracy"] > 0.2  # Most likely ≈ 60%
@@ -95,7 +95,7 @@ class TestX3DLearner(unittest.TestCase):
         dl = torch.utils.data.DataLoader(ds, batch_size=2, num_workers=0)
         batch = next(iter(dl))[0]
 
-        self.learner.load_model_weights(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
+        self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
 
         # Input is Tensor
         results1 = self.learner.infer(batch)
@@ -112,24 +112,24 @@ class TestX3DLearner(unittest.TestCase):
 
     # Redundant test: Same code is executed internally in `test_optimize`
     # def test_save_load_onnx(self):
-    #     self.learner.load_model_weights(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
+    #     self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
     #     path = self.temp_dir / f"x3d_{_BACKBONE}.pyth"
     #     # Save
     #     if path.exists():
     #         path.unlink()
     #     assert not path.exists()
-    #     self.learner.save_onnx(path)
+    #     self.learner.__save_onnx(path)
     #     assert path.exists()
     #     # Load
     #     assert getattr(self.learner, "ort_session", None) == None
-    #     self.learner.load_onnx(path)
+    #     self.learner.__load_onnx(path)
     #     assert getattr(self.learner, "ort_session", None) != None
     #     # Clean up
     #     self.learner.ort_session = None
 
     def test_optimize(self):
         self.learner.ort_session = None
-        self.learner.load_model_weights(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
+        self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
         self.learner.optimize()
 
         assert self.learner.ort_session is not None
