@@ -31,7 +31,7 @@ _BACKBONE = "s"
 class TestCoX3DLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.temp_dir = Path("./tests/sources/tools/perception/activity_recognition/x3d/temp")
+        cls.temp_dir = Path("./tests/sources/tools/perception/activity_recognition/cox3d/temp")
 
         # Download model weights
         CoX3DLearner.download(path=Path(cls.temp_dir) / "weights", model_names={_BACKBONE})
@@ -85,7 +85,7 @@ class TestCoX3DLearner(unittest.TestCase):
     def test_eval(self):
         test_ds = KineticsDataset(path=self.dataset_path, frames_per_clip=40, split="test")
 
-        self.learner.load_model_weights(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
+        self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
         results = self.learner.eval(test_ds, steps=2)
 
         assert results["accuracy"] > 0.2
@@ -97,25 +97,25 @@ class TestCoX3DLearner(unittest.TestCase):
         batch = next(iter(dl))[0]
         batch = batch[:, :, 0]  # Select a single frame
 
-        self.learner.load_model_weights(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
+        self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
         self.learner.model.clean_model_state()
 
         # Input is Tensor
         results1 = self.learner.infer(batch)
         # Results is a batch with each item summing to 1.0
-        assert torch.all(torch.sum(results1, dim=1) == torch.ones((2, 1)))
+        assert all([torch.sum(r.data) == 1.0 for r in results1])
 
         # Input is Image
         results2 = self.learner.infer(Image(batch[0], dtype=np.float))
-        assert torch.allclose(results1[0], results2)
+        assert torch.allclose(results1[0].data, results2[0].data)
 
         # Input is List[Image]
         results3 = self.learner.infer([Image(v, dtype=np.float) for v in batch])
-        assert torch.allclose(results1, results3)
+        assert all([torch.allclose(r1.data, r3.data) for (r1, r3) in zip(results1, results3)])
 
     def test_optimize(self):
         self.learner.ort_session = None
-        self.learner.load_model_weights(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
+        self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
         self.learner.optimize()
 
         assert self.learner.ort_session is not None
