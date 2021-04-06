@@ -14,6 +14,8 @@
 
 from abc import ABC, abstractmethod
 import numpy as np
+import torch
+from typing import Union
 
 
 class Data(ABC):
@@ -277,7 +279,13 @@ class Video(Data):
     - returning a NumPy compatible representation of data (numpy())
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data: Union[torch.Tensor, np.ndarray]=None):
+        """Construct a new Video
+
+        Args:
+            data (Union[torch.Tensor, np.ndarray], optional):
+                Video tensor of shape (C, T, H, W). Defaults to None.
+        """
         super().__init__(data)
 
         if data is not None:
