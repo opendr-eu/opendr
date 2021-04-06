@@ -115,10 +115,10 @@ class X3DLearner(Learner):
         self.ort_session = None
         torch.manual_seed(self.seed)
 
-        self.load_model_hparams(self.backbone)
+        self.__load_model_hparams(self.backbone)
         self.init_model()
 
-    def load_model_hparams(self, model_name: str = None) -> Dict[str, Any]:
+    def __load_model_hparams(self, model_name: str = None) -> Dict[str, Any]:
         """Load hyperparameters for an X3D model
 
         Args:
@@ -137,7 +137,7 @@ class X3DLearner(Learner):
             self.model_hparams = yaml.load(f, Loader=yaml.FullLoader)
         return self.model_hparams
 
-    def load_model_weights(self, weights_path: Union[str, Path]):
+    def __load_model_weights(self, weights_path: Union[str, Path]):
         """Load pretrained model weights
 
         Args:
@@ -153,7 +153,7 @@ class X3DLearner(Learner):
             "Pretrained weights can be downloaded using `self.download(...)`"
         )
         if weights_path.suffix == ".onnx":
-            return self.load_onnx(weights_path)
+            return self.__load_onnx(weights_path)
 
         logger.debug(f"Loading model weights from {str(weights_path)}")
 
@@ -229,7 +229,7 @@ class X3DLearner(Learner):
 
         logger.info(f"Saving model weights to {str(weights_path)}")
         if self.ort_session:
-            self.save_onnx(weights_path)
+            self.__save_onnx(weights_path)
         else:
             torch.save(self.model.state_dict(), weights_path)
 
@@ -270,17 +270,22 @@ class X3DLearner(Learner):
         """Load model.
 
         Args:
-            path (Union[str, Path]): Path to metadata file in json format
+            path (Union[str, Path]): Path to metadata file in json format or path to model weights
 
         Returns:
             self
         """
         path = Path(path)
+
+        # Allow direct loading of weights, omitting the metadatafile
+        if path.suffix in {".pyth", ".pth", ".onnx"}:
+            self.__load_model_weights(path)
+            return self
         if path.is_dir():
             path = path / f"x3d_{self.backbone}.json"
         assert (
             path.is_file() and path.suffix == ".json"
-        ), "The provided path should be a .json file"
+        ), "The provided metadata path should be a .json file"
 
         logger.debug(f"Loading X3DLearner metadata from {str(path)}")
         with open(path, "r") as f:
@@ -311,7 +316,7 @@ class X3DLearner(Learner):
         )
 
         weights_path = path.parent / meta_data["model_paths"]
-        self.load_model_weights(weights_path)
+        self.__load_model_weights(weights_path)
 
         return self
 
@@ -491,21 +496,21 @@ class X3DLearner(Learner):
 
         path = Path(self.temp_path or os.getcwd()) / "weights" / f"x3d_{self.backbone}.onnx"
         if not path.exists():
-            self.save_onnx(path, do_constant_folding)
-        self.load_onnx(path)
+            self.__save_onnx(path, do_constant_folding)
+        self.__load_onnx(path)
 
     @property
-    def example_input(self):
+    def __example_input(self):
         C = 3  # RGB
         T = self.model_hparams["frames_per_clip"]
         S = self.model_hparams["image_size"]
         return torch.randn(1, C, T, S, S).to(device=self.device)
 
-    @example_input.setter
-    def example_input(self):
-        raise ValueError("example_input is set thorugh 'frames_per_clip' 'image_size' in `self.model_hparams`")
+    @__example_input.setter
+    def __example_input(self):
+        raise ValueError("__example_input is set thorugh 'frames_per_clip' 'image_size' in `self.model_hparams`")
 
-    def save_onnx(self, path: Union[str, Path], do_constant_folding=False, verbose=False):
+    def __save_onnx(self, path: Union[str, Path], do_constant_folding=False, verbose=False):
         """Save model in the ONNX format
 
         Args:
@@ -520,7 +525,7 @@ class X3DLearner(Learner):
         logger.info(f"Saving model to ONNX format at {str(path)}")
         onnx.export(
             self.model,
-            self.example_input,
+            self.__example_input,
             path,
             input_names=["video"],
             output_names=["classes"],
@@ -528,7 +533,7 @@ class X3DLearner(Learner):
             verbose=verbose,
         )
 
-    def load_onnx(self, path: Union[str, Path]):
+    def __load_onnx(self, path: Union[str, Path]):
         """Loads ONNX model into an onnxruntime inference session.
 
         Args:
