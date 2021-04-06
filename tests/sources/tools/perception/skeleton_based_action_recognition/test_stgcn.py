@@ -122,27 +122,29 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.stgcn_action_classifier.model = None
         self.stgcn_action_classifier.ort_session = None
         self.stgcn_action_classifier.init_model()
-        self.stgcn_action_classifier.save(path=os.path.join(self.temp_dir, "test_save_load"), model_name='testModel')
+        self.stgcn_action_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
+                                          model_name='test_stgcn')
         self.stgcn_action_classifier.model = None
-        self.stgcn_action_classifier.load(path=os.path.join(self.temp_dir, "test_save_load"), model_name='testModel')
+        self.stgcn_action_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
+                                          model_name='test_stgcn')
         self.assertIsNotNone(self.stgcn_action_classifier.model, "model is None after loading pt model.")
         # Cleanup
-        rmdir(os.path.join(self.temp_dir, "test_save_load"))
+        rmdir(os.path.join(self.temp_dir, self.experiment_name))
 
     def test_save_load_onnx(self):
         self.stgcn_action_classifier.model = None
         self.stgcn_action_classifier.ort_session = None
         self.stgcn_action_classifier.init_model()
         self.stgcn_action_classifier.optimize()
-        self.stgcn_action_classifier.save(path=os.path.join(self.temp_dir, "test_save_load"),
+        self.stgcn_action_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
                                           model_name='onnx_model_temp')
         self.stgcn_action_classifier.model = None
-        self.stgcn_action_classifier.load(path=os.path.join(self.temp_dir, "test_save_load"),
+        self.stgcn_action_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
                                           model_name='onnx_model_temp')
         self.assertIsNotNone(self.stgcn_action_classifier.ort_session, "ort_session is None after loading onnx model.")
         # Cleanup
-        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
-        rmdir(os.path.join(self.temp_dir, "test_save_load"))
+        rmfile(os.path.join(self.temp_dir, self.experiment_name, "onnx_model_temp.onnx"))
+        rmdir(os.path.join(self.temp_dir, self.experiment_name))
         self.stgcn_action_classifier.ort_session = None
 
     def test_optimize(self):
@@ -156,7 +158,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                              "ort_session is None after optimizing the pretrained model.")
         # Cleanup
         self.stgcn_action_classifier.ort_session = None
-        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
+        rmfile(os.path.join(self.temp_dir, self.experiment_name, "onnx_model_temp.onnx"))
 
 
 if __name__ == "__main__":

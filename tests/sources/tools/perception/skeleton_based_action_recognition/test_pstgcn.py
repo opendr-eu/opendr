@@ -122,13 +122,15 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.pstgcn_action_classifier.topology = [1]
         self.pstgcn_action_classifier.ort_session = None
         self.pstgcn_action_classifier.init_model()
-        self.pstgcn_action_classifier.save(path=os.path.join(self.temp_dir, "test_save_load"), model_name='testModel')
+        self.pstgcn_action_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
+                                           model_name='test_pstgcn')
         self.pstgcn_action_classifier.model = None
         self.pstgcn_action_classifier.topology = [1]
-        self.pstgcn_action_classifier.load(path=os.path.join(self.temp_dir, "test_save_load"), model_name='testModel')
+        self.pstgcn_action_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
+                                           model_name='test_pstgcn')
         self.assertIsNotNone(self.pstgcn_action_classifier.model, "model is None after loading pt model.")
         # Cleanup
-        rmdir(os.path.join(self.temp_dir, "test_save_load"))
+        rmdir(os.path.join(self.temp_dir, self.experiment_name))
 
     def test_multi_stream_eval(self):
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
@@ -170,17 +172,17 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.pstgcn_action_classifier.ort_session = None
         self.pstgcn_action_classifier.init_model()
         self.pstgcn_action_classifier.optimize()
-        self.pstgcn_action_classifier.save(path=os.path.join(self.temp_dir, "test_save_load"),
+        self.pstgcn_action_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
                                            model_name='onnx_model_temp')
         self.pstgcn_action_classifier.model = None
         self.pstgcn_action_classifier.topology = [1]
-        self.pstgcn_action_classifier.load(path=os.path.join(self.temp_dir, "test_save_load"),
+        self.pstgcn_action_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
                                            model_name='onnx_model_temp')
         self.assertIsNotNone(self.pstgcn_action_classifier.ort_session, "ort_session is None after loading onnx model.")
         # Cleanup
         self.pstgcn_action_classifier.ort_session = None
-        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
-        rmdir(os.path.join(self.temp_dir, "test_save_load"))
+        rmfile(os.path.join(self.temp_dir, self.experiment_name, "onnx_model_temp.onnx"))
+        rmdir(os.path.join(self.temp_dir, self.experiment_name))
 
 
 if __name__ == "__main__":
