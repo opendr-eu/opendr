@@ -51,7 +51,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                                    method_name='stbln', stbln_symmetric=False)
         cls.experiment_name = 'stbln_nturgbd'
         # Download all required files for testing
-        cls.Pretrained_MODEL_PATH = cls.stgcn_action_classifier.download(
+        cls.Pretrained_MODEL_PATH = cls.stbln_action_classifier.download(
             mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models"))
         cls.Train_DATASET_PATH = cls.stbln_action_classifier.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data"))
