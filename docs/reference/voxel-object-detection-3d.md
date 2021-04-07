@@ -113,7 +113,7 @@ Parameters:
 VoxelObjectDetection3DLearner.infer(self, point_clouds)
 ```
 
-This method is used to perform 3d object detection on a point cloud.
+This method is used to perform 3D object detection on a point cloud.
 Returns a list of [BoundingBox3DList](#class_engine.target.BoundingBox3DList) objects if the list of [PointCloud](#class_engine.data.PointCloud) is given or a single [BoundingBox3DList](#class_engine.target.BoundingBox3DList) if a single [PointCloud](#class_engine.data.PointCloud) is given.
 
 Parameters:

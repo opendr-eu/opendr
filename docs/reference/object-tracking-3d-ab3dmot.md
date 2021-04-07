@@ -26,7 +26,7 @@ Constructor parameters:
 - **state_dimensions**: *int, default=10*
   Specifies the number of state dimensions for Kalman filter. Default is 10 for `x, y, z, rotation_y, w, l, h, dx, dz, drotation_y`.
 - **measurement_dimensions**: *int, default=7*
-  Specifies the number of measurment dimensions for Kalman filter. Default is 7 for `x, y, z, rotation_y, w, l, h`.
+  Specifies the number of measurement dimensions for Kalman filter. Default is 7 for `x, y, z, rotation_y, w, l, h`.
 - **state_transition_matrix**: *numpy.ndarray, default=None*
   Specifies the [NumPy](https://numpy.org) state transition matrix for Kalman filter. If `None`, default one is used.
 - **measurement_function_matrix**: *numpy.ndarray, default=None*
