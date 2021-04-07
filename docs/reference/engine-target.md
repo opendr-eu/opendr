@@ -103,3 +103,16 @@ The [SpeechCommand](#class_engine.target.SpeechCommand) class has the following 
 #### SpeechCommand(prediction, confidence=None)
 Construct a new [SpeechCommand](#class_engine.target.SpeechCommand) object based from *prediction*.
 *prediction* is expected to be an integer designating the class and optional *confidence* a float between 0 and 1.
+
+
+### class engine.target.Category
+Bases: `engine.target.Target`
+
+This target is used for simple classification problems. Contains the predicted class or ground truth
+and optionally the prediction confidence.
+
+The [Category](#class_engine.target.Category) class has the following public methods:
+#### Category(prediction, confidence=None)
+Construct a new [Category](#class_engine.target.Category) object based from *prediction*.
+*prediction* is expected to be a string designating the class and optional *confidence* a float between 0 and 1.
+
