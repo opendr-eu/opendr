@@ -17,11 +17,11 @@ ObjectTracking2DFairMotLearner(self, lr, iters, batch_size, optimizer, lr_schedu
 ```
 
 Constructor parameters:
-- **lr**: *float, default=0.0002*  
+- **lr**: *float, default=0.0001*  
   Specifies the initial learning rate to be used during training.
 - **iters**: *int, default=-1*  
   Specifies the number if iteration per each training epoch. -1 means full epoch.
-- **batch_size**: *int, default=64*
+- **batch_size**: *int, default=4*
   Specifies the size of the training batch.
 - **optimizer**: *str {'adam'}, default=adam*  
   Specifies the optimizer type that should be used.
@@ -35,40 +35,40 @@ Constructor parameters:
   Specifies a path where the algorithm saves the onnx optimized model and checkpoints (if needed).
 - **device**: *{'cpu', 'cuda', 'cuda:x'}, default='cuda'*  
   Specifies the device to be used.
-- **threshold**: *float, default=0.0*  
+- **threshold**: *float, default=0.3*  
   Specifies the confidence threshold for tracking.
 - **lr_step**: *list of int, default=[20]*
   Specifies the number of epochs to change the learning step.
 - **head_conv**: *int, default=256*
   Specifies the number of channels for the network head.
 - **ltrb**: *bool, default=True*
-  Specifies if to regress left, top, right, bottom of a boudning box.
+  Specifies if a bounding box should be regressed as `(left, top, right, bottom)`, or as `(size, center_offset)`.
 - **num_classes**: *int, default=1*
   Specifies the number of classes to track.
 - **reg_offset**: *bool, default=True*
-  Specifies if to regress the center offset.
+  Specifies if center offset should be regressed.
 - **gpus**: *list of int, default=[0]*
   Specifies the list of gpus to use for training. Input batch is split evenly between the gpus during training.
 - **num_workers**: *int, default=4*
   Specifies the number of workers for data loaders.
 - **mse_loss**: *float, default=False*
-  Specifies if to use the Mean Squared Error (MSE) loss instead of the Focal loss.
+  Specifies if the Mean Squared Error (MSE) loss should be used instead of the Focal loss.
 - **reg_loss**: *str {'sl1', 'l1'}, default='l1'*
   Specifies the regression loss type.
 - **dense_wh**: *bool, default=False*
-  Specifies if to apply weighted regression near the center point or just apply regression on the center point.
+  Specifies if weighted regression near the center point should be applied or just the regression on the center point.
 - **cat_spec_wh**: *bool, default=False*
-  Specifies if to use category specific bounding box size.
+  Specifies if category specific bounding box size should be used.
 - **reid_dim**: *int, default=128*
-  Specifies the number of Re-ID features.
+  Specifies the number of re-identification features per object. These features are used to distinguish between different objects across the sequence frames.
 - **norm_wh**: *float, default=False*
-  Specifies if to normalize regression loss. 
-- **wh_weight**: *float, default=0*
+  Specifies if the regression loss should be normalized. 
+- **wh_weight**: *float, default=0.1*
   Specifies the loss weight for bounding box size.
 - **off_weight**: *float, default=1*
   Specifies the loss weight for keypoint local offsets.
 - **id_weight**: *float, default=1*
-  Specifies the loss weight for Re-ID features.
+  Specifies the loss weight for re-identification features. These features are used to distinguish between different objects across the sequence frames.
 - **num_epochs**: *float, default=30*
   Specifies the number of epochs to train.
 - **hm_weight**: *float, default=1*
@@ -142,6 +142,8 @@ Parameters:
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
 - **val_split_paths**: *dict[str, str], default=None*  
   Specifies the validation splits for each sub-dataset in a `{name: splits_path}` format. Used if the provided `val_dataset` is an `ExternalDataset`.
+- **logging_path**: *str, default=None*  
+  Path to save log files. If set to None, only the console will be used for logging.
 - **silent**: *bool, default=False*  
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
 - **verbose**: *bool, default=False*  
@@ -197,7 +199,7 @@ Parameters:
 
 #### `ObjectTracking2DFairMotLearner.optimize`
 ```python
-ObjectTracking2DFairMotLearner.optimize(self, do_constant_folding)
+ObjectTracking2DFairMotLearner.optimize(self, do_constant_folding, img_size, optimizable_dcn_v2)
 ```
 
 This method is used to optimize a trained model to ONNX format which can be then used for inference.
@@ -207,6 +209,11 @@ Parameters:
   ONNX format optimization.
   If True, the constant-folding optimization is applied to the model during export.
   Constant-folding optimization will replace some of the operations that have all constant inputs, with pre-computed constant nodes.
+- **img_size**: *tuple(int, int), default=(1088, 608)*
+  The size of model input image (after data preprocessing).
+- **optimizable_dcn_v2**: *bool, default=False*
+  Should be set to `True` of DCNv2 (deformable convolutions) library can be optimized. Optimization of the model is impossible without the optimization of DCNv2.
+
 
 #### `ObjectTracking2DFairMotLearner.download`
 ```python
