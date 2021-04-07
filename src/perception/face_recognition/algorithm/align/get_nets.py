@@ -91,7 +91,6 @@ class RNet(nn.Module):
 
         self.conv5_1 = nn.Linear(128, 2)
         self.conv5_2 = nn.Linear(128, 4)
-        # weights = np.load("../algorithm/align/rnet.npy", allow_pickle=True)[()]
         weights = np.load(os.path.join(current_file_dir, "rnet.npy"), allow_pickle=True)[()]
         for n, p in self.named_parameters():
             p.data = torch.FloatTensor(weights[n])
@@ -140,7 +139,6 @@ class ONet(nn.Module):
         self.conv6_1 = nn.Linear(256, 2)
         self.conv6_2 = nn.Linear(256, 4)
         self.conv6_3 = nn.Linear(256, 10)
-        # weights = np.load("../algorithm/align/onet.npy", allow_pickle=True)[()]
         weights = np.load(os.path.join(current_file_dir, "onet.npy"), allow_pickle=True)[()]
         for n, p in self.named_parameters():
             p.data = torch.FloatTensor(weights[n])
