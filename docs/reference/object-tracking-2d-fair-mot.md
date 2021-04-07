@@ -5,9 +5,8 @@ The *object_tracking_2d_fair_mot* module contains the *ObjectTracking2DFairMotLe
 ### Class ObjectTracking2DFairMotLearner
 Bases: `engine.learners.Learner`
 
-The *ObjectTracking2DFairMotLearner* class is a wrapper of the FairMOT[[1]](#object-tracking-2d-1) implementation found on [ifzhang/FairMOT](
-https://github.com/ifzhang/FairMOT)[[2]](#object-tracking-2d-2).
-It can be used to perform 2d object tracking on images and train new models.
+The *ObjectTracking2DFairMotLearner* class is a wrapper of the FairMOT[[1]](#object-tracking-2d-1) implementation found on [ifzhang/FairMOT](https://github.com/ifzhang/FairMOT)[[2]](#object-tracking-2d-2).
+It can be used to perform 2D object tracking on images and train new models.
 
 The [ObjectTracking2DFairMotLearner](#src.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner.py) class has the
 following public methods:
@@ -37,9 +36,9 @@ Constructor parameters:
 - **device**: *{'cpu', 'cuda', 'cuda:x'}, default='cuda'*  
   Specifies the device to be used.
 - **threshold**: *float, default=0.0*  
-  Specifies the onfidence threshold for tracking.
+  Specifies the confidence threshold for tracking.
 - **lr_step**: *list of int, default=[20]*
-  Specifies the number of epoch to change the learning step.
+  Specifies the number of epochs to change the learning step.
 - **head_conv**: *int, default=256*
   Specifies the number of channels for the network head.
 - **ltrb**: *bool, default=True*
@@ -102,13 +101,15 @@ ObjectTracking2DFairMotLearner.fit(
 self, dataset, val_dataset, val_epochs, logging_path, silent, verbose, train_split_paths, val_split_paths, resume_optimizer, nID)
 ```
 
-This method is used for training the algorithm on a train dataset and validating on a val dataset.
+This method is used for training the algorithm on the train `dataset` and validating on the `val_dataset`.
 Parameters:
   - **dataset**: *object*  
     Object that holds the training dataset.
     Can be of type `ExternalDataset` (with type="kitti") or a custom dataset inheriting from `DatasetIterator`.
   - **val_dataset**: *object, default=None*
-    Object that holds the validation dataset. If None, and the dataset is an `ExternalDataset`, dataset will be used to sample evaluation inputs. Can be of type `ExternalDataset` (with type="mot") or a custom dataset inheriting from `DatasetIterator`.
+    Object that holds the validation dataset.
+    If None, and the dataset is an `ExternalDataset`, dataset will be used to sample evaluation inputs.
+    Can be of type `ExternalDataset` (with type="mot") or a custom dataset inheriting from `DatasetIterator`.
   - **val_epochs**: *int, default=-1*  
     Defines the number of train epochs passed to start evaluation. -1 means no evaluation. 
   - **logging_path**: *str, default=None*  
@@ -118,9 +119,13 @@ Parameters:
   - **verbose**: *bool, default=False*  
     If set to True, enables maximum verbosity.
   - **train_split_paths**: *dict[str, str], default=None*  
-    Specifies the training splits for each sub-dataset in a `{name: splits_path}` format. Used if the provided `dataset` is an `ExternalDataset`. If None, the default path for MOT20 dataset is used.
+    Specifies the training splits for each sub-dataset in a `{name: splits_path}` format.
+    Used if the provided `dataset` is an `ExternalDataset`.
+    If None, the default path for MOT20 dataset is used.
   - **val_split_paths**: *dict[str, str], default=None*  
-    Specifies the validation splits for each sub-dataset in a `{name: splits_path}` format. Used if the provided `val_dataset` is an `ExternalDataset`. If None, the `train_split_paths` is used.
+    Specifies the validation splits for each sub-dataset in a `{name: splits_path}` format.
+    Used if the provided `val_dataset` is an `ExternalDataset`.
+    If None, the `train_split_paths` is used.
   - **nID**: *int, default=None*  
     Specifies the total number of identities in the dataset. If None, value from the dataset is taken.
 
