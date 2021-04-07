@@ -202,7 +202,7 @@ Parameters:
 
 - **data**: *str, default=''*  
   The folder containing the images to be aligned.  
-- **dest**: *str, default=self.temp_path + '/aligned'*  
+- **dest**: *str, default='/aligned' 
   The destination folder to save the aligned images.
 - **crop_size**: *int, default=112*  
   The size of the produced images (crop_size x crop_size).
