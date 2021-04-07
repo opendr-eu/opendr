@@ -111,7 +111,7 @@ The [BoundingBox](#class_engine.target.BoundingBox) class has the following publ
   - *height* is expected to be a number representing the height of the box.
   - *score* is expected to be a number describing the prediction confidence.
 #### mot(with_confidence=True, frame=-1))
-  Return the annotation in MOT format.
+  Return the annotation in [MOT](https://motchallenge.net/instructions) format.
 
 
 ### class engine.target.BoundingBoxList
@@ -126,7 +126,7 @@ The [BoundingBoxList](#class_engine.target.BoundingBoxList) class has the follow
   Construct a new [BoundingBoxList](#class_engine.target.BoundingBoxList) object based on the given data.
   - *boxes* is expected to be a list of [BoundingBox](#class_engine.target.BoundingBox).
 #### mot(with_confidence=True)
-  Return the annotation in MOT format.
+  Return the annotation in [MOT](https://motchallenge.net/instructions) format.
 #### boxes()
   Return the list of [BoundingBox](#class_engine.target.BoundingBox) boxes.
   
@@ -170,7 +170,7 @@ The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class 
 #### from_mot(data)
   Static method that constructs [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) from the `data` object with MOT annotation.
 #### mot(with_confidence=True)
-  Return the annotation in MOT format.
+  Return the annotation in [MOT](https://motchallenge.net/instructions) format.
 #### boudning_box_list()
   Return the [BoundingBoxList](#class_engine.target.BoundingBoxList) object constructed from this object.
 #### boxes()
