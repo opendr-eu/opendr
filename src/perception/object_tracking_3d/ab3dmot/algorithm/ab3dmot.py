@@ -34,7 +34,7 @@ class AB3DMOT():
     def __init__(
         self, max_staleness=2, min_updates=3, frame=0,
         state_dimensions=10,  # x, y, z, rotation_y, l, w, h, speed_x, speed_z, angular_speed
-        measurment_dimensions=7,  # x, y, z, rotation_y, l, w, h
+        measurement_dimensions=7,  # x, y, z, rotation_y, l, w, h
         state_transition_matrix=None,
         measurement_function_matrix=None,
         covariance_matrix=None,
@@ -51,7 +51,7 @@ class AB3DMOT():
         self.iou_threshold = iou_threshold
 
         self.state_dimensions = state_dimensions
-        self.measurment_dimensions = measurment_dimensions
+        self.measurement_dimensions = measurement_dimensions
         self.state_transition_matrix = state_transition_matrix
         self.measurement_function_matrix = measurement_function_matrix
         self.covariance_matrix = covariance_matrix
@@ -61,10 +61,10 @@ class AB3DMOT():
 
         if len(detections) > 0:
 
-            predictions = np.zeros([len(self.tracklets), self.measurment_dimensions])
+            predictions = np.zeros([len(self.tracklets), self.measurement_dimensions])
 
             for i, tracklet in enumerate(self.tracklets):
-                box = tracklet.predict().reshape(-1)[:self.measurment_dimensions]
+                box = tracklet.predict().reshape(-1)[:self.measurement_dimensions]
                 predictions[i] = [*box]
 
             detection_corners = center_to_corner_box3d(
@@ -95,7 +95,7 @@ class AB3DMOT():
                 self.last_tracklet_id += 1
                 tracklet = KalmanTracker3D(
                     detections[d], self.last_tracklet_id, self.frame,
-                    self.state_dimensions, self.measurment_dimensions,
+                    self.state_dimensions, self.measurement_dimensions,
                     self.state_transition_matrix, self.measurement_function_matrix,
                     self.covariance_matrix, self.process_uncertainty_matrix
                 )
