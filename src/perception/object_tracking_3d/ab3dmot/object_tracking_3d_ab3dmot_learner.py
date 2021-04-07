@@ -27,7 +27,7 @@ class ObjectTracking3DAb3dmotLearner(Learner):
         max_staleness=2,
         min_updates=3,
         state_dimensions=10,  # x, y, z, rotation_y, l, w, h, speed_x, speed_z, angular_speed
-        measurment_dimensions=7,  # x, y, z, rotation_y, l, w, h
+        measurement_dimensions=7,  # x, y, z, rotation_y, l, w, h
         state_transition_matrix=None,
         measurement_function_matrix=None,
         covariance_matrix=None,
@@ -42,7 +42,7 @@ class ObjectTracking3DAb3dmotLearner(Learner):
         self.max_staleness = max_staleness
         self.min_updates = min_updates
         self.state_dimensions = state_dimensions
-        self.measurment_dimensions = measurment_dimensions
+        self.measurement_dimensions = measurement_dimensions
         self.state_transition_matrix = state_transition_matrix
         self.measurement_function_matrix = measurement_function_matrix
         self.covariance_matrix = covariance_matrix
@@ -144,7 +144,7 @@ class ObjectTracking3DAb3dmotLearner(Learner):
             max_staleness=self.max_staleness,
             min_updates=self.min_updates,
             state_dimensions=self.state_dimensions,
-            measurment_dimensions=self.measurment_dimensions,
+            measurement_dimensions=self.measurement_dimensions,
             state_transition_matrix=self.state_transition_matrix,
             measurement_function_matrix=self.measurement_function_matrix,
             covariance_matrix=self.covariance_matrix,

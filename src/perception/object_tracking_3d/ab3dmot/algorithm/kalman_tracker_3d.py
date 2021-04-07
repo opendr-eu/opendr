@@ -25,7 +25,7 @@ class KalmanTracker3D():
         id,
         frame,
         state_dimensions=10,  # x, y, z, rotation_y, l, w, h, speed_x, speed_z, angular_speed
-        measurment_dimensions=7,  # x, y, z, rotation_y, l, w, h
+        measurement_dimensions=7,  # x, y, z, rotation_y, l, w, h
         state_transition_matrix=None,
         measurement_function_matrix=None,
         covariance_matrix=None,
@@ -37,7 +37,7 @@ class KalmanTracker3D():
         self.last_update_frame = frame
         self.id = id
 
-        self.kalman_filter = KalmanFilter(dim_x=state_dimensions, dim_z=measurment_dimensions)
+        self.kalman_filter = KalmanFilter(dim_x=state_dimensions, dim_z=measurement_dimensions)
         self.predictions = []
         self.updates = 0
 
@@ -49,7 +49,7 @@ class KalmanTracker3D():
 
         if measurement_function_matrix is None:
             measurement_function_matrix = np.eye(
-                measurment_dimensions, state_dimensions, dtype=np.float32
+                measurement_dimensions, state_dimensions, dtype=np.float32
             )
 
         if covariance_matrix is None:
@@ -74,7 +74,7 @@ class KalmanTracker3D():
         rotation_y = boundingBox3D.data["rotation_y"]
 
         # [x, y, z, rotation_y, l, w, h]
-        self.kalman_filter.x[:measurment_dimensions] = np.array([
+        self.kalman_filter.x[:measurement_dimensions] = np.array([
             *location, rotation_y, *dimensions
         ]).reshape(-1, 1)
 
