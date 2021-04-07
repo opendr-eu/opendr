@@ -5,11 +5,11 @@ The *object_tracking_3d_ab3dmot* module contains the *ObjectTracking3DAb3dmotLea
 ### Class ObjectTracking3DAb3dmotLearner
 Bases: `engine.learners.Learner`
 
-The *ObjectTracking3DAb3dmotLearner* class is an implementation of the AB3DMOT[[1]](#object-tracking-3d-1) method. Evaluation code is based on the KITTI evaluation development kit[[2]](#object-tracking-3d-2).
-It can be used to perform 3d object tracking based on provided detections.
+The *ObjectTracking3DAb3dmotLearner* class is an implementation of the AB3DMOT[[1]](#object-tracking-3d-1) method.
+Evaluation code is based on the KITTI evaluation development kit[[2]](#object-tracking-3d-2).
+It can be used to perform 3D object tracking based on provided detections.
 
-The [ObjectTracking3DAb3dmotLearner](#src.perception.object_tracking_3d.object_tracking_3d_ab3dmot.object_tracking_3d_ab3dmot_learner.py) class has the
-following public methods:
+The [ObjectTracking3DAb3dmotLearner](#src.perception.object_tracking_3d.object_tracking_3d_ab3dmot.object_tracking_3d_ab3dmot_learner.py) class has the following public methods:
 
 #### `ObjectTracking3DAb3dmotLearner` constructor
 ```python
@@ -20,12 +20,12 @@ Constructor parameters:
 - **device**: *{'cpu'}, default='cpu'*  
   Specifies the device to be used.
 - **max_staleness**: *int, default=2*
-  Specifies the maximum number of frames the track can be not updated.
-- **min_updates**: *int, default=0*
+  Specifies the maximum number of frames when no detections are associated with a track.
+- **min_updates**: *int, default=3*
   Specifies the minimal number of updates for tracker to be displayed as output.
 - **state_dimensions**: *int, default=10*
   Specifies the number of state dimensions for Kalman filter. Default is 10 for `x, y, z, rotation_y, w, l, h, dx, dz, drotation_y`.
-- **measurment_dimensions**: *int, default=0*
+- **measurement_dimensions**: *int, default=7*
   Specifies the number of measurment dimensions for Kalman filter. Default is 7 for `x, y, z, rotation_y, w, l, h`.
 - **state_transition_matrix**: *numpy.ndarray, default=None*
   Specifies the [NumPy](https://numpy.org) state transition matrix for Kalman filter. If `None`, default one is used.
@@ -50,6 +50,8 @@ Parameters:
 - **dataset**: *object*  
   Object that holds the evaluation dataset.
   Can be of type `DatasetIterator`.
+- **logging_path**: *str, default=None*  
+  Path to save log files. If set to None, only the console will be used for logging.
 - **silent**: *bool, default=False*  
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
 - **verbose**: *bool, default=False*  
@@ -63,8 +65,8 @@ Parameters:
 ObjectTracking3DAb3dmotLearner.infer(self, bounding_boxes_3d_list)
 ```
 
-This method is used to perform 3d object tracking on a list of 3D bounding boxes predictions.
-Returns a list of [TrackingAnnotation3D](#class_engine.target.TrackingAnnotation3D) objects if the list of [BoundingBox3DList](#class_engine.target.BoundingBox3DList) is given or a single [TrackingAnnotation3D](#class_engine.target.TrackingAnnotation3D) if a single [BoundingBox3DList](#class_engine.target.BoundingBox3DList) is given.
+This method is used to perform 3D object tracking on a list of 3D bounding boxes predictions.
+Returns a list of [TrackingAnnotation3DList](#class_engine.target.TrackingAnnotation3DList) objects if the list of [BoundingBox3DList](#class_engine.target.BoundingBox3DList) is given or a single [TrackingAnnotation3DList](#class_engine.target.TrackingAnnotation3DList) if a single [BoundingBox3DList](#class_engine.target.BoundingBox3DList) is given.
 
 Parameters:
 - **bounding_boxes_3d_list**: *[BoundingBox3DList](#class_engine.target.BoundingBox3DList)* or a list of *[BoundingBox3DList](#class_engine.target.BoundingBox3DList)***  
