@@ -52,7 +52,8 @@ The [Pose](#class_engine.target.Pose) class has the following public methods:
 ### class engine.target.BoundingBox3D
 Bases: `engine.target.Target`
 
-This target is used for 3D Object Detection.
+This target is used for 3D Object Detection and describes 3D bounding box in space containing an object of interest.
+Additionaly, projection of the bounding box onto camera image plane can be provided in *bbox2d* parameter.
 A bounding box is described by its location (x, y, z), dimensions (w, h, d) and rotation (along vertical y axis).
 Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
 truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
@@ -77,7 +78,8 @@ The [BoundingBox3D](#class_engine.target.BoundingBox3D) class has the following 
 ### class engine.target.BoundingBox3DList
 Bases: `engine.target.Target`
 
-This target is used for 3D object detection. It contains a list of BoundingBox3D targets.
+This target is used for 3D object detection.
+It contains a list of [BoundingBox3D](#class_engine.target.BoundingBox3D)  targets that belong to the same frame.
 A bounding box is described by its location (x, y, z), dimensions (l, h, w) and rotation (along vertical (y) axis).
 Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
 truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
@@ -96,7 +98,7 @@ The [BoundingBox3DList](#class_engine.target.BoundingBox3DList) class has the fo
 ### class engine.target.BoundingBox
 Bases: `engine.target.Target`
 
-This target is used for 2D Object Detection.
+This target is used for 2D Object Detection and describes 2D bounding box in image plane containing an object of interest.
 A bounding box is described by the left-top corner and its width and height.
 
 The [BoundingBox](#class_engine.target.BoundingBox) class has the following public methods:
@@ -109,13 +111,14 @@ The [BoundingBox](#class_engine.target.BoundingBox) class has the following publ
   - *height* is expected to be a number representing the height of the box.
   - *score* is expected to be a number describing the prediction confidence.
 #### mot(with_confidence=True, frame=-1))
-  Return the annotation in MOT format.
+  Return the annotation in [MOT](https://motchallenge.net/instructions) format.
 
 
 ### class engine.target.BoundingBoxList
 Bases: `engine.target.Target`
 
 This target is used for 2D Object Detection.
+It contains a list of [BoundingBox](#class_engine.target.BoundingBox) targets that belong to the same frame.
 A bounding box is described by the left-top corner and its width and height.
 
 The [BoundingBoxList](#class_engine.target.BoundingBoxList) class has the following public methods:
@@ -123,15 +126,15 @@ The [BoundingBoxList](#class_engine.target.BoundingBoxList) class has the follow
   Construct a new [BoundingBoxList](#class_engine.target.BoundingBoxList) object based on the given data.
   - *boxes* is expected to be a list of [BoundingBox](#class_engine.target.BoundingBox).
 #### mot(with_confidence=True)
-  Return the annotation in MOT format.
+  Return the annotation in [MOT](https://motchallenge.net/instructions) format.
 #### boxes()
-  Property. Returns the list of [BoundingBox](#class_engine.target.BoundingBox) boxess.
+  Return the list of [BoundingBox](#class_engine.target.BoundingBox) boxes.
   
 
 ### class engine.target.TrackingAnnotation
 Bases: `engine.target.Target`
 
-This target is used for 2D Object Detection.
+This target is used for 2D Object Tracking and describes 2D bounding box and its unique id (accross one video or image sequence) with a frame number.
 A bounding box is described by the left-top corner and its width and height.
 
 The [TrackingAnnotation](#class_engine.target.TrackingAnnotation) class has the following public methods:
@@ -148,15 +151,16 @@ The [TrackingAnnotation](#class_engine.target.TrackingAnnotation) class has the 
 #### from_mot(data)
    Static method that constructs [TrackingAnnotation](#class_engine.target.TrackingAnnotation) from the `data` object with MOT annotation.
 #### mot(with_confidence=True)
-  Return the annotation in MOT format.
-#### bounding_box()
+  Return the annotation in [MOT](https://motchallenge.net/instructions) format.
+#### boudning_box()
   Return the [BoundingBox](#class_engine.target.BoundingBox) object constructed from this object.
 
 
 ### class engine.target.TrackingAnnotationList
 Bases: `engine.target.Target`
 
-This target is used for 2D Object Detection.
+This target is used for 2D Object Tracking.
+It contains a list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) targets that belong to the same frame.
 A bounding box is described by the left-top corner and its width and height.
 
 The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class has the following public methods:
@@ -166,11 +170,11 @@ The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class 
 #### from_mot(data)
   Static method that constructs [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) from the `data` object with MOT annotation.
 #### mot(with_confidence=True)
-  Return the annotation in MOT format.
-#### bounding_box_list()
+  Return the annotation in [MOT](https://motchallenge.net/instructions) format.
+#### boudning_box_list()
   Return the [BoundingBoxList](#class_engine.target.BoundingBoxList) object constructed from this object.
 #### boxes()
-  Property. Returns the list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) boxess.
+  Return the list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) boxes.
 
 ### class engine.target.SpeechCommand
 Bases: `engine.target.Target`
