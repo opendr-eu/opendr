@@ -162,7 +162,8 @@ The [TrackingAnnotation3DList](#class_engine.target.TrackingAnnotation3DList) cl
 #### bounding_box_3d_list()
   Return the [BoundingBox3DList](#class_engine.target.BoundingBox3DList) object constructed from this object by discarding `frame` and `id` data.
 #### from_kitti(boxes_kitti, ids, frames=None)
-  Static method that constructs [TrackingAnnotation3DList](#class_engine.target.TrackingAnnotation3DList) from the *boxes_kitti* object with KITTI annotation and corresponding *ids*. If *frames* is `None`, `frame` value for each object will be set to `-1`, otherwise, *frames* values are assigned.
+  Static method that constructs [TrackingAnnotation3DList](#class_engine.target.TrackingAnnotation3DList) from the *boxes_kitti* object with KITTI annotation and corresponding *ids*.
+  If *frames* is `None`, `frame` value for each object will be set to `-1`, otherwise, `frames` values are assigned.
 
 
 ### class engine.target.SpeechCommand
