@@ -74,8 +74,8 @@ class FaceRecognitionLearner(Learner):
                  backbone='ir_50', network_head='arcface', loss='focal',
                  temp_path='./temp', mode='backbone_only',
                  checkpoint_after_iter=0, checkpoint_load_iter=0, val_after=0,
-                 input_size=None, rgb_mean=None, rgb_std=None, embedding_size=512,
-                 weight_decay=5e-4, momentum=0.9, drop_last=True, stages=None,
+                 input_size=[112, 112], rgb_mean=[0.5, 0.5, 0.5], rgb_std=[0.5, 0.5, 0.5], embedding_size=512,
+                 weight_decay=5e-4, momentum=0.9, drop_last=True, stages=[35, 65, 95],
                  pin_memory=True, num_workers=4,
                  seed=123):
         super(FaceRecognitionLearner, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer,
@@ -165,7 +165,7 @@ class FaceRecognitionLearner(Learner):
         else:
             self.network_head_model = None
 
-    def align(self, data='', dest='./temp/aligned', crop_size=112, silent=False):
+    def align(self, data='', dest='/aligned', crop_size=112, silent=False):
         """
         This method is used for aligning the faces in an imagefolder dataset.
 
@@ -444,7 +444,7 @@ class FaceRecognitionLearner(Learner):
             f.close()
             self.database = database
 
-    def infer(self, img=None):
+    def infer(self, img):
         """
                 This method is used to perform face recognition on an image.
 
