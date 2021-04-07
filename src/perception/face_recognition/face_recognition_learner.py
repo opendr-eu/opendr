@@ -66,16 +66,16 @@ from perception.face_recognition.algorithm.util.utils import make_weights_for_ba
 from perception.face_recognition.algorithm.align.align import face_align
 
 
-class FaceRecognition(Learner):
+class FaceRecognitionLearner(Learner):
     def __init__(self, lr=0.1, iters=120, batch_size=128, optimizer='sgd', device='cuda', threshold=0.0,
                  backbone='ir_50', network_head='arcface', loss='focal',
                  temp_path='./temp', mode='backbone_only',
                  checkpoint_after_iter=0, checkpoint_load_iter=0, val_after=0,
-                 input_size=None, rgb_mean=None, rgb_std=None, embedding_size=512,
-                 weight_decay=5e-4, momentum=0.9, drop_last=True, stages=None,
+                 input_size=[112, 112], rgb_mean=[0.5, 0.5, 0.5], rgb_std=[0.5, 0.5, 0.5], embedding_size=512,
+                 weight_decay=5e-4, momentum=0.9, drop_last=True, stages=[35, 65, 95],
                  pin_memory=True, num_workers=4,
                  seed=123):
-        super(FaceRecognition, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer,
+        super(FaceRecognitionLearner, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer,
                                               backbone=backbone, network_head=network_head, temp_path=temp_path,
                                               checkpoint_after_iter=checkpoint_after_iter,
                                               checkpoint_load_iter=checkpoint_load_iter,
@@ -162,7 +162,7 @@ class FaceRecognition(Learner):
         else:
             self.network_head_model = None
 
-    def align(self, data='', dest='./temp/aligned', crop_size=112):
+    def align(self, data='', dest=self.temp_path + '/aligned', crop_size=112):
         face_align(data, dest, crop_size)
         print('Face align finished')
 
@@ -430,7 +430,7 @@ class FaceRecognition(Learner):
             f.close()
             self.database = database
 
-    def infer(self, img=None):
+    def infer(self, img):
         if not isinstance(img, Image):
             img = Image(img)
         img = img.numpy()
