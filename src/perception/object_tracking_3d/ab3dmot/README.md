@@ -1,6 +1,6 @@
 # OpenDR 3D Object Tracking - AB3DMOT
 
-This folder contains the OpenDR Learner class implemented for the 3D Object Detection task. 
+This folder contains the OpenDR Learner class implemented for the 3D Object Tracking task. This method uses 3D Kalman filter and a Hungarian algorithm to associate 3D bounding boxes given by a 3D Object Detection method. 
 
 ## Sources
 
