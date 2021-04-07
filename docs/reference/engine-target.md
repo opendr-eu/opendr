@@ -125,7 +125,7 @@ The [BoundingBoxList](#class_engine.target.BoundingBoxList) class has the follow
 #### mot(with_confidence=True)
   Return the annotation in MOT format.
 #### boxes()
-  Property. Returns the list of [BoundingBox](#class_engine.target.BoundingBox) boxess.
+  Return the list of [BoundingBox](#class_engine.target.BoundingBox) boxes.
   
 
 ### class engine.target.TrackingAnnotation
@@ -170,7 +170,7 @@ The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class 
 #### boudning_box_list()
   Return the [BoundingBoxList](#class_engine.target.BoundingBoxList) object constructed from this object.
 #### boxes()
-  Property. Returns the list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) boxess.
+  Return the list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) boxes.
 
 ### class engine.target.SpeechCommand
 Bases: `engine.target.Target`
