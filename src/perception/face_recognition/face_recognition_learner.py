@@ -446,14 +446,14 @@ class FaceRecognitionLearner(Learner):
 
     def infer(self, img):
         """
-                This method is used to perform face recognition on an image.
+        This method is used to perform face recognition on an image.
 
-                :param img: image to run inference on
-                :rtype img: engine.data.Image class object
-                :return: Returns an engine.target.Category object, which holds an ID and the distance between
-                    the embedding of the input image and the closest embedding existing in the reference database.
-                :rtype: engine.target.Category object
-                """
+        :param img: image to run inference on
+        :rtype img: engine.data.Image class object
+        :return: Returns an engine.target.Category object, which holds an ID and the distance between
+                 the embedding of the input image and the closest embedding existing in the reference database.
+        :rtype: engine.target.Category object
+        """
         if not isinstance(img, Image):
             img = Image(img)
         img = img.numpy()
@@ -524,28 +524,27 @@ class FaceRecognitionLearner(Learner):
                     outs = self.network_head_model(features)
                     _, predicted = torch.max(outs.data, 1)
                     person = Category(self.classes[predicted.item()])
-                    # return self.classes[predicted.item()]
                     return person
         else:
             raise UserWarning('Infer should be called either with backbone_only mode or with a classifier head')
 
     def eval(self, dataset=None, num_pairs=1000, silent=False, verbose=True):
         """
-                This method is used to evaluate a trained model on an evaluation dataset.
+        This method is used to evaluate a trained model on an evaluation dataset.
 
-                :param dataset: object that holds the evaluation dataset.
-                :type dataset: ExternalDataset class object or DatasetIterator class object
-                :param num_pairs: the number of pairs to be created for evaluation in a custom imagefolder dataset,
+        :param dataset: object that holds the evaluation dataset.
+        :type dataset: ExternalDataset class object or DatasetIterator class object
+        :param num_pairs: the number of pairs to be created for evaluation in a custom imagefolder dataset,
                     defaults to 1000
-                :type num_pairs: int
-                :param silent: if set to True, disables all printing of evalutaion progress reports and other information
-                    to STDOUT, defaults to 'False'
-                :type silent: bool, optional
-                :param verbose: if set to True, enables the maximum verbosity, defaults to 'True'
-                :type verbose: bool, optional
-                :returns: returns stats regarding evaluation
-                :rtype: dict
-                """
+        :type num_pairs: int
+        :param silent: if set to True, disables all printing of evalutaion progress reports and other information
+                       to STDOUT, defaults to 'False'
+        :type silent: bool, optional
+        :param verbose: if set to True, enables the maximum verbosity, defaults to 'True'
+        :type verbose: bool, optional
+        :returns: returns stats regarding evaluation
+        :rtype: dict
+        """
         if self._model is None:
             raise UserWarning('A model should be loaded first')
         if self.network_head != 'classifier' and self.mode != 'head_only':
@@ -841,7 +840,6 @@ class FaceRecognitionLearner(Learner):
         input_names = ['data']
         output_names = ['features']
         output_name = os.path.join(self.temp_path, 'onnx_' + self.backbone + '_backbone_model.onnx')
-        print(output_name)
         torch.onnx.export(self.backbone_model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
                           input_names=input_names, output_names=output_names)
         if self.mode == 'full' and self.network_head == 'classifier':
