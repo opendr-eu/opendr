@@ -47,7 +47,7 @@ The [Pose](#class_engine.target.Pose) class has the following public methods:
 #### Pose(keypoints, confidence)
   Construct a new [Pose](#class_engine.target.Pose) object based on *keypoints*.
   *keypoints* is expected to be a list of [Keypoint](#class_engine.target.Keypoint) objects.
-  Keypoints can be accessed either by using their numerical id (e.g., pose[0]) or they name (e.g., pose['neck']). 
+  Keypoints can be accessed either by using their numerical id (e.g., pose[0]) or their name (e.g., pose['neck']). 
   Please refer to `Pose.kpt_names` for a list of supported keypoints.
 
 
