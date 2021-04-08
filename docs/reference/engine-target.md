@@ -33,7 +33,8 @@ The [Category](#class_engine.target.Category) class has the following public met
 #### Category(data, num_classes=None)
 Construct a new [Category](#class_engine.target.Category).
 - *data* is a class integer or one-dimensional array / tensor of class probabilities.
-- *num_classes* is and integer with the number of classes. Must be specified only if `data` is an integer. Defaults to None.
+- *num_classes* is an integer indicating the number of classes.
+  Must be specified only if `data` is an integer. Defaults to None.
 
 
 
