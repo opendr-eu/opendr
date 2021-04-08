@@ -35,6 +35,7 @@ Construct a new [Category](#class_engine.target.Category).
 - *data* is a class integer or one-dimensional array / tensor of class probabilities.
 - *num_classes* is an integer indicating the number of classes.
   Must be specified only if `data` is an integer. Defaults to None.
+- *prediction* is an integer indicating the predicted class.
 
 
 
