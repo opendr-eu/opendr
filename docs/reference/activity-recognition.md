@@ -35,14 +35,24 @@ Constructor parameters:
     Learning rate during optimization. 
   - **iters**: *int, default=10*  
     Number of epochs to train for. 
+  - **batch_size**: *int, default=64*  
+    Dataloader batch size. Defaults to 64.
   - **optimizer**: *str, default="adam"*  
     Name of optimizer to use ("sgd" or "adam"). 
+  - **lr_schedule**: *str, default=""*  
+    Unused parameter. 
   - **network_head**: *str, default="classification"*  
     Head of network (only "classification" is currently available). 
+  - **checkpoint_after_iter**: *int, default=0*  
+    Unused parameter. 
+  - **checkpoint_load_iter**: *int, default=0*  
+    Unused parameter. 
   - **temp_path**: *str, default=""*  
     Path in which to store temporary files. 
   - **device**: *str, default="cuda"*  
     Name of computational device ("cpu" or "cuda"). 
+  - **loss**: *str, default="cross_entropy"*  
+    Loss function used during optimization. 
   - **weight_decay**: *[type], default=1e-5*  
     Weight decay used for optimization. 
   - **momentum**: *float, default=0.9*  
