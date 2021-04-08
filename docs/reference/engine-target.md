@@ -52,7 +52,9 @@ The [Pose](#class_engine.target.Pose) class has the following public methods:
 ### class engine.target.BoundingBox3D
 Bases: `engine.target.Target`
 
-This target is used for 3D object detection and tracking.
+
+This target is used for 3D Object Detection and describes 3D bounding box in space containing an object of interest.
+Additionaly, projection of the bounding box onto camera image plane can be provided in *bbox2d* parameter.
 A bounding box is described by its location (x, y, z), dimensions (w, h, d) and rotation (along vertical y axis).
 Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
 truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
@@ -92,7 +94,9 @@ The [BoundingBox3D](#class_engine.target.BoundingBox3D) class has the following 
 ### class engine.target.BoundingBox3DList
 Bases: `engine.target.Target`
 
-This target is used for 3D object detection and tracking. It contains a list of BoundingBox3D targets.
+
+This target is used for 3D object detection.
+It contains a list of [BoundingBox3D](#class_engine.target.BoundingBox3D)  targets that belong to the same frame.
 A bounding box is described by its location (x, y, z), dimensions (l, h, w) and rotation (along vertical (y) axis).
 Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
 truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
@@ -165,6 +169,86 @@ The [TrackingAnnotation3DList](#class_engine.target.TrackingAnnotation3DList) cl
   Static method that constructs [TrackingAnnotation3DList](#class_engine.target.TrackingAnnotation3DList) from the *boxes_kitti* object with KITTI annotation and corresponding *ids*.
   If *frames* is `None`, `frame` value for each object will be set to `-1`, otherwise, `frames` values are assigned.
 
+### class engine.target.BoundingBox
+Bases: `engine.target.Target`
+
+This target is used for 2D Object Detection and describes 2D bounding box in image plane containing an object of interest.
+A bounding box is described by the left-top corner and its width and height.
+
+The [BoundingBox](#class_engine.target.BoundingBox) class has the following public methods:
+#### BoundingBox(name, left, top, width, height, score=0)
+  Construct a new [BoundingBox](#class_engine.target.BoundingBox) object based on the given data.
+  - *name* is expected to be a string or a number representing the class of the object.
+  - *left* is expected to be a number representing the x position of the left-top corner.
+  - *top* is expected to be a number representing the y position of the left-top corner.
+  - *width* is expected to be a number representing the width of the box.
+  - *height* is expected to be a number representing the height of the box.
+  - *score* is expected to be a number describing the prediction confidence.
+#### mot(with_confidence=True, frame=-1))
+  Return the annotation in [MOT](https://motchallenge.net/instructions) format.
+
+
+### class engine.target.BoundingBoxList
+Bases: `engine.target.Target`
+
+This target is used for 2D Object Detection.
+It contains a list of [BoundingBox](#class_engine.target.BoundingBox) targets that belong to the same frame.
+A bounding box is described by the left-top corner and its width and height.
+
+The [BoundingBoxList](#class_engine.target.BoundingBoxList) class has the following public methods:
+#### BoundingBoxList(name, boxes)
+  Construct a new [BoundingBoxList](#class_engine.target.BoundingBoxList) object based on the given data.
+  - *boxes* is expected to be a list of [BoundingBox](#class_engine.target.BoundingBox).
+#### mot(with_confidence=True)
+  Return the annotation in [MOT](https://motchallenge.net/instructions) format.
+#### boxes()
+  Return the list of [BoundingBox](#class_engine.target.BoundingBox) boxes.
+  
+
+### class engine.target.TrackingAnnotation
+Bases: `engine.target.Target`
+
+This target is used for 2D Object Tracking and describes 2D bounding box and its unique id (accross one video or image sequence) with a frame number.
+A bounding box is described by the left-top corner and its width and height.
+
+The [TrackingAnnotation](#class_engine.target.TrackingAnnotation) class has the following public methods:
+#### TrackingAnnotation(name, left, top, width, height, id, score=0, frame=-1)
+  Construct a new [TrackingAnnotation](#class_engine.target.TrackingAnnotation) object based on the given data.
+  - *name* is expected to be a string or a number representing the class of the object.
+  - *left* is expected to be a number representing the x position of the left-top corner.
+  - *top* is expected to be a number representing the y position of the left-top corner.
+  - *width* is expected to be a number representing the width of the box.
+  - *height* is expected to be a number representing the height of the box.
+  - *id* is expected to be a number representing the object id.
+  - *score* is expected to be a number describing the prediction confidence.
+  - *frame* is expected to be a number describing the frame number.
+#### from_mot(data)
+   Static method that constructs [TrackingAnnotation](#class_engine.target.TrackingAnnotation) from the `data` object with MOT annotation.
+#### mot(with_confidence=True)
+  Return the annotation in [MOT](https://motchallenge.net/instructions) format.
+#### boudning_box()
+  Return the [BoundingBox](#class_engine.target.BoundingBox) object constructed from this object.
+
+
+### class engine.target.TrackingAnnotationList
+Bases: `engine.target.Target`
+
+This target is used for 2D Object Tracking.
+It contains a list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) targets that belong to the same frame.
+A bounding box is described by the left-top corner and its width and height.
+
+The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class has the following public methods:
+#### TrackingAnnotationList(name, boxes)
+  Construct a new [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) object based on the given data.
+  - *boxes* is expected to be a list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation).
+#### from_mot(data)
+  Static method that constructs [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) from the `data` object with MOT annotation.
+#### mot(with_confidence=True)
+  Return the annotation in [MOT](https://motchallenge.net/instructions) format.
+#### boudning_box_list()
+  Return the [BoundingBoxList](#class_engine.target.BoundingBoxList) object constructed from this object.
+#### boxes()
+  Return the list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) boxes.
 
 ### class engine.target.SpeechCommand
 Bases: `engine.target.Target`
