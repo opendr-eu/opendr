@@ -46,8 +46,11 @@ class X3DLearner(Learner):
         iters=10,  # Epochs
         batch_size=64,
         optimizer="adam",
+        lr_schedule="",
         backbone="s",
         network_head="classification",
+        checkpoint_after_iter=0,
+        checkpoint_load_iter=0,
         temp_path="",
         device="cuda",
         loss="cross_entropy",
@@ -66,11 +69,16 @@ class X3DLearner(Learner):
         Args:
             lr (float, optional): Learning rate during optimization. Defaults to 1e-3.
             iters (int, optional): Number of epochs to train for. Defaults to 10.
+            batch_size (int, optional): Dataloader batch size. Defaults to 64.
             optimizer (str, optional): Name of optimizer to use ("sgd" or "adam"). Defaults to "adam".
+            lr_schedule (str, optional): Unused parameter. Defaults to "".
             network_head (str, optional): Head of network (only "classification" is currently available).
                 Defaults to "classification".
+            checkpoint_after_iter (int, optional): Unused parameter. Defaults to 0.
+            checkpoint_load_iter (int, optional): Unused parameter. Defaults to 0.
             temp_path (str, optional): Path in which to store temporary files. Defaults to "".
             device (str, optional): Name of computational device ("cpu" or "cuda"). Defaults to "cuda".
+            loss (str, optional): Loss function used during optimization. Defaults to "cross_entropy".
             weight_decay ([type], optional): Weight decay used for optimization. Defaults to 1e-5.
             momentum (float, optional): Momentum used for optimization. Defaults to 0.9.
             drop_last (bool, optional): Drop last data point if a batch cannot be filled. Defaults to True.
@@ -94,12 +102,12 @@ class X3DLearner(Learner):
             iters=iters,
             batch_size=batch_size,
             optimizer=optimizer,
-            lr_schedule="",
+            lr_schedule=lr_schedule,
             backbone=backbone,
             network_head=network_head,
             temp_path=temp_path,
-            checkpoint_after_iter=0,
-            checkpoint_load_iter=0,
+            checkpoint_after_iter=checkpoint_after_iter,
+            checkpoint_load_iter=checkpoint_load_iter,
             device=device,
             threshold=0.0,
         )
