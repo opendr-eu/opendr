@@ -98,7 +98,7 @@ A class used for representing video data.
 The [Image](#class_engine.data.Video) class has the following public methods:
 #### Video(data=None)
   Construct a new [Video](#class_engine.data.Video) object based on *data*.
-  *data* is expected to be a 4-D array of shape of shape (C, T, H, W).
+  *data* is expected to be a 4-D array of shape (C, T, H, W).
 
 #### data()
   Return *data* argument.
