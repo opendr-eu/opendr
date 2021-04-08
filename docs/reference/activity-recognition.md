@@ -156,7 +156,8 @@ Optimize model execution. This is acoomplished by saving to the ONNX format and 
 Parameters:
 - **do_constant_folding**: *bool, default=False*  
   ONNX format optimization.
-  If True, the constant-folding optimization is applied to the model during export. Constant-folding optimization will replace some of the ops that have all constant inputs, with pre-computed constant nodes.
+  If True, the constant-folding optimization is applied to the model during export.
+  Constant-folding optimization will replace some of the ops that have all constant inputs, with pre-computed constant nodes.
 
 
 #### `X3DLearner.download`
