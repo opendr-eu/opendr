@@ -138,7 +138,7 @@ Parameters:
 X3DLearner._load_model_weights(self, weights_path)
 ```
 
-Load trained model weighs directly (e.g. from [X3D model zoo](https://github.com/facebookresearch/SlowFast/blob/master/MODEL_ZOO.md).
+Load trained model weights directly (e.g. from [X3D model zoo](https://github.com/facebookresearch/SlowFast/blob/master/MODEL_ZOO.md).
 
 Parameters:
 - **weights_path**: *str*  
