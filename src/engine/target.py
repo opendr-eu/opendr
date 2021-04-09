@@ -258,6 +258,216 @@ class BoundingBox3DList(Target):
         return str(self.kitti())
 
 
+class BoundingBox(Target):
+    """
+    This target is used for 2D Object Detection.
+    A bounding box is described by the left-top corner and its width and height.
+    """
+    def __init__(
+        self,
+        name,
+        left,
+        top,
+        width,
+        height,
+        score=0,
+    ):
+        super().__init__()
+        self.name = name
+        self.left = left
+        self.top = top
+        self.width = width
+        self.height = height
+        self.confidence = score
+
+    def mot(self, with_confidence=True, frame=-1):
+
+        if with_confidence:
+            result = np.array([
+                self.frame,
+                self.left,
+                self.top,
+                self.width,
+                self.height,
+                self.confidence,
+            ], dtype=np.float32)
+        else:
+            result = np.array([
+                self.frame,
+                self.left,
+                self.top,
+                self.width,
+                self.height,
+            ], dtype=np.float32)
+
+        return result
+
+    def __repr__(self):
+        return "BoundingBox " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
+
+
+class BoundingBoxList(Target):
+    """
+    This target is used for 2D Object Detection.
+    A bounding box is described by the left-top corner and its width and height.
+    """
+    def __init__(
+        self,
+        boxes,
+    ):
+        super().__init__()
+        self.data = boxes
+        self.confidence = np.mean([box.confidence for box in self.data])
+
+    def mot(self, with_confidence=True):
+
+        result = np.array([
+            box.mot(with_confidence) for box in self.data
+        ])
+
+        return result
+
+    @property
+    def boxes(self):
+        return self.data
+
+    def __getitem__(self, idx):
+        return self.boxes[idx]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __repr__(self):
+        return "BoundingBoxList " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
+
+
+class TrackingAnnotation(Target):
+    """
+    This target is used for 2D Object Tracking.
+    A tracking bounding box is described by id, the left-top corner and its width and height.
+    """
+    def __init__(
+        self,
+        name,
+        left,
+        top,
+        width,
+        height,
+        id,
+        score=0,
+        frame=-1,
+    ):
+        super().__init__()
+        self.name = name
+        self.left = left
+        self.top = top
+        self.width = width
+        self.height = height
+        self.id = id
+        self.confidence = score
+        self.frame = frame
+
+    @staticmethod
+    def from_mot(data):
+        return TrackingAnnotation(
+            data[2],
+            data[3],
+            data[4],
+            data[5],
+            data[1],
+            data[6] if len(data) > 6 else 0,
+            data[0],
+        )
+
+    def mot(self, with_confidence=True):
+
+        if with_confidence:
+            result = np.array([
+                self.frame,
+                self.id,
+                self.left,
+                self.top,
+                self.width,
+                self.height,
+                self.confidence,
+            ], dtype=np.float32)
+        else:
+            result = np.array([
+                self.frame,
+                self.id,
+                self.left,
+                self.top,
+                self.width,
+                self.height,
+            ], dtype=np.float32)
+
+        return result
+
+    def boudning_box(self):
+        return BoundingBox(self.left, self.top, self.width, self.height, self.confidence, self.frame)
+
+    def __repr__(self):
+        return "TrackingAnnotation " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
+
+
+class TrackingAnnotationList(Target):
+    """
+    This target is used for 2D Object Tracking.
+    A bounding box is described by the left and top corners and its width and height.
+    """
+    def __init__(
+        self,
+        boxes,
+    ):
+        super().__init__()
+        self.data = boxes
+        self.confidence = np.mean([box.confidence for box in self.data])
+
+    @staticmethod
+    def from_mot(data):
+        boxes = []
+        for box in data:
+            boxes.append(TrackingAnnotation.from_mot(box))
+
+        return TrackingAnnotationList(boxes)
+
+    def mot(self, with_confidence=True):
+
+        result = np.array([
+            box.mot(with_confidence) for box in self.data
+        ])
+
+        return result
+
+    def boudning_box_list(self):
+        return BoundingBoxList([box.boudning_box() for box in self.data])
+
+    @property
+    def boxes(self):
+        return self.data
+
+    def __getitem__(self, idx):
+        return self.boxes[idx]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __repr__(self):
+        return "TrackingAnnotationList " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
+
+
 class SpeechCommand(Target):
     """
     This target is used for speech command recognition. Contains the predicted class or ground truth
