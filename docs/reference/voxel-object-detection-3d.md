@@ -88,7 +88,7 @@ Parameters:
 
 #### `VoxelObjectDetection3DLearner.eval`
 ```python
-VoxelObjectDetection3DLearner.eval(self, dataset, silent, verbose, use_subset, subset_size, images_folder_name, annotations_filename)
+VoxelObjectDetection3DLearner.eval(self, dataset, ground_truth_annotations, logging_path, silent, verbose, image_shape, count)
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
@@ -113,8 +113,8 @@ Parameters:
 VoxelObjectDetection3DLearner.infer(self, point_clouds)
 ```
 
-This method is used to perform pose estimation on an image.
-Returns a list of `engine.target.BoundingBox3DList` objects if the list of `engine.data.PointCloud` is given or a single `engine.target.BoundingBox3DList` if a single `engine.data.PointCloud` is given.
+This method is used to perform 3D object detection on a point cloud.
+Returns a list of [BoundingBox3DList](#class_engine.target.BoundingBox3DList) objects if the list of [PointCloud](#class_engine.data.PointCloud) is given or a single [BoundingBox3DList](#class_engine.target.BoundingBox3DList) if a single [PointCloud](#class_engine.data.PointCloud) is given.
 
 Parameters:
 - **point_clouds**: *engine.data.PointCloud* or *[engine.data.PointCloud]***  
