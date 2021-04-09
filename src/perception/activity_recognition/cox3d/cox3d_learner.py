@@ -33,8 +33,11 @@ class CoX3DLearner(X3DLearner):
         iters=10,  # Epochs
         batch_size=64,
         optimizer="adam",
+        lr_schedule="",
         backbone="s",
         network_head="classification",
+        checkpoint_after_iter=0,
+        checkpoint_load_iter=0,
         temp_path="",
         device="cuda",
         loss="cross_entropy",
@@ -56,8 +59,11 @@ class CoX3DLearner(X3DLearner):
             lr (float, optional): Learning rate during optimization. Defaults to 1e-3.
             iters (int, optional): Number of epochs to train for. Defaults to 10.
             optimizer (str, optional): Name of optimizer to use ("sgd" or "adam"). Defaults to "adam".
+            lr_schedule (str, optional): Unused parameter. Defaults to "".
             network_head (str, optional): Head of network (only "classification" is currently available).
                 Defaults to "classification".
+            checkpoint_after_iter (int, optional): Unused parameter. Defaults to 0.
+            checkpoint_load_iter (int, optional): Unused parameter. Defaults to 0.
             temp_path (str, optional): Path in which to store temporary files. Defaults to "".
             device (str, optional): Name of computational device ("cpu" or "cuda"). Defaults to "cuda".
             weight_decay ([type], optional): Weight decay used for optimization. Defaults to 1e-5.
@@ -71,8 +77,9 @@ class CoX3DLearner(X3DLearner):
                 If None, size will be automically chosen according to the backbone. Defaults to None.
         """
         super().__init__(
-            lr, iters, batch_size, optimizer, backbone, network_head, temp_path, device, loss, weight_decay,
-            momentum, drop_last, pin_memory, num_workers, seed, num_classes, *args, **kwargs,
+            lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head, checkpoint_after_iter,
+            checkpoint_load_iter, temp_path, device, loss, weight_decay, momentum, drop_last, pin_memory,
+            num_workers, seed, num_classes, *args, **kwargs,
         )
         self.temporal_window_size = temporal_window_size
 
