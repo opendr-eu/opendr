@@ -137,22 +137,11 @@ X3DLearner.load(self, path)
 ```
 
 This method is used to load a previously saved model from its saved folder.
+Pretrained models from the [X3D model zoo](https://github.com/facebookresearch/SlowFast/blob/master/MODEL_ZOO.md) can also be loaded using this function.
 
 Parameters:
 - **path**: *str*  
   Path to metadata file in json format or to weights path.
-
-
-#### `X3DLearner._load_model_weights`
-```python
-X3DLearner._load_model_weights(self, weights_path)
-```
-
-Load trained model weights directly (e.g. from [X3D model zoo](https://github.com/facebookresearch/SlowFast/blob/master/MODEL_ZOO.md).
-
-Parameters:
-- **weights_path**: *str*  
-  Path to model weights file. Type of file must be one of {".pyth", ".pth", ".onnx"}.
 
 
 
