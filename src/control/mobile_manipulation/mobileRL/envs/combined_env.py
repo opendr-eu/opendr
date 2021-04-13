@@ -15,17 +15,6 @@ class MobileManipulationEnv(Env):
     def __getattr__(self, name):
         return getattr(self._robot, name)
 
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        del state['_robot']
-        state['_robot'] = pickle.dumps(self._robot)
-        return state
-
-    def __setstate__(self, state):
-        _robot = pickle.loads(state.pop('_robot'))
-        self.__dict__ = state
-        self._robot = _robot
-
     def __init__(self,
                  robot_env: RobotEnv,
                  ik_fail_thresh: int,
