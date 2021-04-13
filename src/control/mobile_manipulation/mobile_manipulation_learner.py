@@ -48,9 +48,9 @@ import rospy
 from stable_baselines3.sac import SAC
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise, NormalActionNoise
 
-from modulation.utils import setup_config_wandb, create_env
-from modulation.stablebl_callbacks import ModulationEvalCallback
-from modulation.evaluation import evaluate_on_task, evaluation_rollout
+from mobileRL.utils import setup_config_wandb, create_env
+from mobileRL.stablebl_callbacks import ModulationEvalCallback
+from mobileRL.evaluation import evaluate_on_task, evaluation_rollout
 from engine.learners import LearnerRL
 
 
@@ -214,41 +214,3 @@ class LearnerMobileRL(LearnerRL):
         """
         self.stable_bl_agent.load(path)
 
-
-def main():
-    # need a node to listen to some stuff for the task envs
-    rospy.init_node('kinematic_feasibility_py', anonymous=False)
-
-    main_path = Path(__file__).parent
-    run, config = setup_config_wandb(main_path, sync_tensorboard=True)
-
-    env = create_env(config, task=config.task, node_handle="train_env", eval=False, wrap_in_dummy_vec=True, flatten_obs=True)
-    eval_config = dict(config).copy()
-    eval_config["transition_noise_base"] = 0.0
-    eval_config["ik_fail_thresh"] = config.ik_fail_thresh_eval
-    eval_config["node_handle"] = "eval_env"
-    time.sleep(1)
-    eval_env = create_env(eval_config, task=eval_config["task"], node_handle="eval_env", eval=True, wrap_in_dummy_vec=True, flatten_obs=True)
-
-    # TODO: pass all other args correctly
-    tensorboard_log = f'{config.logpath}/stableBL/'
-    file_log = f'{config.logpath}/mytmp/'
-    agent = LearnerMobileRL(env)
-
-    # train
-    if not config.evaluation_only:
-        agent.fit(env, val_env=eval_env)
-
-    # evaluate
-    world_types = ["world"] if (config.world_type == "world") else config.eval_execs
-
-    for world_type in world_types:
-        for task in config.eval_tasks:
-            evaluate_on_task(config, eval_env_config=eval_config, policy=agent, task=task, world_type=world_type,
-                             global_step=agent.iters + 1, flatten_obs=True)
-
-    rospy.signal_shutdown("We are done")
-
-
-if __name__ == '__main__':
-    main()
