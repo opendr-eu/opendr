@@ -63,6 +63,7 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
+
 def parse_args(config_path):
     all_tasks = ALL_TASKS.keys()
     parser = argparse.ArgumentParser()
@@ -133,11 +134,16 @@ def parse_args(config_path):
             if k not in cl_args:
                 args[k] = v
 
-    # consistency checks for certain arguments
     if args['restore_model_path']:
         assert args['evaluation_only'], "Continuing to train not supported atm (replay buffer doesn't get saved)"
+        with open(config_path / 'best_defaults.yaml') as f:
+            cp_config = yaml.safe_load(f)
+            # replace with cp_config value
+            for k, v in cp_config[args['env']].items():
+                args[k] = v
+
     if args['env'] == 'hsr':
-        assert not args['perform_collision_check'], "Collisions seem to potentially crash due to some unsupported geometries"
+        assert not args['perform_collision_check'], "Collisions can crash due to unsupported geometries"
 
     # do we need to initialise controllers for the specified tasks?
     tasks_that_need_controllers = [k for k, v in ALL_TASKS.items() if v.requires_simulator()]
@@ -149,12 +155,9 @@ def parse_args(config_path):
     if not n:
         n = []
         for k, v in sorted(args.items()):
-            if (v != parser.get_default(k)) and (k not in ['env', 'seed', 'load_best_defaults',
-                                                           'evaluation_only', 'vis_env',
-                                                           'resume_id', 'eval_tasks', 'eval_execs', 'total_steps',
-                                                           'perform_collision_check', 'init_controllers',
-                                                           'num_workers', 'num_cpus_per_worker', 'num_envs_per_worker',
-                                                           'num_gpus', 'num_gpus_per_worker', 'ray_verbosity', ]):
+            if (v != parser.get_default(k)) and (k not in ['env', 'seed', 'load_best_defaults', 'evaluation_only',
+                                                           'vis_env', 'restore_model_path', 'eval_tasks', 'eval_execs',
+                                                           'total_steps', 'perform_collision_check', 'init_controllers',]):
                 n.append(str(v) if (type(v) == str) else f'{k}:{v}')
         n = '_'.join(n)
     run_name = '_'.join([j for j in [args['env'], n, args.pop('name_suffix')] if j])
@@ -183,7 +186,6 @@ def main():
     rospy.init_node('kinematic_feasibility_py', anonymous=False)
 
     main_path = Path(__file__).parent
-    # TODO: load config yaml if args['restore_model_path']
     run_name, config = parse_args(main_path)
     logpath = f"{config['logpath']}/{run_name}/"
 
@@ -196,7 +198,6 @@ def main():
     time.sleep(1)
     eval_env = create_env(eval_config, task=eval_config["task"], node_handle="eval_env", wrap_in_dummy_vec=True, flatten_obs=True)
 
-    # TODO: pass all other args correctly
     agent = LearnerMobileRL(env,
                             lr=config['lr'],
                             iters=config['iters'],
@@ -211,7 +212,7 @@ def main():
                             nr_evaluations=config['nr_evaluations'],
                             evaluation_frequency=config['evaluation_frequency'],
                             checkpoint_after_iter=config['checkpoint_after_iter'],
-                            temp_path=config['temp_path'],
+                            temp_path=logpath,
                             device=config['device'],
                             ent_coef=config['ent_coef'])
 
