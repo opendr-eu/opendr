@@ -64,7 +64,7 @@ from perception.face_recognition.algorithm.head.losses import ArcFace, CosFace, 
 from perception.face_recognition.algorithm.loss.focal import FocalLoss
 from perception.face_recognition.algorithm.util.utils import make_weights_for_balanced_classes, get_val_data, \
     separate_irse_bn_paras, separate_mobilenet_bn_paras, l2_norm, \
-    separate_resnet_bn_paras, warm_up_lr, schedule_lr, perform_val, perform_val_imagefolder, buffer_val, AverageMeter,\
+    separate_resnet_bn_paras, warm_up_lr, schedule_lr, perform_val, perform_val_imagefolder, buffer_val, AverageMeter, \
     accuracy
 from perception.face_recognition.algorithm.align.align import face_align
 
@@ -165,6 +165,7 @@ class FaceRecognitionLearner(Learner):
         else:
             self.network_head_model = None
 
+
     def align(self, data='', dest='/aligned', crop_size=112, silent=False):
         """
         This method is used for aligning the faces in an imagefolder dataset.
@@ -257,8 +258,8 @@ class FaceRecognitionLearner(Learner):
             else:
                 if os.path.exists(os.path.join(self.temp_path, 'checkpoints', 'backbone_{}_iter_{}'.format(
                         self.backbone, self.epoch))) and os.path.exists(
-                        os.path.join(self.temp_path, 'checkpoints', 'head_{}_iter_{}'.format(
-                            self.network_head, self.epoch))):
+                    os.path.join(self.temp_path, 'checkpoints', 'head_{}_iter_{}'.format(
+                        self.network_head, self.epoch))):
                     backbone_info = torch.load(os.path.join(self.temp_path, 'checkpoints', 'backbone_{}_iter_{}'.format(
                         self.backbone, self.epoch)))
                     self.backbone_model.load_state_dict(backbone_info['backbone_state_dict'])
