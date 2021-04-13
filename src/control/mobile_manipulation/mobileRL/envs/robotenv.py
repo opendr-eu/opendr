@@ -105,17 +105,6 @@ class RobotEnv(Env):
             raise AttributeError("attempted to get missing private attribute '{}'".format(name))
         return getattr(self._env, name)
 
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        del state['_env']
-        state['_env'] = pickle.dumps(self._env)
-        return state
-
-    def __setstate__(self, state):
-        _env = pickle.loads(state.pop('_env'))
-        self.__dict__ = state
-        self._env = _env
-
     def normalize_reward(self, reward):
         # needed for stable_baselines replay buffer class
         return reward

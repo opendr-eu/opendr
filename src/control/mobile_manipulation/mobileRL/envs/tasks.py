@@ -62,17 +62,6 @@ class BaseTask(Wrapper):
     def __getattr__(self, name):
         return getattr(self.env, name)
 
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        del state['env']
-        state['env'] = pickle.dumps(self.env)
-        return state
-
-    def __setstate__(self, state):
-        env = pickle.loads(state.pop('env'))
-        self.__dict__ = state
-        self.env = env
-
     def __init__(self,
                  env: MobileManipulationEnv,
                  initial_joint_distribution: str,
