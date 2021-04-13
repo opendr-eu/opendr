@@ -7,9 +7,9 @@ from typing import NamedTuple, Callable, Tuple
 import numpy as np
 from gym import Wrapper
 
-from modulation.envs.combined_env import CombinedEnv
-from modulation.envs.eeplanner import LinearPlannerWrapper
-from modulation.envs.map import Map, EmptyMap
+from control.mobile_manipulation.mobileRL.envs.combined_env import CombinedEnv
+from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper
+from control.mobile_manipulation.mobileRL.envs.map import Map, EmptyMap
 
 
 class GripperActions(IntEnum):

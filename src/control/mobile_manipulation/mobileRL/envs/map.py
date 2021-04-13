@@ -9,8 +9,8 @@ from matplotlib import pyplot as plt
 from torch.nn import functional as F
 from torchvision import transforms
 
-from modulation.envs.env_utils import quaternion_to_yaw
-from modulation.envs.simulator_api import GazeboAPI, DummySimulatorAPI, SpawnObject, ObjectGeometry
+from control.mobile_manipulation.mobileRL.envs.env_utils import quaternion_to_yaw
+from control.mobile_manipulation.mobileRL.envs.simulator_api import GazeboAPI, DummySimulatorAPI, SpawnObject, ObjectGeometry
 
 MAX_HEIGHT = 10.0
 SMALL_NUMBER = 1e-6

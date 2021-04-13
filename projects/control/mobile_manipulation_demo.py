@@ -1,0 +1,224 @@
+# Copyright 1996-2020 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# MIT License
+#
+# Copyright (c) 2020 Daniel Honerkamp
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+import argparse
+import copy
+import os
+import random
+import sys
+import time
+from pathlib import Path
+from typing import List
+
+import numpy as np
+import rospy
+import torch
+import wandb
+import yaml
+
+from control.mobile_manipulation.mobileRL import __version__
+from control.mobile_manipulation.mobileRL.envs import ALL_TASKS
+from control.mobile_manipulation.mobileRL.evaluation import evaluate_on_task
+from control.mobile_manipulation.mobileRL.utils import create_env
+from control.mobile_manipulation.mobile_manipulation_learner import LearnerMobileRL
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+def parse_args(config_path):
+    all_tasks = ALL_TASKS.keys()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--load_best_defaults', type=str2bool, nargs='?', const=True, default=True, help="Replace default values with those from configs/best_defaults.yaml.")
+    parser.add_argument('--seed', type=int, default=-1, help="Set to a value >= to use deterministic seed")
+    parser.add_argument('--rnd_steps', type=int, default=0, help='Number of random actions to record before starting with rl, subtracted from total_steps')
+    parser.add_argument('--total_steps', type=int, default=1_000_000, help='Total number of action/observation steps to take over all episodes')
+    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--buffer_size', type=int, default=100_000)
+    #################################################
+    # ALGORITHMS
+    #################################################
+    parser.add_argument('--lr_end', type=float, default=1e-6, help="Final / min learning rate. -1 to not decay")
+    parser.add_argument('--tau', type=float, default=0.001, help='target value moving average speed')
+    parser.add_argument('--explore_noise_type', type=str, default='normal', choices=['normal', 'OU', ''], help='Type of exploration noise')
+    parser.add_argument('--explore_noise', type=float, default=0.0, help='')
+    #################################################
+    # SAC
+    #################################################
+    parser.add_argument('--use_sde', type=str2bool, nargs='?', const=True, default=False, help="use sde exploration instead of action noise. Automatically sets explore_noise_type to None")
+    parser.add_argument('--ent_coef', default="auto", help="Entropy coefficient. 'auto' to learn it.")
+    #################################################
+    # Env
+    #################################################
+    parser.add_argument('--env', type=str.lower, default='pr2', choices=['pr2', 'tiago', 'hsr'], help='')
+    parser.add_argument('--use_map_obs', type=str2bool, nargs='?', const=True, default=True, help='Observe a local obstacle map')
+    parser.add_argument('--task', type=str.lower, default='rndstartrndgoal', choices=all_tasks, help='Train on a specific task env. Might override some other choices.')
+    parser.add_argument('--obstacle_config', type=str.lower, default='none', choices=['none', 'inpath'], help='Obstacle configuration for ObstacleConfigMap. Ignored for all other tasks')
+    parser.add_argument('--time_step', type=float, default=0.02, help='Time steps at which the RL agent makes decisions during actual execution. NOTE: time_step for training is hardcoded in robot_env.cpp.')
+    parser.add_argument('--slow_down_real_exec', type=float, default=1.0, help='How much to slow down the planned gripper trajectories during real execun')
+    parser.add_argument('--world_type', type=str, default="sim", choices=["sim", "gazebo", "world"], help="What kind of movement execution and where to get updated values from. Sim: analytical environemt, don't call controllers, gazebo: gazebo simulator, world: real world")
+    parser.add_argument('--strategy', type=str.lower, default="dirvel", choices=["relvelm", "relveld", "dirvel", "modulate_ellipse", "unmodulated"], help='What velocities to learn: modulate, velocity relative to the gripper velocity, direct base velocity')
+    parser.add_argument('--ik_fail_thresh', type=int, default=20, help='number of failures after which on it is considered as failed (i.e. failed: failures > ik_fail_thresh)')
+    parser.add_argument('--ik_fail_thresh_eval', type=int, default=100, help='different eval threshold to make comparable across settings and investigate if it can recover from failures')
+    parser.add_argument('--penalty_scaling', type=float, default=0.01, help='by how much to scale the penalties to incentivise minimal modulation')
+    parser.add_argument('--learn_vel_norm', type=float, default=-1, help="Learn the norm of the next EE-motion. Value is the factor weighting the loss for this. -1 to not learn it.")
+    parser.add_argument('--perform_collision_check', type=str2bool, nargs='?', const=True, default=True, help='Use the planning scen to perform collision checks (both with environment and self collisions)')
+    parser.add_argument('--vis_env', type=str2bool, nargs='?', const=True, default=True, help='Whether to publish markers to rviz')
+    parser.add_argument('--transition_noise_base', type=float, default=0.0, help='Std of Gaussian noise applied to the next base transform during training')
+    parser.add_argument('--head_start', type=float, default=0.0, help='Seconds to wait before starting the EE-motion (allowing the base to position itself)')
+    #################################################
+    # HSR
+    #################################################
+    parser.add_argument('--hsr_ik_slack_dist', type=float, default=0.1, help='Allowed slack for the ik solution')
+    parser.add_argument('--hsr_ik_slack_rot_dist', type=float, default=0.05, help='Allowed slack for the ik solution')
+    parser.add_argument('--hsr_sol_dist_reward', type=str2bool, default=False, help='Penalise distance to perfect ik solution')
+    #################################################
+    # Eval
+    #################################################
+    parser.add_argument('--nr_evaluations', type=int, default=50, help='Nr of runs for the evaluation')
+    parser.add_argument('--evaluation_frequency', type=int, default=20000, help='In nr of steps')
+    parser.add_argument('--evaluation_only', type=str2bool, nargs='?', const=True, default=False, help='If True only model will be loaded and evaluated no training')
+    parser.add_argument('--eval_execs', nargs='+', default=['sim'], choices=['sim', 'gazebo', 'world'], help='Eval execs to run')
+    parser.add_argument('--eval_tasks', nargs='+', default=['rndstartrndgoal', 'houseexpo', 'simpleobstacle', 'restrictedws'], choices=all_tasks, help='Eval tasks to run')
+    # #################################################
+    # Misc
+    #################################################
+    parser.add_argument('--restore_model_path', type=str, nargs='?', default='', help='Restore the model and config under this path')
+    parser.add_argument('--name', type=str, default="", help='name for this run')
+
+    args = parser.parse_args()
+    args = vars(args)
+
+    # user-specified command-line arguments
+    cl_args = [k.replace('-', '').split('=')[0] for k in sys.argv]
+
+    if args.pop('load_best_defaults'):
+        with open(config_path / 'best_defaults.yaml') as f:
+            best_defaults = yaml.safe_load(f)
+        # replace with best_default value unless something else was specified through command line
+        for k, v in best_defaults[args['env']].items():
+            if k not in cl_args:
+                args[k] = v
+
+    # consistency checks for certain arguments
+    if args['restore_model_path']:
+        assert args['evaluation_only'], "Continuing to train not supported atm (replay buffer doesn't get saved)"
+    if args['env'] == 'hsr':
+        assert not args['perform_collision_check'], "Collisions seem to potentially crash due to some unsupported geometries"
+
+    # do we need to initialise controllers for the specified tasks?
+    tasks_that_need_controllers = [k for k, v in ALL_TASKS.items() if v.requires_simulator()]
+    task_needs_gazebo = len(set([args['task']] + args['eval_tasks']).intersection(set(tasks_that_need_controllers))) > 0
+    world_type_needs_controllers = set([args['world_type']] + args['eval_execs']) != {'sim'}
+    args['init_controllers'] = task_needs_gazebo or world_type_needs_controllers
+
+    n = args.pop('name')
+    if not n:
+        n = []
+        for k, v in sorted(args.items()):
+            if (v != parser.get_default(k)) and (k not in ['env', 'seed', 'load_best_defaults',
+                                                           'evaluation_only', 'vis_env',
+                                                           'resume_id', 'eval_tasks', 'eval_execs', 'total_steps',
+                                                           'perform_collision_check', 'init_controllers',
+                                                           'num_workers', 'num_cpus_per_worker', 'num_envs_per_worker',
+                                                           'num_gpus', 'num_gpus_per_worker', 'ray_verbosity', ]):
+                n.append(str(v) if (type(v) == str) else f'{k}:{v}')
+        n = '_'.join(n)
+    run_name = '_'.join([j for j in [args['env'], n, args.pop('name_suffix')] if j])
+
+    args['device'] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    args['logpath'] = f'{config_path}/logs/'
+    os.makedirs(args['logpath'], exist_ok=True)
+    args['version'] = __version__
+
+    if args['seed'] == -1:
+        args['seed'] = random.randint(10, 1000)
+    set_seed(args['seed'])
+
+    print(f"Log path: {args['logpath']}")
+    return run_name, args
+
+
+def set_seed(seed: int):
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+
+
+def main():
+    # need a node to listen to some stuff for the task envs
+    rospy.init_node('kinematic_feasibility_py', anonymous=False)
+
+    main_path = Path(__file__).parent
+    # TODO: load config yaml if args['restore_model_path']
+    run_name, config = parse_args(main_path)
+    logpath = f"{config['logpath']}/{run_name}/"
+
+    # create envs
+    env = create_env(config, task=config['task'], node_handle="train_env", eval=False, wrap_in_dummy_vec=True, flatten_obs=True)
+    eval_config = dict(config).copy()
+    eval_config["transition_noise_base"] = 0.0
+    eval_config["ik_fail_thresh"] = config['ik_fail_thresh_eval']
+    eval_config["node_handle"] = "eval_env"
+    time.sleep(1)
+    eval_env = create_env(eval_config, task=eval_config["task"], node_handle="eval_env", eval=True, wrap_in_dummy_vec=True, flatten_obs=True)
+
+    # TODO: pass all other args correctly
+    agent = LearnerMobileRL(env)
+
+    # train
+    if not config['evaluation_only']:
+        agent.fit(env, val_env=eval_env)
+
+    # evaluate
+    world_types = ["world"] if (config['world_type'] == "world") else config['eval_execs']
+
+    for world_type in world_types:
+        for task in config['eval_tasks']:
+            evaluate_on_task(config, eval_env_config=eval_config, policy=agent, task=task, world_type=world_type,
+                             global_step=agent.iters + 1, flatten_obs=True)
+
+    rospy.signal_shutdown("We are done")
+
+
+if __name__ == '__main__':
+    main()
