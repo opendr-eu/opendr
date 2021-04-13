@@ -32,17 +32,10 @@ class WorldObjects:
     name in gazebo database, x, y, z dimensions
     see e.g. sdfs here: https://github.com/osrf/gazebo_models/blob/master/table/model.sdf
     """
-    # NOTE: not all sizes correct yet!
-    coke_can = GazeboObject('coke_can', 0.05, 0.05, 0.1)
-    table = GazeboObject("table", 1.5, 0.8, 1.0, ObjectGeometry.RECTANGLE)
-    kitchen_table = GazeboObject("kitchen_table", 0.68, 1.13, 0.68, ObjectGeometry.RECTANGLE)
     # our own, non-database objects
     muesli2 = GazeboObject('muesli2', 0.05, 0.15, 0.23, ObjectGeometry.RECTANGLE)
     kallax2 = GazeboObject('Kallax2', 0.415, 0.39, 0.65, ObjectGeometry.RECTANGLE)
     kallax = GazeboObject('Kallax', 0.415, 0.39, 0.65, ObjectGeometry.RECTANGLE)
-    kallaxDrawer1 = GazeboObject('KallaxDrawer1', 0.415, 0.39, 0.65, ObjectGeometry.RECTANGLE)
-    # ATM CRASHING GAZEBO
-    tim_bowl = GazeboObject('tim_bowl', 0.05, 0.05, 0.1, ObjectGeometry.RECTANGLE)
     reemc_table_low = GazeboObject('reemc_table_low', 0.75, 0.75, 0.41, ObjectGeometry.RECTANGLE)
 
 
@@ -96,7 +89,7 @@ class DummySimulatorAPI(SimulatorAPI):
     def __init__(self, frame_id: str):
         super().__init__()
         self._frame_id = frame_id
-        # requires to ahve a rospy node initialised! (Not a given for ray remote actors).
+        # requires to have a rospy node initialised! (Not a given for ray remote actors).
         self._verbose = False
 
     def spawn_scene_objects(self, spawn_objects: Iterable[SpawnObject]):
@@ -163,11 +156,8 @@ class GazeboAPI(SimulatorAPI):
         self._unpause_physics()
 
     def _spawn_model(self, name: str, obj: GazeboObject, pose: Pose, frame='world'):
-        # with open("$GAZEBO_MODEL_PATH/product_0/model.sdf", "r") as f:
-        #     product_xml = f.read()
         product_xml = self.get_model_template(obj.database_name)
 
-        # orient = Quaternion(tf.transformations.quaternion_from_euler(0, 0, 0))
         self._spawned_models.append(name)
         info = self._spawn_model_srv(name, product_xml, "", pose, frame)
 
@@ -180,16 +170,6 @@ class GazeboAPI(SimulatorAPI):
 
     def get_model(self, name: str, relative_entity_name: str):
         return self._get_model_srv(name, relative_entity_name)
-
-    # def set_model(self, name: str, pose: Pose):
-    #     state_msg = ModelState()
-    #     state_msg.model_name = name
-    #     state_msg.pose = pose
-    #     # self.pause_physics()
-    #     info = self._set_model_srv(state_msg)
-    #     time.sleep(1.0)
-    #     # self.unpause_physics()
-    #     return info
 
     def delete_model(self, name: str):
         self._delete_model_srv(name)
@@ -221,14 +201,6 @@ class GazeboAPI(SimulatorAPI):
         self._get_model_srv.close()
         self._set_model_srv.close()
         self._reset_simulation_srv.close()
-
-    # @staticmethod
-    # def set_link_state(link_name: str, pose: Pose):
-    #     msg = LinkState()
-    #     msg.link_name = link_name
-    #     msg.pose = pose
-    #     set_link_state_srv = rospy.ServiceProxy("gazebo/set_link_state", SetLinkState)
-    #     return set_link_state_srv(msg)
 
     @staticmethod
     def get_link_state(link_name: str):

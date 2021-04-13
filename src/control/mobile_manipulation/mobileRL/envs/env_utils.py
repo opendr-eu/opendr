@@ -45,7 +45,7 @@ def publish_marker(namespace: str, marker_pose: Pose, marker_scale, marker_id: i
     marker.scale.y = marker_scale[1]
     marker.scale.z = marker_scale[2]
 
-    assert color == "orange", "atm all orange"
+    assert color == "orange", "atm only orange"
     marker.color.r = 1.0
     marker.color.g = 159 / 255
     marker.color.b = 0.0
