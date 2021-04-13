@@ -9,8 +9,6 @@ import rospy
 from gym import Env
 from pybindings import RobotObs, RobotPR2, RobotTiago, RobotHSR
 
-HSR_IK_SCHEDULE_MIN_SLACK = (0.02, 0.05)
-
 
 class ActionRanges:
     @classmethod
@@ -98,8 +96,7 @@ class RobotEnv(Env):
         self.robot_config = self._get_robot_config()
         self.vis_env = vis_env
 
-        # TODO: IF NOT RECTANGULAR: CHECK IF (H, W) IS THE CORRECT WAY AROUND
-        # TODO: atm only supporting rectangles, while HSR, Tiago are circles
+        # NOTE: atm only supporting rectangles, while HSR, Tiago are circles
         self.robot_base_size = (self.robot_config["robot_base_size_meters_y"],
                                 self.robot_config["robot_base_size_meters_x"])
 
@@ -119,19 +116,8 @@ class RobotEnv(Env):
         self.__dict__ = state
         self._env = _env
 
-    # def scale_action(self, action):
-    #     """
-    #     Rescale the action from [low, high] to [-1, 1]
-    #     (no need for symmetric action space)
-    #     :param action: (np.ndarray) Action to scale
-    #     :return: (np.ndarray) Scaled action
-    #     """
-    #     low, high = self._min_actions, self._max_actions
-    #     return 2.0 * ((action - low) / (high - low)) - 1.0
-    #
-
-    # needed for stable_baselines replay buffer class
     def normalize_reward(self, reward):
+        # needed for stable_baselines replay buffer class
         return reward
 
     def reset(self,

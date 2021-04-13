@@ -13,7 +13,6 @@ from control.mobile_manipulation.mobileRL.envs.env_utils import quaternion_to_ya
 from control.mobile_manipulation.mobileRL.envs.simulator_api import GazeboAPI, DummySimulatorAPI, SpawnObject, \
     ObjectGeometry
 
-MAX_HEIGHT = 10.0
 SMALL_NUMBER = 1e-6
 
 
@@ -112,19 +111,6 @@ class Map:
         xypose_meter[..., 0] -= self._origin_W_meter
         xypose_meter[..., 1] = self._origin_H_meter - xypose_meter[..., 1]
         return xypose_meter
-
-    def in_collision(self, xy_meters: np.ndarray, use_inflated_map: bool = False, height_meters: float = 0,
-                     inflation_radius_meter: float = None) -> bool:
-        if inflation_radius_meter is not None:
-            assert use_inflated_map
-
-        xy_pixels = self.meter_to_pixels(xy_meters)
-        if use_inflated_map:
-            m = self.get_inflated_map(inflation_radius_meter=inflation_radius_meter)
-        else:
-            m = np.asarray(self._floorplan_img)
-
-        return m[xy_pixels[..., 1], xy_pixels[..., 0]].any()
 
     def _get_local_map_gt(self, current_location_tf) -> np.ndarray:
         """
