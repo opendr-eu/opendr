@@ -35,18 +35,15 @@
 # SOFTWARE.
 
 import argparse
-import copy
 import os
 import random
 import sys
 import time
 from pathlib import Path
-from typing import List
 
 import numpy as np
 import rospy
 import torch
-import wandb
 import yaml
 
 from control.mobile_manipulation.mobileRL import __version__
@@ -54,6 +51,7 @@ from control.mobile_manipulation.mobileRL.envs import ALL_TASKS
 from control.mobile_manipulation.mobileRL.evaluation import evaluate_on_task
 from control.mobile_manipulation.mobileRL.utils import create_env
 from control.mobile_manipulation.mobile_manipulation_learner import LearnerMobileRL
+
 
 def str2bool(v):
     if isinstance(v, bool):
