@@ -50,7 +50,7 @@ from control.mobile_manipulation.mobileRL import __version__
 from control.mobile_manipulation.mobileRL.envs import ALL_TASKS
 from control.mobile_manipulation.mobileRL.evaluation import evaluate_on_task
 from control.mobile_manipulation.mobileRL.utils import create_env
-from control.mobile_manipulation.mobile_manipulation_learner import LearnerMobileRL
+from control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
 
 
 def str2bool(v):
@@ -198,7 +198,7 @@ def main():
     time.sleep(1)
     eval_env = create_env(eval_config, task=eval_config["task"], node_handle="eval_env", wrap_in_dummy_vec=True, flatten_obs=True)
 
-    agent = LearnerMobileRL(env,
+    agent = MobileRLLearner(env,
                             lr=config['lr'],
                             iters=config['iters'],
                             batch_size=config['batch_size'],

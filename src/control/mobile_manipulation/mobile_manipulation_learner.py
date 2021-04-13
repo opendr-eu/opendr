@@ -35,9 +35,7 @@
 # SOFTWARE.
 
 import os
-import time
-from pathlib import Path
-from typing import Callable, Union, Optional
+from typing import Callable, Union
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -48,9 +46,8 @@ import rospy
 from stable_baselines3.sac import SAC
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise, NormalActionNoise
 
-from mobileRL.utils import setup_config_wandb, create_env
 from mobileRL.stablebl_callbacks import ModulationEvalCallback
-from mobileRL.evaluation import evaluate_on_task, evaluation_rollout
+from mobileRL.evaluation import evaluation_rollout
 from engine.learners import LearnerRL
 
 
@@ -60,7 +57,7 @@ from engine.learners import LearnerRL
 #   replace modulation.openDR.learner with version in the repo
 
 
-class LearnerMobileRL(LearnerRL):
+class MobileRLLearner(LearnerRL):
     def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, optimizer='adam', lr_schedule='linear',
                  lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path='', device='cuda',
                  seed: int = None, buffer_size: int = 100_000, learning_starts: int = 0,

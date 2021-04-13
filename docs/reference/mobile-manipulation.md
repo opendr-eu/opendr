@@ -1,4 +1,49 @@
-# Learning Kinematic Feasibility
+# mobile_manipulation module
+
+The *mobile_manipulation* module contains the *MobileRLLearner* class, which inherits from the abstract class *RLLearner*.
+
+### Class MobileRLLearner
+Bases: `engine.learners.LearnerRL`
+
+
+
+The *MobileRLLearner* class is an RL agent that can be used to train wheeled robots for mobile manipulation in conjunction with the 
+environments. Originally developed in [[1]](#kinematic-feasibility) implementation found on [Learning Kinematic Feasibility for Mobile Manipulation through Deep Reinforcement Learning](http://kinematic-rl.cs.uni-freiburg.de/).
+
+The [MobileRLLearner](#src.control.mobile_manipulation.mobile_manipulation_learner.py) class has the
+following public methods:
+
+#### `MobileRLLearner` constructor
+
+Constructor parameters:
+- **lr**: *float, default=4e-5*  
+  Specifies the initial learning rate to be used during training.
+- **epochs**: *int, default=280*  
+  Specifies the number of epochs the training should run for.
+- **batch_size**: *int, default=80*  
+  Specifies number of images to be bundled up in a batch during training. This heavily affects memory usage, adjust according to your system.
+- **device**: *{'cpu', 'cuda'}, default='cuda'*  
+  Specifies the device to be used.
+- **backbone**: *{'mobilenet, 'mobilenetv2', 'shufflenet'}, default='mobilenet'*  
+  Specifies the backbone architecture.
+- **lr_schedule**: *str, default=' '*  
+  Specifies the learning rate scheduler. Please provide a function that expects to receive as a sole argument the used optimizer.
+- **temp_path**: *str, default='temp'*  
+  Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files. Moreover the JSON file that contains the evaluation detections is saved here.
+- **checkpoint_after_iter**: *int, default=5000*  
+  Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
+- **checkpoint_load_iter**: *int, default=0*  
+  Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
+
+
+
+#### References
+<a name="kinematic-feasibility" href="https://arxiv.org/abs/2101.05325">[1]</a> Learning Kinematic Feasibility for Mobile Manipulation through Deep Reinforcement Learning,
+[arXiv](https://arxiv.org/abs/2101.05325).
+
+
+
+## WIP
 
 Repository providing the source code for the paper "Learning kinematic feasibility through reinforcement learning", see the [project website](https://rl.uni-freiburg.de/research/kinematic-feasibility-rl).  
 Please cite the paper as follows:
