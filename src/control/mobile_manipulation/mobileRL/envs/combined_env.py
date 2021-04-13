@@ -1,5 +1,3 @@
-import pickle
-
 import numpy as np
 from gym import spaces, Env
 from pybindings import RobotObs
@@ -38,7 +36,6 @@ class MobileManipulationEnv(Env):
         print(f"Detected robot state dim: {self.robot_state_dim}")
 
         self.action_names, self._min_actions, self._max_actions = ActionRanges.get_ranges(env_name=self._robot.env_name,
-                                                                                          strategy=self._robot._strategy,
                                                                                           learn_vel_norm=(
                                                                                                       learn_vel_norm != -1))
         print(f"Actions to learn: {self.action_names}")
