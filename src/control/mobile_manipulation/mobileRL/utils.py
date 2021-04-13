@@ -53,7 +53,6 @@ def create_env(config,
                       ik_fail_thresh=config["ik_fail_thresh"],
                       learn_vel_norm=config["learn_vel_norm"],
                       slow_down_real_exec=config["slow_down_real_exec"],
-                      use_map_obs=config["use_map_obs"],
                       flatten_obs=flatten_obs)
     if task in ['picknplace', 'door', 'drawer']:
         env_kwargs = {'obstacle_configuration': config['obstacle_config']}
@@ -70,7 +69,3 @@ def env_creator(ray_env_config: dict, flatten_obs: bool = False):
                      node_handle=ray_env_config["node_handle"],
                      flatten_obs=flatten_obs)
     return env
-
-
-def episode_is_success(nr_kin_fails: int, nr_collisions: int, goal_reached: bool) -> bool:
-    return (nr_kin_fails == 0) and (nr_collisions == 0) and goal_reached

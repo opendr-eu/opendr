@@ -64,7 +64,7 @@ class LearnerMobileRL(LearnerRL):
     def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, optimizer='adam', lr_schedule='linear',
                  lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path='', device='cuda',
                  seed: int = None, buffer_size: int = 100_000, learning_starts: int = 0,
-                 tau: float = 0.001, gamma: float = 0.99, explore_noise: float = 0.5,
+                 tau: float = 0.001, gamma: float = 0.99, explore_noise: float = 0.5, ent_coef='auto',
                  explore_noise_type='normal', nr_evaluations: int = 50, evaluation_frequency: int = 20_000):
         super(LearnerRL, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer,
                                         lr_schedule=lr_schedule, backbone=backbone, network_head='',
@@ -81,7 +81,8 @@ class LearnerMobileRL(LearnerRL):
                                                      tau=tau,
                                                      gamma=gamma,
                                                      explore_noise=explore_noise,
-                                                     explore_noise_type=explore_noise_type)
+                                                     explore_noise_type=explore_noise_type,
+                                                     ent_coef=ent_coef)
         if checkpoint_load_iter:
             # TODO: where should checkpoints be loaded from?
             raise NotImplementedError()
@@ -117,7 +118,7 @@ class LearnerMobileRL(LearnerRL):
         return lr_fn
             
     def _construct_agent(self, env, buffer_size: int, learning_starts: int, tau: float, gamma: float,
-                         explore_noise: float, explore_noise_type: str):
+                         explore_noise: float, explore_noise_type: str, ent_coef):
         if explore_noise:
             if explore_noise_type == 'normal':
                 action_noise = NormalActionNoise(mean=np.zeros(env.action_space.shape),
@@ -132,7 +133,6 @@ class LearnerMobileRL(LearnerRL):
 
         assert not env.use_map_obs, "TODO: rm this option for openDR"
 
-        # TODO: adjust argparse to pass in the correct stable_baseline_kwargs
         common_args = {
             'policy': self.backbone,
             'env': env,
@@ -152,7 +152,7 @@ class LearnerMobileRL(LearnerRL):
         }
 
         common_args.update({"train_freq": 1,
-                            "ent_coef": 'auto',
+                            "ent_coef": ent_coef,
                             "target_update_interval": 1,
                             "target_entropy": 'auto',
                             "use_sde": False

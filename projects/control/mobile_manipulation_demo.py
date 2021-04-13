@@ -79,10 +79,6 @@ def parse_args(config_path):
     parser.add_argument('--tau', type=float, default=0.001, help='target value moving average speed')
     parser.add_argument('--explore_noise_type', type=str, default='normal', choices=['normal', 'OU', ''], help='Type of exploration noise')
     parser.add_argument('--explore_noise', type=float, default=0.0, help='')
-    #################################################
-    # SAC
-    #################################################
-    parser.add_argument('--use_sde', type=str2bool, nargs='?', const=True, default=False, help="use sde exploration instead of action noise. Automatically sets explore_noise_type to None")
     parser.add_argument('--ent_coef', default="auto", help="Entropy coefficient. 'auto' to learn it.")
     #################################################
     # Env
@@ -192,16 +188,32 @@ def main():
     logpath = f"{config['logpath']}/{run_name}/"
 
     # create envs
-    env = create_env(config, task=config['task'], node_handle="train_env", eval=False, wrap_in_dummy_vec=True, flatten_obs=True)
+    env = create_env(config, task=config['task'], node_handle="train_env", wrap_in_dummy_vec=True, flatten_obs=True)
     eval_config = dict(config).copy()
     eval_config["transition_noise_base"] = 0.0
     eval_config["ik_fail_thresh"] = config['ik_fail_thresh_eval']
     eval_config["node_handle"] = "eval_env"
     time.sleep(1)
-    eval_env = create_env(eval_config, task=eval_config["task"], node_handle="eval_env", eval=True, wrap_in_dummy_vec=True, flatten_obs=True)
+    eval_env = create_env(eval_config, task=eval_config["task"], node_handle="eval_env", wrap_in_dummy_vec=True, flatten_obs=True)
 
     # TODO: pass all other args correctly
-    agent = LearnerMobileRL(env)
+    agent = LearnerMobileRL(env,
+                            lr=config['lr'],
+                            iters=config['iters'],
+                            batch_size=config['batch_size'],
+                            seed=config['seed'],
+                            buffer_size=config['buffer_size'],
+                            learning_starts=config['learning_starts'],
+                            tau=config['tau'],
+                            gamma=config['gamma'],
+                            explore_noise=config['explore_noise'],
+                            explore_noise_type=config['explore_noise_type'],
+                            nr_evaluations=config['nr_evaluations'],
+                            evaluation_frequency=config['evaluation_frequency'],
+                            checkpoint_after_iter=config['checkpoint_after_iter'],
+                            temp_path=config['temp_path'],
+                            device=config['device'],
+                            ent_coef=config['ent_coef'])
 
     # train
     if not config['evaluation_only']:
