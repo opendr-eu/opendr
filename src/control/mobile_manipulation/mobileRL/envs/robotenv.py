@@ -92,7 +92,8 @@ class RobotEnv(Env):
         self._strategy = strategy
         self.env_name = env
         self._transition_noise_base = transition_noise_base
-        self.reset(initial_base_pose=[0, 0, 0, 0, 0, 0, 1], initial_joint_distribution="rnd", success_thres_dist=0.05, success_thres_rot=0.05)
+        self.reset(initial_base_pose=[0, 0, 0, 0, 0, 0, 1], initial_joint_distribution="rnd", success_thres_dist=0.05,
+                   success_thres_rot=0.05)
 
         self.robot_config = self._get_robot_config()
         self.vis_env = vis_env
