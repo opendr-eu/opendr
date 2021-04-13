@@ -10,7 +10,7 @@ import numpy as np
 from geometry_msgs.msg import Point, Pose, Quaternion
 from pybindings import GMMPlanner, multiply_tfs
 
-from control.mobile_manipulation.mobileRL.envs.combined_env import CombinedEnv
+from control.mobile_manipulation.mobileRL.envs.combined_env import MobileManipulationEnv
 from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper, GMMPlannerWrapper
 from control.mobile_manipulation.mobileRL.envs.env_utils import pose_to_list, list_to_pose
 from control.mobile_manipulation.mobileRL.envs.map import SceneMap
@@ -28,7 +28,7 @@ class BaseChainedTask(BaseTask):
             name = name.replace(self.taskname(), f'{self.taskname()}{self.map.obstacle_configuration}')
         return name
 
-    def __init__(self, env: CombinedEnv, map: SceneMap, default_head_start: float, close_gripper_at_start: bool = True):
+    def __init__(self, env: MobileManipulationEnv, map: SceneMap, default_head_start: float, close_gripper_at_start: bool = True):
         super(BaseChainedTask, self).__init__(env=env, initial_joint_distribution="rnd", map=map,
                                               default_head_start=default_head_start,
                                               close_gripper_at_start=close_gripper_at_start)
@@ -153,7 +153,7 @@ class PickNPlaceChainedTask(BaseChainedTask):
     def requires_simulator() -> bool:
         return False
 
-    def __init__(self, env: CombinedEnv, default_head_start: float, obstacle_configuration: str):
+    def __init__(self, env: MobileManipulationEnv, default_head_start: float, obstacle_configuration: str):
         map = ObstacleConfigMap(world_type=env.get_world(),
                                 obstacle_configuration=obstacle_configuration,
                                 initial_base_rng_yaw=(-0.5 * np.pi, 0.5 * np.pi),
@@ -234,7 +234,7 @@ class DoorChainedTask(BaseChainedTask):
     def requires_simulator() -> bool:
         return False
 
-    def __init__(self, env: CombinedEnv, default_head_start: float, obstacle_configuration: str):
+    def __init__(self, env: MobileManipulationEnv, default_head_start: float, obstacle_configuration: str):
         map = ObstacleConfigMap(world_type=env.get_world(),
                                 obstacle_configuration=obstacle_configuration,
                                 initial_base_rng_yaw=(0.0 * np.pi, 1.0 * np.pi),
@@ -306,7 +306,7 @@ class DrawerChainedTask(BaseChainedTask):
     def requires_simulator() -> bool:
         return False
 
-    def __init__(self, env: CombinedEnv, default_head_start: float, obstacle_configuration: str):
+    def __init__(self, env: MobileManipulationEnv, default_head_start: float, obstacle_configuration: str):
         map = ObstacleConfigMap(world_type=env.get_world(),
                                 obstacle_configuration=obstacle_configuration,
                                 initial_base_rng_yaw=(0.5 * np.pi, 1.5 * np.pi),

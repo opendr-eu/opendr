@@ -4,18 +4,18 @@ import random
 from stable_baselines3.common.vec_env import DummyVecEnv
 
 from control.mobile_manipulation.mobileRL.envs import ALL_TASKS
-from control.mobile_manipulation.mobileRL.envs.combined_env import CombinedEnv
+from control.mobile_manipulation.mobileRL.envs.combined_env import MobileManipulationEnv
 from control.mobile_manipulation.mobileRL.envs.robotenv import RobotEnv
 
 
 def wrap_in_task(env, task: str, default_head_start: float, wrap_in_dummy_vec: bool, **env_kwargs):
     if isinstance(env, DummyVecEnv):
         combined_env = env.envs[0].unwrapped
-    elif isinstance(env, CombinedEnv):
+    elif isinstance(env, MobileManipulationEnv):
         combined_env = env
     else:
         combined_env = env.unwrapped
-    assert isinstance(combined_env, CombinedEnv), combined_env
+    assert isinstance(combined_env, MobileManipulationEnv), combined_env
 
     task_fn = ALL_TASKS[task.lower()]
     task_env = task_fn(combined_env, default_head_start, **env_kwargs)
@@ -32,7 +32,7 @@ def create_env(config,
                task: str,
                node_handle: str,
                wrap_in_dummy_vec: bool = False,
-               flatten_obs: bool = False) -> CombinedEnv:
+               flatten_obs: bool = False) -> MobileManipulationEnv:
     print(f"Creating {config['env']}")
 
     robot_env = RobotEnv(env=config["env"],
@@ -49,11 +49,11 @@ def create_env(config,
                          hsr_ik_slack_dist=config["hsr_ik_slack_dist"],
                          hsr_ik_slack_rot_dist=config["hsr_ik_slack_rot_dist"],
                          hsr_sol_dist_reward=config["hsr_sol_dist_reward"])
-    env = CombinedEnv(robot_env=robot_env,
-                      ik_fail_thresh=config["ik_fail_thresh"],
-                      learn_vel_norm=config["learn_vel_norm"],
-                      slow_down_real_exec=config["slow_down_real_exec"],
-                      flatten_obs=flatten_obs)
+    env = MobileManipulationEnv(robot_env=robot_env,
+                                ik_fail_thresh=config["ik_fail_thresh"],
+                                learn_vel_norm=config["learn_vel_norm"],
+                                slow_down_real_exec=config["slow_down_real_exec"],
+                                flatten_obs=flatten_obs)
     if task in ['picknplace', 'door', 'drawer']:
         env_kwargs = {'obstacle_configuration': config['obstacle_config']}
     else:

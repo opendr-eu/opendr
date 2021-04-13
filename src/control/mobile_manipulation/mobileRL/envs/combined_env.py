@@ -9,7 +9,7 @@ from control.mobile_manipulation.mobileRL.envs.map import Map, DummyMap
 from control.mobile_manipulation.mobileRL.envs.robotenv import RobotEnv, ActionRanges, unscale_action
 
 
-class CombinedEnv(Env):
+class MobileManipulationEnv(Env):
     metadata = {'render.modes': []}
 
     def __getattr__(self, name):

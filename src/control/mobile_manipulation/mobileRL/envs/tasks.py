@@ -7,7 +7,7 @@ from typing import NamedTuple, Callable, Tuple
 import numpy as np
 from gym import Wrapper
 
-from control.mobile_manipulation.mobileRL.envs.combined_env import CombinedEnv
+from control.mobile_manipulation.mobileRL.envs.combined_env import MobileManipulationEnv
 from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper
 from control.mobile_manipulation.mobileRL.envs.map import Map, EmptyMap
 
@@ -74,7 +74,7 @@ class BaseTask(Wrapper):
         self.env = env
 
     def __init__(self,
-                 env: CombinedEnv,
+                 env: MobileManipulationEnv,
                  initial_joint_distribution: str,
                  map: Map,
                  default_head_start: float,
@@ -122,7 +122,7 @@ class RndStartRndGoalsTask(BaseTask):
     def requires_simulator() -> bool:
         return False
 
-    def __init__(self, env: CombinedEnv, default_head_start, goal_dist_rng=(1, 5), goal_height_rng=None):
+    def __init__(self, env: MobileManipulationEnv, default_head_start, goal_dist_rng=(1, 5), goal_height_rng=None):
         map = EmptyMap(map_frame_rviz=env.robot_config['frame_id'] if env.get_world() == 'sim' else 'map',
                        inflation_radius=env.get_inflation_radius())
         super(RndStartRndGoalsTask, self).__init__(env=env, initial_joint_distribution='rnd',
@@ -158,7 +158,7 @@ class RestrictedWsTask(RndStartRndGoalsTask):
     def requires_simulator() -> bool:
         return False
 
-    def __init__(self, env: CombinedEnv, default_head_start):
+    def __init__(self, env: MobileManipulationEnv, default_head_start):
         super(RestrictedWsTask, self).__init__(env=env,
                                                default_head_start=default_head_start,
                                                goal_height_rng=(env.robot_config["restricted_ws_z_min"],
