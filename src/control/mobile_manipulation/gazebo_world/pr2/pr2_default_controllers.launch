@@ -1,0 +1,56 @@
+<launch>
+
+  <!-- Base Control -->
+  <rosparam file="$(find pr2_controller_configuration_gazebo)/config/pr2_base_controller.yaml" command="load" />
+
+  <!-- Odometry -->
+  <rosparam file="$(find pr2_controller_configuration_gazebo)/config/pr2_odometry.yaml" command="load" />
+
+  <!-- Head -->
+  <rosparam command="load" file="$(find pr2_controller_configuration_gazebo)/config/pr2_head_controller.yaml" />
+  
+  <!-- Arms -->
+  <rosparam command="load" file="$(find pr2_controller_configuration_gazebo)/config/pr2_arm_controllers.yaml" />
+
+  <!-- Gripper -->
+  <rosparam command="load" file="$(find pr2_controller_configuration_gazebo)/config/pr2_gripper_controllers.yaml" />
+
+  <!-- Tilt Laser -->
+  <rosparam command="load" file="$(find pr2_controller_configuration_gazebo)/config/pr2_laser_tilt_controller.yaml" />
+
+  <!-- Torso -->
+  <rosparam command="load" file="$(find pr2_controller_configuration_gazebo)/config/pr2_torso_controller.yaml" />
+
+  <!-- Controllers that come up started -->
+  <node name="default_controllers_spawner"
+        pkg="pr2_controller_manager" type="spawner" output="screen"
+        args="--wait-for=/calibrated base_controller base_odometry head_traj_controller laser_tilt_controller torso_controller r_gripper_controller l_gripper_controller r_arm_controller l_arm_controller" />
+
+  <!-- Nodes on top of the controllers -->
+  <group ns="r_gripper_controller">
+    <node name="gripper_action_node"
+          pkg="pr2_gripper_action" type="pr2_gripper_action">
+      <!-- needed for stall detection in simulation with joint "jitter" -->
+      <param name="stall_velocity_threshold" value="0.33" type="double"/>
+      <param name="stall_timeout" value="0.5" type="double"/>
+    </node>
+  </group>
+  <group ns="l_gripper_controller">
+    <node name="gripper_action_node"
+          pkg="pr2_gripper_action" type="pr2_gripper_action">
+      <!-- needed for stall detection in simulation with joint "jitter" -->
+      <param name="stall_velocity_threshold" value="0.33" type="double"/>
+      <param name="stall_timeout" value="0.5" type="double"/>
+    </node>
+  </group>
+  <group ns="head_traj_controller">
+    <node name="point_head_action"
+          pkg="pr2_head_action" type="pr2_head_action" />
+  </group>
+  <group ns="torso_controller">
+    <node name="position_joint_action_node"
+          pkg="single_joint_position_action" type="single_joint_position_action" />
+  </group>
+  
+        
+</launch>

@@ -1,0 +1,74 @@
+<launch>
+  
+  <!-- Controller Manager -->
+  <include file="$(find pr2_controller_manager)/controller_manager.launch" />
+
+  <!-- Fake Calibration -->
+  <node pkg="rostopic" type="rostopic" name="fake_joint_calibration"
+        args="pub /calibrated std_msgs/Bool true" />
+
+  <!-- Stereo image processing -->
+  <include file="$(find pr2_gazebo)/config/dualstereo_camera.launch" />
+
+  <!-- Start image_proc inside camera namespace-->
+  <include file="$(find pr2_gazebo)/config/r_forearm_cam.launch" />
+  <include file="$(find pr2_gazebo)/config/l_forearm_cam.launch" />
+
+  <!-- diagnostics aggregator -->
+  <node pkg="diagnostic_aggregator" type="aggregator_node" name="diag_agg" args="Robot" />
+  <group ns="diag_agg">
+    <include file="$(find pr2_gazebo)/config/pr2_analyzers_simple.launch" />
+    <!--
+    <include file="$(find pr2_gazebo)/config/pr2_analyzers.launch" />
+    -->
+  </group>
+
+  <!-- Dashboard aggregation -->
+  <node pkg="pr2_dashboard_aggregator" type="dashboard_aggregator.py" name="pr2_dashboard_aggregator"/>
+
+  <!-- Robot pose ekf -->
+  <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf" output="screen">
+    <param name="freq" value="30.0"/>
+    <param name="sensor_timeout" value="1.0"/>
+    <param name="publish_tf" value="true"/>
+    <param name="odom_used" value="true"/>
+    <param name="imu_used" value="true"/>
+    <param name="vo_used" value="false"/>
+    <remap from="odom" to="base_odometry/odom" />
+    <remap from="imu_data" to="torso_lift_imu/data" />
+  </node>
+
+  <!-- Base Laser dynamic_reconfigure -->
+  <node pkg="gazebo_plugins" type="hokuyo_node" name="base_hokuyo_node">
+    <param name="port" type="string" value="/etc/ros/sensors/base_hokuyo" />
+    <param name="frame_id" type="string" value="base_laser_link" />
+    <param name="min_ang" type="double" value="-2.2689" />
+    <param name="max_ang" type="double" value="2.2689" />
+    <param name="skip" type="int" value="1" />
+    <param name="intensity" value="false" />
+  </node>
+
+  <!-- Tilt Laser dynamic_reconfigure -->
+  <node pkg="gazebo_plugins" type="hokuyo_node" name="tilt_hokuyo_node">
+    <param name="port" type="string" value="/etc/ros/sensors/tilt_hokuyo" />
+    <param name="frame_id" type="string" value="laser_tilt_link" />
+    <param name="min_ang" type="double" value="-0.829" />
+    <param name="max_ang" type="double" value="0.829" />
+    <param name="skip" type="int" value="1" />
+    <param name="intensity" value="true" />
+  </node>
+
+  <!-- Buffer Server -->
+  <node pkg="tf2_ros" type="buffer_server" name="tf2_buffer_server" output="screen">
+    <param name="buffer_size" value="120.0"/>
+  </node>
+
+  <!-- Spawns the synchronizer -->
+  <node type="camera_synchronizer" name="camera_synchronizer_node" pkg="gazebo_plugins" output="screen" />
+
+  <!-- testing only: simulate torso counter weight spring to reduce load on the torso joint
+  <node name="simulate_torso_spring" pkg="pr2_gazebo" type="pr2_simulate_torso_spring.py" respawn="false" output="screen" />
+  -->
+
+</launch>
+

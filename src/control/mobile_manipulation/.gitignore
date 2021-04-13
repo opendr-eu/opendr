@@ -1,0 +1,14 @@
+# file types
+*.pyc
+# directories
+logs/
+wandb/
+/scripts/paper/
+.idea_pycharm/
+HouseExpoDataset/png/
+HouseExpoDataset/json/
+webots/
+# files
+Tims_pr2_arm_base_control.cpp
+/scripts/ray_test/
+/HouseExpoDataset/json.tar.gz

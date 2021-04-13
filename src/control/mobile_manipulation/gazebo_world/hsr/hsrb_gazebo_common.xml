@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="namespace" default="hsrb"/>
+  <arg name="debug" default="false"/>
+  <arg name="fast_physics" default="false" />
+  <arg name="gui" default="true" />
+  <arg name="rviz" default="true"/>
+  <arg name="gazebo_visualization" default="false" />
+  <arg name="use_manipulation" default="true" />
+  <arg name="use_navigation" default="true" />
+  <arg name="use_perception" default="true" />
+  <arg name="use_task" default="true" />
+  <arg name="use_teleop" default="true" />
+  <arg name="use_web" default="true" />
+  <arg name="use_laser_odom" default="true" />
+  <arg name="paused" default="false" />
+  <arg name="map" default="$(optenv ROS_HOME ~/.ros)/map/map.yaml" />
+  <arg name="param_file" default="$(optenv HOME ~)/.ros/params.yaml" />
+  <arg name="world_name" default="worlds/empty.world" />
+  <arg name="robot_pos" default="-x 0 -y 0 -z 0 -Y 0" />
+  <arg name="world_suffix" default="" />
+  <arg name="robot_name" default="hsrb" />
+
+  <!-- prepare params.yaml(param command hack)  -->
+  <param name="$(arg namespace)/tmp" command="rosrun tmc_roslaunch_tools symboliclink $(arg param_file) $(find hsrb_common_launch)/params/empty_params.yaml" />
+
+  <!-- gazebo -->
+  <include file="$(find modulation_rl)/gazebo_world/hsr/bringup_hsrb_empty_world.launch">
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="namespace" value="$(arg namespace)" />
+    <arg name="fast_physics" value="$(arg fast_physics)" />
+    <arg name="gazebo_visualization" value="$(arg gazebo_visualization)" />
+    <arg name="use_laser_odom" value="$(arg use_laser_odom)" />
+    <arg name="paused" value="$(arg paused)" />
+    <arg name="world_name" value="$(arg world_name)" />
+    <arg name="robot_pos" value="$(arg robot_pos)" />
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="robot_name" value="$(arg robot_name)" />
+  </include>
+
+  <!-- common -->
+  <include file="$(find hsrb_common_launch)/launch/hsrb_common.launch">
+    <arg name="namespace" value="$(arg namespace)" />
+    <arg name="sim" value="true" />
+    <arg name="use_manipulation" value="$(arg use_manipulation)" />
+    <arg name="use_navigation" value="$(arg use_navigation)" />
+    <arg name="use_perception" value="$(arg use_perception)" />
+    <arg name="use_task" value="$(arg use_task)" />
+    <arg name="use_teleop" value="$(arg use_teleop)" />
+    <arg name="use_web" value="$(arg use_web)" />
+    <arg name="map" value="$(arg map)"/>
+    <arg name="robot_name" value="$(arg robot_name)" />
+  </include>
+
+  <!-- rviz-->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find hsrb_common_launch)/config/hsrb_display_full_$(arg robot_name).rviz" if="$(arg rviz)"/>
+
+  <!-- load override parameters-->
+  <rosparam command="load" file="$(arg param_file)" />
+</launch>

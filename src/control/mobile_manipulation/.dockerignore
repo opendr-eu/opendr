@@ -1,0 +1,10 @@
+.idea/
+logs/
+wandb/
+scripts/logs/
+scripts/paper/
+HouseExpoDataset/json/
+HouseExpoDataset/json.tar.gz
+HouseExpoDataset/png/
+webots/
+*.npy
