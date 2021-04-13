@@ -1,0 +1,27 @@
+name: modulation_rl
+channels:
+  - pytorch
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.7
+  - pytorch=1.6.1
+  - torchvision
+  - cudatoolkit=10.2
+  - pybind11=2.4.3
+  - numpy=1.18.1
+  - pip
+  - matplotlib
+  - empy
+  - pyparsing
+  - pillow=7.2.0
+  - seaborn
+  - scipy
+  - pip:
+      - stable-baselines3==0.10.0
+      - tensorboard
+      # NOTE: requires to not have the python2 version in PYTHONPATH
+      - roslibpy
+      - rospkg
+      - gym==0.17.2
+      - cloudpickle==1.5.0

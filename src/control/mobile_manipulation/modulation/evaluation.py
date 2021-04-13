@@ -1,0 +1,126 @@
+import time
+
+import numpy as np
+import rospy
+import torch
+from matplotlib import pyplot as plt
+from stable_baselines3.common.base_class import BaseAlgorithm
+from stable_baselines3.common import logger
+
+from modulation.envs.env_utils import calc_disc_return
+from modulation.envs.robotenv import HSR_IK_SCHEDULE_MIN_SLACK
+from modulation.utils import episode_is_success, env_creator
+
+
+def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, verbose: bool = True,
+                       name_prefix: str = '', debug: bool = False):
+    def flatten_obs(obs):
+        """ray expects a batched, flattened obs"""
+        assert len(obs) == 2
+        return np.concatenate([np.array(obs[0]).flatten(), np.array(obs[1]).flatten()])
+
+    name_prefix = f"{name_prefix + '_' if name_prefix else ''}{env.loggingname}"
+    gamma = policy.gamma if hasattr(policy, "gamma") else policy.config["gamma"]
+
+    episode_rewards, episode_lengths, episode_returns, episode_successes, fails_per_episode, goal_reached, base_collisions, vel_norms = [[] for _ in range(8)]
+    max_len = 100_000
+    with torch.no_grad():
+        for i in range(num_eval_episodes):
+            t = time.time()
+            done = False
+            obs = env.reset()
+
+            rewards, infos, actions = [], [], []
+            while not done:
+                if isinstance(policy, BaseAlgorithm):
+                    # stable-baseline agents
+                    action, state = policy.predict(obs, state=None, deterministic=True)
+                else:
+                    # ray agents
+                    action, *_ = policy.compute_single_action(flatten_obs(obs), explore=False)
+
+                assert not np.isnan(action).sum(), f"Nan found in actions: {action}"
+                obs, reward, done, info = env.step(action)
+
+                rewards.append(reward)
+                infos.append(info)
+                episode_length = len(rewards)
+                actions.append(action)
+
+                if episode_length and episode_length % 10_000 == 0:
+                    rospy.logwarn(f"{episode_length} steps already!. Continuing until a max. of {max_len}")
+                if episode_length > max_len:
+                    assert episode_length < max_len, f"EPISODE OF {episode_length} STEPS!"
+
+                if debug:
+                    assert not np.isnan(obs).sum(), "Nan found in obs"
+                    assert reward <= 0.001
+
+            episode_rewards.append(np.sum(rewards))
+            return_disc = calc_disc_return(rewards, gamma=gamma)
+            episode_returns.append(return_disc)
+            episode_lengths.append(episode_length)
+            goal_reached.append(infos[-1]['ee_done'])
+            base_collisions.append(infos[-1]['nr_base_collisions'])
+            # kin fails are cumulative
+            fails_per_episode.append(infos[-1]['nr_kin_failures'])
+            episode_successes.append(episode_is_success(nr_kin_fails=fails_per_episode[-1], nr_collisions=base_collisions[-1], goal_reached=goal_reached[-1]))
+
+            unscaled_actions = [env._convert_policy_to_env_actions(a) for a in actions]
+            vel_norms.append(np.mean([a[0] for a in unscaled_actions]))
+
+            if (verbose > 1) or (env.get_world() != "sim"):
+                rospy.loginfo(f"{name_prefix}: Eval ep {i}: {(time.time() - t) / 60:.2f} minutes, {episode_length} steps. "
+                              f"Ik failures: {fails_per_episode[-1]}, base collisions: {base_collisions[-1]}. "
+                              f"{sum(episode_successes)}/{i + 1} full success.")
+
+    log_dict = {}
+    if env._learn_vel_norm != -1:
+        log_dict['vel_norm'] = np.mean(vel_norms)
+
+    ik_fail_thresh = env._ik_fail_thresh
+    fails_per_episode = np.array(fails_per_episode)
+    metrics = {f'return_undisc':        np.mean(episode_rewards),
+               f'return_disc':          np.mean(episode_returns),
+               f'epoch_len':            np.mean(episode_lengths),
+               f'ik_b{ik_fail_thresh}': np.mean(fails_per_episode <= ik_fail_thresh),
+               f'ik_b11':               np.mean(fails_per_episode < 11),
+               f'ik_zero_fail':         np.mean(fails_per_episode == 0),
+               f'ik_fails':             np.mean(fails_per_episode),
+               f'goal_reached':         np.mean(goal_reached),
+               f'base_collisions':      np.mean(base_collisions),
+               f'success':              np.mean(episode_successes),
+               'global_step':           global_step,
+               'timesteps_total':       global_step}
+    rospy.loginfo("---------------------------------------")
+    rospy.loginfo(f"T {global_step}, {name_prefix:} evaluation over {num_eval_episodes:.0f} episodes: "
+                  f"Avg. return (undisc) {metrics[f'return_undisc']:.2f}, (disc) {metrics[f'return_disc']:.2f}, Avg failures {metrics[f'ik_zero_fail']:.2f}, "
+                  f"Avg. base coll.: {metrics[f'base_collisions']:.2f}, Avg success: {metrics['success']:.2f}")
+    rospy.loginfo(f"IK fails: {metrics[f'ik_b{ik_fail_thresh}']:.2f}p < {ik_fail_thresh}, {metrics[f'ik_b11']:.2f}p < 11, {metrics[f'ik_zero_fail']:.2f}p < 1")
+    rospy.loginfo("---------------------------------------")
+
+    log_dict.update({(f'{name_prefix}/{k}' if ('step' not in k) else k): v for k, v in metrics.items()})
+    for k, v in log_dict.items():
+        logger.record(k, v)
+
+
+    plt.close('all')
+    return episode_rewards, episode_lengths, metrics, name_prefix
+
+
+def evaluate_on_task(wandb_config, policy, eval_env_config, task: str, world_type: str, global_step: int, flatten_obs: bool = False):
+    eval_env_config = eval_env_config.copy()
+    eval_env_config['task'] = task
+    eval_env_config['world_type'] = world_type
+    env = env_creator(eval_env_config, flatten_obs=flatten_obs)
+    # HSR schedule
+    if (eval_env_config['env'] == 'hsr') and wandb_config['hsr_ik_slack_schedule']:
+        env.set_ik_slack(*HSR_IK_SCHEDULE_MIN_SLACK)
+
+    rospy.loginfo(f"Evaluating on task {env.taskname} with {world_type} execution.")
+    prefix = ''
+    if world_type != 'sim':
+        prefix += f'ts{wandb_config["time_step"]}_slow{wandb_config["slow_down_real_exec"]}'
+
+    evaluation_rollout(policy, env, wandb_config["nr_evaluations"], name_prefix=prefix, global_step=global_step, verbose=2)
+    env.clear()
