@@ -206,24 +206,23 @@ class Timeseries(Data):
 class Image(Data):
     """
     A class used for representing image data.
-
     This class provides abstract methods for:
     - returning a NumPy compatible representation of data (numpy())
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, dtype=np.uint8):
         super().__init__(data)
 
+        self.dtype = dtype
         if data is not None:
             self.data = data
 
     @property
     def data(self):
         """
-        Getter of data. Image class returns a float32 NumPy array.
-
+        Getter of data. Image class returns a *dtype* NumPy array.
         :return: the actual data held by the object
-        :rtype: A float32 NumPy array
+        :rtype: A *dtype* NumPy array
         """
         if self._data is None:
             raise ValueError("Image is empty")
@@ -234,12 +233,10 @@ class Image(Data):
     def data(self, data):
         """
         Setter for data.
-
         :param: data to be used for creating a vector
         """
         # Convert input data to a NumPy array
-        # Note that will also fail for non-numeric data (which is expected)
-        data = np.asarray(data, dtype=np.uint8)
+        data = np.asarray(data, dtype=self.dtype)
 
         # Check if the supplied vector is 3D, e.g. (width, height, channels)
         if len(data.shape) != 3:
@@ -252,7 +249,6 @@ class Image(Data):
     def numpy(self):
         """
         Returns a NumPy-compatible representation of data.
-
         :return: a NumPy-compatible representation of data
         :rtype: numpy.ndarray
         """
@@ -262,7 +258,6 @@ class Image(Data):
     def __str__(self):
         """
         Returns a human-friendly string-based representation of the data.
-
         :return: a human-friendly string-based representation of the data
         :rtype: str
         """
