@@ -10,7 +10,8 @@ from torch.nn import functional as F
 from torchvision import transforms
 
 from control.mobile_manipulation.mobileRL.envs.env_utils import quaternion_to_yaw
-from control.mobile_manipulation.mobileRL.envs.simulator_api import GazeboAPI, DummySimulatorAPI, SpawnObject, ObjectGeometry
+from control.mobile_manipulation.mobileRL.envs.simulator_api import GazeboAPI, DummySimulatorAPI, SpawnObject, \
+    ObjectGeometry
 
 MAX_HEIGHT = 10.0
 SMALL_NUMBER = 1e-6
@@ -65,7 +66,8 @@ class Map:
         self.inflated_map = None
 
     @staticmethod
-    def load_map(map: Union[str, Path, np.array], current_resolution: float, target_resolution: float, pad: bool = True) -> Image:
+    def load_map(map: Union[str, Path, np.array], current_resolution: float, target_resolution: float,
+                 pad: bool = True) -> Image:
         """
         :param map: either a path to an image or a numpy array of shape [H x W]
         :param current_resolution:
@@ -111,7 +113,8 @@ class Map:
         xypose_meter[..., 1] = self._origin_H_meter - xypose_meter[..., 1]
         return xypose_meter
 
-    def in_collision(self, xy_meters: np.ndarray, use_inflated_map: bool = False, height_meters: float = 0, inflation_radius_meter: float = None) -> bool:
+    def in_collision(self, xy_meters: np.ndarray, use_inflated_map: bool = False, height_meters: float = 0,
+                     inflation_radius_meter: float = None) -> bool:
         if inflation_radius_meter is not None:
             assert use_inflated_map
 
@@ -198,7 +201,8 @@ class Map:
 
 class DummyMap(Map):
     def __init__(self):
-        super(DummyMap, self).__init__(floorplan=np.zeros([2, 2]), orig_resolution=0.1, map_frame_rviz="map", inflation_radius=0.2)
+        super(DummyMap, self).__init__(floorplan=np.zeros([2, 2]), orig_resolution=0.1, map_frame_rviz="map",
+                                       inflation_radius=0.2)
 
     def in_collision(self, xy_meters) -> bool:
         return False

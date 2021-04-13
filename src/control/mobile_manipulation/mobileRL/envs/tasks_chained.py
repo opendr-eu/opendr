@@ -185,11 +185,13 @@ class PickNPlaceChainedTask(BaseChainedTask):
                                    y=random.uniform(-self._pick_table.y + 0.1, self._pick_table.y - 0.1) / 2,
                                    z=self._pick_table.z + self._pick_obj.z + 0.01),
                              Quaternion(0, 0, 1, 1))
-        self.pick_obj_pose = list_to_pose(multiply_tfs(pose_to_list(start_table_pose), pose_to_list(pose_on_table), False))
+        self.pick_obj_pose = list_to_pose(
+            multiply_tfs(pose_to_list(start_table_pose), pose_to_list(pose_on_table), False))
         objects.append(SpawnObject("pick_obj", self._pick_obj, self.pick_obj_pose, "world"))
 
         # target position to place the object
-        self.place_obj_pose = list_to_pose(multiply_tfs(pose_to_list(end_table_pose), pose_to_list(pose_on_table), False))
+        self.place_obj_pose = list_to_pose(
+            multiply_tfs(pose_to_list(end_table_pose), pose_to_list(pose_on_table), False))
         return objects
 
     def draw_goal(self) -> List[TaskGoal]:
@@ -202,7 +204,8 @@ class PickNPlaceChainedTask(BaseChainedTask):
 
         # place goals
         world_end_target_pos = self.place_obj_pose.position
-        place_loc = [world_end_target_pos.x, world_end_target_pos.y + 0.05, world_end_target_pos.z + 0.05] + [0, 0, -np.pi / 2]
+        place_loc = [world_end_target_pos.x, world_end_target_pos.y + 0.05, world_end_target_pos.z + 0.05] + [0, 0,
+                                                                                                              -np.pi / 2]
         in_front_of_place_loc = copy.deepcopy(place_loc)
         in_front_of_place_loc[1] += 0.2
 
@@ -264,30 +267,33 @@ class DoorChainedTask(BaseChainedTask):
 
     def draw_goal(self) -> List[TaskGoal]:
         # grasp goal
-        door_pose_closed = list_to_pose(multiply_tfs(pose_to_list(self.target_shelf_pose), pose_to_list(self.kallax2_origin_to_door_pose), False))
+        door_pose_closed = list_to_pose(
+            multiply_tfs(pose_to_list(self.target_shelf_pose), pose_to_list(self.kallax2_origin_to_door_pose), False))
         obj_origin_goal = copy.deepcopy(door_pose_closed)
         obj_origin_goal.position.y += 0.01
         obj_origin_goal = pose_to_list(obj_origin_goal)
 
         motion_plan_grasp = str(self._motion_model_path / "GMM_grasp_KallaxTuer.csv")
-        grasp_goal = TaskGoal(gripper_goal_tip=DoorChainedTask.gmm_obj_origin_to_tip(motion_plan_grasp, obj_origin_goal),
-                              end_action=GripperActions.GRASP,
-                              success_thres_dist=self._success_thres_dist,
-                              success_thres_rot=self._success_thres_rot,
-                              head_start=self._default_head_start,
-                              ee_fn=partial(GMMPlannerWrapper, gmm_model_path=motion_plan_grasp, robot_config=self.env.robot_config))
+        grasp_goal = TaskGoal(
+            gripper_goal_tip=DoorChainedTask.gmm_obj_origin_to_tip(motion_plan_grasp, obj_origin_goal),
+            end_action=GripperActions.GRASP,
+            success_thres_dist=self._success_thres_dist,
+            success_thres_rot=self._success_thres_rot,
+            head_start=self._default_head_start,
+            ee_fn=partial(GMMPlannerWrapper, gmm_model_path=motion_plan_grasp, robot_config=self.env.robot_config))
 
         # opening goal: expects the object pose in the beginning of the movement
         # angle = random.uniform(self.DOOR_ANGLE_OPEN_RNG[0], self.DOOR_ANGLE_OPEN_RNG[1])
         # self.set_door_angle("shelf2", angle)
         # door_pose_release = self.map.simulator.get_link_state("shelf2::Door")
         motion_plan_opening = str(self._motion_model_path / "GMM_move_KallaxTuer.csv")
-        opening_goal = TaskGoal(gripper_goal_tip=DoorChainedTask.gmm_obj_origin_to_tip(motion_plan_opening, obj_origin_goal),
-                                end_action=GripperActions.OPEN,
-                                success_thres_dist=self._success_thres_dist,
-                                success_thres_rot=self._success_thres_rot,
-                                head_start=self.SUBGOAL_PAUSE,
-                                ee_fn=partial(GMMPlannerWrapper, gmm_model_path=motion_plan_opening, robot_config=self.env.robot_config))
+        opening_goal = TaskGoal(
+            gripper_goal_tip=DoorChainedTask.gmm_obj_origin_to_tip(motion_plan_opening, obj_origin_goal),
+            end_action=GripperActions.OPEN,
+            success_thres_dist=self._success_thres_dist,
+            success_thres_rot=self._success_thres_rot,
+            head_start=self.SUBGOAL_PAUSE,
+            ee_fn=partial(GMMPlannerWrapper, gmm_model_path=motion_plan_opening, robot_config=self.env.robot_config))
         return [grasp_goal, opening_goal]
 
 
@@ -328,22 +334,26 @@ class DrawerChainedTask(BaseChainedTask):
         # grasp goal
         # self.map.simulator.set_joint_angle(model_name="target_drawer", joint_names=['/Drawer1Joint'], angles=[0])
         # door_pose_closed = self.map.simulator.get_link_state("target_drawer::Drawer1")
-        door_pose_closed = list_to_pose(multiply_tfs(pose_to_list(self.target_drawer_pose), pose_to_list(self.kallax_origin_to_drawer_pose), False))
-        obj_origin_goal = [door_pose_closed.position.x + 0.04, door_pose_closed.position.y, door_pose_closed.position.z + 0.05,
+        door_pose_closed = list_to_pose(
+            multiply_tfs(pose_to_list(self.target_drawer_pose), pose_to_list(self.kallax_origin_to_drawer_pose), False))
+        obj_origin_goal = [door_pose_closed.position.x + 0.04, door_pose_closed.position.y,
+                           door_pose_closed.position.z + 0.05,
                            0, 0, 0, 1]
         motion_plan_grasp = str(self._motion_model_path / "GMM_grasp_KallaxDrawer.csv")
-        grasp_goal = TaskGoal(gripper_goal_tip=DoorChainedTask.gmm_obj_origin_to_tip(motion_plan_grasp, obj_origin_goal),
-                              end_action=GripperActions.GRASP,
-                              success_thres_dist=self._success_thres_dist,
-                              success_thres_rot=self._success_thres_rot,
-                              head_start=self._default_head_start,
-                              ee_fn=partial(GMMPlannerWrapper, gmm_model_path=motion_plan_grasp, robot_config=self.env.robot_config))
+        grasp_goal = TaskGoal(
+            gripper_goal_tip=DoorChainedTask.gmm_obj_origin_to_tip(motion_plan_grasp, obj_origin_goal),
+            end_action=GripperActions.GRASP,
+            success_thres_dist=self._success_thres_dist,
+            success_thres_rot=self._success_thres_rot,
+            head_start=self._default_head_start,
+            ee_fn=partial(GMMPlannerWrapper, gmm_model_path=motion_plan_grasp, robot_config=self.env.robot_config))
 
         motion_plan_opening = str(self._motion_model_path / "GMM_move_KallaxDrawer.csv")
-        opening_goal = TaskGoal(gripper_goal_tip=DoorChainedTask.gmm_obj_origin_to_tip(motion_plan_opening, obj_origin_goal),
-                                end_action=GripperActions.OPEN,
-                                success_thres_dist=self._success_thres_dist,
-                                success_thres_rot=self._success_thres_rot,
-                                head_start=self.SUBGOAL_PAUSE,
-                                ee_fn=partial(GMMPlannerWrapper, gmm_model_path=motion_plan_opening, robot_config=self.env.robot_config))
+        opening_goal = TaskGoal(
+            gripper_goal_tip=DoorChainedTask.gmm_obj_origin_to_tip(motion_plan_opening, obj_origin_goal),
+            end_action=GripperActions.OPEN,
+            success_thres_dist=self._success_thres_dist,
+            success_thres_rot=self._success_thres_rot,
+            head_start=self.SUBGOAL_PAUSE,
+            ee_fn=partial(GMMPlannerWrapper, gmm_model_path=motion_plan_opening, robot_config=self.env.robot_config))
         return [grasp_goal, opening_goal]

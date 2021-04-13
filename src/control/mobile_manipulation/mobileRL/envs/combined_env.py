@@ -1,15 +1,10 @@
 import pickle
 
 import numpy as np
-import torch
-from PIL import Image, ImageDraw
 from gym import spaces, Env
-from matplotlib import pyplot as plt
 from pybindings import RobotObs
-from torchvision import transforms
 
 from control.mobile_manipulation.mobileRL.envs.eeplanner import EEPlanner
-from control.mobile_manipulation.mobileRL.envs.env_utils import quaternion_to_yaw
 from control.mobile_manipulation.mobileRL.envs.map import Map, DummyMap
 from control.mobile_manipulation.mobileRL.envs.robotenv import RobotEnv, ActionRanges, unscale_action
 
@@ -36,7 +31,6 @@ class CombinedEnv(Env):
                  ik_fail_thresh: int,
                  learn_vel_norm: bool,
                  slow_down_real_exec: float,
-                 use_map_obs: bool,
                  flatten_obs: bool = False):
         self._robot = robot_env
         self._ee_planner: EEPlanner = None
@@ -48,7 +42,7 @@ class CombinedEnv(Env):
         self._learn_vel_norm = learn_vel_norm
         self._slow_down_real_execution = slow_down_real_exec
 
-        self._use_map_obs = use_map_obs
+        self._use_map_obs = False
         # Only so we can easily keep compatibility with stable-baselines which needs flat observations
         self._flatten_obs = flatten_obs
         self.robot_state_dim = self._robot.get_obs_dim()
@@ -56,7 +50,8 @@ class CombinedEnv(Env):
 
         self.action_names, self._min_actions, self._max_actions = ActionRanges.get_ranges(env_name=self._robot.env_name,
                                                                                           strategy=self._robot._strategy,
-                                                                                          learn_vel_norm=(learn_vel_norm != -1))
+                                                                                          learn_vel_norm=(
+                                                                                                      learn_vel_norm != -1))
         print(f"Actions to learn: {self.action_names}")
         self.action_dim = len(self._min_actions)
 
@@ -69,13 +64,6 @@ class CombinedEnv(Env):
 
     def get_inflation_radius(self) -> float:
         return max(self._robot.robot_base_size) / 2
-
-    def local_map_in_collision(self, local_map: np.ndarray) -> bool:
-        # TODO: can we account for the arm as well? More complex base shapes?
-        robot_base_size_pixels = (torch.Tensor(self._robot.robot_base_size) / self.map._resolution).ceil().to(torch.int)
-        crop_fn = transforms.CenterCrop(size=robot_base_size_pixels)
-        center = crop_fn(torch.Tensor(local_map))
-        return bool(center.sum() > 0)
 
     @property
     def observation_space(self):
@@ -125,12 +113,12 @@ class CombinedEnv(Env):
               close_gripper: bool = False):
         # first clear map so robot cannot crash into objects when resetting, then respawn the scene
         self.map.clear()
-        robot_obs = self._robot.reset(initial_base_pose=self.map.draw_initial_base_pose(ee_planner.gripper_goal_wrist if ee_planner is not None else None),
+        robot_obs = self._robot.reset(initial_base_pose=self.map.draw_initial_base_pose(
+            ee_planner.gripper_goal_wrist if ee_planner is not None else None),
                                       initial_joint_distribution=initial_joint_distribution,
                                       success_thres_dist=success_thres_dist,
                                       success_thres_rot=success_thres_rot,
                                       close_gripper=close_gripper)
-        self.nr_base_collisions = 0
 
         self.map.map_reset()
         if self.vis_env:
@@ -154,19 +142,8 @@ class CombinedEnv(Env):
         if (self._learn_vel_norm != -1):
             reward -= self._learn_vel_norm * (self._robot.robot_config['base_vel_rng'] - vel_norm)
 
-        local_map = self.map.get_local_map(robot_obs.base_tf, self._robot.get_world())
-        robot_info['base_collision'] = self.local_map_in_collision(local_map)
-        self.nr_base_collisions += robot_info['base_collision']
-        robot_info['nr_base_collisions'] = self.nr_base_collisions
-
-        # penalize stronger than ik failure
-        reward -= 2 * robot_info['base_collision']
-
-        done = ((robot_obs.done and ee_obs_train_freq.done)
-                or (robot_info['nr_kin_failures'] >= self._ik_fail_thresh)
-                or (robot_info['nr_base_collisions'] >= self._ik_fail_thresh))
-
-        return self._to_agent_obs(robot_obs, ee_obs_train_freq.ee_velocities_rel, local_map), reward, done, robot_info
+        done = (robot_obs.done and ee_obs_train_freq.done) or (robot_info['nr_kin_failures'] >= self._ik_fail_thresh)
+        return self._to_agent_obs(robot_obs, ee_obs_train_freq.ee_velocities_rel), reward, done, robot_info
 
     def _to_agent_obs(self, robot_obs: RobotObs, ee_velocities_rel, local_map=None) -> list:
         obs_vector = (robot_obs.relative_gripper_tf
@@ -199,41 +176,3 @@ class CombinedEnv(Env):
 
         base_actions = actions
         return vel_norm, base_actions
-
-    def plot_trajectory(self):
-        f, ax = self.map.plot_floorplan()
-
-        traj = np.array(self._robot.trajectory)
-        if len(traj):
-            base_traj, gripper_traj = traj[:, 0], traj[:, 1]
-            gripper_traj[:, :2] = self.map.meter_to_pixels(gripper_traj[:, :2])
-            base_traj[:, :2] = self.map.meter_to_pixels(base_traj[:, :2])
-
-            ax.plot(gripper_traj[:, 0], gripper_traj[:, 1], ls=':', color='cyan', label=None)
-
-            base_rot = quaternion_to_yaw(base_traj[:, 3:])
-            ax.quiver(base_traj[:, 0], base_traj[:, 1], 1.0 * np.ones_like(base_rot), 1.0 * np.ones_like(base_rot),
-                      angles=np.rad2deg(base_rot),
-                      scale_units='dots', scale=0.09, width=0.002, headwidth=4, headlength=1.5, headaxislength=2,
-                      pivot='middle',
-                      color='orange', label=f'base')
-        return f, ax
-
-    def plot_local_map(self):
-        robot_size_pixel = np.array(self._robot.robot_base_size) / self.map._resolution
-
-        obs = self._robot.get_robot_obs()
-        local_map = self.map.get_local_map(obs.base_tf, self._robot.get_world())
-        img = Image.fromarray(local_map == 0).convert('1').convert('RGB')
-        draw = ImageDraw.Draw(img)
-
-        x = [img.size[0] / 2 - robot_size_pixel[0] / 2, img.size[0] / 2 + robot_size_pixel[0] / 2]
-        y = [img.size[1] / 2 - robot_size_pixel[1] / 2, img.size[1] / 2 + robot_size_pixel[1] / 2]
-        draw.rectangle(list(zip(x, y)), outline="green", width=1)
-        f, ax = plt.subplots(1, 1, figsize=(10, 10))
-        ax.imshow(np.asarray(img))
-        return f, ax
-
-    def plot_floorplan(self):
-        obs = self._robot.get_robot_obs()
-        return self.map.plot_floorplan(location=obs.base_tf)

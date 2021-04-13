@@ -163,4 +163,3 @@ class RestrictedWsTask(RndStartRndGoalsTask):
                                                default_head_start=default_head_start,
                                                goal_height_rng=(env.robot_config["restricted_ws_z_min"],
                                                                 env.robot_config["restricted_ws_z_max"]))
-
