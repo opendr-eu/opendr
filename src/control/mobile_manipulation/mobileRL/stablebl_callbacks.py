@@ -7,7 +7,7 @@ import numpy as np
 from stable_baselines3.common.callbacks import BaseCallback, EventCallback
 from stable_baselines3.common.vec_env import DummyVecEnv, VecEnv, sync_envs_normalization
 
-from modulation.evaluation import evaluation_rollout
+from control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
 
 
 class ModulationEvalCallback(EventCallback):

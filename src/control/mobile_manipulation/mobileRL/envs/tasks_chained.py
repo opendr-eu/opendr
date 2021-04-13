@@ -10,12 +10,12 @@ import numpy as np
 from geometry_msgs.msg import Point, Pose, Quaternion
 from pybindings import GMMPlanner, multiply_tfs
 
-from modulation.envs.combined_env import CombinedEnv
-from modulation.envs.eeplanner import LinearPlannerWrapper, GMMPlannerWrapper, PointToPoint2DPlannerWrapper
-from modulation.envs.env_utils import pose_to_list, list_to_pose
-from modulation.envs.map import SceneMap
-from modulation.envs.simulator_api import WorldObjects, SpawnObject
-from modulation.envs.tasks import BaseTask, TaskGoal, GripperActions
+from control.mobile_manipulation.mobileRL.envs.combined_env import CombinedEnv
+from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper, GMMPlannerWrapper
+from control.mobile_manipulation.mobileRL.envs.env_utils import pose_to_list, list_to_pose
+from control.mobile_manipulation.mobileRL.envs.map import SceneMap
+from control.mobile_manipulation.mobileRL.envs.simulator_api import WorldObjects, SpawnObject
+from control.mobile_manipulation.mobileRL.envs.tasks import BaseTask, TaskGoal, GripperActions
 
 
 class BaseChainedTask(BaseTask):

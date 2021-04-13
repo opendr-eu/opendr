@@ -8,10 +8,10 @@ from matplotlib import pyplot as plt
 from pybindings import RobotObs
 from torchvision import transforms
 
-from modulation.envs.eeplanner import EEPlanner
-from modulation.envs.env_utils import quaternion_to_yaw
-from modulation.envs.map import Map, DummyMap
-from modulation.envs.robotenv import RobotEnv, ActionRanges, unscale_action
+from control.mobile_manipulation.mobileRL.envs.eeplanner import EEPlanner
+from control.mobile_manipulation.mobileRL.envs.env_utils import quaternion_to_yaw
+from control.mobile_manipulation.mobileRL.envs.map import Map, DummyMap
+from control.mobile_manipulation.mobileRL.envs.robotenv import RobotEnv, ActionRanges, unscale_action
 
 
 class CombinedEnv(Env):

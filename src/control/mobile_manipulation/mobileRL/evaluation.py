@@ -7,9 +7,9 @@ from matplotlib import pyplot as plt
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common import logger
 
-from modulation.envs.env_utils import calc_disc_return
-from modulation.envs.robotenv import HSR_IK_SCHEDULE_MIN_SLACK
-from modulation.utils import episode_is_success, env_creator
+from control.mobile_manipulation.mobileRL.envs.env_utils import calc_disc_return
+from control.mobile_manipulation.mobileRL.envs.robotenv import HSR_IK_SCHEDULE_MIN_SLACK
+from control.mobile_manipulation.mobileRL.utils import episode_is_success, env_creator
 
 
 def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, verbose: bool = True,

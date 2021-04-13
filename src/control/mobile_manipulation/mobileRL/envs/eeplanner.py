@@ -6,7 +6,7 @@ import pyastar
 from matplotlib import pyplot as plt
 from pybindings import RobotObs, EEObs, LinearPlanner, GMMPlanner, PointToPoint2DPlanner  # , SplinePlanner
 
-from modulation.envs.map import Map
+from control.mobile_manipulation.mobileRL.envs.map import Map
 
 MIN_PLANNER_VELOCITY = 0.001
 MAX_PLANNER_VELOCITY = 0.1
