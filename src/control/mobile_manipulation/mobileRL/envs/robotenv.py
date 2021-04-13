@@ -12,16 +12,15 @@ from pybindings import RobotObs, RobotPR2, RobotTiago, RobotHSR
 
 class ActionRanges:
     @classmethod
-    def get_ranges(cls, env_name: str, strategy: str, learn_vel_norm: bool):
+    def get_ranges(cls, env_name: str, learn_vel_norm: bool):
         ks = []
         if learn_vel_norm:
             ks.append('vel_norm')
 
-        if strategy in ['dirvel', 'relvelm', 'relveld', 'unmodulated']:
-            if env_name == 'tiago':
-                ks += ['tiago_base_vel', 'tiago_base_angle']
-            else:
-                ks += ['base_rot', 'base_x', 'base_y']
+        if env_name == 'tiago':
+            ks += ['tiago_base_vel', 'tiago_base_angle']
+        else:
+            ks += ['base_rot', 'base_x', 'base_y']
 
         n = len(ks)
         min_actions = n * [-1]
