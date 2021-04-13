@@ -4,21 +4,14 @@ import numpy as np
 import rospy
 import torch
 from matplotlib import pyplot as plt
-from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common import logger
 
 from control.mobile_manipulation.mobileRL.envs.env_utils import calc_disc_return
-from control.mobile_manipulation.mobileRL.envs.robotenv import HSR_IK_SCHEDULE_MIN_SLACK
 from control.mobile_manipulation.mobileRL.utils import episode_is_success, env_creator
 
 
 def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, verbose: bool = True,
                        name_prefix: str = '', debug: bool = False):
-    def flatten_obs(obs):
-        """ray expects a batched, flattened obs"""
-        assert len(obs) == 2
-        return np.concatenate([np.array(obs[0]).flatten(), np.array(obs[1]).flatten()])
-
     name_prefix = f"{name_prefix + '_' if name_prefix else ''}{env.loggingname}"
     gamma = policy.gamma if hasattr(policy, "gamma") else policy.config["gamma"]
 
@@ -32,12 +25,7 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
 
             rewards, infos, actions = [], [], []
             while not done:
-                if isinstance(policy, BaseAlgorithm):
-                    # stable-baseline agents
-                    action, state = policy.predict(obs, state=None, deterministic=True)
-                else:
-                    # ray agents
-                    action, *_ = policy.compute_single_action(flatten_obs(obs), explore=False)
+                action, state = policy.predict(obs, state=None, deterministic=True)
 
                 assert not np.isnan(action).sum(), f"Nan found in actions: {action}"
                 obs, reward, done, info = env.step(action)
@@ -103,7 +91,6 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
     for k, v in log_dict.items():
         logger.record(k, v)
 
-
     plt.close('all')
     return episode_rewards, episode_lengths, metrics, name_prefix
 
@@ -113,9 +100,6 @@ def evaluate_on_task(wandb_config, policy, eval_env_config, task: str, world_typ
     eval_env_config['task'] = task
     eval_env_config['world_type'] = world_type
     env = env_creator(eval_env_config, flatten_obs=flatten_obs)
-    # HSR schedule
-    if (eval_env_config['env'] == 'hsr') and wandb_config['hsr_ik_slack_schedule']:
-        env.set_ik_slack(*HSR_IK_SCHEDULE_MIN_SLACK)
 
     rospy.loginfo(f"Evaluating on task {env.taskname} with {world_type} execution.")
     prefix = ''
