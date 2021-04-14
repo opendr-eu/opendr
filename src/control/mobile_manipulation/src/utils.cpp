@@ -1,37 +1,6 @@
 #include <modulation_rl/utils.h>
 
 namespace utils {
-  void printVector3(tf::Vector3 v, std::string descr) {
-    std::cout << descr << ": " << v.x() << ", " << v.y() << ", " << v.z() << std::endl;
-  }
-
-  void printQ(tf::Quaternion q, std::string descr) {
-    std::cout << descr << ": " << q.x() << ", " << q.y() << ", " << q.z() << ", " << q.w() << std::endl;
-  }
-
-  void printT(tf::Transform t, std::string descr) {
-    tf::Vector3 v = t.getOrigin();
-    tf::Quaternion q = t.getRotation();
-    std::cout << descr << ". O: " << v.x() << ", " << v.y() << ", " << v.z() << ", Q: " << q.x() << ", " << q.y() << ", "
-              << q.z() << ", " << q.w() << std::endl;
-  }
-
-  void printArrayDouble(std::vector<double> array, std::string descr) {
-    std::cout << descr << ", size: " << array.size() << ", ";
-    for (int i = 0; i < array.size(); i++) {
-      std::cout << array[i] << ", ";
-    }
-    std::cout << std::endl;
-  }
-
-  void printArrayStr(std::vector<std::string> array, std::string descr) {
-    std::cout << descr << array.size() << std::endl;
-    for (int i = 0; i < array.size(); i++) {
-      std::cout << array[i] << ", ";
-    }
-    std::cout << std::endl;
-  }
-
   tf::Vector3 qToRpy(tf::Quaternion q) {
     double roll, pitch, yaw;
     tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
@@ -239,21 +208,6 @@ namespace utils {
     return std::string(s, b, e - b + 1);
   }
 
-  void pathPointInsertTransform(PathPoint &path_point, const std::string &name, tf::Transform tf, bool yaw_only) {
-    path_point[name + "_x"] = tf.getOrigin().x();
-    path_point[name + "_y"] = tf.getOrigin().y();
-    path_point[name + "_z"] = tf.getOrigin().z();
-    double R, P, Y;
-    tf::Matrix3x3(tf.getRotation()).getRPY(R, P, Y);
-    if (yaw_only) {
-      path_point[name + "_rot"] = Y;
-    } else {
-      path_point[name + "_R"] = R;
-      path_point[name + "_P"] = P;
-      path_point[name + "_Y"] = Y;
-    }
-  }
-
   tf::Transform listToTf(const std::vector<double> &input) {
     tf::Quaternion rotation;
     if (input.size() == 6) {
@@ -329,10 +283,6 @@ namespace utils {
     bool equal = (a.getOrigin() - b.getOrigin()).length() < 0.05;
     // NOTE: not sure if this is invariant to all equivalent quaternions
     equal &= (a.getRotation() - b.getRotation()).length() < 0.05;
-    if (!equal) {
-      utils::printT(a, "a");
-      utils::printT(b, "b");
-    }
     return equal;
   }
 

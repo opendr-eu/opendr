@@ -377,8 +377,6 @@ bool GaussianMixtureModel::loadFromFile(std::string &filename) {
     return false;
   }
 
-  // ROS_INFO("GMM loaded");
-
   std::string line;
   // skip empty lines until we're at a good one
   do {

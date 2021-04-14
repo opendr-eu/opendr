@@ -67,13 +67,8 @@ RobotEnv::RobotEnv(uint32_t seed, std::string strategy, std::string world_type, 
 
   // always do this so we can later change to real_execution
   if (init_controllers_) {
-    // https://readthedocs.org/projects/moveit/downloads/pdf/latest/
-    // https://ros-planning.github.io/moveit_tutorials/doc/planning_scene_monitor/planning_scene_monitor_tutorial.html
     spinner_ = new ros::AsyncSpinner(2);
     spinner_->start();
-
-    // planning_scene_monitor_.reset(new planning_scene_monitor::PlanningSceneMonitor(robot_model_loader));
-    // planning_scene_monitor_->startSceneMonitor("/my_planning_scene");
   }
 
   if (perform_collision_check_) {
@@ -256,11 +251,6 @@ RobotObs RobotEnv::step(std::vector<double> base_actions, const std::vector<doub
   desired_gripper_tf.setRotation(ee_vel_world.getRotation() * robot_state_.gripper_tf.getRotation());
 
   tf::Transform desired_gripper_tf_rel = desired_base_tf.inverse() * desired_gripper_tf;
-  // if (world_->is_analytical()){
-  //    desired_gripper_tf_rel = desired_base_tf.inverse() * desired_gripper_tf;
-  //} else {
-  //    desired_gripper_tf_rel = robot_state_.base_tf.inverse() * desired_gripper_tf;
-  //}
 
   // Perform IK checks
   Eigen::Isometry3d state;
@@ -275,10 +265,6 @@ RobotObs RobotEnv::step(std::vector<double> base_actions, const std::vector<doub
     base_cmd_pub_.publish(base_cmd_rel);
   }
 
-  // if (!found_ik) {
-  //     // planning_scene_monitor_->getPlanningScene()->getCurrentState().copyJointGroupPositions(joint_model_group_,
-  //     robot_state_.joint_values);
-  // }
   // update state to what we actually achieve
   // a) base: without execution we'll always be at the next base transform
   if (world_->isAnalytical()) {
@@ -293,7 +279,8 @@ RobotObs RobotEnv::step(std::vector<double> base_actions, const std::vector<doub
   // update_current_gripper_from_world();
 
   // there seems to be an incompatibility with some geometries leading to occasional segfaults within
-  // planning_scene::PlanningScene::checkCollisionUnpadded if (init_controllers_){
+  // planning_scene::PlanningScene::checkCollisionUnpadded
+  // if (init_controllers_){
   //     collision |= check_scene_collisions();
   // }
 
@@ -361,9 +348,6 @@ void RobotEnv::addTrajectoryPoint(const tf::Transform &desired_gripper_tf, bool 
       desired_gripper_tf, "gripper_plan", utils::getColorMsg(ik_color, 0.5), mid, robo_config_.frame_id);
     gripper_visualizer_.publish(marker);
     gripper_plan_marker_.markers.push_back(marker);
-
-    // visualization_msgs::Marker base_plan_marker = utils::marker_from_transform(next_plan.nextBaseTransform, "base_plan",
-    // "orange", 0.5, mid, robo_config_.frame_id); gripper_visualizer_.publish(base_plan_marker);
 
     visualization_msgs::Marker base_marker = utils::markerFromTransform(
       robot_state_.base_tf, "base_actual", utils::getColorMsg("yellow", 0.5), mid, robo_config_.frame_id);
@@ -506,17 +490,6 @@ geometry_msgs::Twist RobotOmniDrive::calcDesiredBaseTransform(std::vector<double
   base_cmd_rel.linear.y = relative_desired_pose.getOrigin().getY() * cmd_scaling;
   base_cmd_rel.angular.z = yaw * cmd_scaling;
 
-  //  same values as above. But won't easily adapt to inprecisions in the actual base transform I guess
-  // scale to unit speed and ensure constraints are held
-  // base_vel_rel = utils::norm_scale_vel(cmd_scaling * base_vel_rel, 0.0, robo_config_.base_vel_rng);
-  // geometry_msgs::Twist base_cmd_rel2;
-  // base_cmd_rel2.linear.x = base_vel_rel.x();
-  // base_cmd_rel2.linear.y = base_vel_rel.y();
-  // base_cmd_rel2.linear.z = base_vel_rel.z();
-  // base_cmd_rel2.angular.z = base_rotation * cmd_scaling;
-  // std::cout << "base_cmd_rel2.linear.x: " << base_cmd_rel.linear.x << " , base_cmd_rel2.linear.y: " << base_cmd_rel.linear.y
-  // << " , base_cmd_rel2.angular.z: " << base_cmd_rel.angular.z << std::endl;
-
   return base_cmd_rel;
 }
 
@@ -560,16 +533,6 @@ geometry_msgs::Twist RobotDiffDrive::calcDesiredBaseTransform(std::vector<double
     angle = utils::clampDouble(angle, -base_rot_rng_t, base_rot_rng_t);
     angle += dangle;
 
-    // unmodulated alternative: first rotate then move
-    // if (strategy_ == "unmodulated"){
-    //     if (std::abs(angle) > 0.01){
-    //         vel_forward = 0.0;
-    //         angle = utils::clamp_double(angle, -0.1, 0.1);
-    //      } else {
-    //         angle = 0.0;
-    //      }
-    // }
-
     // enforce constraints
     vel_forward = utils::clampDouble(vel_forward, -base_vel_rng_t, base_vel_rng_t);
     angle = utils::clampDouble(angle, -base_rot_rng_t, base_rot_rng_t);
@@ -610,7 +573,7 @@ geometry_msgs::Twist RobotDiffDrive::calcDesiredBaseTransform(std::vector<double
   return base_cmd_rel;
 }
 
-////Callback for collision checking in ik search//////////////////////
+// Callback for collision checking in ik search
 namespace validity_fun {
   bool validityCallbackFn(planning_scene::PlanningScenePtr &planning_scene, const robot_state::RobotStatePtr &kinematic_state,
                           const robot_state::JointModelGroup *joint_model_group, const double *joint_group_variable_values) {

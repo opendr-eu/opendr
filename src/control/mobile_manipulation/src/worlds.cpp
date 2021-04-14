@@ -26,11 +26,6 @@ void SimWorld::setModelState(std::string model_name, tf::Transform world_transfo
 
 GazeboWorld::GazeboWorld() :
   BaseWorld("gazebo", false){
-    // set_model_state_client_ = nh_->serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
-    // set_model_configuration_client_ =
-    // nh_->serviceClient<gazebo_msgs::SetModelConfiguration>("/gazebo/set_model_configuration");
-    // pause_gazebo_client_ = nh_->serviceClient<std_srvs::Empty>("/gazebo/pause_physics");
-    // unpause_gazebo_client_ = nh_->serviceClient<std_srvs::Empty>("/gazebo/unpause_physics");
   };
 
 void GazeboWorld::setModelState(std::string model_name, tf::Transform world_transform, RoboConf robo_config,
@@ -59,18 +54,6 @@ void GazeboWorld::setModelState(std::string model_name, tf::Transform world_tran
   if (!ros::service::call("/gazebo/set_model_state", srv)) {
     ROS_ERROR("set_model_state_client_ failed");
   };
-
-  // // set joint position in gazebo
-  // gazebo_msgs::SetModelConfigurationRequest model_configuration;
-  // model_configuration.urdf_param_name = "robot_description";
-  // model_configuration.model_name = (std::string) robo_config_.name;
-  // model_configuration.joint_names = joint_names_;
-  // model_configuration.joint_positions = current_joint_values_;
-  // gazebo_msgs::SetModelConfiguration srv2;
-  // srv2.request = model_configuration;
-  // if (!set_model_configuration_client_.call(srv2)) {
-  //     ROS_INFO("set_model_configuration_client_ failed");
-  // };
 
   // unpause physics
   ros::service::call("/gazebo/unpause_physics", emptySrv);
