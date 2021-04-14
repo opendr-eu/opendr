@@ -105,7 +105,7 @@ Parameters:
 X3DLearner.infer(batch)
 ```
 
-This method is used to perform pose estimation on an image.
+This method is used to perform classification of a video
 Returns a list of `engine.target.Category` objects, where each holds a category.
 
 Parameters:
@@ -312,11 +312,10 @@ Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d
 
 #### `CoX3DLearner.infer`
 ```python
-X3DLearner.infer(batch)
+CoX3DLearner.infer(batch)
 ```
-
-This method is used to perform pose estimation on an image.
-Returns a list of `engine.target.Pose` objects, where each holds a pose, or returns an empty list if no detection were made.  
+This method is used to perform classification of a video, image by image.
+Returns a list of `engine.target.Category` objects, where each holds a category.
 
 Parameters:
 - **batch**: *Union[engine.data.Image, List[engine.data.Image], torch.Tensor]*  
