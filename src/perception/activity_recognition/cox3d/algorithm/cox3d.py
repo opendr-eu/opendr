@@ -673,7 +673,7 @@ class CoX3DHead(torch.nn.Module):
         return x
 
     def forward3d(self, inputs):
-        # In its current design the X3D head is only useable for a single
+        # In its current design the X3D head is only usable for a single
         # pathway input.
         assert len(inputs) == 1, "Input tensor does not contain 1 pathway"
         x = self.conv_5.forward3d(inputs[0])
