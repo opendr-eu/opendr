@@ -200,7 +200,62 @@ For HSR / Tiago:
 
 
 #### Examples
-* **Training in the analytical environment and evaluation in Gazebo on the Pick & Place task**.
+* **Training in the analytical environment and evaluation in Gazebo on a Door Opening task**.
+  As described above, install ROS and build the workspace. Then start a roscore and the launch files.
+  ```python
+    import rospy
+    from pathlib import Path
+    from control.mobile_manipulation.mobileRL.evaluation import evaluate_on_task
+    from control.mobile_manipulation.mobileRL.utils import create_env
+    from control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
+
+    # need a node to for visualisation
+    rospy.init_node('kinematic_feasibility_py', anonymous=False)
+
+    main_path = Path(__file__).parent
+    logpath = f"{main_path}/logs/demo_run"
+
+    # create envs
+    env_config = {
+      'env': 'pr2',
+      'penalty_scaling': 0.01,
+      'time_step_world': 0.02,
+      'seed': 42,
+      'strategy': 'dirvel',
+      'world_type': 'sim',
+      'init_controllers': True,
+      'perform_collision_check': True,
+      'vis_env': True,
+      'transition_noise_base': 0.015,
+      'ik_fail_thresh': 20,
+      'learn_vel_norm': -1,
+      'slow_down_real_exec': 2,
+      'head_start': 0,
+      'node_handle': 'train_env'
+    }
+  
+    env = create_env(env_config, task='rndstartrndgoal', node_handle="train_env", wrap_in_dummy_vec=True, flatten_obs=True)
+    eval_config = env_config.copy()
+    eval_config["transition_noise_base"] = 0.0
+    eval_config["ik_fail_thresh"] = env_config['ik_fail_thresh_eval']
+    eval_config["node_handle"] = "eval_env"
+    eval_env = create_env(eval_config, task=eval_config["task"], node_handle="eval_env", wrap_in_dummy_vec=True, flatten_obs=True)
+
+    agent = MobileRLLearner(env,
+                            checkpoint_after_iter=env_config['checkpoint_after_iter'],
+                            temp_path=logpath,
+                            device=env_config['device'])
+
+    # train on random goal reaching task
+    agent.fit(env, val_env=eval_env)
+
+    # evaluate on door opening in gazebo
+    evaluate_on_task(env_config, eval_env_config=eval_config, policy=agent, task='door', world_type='gazebo',
+                     global_step=agent.iters + 1, flatten_obs=True)
+
+    rospy.signal_shutdown("We are done")
+  ```
+
 
 #### Notes
 
@@ -211,12 +266,12 @@ please follow these steps to use the environment. Otherwise ignore this section 
 - Check the commented out parts in the `# HSR` section as well as the building of the workspace further below in the `Dockerfile` to install the requirements.
 - Comment in the following lines in `CMakeLists.txt`:
 
-      add_library(dynamic_system_hsr src/dynamic_system_hsr.cpp)
-      target_link_libraries(dynamic_system_hsr modulation modulation_ellipses utils ${catkin_LIBRARIES})
+      #  tmc_robot_kinematics_model      
+      add_library(robot_hsr src/robot_hsr.cpp)
+      target_link_libraries(robot_hsr worlds modulation_ellipses myutils ${catkin_LIBRARIES})
 
   and add them to `pybind_add_module()` and `target_link_libraries()` two lines below that.
-- Comment in the hsr parts in `src/pybindings` and the import of HSREnv in `scripts/modulation/envs/modulationEnv.py` to create the python bindings
-- Now either build the Dockerfile or rebuild a local workspace (we recommend to use separate catkin workspaces for each robot)
+- Comment in the hsr parts in `src/pybindings` and the import of HSREnv in `mobileRL/envs/robotenv.py` to create the python bindings
 
 
 #### References

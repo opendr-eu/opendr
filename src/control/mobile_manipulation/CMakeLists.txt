@@ -179,15 +179,15 @@ target_link_libraries(robot_pr2 worlds modulation_ellipses myutils ${catkin_LIBR
 add_library(robot_tiago src/robot_tiago.cpp)
 target_link_libraries(robot_tiago worlds modulation_ellipses myutils ${catkin_LIBRARIES})
 
-add_library(robot_hsr src/robot_hsr.cpp)
-target_link_libraries(robot_hsr worlds modulation_ellipses myutils ${catkin_LIBRARIES})
+#add_library(robot_hsr src/robot_hsr.cpp)
+#target_link_libraries(robot_hsr worlds modulation_ellipses myutils ${catkin_LIBRARIES})
 
 # pybind
 pybind_add_module(pybindings SHARED src/worlds src/robot_env src/pybindings src/robot_pr2
-        src/robot_tiago src/robot_hsr src/utils src/gripper_planner/base_gripper_planner src/gripper_planner/linear_planner src/gripper_planner/gmm_planner
+        src/robot_tiago src/utils src/gripper_planner/base_gripper_planner src/gripper_planner/linear_planner src/gripper_planner/gmm_planner
         src/gripper_planner/gaussian_mixture_model src/modulation_ellipses)
 #src/alglib/alglibinternal src/alglib/alglibmisc src/alglib/ap src/alglib/dataanalysis src/alglib/diffequations src/alglib/fasttransforms src/alglib/integration src/alglib/interpolation src/alglib/linalg src/alglib/optimization src/alglib/solvers src/alglib/specialfunctions src/alglib/statistics)
-target_link_libraries(pybindings PRIVATE worlds robot_env robot_pr2 robot_tiago robot_hsr myutils
+target_link_libraries(pybindings PRIVATE worlds robot_env robot_pr2 robot_tiago myutils
         base_gripper_planner linear_planner gmm_planner gaussian_mixture_model modulation_ellipses
         ${LIBGP_LIBRARIES} ${catkin_LIBRARIES}
         )
