@@ -47,7 +47,7 @@ restricted_ws_z_max: 1.1
 gmm_base_offset: 0.0
 kinematics_solver_timeout: 0.05
 #pmb2_robot/pmb2_description/urdf/base/footprint
-#TODO: actually a circle of radius 0.27, not a square
+#NOTE: approximation, actually a circle of radius 0.27, not a square
 robot_base_size_meters:
   x: 0.54
   y: 0.54

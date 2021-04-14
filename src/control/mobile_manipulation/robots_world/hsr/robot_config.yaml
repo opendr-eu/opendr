@@ -35,7 +35,7 @@ restricted_ws_z_max: 1.1
 gmm_base_offset: 0.25
 # not used
 kinematics_solver_timeout: 0.0
-#TODO: rather a circle than a square
+# NOTE: approximation, rather a circle than a square
 # values inferred from https://www.brain.kyutech.ac.jp/~hma/robots/hsr/
 robot_base_size_meters:
   x: 0.43
