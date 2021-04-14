@@ -181,7 +181,7 @@ To be able to visualise install rviz
 
         roslaunch modulation_rl pr2_analytical.launch
    
-2b. evaluation in gazebo: _instead_ of 2a start gazebo with the pr2 robot as well moveit
+2b. evaluation in gazebo: _instead_ of 2a start gazebo with the pr2 robot as well moveit. Please run from outside the conda environment with a python2 interpreter.
 
         roslaunch pr2_gazebo pr2_empty_world.launch
         roslaunch pr2_moveit_config move_group.launch
@@ -194,7 +194,10 @@ To be able to visualise install rviz
 
         rviz -d rviz_config.config
 
-5b. For HSR / Tiago: adjust the reference frame in rviz from `odom` to `odom combined`
+For HSR / Tiago: 
+- Roslaunch commands can be found in `mobile_manipulation/mobileRL/handle_launchfiles.py`
+- adjust the reference frame in rviz from `odom` to `odom combined`
+
 
 #### Examples
 * **Training in the analytical environment and evaluation in Gazebo on the Pick & Place task**.
