@@ -52,7 +52,7 @@ from engine.learners import LearnerRL
 
 
 # TODO:
-#   where to define dependencies?
+#   how to define c++ / ROS dependencies?
 #   test that demo works
 #   test that loading pretrained model works
 #   test that examples in readme work

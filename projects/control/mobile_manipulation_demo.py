@@ -46,7 +46,6 @@ import rospy
 import torch
 import yaml
 
-from control.mobile_manipulation.mobileRL import __version__
 from control.mobile_manipulation.mobileRL.envs import ALL_TASKS
 from control.mobile_manipulation.mobileRL.evaluation import evaluate_on_task
 from control.mobile_manipulation.mobileRL.utils import create_env
@@ -166,7 +165,6 @@ def parse_args(config_path):
     args['device'] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     args['logpath'] = f'{config_path}/logs/'
     os.makedirs(args['logpath'], exist_ok=True)
-    args['version'] = __version__
 
     if args['seed'] == -1:
         args['seed'] = random.randint(10, 1000)
