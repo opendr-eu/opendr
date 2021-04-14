@@ -32,11 +32,6 @@ struct RobotObs {
 };
 
 namespace utils {
-  void printVector3(tf::Vector3 v, std::string descr);
-  void printQ(tf::Quaternion q, std::string descr);
-  void printT(tf::Transform t, std::string descr);
-  void printArrayDouble(std::vector<double> array, std::string descr);
-  void printArrayStr(std::vector<std::string> array, std::string descr);
   tf::Vector3 qToRpy(tf::Quaternion q);
   double calcRotDist(const tf::Transform &a, const tf::Transform &b);
   double vec3AbsMax(tf::Vector3 v);
@@ -56,7 +51,6 @@ namespace utils {
   bool startsWith(const std::string &str, const std::string &substr);
   bool endsWith(const std::string &str, const std::string &substr);
   std::string trim(const std::string &s);
-  void pathPointInsertTransform(PathPoint &path_point, const std::string &name, tf::Transform tf, bool yaw_only = false);
   tf::Transform listToTf(const std::vector<double> &input);
   std::vector<double> tfToList(const tf::Transform &input, bool normalize_q = false);
   std::vector<double> vector3ToList(const tf::Vector3 &input);

@@ -186,7 +186,6 @@ bool RobotHSR::findIk(const Eigen::Isometry3d &desired_state_eigen, const tf::Tr
 }
 
 double RobotHSR::calcReward(bool found_ik, double regularization) {
-  // a)
   double reward = RobotEnv::calcReward(found_ik, regularization);
 
   if (sol_dist_reward_ && found_ik) {

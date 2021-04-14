@@ -74,22 +74,3 @@ void RobotPR2::openGripper(double position, bool wait_for_result) {
 void RobotPR2::closeGripper(double position, bool wait_for_result) {
   moveGripper(position, 200.0, wait_for_result);  // Close gently
 }
-
-// void DynamicSystemPR2::stop_controllers(){
-//    // controllers will try to return to previous pose -> stop and restart
-//    pr2_mechanism_msgs::SwitchController stop;
-//    stop.request.stop_controllers.push_back("r_gripper_controller");
-//    stop.request.stop_controllers.push_back("r_arm_controller");
-//    if (!switch_controller_client_.call(stop)) {
-//        ROS_INFO("switch_controller_client_ failed at stop");
-//    };
-//}
-//
-// void DynamicSystemPR2::start_controllers(){
-//    pr2_mechanism_msgs::SwitchController start;
-//    start.request.start_controllers.push_back("r_gripper_controller");
-//    start.request.start_controllers.push_back("r_arm_controller");
-//    if (!switch_controller_client_.call(start)) {
-//        ROS_INFO("switch_controller_client_ failed at start");
-//    };
-//}

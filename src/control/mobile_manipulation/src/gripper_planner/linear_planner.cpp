@@ -46,29 +46,13 @@ GripperPlan LinearPlanner::calcNextStep(const GripperPlan &prev_plan, const doub
   tf::Quaternion planned_gripper_q =
     getRot(initial_gripper_tf_, plan.next_gripper_tf, gripper_goal_wrist_, initial_dist_to_gripper_goal_);
   plan.next_gripper_tf.setRotation(planned_gripper_q);
-  // base
-  // a) do not rotate
+  // base: do not rotate
   plan.next_base_tf.setRotation(prev_plan.next_base_tf.getRotation());
-  // b) rotate to match yaw of next gripper plan
-  // tf::Vector3 next_gripper_rpy = utils::q_to_rpy(planned_gripper_q);
-  // tf::Quaternion next_base_q;
-  // next_base_q.setRPY(0.0, 0.0, next_gripper_rpy.z());
-  // plan.nextBaseTransform.setRotation(next_base_q);
-
-  // tf::Transform ggoal_floor;
-  // ggoal_floor.setOrigin(tf::Vector3(gripper_goal_.getOrigin().x(), gripper_goal_.getOrigin().y(), 0.0));
-  // tf::Vector3 ggoal_rpy = utils::q_to_rpy(gripper_goal_.getRotation());
-  // tf::Quaternion ggoal_q;
-  // ggoal_q.setRPY(0.0, 0.0, ggoal_rpy.z());
-  // ggoal_floor.setRotation(ggoal_q);
-  // tf::Quaternion next_base_q = get_rot(prevPlan.nextBaseTransform, prevPlan.nextBaseTransform, ggoal_floor,
-  // (ggoal_floor.getOrigin() - initial_base_tf_.getOrigin()).length()); plan.nextBaseTransform.setRotation(next_base_q);
   return plan;
 }
 
 GripperPlan LinearPlanner::internalStep(double time, double dt, const RobotObs &robot_obs, const double &learned_vel_norm,
                                         bool update_prev_plan) {
-  //     ROS_INFO("linearPlanner time: %f, dt: %f", time, dt);
 
   double min_vel, max_vel;
   if (learned_vel_norm >= 0.0) {
