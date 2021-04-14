@@ -298,7 +298,7 @@ Constructor parameters:
     Number of classes to predict among. 
   - **temporal_window_size**: *int, default=None*  
     Size of the final global average pooling.
-    If None, size will be automically chosen according to the backbone. Defaults to None.
+    If None, size will be automatically chosen according to the backbone. Defaults to None.
 
 
 
@@ -406,4 +406,3 @@ Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d
 #### References
 <a name="x3d" href="https://arxiv.org/abs/2004.04730">[1]</a> X3D: Expanding Architectures for Efficient Video Recognition,
 [arXiv](https://arxiv.org/abs/2004.04730).  
-
