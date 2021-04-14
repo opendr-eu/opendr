@@ -182,7 +182,7 @@ def set_seed(seed: int):
 
 
 def main():
-    # need a node to listen to some stuff for the task envs
+    # need a node to for visualisation
     rospy.init_node('kinematic_feasibility_py', anonymous=False)
 
     main_path = Path(__file__).parent

@@ -6,7 +6,7 @@ from typing import Tuple
 import numpy as np
 import rospy
 from gym import Env
-from pybindings import RobotObs, RobotPR2, RobotTiago, RobotHSR
+from pybindings import RobotObs, RobotPR2, RobotTiago  # , RobotHSR
 
 
 class ActionRanges:
@@ -77,8 +77,8 @@ class RobotEnv(Env):
             self._env = RobotPR2(*args)
         elif env == 'tiago':
             self._env = RobotTiago(*args)
-        elif env == 'hsr':
-            self._env = RobotHSR(*args, hsr_ik_slack_dist, hsr_ik_slack_rot_dist, hsr_sol_dist_reward)
+        # elif env == 'hsr':
+        #     self._env = RobotHSR(*args, hsr_ik_slack_dist, hsr_ik_slack_rot_dist, hsr_sol_dist_reward)
         else:
             raise ValueError('Unknown env')
 
