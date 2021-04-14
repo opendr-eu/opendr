@@ -24,7 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   rosbag
   cmake_modules
   pybind11_catkin
-  tmc_robot_kinematics_model
+#  tmc_robot_kinematics_model
 )
 find_package(OpenCV REQUIRED )
 find_package(Eigen REQUIRED)

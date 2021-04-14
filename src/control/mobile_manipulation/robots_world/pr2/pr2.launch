@@ -3,10 +3,10 @@
   <arg name="KINECT2" default="$(optenv KINECT2 false)" />
 
   <!-- Startup PR2 without any mechanism controllers -->
-  <include file="$(find modulation_rl)/gazebo_world/pr2/pr2_no_controllers.launch" pass_all_args="true"/>
+  <include file="$(find modulation_rl)/robots_world/pr2/pr2_no_controllers.launch" pass_all_args="true"/>
 
   <!-- Load and Start Default Controllers -->
-  <include file="$(find modulation_rl)/gazebo_world/pr2/pr2_default_controllers.launch" />
+  <include file="$(find modulation_rl)/robots_world/pr2/pr2_default_controllers.launch" />
 
 </launch>
 
