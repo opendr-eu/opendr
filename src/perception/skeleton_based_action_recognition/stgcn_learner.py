@@ -49,9 +49,9 @@ from perception.skeleton_based_action_recognition.algorithm.datasets.feeder impo
 
 class STGCNLearner(Learner):
     def __init__(self, lr=1e-1, batch_size=128, optimizer_name='sgd', lr_schedule='',
-                 checkpoint_after_iter=500, checkpoint_load_iter=0, temp_path='temp',
-                 device='cuda', num_workers=32, epochs=50, experiment_name='baseline_nturgbd',
-                 device_ind='None', val_batch_size=256, drop_after_epoch=[30, 40],
+                 checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path='temp',
+                 device='cuda', num_workers=32, epochs=50, experiment_name='stgcn_nturgbd',
+                 device_ind=[0], val_batch_size=256, drop_after_epoch=[30, 40],
                  start_epoch=0, dataset_name='nturgbd_cv',
                  method_name='stgcn', stbln_symmetric=False, num_frames=300, num_subframes=100):
         super(STGCNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
