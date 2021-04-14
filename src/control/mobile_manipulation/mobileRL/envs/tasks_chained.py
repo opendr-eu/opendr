@@ -1,19 +1,19 @@
 import copy
 import os
 import random
-import time
 from functools import partial
 from pathlib import Path
 from typing import List
 
 import numpy as np
+import time
 from geometry_msgs.msg import Point, Pose, Quaternion
 from pybindings import GMMPlanner, multiply_tfs
 
-from control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper, GMMPlannerWrapper
 from control.mobile_manipulation.mobileRL.envs.env_utils import pose_to_list, list_to_pose
 from control.mobile_manipulation.mobileRL.envs.map import SceneMap
+from control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 from control.mobile_manipulation.mobileRL.envs.simulator_api import WorldObjects, SpawnObject
 from control.mobile_manipulation.mobileRL.envs.tasks import BaseTask, TaskGoal, GripperActions
 
@@ -28,7 +28,8 @@ class BaseChainedTask(BaseTask):
             name = name.replace(self.taskname(), f'{self.taskname()}{self.map.obstacle_configuration}')
         return name
 
-    def __init__(self, env: MobileManipulationEnv, map: SceneMap, default_head_start: float, close_gripper_at_start: bool = True):
+    def __init__(self, env: MobileManipulationEnv, map: SceneMap, default_head_start: float,
+                 close_gripper_at_start: bool = True):
         super(BaseChainedTask, self).__init__(env=env, initial_joint_distribution="rnd", map=map,
                                               default_head_start=default_head_start,
                                               close_gripper_at_start=close_gripper_at_start)

@@ -1,14 +1,14 @@
-import math
 import random
 from enum import IntEnum
 from typing import NamedTuple, Callable, Tuple
 
+import math
 import numpy as np
 from gym import Wrapper
 
-from control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper
 from control.mobile_manipulation.mobileRL.envs.map import Map, EmptyMap
+from control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 
 
 class GripperActions(IntEnum):

@@ -1,6 +1,6 @@
-import time
 import random
 
+import time
 from stable_baselines3.common.vec_env import DummyVecEnv
 
 from control.mobile_manipulation.mobileRL.envs import ALL_TASKS
@@ -60,6 +60,7 @@ def create_env(config,
         env_kwargs = {}
     return wrap_in_task(env=env, task=task, default_head_start=config["head_start"],
                         wrap_in_dummy_vec=wrap_in_dummy_vec, **env_kwargs)
+
 
 def env_creator(ray_env_config: dict, flatten_obs: bool = False):
     """Allows to construct a different eval env by defining 'task': eval_task in 'evaluation_config'"""

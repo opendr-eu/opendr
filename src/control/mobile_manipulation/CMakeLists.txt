@@ -8,33 +8,33 @@ project(modulation_rl)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  std_msgs
-  geometry_msgs
-  cmake_modules
-  roscpp
-  tf
-  tf_conversions
-  eigen_conversions
-  moveit_core
-  moveit_ros_perception
-  moveit_ros_planning_interface
-  moveit_planners_ompl
-  rosbag
-  cmake_modules
-  pybind11_catkin
-#  tmc_robot_kinematics_model
-)
-find_package(OpenCV REQUIRED )
+        roscpp
+        rospy
+        std_msgs
+        geometry_msgs
+        cmake_modules
+        roscpp
+        tf
+        tf_conversions
+        eigen_conversions
+        moveit_core
+        moveit_ros_perception
+        moveit_ros_planning_interface
+        moveit_planners_ompl
+        rosbag
+        cmake_modules
+        pybind11_catkin
+        #  tmc_robot_kinematics_model
+        )
+find_package(OpenCV REQUIRED)
 find_package(Eigen REQUIRED)
 find_package(cmake_modules REQUIRED)
 pkg_check_modules(LIBGP libgp)
 find_package(yaml-cpp REQUIRED)
 include_directories(
-  include
-  ${Eigen_INCLUDE_DIRS}
-  ${OpenCV3_INCLUDE_DIRS})
+        include
+        ${Eigen_INCLUDE_DIRS}
+        ${OpenCV3_INCLUDE_DIRS})
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -126,10 +126,10 @@ include_directories(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES modulation_rl alglib gripper_planner
-  CATKIN_DEPENDS roscpp rospy std_msgs pybind11_catkin tmc_robot_kinematics_model
-  # DEPENDS system_lib
+        INCLUDE_DIRS include
+        LIBRARIES modulation_rl alglib gripper_planner
+        CATKIN_DEPENDS roscpp rospy std_msgs pybind11_catkin tmc_robot_kinematics_model
+        # DEPENDS system_lib
 )
 
 ###########
@@ -139,9 +139,9 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
- include
-  ${catkin_INCLUDE_DIRS}
-  ${OpenCV3_INCLUDE_DIRS}
+        include
+        ${catkin_INCLUDE_DIRS}
+        ${OpenCV3_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -186,7 +186,7 @@ target_link_libraries(robot_hsr worlds modulation_ellipses myutils ${catkin_LIBR
 pybind_add_module(pybindings SHARED src/worlds src/robot_env src/pybindings src/robot_pr2
         src/robot_tiago src/robot_hsr src/utils src/gripper_planner/base_gripper_planner src/gripper_planner/linear_planner src/gripper_planner/gmm_planner
         src/gripper_planner/gaussian_mixture_model src/modulation_ellipses)
-        #src/alglib/alglibinternal src/alglib/alglibmisc src/alglib/ap src/alglib/dataanalysis src/alglib/diffequations src/alglib/fasttransforms src/alglib/integration src/alglib/interpolation src/alglib/linalg src/alglib/optimization src/alglib/solvers src/alglib/specialfunctions src/alglib/statistics)
+#src/alglib/alglibinternal src/alglib/alglibmisc src/alglib/ap src/alglib/dataanalysis src/alglib/diffequations src/alglib/fasttransforms src/alglib/integration src/alglib/interpolation src/alglib/linalg src/alglib/optimization src/alglib/solvers src/alglib/specialfunctions src/alglib/statistics)
 target_link_libraries(pybindings PRIVATE worlds robot_env robot_pr2 robot_tiago robot_hsr myutils
         base_gripper_planner linear_planner gmm_planner gaussian_mixture_model modulation_ellipses
         ${LIBGP_LIBRARIES} ${catkin_LIBRARIES}
@@ -214,8 +214,8 @@ target_link_libraries(pybindings PRIVATE worlds robot_env robot_pr2 robot_tiago 
 
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(${PROJECT_NAME}_node
-	 # ${catkin_LIBRARIES}
-   # )
+# ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##

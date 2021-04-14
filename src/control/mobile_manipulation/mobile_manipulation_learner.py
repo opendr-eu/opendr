@@ -59,7 +59,8 @@ from engine.learners import LearnerRL
 
 class MobileRLLearner(LearnerRL):
     def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, optimizer='adam', lr_schedule='linear',
-                 lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path='', device='cuda',
+                 lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=0, checkpoint_load_iter=0,
+                 temp_path='', device='cuda',
                  seed: int = None, buffer_size: int = 100_000, learning_starts: int = 0,
                  tau: float = 0.001, gamma: float = 0.99, explore_noise: float = 0.5, ent_coef='auto',
                  explore_noise_type='normal', nr_evaluations: int = 50, evaluation_frequency: int = 20_000):
@@ -113,7 +114,7 @@ class MobileRLLearner(LearnerRL):
         else:
             lr_fn = self.lr
         return lr_fn
-            
+
     def _construct_agent(self, env, buffer_size: int, learning_starts: int, tau: float, gamma: float,
                          explore_noise: float, explore_noise_type: str, ent_coef):
         if explore_noise:
@@ -183,7 +184,8 @@ class MobileRLLearner(LearnerRL):
     def eval(self, env, name_prefix='', nr_evaluations: int = 50):
         rospy.loginfo(f"Evaluating on task {env.taskname} with {env.world_type} execution.")
         prefix = ''
-        evaluation_rollout(self.stable_bl_agent, env, nr_evaluations, name_prefix=prefix, global_step=self.stable_bl_agent.num_timesteps, verbose=2)
+        evaluation_rollout(self.stable_bl_agent, env, nr_evaluations, name_prefix=prefix,
+                           global_step=self.stable_bl_agent.num_timesteps, verbose=2)
         env.clear()
 
     def infer(self, batch):
@@ -210,4 +212,3 @@ class MobileRLLearner(LearnerRL):
         :rtype: bool
         """
         self.stable_bl_agent.load(path)
-

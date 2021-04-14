@@ -1,6 +1,7 @@
 import argparse
-import time
 from subprocess import Popen
+
+import time
 
 """
 IMPORTANT: ENSURE THAT THIS FILE ONLY RELIES ON PYTHON2 COMPATIBLE SYNTAX
@@ -8,8 +9,10 @@ IMPORTANT: ENSURE THAT THIS FILE ONLY RELIES ON PYTHON2 COMPATIBLE SYNTAX
 
 gazebo_cmds = {
     'pr2': "roslaunch modulation_rl pr2_empty_world.launch gui:=false".split(" "),
-    'tiago': "roslaunch modulation_rl tiago_gazebo.launch robot:=steel tuck_arm:=false laser_model:=false camera_model:=false gui:=false".split(" "),
-    'hsr': "roslaunch modulation_rl hsrb_empty_world.launch rviz:=false use_manipulation:=false use_navigation:=false use_perception:=false use_task:=false use_teleop:=false use_web:=false use_laser_odom:=false paused:=false gui:=false".split(" "),
+    'tiago': "roslaunch modulation_rl tiago_gazebo.launch robot:=steel tuck_arm:=false laser_model:=false camera_model:=false gui:=false".split(
+        " "),
+    'hsr': "roslaunch modulation_rl hsrb_empty_world.launch rviz:=false use_manipulation:=false use_navigation:=false use_perception:=false use_task:=false use_teleop:=false use_web:=false use_laser_odom:=false paused:=false gui:=false".split(
+        " "),
 }
 moveit_cmds = {
     'pr2': "roslaunch pr2_moveit_config move_group.launch".split(" "),

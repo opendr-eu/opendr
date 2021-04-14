@@ -1,9 +1,9 @@
 import random
-import time
 from enum import IntEnum
 from typing import Iterable, NamedTuple
 
 import rospy
+import time
 from gazebo_msgs.msg import LinkStates
 from gazebo_msgs.srv import DeleteModel, SpawnModel, GetModelState, SetModelState, SetModelConfiguration, \
     SetModelConfigurationRequest
