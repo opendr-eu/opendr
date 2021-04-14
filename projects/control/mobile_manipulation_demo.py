@@ -117,7 +117,8 @@ def parse_args(config_path):
     # #################################################
     # Misc
     #################################################
-    parser.add_argument('--restore_model_path', type=str, nargs='?', default='', help='Restore the model and config under this path')
+    parser.add_argument('--restore_model_path', type=str, default='model_checkpoints', help='Restore the model and config under this path')
+    parser.add_argument('--checkpoint_load_iter', type=int, default=0, help='Restore the model named model_step{x}. See ./model_checkpoints/[robot] for pretrained checkpoints. Note: does not restore the config automatically.')
     parser.add_argument('--name', type=str, default="", help='name for this run')
 
     args = parser.parse_args()
@@ -212,6 +213,8 @@ def main():
                             nr_evaluations=config['nr_evaluations'],
                             evaluation_frequency=config['evaluation_frequency'],
                             checkpoint_after_iter=config['checkpoint_after_iter'],
+                            checkpoint_path=config['restore_model_path'],
+                            checkpoint_load_iter=0,
                             temp_path=logpath,
                             device=config['device'],
                             ent_coef=config['ent_coef'])

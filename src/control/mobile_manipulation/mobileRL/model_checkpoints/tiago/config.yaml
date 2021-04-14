@@ -1,0 +1,130 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.10.15
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.7.9
+    t:
+      1:
+      - 1
+      2:
+      - 1
+      3:
+      - 3
+      4: 3.7.9
+      5: 0.10.15
+batch_size:
+  desc: null
+  value: 64
+buffer_size:
+  desc: null
+  value: 100000
+ent_coef:
+  desc: null
+  value: auto
+env:
+  desc: null
+  value: tiago
+evaluation_frequency:
+  desc: null
+  value: 20000
+evaluation_only:
+  desc: null
+  value: false
+explore_noise:
+  desc: null
+  value: 0.75
+explore_noise_type:
+  desc: null
+  value: normal
+gamma:
+  desc: null
+  value: 0.99
+head_start:
+  desc: null
+  value: 0.0
+hsr_ik_slack_dist:
+  desc: null
+  value: 0.1
+hsr_ik_slack_rot_dist:
+  desc: null
+  value: 0.05
+hsr_ik_slack_schedule:
+  desc: null
+  value: false
+hsr_sol_dist_reward:
+  desc: null
+  value: false
+ik_fail_thresh:
+  desc: null
+  value: 19
+ik_fail_thresh_eval:
+  desc: null
+  value: 99
+learn_vel_norm:
+  desc: null
+  value: -1
+lr_end:
+  desc: null
+  value: 1.0e-06
+lr_gamma:
+  desc: null
+  value: 0.999
+lr_start:
+  desc: null
+  value: 1.0e-05
+nr_evaluations:
+  desc: null
+  value: 50
+penalty_scaling:
+  desc: null
+  value: 0.01
+perform_collision_check:
+  desc: null
+  value: true
+policy_noise:
+  desc: null
+  value: 0.1
+restore_model:
+  desc: null
+  value: false
+resume_id:
+  desc: null
+  value: null
+resume_model_name:
+  desc: null
+  value: last_model.zip
+rnd_steps:
+  desc: null
+  value: 0
+seed:
+  desc: null
+  value: 49
+slow_down_real_exec:
+  desc: null
+  value: 1.0
+strategy:
+  desc: null
+  value: dirvel
+task:
+  desc: null
+  value: rndstartrndgoal
+tau:
+  desc: null
+  value: 0.001
+time_step:
+  desc: null
+  value: 0.02
+total_steps:
+  desc: null
+  value: 1000000
+transition_noise_base:
+  desc: null
+  value: 0.0
+use_sde:
+  desc: null
+  value: false
