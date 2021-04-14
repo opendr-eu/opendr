@@ -56,13 +56,16 @@ from engine.learners import LearnerRL
 
 
 class MobileRLLearner(LearnerRL):
-    def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, optimizer='adam', lr_schedule='linear',
-                 lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=0, checkpoint_load_iter=0,
-                 temp_path='', device='cuda',
-                 seed: int = None, buffer_size: int = 100_000, learning_starts: int = 0,
-                 tau: float = 0.001, gamma: float = 0.99, explore_noise: float = 0.5, ent_coef='auto',
-                 explore_noise_type='normal', nr_evaluations: int = 50, evaluation_frequency: int = 20_000):
-        super(LearnerRL, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer,
+    def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',
+                 lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=20_000, checkpoint_load_iter=0,
+                 temp_path='', device='cuda', seed: int = None, buffer_size: int = 100_000, learning_starts: int = 0,
+                 tau: float = 0.001, gamma: float = 0.99, explore_noise: float = 0.5, explore_noise_type='normal',
+                 ent_coef='auto', nr_evaluations: int = 50, evaluation_frequency: int = 20_000):
+        """
+        Specifies an soft-actor-critic (SAC) agent that can be trained for mobile manipulation.
+        Internally uses Stable-Baselines3 (https://github.com/DLR-RM/stable-baselines3).
+        """
+        super(LearnerRL, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer='adam',
                                         lr_schedule=lr_schedule, backbone=backbone, network_head='',
                                         checkpoint_after_iter=checkpoint_after_iter,
                                         checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
@@ -84,6 +87,7 @@ class MobileRLLearner(LearnerRL):
             raise NotImplementedError()
             # self.load(os.path.join(magic_path, f'model_step{checkpoint_load_iter}')
 
+    @property
     def lr(self):
         def create_lr_schedule(start_lr: float, min_lr: float, total_decay_steps: int) -> Union[float, Callable]:
             """
@@ -153,7 +157,7 @@ class MobileRLLearner(LearnerRL):
         agent = SAC(**common_args)
         return agent
 
-    def fit(self, env=None, val_env=None, logging_path='', silent=True, verbose=True):
+    def fit(self, env=None, val_env=None, logging_path='', silent=False, verbose=True):
         """
         Train the agent on the environment.
 
@@ -187,15 +191,18 @@ class MobileRLLearner(LearnerRL):
         val_env.env_method("clear")
         rospy.loginfo("Training finished")
 
-    def eval(self, env, name_prefix='', nr_evaluations: int = 50):
+    def eval(self, env, name_prefix='', nr_evaluations: int = None):
         """
         Evaluate the agent on the specified environment.
 
         :param env: gym.Env, env to evaluate on
         :param name_prefix: str, name prefix for all logged variables
-        :param nr_evaluations: int, number of evaluations
+        :param nr_evaluations: int, number of episodes to evaluate over
         :return:
         """
+        if nr_evaluations is None:
+            nr_evaluations = self.nr_evaluations
+
         rospy.loginfo(f"Evaluating on task {env.taskname} with {env.world_type} execution.")
         prefix = ''
         evaluation_rollout(self.stable_bl_agent, env, nr_evaluations, name_prefix=prefix,
