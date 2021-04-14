@@ -279,7 +279,8 @@ class Video(Data):
 
         Args:
             data (Union[torch.Tensor, np.ndarray], optional):
-                Video tensor of shape (C, T, H, W). Defaults to None.
+                Video tensor of shape (channels, time_steps, height, width).
+                Defaults to None.
         """
         super().__init__(data)
 
