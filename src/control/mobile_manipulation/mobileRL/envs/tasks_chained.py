@@ -10,7 +10,7 @@ import numpy as np
 from geometry_msgs.msg import Point, Pose, Quaternion
 from pybindings import GMMPlanner, multiply_tfs
 
-from control.mobile_manipulation.mobileRL.envs.combined_env import MobileManipulationEnv
+from control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper, GMMPlannerWrapper
 from control.mobile_manipulation.mobileRL.envs.env_utils import pose_to_list, list_to_pose
 from control.mobile_manipulation.mobileRL.envs.map import SceneMap

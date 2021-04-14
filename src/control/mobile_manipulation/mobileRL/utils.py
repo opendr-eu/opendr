@@ -4,7 +4,7 @@ import random
 from stable_baselines3.common.vec_env import DummyVecEnv
 
 from control.mobile_manipulation.mobileRL.envs import ALL_TASKS
-from control.mobile_manipulation.mobileRL.envs.combined_env import MobileManipulationEnv
+from control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 from control.mobile_manipulation.mobileRL.envs.robotenv import RobotEnv
 
 
