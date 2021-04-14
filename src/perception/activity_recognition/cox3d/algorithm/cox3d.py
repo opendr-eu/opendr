@@ -989,7 +989,6 @@ class CoX3D(pl.LightningModule):
             temporal_fill=temporal_fill,
         )
 
-        # blob_in = s1
         dim_in = dim_res1
         dim_out = dim_in
         for stage, block in enumerate(self.block_basis):
