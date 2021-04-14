@@ -27,7 +27,7 @@ following public methods:
 
 #### `X3DLearner` constructor
 ```python
-X3DLearner(self, lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, loss, weight_decay, momentum, drop_last, pin_memory, num_workers, seed, num_classes)
+X3DLearner(self, lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, loss, weight_decay, momentum, drop_last, pin_memory, num_workers, seed, num_classes)
 ```
 
 Constructor parameters:
@@ -256,7 +256,7 @@ following public methods:
 #### `CoX3DLearner` constructor
 
 ```python
-CoX3DLearner(self, lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, loss, weight_decay, momentum, drop_last, pin_memory, num_workers, seed, num_classes, temporal_window_size)
+CoX3DLearner(self, lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, loss, weight_decay, momentum, drop_last, pin_memory, num_workers, seed, num_classes, temporal_window_size)
 ```
 
 Constructor parameters:
