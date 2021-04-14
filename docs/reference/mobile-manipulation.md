@@ -31,6 +31,8 @@ Constructor parameters:
   Specifies per how many training steps a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
 - **checkpoint_load_iter**: *int, default=0*  
   Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
+- **checkpoint_path**: *str, default=None*
+  Path to load checkpoints from and save checkpoints to
 - **temp_path**: *str, default='temp'*  
   Specifies a path where the algorithm looks for checkpoints, the checkpoints are saved along with the logging files and configuration.
 - **device**: *{'cpu', 'cuda'}, default='cuda'*  
@@ -227,6 +229,7 @@ For HSR / Tiago:
       'vis_env': True,
       'transition_noise_base': 0.015,
       'ik_fail_thresh': 20,
+      'ik_fail_thresh_eval': 100,
       'learn_vel_norm': -1,
       'slow_down_real_exec': 2,
       'head_start': 0,
@@ -241,15 +244,65 @@ For HSR / Tiago:
     eval_env = create_env(eval_config, task=eval_config["task"], node_handle="eval_env", wrap_in_dummy_vec=True, flatten_obs=True)
 
     agent = MobileRLLearner(env,
-                            checkpoint_after_iter=env_config['checkpoint_after_iter'],
+                            checkpoint_after_iter=20_000,
                             temp_path=logpath,
-                            device=env_config['device'])
+                            device='cpu')
 
     # train on random goal reaching task
     agent.fit(env, val_env=eval_env)
 
     # evaluate on door opening in gazebo
     evaluate_on_task(env_config, eval_env_config=eval_config, policy=agent, task='door', world_type='gazebo',
+                     global_step=agent.iters + 1, flatten_obs=True)
+
+    rospy.signal_shutdown("We are done")
+  ```
+
+* **Evaluate a pretrained model**.
+  ```python
+    import rospy
+    from pathlib import Path
+    from control.mobile_manipulation.mobileRL.evaluation import evaluate_on_task
+    from control.mobile_manipulation.mobileRL.utils import create_env
+    from control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
+
+    # need a node to for visualisation
+    rospy.init_node('kinematic_feasibility_py', anonymous=False)
+
+    main_path = Path(__file__).parent
+    logpath = f"{main_path}/logs/demo_run"
+
+    # create envs
+    eval_config = {
+      'env': 'pr2',
+      'penalty_scaling': 0.01,
+      'time_step_world': 0.02,
+      'seed': 42,
+      'strategy': 'dirvel',
+      'world_type': 'sim',
+      'init_controllers': True,
+      'perform_collision_check': True,
+      'vis_env': True,
+      'transition_noise_base': 0.0,
+      'ik_fail_thresh': 100,
+      'learn_vel_norm': -1,
+      'slow_down_real_exec': 2,
+      'head_start': 0,
+      'node_handle': 'eval_env'
+    }
+  
+    eval_env = create_env(eval_config, task=eval_config["task"], node_handle="eval_env", wrap_in_dummy_vec=True, flatten_obs=True)
+
+    agent = MobileRLLearner(eval_env,
+                            checkpoint_after_iter=0,
+                            checkpoint_load_iter=1_000_000,
+                            checkpoint_path=main_path / 'model_checkpoints' / 'pr2' ,
+                            temp_path=logpath,
+                            device='cpu')
+
+  
+    # evaluate on door opening in gazebo
+    evaluate_on_task(eval_config, eval_env_config=eval_config, policy=agent, task='door', world_type='gazebo',
                      global_step=agent.iters + 1, flatten_obs=True)
 
     rospy.signal_shutdown("We are done")

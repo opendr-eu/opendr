@@ -35,7 +35,7 @@
 # SOFTWARE.
 
 import os
-from typing import Callable, Union
+from typing import Callable, Union, Optional
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -53,11 +53,15 @@ from engine.learners import LearnerRL
 
 # TODO:
 #   where to define dependencies?
+#   example loading pre-defined checkpoint
+#   ability to load checkpoint in ..._demo.py
+#   test that demo works
 
 
 class MobileRLLearner(LearnerRL):
     def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',
                  lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=20_000, checkpoint_load_iter=0,
+                 checkpoint_path: Optional[str] = None,
                  temp_path='', device='cuda', seed: int = None, buffer_size: int = 100_000, learning_starts: int = 0,
                  tau: float = 0.001, gamma: float = 0.99, explore_noise: float = 0.5, explore_noise_type='normal',
                  ent_coef='auto', nr_evaluations: int = 50, evaluation_frequency: int = 20_000):
@@ -82,10 +86,9 @@ class MobileRLLearner(LearnerRL):
                                                      explore_noise=explore_noise,
                                                      explore_noise_type=explore_noise_type,
                                                      ent_coef=ent_coef)
+        self.checkpoint_path = checkpoint_path
         if checkpoint_load_iter:
-            # TODO: where should checkpoints be loaded from?
-            raise NotImplementedError()
-            # self.load(os.path.join(magic_path, f'model_step{checkpoint_load_iter}')
+            self.load(os.path.join(checkpoint_path, f'model_step{checkpoint_load_iter}'))
 
     @property
     def lr(self):
@@ -178,7 +181,7 @@ class MobileRLLearner(LearnerRL):
                                                n_eval_episodes=self.nr_evaluations,
                                                eval_freq=self.evaluation_frequency,
                                                log_path=logging_path,
-                                               best_model_save_path=logging_path,
+                                               best_model_save_path=self.checkpoint_path,
                                                checkpoint_after_iter=self.checkpoint_after_iter,
                                                verbose=verbose if not silent else False)
         self.stable_bl_agent.learn(total_timesteps=self.iters,
