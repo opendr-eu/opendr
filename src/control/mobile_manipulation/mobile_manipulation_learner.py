@@ -56,6 +56,7 @@ from engine.learners import LearnerRL
 #   example loading pre-defined checkpoint
 #   ability to load checkpoint in ..._demo.py
 #   test that demo works
+#   add a note to the pull request that some launchfiles stem from open-source ROS packages
 
 
 class MobileRLLearner(LearnerRL):
