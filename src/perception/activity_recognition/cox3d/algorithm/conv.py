@@ -1,6 +1,6 @@
 """
 Copyright (c) Lukas Hedegaard. All Rights Reserved.
-Included in the OpenDR Toolit with permission from the author.
+Included in the OpenDR Toolkit with permission from the author.
 """
 
 
