@@ -5,10 +5,9 @@ The *mobile_manipulation* module contains the *MobileRLLearner* class, which inh
 ### Class MobileRLLearner
 Bases: `engine.learners.LearnerRL`
 
-
-
-The *MobileRLLearner* class is an RL agent that can be used to train wheeled robots for mobile manipulation in conjunction with the 
-environments. Originally developed in [[1]](#kinematic-feasibility) implementation found on [Learning Kinematic Feasibility for Mobile Manipulation through Deep Reinforcement Learning](http://kinematic-rl.cs.uni-freiburg.de/).
+The *MobileRLLearner* class is an RL agent that can be used to train wheeled robots for mobile manipulation in conjunction with the
+`mobileRL.env.mobile_manipulation_env` environments and the task wrappers around it in `mobileRL.env.tasks` and `mobileRL.env.tasks_chained`. 
+Originally published in [[1]](#kinematic-feasibility), demonstrations can be found on [Learning Kinematic Feasibility for Mobile Manipulation through Deep Reinforcement Learning](http://kinematic-rl.cs.uni-freiburg.de/).
 
 The [MobileRLLearner](#src.control.mobile_manipulation.mobile_manipulation_learner.py) class has the
 following public methods:
