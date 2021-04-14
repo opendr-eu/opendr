@@ -1,38 +1,39 @@
 <launch>
-    <arg name="gazebo_visualization" default="false" />
-    <arg name="fast_physics" default="false" />
-    <arg name="use_laser_odom" default="false" />
+    <arg name="gazebo_visualization" default="false"/>
+    <arg name="fast_physics" default="false"/>
+    <arg name="use_laser_odom" default="false"/>
     <arg name="robot_pos" default=""/>
-    <arg name="namespace" default="hsrb" />
-    <arg name="personal_name" default="" />
-    <arg name="robot_name" default="hsrb" />
+    <arg name="namespace" default="hsrb"/>
+    <arg name="personal_name" default=""/>
+    <arg name="robot_name" default="hsrb"/>
 
     <arg unless="$(arg fast_physics)" name="implicit_damping" value="false"/>
-    <arg     if="$(arg fast_physics)" name="implicit_damping" value="true"/>
+    <arg if="$(arg fast_physics)" name="implicit_damping" value="true"/>
 
     <arg unless="$(arg fast_physics)" name="gains_suffix" value=""/>
-    <arg     if="$(arg fast_physics)" name="gains_suffix" value="_fast"/>
+    <arg if="$(arg fast_physics)" name="gains_suffix" value="_fast"/>
 
     <arg unless="$(eval personal_name == '')" name="gazebo_name" value="$(arg personal_name)"/>
-    <arg     if="$(eval personal_name == '')" name="gazebo_name" value="$(arg namespace)"/>
+    <arg if="$(eval personal_name == '')" name="gazebo_name" value="$(arg namespace)"/>
 
     <include file="$(find modulation_rl)/gazebo_world/hsr/upload_urdf_$(arg robot_name).xml">
-        <arg name="visualization" value="$(arg gazebo_visualization)" />
-        <arg name="implicit_damping" value="$(arg implicit_damping)" />
-        <arg name="namespace" value="$(arg namespace)" />
-        <arg name="personal_name" value="$(arg personal_name)" />
+        <arg name="visualization" value="$(arg gazebo_visualization)"/>
+        <arg name="implicit_damping" value="$(arg implicit_damping)"/>
+        <arg name="namespace" value="$(arg namespace)"/>
+        <arg name="personal_name" value="$(arg personal_name)"/>
     </include>
 
     <group ns="/$(arg personal_name)">
-      <rosparam file="$(find hsrb_gazebo_bringup)/params/hsrb_pid_gains$(arg gains_suffix).yaml" command="load" ns="$(arg namespace)"/>
-      <node name="spawn_hsrb_model" pkg="gazebo_ros" type="spawn_model"
-            args="-urdf -param robot_description -model $(arg gazebo_name) $(arg robot_pos) -J arm_lift_joint 0.05 -J arm_flex_joint 0.0 -J arm_roll_joint -1.57 -J wrist_flex_joint -1.57 -J wrist_roll_joint 0.0 -J head_pan_joint 0.0 -J head_tilt_joint 0.0 -J hand_motor_joint 1.2"
-            respawn="false" output="screen" />
+        <rosparam file="$(find hsrb_gazebo_bringup)/params/hsrb_pid_gains$(arg gains_suffix).yaml" command="load"
+                  ns="$(arg namespace)"/>
+        <node name="spawn_hsrb_model" pkg="gazebo_ros" type="spawn_model"
+              args="-urdf -param robot_description -model $(arg gazebo_name) $(arg robot_pos) -J arm_lift_joint 0.05 -J arm_flex_joint 0.0 -J arm_roll_joint -1.57 -J wrist_flex_joint -1.57 -J wrist_roll_joint 0.0 -J head_pan_joint 0.0 -J head_tilt_joint 0.0 -J hand_motor_joint 1.2"
+              respawn="false" output="screen"/>
     </group>
 
     <include file="$(find hsrb_gazebo_bringup)/launch/include/hsrb_bringup.xml">
-      <arg name="use_laser_odom" value="$(arg use_laser_odom)" />
-      <arg name="namespace" value="$(arg namespace)" />
-      <arg name="personal_name" value="$(arg personal_name)" />
+        <arg name="use_laser_odom" value="$(arg use_laser_odom)"/>
+        <arg name="namespace" value="$(arg namespace)"/>
+        <arg name="personal_name" value="$(arg personal_name)"/>
     </include>
 </launch>

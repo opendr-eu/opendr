@@ -1,7 +1,6 @@
-import time
-
 import numpy as np
 import rospy
+import time
 import torch
 from matplotlib import pyplot as plt
 from stable_baselines3.common import logger
@@ -19,7 +18,8 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
     name_prefix = f"{name_prefix + '_' if name_prefix else ''}{env.loggingname}"
     gamma = policy.gamma if hasattr(policy, "gamma") else policy.config["gamma"]
 
-    episode_rewards, episode_lengths, episode_returns, episode_successes, fails_per_episode, goal_reached, vel_norms = [[] for _ in range(7)]
+    episode_rewards, episode_lengths, episode_returns, episode_successes, fails_per_episode, goal_reached, vel_norms = [
+        [] for _ in range(7)]
     max_len = 100_000
     with torch.no_grad():
         for i in range(num_eval_episodes):
@@ -41,7 +41,6 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
                 if episode_length > max_len:
                     assert episode_length < max_len, f"EPISODE OF {episode_length} STEPS!"
 
-
             episode_rewards.append(np.sum(rewards))
             return_disc = calc_disc_return(rewards, gamma=gamma)
             episode_returns.append(return_disc)
@@ -49,15 +48,17 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
             goal_reached.append(infos[-1]['ee_done'])
             # kin fails are cumulative
             fails_per_episode.append(infos[-1]['nr_kin_failures'])
-            episode_successes.append(episode_is_success(nr_kin_fails=fails_per_episode[-1], nr_collisions=0, goal_reached=goal_reached[-1]))
+            episode_successes.append(
+                episode_is_success(nr_kin_fails=fails_per_episode[-1], nr_collisions=0, goal_reached=goal_reached[-1]))
 
             unscaled_actions = [env._convert_policy_to_env_actions(a) for a in actions]
             vel_norms.append(np.mean([a[0] for a in unscaled_actions]))
 
             if (verbose > 1) or (env.get_world() != "sim"):
-                rospy.loginfo(f"{name_prefix}: Eval ep {i}: {(time.time() - t) / 60:.2f} minutes, {episode_length} steps. "
-                              f"Ik failures: {fails_per_episode[-1]}. "
-                              f"{sum(episode_successes)}/{i + 1} full success.")
+                rospy.loginfo(
+                    f"{name_prefix}: Eval ep {i}: {(time.time() - t) / 60:.2f} minutes, {episode_length} steps. "
+                    f"Ik failures: {fails_per_episode[-1]}. "
+                    f"{sum(episode_successes)}/{i + 1} full success.")
 
     log_dict = {}
     if env._learn_vel_norm != -1:
@@ -65,22 +66,23 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
 
     ik_fail_thresh = env._ik_fail_thresh
     fails_per_episode = np.array(fails_per_episode)
-    metrics = {f'return_undisc':        np.mean(episode_rewards),
-               f'return_disc':          np.mean(episode_returns),
-               f'epoch_len':            np.mean(episode_lengths),
+    metrics = {f'return_undisc': np.mean(episode_rewards),
+               f'return_disc': np.mean(episode_returns),
+               f'epoch_len': np.mean(episode_lengths),
                f'ik_b{ik_fail_thresh}': np.mean(fails_per_episode <= ik_fail_thresh),
-               f'ik_b11':               np.mean(fails_per_episode < 11),
-               f'ik_zero_fail':         np.mean(fails_per_episode == 0),
-               f'ik_fails':             np.mean(fails_per_episode),
-               f'goal_reached':         np.mean(goal_reached),
-               f'success':              np.mean(episode_successes),
-               'global_step':           global_step,
-               'timesteps_total':       global_step}
+               f'ik_b11': np.mean(fails_per_episode < 11),
+               f'ik_zero_fail': np.mean(fails_per_episode == 0),
+               f'ik_fails': np.mean(fails_per_episode),
+               f'goal_reached': np.mean(goal_reached),
+               f'success': np.mean(episode_successes),
+               'global_step': global_step,
+               'timesteps_total': global_step}
     rospy.loginfo("---------------------------------------")
     rospy.loginfo(f"T {global_step}, {name_prefix:} evaluation over {num_eval_episodes:.0f} episodes: "
                   f"Avg. return (undisc) {metrics[f'return_undisc']:.2f}, (disc) {metrics[f'return_disc']:.2f}, "
                   f"Avg failures {metrics[f'ik_zero_fail']:.2f}, Avg success: {metrics['success']:.2f}")
-    rospy.loginfo(f"IK fails: {metrics[f'ik_b{ik_fail_thresh}']:.2f}p < {ik_fail_thresh}, {metrics[f'ik_b11']:.2f}p < 11, {metrics[f'ik_zero_fail']:.2f}p < 1")
+    rospy.loginfo(
+        f"IK fails: {metrics[f'ik_b{ik_fail_thresh}']:.2f}p < {ik_fail_thresh}, {metrics[f'ik_b11']:.2f}p < 11, {metrics[f'ik_zero_fail']:.2f}p < 1")
     rospy.loginfo("---------------------------------------")
 
     log_dict.update({(f'{name_prefix}/{k}' if ('step' not in k) else k): v for k, v in metrics.items()})
@@ -91,7 +93,8 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
     return episode_rewards, episode_lengths, metrics, name_prefix
 
 
-def evaluate_on_task(wandb_config, policy, eval_env_config, task: str, world_type: str, global_step: int, flatten_obs: bool = False):
+def evaluate_on_task(wandb_config, policy, eval_env_config, task: str, world_type: str, global_step: int,
+                     flatten_obs: bool = False):
     eval_env_config = eval_env_config.copy()
     eval_env_config['task'] = task
     eval_env_config['world_type'] = world_type
@@ -102,5 +105,6 @@ def evaluate_on_task(wandb_config, policy, eval_env_config, task: str, world_typ
     if world_type != 'sim':
         prefix += f'ts{wandb_config["time_step"]}_slow{wandb_config["slow_down_real_exec"]}'
 
-    evaluation_rollout(policy, env, wandb_config["nr_evaluations"], name_prefix=prefix, global_step=global_step, verbose=2)
+    evaluation_rollout(policy, env, wandb_config["nr_evaluations"], name_prefix=prefix, global_step=global_step,
+                       verbose=2)
     env.clear()

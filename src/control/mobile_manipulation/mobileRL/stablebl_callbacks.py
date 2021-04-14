@@ -95,7 +95,8 @@ class ModulationEvalCallback(EventCallback):
     def _on_step(self) -> bool:
         continue_train = True
 
-        if self.n_calls and (self.n_calls % self.checkpoint_after_iter == 0) and (self.best_model_save_path is not None):
+        if self.n_calls and (self.n_calls % self.checkpoint_after_iter == 0) and (
+                self.best_model_save_path is not None):
             self.model.save(os.path.join(self.best_model_save_path, f'model_t{self.num_timesteps}'))
 
         if (self.n_calls == 1) or (self.eval_freq > 0 and self.n_calls % self.eval_freq == 0):

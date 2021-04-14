@@ -37,7 +37,7 @@ class MobileManipulationEnv(Env):
 
         self.action_names, self._min_actions, self._max_actions = ActionRanges.get_ranges(env_name=self._robot.env_name,
                                                                                           learn_vel_norm=(
-                                                                                                      learn_vel_norm != -1))
+                                                                                                  learn_vel_norm != -1))
         print(f"Actions to learn: {self.action_names}")
         self.action_dim = len(self._min_actions)
 
@@ -101,10 +101,10 @@ class MobileManipulationEnv(Env):
         self.map.clear()
         robot_obs = self._robot.reset(initial_base_pose=self.map.draw_initial_base_pose(
             ee_planner.gripper_goal_wrist if ee_planner is not None else None),
-                                      initial_joint_distribution=initial_joint_distribution,
-                                      success_thres_dist=success_thres_dist,
-                                      success_thres_rot=success_thres_rot,
-                                      close_gripper=close_gripper)
+            initial_joint_distribution=initial_joint_distribution,
+            success_thres_dist=success_thres_dist,
+            success_thres_rot=success_thres_rot,
+            close_gripper=close_gripper)
 
         self.map.map_reset()
         if self.vis_env:
