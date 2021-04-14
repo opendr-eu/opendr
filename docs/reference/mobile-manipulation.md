@@ -324,7 +324,7 @@ please follow these steps to use the environment. Otherwise ignore this section 
 
   and add them to `pybind_add_module()` and `target_link_libraries()` two lines below that.
 - Comment in the hsr parts in `src/pybindings` and the import of HSREnv in `mobileRL/envs/robotenv.py` to create the python bindings
-
+- Some HSR launchfiles are not opensource either and might need some small adjustments 
 
 #### References
 <a name="kinematic-feasibility" href="https://arxiv.org/abs/2101.05325">[1]</a> Learning Kinematic Feasibility for Mobile Manipulation through Deep Reinforcement Learning,
