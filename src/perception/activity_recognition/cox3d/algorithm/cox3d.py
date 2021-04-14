@@ -696,7 +696,7 @@ class CoX3DHead(torch.nn.Module):
             x = self.dropout(x)
         x = self.projection(x)
 
-        # Performs fully convlutional inference.
+        # Performs fully convolutional inference.
         if not self.training:
             x = self.act.forward3d(x)
             x = x.mean([1, 2, 3])
