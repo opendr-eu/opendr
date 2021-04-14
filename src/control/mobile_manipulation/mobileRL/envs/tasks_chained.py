@@ -119,7 +119,6 @@ class ObstacleConfigMap(SceneMap):
 
     @staticmethod
     def _add_inpath_obstacles() -> List[SpawnObject]:
-        # TODO: GMMPLANNER CANNOT TAKE OBSTACLES INTO ACCOUNT -> MAKE SURE THEY ARE NOT IN THE WAY FOR DOOR/DRAWER OR EE CAN PASS OVER THEM WHILE THE BASE GOES AROUND IT
         positions = []
         # between robot and pick-table
         positions.append((1.5, 0))
@@ -136,7 +135,6 @@ class ObstacleConfigMap(SceneMap):
         return spawn_objects
 
     def get_varying_scene_objects(self) -> List[SpawnObject]:
-        # TODO: add a 'door' configuration where robot first has to pass through a narraw door
         if self.obstacle_configuration == 'inpath':
             return self._add_inpath_obstacles()
         elif self.obstacle_configuration == 'none':

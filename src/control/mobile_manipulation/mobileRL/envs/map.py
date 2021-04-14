@@ -62,7 +62,6 @@ class Map:
 
         # set to half of the robot base size (plus padding if desired)
         self.inflation_radius_meter = inflation_radius
-        self.inflated_map = None
 
     @staticmethod
     def load_map(map: Union[str, Path, np.array], current_resolution: float, target_resolution: float,
@@ -150,11 +149,7 @@ class Map:
         return [0, 0, 0, 0, 0, 0, 1]
 
     def map_reset(self):
-        # TODO: clear costmap after each reset if using gazebo? Using smth like this
-        #   rosservice call /move_base_node/clear_costmaps "{}"
-        # TODO: PR2's own arm can end up in the costmap if too low
         self._floorplan_img = self._floorplan_img_orig.copy()
-        self.inflated_map = None
 
     def clear(self):
         pass

@@ -52,9 +52,7 @@ from engine.learners import LearnerRL
 
 
 # TODO:
-#   move argparse stuff into 'project' or smth
 #   where to define dependencies?
-#   replace modulation.openDR.learner with version in the repo
 
 
 class MobileRLLearner(LearnerRL):
@@ -106,14 +104,13 @@ class MobileRLLearner(LearnerRL):
 
         if self.lr_schedule == 'linear':
             assert self.lr_end is not None
-            lr_fn = create_lr_schedule(start_lr=self._lr,
-                                       min_lr=self.lr_end,
-                                       total_decay_steps=1_000_000)
+            return create_lr_schedule(start_lr=self._lr,
+                                      min_lr=self.lr_end,
+                                      total_decay_steps=1_000_000)
         elif self.lr_schedule:
             raise ValueError(self.lr_schedule)
         else:
-            lr_fn = self.lr
-        return lr_fn
+            return self.lr
 
     def _construct_agent(self, env, buffer_size: int, learning_starts: int, tau: float, gamma: float,
                          explore_noise: float, explore_noise_type: str, ent_coef):
@@ -128,8 +125,6 @@ class MobileRLLearner(LearnerRL):
                 raise ValueError(f"Unknown action noise {explore_noise_type}")
         else:
             action_noise = None
-
-        assert not env.use_map_obs, "TODO: rm this option for openDR"
 
         common_args = {
             'policy': self.backbone,
@@ -158,10 +153,21 @@ class MobileRLLearner(LearnerRL):
         agent = SAC(**common_args)
         return agent
 
-    def fit(self, env, val_env=None, logging_path='', silent=True, verbose=True):
-        assert env.action_space == self.stable_bl_agent.env.action_space
-        assert env.observation_space == self.stable_bl_agent.env.observation_space
-        self.stable_bl_agent.env = env
+    def fit(self, env=None, val_env=None, logging_path='', silent=True, verbose=True):
+        """
+        Train the agent on the environment.
+
+        :param env: gym.Env, optional, if specified use this env to train
+        :param val_env:  gym.Env, optional, if specified periodically evaluate on this env
+        :param logging_path: str, path for logging and checkpointing
+        :param silent: bool, disable verbosity
+        :param verbose: bool, enable verbosity
+        :return:
+        """
+        if env is not None:
+            assert env.action_space == self.stable_bl_agent.env.action_space
+            assert env.observation_space == self.stable_bl_agent.env.observation_space
+            self.stable_bl_agent.env = env
 
         rospy.loginfo("Start learning loop")
         eval_callback = ModulationEvalCallback(eval_env=val_env,
@@ -169,8 +175,8 @@ class MobileRLLearner(LearnerRL):
                                                eval_freq=self.evaluation_frequency,
                                                log_path=logging_path,
                                                best_model_save_path=logging_path,
-                                               debug=False,
-                                               checkpoint_after_iter=self.checkpoint_after_iter)
+                                               checkpoint_after_iter=self.checkpoint_after_iter,
+                                               verbose=verbose if not silent else False)
         self.stable_bl_agent.learn(total_timesteps=self.iters,
                                    callback=eval_callback,
                                    eval_env=None)
@@ -182,14 +188,19 @@ class MobileRLLearner(LearnerRL):
         rospy.loginfo("Training finished")
 
     def eval(self, env, name_prefix='', nr_evaluations: int = 50):
+        """
+        Evaluate the agent on the specified environment.
+
+        :param env: gym.Env, env to evaluate on
+        :param name_prefix: str, name prefix for all logged variables
+        :param nr_evaluations: int, number of evaluations
+        :return:
+        """
         rospy.loginfo(f"Evaluating on task {env.taskname} with {env.world_type} execution.")
         prefix = ''
         evaluation_rollout(self.stable_bl_agent, env, nr_evaluations, name_prefix=prefix,
                            global_step=self.stable_bl_agent.num_timesteps, verbose=2)
         env.clear()
-
-    def infer(self, batch):
-        raise NotImplementedError()
 
     def save(self, path):
         """
