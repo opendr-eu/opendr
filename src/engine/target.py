@@ -88,7 +88,12 @@ class Category(Target):
         return output
 
     @property
-    def prediction(self):
+    def prediction(self) -> int:
+        """Index of the predicted class
+
+        Returns:
+            int: index the predicted class
+        """
         return int(self.data.argmax(dim=0))
 
 
