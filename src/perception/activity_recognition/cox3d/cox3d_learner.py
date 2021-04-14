@@ -95,7 +95,7 @@ class CoX3DLearner(X3DLearner):
         self.model = CoX3D(
             dim_in=3,
             image_size=self.model_hparams["image_size"],
-            frames_per_clip=getattr(self, "temporal_window_size", self.model_hparams["frames_per_clip"]),
+            frames_per_clip=getattr(self, "temporal_window_size", None) or self.model_hparams["frames_per_clip"],
             num_classes=self.num_classes,
             conv1_dim=self.model_hparams["conv1_dim"],
             conv5_dim=self.model_hparams["conv5_dim"],
