@@ -255,8 +255,7 @@ For HSR / Tiago:
     agent.fit(env, val_env=eval_env)
 
     # evaluate on door opening in gazebo
-    evaluate_on_task(env_config, eval_env_config=eval_config, policy=agent, task='door', world_type='gazebo',
-                     global_step=agent.iters + 1, flatten_obs=True)
+    evaluate_on_task(env_config, eval_env_config=eval_config, policy=agent, task='door', world_type='gazebo')
 
     rospy.signal_shutdown("We are done")
   ```
@@ -305,8 +304,7 @@ For HSR / Tiago:
 
   
     # evaluate on door opening in gazebo
-    evaluate_on_task(eval_config, eval_env_config=eval_config, policy=agent, task='door', world_type='gazebo',
-                     global_step=agent.iters + 1, flatten_obs=True)
+    evaluate_on_task(eval_config, eval_env_config=eval_config, policy=agent, task='door', world_type='gazebo')
 
     rospy.signal_shutdown("We are done")
   ```

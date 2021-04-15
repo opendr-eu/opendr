@@ -16,7 +16,6 @@ def episode_is_success(nr_kin_fails: int, nr_collisions: int, goal_reached: bool
 def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, verbose: bool = True,
                        name_prefix: str = ''):
     name_prefix = f"{name_prefix + '_' if name_prefix else ''}{env.loggingname}"
-    gamma = policy.stable_bl_agent.gamma
 
     episode_rewards, episode_lengths, episode_returns, episode_successes, fails_per_episode, goal_reached, vel_norms = [
         [] for _ in range(7)]
@@ -29,7 +28,7 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
 
             rewards, infos, actions = [], [], []
             while not done:
-                action, state = policy.infer(obs, deterministic=True)
+                action, state = policy.predict(obs, deterministic=True)
 
                 obs, reward, done, info = env.step(action)
 
@@ -42,7 +41,7 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
                     assert episode_length < max_len, f"EPISODE OF {episode_length} STEPS!"
 
             episode_rewards.append(np.sum(rewards))
-            return_disc = calc_disc_return(rewards, gamma=gamma)
+            return_disc = calc_disc_return(rewards, gamma=policy.gamma)
             episode_returns.append(return_disc)
             episode_lengths.append(episode_length)
             goal_reached.append(infos[-1]['ee_done'])
@@ -93,18 +92,16 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
     return episode_rewards, episode_lengths, metrics, name_prefix
 
 
-def evaluate_on_task(wandb_config, policy, eval_env_config, task: str, world_type: str, global_step: int,
-                     flatten_obs: bool = False):
+def evaluate_on_task(wandb_config, policy, eval_env_config, task: str, world_type: str):
     eval_env_config = eval_env_config.copy()
     eval_env_config['task'] = task
     eval_env_config['world_type'] = world_type
-    env = env_creator(eval_env_config, flatten_obs=flatten_obs)
+    env = env_creator(eval_env_config, flatten_obs=True)
 
     rospy.loginfo(f"Evaluating on task {env.taskname} with {world_type} execution.")
     prefix = ''
     if world_type != 'sim':
         prefix += f'ts{wandb_config["time_step"]}_slow{wandb_config["slow_down_real_exec"]}'
 
-    evaluation_rollout(policy, env, wandb_config["nr_evaluations"], name_prefix=prefix, global_step=global_step,
-                       verbose=2)
+    policy.eval(env, wandb_config["nr_evaluations"], name_prefix=prefix)
     env.clear()
