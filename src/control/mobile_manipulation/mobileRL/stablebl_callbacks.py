@@ -72,9 +72,9 @@ class ModulationEvalCallback(EventCallback):
                           f"{self.training_env} != {self.eval_env}")
 
         # Create folders if needed
-        if self.best_model_save_path is not None:
+        if self.best_model_save_path:
             os.makedirs(self.best_model_save_path, exist_ok=True)
-        if self.log_path is not None:
+        if self.log_path:
             os.makedirs(os.path.dirname(self.log_path), exist_ok=True)
 
     def do_eval(self):
@@ -89,7 +89,6 @@ class ModulationEvalCallback(EventCallback):
         return evaluation_rollout(self.model, env=eval_env,
                                   num_eval_episodes=self.n_eval_episodes,
                                   global_step=self.num_timesteps,
-                                  debug=self.debug,
                                   name_prefix=self.prefix)
 
     def _on_step(self) -> bool:

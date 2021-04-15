@@ -35,6 +35,7 @@
 # SOFTWARE.
 import functools
 import os
+from pathlib import Path
 from typing import Callable, Union, Optional
 
 import numpy as np
@@ -59,6 +60,7 @@ from engine.learners import LearnerRL
 #   test that examples in readme work
 #   add a note to the pull request that some launchfiles stem from open-source ROS packages
 #   package.xml also mentions a licence
+#   search and resolve any remaining TODO's
 
 
 class MobileRLLearner(LearnerRL):
@@ -89,9 +91,11 @@ class MobileRLLearner(LearnerRL):
                                                      explore_noise=explore_noise,
                                                      explore_noise_type=explore_noise_type,
                                                      ent_coef=ent_coef)
+        if checkpoint_path == 'pretrained':
+            checkpoint_path = Path(__file__).parent / 'model_checkpoints' / env.get_attr('env_name')[0]
         self.checkpoint_path = checkpoint_path
         if checkpoint_load_iter:
-            self.load(os.path.join(checkpoint_path, f'model_step{checkpoint_load_iter}'))
+            self.load(os.path.join(checkpoint_path, f"model_step{checkpoint_load_iter}"))
 
     def _get_lr_fn(self):
         def lin_sched(start_lr, min_lr, progress_remaining):
@@ -220,8 +224,8 @@ class MobileRLLearner(LearnerRL):
         """
         self.stable_bl_agent.load(path)
 
-    def infer(self, batch):
-        raise NotImplementedError()
+    def infer(self, batch, deterministic: bool = True):
+        return self.stable_bl_agent.predict(batch, deterministic=deterministic)
 
     def reset(self):
         raise NotImplementedError()

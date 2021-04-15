@@ -34,7 +34,7 @@ class BaseChainedTask(BaseTask):
                                               default_head_start=default_head_start,
                                               close_gripper_at_start=close_gripper_at_start)
 
-        self._motion_model_path = Path(__file__).parent.parent.parent.parent / "GMM_models"
+        self._motion_model_path = Path(__file__).parent.parent.parent / "GMM_models"
         assert self._motion_model_path.exists(), self._motion_model_path
 
         self._current_goal = 0
