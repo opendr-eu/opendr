@@ -22,7 +22,7 @@
   -->
 
   <!-- Robot model -->
-  <include file="$(find modulation_rl)/gazebo_world/tiago/upload.launch">
+  <include file="$(find mobile_manipulation_rl)/gazebo_world/tiago/upload.launch">
     <arg name="arm" value="$(arg arm)"/>
     <arg name="end_effector" value="$(arg end_effector)"/>
     <arg name="ft_sensor" value="$(arg ft_sensor)"/>

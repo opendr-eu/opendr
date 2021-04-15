@@ -8,22 +8,22 @@ IMPORTANT: ENSURE THAT THIS FILE ONLY RELIES ON PYTHON2 COMPATIBLE SYNTAX
 """
 
 gazebo_cmds = {
-    'pr2': "roslaunch modulation_rl pr2_empty_world.launch gui:=false".split(" "),
-    'tiago': "roslaunch modulation_rl tiago_gazebo.launch robot:=steel tuck_arm:=false laser_model:=false camera_model:=false gui:=false".split(
+    'pr2': "roslaunch mobile_manipulation_rl pr2_empty_world.launch gui:=false".split(" "),
+    'tiago': "roslaunch mobile_manipulation_rl tiago_gazebo.launch robot:=steel tuck_arm:=false laser_model:=false camera_model:=false gui:=false".split(
         " "),
-    'hsr': "roslaunch modulation_rl hsrb_empty_world.launch rviz:=false use_manipulation:=false use_navigation:=false use_perception:=false use_task:=false use_teleop:=false use_web:=false use_laser_odom:=false paused:=false gui:=false".split(
+    'hsr': "roslaunch mobile_manipulation_rl hsrb_empty_world.launch rviz:=false use_manipulation:=false use_navigation:=false use_perception:=false use_task:=false use_teleop:=false use_web:=false use_laser_odom:=false paused:=false gui:=false".split(
         " "),
 }
 moveit_cmds = {
     'pr2': "roslaunch pr2_moveit_config move_group.launch".split(" "),
     'tiago': None,  # ['roslaunch', 'tiago_moveit_config', 'move_group.launch'],
-    'hsr': "roslaunch modulation_rl hsr_move_group.launch joint_states_topic:=/hsrb/robot_state/joint_states".split(" ")
+    'hsr': "roslaunch mobile_manipulation_rl hsr_move_group.launch joint_states_topic:=/hsrb/robot_state/joint_states".split(" ")
 }
 
 analytical_cmds = {
-    'pr2': "roslaunch modulation_rl pr2_analytical.launch".split(" "),
-    'tiago': "roslaunch modulation_rl tiago_analytical.launch".split(" "),
-    'hsr': "roslaunch modulation_rl hsr_analytical.launch".split(" ")
+    'pr2': "roslaunch mobile_manipulation_rl pr2_analytical.launch".split(" "),
+    'tiago': "roslaunch mobile_manipulation_rl tiago_analytical.launch".split(" "),
+    'hsr': "roslaunch mobile_manipulation_rl hsr_analytical.launch".split(" ")
 }
 
 
