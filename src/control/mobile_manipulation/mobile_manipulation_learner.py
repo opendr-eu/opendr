@@ -33,7 +33,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 import functools
 import os
 from typing import Callable, Union, Optional
@@ -62,10 +61,6 @@ from engine.learners import LearnerRL
 #   package.xml also mentions a licence
 
 
-def linear_schedule(start_lr, min_lr, progress_remaining):
-    return min_lr + progress_remaining * (start_lr - min_lr)
-
-
 class MobileRLLearner(LearnerRL):
     def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',
                  lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=20_000, checkpoint_load_iter=0,
@@ -77,17 +72,13 @@ class MobileRLLearner(LearnerRL):
         Specifies an soft-actor-critic (SAC) agent that can be trained for mobile manipulation.
         Internally uses Stable-Baselines3 (https://github.com/DLR-RM/stable-baselines3).
         """
-        if lr_schedule == 'linear':
-            lr = functools.partial(linear_schedule, lr, lr_end)
-        elif lr_schedule:
-            raise NotImplementedError()
-
         super(LearnerRL, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer='adam',
                                         lr_schedule=lr_schedule, backbone=backbone, network_head='',
                                         checkpoint_after_iter=checkpoint_after_iter,
                                         checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
                                         device=device, threshold=0.0, scale=1.0)
         self.seed = seed
+        self.lr_end = lr_end
         self.nr_evaluations = nr_evaluations
         self.evaluation_frequency = evaluation_frequency
         self.stable_bl_agent = self._construct_agent(env=env,
@@ -101,6 +92,18 @@ class MobileRLLearner(LearnerRL):
         self.checkpoint_path = checkpoint_path
         if checkpoint_load_iter:
             self.load(os.path.join(checkpoint_path, f'model_step{checkpoint_load_iter}'))
+
+    def _get_lr_fn(self):
+        def lin_sched(start_lr, min_lr, progress_remaining):
+            return min_lr + progress_remaining * (start_lr - min_lr)
+
+        if self.lr_schedule == 'linear':
+            assert self.lr_end is not None
+            return functools.partial(lin_sched, self.lr, self.lr_end)
+        elif self.lr_schedule:
+            raise ValueError(self.lr_schedule)
+        else:
+            return self.lr
 
     def _construct_agent(self, env, buffer_size: int, learning_starts: int, tau: float, gamma: float,
                          explore_noise: float, explore_noise_type: str, ent_coef):
@@ -119,7 +122,7 @@ class MobileRLLearner(LearnerRL):
         common_args = {
             'policy': self.backbone,
             'env': env,
-            'learning_rate': self.lr,
+            'learning_rate': self._get_lr_fn(),
             'buffer_size': buffer_size,
             'learning_starts': learning_starts,
             'batch_size': self.batch_size,
