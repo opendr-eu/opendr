@@ -134,7 +134,7 @@ def parse_args(config_path):
             if k not in cl_args:
                 args[k] = v
 
-    if args['restore_model_path']:
+    if args['checkpoint_load_iter']:
         assert args['evaluation_only'], "Continuing to train not supported atm (replay buffer doesn't get saved)"
         with open(config_path / 'best_defaults.yaml') as f:
             cp_config = yaml.safe_load(f)
@@ -160,7 +160,7 @@ def parse_args(config_path):
                                                            'total_steps', 'perform_collision_check', 'init_controllers',]):
                 n.append(str(v) if (type(v) == str) else f'{k}:{v}')
         n = '_'.join(n)
-    run_name = '_'.join([j for j in [args['env'], n, args.pop('name_suffix')] if j])
+    run_name = '_'.join([j for j in [args['env'], n] if j])
 
     args['device'] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     args['logpath'] = f'{config_path}/logs/'
