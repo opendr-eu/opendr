@@ -61,7 +61,7 @@ class RobotEnv(Env):
                  hsr_ik_slack_dist,
                  hsr_ik_slack_rot_dist: float,
                  hsr_sol_dist_reward: bool):
-        conf_path = Path(__file__).parent.parent.parent.parent / "gazebo_world" / env / "robot_config.yaml"
+        conf_path = Path(__file__).parent.parent.parent.parent / "robots_world" / env / "robot_config.yaml"
         assert conf_path.exists(), conf_path
         args = [seed,
                 strategy,
