@@ -120,7 +120,7 @@ class MobileRLLearner(LearnerRL):
         elif self.lr_schedule:
             raise ValueError(self.lr_schedule)
         else:
-            return self.lr
+            return self._lr
 
     def _construct_agent(self, env, buffer_size: int, learning_starts: int, tau: float, gamma: float,
                          explore_noise: float, explore_noise_type: str, ent_coef):
