@@ -53,6 +53,7 @@ from engine.learners import LearnerRL
 
 # TODO:
 #   how to define c++ / ROS dependencies?
+#       requires full ROS installation, apt packages depend on linux and ROS version (kinetic vs melodic etc), probably not everyone wants to install all of that to use smth from opendr
 #   test that demo works
 #   test that loading pretrained model works
 #   test that examples in readme work
