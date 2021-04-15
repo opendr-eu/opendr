@@ -16,7 +16,7 @@ def episode_is_success(nr_kin_fails: int, nr_collisions: int, goal_reached: bool
 def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, verbose: bool = True,
                        name_prefix: str = ''):
     name_prefix = f"{name_prefix + '_' if name_prefix else ''}{env.loggingname}"
-    gamma = policy.gamma if hasattr(policy, "gamma") else policy.config["gamma"]
+    gamma = policy.stable_bl_agent.gamma
 
     episode_rewards, episode_lengths, episode_returns, episode_successes, fails_per_episode, goal_reached, vel_norms = [
         [] for _ in range(7)]
@@ -29,7 +29,7 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
 
             rewards, infos, actions = [], [], []
             while not done:
-                action, state = policy.predict(obs, state=None, deterministic=True)
+                action, state = policy.infer(obs, deterministic=True)
 
                 obs, reward, done, info = env.step(action)
 

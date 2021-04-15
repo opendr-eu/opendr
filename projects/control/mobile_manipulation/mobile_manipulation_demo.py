@@ -113,12 +113,13 @@ def parse_args(config_path):
     parser.add_argument('--nr_evaluations', type=int, default=50, help='Nr of runs for the evaluation')
     parser.add_argument('--evaluation_frequency', type=int, default=20000, help='In nr of steps')
     parser.add_argument('--evaluation_only', type=str2bool, nargs='?', const=True, default=False, help='If True only model will be loaded and evaluated no training')
-    parser.add_argument('--eval_execs', nargs='+', default=['sim'], choices=['sim', 'gazebo', 'world'], help='Eval execs to run')
-    parser.add_argument('--eval_tasks', nargs='+', default=['rndstartrndgoal', 'houseexpo', 'simpleobstacle', 'restrictedws'], choices=all_tasks, help='Eval tasks to run')
+    parser.add_argument('--eval_worlds', nargs='+', default=['sim'], choices=['sim', 'gazebo', 'world'], help='Eval execs to run')
+    parser.add_argument('--eval_tasks', nargs='+', default=list(all_tasks), choices=all_tasks, help='Eval tasks to run')
     # #################################################
     # Misc
     #################################################
-    parser.add_argument('--restore_model_path', type=str, default='model_checkpoints', help='Restore the model and config under this path')
+    # TODO: might override the provided checkpoints if training with this
+    parser.add_argument('--restore_model_path', type=str, default='pretrained', help='Restore the model and config under this path')
     parser.add_argument('--checkpoint_load_iter', type=int, default=0, help='Restore the model named model_step{x}. See ./model_checkpoints/[robot] for pretrained checkpoints. Note: does not restore the config automatically.')
     parser.add_argument('--name', type=str, default="", help='name for this run')
 
@@ -144,13 +145,15 @@ def parse_args(config_path):
             for k, v in cp_config[args['env']].items():
                 args[k] = v
 
+    args['checkpoint_after_iter'] = args['evaluation_frequency'] if not args['evaluation_only'] else 0
+
     if args['env'] == 'hsr':
         assert not args['perform_collision_check'], "Collisions can crash due to unsupported geometries"
 
     # do we need to initialise controllers for the specified tasks?
     tasks_that_need_controllers = [k for k, v in ALL_TASKS.items() if v.requires_simulator()]
     task_needs_gazebo = len(set([args['task']] + args['eval_tasks']).intersection(set(tasks_that_need_controllers))) > 0
-    world_type_needs_controllers = set([args['world_type']] + args['eval_execs']) != {'sim'}
+    world_type_needs_controllers = set([args['world_type']] + args['eval_worlds']) != {'sim'}
     args['init_controllers'] = task_needs_gazebo or world_type_needs_controllers
 
     n = args.pop('name')
@@ -158,7 +161,7 @@ def parse_args(config_path):
         n = []
         for k, v in sorted(args.items()):
             if (v != parser.get_default(k)) and (k not in ['env', 'seed', 'load_best_defaults', 'evaluation_only',
-                                                           'vis_env', 'restore_model_path', 'eval_tasks', 'eval_execs',
+                                                           'vis_env', 'restore_model_path', 'eval_tasks', 'eval_worlds',
                                                            'total_steps', 'perform_collision_check', 'init_controllers',]):
                 n.append(str(v) if (type(v) == str) else f'{k}:{v}')
         n = '_'.join(n)
@@ -212,9 +215,9 @@ def main():
                             explore_noise_type=config['explore_noise_type'],
                             nr_evaluations=config['nr_evaluations'],
                             evaluation_frequency=config['evaluation_frequency'],
-                            checkpoint_after_iter=config['evaluation_frequency'],
+                            checkpoint_after_iter=config['checkpoint_after_iter'],
                             checkpoint_path=config['restore_model_path'],
-                            checkpoint_load_iter=0,
+                            checkpoint_load_iter=config['checkpoint_load_iter'],
                             temp_path=logpath,
                             device=config['device'],
                             ent_coef=config['ent_coef'])
@@ -224,7 +227,7 @@ def main():
         agent.fit(env, val_env=eval_env)
 
     # evaluate
-    world_types = ["world"] if (config['world_type'] == "world") else config['eval_execs']
+    world_types = ["world"] if (config['world_type'] == "world") else config['eval_worlds']
 
     for world_type in world_types:
         for task in config['eval_tasks']:

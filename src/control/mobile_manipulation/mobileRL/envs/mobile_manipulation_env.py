@@ -105,8 +105,6 @@ class MobileManipulationEnv(Env):
             close_gripper=close_gripper)
 
         self.map.map_reset()
-        if self.vis_env:
-            self.map.publish_floorplan_rviz()
         # sometimes desirable to call set_ee_planner manually after the map has reset to first deduct goals from the map
         if ee_planner is not None:
             return self.set_ee_planner(ee_planner=ee_planner,

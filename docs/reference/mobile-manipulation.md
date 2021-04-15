@@ -155,7 +155,7 @@ Copy or symlink openDR's mobile_manpipulation module into `./src`
 Create a python environment. We recommend using conda, which requires to first install Anaconda or Miniconda. Then do
 
     conda env create -f src/mobile_manipulation/environment.yml
-    conda activate modulation_rl
+    conda activate mobile_manipulation_rl
 
 Configure the workspace to use your environment's python3 (adjust path according to your executable)
 
@@ -189,8 +189,10 @@ To be able to visualise install rviz
         roslaunch pr2_moveit_config move_group.launch
 
 4. Run the demo script
-
-        python mobile_manipulation_demo.py
+TODO: cannot find pybindings unless copying mobile_manipulation_demo.py into src/mobile_manipulation of the catkin_ws
+        cd opendr_internal/projects/control/mobile_manipulation/
+        export PYTHONPATH=/home/honerkam/repos/opendr_internal/src:=PYTHONPATH
+        python src/project_mobile_manipulation/mobile_manipulation_demo.py
 
 5. [Visualisation] start rviz:
 
