@@ -26,7 +26,7 @@
   </include>
 
   <!-- start pr2 robot -->
-  <include file="$(find modulation_rl)/robots_world/pr2/pr2.launch">
+  <include file="$(find mobile_manipulation_rl)/robots_world/pr2/pr2.launch">
     <arg name="KINECT1" value="$(arg KINECT1)" />
     <arg name="KINECT2" value="$(arg KINECT2)" />
   </include>

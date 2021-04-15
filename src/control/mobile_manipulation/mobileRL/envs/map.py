@@ -3,11 +3,8 @@ from pathlib import Path
 from typing import Union, List, Tuple, Optional
 
 import numpy as np
-import torch
 from PIL import Image, ImageDraw, ImageOps
 from matplotlib import pyplot as plt
-from torch.nn import functional as F
-from torchvision import transforms
 
 from control.mobile_manipulation.mobileRL.envs.env_utils import quaternion_to_yaw
 from control.mobile_manipulation.mobileRL.envs.simulator_api import GazeboAPI, DummySimulatorAPI, SpawnObject, \
@@ -54,9 +51,6 @@ class Map:
 
         sz = int(local_map_size_meters / self._resolution)
         self.output_size = (sz, sz)
-        # expects HxW
-        self._crop_fn = transforms.CenterCrop(size=self.output_size)
-        self._to_tensor_fn = transforms.ToTensor()
 
         self._map_frame_rviz = map_frame_rviz
 
@@ -111,37 +105,6 @@ class Map:
         xypose_meter[..., 1] = self._origin_H_meter - xypose_meter[..., 1]
         return xypose_meter
 
-    def _get_local_map_gt(self, current_location_tf) -> np.ndarray:
-        """
-        Return a crop around the robot, normalised to its current orientation.
-        The robot is always in the center, looking towards the right
-        :param current_location_tf: (List[float]) of [x, y, z, X, Y, Z, W]
-        """
-        pose_th = quaternion_to_yaw(current_location_tf[3:])
-
-        # affine transformation: expects location in -1, 1 range, with [-1, 1] top left and [1, 1] bottom right
-        img_size = np.array([self._floorplan_img.width, self._floorplan_img.height])
-        # into [0, 2] then [-1, 1] range
-        t_xy = self.meter_to_pixels(np.array(current_location_tf[0:2]), round=False) / (img_size / 2) - 1.0
-        r_c = np.cos(pose_th)
-        r_s = np.sin(pose_th)
-        tf = torch.as_tensor([[r_c, r_s, t_xy[0]], [-r_s, r_c, t_xy[1]]]).unsqueeze(0)
-
-        # [B=1, C=1, H, W]
-        # convert to binary map as base does not care about height information
-        map_tensor = self._to_tensor_fn(self._floorplan_img).unsqueeze(0)
-
-        # [-1, -1] is top left, [1, 1] is bottom right
-        grid = F.affine_grid(tf, map_tensor.shape, align_corners=False).float()
-        local_map = F.grid_sample(map_tensor, grid, align_corners=False)
-
-        # center crop image
-        cropped = self._crop_fn(local_map)[0, 0].numpy()
-        return cropped > 0.1
-
-    def get_local_map(self, current_location_tf, world_type: str) -> np.ndarray:
-        return self._get_local_map_gt(current_location_tf)
-
     def draw_goal(self, *args, **kwargs):
         pass
 
@@ -174,10 +137,6 @@ class Map:
                      c[0] * np.cos(theta), c[1] * -np.sin(theta),
                      color='cyan', width=1)
         return f, ax
-
-    def plot_local_map(self, location: list, show: bool = False, world_type: str = "sim"):
-        local_map = self.get_local_map(location, world_type)
-        return self._plot_map(local_map, show=show)
 
 
 class DummyMap(Map):

@@ -3,7 +3,7 @@
   <arg name="KINECT2" default="$(optenv KINECT2 false)" />
 
   <!-- send pr2 urdf to param server -->
-  <include file="$(find modulation_rl)/robots_world/pr2/upload_pr2.launch" pass_all_args="true" />
+  <include file="$(find mobile_manipulation_rl)/robots_world/pr2/upload_pr2.launch" pass_all_args="true" />
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="spawn_pr2_model" pkg="gazebo_ros" type="spawn_model" args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -param robot_description -J l_shoulder_pan_joint 2.076 -J l_shoulder_lift_joint 1.249 -J l_upper_arm_roll_joint 2.1 -J l_elbow_flex_joint -1.75 -model pr2" respawn="false" output="screen" />
@@ -18,7 +18,7 @@ tucked on side:
     -J l_shoulder_pan_joint 2.076 -J l_shoulder_lift_joint 1.249 -J l_upper_arm_roll_joint 2.15 -J l_elbow_flex_joint -1.3
 -->
   <!-- default bringup script -->
-  <include file="$(find modulation_rl)/robots_world/pr2/pr2_bringup.launch" />
+  <include file="$(find mobile_manipulation_rl)/robots_world/pr2/pr2_bringup.launch" />
 
 </launch>
 
