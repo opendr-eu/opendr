@@ -12,7 +12,7 @@
   <!-- Robot description -->
   <param name="robot_description"
     command="rosrun xacro xacro --inorder
-    '$(find modulation_rl)/gazebo_world/tiago/tiago.urdf.xacro'
+    '$(find mobile_manipulation_rl)/gazebo_world/tiago/tiago.urdf.xacro'
     arm:=$(arg arm)
     wrist_model:=$(arg wrist_model)
     end_effector:=$(arg end_effector)

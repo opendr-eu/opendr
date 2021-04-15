@@ -120,7 +120,7 @@ The repository consists of two main parts: a training environment written in C++
 
 As not all ROS packages work with python3, the setup relies on running the robot-specific packages in a python2 environment
 and our package in a python3 environment.
-The environment was tested for Ubunto 18.04 and ROS melodic.
+The environment was tested for Ubuntu 18.04 and ROS melodic.
 
 ###### Installation
 Install the appropriate version for your system (full install recommended): http://wiki.ros.org/ROS/Installation
@@ -146,11 +146,10 @@ Create a catkin workspace (ideally a separate one for each robot)
     mkdir ~/catkin_ws
     cd catkin_ws
 
-TODO: what parts of the whole openDR to use? Clone repo then copy the mobile manipulation part?
-Fork the repo and clone into `./src`
+Copy or symlink openDR's mobile_manpipulation module into `./src`
 
     cd src
-    git clone [url] src/mobile_manipulation
+    ln -s ln -s opendr/src/control/mobile_manipulation src/mobile_manipulation
 
 
 Create a python environment. We recommend using conda, which requires to first install Anaconda or Miniconda. Then do
