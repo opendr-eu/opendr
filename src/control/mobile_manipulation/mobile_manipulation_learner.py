@@ -34,6 +34,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import functools
 import os
 from typing import Callable, Union, Optional
 
@@ -61,6 +62,10 @@ from engine.learners import LearnerRL
 #   package.xml also mentions a licence
 
 
+def linear_schedule(start_lr, min_lr, progress_remaining):
+    return min_lr + progress_remaining * (start_lr - min_lr)
+
+
 class MobileRLLearner(LearnerRL):
     def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',
                  lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=20_000, checkpoint_load_iter=0,
@@ -72,13 +77,17 @@ class MobileRLLearner(LearnerRL):
         Specifies an soft-actor-critic (SAC) agent that can be trained for mobile manipulation.
         Internally uses Stable-Baselines3 (https://github.com/DLR-RM/stable-baselines3).
         """
+        if lr_schedule == 'linear':
+            lr = functools.partial(linear_schedule, lr, lr_end)
+        elif lr_schedule:
+            raise NotImplementedError()
+
         super(LearnerRL, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer='adam',
                                         lr_schedule=lr_schedule, backbone=backbone, network_head='',
                                         checkpoint_after_iter=checkpoint_after_iter,
                                         checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
                                         device=device, threshold=0.0, scale=1.0)
         self.seed = seed
-        self.lr_end = lr_end
         self.nr_evaluations = nr_evaluations
         self.evaluation_frequency = evaluation_frequency
         self.stable_bl_agent = self._construct_agent(env=env,
@@ -92,35 +101,6 @@ class MobileRLLearner(LearnerRL):
         self.checkpoint_path = checkpoint_path
         if checkpoint_load_iter:
             self.load(os.path.join(checkpoint_path, f'model_step{checkpoint_load_iter}'))
-
-    @property
-    def lr(self):
-        def create_lr_schedule(start_lr: float, min_lr: float, total_decay_steps: int) -> Union[float, Callable]:
-            """
-            Return a linearly decaying lr. total_decay_steps maps from progrss to current step.
-            Note: if using random exploration steps, the lr will already decay during those
-            progress_remaining: falling from 1 to 0
-            """
-            if min_lr == -1:
-                return start_lr
-
-            def lin_sched(progress_remaining):
-                return min_lr + progress_remaining * (start_lr - min_lr)
-
-            assert 0 < start_lr <= 0.1
-            assert 0 <= min_lr <= start_lr
-            assert total_decay_steps >= 1
-            return lambda progress_remaining: lin_sched(progress_remaining)
-
-        if self.lr_schedule == 'linear':
-            assert self.lr_end is not None
-            return create_lr_schedule(start_lr=self._lr,
-                                      min_lr=self.lr_end,
-                                      total_decay_steps=1_000_000)
-        elif self.lr_schedule:
-            raise ValueError(self.lr_schedule)
-        else:
-            return self._lr
 
     def _construct_agent(self, env, buffer_size: int, learning_starts: int, tau: float, gamma: float,
                          explore_noise: float, explore_noise_type: str, ent_coef):
