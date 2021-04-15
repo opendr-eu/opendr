@@ -83,8 +83,6 @@ class MobileManipulationEnv(Env):
                                                    robot_obs=robot_obs,
                                                    slow_down_factor=self._slow_down_real_execution if not is_analytical else 1,
                                                    is_analytic_env=is_analytical)
-        if self._robot.vis_env:
-            self._robot.publish_marker(ee_planner.gripper_goal_wrist, 9999, "gripper_goal", "blue", 1.0)
 
         if self._robot.env_name == "hsr":
             self._robot.set_gripper_goal_wrist(ee_planner.gripper_goal_wrist)
