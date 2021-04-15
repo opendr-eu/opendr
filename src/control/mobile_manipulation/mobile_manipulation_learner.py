@@ -239,3 +239,10 @@ class MobileRLLearner(LearnerRL):
 
     def infer(self, batch):
         raise NotImplementedError()
+
+    def reset(self):
+        raise NotImplementedError()
+
+    def optimize(self, target_device):
+        raise NotImplementedError()
+
