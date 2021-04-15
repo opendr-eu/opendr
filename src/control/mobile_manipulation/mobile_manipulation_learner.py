@@ -196,7 +196,6 @@ class MobileRLLearner(LearnerRL):
         if nr_evaluations is None:
             nr_evaluations = self.nr_evaluations
 
-        rospy.loginfo(f"Evaluating on task {env.taskname} with {env.world_type} execution.")
         prefix = ''
         evaluation_rollout(self.stable_bl_agent, env, nr_evaluations, name_prefix=prefix,
                            global_step=self.stable_bl_agent.num_timesteps, verbose=2)

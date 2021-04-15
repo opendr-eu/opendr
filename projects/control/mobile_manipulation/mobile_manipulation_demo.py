@@ -231,8 +231,7 @@ def main():
 
     for world_type in world_types:
         for task in config['eval_tasks']:
-            evaluate_on_task(config, eval_env_config=eval_config, policy=agent, task=task, world_type=world_type,
-                             global_step=agent.iters + 1, flatten_obs=True)
+            evaluate_on_task(config, eval_env_config=eval_config, policy=agent, task=task, world_type=world_type)
 
     rospy.signal_shutdown("We are done")
 
