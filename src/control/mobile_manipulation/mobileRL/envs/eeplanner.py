@@ -1,6 +1,6 @@
 import os
 
-from pybindings import RobotObs, EEObs, LinearPlanner, GMMPlanner  # , SplinePlanner
+from pybindings import RobotObs, EEObs, LinearPlanner, GMMPlanner
 
 MIN_PLANNER_VELOCITY = 0.001
 MAX_PLANNER_VELOCITY = 0.1
