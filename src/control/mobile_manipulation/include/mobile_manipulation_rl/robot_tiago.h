@@ -2,7 +2,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <control_msgs/FollowJointTrajectoryAction.h>
 #include <geometry_msgs/Twist.h>
-#include <modulation_rl/robot_env.h>
+#include <mobile_manipulation_rl/robot_env.h>
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <pr2_mechanism_msgs/SwitchController.h>

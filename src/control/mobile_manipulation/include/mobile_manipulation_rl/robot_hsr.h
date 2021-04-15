@@ -1,5 +1,5 @@
 #pragma once
-#include <modulation_rl/robot_env.h>
+#include <mobile_manipulation_rl/robot_env.h>
 
 #include <tmc_robot_kinematics_model/numeric_ik_solver.hpp>
 #include <tmc_robot_kinematics_model/robot_kinematics_model.hpp>
