@@ -92,16 +92,16 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
     return episode_rewards, episode_lengths, metrics, name_prefix
 
 
-def evaluate_on_task(wandb_config, policy, eval_env_config, task: str, world_type: str):
+def evaluate_on_task(config, agent, eval_env_config, task: str, world_type: str):
     eval_env_config = eval_env_config.copy()
     eval_env_config['task'] = task
     eval_env_config['world_type'] = world_type
     env = env_creator(eval_env_config, flatten_obs=True)
 
-    rospy.loginfo(f"Evaluating on task {env.taskname} with {world_type} execution.")
+    rospy.loginfo(f"Evaluating on task {env.taskname()} with {world_type} execution.")
     prefix = ''
     if world_type != 'sim':
-        prefix += f'ts{wandb_config["time_step"]}_slow{wandb_config["slow_down_real_exec"]}'
+        prefix += f'ts{config["time_step"]}_slow{config["slow_down_real_exec"]}'
 
-    policy.eval(env, wandb_config["nr_evaluations"], name_prefix=prefix)
+    agent.eval(env, nr_evaluations=config["nr_evaluations"], name_prefix=prefix)
     env.clear()
