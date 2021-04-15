@@ -164,7 +164,7 @@ def parse_args(config_path):
         n = '_'.join(n)
     run_name = '_'.join([j for j in [args['env'], n] if j])
 
-    args['device'] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    args['device'] = "cuda" if torch.cuda.is_available() else "cpu"
     args['logpath'] = f'{config_path}/logs/'
     os.makedirs(args['logpath'], exist_ok=True)
 
