@@ -1,7 +1,7 @@
 #ifndef MODULATION
 #define MODULATION
 
-#include <modulation_rl/ellipse.h>
+#include <mobile_manipulation_rl/ellipse.h>
 #include <ros/ros.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>

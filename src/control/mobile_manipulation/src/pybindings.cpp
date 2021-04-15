@@ -1,9 +1,9 @@
 #include <gripper_planner/base_gripper_planner.h>
 #include <gripper_planner/gmm_planner.h>
 #include <gripper_planner/linear_planner.h>
-#include <modulation_rl/robot_hsr.h>
-#include <modulation_rl/robot_pr2.h>
-#include <modulation_rl/robot_tiago.h>
+#include <mobile_manipulation_rl/robot_hsr.h>
+#include <mobile_manipulation_rl/robot_pr2.h>
+#include <mobile_manipulation_rl/robot_tiago.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 

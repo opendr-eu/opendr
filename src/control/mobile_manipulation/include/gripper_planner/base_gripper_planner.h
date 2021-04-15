@@ -1,5 +1,5 @@
-#ifndef MODULATION_RL_BASE_GRIPPER_PLANNER_H
-#define MODULATION_RL_BASE_GRIPPER_PLANNER_H
+#ifndef MOBILE_MANIPULATION_RL_BASE_GRIPPER_PLANNER_H
+#define MOBILE_MANIPULATION_RL_BASE_GRIPPER_PLANNER_H
 
 #include <eigen_conversions/eigen_msg.h>
 #include <ros/ros.h>
@@ -11,7 +11,7 @@
 #include "tf/transform_datatypes.h"
 #include "visualization_msgs/MarkerArray.h"
 
-#include "../modulation_rl/utils.h"
+#include "../mobile_manipulation_rl/utils.h"
 
 struct EEObs {
   const std::vector<double> next_gripper_tf;
@@ -85,4 +85,4 @@ public:
   EEObs generateObsStep(const RobotObs &robot_obs);
 };
 
-#endif  // MODULATION_RL_BASE_GRIPPER_PLANNER_H
+  #endif  // MOBILE_MANIPULATION_RL_BASE_GRIPPER_PLANNER_H

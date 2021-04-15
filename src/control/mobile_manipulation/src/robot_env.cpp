@@ -1,4 +1,4 @@
-#include "modulation_rl/robot_env.h"
+#include "mobile_manipulation_rl/robot_env.h"
 
 RobotEnv::RobotEnv(uint32_t seed, std::string strategy, std::string world_type, bool init_controllers, double penalty_scaling,
                    double time_step_world, bool perform_collision_check, std::string node_handle_name, bool verbose,
@@ -380,8 +380,8 @@ std::vector<PathPoint> RobotEnv::visualizeRobotPose(std::string logfile) {
   //         timeStamp = ros::TIME_MIN;
   //     rosbag::Bag bag;
   //     bag.open(logfile, rosbag::bagmode::Write);
-  //     bag.write("modulation_rl_ik/gripper_goal_visualizer", timeStamp, goal_marker);
-  //     bag.write("modulation_rl_ik/gripper_plan_visualizer", timeStamp, gripper_plan_marker_);
+  //     bag.write("mobile_manipulation_rl_ik/gripper_goal_visualizer", timeStamp, goal_marker);
+  //     bag.write("mobile_manipulation_rl_ik/gripper_plan_visualizer", timeStamp, gripper_plan_marker_);
   //     bag.close();
   // }
   return pathPoints_;

@@ -1,5 +1,5 @@
-#ifndef MODULATION_RL_ROBOT_ENV_H
-#define MODULATION_RL_ROBOT_ENV_H
+#ifndef MOBILE_MANIPULATION_RL_ROBOT_ENV_H
+#define MOBILE_MANIPULATION_RL_ROBOT_ENV_H
 
 #include <eigen_conversions/eigen_msg.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -32,10 +32,10 @@
 #include "tf/transform_datatypes.h"
 #include "visualization_msgs/MarkerArray.h"
 
-#include "modulation_rl/ellipse.h"
-#include "modulation_rl/modulation_ellipses.h"
-#include "modulation_rl/utils.h"
-#include "modulation_rl/worlds.h"
+#include "mobile_manipulation_rl/ellipse.h"
+#include "mobile_manipulation_rl/modulation_ellipses.h"
+#include "mobile_manipulation_rl/utils.h"
+#include "mobile_manipulation_rl/worlds.h"
 
 struct RobotState {
   tf::Transform base_tf;              // in world frame
@@ -224,4 +224,4 @@ namespace validity_fun {
 
 }
 
-#endif  // MODULATION_RL_ROBOT_ENV_H
+#endif  // MOBILE_MANIPULATION_RL_ROBOT_ENV_H
