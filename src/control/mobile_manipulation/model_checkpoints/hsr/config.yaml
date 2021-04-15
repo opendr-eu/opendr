@@ -71,10 +71,7 @@ learn_vel_norm:
 lr_end:
   desc: null
   value: 1.0e-06
-lr_gamma:
-  desc: null
-  value: 0.999
-lr_start:
+lr:
   desc: null
   value: 0.0001
 nr_evaluations:
