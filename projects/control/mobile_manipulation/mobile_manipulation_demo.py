@@ -46,6 +46,8 @@ import rospy
 import torch
 import yaml
 
+from stable_baselines3.common.utils import configure_logger
+
 from control.mobile_manipulation.mobileRL.envs import ALL_TASKS
 from control.mobile_manipulation.mobileRL.evaluation import evaluate_on_task
 from control.mobile_manipulation.mobileRL.utils import create_env
@@ -191,7 +193,7 @@ def main():
 
     main_path = Path(__file__).parent
     run_name, config = parse_args(main_path)
-    logpath = f"{config['logpath']}/{run_name}/"
+    logpath = f"{config['logpath']}{run_name}/"
 
     # create envs
     env = create_env(config, task=config['task'], node_handle="train_env", wrap_in_dummy_vec=True, flatten_obs=True)
@@ -225,13 +227,16 @@ def main():
     # train
     if not config['evaluation_only']:
         agent.fit(env, val_env=eval_env)
+    else:
+        configure_logger(0, logpath, 'SAC', agent.stable_bl_agent.num_timesteps)
+        breakpoint()
 
     # evaluate
     world_types = ["world"] if (config['world_type'] == "world") else config['eval_worlds']
 
     for world_type in world_types:
         for task in config['eval_tasks']:
-            evaluate_on_task(config, eval_env_config=eval_config, policy=agent, task=task, world_type=world_type)
+            evaluate_on_task(config, eval_env_config=eval_config, agent=agent, task=task, world_type=world_type)
 
     rospy.signal_shutdown("We are done")
 

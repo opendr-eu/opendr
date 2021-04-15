@@ -36,7 +36,7 @@
 import functools
 import os
 from pathlib import Path
-from typing import Callable, Union, Optional
+from typing import Optional
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -122,33 +122,26 @@ class MobileRLLearner(LearnerRL):
                 raise ValueError(f"Unknown action noise {explore_noise_type}")
         else:
             action_noise = None
-
-        common_args = {
-            'policy': self.backbone,
-            'env': env,
-            'learning_rate': self._get_lr_fn(),
-            'buffer_size': buffer_size,
-            'learning_starts': learning_starts,
-            'batch_size': self.batch_size,
-            'tau': tau,
-            'gamma': gamma,
-            'action_noise': action_noise,
-            'policy_kwargs': {},
-            'tensorboard_log': self.temp_path,
-            'create_eval_env': False,
-            'seed': self.seed,
-            'verbose': 0,
-            'device': self.device,
-        }
-
-        common_args.update({"train_freq": 1,
-                            "ent_coef": ent_coef,
-                            "target_update_interval": 1,
-                            "target_entropy": 'auto',
-                            "use_sde": False
-                            })
-        agent = SAC(**common_args)
-        return agent
+        return SAC(policy=self.backbone,
+                   env=env,
+                   learning_rate=self._get_lr_fn(),
+                   buffer_size=buffer_size,
+                   learning_starts=learning_starts,
+                   batch_size=self.batch_size,
+                   tau=tau,
+                   gamma=gamma,
+                   action_noise=action_noise,
+                   policy_kwargs={},
+                   tensorboard_log=self.temp_path,
+                   create_eval_env=False,
+                   seed=self.seed,
+                   verbose=0,
+                   device=self.device,
+                   train_freq=1,
+                   ent_coef=ent_coef,
+                   target_update_interval=1,
+                   target_entropy='auto',
+                   use_sde=False)
 
     def fit(self, env=None, val_env=None, logging_path='', silent=False, verbose=True):
         """
