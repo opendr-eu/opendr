@@ -15,11 +15,11 @@ def get_coco_api_from_dataset(dataset):
         return dataset.coco
 
 
-def build_dataset(image_set, args):
-    if args.dataset_file == 'coco':
-        return build_coco(image_set, args)
-    if args.dataset_file == 'coco_panoptic':
+def build_dataset(img_folder, ann_folder, ann_file, image_set, return_masks, dataset_type):
+    if dataset_type == 'coco':
+        return build_coco(img_folder, ann_file, image_set, return_masks)
+    if dataset_type == 'coco_panoptic':
         # to avoid making panopticapi required for coco
         from .coco_panoptic import build as build_coco_panoptic
-        return build_coco_panoptic(image_set, args)
-    raise ValueError(f'dataset {args.dataset_file} not supported')
+        return build_coco_panoptic(img_folder, ann_folder, ann_file, image_set, return_masks)
+    raise ValueError(f'dataset {dataset_type} not supported')

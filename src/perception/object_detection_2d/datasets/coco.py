@@ -144,6 +144,6 @@ def make_coco_transforms(image_set):
     raise ValueError(f'unknown {image_set}')
 
 
-def build_coco_dataset(img_folder_name, ann_file, image_set, return_masks):
-    dataset = CocoDetection(img_folder, ann_file, transforms=make_coco_transforms(image_set), return_masks=return_asks)
+def build(img_folder, ann_file, image_set, return_masks):
+    dataset = CocoDetection(img_folder, ann_file, transforms=make_coco_transforms(image_set), return_masks=return_masks)
     return dataset
