@@ -128,7 +128,8 @@ include_directories(
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES modulation_rl alglib gripper_planner
-        CATKIN_DEPENDS roscpp rospy std_msgs pybind11_catkin tmc_robot_kinematics_model
+        CATKIN_DEPENDS roscpp rospy std_msgs pybind11_catkin
+        # tmc_robot_kinematics_model
         # DEPENDS system_lib
 )
 
