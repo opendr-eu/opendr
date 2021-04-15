@@ -146,17 +146,19 @@ Create a catkin workspace (ideally a separate one for each robot)
     mkdir ~/catkin_ws
     cd catkin_ws
 
+TODO: what parts of the whole openDR to use? Clone repo then copy the mobile manipulation part?
 Fork the repo and clone into `./src`
 
     cd src
-    git clone [url] src/modulation_rl
+    git clone [url] src/mobile_manipulation
+
 
 Create a python environment. We recommend using conda, which requires to first install Anaconda or Miniconda. Then do
 
-    conda env create -f src/modulation_rl/environment.yml
+    conda env create -f src/mobile_manipulation/environment.yml
     conda activate modulation_rl
 
-Configure the workspace to use your environment's python3 (adjust path according to your version)
+Configure the workspace to use your environment's python3 (adjust path according to your executable)
 
     catkin config -DPYTHON_EXECUTABLE=/opt/conda/bin/python -DPYTHON_INCLUDE_DIR=/opt/conda/include/python3.7m -DPYTHON_LIBRARY=/opt/conda/lib/libpython3.7m.so
 
@@ -180,7 +182,7 @@ To be able to visualise install rviz
 
 2a. training or evaluation in the analytical environment only:
 
-        roslaunch modulation_rl pr2_analytical.launch
+        roslaunch mobile_manipulation_rl pr2_analytical.launch
    
 2b. evaluation in gazebo: _instead_ of 2a start gazebo with the pr2 robot as well moveit. Please run from outside the conda environment with a python2 interpreter.
 
