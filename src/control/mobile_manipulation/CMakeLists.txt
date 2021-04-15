@@ -127,7 +127,7 @@ include_directories(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
         INCLUDE_DIRS include
-        LIBRARIES modulation_rl alglib gripper_planner
+        LIBRARIES mobile_manipulation_rl alglib gripper_planner
         CATKIN_DEPENDS roscpp rospy std_msgs pybind11_catkin
         # tmc_robot_kinematics_model
         # DEPENDS system_lib
@@ -201,7 +201,7 @@ target_link_libraries(pybindings PRIVATE worlds robot_env robot_pr2 robot_tiago 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/modulation_rl_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/mobile_manipulation_rl_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -265,7 +265,7 @@ target_link_libraries(pybindings PRIVATE worlds robot_env robot_pr2 robot_tiago 
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_modulation_rl.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_mobile_manipulation_rl.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

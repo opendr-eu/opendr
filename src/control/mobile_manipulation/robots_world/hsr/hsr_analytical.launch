@@ -4,7 +4,7 @@
 
   <!-- The name of the parameter under which the URDF is loaded -->
   <arg name="robot_description" default="robot_description"/>
-  <arg name="upload_robot_model_launch" default="$(find modulation_rl)/gazebo_world/hsr/upload_hsrb.launch"/>
+  <arg name="upload_robot_model_launch" default="$(find mobile_manipulation_rl)/gazebo_world/hsr/upload_hsrb.launch"/>
 
   <!-- Load universal robot description format (URDF) -->
   <include if="$(arg load_robot_description)" file="$(arg upload_robot_model_launch)" >
