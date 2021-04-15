@@ -58,6 +58,7 @@ from engine.learners import LearnerRL
 #   test that loading pretrained model works
 #   test that examples in readme work
 #   add a note to the pull request that some launchfiles stem from open-source ROS packages
+#   package.xml also mentions a licence
 
 
 class MobileRLLearner(LearnerRL):
@@ -235,3 +236,6 @@ class MobileRLLearner(LearnerRL):
         :rtype: bool
         """
         self.stable_bl_agent.load(path)
+
+    def infer(self, batch):
+        raise NotImplementedError()

@@ -75,8 +75,10 @@ def parse_args(config_path):
     #################################################
     # ALGORITHMS
     #################################################
+    parser.add_argument('--lr', type=float, default=1e-5, help="Learning rate.")
     parser.add_argument('--lr_end', type=float, default=1e-6, help="Final / min learning rate. -1 to not decay")
     parser.add_argument('--tau', type=float, default=0.001, help='target value moving average speed')
+    parser.add_argument('--gamma', type=float, default=0.99, help='discount')
     parser.add_argument('--explore_noise_type', type=str, default='normal', choices=['normal', 'OU', ''], help='Type of exploration noise')
     parser.add_argument('--explore_noise', type=float, default=0.0, help='')
     parser.add_argument('--ent_coef', default="auto", help="Entropy coefficient. 'auto' to learn it.")
@@ -199,18 +201,18 @@ def main():
 
     agent = MobileRLLearner(env,
                             lr=config['lr'],
-                            iters=config['iters'],
+                            iters=config['total_steps'],
                             batch_size=config['batch_size'],
                             seed=config['seed'],
                             buffer_size=config['buffer_size'],
-                            learning_starts=config['learning_starts'],
+                            learning_starts=config['rnd_steps'],
                             tau=config['tau'],
                             gamma=config['gamma'],
                             explore_noise=config['explore_noise'],
                             explore_noise_type=config['explore_noise_type'],
                             nr_evaluations=config['nr_evaluations'],
                             evaluation_frequency=config['evaluation_frequency'],
-                            checkpoint_after_iter=config['checkpoint_after_iter'],
+                            checkpoint_after_iter=config['evaluation_frequency'],
                             checkpoint_path=config['restore_model_path'],
                             checkpoint_load_iter=0,
                             temp_path=logpath,
