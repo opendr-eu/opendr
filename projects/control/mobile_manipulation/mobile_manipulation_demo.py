@@ -120,7 +120,6 @@ def parse_args(config_path):
     # #################################################
     # Misc
     #################################################
-    # TODO: might override the provided checkpoints if training with this
     parser.add_argument('--restore_model_path', type=str, default='pretrained', help='Restore the model and config under this path')
     parser.add_argument('--checkpoint_load_iter', type=int, default=0, help='Restore the model named model_step{x}. See ./model_checkpoints/[robot] for pretrained checkpoints. Note: does not restore the config automatically.')
     parser.add_argument('--name', type=str, default="", help='name for this run')
@@ -218,7 +217,7 @@ def main():
                             nr_evaluations=config['nr_evaluations'],
                             evaluation_frequency=config['evaluation_frequency'],
                             checkpoint_after_iter=config['checkpoint_after_iter'],
-                            checkpoint_path=config['restore_model_path'],
+                            restore_model_path=config['restore_model_path'],
                             checkpoint_load_iter=config['checkpoint_load_iter'],
                             temp_path=logpath,
                             device=config['device'],
