@@ -66,10 +66,10 @@ from engine.learners import LearnerRL
 class MobileRLLearner(LearnerRL):
     def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',
                  lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=20_000, checkpoint_load_iter=0,
-                 checkpoint_path: Optional[str] = None,
-                 temp_path='', device='cuda', seed: int = None, buffer_size: int = 100_000, learning_starts: int = 0,
-                 tau: float = 0.001, gamma: float = 0.99, explore_noise: float = 0.5, explore_noise_type='normal',
-                 ent_coef='auto', nr_evaluations: int = 50, evaluation_frequency: int = 20_000):
+                 restore_model_path: Optional[str] = None, temp_path='', device='cuda', seed: int = None,
+                 buffer_size: int = 100_000, learning_starts: int = 0, tau: float = 0.001, gamma: float = 0.99,
+                 explore_noise: float = 0.5, explore_noise_type='normal', ent_coef='auto', nr_evaluations: int = 50,
+                 evaluation_frequency: int = 20_000):
         """
         Specifies an soft-actor-critic (SAC) agent that can be trained for mobile manipulation.
         Internally uses Stable-Baselines3 (https://github.com/DLR-RM/stable-baselines3).
@@ -91,11 +91,10 @@ class MobileRLLearner(LearnerRL):
                                                      explore_noise=explore_noise,
                                                      explore_noise_type=explore_noise_type,
                                                      ent_coef=ent_coef)
-        if checkpoint_path == 'pretrained':
-            checkpoint_path = Path(__file__).parent / 'model_checkpoints' / env.get_attr('env_name')[0]
-        self.checkpoint_path = checkpoint_path
+        if restore_model_path == 'pretrained':
+            restore_model_path = Path(__file__).parent / 'model_checkpoints' / env.get_attr('env_name')[0]
         if checkpoint_load_iter:
-            self.load(os.path.join(checkpoint_path, f"model_step{checkpoint_load_iter}"))
+            self.load(os.path.join(restore_model_path, f"model_step{checkpoint_load_iter}"))
 
     def _get_lr_fn(self):
         def lin_sched(start_lr, min_lr, progress_remaining):
@@ -164,7 +163,7 @@ class MobileRLLearner(LearnerRL):
                                                n_eval_episodes=self.nr_evaluations,
                                                eval_freq=self.evaluation_frequency,
                                                log_path=logging_path,
-                                               best_model_save_path=self.checkpoint_path,
+                                               best_model_save_path=logging_path,
                                                checkpoint_after_iter=self.checkpoint_after_iter,
                                                verbose=verbose if not silent else False)
         self.stable_bl_agent.learn(total_timesteps=self.iters,

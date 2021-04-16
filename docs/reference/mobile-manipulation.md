@@ -31,10 +31,10 @@ Constructor parameters:
   Specifies per how many training steps a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
 - **checkpoint_load_iter**: *int, default=0*  
   Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
-- **checkpoint_path**: *str, default=None*
-  Path to load checkpoints from and save checkpoints to
+- **restore_model_path**: *str, default=None*
+  Path to load checkpoints from. Set to 'pretrained' to load one of the provided checkpoints.
 - **temp_path**: *str, default='temp'*  
-  Specifies a path where the algorithm looks for checkpoints, the checkpoints are saved along with the logging files and configuration.
+  Specifies a path where the algorithm stores log files and saves checkpoints.
 - **device**: *{'cpu', 'cuda'}, default='cuda'*  
   Specifies the device to be used.
 - **seed**: *int, default=None*  
@@ -148,9 +148,7 @@ Create a catkin workspace (ideally a separate one for each robot)
 
 Copy or symlink openDR's mobile_manpipulation module into `./src`
 
-    cd src
-    ln -s ln -s opendr/src/control/mobile_manipulation src/mobile_manipulation
-
+    ln -s ln -s [opendr]/src/control/mobile_manipulation src/
 
 Create a python environment. We recommend using conda, which requires to first install Anaconda or Miniconda. Then do
 
@@ -173,6 +171,13 @@ To be able to visualise install rviz
 
     http://wiki.ros.org/rviz/UserGuide
 
+Tiago additionally requires small modifications to the robot descriptions to use the correct fixed joints. 
+Replace the following files after installing the Tiago packages:
+
+    cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_tiago.srdf.em src/tiago_moveit_config/config/srdf/tiago.srdf.em
+    cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_tiago_pal-gripper.srdf src/tiago_moveit_config/config/srdf/tiago_pal-gripper.srdf
+    cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_gripper.urdf.xacro src/pal_gripper/pal_gripper_description/urdf/gripper.urdf.xacro
+    cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_wsg_gripper.urdf.xacro src/pal_wsg_gripper/pal_wsg_gripper_description/urdf/gripper.urdf.xacro
 
 ##### Run
 1. start a roscore
@@ -298,7 +303,7 @@ For HSR / Tiago:
     agent = MobileRLLearner(eval_env,
                             checkpoint_after_iter=0,
                             checkpoint_load_iter=1_000_000,
-                            checkpoint_path=main_path / 'model_checkpoints' / 'pr2' ,
+                            restore_model_path='pretrained',
                             temp_path=logpath,
                             device='cpu')
 
