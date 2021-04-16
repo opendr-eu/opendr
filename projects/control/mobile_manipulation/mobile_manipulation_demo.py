@@ -140,11 +140,6 @@ def parse_args(config_path):
 
     if args['checkpoint_load_iter']:
         assert args['evaluation_only'], "Continuing to train not supported atm (replay buffer doesn't get saved)"
-        with open(config_path / 'best_defaults.yaml') as f:
-            cp_config = yaml.safe_load(f)
-            # replace with cp_config value
-            for k, v in cp_config[args['env']].items():
-                args[k] = v
 
     args['checkpoint_after_iter'] = args['evaluation_frequency'] if not args['evaluation_only'] else 0
 
