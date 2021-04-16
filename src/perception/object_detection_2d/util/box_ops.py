@@ -19,6 +19,11 @@ def box_xyxy_to_cxcywh(x):
          (x1 - x0), (y1 - y0)]
     return torch.stack(b, dim=-1)
 
+def rescale_bboxes(out_bbox, size, device):
+        img_w, img_h = size
+        b = box_cxcywh_to_xyxy(out_bbox)
+        b = b * torch.tensor([img_w, img_h, img_w, img_h], dtype=torch.float32).to(torch.device(device))
+        return b
 
 # modified from torchvision to also return the union
 def box_iou(boxes1, boxes2):

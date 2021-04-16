@@ -24,10 +24,11 @@ import torch
 from torch.utils.data import DataLoader, DistributedSampler
 from pathlib import Path
 import util.misc as utils
+from util.detect import detect
+from util.plot_utils import plot_results
 from datasets import build_dataset, get_coco_api_from_dataset
 from detr_engine import evaluate, train_one_epoch
 from models import build_model
-
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
 
@@ -46,7 +47,7 @@ class PixelObjectDetection2DLearner(Learner):
         network_head="",
         checkpoint_after_iter=0,
         checkpoint_load_iter=0,
-        temp_path="/temp",
+        temp_path="/tmp",
         device="cuda",
         threshold=0.0,
         scale=1.0
@@ -79,7 +80,8 @@ class PixelObjectDetection2DLearner(Learner):
         self.args.backbone = self.backbone
         self.args.device = self.device
         self.args.output_path = self.temp_path
-
+        self.args.num_classes = len(self.args.classes)
+        
         utils.init_distributed_mode(self.args)
         if self.args.frozen_weights is not None:
             assert self.args.masks, "Frozen training is meant for segmentation only"
@@ -89,8 +91,8 @@ class PixelObjectDetection2DLearner(Learner):
         torch.manual_seed(seed)
         np.random.seed(seed)
         random.seed(seed)
+        
         self.epoch = self.checkpoint_load_iter
-        self.__create_model()
 
     def save(self, path=''):
         """
@@ -112,36 +114,82 @@ class PixelObjectDetection2DLearner(Learner):
 
         return True
 
-    def load(self, path="https://dl.fbaipublicfiles.com/detr/detr-r50-e632da11.pth"):
+    def load(self, path):
         """
-        Loads the model from the specified path or url.
+        Loads a model from the path provided.
+
+        :param path: Path to saved model
+        :type path: str
+        :return: Whether load succeeded or not
+        :rtype: bool
         """
+        
         if path.startswith('https'):
             checkpoint = torch.hub.load_state_dict_from_url(
                 path, map_location=self.device, check_hash=True)
         else:
             checkpoint = torch.load(path, map_location="cpu")
-        self.model_without_ddp.load_state_dict(checkpoint['model'], strict=False)
+        self.model.load_state_dict(checkpoint['model'])
+        # self.model.load_state_dict(checkpoint, strict=False)
         if 'optimizer' in checkpoint and 'lr_scheduler' in checkpoint and 'epoch' in checkpoint:
             self.optim.load_state_dict(checkpoint['optimizer'])
             self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
-            self.checkpoint_load_iter = checkpoint['epoch'] + 1
+            self.epoch = self.checkpoint_load_iter = checkpoint['epoch'] + 1
+            
+        return True
 
-    def reset(self):
-        pass
-
-    def fit(self, dataset, val_dataset=None,
+    def fit(self, dataset, val_dataset=None, logging_path='', 
+            silent=False, verbose=True,
             annotations_folder='Annotations',
             train_images_folder='train2017',
             train_annotations_file='instances_train2017.json',
             val_images_folder='val2017',
-            val_annotations_file='instances_val2017.json',
-            logging_path='', silent=False, verbose=False):
+            val_annotations_file='instances_val2017.json'):
+        """
+        This method is used for training the algorithm on a train dataset and validating on a val dataset.
+
+        :param dataset: object that holds the training dataset
+        :type dataset: ExternalDataset class object or DatasetIterator class object
+        :param val_dataset: object that holds the validation dataset, defaults to 'None'
+        :type val_dataset: ExternalDataset class object or DatasetIterator class object, optional
+        :param logging_path: path to save tensorboard log files. If set to None or '', tensorboard logging is
+            disabled, defaults to ''
+        :type logging_path: str, optional
+        :param silent: if set to True, disables all printing of training progress reports and other information
+            to STDOUT, defaults to 'False'
+        :type silent: bool, optional
+        :param verbose: if set to True, enables the maximum verbosity, defaults to 'True'
+        :type verbose: bool, optional
+        :param train_images_folder: folder name that contains the train dataset images. This folder should be contained in
+            the dataset path provided. Note that this is a folder name, not a path, defaults to 'train2017'
+        :type images_folder: str, optional
+        :param annotations_folder: foldername of the annotations json file. This folder should be contained in the
+            dataset path provided, defaults to 'Annotations'
+        :type train_annotations_file: str, optional
+        :param train_annotations_file: filename of the train annotations json file. This file should be contained in the
+            dataset path provided, defaults to 'instances_train2017.json'
+        :type train_annotations_file: str, optional
+        :param val_images_folder: folder name that contains the validation images. This folder should be contained
+            in the dataset path provided. Note that this is a folder name, not a path, defaults to 'val2017'
+        :type val_images_folder_name: str, optional
+        :param val_annotations_file: filename of the validation annotations json file. This file should be
+            contained in the dataset path provided in the annotations folder provided, defaults to 'instances_val2017.json'
+        :type val_annotations_file: str, optional
+
+        :return: returns stats regarding the last evaluation ran
+        :rtype: dict
+        """
+        train_stats = {}
+        test_stats = {}
+        coco_evaluator = None        
 
         if logging_path != '' and logging_path is not None:
             logging = True
             logging_dir = Path(logging_path)
         else: logging= False
+        
+        if self.model is None:
+            self.__create_model()
 
         output_dir = Path(self.temp_path)
         device = torch.device(self.device)
@@ -181,8 +229,6 @@ class PixelObjectDetection2DLearner(Learner):
                                      drop_last=False, collate_fn=utils.collate_fn, num_workers=self.args.num_workers)
             base_ds = get_coco_api_from_dataset(dataset_val)
 
-
-
         print("Start training")
         start_time = time.time()
         for self.epoch in range(self.checkpoint_load_iter, self.iters):
@@ -191,19 +237,18 @@ class PixelObjectDetection2DLearner(Learner):
             train_stats = train_one_epoch(self.model, self.criterion, data_loader_train, self.optim, device, self.epoch,
                 self.args.clip_max_norm)
             self.lr_scheduler.step()
-            if self.checkpoint_after_iter !=0:
-                checkpoint_paths = [output_dir / 'checkpoint.pth']
-                # extra checkpoint before LR drop and every 100 epochs
-                if (self.epoch + 1) % self.args.lr_drop == 0 or (self.epoch + 1) % self.checkpoint_after_iter == 0:
-                    checkpoint_paths.append(output_dir / f'checkpoint{self.epoch:04}.pth')
-                for checkpoint_path in checkpoint_paths:
-                    utils.save_on_master({
-                        'model': self.model_without_ddp.state_dict(),
-                        'optimizer': self.optim.state_dict(),
-                        'lr_scheduler': self.lr_scheduler.state_dict(),
-                        'epoch': self.epoch,
-                        'args': self.args,
-                    }, checkpoint_path)
+            checkpoint_paths = [output_dir / 'checkpoint.pth']
+            # extra checkpoint every checkpoint_after_iter epochs
+            if self.checkpoint_after_iter != 0 and (self.epoch + 1) % self.checkpoint_after_iter == 0:
+                checkpoint_paths.append(output_dir / f'checkpoint{self.epoch:04}.pth')
+            for checkpoint_path in checkpoint_paths:
+                utils.save_on_master({
+                    'model': self.model_without_ddp.state_dict(),
+                    'optimizer': self.optim.state_dict(),
+                    'lr_scheduler': self.lr_scheduler.state_dict(),
+                    'epoch': self.epoch,
+                    'args': self.args,
+                }, checkpoint_path)
             if val_dataset is not None:
                 test_stats, coco_evaluator = evaluate(
                     self.model, self.criterion, self.postprocessors,
@@ -211,14 +256,13 @@ class PixelObjectDetection2DLearner(Learner):
                     )
 
             if logging:
-                if val_dataset is not None:
-                    log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
-                         **{f'test_{k}': v for k, v in test_stats.items()},
-                         'epoch': self.epoch,
-                         'n_parameters': self.n_parameters}
-                    with (logging_dir / "log.txt").open("a") as f:
-                            f.write(json.dumps(log_stats) + "\n")
-
+                log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
+                     **{f'test_{k}': v for k, v in test_stats.items()},
+                     'epoch': self.epoch,
+                     'n_parameters': self.n_parameters}
+                with (logging_dir / "log.txt").open("a") as f:
+                        f.write(json.dumps(log_stats) + "\n")
+                if coco_evaluator is not None:
                     (logging_dir / 'eval').mkdir(exist_ok=True)
                     if "bbox" in coco_evaluator.coco_eval:
                         filenames = ['latest.pth']
@@ -226,27 +270,40 @@ class PixelObjectDetection2DLearner(Learner):
                             filenames.append(f'{self.epoch:03}.pth')
                         for name in filenames:
                             torch.save(coco_evaluator.coco_eval["bbox"].eval,
-                                       output_dir / "eval" / name)
-                else:
-                    log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
-                         'epoch': self.epoch,
-                         'n_parameters': self.n_parameters}
-                    with (logging_dir / "log.txt").open("a") as f:
-                        f.write(json.dumps(log_stats) + "\n")
+                                       logging_dir / "eval" / name)
 
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
         print('Training time {}'.format(total_time_str))
-
-    def eval(self, dataset, logging_path=None, output_path=None,
-            annotations_folder='Annotations',
+        
+        return (train_stats, test_stats)
+        
+    def eval(self, dataset,
             images_folder='val2017',
+            annotations_folder='Annotations',
             annotations_file='instances_val2017.json'):
+        
+        """
+        This method is used to evaluate a trained model on an evaluation dataset.
 
-        if logging_path != '' and logging_path is not None:
-            logging = True
-            logging_dir = Path(logging_path)
+        :param dataset: object that holds the evaluation dataset.
+        :type dataset: ExternalDataset class object or DatasetIterator class object
+        :param images_folde: Folder name that contains the dataset images. This folder should be contained in
+            the dataset path provided. Note that this is a folder name, not a path, defaults to 'val2017'
+        :type images_folder: str, optional
+        :param annotations_folder: Folder name of the annotations json file. This file should be contained in the
+            dataset path provided, defaults to 'Annotations'
+        :type annotations_folder: str, optional
+        :param annotations_file: Filename of the annotations json file. This file should be contained in the
+            dataset path provided, defaults to 'pesron_keypoints_val2017.json'
+        :type annotations_file: str, optional
 
+        :returns: returns stats regarding evaluation
+        :rtype: dict
+        """
+        
+        device  = torch.device(self.device)
+        
         dataset_val = self.__prepare_dataset(dataset,
                                       image_set="val",
                                       images_folder_name=images_folder,
@@ -267,36 +324,73 @@ class PixelObjectDetection2DLearner(Learner):
 
         test_stats, coco_evaluator = evaluate(
                 self.model, self.criterion, self.postprocessors,
-                data_loader_val, base_ds, self.torch_device,
+                data_loader_val, base_ds, device,
                 self.args.output_path
             )
-        if output_path is not None:
-            output_dir = Path(output_path)
-            utils.save_on_master(coco_evaluator.coco_eval["bbox"].eval, output_dir / "eval.pth")
 
-        if logging:
-            log_stats = {**{f'test_{k}': v for k, v in test_stats.items()},
-                 'epoch': self.epoch,
-                 'n_parameters': self.n_parameters}
-            with (logging_dir / "log.txt").open("a") as f:
-                    f.write(json.dumps(log_stats) + "\n")
-
-            (logging_dir / 'eval').mkdir(exist_ok=True)
-            if "bbox" in coco_evaluator.coco_eval:
-                filenames = ['latest.pth']
-                if self.epoch % 50 == 0:
-                    filenames.append(f'{self.epoch:03}.pth')
-                for name in filenames:
-                    torch.save(coco_evaluator.coco_eval["bbox"].eval,
-                               output_dir / "eval" / name)
         return test_stats
 
-    def infer(self):
+    def infer(self, image):
+        """
+        This method is used to perform object detection on an image.
+
+        :param img: image to run inference on
+        :rtype img: engine.data.Image class object
+        
+        :return: Returns a engine.target.BoundingBoxList, 
+        which contains bounding boxes that are described by the left-top corner 
+        and its width and height, or returns an empty list if no
+            detections were made.
+        :rtype: engine.target.BoundingBoxList
+        """
+        
+        transform = T.Compose([
+            T.Resize(800),
+            T.ToTensor(),
+            T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+        scores, boxes = detect(image, transform, self.model, self. device)
+        plot_results(image, scores, boxes, self.args.classes)
+        
+
+    def optimize(self, target_device):
+        """
+        This method optimizes the model based on the parameters provided.
+
+        :param target_device: the optimization's procedure target device
+        :type target_device: str
+        :return: Whether optimize succeeded or not
+        :rtype: bool
+        """
         pass
 
-    def optimize(self):
+    def reset(self):
         pass
-
+    
+    def download(self, panoptic=False, backbone='resnet50', dilation=False, 
+                 pretrained=True, num_classes=91, return_postprocessor=False, 
+                 threshold=0.85):
+        
+        supportedBackbones = ['resnet50', 'resnet101']
+        if backbone.lower() in supportedBackbones:            
+            model_name = f'detr_{backbone}'
+            if dilation:
+                model_name = model_name + '_dc5'
+            if panoptic:
+                model_name = model_name + '_panoptic'
+                model = torch.hub.load('facebookresearch/detr', model_name, 
+                                       pretrained=True, num_classes=num_classes, 
+                                       return_postprocessor = return_postprocessor,
+                                       threshold=threshold)
+            else:
+                model = torch.hub.load('facebookresearch/detr', model_name, 
+                                       pretrained=True, num_classes=num_classes, 
+                                       return_postprocessor = return_postprocessor)
+            self.model = model
+            self.model.to(torch.device(self.device))
+        else:
+            raise ValueError(self.backbone + " not a valid backbone. Supported backbones:" + str(supportedBackbones))
+        
     def __create_model(self):
         device = torch.device(self.device)
         self.model, self.criterion, self.postprocessors = build_model(self.args)
@@ -332,14 +426,18 @@ class PixelObjectDetection2DLearner(Learner):
         if self.args.frozen_weights is not None:
             checkpoint = torch.load(self.args.frozen_weights, map_location=self.device)
             self.model_without_ddp.detr.load_state_dict(checkpoint['model'])
+            
+        if self.checkpoint_load_iter != 0:
+            output_dir = Path(self.temp_path)
+            checkpoint = output_dir / f'checkpoint{self.checkpoint_load_iter:04}.pth'
+            self.load(path = checkpoint)
 
     def __prepare_dataset(self,
                           dataset,
                           image_set="train",
                           images_folder_name="train2017",
                           annotations_folder_name="Annotations",
-                          annotations_file_name="instances_train2017.json",
-                          verbose=True):
+                          annotations_file_name="instances_train2017.json"):
         """
         This internal method prepares the dataset depending on what type of dataset is provided.
 
@@ -363,9 +461,7 @@ class PixelObjectDetection2DLearner(Learner):
         :param annotations_file_name: the .json file that contains the original annotations, defaults
             to "instances_train2017.json"
         :type annotations_file_name: str, optional
-        :param verbose: whether to print additional information, defaults to 'True'
-        :type verbose: bool, optional
-
+        
         :raises UserWarning: UserWarnings with appropriate messages are raised for wrong type of dataset, or wrong paths
             and filenames
 
