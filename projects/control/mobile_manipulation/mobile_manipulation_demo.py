@@ -228,7 +228,6 @@ def main():
         agent.fit(env, val_env=eval_env)
     else:
         configure_logger(0, logpath, 'SAC', agent.stable_bl_agent.num_timesteps)
-        breakpoint()
 
     # evaluate
     world_types = ["world"] if (config['world_type'] == "world") else config['eval_worlds']
