@@ -5,7 +5,7 @@
   <arg name="headless" default="false" />
   <arg name="debug" default="false" />
   <arg name="paused" default="true"/>
-  <!-- TODO: throttled not implemented in gazebo_ros/empty_world.launch
+  <!-- NOTE: throttled not implemented in gazebo_ros/empty_world.launch
   <arg name="throttled" default="false"/>
   -->
   <arg name="world_name" default="worlds/empty.world"/> <!-- Note: the world_name is with respect to GAZEBO_RESOURCE_PATH environmental variable -->
@@ -19,7 +19,7 @@
     <arg name="paused" value="$(arg paused)" />
     <arg name="debug" value="$(arg debug)" />
     <arg name="use_sim_time" value="true" />
-    <!-- TODO: throttled not implemented in gazebo_ros/empty_world.launch
+    <!-- NOTE: throttled not implemented in gazebo_ros/empty_world.launch
     <arg name="throttled" value="$(arg throttled)" />
     -->
     <arg name="world_name" value="$(arg world_name)"/>

@@ -51,5 +51,4 @@ kinematics_solver_timeout: 0.05
 robot_base_size_meters:
   x: 0.54
   y: 0.54
-# TODO: check if gazebo sets non-default values
 #initial_joint_values:
