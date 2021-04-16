@@ -47,8 +47,8 @@ import rospy
 from stable_baselines3.sac import SAC
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise, NormalActionNoise
 
-from mobileRL.stablebl_callbacks import ModulationEvalCallback
-from mobileRL.evaluation import evaluation_rollout
+from control.mobile_manipulation.mobileRL.stablebl_callbacks import ModulationEvalCallback
+from control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
 from engine.learners import LearnerRL
 
 

@@ -194,9 +194,9 @@ Replace the following files after installing the Tiago packages:
         roslaunch pr2_moveit_config move_group.launch
 
 4. Run the demo script
-TODO: cannot find pybindings unless copying mobile_manipulation_demo.py into src/mobile_manipulation of the catkin_ws
+
         cd opendr_internal/projects/control/mobile_manipulation/
-        export PYTHONPATH=/home/honerkam/repos/opendr_internal/src:=PYTHONPATH
+        export PYTHONPATH=/home/honerkam/repos/opendr_internal/src:=$PYTHONPATH
         python src/project_mobile_manipulation/mobile_manipulation_demo.py
 
 5. [Visualisation] start rviz:
@@ -307,7 +307,6 @@ For HSR / Tiago:
                             temp_path=logpath,
                             device='cpu')
 
-  
     # evaluate on door opening in gazebo
     evaluate_on_task(eval_config, eval_env_config=eval_config, agent=agent, task='door', world_type='gazebo')
 
