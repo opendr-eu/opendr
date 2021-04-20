@@ -1,10 +1,10 @@
 ## ROSBridge Package
 
 
-This *ROSBridge* package provides an interface to convert OpenDR data types and targets into ROS-compatible ones similar to CvBridge
-The *ROSBridge* class provides two methods from each data type X:
-1. *from_ros_X()* : which converts the ROS equivalent of X into OpenDR data type
-2. *to_ros_X()* : which converts the OpenDR data type into the ROS equivalent of X
+This *ROSBridge* package provides an interface to convert OpenDR data types and targets into ROS-compatible ones similar to CvBridge.
+The *ROSBridge* class provides two methods for each data type X:
+1. *from_ros_X()* : converts the ROS equivalent of X into OpenDR data type
+2. *to_ros_X()* : converts the OpenDR data type into the ROS equivalent of X
 
 ### Class ROSBridge
 
@@ -13,7 +13,7 @@ The *ROSBridge* class provides an interface to convert OpenDR data types and tar
 The ROSBridge class has the following public methods:
 
 #### `ROSBridge` constructor
-Currently the constructor does nothing, apart from initializing the state of the class.
+The constructor only initializes the state of the class and does not require any input arguments.
 ```python
 ROSBridge(self)
 ```
@@ -26,7 +26,8 @@ ROSBridge.from_ros_image(self,
                           encoding)
 ```
 
-This method converts a ROS Image into an OpenDR image
+This method converts a ROS Image into an OpenDR image.
+
 Parameters:
 
 - **message**: *sensor_msgs.msg.Img*  
@@ -42,7 +43,8 @@ ROSBridge.to_ros_image(self,
                           encoding)
 ```
 
-This method converts an OpenDR image into a ROS image
+This method converts an OpenDR image into a ROS image.
+
 Parameters:
 
 - **message**: *engine.data.Image*  
@@ -57,7 +59,8 @@ ROSBridge.from_ros_pose(self,
                           ros_pose)
 ```
 
-Converts a ROS pose into an OpenDR pose
+Converts a ROS pose into an OpenDR pose.
+
 Parameters:
 
 - **message**: *ros_bridge.msg.Pose*  
@@ -69,7 +72,8 @@ Parameters:
 ROSBridge.to_ros_pose(self,
                           ros_pose)
 ```
-Converts an OpenDR pose into a ROS pose
+Converts an OpenDR pose into a ROS pose.
+
 Parameters:
 
 - **message**: *engine.target.Pose*  
