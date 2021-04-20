@@ -1,18 +1,22 @@
-from PIL import Image
+from PIL import Image as im
 import requests
 from perception.object_detection_2d.pixel_object_detection_2d_learner import PixelObjectDetection2DLearner
+from engine.data import Image
 from engine.datasets import ExternalDataset
 from util.plot_utils import plot_logs
 from pathlib import Path
-
+from util.plot_utils import plot_results
 
 def main():
     learner = PixelObjectDetection2DLearner(iters=3)
     learner.download()
     url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
-    im = Image.open(requests.get(url, stream=True).raw)
-    # im = Image.open("/home/jelle/Afbeeldingen/kat.jpg")
-    learner.infer(im)
+    image = im.open(requests.get(url, stream=True).raw)
+    # image = Image(image)
+    # # im = Image.open("/home/jelle/Afbeeldingen/kat.jpg")
+    # blist = learner.infer(image)
+    learner.optimize()
+    # plot_results(img, scores, boxes, self.args.classes)
     # dataset = ExternalDataset("/home/jelle/Afbeeldingen/small_coco", "coco")
     # learner.fit(dataset, annotations_folder="", 
     #             train_annotations_file="instances_train2017_small.json", 

@@ -11,26 +11,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from PIL import Image as im
 import os
 import datetime
 import json
+import shutil
 import random
 import time
 import warnings
 import torchvision.transforms as T
 import numpy as np
+import onnxruntime as ort
 import torch
 from torch.utils.data import DataLoader, DistributedSampler
 from pathlib import Path
+
 import util.misc as utils
 from util.detect import detect
-from util.plot_utils import plot_results
 from datasets import build_dataset, get_coco_api_from_dataset
 from detr_engine import evaluate, train_one_epoch
 from models import build_model
+
+from engine.data import Image
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
+from engine.target import BoundingBox, BoundingBoxList
 
 class PixelObjectDetection2DLearner(Learner):
     def __init__(
@@ -48,7 +53,7 @@ class PixelObjectDetection2DLearner(Learner):
         checkpoint_after_iter=0,
         checkpoint_load_iter=0,
         temp_path="/tmp",
-        device="cuda",
+        device="cpu",
         threshold=0.0,
         scale=1.0
     ):
@@ -71,8 +76,6 @@ class PixelObjectDetection2DLearner(Learner):
         )
 
         # Add arguments to a structure like in the original implementation
-
-
         self.args = utils.load_config(model_config_path)
         self.args.lr = self.lr
         self.args.batch_size = self.batch_size
@@ -82,62 +85,167 @@ class PixelObjectDetection2DLearner(Learner):
         self.args.output_path = self.temp_path
         self.args.num_classes = len(self.args.classes)
         
+        # Initialise distributed mode in case of distributed mode
         utils.init_distributed_mode(self.args)
         if self.args.frozen_weights is not None:
             assert self.args.masks, "Frozen training is meant for segmentation only"
 
-        # fix the seed for reproducibility
+        # Fix the seed for reproducibility
         seed = self.args.seed + utils.get_rank()
         torch.manual_seed(seed)
         np.random.seed(seed)
         random.seed(seed)
         
+        # Initialise epoch
         self.epoch = self.checkpoint_load_iter
+        
+        # Initialise transform for inference
+        self.infer_transform = T.Compose([
+            T.Resize(self.args.input_size),
+            T.ToTensor(),
+            T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+        
+        # Initialise temp path
+        if not os.path.exists(self.temp_path):
+            os.makedirs(self.temp_path)
+            
+        # Initialise ort
+        self.ort_session = None
 
-    def save(self, path=''):
+    def save(self, path):
         """
-        Saves the model in the path provided.
+        Method for saving the current model in the path provided.
 
-        :param path: Path to save directory
-        :type path: str
-        :return: Whether save succeeded or not
-        :rtype: bool
+        Parameters
+        ----------
+        path : str
+            Folder where the model should be saved. If it does not exist, it
+            will be created.
+
+        Raises
+        ------
+        UserWarning
+            If there is no model available, a warning is raised.
+
+        Returns
+        -------
+        bool
+            True if saving was successful.
+
         """
-
-        checkpoint_path = os.path.join(path,'checkpoint.pth')
-        utils.save_on_master({'model': self.model_without_ddp.state_dict(),
-                              'optimizer': self.optim.state_dict(),
-                              'lr_scheduler': self.lr_scheduler.state_dict(),
-                              'epoch': self.epoch,
-                              'args': self.args,
-                              }, checkpoint_path)
-
+        if self.model is None and self.ort_session is None:
+            raise UserWarning("No model is loaded, cannot save.")
+            return False
+        
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
+        if self.ort_session is None:
+            metadata = {'model_paths': os.path.join(path, "detr_" + self.backbone + '_model.pth'),
+                                 'framework': 'pytorch',
+                                 'format': 'pth',
+                                 'has_data': False,
+                                 'inference_params': {'threshold': self.threshold},
+                                 'optimized': False,
+                                 'optimizer_info': {}
+                                 }
+            torch.save(self.model.state_dict(), metadata['model_paths'])
+        else:
+            metadata = {'model_paths': os.path.join(path, 'detr_' + self.backbone + '_model.onnx'),
+                                 'framework': 'pytorch',
+                                 'format': 'onnx',
+                                 'has_data': False,
+                                 'inference_params': {'threshold': self.threshold},
+                                 'optimized': True,
+                                 'optimizer_info': {}
+                                 }
+            shutil.copy2(self.temp_path + 'detr_' + self.backbone + '_model.onnx',
+                         metadata['model_paths'])
+                         
+        with open(os.path.join(path, 'detr_' + self.backbone + '.json'), 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=4)
         return True
-
+    
     def load(self, path):
         """
-        Loads a model from the path provided.
+        Method for loading a model that was saved earlier.
 
-        :param path: Path to saved model
-        :type path: str
-        :return: Whether load succeeded or not
-        :rtype: bool
+        Parameters
+        ----------
+        path : str
+            Folder where the model was saved.
+
+        Raises
+        ------
+        UserWarning
+            If the given folder does not exist, a warning is raised.
+
+        Returns
+        -------
+        bool
+            True if loading the model was successful.
+
         """
-        
-        if path.startswith('https'):
-            checkpoint = torch.hub.load_state_dict_from_url(
-                path, map_location=self.device, check_hash=True)
+        if os.path.exists(os.path.join(path, 'detr_' + self.backbone + '.json')):
+            with open(os.path.join(path, 'detr_' + self.backbone + '.json')) as f:
+                metadata = json.load(f)
+            self.threshold = metadata['inference_params']['threshold']
         else:
+            raise UserWarning('No detr_' + self.backbone + '.json found. Please have a check')
+            return False
+        
+        if metadata['optimized']:
+            path_onnx = os.path.join(path, 'detr_' + self.backbone + '_model.onnx')
+            if os.path.exists(path_onnx):
+                self.ort_session = ort.InferenceSession(path_onnx)
+            else:
+                raise UserWarning('No detr_' + self.backbone + '_model.onnx found. Please have a check')
+                return False
+        else:
+            if os.path.exists(os.path.join(path, 'detr_' + self.backbone + '_model.pth')):
+                self.__create_model()
+                self.model_without_ddp.load_state_dict(torch.load(
+                    os.path.join(path, 'detr_' + self.backbone + '_model.pth')))
+            else:
+                raise UserWarning('No detr_' + self.backbone + '_model.pth found. Please have a check')
+                return False
+        return True
+
+    def __load_checkpoint(self, path):
+        """
+        Internal method for loading a checkpoint
+
+        Parameters
+        ----------
+        path : str
+            Path to the checkpoint.
+
+        Raises
+        ------
+        e
+            Error when provided path does not exist.
+
+        Returns
+        -------
+        None.
+
+        """
+        try:
             checkpoint = torch.load(path, map_location="cpu")
-        self.model.load_state_dict(checkpoint['model'])
-        # self.model.load_state_dict(checkpoint, strict=False)
+        except FileNotFoundError as e:
+                e.strerror = path + " not found, " \
+                                                         "provided checkpoint_load_iter (" + \
+                             str(self.checkpoint_load_iter) + \
+                             ") doesn't correspond to a saved checkpoint.\nNo such file or directory."
+                raise e
+        self.model_without_ddp.load_state_dict(checkpoint['model'])
         if 'optimizer' in checkpoint and 'lr_scheduler' in checkpoint and 'epoch' in checkpoint:
             self.optim.load_state_dict(checkpoint['optimizer'])
             self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
             self.epoch = self.checkpoint_load_iter = checkpoint['epoch'] + 1
+        print(f'Loaded checkpoint{self.checkpoint_load_iter:04}.pth')
             
-        return True
-
     def fit(self, dataset, val_dataset=None, logging_path='', 
             silent=False, verbose=True,
             annotations_folder='Annotations',
@@ -190,6 +298,15 @@ class PixelObjectDetection2DLearner(Learner):
         
         if self.model is None:
             self.__create_model()
+            
+        if self.args.frozen_weights is not None:
+            checkpoint = torch.load(self.args.frozen_weights, map_location=self.device)
+            self.model_without_ddp.detr.load_state_dict(checkpoint['model'])
+            
+        if self.checkpoint_load_iter != 0:
+            output_dir = Path(self.temp_path)
+            checkpoint = output_dir / f'checkpoint{self.checkpoint_load_iter:04}.pth'
+            self.__load_checkpoint(checkpoint)
 
         output_dir = Path(self.temp_path)
         device = torch.device(self.device)
@@ -235,7 +352,7 @@ class PixelObjectDetection2DLearner(Learner):
             if self.args.distributed:
                 sampler_train.set_epoch(self.epoch)
             train_stats = train_one_epoch(self.model, self.criterion, data_loader_train, self.optim, device, self.epoch,
-                self.args.clip_max_norm)
+                self.args.clip_max_norm, verbose=verbose, silent=silent)
             self.lr_scheduler.step()
             checkpoint_paths = [output_dir / 'checkpoint.pth']
             # extra checkpoint every checkpoint_after_iter epochs
@@ -252,8 +369,8 @@ class PixelObjectDetection2DLearner(Learner):
             if val_dataset is not None:
                 test_stats, coco_evaluator = evaluate(
                     self.model, self.criterion, self.postprocessors,
-                    data_loader_val, base_ds, device, self.args.output_dir
-                    )
+                    data_loader_val, base_ds, device, self.args.output_dir,
+                    verbose=verbose, silent=silent)
 
             if logging:
                 log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
@@ -276,7 +393,7 @@ class PixelObjectDetection2DLearner(Learner):
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
         print('Training time {}'.format(total_time_str))
         
-        return (train_stats, test_stats)
+        return {train_stats, test_stats}
         
     def eval(self, dataset,
             images_folder='val2017',
@@ -343,55 +460,165 @@ class PixelObjectDetection2DLearner(Learner):
             detections were made.
         :rtype: engine.target.BoundingBoxList
         """
+        if not isinstance(image, Image):
+            image = Image(image)
+        img = im.fromarray(image.numpy())
+    
+        scores, boxes = detect(img, self.infer_transform, self.model, 
+                               self.device, self.threshold)
         
-        transform = T.Compose([
-            T.Resize(800),
-            T.ToTensor(),
-            T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ])
-        scores, boxes = detect(image, transform, self.model, self. device)
-        plot_results(image, scores, boxes, self.args.classes)
+        boxlist = []
+        for p, (xmin, ymin, xmax, ymax) in zip(scores.tolist(), boxes.tolist()):
+            cl = np.argmax(p)
+            name = f'{self.args.classes[cl]}'
+            box = BoundingBox(name, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl])
+            boxlist.append(box)
+        return BoundingBoxList(boxlist)
         
 
-    def optimize(self, target_device):
+    def optimize(self, do_constant_folding=False):
         """
-        This method optimizes the model based on the parameters provided.
+        Method for optimizing the model with onnx.
 
-        :param target_device: the optimization's procedure target device
-        :type target_device: str
-        :return: Whether optimize succeeded or not
-        :rtype: bool
+        Parameters
+        ----------
+        do_constant_folding : bool, optional
+            If true, constant folding is true in the onnnx model. The default is False.
+
+        Raises
+        ------
+        UserWarning
+            If no model is loaded or if an ort session is already ongoing, a
+            user warning is raised.
+
+        Returns
+        -------
+        bool
+            True if the model was optimized successfully.
+
         """
-        pass
+        if self.model is None:
+            raise UserWarning("No model is loaded, cannot optimize. Load or train a model first.")
+            return False
+        
+        if self.ort_session is not None:
+            raise UserWarning("Model is already optimized in ONNX.")
+            return False
+        
+        device = torch.device(self.device)
+        
+        x = torch.randn(1, 3, self.args.input_size[0], 
+                        self.args.input_size[1]).to(device)
+        
+        input_names = ['data']
+        output_names = ['pred_logits', 'pred_boxes']
+
+        torch.onnx.export(self.model, x, 
+                  os.path.join(self.temp_path, "onnx_model_temp.onnx"), 
+                  enable_onnx_checker=True,
+                  do_constant_folding=do_constant_folding, 
+                  input_names=input_names, output_names=output_names)
+        
+        print("Exported onnx model")
+        
+        self.ort_session = ort.InferenceSession(os.path.join(self.temp_path, "onnx_model_temp.onnx"))
+        return True
 
     def reset(self):
         pass
     
     def download(self, panoptic=False, backbone='resnet50', dilation=False, 
-                 pretrained=True, num_classes=91, return_postprocessor=False, 
-                 threshold=0.85):
-        
+                 pretrained=True, return_postprocessor=False, 
+                 threshold=0.85, classes =[
+        'N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+        'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A',
+        'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
+        'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack',
+        'umbrella', 'N/A', 'N/A', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
+        'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
+        'skateboard', 'surfboard', 'tennis racket', 'bottle', 'N/A', 'wine glass',
+        'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
+        'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
+        'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table', 'N/A',
+        'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
+        'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
+        'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
+        'toothbrush']):
+        """
+        Download utility for downloading detr models.
+
+        Parameters
+        ----------
+        panoptic : bool, optional
+            This bool differentiates between coco or coco_panoptic models. 
+            If set to false, the coco model is downloaded instead of the 
+            coco_panoptic model. The default is False.
+        backbone : str, optional
+            This str determines the backbone that is used in the model. There
+            are two possible backbones: "resnet50" and "resnet101". The 
+            default is 'resnet50'.
+        dilation : bool, optional
+            If set to true, dilation is used in the model, otherwise not. The 
+            default is False.
+        pretrained : bool, optional
+            If set to true, a pretrained model is downloaded. The default is True.
+        num_classes : int, optional
+            Sets the number of classes in the model. The default is 91.
+        return_postprocessor : bool, optional
+            If set to true, postprocessors are returned. The default is False.
+        threshold : float, optional
+            Sets the threshold for coco_panoptic models. The default is 0.85.
+
+        Raises
+        ------
+        ValueError
+            If an unsupported backbone is given, a value error is raised.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.num_classes = len(classes)
+        self.args.classes = classes
         supportedBackbones = ['resnet50', 'resnet101']
         if backbone.lower() in supportedBackbones:            
             model_name = f'detr_{backbone}'
+            self.backbone = self.args.backbone = backbone
             if dilation:
                 model_name = model_name + '_dc5'
+                self.args.dilation = True
             if panoptic:
                 model_name = model_name + '_panoptic'
-                model = torch.hub.load('facebookresearch/detr', model_name, 
-                                       pretrained=True, num_classes=num_classes, 
+                self.model = torch.hub.load('facebookresearch/detr', model_name, 
+                                       pretrained=True, num_classes=self.num_classes, 
                                        return_postprocessor = return_postprocessor,
                                        threshold=threshold)
             else:
-                model = torch.hub.load('facebookresearch/detr', model_name, 
-                                       pretrained=True, num_classes=num_classes, 
+                self.model = torch.hub.load('facebookresearch/detr', model_name, 
+                                       pretrained=True, num_classes=self.num_classes, 
                                        return_postprocessor = return_postprocessor)
-            self.model = model
-            self.model.to(torch.device(self.device))
+            device = torch.device(self.device)
+            
+            self.model.to(device)
+            self.model_without_ddp = self.model
+            
+            if self.args.distributed:
+                self.model = torch.nn.parallel.DistributedDataParallel(self.model, device_ids=[self.args.gpu])
+                self.model_without_ddp = self.model.module
         else:
             raise ValueError(self.backbone + " not a valid backbone. Supported backbones:" + str(supportedBackbones))
         
     def __create_model(self):
+        """
+        Internal method for creating a model, optimizer and scheduler based
+        on the parameters in the config file.
+
+        Returns
+        -------
+        None.
+
+        """
         device = torch.device(self.device)
         self.model, self.criterion, self.postprocessors = build_model(self.args)
         self.model.to(device)
@@ -422,15 +649,6 @@ class PixelObjectDetection2DLearner(Learner):
             self.optim = torch.optim.AdamW(param_dicts, lr=self.lr, weight_decay=self.weight_decay)
 
         self.lr_scheduler = torch.optim.lr_scheduler.StepLR(self.optim, self.args.lr_drop)
-
-        if self.args.frozen_weights is not None:
-            checkpoint = torch.load(self.args.frozen_weights, map_location=self.device)
-            self.model_without_ddp.detr.load_state_dict(checkpoint['model'])
-            
-        if self.checkpoint_load_iter != 0:
-            output_dir = Path(self.temp_path)
-            checkpoint = output_dir / f'checkpoint{self.checkpoint_load_iter:04}.pth'
-            self.load(path = checkpoint)
 
     def __prepare_dataset(self,
                           dataset,

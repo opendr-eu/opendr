@@ -1,9 +1,11 @@
+# * Input size
+input_size: [200, 200]
+
+# * Model 
 weight_decay: 0.0001
 lr_drop: 200
 lr_backbone: 0.00001
 clip_max_norm: 0.1 # Gradient clipping max norm
-
-# Extra Model Parameters
 frozen_weights: null # Path to the pretrained model. If set only the mask head will be trained
 dilation: False # If true we replace stride with dilation in the last convolutional block (DC5)
 position_embedding: "sine" # Choices: sine learned. Type of positional embedding to use on top of the image features
