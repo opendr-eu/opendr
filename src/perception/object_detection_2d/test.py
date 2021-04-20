@@ -8,21 +8,25 @@ from pathlib import Path
 from util.plot_utils import plot_results
 
 def main():
-    learner = PixelObjectDetection2DLearner(iters=3)
+    learner = PixelObjectDetection2DLearner(iters=1)
     learner.download()
-    url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
-    image = im.open(requests.get(url, stream=True).raw)
+    # success = learner.save("/home/jelle")
+    # learner.load("/home/jelle")
+    # url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+    # image = im.open(requests.get(url, stream=True).raw)
     # image = Image(image)
-    # # im = Image.open("/home/jelle/Afbeeldingen/kat.jpg")
+    # image = Image.open("/home/jelle/Afbeeldingen/kat.jpg")
     # blist = learner.infer(image)
-    learner.optimize()
-    # plot_results(img, scores, boxes, self.args.classes)
-    # dataset = ExternalDataset("/home/jelle/Afbeeldingen/small_coco", "coco")
-    # learner.fit(dataset, annotations_folder="", 
-    #             train_annotations_file="instances_train2017_small.json", 
-    #             train_images_folder="train_2017_small", logging_path="/tmp", 
-    #             val_annotations_file="instances_train2017_small.json", 
-    #             val_images_folder="train_2017_small")
+    # for box in blist:
+    #     print(box.name)
+    # learner.optimize()
+    # learner.save("/home/jelle")
+    dataset = ExternalDataset("/home/jelle/Afbeeldingen/small_coco", "coco")
+    learner.fit(dataset, annotations_folder="", 
+                train_annotations_file="instances_train2017_small.json", 
+                train_images_folder="train_2017_small", logging_path="/tmp", 
+                val_annotations_file="instances_train2017_small.json", 
+                val_images_folder="train_2017_small")
     # log_directory = [Path("/tmp")]
     # fields_of_interest = (
     #     'loss',

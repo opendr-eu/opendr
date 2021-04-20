@@ -16,18 +16,17 @@ from datasets.panoptic_eval import PanopticEvaluator
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
-                    device: torch.device, epoch: int, max_norm: float = 0, verbose=True, silent=False):
+                    device: torch.device, epoch: int, max_norm: float = 0, verbose=True):
     model.train()
     criterion.train()
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
     metric_logger.add_meter('class_error', utils.SmoothedValue(window_size=1, fmt='{value:.2f}'))
     header = 'Epoch: [{}]'.format(epoch)
-    if verbose:
-        print_freq = 10
-    else: print_freq = 0
+    
+    print_freq = 10
 
-    for samples, targets in metric_logger.log_every(data_loader, print_freq, header):
+    for samples, targets in metric_logger.log_every(data_loader, print_freq, header, verbose=verbose):
         samples = samples.to(device)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
@@ -62,13 +61,13 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
-    if not silent:
+    if verbose:
         print("Averaged stats:", metric_logger)
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
 
 
 @torch.no_grad()
-def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, output_dir, verbose=True, silent=False):
+def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, output_dir, verbose=True):
     model.eval()
     criterion.eval()
 
@@ -88,11 +87,10 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
             output_dir=os.path.join(output_dir, "panoptic_eval"),
         )
 
-    if verbose:
-        print_freq = 10
-    else: print_freq = 0
+    print_freq = 10
 
-    for samples, targets in metric_logger.log_every(data_loader, print_freq, header):
+
+    for samples, targets in metric_logger.log_every(data_loader, print_freq, header, verbose=verbose):
         samples = samples.to(device)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
@@ -132,7 +130,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
 
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
-    if not silent:
+    if verbose:
         print("Averaged stats:", metric_logger)
     if coco_evaluator is not None:
         coco_evaluator.synchronize_between_processes()

@@ -352,3 +352,54 @@ def build(args):
             postprocessors["panoptic"] = PostProcessPanoptic(is_thing_map, threshold=0.85)
 
     return model, criterion, postprocessors
+
+def build_c(args):
+    # the `num_classes` naming here is somewhat misleading.
+    # it indeed corresponds to `max_obj_id + 1`, where max_obj_id
+    # is the maximum id for a class in your dataset. For example,
+    # COCO has a max_obj_id of 90, so we pass `num_classes` to be 91.
+    # As another example, for a dataset that has a single class with id 1,
+    # you should pass `num_classes` to be 2 (max_obj_id + 1).
+    # For more details on this, check the following discussion
+    # https://github.com/facebookresearch/detr/issues/108#issuecomment-650269223
+    device = torch.device(args.device)
+
+    matcher = build_matcher(args)
+    weight_dict = {'loss_ce': 1, 'loss_bbox': args.bbox_loss_coef}
+    weight_dict['loss_giou'] = args.giou_loss_coef
+    if args.masks:
+        weight_dict["loss_mask"] = args.mask_loss_coef
+        weight_dict["loss_dice"] = args.dice_loss_coef
+    # TODO this is a hack
+    if args.aux_loss:
+        aux_weight_dict = {}
+        for i in range(args.dec_layers - 1):
+            aux_weight_dict.update({k + f'_{i}': v for k, v in weight_dict.items()})
+        weight_dict.update(aux_weight_dict)
+
+    losses = ['labels', 'boxes', 'cardinality']
+    if args.masks:
+        losses += ["masks"]
+    criterion = SetCriterion(args.num_classes, matcher=matcher, weight_dict=weight_dict,
+                             eos_coef=args.eos_coef, losses=losses)
+    criterion.to(device)
+
+    return criterion
+
+def build_pp(args):
+    # the `num_classes` naming here is somewhat misleading.
+    # it indeed corresponds to `max_obj_id + 1`, where max_obj_id
+    # is the maximum id for a class in your dataset. For example,
+    # COCO has a max_obj_id of 90, so we pass `num_classes` to be 91.
+    # As another example, for a dataset that has a single class with id 1,
+    # you should pass `num_classes` to be 2 (max_obj_id + 1).
+    # For more details on this, check the following discussion
+    # https://github.com/facebookresearch/detr/issues/108#issuecomment-650269223
+    postprocessors = {'bbox': PostProcess()}
+    if args.masks:
+        postprocessors['segm'] = PostProcessSegm()
+        if args.dataset_file == "coco_panoptic":
+            is_thing_map = {i: i <= 90 for i in range(201)}
+            postprocessors["panoptic"] = PostProcessPanoptic(is_thing_map, threshold=0.85)
+
+    return criterion

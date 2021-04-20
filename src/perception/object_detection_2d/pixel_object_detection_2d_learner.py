@@ -30,7 +30,7 @@ import util.misc as utils
 from util.detect import detect
 from datasets import build_dataset, get_coco_api_from_dataset
 from detr_engine import evaluate, train_one_epoch
-from models import build_model
+from models import build_model, build_criterion, build_postprocessors
 
 from engine.data import Image
 from engine.learners import Learner
@@ -54,7 +54,7 @@ class PixelObjectDetection2DLearner(Learner):
         checkpoint_load_iter=0,
         temp_path="/tmp",
         device="cpu",
-        threshold=0.0,
+        threshold=0.7,
         scale=1.0
     ):
 
@@ -112,6 +112,13 @@ class PixelObjectDetection2DLearner(Learner):
             
         # Initialise ort
         self.ort_session = None
+        
+        # Initialize criterion, postprocessors, optimizer and scheduler
+        self.criterion = None
+        self.postprocessors = None
+        self.optim = None
+        self.lr_scheduler = None
+        self.n_parameters = None
 
     def save(self, path):
         """
@@ -136,7 +143,6 @@ class PixelObjectDetection2DLearner(Learner):
         """
         if self.model is None and self.ort_session is None:
             raise UserWarning("No model is loaded, cannot save.")
-            return False
         
         if not os.path.exists(path):
             os.makedirs(path)
@@ -160,7 +166,7 @@ class PixelObjectDetection2DLearner(Learner):
                                  'optimized': True,
                                  'optimizer_info': {}
                                  }
-            shutil.copy2(self.temp_path + 'detr_' + self.backbone + '_model.onnx',
+            shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"),
                          metadata['model_paths'])
                          
         with open(os.path.join(path, 'detr_' + self.backbone + '.json'), 'w', encoding='utf-8') as f:
@@ -193,23 +199,22 @@ class PixelObjectDetection2DLearner(Learner):
             self.threshold = metadata['inference_params']['threshold']
         else:
             raise UserWarning('No detr_' + self.backbone + '.json found. Please have a check')
-            return False
         
         if metadata['optimized']:
             path_onnx = os.path.join(path, 'detr_' + self.backbone + '_model.onnx')
             if os.path.exists(path_onnx):
                 self.ort_session = ort.InferenceSession(path_onnx)
+                print("Loaded ONNX model.")
             else:
                 raise UserWarning('No detr_' + self.backbone + '_model.onnx found. Please have a check')
-                return False
         else:
             if os.path.exists(os.path.join(path, 'detr_' + self.backbone + '_model.pth')):
                 self.__create_model()
                 self.model_without_ddp.load_state_dict(torch.load(
                     os.path.join(path, 'detr_' + self.backbone + '_model.pth')))
+                print("Loaded Pytorch model.")
             else:
                 raise UserWarning('No detr_' + self.backbone + '_model.pth found. Please have a check')
-                return False
         return True
 
     def __load_checkpoint(self, path):
@@ -287,6 +292,9 @@ class PixelObjectDetection2DLearner(Learner):
         :return: returns stats regarding the last evaluation ran
         :rtype: dict
         """
+        if silent:
+            verbose = False
+        
         train_stats = {}
         test_stats = {}
         coco_evaluator = None        
@@ -298,6 +306,20 @@ class PixelObjectDetection2DLearner(Learner):
         
         if self.model is None:
             self.__create_model()
+            if not silent and verbose:
+                print('number of params:', self.n_parameters)
+    
+        if self.criterion is None:
+            self.__create_criterion()
+        
+        if self.postprocessors is None:
+            self.__create_postprocessors()
+            
+        if self.optim is None:
+            self.__create_optimizer()
+            
+        if self.lr_scheduler is None:
+            self.__create_scheduler()
             
         if self.args.frozen_weights is not None:
             checkpoint = torch.load(self.args.frozen_weights, map_location=self.device)
@@ -346,13 +368,14 @@ class PixelObjectDetection2DLearner(Learner):
                                      drop_last=False, collate_fn=utils.collate_fn, num_workers=self.args.num_workers)
             base_ds = get_coco_api_from_dataset(dataset_val)
 
-        print("Start training")
+        if not silent:
+            print("Start training")
         start_time = time.time()
         for self.epoch in range(self.checkpoint_load_iter, self.iters):
             if self.args.distributed:
                 sampler_train.set_epoch(self.epoch)
             train_stats = train_one_epoch(self.model, self.criterion, data_loader_train, self.optim, device, self.epoch,
-                self.args.clip_max_norm, verbose=verbose, silent=silent)
+                self.args.clip_max_norm, verbose=verbose)
             self.lr_scheduler.step()
             checkpoint_paths = [output_dir / 'checkpoint.pth']
             # extra checkpoint every checkpoint_after_iter epochs
@@ -370,7 +393,7 @@ class PixelObjectDetection2DLearner(Learner):
                 test_stats, coco_evaluator = evaluate(
                     self.model, self.criterion, self.postprocessors,
                     data_loader_val, base_ds, device, self.args.output_dir,
-                    verbose=verbose, silent=silent)
+                    verbose=verbose)
 
             if logging:
                 log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
@@ -391,9 +414,12 @@ class PixelObjectDetection2DLearner(Learner):
 
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
-        print('Training time {}'.format(total_time_str))
-        
-        return {train_stats, test_stats}
+        if not silent:
+            print('Training time {}'.format(total_time_str))
+        if val_dataset is not None:
+            return {train_stats, test_stats}
+        else:
+            return train_stats
         
     def eval(self, dataset,
             images_folder='val2017',
@@ -418,6 +444,15 @@ class PixelObjectDetection2DLearner(Learner):
         :returns: returns stats regarding evaluation
         :rtype: dict
         """
+        
+        if self.model is None:
+            raise UserWarning('A model should be loaded first')
+        
+        if self.criterion is None:
+            self.__create_criterion()
+        
+        if self.postprocessors is None:
+            self.__create_postprocessors()
         
         device  = torch.device(self.device)
         
@@ -463,9 +498,9 @@ class PixelObjectDetection2DLearner(Learner):
         if not isinstance(image, Image):
             image = Image(image)
         img = im.fromarray(image.numpy())
-    
+        
         scores, boxes = detect(img, self.infer_transform, self.model, 
-                               self.device, self.threshold)
+                               self.device, self.threshold, self.ort_session)
         
         boxlist = []
         for p, (xmin, ymin, xmax, ymax) in zip(scores.tolist(), boxes.tolist()):
@@ -499,11 +534,9 @@ class PixelObjectDetection2DLearner(Learner):
         """
         if self.model is None:
             raise UserWarning("No model is loaded, cannot optimize. Load or train a model first.")
-            return False
         
         if self.ort_session is not None:
             raise UserWarning("Model is already optimized in ONNX.")
-            return False
         
         device = torch.device(self.device)
         
@@ -517,7 +550,7 @@ class PixelObjectDetection2DLearner(Learner):
                   os.path.join(self.temp_path, "onnx_model_temp.onnx"), 
                   enable_onnx_checker=True,
                   do_constant_folding=do_constant_folding, 
-                  input_names=input_names, output_names=output_names)
+                  input_names=input_names, output_names=output_names, opset_version=11)
         
         print("Exported onnx model")
         
@@ -562,12 +595,28 @@ class PixelObjectDetection2DLearner(Learner):
             default is False.
         pretrained : bool, optional
             If set to true, a pretrained model is downloaded. The default is True.
-        num_classes : int, optional
-            Sets the number of classes in the model. The default is 91.
         return_postprocessor : bool, optional
             If set to true, postprocessors are returned. The default is False.
         threshold : float, optional
             Sets the threshold for coco_panoptic models. The default is 0.85.
+        classes : list of strings, optional
+            Sets the names and number of classes in the model. Coco classes are
+            used by default. The default is
+            [
+        'N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+        'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A',
+        'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
+        'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack',
+        'umbrella', 'N/A', 'N/A', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
+        'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
+        'skateboard', 'surfboard', 'tennis racket', 'bottle', 'N/A', 'wine glass',
+        'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
+        'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
+        'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table', 'N/A',
+        'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
+        'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
+        'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
+        'toothbrush'].
 
         Raises
         ------
@@ -588,16 +637,21 @@ class PixelObjectDetection2DLearner(Learner):
             if dilation:
                 model_name = model_name + '_dc5'
                 self.args.dilation = True
+            else:
+                self.args.dilation = False
             if panoptic:
                 model_name = model_name + '_panoptic'
-                self.model = torch.hub.load('facebookresearch/detr', model_name, 
+                self.model, self.postprocessors = torch.hub.load('facebookresearch/detr', model_name, 
                                        pretrained=True, num_classes=self.num_classes, 
-                                       return_postprocessor = return_postprocessor,
+                                       return_postprocessor = True,
                                        threshold=threshold)
+                self.args.dataset_file = 'coco_panoptic'
             else:
-                self.model = torch.hub.load('facebookresearch/detr', model_name, 
+                self.model, self.postprocessors = torch.hub.load('facebookresearch/detr', model_name, 
                                        pretrained=True, num_classes=self.num_classes, 
-                                       return_postprocessor = return_postprocessor)
+                                       return_postprocessor = True)
+                self.args.dataset_file = 'coco'
+            
             device = torch.device(self.device)
             
             self.model.to(device)
@@ -606,30 +660,42 @@ class PixelObjectDetection2DLearner(Learner):
             if self.args.distributed:
                 self.model = torch.nn.parallel.DistributedDataParallel(self.model, device_ids=[self.args.gpu])
                 self.model_without_ddp = self.model.module
+                
+            self.n_parameters = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         else:
             raise ValueError(self.backbone + " not a valid backbone. Supported backbones:" + str(supportedBackbones))
-        
-    def __create_model(self):
+    
+    def __create_criterion(self):
         """
-        Internal method for creating a model, optimizer and scheduler based
-        on the parameters in the config file.
+        Internal model for creating the criterion.
 
         Returns
         -------
         None.
 
         """
-        device = torch.device(self.device)
-        self.model, self.criterion, self.postprocessors = build_model(self.args)
-        self.model.to(device)
+        self.criterion = build_criterion(self.args)
+        
+    def __create_postprocessors(self):
+        """
+        Internal model for creating the postprocessors
 
-        self.model_without_ddp = self.model
-        if self.args.distributed:
-            self.model = torch.nn.parallel.DistributedDataParallel(self.model, device_ids=[self.args.gpu])
-            self.model_without_ddp = self.model.module
-        self.n_parameters = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-        print('number of params:', self.n_parameters)
+        Returns
+        -------
+        None.
 
+        """
+        self.postprocessors = build_postprocessors(self.args)
+        
+    def __create_optimizer(self):
+        """
+        Internal model for creating the optimizer.
+
+        Returns
+        -------
+        None.
+
+        """
         param_dicts = [
             {"params": [p for n, p in self.model_without_ddp.named_parameters() if "backbone" not in n and p.requires_grad]},
             {
@@ -647,8 +713,32 @@ class PixelObjectDetection2DLearner(Learner):
         else:
             warnings.warn("Unavailbale optimizer specified, using adamw instead. Possible optimizers are; adam, adamw and sgd")
             self.optim = torch.optim.AdamW(param_dicts, lr=self.lr, weight_decay=self.weight_decay)
-
+            
+    def __create_scheduler(self):
         self.lr_scheduler = torch.optim.lr_scheduler.StepLR(self.optim, self.args.lr_drop)
+    
+    def __create_model(self):
+        """
+        Internal method for creating a model, optimizer and scheduler based
+        on the parameters in the config file.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.ort_session = None
+        
+        device = torch.device(self.device)
+        self.model, self.criterion, self.postprocessors = build_model(self.args)
+        self.model.to(device)
+
+        self.model_without_ddp = self.model
+        if self.args.distributed:
+            self.model = torch.nn.parallel.DistributedDataParallel(self.model, device_ids=[self.args.gpu])
+            self.model_without_ddp = self.model.module
+        
+        self.n_parameters = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
     def __prepare_dataset(self,
                           dataset,
