@@ -2,6 +2,7 @@
 
 # Install OpenDR or include it to PYTHONPATH
 import sys
+
 sys.path.append('../../src')
 
 import rospy
@@ -14,8 +15,6 @@ from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_lear
     LightweightOpenPoseLearner
 
 
-# TODO: Header for ROS
-# TODO: Instructions for running + readme
 class PoseEstimationNode:
 
     def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_pose_annotated",
