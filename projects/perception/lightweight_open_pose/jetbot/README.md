@@ -1,4 +1,4 @@
-# fall_detection_demo
+# Fall Detection using Lightweight OpenPose
 
 This project provides a demo developed on Webots to demonstrate how OpenDR functionality can be used to provide a naive fall detector. This demo can be also directly used on an NVIDIA [JetBot](https://github.com/NVIDIA-AI-IOT/jetbot).
 
