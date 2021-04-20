@@ -33,4 +33,4 @@ source devel/setup.bash
 ## Structure
 
 Currently, apart from tools, opendr_ws contains the following 1 ros node:
-1. [Pose Estimation](?)
+1. [Pose Estimation](src/perception/README.md)
