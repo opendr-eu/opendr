@@ -7,8 +7,8 @@ from engine.target import Pose
 
 class ROSBridge:
     """
-    This class provides an interface to convert OpenDR data types and targets into ROS-compatible ones similar to CvBridge
-    From each data type X two methods are provided:
+    This class provides an interface to convert OpenDR data types and targets into ROS-compatible ones similar to CvBridge.
+    For each data type X two methods are provided:
     from_ros_X: which converts the ROS equivalent of X into OpenDR data type
     to_ros_X: which converts the OpenDR data type into the ROS equivalent of X
     """
@@ -18,7 +18,7 @@ class ROSBridge:
 
     def from_ros_image(self, message, encoding='bgr8'):
         """
-        Converts an ROS Image into an OpenDR image
+        Converts a ROS Image into an OpenDR image
         :param message: ROS image to be converted
         :type message: sensor_msgs.msg.Img
         :param encoding: encoding to be used for the conversion (inherited from CvBridge)
