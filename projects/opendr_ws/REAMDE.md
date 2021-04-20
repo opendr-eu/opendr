@@ -4,12 +4,13 @@
 This ROS workspace contains ROS nodes and tools developed by OpenDR project. Currently, ROS nodes are compatible with ROS Noetic.
 This workspace contains the `ros_bridge` package, which provides message definitions for ROS-compatible OpenDR data types, 
 as well the `ROSBridge` class which provides an interface to convert OpenDR data types and targets into ROS-compatible
-ones similar to CvBridge. You can find more information in the corresponding [readme file](?)
+ones similar to CvBridge. You can find more information in the corresponding [documentation](../../docs/reference/rosbridge.md).
 
 
 ## Setup
 For running a minimal working example you can follow the instructions below:
-0. Source ditribution tools:
+
+0. Source the necessary distribution tools:
    
    ```source /opt/ros/noetic/setup.bash```
    
