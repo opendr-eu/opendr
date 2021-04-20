@@ -1,1 +1,0 @@
-from opendr_bridge.bridge import ROSBridge
