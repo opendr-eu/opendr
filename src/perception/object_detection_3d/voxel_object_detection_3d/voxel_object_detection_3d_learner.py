@@ -310,7 +310,7 @@ class VoxelObjectDetection3DLearner(Learner):
         logging_path=None,
         silent=False,
         verbose=False,
-        image_shape=(1224, 370),
+        image_shape=(370, 1224),
         count=None,
     ):
 
@@ -551,25 +551,36 @@ class VoxelObjectDetection3DLearner(Learner):
         require_dataset=True,
     ):
 
-        def create_map_point_cloud_dataset_func(include_annotation_in_example):
+        def create_map_point_cloud_dataset_func(is_training):
 
             prep_func = create_prep_func(
-                input_cfg, model_cfg, True,
+                input_cfg if is_training else eval_input_cfg,
+                model_cfg, is_training,
                 voxel_generator, target_assigner,
                 use_sampler=False,
             )
 
-            def map(data):
-                point_cloud_with_calibration, target = data
+            def map(data_target):
+
+                from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data import (
+                    kitti_common as kitti,
+                )
+
+                point_cloud_with_calibration, target = data_target
                 point_cloud = point_cloud_with_calibration.data
                 calib = point_cloud_with_calibration.calib
 
                 annotation = target.kitti()
-
+                
                 example = _prep_v9(point_cloud, calib, prep_func, annotation)
-
-                if include_annotation_in_example:
+                
+                if not is_training:
                     example["annos"] = annotation
+                
+                if point_cloud_with_calibration.image_shape is not None:
+                    example["image_shape"] = point_cloud_with_calibration.image_shape
+                
+                kitti.add_difficulty_to_annos(example)
 
                 return example
 
@@ -606,7 +617,7 @@ class VoxelObjectDetection3DLearner(Learner):
         elif isinstance(dataset, DatasetIterator):
             input_dataset_iterator = MappedDatasetIterator(
                 dataset,
-                create_map_point_cloud_dataset_func(False),
+                create_map_point_cloud_dataset_func(True),
             )
         else:
             if require_dataset or dataset is not None:
@@ -650,7 +661,7 @@ class VoxelObjectDetection3DLearner(Learner):
         elif isinstance(val_dataset, DatasetIterator):
             eval_dataset_iterator = MappedDatasetIterator(
                 val_dataset,
-                create_map_point_cloud_dataset_func(True),
+                create_map_point_cloud_dataset_func(False),
             )
         elif val_dataset is None:
             if isinstance(dataset, ExternalDataset):
