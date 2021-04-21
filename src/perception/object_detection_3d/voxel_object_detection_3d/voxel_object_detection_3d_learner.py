@@ -138,41 +138,44 @@ class VoxelObjectDetection3DLearner(Learner):
 
         if self.model.rpn_ort_session is None:
             model_metadata["model_paths"] = [
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_vfe.pth"),
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_mfe.pth"),
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_rpn.pth")
+                folder_name_no_ext + "_vfe.pth",
+                folder_name_no_ext + "_mfe.pth",
+                folder_name_no_ext + "_rpn.pth"
             ]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pth"
 
             torch.save({
                 'state_dict': self.model.voxel_feature_extractor.state_dict()
-            }, model_metadata["model_paths"][0])
+            }, os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][0]))
             torch.save({
                 'state_dict': self.model.middle_feature_extractor.state_dict()
-            }, model_metadata["model_paths"][1])
+            }, os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][1]))
             torch.save({
                 'state_dict': self.model.rpn.state_dict()
-            }, model_metadata["model_paths"][2])
+            }, os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][2]))
             if verbose:
                 print("Saved Pytorch VFE, MFE and RPN sub-models.")
         else:
             model_metadata["model_paths"] = [
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_vfe.pth"),
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_mfe.pth"),
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_rpn.onnx")
+                folder_name_no_ext + "_vfe.pth",
+                folder_name_no_ext + "_mfe.pth",
+                folder_name_no_ext + "_rpn.onnx"
             ]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
 
             torch.save({
                 'state_dict': self.model.voxel_feature_extractor.state_dict()
-            }, model_metadata["model_paths"][0])
+            }, os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][0]))
             torch.save({
                 'state_dict': self.model.middle_feature_extractor.state_dict()
-            }, model_metadata["model_paths"][1])
+            }, os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][1]))
             # Copy already optimized model from temp path
-            shutil.copy2(os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"), model_metadata["model_paths"][2])
+            shutil.copy2(
+                os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"),
+                os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][2])
+            )
             if verbose:
                 print("Saved Pytorch VFE, MFE and ONNX RPN sub-models.")
 
@@ -198,21 +201,21 @@ class VoxelObjectDetection3DLearner(Learner):
             metadata = json.load(metadata_file)
 
         if len(metadata["model_paths"]) == 1:
-            self.__load_from_pth(self.model, metadata["model_paths"][0], True)
+            self.__load_from_pth(self.model, os.path.join(path, metadata["model_paths"][0]), True)
             if verbose:
                 print("Loaded Pytorch model.")
         else:
-            self.__load_from_pth(self.model.voxel_feature_extractor, metadata["model_paths"][0])
-            self.__load_from_pth(self.model.middle_feature_extractor, metadata["model_paths"][1])
+            self.__load_from_pth(self.model.voxel_feature_extractor, os.path.join(path, metadata["model_paths"][0]))
+            self.__load_from_pth(self.model.middle_feature_extractor, os.path.join(path, metadata["model_paths"][1]))
             if verbose:
                 print("Loaded Pytorch VFE and MFE sub-model.")
 
             if not metadata["optimized"]:
-                self.__load_from_pth(self.model.rpn, metadata["model_paths"][2])
+                self.__load_from_pth(self.model.rpn, os.path.join(path, metadata["model_paths"][2]))
                 if verbose:
                     print("Loaded Pytorch RPN sub-model.")
             else:
-                self.__load_rpn_from_onnx(metadata["model_paths"][2])
+                self.__load_rpn_from_onnx(os.path.join(path, metadata["model_paths"][2]))
                 if verbose:
                     print("Loaded ONNX RPN sub-model.")
 
