@@ -565,25 +565,19 @@ class VoxelObjectDetection3DLearner(Learner):
 
             def map(data_target):
 
-                from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data import (
-                    kitti_common as kitti,
-                )
-
                 point_cloud_with_calibration, target = data_target
                 point_cloud = point_cloud_with_calibration.data
                 calib = point_cloud_with_calibration.calib
 
                 annotation = target.kitti()
-                
+
                 example = _prep_v9(point_cloud, calib, prep_func, annotation)
-                
+
                 if not is_training:
                     example["annos"] = annotation
-                
+
                 if point_cloud_with_calibration.image_shape is not None:
                     example["image_shape"] = point_cloud_with_calibration.image_shape
-                
-                kitti.add_difficulty_to_annos(example)
 
                 return example
 
