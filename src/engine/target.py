@@ -492,7 +492,7 @@ class BoundingBox3DList(Target):
             result["location"] = np.array(result["location"])
             result["rotation_y"] = np.array(result["rotation_y"])
             result["score"] = np.array(result["score"])
-            
+
             num_gt = len(result["name"])
             num_objects = len([x for x in result["name"] if x != "DontCare"])
             index = list(range(num_objects)) + [-1] * (num_gt - num_objects)
