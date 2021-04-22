@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from PIL import Image as im
 import os
 import datetime
 import json
@@ -19,30 +18,30 @@ import shutil
 import random
 import time
 import warnings
-import torchvision.transforms as T
-import numpy as np
-import onnxruntime as ort
 import torch
 from torch.utils.data import DataLoader, DistributedSampler
 from pathlib import Path
-
-import util.misc as utils
-from util.detect import detect
-from datasets import build_dataset, get_coco_api_from_dataset
-from detr_engine import evaluate, train_one_epoch
-from models import build_model, build_criterion, build_postprocessors
-
+from algorithm.util.detect import detect
+from algorithm.datasets import build_dataset, get_coco_api_from_dataset
+from algorithm.engine import evaluate, train_one_epoch
+from algorithm.models import build_model, build_criterion, build_postprocessors
 from engine.data import Image
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
 from engine.target import BoundingBox, BoundingBoxList
+import torchvision.transforms as T
+import numpy as np
+import onnxruntime as ort
+import algorithm.util.misc as utils
+from PIL import Image as im
+
 
 class PixelObjectDetection2DLearner(Learner):
     def __init__(
         self,
         model_config_path=os.path.join(
             os.path.dirname(os.path.realpath('__file__')),
-            "configs/model_config.yaml"),
+            "algorithm/configs/model_config.yaml"),
         iters=10,
         lr=1e-4,
         batch_size=1,
@@ -84,7 +83,7 @@ class PixelObjectDetection2DLearner(Learner):
         self.args.device = self.device
         self.args.output_path = self.temp_path
         self.args.num_classes = len(self.args.classes)
-        
+
         # Initialise distributed mode in case of distributed mode
         utils.init_distributed_mode(self.args)
         if self.args.frozen_weights is not None:
@@ -95,28 +94,28 @@ class PixelObjectDetection2DLearner(Learner):
         torch.manual_seed(seed)
         np.random.seed(seed)
         random.seed(seed)
-        
+
         # Initialise epoch
         self.epoch = self.checkpoint_load_iter
-        
+
         # Initialise transform for inference
         self.infer_transform = T.Compose([
             T.Resize(self.args.input_size),
             T.ToTensor(),
             T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
-        
+
         # Initialise temp path
         if not os.path.exists(self.temp_path):
             os.makedirs(self.temp_path)
-            
+
         # Initialise ort
         self.ort_session = None
-        
+
         # Initialize criterion, postprocessors, optimizer and scheduler
         self.criterion = None
         self.postprocessors = None
-        self.optim = None
+        self.torch_optimizer = None
         self.lr_scheduler = None
         self.n_parameters = None
 
@@ -138,41 +137,41 @@ class PixelObjectDetection2DLearner(Learner):
         Returns
         -------
         bool
-            True if saving was successful.
+            If True, model was saved was successfully.
 
         """
         if self.model is None and self.ort_session is None:
             raise UserWarning("No model is loaded, cannot save.")
-        
+
         if not os.path.exists(path):
             os.makedirs(path)
-        
+
         if self.ort_session is None:
             metadata = {'model_paths': os.path.join(path, "detr_" + self.backbone + '_model.pth'),
-                                 'framework': 'pytorch',
-                                 'format': 'pth',
-                                 'has_data': False,
-                                 'inference_params': {'threshold': self.threshold},
-                                 'optimized': False,
-                                 'optimizer_info': {}
-                                 }
+                        'framework': 'pytorch',
+                        'format': 'pth',
+                        'has_data': False,
+                        'inference_params': {'threshold': self.threshold},
+                        'optimized': False,
+                        'optimizer_info': {}
+                        }
             torch.save(self.model.state_dict(), metadata['model_paths'])
         else:
             metadata = {'model_paths': os.path.join(path, 'detr_' + self.backbone + '_model.onnx'),
-                                 'framework': 'pytorch',
-                                 'format': 'onnx',
-                                 'has_data': False,
-                                 'inference_params': {'threshold': self.threshold},
-                                 'optimized': True,
-                                 'optimizer_info': {}
-                                 }
+                        'framework': 'pytorch',
+                        'format': 'onnx',
+                        'has_data': False,
+                        'inference_params': {'threshold': self.threshold},
+                        'optimized': True,
+                        'optimizer_info': {}
+                        }
             shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"),
                          metadata['model_paths'])
-                         
+
         with open(os.path.join(path, 'detr_' + self.backbone + '.json'), 'w', encoding='utf-8') as f:
             json.dump(metadata, f, ensure_ascii=False, indent=4)
         return True
-    
+
     def load(self, path):
         """
         Method for loading a model that was saved earlier.
@@ -199,7 +198,7 @@ class PixelObjectDetection2DLearner(Learner):
             self.threshold = metadata['inference_params']['threshold']
         else:
             raise UserWarning('No detr_' + self.backbone + '.json found. Please have a check')
-        
+
         if metadata['optimized']:
             path_onnx = os.path.join(path, 'detr_' + self.backbone + '_model.onnx')
             if os.path.exists(path_onnx):
@@ -239,92 +238,98 @@ class PixelObjectDetection2DLearner(Learner):
         try:
             checkpoint = torch.load(path, map_location="cpu")
         except FileNotFoundError as e:
-                e.strerror = path + " not found, " \
-                                                         "provided checkpoint_load_iter (" + \
-                             str(self.checkpoint_load_iter) + \
-                             ") doesn't correspond to a saved checkpoint.\nNo such file or directory."
-                raise e
+            e.strerror = path + " not found, " \
+                "provided checkpoint_load_iter (" + \
+                str(self.checkpoint_load_iter) + \
+                ") doesn't correspond to a saved checkpoint.\nNo such file or directory."
+            raise e
         self.model_without_ddp.load_state_dict(checkpoint['model'])
         if 'optimizer' in checkpoint and 'lr_scheduler' in checkpoint and 'epoch' in checkpoint:
-            self.optim.load_state_dict(checkpoint['optimizer'])
+            self.torch_optimizer.load_state_dict(checkpoint['optimizer'])
             self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
             self.epoch = self.checkpoint_load_iter = checkpoint['epoch'] + 1
         print(f'Loaded checkpoint{self.checkpoint_load_iter:04}.pth')
-            
-    def fit(self, dataset, val_dataset=None, logging_path='', 
-            silent=False, verbose=True,
+
+    def fit(self, dataset, val_dataset=None, logging_path='', silent=False, verbose=True,
             annotations_folder='Annotations',
             train_images_folder='train2017',
             train_annotations_file='instances_train2017.json',
             val_images_folder='val2017',
-            val_annotations_file='instances_val2017.json'):
+            val_annotations_file='instances_val2017.json'
+            ):
         """
         This method is used for training the algorithm on a train dataset and validating on a val dataset.
 
-        :param dataset: object that holds the training dataset
-        :type dataset: ExternalDataset class object or DatasetIterator class object
-        :param val_dataset: object that holds the validation dataset, defaults to 'None'
-        :type val_dataset: ExternalDataset class object or DatasetIterator class object, optional
-        :param logging_path: path to save tensorboard log files. If set to None or '', tensorboard logging is
-            disabled, defaults to ''
-        :type logging_path: str, optional
-        :param silent: if set to True, disables all printing of training progress reports and other information
-            to STDOUT, defaults to 'False'
-        :type silent: bool, optional
-        :param verbose: if set to True, enables the maximum verbosity, defaults to 'True'
-        :type verbose: bool, optional
-        :param train_images_folder: folder name that contains the train dataset images. This folder should be contained in
-            the dataset path provided. Note that this is a folder name, not a path, defaults to 'train2017'
-        :type images_folder: str, optional
-        :param annotations_folder: foldername of the annotations json file. This folder should be contained in the
-            dataset path provided, defaults to 'Annotations'
-        :type train_annotations_file: str, optional
-        :param train_annotations_file: filename of the train annotations json file. This file should be contained in the
-            dataset path provided, defaults to 'instances_train2017.json'
-        :type train_annotations_file: str, optional
-        :param val_images_folder: folder name that contains the validation images. This folder should be contained
-            in the dataset path provided. Note that this is a folder name, not a path, defaults to 'val2017'
-        :type val_images_folder_name: str, optional
-        :param val_annotations_file: filename of the validation annotations json file. This file should be
-            contained in the dataset path provided in the annotations folder provided, defaults to 'instances_val2017.json'
-        :type val_annotations_file: str, optional
+        Parameters
+        ----------
+        dataset : ExternalDataset class object or DatasetIterator class object
+            Object that holds the training dataset.
+        val_dataset : ExternalDataset class object or DatasetIterator class object, optional
+            object that holds the validation dataset. The default is None.
+        logging_path : str, optional
+            Path to save tensorboard log files. If set to None or '', tensorboard logging is
+            disabled. The default is ''.
+        silent : TYPE, optional
+            If True, all printing of training progress reports and other information
+            to STDOUT are disabled. The default is False.
+        verbose : bool, optional
+            Enables the maximum verbosity. The default is True.
+        annotations_folder : str,
+            Foldername of the annotations json file. This folder should be contained in the
+            dataset path provided. The default is 'Annotations'.
+        train_images_folder : str, optional
+            Name of the folder that contains the train dataset images. This folder should be contained in
+            the dataset path provided. Note that this is a folder name, not a path. The default is 'train2017'.
+        train_annotations_file : str, optional
+            Filename of the train annotations json file. This file should be contained in the
+            dataset path provided. The default is 'instances_train2017.json'.
+        val_images_folder : str, optional
+            Folder name that contains the validation images. This folder should be contained
+            in the dataset path provided. Note that this is a folder name, not a path. The default is 'val2017'.
+        val_annotations_file : str, optional
+            Filename of the validation annotations json file. This file should be
+            contained in the dataset path provided in the annotations folder provided. The default is 'instances_val2017.json'.
 
-        :return: returns stats regarding the last evaluation ran
-        :rtype: dict
+        Returns
+        -------
+        dict
+            Returns stats regarding the last evaluation ran.
+
         """
         if silent:
             verbose = False
-        
+
         train_stats = {}
         test_stats = {}
-        coco_evaluator = None        
+        coco_evaluator = None
 
         if logging_path != '' and logging_path is not None:
             logging = True
             logging_dir = Path(logging_path)
-        else: logging= False
-        
+        else:
+            logging = False
+
         if self.model is None:
             self.__create_model()
             if not silent and verbose:
                 print('number of params:', self.n_parameters)
-    
+
         if self.criterion is None:
             self.__create_criterion()
-        
+
         if self.postprocessors is None:
             self.__create_postprocessors()
-            
-        if self.optim is None:
+
+        if self.torch_optimizer is None:
             self.__create_optimizer()
-            
+
         if self.lr_scheduler is None:
             self.__create_scheduler()
-            
+
         if self.args.frozen_weights is not None:
             checkpoint = torch.load(self.args.frozen_weights, map_location=self.device)
             self.model_without_ddp.detr.load_state_dict(checkpoint['model'])
-            
+
         if self.checkpoint_load_iter != 0:
             output_dir = Path(self.temp_path)
             checkpoint = output_dir / f'checkpoint{self.checkpoint_load_iter:04}.pth'
@@ -333,18 +338,22 @@ class PixelObjectDetection2DLearner(Learner):
         output_dir = Path(self.temp_path)
         device = torch.device(self.device)
 
-        dataset_train = self.__prepare_dataset(dataset,
-                                      image_set="train",
-                                      images_folder_name=train_images_folder,
-                                      annotations_folder_name=annotations_folder,
-                                      annotations_file_name=train_annotations_file)
+        dataset_train = self.__prepare_dataset(
+            dataset,
+            image_set="train",
+            images_folder_name=train_images_folder,
+            annotations_folder_name=annotations_folder,
+            annotations_file_name=train_annotations_file
+            )
 
         if val_dataset is not None:
-            dataset_val = self.__prepare_dataset(val_dataset,
-                                      image_set="val",
-                                      images_folder_name=val_images_folder,
-                                      annotations_folder_name=annotations_folder,
-                                      annotations_file_name=val_annotations_file)
+            dataset_val = self.__prepare_dataset(
+                val_dataset,
+                image_set="val",
+                images_folder_name=val_images_folder,
+                annotations_folder_name=annotations_folder,
+                annotations_file_name=val_annotations_file
+                )
 
         if self.args.distributed:
             sampler_train = DistributedSampler(dataset_train)
@@ -355,7 +364,6 @@ class PixelObjectDetection2DLearner(Learner):
             if val_dataset is not None:
                 sampler_val = torch.utils.data.SequentialSampler(dataset_val)
 
-
         batch_sampler_train = torch.utils.data.BatchSampler(
             sampler_train, self.batch_size, drop_last=True)
 
@@ -364,8 +372,14 @@ class PixelObjectDetection2DLearner(Learner):
                                        collate_fn=utils.collate_fn,
                                        num_workers=self.args.num_workers)
         if val_dataset is not None:
-            data_loader_val = DataLoader(dataset_val, self.batch_size, sampler=sampler_val,
-                                     drop_last=False, collate_fn=utils.collate_fn, num_workers=self.args.num_workers)
+            data_loader_val = DataLoader(
+                dataset_val,
+                self.batch_size,
+                sampler=sampler_val,
+                drop_last=False,
+                collate_fn=utils.collate_fn,
+                num_workers=self.args.num_workers
+                )
             base_ds = get_coco_api_from_dataset(dataset_val)
 
         if not silent:
@@ -374,8 +388,17 @@ class PixelObjectDetection2DLearner(Learner):
         for self.epoch in range(self.checkpoint_load_iter, self.iters):
             if self.args.distributed:
                 sampler_train.set_epoch(self.epoch)
-            train_stats = train_one_epoch(self.model, self.criterion, data_loader_train, self.optim, device, self.epoch,
-                self.args.clip_max_norm, verbose=verbose)
+            train_stats = train_one_epoch(
+                self.model,
+                self.criterion,
+                data_loader_train,
+                self.torch_optimizer,
+                device,
+                self.epoch,
+                self.args.clip_max_norm,
+                verbose=verbose,
+                silent=silent
+                )
             self.lr_scheduler.step()
             checkpoint_paths = [output_dir / 'checkpoint.pth']
             # extra checkpoint every checkpoint_after_iter epochs
@@ -384,7 +407,7 @@ class PixelObjectDetection2DLearner(Learner):
             for checkpoint_path in checkpoint_paths:
                 utils.save_on_master({
                     'model': self.model_without_ddp.state_dict(),
-                    'optimizer': self.optim.state_dict(),
+                    'optimizer': self.torch_optimizer.state_dict(),
                     'lr_scheduler': self.lr_scheduler.state_dict(),
                     'epoch': self.epoch,
                     'args': self.args,
@@ -393,15 +416,17 @@ class PixelObjectDetection2DLearner(Learner):
                 test_stats, coco_evaluator = evaluate(
                     self.model, self.criterion, self.postprocessors,
                     data_loader_val, base_ds, device, self.args.output_dir,
-                    verbose=verbose)
+                    verbose=verbose, silent=silent)
 
             if logging:
-                log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
-                     **{f'test_{k}': v for k, v in test_stats.items()},
-                     'epoch': self.epoch,
-                     'n_parameters': self.n_parameters}
+                log_stats = {
+                    **{f'train_{k}': v for k, v in train_stats.items()},
+                    **{f'test_{k}': v for k, v in test_stats.items()},
+                    'epoch': self.epoch,
+                    'n_parameters': self.n_parameters
+                    }
                 with (logging_dir / "log.txt").open("a") as f:
-                        f.write(json.dumps(log_stats) + "\n")
+                    f.write(json.dumps(log_stats) + "\n")
                 if coco_evaluator is not None:
                     (logging_dir / 'eval').mkdir(exist_ok=True)
                     if "bbox" in coco_evaluator.coco_eval:
@@ -418,49 +443,60 @@ class PixelObjectDetection2DLearner(Learner):
             print('Training time {}'.format(total_time_str))
         if val_dataset is not None:
             return {train_stats, test_stats}
-        else:
-            return train_stats
-        
-    def eval(self, dataset,
-            images_folder='val2017',
-            annotations_folder='Annotations',
-            annotations_file='instances_val2017.json'):
-        
+        return train_stats
+
+    def eval(self,
+             dataset,
+             images_folder='val2017',
+             annotations_folder='Annotations',
+             annotations_file='instances_val2017.json'
+             ):
         """
         This method is used to evaluate a trained model on an evaluation dataset.
 
-        :param dataset: object that holds the evaluation dataset.
-        :type dataset: ExternalDataset class object or DatasetIterator class object
-        :param images_folde: Folder name that contains the dataset images. This folder should be contained in
-            the dataset path provided. Note that this is a folder name, not a path, defaults to 'val2017'
-        :type images_folder: str, optional
-        :param annotations_folder: Folder name of the annotations json file. This file should be contained in the
-            dataset path provided, defaults to 'Annotations'
-        :type annotations_folder: str, optional
-        :param annotations_file: Filename of the annotations json file. This file should be contained in the
-            dataset path provided, defaults to 'pesron_keypoints_val2017.json'
-        :type annotations_file: str, optional
+        Parameters
+        ----------
+        dataset : ExternalDataset class object or DatasetIterator class object
+            Object that holds the evaluation dataset.
+        images_folder : str, optional
+            Folder name that contains the dataset images. This folder should be contained in
+            the dataset path provided. Note that this is a folder name, not a path. The default is 'val2017'.
+        annotations_folder : str, optional
+            Folder name of the annotations json file. This file should be contained in the
+            dataset path provided. The default is 'Annotations'.
+        annotations_file : str, optional
+            Filename of the annotations json file. This file should be contained in the
+            dataset path provided. The default is 'instances_val2017.json'.
 
-        :returns: returns stats regarding evaluation
-        :rtype: dict
+        Raises
+        ------
+        UserWarning
+            If there is no model, a warning is raised.
+
+        Returns
+        -------
+        test_stats : dict
+            Returns stats regarding evaluation.
+
         """
-        
         if self.model is None:
             raise UserWarning('A model should be loaded first')
-        
+
         if self.criterion is None:
             self.__create_criterion()
-        
+
         if self.postprocessors is None:
             self.__create_postprocessors()
-        
-        device  = torch.device(self.device)
-        
-        dataset_val = self.__prepare_dataset(dataset,
-                                      image_set="val",
-                                      images_folder_name=images_folder,
-                                      annotations_folder_name=annotations_folder,
-                                      annotations_file_name=annotations_file)
+
+        device = torch.device(self.device)
+
+        dataset_val = self.__prepare_dataset(
+            dataset,
+            image_set="val",
+            images_folder_name=images_folder,
+            annotations_folder_name=annotations_folder,
+            annotations_file_name=annotations_file
+            )
 
         if self.args.distributed:
             sampler_val = DistributedSampler(dataset_val, shuffle=False)
@@ -474,7 +510,7 @@ class PixelObjectDetection2DLearner(Learner):
 
         base_ds = get_coco_api_from_dataset(dataset_val)
 
-        test_stats, coco_evaluator = evaluate(
+        test_stats, _ = evaluate(
                 self.model, self.criterion, self.postprocessors,
                 data_loader_val, base_ds, device,
                 self.args.output_path
@@ -486,30 +522,35 @@ class PixelObjectDetection2DLearner(Learner):
         """
         This method is used to perform object detection on an image.
 
-        :param img: image to run inference on
-        :rtype img: engine.data.Image class object
-        
-        :return: Returns a engine.target.BoundingBoxList, 
-        which contains bounding boxes that are described by the left-top corner 
-        and its width and height, or returns an empty list if no
-            detections were made.
-        :rtype: engine.target.BoundingBoxList
+        Parameters
+        ----------
+        image : engine.data.Image class object
+            Image to run inference on.
+
+        Returns
+        -------
+        engine.target.BoundingBoxList
+            The engine.target.BoundingBoxList contains bounding boxes that are
+            described by the left-top corner and its width and height, or
+            returns an empty list if no detections were made.
+
         """
         if not isinstance(image, Image):
             image = Image(image)
         img = im.fromarray(image.numpy())
-        
-        scores, boxes = detect(img, self.infer_transform, self.model, 
+
+        scores, boxes = detect(img, self.infer_transform, self.model,
                                self.device, self.threshold, self.ort_session)
-        
+
         boxlist = []
-        for p, (xmin, ymin, xmax, ymax) in zip(scores.tolist(), boxes.tolist()):
+        for p, (xmin, ymin, xmax, ymax) in zip(
+                scores.tolist(), boxes.tolist()):
             cl = np.argmax(p)
             name = f'{self.args.classes[cl]}'
-            box = BoundingBox(name, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl])
+            box = BoundingBox(name, xmin, ymin, xmax-xmin, ymax-ymin,
+                              score=p[cl])
             boxlist.append(box)
         return BoundingBoxList(boxlist)
-        
 
     def optimize(self, do_constant_folding=False):
         """
@@ -518,7 +559,8 @@ class PixelObjectDetection2DLearner(Learner):
         Parameters
         ----------
         do_constant_folding : bool, optional
-            If true, constant folding is true in the onnnx model. The default is False.
+            If true, constant folding is true in the onnnx model. The default
+            is False.
 
         Raises
         ------
@@ -534,74 +576,91 @@ class PixelObjectDetection2DLearner(Learner):
         """
         if self.model is None:
             raise UserWarning("No model is loaded, cannot optimize. Load or train a model first.")
-        
+
         if self.ort_session is not None:
             raise UserWarning("Model is already optimized in ONNX.")
-        
+
         device = torch.device(self.device)
-        
-        x = torch.randn(1, 3, self.args.input_size[0], 
+
+        x = torch.randn(1, 3, self.args.input_size[0],
                         self.args.input_size[1]).to(device)
-        
+
         input_names = ['data']
         output_names = ['pred_logits', 'pred_boxes']
 
-        torch.onnx.export(self.model, x, 
-                  os.path.join(self.temp_path, "onnx_model_temp.onnx"), 
-                  enable_onnx_checker=True,
-                  do_constant_folding=do_constant_folding, 
-                  input_names=input_names, output_names=output_names, opset_version=11)
-        
+        torch.onnx.export(
+            self.model,
+            x,
+            os.path.join(self.temp_path, "onnx_model_temp.onnx"),
+            enable_onnx_checker=True,
+            do_constant_folding=do_constant_folding,
+            input_names=input_names,
+            output_names=output_names,
+            opset_version=11
+            )
+
         print("Exported onnx model")
-        
-        self.ort_session = ort.InferenceSession(os.path.join(self.temp_path, "onnx_model_temp.onnx"))
+
+        self.ort_session = ort.InferenceSession(
+            os.path.join(self.temp_path, "onnx_model_temp.onnx")
+            )
         return True
 
     def reset(self):
-        pass
-    
-    def download(self, panoptic=False, backbone='resnet50', dilation=False, 
-                 pretrained=True, return_postprocessor=False, 
-                 threshold=0.85, classes =[
-        'N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
-        'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A',
-        'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
-        'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack',
-        'umbrella', 'N/A', 'N/A', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
-        'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
-        'skateboard', 'surfboard', 'tennis racket', 'bottle', 'N/A', 'wine glass',
-        'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
-        'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
-        'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table', 'N/A',
-        'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
-        'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
-        'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
-        'toothbrush']):
+        """
+        Method for resetting the state of the model. Since the model does not
+        have a state, this method simply passes.
+
+        Returns
+        -------
+        None.
+
+        """
+
+    def download(
+            self, panoptic=False, backbone='resnet50', dilation=False,
+            pretrained=True, threshold=0.85,
+            classes=['N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+                     'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A',
+                     'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
+                     'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack',
+                     'umbrella', 'N/A', 'N/A', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
+                     'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
+                     'skateboard', 'surfboard', 'tennis racket', 'bottle', 'N/A', 'wine glass',
+                     'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
+                     'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
+                     'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table', 'N/A',
+                     'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
+                     'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
+                     'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
+                     ]
+            ):
         """
         Download utility for downloading detr models.
 
         Parameters
         ----------
         panoptic : bool, optional
-            This bool differentiates between coco or coco_panoptic models. 
-            If set to false, the coco model is downloaded instead of the 
+            This bool differentiates between coco or coco_panoptic models.
+            If set to false, the coco model is downloaded instead of the
             coco_panoptic model. The default is False.
         backbone : str, optional
             This str determines the backbone that is used in the model. There
-            are two possible backbones: "resnet50" and "resnet101". The 
+            are two possible backbones: "resnet50" and "resnet101". The
             default is 'resnet50'.
         dilation : bool, optional
-            If set to true, dilation is used in the model, otherwise not. The 
+            If set to true, dilation is used in the model, otherwise not. The
             default is False.
         pretrained : bool, optional
-            If set to true, a pretrained model is downloaded. The default is True.
+            If set to true, a pretrained model is downloaded. The default is
+            True.
         return_postprocessor : bool, optional
             If set to true, postprocessors are returned. The default is False.
         threshold : float, optional
             Sets the threshold for coco_panoptic models. The default is 0.85.
         classes : list of strings, optional
-            Sets the names and number of classes in the model. Coco classes are
-            used by default. The default is
+            Sets the names and number of classes in the model. Coco classes
+            are used by default. The default is
             [
         'N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
         'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A',
@@ -631,7 +690,7 @@ class PixelObjectDetection2DLearner(Learner):
         self.num_classes = len(classes)
         self.args.classes = classes
         supportedBackbones = ['resnet50', 'resnet101']
-        if backbone.lower() in supportedBackbones:            
+        if backbone.lower() in supportedBackbones:
             model_name = f'detr_{backbone}'
             self.backbone = self.args.backbone = backbone
             if dilation:
@@ -641,30 +700,38 @@ class PixelObjectDetection2DLearner(Learner):
                 self.args.dilation = False
             if panoptic:
                 model_name = model_name + '_panoptic'
-                self.model, self.postprocessors = torch.hub.load('facebookresearch/detr', model_name, 
-                                       pretrained=True, num_classes=self.num_classes, 
-                                       return_postprocessor = True,
-                                       threshold=threshold)
+                self.model, self.postprocessors = torch.hub.load(
+                    'facebookresearch/detr',
+                    model_name,
+                    pretrained=pretrained,
+                    num_classes=self.num_classes,
+                    return_postprocessor=True,
+                    threshold=threshold
+                    )
                 self.args.dataset_file = 'coco_panoptic'
             else:
-                self.model, self.postprocessors = torch.hub.load('facebookresearch/detr', model_name, 
-                                       pretrained=True, num_classes=self.num_classes, 
-                                       return_postprocessor = True)
+                self.model, self.postprocessors = torch.hub.load(
+                    'facebookresearch/detr',
+                    model_name,
+                    pretrained=pretrained,
+                    num_classes=self.num_classes,
+                    return_postprocessor=True
+                    )
                 self.args.dataset_file = 'coco'
-            
+
             device = torch.device(self.device)
-            
+
             self.model.to(device)
             self.model_without_ddp = self.model
-            
+
             if self.args.distributed:
                 self.model = torch.nn.parallel.DistributedDataParallel(self.model, device_ids=[self.args.gpu])
                 self.model_without_ddp = self.model.module
-                
+
             self.n_parameters = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         else:
             raise ValueError(self.backbone + " not a valid backbone. Supported backbones:" + str(supportedBackbones))
-    
+
     def __create_criterion(self):
         """
         Internal model for creating the criterion.
@@ -675,7 +742,7 @@ class PixelObjectDetection2DLearner(Learner):
 
         """
         self.criterion = build_criterion(self.args)
-        
+
     def __create_postprocessors(self):
         """
         Internal model for creating the postprocessors
@@ -686,7 +753,7 @@ class PixelObjectDetection2DLearner(Learner):
 
         """
         self.postprocessors = build_postprocessors(self.args)
-        
+
     def __create_optimizer(self):
         """
         Internal model for creating the optimizer.
@@ -705,18 +772,18 @@ class PixelObjectDetection2DLearner(Learner):
         ]
 
         if self.optimizer == "adamw":
-            self.optim = torch.optim.AdamW(param_dicts, lr=self.lr, weight_decay=self.args.weight_decay)
+            self.torch_optimizer = torch.optim.AdamW(param_dicts, lr=self.lr, weight_decay=self.args.weight_decay)
         elif self.optimizer == "adam":
-            self.optim = torch.optim.Adam(param_dicts, lr=self.lr, weight_decay=self.args.weight_decay)
+            self.torch_optimizer = torch.optim.Adam(param_dicts, lr=self.lr, weight_decay=self.args.weight_decay)
         elif self.optimizer == "sgd":
-            self.optim = torch.optim.SGD(param_dicts, lr=self.lr, weight_decay=self.args.weight_decay)
+            self.torch_optimizer = torch.optim.SGD(param_dicts, lr=self.lr, weight_decay=self.args.weight_decay)
         else:
             warnings.warn("Unavailbale optimizer specified, using adamw instead. Possible optimizers are; adam, adamw and sgd")
-            self.optim = torch.optim.AdamW(param_dicts, lr=self.lr, weight_decay=self.weight_decay)
-            
+            self.torch_optimizer = torch.optim.AdamW(param_dicts, lr=self.lr, weight_decay=self.weight_decay)
+
     def __create_scheduler(self):
-        self.lr_scheduler = torch.optim.lr_scheduler.StepLR(self.optim, self.args.lr_drop)
-    
+        self.lr_scheduler = torch.optim.lr_scheduler.StepLR(self.torch_optimizer, self.args.lr_drop)
+
     def __create_model(self):
         """
         Internal method for creating a model, optimizer and scheduler based
@@ -728,7 +795,7 @@ class PixelObjectDetection2DLearner(Learner):
 
         """
         self.ort_session = None
-        
+
         device = torch.device(self.device)
         self.model, self.criterion, self.postprocessors = build_model(self.args)
         self.model.to(device)
@@ -737,7 +804,7 @@ class PixelObjectDetection2DLearner(Learner):
         if self.args.distributed:
             self.model = torch.nn.parallel.DistributedDataParallel(self.model, device_ids=[self.args.gpu])
             self.model_without_ddp = self.model.module
-        
+
         self.n_parameters = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
     def __prepare_dataset(self,
@@ -745,7 +812,8 @@ class PixelObjectDetection2DLearner(Learner):
                           image_set="train",
                           images_folder_name="train2017",
                           annotations_folder_name="Annotations",
-                          annotations_file_name="instances_train2017.json"):
+                          annotations_file_name="instances_train2017.json"
+                          ):
         """
         This internal method prepares the dataset depending on what type of dataset is provided.
 
@@ -757,33 +825,41 @@ class PixelObjectDetection2DLearner(Learner):
         If the dataset is of the DatasetIterator format, then it's a custom implementation of a dataset and all
         required operations should be handled by the user, so the dataset object is just returned.
 
-        :param dataset: the dataset
-        :type dataset: ExternalDataset class object or DatasetIterator class object
-        :param image_set: Specifies whether the dataset is a train or validation dataset, possible values: "train" or "val"
-        :type image_set: str
-        :param images_folder_name: the name of the folder that contains the image files, defaults to "train2017"
-        :type images_folder_name: str, optional
-        :param annotations_folder_name: the folder that contains the original annotations, defaults
-            to "Annotations"
-        :type annotations_folder_name: str, optional
-        :param annotations_file_name: the .json file that contains the original annotations, defaults
-            to "instances_train2017.json"
-        :type annotations_file_name: str, optional
-        
-        :raises UserWarning: UserWarnings with appropriate messages are raised for wrong type of dataset, or wrong paths
-            and filenames
+        Parameters
+        ----------
+        dataset : ExternalDataset class object or DatasetIterator class object
+            The dataset.
+        image_set : str, optional
+            Specifies whether the dataset is a train or validation dataset, possible values: "train" or "val".
+            The default is "train".
+        images_folder_name : str, optional
+            The name of the folder that contains the image files. The default is "train2017".
+        annotations_folder_name : str, optional
+            The folder that contains the original annotations. The default is "Annotations".
+        annotations_file_name : str, optional
+            The .json file that contains the original annotations. The default is "instances_train2017.json".
 
-        :return: returns CocoTrainDataset object or custom DatasetIterator implemented by user
-        :rtype: CocoDetection class object or DatasetIterator instance
+        Raises
+        ------
+        UserWarning
+            UserWarnings with appropriate messages are raised for wrong type of dataset, or wrong paths
+            and filenames.
+
+        Returns
+        -------
+        CocoTrainDataset object or custom DatasetIterator implemented by user
+            CocoDetection class object or DatasetIterator instance.
+
         """
-
+        if not (isinstance(dataset, ExternalDataset) or isinstance(dataset, DatasetIterator)):
+            raise UserWarning("dataset must be an ExternalDataset or a DatasetIterator")
         if isinstance(dataset, ExternalDataset):
             if dataset.dataset_type.lower() not in ["coco", "coco_panoptic"]:
                 raise UserWarning("dataset_type must be \"COCO\" or \"COCO_PANOPTIC\"")
 
             # Get images folder
             images_folder = os.path.join(dataset.path, images_folder_name)
-            if not(os.path.isdir(images_folder)):
+            if not os.path.isdir(images_folder):
                 raise UserWarning("Didn't find \"" + images_folder_name +
                                   "\" folder in the dataset path provided.")
 
@@ -794,12 +870,11 @@ class PixelObjectDetection2DLearner(Learner):
             else:
                 annotations_folder = os.path.join(dataset.path, annotations_folder_name)
                 annotations_file = os.path.join(annotations_folder, annotations_file_name)
-            if not(os.path.isfile(annotations_file)):
+            if not os.path.isfile(annotations_file):
                 raise UserWarning("Didn't find \"" + annotations_file +
                                   "\" file in the dataset path provided.")
 
             return build_dataset(images_folder, annotations_folder,
                                  annotations_file, image_set, self.args.masks,
                                  dataset.dataset_type.lower())
-        elif isinstance(dataset, DatasetIterator):
-            return dataset
+        return dataset

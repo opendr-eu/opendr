@@ -3,9 +3,9 @@ import requests
 from perception.object_detection_2d.pixel_object_detection_2d_learner import PixelObjectDetection2DLearner
 from engine.data import Image
 from engine.datasets import ExternalDataset
-from util.plot_utils import plot_logs
+# from algorithm.util.plot_utils import plot_logs
 from pathlib import Path
-from util.plot_utils import plot_results
+# from algorithm.util.plot_utils import plot_results
 
 def main():
     learner = PixelObjectDetection2DLearner(iters=1)
@@ -26,7 +26,7 @@ def main():
                 train_annotations_file="instances_train2017_small.json", 
                 train_images_folder="train_2017_small", logging_path="/tmp", 
                 val_annotations_file="instances_train2017_small.json", 
-                val_images_folder="train_2017_small")
+                val_images_folder="train_2017_small", verbose=True)
     # log_directory = [Path("/tmp")]
     # fields_of_interest = (
     #     'loss',
