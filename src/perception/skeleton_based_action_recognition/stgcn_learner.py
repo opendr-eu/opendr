@@ -55,9 +55,9 @@ class SpatioTemporalGCNLearner(Learner):
                  start_epoch=0, dataset_name='nturgbd_cv',
                  method_name='stgcn', stbln_symmetric=False, num_frames=300, num_subframes=100):
         super(SpatioTemporalGCNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
-                                           checkpoint_after_iter=checkpoint_after_iter,
-                                           checkpoint_load_iter=checkpoint_load_iter,
-                                           temp_path=temp_path, device=device)
+                                                       checkpoint_after_iter=checkpoint_after_iter,
+                                                       checkpoint_load_iter=checkpoint_load_iter,
+                                                       temp_path=temp_path, device=device)
         self.device = device
         self.device_ind = device_ind
         self.parent_dir = temp_path

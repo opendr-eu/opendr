@@ -60,7 +60,7 @@ def read_skeleton(file):
 
 def read_xyz(file, max_body=2, num_joint=25):
     seq_info = read_skeleton(file)
-    data = np.zeros((3, seq_info['numFrame'], num_joint, max_body)) # C, T, V, M
+    data = np.zeros((3, seq_info['numFrame'], num_joint, max_body))  # C, T, V, M
     for n, f in enumerate(seq_info['frameInfo']):
         for m, b in enumerate(f['bodyInfo']):
             for j, v in enumerate(b['jointInfo']):
@@ -162,7 +162,7 @@ def skeleton_preprocess(data):
 
 
 def gendata(data_path, out_path, ignored_sample_path=None, benchmark='xview', part='eval'):
-    if ignored_sample_path != None:
+    if ignored_sample_path is not None:
         with open(ignored_sample_path, 'r') as f:
             ignored_samples = [
                 line.strip() + '.skeleton' for line in f.readlines()
