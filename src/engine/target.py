@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Union
 import numpy as np
+import torch
 
 
 class BaseTarget:
@@ -44,6 +46,55 @@ class Target(BaseTarget):
         self.data = None
         self.confidence = None
         self.action = None
+
+
+class Category(Target):
+    """
+    This target is used for 1-of-K categorization / classification problems.
+    """
+
+    def __init__(self, data: Union[int, torch.Tensor, np.ndarray], num_classes: int=None):
+        """Initialize a category.
+
+        Args:
+            data (Union[int, torch.Tensor, np.ndarray]):
+                Class integer or one-dimensional array / tensor of class probabilities.
+            num_classes (bool, optional):
+                Number of classes. Must be specified only if `data` is an integer. Defaults to None.
+        """
+        super().__init__()
+        self.data = Category.__to_one_hot(data, num_classes)
+        assert (
+            torch.isclose(torch.sum(self.data), torch.tensor(1.0))
+        ), "Category probabilities should sum to 1.0"
+        self.num_classes = len(self.data)
+
+    def __str__(self):
+        return str(self.data)
+
+    @staticmethod
+    def __to_one_hot(
+        data: Union[int, torch.Tensor, np.ndarray],
+        num_classes: int
+    ) -> torch.Tensor:
+        if type(data) == torch.Tensor:
+            return data
+        if type(data) == np.ndarray:
+            return torch.tensor(data, dtype=torch.float32)
+        assert (
+            type(data) == int and type(num_classes) == int and data >= 0 and num_classes > 0
+        ), "Inputs should be non-negative integers"
+        output = torch.nn.functional.one_hot(torch.tensor(data), num_classes).float()
+        return output
+
+    @property
+    def prediction(self) -> int:
+        """Index of the predicted class
+
+        Returns:
+            int: index the predicted class
+        """
+        return int(self.data.argmax(dim=0))
 
 
 class Keypoint(Target):
@@ -90,10 +141,237 @@ class Pose(Target):
             out_string += name + ": " + str(kpt) + "\n"
         return out_string
 
+    def __getitem__(self, key):
+        """  Allows for accessing keypoint position using either integers or keypoint names """
+        if isinstance(key, int):
+            if key >= Pose.num_kpts or key < 0:
+                raise ValueError('Pose supports ' + str(Pose.num_kpts) + ' keypoints. Keypoint id ' + str(
+                    key) + ' is not within the supported range')
+            else:
+                return self.data[key]
+        elif isinstance(key, str):
+            try:
+                position = Pose.kpt_names.index(key)
+                return self.data[position]
+            except:
+                raise ValueError('Keypoint ' + key + ' not supported.')
+        else:
+            raise ValueError('Only string and integers are supported for retrieving keypoints.')
+
+
+class BoundingBox(Target):
+    """
+    This target is used for 2D Object Detection.
+    A bounding box is described by the left-top corner and its width and height.
+    """
+    def __init__(
+        self,
+        name,
+        left,
+        top,
+        width,
+        height,
+        score=0,
+    ):
+        super().__init__()
+        self.name = name
+        self.left = left
+        self.top = top
+        self.width = width
+        self.height = height
+        self.confidence = score
+
+    def mot(self, with_confidence=True, frame=-1):
+
+        if with_confidence:
+            result = np.array([
+                self.frame,
+                self.left,
+                self.top,
+                self.width,
+                self.height,
+                self.confidence,
+            ], dtype=np.float32)
+        else:
+            result = np.array([
+                self.frame,
+                self.left,
+                self.top,
+                self.width,
+                self.height,
+            ], dtype=np.float32)
+
+        return result
+
+    def __repr__(self):
+        return "BoundingBox " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
+
+
+class BoundingBoxList(Target):
+    """
+    This target is used for 2D Object Detection.
+    A bounding box is described by the left-top corner and its width and height.
+    """
+    def __init__(
+        self,
+        boxes,
+    ):
+        super().__init__()
+        self.data = boxes
+        self.confidence = np.mean([box.confidence for box in self.data])
+
+    def mot(self, with_confidence=True):
+
+        result = np.array([
+            box.mot(with_confidence) for box in self.data
+        ])
+
+        return result
+
+    @property
+    def boxes(self):
+        return self.data
+
+    def __getitem__(self, idx):
+        return self.boxes[idx]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __repr__(self):
+        return "BoundingBoxList " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
+
+
+class TrackingAnnotation(Target):
+    """
+    This target is used for 2D Object Tracking.
+    A tracking bounding box is described by id, the left-top corner and its width and height.
+    """
+    def __init__(
+        self,
+        name,
+        left,
+        top,
+        width,
+        height,
+        id,
+        score=0,
+        frame=-1,
+    ):
+        super().__init__()
+        self.name = name
+        self.left = left
+        self.top = top
+        self.width = width
+        self.height = height
+        self.id = id
+        self.confidence = score
+        self.frame = frame
+
+    @staticmethod
+    def from_mot(data):
+        return TrackingAnnotation(
+            data[2],
+            data[3],
+            data[4],
+            data[5],
+            data[1],
+            data[6] if len(data) > 6 else 0,
+            data[0],
+        )
+
+    def mot(self, with_confidence=True):
+
+        if with_confidence:
+            result = np.array([
+                self.frame,
+                self.id,
+                self.left,
+                self.top,
+                self.width,
+                self.height,
+                self.confidence,
+            ], dtype=np.float32)
+        else:
+            result = np.array([
+                self.frame,
+                self.id,
+                self.left,
+                self.top,
+                self.width,
+                self.height,
+            ], dtype=np.float32)
+
+        return result
+
+    def boudning_box(self):
+        return BoundingBox(self.left, self.top, self.width, self.height, self.confidence, self.frame)
+
+    def __repr__(self):
+        return "TrackingAnnotation " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
+
+
+class TrackingAnnotationList(Target):
+    """
+    This target is used for 2D Object Tracking.
+    A bounding box is described by the left and top corners and its width and height.
+    """
+    def __init__(
+        self,
+        boxes,
+    ):
+        super().__init__()
+        self.data = boxes
+        self.confidence = np.mean([box.confidence for box in self.data])
+
+    @staticmethod
+    def from_mot(data):
+        boxes = []
+        for box in data:
+            boxes.append(TrackingAnnotation.from_mot(box))
+
+        return TrackingAnnotationList(boxes)
+
+    def mot(self, with_confidence=True):
+
+        result = np.array([
+            box.mot(with_confidence) for box in self.data
+        ])
+
+        return result
+
+    def boudning_box_list(self):
+        return BoundingBoxList([box.boudning_box() for box in self.data])
+
+    @property
+    def boxes(self):
+        return self.data
+
+    def __getitem__(self, idx):
+        return self.boxes[idx]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __repr__(self):
+        return "TrackingAnnotationList " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
+
 
 class BoundingBox3D(Target):
     """
-    This target is used for 3D Object Detection.
+    This target is used for 3D Object Detection and Tracking.
     A bounding box is described by its location (x, y, z), dimensions (w, h, d) and rotation (along vertical y axis).
     Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
     truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
@@ -139,6 +417,38 @@ class BoundingBox3D(Target):
         result["score"] = np.array([self.confidence])
 
         return result
+
+    @property
+    def name(self):
+        return self.data["name"]
+
+    @property
+    def truncated(self):
+        return self.data["truncated"]
+
+    @property
+    def occluded(self):
+        return self.data["occluded"]
+
+    @property
+    def alpha(self):
+        return self.data["alpha"]
+
+    @property
+    def bbox2d(self):
+        return self.data["bbox2d"]
+
+    @property
+    def dimensions(self):
+        return self.data["dimensions"]
+
+    @property
+    def location(self):
+        return self.data["location"]
+
+    @property
+    def rotation_y(self):
+        return self.data["rotation_y"]
 
     def __repr__(self):
         return "BoundingBox3D " + str(self)
@@ -231,6 +541,13 @@ class BoundingBox3DList(Target):
 
         return result
 
+    @property
+    def boxes(self):
+        return self.data
+
+    def __getitem__(self, idx):
+        return self.boxes[idx]
+
     def __len__(self):
         return len(self.data)
 
@@ -239,6 +556,206 @@ class BoundingBox3DList(Target):
 
     def __str__(self):
         return str(self.kitti())
+
+
+class TrackingAnnotation3D(BoundingBox3D):
+    """
+    This target is used for 3D Object Tracking.
+    A tracking bounding box is described by frame, id, its location (x, y, z),
+    dimensions (w, h, d) and rotation (along vertical y axis).
+    Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
+    truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
+    observation angle of an object (alpha).
+    """
+    def __init__(
+        self,
+        name,
+        truncated,
+        occluded,
+        alpha,
+        bbox2d,
+        dimensions,
+        location,
+        rotation_y,
+        id,
+        score=0,
+        frame=-1,
+    ):
+        self.data = {
+            "name": name,
+            "truncated": truncated,
+            "occluded": occluded,
+            "alpha": alpha,
+            "bbox2d": bbox2d,
+            "dimensions": dimensions,
+            "location": location,
+            "rotation_y": rotation_y,
+            "id": id,
+            "frame": frame,
+        }
+        self.confidence = score
+
+    def kitti(self, with_tracking_info=True):
+
+        result = {}
+
+        result["name"] = np.array([self.data["name"]])
+        result["truncated"] = np.array([self.data["truncated"]])
+        result["occluded"] = np.array([self.data["occluded"]])
+        result["alpha"] = np.array([self.data["alpha"]])
+        result["bbox"] = np.array([self.data["bbox2d"]])
+        result["dimensions"] = np.array([self.data["dimensions"]])
+        result["location"] = np.array([self.data["location"]])
+        result["rotation_y"] = np.array([self.data["rotation_y"]])
+        result["score"] = np.array([self.confidence])
+
+        if with_tracking_info:
+            result["id"] = np.array([self.data["id"]])
+            result["frame"] = np.array([self.data["frame"]])
+
+        return result
+
+    @property
+    def frame(self):
+        return self.data["frame"]
+
+    @property
+    def id(self):
+        return self.data["id"]
+
+    def bounding_box_3d(self):
+        return BoundingBox3D(
+            self.name, self.truncated, self.occluded, self.alpha,
+            self.bbox2d, self.dimensions, self.location, self.rotation_y,
+            self.confidence
+        )
+
+    def __repr__(self):
+        return "TrackingAnnotation3D " + str(self)
+
+    def __str__(self):
+        return str(self.kitti(True))
+
+
+class TrackingAnnotation3DList(Target):
+    """
+    This target is used for 3D Object Tracking. It contains a list of TrackingAnnotation3D targets.
+    A tracking bounding box is described by frame, id, its location (x, y, z),
+    dimensions (l, h, w) and rotation (along vertical (y) axis).
+    Additional fields are used to describe confidence (score), 2D projection of the box on camera image (bbox2d),
+    truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
+    observation angle of an object (alpha).
+    """
+    def __init__(
+        self,
+        tracking_bounding_boxes_3d
+    ):
+        super().__init__()
+        self.data = tracking_bounding_boxes_3d
+        self.confidence = np.mean([box.confidence for box in self.data])
+
+    @staticmethod
+    def from_kitti(boxes_kitti, ids, frames=None):
+
+        count = len(boxes_kitti["name"])
+
+        if frames is None:
+            frames = [-1] * count
+
+        tracking_boxes_3d = []
+
+        for i in range(count):
+            box3d = TrackingAnnotation3D(
+                boxes_kitti["name"][i],
+                boxes_kitti["truncated"][i],
+                boxes_kitti["occluded"][i],
+                boxes_kitti["alpha"][i],
+                boxes_kitti["bbox"][i],
+                boxes_kitti["dimensions"][i],
+                boxes_kitti["location"][i],
+                boxes_kitti["rotation_y"][i],
+                ids[count],
+                boxes_kitti["score"][i],
+                frames[count],
+            )
+
+            tracking_boxes_3d.append(box3d)
+
+        return TrackingAnnotation3DList(tracking_boxes_3d)
+
+    def kitti(self, with_tracking_info=True):
+
+        result = {
+            "name": [],
+            "truncated": [],
+            "occluded": [],
+            "alpha": [],
+            "bbox": [],
+            "dimensions": [],
+            "location": [],
+            "rotation_y": [],
+            "score": [],
+        }
+
+        if with_tracking_info:
+            result["id"] = []
+            result["frame"] = []
+
+        if len(self.data) == 0:
+            return result
+        elif len(self.data) == 1:
+            return self.data[0].kitti()
+        else:
+
+            for box in self.data:
+                result["name"].append(box.data["name"])
+                result["truncated"].append(box.data["truncated"])
+                result["occluded"].append(box.data["occluded"])
+                result["alpha"].append(box.data["alpha"])
+                result["bbox"].append(box.data["bbox2d"])
+                result["dimensions"].append(box.data["dimensions"])
+                result["location"].append(box.data["location"])
+                result["rotation_y"].append(box.data["rotation_y"])
+                result["score"].append(box.confidence)
+
+                if with_tracking_info:
+                    result["id"].append(box.data["id"])
+                    result["frame"].append(box.data["frame"])
+
+            result["name"] = np.array(result["name"])
+            result["truncated"] = np.array(result["truncated"])
+            result["occluded"] = np.array(result["occluded"])
+            result["alpha"] = np.array(result["alpha"])
+            result["bbox"] = np.array(result["bbox"])
+            result["dimensions"] = np.array(result["dimensions"])
+            result["location"] = np.array(result["location"])
+            result["rotation_y"] = np.array(result["rotation_y"])
+            result["score"] = np.array(result["score"])
+
+            if with_tracking_info:
+                result["id"] = np.array(result["id"])
+                result["frame"] = np.array(result["frame"])
+
+        return result
+
+    @property
+    def boxes(self):
+        return self.data
+
+    def bounding_box_3d_list(self):
+        return BoundingBox3DList([box.bounding_box_3d() for box in self.data])
+
+    def __getitem__(self, idx):
+        return self.boxes[idx]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __repr__(self):
+        return "TrackingAnnotation3DList " + str(self)
+
+    def __str__(self):
+        return str(self.kitti(True))
 
 
 class SpeechCommand(Target):

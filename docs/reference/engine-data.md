@@ -72,9 +72,10 @@ Bases: `engine.data.Data`
 A class used for representing image data.
 
 The [Image](#class_engine.data.Image) class has the following public methods:
-#### Image(data=None)
+#### Image(data=None, dtype=np.uint8)
   Construct a new [Image](#class_engine.data.Image) object based on *data*.
   *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
+  *dtype* is expected to be a [NumPy](https://numpy.org) data type.
 
 #### data()
   Return *data* argument.
@@ -84,6 +85,29 @@ The [Image](#class_engine.data.Image) class has the following public methods:
   Set the internal *data* argument.
   *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array, where the
   dimensions can be organized as e.g. (channels, width, height).
+
+#### numpy()
+  Return a  [NumPy](https://numpy.org)-compatible representation of data.
+  Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+
+
+### class engine.data.Video
+Bases: `engine.data.Data`
+
+A class used for representing video data.
+
+The [Video](#class_engine.data.Video) class has the following public methods:
+#### Video(data=None)
+  Construct a new [Video](#class_engine.data.Video) object based on *data*.
+  *data* is expected to be a 4-D array of shape (channels, time_steps, height, width).
+
+#### data()
+  Return *data* argument.
+  Return type is a float32 [NumPy](https://numpy.org) array.
+
+#### data(data)
+  Set the internal *data* argument.
+  *data* is expected to be a 4-D array that can be casted into a 4-D [NumPy](https://numpy.org) array, where the dimensions can be organized as e.g. (channels, width, height).
 
 #### numpy()
   Return a  [NumPy](https://numpy.org)-compatible representation of data.
