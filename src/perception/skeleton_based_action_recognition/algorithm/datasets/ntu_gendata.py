@@ -84,7 +84,8 @@ def fill_empty_frames(data):
                         if frame.sum() == 0:
                             if person[f:].sum() == 0:
                                 rest = len(person) - f
-                                pad = person[0:f][:rest]
+                                num = int(np.ceil(rest / f))
+                                pad = np.concatenate([person[0:f] for _ in range(num)], 0)[:rest]
                                 data[s, p, f:] = pad
                                 break
     return data
