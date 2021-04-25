@@ -17,7 +17,7 @@ import shutil
 import os
 import torch
 import numpy as np
-from perception.skeleton_based_action_recognition.pstgcn_learner import PSTGCNLearner
+from perception.skeleton_based_action_recognition.pstgcn_learner import ProgressiveSpatioTemporalGCNLearner
 from engine.datasets import ExternalDataset
 
 
@@ -45,15 +45,17 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
     def setUpClass(cls):
         cls.temp_dir = PATH_
         cls.logging_path = LOG_PATH_
-        cls.pstgcn_action_classifier = PSTGCNLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
-                                                     checkpoint_after_iter=1, val_batch_size=1,
-                                                     dataset_name='nturgbd_cv', experiment_name='pstgcn_nturgbd',
-                                                     blocksize=20, numblocks=1, numlayers=1, topology=[],
-                                                     layer_threshold=1e-4, block_threshold=1e-4)
+        cls.pstgcn_action_classifier = ProgressiveSpatioTemporalGCNLearner(
+                                       device="cpu", temp_path=cls.temp_dir,
+                                       batch_size=1, epochs=1,
+                                       checkpoint_after_iter=1, val_batch_size=1,
+                                       dataset_name='nturgbd_cv', experiment_name='pstgcn_nturgbd',
+                                       blocksize=20, numblocks=1, numlayers=1, topology=[],
+                                       layer_threshold=1e-4, block_threshold=1e-4)
         cls.experiment_name = 'pstgcn_nturgbd'
         # Download all required files for testing
         cls.Pretrained_MODEL_PATH = cls.pstgcn_action_classifier.download(
-            mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models"))
+            mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models"), file_name='pstgcn_nturgbd-1-1')
         cls.Train_DATASET_PATH = cls.pstgcn_action_classifier.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data"))
         cls.Val_DATASET_PATH = cls.pstgcn_action_classifier.download(

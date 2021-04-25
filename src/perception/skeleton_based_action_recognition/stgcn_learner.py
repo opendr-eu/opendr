@@ -37,7 +37,7 @@ from urllib.request import urlretrieve
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
 from engine.data import SkeletonSequence
-from engine.target import ActionCategory
+from engine.target import Category
 from engine.constants import OPENDR_SERVER_URL
 
 # OpenDR skeleton_based_action_recognition imports
@@ -47,14 +47,14 @@ from perception.skeleton_based_action_recognition.algorithm.models.stbln import 
 from perception.skeleton_based_action_recognition.algorithm.datasets.feeder import Feeder
 
 
-class STGCNLearner(Learner):
+class SpatioTemporalGCNLearner(Learner):
     def __init__(self, lr=1e-1, batch_size=128, optimizer_name='sgd', lr_schedule='',
                  checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path='temp',
                  device='cuda', num_workers=32, epochs=50, experiment_name='stgcn_nturgbd',
                  device_ind=[0], val_batch_size=256, drop_after_epoch=[30, 40],
                  start_epoch=0, dataset_name='nturgbd_cv',
                  method_name='stgcn', stbln_symmetric=False, num_frames=300, num_subframes=100):
-        super(STGCNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
+        super(SpatioTemporalGCNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                            checkpoint_after_iter=checkpoint_after_iter,
                                            checkpoint_load_iter=checkpoint_load_iter,
                                            temp_path=temp_path, device=device)
@@ -290,6 +290,9 @@ class STGCNLearner(Learner):
         :type val_data_filename: str, optional
         :param val_labels_filename: the file name of val labels which is placed in the dataset path.
         :type val_labels_filename: str, optional
+        :param skeleton_data_type: the data stream that should be used for training and evaluation. Defalut is set to
+        'joint'
+        :type skeleton_data_type: str
         :param save_score: if set to True, it saves the classification score of all samples in differenc classes
         in a log file. Default to False.
         :type save_score: bool, optional
@@ -463,9 +466,9 @@ class STGCNLearner(Learner):
             output, l1 = output
         else:
             output = output
-        value, predict_label = torch.max(output.data, 1)
-        category = ActionCategory(predict_label, value)
-        return category.confidence
+        # value, predict_label = torch.max(output.data, 1)
+        category = Category(output.data)
+        return category.prediction()
 
     def optimize(self, do_constant_folding=False):
         """
@@ -652,11 +655,24 @@ class STGCNLearner(Learner):
                           labels_filename='val_labels.pkl', skeleton_data_type='joint',
                           verbose=True, silent=True):
         """
-        :param scores: a list of score arrays. Each array in the list contains the evaluation results for a dataset.
-        :type scores: a list of score arrays.
         :param dataset: ExternalDataset class object.
         :type dataset: object that holds the validation dataset
+        :param scores: a list of score arrays. Each array in the list contains the evaluation results for a dataset.
+        :type scores: a list of score arrays.
+        :param data_filename: the data file name which is placed in the dataset path.
+        :type data_filename: str, optional
+        :param labels_filename: the labels file name which is placed in the dataset path.
+        :type labels_filename: str, optional
+        :param skeleton_data_type: the data stream that should be used for training and evaluation. Defalut is set to
+        'joint'.
+        :type skeleton_data_type: str, optional
+        :param verbose: if set to True, enables the maximum verbosity, defaults to 'True'
+        :type verbose: bool, optional
+        :param silent: if set to True, disables all printing of training progress reports and other information
+            to STDOUT, defaults to 'False'
+        :type silent: bool, optional
         :return: the top_k classification results
+
         """
         valdata = self.__prepare_dataset(dataset,
                                          data_filename=data_filename,
@@ -685,7 +701,8 @@ class STGCNLearner(Learner):
         return total_score
 
     def download(self, path=None, mode="pretrained", verbose=False,
-                 url=OPENDR_SERVER_URL + "perception/skeleton_based_action_recognition/"):
+                 url=OPENDR_SERVER_URL + "perception/skeleton_based_action_recognition/",
+                 file_name='stgcn_nturgbd-0-10'):
         """
         Download utility for various skeleton_based_action_recognition components. Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
@@ -700,6 +717,8 @@ class STGCNLearner(Learner):
         :type verbose: bool, optional
         :param url: URL of the FTP server, defaults to OpenDR FTP URL
         :type url: str, optional
+        :param file_name: the name of the file containing the pretrained model.
+        :type file_name: str
         """
         valid_modes = ["pretrained", "train_data", "val_data", "test_data"]
         if mode not in valid_modes:
@@ -720,10 +739,10 @@ class STGCNLearner(Learner):
                 print("Downloading pretrained model...")
             # download the .json model
             if not os.path.exists(os.path.join(path, '{}_checkpoints'.format(self.experiment_name),
-                                               self.experiment_name+'-0-10.json')):
-                file_url = os.path.join(url, 'pretrained_models', self.experiment_name+'-0-10.json')
+                                               file_name+'.json')):
+                file_url = os.path.join(url, 'pretrained_models', file_name, file_name+'.json')
                 urlretrieve(file_url, os.path.join(path, '{}_checkpoints'.format(self.experiment_name),
-                                                   self.experiment_name+'-0-10.json'))
+                                                   file_name+'.json'))
                 if verbose:
                     print("Downloaded metadata json.")
             else:
@@ -731,10 +750,10 @@ class STGCNLearner(Learner):
                     print("Metadata json file already exists.")
             # download the .pt model
             if not os.path.exists(os.path.join(path, '{}_checkpoints'.format(self.experiment_name),
-                                               self.experiment_name+'-0-10.pt')):
-                file_url = os.path.join(url, 'pretrained_models', self.experiment_name+'-0-10.pt')
+                                               file_name+'.pt')):
+                file_url = os.path.join(url, 'pretrained_models', file_name, file_name+'.pt')
                 urlretrieve(file_url, os.path.join(path, '{}_checkpoints'.format(self.experiment_name),
-                                                   self.experiment_name+'-0-10.pt'))
+                                                   file_name+'.pt'))
             else:
                 if verbose:
                     print("Trained model.pt file already exists.")

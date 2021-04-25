@@ -17,7 +17,7 @@ import shutil
 import os
 import torch
 import numpy as np
-from perception.skeleton_based_action_recognition.stgcn_learner import STGCNLearner
+from perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
 from engine.datasets import ExternalDataset
 
 
@@ -45,14 +45,16 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
     def setUpClass(cls):
         cls.temp_dir = PATH_
         cls.logging_path = LOG_PATH_
-        cls.stbln_action_classifier = STGCNLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
-                                                   checkpoint_after_iter=1, val_batch_size=1,
-                                                   dataset_name='nturgbd_cv', experiment_name='stbln_nturgbd',
-                                                   method_name='stbln', stbln_symmetric=False)
+        cls.stbln_action_classifier = SpatioTemporalGCNLearner(device="cpu", temp_path=cls.temp_dir,
+                                                               batch_size=1, epochs=1,
+                                                               checkpoint_after_iter=1, val_batch_size=1,
+                                                               dataset_name='nturgbd_cv',
+                                                               experiment_name='stbln_nturgbd',
+                                                               method_name='stbln', stbln_symmetric=False)
         cls.experiment_name = 'stbln_nturgbd'
         # Download all required files for testing
         cls.Pretrained_MODEL_PATH = cls.stbln_action_classifier.download(
-            mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models"))
+            mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models"), file_name='stbln_nturgbd-0-10')
         cls.Train_DATASET_PATH = cls.stbln_action_classifier.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data"))
         cls.Val_DATASET_PATH = cls.stbln_action_classifier.download(

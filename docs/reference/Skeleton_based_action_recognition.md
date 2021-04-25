@@ -1,28 +1,42 @@
 ## skeleton_based_action_recognition module
 
-The *skeleton_based_action_recognition* module contains the *STGCNLearner* and *PSTGCNLearner* classes, which inherits from the abstract class *Learner*.
+The *skeleton_based_action_recognition* module contains the *SpatioTemporalGCNLearner* and *ProgressiveSpatioTemporalGCNLearner* classes, which inherits from the abstract class *Learner*.
 
-### Class STGCNLearner
+#### Data preparation  
+  Download the NTU-RGB+D skeleton data from [here](https://github.com/shahroudy/NTURGB-D) and the kinetics-skeleton dataset from [here](https://drive.google.com/drive/folders/1SPQ6FmFsjGg3f59uCWfdUWI-5HJM_YhZ). 
+  Then run the following function to preprocess the NTU-RGB+D and Kinetics skeleton data for ST-GCN methods: 
+  
+  ```python
+  from OpenDR.perception.skeleton_based_action_recognition.algorithm.datasets import ntu_gendata
+  from OpenDR.perception.skeleton_based_action_recognition.algorithm.datasets import kinetics_gendata
+  python ntu_gendata.py --data_path ./data/nturgbd_raw_skeletons --ignored_sample_path ./algorithm/datasets/ntu_samples_with_missing_skeletons.txt --out_folder ./data/preprocessed_nturgbd
+  python kinetics_gendata.py --data_path ./data/kinetics_raw_skeletons --out_folder ./data/preprocessed_kinetics_skeletons
+  ```
+  You need to specify the path of the downloaded data as `--data_path` and the path of the processed data as `--out_folder`. 
+  ntu_samples_with_missing_skeletons.txt provides the NTU-RGB+D sample indices which don't contain any skeleton. 
+  You need to specify the path of this file with --ignored_sample_path.
+
+### Class SpatioTemporalGCNLearner
 Bases: `engine.learners.Learner`
 
-The *STGCNLearner* class is a wrapper of the ST-GCN [[1]](#1) and the proposed methods TA-GCN [[2]](#2) and ST-BLN [[3]](#3) for Skeleton-based Human 
+The *SpatioTemporalGCNLearner* class is a wrapper of the ST-GCN [[1]](#1) and the proposed methods TA-GCN [[2]](#2) and ST-BLN [[3]](#3) for Skeleton-based Human 
 Action Recognition.
 This implementation of ST-GCN can be found in [OpenMMLAB toolbox](
 https://github.com/open-mmlab/mmskeleton/tree/b4c076baa9e02e69b5876c49fa7c509866d902c7).
 It can be used to perform the baseline method ST-GCN and the proposed methods TA-GCN [[2]](#2) and ST-BLN [[3]](#3) for skeleton-based action recognition. 
 The TA-GCN and ST-BLN methods are proposed on top of ST-GCN and make it more efficient in terms of number of model parameters and floating point operations. 
 
-The [STGCNLearner](#src.perception.skeleton_based_action_recognition.stgcn_learner.py) class has the
+The [SpatioTemporalGCNLearner](#src.perception.skeleton_based_action_recognition.stgcn_learner.py) class has the
 following public methods:
 
-#### `STGCNLearner` constructor
+#### `SpatioTemporalGCNLearner` constructor
 ```python
-STGCNLearner(self, lr, batch_size, optimizer_name, lr_schedule,
-             checkpoint_after_iter, checkpoint_load_iter, temp_path,
-             device, num_workers, epochs, experiment_name,
-             device_ind, val_batch_size, drop_after_epoch,
-             start_epoch, dataset_name,method_name, 
-             stbln_symmetric, num_frames, num_subframes=100)
+SpatioTemporalGCNLearner(self, lr, batch_size, optimizer_name, lr_schedule,
+                         checkpoint_after_iter, checkpoint_load_iter, temp_path,
+                         device, num_workers, epochs, experiment_name,
+                         device_ind, val_batch_size, drop_after_epoch,
+                         start_epoch, dataset_name,method_name, 
+                         stbln_symmetric, num_frames, num_subframes)
 ```
 
 Constructor parameters:
@@ -68,12 +82,12 @@ Constructor parameters:
   Specifies the number of sub-frames that are going to be selected by the tagcn model. This parameter is used if the method_name is 'tagcn'.   
 
 
-#### `STGCNLearner.fit`
+#### `SpatioTemporalGCNLearner.fit`
 ```python
-STGCNLearner.fit(self, dataset, val_dataset, logging_path, silent, verbose,
-                 momentum, nesterov, weight_decay, train_data_filename,
-                 train_labels_filename, val_data_filename,
-                 val_labels_filename, skeleton_data_type)
+SpatioTemporalGCNLearner.fit(self, dataset, val_dataset, logging_path, silent, verbose,
+                             momentum, nesterov, weight_decay, train_data_filename,
+                             train_labels_filename, val_data_filename,
+                             val_labels_filename, skeleton_data_type)
 ```
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
@@ -113,11 +127,11 @@ Parameters:
   - **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*  
     The data stream that should be used for training and evaluation. 
     
-#### `STGCNLearner.eval`
+#### `SpatioTemporalGCNLearner.eval`
 ```python
-STGCNLearner.eval(self, val_dataset, epoch, silent, verbose,
-                  val_data_filename, val_labels_filename, skeleton_data_type,
-                  save_score, wrong_file, result_file, show_topk)
+SpatioTemporalGCNLearner.eval(self, val_dataset, epoch, silent, verbose,
+                              val_data_filename, val_labels_filename, skeleton_data_type,
+                              save_score, wrong_file, result_file, show_topk)
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
@@ -141,50 +155,58 @@ Parameters:
   This file should be contained in the dataset path provided.
 - **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*  
   The data stream that should be used for training and evaluation. 
-  
 - **save_score**: *bool, default=False*  
-  The data stream that should be used for training and evaluation. 
+  If set to True, it saves the classification score of all samples in differenc classes
+  in a log file. Default to False.
 - **wrong_file**: *str, default=None*  
-  The data stream that should be used for training and evaluation. 
+  If set to True, it saves the results of wrongly classified samples. Default to False.
 - **result_file**: *str, default=None*  
-  The data stream that should be used for training and evaluation. 
+  If set to True, it saves the classification results of all samples. Default to False.
 - **show_topk**: *list, default=[1, 5]*  
-  The data stream that should be used for training and evaluation. 
+  Is set to a list of integer numbers defining the k in top-k accuracy. Default is set to [1,5].
   
-  
-#### `STGCNLearner.infer`
+#### `SpatioTemporalGCNLearner.init_model`
 ```python
-STGCNLearner.infer(self, point_clouds)
+SpatioTemporalGCNLearner.init_model(self)
 ```
+This method is used to initialize the imported model and its loss function. 
+  
 
-This method is used to perform pose estimation on an image.
-Returns a list of `engine.target.BoundingBox3DList` objects if the list of `engine.data.PointCloud` is given or a single `engine.target.BoundingBox3DList` if a single `engine.data.PointCloud` is given.
+#### `SpatioTemporalGCNLearner.infer`
+```python
+SpatioTemporalGCNLearner.infer(self, SkeletonSeq_batch)
+```
+This method is used to perform action recognition on a sequence of skeletons. 
+It returns the action category as an object of `engine.target.Category` if a proper input object `engine.data.SkeletonSequence` is given. 
 
 Parameters:
-- **point_clouds**: *engine.data.PointCloud* or *[engine.data.PointCloud]***  
-  Input data.
+- **SkeletonSeq_batch**: *object***  
+  Object of type engine.data.SkeletonSequence.
 
-#### `VoxelObjectDetection3DLearner.save`
+#### `SpatioTemporalGCNLearner.save`
 ```python
-VoxelObjectDetection3DLearner.save(self, path, verbose)
+SpatioTemporalGCNLearner.save(self, path, model_name, verbose)
 ```
-
 This method is used to save a trained model.
-Provided with the path "/my/path/name" (absolute or relative), it creates the "name" directory, if it does not already exist.
-Inside this folder, the model is saved as "name_vfe.pth", "name_mfe.pth", and "name_rpn.pth" or "name_rpn.onnx" and the metadata file as "name.json".
-If the directory already exists, the files are overwritten.
+Provided with the path "/my/path" (absolute or relative), it creates the "path" directory, if it does not already 
+exist. Inside this folder, the model is saved as "model_name.pt" and the metadata file as "model_name.json". If the directory
+already exists, the "model_name.pt" and "model_name.json" files are overwritten.
 
-If [`self.optimize`](#VoxelObjectDetection3DLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the `self.temp_path` it was saved previously during conversion.
+If [`self.optimize`](#SpatioTemporalGCNLearner.optimize) was run previously, it saves the optimized ONNX model in 
+a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously 
+during conversion.
 
 Parameters:
 - **path**: *str*  
-  Path to save the model, including the filename.
+  Path to save the model.
+- **model_name**: *str*  
+  The file name to be saved. 
 - **verbose**: *bool, default=False*  
   If set to True, prints a message on success.
 
-#### `VoxelObjectDetection3DLearner.load`
+#### `SpatioTemporalGCNLearner.load`
 ```python
-VoxelObjectDetection3DLearner.load(self, path, verbose)
+SpatioTemporalGCNLearner.load(self, path, model_name, verbose)
 ```
 
 This method is used to load a previously saved model from its saved folder.
@@ -193,12 +215,15 @@ Loads the model from inside the directory of the path provided, using the metada
 Parameters:
 - **path**: *str*  
   Path of the model to be loaded.
+- **model_name**: *str*  
+  The file name to be loaded. 
 - **verbose**: *bool, default=False*  
   If set to True, prints a message on success.
 
-#### `VoxelObjectDetection3DLearner.optimize`
+
+#### `SpatioTemporalGCNLearner.optimize`
 ```python
-VoxelObjectDetection3DLearner.optimize(self, do_constant_folding)
+SpatioTemporalGCNLearner.optimize(self, do_constant_folding)
 ```
 
 This method is used to optimize a trained model to ONNX format which can be then used for inference.
@@ -209,215 +234,559 @@ Parameters:
   If True, the constant-folding optimization is applied to the model during export.
   Constant-folding optimization will replace some of the operations that have all constant inputs, with pre-computed constant nodes.
 
-#### `VoxelObjectDetection3DLearner.download`
-```python
-@staticmethod
-VoxelObjectDetection3DLearner.download(model_name, path, server_url)
-```
 
-Download utility for pretrained models.
+
+#### `SpatioTemporalGCNLearner.multi_stream_eval`
+```python
+SpatioTemporalGCNLearner.multi_stream_eval(self, dataset, scores, data_filename,
+                                           labels_filename, skeleton_data_type,
+                                           verbose, silent)
+```
+This method is used to ensemble the classification results of the model on two or more data streams like joints, bones and motions. 
+It returns the top-k classification performance of ensembled model. 
 
 Parameters:
-- **model_name**: *str {'pointpillars_car_xyres_16', 'pointpillars_ped_cycle_xyres_16', 'tanet_car_xyres_16', 'tanet_ped_cycle_xyres_16'}*
-  The name of the model to download.
-- **path**: *str*
-  Local path to save the downloaded files.
-- **server_url**: *str, default=None*  
-  URL of the pretrained models directory on an FTP server. If None, OpenDR FTP URL is used.
+- **dataset**: *object*  
+  Object that holds the dataset.
+  Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+- **score**: *list*  
+  A list of score arrays. Each array in the list contains the evaluation results for a data stream.
+- **data_filename**: *str, default='val_joints.npy'*  
+  Filename that contains the validation data.
+  This file should be contained in the dataset path provided.
+  Note that this is a filename, not a path.
+- **labels_filename**: *str, default='val_labels.pkl'*  
+  Filename of the validation labels .pkl file.
+  This file should be contained in the dataset path provided.
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*  
+  The data stream that should be used for training and evaluation. 
+- **silent**: *bool, default=False*  
+  If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
+- **verbose**: *bool, default=True*  
+  If set to True, enables the maximum verbosity.
+
+
+#### `SpatioTemporalGCNLearner.download`
+```python
+@staticmethod
+SpatioTemporalGCNLearner.download(self, path, mode, verbose, url, file_name)
+```
+
+Download utility for various skeleton-based action recognition components. Downloads files depending on mode and
+saves them in the path provided. It supports downloading:
+1. the pretrained weights for stgcn, tagcn and stbln models. 
+2. a dataset containing one or more skeleton sequences and its labels.  
+
+Parameters:
+- **path**: *str, default=None*  
+  Local path to save the files, defaults to self.parent_dir if None.
+- **mode**: *str, default="pretrained"*  
+  What file to download, can be one of "pretrained", "train_data", "val_data", "test_data"
+- **verbose**: *bool, default=False*  
+  Whether to print messages in the console.
+- **url**: *str, default=OpenDR FTP URL*  
+  URL of the FTP server.
+- **file_name**: *str*  
+  The name of the file containing the pretrained model. 
 
 
 #### Examples
 
 * **Training example using an `ExternalDataset`**.  
-  Mini and nano KITTI dataset can be downloaded from OpenDR server.
+  The training and evaluation dataset should be present in the path provided, along with the labels file.
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
-  import os
-  import torch
-  from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
-    VoxelObjectDetection3DLearner
-  )
-  from perception.object_detection_3d.datasets.kitti import KittiDataset
+  from OpenDR.perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
+  from OpenDR.engine.datasets import ExternalDataset
 
-  DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
-  name = "tanet_car"
-  config = os.path.join(
-    ".", "src", "perception",
-    "object_detection_3d",
-    "voxel_object_detection_3d",
-    "second_detector", "configs", "tanet",
-    "car", "test_short.proto")
-  temp_dir = "temp"
-  model_path = os.path.join(temp_dir, "test_fit_" + name)
+  stgcn_learner = SpatioTemporalGCNLearner(temp_path='./parent_dir',
+                                            batch_size=64, epochs=50,
+                                            checkpoint_after_iter=10, val_batch_size=128,
+                                            dataset_name='nturgbd_cv',
+                                            experiment_name='stgcn_nturgbd',
+                                            method_name='stgcn')
 
-  subsets_path = os.path.join(
-    ".", "src", "perception", "object_detection_3d",
-    "datasets", "nano_kitti_subsets")
-
-  dataset = KittiDataset.download_nano_kitti(
-      temp_dir, True, subsets_path
-  )
-
-  learner = VoxelObjectDetection3DLearner(
-      model_config_path=config, device=DEVICE,
-      checkpoint_after_iter=2,
-  )
-
-  learner.fit(
-      dataset,
-      model_dir=model_path,
-      verbose=True,
-      evaluate=False,
-  )
-  learner.save(model_path)
+  training_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
+  validation_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
+  stgcn_learner.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path='./logs', silent=True,
+                    train_data_filename='train_joints.npy',
+                    train_labels_filename='train_labels.pkl', val_data_filename='val_joints.npy',
+                    val_labels_filename='val_labels.pkl',
+                    skeleton_data_type='joint')
+  stgcn_learner.save(path='./saved_models/stgcn_nturgbd_cv_checkpoints', model_name='test_stgcn')
   ```
-
-* **Training example using a `DatasetIterator`**.  
-  If the DatasetIterator is given as a dataset, `val_dataset` should be specified.
-  The `batch_size` argument should be adjusted according to available memory.
-
-  ```python
-  import os
-  import torch
-  from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
-    VoxelObjectDetection3DLearner
-  )
-  from perception.object_detection_3d.datasets.kitti import LabeledPointCloudsDatasetIterator
-
-  DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
-  name = "tanet_car"
-  config = os.path.join(
-    ".", "src", "perception",
-    "object_detection_3d",
-    "voxel_object_detection_3d",
-    "second_detector", "configs", "tanet",
-    "car", "test_short.proto")
-  temp_dir = "temp"
-  model_path = os.path.join(temp_dir, "test_fit_" + name)
-
-  subsets_path = os.path.join(
-    ".", "src", "perception", "object_detection_3d",
-    "datasets", "nano_kitti_subsets")
-
-  dataset_path = KittiDataset.download_nano_kitti(
-      temp_dir, True, subsets_path
-  ).path
-
-  dataset = LabeledPointCloudsDatasetIterator(
-    dataset_path + "/training/velodyne_reduced",
-    dataset_path + "/training/label_2",
-    dataset_path + "/training/calib",
-  )
-
-  val_dataset = LabeledPointCloudsDatasetIterator(
-    dataset_path + "/training/velodyne_reduced",
-    dataset_path + "/training/label_2",
-    dataset_path + "/training/calib",
-  )
-
-  learner = VoxelObjectDetection3DLearner(
-    model_config_path=config, device=DEVICE,
-    checkpoint_after_iter=90,
-  )
-
-  learner.fit(
-    dataset,
-    val_dataset=val_dataset,
-    model_dir=model_path,
-  )
-  learner.save(model_path)
-  ```
-
-* **Inference example.**
-  ```python
-  import os
-  import torch
-  from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
-    VoxelObjectDetection3DLearner
-  )
-  from engine.datasets import PointCloudsDatasetIterator
-
-  DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
-  name = "tanet_car"
-  config = os.path.join(
-    ".", "src", "perception",
-    "object_detection_3d",
-    "voxel_object_detection_3d",
-    "second_detector", "configs", "tanet",
-    "car", "test_short.proto")
-  temp_dir = "temp"
-  model_path = os.path.join(temp_dir, "test_fit_" + name)
-
-  subsets_path = os.path.join(
-    ".", "src", "perception", "object_detection_3d",
-    "datasets", "nano_kitti_subsets")
-
-  dataset_path = KittiDataset.download_nano_kitti(
-      temp_dir, True, subsets_path
-  ).path
-
-  dataset = PointCloudsDatasetIterator(dataset_path + "/testing/velodyne_reduced")
-
-  learner = VoxelObjectDetection3DLearner(
-      model_config_path=config, device=DEVICE
-  )
-
-  result = learner.infer(
-      dataset[0]
-  )
-
-  print(result)
-
-  result = learner.infer(
-      [dataset[0], dataset[1], dataset[2]]
-  )
+  In a similar manner train the TA-GCN model by specifying the number of important frames that the model selects as num_subframes. 
+  The number of frames in both NTU-RGB+D and Kinetics-skeleton is 300.  
   
-  print(result)
+  ```python
+  from OpenDR.perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
+  from OpenDR.engine.datasets import ExternalDataset
+
+  tagcn_learner = SpatioTemporalGCNLearner(temp_path='./parent_dir',
+                                            batch_size=64, epochs=50,
+                                            checkpoint_after_iter=10, val_batch_size=128,
+                                            dataset_name='nturgbd_cv',
+                                            experiment_name='tagcn_nturgbd',
+                                            method_name='tagcn', num_frames=300, num_subframes=100)
+
+  training_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
+  validation_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
+  tagcn_learner.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path='./logs', silent=True,
+                    train_data_filename='train_joints.npy',
+                    train_labels_filename='train_labels.pkl', val_data_filename='val_joints.npy',
+                    val_labels_filename='val_labels.pkl',
+                    skeleton_data_type='joint')
+  tagcn_learner.save(path='./saved_models/tagcn_nturgbd_cv_checkpoints', model_name='test_tagcn')
+  ```
+  
+  For training the ST-BLN model, set the method_name to 'stbln' and specify if the model uses a symmetric attention matrix or not by setting stbln_symmetric to True or False. 
+  
+  ```python
+  from OpenDR.perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
+  from OpenDR.engine.datasets import ExternalDataset
+
+  stbln_learner = SpatioTemporalGCNLearner(temp_path='./parent_dir',
+                                            batch_size=64, epochs=50,
+                                            checkpoint_after_iter=10, val_batch_size=128,
+                                            dataset_name='nturgbd_cv',
+                                            experiment_name='stbln_nturgbd',
+                                            method_name='stbln', stbln_symmetric=False)
+
+  training_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
+  validation_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
+  stbln_learner.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path='./logs', silent=True,
+                    train_data_filename='train_joints.npy',
+                    train_labels_filename='train_labels.pkl', val_data_filename='val_joints.npy',
+                    val_labels_filename='val_labels.pkl',
+                    skeleton_data_type='joint')
+  stbln_learner.save(path='./saved_models/stbln_nturgbd_cv_checkpoints', model_name='test_stbln')
+  ```
+  
+
+* **Inference on a test skeleton sequence**
+  ```python
+  from OpenDR.perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
+  import numpy
+  stgcn_learner = SpatioTemporalGCNLearner(temp_path='./parent_dir',
+                                            batch_size=64, epochs=50,
+                                            checkpoint_after_iter=10, val_batch_size=128,
+                                            dataset_name='nturgbd_cv',
+                                            experiment_name='stgcn_nturgbd',
+                                            method_name='stgcn')
+  # Download the default pretrained stgcn model in the parent_dir
+  stgcn_learner.download(
+            mode="pretrained", path='./parent_dir/pretrained_models', file_name='pretrained_stgcn')  
+  
+  stgcn_learner.load('./parent_dir/pretrained_models', model_name='pretrained_stgcn')
+  test_data_path = stgcn_learner.download(mode="test_data")  # Download a test data 
+  test_data = numpy.load(test_data_path)
+  action_category = stgcn_learner.infer(test_data)
+  
+  ```
+  
+* **Optimization example for a previously trained model.**
+  Inference can be run with the trained model after running self.optimize.
+  ```python
+  from OpenDR.perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
+
+
+  stgcn_learner = SpatioTemporalGCNLearner(temp_path='./parent_dir',
+                                            batch_size=64, epochs=50,
+                                            checkpoint_after_iter=10, val_batch_size=128,
+                                            dataset_name='nturgbd_cv',
+                                            experiment_name='stgcn_nturgbd',
+                                            method_name='stgcn')
+  stgcn_learner.download(
+            mode="pretrained", path='./parent_dir/pretrained_models', file_name='pretrained_stgcn')  
+  
+  stgcn_learner.load(path='./parent_dir/pretrained_models', file_name='pretrained_stgcn')
+  stgcn_learner.optimize(do_constant_folding=True)
+  stgcn_learner.save(path='./parent_dir/optimized_model', model_name='optimized_stgcn')
+  ```
+  The inference and optimization can be performed for TA-GCN and ST-BLN methods in a similar manner only by specifying the method_name to 'tagcn' or 'stbln', respectively in the learner class constructor. 
+
+
+### Class ProgressiveSpatioTemporalGCNLearner
+Bases: `engine.learners.Learner`
+
+The *ProgressiveSpatioTemporalGCNLearner* class is an implementation of the proposed method PST-GCN [[4]](#4) for Skeleton-based Human 
+Action Recognition.
+It finds an optimized and data dependant spatio-temporal graph convolutional network topology for skeleton-based action recognition. 
+The [ProgressiveSpatioTemporalGCNLearner](#src.perception.skeleton_based_action_recognition.pstgcn_learner.py) class has the
+following public methods:
+
+
+#### `ProgressiveSpatioTemporalGCNLearner` constructor
+```python
+ProgressiveSpatioTemporalGCNLearner(self, lr, batch_size, optimizer_name, lr_schedule,
+                                    checkpoint_after_iter, checkpoint_load_iter, temp_path,
+                                    device, num_workers, epochs, experiment_name,
+                                    device_ind, val_batch_size, drop_after_epoch,
+                                    start_epoch, dataset_name, 
+                                    blocksize, numblocks, numlayers, topology,
+                                    layer_threshold, block_threshold)
+```
+
+Constructor parameters:
+- **lr**: *float, default=0.01*  
+  Specifies the initial learning rate to be used during training.
+- **batch_size**: *int, default=128*  
+  Specifies number of skeleton sequences to be bundled up in a batch during training. This heavily affects memory usage, adjust according to your system.
+- **optimizer_name**: *str {'sgd', 'adam'}, default='sgd'*  
+  Specifies the optimizer type that should be used.
+- **lr_schedule**: *str, default=' '*  
+  Specifies the learning rate scheduler.
+- **checkpoint_after_iter**: *int, default=0*
+  Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
+- **checkpoint_load_iter**: *int, default=0*  
+  Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
+- **temp_path**: *str, default=''*  
+  Specifies a path where the algorithm saves the checkpoints and onnx optimized model (if needed).
+- **device**: *{'cpu', 'cuda'}, default='cuda'*  
+  Specifies the device to be used.
+- **num_workers**: *int, default=32*  
+  Specifies the number of workers to be used by the data loader.
+- **epochs**: *int, default=50*  
+  Specifies the number of epochs the training should run for.
+- **experiment_name**: *str, default='stgcn_nturgbd'*  
+  String name to attach to checkpoints.
+- **device_ind**: *list, default=[0]*  
+  List of GPU indices to be used if the device is 'cuda'. 
+- **val_batch_size**: *int, default=256*  
+  Specifies number of skeleton sequences to be bundled up in a batch during evaluation. This heavily affects memory usage, adjust according to your system.
+- **drop_after_epoch**: *list, default=[30,40]*  
+  List of epoch numbers in which the optimizer drops the learning rate.  
+- **start_epoch**: *int, default=0*  
+  Specifies the starting epoch number for training.  
+- **dataset_name**: *str {'kinetics', 'nturgbd_cv', 'nturgbd_cs'}, default='nturgbd_cv'*  
+  Specifies the name of dataset that is used for training and evaluation. 
+- **block_size**: *int, default=20*  
+  Specifies the number of output channels (or neurons) that are added to each layer of the network at each progression iteration. 
+- **numblocks**: *int, default=10*  
+  Specifies the maximum number of blocks that are added to each layer of the network at each progression iteration. 
+- **numlayers**: *int, default=10*  
+  Specifies the maximum number of layers that are built for the network.
+- **topology**: *list, default=[]*  
+  Specifies the initial topology of the network. The default is set to [], since the method gets an empty network as input and builds it progressively. 
+- **layer_threshold**: *float, default=1e-4*  
+  Specifies the threshold which is used by the method to identify when it should stop adding new layers.  
+- **block_threshold**: *float, default=1e-4*  
+  Specifies the threshold which is used by the model to identify when it should stop adding new blocks in each layer.  
+  
+
+#### `ProgressiveSpatioTemporalGCNLearner.fit`
+```python
+ProgressiveSpatioTemporalGCNLearner.fit(self, dataset, val_dataset, logging_path, silent, verbose,
+                                        momentum, nesterov, weight_decay, train_data_filename,
+                                        train_labels_filename, val_data_filename,
+                                        val_labels_filename, skeleton_data_type)
+```
+
+This method is used for training the algorithm on a train dataset and validating on a val dataset.
+Parameters:
+- **dataset**: *object*  
+Object that holds the training dataset.
+Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+- **val_dataset**: *object*
+Object that holds the validation dataset. 
+- **logging_path**: *str, default=''*  
+Path to save TensorBoard log files and the training log files.
+If set to None or '', TensorBoard logging is disabled and no log file is created. 
+- **silent**: *bool, default=False*  
+If set to True, disables all printing of training progress reports and other information to STDOUT.
+- **verbose**: *bool, default=True***  
+If set to True, enables the maximum verbosity.
+- **momentum**: *float, default=0.9*  
+Specifies the momentum value for optimizer. 
+- **nesterov**: *bool, default=True***  
+If set to true, the optimizer uses nesterov.  
+- **weight_decay**: *float, default=0.0001***  
+Specifies the weight_decay value of the optimizer. 
+- **train_data_filename**: *str, default='train_joints.npy'*  
+Filename that contains the training data. 
+This file should be contained in the dataset path provided.
+Note that this is a file name, not a path.
+- **train_labels_filename**: *str, default='train_labels.pkl'*  
+Filename of the labels .pkl file. 
+This file should be contained in the dataset path provided.
+- **val_data_filename**: *str, default='val_joints.npy'*  
+Filename that contains the validation data.
+This file should be contained in the dataset path provided.
+Note that this is a filename, not a path.
+- **val_labels_filename**: *str, default='val_labels.pkl'*  
+Filename of the validation labels .pkl file.
+This file should be contained in the dataset path provided.
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*  
+The data stream that should be used for training and evaluation. 
+
+
+#### `ProgressiveSpatioTemporalGCNLearner.eval`
+```python
+ProgressiveSpatioTemporalGCNLearner.eval(self, val_dataset, epoch, silent, verbose,
+                                         val_data_filename, val_labels_filename, skeleton_data_type,
+                                         save_score, wrong_file, result_file, show_topk)
+```
+
+This method is used to evaluate a trained model on an evaluation dataset.
+Returns a dictionary containing stats regarding evaluation.  
+Parameters:
+
+- **val_dataset**: *object*  
+  Object that holds the evaluation dataset.
+  Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+- **epoch**: *int, default=0*  
+  The training epoch in which the model is evaluated. 
+- **silent**: *bool, default=False*  
+  If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
+- **verbose**: *bool, default=True*  
+  If set to True, enables the maximum verbosity.
+- **val_data_filename**: *str, default='val_joints.npy'*  
+  Filename that contains the validation data.
+  This file should be contained in the dataset path provided.
+  Note that this is a filename, not a path.
+- **val_labels_filename**: *str, default='val_labels.pkl'*  
+  Filename of the validation labels .pkl file.
+  This file should be contained in the dataset path provided.
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*  
+  The data stream that should be used for training and evaluation. 
+- **save_score**: *bool, default=False*  
+  If set to True, it saves the classification score of all samples in differenc classes
+  in a log file. Default to False.
+- **wrong_file**: *str, default=None*  
+  If set to True, it saves the results of wrongly classified samples. Default to False.
+- **result_file**: *str, default=None*  
+  If set to True, it saves the classification results of all samples. Default to False.
+- **show_topk**: *list, default=[1, 5]*  
+  Is set to a list of integer numbers defining the k in top-k accuracy. Default is set to [1,5].
+
+
+#### `ProgressiveSpatioTemporalGCNLearner.init_model`
+```python
+ProgressiveSpatioTemporalGCNLearner.init_model(self)
+```
+This method is used to initialize the imported model and its loss function. 
+  
+  
+#### `ProgressiveSpatioTemporalGCNLearner.network_builder`
+```python
+ProgressiveSpatioTemporalGCNLearner.network_builder(self, dataset, val_dataset, train_data_filename,
+                                                    train_labels_filename, val_data_filename,
+                                                    val_labels_filename, skeleton_data_type, verbose)
+```
+This method implement the ST-GCN Augmentation Module (ST-GCN-AM) which builds the network topology progressively. 
+Parameters:
+
+- **dataset**: *object*  
+  Object that holds the training dataset.
+- **val_dataset**: *object*  
+  Object that holds the evaluation dataset.
+  Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+- **train_data_filename**: *str, default='train_joints.npy'*  
+  Filename that contains the training data. 
+  This file should be contained in the dataset path provided.
+  Note that this is a file name, not a path.
+- **train_labels_filename**: *str, default='train_labels.pkl'*  
+  Filename of the labels .pkl file. 
+  This file should be contained in the dataset path provided.
+- **val_data_filename**: *str, default='val_joints.npy'*  
+  Filename that contains the validation data.
+  This file should be contained in the dataset path provided.
+  Note that this is a filename, not a path.
+- **val_labels_filename**: *str, default='val_labels.pkl'*  
+  Filename of the validation labels .pkl file.
+  This file should be contained in the dataset path provided.
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*  
+  The data stream that should be used for training and evaluation. 
+- **verbose**: *bool, default=True***  
+  Whether to print messages in the console.
+  
+  
+#### `ProgressiveSpatioTemporalGCNLearner.infer`
+```python
+ProgressiveSpatioTemporalGCNLearner.infer(self, SkeletonSeq_batch)
+```
+This method is used to perform action recognition on a sequence of skeletons. 
+It returns the action category as an object of `engine.target.Category` if a proper input object `engine.data.SkeletonSequence` is given. 
+
+Parameters:
+- **SkeletonSeq_batch**: *object***  
+  Object of type engine.data.SkeletonSequence.
+
+#### `ProgressiveSpatioTemporalGCNLearner.save`
+```python
+ProgressiveSpatioTemporalGCNLearner.save(self, path, model_name, verbose)
+```
+This method is used to save a trained model.
+Provided with the path "/my/path" (absolute or relative), it creates the "path" directory, if it does not already 
+exist. Inside this folder, the model is saved as "model_name.pt" and the metadata file as "model_name.json". If the directory
+already exists, the "model_name.pt" and "model_name.json" files are overwritten.
+
+If [`self.optimize`](#SpatioTemporalGCNLearner.optimize) was run previously, it saves the optimized ONNX model in 
+a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously 
+during conversion.
+
+Parameters:
+- **path**: *str*  
+  Path to save the model.
+- **model_name**: *str*  
+  The file name to be saved. 
+- **verbose**: *bool, default=False*  
+  If set to True, prints a message on success.
+
+#### `ProgressiveSpatioTemporalGCNLearner.load`
+```python
+ProgressiveSpatioTemporalGCNLearner.load(self, path, model_name, verbose)
+```
+
+This method is used to load a previously saved model from its saved folder.
+Loads the model from inside the directory of the path provided, using the metadata .json file included.
+
+Parameters:
+- **path**: *str*  
+  Path of the model to be loaded.
+- **model_name**: *str*  
+  The file name to be loaded. 
+- **verbose**: *bool, default=False*  
+  If set to True, prints a message on success.
+
+
+#### `ProgressiveSpatioTemporalGCNLearner.optimize`
+```python
+ProgressiveSpatioTemporalGCNLearner.optimize(self, do_constant_folding)
+```
+
+This method is used to optimize a trained model to ONNX format which can be then used for inference.
+
+Parameters:
+- **do_constant_folding**: *bool, default=False*  
+  ONNX format optimization.
+  If True, the constant-folding optimization is applied to the model during export.
+  Constant-folding optimization will replace some of the operations that have all constant inputs, with pre-computed constant nodes.
+
+
+#### `ProgressiveSpatioTemporalGCNLearner.multi_stream_eval`
+```python
+ProgressiveSpatioTemporalGCNLearner.multi_stream_eval(self, dataset, scores, data_filename,
+                                                      labels_filename, skeleton_data_type,
+                                                      verbose, silent)
+```
+This method is used to ensemble the classification results of the model on two or more data streams like joints, bones and motions. 
+It returns the top-k classification performance of ensembled model. 
+
+Parameters:
+- **dataset**: *object*  
+  Object that holds the dataset.
+  Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+- **score**: *list*  
+  A list of score arrays. Each array in the list contains the evaluation results for a data stream.
+- **data_filename**: *str, default='val_joints.npy'*  
+  Filename that contains the validation data.
+  This file should be contained in the dataset path provided.
+  Note that this is a filename, not a path.
+- **labels_filename**: *str, default='val_labels.pkl'*  
+  Filename of the validation labels .pkl file.
+  This file should be contained in the dataset path provided.
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*  
+  The data stream that should be used for training and evaluation. 
+- **silent**: *bool, default=False*  
+  If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
+- **verbose**: *bool, default=True*  
+  If set to True, enables the maximum verbosity.
+
+
+#### `ProgressiveSpatioTemporalGCNLearner.download`
+```python
+@staticmethod
+ProgressiveSpatioTemporalGCNLearner.download(self, path, mode, verbose, url, file_name)
+```
+
+Download utility for various skeleton-based action recognition components. Downloads files depending on mode and
+saves them in the path provided. It supports downloading:
+1. the pretrained weights for stgcn, tagcn and stbln models. 
+2. a dataset containing one or more skeleton sequences and its labels.  
+
+Parameters:
+- **path**: *str, default=None*  
+  Local path to save the files, defaults to self.parent_dir if None.
+- **mode**: *str, default="pretrained"*  
+  What file to download, can be one of "pretrained", "train_data", "val_data", "test_data"
+- **verbose**: *bool, default=False*  
+  Whether to print messages in the console.
+- **url**: *str, default=OpenDR FTP URL*  
+  URL of the FTP server.
+- **file_name**: *str*  
+  The name of the file containing the pretrained model. 
+
+
+#### Examples
+
+* **Finding an optimized spatio-temporal GCN architecture based on training dataset defined as an `ExternalDataset`**.  
+  The training and evaluation dataset should be present in the path provided, along with the labels file.
+  The `batch_size` argument should be adjusted according to available memory.
+
+  ```python
+  from OpenDR.perception.skeleton_based_action_recognition.pstgcn_learner import ProgressiveSpatioTemporalGCNLearner
+  from OpenDR.engine.datasets import ExternalDataset
+  training_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
+  validation_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
+  
+  pstgcn_learner = ProgressiveSpatioTemporalGCNLearner(temp_path='./parent_dir',
+                                                       batch_size=64, epochs=65,
+                                                       checkpoint_after_iter=10, val_batch_size=128,
+                                                       dataset_name='nturgbd_cv', experiment_name='pstgcn_nturgbd',
+                                                       blocksize=20, numblocks=1, numlayers=1, topology=[],
+                                                       layer_threshold=1e-4, block_threshold=1e-4)
+  
+  pstgcn_learner.network_builder(dataset=training_dataset, val_dataset=validation_dataset,
+                                 train_data_filename='train_joints.npy',
+                                 train_labels_filename='train_labels.pkl',
+                                 val_data_filename="val_joints.npy",
+                                 val_labels_filename="val_labels.pkl",
+                                 skeleton_data_type='joint')
+  
+  pstgcn_learner.save(path='./saved_models/pstgcn_nturgbd_cv_checkpoints', model_name='test_pstgcn')
   ```
 
-* **Optimization example for a previously trained model.**
-  Inference can be run with the trained model after running `self.optimize`.
+* **Inference on a test skeleton sequence**
   ```python
-  import os
-  import torch
-  from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
-    VoxelObjectDetection3DLearner
-  )
-  from engine.datasets import PointCloudsDatasetIterator
+  import numpy
+  from OpenDR.perception.skeleton_based_action_recognition.pstgcn_learner import ProgressiveSpatioTemporalGCNLearner
+  pstgcn_learner = ProgressiveSpatioTemporalGCNLearner(temp_path='./parent_dir',
+                                                       batch_size=64, epochs=65,
+                                                       checkpoint_after_iter=10, val_batch_size=128,
+                                                       dataset_name='nturgbd_cv', experiment_name='pstgcn_nturgbd',
+                                                       blocksize=20, numblocks=1, numlayers=1, topology=[],
+                                                       layer_threshold=1e-4, block_threshold=1e-4)
+  
+  # Download the default pretrained stgcn model in the parent_dir
+  pstgcn_learner.download(
+            mode="pretrained", path='./parent_dir/pretrained_models', file_name='pretrained_pstgcn')  
+  
+  pstgcn_learner.load('./parent_dir/pretrained_models', model_name='pretrained_stgcn')
+  test_data_path = pstgcn_learner.download(mode="test_data")  # Download a test data 
+  test_data = numpy.load(test_data_path)
+  action_category = pstgcn_learner.infer(test_data)
+  
+  ```
+  
+* **Optimization example for a previously trained model.**
+  Inference can be run with the trained model after running self.optimize.
+  ```python
+  from OpenDR.perception.skeleton_based_action_recognition.pstgcn_learner import ProgressiveSpatioTemporalGCNLearner
 
-  DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
-  name = "tanet_car"
-  config = os.path.join(
-    ".", "src", "perception",
-    "object_detection_3d",
-    "voxel_object_detection_3d",
-    "second_detector", "configs", "tanet",
-    "car", "test_short.proto")
-  temp_dir = "temp"
-  model_path = os.path.join(temp_dir, "test_fit_" + name)
-
-  subsets_path = os.path.join(
-    ".", "src", "perception", "object_detection_3d",
-    "datasets", "nano_kitti_subsets")
-
-  dataset_path = KittiDataset.download_nano_kitti(
-      temp_dir, True, subsets_path
-  ).path
-
-  dataset = PointCloudsDatasetIterator(dataset_path + "/testing/velodyne_reduced")
-
-  learner = VoxelObjectDetection3DLearner(
-      model_config_path=config, device=DEVICE,
-      temp_path=temp_dir
-  )
-  learner.optimize()
-
-  result = learner.infer(
-      dataset[0]
-  )
-
-  print(result)
+  pstgcn_learner = ProgressiveSpatioTemporalGCNLearner(temp_path='./parent_dir',
+                                                      batch_size=64, epochs=65,
+                                                      checkpoint_after_iter=10, val_batch_size=128,
+                                                      dataset_name='nturgbd_cv', experiment_name='pstgcn_nturgbd',
+                                                      blocksize=20, numblocks=1, numlayers=1, topology=[],
+                                                      layer_threshold=1e-4, block_threshold=1e-4)
+  pstgcn_learner.download(
+            mode="pretrained", path='./parent_dir/pretrained_models', file_name='pretrained_pstgcn')  
+  
+  pstgcn_learner.load(path='./parent_dir/pretrained_models', file_name='pretrained_pstgcn')
+  pstgcn_learner.optimize(do_constant_folding=True)
+  pstgcn_learner.save(path='./parent_dir/optimized_model', model_name='optimized_pstgcn')
   ```
 
 

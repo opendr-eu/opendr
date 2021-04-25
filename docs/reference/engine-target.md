@@ -105,27 +105,3 @@ Construct a new [SpeechCommand](#class_engine.target.SpeechCommand) object based
 *prediction* is expected to be an integer designating the class and optional *confidence* a float between 0 and 1.
 
 
-### class engine.target.ActionCategory
-Bases: `engine.target.Target`
-
-This target is used for skeleton-based action recognition.
-
-
-The [ActionCategory](#class_engine.target.ActionCategory) class has the following public methods:
-#### ActionCategory(actioncategory, confidence=None)
-  Construct a new [ActionCategory](#class_engine.target.ActionCategory) object based from *actioncategory*.
-  *actioncategory* is expected to be an integer number which shows the action class number. 
-  Confidence indicates the confidence score of the classification. 
-
-
-### class engine.target.Pose
-Bases: `engine.target.Target`
-
-This target is used for pose estimation. It contains a list of Keypoints.
-Refer to kpt_names for keypoint naming.
-
-The [Pose](#class_engine.target.Pose) class has the following public methods:
-#### Pose(keypoints, confidence)
-  Construct a new [Pose](#class_engine.target.Pose) object based on *keypoints*.
-  *keypoints* is expected to be a list of [Keypoint](#class_engine.target.Keypoint) objects.
-

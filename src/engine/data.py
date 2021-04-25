@@ -420,10 +420,10 @@ class SkeletonSequence(Data):
     @property
     def data(self):
         """
-        Getter of data. SkeletonSequence class returns a float32 NumPy array.
+        Getter of data. SkeletonSequence class returns a float32 5-D NumPy array.
 
         :return: the actual data held by the object
-        :rtype: A float32 NumPy array
+        :rtype: A float32 5-D NumPy array
         """
         if self._data is None:
             raise ValueError("SkeletonSequence is empty")

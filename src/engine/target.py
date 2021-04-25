@@ -259,14 +259,4 @@ class SpeechCommand(Target):
             return f"Class {self.data} speech command"
 
 
-class ActionCategory(Target):
-    """
-    This target is used for skeleton-based action detection.
-    """
-    def __init__(self, actioncategory, confidence=None):
-        super().__init__()
-        self.data = actioncategory
-        self.confidence = confidence
 
-    def __str__(self):
-        return str(self.data)
