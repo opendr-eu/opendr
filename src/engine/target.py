@@ -364,11 +364,11 @@ class BoundingBox3D(Target):
         result["location"] = np.array([self.data["location"]])
         result["rotation_y"] = np.array([self.data["rotation_y"]])
         result["score"] = np.array([self.confidence])
-        num_gt = 1
+        num_ground_truths = 1
         num_objects = 1
-        index = list(range(num_objects)) + [-1] * (num_gt - num_objects)
+        index = list(range(num_objects)) + [-1] * (num_ground_truths - num_objects)
         result["index"] = np.array(index, dtype=np.int32)
-        result["group_ids"] = np.arange(num_gt, dtype=np.int32)
+        result["group_ids"] = np.arange(num_ground_truths, dtype=np.int32)
 
         return result
 
@@ -493,11 +493,11 @@ class BoundingBox3DList(Target):
             result["rotation_y"] = np.array(result["rotation_y"])
             result["score"] = np.array(result["score"])
 
-            num_gt = len(result["name"])
+            num_ground_truths = len(result["name"])
             num_objects = len([x for x in result["name"] if x != "DontCare"])
-            index = list(range(num_objects)) + [-1] * (num_gt - num_objects)
+            index = list(range(num_objects)) + [-1] * (num_ground_truths - num_objects)
             result["index"] = np.array(index, dtype=np.int32)
-            result["group_ids"] = np.arange(num_gt, dtype=np.int32)
+            result["group_ids"] = np.arange(num_ground_truths, dtype=np.int32)
 
         return result
 
