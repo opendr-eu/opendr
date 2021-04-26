@@ -471,7 +471,7 @@ class SpatioTemporalGCNLearner(Learner):
         output_ = m(output.data[0])
         category = Category(output_)
 
-        return category.prediction()
+        return category.prediction
 
     def optimize(self, do_constant_folding=False):
         """
