@@ -54,9 +54,7 @@ class DetrLearner(Learner):
         lr=1e-4,
         batch_size=1,
         optimizer="adamw",
-        lr_schedule="",
         backbone="resnet50",
-        network_head="",
         checkpoint_after_iter=0,
         checkpoint_load_iter=0,
         temp_path="temp",
@@ -71,9 +69,7 @@ class DetrLearner(Learner):
             lr=lr,
             batch_size=batch_size,
             optimizer=optimizer,
-            lr_schedule=lr_schedule,
             backbone=backbone,
-            network_head=network_head,
             checkpoint_after_iter=checkpoint_after_iter,
             checkpoint_load_iter=checkpoint_load_iter,
             temp_path=temp_path,
@@ -277,7 +273,7 @@ class DetrLearner(Learner):
         logging_path : str, optional
             Path to save tensorboard log files. If set to None or '', tensorboard logging is
             disabled. The default is ''.
-        silent : TYPE, optional
+        silent : bool, optional
             If True, all printing of training progress reports and other information
             to STDOUT are disabled. The default is False.
         verbose : bool, optional
@@ -314,6 +310,8 @@ class DetrLearner(Learner):
         if logging_path != '' and logging_path is not None:
             logging = True
             logging_dir = Path(logging_path)
+            if not os.path.exists(logging_path):
+                os.mkdir(logging_path)
         else:
             logging = False
 
@@ -636,7 +634,7 @@ class DetrLearner(Learner):
             panoptic=False, 
             backbone='resnet50', 
             dilation=False,
-            pretrained=True,
+            pretrained=True
             ):
         """
         Download utility for downloading detr models.
@@ -657,10 +655,6 @@ class DetrLearner(Learner):
         pretrained : bool, optional
             If set to true, a pretrained model is downloaded. The default is
             True.
-        return_postprocessor : bool, optional
-            If set to true, postprocessors are returned. The default is False.
-        threshold : float, optional
-            Sets the threshold for coco_panoptic models. The default is 0.85.
 
         Raises
         ------
