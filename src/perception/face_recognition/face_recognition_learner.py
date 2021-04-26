@@ -165,7 +165,6 @@ class FaceRecognitionLearner(Learner):
         else:
             self.network_head_model = None
 
-
     def align(self, data='', dest='/aligned', crop_size=112, silent=False):
         """
         This method is used for aligning the faces in an imagefolder dataset.
