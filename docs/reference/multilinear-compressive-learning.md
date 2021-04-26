@@ -117,9 +117,10 @@ Parameters:
     If set to True, disables all printing, otherwise, the performance statistics, estimated time till finish are printed to STDOUT after every epoch 
   - **verbose**: *bool*, default to True   
     If set to True, enables the progress bar of each epoch  
+ 
 Returns:
   - **performance**: *dict*
-    A dictionary that holds the performance curves with the following keys:
+    A dictionary that holds the performance curves with the following keys:  
         - `backbone_performance`: a *dict* that contains `cross_entropy` and `acc` when training the backbone classifier
         - `initialization_performance`: a *dict* that contains `mean_squared_error` when training the teacher's sensing and synthesis components
         - `compressive_learning_performance`: a *dict* that contains `cross_entropy` and `acc` when training the compressive model
@@ -134,15 +135,16 @@ Returns a dictionary containing *'cross_entropy'* and *'acc'* as keys.
  
 Parameters:
 - **dataset**: *engine.datasets.DatasetIterator*   
-  Object that holds the training set.
+  Object that holds the training set.  
   OpenDR dataset object, with `__getitem__` producing a pair of (`engine.data.Image`, `engine.target.Category`)  
-- **silent**: *bool*, default to False  
+- **silent**: *bool*, default to False   
   If set to False, print the cross entropy and accuracy to STDOUT 
-- **verbose**: *bool*, default to True  
-  If set to True, display a progress bar of the evaluation process 
+- **verbose**: *bool*, default to True   
+  If set to True, display a progress bar of the evaluation process  
+ 
 Returns:
-- **performance**: *dict*
-  Dictionary that contains `cross_entropy` and `acc`
+- **performance**: *dict*  
+  Dictionary that contains `cross_entropy` and `acc`  
 
 #### `MultilinearCompressiveLearner.infer`
 ```python
@@ -155,8 +157,9 @@ Returns an instance of `engine.target.Category` representing the prediction
 Parameters:
 - **img**: *engine.data.Image*  
   Object of type `engine.data.Image` that holds the input data  
+ 
 Returns:
-- **prediction**: *engine.target.Category*
+- **prediction**: *engine.target.Category*  
   Object of type `engine.target.Category` that contains the prediction
 
 #### `MultilinearCompressiveLearner.save`
@@ -168,10 +171,10 @@ This method is used to save the current model instance under a given path. The s
 Two files are saved under the given directory path, namely `metadata.json` and `model_weights.pt`. The former keeps the metadata and the latter keeps the model weights
 
 Parameters:
-- **path**: *str*  
-  Directory path to save the model
-- **verbose**: *bool*, default to True  
-  If set to True, print acknowledge message when saving is successful 
+- **path**: *str*    
+  Directory path to save the model    
+- **verbose**: *bool*, default to True    
+  If set to True, print acknowledge message when saving is successful   
 
 #### `MultilinearCompressiveLearner.load`
 ```python
@@ -182,9 +185,9 @@ This method is used to load a previously saved model (by calling `MultilinearCom
 
 Parameters:
 - **path**: *str*  
-  Directory path of the model to be loaded.
-- **verbose**: *bool*, default to True  
-  If set to True, print acknowledge message when model loading is successful 
+  Directory path of the model to be loaded.  
+- **verbose**: *bool*, default to True   
+  If set to True, print acknowledge message when model loading is successful   
 
 #### `MultilinearCompressiveLearner.download`
 ```python
@@ -194,11 +197,11 @@ MultilinearCompressiveLearner.download(path)
 This method is used to download CIFAR10 and CIFAR100 pretrained models for the `cifar_allcnn` architecture. Pretrained models are available for `backbone='cifar_allcnn` and `n_class in [10, 10]` and `compressed_shape in [(20, 19, 2), (28, 27, 1), (14, 11, 2), (18, 17, 1), (9, 6, 1), (6, 9, 1)]`. Here we should note that the input image to the pretrained model should be scaled to the range [0, 1] and standardized using  `mean = [0.4914, 0.4824, 0.4467]` and `std = [0.2471, 0.2435, 0.2616]`
 
 Parameters:
-- **path**: *str*  
+- **path**: *str*   
   Directory path to download the model. Note that under this path, `metadata.json` and `model_weights.pt` will be downloaded, thus, to download different model, different paths should be given to avoid overwriting previously downloaded model. In addition, the downloaded pretrained model weights can be loaded by calling `MultilinearCompressiveLearner.load(path)` afterward.   
 
 
-#### Examples
+### Examples
 
 * **Training example using cifar dataset**.  
   In this example, we will train a multilinear compressive learner for the CIFAR10 dataset using built-in `cifar_allcnn` as the backbone classifier. For CIFAR10 dataset, the `input_shape = (32, 32, 3)`. Let's assume that the compressive sensing device produces a measurement of shape 20x19x2, so `compressed_shape` is set to `(20, 19, 2)`. We start by first importing the `MultilinearCompressiveLearner` and the convenient function `get_cosine_lr_scheduler` to construct cosine learning rate schedule.   
