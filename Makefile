@@ -36,6 +36,14 @@ install_compilation_dependencies:
 	@+echo "#"; echo "# * Install Compilation Dependencies *"; echo "#"
 	@+cd dependencies; ./install.sh compilation
 
+styletest:
+	@+echo "Testing file licences and code-style"
+	@+python3 -m unittest discover -s tests
+
+unittest:
+	@+echo "Performing unit tests"
+	@+python3 -m unittest discover -s tests/sources/tools/
+
 help:
 	@+echo
 	@+echo -e "\033[32;1mOpenDR Makefile targets:\033[0m"
@@ -43,6 +51,8 @@ help:
 	@+echo -e "\033[33;1mmake -j$(THREADS) release\033[0m\t# install dependencies and compile (default)"
 	@+echo -e "\033[33;1mmake -j$(THREADS) dependencies\033[0m\t# install toolkit dependencies"
 	@+echo -e "\033[33;1mmake help\033[0m\t\t# display this message and exit"
+	@+echo -e "\033[33;1mmake styletest\033[0m\t# run tests for style and licences"
+	@+echo -e "\033[33;1mmake unittest\033[0m\t# run unit tests"
 	@+echo
 	@+echo -e "\033[32;1mNote:\033[0m You seem to have a processor with $(NUMBER_OF_PROCESSORS) virtual cores,"
 	@+echo -e "      hence the \033[33;1m-j$(THREADS)\033[0m option to speed-up the compilation."
