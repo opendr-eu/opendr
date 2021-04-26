@@ -82,7 +82,7 @@ class MatchboxNetLearner(Learner):
     @b.setter
     def b(self, value: int):
         if type(value) is not int or value < 1:
-            raise TypeError(f"MatchboxNet b-value should be a positive integer")
+            raise TypeError("MatchboxNet b-value should be a positive integer")
         else:
             self._b = value
 
@@ -93,7 +93,7 @@ class MatchboxNetLearner(Learner):
     @r.setter
     def r(self, value: int):
         if type(value) is not int or value < 1:
-            raise TypeError(f"MatchboxNet r-value should be a positive integer")
+            raise TypeError("MatchboxNet r-value should be a positive integer")
         else:
             self._r = value
 
@@ -104,7 +104,7 @@ class MatchboxNetLearner(Learner):
     @c.setter
     def c(self, value: int):
         if type(value) is not int or value < 1:
-            raise TypeError(f"MatchboxNet c-value should be a positive integer")
+            raise TypeError("MatchboxNet c-value should be a positive integer")
         else:
             self._c = value
 
