@@ -299,7 +299,10 @@ Parameters:
   ```python
   from OpenDR.perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
   from OpenDR.engine.datasets import ExternalDataset
-
+  
+  training_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
+  validation_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
+ 
   stgcn_learner = SpatioTemporalGCNLearner(temp_path='./parent_dir',
                                             batch_size=64, epochs=50,
                                             checkpoint_after_iter=10, val_batch_size=128,
@@ -307,9 +310,7 @@ Parameters:
                                             experiment_name='stgcn_nturgbd',
                                             method_name='stgcn')
 
-  training_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
-  validation_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
-  stgcn_learner.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path='./logs', silent=True,
+   stgcn_learner.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path='./logs', silent=True,
                     train_data_filename='train_joints.npy',
                     train_labels_filename='train_labels.pkl', val_data_filename='val_joints.npy',
                     val_labels_filename='val_labels.pkl',
@@ -320,9 +321,6 @@ Parameters:
   The number of frames in both NTU-RGB+D and Kinetics-skeleton is 300.  
   
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
-  from OpenDR.engine.datasets import ExternalDataset
-
   tagcn_learner = SpatioTemporalGCNLearner(temp_path='./parent_dir',
                                             batch_size=64, epochs=50,
                                             checkpoint_after_iter=10, val_batch_size=128,
@@ -330,8 +328,6 @@ Parameters:
                                             experiment_name='tagcn_nturgbd',
                                             method_name='tagcn', num_frames=300, num_subframes=100)
 
-  training_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
-  validation_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
   tagcn_learner.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path='./logs', silent=True,
                     train_data_filename='train_joints.npy',
                     train_labels_filename='train_labels.pkl', val_data_filename='val_joints.npy',
@@ -343,8 +339,6 @@ Parameters:
   For training the ST-BLN model, set the method_name to 'stbln' and specify if the model uses a symmetric attention matrix or not by setting stbln_symmetric to True or False. 
   
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
-  from OpenDR.engine.datasets import ExternalDataset
 
   stbln_learner = SpatioTemporalGCNLearner(temp_path='./parent_dir',
                                             batch_size=64, epochs=50,
@@ -353,8 +347,6 @@ Parameters:
                                             experiment_name='stbln_nturgbd',
                                             method_name='stbln', stbln_symmetric=False)
 
-  training_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
-  validation_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
   stbln_learner.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path='./logs', silent=True,
                     train_data_filename='train_joints.npy',
                     train_labels_filename='train_labels.pkl', val_data_filename='val_joints.npy',
