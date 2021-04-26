@@ -10,7 +10,7 @@ Bases: `engine.learners.Learner`
 The *MatchboxNetLearner* class is a wrapper of the MatchboxNet[[1]](#matchboxnet-arxiv) implementation. It is designed 
 for limited-vocabulary speech command recognition tasks.
 
-The [MatchboxNetLearner](#src.perception.speech_recognition.edgespeechnets_learner.py) class has the following public
+The [MatchboxNetLearner](#src.perception.speech_recognition.matchboxnet_learner.py) class has the following public
 methods:
 
 #### `MatchboxNetLearner` constructor
@@ -49,7 +49,7 @@ Constructor parameters:
   Specifies the optimizer to be used. Currently, only SGD is supported.
 - **checkpoint_after_iter**: *int, default=0*  
   Specifies per how many training iterations a checkpoint should be saved. If set to 0 no checkpoints will be saved.
-  Saves the models to the `temp_path` as "EdgeSpeechNet\<Architecture\>-\<epoch\>.pt"
+  Saves the models to the `temp_path` as "MatchboxNet-\<epoch\>.pth"
 - **checkpoint_load_iter**: *int, default=0*   
   Specifies a checkpoint to load based on the number of iterations before fitting. If set to 0 no checkpoint will be
   loaded.
@@ -166,7 +166,7 @@ Parameters:
   import os
   
   from OpenDR.engine.datasets import DatasetIterator
-  from OpenDR.perception.speech_recognition.edgespeechnets.edgespeechnets_learner from MatchboxNetLearner
+  from OpenDR.perception.speech_recognition.matchboxnet.matchboxnet_learner import MatchboxNetLearner
   
   class RandomDataset(DatasetIterator):
       def __init__(self):
@@ -194,7 +194,7 @@ Parameters:
   import numpy as np
   
   from OpenDR.engine.data import Timeseries
-  from OpenDR.perception.speech_recognition.edgespeechnets.edgespeechnets_learner from MatchboxNetLearner
+  from OpenDR.perception.speech_recognition.matchboxnet.matchboxnet_learner import MatchboxNetLearner
   
   learner = MatchboxNetLearner(output_clases_n=10)
   learner.load(os.path.join(".", "example", "directory", "path", "model"))
