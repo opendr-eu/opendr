@@ -99,7 +99,7 @@ MultilinearCompressiveLearner.fit(self, train_set, val_set, test_set, logging_pa
 
 This method is used for training the multilinear compressive learning model using the provided train set. If validation set is provided, it is used to validate the best model weights during the optimization process. That is, the final model weight is the one that produces the best validation accuracy during optimization. If validation set is not provided, the final model weight is the one that produces the best training accuracy during optimization.   
 
-Returns a dictionary containing a list of cross entropy measures (dict key: `cross_entropy`) and a list of accuracy (dict key: `acc`) during the entire optimization process. Note that the last value in the provided lists do not necessarily correspond to the final model performance due to the model selection policy mentioned above. To get the final performance on a dataset, please use the `eval` method of `MultilinearCompressiveLearner`. 
+Returns a dictionary containing a list of cross entropy measures (dict key: `train_cross_entropy`, `val_cross_entropy`,...) and a list of accuracy (dict key: `train_acc`, `val_acc`, ...) during the entire optimization process. Note that the last value in the provided lists do not necessarily correspond to the final model performance due to the model selection policy mentioned above. To get the final performance on a dataset, please use the `eval` method of `MultilinearCompressiveLearner`. 
  
 Parameters:
   - **train_set**: *engine.datasets.DatasetIterator*  
@@ -119,34 +119,34 @@ Parameters:
     If set to True, enables the progress bar of each epoch  
  
 Returns:
-  - **performance**: *dict*
+  - **performance**: *dict*  
     A dictionary that holds the performance curves with the following keys:  
-        - `backbone_performance`: a *dict* that contains `cross_entropy` and `acc` when training the backbone classifier
-        - `initialization_performance`: a *dict* that contains `mean_squared_error` when training the teacher's sensing and synthesis components
-        - `compressive_learning_performance`: a *dict* that contains `cross_entropy` and `acc` when training the compressive model
+        - `backbone_performance`: a *dict* that contains `cross_entropy` and `acc` when training the backbone classifier  
+        - `initialization_performance`: a *dict* that contains `mean_squared_error` when training the teacher's sensing and synthesis components  
+        - `compressive_learning_performance`: a *dict* that contains `cross_entropy` and `acc` when training the compressive model  
 
-#### `MultilinearCompressiveLearner.eval`
+#### `MultilinearCompressiveLearner.eval`   
 ```python
 MultilinearCompressiveLearner.eval(self, dataset, silent, verbose)
 ```
 
-This method is used to evaluate the current compressive learning model given the dataset 
+This method is used to evaluate the current compressive learning model given the dataset   
 Returns a dictionary containing *'cross_entropy'* and *'acc'* as keys.  
  
 Parameters:
 - **dataset**: *engine.datasets.DatasetIterator*   
   Object that holds the training set.  
-  OpenDR dataset object, with `__getitem__` producing a pair of (`engine.data.Image`, `engine.target.Category`)  
+  OpenDR dataset object, with `__getitem__` producing a pair of (`engine.data.Image`, `engine.target.Category`)    
 - **silent**: *bool*, default to False   
-  If set to False, print the cross entropy and accuracy to STDOUT 
+  If set to False, print the cross entropy and accuracy to STDOUT   
 - **verbose**: *bool*, default to True   
-  If set to True, display a progress bar of the evaluation process  
+  If set to True, display a progress bar of the evaluation process    
  
 Returns:
 - **performance**: *dict*  
   Dictionary that contains `cross_entropy` and `acc`  
 
-#### `MultilinearCompressiveLearner.infer`
+#### `MultilinearCompressiveLearner.infer`  
 ```python
 MultilinearCompressiveLearner.infer(img)
 ```
@@ -160,9 +160,9 @@ Parameters:
  
 Returns:
 - **prediction**: *engine.target.Category*  
-  Object of type `engine.target.Category` that contains the prediction
+  Object of type `engine.target.Category` that contains the prediction  
 
-#### `MultilinearCompressiveLearner.save`
+#### `MultilinearCompressiveLearner.save`  
 ```python
 MultilinearCompressiveLearner.save(path, verbose)
 ```
@@ -176,12 +176,12 @@ Parameters:
 - **verbose**: *bool*, default to True    
   If set to True, print acknowledge message when saving is successful   
 
-#### `MultilinearCompressiveLearner.load`
+#### `MultilinearCompressiveLearner.load`  
 ```python
-MultilinearCompressiveLearner.load(path, verbose)
+MultilinearCompressiveLearner.load(path, verbose)  
 ```
 
-This method is used to load a previously saved model (by calling `MultilinearCompressiveLearner.save(path)`) from a given directory. Note that under the given directory path, `metadata.json` and `model_weights.pt` must exist. 
+This method is used to load a previously saved model (by calling `MultilinearCompressiveLearner.save(path)`) from a given directory. Note that under the given directory path, `metadata.json` and `model_weights.pt` must exist.   
 
 Parameters:
 - **path**: *str*  
@@ -194,11 +194,11 @@ Parameters:
 MultilinearCompressiveLearner.download(path)
 ```
 
-This method is used to download CIFAR10 and CIFAR100 pretrained models for the `cifar_allcnn` architecture. Pretrained models are available for `backbone='cifar_allcnn` and `n_class in [10, 10]` and `compressed_shape in [(20, 19, 2), (28, 27, 1), (14, 11, 2), (18, 17, 1), (9, 6, 1), (6, 9, 1)]`. Here we should note that the input image to the pretrained model should be scaled to the range [0, 1] and standardized using  `mean = [0.4914, 0.4824, 0.4467]` and `std = [0.2471, 0.2435, 0.2616]`
+This method is used to download CIFAR10 and CIFAR100 pretrained models for the `cifar_allcnn` architecture. Pretrained models are available for `backbone='cifar_allcnn` and `n_class in [10, 10]` and `compressed_shape in [(20, 19, 2), (28, 27, 1), (14, 11, 2), (18, 17, 1), (9, 6, 1), (6, 9, 1)]`. Here we should note that the input image to the pretrained model should be scaled to the range [0, 1] and standardized using  `mean = [0.4914, 0.4824, 0.4467]` and `std = [0.2471, 0.2435, 0.2616]`  
 
-Parameters:
+Parameters:  
 - **path**: *str*   
-  Directory path to download the model. Note that under this path, `metadata.json` and `model_weights.pt` will be downloaded, thus, to download different model, different paths should be given to avoid overwriting previously downloaded model. In addition, the downloaded pretrained model weights can be loaded by calling `MultilinearCompressiveLearner.load(path)` afterward.   
+  Directory path to download the model. Note that under this path, `metadata.json` and `model_weights.pt` will be downloaded, thus, to download different model, different paths should be given to avoid overwriting previously downloaded model. In addition, the downloaded pretrained model weights can be loaded by calling `MultilinearCompressiveLearner.load(path)` afterward.     
 
 
 ### Examples
