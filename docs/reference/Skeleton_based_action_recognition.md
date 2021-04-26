@@ -751,7 +751,7 @@ Parameters:
                                                        blocksize=20, numblocks=1, numlayers=1, topology=[],
                                                        layer_threshold=1e-4, block_threshold=1e-4)
   
-  # Download the default pretrained stgcn model in the parent_dir
+  # Download the default pretrained pstgcn model in the parent_dir
   pstgcn_learner.download(
             mode="pretrained", path='./parent_dir/pretrained_models', file_name='pretrained_pstgcn')  
   
