@@ -467,8 +467,8 @@ class SpatioTemporalGCNLearner(Learner):
         else:
             output = output
 
-        m = nn.Softmax(dim=1)
-        output_ = m(output.data)
+        m = nn.Softmax(dim=0)
+        output_ = m(output.data[0])
         category = Category(output_)
 
         return category.prediction()
