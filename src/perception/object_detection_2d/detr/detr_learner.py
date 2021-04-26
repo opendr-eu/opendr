@@ -23,12 +23,14 @@ import warnings
 import torch
 from torch.utils.data import DataLoader, DistributedSampler
 from pathlib import Path
+from urllib.request import urlretrieve
 
-from algorithm.util.detect import detect
-from algorithm.datasets import build_dataset, get_coco_api_from_dataset
-from algorithm.engine import evaluate, train_one_epoch
-from algorithm.models import build_model, build_criterion, build_postprocessors
+from perception.object_detection_2d.detr.algorithm.util.detect import detect
+from perception.object_detection_2d.detr.algorithm.datasets import build_dataset, get_coco_api_from_dataset
+from perception.object_detection_2d.detr.algorithm.engine import evaluate, train_one_epoch
+from perception.object_detection_2d.detr.algorithm.models import build_model, build_criterion, build_postprocessors
 
+from engine.constants import OPENDR_SERVER_URL
 from engine.data import Image
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
@@ -37,7 +39,7 @@ from engine.target import BoundingBox, BoundingBoxList
 import torchvision.transforms as T
 import numpy as np
 import onnxruntime as ort
-import algorithm.util.misc as utils
+import perception.object_detection_2d.detr.algorithm.util.misc as utils
 from PIL import Image as im
 
 
@@ -45,8 +47,9 @@ class DetrLearner(Learner):
     def __init__(
         self,
         model_config_path=os.path.join(
-            os.path.dirname(os.path.realpath('__file__')),
-            "algorithm/configs/model_config.yaml"),
+            os.path.dirname(os.path.realpath(__file__)),
+            "algorithm/configs/model_config.yaml"
+            ),
         iters=10,
         lr=1e-4,
         batch_size=1,
@@ -336,6 +339,8 @@ class DetrLearner(Learner):
             output_dir = Path(self.temp_path)
             checkpoint = output_dir / f'checkpoint{self.checkpoint_load_iter:04}.pth'
             self.__load_checkpoint(checkpoint)
+            if not silent:
+                print("Loaded" + f'checkpoint{self.checkpoint_load_iter:04}.pth')
 
         output_dir = Path(self.temp_path)
         device = torch.device(self.device)
@@ -361,22 +366,6 @@ class DetrLearner(Learner):
         #   - Many variables are now attributes of the class
         #   - Added functionality for verbose and silent mode
         #   - Added possibibity to load from iteration specified by load_from_iter attribute
-        #
-        # Copyright 2020 - present, Facebook, Inc
-        #
-        # Modifications Copyright 2021 - present, OpenDR European Project
-        #
-        # Licensed under the Apache License, Version 2.0 (the "License");
-        # you may not use this file except in compliance with the License.
-        # You may obtain a copy of the License at
-        #
-        #     http://www.apache.org/licenses/LICENSE-2.0
-        #
-        # Unless required by applicable law or agreed to in writing, software
-        # distributed under the License is distributed on an "AS IS" BASIS,
-        # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        # See the License for the specific language governing permissions and
-        # limitations under the License.
 
         if self.args.distributed:
             sampler_train = DistributedSampler(dataset_train)
@@ -642,9 +631,13 @@ class DetrLearner(Learner):
 
         """
 
-    def download(
-            self, panoptic=False, backbone='resnet50', dilation=False,
-            pretrained=True):
+    def download_model(
+            self, 
+            panoptic=False, 
+            backbone='resnet50', 
+            dilation=False,
+            pretrained=True,
+            ):
         """
         Download utility for downloading detr models.
 
@@ -692,27 +685,29 @@ class DetrLearner(Learner):
                 self.args.dilation = False
             if panoptic:
                 model_name = model_name + '_panoptic'
-                self.model, self.postprocessors = torch.hub.load(
+                self.model = torch.hub.load(
                     'facebookresearch/detr',
                     model_name,
                     pretrained=pretrained,
-                    num_classes=self.num_classes,
-                    return_postprocessor=True,
-                    threshold=threshold
+                    num_classes=self.args.num_classes,
+                    return_postprocessor=False,
+                    threshold=self.threshold
                     )
                 self.args.dataset_file = 'coco_panoptic'
             else:
-                self.model, self.postprocessors = torch.hub.load(
+                self.model = torch.hub.load(
                     'facebookresearch/detr',
                     model_name,
                     pretrained=pretrained,
-                    num_classes=self.num_classes,
-                    return_postprocessor=True
+                    num_classes=self.args.num_classes,
+                    return_postprocessor=False
                     )
                 self.args.dataset_file = 'coco'
 
-            device = torch.device(self.device)
+            self.ort_session = None            
 
+            device = torch.device(self.device)
+            
             self.model.to(device)
             self.model_without_ddp = self.model
 
@@ -723,7 +718,24 @@ class DetrLearner(Learner):
             self.n_parameters = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         else:
             raise ValueError(self.backbone + " not a valid backbone. Supported backbones:" + str(supportedBackbones))
-
+    
+    def download_nano_coco(self):
+        url=OPENDR_SERVER_URL + "perception/object_detection_2d/detr/nano_coco/"
+        
+        if not os.path.exists(os.path.join(self.temp_path, "nano_coco")):
+            os.makedirs(os.path.join(self.temp_path, "nano_coco"))
+        
+        if not os.path.exists(os.path.join(self.temp_path, "nano_coco", "image")):
+            os.makedirs(os.path.join(self.temp_path, "nano_coco", "image"))
+        
+        # Download annotation file
+        file_url = os.path.join(url, "instances.json")
+        urlretrieve(file_url, os.path.join(self.temp_path, "nano_coco", "instances.json"))
+        # Download test image
+        file_url = os.path.join(url, "image", "000000391895.jpg")
+        urlretrieve(file_url, os.path.join(self.temp_path, "nano_coco", "image", "000000391895.jpg"))
+        
+    
     def __create_criterion(self):
         """
         Internal model for creating the criterion.

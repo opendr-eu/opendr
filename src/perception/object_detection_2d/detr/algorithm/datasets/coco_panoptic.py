@@ -21,7 +21,7 @@ import torch
 from PIL import Image
 
 from panopticapi.utils import rgb2id
-from util.box_ops import masks_to_boxes
+from perception.object_detection_2d.detr.algorithm.util.box_ops import masks_to_boxes
 
 from .coco import make_coco_transforms
 

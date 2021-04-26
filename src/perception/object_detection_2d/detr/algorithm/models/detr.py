@@ -20,8 +20,8 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from algorithm.util import box_ops
-from algorithm.util.misc import (NestedTensor, nested_tensor_from_tensor_list,
+from perception.object_detection_2d.detr.algorithm.util import box_ops
+from perception.object_detection_2d.detr.algorithm.util.misc import (NestedTensor, nested_tensor_from_tensor_list,
                        accuracy, get_world_size, interpolate,
                        is_dist_avail_and_initialized)
 
@@ -416,4 +416,4 @@ def build_pp(args):
             is_thing_map = {i: i <= 90 for i in range(201)}
             postprocessors["panoptic"] = PostProcessPanoptic(is_thing_map, threshold=0.85)
 
-    return criterion
+    return postprocessors

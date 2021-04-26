@@ -17,7 +17,7 @@
 Mostly copy-paste from https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/detr_demo.ipynb
 """
 import torch
-from algorithm.util.box_ops import rescale_bboxes
+from perception.object_detection_2d.detr.algorithm.util.box_ops import rescale_bboxes
 import numpy as np
 
 @torch.no_grad()

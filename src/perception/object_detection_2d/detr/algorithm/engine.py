@@ -23,9 +23,9 @@ from typing import Iterable
 
 import torch
 
-import algorithm.util.misc as utils
-from algorithm.datasets.coco_eval import CocoEvaluator
-from algorithm.datasets.panoptic_eval import PanopticEvaluator
+import perception.object_detection_2d.detr.algorithm.util.misc as utils
+from perception.object_detection_2d.detr.algorithm.datasets.coco_eval import CocoEvaluator
+from perception.object_detection_2d.detr.algorithm.datasets.panoptic_eval import PanopticEvaluator
 
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,

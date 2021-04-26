@@ -9,8 +9,8 @@ import torch
 import torchvision.transforms as T
 import torchvision.transforms.functional as F
 
-from algorithm.util.box_ops import box_xyxy_to_cxcywh
-from algorithm.util.misc import interpolate
+from perception.object_detection_2d.detr.algorithm.util.box_ops import box_xyxy_to_cxcywh
+from perception.object_detection_2d.detr.algorithm.util.misc import interpolate
 
 
 def crop(image, target, region):

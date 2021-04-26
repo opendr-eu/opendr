@@ -2,7 +2,7 @@
 import json
 import os
 
-import algorithm.util.misc as utils
+import perception.object_detection_2d.detr.algorithm.util.misc as utils
 
 try:
     from panopticapi.evaluation import pq_compute
