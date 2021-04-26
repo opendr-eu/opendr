@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Union
 import numpy as np
+import torch
 
 
 class BaseTarget:
@@ -44,6 +46,55 @@ class Target(BaseTarget):
         self.data = None
         self.confidence = None
         self.action = None
+
+
+class Category(Target):
+    """
+    This target is used for 1-of-K categorization / classification problems.
+    """
+
+    def __init__(self, data: Union[int, torch.Tensor, np.ndarray], num_classes: int=None):
+        """Initialize a category.
+
+        Args:
+            data (Union[int, torch.Tensor, np.ndarray]):
+                Class integer or one-dimensional array / tensor of class probabilities.
+            num_classes (bool, optional):
+                Number of classes. Must be specified only if `data` is an integer. Defaults to None.
+        """
+        super().__init__()
+        self.data = Category.__to_one_hot(data, num_classes)
+        assert (
+            torch.isclose(torch.sum(self.data), torch.tensor(1.0))
+        ), "Category probabilities should sum to 1.0"
+        self.num_classes = len(self.data)
+
+    def __str__(self):
+        return str(self.data)
+
+    @staticmethod
+    def __to_one_hot(
+        data: Union[int, torch.Tensor, np.ndarray],
+        num_classes: int
+    ) -> torch.Tensor:
+        if type(data) == torch.Tensor:
+            return data
+        if type(data) == np.ndarray:
+            return torch.tensor(data, dtype=torch.float32)
+        assert (
+            type(data) == int and type(num_classes) == int and data >= 0 and num_classes > 0
+        ), "Inputs should be non-negative integers"
+        output = torch.nn.functional.one_hot(torch.tensor(data), num_classes).float()
+        return output
+
+    @property
+    def prediction(self) -> int:
+        """Index of the predicted class
+
+        Returns:
+            int: index the predicted class
+        """
+        return int(self.data.argmax(dim=0))
 
 
 class Keypoint(Target):
@@ -89,6 +140,23 @@ class Pose(Target):
         for name, kpt in zip(Pose.kpt_names, self.data.tolist()):
             out_string += name + ": " + str(kpt) + "\n"
         return out_string
+
+    def __getitem__(self, key):
+        """  Allows for accessing keypoint position using either integers or keypoint names """
+        if isinstance(key, int):
+            if key >= Pose.num_kpts or key < 0:
+                raise ValueError('Pose supports ' + str(Pose.num_kpts) + ' keypoints. Keypoint id ' + str(
+                    key) + ' is not within the supported range')
+            else:
+                return self.data[key]
+        elif isinstance(key, str):
+            try:
+                position = Pose.kpt_names.index(key)
+                return self.data[position]
+            except:
+                raise ValueError('Keypoint ' + key + ' not supported.')
+        else:
+            raise ValueError('Only string and integers are supported for retrieving keypoints.')
 
 
 class BoundingBox(Target):
