@@ -1,16 +1,18 @@
-# Copyright 2020 Delft University of Technology
-#
+# Copyright 2021 - present, OpenDR European Project
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-#
+
 #     http://www.apache.org/licenses/LICENSE-2.0
-#
+
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
 import os
 import datetime
 import json
@@ -21,14 +23,17 @@ import warnings
 import torch
 from torch.utils.data import DataLoader, DistributedSampler
 from pathlib import Path
+
 from algorithm.util.detect import detect
 from algorithm.datasets import build_dataset, get_coco_api_from_dataset
 from algorithm.engine import evaluate, train_one_epoch
 from algorithm.models import build_model, build_criterion, build_postprocessors
+
 from engine.data import Image
 from engine.learners import Learner
 from engine.datasets import ExternalDataset, DatasetIterator
 from engine.target import BoundingBox, BoundingBoxList
+
 import torchvision.transforms as T
 import numpy as np
 import onnxruntime as ort
@@ -36,7 +41,7 @@ import algorithm.util.misc as utils
 from PIL import Image as im
 
 
-class PixelObjectDetection2DLearner(Learner):
+class DetrLearner(Learner):
     def __init__(
         self,
         model_config_path=os.path.join(
@@ -51,14 +56,14 @@ class PixelObjectDetection2DLearner(Learner):
         network_head="",
         checkpoint_after_iter=0,
         checkpoint_load_iter=0,
-        temp_path="/tmp",
-        device="cpu",
+        temp_path="temp",
+        device="cuda",
         threshold=0.7,
         scale=1.0
     ):
 
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
-        super(PixelObjectDetection2DLearner, self).__init__(
+        super(DetrLearner, self).__init__(
             iters=iters,
             lr=lr,
             batch_size=batch_size,
@@ -102,7 +107,7 @@ class PixelObjectDetection2DLearner(Learner):
         self.infer_transform = T.Compose([
             T.Resize(self.args.input_size),
             T.ToTensor(),
-            T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            T.Normalize(self.args.image_mean, self.args.image_std)
         ])
 
         # Initialise temp path
@@ -265,7 +270,7 @@ class PixelObjectDetection2DLearner(Learner):
         dataset : ExternalDataset class object or DatasetIterator class object
             Object that holds the training dataset.
         val_dataset : ExternalDataset class object or DatasetIterator class object, optional
-            object that holds the validation dataset. The default is None.
+            Object that holds the validation dataset. The default is None.
         logging_path : str, optional
             Path to save tensorboard log files. If set to None or '', tensorboard logging is
             disabled. The default is ''.
@@ -314,17 +319,14 @@ class PixelObjectDetection2DLearner(Learner):
             if not silent and verbose:
                 print('number of params:', self.n_parameters)
 
-        if self.criterion is None:
-            self.__create_criterion()
-
         if self.postprocessors is None:
             self.__create_postprocessors()
 
-        if self.torch_optimizer is None:
-            self.__create_optimizer()
+        self.__create_criterion()
 
-        if self.lr_scheduler is None:
-            self.__create_scheduler()
+        self.__create_optimizer()
+
+        self.__create_scheduler()
 
         if self.args.frozen_weights is not None:
             checkpoint = torch.load(self.args.frozen_weights, map_location=self.device)
@@ -337,7 +339,6 @@ class PixelObjectDetection2DLearner(Learner):
 
         output_dir = Path(self.temp_path)
         device = torch.device(self.device)
-
         dataset_train = self.__prepare_dataset(
             dataset,
             image_set="train",
@@ -354,6 +355,28 @@ class PixelObjectDetection2DLearner(Learner):
                 annotations_folder_name=annotations_folder,
                 annotations_file_name=val_annotations_file
                 )
+
+        # Starting from here, code is mainly copied from https://github.com/facebookresearch/detr/blob/master/main.py
+        # Main modifications:
+        #   - Many variables are now attributes of the class
+        #   - Added functionality for verbose and silent mode
+        #   - Added possibibity to load from iteration specified by load_from_iter attribute
+        #
+        # Copyright 2020 - present, Facebook, Inc
+        #
+        # Modifications Copyright 2021 - present, OpenDR European Project
+        #
+        # Licensed under the Apache License, Version 2.0 (the "License");
+        # you may not use this file except in compliance with the License.
+        # You may obtain a copy of the License at
+        #
+        #     http://www.apache.org/licenses/LICENSE-2.0
+        #
+        # Unless required by applicable law or agreed to in writing, software
+        # distributed under the License is distributed on an "AS IS" BASIS,
+        # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        # See the License for the specific language governing permissions and
+        # limitations under the License.
 
         if self.args.distributed:
             sampler_train = DistributedSampler(dataset_train)
@@ -439,6 +462,9 @@ class PixelObjectDetection2DLearner(Learner):
 
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
+
+        # End of code copied from https://github.com/facebookresearch/detr/blob/master/main.py
+
         if not silent:
             print('Training time {}'.format(total_time_str))
         if val_dataset is not None:
@@ -482,11 +508,10 @@ class PixelObjectDetection2DLearner(Learner):
         if self.model is None:
             raise UserWarning('A model should be loaded first')
 
-        if self.criterion is None:
-            self.__create_criterion()
-
         if self.postprocessors is None:
             self.__create_postprocessors()
+
+        self.__create_criterion()
 
         device = torch.device(self.device)
 
@@ -619,22 +644,7 @@ class PixelObjectDetection2DLearner(Learner):
 
     def download(
             self, panoptic=False, backbone='resnet50', dilation=False,
-            pretrained=True, threshold=0.85,
-            classes=['N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
-                     'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A',
-                     'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
-                     'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack',
-                     'umbrella', 'N/A', 'N/A', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
-                     'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
-                     'skateboard', 'surfboard', 'tennis racket', 'bottle', 'N/A', 'wine glass',
-                     'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
-                     'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
-                     'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table', 'N/A',
-                     'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
-                     'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
-                     'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
-                     ]
-            ):
+            pretrained=True):
         """
         Download utility for downloading detr models.
 
@@ -658,24 +668,6 @@ class PixelObjectDetection2DLearner(Learner):
             If set to true, postprocessors are returned. The default is False.
         threshold : float, optional
             Sets the threshold for coco_panoptic models. The default is 0.85.
-        classes : list of strings, optional
-            Sets the names and number of classes in the model. Coco classes
-            are used by default. The default is
-            [
-        'N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
-        'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A',
-        'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
-        'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack',
-        'umbrella', 'N/A', 'N/A', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
-        'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
-        'skateboard', 'surfboard', 'tennis racket', 'bottle', 'N/A', 'wine glass',
-        'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
-        'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
-        'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table', 'N/A',
-        'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
-        'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
-        'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
-        'toothbrush'].
 
         Raises
         ------
@@ -687,8 +679,8 @@ class PixelObjectDetection2DLearner(Learner):
         None.
 
         """
-        self.num_classes = len(classes)
-        self.args.classes = classes
+        torch.hub.set_dir(self.temp_path)
+
         supportedBackbones = ['resnet50', 'resnet101']
         if backbone.lower() in supportedBackbones:
             model_name = f'detr_{backbone}'
