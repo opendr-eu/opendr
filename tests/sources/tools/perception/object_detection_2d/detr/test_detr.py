@@ -17,7 +17,11 @@ import unittest
 import shutil
 import os
 import torch
+
+from engine.datasets import ExternalDataset
+
 from perception.object_detection_2d.detr.detr_learner import DetrLearner
+from PIL import Image
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -44,184 +48,122 @@ class TestDetrLearner(unittest.TestCase):
     def setUpClass(cls):
         cls.temp_dir = os.path.join("tests", "sources", "tools",
                                     "perception", "object_detection_2d",
-                                    "detr",
-                                    "detr_temp")
+                                    "detr", "detr_temp")
 
-        cls.model_backbones = "resnet50"
+        cls.model_backbone = "resnet50"
 
-        # TODO: Get dataset from server
-        cls.dataset_path = "/home/jelle/nano"
-
-        print("Dataset downloaded", file=sys.stderr)
-
-        learner = DetrLearner(temp_path=cls.temp_dir)
-
-        learner.download(backbone=model_backbone)
-
+        cls.learner = DetrLearner(iters=1,
+                                  temp_path=cls.temp_dir,
+                                  backbone=cls.model_backbone,
+                                  device=DEVICE)
+        
+        cls.learner.download_model(backbone=cls.model_backbone)
+        
         print("Model downloaded", file=sys.stderr)
+        
+        cls.learner.download_nano_coco()
+        
+        print("Data downloaded", file=sys.stderr)
+        
+        cls.dataset_path = os.path.join(cls.temp_dir, "nano_coco")
+        
+        cls.dataset = ExternalDataset(
+            cls.dataset_path, 
+            "coco"
+        )
 
+        
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
-
+        rmdir(os.path.join(cls.temp_dir, 'checkpoints'))
+        rmdir(os.path.join(cls.temp_dir, 'facebookresearch_detr_master'))
         rmdir(os.path.join(cls.temp_dir))
 
     def test_fit(self):
-
-        def test_model(name):
-            dataset = MotDat(self.dataset_path)
-
-            learner = ObjectTracking2DFairMotLearner(
-                iters=1,
-                num_epochs=1,
-                checkpoint_after_iter=3,
-                temp_path=self.temp_dir,
-                device=DEVICE,
-            )
-
-            starting_param = list(learner.model.parameters())[0].clone()
-
-            learner.fit(
-                dataset,
-                val_epochs=-1,
-                train_split_paths=self.train_split_paths,
-                val_split_paths=self.train_split_paths,
-                verbose=True,
-            )
-            new_param = list(learner.model.parameters())[0].clone()
-            self.assertFalse(torch.equal(starting_param, new_param))
-
-            print("Fit", name, "ok", file=sys.stderr)
-
-        for name in self.model_names:
-            test_model(name)
-
-    def test_fit_iterator(self):
-        def test_model(name):
-            dataset = MotDatasetIterator(self.dataset_path, self.train_split_paths)
-            eval_dataset = RawMotDatasetIterator(self.dataset_path, self.train_split_paths)
-
-            learner = ObjectTracking2DFairMotLearner(
-                iters=1,
-                num_epochs=1,
-                checkpoint_after_iter=3,
-                temp_path=self.temp_dir,
-                device=DEVICE,
-            )
-
-            starting_param = list(learner.model.parameters())[0].clone()
-
-            learner.fit(
-                dataset,
-                val_dataset=eval_dataset,
-                val_epochs=-1,
-                train_split_paths=self.train_split_paths,
-                val_split_paths=self.train_split_paths,
-                verbose=True,
-            )
-            new_param = list(learner.model.parameters())[0].clone()
-            self.assertFalse(torch.equal(starting_param, new_param))
-
-            print("Fit iterator", name, "ok", file=sys.stderr)
-
-        for name in self.model_names:
-            test_model(name)
+        self.learner.model = None
+        self.learner.ort_session = None
+        
+        self.learner.fit(
+            self.dataset,
+            annotations_folder="", 
+            train_annotations_file="instances.json", 
+            train_images_folder="image", 
+            verbose=True
+        )
 
     def test_eval(self):
-        def test_model(name):
-            model_path = os.path.join(self.temp_dir, name)
-            eval_dataset = RawMotDatasetIterator(self.dataset_path, self.train_split_paths)
+        self.learner.model = None
+        self.learner.ort_session = None
+        
+        self.learner.download_model(
+            backbone=self.model_backbone
+        )
+        
+        result = self.learner.eval(
+            self.dataset,
+            images_folder='image',
+            annotations_folder='',
+            annotations_file='instances.json'
+        )
 
-            learner = ObjectTracking2DFairMotLearner(
-                iters=1,
-                num_epochs=1,
-                checkpoint_after_iter=3,
-                temp_path=self.temp_dir,
-                device=DEVICE,
-            )
-            learner.load(model_path, verbose=True)
-            result = learner.eval(eval_dataset)
-
-            self.assertGreater(len(result["mota"]), 0)
-
-        for name in self.model_names:
-            test_model(name)
+        self.assertGreater(len(result), 0)
 
     def test_infer(self):
-        def test_model(name):
-            model_path = os.path.join(self.temp_dir, name)
-            eval_dataset = RawMotDatasetIterator(self.dataset_path, self.train_split_paths)
-
-            learner = ObjectTracking2DFairMotLearner(
-                iters=1,
-                num_epochs=1,
-                checkpoint_after_iter=3,
-                temp_path=self.temp_dir,
-                device=DEVICE,
+        self.learner.model = None
+        self.learner.ort_session = None
+        
+        self.learner.download_model(
+            backbone="resnet50"
+        )
+        
+        image_path = os.path.join(
+            self.dataset_path, 
+            "image",
+            "000000391895.jpg"
             )
-            learner.load(model_path, verbose=True)
-            result = learner.infer(eval_dataset[0][0], 10)
-
-            self.assertTrue(len(result) > 0)
-
-            result = learner.infer([
-                eval_dataset[0][0],
-                eval_dataset[1][0],
-            ])
-
-            self.assertTrue(len(result) == 2)
-            self.assertTrue(len(result[0]) > 0)
-
-        for name in self.model_names:
-            test_model(name)
+        
+        image = Image.open(image_path)
+        
+        result = self.learner.infer(image)
+        
+        self.assertGreater(len(result), 0)
 
     def test_save(self):
-        def test_model(name):
-            model_path = os.path.join(self.temp_dir, "test_save_" + name)
-            save_path = os.path.join(model_path, "save")
+        self.learner.model = None
+        self.learner.ort_session = None
+        
+        model_dir = os.path.join(self.temp_dir, "test_model")
+        
+        self.learner.download_model(
+            backbone="resnet50"
+        )
+        
+        self.learner.save(model_dir)
+        
+        starting_param_1 = list(self.learner.model.parameters())[0].clone()
 
-            learner = ObjectTracking2DFairMotLearner(
-                iters=1,
-                num_epochs=1,
-                checkpoint_after_iter=3,
-                temp_path=self.temp_dir,
-                device=DEVICE,
-            )
+        learner2 = DetrLearner(
+            iters=1,
+            temp_path=self.temp_dir,
+            device=DEVICE,
+        )
+        learner2.load(model_dir)
 
-            learner.save(save_path, True)
-            starting_param_1 = list(learner.model.parameters())[0].clone()
-
-            learner2 = ObjectTracking2DFairMotLearner(
-                iters=1,
-                num_epochs=1,
-                checkpoint_after_iter=3,
-                temp_path=self.temp_dir,
-                device=DEVICE,
-            )
-            learner2.load(save_path)
-
-            new_param = list(learner2.model.parameters())[0].clone()
-            self.assertTrue(torch.equal(starting_param_1, new_param))
-
-        for name in self.model_names:
-            test_model(name)
-
+        new_param = list(learner2.model.parameters())[0].clone()
+        self.assertTrue(torch.equal(starting_param_1, new_param))
+        
+        rmdir(model_dir)
+        
     def test_optimize(self):
-        def test_model(name):
+        self.learner.model = None
+        self.learner.ort_session = None
+        
+        self.learner.download_model(
+            backbone="resnet50"
+        )
 
-            learner = ObjectTracking2DFairMotLearner(
-                iters=1,
-                num_epochs=1,
-                checkpoint_after_iter=3,
-                temp_path=self.temp_dir,
-                device=DEVICE,
-            )
-
-            with self.assertRaises(Exception):
-                learner.optimize()
-
-        for name in self.model_names:
-            test_model(name)
+        self.learner.optimize()
 
 
 if __name__ == "__main__":
