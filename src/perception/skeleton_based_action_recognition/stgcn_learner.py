@@ -466,8 +466,11 @@ class SpatioTemporalGCNLearner(Learner):
             output, l1 = output
         else:
             output = output
-        # value, predict_label = torch.max(output.data, 1)
-        category = Category(output.data)
+
+        m = nn.Softmax(dim=1)
+        output_ = m(output.data)
+        category = Category(output_)
+
         return category.prediction()
 
     def optimize(self, do_constant_folding=False):
