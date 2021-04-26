@@ -112,7 +112,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertNotEqual(len(total_score), 0, msg="results of multi-stream-eval contains empty list.")
 
     def test_infer(self):
-        test_data = np.load(self.Test_DATASET_PATH)
+        test_data = np.load(self.Test_DATASET_PATH)[0:1]
         model_saved_path = self.Pretrained_MODEL_PATH
         model_name = 'stgcn_nturgbd-0-10'
         self.stgcn_action_classifier.model = None

@@ -111,7 +111,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertNotEqual(len(score), 0, msg="Eval results contains empty list.")
 
     def test_infer(self):
-        test_data = np.load(self.Test_DATASET_PATH)
+        test_data = np.load(self.Test_DATASET_PATH)[0:1]
         model_saved_path = self.Pretrained_MODEL_PATH
         model_name = self.experiment_name + '-' + str(len(self.pstgcn_action_classifier.topology)) + '-' + str(
             self.pstgcn_action_classifier.topology[-1])
