@@ -212,10 +212,10 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
 
         url = str(
             Path(OPENDR_SERVER_URL) /
-            "perception" / "activity_recognition" / "datasets" / "kinetics400micro.zip"
+            "perception" / "activity_recognition" / "datasets" / "kinetics400mini.zip"
         )
-        zip_path = str(Path(path) / "kinetics400micro.zip")
-        unzip_path = str(Path(path) / "kinetics400micro")
+        zip_path = str(Path(path) / "kinetics400mini.zip")
+        unzip_path = str(Path(path) / "kinetics400mini")
 
         logger.info(f"Downloading Kinetics400 mini from {url}")
         urlretrieve(url=url, filename=zip_path)
