@@ -81,11 +81,14 @@ class TestLicense(unittest.TestCase):
         skippedDirectoryPaths = [
             'src/perception/pose_estimation/lightweight_open_pose/algorithm',
             'src/perception/object_detection_3d/voxel_object_detection_3d/second_detector',
-            'src/perception/object_tracking_2d/fair_mot/algorithm',
-            'src/perception/face_recognition/algorithm'
+            'src/perception/face_recognition/algorithm',
+            'src/perception/activity_recognition/x3d/algorithm',
+            'src/perception/object_tracking_2d/fair_mot/algorithm'
         ]
 
-        skippedFilePaths = []
+        skippedFilePaths = [
+            'src/perception/activity_recognition/datasets/utils/decoder.py',
+        ]
 
         skippedDirectories = [
             'build'
