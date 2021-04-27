@@ -1,4 +1,4 @@
-# Copyright 1996-2020 OpenDR European Project
+# Copyright 2020-2021 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,6 +53,9 @@ from urllib.request import urlretrieve
 
 from engine.learners import Learner
 from engine.data import Image
+from engine.target import Category
+from engine.constants import OPENDR_SERVER_URL
+
 from perception.face_recognition.algorithm.backbone.model_resnet import ResNet_50, ResNet_101, ResNet_152
 from perception.face_recognition.algorithm.backbone.model_irse import IR_50, IR_101, IR_152, IR_SE_50, IR_SE_101, \
     IR_SE_152
@@ -128,7 +131,7 @@ class FaceRecognitionLearner(Learner):
         self.pairs = None
         self.ort_backbone_session = None  # ONNX runtime inference session for backbone
         self.ort_head_session = None  # ONNX runtime inference session for head
-        self.temp_path = './temp'
+        self.temp_path = temp_path
 
     def __create_model(self, num_class=0):
         # Create the backbone architecture
@@ -162,10 +165,20 @@ class FaceRecognitionLearner(Learner):
         else:
             self.network_head_model = None
 
-    def align(self, data='', dest='/aligned', crop_size=112):
+    def align(self, data='', dest='/aligned', crop_size=112, silent=False):
+        """
+        This method is used for aligning the faces in an imagefolder dataset.
 
+        :param data: The folder containing the images to be aligned
+        :type data: str
+        :param dest: destination folder to save the aligned images, defaults to './temp/aligned'
+        :type dest: str
+        :param silent: if set to True, disables printing training progress reports to STDOUT
+        :type silent: bool, optional
+        """
         face_align(data, dest, crop_size)
-        print('Face align finished')
+        if not silent:
+            print('Face align finished')
 
     def fit(self, dataset, val_dataset=None, logging_path='', silent=False, verbose=True):
         """
@@ -432,6 +445,15 @@ class FaceRecognitionLearner(Learner):
             self.database = database
 
     def infer(self, img):
+        """
+        This method is used to perform face recognition on an image.
+
+        :param img: image to run inference on
+        :rtype img: engine.data.Image class object
+        :return: Returns an engine.target.Category object, which holds an ID and the distance between
+                 the embedding of the input image and the closest embedding existing in the reference database.
+        :rtype: engine.target.Category object
+        """
         if not isinstance(img, Image):
             img = Image(img)
         img = img.numpy()
@@ -447,7 +469,7 @@ class FaceRecognitionLearner(Learner):
             distance = self.threshold
             if distance == 0:
                 distance = 1000
-            to_keep = None
+            person = None
 
             self.backbone_model.eval()
             with torch.no_grad():
@@ -473,10 +495,11 @@ class FaceRecognitionLearner(Learner):
                         dist = 1000
                     if dist < distance:
                         distance = dist
-                        to_keep = key
-                        to_keep = to_keep.split('/')
-                        to_keep = to_keep[-1]
-            return to_keep
+                        person = key
+                        person = person.split('/')
+                        person = person[-1]
+            person = Category(person, distance)
+            return person
 
         elif self.network_head == 'classifier':
             self.backbone_model.eval()
@@ -500,23 +523,42 @@ class FaceRecognitionLearner(Learner):
                 else:
                     outs = self.network_head_model(features)
                     _, predicted = torch.max(outs.data, 1)
-                    return self.classes[predicted.item()]
+                    person = Category(self.classes[predicted.item()])
+                    return person
         else:
             raise UserWarning('Infer should be called either with backbone_only mode or with a classifier head')
 
-    def eval(self, dataset=None, num_pairs=1000):
+    def eval(self, dataset=None, num_pairs=1000, silent=False, verbose=True):
+        """
+        This method is used to evaluate a trained model on an evaluation dataset.
+
+        :param dataset: object that holds the evaluation dataset.
+        :type dataset: ExternalDataset class object or DatasetIterator class object
+        :param num_pairs: the number of pairs to be created for evaluation in a custom imagefolder dataset,
+                    defaults to 1000
+        :type num_pairs: int
+        :param silent: if set to True, disables all printing of evalutaion progress reports and other information
+                       to STDOUT, defaults to 'False'
+        :type silent: bool, optional
+        :param verbose: if set to True, enables the maximum verbosity, defaults to 'True'
+        :type verbose: bool, optional
+        :returns: returns stats regarding evaluation
+        :rtype: dict
+        """
         if self._model is None:
             raise UserWarning('A model should be loaded first')
         if self.network_head != 'classifier' and self.mode != 'head_only':
             self.backbone_model.eval()
-            self.data, self.pairs = get_val_data(dataset.path, dataset.dataset_type, num_pairs)
-            print("=" * 60)
-            print("Perform Evaluation on " + dataset.dataset_type)
+            if not silent:
+                print("=" * 60)
+                print("Perform Evaluation on " + dataset.dataset_type)
             if dataset.dataset_type == 'imagefolder':
+                self.data = get_val_data(dataset.path, dataset.dataset_type, num_pairs)
                 eval_accuracy, best_threshold = perform_val_imagefolder(self.device, self.embedding_size,
                                                                         self.batch_size, self.backbone_model, self.data,
                                                                         self.num_workers)
             else:
+                self.data, self.pairs = get_val_data(dataset.path, dataset.dataset_type)
                 eval_accuracy, best_threshold = perform_val(self.device, self.embedding_size,
                                                             self.batch_size, self.backbone_model, self.data,
                                                             self.pairs)
@@ -524,16 +566,18 @@ class FaceRecognitionLearner(Learner):
             self.threshold = float(best_threshold)
             if self.logging:
                 buffer_val(self.writer, dataset.dataset_type, eval_accuracy, best_threshold, self.epoch + 1)
-            print(
-                "Evaluation on " + dataset.dataset_type + ": Acc: {} ".format(eval_accuracy))
-            print("=" * 60)
+            if not silent:
+                print(
+                    "Evaluation on " + dataset.dataset_type + ": Acc: {} ".format(eval_accuracy))
+                print("=" * 60)
             return {'Accuracy': eval_accuracy, 'Best_Threshold': best_threshold}
 
         else:
             self.backbone_model.eval()
             if self.mode != 'backbone_only':
                 self.network_head_model.eval()
-            print("Perform Evaluation on Image Dataset")
+            if not silent:
+                print("Perform Evaluation on Image Dataset")
             eval_transform = transforms.Compose([
                 transforms.Resize([int(128 * self.input_size[0] / 112), int(128 * self.input_size[0] / 112)]),
                 transforms.CenterCrop([self.input_size[0], self.input_size[1]]),
@@ -560,9 +604,9 @@ class FaceRecognitionLearner(Learner):
                     correct += (predicted == labels).sum().item()
             if self.logging:
                 self.writer.add_scalar("Evaluation_Accuracy", 100 * correct / total, self.epoch + 1)
-
-            print('Accuracy of the network on {} test images: {}'.format(total,
-                                                                         100 * correct / total))
+            if not silent:
+                print('Accuracy of the network on {} test images: {}'.format(total,
+                                                                             100 * correct / total))
             return {"Accuracy": 100 * correct / total}
 
     def __save(self, path):
@@ -589,21 +633,66 @@ class FaceRecognitionLearner(Learner):
         torch.save(head_custom_dict, os.path.join(path, "head_{}_iter_{}".format(
             self.network_head, self.epoch)))
 
-    def download(self, path=None):
-        if self.mode == 'backbone_only' or self.mode == 'finetune':
-            if not os.path.exists(os.path.join(path, 'backbone_' + self.backbone + '.pth')):
-                url = 'ftp://opendrdata.csd.auth.gr/face_recognition/'
-                url_backbone = os.path.join(url, 'backbone_' + self.backbone + '.pth')
-                url_backbone_json = os.path.join(url, 'backbone_' + self.backbone + '.json')
-                if not os.path.exists(path):
-                    os.makedirs(path)
-                urlretrieve(url_backbone, os.path.join(path, 'backbone_' + self.backbone + '.pth'))
-                urlretrieve(url_backbone_json, os.path.join(path, 'backbone_' + self.backbone + '.json'))
-                print('Model Downloaded')
+    def download(self, path=None, mode="pretrained"):
+        """
+        Download utility for various Face Recognition components. Downloads files depending on mode and
+        saves them in the path provided. It supports downloading:
+        1) the corresponding pretrained backbone
+        3) a test dataset with a single image
+
+        :param path: Local path to save the files, defaults to self.temp_path if None
+        :type path: str, path, optional
+        :param mode: What file to download, can be one of "pretrained", "test_data", defaults to "pretrained"
+        :type mode: str, optional
+        :param verbose: Whether to print messages in the console, defaults to False
+        :type verbose: bool, optional
+        """
+        valid_modes = ['pretrained', 'test_data']
+        if mode not in valid_modes:
+            raise UserWarning("mode parameter not valid:", mode, ", should be one of:", valid_modes)
+        if mode == 'pretrained':
+
+            if path is None:
+                path = self.temp_path
+            if not os.path.exists(path):
+                os.makedirs(path)
+
+            if self.mode == 'backbone_only' or self.mode == 'finetune':
+                if not os.path.exists(os.path.join(path, 'backbone_' + self.backbone + '.pth')):
+                    url = OPENDR_SERVER_URL + 'perception/face_recognition/'
+                    url_backbone = os.path.join(url, 'backbone_' + self.backbone + '.pth')
+                    url_backbone_json = os.path.join(url, 'backbone_' + self.backbone + '.json')
+                    urlretrieve(url_backbone, os.path.join(path, 'backbone_' + self.backbone + '.pth'))
+                    urlretrieve(url_backbone_json, os.path.join(path, 'backbone_' + self.backbone + '.json'))
+                    print('Model downloaded')
+                else:
+                    print('Model already exists')
             else:
-                print('Model already exists')
-        else:
-            raise UserWarning('Only a pretrained backbone can be downloaded')
+                raise UserWarning('Only a pretrained backbone can be downloaded,'
+                                  ' change Learners mode to "backbone_only" or "finetune"')
+
+        if mode == 'test_data':
+
+            if path is None:
+                path = self.temp_path
+            if not os.path.exists(path):
+                os.makedirs(path)
+
+            image_parent = os.path.join(path, 'test_data', 'images')
+            if not os.path.exists(image_parent):
+                os.makedirs(image_parent)
+                url = OPENDR_SERVER_URL + 'perception/face_recognition/test_data/images'
+                for i in range(1, 7):
+                    image_path = os.path.join(image_parent, str(i))
+                    ftp_parent = os.path.join(url, str(i))
+                    if not os.path.exists(image_path):
+                        os.makedirs(image_path)
+                    for j in range(1, 3):
+                        image_dl = os.path.join(ftp_parent, str(j) + '.jpg')
+                        urlretrieve(image_dl, os.path.join(image_path, str(j) + '.jpg'))
+                print('Data Downloaded')
+            else:
+                print('Data already downloaded')
 
     def save(self, path=None):
         """
@@ -645,7 +734,7 @@ class FaceRecognitionLearner(Learner):
                                  'optimized': True,
                                  'optimizer_info': {}
                                  }
-            shutil.copy2(self.temp_path + 'onnx_' + self.backbone + '_backbone_model.onnx',
+            shutil.copy2(os.path.join(self.temp_path, 'onnx_' + self.backbone + '_backbone_model.onnx'),
                          backbone_metadata['model_paths'])
         with open(os.path.join(path, 'backbone_' + self.backbone + '.json'), 'w', encoding='utf-8') as f:
             json.dump(backbone_metadata, f, ensure_ascii=False, indent=4)
@@ -709,7 +798,7 @@ class FaceRecognitionLearner(Learner):
             if os.path.exists(os.path.join(path, 'backbone_' + self.backbone + '.pth')):
                 self.__create_model(num_class=0)
                 self.backbone_model.load_state_dict(torch.load(
-                    os.path.join(path, 'backbone_' + self.backbone + '.pth')))
+                    os.path.join(path, 'backbone_' + self.backbone + '.pth'), map_location=torch.device(self.device)))
                 self._model = {self.backbone_model, self.network_head_model}
             else:
                 raise UserWarning('No backbone_' + self.backbone + '.pth found. Please have a check')
