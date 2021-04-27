@@ -785,21 +785,4 @@ class SpeechCommand(Target):
             return f"Class {self.data} speech command with confidence {self.confidence}"
         else:
             return f"Class {self.data} speech command"
-
-
-class Category(Target):
-    """
-    This target is used for simple classification problems. Contains the predicted class or ground truth
-    and optionally the prediction confidence.
-    """
-
-    def __init__(self, prediction, confidence=None):
-        super().__init__()
-        self.data = prediction
-        self.confidence = confidence
-
-    def __str__(self):
-        if self.confidence is not None:
-            return f"Class {self.data} with confidence {self.confidence}"
-        else:
-            return f"Class {self.data} "
+        
