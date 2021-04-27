@@ -17,7 +17,7 @@ import json
 import random
 import torch
 import zipfile
-from os import getcwd
+import os
 from engine.datasets import ExternalDataset, DatasetIterator
 from pathlib import Path
 from logging import getLogger
@@ -101,7 +101,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
             train_transform, eval_transform = standard_video_transforms()
             self.video_transform = train_transform if self.split == "train" else eval_transform
 
-        validate_splits = Memory(Path(getcwd()) / ".cache", verbose=1).cache(
+        validate_splits = Memory(Path(os.getcwd()) / ".cache", verbose=1).cache(
             _validate_splits
         ) if use_caching else _validate_splits
 
@@ -210,9 +210,12 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         """
         path.mkdir(parents=True, exist_ok=True)
 
-        url = str(
-            Path(OPENDR_SERVER_URL) /
-            "perception" / "activity_recognition" / "datasets" / "kinetics400mini.zip"
+        url = os.path.join(
+            OPENDR_SERVER_URL,
+            "perception",
+            "activity_recognition",
+            "datasets",
+            "kinetics400mini.zip"
         )
         zip_path = str(Path(path) / "kinetics400mini.zip")
         unzip_path = str(Path(path) / "kinetics400mini")
