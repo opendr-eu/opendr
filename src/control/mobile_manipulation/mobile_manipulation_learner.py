@@ -55,12 +55,11 @@ from engine.learners import LearnerRL
 # TODO:
 #   how to define c++ / ROS dependencies?
 #       requires full ROS installation, apt packages depend on linux and ROS version (kinetic vs melodic etc), probably not everyone wants to install all of that to use smth from opendr
-#   test that demo works
-#   test that loading pretrained model works
+#   update checkpoints
+#   test that gazebo evaluation works
 #   test that examples in readme work
 #   add a note to the pull request that some launchfiles stem from open-source ROS packages
 #   package.xml also mentions a licence
-#   search and resolve any remaining TODO's
 
 
 class MobileRLLearner(LearnerRL):
