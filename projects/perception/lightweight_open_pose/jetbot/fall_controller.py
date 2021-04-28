@@ -1,3 +1,17 @@
+# Copyright 2020-2021 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from utils.robot_interface import PoseRobot
 from utils.active import LightweightOpenPoseLearner
 from utils.pose_controller import PoseController
@@ -55,7 +69,9 @@ if __name__ == '__main__':
 
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("./openpose_default")
-    fall_handler_fn_file = lambda imgs: fall_handler_fn(imgs, output_file=output_path)
+
+    def fall_handler_fn_file(imgs):
+        fall_handler_fn(imgs, output_file=output_path)
 
     if args.video:
         if args.platform == 'jetbot':

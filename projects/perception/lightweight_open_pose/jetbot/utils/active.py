@@ -1,7 +1,28 @@
-from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import *
+# Copyright 2020-2021 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This file provides a hotpatch to support an early version of active perception as a demonstrator, it will be removed
+# in a future version of OpenDR toolkit
+
+
+import torch
+import cv2
+from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import Image, extract_keypoints,\
+    normalize, pad_width, group_keypoints, track_poses, FilteredPose, Pose, LightweightOpenPoseLearner
 import numpy as np
 
-# This file provides a hotpatch to support an early version of active perception as a demonstrator
+
 def infer_active(self, img, upsample_ratio=4, track=True, smooth=True):
     """
     This method is used to perform pose estimation on an image.

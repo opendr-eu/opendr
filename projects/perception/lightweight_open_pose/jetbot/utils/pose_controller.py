@@ -1,9 +1,22 @@
+# Copyright 2020-2021 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import time
 from utils.pose_utils import calculate_horizontal_offset, calculate_upper_body_height, calculate_body_area
 from utils.pid import PID
 import numpy as np
 import cv2
-
 
 
 class PoseController:
@@ -32,20 +45,17 @@ class PoseController:
         self.fall_handler_fn = fall_handler_fn
         self.infer_delay = infer_delay
 
-
-
         if disable_collision:
             self.enable_depth_perception = False
         else:
             # Enables some very basic collision detection
             self.enable_depth_perception = True
             self.collision_depth_threshold = 0.06
-            from mxnet.gluon.data.vision import transforms
             import gluoncv
             import mxnet as mx
             self.ctx = mx.gpu(0)
             self.collision_model = gluoncv.model_zoo.get_model('monodepth2_resnet18_kitti_stereo_640x192',
-                                                pretrained_base=False, ctx=self.ctx, pretrained=True)
+                                                               pretrained_base=False, ctx=self.ctx, pretrained=True)
 
         # Webots constants
         if self.robot.robot_interface == 'webots':
@@ -158,10 +168,6 @@ class PoseController:
         poses = self.pose_estimator.infer(self._get_infer_image())
         self.wait()
 
-        # Define a function for visualizing the results during movements
-        visualization_fn = lambda img: self.visualization_handler(img, self.last_pose,
-                                                                  {'state': 'rotate_to_detect'})
-
         if self.active:
 
             # offset_x is used to determine the direction of movements
@@ -211,13 +217,14 @@ class PoseController:
                 else:
                     offset_x = None
 
-                visualization_fn = lambda img: self.visualization_handler(img, self.last_pose,
-                                                                          {'state': 'rotate_to_detect_active',
-                                                                           'heatmap': heatmap,
-                                                                           'control_left': control_left,
-                                                                           'control_right': control_right,
-                                                                           'size': person_area, 'offset': offset_x,
-                                                                           })
+                def visualization_fn(img):
+                    return self.visualization_handler(img, self.last_pose,
+                                                      {'state': 'rotate_to_detect_active',
+                                                       'heatmap': heatmap,
+                                                       'control_left': control_left,
+                                                       'control_right': control_right,
+                                                       'size': person_area, 'offset': offset_x,
+                                                       })
 
                 # Perform the actions
                 if offset_command is None:
@@ -225,10 +232,8 @@ class PoseController:
                 else:
                     self.robot.rotate(offset_command, visualization_fn)
 
-
                 if max_conf > self.active_detection_limit:
                     self.safe_translate(distance_command, visualization_fn)
-
 
                 # If we have successfully detected a pose and we have a stable detection we can end this process
                 if len(poses) > 0 and np.sum(poses[0].data == -1) < self.min_joints_threshold:
@@ -255,7 +260,6 @@ class PoseController:
                     break
                 else:
                     self.last_pose = None
-
 
     def _get_infer_image(self):
         return cv2.resize(self.last_img, (self.image_width, self.image_height))
@@ -324,8 +328,8 @@ class PoseController:
                     size = calculate_body_area(self.last_pose, self.image_width, self.image_height) * size_scaler
                     if self.running_average_size == 0:
                         self.running_average_size = size
-                    self.running_average_size = self.size_smoothing * self.running_average_size + \
-                                                (1 - self.size_smoothing) * size
+                    self.running_average_size = self.size_smoothing * self.running_average_size + (
+                            1 - self.size_smoothing) * size
 
                     if self.running_average_size < self.max_distance_size or self.running_average_size > self.min_distance_size:
                         distance_command = self.distance_pid(self.running_average_size)
@@ -340,15 +344,16 @@ class PoseController:
                     else:
                         fall = False
 
-                    visualization_handler = lambda img: self.visualization_handler(img, self.last_pose,
-                                                                                   {'state': 'monitor_target',
-                                                                                    'control_left': control_left,
-                                                                                    'control_right': control_right,
-                                                                                    'fall': fall,
-                                                                                    'size': size,
-                                                                                    'offset': offset_center,
-                                                                                    'fall_confidence': self.running_average_fall,
-                                                                                    'skipped': False, 'control': True})
+                    def visualization_handler(img):
+                        return self.visualization_handler(img, self.last_pose,
+                                                          {'state': 'monitor_target',
+                                                           'control_left': control_left,
+                                                           'control_right': control_right,
+                                                           'fall': fall,
+                                                           'size': size,
+                                                           'offset': offset_center,
+                                                           'fall_confidence': self.running_average_fall,
+                                                           'skipped': False, 'control': True})
 
                     self.last_img = self.robot.get_camera_data()
                     self.visualization_handler(self.last_img, self.last_pose, {'state': 'monitor_target',
@@ -376,8 +381,6 @@ class PoseController:
                         # Reset threshold to allow fast recovery
                         self.running_average_fall = 0
 
-
-
             else:
                 self.last_pose = None
                 no_detection_frames += 1
@@ -399,7 +402,7 @@ class PoseController:
 
         # Go towards the fall
         for i in range(self.distance_fall):
-            self.safe_translate(2, lambda x:None )
+            self.safe_translate(2, lambda x: None)
             self.last_img = self.robot.get_camera_data()
             poses = self.pose_estimator.infer(self._get_infer_image())
             self.wait()
@@ -414,7 +417,6 @@ class PoseController:
 
         self.fall_handler_fn(images)
 
-
     def safe_translate(self, distance_command, visualization_handler):
         """
         Allows for translating the robot after checking for obstacles
@@ -423,11 +425,8 @@ class PoseController:
         @return: True, if the command was executed, False, otherwise
         """
 
-
         if self.enable_depth_perception:
-
             from mxnet.gluon.data.vision import transforms
-            import gluoncv
             import mxnet as mx
             import PIL.Image as pil
 
@@ -440,13 +439,12 @@ class PoseController:
             outputs = outputs[("disp", 0)]
             outputs = outputs.squeeze().as_in_context(mx.cpu()).asnumpy()
 
-        if self.enable_depth_perception and np.mean(outputs)>self.collision_depth_threshold:
+        if self.enable_depth_perception and np.mean(outputs) > self.collision_depth_threshold:
             print("Collision")
             return False
         else:
             self.robot.translate(distance_command, visualization_handler)
             return True
-
 
     def wait(self):
         time.sleep(self.infer_delay)
