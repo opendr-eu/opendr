@@ -15,7 +15,8 @@
 
 """Functions to build DetectionModel training optimizers."""
 
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train import learning_schedules
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.\
+    second_detector.torchplus_tanet.train import learning_schedules
 
 
 def build(optimizer_config, optimizer, last_step=-1):

@@ -29,7 +29,9 @@ from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_dete
     optimizer_builder,
     second_builder,
 )
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train import MixedPrecisionWrapper
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train import (
+    MixedPrecisionWrapper
+)
 
 
 def create_model(
