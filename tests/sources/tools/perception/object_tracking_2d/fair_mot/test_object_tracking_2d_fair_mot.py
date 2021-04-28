@@ -17,12 +17,12 @@ import unittest
 import shutil
 import os
 import torch
-from perception.object_tracking_2d.datasets.mot_dataset import (
+from opendr.perception.object_tracking_2d.datasets.mot_dataset import (
     MotDataset,
     MotDatasetIterator,
     RawMotDatasetIterator,
 )
-from perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
+from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
     ObjectTracking2DFairMotLearner,
 )
 
