@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from perception.pose_estimation.lightweight_open_pose.algorithm.modules.conv import conv, conv_dw, conv_dw_no_bn
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.conv import conv, conv_dw, conv_dw_no_bn
 
 
 class Cpm(nn.Module):
