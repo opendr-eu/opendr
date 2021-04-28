@@ -218,7 +218,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
             "kinetics400mini.zip"
         )
         zip_path = str(Path(path) / "kinetics400mini.zip")
-        unzip_path = str(Path(path) / "kinetics400mini")
+        unzip_path = str(Path(path))
 
         logger.info(f"Downloading Kinetics400 mini from {url}")
         urlretrieve(url=url, filename=zip_path)
@@ -226,6 +226,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         logger.info(f"Unzipping Kinetics400 mini to {(unzip_path)}")
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(unzip_path)
+        os.remove(zip_path)
 
 
 def _make_path_name(
