@@ -68,17 +68,17 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
                                                   "test_short.proto")
 
         cls.config_pointpillars_car = os.path.join(
-            ".", "src", "perception", "object_detection_3d",
+            ".", "src", "opendr", "perception", "object_detection_3d",
             "voxel_object_detection_3d", "second_detector", "configs", "pointpillars",
             "car", "test_short.proto")
 
         cls.config_pointpillars_ped_cycle = os.path.join(
-            ".", "src", "perception", "object_detection_3d",
+            ".", "src", "opendr", "perception", "object_detection_3d",
             "voxel_object_detection_3d", "second_detector", "configs", "pointpillars",
             "ped_cycle", "test_short.proto")
 
         cls.subsets_path = os.path.join(
-            ".", "src", "perception", "object_detection_3d",
+            ".", "src", "opendr", "perception", "object_detection_3d",
             "datasets", "nano_kitti_subsets")
 
         cls.download_model_names = {

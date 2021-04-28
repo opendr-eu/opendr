@@ -9,7 +9,7 @@ The *ObjectTracking3DAb3dmotLearner* class is an implementation of the AB3DMOT[[
 Evaluation code is based on the KITTI evaluation development kit[[2]](#object-tracking-3d-2).
 It can be used to perform 3D object tracking based on provided detections.
 
-The [ObjectTracking3DAb3dmotLearner](#src.perception.object_tracking_3d.object_tracking_3d_ab3dmot.object_tracking_3d_ab3dmot_learner.py) class has the following public methods:
+The [ObjectTracking3DAb3dmotLearner](#src.opendr.perception.object_tracking_3d.object_tracking_3d_ab3dmot.object_tracking_3d_ab3dmot_learner.py) class has the following public methods:
 
 #### `ObjectTracking3DAb3dmotLearner` constructor
 ```python

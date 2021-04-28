@@ -58,7 +58,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
 
         cls.train_split_paths = {
             "nano_mot20": os.path.join(
-                ".", "src", "perception", "object_tracking_2d",
+                ".", "src", "opendr", "perception", "object_tracking_2d",
                 "datasets", "splits", "nano_mot20.train"
             )
         }
