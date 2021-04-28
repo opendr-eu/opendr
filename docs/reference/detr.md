@@ -13,7 +13,7 @@ following public methods:
 
 #### `DetrLearner` constructor
 ```python
-DetrLearner(self, iters=10, lr=1e-4, batch_size=1, optimizer="adamw", lr_schedule={"lr_drop": 200}, backbone="resnet50", checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path="temp", device="cuda", threshold=0.7, scale=1.0)
+DetrLearner(model_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold)
 ```
 
 Constructor parameters:
@@ -27,19 +27,18 @@ Constructor parameters:
   Specifies number of images to be bundled up in a batch during training. This heavily affects memory usage, adjust according to your system.
 - **optimizer**: *{'sdg', 'adam', 'adamw'}, default='adamw'*
   Specifies the type of optimizer that is used during training.
-- **lr_schedule**: *{"lr_drop": int}, default {"lr_drop": 200}*
-  Specifies the number of epochs after which the learning rate is decayed.
 - **backbone**: *{'resnet50', 'resnet101'}, default='resnet50'*
   Specifies the backbone architecture. Other Torchvision backbones are also valid, but have no pretrained DETR models available. Therefore other backbone models have to be learned from scratch.
-- **device**: *{'cpu', 'cuda'}, default='cuda'*
-  Specifies the device to be used.
-- **temp_path**: *str, default='temp'*
-  Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files.
 - **checkpoint_after_iter**: *int, default=0*
   Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
 - **checkpoint_load_iter**: *int, default=0*
   Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
-
+- **temp_path**: *str, default='temp'*
+  Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files.
+- **device**: *{'cpu', 'cuda'}, default='cuda'*
+  Specifies the device to be used.
+- **threshold**: *float, default=0.7*
+  Specifies the threshold for object detection inference. An object is detected if the confidence of the output is higher than the specified threshold.
 
 #### `DetrLearner.fit`
 ```python
@@ -175,40 +174,43 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
   from OpenDR.perception.object_detection_2d.detr.detr_learner import DetrLearner
   from OpenDR.engine.datasets import ExternalDataset
 
-  object_detector = DetrLearner(temp_path='./parent_dir', batch_size=8, device="cuda")
+  detr_learner = DetrLearner(temp_path='./parent_dir', batch_size=8, device="cuda")
 
   training_dataset = ExternalDataset(path="./data", dataset_type="COCO")
   validation_dataset = ExternalDataset(path="./data", dataset_type="COCO")
-  pose_estimator.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path="./logs)
-  pose_estimator.save('./saved_models/trained_model')
+  
+  detr_learner.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path="./logs)
+  detr_learner.save('./saved_models/trained_model')
   ```
 
-* **Inference and result drawing example on a test .jpg image.**
+* **Inference and result drawing example on a test .jpg image, similar to the [detr_demo colab](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/detr_demo.ipynb#scrollTo=Jf59UNQ37QhJ).**
   ```python
-  from perception.object_detection_2d.detr.detr_learner import DetrLearner
-  from PIL import Image
-
-  # Function for plotting results
-  def plot_results(pil_img, boxes):
-      plt.figure(figsize=(16,10))
-      plt.imshow(pil_img)
-      ax = plt.gca()
-      for box in boxes:
-          ax.add_patch(plt.Rectangle((box.left, box.top), box.width, box.height,
-                                     fill=False, linewidth=3))
-          text = f'{box.name}: {box.confidence:0.2f}'
-          ax.text(box.left, box.top, text, fontsize=15, bbox=dict(facecolor='yellow', alpha=0.5))
-      plt.axis('off')
-      plt.show()
-
-  # Download an image
-  url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
-  img = im.open(requests.get(url, stream=True).raw)
-
-  learner = DetrLearner()
-  learner.download_model()
-  bounding_box_list = learner.infer(image)
-  plot_results(img, bounding_box_list)
+    from perception.object_detection_2d.detr.detr_learner import DetrLearner
+    from PIL import Image
+    import matplotlib.pyplot as plt
+    import requests
+    
+    # Function for plotting results
+    def plot_results(pil_img, boxes):
+    plt.figure(figsize=(16,10))
+    plt.imshow(pil_img)
+    ax = plt.gca()
+    for box in boxes:
+        ax.add_patch(plt.Rectangle((box.left, box.top), box.width, box.height,
+                                   fill=False, linewidth=3))
+        text = f'{box.name}: {box.confidence:0.2f}'
+        ax.text(box.left, box.top, text, fontsize=15, bbox=dict(facecolor='yellow', alpha=0.5))
+    plt.axis('off')
+    plt.show()
+    
+    # Download an image
+    url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+    img = Image.open(requests.get(url, stream=True).raw)
+    
+    detr_learner = DetrLearner()
+    detr_learner.download_model()
+    bounding_box_list = detr_learner.infer(img)
+    plot_results(img, bounding_box_list)
   ```
 
 * **Optimization example for a previously trained model.**
@@ -216,11 +218,10 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
   ```python
   from perception.object_detection_2d.detr.detr_learner import DetrLearner
 
-  learner = DetrLearner()
-
-  learner.download_model()  
-  learner.optimize()
-  learner.save('./parent_dir/optimized_model')
+  detr_learner = DetrLearner()
+  detr_learner.download_model()  
+  detr_learner.optimize()
+  detr_learner.save('./parent_dir/optimized_model')
   ```
 
 
