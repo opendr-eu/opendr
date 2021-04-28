@@ -1,4 +1,4 @@
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.anchor_generator import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.anchor_generator import (
     AnchorGeneratorStride,
     AnchorGeneratorRange,
 )

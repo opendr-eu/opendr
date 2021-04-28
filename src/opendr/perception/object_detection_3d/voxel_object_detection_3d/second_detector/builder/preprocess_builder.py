@@ -1,4 +1,4 @@
-import perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.preprocess as prep
+import opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.preprocess as prep
 
 
 def build_db_preprocess(db_prep_config):

@@ -7,7 +7,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from pyqtgraph.opengl.GLGraphicsItem import GLGraphicsItem
 from pyqtgraph.Qt import QtCore, QtGui
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.box_np_ops import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.box_np_ops import (
     minmax_to_corner_3d,
 )
 

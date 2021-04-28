@@ -1,13 +1,13 @@
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.target_assigner import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.target_assigner import (
     TargetAssigner,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
     target_pb2,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
     similarity_calculator_builder,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
     anchor_generator_builder,
 )
 

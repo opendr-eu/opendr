@@ -1,6 +1,6 @@
 import torch
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.nn import one_hot
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.core import box_torch_ops
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.nn import one_hot
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.core import box_torch_ops
 from enum import Enum
 
 PI = 3.141592653589793

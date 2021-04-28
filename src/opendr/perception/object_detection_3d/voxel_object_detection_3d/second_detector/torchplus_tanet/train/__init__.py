@@ -1,4 +1,4 @@
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train.checkpoint import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train.checkpoint import (
     latest_checkpoint,
     restore,
     restore_latest_checkpoints,
@@ -7,10 +7,10 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.to
     save_models,
     try_restore_latest_checkpoints,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train.common import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train.common import (
     create_folder,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train.optim import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train.optim import (
     MixedPrecisionWrapper,
 )
 

@@ -3,15 +3,15 @@ from collections import defaultdict
 
 import numpy as np
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
     box_np_ops, )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
     preprocess as prep, )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.geometry import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.geometry import (
     points_in_convex_polygon_3d_jit, )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.point_cloud.bev_ops import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.point_cloud.bev_ops import (
     points_to_bev, )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data import (
     kitti_common as kitti, )
 
 

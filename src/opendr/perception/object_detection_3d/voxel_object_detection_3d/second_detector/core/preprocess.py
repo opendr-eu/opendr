@@ -4,10 +4,10 @@ from collections import OrderedDict
 import numba
 import numpy as np
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
     box_np_ops,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.geometry import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.geometry import (
     points_in_convex_polygon_3d_jit,
     points_in_convex_polygon_jit,
 )

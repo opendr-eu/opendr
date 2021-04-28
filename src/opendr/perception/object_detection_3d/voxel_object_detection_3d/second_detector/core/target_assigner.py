@@ -1,4 +1,4 @@
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.target_ops import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.target_ops import (
     create_target_np, )
 import numpy as np
 

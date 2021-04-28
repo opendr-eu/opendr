@@ -3,13 +3,13 @@ from functools import reduce
 
 import numpy as np
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
     preprocess as prep, )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
     box_np_ops, )
 import copy
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.check import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.check import (
     shape_mergeable, )
 
 

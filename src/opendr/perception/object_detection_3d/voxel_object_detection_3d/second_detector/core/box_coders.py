@@ -1,7 +1,7 @@
 from abc import ABCMeta
 from abc import abstractmethod
 from abc import abstractproperty
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
     box_np_ops, )
 import numpy as np
 

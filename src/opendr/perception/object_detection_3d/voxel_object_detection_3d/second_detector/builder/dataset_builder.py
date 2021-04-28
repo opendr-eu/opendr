@@ -22,16 +22,16 @@ Detection configuration framework, they should define their own builder function
 that wraps the build function.
 """
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
     input_reader_pb2,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.dataset import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.dataset import (
     KittiDataset,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
     prep_pointcloud,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
     dbsampler_builder,
 )
 from functools import partial

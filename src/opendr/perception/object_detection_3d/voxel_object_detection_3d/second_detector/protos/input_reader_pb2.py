@@ -7,13 +7,13 @@ from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
     target_pb2 as second_dot_protos_dot_target__pb2,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
     preprocess_pb2 as second_dot_protos_dot_preprocess__pb2,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
     sampler_pb2 as second_dot_protos_dot_sampler__pb2,
 )
 

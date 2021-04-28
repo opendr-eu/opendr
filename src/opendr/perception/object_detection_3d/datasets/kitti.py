@@ -17,22 +17,22 @@
 import os
 import numpy as np
 from distutils.dir_util import copy_tree
-from engine.datasets import ExternalDataset, DatasetIterator
-from engine.data import PointCloudWithCalibration
-from engine.target import BoundingBox3DList
-from perception.object_detection_3d.datasets.create_data_kitti import (
+from opendr.engine.datasets import ExternalDataset, DatasetIterator
+from opendr.engine.data import PointCloudWithCalibration
+from opendr.engine.target import BoundingBox3DList
+from opendr.perception.object_detection_3d.datasets.create_data_kitti import (
     create_kitti_info_file,
     create_reduced_point_cloud,
     create_groundtruth_database,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.kitti_common import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.kitti_common import (
     get_label_anno,
     _extend_matrix,
 )
 from urllib.request import urlretrieve
 import time
 from zipfile import ZipFile
-from engine.constants import OPENDR_SERVER_URL
+from opendr.engine.constants import OPENDR_SERVER_URL
 
 
 DEFAULT_KITTI_SUBSETS_PATH = "./perception/object_detection_3d/datasets/kitti_subsets"

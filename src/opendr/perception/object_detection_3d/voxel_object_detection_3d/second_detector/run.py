@@ -16,16 +16,16 @@ import torch
 import numpy as np
 import time
 
-import perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.kitti_common as kitti
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
+import opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.kitti_common as kitti
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
     merge_second_batch, )
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.eval import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.eval import (
     get_official_eval_result,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.progress_bar import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.progress_bar import (
     ProgressBar, )
-from perception.object_detection_3d.voxel_object_detection_3d.logger import Logger
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.logger import Logger
 
 
 def example_convert_to_torch(example,
