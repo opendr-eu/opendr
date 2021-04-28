@@ -39,6 +39,8 @@ def rmdir(_dir):
 class TestObjectTracking3DAb3dmot(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        print("\n\n**********************************\nTEST Object Tracking 3D ab3dmot Learner\n"
+              "**********************************")
         cls.temp_dir = os.path.join("tests", "sources", "tools",
                                     "perception", "object_tracking_3d",
                                     "ab3dmot",

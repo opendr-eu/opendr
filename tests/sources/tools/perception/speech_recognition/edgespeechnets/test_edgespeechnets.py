@@ -51,6 +51,7 @@ class EdgeSpeechNetsTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        print("\n\n**********************************\nTEST Edge Speech Nets Learner\n**********************************")
         cls.learner = EdgeSpeechNetsLearner(device="cpu", output_classes_n=TEST_CLASSES_N, iters=TEST_EPOCHS)
 
     @classmethod
