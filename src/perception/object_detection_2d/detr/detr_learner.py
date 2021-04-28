@@ -60,7 +60,6 @@ class DetrLearner(Learner):
         temp_path="temp",
         device="cuda",
         threshold=0.7,
-        scale=1.0
     ):
 
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
@@ -74,8 +73,7 @@ class DetrLearner(Learner):
             checkpoint_load_iter=checkpoint_load_iter,
             temp_path=temp_path,
             device=device,
-            threshold=threshold,
-            scale=scale,
+            threshold=threshold
         )
 
         # Add arguments to a structure like in the original implementation
