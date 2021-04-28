@@ -47,6 +47,8 @@ def rmdir(_dir):
 class TestVoxelObjectDetection3DLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        print("\n\n****************************************\nTEST Voxel Object Detection 3D Learner\n"
+              "****************************************")
         cls.temp_dir = os.path.join("tests", "sources", "tools",
                                     "perception", "object_detection_3d",
                                     "voxel_object_detection_3d",
