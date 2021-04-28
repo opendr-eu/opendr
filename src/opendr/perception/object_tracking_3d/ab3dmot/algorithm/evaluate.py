@@ -29,9 +29,10 @@ from opendr.perception.object_tracking_3d.ab3dmot.logger import Logger
 from numba.cuda.cudadrv.error import CudaSupportError
 
 try:
-    from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms_gpu import (
-        rotate_iou_gpu_eval as iou3D,
-    )
+    from opendr.perception.object_detection_3d.voxel_object_detection_3d.\
+        second_detector.core.non_max_suppression.nms_gpu import (
+            rotate_iou_gpu_eval as iou3D
+        )
 except (CudaSupportError, ValueError):
 
     def iou3D(boxes, qboxes, criterion=-1):

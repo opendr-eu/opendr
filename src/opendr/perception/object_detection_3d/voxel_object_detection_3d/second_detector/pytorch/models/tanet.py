@@ -1,7 +1,8 @@
 import torch
 from torch import nn
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.utils import get_paddings_indicator
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.tools import change_default_args
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.\
+    second_detector.torchplus_tanet.tools import change_default_args
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.nn import (
     Empty, GroupNorm, Sequential
 )

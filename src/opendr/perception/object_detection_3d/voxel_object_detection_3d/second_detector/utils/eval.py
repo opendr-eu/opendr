@@ -5,9 +5,8 @@ import numpy as np
 
 from numba.cuda.cudadrv.error import CudaSupportError
 try:
-    from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms_gpu import (
-        rotate_iou_gpu_eval,
-    )
+    from opendr.perception.object_detection_3d.voxel_object_detection_3d.\
+        second_detector.core.non_max_suppression.nms_gpu import (rotate_iou_gpu_eval)
 except (CudaSupportError, ValueError):
     def rotate_iou_gpu_eval(boxes, qboxes, criterion):
         return np.zeros((boxes.shape[0], qboxes.shape[0]))

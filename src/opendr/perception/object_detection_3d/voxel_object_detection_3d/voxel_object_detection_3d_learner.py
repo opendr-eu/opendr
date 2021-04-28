@@ -33,9 +33,15 @@ from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_dete
     input_reader_builder, )
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.logger import (
     Logger, )
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.tanet import set_tanet_config
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import _prep_v9, _prep_v9_infer
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder.dataset_builder import create_prep_func
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.tanet import (
+    set_tanet_config
+)
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
+    _prep_v9, _prep_v9_infer
+)
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder.dataset_builder import (
+    create_prep_func
+)
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
     merge_second_batch,
 )
