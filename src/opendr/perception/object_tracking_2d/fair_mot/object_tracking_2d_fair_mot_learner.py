@@ -20,18 +20,18 @@ import shutil
 import numpy as np
 import onnxruntime as ort
 from torchvision.transforms import transforms as T
-from engine.learners import Learner
-from engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetIterator
-from perception.object_tracking_2d.logger import Logger
-from perception.object_tracking_2d.datasets.mot_dataset import JointDataset, RawMotDatasetIterator
-from perception.object_tracking_2d.fair_mot.algorithm.lib.models.model import create_model
-from perception.object_tracking_2d.fair_mot.algorithm.run import train, evaluate
-from perception.object_tracking_2d.fair_mot.algorithm.load import load_from_checkpoint
-from perception.object_tracking_2d.datasets.mot_dataset import letterbox, process as process_dataset
-from perception.object_tracking_2d.fair_mot.algorithm.lib.tracker.multitracker import JDETracker
-from engine.data import Image
-from engine.target import TrackingAnnotation, TrackingAnnotationList
-from engine.constants import OPENDR_SERVER_URL
+from opendr.engine.learners import Learner
+from opendr.engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetIterator
+from opendr.perception.object_tracking_2d.logger import Logger
+from opendr.perception.object_tracking_2d.datasets.mot_dataset import JointDataset, RawMotDatasetIterator
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.models.model import create_model
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.run import train, evaluate
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.load import load_from_checkpoint
+from opendr.perception.object_tracking_2d.datasets.mot_dataset import letterbox, process as process_dataset
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.tracker.multitracker import JDETracker
+from opendr.engine.data import Image
+from opendr.engine.target import TrackingAnnotation, TrackingAnnotationList
+from opendr.engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 
 

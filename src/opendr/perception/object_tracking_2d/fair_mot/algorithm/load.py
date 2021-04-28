@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import torch
-from perception.object_tracking_2d.logger import Logger
+from opendr.perception.object_tracking_2d.logger import Logger
 
 
 def load_from_checkpoint(

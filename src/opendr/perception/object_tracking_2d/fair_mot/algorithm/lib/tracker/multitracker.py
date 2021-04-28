@@ -3,21 +3,21 @@ from collections import deque
 import torch
 import torch.nn.functional as F
 
-from perception.object_tracking_2d.fair_mot.algorithm.lib.models.decode import (
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.models.decode import (
     mot_decode,
 )
 
-from perception.object_tracking_2d.fair_mot.algorithm.lib.tracking_utils.kalman_filter import (
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.tracking_utils.kalman_filter import (
     KalmanFilter,
 )
-from perception.object_tracking_2d.fair_mot.algorithm.lib.tracker import (
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.tracker import (
     matching,
 )
 from .basetrack import BaseTrack, TrackState
-from perception.object_tracking_2d.fair_mot.algorithm.lib.utils.post_process import (
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.utils.post_process import (
     ctdet_post_process,
 )
-from perception.object_tracking_2d.fair_mot.algorithm.lib.models.utils import (
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.models.utils import (
     _tranpose_and_gather_feat,
 )
 

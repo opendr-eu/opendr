@@ -7,21 +7,21 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from perception.object_tracking_2d.fair_mot.algorithm.lib.models.losses import FocalLoss
-from perception.object_tracking_2d.fair_mot.algorithm.lib.models.losses import (
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.models.losses import FocalLoss
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.models.losses import (
     RegL1Loss,
     RegLoss,
     NormRegL1Loss,
     RegWeightedL1Loss,
 )
-from perception.object_tracking_2d.fair_mot.algorithm.lib.models.decode import (
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.models.decode import (
     mot_decode,
 )
-from perception.object_tracking_2d.fair_mot.algorithm.lib.models.utils import (
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.models.utils import (
     _sigmoid,
     _tranpose_and_gather_feat,
 )
-from perception.object_tracking_2d.fair_mot.algorithm.lib.utils.post_process import (
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.utils.post_process import (
     ctdet_post_process,
 )
 from .base_trainer import BaseTrainer

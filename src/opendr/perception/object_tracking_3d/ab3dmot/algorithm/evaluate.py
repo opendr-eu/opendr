@@ -20,16 +20,16 @@ import numpy as np
 from typing import List
 from munkres import Munkres
 from collections import defaultdict
-from engine.target import TrackingAnnotation3DList
+from opendr.engine.target import TrackingAnnotation3DList
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.box_np_ops import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.box_np_ops import (
     center_to_corner_box3d,
 )
-from perception.object_tracking_3d.ab3dmot.logger import Logger
+from opendr.perception.object_tracking_3d.ab3dmot.logger import Logger
 from numba.cuda.cudadrv.error import CudaSupportError
 
 try:
-    from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms_gpu import (
+    from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms_gpu import (
         rotate_iou_gpu_eval as iou3D,
     )
 except (CudaSupportError, ValueError):

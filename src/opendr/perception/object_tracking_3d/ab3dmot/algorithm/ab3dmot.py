@@ -13,16 +13,16 @@
 # limitations under the License.
 
 import numpy as np
-from engine.target import BoundingBox3DList, TrackingAnnotation3DList
+from opendr.engine.target import BoundingBox3DList, TrackingAnnotation3DList
 from scipy.optimize import linear_sum_assignment
-from perception.object_tracking_3d.ab3dmot.algorithm.kalman_tracker_3d import KalmanTracker3D
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.box_np_ops import (
+from opendr.perception.object_tracking_3d.ab3dmot.algorithm.kalman_tracker_3d import KalmanTracker3D
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.box_np_ops import (
     center_to_corner_box3d,
 )
 from numba.cuda.cudadrv.error import CudaSupportError
 
 try:
-    from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms_gpu import (
+    from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms_gpu import (
         rotate_iou_gpu_eval as iou3D,
     )
 except (CudaSupportError, ValueError):
