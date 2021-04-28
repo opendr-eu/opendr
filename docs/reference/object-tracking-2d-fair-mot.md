@@ -241,10 +241,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
+  from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
       ObjectTracking2DFairMotLearner,
   )
-  from perception.object_tracking_2d.datasets.mot_dataset import MotDataset
+  from opendr.perception.object_tracking_2d.datasets.mot_dataset import MotDataset
 
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "fairmot_dla34"
@@ -287,10 +287,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
+  from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
       ObjectTracking2DFairMotLearner,
   )
-  from perception.object_tracking_2d.datasets.mot_dataset import (
+  from opendr.perception.object_tracking_2d.datasets.mot_dataset import (
     MotDataset,
     MotDatasetIterator,
     RawMotDatasetIterator,
@@ -338,10 +338,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
+  from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
       ObjectTracking2DFairMotLearner,
   )
-  from perception.object_tracking_2d.datasets.mot_dataset import (
+  from opendr.perception.object_tracking_2d.datasets.mot_dataset import (
     MotDataset,
     RawMotDatasetIterator,
   )
@@ -384,10 +384,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
+  from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
       ObjectTracking2DFairMotLearner,
   )
-  from perception.object_tracking_2d.datasets.mot_dataset import (
+  from opendr.perception.object_tracking_2d.datasets.mot_dataset import (
     MotDataset,
     RawMotDatasetIterator,
   )

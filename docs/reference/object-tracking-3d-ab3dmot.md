@@ -78,10 +78,10 @@ Parameters:
 * **Inference example.**
   ```python
   import os
-  from perception.object_tracking_3d.datasets.kitti_tracking import (
+  from opendr.perception.object_tracking_3d.datasets.kitti_tracking import (
     KittiTrackingDatasetIterator,
   )
-  from perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_learner import (
+  from opendr.perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_learner import (
     ObjectTracking3DAb3dmotLearner,
   )
 
@@ -100,10 +100,10 @@ Parameters:
 * **Evaluation example.**
   ```python
   import os
-  from perception.object_tracking_3d.datasets.kitti_tracking import (
+  from opendr.perception.object_tracking_3d.datasets.kitti_tracking import (
     KittiTrackingDatasetIterator,
   )
-  from perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_learner import (
+  from opendr.perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_learner import (
     ObjectTracking3DAb3dmotLearner,
   )
 

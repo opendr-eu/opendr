@@ -191,10 +191,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
+  from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner
   )
-  from perception.object_detection_3d.datasets.kitti import KittiDataset
+  from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset
 
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "tanet_car"
@@ -236,10 +236,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
+  from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner
   )
-  from perception.object_detection_3d.datasets.kitti import LabeledPointCloudsDatasetIterator
+  from opendr.perception.object_detection_3d.datasets.kitti import LabeledPointCloudsDatasetIterator
 
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "tanet_car"
@@ -289,10 +289,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
+  from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner
   )
-  from engine.datasets import PointCloudsDatasetIterator
+  from opendr.engine.datasets import PointCloudsDatasetIterator
 
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "tanet_car"
@@ -337,10 +337,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
+  from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner
   )
-  from engine.datasets import PointCloudsDatasetIterator
+  from opendr.engine.datasets import PointCloudsDatasetIterator
 
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "tanet_car"
