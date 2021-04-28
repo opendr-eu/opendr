@@ -18,16 +18,16 @@ import random
 import torch
 import zipfile
 from os import getcwd
-from engine.datasets import ExternalDataset, DatasetIterator
+from opendr.engine.datasets import ExternalDataset, DatasetIterator
 from pathlib import Path
 from logging import getLogger
 from tqdm.contrib.concurrent import process_map
 from functools import partial
 from typing import List, Optional, Tuple, Union
 from joblib import Memory
-from perception.activity_recognition.datasets.utils import decoder
-from perception.activity_recognition.datasets.utils.transforms import standard_video_transforms
-from engine.constants import OPENDR_SERVER_URL
+from opendr.perception.activity_recognition.datasets.utils import decoder
+from opendr.perception.activity_recognition.datasets.utils.transforms import standard_video_transforms
+from opendr.engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 
 logger = getLogger(__file__)
