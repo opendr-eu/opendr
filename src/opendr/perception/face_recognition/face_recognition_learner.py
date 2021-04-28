@@ -51,19 +51,19 @@ import json
 import shutil
 from urllib.request import urlretrieve
 
-from engine.learners import Learner
-from engine.data import Image
-from perception.face_recognition.algorithm.backbone.model_resnet import ResNet_50, ResNet_101, ResNet_152
-from perception.face_recognition.algorithm.backbone.model_irse import IR_50, IR_101, IR_152, IR_SE_50, IR_SE_101, \
+from opendr.engine.learners import Learner
+from opendr.engine.data import Image
+from opendr.perception.face_recognition.algorithm.backbone.model_resnet import ResNet_50, ResNet_101, ResNet_152
+from opendr.perception.face_recognition.algorithm.backbone.model_irse import IR_50, IR_101, IR_152, IR_SE_50, IR_SE_101, \
     IR_SE_152
-from perception.face_recognition.algorithm.backbone.model_mobilenet import MobileFaceNet
-from perception.face_recognition.algorithm.head.losses import ArcFace, CosFace, SphereFace, AMSoftmax, Classifier
-from perception.face_recognition.algorithm.loss.focal import FocalLoss
-from perception.face_recognition.algorithm.util.utils import make_weights_for_balanced_classes, get_val_data, \
+from opendr.perception.face_recognition.algorithm.backbone.model_mobilenet import MobileFaceNet
+from opendr.perception.face_recognition.algorithm.head.losses import ArcFace, CosFace, SphereFace, AMSoftmax, Classifier
+from opendr.perception.face_recognition.algorithm.loss.focal import FocalLoss
+from opendr.perception.face_recognition.algorithm.util.utils import make_weights_for_balanced_classes, get_val_data, \
     separate_irse_bn_paras, separate_mobilenet_bn_paras, l2_norm, \
     separate_resnet_bn_paras, warm_up_lr, schedule_lr, perform_val, perform_val_imagefolder, buffer_val, AverageMeter, \
     accuracy
-from perception.face_recognition.algorithm.align.align import face_align
+from opendr.perception.face_recognition.algorithm.align.align import face_align
 
 
 class FaceRecognitionLearner(Learner):

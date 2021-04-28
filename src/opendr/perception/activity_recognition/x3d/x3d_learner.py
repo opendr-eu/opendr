@@ -18,16 +18,16 @@ import torch
 import yaml
 import os
 from pathlib import Path
-from engine.learners import Learner
-from utils.io import bump_version
+from opendr.engine.learners import Learner
+from opendr.utils.io import bump_version
 from torch import onnx
 import onnxruntime as ort
 
-from engine.data import Video
-from engine.datasets import Dataset
-from engine.target import Category
+from opendr.engine.data import Video
+from opendr.engine.datasets import Dataset
+from opendr.engine.target import Category
 
-from perception.activity_recognition.x3d.algorithm.x3d import X3D
+from opendr.perception.activity_recognition.x3d.algorithm.x3d import X3D
 import pytorch_lightning as pl
 
 from urllib.request import urlretrieve
