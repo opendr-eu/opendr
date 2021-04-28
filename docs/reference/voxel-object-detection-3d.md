@@ -9,7 +9,7 @@ The *VoxelObjectDetection3DLearner* class is a wrapper of the TANet[[1]](#object
 https://github.com/happinesslz/TANet)[[3]](#object-detectiond-3d-3).
 It can be used to perform voxel-based 3d object detection on point clouds and train new models.
 
-The [VoxelObjectDetection3DLearner](#src.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner.py) class has the
+The [VoxelObjectDetection3DLearner](#src.opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner.py) class has the
 following public methods:
 
 #### `VoxelObjectDetection3DLearner` constructor
@@ -80,7 +80,7 @@ Parameters:
   - **verbose**: *bool, default=False*  
     If set to True, enables maximum verbosity.
   - **model_dir**: *str, default=None***  
-    Can be used for storing and loading checkpoints. 
+    Can be used for storing and loading checkpoints.
   - **image_shape**: *(int, int), default=(1224, 370)***  
     Camera image shape for KITTI evaluation.
   - **evaluate**: *str, default=True*  
@@ -199,7 +199,7 @@ Parameters:
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "tanet_car"
   config = os.path.join(
-    ".", "src", "perception",
+    ".", "src", "opendr", "perception",
     "object_detection_3d",
     "voxel_object_detection_3d",
     "second_detector", "configs", "tanet",
@@ -208,7 +208,7 @@ Parameters:
   model_path = os.path.join(temp_dir, "test_fit_" + name)
 
   subsets_path = os.path.join(
-    ".", "src", "perception", "object_detection_3d",
+    ".", "src", "opendr", "perception", "object_detection_3d",
     "datasets", "nano_kitti_subsets")
 
   dataset = KittiDataset.download_nano_kitti(
@@ -244,7 +244,7 @@ Parameters:
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "tanet_car"
   config = os.path.join(
-    ".", "src", "perception",
+    ".", "src", "opendr", "perception",
     "object_detection_3d",
     "voxel_object_detection_3d",
     "second_detector", "configs", "tanet",
@@ -253,7 +253,7 @@ Parameters:
   model_path = os.path.join(temp_dir, "test_fit_" + name)
 
   subsets_path = os.path.join(
-    ".", "src", "perception", "object_detection_3d",
+    ".", "src", "opendr", "perception", "object_detection_3d",
     "datasets", "nano_kitti_subsets")
 
   dataset_path = KittiDataset.download_nano_kitti(
@@ -297,7 +297,7 @@ Parameters:
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "tanet_car"
   config = os.path.join(
-    ".", "src", "perception",
+    ".", "src", "opendr", "perception",
     "object_detection_3d",
     "voxel_object_detection_3d",
     "second_detector", "configs", "tanet",
@@ -306,7 +306,7 @@ Parameters:
   model_path = os.path.join(temp_dir, "test_fit_" + name)
 
   subsets_path = os.path.join(
-    ".", "src", "perception", "object_detection_3d",
+    ".", "src", "opendr", "perception", "object_detection_3d",
     "datasets", "nano_kitti_subsets")
 
   dataset_path = KittiDataset.download_nano_kitti(
@@ -328,7 +328,7 @@ Parameters:
   result = learner.infer(
       [dataset[0], dataset[1], dataset[2]]
   )
-  
+
   print(result)
   ```
 
@@ -345,7 +345,7 @@ Parameters:
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "tanet_car"
   config = os.path.join(
-    ".", "src", "perception",
+    ".", "src", "opendr", "perception",
     "object_detection_3d",
     "voxel_object_detection_3d",
     "second_detector", "configs", "tanet",
@@ -354,7 +354,7 @@ Parameters:
   model_path = os.path.join(temp_dir, "test_fit_" + name)
 
   subsets_path = os.path.join(
-    ".", "src", "perception", "object_detection_3d",
+    ".", "src", "opendr", "perception", "object_detection_3d",
     "datasets", "nano_kitti_subsets")
 
   dataset_path = KittiDataset.download_nano_kitti(
@@ -378,7 +378,7 @@ Parameters:
 
 ### <a name="proto">Proto structure</a>
 
-Proto files can be found in [voxel_object_detection_3d/second_detector/configs](#src.perception.object_detection_3d.voxel_object_detection_3d.second_detector_configs)
+Proto files can be found in [voxel_object_detection_3d/second_detector/configs](#src.opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector_configs)
 - **model**:
   Specifies the model architecture under the "second" block.
   - **voxel_generator**:
