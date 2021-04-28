@@ -1,7 +1,7 @@
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.voxel_generator import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.voxel_generator import (
     VoxelGenerator,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
     voxel_generator_pb2,
 )
 

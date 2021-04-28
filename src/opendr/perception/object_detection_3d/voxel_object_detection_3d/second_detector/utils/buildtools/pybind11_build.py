@@ -1,9 +1,9 @@
 import subprocess
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.loader import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.loader import (
     import_file,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.find import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.find import (
     find_cuda_device_arch,
 )
 from .command import CUDALink, Gpp, Nvcc, compile_libraries, out

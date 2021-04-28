@@ -1,14 +1,14 @@
 import numba
 from pathlib import Path
 import numpy as np
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.buildtools.pybind11_build import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.buildtools.pybind11_build import (
     load_pb11, )
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.geometry import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.geometry import (
     points_in_convex_polygon_3d_jit, )
 
 try:
-    from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
+    from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
         box_ops_cc, )
 except:
     current_dir = Path(__file__).resolve().parents[0]

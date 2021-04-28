@@ -18,13 +18,13 @@ import pickle
 
 import numpy as np
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
     box_np_ops,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data import (
     kitti_common as kitti,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.progress_bar import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.progress_bar import (
     list_bar as prog_bar,
 )
 import os

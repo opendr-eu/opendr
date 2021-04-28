@@ -1,12 +1,12 @@
 import pickle
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
     preprocess_builder,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.preprocess import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.preprocess import (
     DataBasePreprocessor,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.sample_ops import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.sample_ops import (
     DataBaseSamplerV2,
 )
 

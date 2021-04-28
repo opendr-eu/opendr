@@ -15,13 +15,13 @@
 """VoxelNet builder.
 """
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
     second_pb2,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.builder import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.builder import (
     losses_builder,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.voxelnet import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.voxelnet import (
     LossNormType,
     VoxelNet,
 )

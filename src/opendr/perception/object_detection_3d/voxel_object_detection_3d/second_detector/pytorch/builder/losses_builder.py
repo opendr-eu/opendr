@@ -15,10 +15,10 @@
 
 """A function to build localization and classification losses from config."""
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.core import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.core import (
     losses,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
     losses_pb2,
 )
 

@@ -19,28 +19,28 @@ import ntpath
 import shutil
 import pathlib
 import onnxruntime as ort
-from engine.learners import Learner
-from engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetIterator
-from engine.data import PointCloud
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.load import (
+from opendr.engine.learners import Learner
+from opendr.engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetIterator
+from opendr.engine.data import PointCloud
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.load import (
     create_model as second_create_model,
     load_from_checkpoint,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.run import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.run import (
     compute_lidar_kitti_output, evaluate, example_convert_to_torch, train
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.builder import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.builder import (
     input_reader_builder, )
-from perception.object_detection_3d.voxel_object_detection_3d.logger import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.logger import (
     Logger, )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.tanet import set_tanet_config
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import _prep_v9, _prep_v9_infer
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder.dataset_builder import create_prep_func
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.tanet import set_tanet_config
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import _prep_v9, _prep_v9_infer
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder.dataset_builder import create_prep_func
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
     merge_second_batch,
 )
-from engine.target import BoundingBox3DList
-from engine.constants import OPENDR_SERVER_URL
+from opendr.engine.target import BoundingBox3DList
+from opendr.engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 
 

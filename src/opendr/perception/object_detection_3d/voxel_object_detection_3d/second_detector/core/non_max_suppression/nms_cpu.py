@@ -1,13 +1,13 @@
 from pathlib import Path
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.buildtools.pybind11_build import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.buildtools.pybind11_build import (
     load_pb11,
 )
 import numba
 import numpy as np
 
 try:
-    from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
+    from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
         non_max_suppression_cpu,
         rotate_non_max_suppression_cpu,
     )
@@ -21,12 +21,12 @@ except:
         # cuda=True,
         cuda=False,
     )
-    from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
+    from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
         non_max_suppression_cpu,
         rotate_non_max_suppression_cpu,
     )
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
     box_np_ops,
 )
 

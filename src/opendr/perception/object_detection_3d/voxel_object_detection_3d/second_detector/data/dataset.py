@@ -1,10 +1,10 @@
 import pickle
 from functools import partial
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
     box_np_ops,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
     _read_and_prep_v9,
 )
 

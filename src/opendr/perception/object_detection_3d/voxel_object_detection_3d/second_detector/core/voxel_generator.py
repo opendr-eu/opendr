@@ -1,5 +1,5 @@
 import numpy as np
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.point_cloud.point_cloud_ops import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.point_cloud.point_cloud_ops import (
     points_to_voxel,
 )
 

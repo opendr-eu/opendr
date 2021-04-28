@@ -24,10 +24,10 @@ that wraps the build function.
 
 from torch.utils.data import Dataset
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
     dataset_builder,
 )
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
     input_reader_pb2,
 )
 

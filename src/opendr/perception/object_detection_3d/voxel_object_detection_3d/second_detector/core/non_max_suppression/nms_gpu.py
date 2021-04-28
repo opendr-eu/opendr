@@ -5,11 +5,11 @@ import numba
 import numpy as np
 from numba import cuda
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.buildtools.pybind11_build import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.buildtools.pybind11_build import (
     load_pb11, )
 
 try:
-    from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
+    from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
         non_max_suppression, )
 except:
     current_dir = Path(__file__).resolve().parents[0]
@@ -19,7 +19,7 @@ except:
         current_dir,
         cuda=True,
     )
-    from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
+    from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
         non_max_suppression, )
 
 

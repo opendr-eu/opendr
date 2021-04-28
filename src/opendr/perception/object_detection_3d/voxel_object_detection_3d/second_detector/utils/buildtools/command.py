@@ -7,7 +7,7 @@ from functools import partial
 from pathlib import Path
 
 
-from perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.find import (
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.find import (
     find_cuda,
     find_cuda_device_arch,
 )
