@@ -15,7 +15,7 @@
 from abc import ABC, abstractmethod
 import os
 import numpy as np
-from engine.data import PointCloud
+from opendr.engine.data import PointCloud
 
 
 class Dataset(ABC):
