@@ -14,7 +14,7 @@
 
 import cv2
 import time
-from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
+from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
     LightweightOpenPoseLearner
 import argparse
 from os.path import join
