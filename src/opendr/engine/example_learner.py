@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from engine.learners import Learner
+from opendr.engine.learners import Learner
 
 
 class ExampleLearner(Learner):
