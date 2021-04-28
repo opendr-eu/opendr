@@ -21,9 +21,9 @@ import os
 import time
 from zipfile import ZipFile
 from urllib.request import urlretrieve
-from engine.constants import OPENDR_SERVER_URL
-from engine.target import BoundingBox3D, BoundingBox3DList, TrackingAnnotation3D, TrackingAnnotation3DList
-from engine.datasets import DatasetIterator
+from opendr.engine.constants import OPENDR_SERVER_URL
+from opendr.engine.target import BoundingBox3D, BoundingBox3DList, TrackingAnnotation3D, TrackingAnnotation3DList
+from opendr.engine.datasets import DatasetIterator
 
 
 class KittiTrackingDatasetIterator(DatasetIterator):

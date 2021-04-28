@@ -14,7 +14,7 @@
 
 import numpy as np
 from filterpy.kalman import KalmanFilter
-from engine.target import BoundingBox3D, TrackingAnnotation3D
+from opendr.engine.target import BoundingBox3D, TrackingAnnotation3D
 
 
 class KalmanTracker3D():

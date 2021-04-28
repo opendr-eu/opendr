@@ -15,9 +15,9 @@
 import os
 import torch
 import numpy as np
-from perception.object_tracking_2d.fair_mot.algorithm.lib.trains.mot import MotTrainer
-from perception.object_tracking_2d.logger import Logger
-from perception.object_tracking_2d.fair_mot.algorithm.lib.tracking_utils.evaluation import Evaluator
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.trains.mot import MotTrainer
+from opendr.perception.object_tracking_2d.logger import Logger
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.tracking_utils.evaluation import Evaluator
 
 
 def train(

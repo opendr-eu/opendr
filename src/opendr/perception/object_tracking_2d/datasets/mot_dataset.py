@@ -27,12 +27,12 @@ import torch
 from collections import OrderedDict
 from urllib.request import urlretrieve
 from zipfile import ZipFile
-from engine.constants import OPENDR_SERVER_URL
-from engine.data import Image
-from engine.target import TrackingAnnotationList
-from engine.datasets import ExternalDataset, DatasetIterator
+from opendr.engine.constants import OPENDR_SERVER_URL
+from opendr.engine.data import Image
+from opendr.engine.target import TrackingAnnotationList
+from opendr.engine.datasets import ExternalDataset, DatasetIterator
 from torchvision.transforms import transforms as T
-from perception.object_tracking_2d.fair_mot.algorithm.gen_labels_mot import gen_labels_mot
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.gen_labels_mot import gen_labels_mot
 
 
 class MotDataset(ExternalDataset):

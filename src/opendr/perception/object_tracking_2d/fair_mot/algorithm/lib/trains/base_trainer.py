@@ -7,13 +7,13 @@ import torch
 import numpy as np
 from progress.bar import Bar
 
-from perception.object_tracking_2d.fair_mot.algorithm.lib.models.data_parallel import (
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.models.data_parallel import (
     DataParallel,
 )
-from perception.object_tracking_2d.fair_mot.algorithm.lib.utils.utils import (
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.lib.utils.utils import (
     AverageMeter,
 )
-from perception.object_tracking_2d.logger import Logger
+from opendr.perception.object_tracking_2d.logger import Logger
 
 
 class ModelWithLoss(torch.nn.Module):
