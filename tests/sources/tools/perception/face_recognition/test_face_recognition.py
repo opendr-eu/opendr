@@ -38,8 +38,6 @@ class TestFaceRecognitionLearner(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # cls.temp_dir = os.path.join(".", "tests",
-        # "sources", "tools", "perception", "face_recognition", "face_recognition_temp")
         cls.temp_dir = './face_recognition_temp'
         cls.recognizer = FaceRecognitionLearner(backbone='mobilefacenet', mode='backbone_only', device="cpu",
                                                 temp_path=cls.temp_dir, batch_size=10, checkpoint_after_iter=0)
