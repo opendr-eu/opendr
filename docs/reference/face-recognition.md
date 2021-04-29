@@ -7,7 +7,7 @@ Bases: `engine.learners.Learner`
 
 FaceRecognition class is OpenDR's implementation for training and using a model on the face recognition task.
 
-The [FaceRecognition](#src.perception.face_recognition.face_recognition_learner.py) class has the
+The [FaceRecognition](#src.opendr.perception.face_recognition.face_recognition_learner.py) class has the
 following public methods:
 
 #### `FaceRecognitionLearner` constructor
