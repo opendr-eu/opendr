@@ -22,8 +22,8 @@ import numpy as np
 from ros_bridge.msg import Pose as ROS_Pose
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from perception.pose_estimation.lightweight_open_pose.utilities import draw
-from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
+from opendr.perception.pose_estimation.lightweight_open_pose.utilities import draw
+from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
     LightweightOpenPoseLearner
 
 

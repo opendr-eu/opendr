@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from engine.data import Image
+from opendr.engine.data import Image
 from ros_bridge.msg import Pose as ROS_Pose
-from engine.target import Pose
+from opendr.engine.target import Pose
 import numpy as np
 from cv_bridge import CvBridge
 
