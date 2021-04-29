@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Please sets the parths appropriately to your Webotsinstallation and according to your python version
+# Please sets the paths appropriately to your Webots installation and according to your python version
 export OPENDR_PATH="opendr_internal/src/"
 export PYTHONPATH="/usr/local/webots/lib/controller/python38:$OPENDR_PATH"
 export LD_LIBRARY_PATH="/usr/local/webots/lib/controller"
