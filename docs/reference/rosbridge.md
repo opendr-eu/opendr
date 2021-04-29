@@ -39,8 +39,8 @@ Parameters:
 
 ```python
 ROSBridge.to_ros_image(self,
-                          image,
-                          encoding)
+                       image,
+                       encoding)
 ```
 
 This method converts an OpenDR image into a ROS image.
