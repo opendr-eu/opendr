@@ -13,11 +13,11 @@
 # limitations under the License.
 
 
-from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
+from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
     LightweightOpenPoseLearner
 import argparse
 from os.path import join
-from engine.datasets import ExternalDataset
+from opendr.engine.datasets import ExternalDataset
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

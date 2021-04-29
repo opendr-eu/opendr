@@ -20,10 +20,10 @@ import unittest
 import numpy as np
 import torch as t
 
-from perception.speech_recognition.edgespeechnets.edgespeechnets_learner import EdgeSpeechNetsLearner
-from engine.data import Timeseries
-from engine.datasets import DatasetIterator
-from engine.target import SpeechCommand
+from opendr.perception.speech_recognition.edgespeechnets.edgespeechnets_learner import EdgeSpeechNetsLearner
+from opendr.engine.data import Timeseries
+from opendr.engine.datasets import DatasetIterator
+from opendr.engine.target import SpeechCommand
 
 TEST_BATCH_SIZE = 2
 TEST_EPOCHS = 1

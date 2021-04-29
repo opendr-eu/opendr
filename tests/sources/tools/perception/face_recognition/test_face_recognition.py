@@ -16,8 +16,8 @@ import numpy as np
 import os
 import shutil
 import unittest
-from perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
-from engine.datasets import ExternalDataset
+from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.engine.datasets import ExternalDataset
 
 
 def rmfile(path):
