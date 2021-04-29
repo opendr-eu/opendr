@@ -48,15 +48,15 @@ This method converts an OpenDR image into a ROS image.
 Parameters:
 
 - **message**: *engine.data.Image*  
-  OpenDR image to be converted into a ROS message
+  OpenDR image to be converted into a ROS message.
 - **encoding**: *str, default='bgr8'*  
-  Encoding to be used for the conversion (inherited from CvBridge)
+  Encoding to be used for the conversion (inherited from CvBridge).
 
 #### `ROSBridge.from_ros_pose`
 
 ```python
 ROSBridge.from_ros_pose(self,
-                          ros_pose)
+                        ros_pose)
 ```
 
 Converts a ROS pose into an OpenDR pose.
@@ -64,13 +64,13 @@ Converts a ROS pose into an OpenDR pose.
 Parameters:
 
 - **message**: *ros_bridge.msg.Pose*  
-  ROS pose to be converted into an OpenDR pose
+  ROS pose to be converted into an OpenDR pose.
   
 #### `ROSBridge.to_ros_pose`
 
 ```python
 ROSBridge.to_ros_pose(self,
-                          ros_pose)
+                      ros_pose)
 ```
 Converts an OpenDR pose into a ROS pose.
 
