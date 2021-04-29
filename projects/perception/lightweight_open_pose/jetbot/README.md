@@ -12,6 +12,6 @@ To run the evaluation on your computer using Webots, please start the world cont
 To run the evaluation on jetbot you can simply use the `jetbot.sh`. Note that collision avoidance is not supported on JetBot due to the limited computational resources. Furthermore, you should make sure that the camera is facing upwards. Based on the actual configuration and calibration of you robot, you might need to finetune the default parameters set in [pose_controller.py](https://github.com/cidl-auth/fall_detection_demo/blob/main/utils/pose_controller.py#L87). The demo controller attempts to stop the JetBot motors if an exception is raised. However, if this fails, then you can use the `jetbot_kill.sh` for convenience. However, note that the response time of the script might be high, if the JetBot is loaded.
 
 ## Monitoring progress remotely
-Setting the ``--web`` flag allows for monitoring the stream from the web browser (this is expected to be useful when the demo will be running on jetbot). You can access the interface at `localhost:5000`. The server also responds to connections from other machines.
+Setting the ``--web`` flag allows for monitoring the stream from the web browser (this is expected to be useful when the demo will be running on JetBot). You can access the interface at `localhost:5000`. The server also responds to connections from other machines.
 
 ![alt text](flask.png)
