@@ -4,8 +4,9 @@ This project provides a demo developed on Webots to demonstrate how OpenDR funct
 This demo can be also directly used on an NVIDIA [JetBot](https://github.com/NVIDIA-AI-IOT/jetbot).
 
 ## Instructions
-1. Install the additional requirements by running `pip3 install -r requirements.txt`
-2. Run either the `evaluate.sh` (for evaluation using Webots) or `jetbot.sh` (to run the demo on JetBot)
+1. Install the additional requirements by running `pip3 install -r requirements.txt`.
+   If you use obstacle detection/avoidance, please also install the appropriate version of [mxnet](https://mxnet.apache.org).
+2. Run either the `evaluate.sh` (for evaluation using Webots) or `jetbot.sh` (to run the demo on JetBot).
 
 To run the evaluation on your computer using Webots, please start the world contained in the project directory `simulation_pose`. 
 Then you can run different evaluation by running `evaluate.sh`. 
