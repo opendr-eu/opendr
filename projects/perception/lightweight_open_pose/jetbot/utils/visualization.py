@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from os.path import exists
-from perception.pose_estimation.lightweight_open_pose.utilities import draw
+from opendr.perception.pose_estimation.lightweight_open_pose.utilities import draw
 import cv2
 import threading
 import numpy as np
