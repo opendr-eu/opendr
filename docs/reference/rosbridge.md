@@ -50,7 +50,7 @@ Parameters:
 - **message**: *engine.data.Image*  
   OpenDR image to be converted into a ROS message
 - **encoding**: *str, default='bgr8'*  
-  Encoding to be used for the conversion (inherited from CvBridge)
+  Encoding to be used for the conversion (inherited from CvBridge).
 
 #### `ROSBridge.from_ros_pose`
 
