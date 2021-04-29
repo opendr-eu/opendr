@@ -22,8 +22,8 @@ ROSBridge(self)
 
 ```python
 ROSBridge.from_ros_image(self,
-                          message,
-                          encoding)
+                         message,
+                         encoding)
 ```
 
 This method converts a ROS Image into an OpenDR image.
