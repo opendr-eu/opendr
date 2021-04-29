@@ -10,7 +10,7 @@ Bases: `engine.learners.Learner`
 The *EdgeSpeechNetsLearner* class is a wrapper of the EdgeSpeechNets[[1]](#edgespeechnets-arxiv) implementation. It can
 be used for limited-vocabulary speech command recognition tasks.
 
-The [EdgeSpeechNetsLearner](#src.perception.speech_recognition.edgespeechnets_learner.py) class has the following public
+The [EdgeSpeechNetsLearner](#src.opendr.perception.speech_recognition.edgespeechnets_learner.py) class has the following public
 methods:
 
 #### `EdgeSpeechNetsLearner` constructor
