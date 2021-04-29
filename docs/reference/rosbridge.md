@@ -77,7 +77,7 @@ Converts an OpenDR pose into a ROS pose.
 Parameters:
 
 - **message**: *engine.target.Pose*  
-  OpenDR pose to be converted to ROS pose
+  OpenDR pose to be converted to ROS pose.
 
 
 ## ROS message equivalence with OpenDR
