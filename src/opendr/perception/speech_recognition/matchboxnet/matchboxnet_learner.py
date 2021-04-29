@@ -22,11 +22,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from engine.data import Timeseries
-from engine.learners import Learner
-from engine.target import SpeechCommand
-from perception.speech_recognition.matchboxnet.algorithm.audioutils import get_mfcc
-from perception.speech_recognition.matchboxnet.algorithm.model import MatchBoxNet
+from opendr.engine.data import Timeseries
+from opendr.engine.learners import Learner
+from opendr.engine.target import SpeechCommand
+from opendr.perception.speech_recognition.matchboxnet.algorithm.audioutils import get_mfcc
+from opendr.perception.speech_recognition.matchboxnet.algorithm.model import MatchBoxNet
 
 
 class MatchboxNetLearner(Learner):
