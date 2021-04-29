@@ -33,7 +33,7 @@ Parameters:
 - **message**: *sensor_msgs.msg.Img*  
   ROS image to be converted into an OpenDR image.
 - **encoding**: *str, default='bgr8'*  
-  Encoding to be used for the conversion (inherited from CvBridge)
+  Encoding to be used for the conversion (inherited from CvBridge).
 
 #### `ROSBridge.to_ros_image`
 
