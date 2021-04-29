@@ -17,8 +17,8 @@ import cv2
 import shutil
 import os
 import torch
-from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import LightweightOpenPoseLearner
-from engine.datasets import ExternalDataset
+from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import LightweightOpenPoseLearner
+from opendr.engine.datasets import ExternalDataset
 
 
 def rmfile(path):
