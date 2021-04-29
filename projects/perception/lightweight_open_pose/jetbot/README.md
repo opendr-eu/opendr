@@ -5,7 +5,7 @@ This project provides a demo developed on Webots to demonstrate how OpenDR funct
 ## Instructions
 1. Download the OpenDR toolkit and set its path to `evaluate.sh` and `jetbot.sh`.
 2. Install the additional requirements: `pip3 install -r requirements.txt`. For the JetBot please use the requirements_jetson.txt file.
-3. You should be are ready to go.
+3. You should be ready to go.
 
 To run the evaluation on your computer using Webots, please start the world contained in the project directory `simulation_pose`. Then you can run different evaluation by running `evaluate.sh`. You can switch between different setups (three supported) using the `--setup` flag, you can record the simulation output in a file using the `--video` flag, you can enable the OpenDR acceleration mode using the `--opendr` flag, you can turn on the active perception mode (experimental) using the `--active` flag, while you can switch off the basic RGB mono obstacle avoidance using the `--nocollision` flag. The implementation also exposes a flask-based web interface for monitoring, which can be enabled using the `--web` flag (see below). Using the `--local` flag provides an OpenCV window for monitoring the input to the DNN, as well as providing other useful information.
 
