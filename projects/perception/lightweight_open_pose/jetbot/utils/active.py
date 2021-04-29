@@ -18,7 +18,7 @@
 
 import torch
 import cv2
-from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import Image, extract_keypoints,\
+from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import Image, extract_keypoints,\
     normalize, pad_width, group_keypoints, track_poses, FilteredPose, Pose, LightweightOpenPoseLearner
 import numpy as np
 
