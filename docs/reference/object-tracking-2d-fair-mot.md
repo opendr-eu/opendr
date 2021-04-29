@@ -8,7 +8,7 @@ Bases: `engine.learners.Learner`
 The *ObjectTracking2DFairMotLearner* class is a wrapper of the FairMOT[[1]](#object-tracking-2d-1) implementation found on [ifzhang/FairMOT](https://github.com/ifzhang/FairMOT)[[2]](#object-tracking-2d-2).
 It can be used to perform 2D object tracking on images and train new models.
 
-The [ObjectTracking2DFairMotLearner](#src.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner.py) class has the
+The [ObjectTracking2DFairMotLearner](#src.opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner.py) class has the
 following public methods:
 
 #### `ObjectTracking2DFairMotLearner` constructor
@@ -26,7 +26,7 @@ Constructor parameters:
 - **optimizer**: *str {'adam'}, default=adam*  
   Specifies the optimizer type that should be used.
 - **backbone**: *str {'dlav0_X', 'dla_X', 'dlaconv_X', 'resdcn_X', 'resfpndcn_X', 'hrnet_X'}, default='dla_34'*  
-  Specifies the structure of the network that should be used in a `name_X` format where `name` is a type of the network and `X` is a number of layers. 
+  Specifies the structure of the network that should be used in a `name_X` format where `name` is a type of the network and `X` is a number of layers.
 - **checkpoint_after_iter**: *int, default=0*
   Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
 - **checkpoint_load_iter**: *int, default=0*  
@@ -62,7 +62,7 @@ Constructor parameters:
 - **reid_dim**: *int, default=128*
   Specifies the number of re-identification features per object. These features are used to distinguish between different objects across the sequence frames.
 - **norm_wh**: *float, default=False*
-  Specifies if the regression loss should be normalized. 
+  Specifies if the regression loss should be normalized.
 - **wh_weight**: *float, default=0.1*
   Specifies the loss weight for bounding box size.
 - **off_weight**: *float, default=1*
@@ -78,7 +78,7 @@ Constructor parameters:
 - **max_objs**: *float, default=500*
   Specifies the max number of output objects.
 - **track_buffer**: *float, default=30*
-  Specifies the size of the tracking buffer. 
+  Specifies the size of the tracking buffer.
 - **image_mean**: *list of float, default=[0.408, 0.447, 0.47]*
   Specifies the mean value for input images
 - **image_std**: *list of float, default=[0.289, 0.274, 0.278]*
@@ -111,7 +111,7 @@ Parameters:
     If None, and the dataset is an `ExternalDataset`, dataset will be used to sample evaluation inputs.
     Can be of type `ExternalDataset` (with type="mot") or a custom dataset inheriting from `DatasetIterator`.
   - **val_epochs**: *int, default=-1*  
-    Defines the number of train epochs passed to start evaluation. -1 means no evaluation. 
+    Defines the number of train epochs passed to start evaluation. -1 means no evaluation.
   - **logging_path**: *str, default=None*  
     Path to save log files. If set to None, only the console will be used for logging.
   - **silent**: *bool, default=False*  
@@ -241,10 +241,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
+  from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
       ObjectTracking2DFairMotLearner,
   )
-  from perception.object_tracking_2d.datasets.mot_dataset import MotDataset
+  from opendr.perception.object_tracking_2d.datasets.mot_dataset import MotDataset
 
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "fairmot_dla34"
@@ -252,7 +252,7 @@ Parameters:
   model_path = os.path.join(temp_dir, "test_fit_" + name)
   train_split_paths = {
     "nano_mot20": os.path.join(
-      ".", "src", "perception", "object_tracking_2d",
+      ".", "src", "opendr", "perception", "object_tracking_2d",
       "datasets", "splits", "nano_mot20.train"
     )
   }
@@ -287,10 +287,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
+  from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
       ObjectTracking2DFairMotLearner,
   )
-  from perception.object_tracking_2d.datasets.mot_dataset import (
+  from opendr.perception.object_tracking_2d.datasets.mot_dataset import (
     MotDataset,
     MotDatasetIterator,
     RawMotDatasetIterator,
@@ -302,7 +302,7 @@ Parameters:
   model_path = os.path.join(temp_dir, "test_fit_" + name)
   train_split_paths = {
     "nano_mot20": os.path.join(
-      ".", "src", "perception", "object_tracking_2d",
+      ".", "src", "opendr", "perception", "object_tracking_2d",
       "datasets", "splits", "nano_mot20.train"
     )
   }
@@ -338,10 +338,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
+  from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
       ObjectTracking2DFairMotLearner,
   )
-  from perception.object_tracking_2d.datasets.mot_dataset import (
+  from opendr.perception.object_tracking_2d.datasets.mot_dataset import (
     MotDataset,
     RawMotDatasetIterator,
   )
@@ -352,7 +352,7 @@ Parameters:
   model_path = os.path.join(temp_dir, "test_fit_" + name)
   train_split_paths = {
     "nano_mot20": os.path.join(
-      ".", "src", "perception", "object_tracking_2d",
+      ".", "src", "opendr", "perception", "object_tracking_2d",
       "datasets", "splits", "nano_mot20.train"
     )
   }
@@ -384,10 +384,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
+  from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
       ObjectTracking2DFairMotLearner,
   )
-  from perception.object_tracking_2d.datasets.mot_dataset import (
+  from opendr.perception.object_tracking_2d.datasets.mot_dataset import (
     MotDataset,
     RawMotDatasetIterator,
   )
@@ -401,7 +401,7 @@ Parameters:
     device=DEVICE,
   )
   learner.optimize()
-  
+
   dataset_path = MotDataset.download_nano_mot20(
     temp_dir, True
   ).path

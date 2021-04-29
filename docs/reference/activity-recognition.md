@@ -22,7 +22,7 @@ On [Kinetics-400](https://deepmind.com/research/open-source/kinetics), they achi
 | X3D-L  | 65.93 (85.60)     |
 
 
-The [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py) class has the
+The [X3DLearner](#src.opendr.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py) class has the
 following public methods:
 
 #### `X3DLearner` constructor

@@ -27,9 +27,9 @@ Construct a new [DatasetIterator](#class-engine.datasets.DatasetIterator) object
 * **Creation of a new DatasetIterator class**.  
   ```python
   
-  from engine.data import Image
+  from opendr.engine.data import Image
   from enging.target import Pose
-  from engine.datasets import DatasetIterator
+  from opendr.engine.datasets import DatasetIterator
 
   class SimpleDatasetIterator(DatasetIterator):
     def __init__(self, path, width=1024, height=2605):
@@ -95,9 +95,9 @@ Construct a new [MappedDatasetIterator](#class-engine.datasets.MappedDatasetIter
 * **Generation of a MappedDatasetIterator from an existing DatasetIterator**.  
   ```python
   
-  from engine.data import Image
+  from opendr.engine.data import Image
   from enging.target import Pose
-  from engine.datasets import DatasetIterator, MappedDatasetIterator
+  from opendr.engine.datasets import DatasetIterator, MappedDatasetIterator
 
   class SimpleDatasetIterator(DatasetIterator):
     def __init__(self, path, width=1024, height=2605):
