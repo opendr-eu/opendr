@@ -30,7 +30,7 @@ _BACKBONE = "xs"
 class TestX3DLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        print("\n\n**********************************\nTEST Active Recognition X3D Learner\n**********************************")
+        print("\n\n**********************************\nTEST Activity Recognition X3D Learner\n**********************************")
         cls.temp_dir = Path("./tests/sources/tools/perception/activity_recognition/x3d/temp")
 
         # Download model weights
