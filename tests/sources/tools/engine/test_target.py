@@ -2,7 +2,7 @@ import unittest
 import torch
 import numpy as np
 
-from engine.target import Category
+from opendr.engine.target import Category
 
 
 class TestTarget(unittest.TestCase):
