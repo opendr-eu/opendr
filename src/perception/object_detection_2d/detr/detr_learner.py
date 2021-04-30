@@ -517,9 +517,12 @@ class DetrLearner(Learner):
                                      sampler=sampler_val, drop_last=False,
                                      collate_fn=utils.collate_fn,
                                      num_workers=self.args.num_workers)
-
-        base_ds = get_coco_api_from_dataset(dataset_val)
-
+        
+        if isinstance(dataset, ExternalDataset):
+            base_ds = get_coco_api_from_dataset(dataset_val)
+        else:
+            base_ds = None
+            
         test_stats, _ = evaluate(
                 self.model, self.criterion, self.postprocessors,
                 data_loader_val, base_ds, device,
@@ -873,4 +876,5 @@ class DetrLearner(Learner):
             return build_dataset(images_folder, annotations_folder,
                                  annotations_file, image_set, self.args.masks,
                                  dataset.dataset_type.lower())
+
         return dataset
