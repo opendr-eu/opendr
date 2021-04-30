@@ -163,7 +163,7 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
 
 #### Examples
 
-* **Training example using an `ExternalDataset`**.  
+* **Training example using an `ExternalDataset`.**
   To train properly, the backbone weights are downloaded automatically in the `temp_path`. Default backbone is
   'resnet50'.
   The training and evaluation dataset should be present in the path provided, along with the JSON annotation files.
@@ -182,6 +182,91 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
   detr_learner.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path="./logs)
   detr_learner.save('./saved_models/trained_model')
   ```
+* **Training example with a custom `DatasetIterator`.**
+  This example serves to show how a custom dataset can be created by a user and used for training. 
+  This can be used for cases where the user does not want to make use of the dataset type `ExternalDataset` or does not want to use the standard input data type or target data type. 
+  We create a custom dataset using the `DatasetIterator` class and create appropriate transformations using the `MappedDatasetIterator` class.
+  The `DatasetIterator` we create outputs tuples of type `(Image, BoundingBoxList)`. 
+  Since the DETR algorithm expects is own data format, we create a mapping function to allow the learner to work with this dataset.
+  
+  ```python
+    import os
+    import numpy as np
+    from pycocotools.coco import COCO
+    from engine.datasets import MappedDatasetIterator, DatasetIterator
+    from engine.data import Image
+    from engine.target import BoundingBoxList
+    from perception.object_detection_2d.detr.detr_learner import DetrLearner
+    from perception.object_detection_2d.detr.algorithm.datasets.coco import (
+        ConvertCocoPolysToMask, make_coco_transforms)
+    from PIL import Image as im
+    
+    # Create mapping function to convert (Image, BoundingBoxList) to detr format
+    def create_map_bounding_box_list_dataset(image_set, return_masks):
+                
+                prepare = ConvertCocoPolysToMask(return_masks)
+                transforms = make_coco_transforms(image_set)
+                
+                def map(data):
+                    image, target = data
+                    numpy_image = image.numpy()
+                    pil_image = im.fromarray(numpy_image)
+                    
+                    coco_target = {'image_id' : target.image_id, 'annotations' : target.coco()}
+                    image, target = prepare(pil_image, coco_target)
+                    transformed_img, transformed_target = transforms(image, target)
+                    return transformed_img, transformed_target
+    
+                return map
+    
+    # Create DatasetIterator object for Coco data
+    class CocoDatasetIterator(DatasetIterator):
+        def __init__(
+            self, image_folder, annotations_file
+            ):
+    
+            super().__init__()
+            self.root = os.path.expanduser(image_folder)
+            self.coco = COCO(annotations_file)
+            self.ids = list(self.coco.imgs.keys())
+    
+        def __getitem__(self, idx):
+            coco = self.coco
+            img_id = self.ids[idx]
+            ann_ids = coco.getAnnIds(imgIds=img_id)
+            target = coco.loadAnns(ann_ids)
+            bounding_box_list = BoundingBoxList.from_coco(target, image_id=img_id)
+            path = coco.loadImgs(img_id)[0]['file_name']
+            img = im.open(os.path.join(self.root, path)).convert('RGB')
+            image = Image(np.array(img))
+            return image, bounding_box_list
+    
+        def __len__(self):
+            return len(self.ids)
+    
+        def __repr__(self):
+            fmt_str = 'Dataset ' + self.__class__.__name__ + '\n'
+            fmt_str += '    Number of datapoints: {}\n'.format(self.__len__())
+            fmt_str += '    Root Location: {}\n'.format(self.root)
+            return fmt_str
+    
+    learner = DetrLearner()
+    learner.download_model()
+    
+    # Download dummy dataset
+    learner.download_nano_coco()
+    
+    image_folder = "temp/nano_coco/image"
+    annotations_file = "temp/nano_coco/instances.json"
+    
+    dataset = CocoDatasetIterator(image_folder, annotations_file)
+    map = create_map_bounding_box_list_dataset("train", False)
+    
+    mapped_dataset = MappedDatasetIterator(dataset, map)
+    
+    learner.fit(mapped_dataset)
+    ```
+
 
 * **Inference and result drawing example on a test .jpg image, similar to the [detr_demo colab](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/detr_demo.ipynb#scrollTo=Jf59UNQ37QhJ).**
   ```python
