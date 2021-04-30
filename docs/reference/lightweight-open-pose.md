@@ -8,7 +8,7 @@ Bases: `engine.learners.Learner`
 The *LightweightOpenPoseLearner* class is a wrapper of the Open Pose[[1]](#open-pose-1) implementation found on [Lightweight Open Pose](https://github.com/Daniil-Osokin/lightweight-human-pose-estimation.pytorch) [[2]](#open-pose-2).
 It can be used to perform human pose estimation on images (inference) and train new pose estimation models.
 
-The [LightweightOpenPoseLearner](#src.perception.lightweight_open_pose.lightweight_open_pose_learner.py) class has the
+The [LightweightOpenPoseLearner](#src.opendr.perception.lightweight_open_pose.lightweight_open_pose_learner.py) class has the
 following public methods:
 
 #### `LightweightOpenPoseLearner` constructor
@@ -169,12 +169,12 @@ LightweightOpenPoseLearner.save(self, path, verbose)
 ```
 
 This method is used to save a trained model.
-Provided with the path "/my/path/name" (absolute or relative), it creates the "name" directory, if it does not already 
+Provided with the path "/my/path/name" (absolute or relative), it creates the "name" directory, if it does not already
 exist. Inside this folder, the model is saved as "name.pth" and the metadata file as "name.json". If the directory
 already exists, the "name.pth" and "name.json" files are overwritten.
 
-If [`self.optimize`](#LightweightOpenPoseLearner.optimize) was run previously, it saves the optimized ONNX model in 
-a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously 
+If [`self.optimize`](#LightweightOpenPoseLearner.optimize) was run previously, it saves the optimized ONNX model in
+a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously
 during conversion.
 
 Parameters:
@@ -234,7 +234,7 @@ Parameters:
 #### Examples
 
 * **Training example using an `ExternalDataset`**.  
-  To train properly, the backbone weights are downloaded automatically in the `temp_path`. Default backbone is 
+  To train properly, the backbone weights are downloaded automatically in the `temp_path`. Default backbone is
   'mobilenet'.
   The training and evaluation dataset should be present in the path provided, along with the JSON annotation files.
   The default COCO 2017 training data can be found [here](https://cocodataset.org/#download) (train, val, annotations).
@@ -283,7 +283,7 @@ Parameters:
       LightweightOpenPoseLearner
 
   pose_estimator = LightweightOpenPoseLearner(temp_path='./parent_dir')
-  
+
   pose_estimator.download()  # Download the default pretrained mobilenet model in the temp_path
   pose_estimator.load("./parent_dir/mobilenet_openpose")
   pose_estimator.optimize(do_constant_folding=True)

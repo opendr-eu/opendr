@@ -14,9 +14,9 @@
 
 import cv2
 import time
-from perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
+from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
     LightweightOpenPoseLearner
-from perception.pose_estimation.lightweight_open_pose.utilities import draw
+from opendr.perception.pose_estimation.lightweight_open_pose.utilities import draw
 import argparse
 
 
