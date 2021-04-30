@@ -133,15 +133,6 @@ class RobotEnv(Env):
         info = {'nr_kin_failures': self._nr_kin_failures}
         return robot_obs, info
 
-    def visualize(self, logdir: str = "", logfile: str = "") -> list:
-        if logfile:
-            os.makedirs(logdir, exist_ok=True)
-            path = f'{logdir}/{logfile}'
-        else:
-            path = ""
-        path_points = self._env.visualize(path)
-        return path_points
-
     def close(self):
         pass
 

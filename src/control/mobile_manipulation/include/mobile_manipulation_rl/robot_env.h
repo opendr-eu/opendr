@@ -32,8 +32,6 @@
 #include "tf/transform_datatypes.h"
 #include "visualization_msgs/MarkerArray.h"
 
-#include "mobile_manipulation_rl/ellipse.h"
-#include "mobile_manipulation_rl/modulation_ellipses.h"
 #include "mobile_manipulation_rl/utils.h"
 #include "mobile_manipulation_rl/worlds.h"
 
@@ -153,7 +151,6 @@ public:
 
   RobotObs step(std::vector<double> base_actions, const std::vector<double> &ee_velocities_world, double transition_noise_base);
 
-  std::vector<PathPoint> visualizeRobotPose(std::string logfile);
   // easiest way to know the dim without having to enforce that everything is already initialised
   int getObsDim() { return 21 + joint_names_.size(); };
   bool getInitControllers() const { return init_controllers_; };

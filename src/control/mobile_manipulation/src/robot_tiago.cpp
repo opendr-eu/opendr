@@ -30,19 +30,10 @@ void RobotTiago::setup() {
     torso_goal_.trajectory.points[0].positions.resize(1);
     torso_goal_.trajectory.points[0].velocities.resize(1);
 
-    // move_group_arm_torso_ = new moveit::planning_interface::MoveGroupInterface(joint_model_group_name_);
-    // move_group_arm_torso_->setPlannerId("SBLkConfigDefault");
-    // move_group_arm_torso_->setMaxVelocityScalingFactor(1.0);
-    // //move_group_arm_torso_->setMaxAccelerationScalingFactor(0.05);
-
     gripper_client_.reset(new TrajClientTiago("/gripper_controller/follow_joint_trajectory"));
     while (!gripper_client_->waitForServer(ros::Duration(5.0))) {
       ROS_INFO("Waiting for the gripper_controller/follow_joint_trajectory action server to come up");
     }
-
-    // somehow the controller manager expects the hash from a pr2_mechanism_msgs::SwitchController, not
-    // controller_manager_msgs::SwitchController switch_controller_client_ =
-    // nh_->serviceClient<pr2_mechanism_msgs::SwitchController>("/controller_manager/switch_controller");
   }
 }
 
