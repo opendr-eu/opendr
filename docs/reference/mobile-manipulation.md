@@ -157,7 +157,7 @@ Create a python environment. We recommend using conda, which requires to first i
 
 Configure the workspace to use your environment's python3 (adjust path according to your executable)
 
-    catkin config -DPYTHON_EXECUTABLE=/opt/conda/bin/python -DPYTHON_INCLUDE_DIR=/opt/conda/include/python3.7m -DPYTHON_LIBRARY=/opt/conda/lib/libpython3.7m.so
+    catkin config -DPYTHON_EXECUTABLE=/home/honerkam/miniconda3/envs/opendr/bin/python -DPYTHON_INCLUDE_DIR=/home/honerkam/miniconda3/envs/opendr/include/python3.7m -DPYTHON_LIBRARY=/home/honerkam/miniconda3/envs/opendr/lib/libpython3.7m.so
 
 Build the workspace
 
@@ -325,7 +325,7 @@ please follow these steps to use the environment. Otherwise ignore this section 
 
       #  tmc_robot_kinematics_model      
       add_library(robot_hsr src/robot_hsr.cpp)
-      target_link_libraries(robot_hsr worlds modulation_ellipses myutils ${catkin_LIBRARIES})
+      target_link_libraries(robot_hsr worlds myutils ${catkin_LIBRARIES})
 
   and add them to `pybind_add_module()` and `target_link_libraries()` two lines below that.
 - Comment in the hsr parts in `src/pybindings` and the import of HSREnv in `mobileRL/envs/robotenv.py` to create the python bindings

@@ -70,31 +70,6 @@ protected:
   tf::Transform _related_object_pose;
   tf::Transform _related_object_grasp_pose;
   std::string _related_object_name;
-  // std::vector<int> _colliding_poses;
-  // int _colliding_base_angle;
-  // int _ik_error_counter;
-  // int _ik_collision_counter;
-  // int _total_nr_poses;
-  // int _current_nr_poses;
-  // int _nr_pose_last_plotted;
-  // int _plot_every_xth;
-  // geometry_msgs::PoseArray trajectory_pose_array;
-
-  // ros::NodeHandle nh_;
-  // ros::Publisher Mu_pub_;
-  // ros::Publisher Traj_pub_;
-  // ros::Publisher Traj_pub2_;
-  // ros::Publisher Ellipses_pub_;
-  // ros::Publisher planning_scene_diff_publisher_;
-  // ros::ServiceClient client_get_scene_;
-  // boost::shared_ptr<modulation::Modulation_manager> manager_;
-  // modulation::Modulation modulation_;
-
-  // IK test stuff
-  // boost::shared_ptr<robot_state::RobotState> kinematic_state;
-  // robot_state::JointModelGroup* joint_model_group;
-  // boost::shared_ptr<planning_scene::PlanningScene> planning_scene_;
-  // collision_detection::AllowedCollisionMatrix currentACM_;
 
   template<typename T> bool parseVector(std::ifstream &is, std::vector<T> &pts, const std::string &name);
   double gaussPDF(double &current_time, int mode_nr);

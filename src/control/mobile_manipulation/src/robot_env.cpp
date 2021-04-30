@@ -369,24 +369,6 @@ void RobotEnv::addTrajectoryPoint(const tf::Transform &desired_gripper_tf, bool 
   }
 }
 
-std::vector<PathPoint> RobotEnv::visualizeRobotPose(std::string logfile) {
-  // visualization_msgs::Marker goal_marker = utils::marker_from_transform(currentGripperGOAL_, "gripper_goal", "blue", 1.0,
-  // marker_counter_, robo_config_.frame_id);
-  // // Store in rosbag
-  // if (logfile != "") {
-  //     logfile = logfile + ".bag";
-  //     ros::Time timeStamp = ros::Time::now();
-  //     if (timeStamp.toNSec() == 0)
-  //         timeStamp = ros::TIME_MIN;
-  //     rosbag::Bag bag;
-  //     bag.open(logfile, rosbag::bagmode::Write);
-  //     bag.write("mobile_manipulation_rl_ik/gripper_goal_visualizer", timeStamp, goal_marker);
-  //     bag.write("mobile_manipulation_rl_ik/gripper_plan_visualizer", timeStamp, gripper_plan_marker_);
-  //     bag.close();
-  // }
-  return pathPoints_;
-}
-
 void RobotEnv::publishMarker(const std::vector<double> &marker_tf, int marker_id, const std::string &name_space,
                              const std::string &color, double alpha, const std::string &geometry,
                              const std::vector<double> &marker_scale) {
