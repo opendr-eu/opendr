@@ -187,9 +187,9 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
   This can be used for cases where the user does not want to make use of the dataset type `ExternalDataset` or does not want to use the standard input data type or target data type. 
   We create a custom dataset using the `DatasetIterator` class and create appropriate transformations using the `MappedDatasetIterator` class.
   The `DatasetIterator` we create outputs tuples of type `(Image, BoundingBoxList)`. 
-  Since the DETR algorithm expects is own data format, we create a mapping function to allow the learner to work with this dataset.
+  Since the DETR algorithm expects its own data format, we create a mapping function to allow the learner to work with this dataset.
   
-  ```python
+    ```python
     import os
     import numpy as np
     from pycocotools.coco import COCO
