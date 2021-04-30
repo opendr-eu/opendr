@@ -172,6 +172,9 @@ class BoundingBox(Target):
         width,
         height,
         score=0,
+        segmentation=[],
+        iscrowd=0,
+        area=0
     ):
         super().__init__()
         self.name = name
@@ -180,6 +183,9 @@ class BoundingBox(Target):
         self.width = width
         self.height = height
         self.confidence = score
+        self.segmentation = segmentation
+        self.iscrowd = iscrowd
+        self.area = area
 
     def mot(self, with_confidence=True, frame=-1):
 
@@ -202,7 +208,16 @@ class BoundingBox(Target):
             ], dtype=np.float32)
 
         return result
-
+    
+    def coco(self):
+        result = {}
+        result['bbox'] = [self.left, self.top, self.width, self.height]
+        result['area'] = self.area
+        result['category_id'] = self.name
+        result['segmentation'] = self.segmentation
+        result['iscrowd'] = self.iscrowd
+        return result
+        
     def __repr__(self):
         return "BoundingBox " + str(self)
 
@@ -218,10 +233,32 @@ class BoundingBoxList(Target):
     def __init__(
         self,
         boxes,
+        image_id=0
     ):
         super().__init__()
         self.data = boxes
+        self.image_id = image_id
         self.confidence = np.mean([box.confidence for box in self.data])
+        
+    @staticmethod
+    def from_coco(boxes_coco, image_id=0):
+        count = len(boxes_coco)
+        
+        boxes = []
+        for i in range(count):
+            box = BoundingBox(
+                boxes_coco[i]['category_id'],
+                boxes_coco[i]['bbox'][0],
+                boxes_coco[i]['bbox'][1],
+                boxes_coco[i]['bbox'][2],
+                boxes_coco[i]['bbox'][3],
+                segmentation=boxes_coco[i]['segmentation'],
+                iscrowd=boxes_coco[i]['iscrowd'],
+                area=boxes_coco[i]['area']
+            )
+            boxes.append(box)
+
+        return BoundingBoxList(boxes, image_id=image_id)
 
     def mot(self, with_confidence=True):
 
@@ -230,10 +267,23 @@ class BoundingBoxList(Target):
         ])
 
         return result
-
+    
+    def coco(self):
+        result = []
+        
+        for box in self.data:
+            result.append(
+                box.coco()
+            )
+            
+        return result
+    
     @property
     def boxes(self):
         return self.data
+    
+    def image_id(self):
+        return self.image_id
 
     def __getitem__(self, idx):
         return self.boxes[idx]
