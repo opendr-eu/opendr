@@ -18,15 +18,19 @@ COCO dataset which returns image_id for evaluation.
 
 Mostly copy-paste from https://github.com/pytorch/vision/blob/13b35ff/references/detection/coco_utils.py
 """
-from pathlib import Path
 
+import os
 import torch
 import torch.utils.data
 import torchvision
+from pycocotools.coco import COCO
 from pycocotools import mask as coco_mask
-
+from engine.datasets import DatasetIterator
+from engine.data import Image
+from engine.target import BoundingBoxList
+import numpy as np
 import perception.object_detection_2d.detr.algorithm.datasets.transforms as T
-
+from PIL import Image as im
 
 class CocoDetection(torchvision.datasets.CocoDetection):
     def __init__(self, img_folder, ann_file, transforms, return_masks):
@@ -125,6 +129,36 @@ class ConvertCocoPolysToMask(object):
 
         return image, target
 
+
+class CocoDatasetIterator(DatasetIterator):
+    def __init__(
+        self, image_folder, annotations_file
+        ):
+
+        super().__init__()
+        self.root = os.path.expanduser(image_folder)
+        self.coco = COCO(annotations_file)
+        self.ids = list(self.coco.imgs.keys())
+
+    def __getitem__(self, idx):
+        coco = self.coco
+        img_id = self.ids[idx]
+        ann_ids = coco.getAnnIds(imgIds=img_id)
+        target = coco.loadAnns(ann_ids)
+        bounding_box_list = BoundingBoxList.from_coco(target, image_id=img_id)
+        path = coco.loadImgs(img_id)[0]['file_name']
+        img = im.open(os.path.join(self.root, path)).convert('RGB')
+        image = Image(np.array(img))
+        return image, bounding_box_list
+
+    def __len__(self):
+        return len(self.ids)
+
+    def __repr__(self):
+        fmt_str = 'Dataset ' + self.__class__.__name__ + '\n'
+        fmt_str += '    Number of datapoints: {}\n'.format(self.__len__())
+        fmt_str += '    Root Location: {}\n'.format(self.root)
+        return fmt_str
 
 def make_coco_transforms(image_set):
 
