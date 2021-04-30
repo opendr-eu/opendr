@@ -193,11 +193,11 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
     import os
     import numpy as np
     from pycocotools.coco import COCO
-    from engine.datasets import MappedDatasetIterator, DatasetIterator
-    from engine.data import Image
-    from engine.target import BoundingBoxList
-    from perception.object_detection_2d.detr.detr_learner import DetrLearner
-    from perception.object_detection_2d.detr.algorithm.datasets.coco import (
+    from opendr.engine.datasets import MappedDatasetIterator, DatasetIterator
+    from opendr.engine.data import Image
+    from opendr.engine.target import BoundingBoxList
+    from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
+    from opendr.perception.object_detection_2d.detr.algorithm.datasets.coco import (
         ConvertCocoPolysToMask, make_coco_transforms)
     from PIL import Image as im
     
@@ -270,7 +270,7 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
 
 * **Inference and result drawing example on a test .jpg image, similar to the [detr_demo colab](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/detr_demo.ipynb#scrollTo=Jf59UNQ37QhJ).**
     ```python
-    from perception.object_detection_2d.detr.detr_learner import DetrLearner
+    from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
     from PIL import Image
     import matplotlib.pyplot as plt
     import requests
@@ -301,7 +301,7 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
 * **Optimization example for a previously trained model.**
   Inference can be run with the trained model after running self.optimize.
   ```python
-  from perception.object_detection_2d.detr.detr_learner import DetrLearner
+  from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
 
   detr_learner = DetrLearner()
   detr_learner.download_model()  

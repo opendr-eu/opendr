@@ -12,8 +12,8 @@ import torch.nn.functional as F
 from torch import Tensor
 from PIL import Image
 
-import perception.object_detection_2d.detr.algorithm.util.box_ops as box_ops
-from perception.object_detection_2d.detr.algorithm.util.misc import NestedTensor, interpolate, nested_tensor_from_tensor_list
+import opendr.perception.object_detection_2d.detr.algorithm.util.box_ops as box_ops
+from opendr.perception.object_detection_2d.detr.algorithm.util.misc import NestedTensor, interpolate, nested_tensor_from_tensor_list
 
 try:
     from panopticapi.utils import id2rgb, rgb2id

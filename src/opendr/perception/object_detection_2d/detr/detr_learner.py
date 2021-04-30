@@ -25,21 +25,21 @@ from torch.utils.data import DataLoader, DistributedSampler
 from pathlib import Path
 from urllib.request import urlretrieve
 
-from perception.object_detection_2d.detr.algorithm.util.detect import detect
-from perception.object_detection_2d.detr.algorithm.datasets import build_dataset, get_coco_api_from_dataset
-from perception.object_detection_2d.detr.algorithm.engine import evaluate, train_one_epoch
-from perception.object_detection_2d.detr.algorithm.models import build_model, build_criterion, build_postprocessors
+from opendr.perception.object_detection_2d.detr.algorithm.util.detect import detect
+from opendr.perception.object_detection_2d.detr.algorithm.datasets import build_dataset, get_coco_api_from_dataset
+from opendr.perception.object_detection_2d.detr.algorithm.engine import evaluate, train_one_epoch
+from opendr.perception.object_detection_2d.detr.algorithm.models import build_model, build_criterion, build_postprocessors
 
-from engine.constants import OPENDR_SERVER_URL
-from engine.data import Image
-from engine.learners import Learner
-from engine.datasets import ExternalDataset, DatasetIterator
-from engine.target import BoundingBox, BoundingBoxList
+from opendr.engine.constants import OPENDR_SERVER_URL
+from opendr.engine.data import Image
+from opendr.engine.learners import Learner
+from opendr.engine.datasets import ExternalDataset, DatasetIterator
+from opendr.engine.target import BoundingBox, BoundingBoxList
 
 import torchvision.transforms as T
 import numpy as np
 import onnxruntime as ort
-import perception.object_detection_2d.detr.algorithm.util.misc as utils
+import opendr.perception.object_detection_2d.detr.algorithm.util.misc as utils
 from PIL import Image as im
 
 

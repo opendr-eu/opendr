@@ -6,7 +6,7 @@ import torch
 from scipy.optimize import linear_sum_assignment
 from torch import nn
 
-from perception.object_detection_2d.detr.algorithm.util.box_ops import box_cxcywh_to_xyxy, generalized_box_iou
+from opendr.perception.object_detection_2d.detr.algorithm.util.box_ops import box_cxcywh_to_xyxy, generalized_box_iou
 
 
 class HungarianMatcher(nn.Module):

@@ -20,8 +20,8 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from perception.object_detection_2d.detr.algorithm.util import box_ops
-from perception.object_detection_2d.detr.algorithm.util.misc import (NestedTensor, nested_tensor_from_tensor_list,
+from opendr.perception.object_detection_2d.detr.algorithm.util import box_ops
+from opendr.perception.object_detection_2d.detr.algorithm.util.misc import (NestedTensor, nested_tensor_from_tensor_list,
                        accuracy, get_world_size, interpolate,
                        is_dist_avail_and_initialized)
 
@@ -56,7 +56,7 @@ class DETR(nn.Module):
         self.aux_loss = aux_loss
 
     def forward(self, samples: NestedTensor):
-        """ The forward expects a NestedTensor, which consists of:
+        """ The forward expects a NestedTensor, which consists of:
                - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
                - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
 

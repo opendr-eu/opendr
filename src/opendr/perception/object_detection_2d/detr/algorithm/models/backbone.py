@@ -11,7 +11,7 @@ from torch import nn
 from torchvision.models._utils import IntermediateLayerGetter
 from typing import Dict, List
 
-from perception.object_detection_2d.detr.algorithm.util.misc import NestedTensor, is_main_process
+from opendr.perception.object_detection_2d.detr.algorithm.util.misc import NestedTensor, is_main_process
 
 from .position_encoding import build_position_encoding
 

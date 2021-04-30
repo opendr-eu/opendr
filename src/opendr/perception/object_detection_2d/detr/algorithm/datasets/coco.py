@@ -25,11 +25,11 @@ import torch.utils.data
 import torchvision
 from pycocotools.coco import COCO
 from pycocotools import mask as coco_mask
-from engine.datasets import DatasetIterator
-from engine.data import Image
-from engine.target import BoundingBoxList
+from opendr.engine.datasets import DatasetIterator
+from opendr.engine.data import Image
+from opendr.engine.target import BoundingBoxList
 import numpy as np
-import perception.object_detection_2d.detr.algorithm.datasets.transforms as T
+import opendr.perception.object_detection_2d.detr.algorithm.datasets.transforms as T
 from PIL import Image as im
 
 class CocoDetection(torchvision.datasets.CocoDetection):

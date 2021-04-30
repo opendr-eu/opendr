@@ -18,9 +18,9 @@ import shutil
 import os
 import torch
 
-from engine.datasets import ExternalDataset
+from opendr.engine.datasets import ExternalDataset
+from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
 
-from perception.object_detection_2d.detr.detr_learner import DetrLearner
 from PIL import Image
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
