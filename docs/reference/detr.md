@@ -204,20 +204,20 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
     # Create mapping function to convert (Image, BoundingBoxList) to detr format
     def create_map_bounding_box_list_dataset(image_set, return_masks):
                 
-                prepare = ConvertCocoPolysToMask(return_masks)
-                transforms = make_coco_transforms(image_set)
-                
-                def map(data):
-                    image, target = data
-                    numpy_image = image.numpy()
-                    pil_image = im.fromarray(numpy_image)
-                    
-                    coco_target = {'image_id' : target.image_id, 'annotations' : target.coco()}
-                    image, target = prepare(pil_image, coco_target)
-                    transformed_img, transformed_target = transforms(image, target)
-                    return transformed_img, transformed_target
-    
-                return map
+        prepare = ConvertCocoPolysToMask(return_masks)
+        transforms = make_coco_transforms(image_set)
+        
+        def map(data):
+            image, target = data
+            numpy_image = image.numpy()
+            pil_image = im.fromarray(numpy_image)
+            
+            coco_target = {'image_id' : target.image_id, 'annotations' : target.coco()}
+            image, target = prepare(pil_image, coco_target)
+            transformed_img, transformed_target = transforms(image, target)
+            return transformed_img, transformed_target
+
+        return map
     
     # Create DatasetIterator object for Coco data
     class CocoDatasetIterator(DatasetIterator):
