@@ -179,122 +179,125 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
   training_dataset = ExternalDataset(path="./data", dataset_type="COCO")
   validation_dataset = ExternalDataset(path="./data", dataset_type="COCO")
   
-  detr_learner.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path="./logs)
+  detr_learner.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path="./logs")
   detr_learner.save('./saved_models/trained_model')
   ```
 * **Training example with a custom `DatasetIterator`.**
   This example serves to show how a custom dataset can be created by a user and used for training. 
-  This can be used for cases where the user does not want to make use of the dataset type `ExternalDataset` or does not want to use the standard input data type or target data type. 
-  We create a custom dataset using the `DatasetIterator` class and create appropriate transformations using the `MappedDatasetIterator` class.
-  The `DatasetIterator` we create outputs tuples of type `(Image, BoundingBoxList)`. 
-  Since the DETR algorithm expects its own data format, we create a mapping function to allow the learner to work with this dataset.
+  In this way, the user can easily train on its own dataset. In order to do this, the user should create a `DatasetIterator` object that outputs `(Image, BoundingboxList)` tuples.
+  Here we show an example for doing this for the COCO dataset, but this can be done for any dataset as long as the `DatasetIterator` outputs `(Image, BoundingboxList)` tuples.
   
     ```python
     import os
     import numpy as np
     from pycocotools.coco import COCO
-    from opendr.engine.datasets import MappedDatasetIterator, DatasetIterator
+    from opendr.engine.datasets import DatasetIterator
     from opendr.engine.data import Image
     from opendr.engine.target import BoundingBoxList
     from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
-    from opendr.perception.object_detection_2d.detr.algorithm.datasets.coco import (
-        ConvertCocoPolysToMask, make_coco_transforms)
     from PIL import Image as im
     
-    # Create mapping function to convert (Image, BoundingBoxList) to detr format
-    def create_map_bounding_box_list_dataset(image_set, return_masks):
-                
-        prepare = ConvertCocoPolysToMask(return_masks)
-        transforms = make_coco_transforms(image_set)
-        
-        def map(data):
-            image, target = data
-            numpy_image = image.numpy()
-            pil_image = im.fromarray(numpy_image)
-            
-            coco_target = {'image_id' : target.image_id, 'annotations' : target.coco()}
-            image, target = prepare(pil_image, coco_target)
-            transformed_img, transformed_target = transforms(image, target)
-            return transformed_img, transformed_target
-
-        return map
     
-    # Create DatasetIterator object for Coco data
+    # We create a DatasetIterator object that loads coco images and annotations and outputs (Image, BoundingBoxList) tuples.
     class CocoDatasetIterator(DatasetIterator):
-        def __init__(
-            self, image_folder, annotations_file
-            ):
-    
+        def __init__(self, image_folder, annotations_file):
             super().__init__()
             self.root = os.path.expanduser(image_folder)
             self.coco = COCO(annotations_file)
             self.ids = list(self.coco.imgs.keys())
     
         def __getitem__(self, idx):
-            coco = self.coco
+            # Get ids of image and annotations
             img_id = self.ids[idx]
-            ann_ids = coco.getAnnIds(imgIds=img_id)
-            target = coco.loadAnns(ann_ids)
+            ann_ids = self.coco.getAnnIds(imgIds=img_id)
+            
+            # Load the annotations with pycocotools
+            target = self.coco.loadAnns(ann_ids)
+            
+            # Convert coco annotations to BoundingBoxList objects
             bounding_box_list = BoundingBoxList.from_coco(target, image_id=img_id)
-            path = coco.loadImgs(img_id)[0]['file_name']
+            
+            # Load images
+            path = self.coco.loadImgs(img_id)[0]['file_name']
             img = im.open(os.path.join(self.root, path)).convert('RGB')
+            
+            # Convert image to Image object
             image = Image(np.array(img))
+            
             return image, bounding_box_list
     
         def __len__(self):
             return len(self.ids)
     
-        def __repr__(self):
-            fmt_str = 'Dataset ' + self.__class__.__name__ + '\n'
-            fmt_str += '    Number of datapoints: {}\n'.format(self.__len__())
-            fmt_str += '    Root Location: {}\n'.format(self.root)
-            return fmt_str
+    # We create a learner that trains for 3 epochs
+    learner = DetrLearner(iters=3, temp_path="temp")
     
-    learner = DetrLearner()
-    learner.download_model()
+    # We download a pretrained detr model from the detr repo
+    learner.download_model(pretrained=True)
     
-    # Download dummy dataset
+    # Download dummy dataset with a single picture
     learner.download_nano_coco()
     
+    # The dummy dataset is stored in the temp_path
     image_folder = "temp/nano_coco/image"
     annotations_file = "temp/nano_coco/instances.json"
     
     dataset = CocoDatasetIterator(image_folder, annotations_file)
-    map = create_map_bounding_box_list_dataset("train", False)
     
-    mapped_dataset = MappedDatasetIterator(dataset, map)
-    
-    learner.fit(mapped_dataset)
+    learner.fit(dataset)
+
     ```
 
 
-* **Inference and result drawing example on a test .jpg image, similar to the [detr_demo colab](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/detr_demo.ipynb#scrollTo=Jf59UNQ37QhJ).**
+* **Inference and result drawing example on a test .jpg image, similar to and partially copied from [detr_demo colab](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/detr_demo.ipynb#scrollTo=Jf59UNQ37QhJ).**
     ```python
-    from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
-    from PIL import Image
     import matplotlib.pyplot as plt
     import requests
+    from PIL import Image as im
+    from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
+    
+    # COCO classes
+    classes = [
+        'N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+        'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A',
+        'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
+        'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack',
+        'umbrella', 'N/A', 'N/A', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
+        'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
+        'skateboard', 'surfboard', 'tennis racket', 'bottle', 'N/A', 'wine glass',
+        'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
+        'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
+        'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table', 'N/A',
+        'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
+        'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
+        'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
+        'toothbrush'
+    ]
+    
+    # colors for visualization
+    colors = [[0.000, 0.447, 0.741], [0.850, 0.325, 0.098], [0.929, 0.694, 0.125],
+              [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
     
     # Function for plotting results
     def plot_results(pil_img, boxes):
-    plt.figure(figsize=(16,10))
-    plt.imshow(pil_img)
-    ax = plt.gca()
-    for box in boxes:
-        ax.add_patch(plt.Rectangle((box.left, box.top), box.width, box.height,
-                                   fill=False, linewidth=3))
-        text = f'{box.name}: {box.confidence:0.2f}'
-        ax.text(box.left, box.top, text, fontsize=15, bbox=dict(facecolor='yellow', alpha=0.5))
-    plt.axis('off')
-    plt.show()
+        plt.figure(figsize=(16,10))
+        plt.imshow(pil_img)
+        ax = plt.gca()
+        for box, c in zip(boxes, colors*100):
+            ax.add_patch(plt.Rectangle((box.left, box.top), box.width, box.height,
+                                       fill=False, color=c, linewidth=3))
+            text = f'{classes[box.name]}: {box.confidence:0.2f}'
+            ax.text(box.left, box.top, text, fontsize=15, bbox=dict(facecolor='yellow', alpha=0.5))
+        plt.axis('off')
+        plt.show()
     
     # Download an image
     url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
-    img = Image.open(requests.get(url, stream=True).raw)
+    img = im.open(requests.get(url, stream=True).raw)
     
-    detr_learner = DetrLearner()
-    detr_learner.download_model()
-    bounding_box_list = detr_learner.infer(img)
+    learner = DetrLearner(threshold=0.7)
+    learner.download_model(backbone="resnet50", dilation=True)
+    bounding_box_list = learner.infer(img)
     plot_results(img, bounding_box_list)
     ```
 
