@@ -19,16 +19,10 @@ COCO dataset which returns image_id for evaluation.
 Mostly copy-paste from https://github.com/pytorch/vision/blob/13b35ff/references/detection/coco_utils.py
 """
 
-import os
 import torch
 import torch.utils.data
 import torchvision
-from pycocotools.coco import COCO
 from pycocotools import mask as coco_mask
-from opendr.engine.datasets import DatasetIterator
-from opendr.engine.data import Image
-from opendr.engine.target import BoundingBoxList
-import numpy as np
 import opendr.perception.object_detection_2d.detr.algorithm.datasets.transforms as T
 from PIL import Image as im
 
@@ -129,36 +123,21 @@ class ConvertCocoPolysToMask(object):
 
         return image, target
 
+def map_bounding_box_list_to_coco(image_set, return_masks):       
+    prepare = ConvertCocoPolysToMask(return_masks)
+    transforms = make_coco_transforms(image_set)
+    
+    def map(data):
+        image, target = data
+        numpy_image = image.numpy()
+        pil_image = im.fromarray(numpy_image)
+        
+        coco_target = {'image_id' : target.image_id, 'annotations' : target.coco()}
+        image, target = prepare(pil_image, coco_target)
+        transformed_img, transformed_target = transforms(image, target)
+        return transformed_img, transformed_target
 
-class CocoDatasetIterator(DatasetIterator):
-    def __init__(
-        self, image_folder, annotations_file
-        ):
-
-        super().__init__()
-        self.root = os.path.expanduser(image_folder)
-        self.coco = COCO(annotations_file)
-        self.ids = list(self.coco.imgs.keys())
-
-    def __getitem__(self, idx):
-        coco = self.coco
-        img_id = self.ids[idx]
-        ann_ids = coco.getAnnIds(imgIds=img_id)
-        target = coco.loadAnns(ann_ids)
-        bounding_box_list = BoundingBoxList.from_coco(target, image_id=img_id)
-        path = coco.loadImgs(img_id)[0]['file_name']
-        img = im.open(os.path.join(self.root, path)).convert('RGB')
-        image = Image(np.array(img))
-        return image, bounding_box_list
-
-    def __len__(self):
-        return len(self.ids)
-
-    def __repr__(self):
-        fmt_str = 'Dataset ' + self.__class__.__name__ + '\n'
-        fmt_str += '    Number of datapoints: {}\n'.format(self.__len__())
-        fmt_str += '    Root Location: {}\n'.format(self.root)
-        return fmt_str
+    return map
 
 def make_coco_transforms(image_set):
 
