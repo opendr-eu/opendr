@@ -27,13 +27,14 @@ from urllib.request import urlretrieve
 
 from opendr.perception.object_detection_2d.detr.algorithm.util.detect import detect
 from opendr.perception.object_detection_2d.detr.algorithm.datasets import build_dataset, get_coco_api_from_dataset
+from opendr.perception.object_detection_2d.detr.algorithm.datasets.coco import map_bounding_box_list_to_coco
 from opendr.perception.object_detection_2d.detr.algorithm.engine import evaluate, train_one_epoch
 from opendr.perception.object_detection_2d.detr.algorithm.models import build_model, build_criterion, build_postprocessors
 
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Image
 from opendr.engine.learners import Learner
-from opendr.engine.datasets import ExternalDataset, DatasetIterator
+from opendr.engine.datasets import ExternalDataset, DatasetIterator, MappedDatasetIterator
 from opendr.engine.target import BoundingBox, BoundingBoxList
 
 import torchvision.transforms as T
@@ -78,13 +79,8 @@ class DetrLearner(Learner):
 
         # Add arguments to a structure like in the original implementation
         self.args = utils.load_config(model_config_path)
-        self.args.lr = self.lr
-        self.args.batch_size = self.batch_size
-        self.args.optimizer = self.optimizer
         self.args.backbone = self.backbone
         self.args.device = self.device
-        self.args.output_path = self.temp_path
-        self.args.num_classes = len(self.args.classes)
 
         # Initialise distributed mode in case of distributed mode
         utils.init_distributed_mode(self.args)
@@ -556,12 +552,9 @@ class DetrLearner(Learner):
                                self.device, self.threshold, self.ort_session)
 
         boxlist = []
-        for p, (xmin, ymin, xmax, ymax) in zip(
-                scores.tolist(), boxes.tolist()):
+        for p, (xmin, ymin, xmax, ymax) in zip(scores.tolist(), boxes.tolist()):
             cl = np.argmax(p)
-            name = f'{self.args.classes[cl]}'
-            box = BoundingBox(name, xmin, ymin, xmax-xmin, ymax-ymin,
-                              score=p[cl])
+            box = BoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl])
             boxlist.append(box)
         return BoundingBoxList(boxlist)
 
@@ -876,5 +869,12 @@ class DetrLearner(Learner):
             return build_dataset(images_folder, annotations_folder,
                                  annotations_file, image_set, self.args.masks,
                                  dataset.dataset_type.lower())
-
-        return dataset
+        
+        # Create Map function for converting (Image, BoundingboxList) to detr format 
+        if self.args.dataset_file.lower() == "coco":
+            map_function = map_bounding_box_list_to_coco(image_set, self.args.masks)
+        elif self.args.dataset_file.lower() == "coco_panoptic":
+            # TODO: create map for coco_panoptic
+            map_function = map_bounding_box_list_to_coco(image_set, self.args.masks)
+        mapped_dataset = MappedDatasetIterator(dataset, map_function)
+        return mapped_dataset
