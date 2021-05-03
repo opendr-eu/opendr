@@ -98,7 +98,7 @@ Returns a dictionary containing stats regarding the last evaluation ran. Paramet
   Object that holds the validation dataset.
   Same rules apply as above.
 - **logging_path**: *str, default=''*  
-  Path to save TensorBoard log files. If set to None or '', TensorBoard logging is disabled.
+  Path to save log files. If set to None or '', logging is disabled.
 - **silent**: *bool, default=True*  
   If set to True, disables all printing of training progress reports and other information to STDOUT.
 - **verbose**: *bool, default=True*  
