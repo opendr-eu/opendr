@@ -13,7 +13,7 @@ following public methods:
 
 #### `DetrLearner` constructor
 ```python
-DetrLearner(model_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold)
+DetrLearner(model_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, num_classes, dataset_style, masks)
 ```
 
 Constructor parameters:
@@ -39,6 +39,13 @@ Constructor parameters:
   Specifies the device to be used.
 - **threshold**: *float, default=0.7*
   Specifies the threshold for object detection inference. An object is detected if the confidence of the output is higher than the specified threshold.
+- **num_classes**: *int, default=91*
+  Specifies the number of classes of the model. The default is 91, since this is the number of classes in the COCO dataset, but modifying the num_classes allows the user to train on its own dataset. 
+  It is also possible to use pretrained DETR models with the specified num_classes, since the head of the pretrained model with be modified appropriately. 
+  In this way, a model that was pretrained on the coco dataset can be finetuned to another dataset. Training on other datasets than COCO can be done by creating a DatasetIterator that outputs (Image, BoundingBoxList) tuples.
+  Below you can find an example that shows how you can create such a DatasetIterator.
+- **masks**: *bool, default=False*
+  Specifies whether the model returns the masks of objects (segmentations).
 
 #### `DetrLearner.fit`
 ```python
@@ -247,7 +254,6 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
     learner.fit(dataset)
 
     ```
-
 
 * **Inference and result drawing example on a test .jpg image, similar to and partially copied from [detr_demo colab](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/detr_demo.ipynb#scrollTo=Jf59UNQ37QhJ).**
     ```python

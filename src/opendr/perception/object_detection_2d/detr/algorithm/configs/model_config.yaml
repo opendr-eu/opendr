@@ -22,9 +22,6 @@ nheads: 8 # Number of attention heads inside the transformer's attentions
 num_queries: 100 # Number of query slots
 pre_norm: False
 
-# * Segmentation
-masks: False
-
 # * Loss
 aux_loss: False # Disables auxiliary decoding losses (loss at each layer)
 
@@ -41,11 +38,9 @@ giou_loss_coef: 2
 eos_coef: 0.1 # Relative classification weight of the no-object class
 
 # * dataset parameters
-dataset_file: "coco"
 remove_difficult: True
 seed: 42
 num_workers: 2
-num_classes: 91
 
 # * distributed training parameters
 world_size: 1 # Number of distributed processes
