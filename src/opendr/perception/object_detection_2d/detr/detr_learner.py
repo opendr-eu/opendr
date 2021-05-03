@@ -61,7 +61,9 @@ class DetrLearner(Learner):
         temp_path="temp",
         device="cuda",
         threshold=0.7,
-    ):
+        num_classes=91,
+        masks=False
+        ):
 
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(DetrLearner, self).__init__(
@@ -81,6 +83,9 @@ class DetrLearner(Learner):
         self.args = utils.load_config(model_config_path)
         self.args.backbone = self.backbone
         self.args.device = self.device
+        self.args.num_classes = num_classes
+        self.args.dataset_file = "coco"        
+        self.args.masks = masks
 
         # Initialise distributed mode in case of distributed mode
         utils.init_distributed_mode(self.args)
@@ -419,7 +424,7 @@ class DetrLearner(Learner):
             if val_dataset is not None:
                 test_stats, coco_evaluator = evaluate(
                     self.model, self.criterion, self.postprocessors,
-                    data_loader_val, base_ds, device, self.args.output_dir,
+                    data_loader_val, base_ds, device, self.temp_path,
                     verbose=verbose, silent=silent)
 
             if logging:
@@ -522,7 +527,7 @@ class DetrLearner(Learner):
         test_stats, _ = evaluate(
                 self.model, self.criterion, self.postprocessors,
                 data_loader_val, base_ds, device,
-                self.args.output_path
+                self.temp_path
             )
 
         return test_stats
@@ -677,19 +682,25 @@ class DetrLearner(Learner):
                     'facebookresearch/detr',
                     model_name,
                     pretrained=pretrained,
-                    num_classes=self.args.num_classes,
                     return_postprocessor=False,
                     threshold=self.threshold
                     )
+                if self.args.num_classes != 250:
+                    self.model.detr.class_embed = torch.nn.Linear(
+                        in_features=self.model.detr.class_embed.in_features,
+                        out_features=self.args.num_classes+1)
                 self.args.dataset_file = 'coco_panoptic'
             else:
                 self.model = torch.hub.load(
                     'facebookresearch/detr',
                     model_name,
                     pretrained=pretrained,
-                    num_classes=self.args.num_classes,
                     return_postprocessor=False
                     )
+                if self.args.num_classes != 91:
+                    self.model.class_embed = torch.nn.Linear(
+                        in_features=self.model.class_embed.in_features,
+                        out_features=self.args.num_classes+1)
                 self.args.dataset_file = 'coco'
 
             self.ort_session = None            
@@ -848,6 +859,9 @@ class DetrLearner(Learner):
         if isinstance(dataset, ExternalDataset):
             if dataset.dataset_type.lower() not in ["coco", "coco_panoptic"]:
                 raise UserWarning("dataset_type must be \"COCO\" or \"COCO_PANOPTIC\"")
+            
+            if dataset.dataset_type.lower() == "coco_panoptic":
+                self.arg.dataset_file = "coco_panoptic"
 
             # Get images folder
             images_folder = os.path.join(dataset.path, images_folder_name)
@@ -871,10 +885,5 @@ class DetrLearner(Learner):
                                  dataset.dataset_type.lower())
         
         # Create Map function for converting (Image, BoundingboxList) to detr format 
-        if self.args.dataset_file.lower() == "coco":
-            map_function = map_bounding_box_list_to_coco(image_set, self.args.masks)
-        elif self.args.dataset_file.lower() == "coco_panoptic":
-            # TODO: create map for coco_panoptic
-            map_function = map_bounding_box_list_to_coco(image_set, self.args.masks)
-        mapped_dataset = MappedDatasetIterator(dataset, map_function)
-        return mapped_dataset
+        map_function = map_bounding_box_list_to_coco(image_set, self.args.masks)
+        return MappedDatasetIterator(dataset, map_function)
