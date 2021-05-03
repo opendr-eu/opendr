@@ -27,15 +27,14 @@ type checking is performed (if there is no other technical obstacle to this, e.g
 ### class engine.target.Category
 Bases: `engine.target.Target`
 
-This target is used for 1-of-K categorization / classification problems.
+The Category target is used for 1-of-K classification problems.
+    It contains the predicted class or ground truth and optionally the prediction confidence.
 
-The [Category](#class_engine.target.Category) class has the following public methods:
-#### Category(data, num_classes=None)
+The [Category](#class_engine.target.Category) class has the following public methods and attributes:
+#### Category(data, confidence=None)
 Construct a new [Category](#class_engine.target.Category).
-- *data* is a class integer or one-dimensional array / tensor of class probabilities.
-- *num_classes* is an integer indicating the number of classes.
-  Must be specified only if `data` is an integer. Defaults to None.
-- *prediction* is an integer indicating the predicted class.
+- *data* is a class integer.
+- *confidence* is an optional one-dimensional array / tensor of class probabilitiess.
 
 
 
