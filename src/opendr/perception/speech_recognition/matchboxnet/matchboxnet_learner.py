@@ -39,9 +39,9 @@ class MatchboxNetLearner(Learner):
                  checkpoint_load_iter=0,
                  temp_path='',
                  device='cuda',
-                 b=3,
-                 r=1,
-                 c=64,
+                 number_of_blocks=3,
+                 number_of_subblocks=1,
+                 number_of_channels=64,
                  output_classes_n=20,
                  momentum=0.9,
                  preprocess_to_mfcc=True,
@@ -53,15 +53,15 @@ class MatchboxNetLearner(Learner):
                                                  checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
                                                  device=device)
         self.logger = logging.getLogger("MatchboxNetLearner")
-        self.b = b
-        self.r = r
-        self.c = c
+        self.number_of_blocks = number_of_blocks
+        self.number_of_subblocks = number_of_subblocks
+        self.number_of_channels = number_of_channels
         self.momentum = momentum
         self.preprocess_to_mfcc = preprocess_to_mfcc
         self.sample_rate = sample_rate
         self.output_classes_n = output_classes_n
 
-        self.model = MatchBoxNet(num_classes=output_classes_n, b=b, r=r, c=c)
+        self.model = MatchBoxNet(num_classes=output_classes_n, b=number_of_blocks, r=number_of_subblocks, c=number_of_channels)
         self.loss = nn.NLLLoss()
 
         self.model.to(self.device)
@@ -76,37 +76,37 @@ class MatchboxNetLearner(Learner):
             self.optimizer_func = optim.Adam(self.model.parameters(), lr=self.lr)
 
     @property
-    def b(self):
-        return self._b
+    def number_of_blocks(self):
+        return self._number_of_blocks
 
-    @b.setter
-    def b(self, value: int):
+    @number_of_blocks.setter
+    def number_of_blocks(self, value: int):
         if type(value) is not int or value < 1:
             raise TypeError("MatchboxNet b-value should be a positive integer")
         else:
-            self._b = value
+            self._number_of_blocks = value
 
     @property
-    def r(self):
-        return self._r
+    def number_of_subblocks(self):
+        return self._number_of_subblocks
 
-    @r.setter
-    def r(self, value: int):
+    @number_of_subblocks.setter
+    def number_of_subblocks(self, value: int):
         if type(value) is not int or value < 1:
             raise TypeError("MatchboxNet r-value should be a positive integer")
         else:
-            self._r = value
+            self._number_of_subblocks = value
 
     @property
-    def c(self):
-        return self._c
+    def number_of_channels(self):
+        return self._number_of_channels
 
-    @c.setter
-    def c(self, value: int):
+    @number_of_channels.setter
+    def number_of_channels(self, value: int):
         if type(value) is not int or value < 1:
             raise TypeError("MatchboxNet c-value should be a positive integer")
         else:
-            self._c = value
+            self._number_of_channels = value
 
     @property
     def momentum(self):
@@ -153,7 +153,7 @@ class MatchboxNetLearner(Learner):
             self._preprocess_to_mfcc = value
 
     def _signal_to_mfcc(self, signal):
-        mfcc = np.apply_along_axis(lambda sample: get_mfcc(sample, self.sample_rate, n_mfcc=self.c, length=40),
+        mfcc = np.apply_along_axis(lambda sample: get_mfcc(sample, self.sample_rate, n_mfcc=self.number_of_channels, length=40),
                                    axis=1,
                                    arr=signal)
         return mfcc
