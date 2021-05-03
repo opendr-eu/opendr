@@ -34,15 +34,15 @@ import json
 from urllib.request import urlretrieve
 
 # OpenDR engine imports
-from engine.learners import Learner
-from engine.datasets import ExternalDataset, DatasetIterator
-from engine.data import SkeletonSequence
-from engine.target import Category
-from engine.constants import OPENDR_SERVER_URL
+from opendr.engine.learners import Learner
+from opendr.engine.datasets import ExternalDataset, DatasetIterator
+from opendr.engine.data import SkeletonSequence
+from opendr.engine.target import Category
+from opendr.engine.constants import OPENDR_SERVER_URL
 
 # OpenDR skeleton_based_action_recognition imports
-from perception.skeleton_based_action_recognition.algorithm.models.pstgcn import PSTGCN
-from perception.skeleton_based_action_recognition.algorithm.datasets.feeder import Feeder
+from opendr.perception.skeleton_based_action_recognition.algorithm.models.pstgcn import PSTGCN
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.feeder import Feeder
 
 
 class ProgressiveSpatioTemporalGCNLearner(Learner):
@@ -412,7 +412,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                 self.model = PSTGCN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.blocksize,
                                     cuda_=False)
                 self.loss = nn.CrossEntropyLoss()
-            print(self.model)
+            # print(self.model)
 
     def network_builder(self, dataset, val_dataset, train_data_filename='train_joints.npy',
                         train_labels_filename='train_labels.pkl', val_data_filename="val_joints.npy",

@@ -184,6 +184,7 @@ The [SkeletonSequence](#class_engine.data.SkeletonSequence) class has the follow
   - `T` is the number of skeletons in each sequence 
   - `V` is the number of body joints in each skeleton
   - `M` is the number of persons (or skeletons) in each frame. 
+  
   Accordingly, an array of size `[10, 3, 300, 18, 2]` contains `10` samples 
   each containing a sequence of `300` skeletons while each skeleton has `2` persons each of which has `18` joints
   and each body joint has `3` channels.  

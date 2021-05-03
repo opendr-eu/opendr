@@ -8,8 +8,8 @@ from torch.utils.data import Dataset
 import random
 from tqdm import tqdm
 
-from perception.skeleton_based_action_recognition.algorithm.graphs.nturgbd import NTUGraph
-from perception.skeleton_based_action_recognition.algorithm.graphs.kinetics import KineticsGraph
+from opendr.perception.skeleton_based_action_recognition.algorithm.graphs.nturgbd import NTUGraph
+from opendr.perception.skeleton_based_action_recognition.algorithm.graphs.kinetics import KineticsGraph
 
 
 def auto_pading(data_numpy, size, random_pad=False):

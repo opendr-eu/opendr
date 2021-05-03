@@ -34,17 +34,17 @@ import json
 from urllib.request import urlretrieve
 
 # OpenDR engine imports
-from engine.learners import Learner
-from engine.datasets import ExternalDataset, DatasetIterator
-from engine.data import SkeletonSequence
-from engine.target import Category
-from engine.constants import OPENDR_SERVER_URL
+from opendr.engine.learners import Learner
+from opendr.engine.datasets import ExternalDataset, DatasetIterator
+from opendr.engine.data import SkeletonSequence
+from opendr.engine.target import Category
+from opendr.engine.constants import OPENDR_SERVER_URL
 
 # OpenDR skeleton_based_action_recognition imports
-from perception.skeleton_based_action_recognition.algorithm.models.stgcn import STGCN
-from perception.skeleton_based_action_recognition.algorithm.models.tagcn import TAGCN
-from perception.skeleton_based_action_recognition.algorithm.models.stbln import STBLN
-from perception.skeleton_based_action_recognition.algorithm.datasets.feeder import Feeder
+from opendr.perception.skeleton_based_action_recognition.algorithm.models.stgcn import STGCN
+from opendr.perception.skeleton_based_action_recognition.algorithm.models.tagcn import TAGCN
+from opendr.perception.skeleton_based_action_recognition.algorithm.models.stbln import STBLN
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.feeder import Feeder
 
 
 class SpatioTemporalGCNLearner(Learner):
@@ -432,7 +432,7 @@ class SpatioTemporalGCNLearner(Learner):
             if self.logging:
                 shutil.copy2(inspect.getfile(STBLN), self.logging_path)
         self.loss = nn.CrossEntropyLoss()
-        print(self.model)
+        # print(self.model)
 
     def infer(self, SkeletonSeq_batch):
         """

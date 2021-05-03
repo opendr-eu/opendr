@@ -17,8 +17,8 @@ import shutil
 import os
 import torch
 import numpy as np
-from perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
-from engine.datasets import ExternalDataset
+from opendr.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
+from opendr.engine.datasets import ExternalDataset
 
 
 def rmfile(path):
@@ -36,13 +36,16 @@ def rmdir(_dir):
 
 
 # LOG_PATH_ = os.path.join(".", "tests", "sources", "tools", "perception", "skeleton_based_action_recognition", "logs")
-PATH_ = './tests/sources/tools/perception/skeleton_based_action_recognition'
+PATH_ = './tests/sources/tools/perception/skeleton_based_action_recognition/skeleton_based_action_recognition_temp'
 LOG_PATH_ = ''
 
 
 class TestSkeletonBasedActionRecognition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        print(
+            "\n\n**********************************\nTEST Skeleton Based Action Recognition Learner with STBLN model\n*"
+            "*********************************")
         cls.temp_dir = PATH_
         cls.logging_path = LOG_PATH_
         cls.stbln_action_classifier = SpatioTemporalGCNLearner(device="cpu", temp_path=cls.temp_dir,
@@ -67,6 +70,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         # Clean up downloaded files
         rmdir(os.path.join(cls.temp_dir, "data"))
         rmdir(os.path.join(cls.temp_dir, "pretrained_models"))
+        rmdir(os.path.join(cls.temp_dir))
 
     def test_fit(self):
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="NTURGBD")
@@ -75,7 +79,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.stbln_action_classifier.init_model()
         m = list(self.stbln_action_classifier.model.parameters())[0].clone()
         self.stbln_action_classifier.fit(dataset=training_dataset, val_dataset=validation_dataset, silent=True,
-                                         train_data_filename='train_joints.npy',
+                                         verbose=False, train_data_filename='train_joints.npy',
                                          train_labels_filename='train_labels.pkl', val_data_filename="val_joints.npy",
                                          val_labels_filename="val_labels.pkl",
                                          skeleton_data_type='joint')
@@ -87,7 +91,8 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         model_name = 'stbln_nturgbd-0-10'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.stbln_action_classifier.load(model_saved_path, model_name)
-        score = self.stbln_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
+        score = self.stbln_action_classifier.eval(validation_dataset, verbose=False,
+                                                  val_data_filename='val_joints.npy',
                                                   val_labels_filename='val_labels.pkl',
                                                   skeleton_data_type='joint')
         self.assertNotEqual(len(score), 0, msg="Eval results contains empty list.")
@@ -97,10 +102,12 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         model_name = 'stbln_nturgbd-0-10'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.stbln_action_classifier.load(model_saved_path, model_name)
-        score_joints = self.stbln_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
+        score_joints = self.stbln_action_classifier.eval(validation_dataset, verbose=False,
+                                                         val_data_filename='val_joints.npy',
                                                          val_labels_filename='val_labels.pkl',
                                                          skeleton_data_type='joint')
-        score_bones = self.stbln_action_classifier.eval(validation_dataset, val_data_filename='val_joints.npy',
+        score_bones = self.stbln_action_classifier.eval(validation_dataset, verbose=False,
+                                                        val_data_filename='val_joints.npy',
                                                         val_labels_filename='val_labels.pkl',
                                                         skeleton_data_type='bone')
         scores = [score_joints, score_bones]
