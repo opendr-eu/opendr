@@ -1,17 +1,15 @@
 ## matchboxnet module
 
-The *matchboxnet* module contains the *MatchboxNetLearner* class, which inherits from the abstract class *Learner*
-.
+The *matchboxnet* module contains the *MatchboxNetLearner* class, which inherits from the abstract class *Learner*.
 
 ### Class MatchboxNetLearner
 
 Bases: `engine.learners.Learner`
 
-The *MatchboxNetLearner* class is a wrapper of the MatchboxNet[[1]](#matchboxnet-arxiv) implementation. It is designed 
-for limited-vocabulary speech command recognition tasks.
+The *MatchboxNetLearner* class is a wrapper of the MatchboxNet[[1]](#matchboxnet-arxiv) implementation.
+It is designed for limited-vocabulary speech command recognition tasks.
 
-The [MatchboxNetLearner](#src.perception.speech_recognition.matchboxnet_learner.py) class has the following public
-methods:
+The [MatchboxNetLearner](#src.perception.speech_recognition.matchboxnet_learner.py) class has the following public methods:
 
 #### `MatchboxNetLearner` constructor
 
@@ -25,9 +23,9 @@ MatchboxNetLearner(self,
                    checkpoint_load_iter,
                    temp_path,
                    device,
-                   b,
-                   r,
-                   c,
+                   number_of_blocks,
+                   number_of_subblocks,
+                   number_of_channels,
                    output_classes_n,
                    momentum,
                    preprocess_to_mfcc,
@@ -43,27 +41,27 @@ Constructor parameters:
   Specifies the number of epochs the training should run for.
 - **batch_size**: *int, default=64*  
   Specifies number of images to be bundled up in a batch during training.  
-  This heavily affects memory usage, adjust
-  according to your system. Should always be equal to or higher than the number of used CUDA devices.
+  This heavily affects memory usage, adjust according to your system.
+  Should always be equal to or higher than the number of used CUDA devices.
 - **optimizer**: *{'sgd'}, default='adam'*  
   Specifies the optimizer to be used. Currently, only SGD is supported.
 - **checkpoint_after_iter**: *int, default=0*  
-  Specifies per how many training iterations a checkpoint should be saved. If set to 0 no checkpoints will be saved.
+  Specifies per how many training iterations a checkpoint should be saved.
+  If set to 0 no checkpoints will be saved.
   Saves the models to the `temp_path` as "MatchboxNet-\<epoch\>.pth"
 - **checkpoint_load_iter**: *int, default=0*   
-  Specifies a checkpoint to load based on the number of iterations before fitting. If set to 0 no checkpoint will be
-  loaded.
+  Specifies a checkpoint to load based on the number of iterations before fitting. If set to 0 no checkpoint will be loaded.
 - **temp_path**: *str, default='temp'*  
   Specifies the path to the directory where the checkpoints will be saved.
 - **device**: *{'cpu', 'cuda'}, default='cuda'*  
   Specifies the device to be used.
-- **b**: *int, default='3'*  
+- **number_of_blocks**: *int, default='3'*  
   Specifies the number of residual blocks in the network.  
   See the [paper](#matchboxnet-arxiv) for further information and visualization.
-- **r**: *int, default='1'*  
+- **number_of_subblocks**: *int, default='1'*  
   Specifies the number of sub-blocks within each residual block.  
   See the [paper](#matchboxnet-arxiv) for further information and visualization.
-- **c**: *int, default='64'*  
+- **number_of_channels**: *int, default='64'*  
   Specifies the number of channels within the residual blocks.  
   See the [paper](#matchboxnet-arxiv) for further information and visualization.
 - **output_classes_n**: *int, default=20*  
@@ -71,11 +69,12 @@ Constructor parameters:
 - **momentum**: *float, default=0.9*  
   Specifies the momentum for the SGD optimizer if it is selected.
 - **preprocess_to_mfcc**: *bool, default=True*  
-  Specifies whether the learner should transform the input to a MFCC. If the input is already converted to a 2D signal,
-  turn this off. Expects a 1D signal if set to true.
+  Specifies whether the learner should transform the input to a MFCC.
+  If the input is already converted to a 2D signal, turn this off.
+  Expects a 1D signal if set to true.
 - **sample_rate**: *int, default=16000*  
-  Specifies the assumed sampling rate for the input signals used in the MFCC conversion. Does nothing if  *
-  preprocess_to_mfcc* is set to false.
+  Specifies the assumed sampling rate for the input signals used in the MFCC conversion.
+  Does nothing if *preprocess_to_mfcc* is set to false.
 
 #### `MatchboxNetLearner.fit`
 
@@ -88,14 +87,16 @@ MatchboxNetLearner.fit(self,
                        verbose)
 ```
 
-This method is used for training the algorithm on a train dataset and validating on a val dataset. Returns a dictionary
-containing stats regarding the last evaluation ran. Parameters:
+This method is used for training the algorithm on a train dataset and validating on a val dataset.
+Returns a dictionary containing stats regarding the last evaluation ran. Parameters:
 
 - **dataset**: *DatasetIterator*  
-  Object that holds the training dataset. Will be converted used by a PyTorch Dataloader. Can be anything that can be
-  passed to Dataloader as a dataset, but a safe way is to inherit it from DatasetIterator.
+  Object that holds the training dataset.
+  Will be used by a PyTorch `DataLoader`.
+  Can be anything that can be passed to `DataLoader` as a dataset, but a safe way is to inherit it from `DatasetIterator`.
 - **val_dataset**: *DatasetIterator, default=None*  
-  Object that holds the validation dataset. Same rules apply as above.
+  Object that holds the validation dataset.
+  Same rules apply as above.
 - **logging_path**: *str, default=''*  
   Path to save TensorBoard log files. If set to None or '', TensorBoard logging is disabled.
 - **silent**: *bool, default=True*  
@@ -109,13 +110,14 @@ containing stats regarding the last evaluation ran. Parameters:
 MatchboxNetLearner.eval(self, dataset)
 ```
 
-This method is used to evaluate a trained model on an evaluation dataset. Returns a dictionary containing stats
-regarding evaluation.  
+This method is used to evaluate a trained model on an evaluation dataset.
+Returns a dictionary containing stats regarding evaluation.  
 Parameters:
 
 - **dataset**: *DatasetIterator*  
-  Object that holds the training dataset. Will be used by a PyTorch Dataloader. Can be anything that can be passed to
-  Dataloader as a dataset, but a safe way is to inherit it from DatasetIterator.
+  Object that holds the training dataset.
+  Will be used by a PyTorch `DataLoader`.
+  Can be anything that can be passed to Dataloader as a dataset, but a safe way is to inherit it from `DatasetIterator`.
 
 #### `MatchboxNetLearner.infer`
 
@@ -165,8 +167,8 @@ Parameters:
   import numpy as np
   import os
   
-  from OpenDR.engine.datasets import DatasetIterator
-  from OpenDR.perception.speech_recognition.matchboxnet.matchboxnet_learner import MatchboxNetLearner
+  from opendr.engine.datasets import DatasetIterator
+  from opendr.perception.speech_recognition.matchboxnet.matchboxnet_learner import MatchboxNetLearner
   
   class RandomDataset(DatasetIterator):
       def __init__(self):
@@ -193,10 +195,10 @@ Parameters:
   import librosa
   import numpy as np
   
-  from OpenDR.engine.data import Timeseries
-  from OpenDR.perception.speech_recognition.matchboxnet.matchboxnet_learner import MatchboxNetLearner
+  from opendr.engine.data import Timeseries
+  from opendr.perception.speech_recognition.matchboxnet.matchboxnet_learner import MatchboxNetLearner
   
-  learner = MatchboxNetLearner(output_clases_n=10)
+  learner = MatchboxNetLearner(output_classes_n=10)
   learner.load(os.path.join(".", "example", "directory", "path", "model"))
 
   signal, sampling_rate = librosa.load("command.wav", sr=learner.sample_rate)
@@ -207,6 +209,6 @@ Parameters:
 
 #### References
 
-<a name="matchboxnet-arxiv" href="https://arxiv.org/abs/1810.085591">[1]</a> MatchboxNet: 1D Time-Channel Separable
-Convolutional Neural Network Architecture for Speech Commands Recognition,
+<a name="matchboxnet-arxiv" href="https://arxiv.org/abs/1810.085591">[1]</a>
+MatchboxNet: 1D Time-Channel Separable Convolutional Neural Network Architecture for Speech Commands Recognition,
 [arXiv](https://arxiv.org/abs/2004.08531).  
