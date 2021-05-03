@@ -13,7 +13,7 @@ following public methods:
 
 #### `DetrLearner` constructor
 ```python
-DetrLearner(model_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, num_classes, dataset_style, masks)
+DetrLearner(model_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, num_classes, masks)
 ```
 
 Constructor parameters:
