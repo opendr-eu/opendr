@@ -14,7 +14,6 @@
 
 from typing import Union
 import numpy as np
-import torch
 
 
 class BaseTarget:
@@ -54,13 +53,13 @@ class Category(Target):
     It contains the predicted class or ground truth and optionally the prediction confidence.
     """
 
-    def __init__(self, prediction: int, confidence: Union[torch.Tensor, np.ndarray]=None):
+    def __init__(self, prediction: int, confidence=None):
         """Initialize a category.
 
         Args:
             prediction (int): Class integer
-            confidence (Union[torch.Tensor, np.ndarray], optional):
-                One-dimensional array / tensor of class probabilities.. Defaults to None.
+            confidence (optional):
+                One-dimensional array / tensor of class probabilities. Defaults to None.
         """
         super().__init__()
         self.data = prediction
