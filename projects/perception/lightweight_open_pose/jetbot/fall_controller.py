@@ -85,10 +85,8 @@ if __name__ == '__main__':
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("./openpose_default")
 
-
     def fall_handler_fn_file(imgs):
         fall_handler_fn(imgs, output_file=output_path)
-
 
     if args.video:
         if args.platform == 'jetbot':
