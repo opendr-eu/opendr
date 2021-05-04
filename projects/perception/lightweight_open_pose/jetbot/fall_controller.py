@@ -20,6 +20,7 @@ import argparse
 from utils.webots import initialize_webots_setup
 from cv2 import VideoWriter, VideoWriter_fourcc
 from os.path import join
+import torch
 
 if __name__ == '__main__':
     opendr = True
@@ -57,21 +58,37 @@ if __name__ == '__main__':
 
     output_path = mode + '_' + str(args.active) + '_' + str(args.opendr)
 
+    # Select the device for running the
+    try:
+        if torch.cuda.is_available():
+            print("GPU found.")
+            device = 'cuda'
+        else:
+            print("GPU not found. Using CPU instead.")
+            device = 'cpu'
+            # Disable collision detection if we are lacking a GPU
+            args.nocollision = True
+    except:
+        device = 'cpu'
+        args.nocollision = True
+
     if args.opendr:
-        pose_estimator = LightweightOpenPoseLearner(device='cuda', num_refinement_stages=2,
+        pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=2,
                                                     mobilenet_use_stride=True, half_precision=True)
         infer_delay = 0.15  # delay calculated based on FPS on jetbot
 
     else:
-        pose_estimator = LightweightOpenPoseLearner(device='cuda', num_refinement_stages=2,
+        pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=2,
                                                     mobilenet_use_stride=False, half_precision=False)
         infer_delay = 0.43  # delay calculated based on FPS on jetbot
 
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("./openpose_default")
 
+
     def fall_handler_fn_file(imgs):
         fall_handler_fn(imgs, output_file=output_path)
+
 
     if args.video:
         if args.platform == 'jetbot':
