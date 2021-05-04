@@ -18,6 +18,7 @@
 # import sys
 # sys.path.append('../../src')
 import rospy
+import torch
 import numpy as np
 from ros_bridge.msg import Pose as ROS_Pose
 from sensor_msgs.msg import Image as ROS_Image
@@ -103,5 +104,16 @@ class PoseEstimationNode:
 
 
 if __name__ == '__main__':
-    pose_estimation_node = PoseEstimationNode()
+    # Select the device for running the
+    try:
+        if torch.cuda.is_available():
+            print("GPU found.")
+            device = 'cuda'
+        else:
+            print("GPU not found. Using CPU instead.")
+            device = 'cpu'
+    except:
+        device = 'cpu'
+
+    pose_estimation_node = PoseEstimationNode(device=device)
     pose_estimation_node.listen()

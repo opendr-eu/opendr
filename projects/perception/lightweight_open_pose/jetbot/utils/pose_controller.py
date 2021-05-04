@@ -246,6 +246,11 @@ class PoseController:
         else:
             # Slowly rotate until detecting a human
             while len(poses) == 0:
+                def visualization_fn(img):
+                    return self.visualization_handler(img, self.last_pose,
+                                                      {'state': 'rotate_to_detect_active',
+                                                       })
+
                 self.robot.rotate(self.rotation_interval, visualization_fn)
                 self.last_img = self.robot.get_camera_data()
                 poses = self.pose_estimator.infer(cv2.resize(self.last_img, (600, 800)))
@@ -253,6 +258,13 @@ class PoseController:
                 if len(poses) > 0:
                     self.last_pose = poses[0]
                     offset_center = calculate_horizontal_offset(poses[0], self.image_width)
+
+                    def visualization_fn(img):
+                        return self.visualization_handler(img, self.last_pose,
+                                                          {'state': 'rotate_to_detect_active',
+                                                           'offset': offset_center,
+                                                           })
+
                     if offset_center > 0:
                         self.robot.rotate(-self.rotation_interval, visualization_fn)
                     else:
