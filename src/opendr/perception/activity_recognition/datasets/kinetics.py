@@ -17,7 +17,7 @@ import json
 import random
 import torch
 import zipfile
-from os import getcwd
+import os
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
 from pathlib import Path
 from logging import getLogger
@@ -101,7 +101,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
             train_transform, eval_transform = standard_video_transforms()
             self.video_transform = train_transform if self.split == "train" else eval_transform
 
-        validate_splits = Memory(Path(getcwd()) / ".cache", verbose=1).cache(
+        validate_splits = Memory(Path(os.getcwd()) / ".cache", verbose=1).cache(
             _validate_splits
         ) if use_caching else _validate_splits
 
@@ -210,12 +210,15 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         """
         path.mkdir(parents=True, exist_ok=True)
 
-        url = str(
-            Path(OPENDR_SERVER_URL) /
-            "perception" / "activity_recognition" / "datasets" / "kinetics400micro.zip"
+        url = os.path.join(
+            OPENDR_SERVER_URL,
+            "perception",
+            "activity_recognition",
+            "datasets",
+            "kinetics400mini.zip"
         )
-        zip_path = str(Path(path) / "kinetics400micro.zip")
-        unzip_path = str(Path(path) / "kinetics400micro")
+        zip_path = str(Path(path) / "kinetics400mini.zip")
+        unzip_path = str(Path(path))
 
         logger.info(f"Downloading Kinetics400 mini from {url}")
         urlretrieve(url=url, filename=zip_path)
@@ -223,6 +226,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         logger.info(f"Unzipping Kinetics400 mini to {(unzip_path)}")
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(unzip_path)
+        os.remove(zip_path)
 
 
 def _make_path_name(
