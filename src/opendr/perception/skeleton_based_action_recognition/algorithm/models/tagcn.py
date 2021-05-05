@@ -153,7 +153,7 @@ class TAGCN(nn.Module):
             num_class = 400
             num_point = 18
             num_person = 2
-            in_channels = 2
+            in_channels = 3
             self.graph = KineticsGraph()
 
         A = self.graph.A

@@ -209,8 +209,8 @@ class SpatioTemporalGCNLearner(Learner):
         for epoch in range(self.start_epoch, self.epochs):
             self.model.train()
             self.__print_log('Training epoch: {}'.format(epoch + 1))
-            # save_model = ((self.global_step + 1) % self.checkpoint_after_iter == 0) or (epoch + 1 == self.epochs)
-            save_model = ((epoch + 1) % self.checkpoint_after_iter == 0) or (epoch + 1 == self.epochs)
+            save_model = ((self.global_step + 1) % self.checkpoint_after_iter == 0) or (epoch + 1 == self.epochs)
+            # save_model = ((epoch + 1) % self.checkpoint_after_iter == 0) or (epoch + 1 == self.epochs)
             loss_value = []
             if self.logging:
                 self.train_writer.add_scalar('epoch', epoch, self.global_step)

@@ -8,6 +8,7 @@ from opendr.engine.target import Category
 class TestTarget(unittest.TestCase):
 
     def test_category(self):
+        print("\n\n**********************************\nTEST engine.target \n**********************************")
         data_list = [0.1, 0.5, 0.2, 0.2]
         # torch.Tensor
         c_t = Category(torch.tensor(data_list))

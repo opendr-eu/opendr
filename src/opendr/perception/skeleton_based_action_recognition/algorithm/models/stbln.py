@@ -122,7 +122,7 @@ class STBLN(nn.Module):
             num_class = 400
             num_point = 18
             num_person = 2
-            in_channels = 2
+            in_channels = 3
 
         self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point)
         weights_init(self.data_bn, bs=1)
@@ -132,12 +132,12 @@ class STBLN(nn.Module):
              'layer2': ST_GCN_block(64, 64, num_point, num_point, symmetric, cuda_),
              'layer3': ST_GCN_block(64, 64, num_point, num_point, symmetric, cuda_),
              'layer4': ST_GCN_block(64, 64, num_point, num_point, symmetric, cuda_),
-             'layer5': ST_GCN_block(64, 128, num_point, 1, symmetric, cuda_, stride=2),
-             'layer6': ST_GCN_block(128, 128, 1, 1, symmetric, cuda_),
-             'layer7': ST_GCN_block(128, 128, 1, 1, symmetric, cuda_),
-             'layer8': ST_GCN_block(128, 256, 1, 1, symmetric, cuda_, stride=2),
-             'layer9': ST_GCN_block(256, 256, 1, 1, symmetric, cuda_),
-             'layer10': ST_GCN_block(256, 256, 1, 1, symmetric, cuda_)}
+             'layer5': ST_GCN_block(64, 128, num_point, num_point, symmetric, cuda_, stride=2),
+             'layer6': ST_GCN_block(128, 128, num_point, num_point, symmetric, cuda_),
+             'layer7': ST_GCN_block(128, 128, num_point, num_point, symmetric, cuda_),
+             'layer8': ST_GCN_block(128, 256, num_point, num_point, symmetric, cuda_, stride=2),
+             'layer9': ST_GCN_block(256, 256, num_point, num_point, symmetric, cuda_),
+             'layer10': ST_GCN_block(256, 256, num_point, num_point, symmetric, cuda_)}
         )
 
         self.fc = nn.Linear(256, num_class)
