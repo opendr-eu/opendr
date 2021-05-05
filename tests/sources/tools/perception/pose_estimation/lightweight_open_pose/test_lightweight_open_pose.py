@@ -40,7 +40,8 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print("\n\n**********************************\nTEST Lightweight OpenPose Learner\n**********************************")
+        print("\n\n**********************************\nTEST Lightweight OpenPose Learner\n"
+              "**********************************")
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "pose_estimation",
                                     "lightweight_open_pose", "lw_open_pose_temp")
