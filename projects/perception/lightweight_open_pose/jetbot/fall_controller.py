@@ -106,7 +106,9 @@ if __name__ == '__main__':
             pose_controller.rotate_to_detect()
             pose_controller.monitor_target()
     except Exception as e:
+        pose_robot.kill_switch()
+
         print("Caught: ", e)
         if visualizer.video_writer:
             visualizer.video_writer.release()
-        pose_robot.kill_switch()
+

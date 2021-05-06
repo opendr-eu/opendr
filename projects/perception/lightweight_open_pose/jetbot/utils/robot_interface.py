@@ -61,10 +61,6 @@ class PoseRobot:
         else:
             assert False
 
-    def __del__(self):
-        # Ensure that robot is stopped when we exit
-        self.kill_switch()
-
     def kill_switch(self):
         """
         This function acts as a killswitch, it immediately stops the robot
