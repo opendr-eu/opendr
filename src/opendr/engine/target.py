@@ -49,7 +49,8 @@ class Target(BaseTarget):
 class Category(Target):
     """
     The Category target is used for 1-of-K classification problems.
-    It contains the predicted class or ground truth and optionally the prediction confidence.
+    It contains the predicted class or ground truth and optionally the description of the predicted class
+    and the prediction confidence.
     """
 
     def __init__(self, prediction: int, description=None, confidence=None):

@@ -506,7 +506,6 @@ class FaceRecognitionLearner(Learner):
                 return person
             else:
                 person = Category(None, None, None)
-                print(person)
                 return person
 
         elif self.network_head == 'classifier':
@@ -840,7 +839,7 @@ class FaceRecognitionLearner(Learner):
             path_head = os.path.join(path, 'onnx_' + self.network_head + '_head_model.onnx')
             self.ort_head_session = ort.InferenceSession(path_head)
 
-    def __convert_to_onnx(self, verbose=True):
+    def __convert_to_onnx(self, verbose=False):
         if self.device == 'cuda':
             inp = torch.randn(1, 3, self.input_size[0], self.input_size[1]).cuda()
         else:
