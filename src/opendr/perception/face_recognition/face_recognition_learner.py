@@ -415,7 +415,10 @@ class FaceRecognitionLearner(Learner):
                 transforms.Normalize(mean=self.rgb_mean, std=self.rgb_std)]
             )
             with torch.no_grad():
+                class_key = 0
                 for subdir, dirs, files in os.walk(path):
+                    if subdir == path:
+                        continue
                     total = 0
                     features_sum = torch.zeros(1, self.embedding_size).to(self.device)
                     for file in files:
@@ -435,10 +438,10 @@ class FaceRecognitionLearner(Learner):
                         features = l2_norm(features)
                         features_sum += features
                     avg_features = features_sum / total
-                    if subdir not in database:
-                        database[subdir] = [avg_features]
-                    else:
-                        database[subdir].append(avg_features)
+                    subdir = subdir.split('/')
+                    subdir = subdir[-1]
+                    database[class_key] = [subdir, avg_features]
+                    class_key += 1
             f = open(os.path.join(save_path, "reference.pkl"), "wb")
             pickle.dump(database, f)
             f.close()
@@ -468,9 +471,8 @@ class FaceRecognitionLearner(Learner):
         if self.mode == 'backbone_only':
             distance = self.threshold
             if distance == 0:
-                distance = 1000
+                distance = 10
             person = None
-
             self.backbone_model.eval()
             with torch.no_grad():
                 img = PILImage.fromarray(
@@ -488,18 +490,24 @@ class FaceRecognitionLearner(Learner):
             if self.database is None:
                 raise UserWarning('A reference for comparison should be created first. Try calling fit_reference()')
             for key in self.database:
-                for item in self.database[key]:
-                    diff = np.subtract(features.cpu().numpy(), item.cpu().numpy())
-                    dist = np.sum(np.square(diff), axis=1)
-                    if np.isnan(dist):
-                        dist = 1000
-                    if dist < distance:
-                        distance = dist
-                        person = key
-                        person = person.split('/')
-                        person = person[-1]
-            person = Category(person, distance)
-            return person
+                diff = np.subtract(features.cpu().numpy(), self.database[key][1].cpu().numpy())
+                dist = np.sum(np.square(diff), axis=1)
+                if np.isnan(dist):
+                    dist = 10
+                if dist < distance:
+                    distance = dist
+                    person = key
+            if type(distance) != float:
+                confidence = 1 - (distance.item() / self.threshold)
+            else:
+                confidence = 1 - (distance / self.threshold)
+            if person is not None:
+                person = Category(person, self.database[person][0], confidence)
+                return person
+            else:
+                person = Category(None, None, None)
+                print(person)
+                return person
 
         elif self.network_head == 'classifier':
             self.backbone_model.eval()
