@@ -17,6 +17,8 @@ from ros_bridge.msg import Pose as ROS_Pose
 from opendr.engine.target import Pose
 import numpy as np
 from cv_bridge import CvBridge
+from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose
+from geometry_msgs.msg import Pose2D
 
 
 class ROSBridge:
@@ -57,32 +59,58 @@ class ROSBridge:
         message = self._cv_bridge.cv2_to_imgmsg(image, encoding=encoding)
         return message
 
-    def to_ros_pose(self, pose):
+    def to_ros_pose(self, pose, image=None):
         """
-        Converts an OpenDR pose into a ROS pose
+        Converts an OpenDR pose into a Classification2D msg that can carry the same information
+        Each keypoint is represented as a bbox centered at the keypoint with zero width/height. The unique subject id is
+        also embedded on each keypoint (stored in ObjectHypothesisWithPose.id).
         :param pose: OpenDR pose to be converted
         :type pose: engine.target.Pose
+        :param image: An image to embed into the message (optional)
+        :type image: sensor_msgs.msg.Image
         :return: ROS message with the pose
-        :rtype: a ROS pose
+        :rtype: vision_msgs.msg.Classification2D
         """
-        ros_pose = ROS_Pose()
-        data = pose.data.reshape((-1,)).tolist()
-        ros_pose.data = data
-        ros_pose.confidence = pose.confidence
-        ros_pose.id = pose.id
-
-        return ros_pose
+        ros_pose = Detection2D()
+        if image is not None:
+            ros_pose.source_img = image
+        data = pose.data
+        keypoints = Detection2DArray()
+        for i in range(data.shape[0]):
+            keypoint = Detection2D()
+            keypoint.bbox = BoundingBox2D()
+            keypoint.results.append(ObjectHypothesisWithPose())
+            keypoint.bbox.center = Pose2D()
+            keypoint.bbox.center.x = data[i][0]
+            keypoint.bbox.center.y = data[i][1]
+            keypoint.bbox.size_x = 0
+            keypoint.bbox.size_y = 0
+            keypoint.results[0].id = pose.id
+            if pose.confidence:
+                keypoint.results[0].score = pose.confidence
+            keypoints.detections.append(keypoint)
+        return keypoints
 
     def from_ros_pose(self, ros_pose):
         """
         Converts a ROS pose into an OpenDR pose
-        :param ros_pose: ROS pose to be converted
-        :type ros_pose: ros_bridge.msg.Pose
+        :param ros_pose: ROS pose (as a payload to a vision_msgs/Classification2D) to be converted
+        :type ros_pose: vision_msgs.msg.Classification2D
         :return: an OpenDR pose
         :rtype: engine.target.Pose
         """
-        data = np.asarray(ros_pose.data).reshape((-1, 2))
-        confidence = ros_pose.confidence
+        keypoints = ros_pose.detections
+        data = []
+        id = None
+        confidence = None
+
+        for keypoint in keypoints:
+            data.append(keypoint.bbox.center.x)
+            data.append(keypoint.bbox.center.y)
+            confidence = keypoint.results[0].score
+            id = keypoint.results[0].id
+        data = np.asarray(data).reshape((-1, 2))
+
         pose = Pose(data, confidence)
-        pose.id = ros_pose.id
+        pose.id = id
         return pose
