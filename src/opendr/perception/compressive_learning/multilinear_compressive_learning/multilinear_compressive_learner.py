@@ -27,20 +27,20 @@ from tqdm import tqdm
 from urllib.request import urlretrieve
 
 # OpenDR engine imports
-from engine.learners import Learner
-from engine.data import Image
-from engine.datasets import DatasetIterator
-from engine.target import Category
-from engine.constants import OPENDR_SERVER_URL
+from opendr.engine.learners import Learner
+from opendr.engine.data import Image
+from opendr.engine.datasets import DatasetIterator
+from opendr.engine.target import Category
+from opendr.engine.constants import OPENDR_SERVER_URL
 
 # OpenDR multilinear_compressive_learning imports
-from perception.compressive_learning.multilinear_compressive_learning.algorithm import (
+from opendr.perception.compressive_learning.multilinear_compressive_learning.algorithm import (
     trainers,
     CompressiveLearner,
     get_builtin_backbones
 )
-from perception.compressive_learning.multilinear_compressive_learning.algorithm.data import DataWrapper
-from perception.compressive_learning.multilinear_compressive_learning.algorithm.trainers import (
+from opendr.perception.compressive_learning.multilinear_compressive_learning.algorithm.data import DataWrapper
+from opendr.perception.compressive_learning.multilinear_compressive_learning.algorithm.trainers import (
     get_cosine_lr_scheduler,
     get_multiplicative_lr_scheduler
 )
@@ -358,7 +358,7 @@ class MultilinearCompressiveLearner(Learner):
         img = np.expand_dims(img.transpose(2, 0, 1), 0)
 
         tensor_img = torch.tensor(img, device=torch.device(self.device)).float()
-        prob_prediction = self.model(tensor_img).flatten()
+        prob_prediction = torch.nn.functional.softmax(self.model(tensor_img).flatten(), dim=0)
         class_prediction = prob_prediction.argmax(dim=-1).cpu().item()
         prediction = Category(class_prediction, prob_prediction[class_prediction].cpu().item())
 
