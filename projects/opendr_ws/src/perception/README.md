@@ -23,6 +23,6 @@ rosrun usb_cam usb_cam_node
 rosrun perception pose_estimation.py
 ```
 
-3. You can examine the annotated image stream using `rqt_image_view` or `rostopic echo /opendr/poses`
+3. You can examine the annotated image stream using `rqt_image_view` (select the topic `/opendr/image_pose_annotated`) or `rostopic echo /opendr/poses`
 
 
