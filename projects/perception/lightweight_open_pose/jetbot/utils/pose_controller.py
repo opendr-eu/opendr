@@ -157,9 +157,7 @@ class PoseController:
 
     def rotate_to_detect(self):
         """
-        Rotates the robot until finding a human target
-        @return:
-        @rtype:
+        Rotates the robot until finding a human target and then returns
         """
 
         # Get a frame and check for detections
