@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  vision_msgs
   message_generation
 )
 
@@ -14,14 +15,10 @@ catkin_python_setup()
 ## Declare ROS messages, services and actions ##
 ################################################
 
-add_message_files(
-    FILES
-	Pose.msg
-)
-
 generate_messages(
     DEPENDENCIES
     std_msgs
+    vision_msgs
  )
 
 ###################################

@@ -4,6 +4,7 @@ project(perception)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  vision_msgs
   std_msgs
 )
 

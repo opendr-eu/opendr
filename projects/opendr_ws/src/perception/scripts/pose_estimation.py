@@ -14,13 +14,10 @@
 # limitations under the License.
 
 
-# Install OpenDR or include it to PYTHONPATH
-# import sys
-# sys.path.append('../../src')
 import rospy
 import torch
 import numpy as np
-from ros_bridge.msg import Pose as ROS_Pose
+from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 from opendr.perception.pose_estimation.lightweight_open_pose.utilities import draw
@@ -52,7 +49,7 @@ class PoseEstimationNode:
             self.image_publisher = None
 
         if pose_annotations_topic is not None:
-            self.pose_publisher = rospy.Publisher(pose_annotations_topic, ROS_Pose, queue_size=10)
+            self.pose_publisher = rospy.Publisher(pose_annotations_topic, Detection2DArray, queue_size=10)
         else:
             self.pose_publisher = None
 
@@ -96,6 +93,7 @@ class PoseEstimationNode:
                 ros_pose = self.bridge.to_ros_pose(pose)
                 self.pose_publisher.publish(ros_pose)
                 # We get can the data back using self.bridge.from_ros_pose(ros_pose)
+                # e.g., opendr_pose = self.bridge.from_ros_pose(ros_pose)
                 draw(image, pose)
 
         if self.image_publisher is not None:
