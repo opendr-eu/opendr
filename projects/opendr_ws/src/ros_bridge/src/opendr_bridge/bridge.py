@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from opendr.engine.data import Image
-from ros_bridge.msg import Pose as ROS_Pose
 from opendr.engine.target import Pose
 import numpy as np
 from cv_bridge import CvBridge
