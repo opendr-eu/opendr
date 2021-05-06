@@ -58,21 +58,16 @@ class ROSBridge:
         message = self._cv_bridge.cv2_to_imgmsg(image, encoding=encoding)
         return message
 
-    def to_ros_pose(self, pose, image=None):
+    def to_ros_pose(self, pose):
         """
-        Converts an OpenDR pose into a Classification2D msg that can carry the same information
-        Each keypoint is represented as a bbox centered at the keypoint with zero width/height. The unique subject id is
-        also embedded on each keypoint (stored in ObjectHypothesisWithPose.id).
+        Converts an OpenDR pose into a Detection2DArray msg that can carry the same information
+        Each keypoint is represented as a bbox centered at the keypoint with zero width/height. The subject id is also
+        embedded on each keypoint (stored in ObjectHypothesisWithPose).
         :param pose: OpenDR pose to be converted
         :type pose: engine.target.Pose
-        :param image: An image to embed into the message (optional)
-        :type image: sensor_msgs.msg.Image
         :return: ROS message with the pose
-        :rtype: vision_msgs.msg.Classification2D
+        :rtype: vision_msgs.msg.Detection2DArray
         """
-        ros_pose = Detection2D()
-        if image is not None:
-            ros_pose.source_img = image
         data = pose.data
         keypoints = Detection2DArray()
         for i in range(data.shape[0]):
@@ -92,24 +87,23 @@ class ROSBridge:
 
     def from_ros_pose(self, ros_pose):
         """
-        Converts a ROS pose into an OpenDR pose
-        :param ros_pose: ROS pose (as a payload to a vision_msgs/Classification2D) to be converted
-        :type ros_pose: vision_msgs.msg.Classification2D
+        Converts a ROS message with pose payload into an OpenDR pose
+        :param ros_pose: the pose to be converted (represented as vision_msgs.msg.Detection2DArray)
+        :type ros_pose: vision_msgs.msg.Detection2DArray
         :return: an OpenDR pose
         :rtype: engine.target.Pose
         """
         keypoints = ros_pose.detections
         data = []
-        id = None
-        confidence = None
+        pose_id, confidence = None, None
 
         for keypoint in keypoints:
             data.append(keypoint.bbox.center.x)
             data.append(keypoint.bbox.center.y)
             confidence = keypoint.results[0].score
-            id = keypoint.results[0].id
+            pose_id = keypoint.results[0].id
         data = np.asarray(data).reshape((-1, 2))
 
         pose = Pose(data, confidence)
-        pose.id = id
+        pose.id = pose_id
         return pose
