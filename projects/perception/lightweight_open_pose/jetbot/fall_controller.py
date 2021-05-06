@@ -111,4 +111,3 @@ if __name__ == '__main__':
         print("Caught: ", e)
         if visualizer.video_writer:
             visualizer.video_writer.release()
-
