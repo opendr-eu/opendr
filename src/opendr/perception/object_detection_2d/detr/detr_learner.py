@@ -21,6 +21,7 @@ import random
 import time
 import warnings
 import torch
+import ntpath
 from torch.utils.data import DataLoader, DistributedSampler
 from pathlib import Path
 from urllib.request import urlretrieve
@@ -62,7 +63,7 @@ class DetrLearner(Learner):
         device="cuda",
         threshold=0.7,
         num_classes=91,
-        masks=False
+        return_segmentations=False,
         ):
 
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
@@ -85,7 +86,13 @@ class DetrLearner(Learner):
         self.args.device = self.device
         self.args.num_classes = num_classes
         self.args.dataset_file = "coco"        
-        self.args.masks = masks
+        
+        if return_segmentations:
+            self.args.masks = True
+            self.args.dataset_file = "coco_panoptic"
+        else:
+            self.args.masks = False
+            self.args.dataset_file = "coco"
 
         # Initialise distributed mode in case of distributed mode
         utils.init_distributed_mode(self.args)
@@ -122,16 +129,18 @@ class DetrLearner(Learner):
         self.lr_scheduler = None
         self.n_parameters = None
 
-    def save(self, path):
+    def save(self, path, verbose=False):
         """
         Method for saving the current model in the path provided.
-
+        
         Parameters
         ----------
         path : str
             Folder where the model should be saved. If it does not exist, it
             will be created.
-
+        verbose : bool, optional
+            Enables the maximum verbosity. The default is False.
+            
         Raises
         ------
         UserWarning
@@ -141,39 +150,54 @@ class DetrLearner(Learner):
         -------
         bool
             If True, model was saved was successfully.
-
+            
         """
         if self.model is None and self.ort_session is None:
             raise UserWarning("No model is loaded, cannot save.")
+            
+        folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
+        # Also extract folder name without any extension if extension is erroneously provided
+        folder_name_no_ext = folder_name.split(sep='.')[0]
+
+        # Extract path without folder name, by removing folder name from original path
+        path_no_folder_name = path.replace(folder_name, '')
+        # If tail is '', then path was a/b/c/, which leaves a trailing double '/'
+        if tail == '':
+            path_no_folder_name = path_no_folder_name[0:-1]  # Remove one '/'
+
+        # Create model directory
+        full_path_to_model_folder = path_no_folder_name + folder_name_no_ext
+        os.makedirs(full_path_to_model_folder, exist_ok=True)
+
 
         if not os.path.exists(path):
             os.makedirs(path)
-
+        
+        model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
+                          "inference_params": {'threshold' : self.threshold}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
+            
         if self.ort_session is None:
-            metadata = {'model_paths': os.path.join(path, "detr_" + self.backbone + '_model.pth'),
-                        'framework': 'pytorch',
-                        'format': 'pth',
-                        'has_data': False,
-                        'inference_params': {'threshold': self.threshold},
-                        'optimized': False,
-                        'optimizer_info': {}
-                        }
-            torch.save(self.model.state_dict(), metadata['model_paths'])
-        else:
-            metadata = {'model_paths': os.path.join(path, 'detr_' + self.backbone + '_model.onnx'),
-                        'framework': 'pytorch',
-                        'format': 'onnx',
-                        'has_data': False,
-                        'inference_params': {'threshold': self.threshold},
-                        'optimized': True,
-                        'optimizer_info': {}
-                        }
-            shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"),
-                         metadata['model_paths'])
+            model_metadata["model_paths"] = [folder_name_no_ext + ".pth"]
+            model_metadata["optimized"] = False
+            model_metadata["format"] = "pth"
 
-        with open(os.path.join(path, 'detr_' + self.backbone + '.json'), 'w', encoding='utf-8') as f:
-            json.dump(metadata, f, ensure_ascii=False, indent=4)
-        return True
+            custom_dict = {'state_dict': self.model.state_dict()}
+            torch.save(custom_dict, os.path.join(full_path_to_model_folder, model_metadata["model_paths"][0]))
+            if verbose:
+                print("Saved Pytorch model.")
+        else:
+            model_metadata["model_paths"] = [os.path.join(folder_name_no_ext + ".onnx")]
+            model_metadata["optimized"] = True
+            model_metadata["format"] = "onnx"
+            # Copy already optimized model from temp path
+            shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"),
+                         os.path.join(full_path_to_model_folder, model_metadata["model_paths"][0]))
+            model_metadata["optimized"] = True
+            if verbose:
+                print("Saved ONNX model.")
+
+        with open(os.path.join(full_path_to_model_folder, folder_name_no_ext + ".json"), 'w') as outfile:
+            json.dump(model_metadata, outfile)
 
     def load(self, path):
         """
@@ -195,28 +219,24 @@ class DetrLearner(Learner):
             True if loading the model was successful.
 
         """
-        if os.path.exists(os.path.join(path, 'detr_' + self.backbone + '.json')):
-            with open(os.path.join(path, 'detr_' + self.backbone + '.json')) as f:
-                metadata = json.load(f)
+        model_name, _, _ = self.__extract_trailing(path)  # Trailing folder name from the path provided
+        
+        if os.path.exists(os.path.join(path, model_name + ".json")):
+            with open(os.path.join(path, model_name + ".json")) as metadata_file:
+                metadata = json.load(metadata_file)
             self.threshold = metadata['inference_params']['threshold']
         else:
-            raise UserWarning('No detr_' + self.backbone + '.json found. Please have a check')
-
+            raise UserWarning('No ' + os.path.join(path, model_name + ".json") + ' found. Please have a check')
+        
+        model_path = os.path.join(path, metadata['model_paths'][0])
+        
         if metadata['optimized']:
-            path_onnx = os.path.join(path, 'detr_' + self.backbone + '_model.onnx')
-            if os.path.exists(path_onnx):
-                self.ort_session = ort.InferenceSession(path_onnx)
-                print("Loaded ONNX model.")
-            else:
-                raise UserWarning('No detr_' + self.backbone + '_model.onnx found. Please have a check')
+            self.ort_session = ort.InferenceSession(model_path)
+            print("Loaded ONNX model.")
         else:
-            if os.path.exists(os.path.join(path, 'detr_' + self.backbone + '_model.pth')):
-                self.__create_model()
-                self.model_without_ddp.load_state_dict(torch.load(
-                    os.path.join(path, 'detr_' + self.backbone + '_model.pth')))
-                print("Loaded Pytorch model.")
-            else:
-                raise UserWarning('No detr_' + self.backbone + '_model.pth found. Please have a check')
+            self.__create_model()
+            self.model_without_ddp.load_state_dict(torch.load(model_path)['state_dict'])
+            print("Loaded Pytorch model.")
         return True
 
     def __load_checkpoint(self, path):
@@ -454,7 +474,7 @@ class DetrLearner(Learner):
         if not silent:
             print('Training time {}'.format(total_time_str))
         if val_dataset is not None:
-            return {train_stats, test_stats}
+            return {"train_stats": train_stats, "test_stats": test_stats}
         return train_stats
 
     def eval(self,
@@ -552,15 +572,23 @@ class DetrLearner(Learner):
         if not isinstance(image, Image):
             image = Image(image)
         img = im.fromarray(image.numpy())
-
-        scores, boxes = detect(img, self.infer_transform, self.model,
-                               self.device, self.threshold, self.ort_session)
+        
+        scores, boxes, segmentations = detect(img, self.infer_transform, self.model, 
+                                              self.postprocessors, self.device, 
+                                              self.threshold, self.ort_session, 
+                                              self.args.masks)
 
         boxlist = []
-        for p, (xmin, ymin, xmax, ymax) in zip(scores.tolist(), boxes.tolist()):
-            cl = np.argmax(p)
-            box = BoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl])
-            boxlist.append(box)
+        if len(segmentations) == len(scores):
+            for p, (xmin, ymin, xmax, ymax), segmentation in zip(scores.tolist(), boxes.tolist(), segmentations):
+                cl = np.argmax(p)
+                box = BoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl], segmentation=segmentation)
+                boxlist.append(box)
+        else:
+            for p, (xmin, ymin, xmax, ymax) in zip(scores.tolist(), boxes.tolist()):
+                cl = np.argmax(p)
+                box = BoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl])
+                boxlist.append(box)
         return BoundingBoxList(boxlist)
 
     def optimize(self, do_constant_folding=False):
@@ -630,7 +658,6 @@ class DetrLearner(Learner):
 
     def download_model(
             self, 
-            panoptic=False, 
             backbone='resnet50', 
             dilation=False,
             pretrained=True
@@ -676,20 +703,19 @@ class DetrLearner(Learner):
                 self.args.dilation = True
             else:
                 self.args.dilation = False
-            if panoptic:
+            if self.args.dataset_file == 'coco_panoptic':
                 model_name = model_name + '_panoptic'
-                self.model = torch.hub.load(
+                self.model, self.postprocessors = torch.hub.load(
                     'facebookresearch/detr',
                     model_name,
                     pretrained=pretrained,
-                    return_postprocessor=False,
+                    return_postprocessor=True,
                     threshold=self.threshold
                     )
                 if self.args.num_classes != 250:
                     self.model.detr.class_embed = torch.nn.Linear(
                         in_features=self.model.detr.class_embed.in_features,
                         out_features=self.args.num_classes+1)
-                self.args.dataset_file = 'coco_panoptic'
             else:
                 self.model = torch.hub.load(
                     'facebookresearch/detr',
@@ -887,3 +913,18 @@ class DetrLearner(Learner):
         # Create Map function for converting (Image, BoundingboxList) to detr format 
         map_function = map_bounding_box_list_to_coco(image_set, self.args.masks)
         return MappedDatasetIterator(dataset, map_function)
+    
+    @staticmethod
+    def __extract_trailing(path):
+        """
+        Extracts the trailing folder name or filename from a path provided in an OS-generic way, also handling
+        cases where the last trailing character is a separator. Returns the folder name and the split head and tail.
+
+        :param path: the path to extract the trailing filename or folder name from
+        :type path: str
+        :return: the folder name, the head and tail of the path
+        :rtype: tuple of three strings
+        """
+        head, tail = ntpath.split(path)
+        folder_name = tail or ntpath.basename(head)  # handle both a/b/c and a/b/c/
+        return folder_name, head, tail

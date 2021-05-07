@@ -13,7 +13,7 @@ following public methods:
 
 #### `DetrLearner` constructor
 ```python
-DetrLearner(model_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, num_classes, masks)
+DetrLearner(model_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, num_classes, return_segmentations)
 ```
 
 Constructor parameters:
@@ -44,8 +44,8 @@ Constructor parameters:
   It is also possible to use pretrained DETR models with the specified num_classes, since the head of the pretrained model with be modified appropriately. 
   In this way, a model that was pretrained on the coco dataset can be finetuned to another dataset. Training on other datasets than COCO can be done by creating a DatasetIterator that outputs (Image, BoundingBoxList) tuples.
   Below you can find an example that shows how you can create such a DatasetIterator.
-- **masks**: *bool, default=False*
-  Specifies whether the model returns the masks of objects (segmentations).
+- **return_segmentations**: *bool, default=False*
+  Specifies whether the model returns, next to bounding boxes, segmentations of objects. If True, the `download_model()` method will download pretrained coco_panoptic models.
 
 #### `DetrLearner.fit`
 ```python
@@ -256,6 +256,7 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
     ```
 
 * **Inference and result drawing example on a test .jpg image, similar to and partially copied from [detr_demo colab](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/detr_demo.ipynb#scrollTo=Jf59UNQ37QhJ).**
+	This example shows how to perform inference on an image and draw the resulting bounding boxes using a detr model that is pretrained on the coco dataset.
     ```python
     import matplotlib.pyplot as plt
     import requests
@@ -306,6 +307,77 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
     bounding_box_list = learner.infer(img)
     plot_results(img, bounding_box_list)
     ```
+
+* **Inference and result drawing example on a test .jpg image with segmentations, similar to [detr_demo colab](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/DETR_panoptic.ipynb#scrollTo=LAjJjP9kAHhA).**
+	This example shows how to perform inference on an image and draw the resulting bounding boxes and segmentations using a detr model that is pretrained on the coco_panoptic dataset.
+	```python
+	import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Polygon
+    from matplotlib.collections import PatchCollection
+    import requests
+    from PIL import Image as im
+    import opendr
+    from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
+    
+    # These are the COCO classes
+    CLASSES = [
+        'N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+        'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A',
+        'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
+        'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack',
+        'umbrella', 'N/A', 'N/A', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
+        'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
+        'skateboard', 'surfboard', 'tennis racket', 'bottle', 'N/A', 'wine glass',
+        'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
+        'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
+        'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table', 'N/A',
+        'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
+        'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
+        'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
+        'toothbrush'
+    ]
+    
+    
+    # Function for plotting results
+    def plot_results(pil_img, boxes):
+        plt.figure(figsize=(16,10))
+        plt.imshow(pil_img)
+        ax = plt.gca()
+        ax.set_autoscale_on(False)
+        color = []
+        polygons = []
+        for box in boxes:
+            if box.name >= len(CLASSES):
+                continue
+            c = (np.random.random((1, 3))*0.6+0.4).tolist()[0]
+            ax.add_patch(plt.Rectangle((box.left, box.top), box.width, box.height,
+                                       fill=False, linewidth=3))
+            text = f'{CLASSES[box.name]}: {box.confidence:0.2f}'
+            seg = box.segmentation[0]
+            poly = np.array(seg).reshape((int(len(seg)/2), 2))
+            polygons.append(Polygon(poly))
+            color.append(c)
+            
+            ax.text(box.left, box.top, text, fontsize=15, bbox=dict(facecolor='yellow', alpha=0.5))
+        p = PatchCollection(polygons, facecolor=color, linewidths=0, alpha=0.4)
+        ax.add_collection(p)
+        p = PatchCollection(polygons, facecolor='none', edgecolors=color, linewidths=2)
+        ax.add_collection(p)
+        plt.axis('off')
+        plt.show()
+    
+    # Download an image
+    url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+    img = im.open(requests.get(url, stream=True).raw)
+    
+    # We want to return the segmentations and plot those, so we set return_segmentations to True.
+    # Also, we have to modify the number of classes, since the number of panoptic classes in the pretrained detr model is 250.
+    learner = DetrLearner(return_segmentations=True, num_classes=250)
+    learner.download_model(backbone="resnet50")
+    bounding_box_list = learner.infer(img)
+    plot_results(img, bounding_box_list)
+	```
 
 * **Optimization example for a previously trained model.**
   Inference can be run with the trained model after running self.optimize.

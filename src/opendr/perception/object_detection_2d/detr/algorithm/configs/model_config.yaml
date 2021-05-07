@@ -1,5 +1,5 @@
 # * Input Image
-input_size: [200, 200]
+input_size: [800, 800]
 image_mean: [0.485, 0.456, 0.406]
 image_std: [0.229, 0.224, 0.225]
 
@@ -10,7 +10,7 @@ lr_backbone: 0.00001
 clip_max_norm: 0.1 # Gradient clipping max norm
 frozen_weights: null # Path to the pretrained model. If set only the mask head will be trained
 dilation: False # If true we replace stride with dilation in the last convolutional block (DC5)
-position_embedding: "sine" # Choices: sine learned. Type of positional embedding to use on top of the image features
+position_embedding: "sine" # Choices: {sine, learned}. Type of positional embedding to use on top of the image features
 
 # * Transformer
 enc_layers: 6 # Number of encoding layers in the transformer
