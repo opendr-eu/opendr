@@ -50,6 +50,10 @@ PRETRAINED_SAMPLE_LENGTH = [30]
 PRETRAINED_RECURRENT_UNIT = [256, 512]
 AF_SAMPLING_RATE = 300
 
+__all__ = ['get_cosine_lr_scheduler',
+           'get_multiplicative_lr_scheduler',
+           'get_AF_dataset']
+
 
 class GatedRecurrentUnitLearner(Learner):
     def __init__(self,

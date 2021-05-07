@@ -116,8 +116,8 @@ class ResNetPreprocessing(nn.Module):
         filter_multiplier = 1
         in_channels = n_filter
 
-        for l in range(15):
-            if l % 4 == 0 and l > 0:
+        for layer_idx in range(15):
+            if layer_idx % 4 == 0 and layer_idx > 0:
                 filter_multiplier += 1
                 expand_right = True
             else:
