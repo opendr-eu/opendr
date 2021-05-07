@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
 import numpy as np
-import torch
 
 
 class BaseTarget:
@@ -50,51 +48,27 @@ class Target(BaseTarget):
 
 class Category(Target):
     """
-    This target is used for 1-of-K categorization / classification problems.
+    The Category target is used for 1-of-K classification problems.
+    It contains the predicted class or ground truth and optionally the prediction confidence.
     """
 
-    def __init__(self, data: Union[int, torch.Tensor, np.ndarray], num_classes: int=None):
+    def __init__(self, prediction: int, confidence=None):
         """Initialize a category.
 
         Args:
-            data (Union[int, torch.Tensor, np.ndarray]):
-                Class integer or one-dimensional array / tensor of class probabilities.
-            num_classes (bool, optional):
-                Number of classes. Must be specified only if `data` is an integer. Defaults to None.
+            prediction (int): Class integer
+            confidence (optional):
+                One-dimensional array / tensor of class probabilities. Defaults to None.
         """
         super().__init__()
-        self.data = Category.__to_one_hot(data, num_classes)
-        assert (
-            torch.isclose(torch.sum(self.data), torch.tensor(1.0))
-        ), "Category probabilities should sum to 1.0"
-        self.num_classes = len(self.data)
+        self.data = prediction
+        self.confidence = confidence
 
     def __str__(self):
-        return str(self.data)
-
-    @staticmethod
-    def __to_one_hot(
-        data: Union[int, torch.Tensor, np.ndarray],
-        num_classes: int
-    ) -> torch.Tensor:
-        if type(data) == torch.Tensor:
-            return data
-        if type(data) == np.ndarray:
-            return torch.tensor(data, dtype=torch.float32)
-        assert (
-            type(data) == int and type(num_classes) == int and data >= 0 and num_classes > 0
-        ), "Inputs should be non-negative integers"
-        output = torch.nn.functional.one_hot(torch.tensor(data), num_classes).float()
-        return output
-
-    @property
-    def prediction(self) -> int:
-        """Index of the predicted class
-
-        Returns:
-            int: index the predicted class
-        """
-        return int(self.data.argmax(dim=0))
+        if self.confidence is not None:
+            return f"Class {self.data} with confidence {self.confidence}"
+        else:
+            return f"Class {self.data} "
 
 
 class Keypoint(Target):
