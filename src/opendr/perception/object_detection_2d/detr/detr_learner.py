@@ -23,6 +23,7 @@ import warnings
 import torch
 import ntpath
 from torch.utils.data import DataLoader, DistributedSampler
+from torch.utils.tensorboard import SummaryWriter
 from pathlib import Path
 from urllib.request import urlretrieve
 
@@ -331,8 +332,10 @@ class DetrLearner(Learner):
             logging_dir = Path(logging_path)
             if not os.path.exists(logging_path):
                 os.mkdir(logging_path)
+            writer = SummaryWriter(logging_path)
         else:
             logging = False
+            writer = None
 
         if self.model is None:
             self.__create_model()
@@ -446,31 +449,26 @@ class DetrLearner(Learner):
                     self.model, self.criterion, self.postprocessors,
                     data_loader_val, base_ds, device, self.temp_path,
                     verbose=verbose, silent=silent)
-
+        
+        # End of code copied from https://github.com/facebookresearch/detr/blob/master/main.py
+        
             if logging:
-                log_stats = {
-                    **{f'train_{k}': v for k, v in train_stats.items()},
-                    **{f'test_{k}': v for k, v in test_stats.items()},
-                    'epoch': self.epoch,
-                    'n_parameters': self.n_parameters
-                    }
-                with (logging_dir / "log.txt").open("a") as f:
-                    f.write(json.dumps(log_stats) + "\n")
-                if coco_evaluator is not None:
-                    (logging_dir / 'eval').mkdir(exist_ok=True)
-                    if "bbox" in coco_evaluator.coco_eval:
-                        filenames = ['latest.pth']
-                        if self.epoch % 50 == 0:
-                            filenames.append(f'{self.epoch:03}.pth')
-                        for name in filenames:
-                            torch.save(coco_evaluator.coco_eval["bbox"].eval,
-                                       logging_dir / "eval" / name)
+                for k, v in train_stats.items():
+                    if isinstance(v, list):
+                        v = v[0]
+                    writer.add_scalar(f'train_{k}', v, self.epoch + 1)
+                if val_dataset is not None:
+                    for k, v in test_stats.items():
+                        if isinstance(v, list):
+                            v = v[0]
+                        writer.add_scalar(f'test_{k}', v, self.epoch + 1)
 
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
-
-        # End of code copied from https://github.com/facebookresearch/detr/blob/master/main.py
-
+        
+        if logging:
+            writer.close()
+        
         if not silent:
             print('Training time {}'.format(total_time_str))
         if val_dataset is not None:
