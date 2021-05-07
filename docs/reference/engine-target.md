@@ -192,7 +192,7 @@ This target is used for 2D Object Detection and describes 2D bounding box in ima
 A bounding box is described by the left-top corner and its width and height.
 
 The [BoundingBox](#class_engine.target.BoundingBox) class has the following public methods:
-#### BoundingBox(name, left, top, width, height, score=0)
+#### BoundingBox(name, left, top, width, height, score=0, segmentation=[], iscrowd=0, area=0)
   Construct a new [BoundingBox](#class_engine.target.BoundingBox) object based on the given data.
   - *name* is expected to be a string or a number representing the class of the object.
   - *left* is expected to be a number representing the x position of the left-top corner.
@@ -200,8 +200,13 @@ The [BoundingBox](#class_engine.target.BoundingBox) class has the following publ
   - *width* is expected to be a number representing the width of the box.
   - *height* is expected to be a number representing the height of the box.
   - *score* is expected to be a number describing the prediction confidence.
+  - *segmentation* is expected to be a list of integers describing the segmentation polygon or rle.
+  - *iscrowd* is expected to be a bool describing whether segmentation based on polygon (iscrowd=False) or rle (iscrowd=False)
+  - *area* is expected to be an integer describing the area of the segmentation.
 #### mot(with_confidence=True, frame=-1))
   Return the annotation in [MOT](https://motchallenge.net/instructions) format.
+#### coco()
+	Return the annotation in [COCO detection](https://cocodataset.org/#detection-2019) format.
 
 
 ### class engine.target.BoundingBoxList
@@ -217,6 +222,10 @@ The [BoundingBoxList](#class_engine.target.BoundingBoxList) class has the follow
   - *boxes* is expected to be a list of [BoundingBox](#class_engine.target.BoundingBox).
 #### mot(with_confidence=True)
   Return the annotation in [MOT](https://motchallenge.net/instructions) format.
+#### from_coco(data, image_id)
+	Static method that constructs [BoundingBoxList](#class_engine.target.BoundingBoxList) from the `boxes_coco` list with COCO annotation.
+#### coco()
+	Return the annotation in [COCO detection](https://cocodataset.org/#detection-2019) format.
 #### boxes()
   Return the list of [BoundingBox](#class_engine.target.BoundingBox) boxes.
   
