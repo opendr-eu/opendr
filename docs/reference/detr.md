@@ -162,10 +162,11 @@ Parameters:
 - **pretrained** : *bool, default=True*
   If True, a pretrained model is downloaded.
 
-  #### `DetrLearner.download_nano_coco`
-  ```python
-  DetrLearner.download_nano_coco(self)
-  ```
+#### `DetrLearner.download_nano_coco`
+```python
+DetrLearner.download_nano_coco(self)
+```
+
 Method for downloading a minimal coco dataset from the OpenDR server that contains a single image for running tests. The dataset will be saved in the `temp_path`.
 
 #### Examples
@@ -310,6 +311,7 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
 
 * **Inference and result drawing example on a test .jpg image with segmentations, similar to [detr_demo colab](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/DETR_panoptic.ipynb#scrollTo=LAjJjP9kAHhA).**
 	This example shows how to perform inference on an image and draw the resulting bounding boxes and segmentations using a detr model that is pretrained on the coco_panoptic dataset.
+	
 	```python
 	import numpy as np
     import matplotlib.pyplot as plt
