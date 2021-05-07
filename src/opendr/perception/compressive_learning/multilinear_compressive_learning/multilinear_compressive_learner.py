@@ -45,6 +45,10 @@ from opendr.perception.compressive_learning.multilinear_compressive_learning.alg
     get_multiplicative_lr_scheduler
 )
 
+__all__ = ['get_cosine_lr_scheduler',
+           'get_multiplicative_lr_scheduler',
+           'get_builtin_backbones']
+
 # constants
 PRETRAINED_COMPRESSED_SHAPE = ((20, 19, 2),
                                (28, 27, 1),
