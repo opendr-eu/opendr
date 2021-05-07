@@ -72,7 +72,5 @@ def detect(im, transform, model, postprocessor, device, threshold, ort_session, 
                 for i in range(panoptic_seg_id.max()+1):
                     mask = (panoptic_seg_id  == i).astype(np.uint8)
                     polygons = Mask(mask).polygons()
-                    segmentations.append(polygons.segmentation)
-            else:
-                segmentations = []
+                    segmentations.append(polygons.segmentation[0])
             return probas[keep], bboxes_scaled, segmentations
