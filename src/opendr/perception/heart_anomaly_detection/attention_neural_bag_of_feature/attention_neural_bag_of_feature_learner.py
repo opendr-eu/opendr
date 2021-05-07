@@ -45,6 +45,10 @@ from opendr.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurr
 )
 from opendr.perception.heart_anomaly_detection.attention_neural_bag_of_feature.algorithm import models
 
+__all__ = ['get_AF_dataset',
+           'get_cosine_lr_scheduler',
+           'get_multiplicative_lr_scheduler']
+
 PRETRAINED_SAMPLE_LENGTH = [30]
 PRETRAINED_N_CODEWORD = [256, 512]
 PRETRAINED_QUANT_TYPE = ['nbof', ]

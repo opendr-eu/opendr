@@ -46,6 +46,8 @@ class DummyDataset(DatasetIterator):
 class TestAttentionNeuralBagOfFeatureLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        print("\n\n**********************************\nTEST Attention Neural Bag-of-Feature Learner\n"
+              "**********************************")
         pass
 
     @classmethod
