@@ -312,7 +312,7 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
 * **Inference and result drawing example on a test .jpg image with segmentations, similar to [detr_demo colab](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/DETR_panoptic.ipynb#scrollTo=LAjJjP9kAHhA).**
 	This example shows how to perform inference on an image and draw the resulting bounding boxes and segmentations using a detr model that is pretrained on the coco_panoptic dataset.
 	
-	```python
+    ```python
 	import numpy as np
     import matplotlib.pyplot as plt
     from matplotlib.patches import Polygon
@@ -379,7 +379,7 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
     learner.download_model(backbone="resnet50")
     bounding_box_list = learner.infer(img)
     plot_results(img, bounding_box_list)
-	```
+    ```
 
 * **Optimization example for a previously trained model.**
   Inference can be run with the trained model after running self.optimize.
