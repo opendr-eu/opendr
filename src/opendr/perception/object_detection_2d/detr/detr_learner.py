@@ -329,7 +329,6 @@ class DetrLearner(Learner):
 
         if logging_path != '' and logging_path is not None:
             logging = True
-            logging_dir = Path(logging_path)
             if not os.path.exists(logging_path):
                 os.mkdir(logging_path)
             writer = SummaryWriter(logging_path)
@@ -615,7 +614,12 @@ class DetrLearner(Learner):
             raise UserWarning("No model is loaded, cannot optimize. Load or train a model first.")
 
         if self.ort_session is not None:
-            raise UserWarning("Model is already optimized in ONNX.")
+            print("Model is already optimized in ONNX.")
+            return False
+            
+        if self.args.masks:
+            print("Optimization not yet implemented if return_segmentations is True")
+            return False
 
         device = torch.device(self.device)
 
@@ -633,7 +637,7 @@ class DetrLearner(Learner):
             do_constant_folding=do_constant_folding,
             input_names=input_names,
             output_names=output_names,
-            opset_version=11
+            opset_version=13
             )
 
         print("Exported onnx model")
