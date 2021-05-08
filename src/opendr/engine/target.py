@@ -186,10 +186,13 @@ class BoundingBox(Target):
     def coco(self):
         result = {}
         result['bbox'] = [self.left, self.top, self.width, self.height]
-        result['area'] = self.area
         result['category_id'] = self.name
-        result['segmentation'] = self.segmentation
-        result['iscrowd'] = self.iscrowd
+        if len(self.segmentation) > 0:
+            result['area'] = self.area
+            result['segmentation'] = self.segmentation
+            result['iscrowd'] = self.iscrowd
+        else:
+            result['area'] = self.width * self.height
         return result
         
     def __repr__(self):
@@ -220,15 +223,27 @@ class BoundingBoxList(Target):
         
         boxes = []
         for i in range(count):
+            if 'segmentation' in boxes_coco[i]:
+                segmentation = boxes_coco[i]['segmentation']
+            else:
+                segmentation = []
+            if 'iscrowd' in boxes_coco[i]:
+                iscrowd = boxes_coco[i]['iscrowd']
+            else:
+                iscrowd = 0
+            if 'area' in boxes_coco[i]:
+                area = boxes_coco[i]['area']
+            else:
+                area = boxes_coco[i]['bbox'][2] * boxes_coco[i]['bbox'][3]
             box = BoundingBox(
                 boxes_coco[i]['category_id'],
                 boxes_coco[i]['bbox'][0],
                 boxes_coco[i]['bbox'][1],
                 boxes_coco[i]['bbox'][2],
                 boxes_coco[i]['bbox'][3],
-                segmentation=boxes_coco[i]['segmentation'],
-                iscrowd=boxes_coco[i]['iscrowd'],
-                area=boxes_coco[i]['area']
+                segmentation=segmentation,
+                iscrowd=iscrowd,
+                area=area
             )
             boxes.append(box)
 
