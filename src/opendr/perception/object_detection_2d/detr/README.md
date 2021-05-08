@@ -14,7 +14,7 @@ The modifications are:
 - The rest of the algorithm code is mainly copied from [facebook/detr](https://github.com/facebookresearch/detr), but with the following modifications:
   - The names of the coco and coco_panoptic dataset subfolders for the images and annotations are not fixed any more.
   - The number of classes in [detr.py](https://github.com/facebookresearch/detr/blob/master/models/detr.py) is not fixed any more.
-  - Verbose and silent mode are added to the [engine.py](https://github.com/facebookresearch/detr/blob/master/engine.py) and metric_logger in [misc.py][https://github.com/facebookresearch/detr/blob/master/util/misc.py]
+  - Verbose and silent mode are added to the [engine.py](https://github.com/facebookresearch/detr/blob/master/engine.py) and metric_logger in [misc.py](https://github.com/facebookresearch/detr/blob/master/util/misc.py)
 
   DETR was originally licensed under the Apache 2.0 [license](https://github.com/facebookresearch/detr/blob/master/LICENSE).
 
