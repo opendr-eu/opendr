@@ -200,14 +200,17 @@ The [BoundingBox](#class_engine.target.BoundingBox) class has the following publ
   - *width* is expected to be a number representing the width of the box.
   - *height* is expected to be a number representing the height of the box.
   - *score* is expected to be a number describing the prediction confidence.
-  - *segmentation* is expected to be a list of integers describing the segmentation polygon or rle.
-  - *iscrowd* is expected to be a bool describing whether segmentation based on polygon (iscrowd=False) or rle (iscrowd=False)
+  - *segmentation* is expected to be a list of polygon vertices around the object (`iscrowd=False`) or a run-length-encoded (RLE) bit mask (`iscrowd=True`).
+  - *iscrowd* is expected to be a bool describing whether the `BoundingBox` represents a crowd (a group of objects).
+    If `True`, `segmentation` is a run-length-encoded (RLE) bit mask. If `False`, `segmentation` is a list of polygon vertices around the object.
+    For more information see this [tutorial](https://www.immersivelimit.com/tutorials/create-coco-annotations-from-scratch)
   - *area* is expected to be an integer describing the area of the segmentation.
 #### mot(with_confidence=True, frame=-1))
   Return the annotation in [MOT](https://motchallenge.net/instructions) format.
 #### coco()
-	Return the annotation in [COCO detection](https://cocodataset.org/#detection-2019) format.
-
+  Return the annotation in [COCO detection](https://cocodataset.org/#detection-2019) format.
+  For more information and a detailed description of COCO annotations, see this [COCO annotations tutorial](https://www.immersivelimit.com/tutorials/create-coco-annotations-from-scratch).
+  If the `BoundingBox` does not contain a segmentation of the object (`segmentation=[]`), the returned COCO annotation will contain no `segmentation` and `iscrowd` items and an `area` item with a value that is equal to the `width` times the `height` of the `BoundingBox`. 
 
 ### class engine.target.BoundingBoxList
 Bases: `engine.target.Target`
