@@ -37,7 +37,7 @@ Constructor parameters:
 
 - **lr**: *float, default=3e-4*  
   Specifies the learning rate to be used during training.
-- **epochs**: *int, default=30*  
+- **iters**: *int, default=30*  
   Specifies the number of epochs the training should run for.
 - **batch_size**: *int, default=64*  
   Specifies number of images to be bundled up in a batch during training.  
