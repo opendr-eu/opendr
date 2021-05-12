@@ -27,10 +27,10 @@ class MultilinearMapping(nn.Module):
         super(MultilinearMapping, self).__init__()
 
         assert len(input_shape) == 3,\
-            'Input shape must be a 3-tupple containing (#row, #col, #channel). Received "{}"'.format(input_shape)
+            'Input shape must be a 3-tuple containing (#row, #col, #channel). Received "{}"'.format(input_shape)
 
         assert len(output_shape) == 3,\
-            'Output shape must be a 3-tupple containing (#row, #col, #channel). Received "{}"'.format(output_shape)
+            'Output shape must be a 3-tuple containing (#row, #col, #channel). Received "{}"'.format(output_shape)
 
         # reorder input shape and compressed shape to (#channel, #row, #col)
         input_shape = (input_shape[2], input_shape[0], input_shape[1])
