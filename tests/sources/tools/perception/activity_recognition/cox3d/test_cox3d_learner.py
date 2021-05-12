@@ -17,9 +17,9 @@ import torch
 import unittest
 import numpy as np
 
-from perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
-from perception.activity_recognition.datasets.kinetics import KineticsDataset
-from engine.data import Image
+from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
+from opendr.perception.activity_recognition.datasets.kinetics import KineticsDataset
+from opendr.engine.data import Image
 from pathlib import Path
 from logging import getLogger
 
@@ -31,6 +31,8 @@ _BACKBONE = "s"
 class TestCoX3DLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        print("\n\n**********************************\nTEST Continual Activity Recognition CoX3D Learner\n"
+              "**********************************")
         cls.temp_dir = Path("./tests/sources/tools/perception/activity_recognition/cox3d/temp")
 
         # Download model weights
@@ -103,15 +105,15 @@ class TestCoX3DLearner(unittest.TestCase):
         # Input is Tensor
         results1 = self.learner.infer(batch)
         # Results is a batch with each item summing to 1.0
-        assert all([torch.sum(r.data) == 1.0 for r in results1])
+        assert all([torch.sum(r.confidence) == 1.0 for r in results1])
 
         # Input is Image
         results2 = self.learner.infer(Image(batch[0], dtype=np.float))
-        assert torch.allclose(results1[0].data, results2[0].data)
+        assert torch.allclose(results1[0].confidence, results2[0].confidence)
 
         # Input is List[Image]
         results3 = self.learner.infer([Image(v, dtype=np.float) for v in batch])
-        assert all([torch.allclose(r1.data, r3.data) for (r1, r3) in zip(results1, results3)])
+        assert all([torch.allclose(r1.confidence, r3.confidence) for (r1, r3) in zip(results1, results3)])
 
     def test_optimize(self):
         self.learner.ort_session = None

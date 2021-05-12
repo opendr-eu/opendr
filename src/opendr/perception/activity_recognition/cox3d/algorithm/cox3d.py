@@ -11,8 +11,8 @@ from .delay import Delay
 from .pooling import AdaptiveAvgPoolCo3d, AvgPoolCo3d
 from .se import ReSe
 from .utils import FillMode, unsqueezed, warn_once_if
-from perception.activity_recognition.x3d.algorithm.operators import Swish
-from perception.activity_recognition.x3d.algorithm.x3d import (
+from opendr.perception.activity_recognition.x3d.algorithm.operators import Swish
+from opendr.perception.activity_recognition.x3d.algorithm.x3d import (
     _accuracy, _round_width, _round_repeats, init_weights
 )
 import torch.nn.functional as F
