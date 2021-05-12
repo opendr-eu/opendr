@@ -71,7 +71,7 @@ class TestGatedRecurrentUnitLearner(unittest.TestCase):
                                             series_length=series_length,
                                             n_class=n_class,
                                             recurrent_unit=recurrent_unit,
-                                            n_epoch=1,
+                                            iters=1,
                                             batch_size=4,
                                             test_mode=True)
 
@@ -92,7 +92,7 @@ class TestGatedRecurrentUnitLearner(unittest.TestCase):
                                             series_length=series_length,
                                             n_class=n_class,
                                             recurrent_unit=recurrent_unit,
-                                            n_epoch=1,
+                                            iters=1,
                                             batch_size=4,
                                             test_mode=True)
 
@@ -115,7 +115,7 @@ class TestGatedRecurrentUnitLearner(unittest.TestCase):
                                             series_length=series_length,
                                             n_class=n_class,
                                             recurrent_unit=recurrent_unit,
-                                            n_epoch=1,
+                                            iters=1,
                                             batch_size=4,
                                             test_mode=True)
 
@@ -137,7 +137,7 @@ class TestGatedRecurrentUnitLearner(unittest.TestCase):
                                             series_length=series_length,
                                             n_class=n_class,
                                             recurrent_unit=recurrent_unit,
-                                            n_epoch=1,
+                                            iters=1,
                                             batch_size=4,
                                             test_mode=True)
         temp_dir = tempfile.TemporaryDirectory()
@@ -147,7 +147,7 @@ class TestGatedRecurrentUnitLearner(unittest.TestCase):
                                                 series_length=series_length,
                                                 n_class=n_class,
                                                 recurrent_unit=recurrent_unit,
-                                                n_epoch=1,
+                                                iters=1,
                                                 batch_size=4,
                                                 test_mode=True)
 
