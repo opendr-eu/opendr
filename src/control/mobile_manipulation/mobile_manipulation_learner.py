@@ -39,7 +39,6 @@ from pathlib import Path
 from typing import Optional
 
 import numpy as np
-from matplotlib import pyplot as plt
 
 import rospy
 
@@ -54,14 +53,14 @@ from engine.learners import LearnerRL
 # TODO:
 #   update checkpoints
 #   test that gazebo evaluation works
-#   test that examples in readme work
+#   test that examples in readme work, incl. checkpoint / log directories
 #   add a note to the pull request that some launchfiles stem from open-source ROS packages
-#   fix checkpoint / log directories for examples
 #   update readme for additional installations needed for gazebo evaluation?
 #   Dependencies:
 #       how to specify correct ros version for you linux system? (i.e melodic)
 #       install libgp from github: https://github.com/mblum/libgp.git
 #       openDR's `make -j install_runtime_dependencies` won't install everything necessary to run pytorch on GPU
+#       how to copy the modified tiago launchfiles (needed e.g. for the world_link definition)?
 
 class MobileRLLearner(LearnerRL):
     def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',

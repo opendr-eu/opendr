@@ -124,10 +124,6 @@ The environment was tested for Ubuntu 18.04 and ROS melodic.
 ###### Installation
 Install the appropriate version for your system (full install recommended): http://wiki.ros.org/ROS/Installation
 
-Install the corresponding catkin package for python bindings
-
-    sudo apt install ros-[version]-pybind11-catkin
-
 We provide implementations for the PR2, PAL Tiago and Toyota HSR robots.
 The following outlines the installation for the PR2.
 For the other robots please follow the official guides to install the respective ROS dependencies.
@@ -139,53 +135,70 @@ Install libgp: `https://github.com/mblum/libgp.git`
 
 Create a catkin workspace (ideally a separate one for each robot)
 
-    mkdir ~/catkin_ws
-    cd catkin_ws
+```sh
+mkdir ~/catkin_ws
+cd catkin_ws
+```
 
 Copy or symlink openDR's mobile_manipulation module into `./src`
 
-    ln -s ln -s [opendr]/src/control/mobile_manipulation src/
+```sh
+ln -s ln -s [opendr]/src/control/mobile_manipulation src/
+```
 
 Configure the workspace to use your environment's python3 (adjust path according to your executable)
 
-    catkin config -DPYTHON_EXECUTABLE=/home/honerkam/miniconda3/envs/opendr/bin/python -DPYTHON_INCLUDE_DIR=/home/honerkam/miniconda3/envs/opendr/include/python3.7m -DPYTHON_LIBRARY=/home/honerkam/miniconda3/envs/opendr/lib/libpython3.7m.so
+```sh
+catkin config -DPYTHON_EXECUTABLE=/home/honerkam/miniconda3/envs/opendr/bin/python -DPYTHON_INCLUDE_DIR=/home/honerkam/miniconda3/envs/opendr/include/python3.7m -DPYTHON_LIBRARY=/home/honerkam/miniconda3/envs/opendr/lib/libpython3.7m.so
+```
 
 Build the workspace and source the setup file
 
-    catkin build
-    source devel/setup.bash
+```sh
+catkin build
+source devel/setup.bash
+```
 
 Tiago additionally requires small modifications to the robot descriptions to use the correct fixed joints. 
 Replace the following files after installing the Tiago packages:
 
-    cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_tiago.srdf.em src/tiago_moveit_config/config/srdf/tiago.srdf.em
-    cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_tiago_pal-gripper.srdf src/tiago_moveit_config/config/srdf/tiago_pal-gripper.srdf
-    cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_gripper.urdf.xacro src/pal_gripper/pal_gripper_description/urdf/gripper.urdf.xacro
-    cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_wsg_gripper.urdf.xacro src/pal_wsg_gripper/pal_wsg_gripper_description/urdf/gripper.urdf.xacro
+```sh
+cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_tiago.srdf.em src/tiago_moveit_config/config/srdf/tiago.srdf.em
+cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_tiago_pal-gripper.srdf src/tiago_moveit_config/config/srdf/tiago_pal-gripper.srdf
+cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_gripper.urdf.xacro src/pal_gripper/pal_gripper_description/urdf/gripper.urdf.xacro
+cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_wsg_gripper.urdf.xacro src/pal_wsg_gripper/pal_wsg_gripper_description/urdf/gripper.urdf.xacro
+```
 
 ##### Run
 1. start a roscore
 
-        roscore
+```sh
+roscore
+```
 
 2a. training or evaluation in the analytical environment only:
 
-        roslaunch mobile_manipulation_rl pr2_analytical.launch
-   
-2b. evaluation in gazebo: _instead_ of 2a start gazebo with the pr2 robot as well moveit. Please run from outside the conda environment with a python2 interpreter.
+```sh
+roslaunch mobile_manipulation_rl pr2_analytical.launch
+```
 
-        roslaunch pr2_gazebo pr2_empty_world.launch
-        roslaunch pr2_moveit_config move_group.launch
+2b. evaluation in gazebo: _instead_ of 2a start gazebo with the pr2 robot as well moveit. Please run from outside the conda environment with a python2 interpreter.
+```sh
+roslaunch pr2_gazebo pr2_empty_world.launch
+roslaunch pr2_moveit_config move_group.launch
+```
 
 4. Run the demo script
-
-        cd opendr_internal/projects/control/mobile_manipulation/
-        export PYTHONPATH=/home/honerkam/repos/opendr_internal/src:=$PYTHONPATH
-        python src/project_mobile_manipulation/mobile_manipulation_demo.py
+```sh
+cd opendr_internal/projects/control/mobile_manipulation/
+export PYTHONPATH=/home/honerkam/repos/opendr_internal/src:=$PYTHONPATH
+python src/project_mobile_manipulation/mobile_manipulation_demo.py
+```
 
 5. [Visualisation] start rviz:
-
-        rviz -d rviz_config.config
+```sh
+rviz -d rviz_config.config
+```
 
 For HSR / Tiago: 
 - Roslaunch commands can be found in `mobile_manipulation/mobileRL/handle_launchfiles.py`
