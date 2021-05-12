@@ -58,9 +58,9 @@ class RobotEnv(Env):
                  vis_env: bool,
                  transition_noise_base: float,
                  perform_collision_check: bool,
-                 hsr_ik_slack_dist,
-                 hsr_ik_slack_rot_dist: float,
-                 hsr_sol_dist_reward: bool):
+                 hsr_ik_slack_dist: float = None,
+                 hsr_ik_slack_rot_dist: float = None,
+                 hsr_sol_dist_reward: bool = None):
         conf_path = Path(__file__).parent.parent.parent / "robots_world" / env / "robot_config.yaml"
         assert conf_path.exists(), conf_path
         args = [seed,
@@ -78,6 +78,9 @@ class RobotEnv(Env):
         elif env == 'tiago':
             self._env = RobotTiago(*args)
         # elif env == 'hsr':
+        #     assert hsr_ik_slack_dist is not None
+        #     assert hsr_ik_slack_rot_dist is not None
+        #     assert hsr_sol_dist_reward is not None
         #     self._env = RobotHSR(*args, hsr_ik_slack_dist, hsr_ik_slack_rot_dist, hsr_sol_dist_reward)
         else:
             raise ValueError('Unknown env')

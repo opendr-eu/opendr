@@ -88,9 +88,7 @@ def parse_args(config_path):
     # Env
     #################################################
     parser.add_argument('--env', type=str.lower, default='pr2', choices=['pr2', 'tiago', 'hsr'], help='')
-    parser.add_argument('--use_map_obs', type=str2bool, nargs='?', const=True, default=True, help='Observe a local obstacle map')
     parser.add_argument('--task', type=str.lower, default='rndstartrndgoal', choices=all_tasks, help='Train on a specific task env. Might override some other choices.')
-    parser.add_argument('--obstacle_config', type=str.lower, default='none', choices=['none', 'inpath'], help='Obstacle configuration for ObstacleConfigMap. Ignored for all other tasks')
     parser.add_argument('--time_step', type=float, default=0.02, help='Time steps at which the RL agent makes decisions during actual execution. NOTE: time_step for training is hardcoded in robot_env.cpp.')
     parser.add_argument('--slow_down_real_exec', type=float, default=1.0, help='How much to slow down the planned gripper trajectories during real execun')
     parser.add_argument('--world_type', type=str, default="sim", choices=["sim", "gazebo", "world"], help="What kind of movement execution and where to get updated values from. Sim: analytical environemt, don't call controllers, gazebo: gazebo simulator, world: real world")

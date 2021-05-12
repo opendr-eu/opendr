@@ -46,16 +46,16 @@ def create_env(config,
                          perform_collision_check=config["perform_collision_check"],
                          vis_env=config["vis_env"],
                          transition_noise_base=config["transition_noise_base"],
-                         hsr_ik_slack_dist=config["hsr_ik_slack_dist"],
-                         hsr_ik_slack_rot_dist=config["hsr_ik_slack_rot_dist"],
-                         hsr_sol_dist_reward=config["hsr_sol_dist_reward"])
+                         hsr_ik_slack_dist=config.get("hsr_ik_slack_dist", None),
+                         hsr_ik_slack_rot_dist=config.get("hsr_ik_slack_rot_dist", None),
+                         hsr_sol_dist_reward=config.get("hsr_sol_dist_reward", None))
     env = MobileManipulationEnv(robot_env=robot_env,
                                 ik_fail_thresh=config["ik_fail_thresh"],
                                 learn_vel_norm=config["learn_vel_norm"],
                                 slow_down_real_exec=config["slow_down_real_exec"],
                                 flatten_obs=flatten_obs)
     if task in ['picknplace', 'door', 'drawer']:
-        env_kwargs = {'obstacle_configuration': config['obstacle_config']}
+        env_kwargs = {'obstacle_configuration': config.get('obstacle_config', 'none')}
     else:
         env_kwargs = {}
     return wrap_in_task(env=env, task=task, default_head_start=config["head_start"],
