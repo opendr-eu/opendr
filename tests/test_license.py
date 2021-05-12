@@ -94,6 +94,7 @@ class TestLicense(unittest.TestCase):
 
         skippedFilePaths = [
             'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
+            'projects/perception/lightweight_open_pose/jetbot/utils/pid.py'
         ]
 
         skippedDirectories = [
