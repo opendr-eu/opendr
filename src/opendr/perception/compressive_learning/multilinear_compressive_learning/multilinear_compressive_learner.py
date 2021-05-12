@@ -69,8 +69,8 @@ class MultilinearCompressiveLearner(Learner):
                  lr_scheduler=get_cosine_lr_scheduler(1e-3, 1e-5),
                  optimizer='adam',
                  weight_decay=1e-4,
-                 n_init_epoch=100,
-                 n_epoch=300,
+                 n_init_iters=100,
+                 iters=300,
                  batch_size=32,
                  checkpoint_after_iter=1,
                  checkpoint_load_iter=0,
@@ -115,8 +115,8 @@ class MultilinearCompressiveLearner(Learner):
         self.init_backbone = init_backbone
         self.n_class = n_class
         self.lr_scheduler = lr_scheduler
-        self.n_init_epoch = n_init_epoch
-        self.n_epoch = n_epoch
+        self.n_init_epoch = n_init_iters
+        self.n_epoch = iters
         self.batch_size = batch_size
         self.checkpoint_freq = checkpoint_after_iter
         self.epoch_idx = checkpoint_load_iter
@@ -364,7 +364,7 @@ class MultilinearCompressiveLearner(Learner):
         tensor_img = torch.tensor(img, device=torch.device(self.device)).float()
         prob_prediction = torch.nn.functional.softmax(self.model(tensor_img).flatten(), dim=0)
         class_prediction = prob_prediction.argmax(dim=-1).cpu().item()
-        prediction = Category(class_prediction, prob_prediction[class_prediction].cpu().item())
+        prediction = Category(class_prediction, confidence=prob_prediction[class_prediction].cpu().item())
 
         return prediction
 
@@ -420,8 +420,6 @@ class MultilinearCompressiveLearner(Learner):
 
         except Exception as error:
             raise error
-
-        return True
 
     def load(self, path, verbose=True):
         """

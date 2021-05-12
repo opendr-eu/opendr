@@ -77,8 +77,8 @@ def get_random_learner():
                                             n_class=n_class,
                                             pretrained_backbone=pretrained_backbone,
                                             init_backbone=init_backbone,
-                                            n_init_epoch=1,
-                                            n_epoch=1,
+                                            n_init_iters=1,
+                                            iters=1,
                                             batch_size=2,
                                             test_mode=True)
 
@@ -113,8 +113,8 @@ class TestMultilinearCompressiveLearner(unittest.TestCase):
                                                 n_class=n_class,
                                                 pretrained_backbone='',
                                                 init_backbone=True,
-                                                n_init_epoch=1,
-                                                n_epoch=1,
+                                                n_init_iters=1,
+                                                iters=1,
                                                 batch_size=4,
                                                 test_mode=True)
 
@@ -168,8 +168,8 @@ class TestMultilinearCompressiveLearner(unittest.TestCase):
                                                     n_class=n_class,
                                                     pretrained_backbone='',
                                                     init_backbone=True,
-                                                    n_init_epoch=1,
-                                                    n_epoch=1,
+                                                    n_init_iters=1,
+                                                    iters=1,
                                                     batch_size=4,
                                                     test_mode=True)
 
