@@ -225,11 +225,12 @@ For HSR / Tiago:
     env_config = {
       'env': 'pr2',
       'penalty_scaling': 0.01,
-      'time_step_world': 0.02,
+      'time_step': 0.02,
       'seed': 42,
       'strategy': 'dirvel',
       'world_type': 'sim',
-      'init_controllers': True,
+      # set this to true to evaluate in gazebo
+      'init_controllers': False,
       'perform_collision_check': True,
       'vis_env': True,
       'transition_noise_base': 0.015,
@@ -246,7 +247,7 @@ For HSR / Tiago:
     eval_config["transition_noise_base"] = 0.0
     eval_config["ik_fail_thresh"] = env_config['ik_fail_thresh_eval']
     eval_config["node_handle"] = "eval_env"
-    eval_env = create_env(eval_config, task=eval_config["task"], node_handle="eval_env", wrap_in_dummy_vec=True, flatten_obs=True)
+    eval_env = create_env(eval_config, task="rndstartrndgoal", node_handle="eval_env", wrap_in_dummy_vec=True, flatten_obs=True)
 
     agent = MobileRLLearner(env,
                             checkpoint_after_iter=20_000,
@@ -280,11 +281,12 @@ For HSR / Tiago:
     eval_config = {
       'env': 'pr2',
       'penalty_scaling': 0.01,
-      'time_step_world': 0.02,
+      'time_step': 0.02,
       'seed': 42,
       'strategy': 'dirvel',
       'world_type': 'sim',
-      'init_controllers': True,
+      # set this to true to evaluate in gazebo
+      'init_controllers': False,
       'perform_collision_check': True,
       'vis_env': True,
       'transition_noise_base': 0.0,
@@ -292,10 +294,11 @@ For HSR / Tiago:
       'learn_vel_norm': -1,
       'slow_down_real_exec': 2,
       'head_start': 0,
-      'node_handle': 'eval_env'
+      'node_handle': 'eval_env',
+      'nr_evaluations': 50,
     }
   
-    eval_env = create_env(eval_config, task=eval_config["task"], node_handle="eval_env", wrap_in_dummy_vec=True, flatten_obs=True)
+    eval_env = create_env(eval_config, task='rndstartrndgoal', node_handle="eval_env", wrap_in_dummy_vec=True, flatten_obs=True)
 
     agent = MobileRLLearner(eval_env,
                             checkpoint_after_iter=0,

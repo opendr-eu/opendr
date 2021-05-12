@@ -53,9 +53,10 @@ from engine.learners import LearnerRL
 # TODO:
 #   update checkpoints
 #   test that gazebo evaluation works
-#   test that examples in readme work, incl. checkpoint / log directories
 #   add a note to the pull request that some launchfiles stem from open-source ROS packages
 #   update readme for additional installations needed for gazebo evaluation?
+#   move gazebo stuff not needed for training into projects/
+#   move csv's etc to file server
 #   Dependencies:
 #       how to specify correct ros version for you linux system? (i.e melodic)
 #       install libgp from github: https://github.com/mblum/libgp.git
