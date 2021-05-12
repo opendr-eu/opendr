@@ -46,7 +46,7 @@ import rospy
 from stable_baselines3.sac import SAC
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise, NormalActionNoise
 
-from control.mobile_manipulation.mobileRL.stablebl_callbacks import ModulationEvalCallback
+from control.mobile_manipulation.mobileRL.stablebl_callbacks import MobileRLEvalCallback
 from control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
 from engine.learners import LearnerRL
 
@@ -56,11 +56,12 @@ from engine.learners import LearnerRL
 #   test that gazebo evaluation works
 #   test that examples in readme work
 #   add a note to the pull request that some launchfiles stem from open-source ROS packages
-#   package.xml also mentions a licence
-#   fix checkpoint / log directories
+#   fix checkpoint / log directories for examples
+#   update readme for additional installations needed for gazebo evaluation?
 #   Dependencies:
 #       how to specify correct ros version for you linux system? (i.e melodic)
 #       install libgp from github: https://github.com/mblum/libgp.git
+#       openDR's `make -j install_runtime_dependencies` won't install everything necessary to run pytorch on GPU
 
 class MobileRLLearner(LearnerRL):
     def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',
@@ -152,19 +153,22 @@ class MobileRLLearner(LearnerRL):
         :param verbose: bool, enable verbosity
         :return:
         """
+        if logging_path == '':
+            logging_path = self.temp_path
+
         if env is not None:
             assert env.action_space == self.stable_bl_agent.env.action_space
             assert env.observation_space == self.stable_bl_agent.env.observation_space
             self.stable_bl_agent.env = env
 
         rospy.loginfo("Start learning loop")
-        eval_callback = ModulationEvalCallback(eval_env=val_env,
-                                               n_eval_episodes=self.nr_evaluations,
-                                               eval_freq=self.evaluation_frequency,
-                                               log_path=logging_path,
-                                               best_model_save_path=logging_path,
-                                               checkpoint_after_iter=self.checkpoint_after_iter,
-                                               verbose=verbose if not silent else False)
+        eval_callback = MobileRLEvalCallback(eval_env=val_env,
+                                             n_eval_episodes=self.nr_evaluations,
+                                             eval_freq=self.evaluation_frequency,
+                                             log_path=logging_path,
+                                             best_model_save_path=logging_path,
+                                             checkpoint_after_iter=self.checkpoint_after_iter,
+                                             verbose=verbose if not silent else False)
         self.stable_bl_agent.learn(total_timesteps=self.iters,
                                    callback=eval_callback,
                                    eval_env=None)

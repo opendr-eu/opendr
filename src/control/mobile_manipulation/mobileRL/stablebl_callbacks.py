@@ -10,7 +10,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv, VecEnv, sync_envs_norm
 from control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
 
 
-class ModulationEvalCallback(EventCallback):
+class MobileRLEvalCallback(EventCallback):
     """
     Callback for evaluating an agent.
 
@@ -43,7 +43,7 @@ class ModulationEvalCallback(EventCallback):
                  prefix: str = 'eval',
                  checkpoint_after_iter: int = 0
                  ):
-        super(ModulationEvalCallback, self).__init__(callback_on_new_best, verbose=verbose)
+        super(MobileRLEvalCallback, self).__init__(callback_on_new_best, verbose=verbose)
         self.n_eval_episodes = n_eval_episodes
         self.eval_freq = eval_freq
         self.deterministic = deterministic

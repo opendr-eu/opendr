@@ -222,6 +222,7 @@ def main():
     if not config['evaluation_only']:
         agent.fit(env, val_env=eval_env)
     else:
+        # set up logger which otherwise is automatically handled by stable-baselines
         configure_logger(0, logpath, 'SAC', agent.stable_bl_agent.num_timesteps)
 
     # evaluate

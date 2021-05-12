@@ -1,18 +1,15 @@
 pr2:
   lr: 0.00001
   explore_noise: 0.75
-  # policy_noise: 0.25
   ent_coef: 0.1
   transition_noise_base: 0.015
 tiago:
   lr: 0.00001
   explore_noise: 0.75
-  # policy_noise: 0.1
   transition_noise_base: 0.0
 hsr:
   lr: 0.0001
   explore_noise: 0.5
-  # policy_noise: 0.25
   rnd_steps: 50000
   ent_coef: 0.2
   transition_noise_base: 0.015
