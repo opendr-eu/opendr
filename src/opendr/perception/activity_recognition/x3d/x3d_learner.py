@@ -487,7 +487,7 @@ class X3DLearner(Learner):
 
         self.model.eval()
         results = self.model.forward(batch)
-        results = [Category(r) for r in results]
+        results = [Category(prediction=int(r.argmax(dim=0)), confidence=r) for r in results]
         return results
 
     def optimize(self, do_constant_folding=False):
