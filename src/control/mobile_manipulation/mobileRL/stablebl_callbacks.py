@@ -96,7 +96,7 @@ class MobileRLEvalCallback(EventCallback):
 
         if self.checkpoint_after_iter and self.n_calls and (self.n_calls % self.checkpoint_after_iter == 0) and (
                 self.best_model_save_path is not None):
-            self.model.save(os.path.join(self.best_model_save_path, f'model_t{self.num_timesteps}'))
+            self.model.save(os.path.join(self.best_model_save_path, f'model_step{self.num_timesteps}'))
 
         if (self.n_calls == 1) or (self.eval_freq > 0 and self.n_calls % self.eval_freq == 0):
             episode_rewards, episode_lengths, metrics, name_prefix = self.do_eval()
