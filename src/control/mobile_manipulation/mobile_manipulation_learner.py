@@ -41,7 +41,6 @@ from typing import Optional
 import numpy as np
 from matplotlib import pyplot as plt
 
-plt.style.use('seaborn')
 import rospy
 
 from stable_baselines3.sac import SAC
@@ -53,14 +52,15 @@ from engine.learners import LearnerRL
 
 
 # TODO:
-#   how to define c++ / ROS dependencies?
-#       requires full ROS installation, apt packages depend on linux and ROS version (kinetic vs melodic etc), probably not everyone wants to install all of that to use smth from opendr
 #   update checkpoints
 #   test that gazebo evaluation works
 #   test that examples in readme work
 #   add a note to the pull request that some launchfiles stem from open-source ROS packages
 #   package.xml also mentions a licence
-
+#   fix checkpoint / log directories
+#   Dependencies:
+#       how to specify correct ros version for you linux system? (i.e melodic)
+#       install libgp from github: https://github.com/mblum/libgp.git
 
 class MobileRLLearner(LearnerRL):
     def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',
