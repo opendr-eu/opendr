@@ -133,11 +133,7 @@ We provide implementations for the PR2, PAL Tiago and Toyota HSR robots. The fol
 For the other robots please follow the official guides to install the respective ROS dependencies. We recommend to use
 separate catkin workspaces for each.
 
-Install moveit and the pr2
-
-    sudo apt-get install ros-[version]-moveit
-    sudo apt-get install ros-[version]-pr2-simulator
-    sudo apt-get install ros-[version]-moveit-pr2
+Install the openDR dependencies and activate it's python environment
 
 Install libgp: `https://github.com/mblum/libgp.git`
 
@@ -150,26 +146,14 @@ Copy or symlink openDR's mobile_manpipulation module into `./src`
 
     ln -s ln -s [opendr]/src/control/mobile_manipulation src/
 
-Create a python environment. We recommend using conda, which requires to first install Anaconda or Miniconda. Then do
-
-    conda env create -f src/mobile_manipulation/environment.yml
-    conda activate mobile_manipulation_rl
-
 Configure the workspace to use your environment's python3 (adjust path according to your executable)
 
     catkin config -DPYTHON_EXECUTABLE=/home/honerkam/miniconda3/envs/opendr/bin/python -DPYTHON_INCLUDE_DIR=/home/honerkam/miniconda3/envs/opendr/include/python3.7m -DPYTHON_LIBRARY=/home/honerkam/miniconda3/envs/opendr/lib/libpython3.7m.so
 
-Build the workspace
+Build the workspace and source the setup file
 
     catkin build
-
-Each new build of the ROS / C++package requires a
-
     source devel/setup.bash
-
-To be able to visualise install rviz
-
-    http://wiki.ros.org/rviz/UserGuide
 
 Tiago additionally requires small modifications to the robot descriptions to use the correct fixed joints. 
 Replace the following files after installing the Tiago packages:
