@@ -105,7 +105,7 @@ class TestCoX3DLearner(unittest.TestCase):
         # Input is Tensor
         results1 = self.learner.infer(batch)
         # Results is a batch with each item summing to 1.0
-        assert all([torch.sum(r.confidence) == 1.0 for r in results1])
+        assert all([torch.isclose(torch.sum(r.confidence), torch.tensor(1.0)) for r in results1])
 
         # Input is Image
         results2 = self.learner.infer(Image(batch[0], dtype=np.float))
