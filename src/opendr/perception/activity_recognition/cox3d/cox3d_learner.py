@@ -14,11 +14,10 @@
 
 import torch
 
-from engine import data
-from engine.target import Category
-
-from perception.activity_recognition.cox3d.algorithm.cox3d import CoX3D
-from perception.activity_recognition.x3d.x3d_learner import X3DLearner
+from opendr.engine import data
+from opendr.engine.target import Category
+from opendr.perception.activity_recognition.cox3d.algorithm.cox3d import CoX3D
+from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
 
 from logging import getLogger
 from typing import Union, List
@@ -139,5 +138,5 @@ class CoX3DLearner(X3DLearner):
 
         self.model.eval()
         results = self.model.forward(batch)
-        results = [Category(r) for r in results]
+        results = [Category(prediction=int(r.argmax(dim=0)), confidence=r) for r in results]
         return results

@@ -8,7 +8,7 @@ from torch import Tensor
 from torch.nn import AdaptiveAvgPool3d, Conv3d, ReLU, Sigmoid
 from torch.nn.modules.pooling import AdaptiveAvgPool2d
 
-from perception.activity_recognition.x3d.algorithm.operators import Swish
+from opendr.perception.activity_recognition.x3d.algorithm.operators import Swish
 from .pooling import AdaptiveAvgPoolCo3d
 from .utils import unsqueezed
 
