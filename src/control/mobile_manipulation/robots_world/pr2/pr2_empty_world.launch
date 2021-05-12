@@ -34,5 +34,7 @@
   <node pkg="fake_localization" type="fake_localization" name="fake_localization" output="screen">
       <param name="odom_frame_id" value="odom_combined"/>
   </node>
+
+  <include file="$(find pr2_moveit_config)/launch/move_group.launch"/>
 </launch>
 
