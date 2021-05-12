@@ -115,7 +115,7 @@ Parameters:
 
 
 #### ROS Setup
-The repository consists of two main parts: a training environment written in C++ and connected to python through bindings and the RL agents written in python3.
+The repository consists of two main parts: a training environment written in C++ and connected to Python through bindings and the RL agents written in Python 3.
 
 As not all ROS packages work with python3, the setup relies on running the robot-specific packages in a python2 environment
 and our package in a python3 environment.
