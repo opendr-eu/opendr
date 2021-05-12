@@ -142,7 +142,7 @@ Create a catkin workspace (ideally a separate one for each robot)
     mkdir ~/catkin_ws
     cd catkin_ws
 
-Copy or symlink openDR's mobile_manpipulation module into `./src`
+Copy or symlink openDR's mobile_manipulation module into `./src`
 
     ln -s ln -s [opendr]/src/control/mobile_manipulation src/
 
