@@ -65,7 +65,7 @@ class GatedRecurrentUnitLearner(Learner):
                  optimizer='adam',
                  weight_decay=0.0,
                  dropout=0.2,
-                 n_epoch=200,
+                 iters=200,
                  batch_size=32,
                  checkpoint_after_iter=1,
                  checkpoint_load_iter=0,
@@ -91,7 +91,7 @@ class GatedRecurrentUnitLearner(Learner):
         self.recurrent_unit = recurrent_unit
         self.n_class = n_class
         self.lr_scheduler = lr_scheduler
-        self.n_epoch = n_epoch
+        self.n_epoch = iters
         self.batch_size = batch_size
         self.checkpoint_freq = checkpoint_after_iter
         self.epoch_idx = checkpoint_load_iter
@@ -318,8 +318,8 @@ class GatedRecurrentUnitLearner(Learner):
         """
         This method is used to generate class prediction given a time-series
 
-        :param img: image to generate class prediction
-        :type img: engine.data.Timeseries
+        :param series: time-series to generate class prediction
+        :type series: engine.data.Timeseries
 
         :return: predicted label
         :rtype: engine.target.Category
@@ -351,7 +351,7 @@ class GatedRecurrentUnitLearner(Learner):
         series = torch.tensor(series, device=torch.device(self.device)).float()
         prob_prediction = torch.nn.functional.softmax(self.model(series).flatten(), dim=0)
         class_prediction = prob_prediction.argmax().cpu().item()
-        prediction = Category(class_prediction, prob_prediction[class_prediction].cpu().item())
+        prediction = Category(class_prediction, confidence=prob_prediction[class_prediction].cpu().item())
         return prediction
 
     def save(self, path, verbose=True):
