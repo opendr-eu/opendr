@@ -1,6 +1,6 @@
 # mobile_manipulation module
 
-The *mobile_manipulation* module contains the *MobileRLLearner* class, which inherits from the abstract class *RLLearner*.
+The *mobile_manipulation* module contains the *MobileRLLearner* class, which inherits from the abstract class *LearnerRL*.
 
 ### Class MobileRLLearner
 Bases: `engine.learners.LearnerRL`
