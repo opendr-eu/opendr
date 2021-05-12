@@ -52,7 +52,7 @@ class TestX3DLearner(unittest.TestCase):
             logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
 
     def test_downloaded(self):
-        assert Path(self.temp_dir) / "weights" / "x3d_s.pyth"
+        assert Path(self.temp_dir) / "weights" / f"x3d_{_BACKBONE}.pyth"
 
     def test_save_and_load(self):
         assert self.learner.model is not None
