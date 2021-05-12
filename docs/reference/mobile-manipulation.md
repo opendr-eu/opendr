@@ -128,9 +128,10 @@ Install the corresponding catkin package for python bindings
 
     sudo apt install ros-[version]-pybind11-catkin
 
-We provide implementations for the PR2, PAL Tiago and Toyota HSR robots. The following outlines the installation for the PR2.
-For the other robots please follow the official guides to install the respective ROS dependencies. We recommend to use
-separate catkin workspaces for each.
+We provide implementations for the PR2, PAL Tiago and Toyota HSR robots.
+The following outlines the installation for the PR2.
+For the other robots please follow the official guides to install the respective ROS dependencies.
+We recommend to use separate catkin workspaces for each.
 
 Install the openDR dependencies and activate it's python environment
 
