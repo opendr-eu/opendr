@@ -48,20 +48,20 @@ from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise, NormalA
 from control.mobile_manipulation.mobileRL.stablebl_callbacks import MobileRLEvalCallback
 from control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
 from engine.learners import LearnerRL
+from engine.constants import OPENDR_SERVER_URL
+from urllib.request import urlretrieve
 
 
 # TODO:
-#   update checkpoints
-#   test that gazebo evaluation works
+#   test that gazebo evaluation works. Adjust paths in the launchfiles moved to project/
 #   add a note to the pull request that some launchfiles stem from open-source ROS packages
 #   update readme for additional installations needed for gazebo evaluation?
 #   move gazebo stuff not needed for training into projects/
-#   move csv's etc to file server
 #   Dependencies:
 #       how to specify correct ros version for you linux system? (i.e melodic)
-#       install libgp from github: https://github.com/mblum/libgp.git
+#       install libgp from github: https://github.com/mblum/libgp.git -> only needed for evaluation / for the project -> can we define it in a separate dependencies.ini in projects/ ?
 #       openDR's `make -j install_runtime_dependencies` won't install everything necessary to run pytorch on GPU
-#       how to copy the modified tiago launchfiles (needed e.g. for the world_link definition)?
+#       how to specify the tiago install and how to copy the modified tiago launchfiles (needed e.g. for the world_link definition)?
 
 class MobileRLLearner(LearnerRL):
     def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',
@@ -71,7 +71,7 @@ class MobileRLLearner(LearnerRL):
                  explore_noise: float = 0.5, explore_noise_type='normal', ent_coef='auto', nr_evaluations: int = 50,
                  evaluation_frequency: int = 20_000):
         """
-        Specifies an soft-actor-critic (SAC) agent that can be trained for mobile manipulation.
+        Specifies a soft-actor-critic (SAC) agent that can be trained for mobile manipulation.
         Internally uses Stable-Baselines3 (https://github.com/DLR-RM/stable-baselines3).
         """
         super(LearnerRL, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer='adam',
@@ -91,9 +91,23 @@ class MobileRLLearner(LearnerRL):
                                                      explore_noise=explore_noise,
                                                      explore_noise_type=explore_noise_type,
                                                      ent_coef=ent_coef)
-        if restore_model_path == 'pretrained':
-            restore_model_path = Path(__file__).parent / 'model_checkpoints' / env.get_attr('env_name')[0]
+
         if checkpoint_load_iter:
+            if restore_model_path == 'pretrained':
+                assert checkpoint_load_iter == 1_000_000, "pretrained models are provided for step 1_000_000"
+                filename = f"model_step{checkpoint_load_iter}.zip"
+                file_destination = Path(temp_path) / filename
+                if not file_destination.parent.exists():
+                    file_destination.parent.mkdir(parents=True, exist_ok=False)
+                    url = os.path.join(
+                        OPENDR_SERVER_URL,
+                        "control",
+                        "mobile_manipulation",
+                        env.get_attr('env_name')[0],
+                        filename)
+                    urlretrieve(url=url, filename=file_destination)
+                restore_model_path = str(file_destination.parent)
+
             self.load(os.path.join(restore_model_path, f"model_step{checkpoint_load_iter}"))
 
     def _get_lr_fn(self):
@@ -216,7 +230,7 @@ class MobileRLLearner(LearnerRL):
         :return: Whether load succeeded or not
         :rtype: bool
         """
-        self.stable_bl_agent.load(path)
+        self.stable_bl_agent = self.stable_bl_agent.load(path)
 
     def infer(self, batch, deterministic: bool = True):
         return self.stable_bl_agent.predict(batch, deterministic=deterministic)
