@@ -79,9 +79,9 @@ class GatedRecurrentUnitLearner(Learner):
                                                         temp_path=temp_path,
                                                         device=device)
 
-        assert checkpoint_load_iter in [-1, 0],\
-            'check_point_load_iter must be -1 or 0, with 0 indicating training from scratch,' +\
-            '-1 indicating training from latest checkpoint if temp_path is given'
+        assert checkpoint_load_iter < iters,\
+            '`check_point_load_iter` must be less or equal than `iters`\n' +\
+            'given check_point_load_iter={} and iters={}'.format(checkpoint_load_iter, iters)
 
         assert optimizer in ['adam', 'sgd'],\
             'given optimizer "{}" is not supported, please select set optimizer to "adam" or "sgd"'.format(optimizer)
