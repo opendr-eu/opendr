@@ -70,7 +70,7 @@ class TestAttentionNeuralBagOfFeatureLearner(unittest.TestCase):
                                                      n_class,
                                                      quantization_type=quantization_type,
                                                      attention_type=attention_type,
-                                                     n_epoch=1,
+                                                     iters=1,
                                                      batch_size=4,
                                                      test_mode=True)
 
@@ -93,7 +93,7 @@ class TestAttentionNeuralBagOfFeatureLearner(unittest.TestCase):
                                                      n_class,
                                                      quantization_type=quantization_type,
                                                      attention_type=attention_type,
-                                                     n_epoch=1,
+                                                     iters=1,
                                                      batch_size=4,
                                                      test_mode=True)
 
@@ -118,7 +118,7 @@ class TestAttentionNeuralBagOfFeatureLearner(unittest.TestCase):
                                                      n_class,
                                                      quantization_type=quantization_type,
                                                      attention_type=attention_type,
-                                                     n_epoch=1,
+                                                     iters=1,
                                                      batch_size=4,
                                                      test_mode=True)
 
@@ -140,7 +140,7 @@ class TestAttentionNeuralBagOfFeatureLearner(unittest.TestCase):
                                                      n_class,
                                                      quantization_type=quantization_type,
                                                      attention_type=attention_type,
-                                                     n_epoch=1,
+                                                     iters=1,
                                                      batch_size=4,
                                                      test_mode=True)
 
@@ -152,7 +152,7 @@ class TestAttentionNeuralBagOfFeatureLearner(unittest.TestCase):
                                                          n_class,
                                                          quantization_type=quantization_type,
                                                          attention_type=attention_type,
-                                                         n_epoch=1,
+                                                         iters=1,
                                                          batch_size=4,
                                                          test_mode=True)
 

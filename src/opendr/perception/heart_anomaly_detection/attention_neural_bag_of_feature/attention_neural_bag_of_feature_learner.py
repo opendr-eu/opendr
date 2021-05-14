@@ -68,7 +68,7 @@ class AttentionNeuralBagOfFeatureLearner(Learner):
                  optimizer='adam',
                  weight_decay=0.0,
                  dropout=0.2,
-                 n_epoch=300,
+                 iters=300,
                  batch_size=32,
                  checkpoint_after_iter=1,
                  checkpoint_load_iter=0,
@@ -91,9 +91,9 @@ class AttentionNeuralBagOfFeatureLearner(Learner):
             'Parameter `attention_type` must be "spatial" or "temporal"\n' +\
             'Provided value: {}'.format(attention_type)
 
-        assert checkpoint_load_iter in [-1, 0],\
-            'check_point_load_iter must be -1 or 0, with 0 indicating training from scratch,' +\
-            '-1 indicating training from latest checkpoint if temp_path is given'
+        assert checkpoint_load_iter < iters,\
+            '`check_point_load_iter` must be less than `iters`\n' +\
+            'Given check_point_load_iter={} and iters={}'.format(checkpoint_load_iter, iters)
 
         assert optimizer in ['adam', 'sgd'],\
             'given optimizer "{}" is not supported, please select set optimizer to "adam" or "sgd"'.format(optimizer)
@@ -105,7 +105,7 @@ class AttentionNeuralBagOfFeatureLearner(Learner):
         self.attention_type = attention_type
         self.n_class = n_class
         self.lr_scheduler = lr_scheduler
-        self.n_epoch = n_epoch
+        self.n_epoch = iters
         self.batch_size = batch_size
         self.checkpoint_freq = checkpoint_after_iter
         self.epoch_idx = checkpoint_load_iter
