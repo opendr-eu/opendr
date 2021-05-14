@@ -8,6 +8,8 @@ from typing import List
 import numpy as np
 import time
 from geometry_msgs.msg import Point, Pose, Quaternion
+from urllib.request import urlretrieve
+import zipfile
 from pybindings import GMMPlanner, multiply_tfs
 
 from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper, GMMPlannerWrapper
@@ -16,6 +18,20 @@ from control.mobile_manipulation.mobileRL.envs.map import SceneMap
 from control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 from control.mobile_manipulation.mobileRL.envs.simulator_api import WorldObjects, SpawnObject
 from control.mobile_manipulation.mobileRL.envs.tasks import BaseTask, TaskGoal, GripperActions
+from engine.constants import OPENDR_SERVER_URL
+
+
+def download_gmm_models():
+    """Download the imitation learning models used by the GMMPlanner"""
+    module_root = Path(__file__).parent.parent.parent
+
+    if not (module_root / 'GMM_models' / 'GMM_grasp_KallaxDrawer.csv').exists():
+        zip_path = module_root / 'GMM_models.zip'
+        url = os.path.join(OPENDR_SERVER_URL, "control", "mobile_manipulation", 'GMM_models.zip')
+        urlretrieve(url=url, filename=zip_path)
+        with zipfile.ZipFile(str(zip_path), 'r') as zip_ref:
+            zip_ref.extractall(str(module_root))
+        os.remove(zip_path)
 
 
 class BaseChainedTask(BaseTask):
@@ -34,6 +50,7 @@ class BaseChainedTask(BaseTask):
                                               default_head_start=default_head_start,
                                               close_gripper_at_start=close_gripper_at_start)
 
+        download_gmm_models()
         self._motion_model_path = Path(__file__).parent.parent.parent / "GMM_models"
         assert self._motion_model_path.exists(), self._motion_model_path
 
