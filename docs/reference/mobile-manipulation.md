@@ -114,6 +114,21 @@ Parameters:
   Path of the model to be loaded.
 
 
+### Class MobileManipulationEnv
+Bases: `gym.Env`
+
+The *MobileManipulationEnv* class is an environment to train an RL agent for mobile manipulation, given end-effector motions, and to run mobile manipulation tasks in both simulation and the real world.
+New tasks can easily be defined as task wrappers as they can be found in `mobileRL.env.tasks` and `mobileRL.env.tasks_chained`.
+
+The [MobileManipulationEnv](#src.control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env.py) class has the
+following public methods:
+
+#### `MobileManipulationEnv` constructor
+
+Constructor parameters:
+- **lr**: *float, default=1e-5*
+
+
 #### ROS Setup
 The repository consists of two main parts: a training environment written in C++ and connected to Python through bindings and the RL agents written in Python 3.
 
@@ -257,8 +272,8 @@ For HSR / Tiago:
     # train on random goal reaching task
     agent.fit(env, val_env=eval_env)
 
-    # evaluate on door opening in gazebo
-    evaluate_on_task(env_config, eval_env_config=eval_config, agent=agent, task='door', world_type='gazebo')
+    # evaluate on door opening in analytical environement
+    evaluate_on_task(env_config, eval_env_config=eval_config, agent=agent, task='door', world_type='sim')
 
     rospy.signal_shutdown("We are done")
   ```
@@ -307,8 +322,15 @@ For HSR / Tiago:
                             temp_path=logpath,
                             device='cpu')
 
-    # evaluate on door opening in gazebo
-    evaluate_on_task(eval_config, eval_env_config=eval_config, agent=agent, task='door', world_type='gazebo')
+    # evaluate on door opening in the analytical environment
+    # to evaluate in gazebo:
+    # - PR2: run `roslaunch pr2_gazebo pr2_empty_world.launch` in a separate terminal (replacing `roslaunch mobile_manipulation_rl pr2_analytical`)
+    # - Tiago: run `roslaunch mobile_manipulation_rl tiago_gazebo.launch robot:=steel tuck_arm:=false laser_model:=false camera_model:=false`
+    # - HSR: run `roslaunch modulation_rl hsrb_empty_world.launch rviz:=false use_manipulation:=false use_navigation:=false use_perception:=false use_task:=false use_teleop:=false use_web:=false use_laser_odom:=false paused:=false`
+    #        and in a second terminal run `roslaunch modulation_rl hsr_move_group.launch joint_states_topic:=/hsrb/robot_state/joint_states` 
+    # - set world_type='gazebo'
+    
+    evaluate_on_task(eval_config, eval_env_config=eval_config, agent=agent, task='door', world_type='sim')
 
     rospy.signal_shutdown("We are done")
   ```
