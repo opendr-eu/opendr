@@ -56,7 +56,6 @@ from urllib.request import urlretrieve
 #   test that gazebo evaluation works. Adjust paths in the launchfiles moved to project/
 #   add a note to the pull request that some launchfiles stem from open-source ROS packages
 #   update readme for additional installations needed for gazebo evaluation?
-#   move gazebo stuff not needed for training into projects/
 #   Dependencies:
 #       how to specify correct ros version for you linux system? (i.e melodic)
 #       install libgp from github: https://github.com/mblum/libgp.git -> only needed for evaluation / for the project -> can we define it in a separate dependencies.ini in projects/ ?
