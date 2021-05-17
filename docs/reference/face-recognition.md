@@ -279,8 +279,8 @@ Parameters:
 * **Training example using an 'ExternalDataset'**.
 
 ```python
-from OpenDR.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
-from OpenDR.engine.datasets import ExternalDataset
+from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.engine.datasets import ExternalDataset
 recognizer = FaceRecognitionLearner(backbone='ir_50', mode='full', network_head='arcface',
                                     epochs=120, lr=0.1, checkpoint_after_iter=10, checkpoint_load_iter=0,
                                     device='cuda', val_after=40)
@@ -294,7 +294,7 @@ recognizer.save('./temp/saved_models')
 * **Inference example - backbone_only mode**
 ```python
 import cv2
-from OpenDR.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
 recognizer = FaceRecognitionLearner(backbone='ir_50', mode='backbone_only', device='cuda')
 recognizer.load('./temp/saved_models')
 recognizer.fit_reference(path='./data/imgs', save_path='./temp/demo')
@@ -311,7 +311,7 @@ import cv2
 import os
 import numpy as np
 import time
-from OpenDR.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
 
 recognizer = FaceRecognitionLearner(backbone='ir_50', mode='backbone_only', device='cuda') # Initialize the recognizer
 recognizer.load('./temp/saved_models') # Load the pretrained backbone
