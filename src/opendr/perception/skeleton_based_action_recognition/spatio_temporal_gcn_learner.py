@@ -207,6 +207,7 @@ class SpatioTemporalGCNLearner(Learner):
         # start training
         self.global_step = self.start_epoch * len(train_loader) / self.batch_size
         # self.checkpoint_after_iter = int(len(train_loader) / self.batch_size)
+        eval_results_list = []
         for epoch in range(self.start_epoch, self.epochs):
             self.model.train()
             self.__print_log('Training epoch: {}'.format(epoch + 1))
@@ -268,9 +269,12 @@ class SpatioTemporalGCNLearner(Learner):
                 checkpoint_name = self.experiment_name + '-' + str(epoch) + '-' + str(int(self.global_step))
                 self.ort_session = None
                 self.save(path=checkpoints_folder, model_name=checkpoint_name)
-            self.eval(val_dataset, epoch, val_data_filename=val_data_filename, val_labels_filename=val_labels_filename)
+            eval_results = self.eval(val_dataset, epoch, val_data_filename=val_data_filename, val_labels_filename=val_labels_filename)
+            eval_results_list.append(eval_results)
             scheduler.step()
         print('best accuracy: ', self.best_acc, ' model_name: ', self.experiment_name)
+        return {"train_loss": np.mean(loss_value), "eval_results": eval_results_list,
+                "best_accuracy": self.best_acc, "model_name": self.experiment_name}
 
     def eval(self, val_dataset, epoch=0, silent=False, verbose=True,
              val_data_filename='val_joints.npy', val_labels_filename='val_labels.pkl', skeleton_data_type='joint',
@@ -376,7 +380,7 @@ class SpatioTemporalGCNLearner(Learner):
         if save_score and self.logging:
             with open('{}/epoch{}_{}_score.pkl'.format(self.logging_path, epoch + 1, 'val'), 'wb') as f:
                 pickle.dump(score_dict, f)
-        return score
+        return {"epoch": epoch, "accuracy": accuracy, "loss": loss}
 
     @staticmethod
     def __prepare_dataset(dataset, data_filename="train_joints.npy",
@@ -478,10 +482,11 @@ class SpatioTemporalGCNLearner(Learner):
             output = output
 
         m = nn.Softmax(dim=0)
-        output_ = m(output.data[0])
-        category = Category(output_)
+        softmax_predictions = m(output.data[0])
+        class_ind = int(torch.argmax(softmax_predictions))
+        category = Category(prediction=class_ind, confidence=softmax_predictions)
 
-        return category.prediction
+        return category
 
     def optimize(self, do_constant_folding=False):
         """

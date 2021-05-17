@@ -186,6 +186,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         # start training
         self.best_acc = 0
         self.global_step = self.start_epoch * len(train_loader) / self.batch_size
+        eval_results_list = []
         for epoch in range(self.start_epoch, self.epochs):
             self.model.train()
             self.__print_log('Training epoch: {}'.format(epoch + 1))
@@ -248,11 +249,13 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                                 len(self.topology)) + '-' + str(self.topology[-1])
                 self.ort_session = None
                 self.save(path=checkpoints_folder, model_name=checkpoint_name)
-            self.eval(val_dataset, epoch, val_data_filename=val_data_filename,
+            eval_results = self.eval(val_dataset, epoch, val_data_filename=val_data_filename,
                       val_labels_filename=val_labels_filename)
+            eval_results_list.append(eval_results)
             scheduler.step()
         print('best accuracy: ', self.best_acc, ' model_name: ', self.experiment_name)
-        return np.mean(loss_value)
+        return {"train_loss": np.mean(loss_value), "eval_results": eval_results_list,
+                "best_accuracy": self.best_acc, "model_name": self.experiment_name}
 
     def eval(self, val_dataset, epoch=0, silent=False, verbose=True,
              val_data_filename='val_joints.npy', val_labels_filename='val_labels.pkl', skeleton_data_type='joint',
@@ -358,7 +361,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         if save_score and self.logging:
             with open('{}/epoch{}_{}_score.pkl'.format(self.logging_path, epoch + 1, 'val'), 'wb') as f:
                 pickle.dump(score_dict, f)
-        return score
+        return {"epoch": epoch, "accuracy": accuracy, "loss": loss}
 
     @staticmethod
     def __prepare_dataset(dataset, data_filename="train_joints.npy",
@@ -456,12 +459,13 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                     self.ort_session = None
                     self.load(checkpoints_folder, checkpoint_name)
 
-                loss_block_new = self.fit(dataset, val_dataset, logging_path,
+                train_results = self.fit(dataset, val_dataset, logging_path,
                                           train_data_filename=train_data_filename,
                                           train_labels_filename=train_labels_filename,
                                           val_data_filename=val_data_filename,
                                           val_labels_filename=val_labels_filename,
                                           skeleton_data_type=skeleton_data_type)
+                loss_block_new = train_results["train_loss"]
                 if block_iter > 0:
                     loss_b = -1 * (loss_block_new - loss_block_old) / loss_block_old
                     if loss_b <= self.block_threshold:
@@ -515,10 +519,11 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
             output = output
 
         m = nn.Softmax(dim=0)
-        output_ = m(output.data[0])
-        category = Category(output_)
+        softmax_predictions = m(output.data[0])
+        class_ind = int(torch.argmax(softmax_predictions))
+        category = Category(prediction=class_ind, confidence=softmax_predictions)
 
-        return category.prediction
+        return category
 
     def optimize(self, do_constant_folding=False):
         """
