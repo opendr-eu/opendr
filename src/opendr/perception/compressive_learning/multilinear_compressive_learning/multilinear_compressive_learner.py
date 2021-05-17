@@ -369,6 +369,22 @@ class MultilinearCompressiveLearner(Learner):
 
         return prediction
 
+    def get_sensing_parameters(self):
+        """
+        This method is used to get the sensing parameters
+
+        :return: parameters of sensing operators
+        :rtype: list of numpy array
+
+        """
+
+        params = [x.detach().cpu().numpy() for x in list(self.model.sense_synth_module.synthesis_module.parameters())]
+        # reverse the order from pytorch order to normal image order
+        if len(params) == 3:
+            params = [params[1], params[2], params[0]]
+
+        return params
+
     def infer_from_compressed_measurement(self, measurement):
         """
         This method is used to generate class prediction given the compressed measurement
