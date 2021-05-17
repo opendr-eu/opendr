@@ -92,10 +92,6 @@ class FaceRecognitionLearner(Learner):
             rgb_std = [0.5, 0.5, 0.5]
         if stages is None:
             stages = [35, 65, 95]
-        if self.device == 'cuda':
-            self.gpu_id = [0]
-        else:
-            self.gpu_id = None
         self.seed = seed
         self.loss = loss
         self.mode = mode
@@ -152,12 +148,12 @@ class FaceRecognitionLearner(Learner):
         # Create the head architecture
         if self.mode != 'backbone_only':
             head_dict = {
-                'arcface': ArcFace(in_features=self.embedding_size, out_features=self.num_class, device_id=self.gpu_id),
-                'cosface': CosFace(in_features=self.embedding_size, out_features=self.num_class, device_id=self.gpu_id),
+                'arcface': ArcFace(in_features=self.embedding_size, out_features=self.num_class, device=self.device),
+                'cosface': CosFace(in_features=self.embedding_size, out_features=self.num_class, device=self.device),
                 'sphereface': SphereFace(in_features=self.embedding_size, out_features=self.num_class,
-                                         device_id=self.gpu_id),
+                                         device=self.device),
                 'am_softmax': AMSoftmax(in_features=self.embedding_size, out_features=self.num_class,
-                                        device_id=self.gpu_id),
+                                        device=self.device),
                 'classifier': Classifier(in_features=self.embedding_size, out_features=self.num_class,
                                          device=self.device)}
             head = head_dict[self.network_head]
