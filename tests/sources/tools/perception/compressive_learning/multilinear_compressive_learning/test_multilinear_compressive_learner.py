@@ -215,6 +215,19 @@ class TestMultilinearCompressiveLearner(unittest.TestCase):
         learner.load(temp_dir.name)
         temp_dir.cleanup()
 
+    def test_get_sensing_parameters(self):
+        learner, input_shape, compressed_shape, n_class, _, _ = get_random_learner()
+        params = learner.get_sensing_parameters()
+        self.assertTrue(len(params) in [2, 3],
+                        msg='sensing parameters should be a list of 2 or 3 elements')
+
+        for idx, param in enumerate(params):
+            self.assertTrue(isinstance(param, np.ndarray),
+                            msg='each sensing parameter must be an instance of numpy.ndarray')
+            correct_shape = (input_shape[idx], compressed_shape[idx])
+            self.assertTrue(param.shape == correct_shape,
+                            msg='the {}-th parameter should have shape: {}'.format(idx, correct_shape))
+
 
 if __name__ == "__main__":
     unittest.main()

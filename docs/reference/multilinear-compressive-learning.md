@@ -209,7 +209,7 @@ Returns an instance of `engine.target.Category` representing the prediction.
 
 #### `MultilinearCompressiveLearner.infer_from_compressed_measurement`  
 ```python
-MultilinearCompressiveLearner.infer(img)
+MultilinearCompressiveLearner.infer_from_compressed_measurement(img)
 ```
 
 This method is used to generate the class prediction given a compressed measurement.  
@@ -226,7 +226,18 @@ Returns an instance of `engine.target.Category` representing the prediction.
 - **prediction**: *engine.target.Category*  
   Object of type `engine.target.Category` that contains the prediction.  
 
+#### `MultilinearCompressiveLearner.get_sensing_parameters()`  
+```python
+MultilinearCompressiveLearner.get_sensing_parameters()
+```
 
+This method is used to get the parameters of the sensing component, which is used to setup the sensing device.  
+Returns a list of numpy arrays.  
+
+**Returns**:
+
+- **params**: *list*  
+  A list of numpy arrays that contain the parameters corresponding to each compressed dimension.  
 
 
 #### `MultilinearCompressiveLearner.save`  
