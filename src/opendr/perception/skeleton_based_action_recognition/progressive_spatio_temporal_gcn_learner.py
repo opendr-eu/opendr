@@ -63,6 +63,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         self.epochs = epochs
         self.num_workers = num_workers
         self.lr = lr
+        self.base_lr = lr
         self.drop_after_epoch = drop_after_epoch
         self.lr_schedule = lr_schedule
         self.batch_size = batch_size
@@ -150,14 +151,14 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         if self.optimizer_name == 'sgd':
             self.optimizer_ = optim.SGD(
                 self.model.parameters(),
-                lr=self.lr,
+                lr=self.base_lr,
                 momentum=momentum,
                 nesterov=nesterov,
                 weight_decay=weight_decay)
         elif self.optimizer_name == 'adam':
             self.optimizer_ = optim.Adam(
                 self.model.parameters(),
-                lr=self.lr,
+                lr=self.base_lr,
                 weight_decay=weight_decay)
         else:
             raise ValueError(
@@ -390,10 +391,19 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
             # Get data and labels path
             data_path = os.path.join(dataset.path, data_filename)
             labels_path = os.path.join(dataset.path, labels_filename)
+            if dataset.dataset_type.lower() == "nturgbd":
+                random_choose = False
+                random_move = False
+                window_size = -1
+            elif dataset.dataset_type.lower() == "kinetics":
+                random_choose = True
+                random_move = True
+                window_size = 150
             if verbose:
                 print('Dataset path is set. Loading feeder...')
             return Feeder(data_path=data_path, label_path=labels_path, skeleton_data_type=skeleton_data_type,
-                          data_name=dataset.dataset_type.lower())
+                          random_choose=random_choose, random_move=random_move,
+                          window_size=window_size, data_name=dataset.dataset_type.lower())
         elif isinstance(dataset, DatasetIterator):
             return dataset
 
@@ -414,7 +424,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                 self.loss = nn.CrossEntropyLoss()
             # print(self.model)
 
-    def network_builder(self, dataset, val_dataset, train_data_filename='train_joints.npy',
+    def network_builder(self, dataset, val_dataset, logging_path='', train_data_filename='train_joints.npy',
                         train_labels_filename='train_labels.pkl', val_data_filename="val_joints.npy",
                         val_labels_filename="val_labels.pkl", skeleton_data_type='joint', verbose=True):
         # start building the model progressively
@@ -446,7 +456,8 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                     self.ort_session = None
                     self.load(checkpoints_folder, checkpoint_name)
 
-                loss_block_new = self.fit(dataset, val_dataset, train_data_filename=train_data_filename,
+                loss_block_new = self.fit(dataset, val_dataset, logging_path,
+                                          train_data_filename=train_data_filename,
                                           train_labels_filename=train_labels_filename,
                                           val_data_filename=val_data_filename,
                                           val_labels_filename=val_labels_filename,
@@ -543,7 +554,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         if self.dataset_name == 'nturgbd_cv' or self.dataset_name == 'nturgbd_cs':
             c, t, v, m = [3, 150, 25, 2]
         elif self.dataset_name == 'kinetics':
-            c, t, v, m = [2, 150, 18, 2]
+            c, t, v, m = [3, 150, 18, 2]
         else:
             raise ValueError(self.dataset_name + "is not a valid dataset name. Supported datasets: nturgbd_cv,"
                                                  " nturgbd_cs, kinetics")
@@ -679,7 +690,6 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                     if current_key in old_keys:
                         A = self.model.state_dict()[current_key]
                         old_sh = weights[current_key].shape
-                        print('old_sh', old_sh)
                         A[:old_sh[0]] = weights[current_key]
                         new_state_dict = OrderedDict({current_key: A})
                         self.model.load_state_dict(new_state_dict, strict=False)
@@ -698,13 +708,6 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                         A[:old_sh[0], :old_sh[1]] = weights[current_key]
                         new_state_dict = OrderedDict({current_key: A})
                         self.model.load_state_dict(new_state_dict, strict=False)
-
-            if self.device == "cuda":
-                self.model = self.model.cuda(self.output_device)
-                if type(self.device_ind) is list:
-                    if len(self.device_ind) > 1:
-                        self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
-                                                     output_device=self.output_device)
 
     def __load_from_onnx(self, path):
         """

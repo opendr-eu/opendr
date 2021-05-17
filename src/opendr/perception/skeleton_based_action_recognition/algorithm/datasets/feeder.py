@@ -71,14 +71,14 @@ def random_move(data_numpy,
                                                node[i + 1] - node[i])
 
     theta = np.array([[np.cos(a) * s, -np.sin(a) * s],
-                      [np.sin(a) * s, np.cos(a) * s]])  # xuanzhuan juzhen
+                      [np.sin(a) * s, np.cos(a) * s]])
 
     # perform transformation
     for i_frame in range(T):
         xy = data_numpy[0:2, i_frame, :, :]
         new_xy = np.dot(theta[:, :, i_frame], xy.reshape(2, -1))
         new_xy[0] += t_x[i_frame]
-        new_xy[1] += t_y[i_frame]  # pingyi bianhuan
+        new_xy[1] += t_y[i_frame]
         data_numpy[0:2, i_frame, :, :] = new_xy.reshape(2, V, M)
 
     return data_numpy

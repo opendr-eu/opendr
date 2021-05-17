@@ -64,6 +64,7 @@ class SpatioTemporalGCNLearner(Learner):
         self.epochs = epochs
         self.num_workers = num_workers
         self.lr = lr
+        self.base_lr = lr
         self.drop_after_epoch = drop_after_epoch
         self.lr_schedule = lr_schedule
         self.batch_size = batch_size
@@ -173,14 +174,14 @@ class SpatioTemporalGCNLearner(Learner):
         if self.optimizer_name == 'sgd':
             self.optimizer_ = optim.SGD(
                 self.model.parameters(),
-                lr=self.lr,
+                lr=self.base_lr,
                 momentum=momentum,
                 nesterov=nesterov,
                 weight_decay=weight_decay)
         elif self.optimizer_name == 'adam':
             self.optimizer_ = optim.Adam(
                 self.model.parameters(),
-                lr=self.lr,
+                lr=self.base_lr,
                 weight_decay=weight_decay)
         else:
             raise ValueError(self.optimizer_ + "is not a valid optimizer name. Supported optimizers: sgd, adam")
@@ -408,11 +409,20 @@ class SpatioTemporalGCNLearner(Learner):
             # Get data and labels path
             data_path = os.path.join(dataset.path, data_filename)
             labels_path = os.path.join(dataset.path, labels_filename)
+            if dataset.dataset_type.lower() == "nturgbd":
+                random_choose = False
+                random_move = False
+                window_size = -1
+            elif dataset.dataset_type.lower() == "kinetics":
+                random_choose = True
+                random_move = True
+                window_size = 150
             if verbose:
                 print('Dataset path is set. Loading feeder...')
-            return Feeder(data_path=data_path, label_path=labels_path, skeleton_data_type=skeleton_data_type,
+            return Feeder(data_path=data_path, label_path=labels_path, random_choose=random_choose,
+                          random_move=random_move, window_size=window_size,
+                          skeleton_data_type=skeleton_data_type,
                           data_name=dataset.dataset_type.lower())
-
         elif isinstance(dataset, DatasetIterator):
             return dataset
 
@@ -507,7 +517,7 @@ class SpatioTemporalGCNLearner(Learner):
         if self.dataset_name == 'nturgbd_cv' or self.dataset_name == 'nturgbd_cs':
             c, t, v, m = [3, 300, 25, 2]
         elif self.dataset_name == 'kinetics':
-            c, t, v, m = [2, 300, 18, 2]
+            c, t, v, m = [3, 300, 18, 2]
         else:
             raise ValueError(self.dataset_name + "is not a valid dataset name. Supported datasets: nturgbd_cv,"
                                                  " nturgbd_cs, kinetics")
