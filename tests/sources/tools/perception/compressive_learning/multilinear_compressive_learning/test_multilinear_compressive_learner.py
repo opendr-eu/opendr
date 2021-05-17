@@ -158,6 +158,16 @@ class TestMultilinearCompressiveLearner(unittest.TestCase):
         self.assertTrue(pred.confidence <= 1,
                         msg="Confidence of prediction must be less or equal than 1")
 
+    def test_infer_from_compressed_measurement(self):
+        learner, input_shape, compressed_shape, n_class, pretrained_backbone, init_backbone = get_random_learner()
+        img = Image(np.random.rand(*compressed_shape))
+        pred = learner.infer_from_compressed_measurement(img)
+        self.assertTrue(isinstance(pred, Category))
+        self.assertTrue(pred.data < learner.n_class,
+                        msg="Predicted class label must be less than the number of class")
+        self.assertTrue(pred.confidence <= 1,
+                        msg="Confidence of prediction must be less or equal than 1")
+
     def test_save_load(self):
         learner, input_shape, compressed_shape, n_class, _, _ = get_random_learner()
         temp_dir = tempfile.TemporaryDirectory()
