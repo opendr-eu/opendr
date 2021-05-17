@@ -126,6 +126,11 @@ class CompressiveLearner(nn.Module):
         x = self.backbone(x)
         return x
 
+    def infer_from_measurement(self, x):
+        x = self.sense_synth_module.synthesis_module(x)
+        x = self.backbone(x)
+        return x
+
     def get_parameters(self,):
         bn_params, other_params = [], []
         if hasattr(self.backbone, 'get_parameters') and callable(self.backbone.get_parameters):

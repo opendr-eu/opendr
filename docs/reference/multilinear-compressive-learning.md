@@ -207,6 +207,27 @@ Returns an instance of `engine.target.Category` representing the prediction.
 - **prediction**: *engine.target.Category*  
   Object of type `engine.target.Category` that contains the prediction.  
 
+#### `MultilinearCompressiveLearner.infer_from_compressed_measurement`  
+```python
+MultilinearCompressiveLearner.infer(img)
+```
+
+This method is used to generate the class prediction given a compressed measurement.  
+This method is used during deployment when the model receives compressed measurement from the sensor.  
+Returns an instance of `engine.target.Category` representing the prediction.  
+
+**Parameters**:
+
+- **img**: *engine.data.Image*  
+  Object of type `engine.data.Image` that holds the compressed measurement.  
+ 
+**Returns**:
+
+- **prediction**: *engine.target.Category*  
+  Object of type `engine.target.Category` that contains the prediction.  
+
+
+
 
 #### `MultilinearCompressiveLearner.save`  
 ```python

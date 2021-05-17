@@ -361,10 +361,49 @@ class MultilinearCompressiveLearner(Learner):
 
         img = np.expand_dims(img.transpose(2, 0, 1), 0)
 
-        tensor_img = torch.tensor(img, device=torch.device(self.device)).float()
-        prob_prediction = torch.nn.functional.softmax(self.model(tensor_img).flatten(), dim=0)
-        class_prediction = prob_prediction.argmax(dim=-1).cpu().item()
-        prediction = Category(class_prediction, confidence=prob_prediction[class_prediction].cpu().item())
+        with torch.no_grad():
+            tensor_img = torch.tensor(img, device=torch.device(self.device)).float()
+            prob_prediction = torch.nn.functional.softmax(self.model(tensor_img).flatten(), dim=0)
+            class_prediction = prob_prediction.argmax(dim=-1).cpu().item()
+            prediction = Category(class_prediction, confidence=prob_prediction[class_prediction].cpu().item())
+
+        return prediction
+
+    def infer_from_compressed_measurement(self, measurement):
+        """
+        This method is used to generate class prediction given the compressed measurement
+
+        :param measurement: compressed measurement to generate class prediction
+        :type measurement: engine.data.Image
+
+        :return: predicted label
+        :rtype: engine.target.Category
+
+        """
+
+        if not isinstance(measurement, Image):
+            msg = 'Input to `infer_from_compressed_measurement()` must be an instance of engine.data.Image\n' +\
+                  'Received an instance of type: {}'.format(type(measurement))
+            raise TypeError(msg)
+
+        self.model.to(torch.device(self.device))
+        self.model.eval()
+
+        measurement = measurement.numpy()
+
+        if not tuple(measurement.shape) == tuple(self.compressed_shape):
+            msg = 'Dimensions of the given compressed measurement "{}"'.format(measurement.shape) +\
+                  'do not match `compressed_shape` "{}" of the model'.format(tuple(self.compressed_shape))
+            raise ValueError(msg)
+
+        measurement = np.expand_dims(measurement.transpose(2, 0, 1), 0)
+
+        with torch.no_grad():
+            tensor_measurement = torch.tensor(measurement, device=torch.device(self.device)).float()
+            prob_prediction = self.model.infer_from_measurement(tensor_measurement).flatten()
+            prob_prediction = torch.nn.functional.softmax(prob_prediction, dim=0)
+            class_prediction = prob_prediction.argmax(dim=-1).cpu().item()
+            prediction = Category(class_prediction, confidence=prob_prediction[class_prediction].cpu().item())
 
         return prediction
 
