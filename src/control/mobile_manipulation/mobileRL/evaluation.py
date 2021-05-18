@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from stable_baselines3.common import logger
 
 from control.mobile_manipulation.mobileRL.envs.env_utils import calc_disc_return
-from control.mobile_manipulation.mobileRL.utils import env_creator
+from control.mobile_manipulation.mobileRL.utils import create_env
 
 
 def episode_is_success(nr_kin_fails: int, nr_collisions: int, goal_reached: bool) -> bool:
@@ -94,9 +94,11 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
 
 def evaluate_on_task(config, agent, eval_env_config, task: str, world_type: str):
     eval_env_config = eval_env_config.copy()
-    eval_env_config['task'] = task
     eval_env_config['world_type'] = world_type
-    env = env_creator(eval_env_config, flatten_obs=True)
+    env = create_env(eval_env_config,
+                     task=task,
+                     node_handle=eval_env_config["node_handle"],
+                     flatten_obs=True)
 
     rospy.loginfo(f"Evaluating on task {env.taskname()} with {world_type} execution.")
     prefix = ''
