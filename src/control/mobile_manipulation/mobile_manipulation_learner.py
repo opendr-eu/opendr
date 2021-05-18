@@ -44,6 +44,7 @@ import rospy
 
 from stable_baselines3.sac import SAC
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise, NormalActionNoise
+from stable_baselines3.common.vec_env import VecEnv
 
 from control.mobile_manipulation.mobileRL.stablebl_callbacks import MobileRLEvalCallback
 from control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
@@ -94,20 +95,25 @@ class MobileRLLearner(LearnerRL):
         if checkpoint_load_iter:
             if restore_model_path == 'pretrained':
                 assert checkpoint_load_iter == 1_000_000, "pretrained models are provided for step 1_000_000"
-                filename = f"model_step{checkpoint_load_iter}.zip"
-                file_destination = Path(temp_path) / filename
-                if not file_destination.parent.exists():
-                    file_destination.parent.mkdir(parents=True, exist_ok=False)
-                    url = os.path.join(
-                        OPENDR_SERVER_URL,
-                        "control",
-                        "mobile_manipulation",
-                        env.get_attr('env_name')[0],
-                        filename)
-                    urlretrieve(url=url, filename=file_destination)
-                restore_model_path = str(file_destination.parent)
+            else:
+                restore_model_path = os.path.join(restore_model_path, f"model_step{checkpoint_load_iter}")
+            self.load(restore_model_path)
 
-            self.load(os.path.join(restore_model_path, f"model_step{checkpoint_load_iter}"))
+    @staticmethod
+    def _download_pretrained(save_path: str, robot_name: str):
+        checkpoint_load_iter= 1_000_000
+        filename = f"model_step{checkpoint_load_iter}.zip"
+        file_destination = Path(save_path) / filename
+        if not file_destination.exists():
+            file_destination.parent.mkdir(parents=True, exist_ok=True)
+            url = os.path.join(
+                OPENDR_SERVER_URL,
+                "control",
+                "mobile_manipulation",
+                robot_name,
+                filename)
+            urlretrieve(url=url, filename=file_destination)
+        return file_destination
 
     def _get_lr_fn(self):
         def lin_sched(start_lr, min_lr, progress_remaining):
@@ -175,21 +181,25 @@ class MobileRLLearner(LearnerRL):
             self.stable_bl_agent.env = env
 
         rospy.loginfo("Start learning loop")
-        eval_callback = MobileRLEvalCallback(eval_env=val_env,
-                                             n_eval_episodes=self.nr_evaluations,
-                                             eval_freq=self.evaluation_frequency,
-                                             log_path=logging_path,
-                                             best_model_save_path=logging_path,
-                                             checkpoint_after_iter=self.checkpoint_after_iter,
-                                             verbose=verbose if not silent else False)
+        if val_env is not None:
+            eval_callback = MobileRLEvalCallback(eval_env=val_env,
+                                                 n_eval_episodes=self.nr_evaluations,
+                                                 eval_freq=self.evaluation_frequency,
+                                                 log_path=logging_path,
+                                                 best_model_save_path=logging_path,
+                                                 checkpoint_after_iter=self.checkpoint_after_iter,
+                                                 verbose=verbose if not silent else False)
+        else:
+            eval_callback = None
         self.stable_bl_agent.learn(total_timesteps=self.iters,
                                    callback=eval_callback,
                                    eval_env=None)
 
-        self.stable_bl_agent.save(os.path.join(eval_callback.best_model_save_path, f'last_model'))
+        self.stable_bl_agent.save(os.path.join(logging_path, f'last_model'))
 
-        env.env_method("clear")
-        val_env.env_method("clear")
+        for e in [env, val_env]:
+            if e is not None:
+                env.env_method("clear")
         rospy.loginfo("Training finished")
 
     def eval(self, env, name_prefix='', nr_evaluations: int = None):
@@ -203,11 +213,15 @@ class MobileRLLearner(LearnerRL):
         """
         if nr_evaluations is None:
             nr_evaluations = self.nr_evaluations
+        if isinstance(env, VecEnv):
+            assert env.num_envs == 1, "You must pass only one environment when using this function"
+            env = env.envs[0]
 
         prefix = ''
-        evaluation_rollout(self.stable_bl_agent, env, nr_evaluations, name_prefix=prefix,
-                           global_step=self.stable_bl_agent.num_timesteps, verbose=2)
+        episode_rewards, episode_lengths, metrics, name_prefix = evaluation_rollout(self.stable_bl_agent, env, nr_evaluations, name_prefix=prefix,
+                                                                                    global_step=self.stable_bl_agent.num_timesteps, verbose=2)
         env.clear()
+        return episode_rewards, episode_lengths, metrics, name_prefix
 
     def save(self, path):
         """
@@ -229,7 +243,9 @@ class MobileRLLearner(LearnerRL):
         :return: Whether load succeeded or not
         :rtype: bool
         """
-        self.stable_bl_agent = self.stable_bl_agent.load(path)
+        if path == 'pretrained':
+            path = str(self._download_pretrained(self.temp_path, self.stable_bl_agent.env.get_attr('env_name')[0]))
+        self.stable_bl_agent = self.stable_bl_agent.load(path, device=self.device, env=self.stable_bl_agent.env, tensorboard_log=self.temp_path)
 
     def infer(self, batch, deterministic: bool = True):
         return self.stable_bl_agent.predict(batch, deterministic=deterministic)
