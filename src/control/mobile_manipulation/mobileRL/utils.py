@@ -61,12 +61,3 @@ def create_env(config,
     return wrap_in_task(env=env, task=task, default_head_start=config["head_start"],
                         wrap_in_dummy_vec=wrap_in_dummy_vec, **env_kwargs)
 
-
-def env_creator(ray_env_config: dict, flatten_obs: bool = False):
-    """Allows to construct a different eval env by defining 'task': eval_task in 'evaluation_config'"""
-    time.sleep(random.uniform(0.0, 0.2))
-    env = create_env(ray_env_config,
-                     task=ray_env_config['task'],
-                     node_handle=ray_env_config["node_handle"],
-                     flatten_obs=flatten_obs)
-    return env
