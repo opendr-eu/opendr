@@ -28,14 +28,15 @@ type checking is performed (if there is no other technical obstacle to this, e.g
 Bases: `engine.target.Target`
 
 The Category target is used for 1-of-K classification problems.
-It contains the predicted class or ground truth and optionally the prediction confidence.
+It contains the predicted class or ground truth and optionally the description of the predicted class
+and the prediction confidence.
 
 The [Category](#class_engine.target.Category) class has the following public methods and attributes:
 #### Category(prediction, confidence=None)
 Construct a new [Category](#class_engine.target.Category).
 - *prediction* is a class integer.
+- *description* is an optional string describing the predicted class.
 - *confidence* is an optional one-dimensional array / tensor of class probabilitiess.
-
 
 
 ### class engine.target.Keypoint

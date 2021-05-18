@@ -49,26 +49,36 @@ class Target(BaseTarget):
 class Category(Target):
     """
     The Category target is used for 1-of-K classification problems.
-    It contains the predicted class or ground truth and optionally the prediction confidence.
+    It contains the predicted class or ground truth and optionally the description of the predicted class
+    and the prediction confidence.
     """
 
-    def __init__(self, prediction: int, confidence=None):
+    def __init__(self, prediction: int, description=None, confidence=None):
         """Initialize a category.
 
         Args:
             prediction (int): Class integer
+            description (optional):
+                Class description / translation of prediction to class name. Defaults to None
             confidence (optional):
                 One-dimensional array / tensor of class probabilities. Defaults to None.
         """
         super().__init__()
         self.data = prediction
         self.confidence = confidence
+        self.description = description
 
     def __str__(self):
-        if self.confidence is not None:
-            return f"Class {self.data} with confidence {self.confidence}"
+        if self.description is None:
+            if self.confidence is not None:
+                return f"Class {self.data} with confidence {self.confidence}"
+            else:
+                return f"Class {self.data} "
         else:
-            return f"Class {self.data} "
+            if self.confidence is not None:
+                return f"Class {self.data} ({self.description}) with confidence {self.confidence}"
+            else:
+                return f"Class {self.data}, ({self.description})"
 
 
 class Keypoint(Target):
