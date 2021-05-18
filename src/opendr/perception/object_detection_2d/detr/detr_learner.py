@@ -637,7 +637,7 @@ class DetrLearner(Learner):
             do_constant_folding=do_constant_folding,
             input_names=input_names,
             output_names=output_names,
-            opset_version=13
+            opset_version=12
             )
 
         print("Exported onnx model")
