@@ -57,11 +57,13 @@ from urllib.request import urlretrieve
 #   test that gazebo evaluation works. Adjust paths in the launchfiles moved to project/
 #   add a note to the pull request that some launchfiles stem from open-source ROS packages
 #   update readme for additional installations needed for gazebo evaluation?
+#   how to run the run_ros.sh script for the tests?
+#   where to create the catkin_ws? In lib? In demos?
+#   check all TODO's (including in tests)
+#   put this into control or planning? (in overleaf it's in planning). If changing, also move the tests
 #   Dependencies:
 #       how to specify correct ros version for you linux system? (i.e melodic)
-#       install libgp from github: https://github.com/mblum/libgp.git -> only needed for evaluation / for the project -> can we define it in a separate dependencies.ini in projects/ ?
 #       openDR's `make -j install_runtime_dependencies` won't install everything necessary to run pytorch on GPU
-#       how to specify the tiago install and how to copy the modified tiago launchfiles (needed e.g. for the world_link definition)?
 
 class MobileRLLearner(LearnerRL):
     def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',

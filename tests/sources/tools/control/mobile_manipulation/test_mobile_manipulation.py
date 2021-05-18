@@ -63,7 +63,7 @@ class MobileManipulationTest(unittest.TestCase):
         del cls.learner
 
     def test_ckpt_download(self):
-        ckpt_folder = self.learner._download_pretrained(TEMP_SAVE_DIR, 'pr2')
+        ckpt_folder = self.learner._download_pretrained(str(TEMP_SAVE_DIR), 'pr2')
         self.assertTrue(Path(ckpt_folder).exists, "Checkpoint file could not be downloaded")
         # Remove temporary files
         try:
@@ -90,7 +90,7 @@ class MobileManipulationTest(unittest.TestCase):
         self.learner.load('pretrained')
         episode_rewards, episode_lengths, metrics, name_prefix = self.learner.eval(self.env,
                                                                                    nr_evaluations=nr_evaluations)
-        self.assertTrue(metrics['success'] > 0.6, f"Success rate of pretrained model is only {metrics['success']}")
+        self.assertTrue(metrics['success'] > 0.5, f"Success rate of pretrained model is only {metrics['success']}")
 
     def test_infer(self):
         obs = self.env.observation_space.sample()
