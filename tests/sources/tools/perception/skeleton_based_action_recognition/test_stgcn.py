@@ -73,7 +73,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         rmdir(os.path.join(cls.temp_dir, "pretrained_models"))
         rmdir(os.path.join(cls.temp_dir))
 
-
     def test_fit(self):
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="NTURGBD")
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
