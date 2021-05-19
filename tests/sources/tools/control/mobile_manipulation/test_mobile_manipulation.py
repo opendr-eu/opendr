@@ -25,7 +25,6 @@ from control.mobile_manipulation.mobileRL.utils import create_env
 
 TEST_ITERS = 3
 TEMP_SAVE_DIR = Path(__file__).parent / "mobile_manipulation_tmp"
-
 EVAL_ENV_CONFIG = {
     'env': 'pr2',
     'penalty_scaling': 0.01,
