@@ -6,7 +6,7 @@ if [[ -z "$OPENDR_HOME" ]]; then
 fi
 
 MODULE_PATH=${OPENDR_HOME}/src/control/mobile_manipulation
-WS_PATH=${OPENDR_HOME}/catkin_ws_mobile_manipulation
+WS_PATH=${OPENDR_HOME}/lib/catkin_ws_mobile_manipulation
 
 # libgp
 LIBGP_PATH=${OPENDR_HOME}/lib/libgp
