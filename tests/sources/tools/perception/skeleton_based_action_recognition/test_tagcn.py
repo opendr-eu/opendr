@@ -92,9 +92,9 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.tagcn_action_classifier.load(model_saved_path, model_name)
         eval_results = self.tagcn_action_classifier.eval(validation_dataset, verbose=False,
-                                                  val_data_filename='val_joints.npy',
-                                                  val_labels_filename='val_labels.pkl',
-                                                  skeleton_data_type='joint')
+                                                         val_data_filename='val_joints.npy',
+                                                         val_labels_filename='val_labels.pkl',
+                                                         skeleton_data_type='joint')
         self.assertNotEqual(len(eval_results["score"]), 0,
                             msg="Eval results contains empty list.")
 
