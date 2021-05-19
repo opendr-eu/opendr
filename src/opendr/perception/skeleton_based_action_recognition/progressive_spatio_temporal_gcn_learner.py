@@ -174,14 +174,27 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                                            data_filename=train_data_filename,
                                            labels_filename=train_labels_filename,
                                            skeleton_data_type=skeleton_data_type,
+                                           phase='train',
                                            verbose=verbose and not silent)
-
         train_loader = DataLoader(dataset=traindata,
                                   batch_size=self.batch_size,
                                   shuffle=True,
                                   num_workers=self.num_workers,
                                   drop_last=True,
                                   worker_init_fn=self.__init_seed(1))
+
+        valdata = self.__prepare_dataset(val_dataset,
+                                         data_filename=val_data_filename,
+                                         labels_filename=val_labels_filename,
+                                         skeleton_data_type=skeleton_data_type,
+                                         phase='val',
+                                         verbose=verbose and not silent)
+        val_loader = DataLoader(dataset=valdata,
+                                batch_size=self.val_batch_size,
+                                shuffle=False,
+                                num_workers=self.num_workers,
+                                drop_last=False,
+                                worker_init_fn=self.__init_seed(1))
 
         # start training
         self.best_acc = 0
@@ -249,15 +262,15 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                                 len(self.topology)) + '-' + str(self.topology[-1])
                 self.ort_session = None
                 self.save(path=checkpoints_folder, model_name=checkpoint_name)
-            eval_results = self.eval(val_dataset, epoch, val_data_filename=val_data_filename,
-                      val_labels_filename=val_labels_filename)
+            eval_results = self.eval(val_dataset, val_loader=val_loader, epoch=epoch,
+                                     val_data_filename=val_data_filename, val_labels_filename=val_labels_filename)
             eval_results_list.append(eval_results)
             scheduler.step()
         print('best accuracy: ', self.best_acc, ' model_name: ', self.experiment_name)
         return {"train_loss": np.mean(loss_value), "eval_results": eval_results_list,
                 "best_accuracy": self.best_acc, "model_name": self.experiment_name}
 
-    def eval(self, val_dataset, epoch=0, silent=False, verbose=True,
+    def eval(self, val_dataset, val_loader=None, epoch=0, silent=False, verbose=True,
              val_data_filename='val_joints.npy', val_labels_filename='val_labels.pkl', skeleton_data_type='joint',
              save_score=False, wrong_file=None, result_file=None, show_topk=[1, 5]):
         """
@@ -297,17 +310,19 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         if result_file is not None:
             f_r = open(result_file, 'w')
         # load data
-        valdata = self.__prepare_dataset(val_dataset,
-                                         data_filename=val_data_filename,
-                                         labels_filename=val_labels_filename,
-                                         skeleton_data_type=skeleton_data_type,
-                                         verbose=verbose and not silent)
-        val_loader = DataLoader(dataset=valdata,
-                                batch_size=self.val_batch_size,
-                                shuffle=False,
-                                num_workers=self.num_workers,
-                                drop_last=False,
-                                worker_init_fn=self.__init_seed(1))
+        if val_loader is None:
+            valdata = self.__prepare_dataset(val_dataset,
+                                             data_filename=val_data_filename,
+                                             labels_filename=val_labels_filename,
+                                             skeleton_data_type=skeleton_data_type,
+                                             phase='val',
+                                             verbose=verbose and not silent)
+            val_loader = DataLoader(dataset=valdata,
+                                    batch_size=self.val_batch_size,
+                                    shuffle=False,
+                                    num_workers=self.num_workers,
+                                    drop_last=False,
+                                    worker_init_fn=self.__init_seed(1))
         self.model.eval()
         self.__print_log('Eval epoch: {}'.format(epoch + 1))
         loss_value = []
@@ -316,11 +331,11 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         for batch_idx, (data, label, index) in enumerate(process):
             with torch.no_grad():
                 if self.device == "cuda":
-                    data = Variable(data.float().cuda(self.output_device), requires_grad=False)
-                    label = Variable(label.long().cuda(self.output_device), requires_grad=False)
+                    data = Variable(data.float().cuda(self.output_device), requires_grad=False, volatile=True)
+                    label = Variable(label.long().cuda(self.output_device), requires_grad=False, volatile=True)
                 else:
-                    data = Variable(data.float(), requires_grad=False)
-                    label = Variable(label.long(), requires_grad=False)
+                    data = Variable(data.float(), requires_grad=False, volatile=True)
+                    label = Variable(label.long(), requires_grad=False, volatile=True)
                 output = self.model(data)
                 if isinstance(output, tuple):
                     output, l1 = output
@@ -367,6 +382,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
     def __prepare_dataset(dataset, data_filename="train_joints.npy",
                           labels_filename="train_labels.pkl",
                           skeleton_data_type='joint',
+                          phase='train',
                           verbose=True):
         """
         This internal method prepares the train dataset depending on what type of dataset is provided.
@@ -394,14 +410,19 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
             # Get data and labels path
             data_path = os.path.join(dataset.path, data_filename)
             labels_path = os.path.join(dataset.path, labels_filename)
-            if dataset.dataset_type.lower() == "nturgbd":
+            if phase == 'train':
+                if dataset.dataset_type.lower() == "nturgbd":
+                    random_choose = False
+                    random_move = False
+                    window_size = -1
+                elif dataset.dataset_type.lower() == "kinetics":
+                    random_choose = True
+                    random_move = True
+                    window_size = 150
+            else:
                 random_choose = False
                 random_move = False
                 window_size = -1
-            elif dataset.dataset_type.lower() == "kinetics":
-                random_choose = True
-                random_move = True
-                window_size = 150
             if verbose:
                 print('Dataset path is set. Loading feeder...')
             return Feeder(data_path=data_path, label_path=labels_path, skeleton_data_type=skeleton_data_type,
@@ -460,11 +481,11 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                     self.load(checkpoints_folder, checkpoint_name)
 
                 train_results = self.fit(dataset, val_dataset, logging_path,
-                                          train_data_filename=train_data_filename,
-                                          train_labels_filename=train_labels_filename,
-                                          val_data_filename=val_data_filename,
-                                          val_labels_filename=val_labels_filename,
-                                          skeleton_data_type=skeleton_data_type)
+                                         train_data_filename=train_data_filename,
+                                         train_labels_filename=train_labels_filename,
+                                         val_data_filename=val_data_filename,
+                                         val_labels_filename=val_labels_filename,
+                                         skeleton_data_type=skeleton_data_type)
                 loss_block_new = train_results["train_loss"]
                 if block_iter > 0:
                     loss_b = -1 * (loss_block_new - loss_block_old) / loss_block_old
@@ -557,9 +578,9 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         """
         # Input to the model
         if self.dataset_name == 'nturgbd_cv' or self.dataset_name == 'nturgbd_cs':
-            c, t, v, m = [3, 150, 25, 2]
+            c, t, v, m = [3, 300, 25, 2]
         elif self.dataset_name == 'kinetics':
-            c, t, v, m = [3, 150, 18, 2]
+            c, t, v, m = [3, 300, 18, 2]
         else:
             raise ValueError(self.dataset_name + "is not a valid dataset name. Supported datasets: nturgbd_cv,"
                                                  " nturgbd_cs, kinetics")
@@ -748,6 +769,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                                          data_filename=data_filename,
                                          labels_filename=labels_filename,
                                          skeleton_data_type=skeleton_data_type,
+                                         phase='val',
                                          verbose=verbose and not silent)
         val_loader = DataLoader(dataset=valdata,
                                 batch_size=self.val_batch_size,

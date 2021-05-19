@@ -51,12 +51,13 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                                                batch_size=1, epochs=1,
                                                                checkpoint_after_iter=1, val_batch_size=1,
                                                                dataset_name='nturgbd_cv',
-                                                               experiment_name='tagcn_nturgbd',
+                                                               experiment_name='tagcn_nturgbd_cv_joint',
                                                                method_name='tagcn', num_frames=300, num_subframes=100)
-        cls.experiment_name = 'tagcn_nturgbd'
+        cls.experiment_name = 'tagcn_nturgbd_cv_joint'
         # Download all required files for testing
         cls.Pretrained_MODEL_PATH = cls.tagcn_action_classifier.download(
-            mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models"), file_name='tagcn_nturgbd-0-10')
+            mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models", "tagcn"), method_name="tagcn",
+            file_name='tagcn_nturgbd_cv_joint-49-29400')
         cls.Train_DATASET_PATH = cls.tagcn_action_classifier.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data"))
         cls.Val_DATASET_PATH = cls.tagcn_action_classifier.download(
@@ -87,29 +88,35 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
 
     def test_eval(self):
         model_saved_path = self.Pretrained_MODEL_PATH
-        model_name = 'tagcn_nturgbd-0-10'
+        model_name = 'tagcn_nturgbd_cv_joint-49-29400'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.tagcn_action_classifier.load(model_saved_path, model_name)
-        score = self.tagcn_action_classifier.eval(validation_dataset, verbose=False,
+        eval_results = self.tagcn_action_classifier.eval(validation_dataset, verbose=False,
                                                   val_data_filename='val_joints.npy',
                                                   val_labels_filename='val_labels.pkl',
                                                   skeleton_data_type='joint')
-        self.assertNotEqual(len(score), 0,
+        self.assertNotEqual(len(eval_results["score"]), 0,
                             msg="Eval results contains empty list.")
 
     def test_multi_stream_eval(self):
         model_saved_path = self.Pretrained_MODEL_PATH
-        model_name = 'tagcn_nturgbd-0-10'
+        model_name_joint = 'tagcn_nturgbd_cv_joint-49-29400'
+        model_name_bone = 'tagcn_nturgbd_cv_bone-49-29400'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
-        self.tagcn_action_classifier.load(model_saved_path, model_name)
-        score_joints = self.tagcn_action_classifier.eval(validation_dataset, verbose=False,
-                                                         val_data_filename='val_joints.npy',
-                                                         val_labels_filename='val_labels.pkl',
-                                                         skeleton_data_type='joint')
-        score_bones = self.tagcn_action_classifier.eval(validation_dataset, verbose=False,
-                                                        val_data_filename='val_joints.npy',
-                                                        val_labels_filename='val_labels.pkl',
-                                                        skeleton_data_type='bone')
+
+        self.tagcn_action_classifier.load(model_saved_path, model_name_joint)
+        eval_results_joint = self.tagcn_action_classifier.eval(validation_dataset, verbose=False,
+                                                               val_data_filename='val_joints.npy',
+                                                               val_labels_filename='val_labels.pkl',
+                                                               skeleton_data_type='joint')
+
+        self.tagcn_action_classifier.load(model_saved_path, model_name_bone)
+        eval_results_bone = self.tagcn_action_classifier.eval(validation_dataset, verbose=False,
+                                                              val_data_filename='val_joints.npy',
+                                                              val_labels_filename='val_labels.pkl',
+                                                              skeleton_data_type='bone')
+        score_joints = eval_results_joint["score"]
+        score_bones = eval_results_bone["score"]
         scores = [score_joints, score_bones]
         total_score = self.tagcn_action_classifier.multi_stream_eval(validation_dataset, scores,
                                                                      data_filename='val_joints.npy',
@@ -120,11 +127,11 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
     def test_infer(self):
         test_data = np.load(self.Test_DATASET_PATH)[0:1]
         model_saved_path = self.Pretrained_MODEL_PATH
-        model_name = 'tagcn_nturgbd-0-10'
+        model_name = 'tagcn_nturgbd_cv_joint-49-29400'
         self.tagcn_action_classifier.model = None
         self.tagcn_action_classifier.load(model_saved_path, model_name)
-        model_output = self.tagcn_action_classifier.infer(test_data)
-        self.assertIsNotNone(model_output, msg="The model output is None")
+        category = self.tagcn_action_classifier.infer(test_data)
+        self.assertIsNotNone(category.confidence, msg="The predicted confidence score is None")
 
     def test_save_load(self):
         self.tagcn_action_classifier.model = None
@@ -157,7 +164,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
 
     def test_optimize(self):
         model_saved_path = self.Pretrained_MODEL_PATH
-        model_name = 'tagcn_nturgbd-0-10'
+        model_name = 'tagcn_nturgbd_cv_joint-49-29400'
         self.tagcn_action_classifier.model = None
         self.tagcn_action_classifier.ort_session = None
         self.tagcn_action_classifier.load(model_saved_path, model_name)

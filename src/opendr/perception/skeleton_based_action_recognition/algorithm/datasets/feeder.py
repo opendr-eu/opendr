@@ -8,9 +8,6 @@ from torch.utils.data import Dataset
 import random
 from tqdm import tqdm
 
-from opendr.perception.skeleton_based_action_recognition.algorithm.graphs.nturgbd import NTUGraph
-from opendr.perception.skeleton_based_action_recognition.algorithm.graphs.kinetics import KineticsGraph
-
 
 def auto_pading(data_numpy, size, random_pad=False):
     C, T, V, M = data_numpy.shape
@@ -149,11 +146,12 @@ class Feeder(Dataset):
 
         # if we need bone or motion data instead of joints
         if self.data_name == 'nturgbd':
-            graph = NTUGraph()
-            joint_pairs = graph.in_edge
+            joint_pairs = ((0, 1), (1, 20), (2, 20), (3, 2), (4, 20), (5, 4), (6, 5), (7, 6), (8, 20), (9, 8),
+                           (10, 9), (11, 10), (12, 0), (13, 12), (14, 13), (15, 14), (16, 0), (17, 16), (18, 17),
+                           (19, 18), (21, 22), (20, 20), (22, 7), (23, 24), (24, 11))
         elif self.data_name == 'kinetics':
-            graph = KineticsGraph()
-            joint_pairs = graph.in_edge
+            joint_pairs = ((0, 0), (1, 0), (2, 1), (3, 2), (4, 3), (5, 1), (6, 5), (7, 6), (8, 2), (9, 8), (10, 9),
+                           (11, 5), (12, 11), (13, 12), (14, 0), (15, 0), (16, 14), (17, 15))
         N, C, T, V, M = self.data.shape
         if self.skeleton_data_type == 'bone':
             bones = np.zeros((N, C, T, V, M))
