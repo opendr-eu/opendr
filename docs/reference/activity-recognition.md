@@ -222,12 +222,6 @@ Parameters:
 [arXiv](https://arxiv.org/abs/2004.04730).  
 
 
-
-
-
-
-
-
 ### Class CoX3DLearner
 Bases: `engine.learners.Learner`
 
