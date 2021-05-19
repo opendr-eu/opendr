@@ -15,28 +15,29 @@
 import shutil
 import torch
 import unittest
+import numpy as np
 
-from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
+from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
 from opendr.perception.activity_recognition.datasets.kinetics import KineticsDataset
-from opendr.engine.data import Video
+from opendr.engine.data import Image
 from pathlib import Path
 from logging import getLogger
 
 logger = getLogger(__name__)
 
-_BACKBONE = "xs"
+_BACKBONE = "s"
 
 
-class TestX3DLearner(unittest.TestCase):
+class TestCoX3DLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        print("\n\n**********************************\nTEST Activity Recognition X3D Learner\n"
+        print("\n\n**********************************\nTEST Continual Activity Recognition CoX3D Learner\n"
               "**********************************")
-        cls.temp_dir = Path("./tests/sources/tools/perception/activity_recognition/x3d/temp")
+        cls.temp_dir = Path("./tests/sources/tools/perception/activity_recognition/cox3d/temp")
 
         # Download model weights
-        X3DLearner.download(path=Path(cls.temp_dir) / "weights", model_names={_BACKBONE})
-        cls.learner = X3DLearner(
+        CoX3DLearner.download(path=Path(cls.temp_dir) / "weights", model_names={_BACKBONE})
+        cls.learner = CoX3DLearner(
             device="cpu", temp_path=str(cls.temp_dir), iters=1, batch_size=2, backbone=_BACKBONE, num_workers=0,
         )
 
@@ -52,7 +53,7 @@ class TestX3DLearner(unittest.TestCase):
             logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
 
     def test_downloaded(self):
-        assert Path(self.temp_dir) / "weights" / f"x3d_{_BACKBONE}.pyth"
+        assert Path(self.temp_dir) / "weights" / "x3d_s.pyth"
 
     def test_save_and_load(self):
         assert self.learner.model is not None
@@ -84,54 +85,35 @@ class TestX3DLearner(unittest.TestCase):
         assert not torch.equal(m, list(self.learner.model.parameters())[0])
 
     def test_eval(self):
-        test_ds = KineticsDataset(path=self.dataset_path, frames_per_clip=4, split="test")
+        test_ds = KineticsDataset(path=self.dataset_path, frames_per_clip=40, split="test")
 
         self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
         results = self.learner.eval(test_ds, steps=2)
 
-        assert results["accuracy"] > 0.2  # Most likely ≈ 60%
-        assert results["loss"] < 20  # Most likely ≈ 6.0
+        assert results["accuracy"] > 0.2
+        assert results["loss"] < 20
 
     def test_infer(self):
         ds = KineticsDataset(path=self.dataset_path, frames_per_clip=4, split="test")
         dl = torch.utils.data.DataLoader(ds, batch_size=2, num_workers=0)
         batch = next(iter(dl))[0]
+        batch = batch[:, :, 0]  # Select a single frame
 
         self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
+        self.learner.model.clean_model_state()
 
         # Input is Tensor
         results1 = self.learner.infer(batch)
         # Results is a batch with each item summing to 1.0
-        assert all([torch.sum(r.confidence) == 1.0 for r in results1])
+        assert all([torch.isclose(torch.sum(r.confidence), torch.tensor(1.0)) for r in results1])
 
-        # Input is Video
-        results2 = self.learner.infer(Video(batch[0]))
-        assert results1[0].data == results2[0].data
+        # Input is Image
+        results2 = self.learner.infer(Image(batch[0], dtype=np.float))
         assert torch.allclose(results1[0].confidence, results2[0].confidence)
 
-        # Input is List[Video]
-        results3 = self.learner.infer([Video(v) for v in batch])
-        assert all([
-            r1.data == r3.data and torch.allclose(r1.confidence, r3.confidence)
-            for (r1, r3) in zip(results1, results3)
-        ])
-
-    # Redundant test: Same code is executed internally in `test_optimize`
-    # def test_save_load_onnx(self):
-    #     self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
-    #     path = self.temp_dir / f"x3d_{_BACKBONE}.pyth"
-    #     # Save
-    #     if path.exists():
-    #         path.unlink()
-    #     assert not path.exists()
-    #     self.learner._save_onnx(path)
-    #     assert path.exists()
-    #     # Load
-    #     assert getattr(self.learner, "ort_session", None) == None
-    #     self.learner._load_onnx(path)
-    #     assert getattr(self.learner, "ort_session", None) != None
-    #     # Clean up
-    #     self.learner.ort_session = None
+        # Input is List[Image]
+        results3 = self.learner.infer([Image(v, dtype=np.float) for v in batch])
+        assert all([torch.allclose(r1.confidence, r3.confidence) for (r1, r3) in zip(results1, results3)])
 
     def test_optimize(self):
         self.learner.ort_session = None
