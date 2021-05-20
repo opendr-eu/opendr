@@ -56,11 +56,14 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                        dataset_name='nturgbd_cv', experiment_name='pstgcn_nturgbd_cv_joint',
                                        blocksize=20, numblocks=1, numlayers=1, topology=[],
                                        layer_threshold=1e-4, block_threshold=1e-4)
-        cls.experiment_name = 'pstgcn_nturgbd_cv_joint'
+        cls.experiment_name = 'pstgcn_nturgbd_cv'
         # Download all required files for testing
-        cls.Pretrained_MODEL_PATH = cls.pstgcn_action_classifier.download(
+        cls.Pretrained_MODEL_PATH_J = cls.pstgcn_action_classifier.download(
             path=os.path.join(cls.temp_dir, "pretrained_models", "pstgcn"), method_name="pstgcn", mode="pretrained",
             file_name='pstgcn_nturgbd_cv_joint-8-4')
+        cls.Pretrained_MODEL_PATH_B = cls.pstgcn_action_classifier.download(
+            path=os.path.join(cls.temp_dir, "pretrained_models", "pstgcn"), method_name="pstgcn", mode="pretrained",
+            file_name='pstgcn_nturgbd_cv_bone-8-4')
         cls.Train_DATASET_PATH = cls.pstgcn_action_classifier.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data"))
         cls.Val_DATASET_PATH = cls.pstgcn_action_classifier.download(
@@ -105,7 +108,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                          msg="Model parameters did not change after running fit.")
 
     def test_eval(self):
-        model_saved_path = self.Pretrained_MODEL_PATH
+        model_saved_path = self.Pretrained_MODEL_PATH_J
         self.pstgcn_action_classifier.topology = [5, 4, 5, 2, 3, 4, 3, 4]
         model_name = 'pstgcn_nturgbd_cv_joint-8-4'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
@@ -118,7 +121,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
 
     def test_infer(self):
         test_data = np.load(self.Test_DATASET_PATH)[0:1]
-        model_saved_path = self.Pretrained_MODEL_PATH
+        model_saved_path = self.Pretrained_MODEL_PATH_J
         model_name = 'pstgcn_nturgbd_cv_joint-8-4'
         self.pstgcn_action_classifier.topology = [5, 4, 5, 2, 3, 4, 3, 4]
         self.pstgcn_action_classifier.load(model_saved_path, model_name)
@@ -141,18 +144,19 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
 
     def test_multi_stream_eval(self):
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
-        model_saved_path = self.Pretrained_MODEL_PATH
+        model_saved_path_joint = self.Pretrained_MODEL_PATH_J
+        model_saved_path_bone = self.Pretrained_MODEL_PATH_B
         self.pstgcn_action_classifier.topology = [5, 4, 5, 2, 3, 4, 3, 4]
         model_name_joint = 'pstgcn_nturgbd_cv_joint-8-4'
         model_name_bone = 'pstgcn_nturgbd_cv_bone-8-4'
 
-        self.pstgcn_action_classifier.load(model_saved_path, model_name_joint)
+        self.pstgcn_action_classifier.load(model_saved_path_joint, model_name_joint)
         eval_results_joint = self.pstgcn_action_classifier.eval(validation_dataset, verbose=False,
                                                                 val_data_filename='val_joints.npy',
                                                                 val_labels_filename='val_labels.pkl',
                                                                 skeleton_data_type='joint')
 
-        self.pstgcn_action_classifier.load(model_saved_path, model_name_bone)
+        self.pstgcn_action_classifier.load(model_saved_path_bone, model_name_bone)
         eval_results_bone = self.pstgcn_action_classifier.eval(validation_dataset, verbose=False,
                                                                val_data_filename='val_joints.npy',
                                                                val_labels_filename='val_labels.pkl',
@@ -167,7 +171,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertNotEqual(len(total_score), 0, msg="results of multi-stream-eval contains empty list.")
 
     def test_optimize(self):
-        model_saved_path = self.Pretrained_MODEL_PATH
+        model_saved_path = self.Pretrained_MODEL_PATH_J
         model_name = 'pstgcn_nturgbd_cv_joint-8-4'
         self.pstgcn_action_classifier.topology = [5, 4, 5, 2, 3, 4, 3, 4]
         self.pstgcn_action_classifier.ort_session = None

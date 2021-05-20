@@ -651,7 +651,7 @@ class SpatioTemporalGCNLearner(Learner):
         :type verbose: bool, optional
         """
         if path is not None:
-            self.__print_log('Load weights from {}.'.format(path))
+            self.__print_log('Load weights from {}'.format(path))
             try:
                 weights = torch.load(path)
             except FileNotFoundError as e:

@@ -505,6 +505,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                     break
             loss_layer_old = loss_layer_new
         np.save(os.path.join(self.parent_dir, 'Topology.npy'), self.topology)
+        return self.topology
 
     def infer(self, skeletonseq_batch):
         """

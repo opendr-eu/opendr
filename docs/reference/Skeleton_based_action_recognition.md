@@ -26,7 +26,7 @@ https://github.com/open-mmlab/mmskeleton/tree/b4c076baa9e02e69b5876c49fa7c509866
 It can be used to perform the baseline method ST-GCN and the proposed methods TA-GCN [[2]](#2) and ST-BLN [[3]](#3) for skeleton-based action recognition. 
 The TA-GCN and ST-BLN methods are proposed on top of ST-GCN and make it more efficient in terms of number of model parameters and floating point operations. 
 
-The [SpatioTemporalGCNLearner](#src.perception.skeleton_based_action_recognition.stgcn_learner.py) class has the
+The [SpatioTemporalGCNLearner](#src.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner.py) class has the
 following public methods:
 
 #### `SpatioTemporalGCNLearner` constructor
@@ -297,7 +297,7 @@ Parameters:
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
+  from OpenDR.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
   from OpenDR.engine.datasets import ExternalDataset
   
   training_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
@@ -358,7 +358,7 @@ Parameters:
 
 * **Inference on a test skeleton sequence**
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
+  from OpenDR.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
   import numpy
   stgcn_learner = SpatioTemporalGCNLearner(temp_path='./parent_dir',
                                             batch_size=64, epochs=50,
@@ -380,7 +380,7 @@ Parameters:
 * **Optimization example for a previously trained model.**
   Inference can be run with the trained model after running self.optimize.
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.stgcn_learner import SpatioTemporalGCNLearner
+  from OpenDR.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
 
 
   stgcn_learner = SpatioTemporalGCNLearner(temp_path='./parent_dir',
@@ -405,7 +405,7 @@ Bases: `engine.learners.Learner`
 The *ProgressiveSpatioTemporalGCNLearner* class is an implementation of the proposed method PST-GCN [[4]](#4) for Skeleton-based Human 
 Action Recognition.
 It finds an optimized and data dependant spatio-temporal graph convolutional network topology for skeleton-based action recognition. 
-The [ProgressiveSpatioTemporalGCNLearner](#src.perception.skeleton_based_action_recognition.pstgcn_learner.py) class has the
+The [ProgressiveSpatioTemporalGCNLearner](#src.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner.py) class has the
 following public methods:
 
 
@@ -718,7 +718,7 @@ Parameters:
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.pstgcn_learner import ProgressiveSpatioTemporalGCNLearner
+  from OpenDR.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import ProgressiveSpatioTemporalGCNLearner
   from OpenDR.engine.datasets import ExternalDataset
   training_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
   validation_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
@@ -743,7 +743,7 @@ Parameters:
 * **Inference on a test skeleton sequence**
   ```python
   import numpy
-  from OpenDR.perception.skeleton_based_action_recognition.pstgcn_learner import ProgressiveSpatioTemporalGCNLearner
+  from OpenDR.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import ProgressiveSpatioTemporalGCNLearner
   pstgcn_learner = ProgressiveSpatioTemporalGCNLearner(temp_path='./parent_dir',
                                                        batch_size=64, epochs=65,
                                                        checkpoint_after_iter=10, val_batch_size=128,
@@ -765,7 +765,7 @@ Parameters:
 * **Optimization example for a previously trained model.**
   Inference can be run with the trained model after running self.optimize.
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.pstgcn_learner import ProgressiveSpatioTemporalGCNLearner
+  from OpenDR.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import ProgressiveSpatioTemporalGCNLearner
 
   pstgcn_learner = ProgressiveSpatioTemporalGCNLearner(temp_path='./parent_dir',
                                                       batch_size=64, epochs=65,

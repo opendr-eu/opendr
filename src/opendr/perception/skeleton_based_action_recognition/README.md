@@ -2,8 +2,8 @@
 Python implementation of baseline method, ST-GCN [[1]](#1), and the proposed methods 
 TA-GCN [[2]](#2), ST-BLN [[3]](#3) and PST-GCN [[4]](#4) for Skeleton-based Human 
 Action Recognition. 
-The ST-GCN, TA-GCN and ST-BLN methods can be run and evaluated using stgcn_learner by specifying the model name. 
-The PST-GCN method can be run and evaluated using pstgcn_learner. 
+The ST-GCN, TA-GCN and ST-BLN methods can be run and evaluated using spatio_temporal_gcn_learner by specifying the model name. 
+The PST-GCN method can be run and evaluated using progressive_spatio_temporal_gcn_learner. 
 
 This implementation is adapted from the [OpenMMLAB toolbox](
 https://github.com/open-mmlab/mmskeleton/tree/b4c076baa9e02e69b5876c49fa7c509866d902c7).

@@ -54,11 +54,14 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                                                dataset_name='nturgbd_cv',
                                                                experiment_name='stbln_nturgbd_cv_joint',
                                                                method_name='stbln', stbln_symmetric=False)
-        cls.experiment_name = 'stbln_nturgbd_cv_joint'
+        cls.experiment_name = 'stbln_nturgbd_cv'
         # Download all required files for testing
-        cls.Pretrained_MODEL_PATH = cls.stbln_action_classifier.download(
+        cls.Pretrained_MODEL_PATH_J = cls.stbln_action_classifier.download(
             path=os.path.join(cls.temp_dir, "pretrained_models", "stbln"), method_name="stbln", mode="pretrained",
             file_name='stbln_nturgbd_cv_joint-49-29400')
+        cls.Pretrained_MODEL_PATH_B = cls.stbln_action_classifier.download(
+            path=os.path.join(cls.temp_dir, "pretrained_models", "stbln"), method_name="stbln", mode="pretrained",
+            file_name='stbln_nturgbd_cv_bone-49-29400')
         cls.Train_DATASET_PATH = cls.stbln_action_classifier.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data"))
         cls.Val_DATASET_PATH = cls.stbln_action_classifier.download(
@@ -88,7 +91,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                          msg="Model parameters did not change after running fit.")
 
     def test_eval(self):
-        model_saved_path = self.Pretrained_MODEL_PATH
+        model_saved_path = self.Pretrained_MODEL_PATH_J
         model_name = 'stbln_nturgbd_cv_joint-49-29400'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.stbln_action_classifier.load(model_saved_path, model_name)
@@ -99,18 +102,19 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertNotEqual(len(eval_results["score"]), 0, msg="Eval results contains empty list.")
 
     def test_multi_stream_eval(self):
-        model_saved_path = self.Pretrained_MODEL_PATH
+        model_saved_path_joint = self.Pretrained_MODEL_PATH_J
+        model_saved_path_bone = self.Pretrained_MODEL_PATH_B
         model_name_joint = 'stbln_nturgbd_cv_joint-49-29400'
         model_name_bone = 'stbln_nturgbd_cv_bone-49-29400'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
 
-        self.stbln_action_classifier.load(model_saved_path, model_name_joint)
+        self.stbln_action_classifier.load(model_saved_path_joint, model_name_joint)
         eval_results_joint = self.stbln_action_classifier.eval(validation_dataset, verbose=False,
                                                                val_data_filename='val_joints.npy',
                                                                val_labels_filename='val_labels.pkl',
                                                                skeleton_data_type='joint')
 
-        self.stbln_action_classifier.load(model_saved_path, model_name_bone)
+        self.stbln_action_classifier.load(model_saved_path_bone, model_name_bone)
         eval_results_bone = self.stbln_action_classifier.eval(validation_dataset, verbose=False,
                                                               val_data_filename='val_joints.npy',
                                                               val_labels_filename='val_labels.pkl',
@@ -126,7 +130,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
 
     def test_infer(self):
         test_data = np.load(self.Test_DATASET_PATH)[0:1]
-        model_saved_path = self.Pretrained_MODEL_PATH
+        model_saved_path = self.Pretrained_MODEL_PATH_J
         model_name = 'stbln_nturgbd_cv_joint-49-29400'
         self.stbln_action_classifier.model = None
         self.stbln_action_classifier.load(model_saved_path, model_name)
@@ -163,7 +167,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.stbln_action_classifier.ort_session = None
 
     def test_optimize(self):
-        model_saved_path = self.Pretrained_MODEL_PATH
+        model_saved_path = self.Pretrained_MODEL_PATH_J
         model_name = 'stbln_nturgbd_cv_joint-49-29400'
         self.stbln_action_classifier.model = None
         self.stbln_action_classifier.ort_session = None
