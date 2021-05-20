@@ -58,8 +58,8 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                        layer_threshold=1e-4, block_threshold=1e-4)
         cls.experiment_name = 'pstgcn_nturgbd_cv_joint'
         # Download all required files for testing
-        cls.Pretrained_MODEL_PATH = cls.pstgcn_action_classifier.download(method_name="pstgcn",
-            mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models", "pstgcn"),
+        cls.Pretrained_MODEL_PATH = cls.pstgcn_action_classifier.download(
+            path=os.path.join(cls.temp_dir, "pretrained_models", "pstgcn"), method_name="pstgcn", mode="pretrained",
             file_name='pstgcn_nturgbd_cv_joint-8-4')
         cls.Train_DATASET_PATH = cls.pstgcn_action_classifier.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data"))
