@@ -791,9 +791,9 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                 pickle.dump(total_score, f)
         return total_score
 
-    def download(self, path=None, mode="pretrained", verbose=False,
+    def download(self, path=None, method_name="pstgcn", mode="pretrained", verbose=False,
                  url=OPENDR_SERVER_URL + "perception/skeleton_based_action_recognition/",
-                 file_name='pstgcn_nturgbd-1-1'):
+                 file_name='pstgcn_nturgbd_cv_joint-8-4'):
         """
         Download utility for various skeleton_based_action_recognition components. Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
@@ -822,8 +822,8 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
             os.makedirs(path)
         if not os.path.exists(os.path.join(path, self.dataset_name)):
             os.makedirs(os.path.join(path, self.dataset_name))
-        if not os.path.exists(os.path.join(path, '{}_checkpoints'.format(self.experiment_name))):
-            os.makedirs(os.path.join(path, '{}_checkpoints'.format(self.experiment_name)))
+        if not os.path.exists(os.path.join(path, '{}_checkpoints'.format(self.experiment_name), file_name)):
+            os.makedirs(os.path.join(path, '{}_checkpoints'.format(self.experiment_name), file_name))
 
         if mode == "pretrained":
             if verbose:
@@ -831,8 +831,8 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
             # download the .json model
             if not os.path.exists(os.path.join(path, '{}_checkpoints'.format(self.experiment_name),
                                                file_name + '.json')):
-                file_url = os.path.join(url, 'pretrained_models', file_name, file_name + '.json')
-                urlretrieve(file_url, os.path.join(path, '{}_checkpoints'.format(self.experiment_name),
+                file_url = os.path.join(url, 'pretrained_models', method_name, file_name, file_name + '.json')
+                urlretrieve(file_url, os.path.join(path, '{}_checkpoints'.format(self.experiment_name), file_name,
                                                    file_name + '.json'))
                 if verbose:
                     print("Downloaded metadata json.")
@@ -842,15 +842,15 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
             # download the .pt model
             if not os.path.exists(os.path.join(path, '{}_checkpoints'.format(self.experiment_name),
                                                file_name + '.pt')):
-                file_url = os.path.join(url, 'pretrained_models', file_name, file_name + '.pt')
-                urlretrieve(file_url, os.path.join(path, '{}_checkpoints'.format(self.experiment_name),
+                file_url = os.path.join(url, 'pretrained_models', method_name, file_name, file_name + '.pt')
+                urlretrieve(file_url, os.path.join(path, '{}_checkpoints'.format(self.experiment_name), file_name,
                                                    file_name + '.pt'))
             else:
                 if verbose:
                     print("Trained model.pt file already exists.")
             if verbose:
                 print("Pretrained model download complete.")
-            downloaded_files_path = os.path.join(path, '{}_checkpoints'.format(self.experiment_name))
+            downloaded_files_path = os.path.join(path, '{}_checkpoints'.format(self.experiment_name), file_name)
 
         elif mode == "train_data":
             if verbose:

@@ -57,7 +57,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         cls.experiment_name = 'stgcn_nturgbd_cv_joint'
         # Download all required files for testing
         cls.Pretrained_MODEL_PATH = cls.stgcn_action_classifier.download(
-            mode="pretrained", path=os.path.join(cls.temp_dir, "pretrained_models", 'stgcn'), method_name="stgcn",
+            path=os.path.join(cls.temp_dir, "pretrained_models", 'stgcn'), method_name="stgcn", mode="pretrained",
             file_name='stgcn_nturgbd_cv_joint-49-29400')
         cls.Train_DATASET_PATH = cls.stgcn_action_classifier.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data"))
