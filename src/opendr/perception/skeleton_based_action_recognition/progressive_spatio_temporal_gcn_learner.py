@@ -376,7 +376,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         if save_score and self.logging:
             with open('{}/epoch{}_{}_score.pkl'.format(self.logging_path, epoch + 1, 'val'), 'wb') as f:
                 pickle.dump(score_dict, f)
-        return {"epoch": epoch, "accuracy": accuracy, "loss": loss}
+        return {"epoch": epoch, "accuracy": accuracy, "loss": loss, "score": score}
 
     @staticmethod
     def __prepare_dataset(dataset, data_filename="train_joints.npy",
@@ -564,10 +564,10 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         except FileNotFoundError:
             # Create temp directory
             os.makedirs(os.path.join(self.parent_dir, self.experiment_name), exist_ok=True)
-            self.__convert_to_onnx(os.path.join(self.parent_dir, "onnx_model_temp.onnx"),
+            self.__convert_to_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"),
                                    do_constant_folding)
 
-        self.__load_from_onnx(os.path.join(self.parent_dir, "onnx_model_temp.onnx"))
+        self.__load_from_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"))
 
     def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=False):
         """
@@ -645,7 +645,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             # Copy already optimized model from temp path
-            shutil.copy2(os.path.join(self.parent_dir, "onnx_model_temp.onnx"),
+            shutil.copy2(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"),
                          model_metadata["model_paths"][0])
             model_metadata["optimized"] = True
             if verbose:

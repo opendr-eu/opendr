@@ -54,7 +54,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                        batch_size=1, epochs=1,
                                        checkpoint_after_iter=1, val_batch_size=1,
                                        dataset_name='nturgbd_cv', experiment_name='pstgcn_nturgbd_cv_joint',
-                                       blocksize=20, numblocks=1, numlayers=1, topology=[],
+                                       blocksize=20, numblocks=20, numlayers=20, topology=[],
                                        layer_threshold=1e-4, block_threshold=1e-4)
         cls.experiment_name = 'pstgcn_nturgbd_cv'
         # Download all required files for testing
@@ -122,6 +122,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
     def test_infer(self):
         test_data = np.load(self.Test_DATASET_PATH)[0:1]
         model_saved_path = self.Pretrained_MODEL_PATH_J
+        self.pstgcn_action_classifier.model = None
         model_name = 'pstgcn_nturgbd_cv_joint-8-4'
         self.pstgcn_action_classifier.topology = [5, 4, 5, 2, 3, 4, 3, 4]
         self.pstgcn_action_classifier.load(model_saved_path, model_name)
@@ -146,16 +147,18 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         model_saved_path_joint = self.Pretrained_MODEL_PATH_J
         model_saved_path_bone = self.Pretrained_MODEL_PATH_B
-        self.pstgcn_action_classifier.topology = [5, 4, 5, 2, 3, 4, 3, 4]
         model_name_joint = 'pstgcn_nturgbd_cv_joint-8-4'
         model_name_bone = 'pstgcn_nturgbd_cv_bone-8-4'
 
+        self.pstgcn_action_classifier.model = None
+        self.pstgcn_action_classifier.topology = [5, 4, 5, 2, 3, 4, 3, 4]
         self.pstgcn_action_classifier.load(model_saved_path_joint, model_name_joint)
         eval_results_joint = self.pstgcn_action_classifier.eval(validation_dataset, verbose=False,
                                                                 val_data_filename='val_joints.npy',
                                                                 val_labels_filename='val_labels.pkl',
                                                                 skeleton_data_type='joint')
-
+        self.pstgcn_action_classifier.model = None
+        self.pstgcn_action_classifier.topology = [5, 4, 5, 2, 3, 4, 3, 4]
         self.pstgcn_action_classifier.load(model_saved_path_bone, model_name_bone)
         eval_results_bone = self.pstgcn_action_classifier.eval(validation_dataset, verbose=False,
                                                                val_data_filename='val_joints.npy',
