@@ -348,10 +348,11 @@ class GatedRecurrentUnitLearner(Learner):
         self.model.to(torch.device(self.device))
         self.model.eval()
         series = np.expand_dims(series, 0)
-        series = torch.tensor(series, device=torch.device(self.device)).float()
-        prob_prediction = torch.nn.functional.softmax(self.model(series).flatten(), dim=0)
-        class_prediction = prob_prediction.argmax().cpu().item()
-        prediction = Category(class_prediction, confidence=prob_prediction[class_prediction].cpu().item())
+        with torch.no_grad():
+            series = torch.tensor(series, device=torch.device(self.device)).float()
+            prob_prediction = torch.nn.functional.softmax(self.model(series).flatten(), dim=0)
+            class_prediction = prob_prediction.argmax().cpu().item()
+            prediction = Category(class_prediction, confidence=prob_prediction[class_prediction].cpu().item())
         return prediction
 
     def save(self, path, verbose=True):
@@ -377,7 +378,7 @@ class GatedRecurrentUnitLearner(Learner):
                     'in_channels': self.in_channels,
                     'series_length': self.series_length,
                     'recurrent_unit': self.recurrent_unit,
-                    'model_paths': model_weight_file,
+                    'model_paths': ['model_weights.pt'],
                     'has_data': False,
                     'inference_params': {},
                     'optimized': False,
@@ -423,17 +424,17 @@ class GatedRecurrentUnitLearner(Learner):
             raise ValueError('Given path "{}" is not a directory'.format(path))
 
         metadata_file = os.path.join(path, 'metadata.json')
-        model_weight_file = os.path.join(path, 'model_weights.pt')
-
         assert os.path.exists(metadata_file),\
             'Metadata file ("metadata.json") does not exist under the given path "{}"'.format(path)
-
-        assert os.path.exists(model_weight_file),\
-            'Model weights ("model_weights.pt") does not exist under the given path "{}"'.format(path)
 
         fid = open(metadata_file, 'r')
         metadata = json.load(fid)
         fid.close()
+
+        model_weight_file = os.path.join(path, metadata['model_paths'][0])
+
+        assert os.path.exists(model_weight_file),\
+            'Model weights ("model_weights.pt") does not exist under the given path "{}"'.format(path)
 
         assert metadata['in_channels'] == self.in_channels,\
             'Parameter `in_channels` provided during initialization does not match ' +\

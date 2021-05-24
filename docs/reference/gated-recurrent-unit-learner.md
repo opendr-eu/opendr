@@ -1,11 +1,12 @@
 ## gated_recurrent_unit module
 
-The *gated_recurrent_unit* module contains the *GatedRecurrentUnitLearner* class, which inherits from the abstract class *Learner*. In addition, the module also contains the convenient function to download and construct the AF dataset [[2]](#af), which is an ECG dataset for heart anomaly detection. 
+The *gated_recurrent_unit* module contains the *GatedRecurrentUnitLearner* class, which inherits from the abstract class *Learner*.  
+In addition, the module also contains the convenient function to download and construct the AF dataset [[2]](#af), which is an ECG dataset for heart anomaly detection. 
 
 ### Class GatedRecurrentUnitLearner 
 Bases: `engine.learners.Learner`
 
-The *GatedRecurrentUnitLearner* class provides the implementation of the Gated Recurrent Unit network for heart anomaly detection [[1]](#gru).
+The *GatedRecurrentUnitLearner* class provides the implementation of the Gated Recurrent Unit network for heart anomaly detection [[1]](#gru).  
 It can also be used to train a time-series classifier.  
 
 The [GatedRecurrentUnitLearner](#src.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurrent_unit_learner.py) class has the following public methods:
@@ -26,7 +27,7 @@ GatedRecurrentUnitLearner(self, in_channels, series_length, n_class, recurrent_u
 - **recurrent_unit**: *int, default=512*  
   Specifies the number of units in the recurrent layer.  
 - **lr_scheduler**: *callable,  default=`opendr.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurrent_unit_learner.get_cosine_lr_scheduler(2e-4, 1e-5)`*   
-  Specifies the function that computes the learning rate, given the total number of epoch `n_epoch` and the current epoch index `epoch_idx`.   
+  Specifies the function that computes the learning rate, given the total number of epochs `n_epoch` and the current epoch index `epoch_idx`.   
   That is, the optimizer uses this function to determine the learning rate at a given epoch index.  
   Calling `lr_scheduler(n_epoch, epoch_idx)` should return the corresponding learning rate that should be used for the given epoch index.  
   The default `lr_scheduler` implements a schedule that gradually reduces the learning rate from the initial learning rate (`2e-4`) to the final learning rate (`1e-5`) using cosine function.  
@@ -43,7 +44,7 @@ GatedRecurrentUnitLearner(self, in_channels, series_length, n_class, recurrent_u
 - **iters**: *int, default=200*  
   Specifies the number of epochs used to train the model.  
 - **batch_size**: *int, default=32*  
-  Specifies the size of minit-batches.  
+  Specifies the size of mini-batches.  
 - **checkpoint_after_iter**: *int, default=1*  
   Specifies the frequency to save checkpoints.  
   The default behavior saves checkpoint after every epoch.  
@@ -67,10 +68,14 @@ GatedRecurrentUnitLearner(self, in_channels, series_length, n_class, recurrent_u
 GatedRecurrentUnitLearner.fit(self, train_set, val_set, test_set, class_weight, logging_path, silent, verbose)
 ```
 
-This method is used for training the model using the provided train set. If validation set is provided, it is used to validate the best model weights during the optimization process. That is, the final model weight is the one that produces the best validation F1 during optimization. If validation set is not provided, the final model weight is the one that produces the best training F1 during optimization.   
+This method is used for training the model using the provided train set.  
+If validation set is provided, it is used to validate the best model weights during the optimization process.  
+That is, the final model weight is the one that produces the best validation F1 during optimization.  
+If validation set is not provided, the final model weight is the one that produces the best training F1 during optimization.   
 
-Returns a dictionary containing a list of accuracy, precision, recall, f1 measures (dict keys: `"train_cross_entropy"`, `"train_acc"`, `"train_precision"`, `"train_recall"`, `"train_f1"`, `"val_cross_entropy"`, `"val_acc"`, `"val_precision"`, `"val_recall"`, `"val_f1"`, `"test_cross_entropy"`, `"test_acc"`, `"test_precision"`, `"test_recall"`, `"test_f1"`) during the entire optimization process.  
-Note that the last value in the provided lists do not necessarily correspond to the final model performance due to the model selection policy mentioned above. To get the final performance on a dataset, please use the `eval` method of `GatedRecurrentUnitLearner`.   
+Returns a dictionary containing a list of accuracy, precision, recall, f1 measures (dict keys: `"train_cross_entropy"`, `"train_acc"`, `"train_precision"`, `"train_recall"`, `"train_f1"`, `"val_cross_entropy"`, `"val_acc"`, `"val_precision"`, `"val_recall"`, `"val_f1"`, `"test_cross_entropy"`, `"test_acc"`, `"test_precision"`, `"test_recall"`, `"test_f1"`) during the entire optimization process.   
+Note that the last value in the provided lists do not necessarily correspond to the final model performance due to the model selection policy mentioned above.  
+To get the final performance on a dataset, please use the `eval` method of `GatedRecurrentUnitLearner`.   
  
 **Parameters**: 
  
@@ -110,7 +115,7 @@ GatedRecurrentUnitLearner.eval(self, dataset, silent, verbose)
 ```
 
 This method is used to evaluate the current model given the dataset.   
-Returns a dictionary containing `"cross_entropy"`, `"acc"`, `"precision"`, `"recall"` and `"f1"` as keys. 
+Returns a dictionary containing `"cross_entropy"`, `"acc"`, `"precision"`, `"recall"` and `"f1"` as keys.  
  
 **Parameters**:
 
@@ -133,18 +138,18 @@ Returns a dictionary containing `"cross_entropy"`, `"acc"`, `"precision"`, `"rec
 GatedRecurrentUnitLearner.infer(series)   
 ```
 
-This method is used to generate the class prediction given an input series. 
-Returns an instance of `engine.target.Category` representing the prediction. 
+This method is used to generate the class prediction given an input series.   
+Returns an instance of `engine.target.Category` representing the prediction.   
 
 **Parameters**:
 
 - **series**: *engine.data.Timeseries*   
-  Object of type `engine.data.Timeseries` that holds the input data. 
+  Object of type `engine.data.Timeseries` that holds the input data.   
  
 **Returns**:
 
 - **prediction**: *engine.target.Category*  
-  Object of type `engine.target.Category` that contains the prediction. 
+  Object of type `engine.target.Category` that contains the prediction.   
 
 
 #### `GatedRecurrentUnitLearner.save`
@@ -152,10 +157,10 @@ Returns an instance of `engine.target.Category` representing the prediction.
 GatedRecurrentUnitLearner.save(path, verbose)
 ```
 
-This method is used to save the current model instance under a given path. 
-The saved model can be loaded later by calling `GatedRecurrentUnitLearner.load(path)`. 
-Two files are saved under the given directory path, namely `metadata.json` and `model_weights.pt`. 
-The former keeps the metadata and the latter keeps the model weights. 
+This method is used to save the current model instance under a given path.  
+The saved model can be loaded later by calling `GatedRecurrentUnitLearner.load(path)`.  
+Two files are saved under the given directory path, namely `metadata.json` and `model_weights.pt`.  
+The former keeps the metadata and the latter keeps the model weights.  
 
 **Parameters**:
 
@@ -184,7 +189,9 @@ Note that under the given directory path, `metadata.json` and `model_weights.pt`
 GatedRecurrentUnitLearner.download(path, fold_idx)
 ```
 
-This method is used to download pretrained models for the AF dataset given different cross validation fold index. Pretrained models are available for `series_length=30` and `n_class=4` and `recurrent_unit in [256, 512]`. The input series must be a univariate series, i.e., `in_channels=1`.   
+This method is used to download pretrained models for the AF dataset given different cross validation fold index.  
+Pretrained models are available for `series_length=30` and `n_class=4` and `recurrent_unit in [256, 512]`.  
+The input series must be a univariate series, i.e., `in_channels=1`.   
 
 **Parameters**:
 
@@ -193,9 +200,9 @@ This method is used to download pretrained models for the AF dataset given diffe
   Note that under this path, `metadata.json` and `model_weights.pt` will be downloaded.  
   Thus, to download different models, different paths should be given to avoid overwriting previously downloaded model.  
   In addition, the downloaded pretrained model weights can be loaded by calling `GatedRecurrentUnitLearner.load(path)` afterward.  
-- **fold_idx**: *{0, 1, 2, 3, 4}* 
+- **fold_idx**: *{0, 1, 2, 3, 4}*   
   The index of the cross validation fold.  
-  The AF dataset was divided into 5 folds and we provide the pretrained models for 5 different cross-validation folds. 
+  The AF dataset was divided into 5 folds and we provide the pretrained models for 5 different cross-validation folds.  
 
 
 #### `gated_recurrent_unit.gated_recurrent_unit_learner.get_AF_dataset`
@@ -203,7 +210,7 @@ This method is used to download pretrained models for the AF dataset given diffe
 opendr.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurrent_unit_learner.get_AF_dataset(data_file, fold_idx, sample_length, standardize)
 ```
 
-This method is used to download the pre-processed AF dataset [[2]](#af)   
+This method is used to download the pre-processed AF dataset [[2]](#af).   
 
 **Parameters**: 
 
@@ -211,11 +218,12 @@ This method is used to download the pre-processed AF dataset [[2]](#af)
   Path to the data file.  
   If the given data file does not exist, it will be downloaded from the OpenDR server.     
 - **fold_idx**: *{0, 1, 2, 3, 4}*   
-  The index of the cross validation fold. The AF dataset was divided into 5 folds.  
+  The index of the cross validation fold.  
+  The AF dataset was divided into 5 folds.  
 - **sample_length**: *int, default=30*  
   The length of each sample (in seconds).  
   This value must be at least 30 seconds.  
-  Note that this value is different from `series_length`, which is equal to `sample_length` multiplied by the sampling rate (3000 Hz). 
+  Note that this value is different from `series_length`, which is equal to `sample_length` multiplied by the sampling rate (3000 Hz).  
 - **standardize**: *bool, default=True*   
   Specifies whether to standardize the input series.  
 
@@ -236,7 +244,9 @@ This method is used to download the pre-processed AF dataset [[2]](#af)
 ### Examples
 
 * **Training example using the AF dataset**.  
-  In this example, we will train a heart anomaly detector using the AF dataset [[2]](#af), which contains single-lead ECG recordings and the class labels that categorize the samples into 4 classes: normal rhythm, atrial fibrillation, alternative rhythm and noise. We start by importing the learner and the function used to download and construct the dataset. This dataset has been preprocessed according to [[1]](#gru) and splitted into 5-fold cross validation protocol.  
+  In this example, we will train a heart anomaly detector using the AF dataset [[2]](#af), which contains single-lead ECG recordings and the class labels that categorize the samples into 4 classes: normal rhythm, atrial fibrillation, alternative rhythm and noise.  
+  We start by importing the learner and the function used to download and construct the dataset.  
+  This dataset has been preprocessed according to [[1]](#gru) and splitted into 5-fold cross validation protocol.  
 
   ```python
   from opendr.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurrent_unit_learner import \
@@ -252,9 +262,10 @@ This method is used to download the pre-processed AF dataset [[2]](#af)
   train_set, val_set, series_length, class_weight = get_AF_dataset(data_file, fold_idx, sample_length)
   ```
 
-  In the above snippet, we specify the name of the data file, the index of the cross validation fold and the length of each sample (in seconds). Here, we don't specify any absolute path for the data file so it will be downloaded and saved under the name "AF.dat" in the current directory.   
+  In the above snippet, we specify the name of the data file, the index of the cross validation fold and the length of each sample (in seconds).  
+  Here, we don't specify any absolute path for the data file so it will be downloaded and saved under the name "AF.dat" in the current directory.   
 
-  Then, we proceed to construct the learner object that will train the GRU network for 200 epochs starting from the learning rate of `2e-4` and gradually dropping to `1e-5` using a cosine scheduler. 
+  Then, we proceed to construct the learner object that will train the GRU network for 200 epochs starting from the learning rate of `2e-4` and gradually dropping to `1e-5` using a cosine scheduler.  
 
   ```python
   learner = GatedRecurrentUnitLearner(in_channels=1,
@@ -264,16 +275,18 @@ This method is used to download the pre-processed AF dataset [[2]](#af)
                                       lr_scheduler=get_cosine_lr_scheduler(2e-4, 1e-5))
   ```
 
-  After the learner has been constructed, we can train the learner using the `fit` function
+  After the learner has been constructed, we can train the learner using the `fit` function.  
    
   ```python
   performance = learner.fit(train_set, val_set, class_weight=class_weight) 
   ```
 
-  In the above code, we pass the `class_weight` parameter to the `fit` function because the AF dataset is imbalanced. The `fit` function returns `performance`, which is a dictionary that contains the performance measured after each training epoch.   
+  In the above code, we pass the `class_weight` parameter to the `fit` function because the AF dataset is imbalanced.  
+  The `fit` function returns `performance`, which is a dictionary that contains the performance measured after each training epoch.   
 
 * **Download and evaluate pretrained models for the AF dataset**.  
-  In this example, we will show how pretrained models for the AF dataset [[2]](#af) can be easily downloaded by a single line of code using the functionality provided in `GatedRecurrentUnitLearner` and evaluate the model on the test set. Since the AF dataset is divided into 5 folds, the following code iterates through each data split, downloads the corresponding pretrained model and evaluates on the correposnding validation set.  
+  In this example, we will show how pretrained models for the AF dataset [[2]](#af) can be easily downloaded by a single line of code using the functionality provided in `GatedRecurrentUnitLearner` and evaluate the model on the test set.  
+  Since the AF dataset is divided into 5 folds, the following code iterates through each data split, downloads the corresponding pretrained model and evaluates on the correposnding validation set.  
 
   ```python
   from opendr.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurrent_unit_learner import \
