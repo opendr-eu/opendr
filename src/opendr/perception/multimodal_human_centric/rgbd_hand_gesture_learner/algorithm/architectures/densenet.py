@@ -37,7 +37,6 @@ import torch.utils.checkpoint as cp
 from collections import OrderedDict
 from torchvision.models.utils import load_state_dict_from_url
 from torch import Tensor
-from torch.jit.annotations import List
 
 
 __all__ = ['DenseNet', 'densenet121', 'densenet169', 'densenet201', 'densenet161']
@@ -67,14 +66,12 @@ class _DenseLayer(nn.Module):
         self.memory_efficient = memory_efficient
 
     def bn_function(self, inputs):
-        # type: (List[Tensor]) -> Tensor
         concated_features = torch.cat(inputs, 1)
         bottleneck_output = self.conv1(self.relu1(self.norm1(concated_features)))  # noqa: T484
         return bottleneck_output
 
     # todo: rewrite when torchscript supports any
     def any_requires_grad(self, input):
-        # type: (List[Tensor]) -> bool
         for tensor in input:
             if tensor.requires_grad:
                 return True
@@ -82,21 +79,10 @@ class _DenseLayer(nn.Module):
 
     @torch.jit.unused  # noqa: T484
     def call_checkpoint_bottleneck(self, input):
-        # type: (List[Tensor]) -> Tensor
         def closure(*inputs):
             return self.bn_function(inputs)
 
         return cp.checkpoint(closure, *input)
-
-    @torch.jit._overload_method  # noqa: F811
-    def forward(self, input):
-        # type: (List[Tensor]) -> (Tensor)
-        pass
-
-    @torch.jit._overload_method  # noqa: F811
-    def forward(self, input):
-        # type: (Tensor) -> (Tensor)
-        pass
 
     # torchscript does not yet support *args, so we overload method
     # allowing it to take either a List[Tensor] or single Tensor
