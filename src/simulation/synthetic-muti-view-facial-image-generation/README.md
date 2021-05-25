@@ -30,7 +30,13 @@ pip3 install neural_renderer_pytorch
 #1. Download the [checkpoint](https://cicloud.csd.auth.gr/owncloud/remote.php/webdav/OpenDR/FTP%20Server%20Material/simulation/latest_net_G.zip)
 and put it in ```./checkpoints/rs_model```.
 
-#2.	Execute 3ddfa/testSytheticDataGeneration.py specifying the input the folder of images, the output folder, the desired degrees (range -90 to 90) for generating the facial images in multiple view angles pitch and yaw  as indicated in the command line
+#2.	Execute 3ddfa/testSyntheticDataGeneration.py specifying the input the folder of images, the output folder, the desired degrees (range -90 to 90) for generating the facial images in multiple view angles pitch and yaw  as indicated in the command line: 
+```
+cd 3ddfa
+```
+```
+python3 testSyntheticDataGeneration.py
+```
 
 #3 Results are multi-view facial images for every person identity in a respective folder called  ```results/rs_model/example/```
 
