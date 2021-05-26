@@ -129,7 +129,6 @@ class MultiviewDataGenerationLearner:
   
   a = open("file_list.txt" , "w")
   for subdir, dirs, files in os.walk(self.rootdir):
-   print("START_1")
    print(subdir)
    print(dirs)
    current_directory_path = os.path.abspath(subdir)
@@ -150,12 +149,10 @@ class MultiviewDataGenerationLearner:
   a.close()
 
   #STAGE No2: Landmarks Output with inference.py execution
-  #'''
+  
   im_list2 = []
   d = open(os.path.join(self.key1, 'realign_lmk'), "w")
   for subdir, dirs, files in os.walk(self.rootdir):
-   print('START3')
-  
    current_directory_path = os.path.abspath(subdir)
    self.args2.img_prefix=current_directory_path
    self.args2.save_dir=os.path.abspath(self.key2)
@@ -190,6 +187,6 @@ class MultiviewDataGenerationLearner:
         for img_idx, img_fp in enumerate(tqdm(img_list)): 
             d.write(img_fp + os.linesep)
   d.close()
-  #'''
+  
   #STAGE No3: Generate Facial Images in specific pitch and yaw angles
   test_multipose.main()
