@@ -73,16 +73,12 @@ class MultiviewDataGenerationLearner:
  
   self.rootdir = input("Enter the folder with subfolders of images: ")
   self.path=input("Enter the path of folder 3ddfa, e.g.'/home/<user>/Documents/Rotate-and-Render/3ddfa/': ")
-  self.key=str(self.path +"/example/Images/")# input("Enter the path'/home/<user>/Documents/Rotate-and-Render/3ddfa/example/Images/': ")
-  self.key1=str(self.path +"/example/") # input("Enter the path'/home/<user>/Documents/Rotate-and-Render/3ddfa/example/': ")
-  self.key2=str(self.path +"/results/")# input("Enter the path'/home/<user>/Documents/Rotate-and-Render/3ddfa/results/': ")
-  #rootdir = "/home/ekakalets/Pictures/TEST/"
-  #path=/home/ekakalets/Documents/Rotate-and-Render/3ddfa/
-  #key = /home/ekakalets/Documents/Rotate-and-Render/3ddfa/example/Images/
-  #key1= /home/ekakalets/Documents/Rotate-and-Render/3ddfa/example/
-  #key2= /home/ekakalets/Documents/Rotate-and-Render/3ddfa/results/
+  self.key=str(self.path +"/example/Images/")
+  self.key1=str(self.path +"/example/") 
+  self.key2=str(self.path +"/results/")
+ 
 
-#'''
+
   parser = argparse.ArgumentParser(description='3DDFA inference pipeline')
   parser.add_argument('-f', '--files', nargs='+', help='image files paths fed into network, single or multiple images')
   parser.add_argument('-m', '--mode', default='cpu', type=str, help='gpu or cpu mode')
@@ -113,7 +109,7 @@ class MultiviewDataGenerationLearner:
   parser2.add_argument('--save_dir', default=self.key2, type=str, help='dir to save result')
   parser2.add_argument('--save_lmk_dir', default='./example', type=str, help='dir to save landmark result')
   parser2.add_argument('--img_list', default='./txt_name_batch.txt', type=str, help='test image list file')
-  #parser2.add_argument('--img_prefix', default=os.path.abspath(subdir), type=str, help='test image prefix')
+  
   parser2.add_argument('--rank', default=0, type=int, help='used when parallel run')
   parser2.add_argument('--world_size', default=1, type=int, help='used when parallel run')
   parser2.add_argument('--resume_idx', default=0, type=int)
@@ -137,21 +133,17 @@ class MultiviewDataGenerationLearner:
    print(subdir)
    print(dirs)
    current_directory_path = os.path.abspath(subdir)
-  #os.path.relpath(subdir, '/home/ekakalet/OPENDR/Rotate-and-Render/3ddfa') #
+  
    print(current_directory_path)
    for file in files:
        name, ext = os.path.splitext( file )
        if ext == ".jpg": 
-        #if (len(file.split("_"))<=3): #
             current_image_path= os.path.join(current_directory_path, file)
             print(current_image_path)
             current_image = cv2.imread(current_image_path)
-            #inputs = transform(PILImage.fromarray(cv2.cvtColor(current_image, cv2.COLOR_BGR2RGB)))
             list_im.append( current_image_path)
             a.write(str(file) + os.linesep)
             cv2.imwrite(os.path.join(self.key, file), current_image)
-  #self.args1.files=files
-
    self.args1.files=list_im.copy()
    list_im.clear()           
    main.main(self.args1) 
@@ -160,8 +152,6 @@ class MultiviewDataGenerationLearner:
   #STAGE No2: Landmarks Output with inference.py execution
   #'''
   im_list2 = []
-
-  #rootdir = "/home/ekakalets/Pictures/synthetic/"
   d = open(os.path.join(self.key1, 'realign_lmk'), "w")
   for subdir, dirs, files in os.walk(self.rootdir):
    print('START3')
@@ -180,7 +170,6 @@ class MultiviewDataGenerationLearner:
    dst=os.path.join(self.args2.save_lmk_dir,"file_list.txt")
    copyfile(list_lfw_batch, dst)
    b = open("txt_name_batch.txt", "w")
-   #c = open(os.path.join(self.args2.save_lmk_dir,"file_list.txt"), "w")
    for file in files:
    
     with open(list_lfw_batch) as f:
@@ -190,12 +179,9 @@ class MultiviewDataGenerationLearner:
           if img_fp == str(file):
             im_list2.append( str(file))
             b.write(str(file) + os.linesep)
-            #c.write(str(file) + os.linesep)
    print(im_list2)
    self.args2.img_list= './txt_name_batch.txt'
-   #open('./txt_name_batch.txt', 'w').close()
    b.close()
-   #c.close()
    self.args2.dump_lmk = 'true'
    im_list2.clear()
    inference.main(self.args2)
