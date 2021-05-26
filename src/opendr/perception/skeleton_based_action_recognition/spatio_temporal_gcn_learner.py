@@ -99,7 +99,7 @@ class SpatioTemporalGCNLearner(Learner):
             self.output_device = self.device_ind[0] if type(self.device_ind) is list else self.device_ind
         self.__init_seed(1)
 
-    def fit(self, dataset, val_dataset, logging_path='', silent=False, verbose=True,
+    def fit(self, dataset, val_dataset, logging_path='', silent=False, verbose=False,
             momentum=0.9, nesterov=True, weight_decay=0.0001, train_data_filename='train_joints.npy',
             train_labels_filename='train_labels.pkl', val_data_filename="val_joints.npy",
             val_labels_filename="val_labels.pkl", skeleton_data_type='joint'):
@@ -190,7 +190,7 @@ class SpatioTemporalGCNLearner(Learner):
             scheduler = self.lr_schedule
         else:
             scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer_, milestones=self.drop_after_epoch, gamma=0.1,
-                                                       last_epoch=-1, verbose=True)
+                                                       last_epoch=-1, verbose=False)
         # load data
         traindata = self.__prepare_dataset(dataset,
                                            data_filename=train_data_filename,
@@ -288,11 +288,12 @@ class SpatioTemporalGCNLearner(Learner):
                                      val_data_filename=val_data_filename, val_labels_filename=val_labels_filename)
             eval_results_list.append(eval_results)
             scheduler.step()
-        print('best accuracy: ', self.best_acc, ' model_name: ', self.experiment_name)
+        if verbose:
+            print('best accuracy: ', self.best_acc, ' model_name: ', self.experiment_name)
         return {"train_loss": np.mean(loss_value), "eval_results": eval_results_list,
                 "best_accuracy": self.best_acc, "model_name": self.experiment_name}
 
-    def eval(self, val_dataset, val_loader=None, epoch=0, silent=False, verbose=True,
+    def eval(self, val_dataset, val_loader=None, epoch=0, silent=False, verbose=False,
              val_data_filename='val_joints.npy', val_labels_filename='val_labels.pkl', skeleton_data_type='joint',
              save_score=False, wrong_file=None, result_file=None, show_topk=[1, 5]):
         """
@@ -383,7 +384,8 @@ class SpatioTemporalGCNLearner(Learner):
         accuracy = val_loader.dataset.top_k(score, 1)
         if accuracy > self.best_acc:
             self.best_acc = accuracy
-        print('Accuracy: ', accuracy, ' model: ', self.experiment_name)
+        if verbose:
+            print('Accuracy: ', accuracy, ' model: ', self.experiment_name)
         if self.model_train_state and self.logging:
             self.val_writer.add_scalar('loss', loss, self.global_step)
             self.val_writer.add_scalar('loss_l1', l1, self.global_step)
@@ -404,7 +406,7 @@ class SpatioTemporalGCNLearner(Learner):
                           labels_filename="train_labels.pkl",
                           skeleton_data_type='joint',
                           phase='train',
-                          verbose=True):
+                          verbose=False):
         """
         This internal method prepares the train dataset depending on what type of dataset is provided.
         If an ExternalDataset object type is provided, the method tried to prepare the dataset based on the original
@@ -570,7 +572,7 @@ class SpatioTemporalGCNLearner(Learner):
                           dynamic_axes={'onnx_input': {0: 'n'},  # variable lenght axes
                                         'onnx_output': {0: 'n'}})
 
-    def save(self, path, model_name='', verbose=True):
+    def save(self, path, model_name='', verbose=False):
         """
         This method is used to save a trained model.
         Provided with the path and model_name, it saves the model there with a proper format and a .json file
@@ -622,7 +624,7 @@ class SpatioTemporalGCNLearner(Learner):
         with open(json_model_path, 'w') as outfile:
             json.dump(model_metadata, outfile)
 
-    def load(self, path, model_name, verbose=True):
+    def load(self, path, model_name, verbose=False):
         """
         Loads the model from inside the path provided, based on the metadata.json file included.
         :param path: path of the directory the model was saved
@@ -643,7 +645,7 @@ class SpatioTemporalGCNLearner(Learner):
             if verbose:
                 print("Loaded ONNX model.")
 
-    def __load_from_pt(self, path, verbose=True):
+    def __load_from_pt(self, path, verbose=False):
         """Loads the .pt model weights (or checkpoint) from the path provided.
         :param path: path of the directory the model (checkpoint) was saved
         :type path: str
@@ -695,7 +697,7 @@ class SpatioTemporalGCNLearner(Learner):
 
     def multi_stream_eval(self, dataset, scores, data_filename='val_joints.npy',
                           labels_filename='val_labels.pkl', skeleton_data_type='joint',
-                          verbose=True, silent=True):
+                          verbose=False, silent=True):
         """
         :param dataset: ExternalDataset class object.
         :type dataset: object that holds the validation dataset
@@ -880,7 +882,6 @@ class SpatioTemporalGCNLearner(Learner):
         if print_time:
             localtime = time.asctime(time.localtime(time.time()))
             str_log = "[ " + localtime + ' ] ' + str_log
-        print(str_log)
         if self.logging:
             with open('{}/log.txt'.format(self.logging_path), 'a') as f:
                 print(str_log, file=f)
