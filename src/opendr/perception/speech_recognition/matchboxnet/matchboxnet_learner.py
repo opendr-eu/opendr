@@ -15,6 +15,8 @@
 import json
 import logging
 import os
+from urllib.request import urlretrieve
+from urllib.error import URLError
 
 import numpy as np
 import torch as t
@@ -22,6 +24,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
+from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Timeseries
 from opendr.engine.learners import Learner
 from opendr.engine.target import SpeechCommand
@@ -61,7 +64,8 @@ class MatchboxNetLearner(Learner):
         self.sample_rate = sample_rate
         self.output_classes_n = output_classes_n
 
-        self.model = MatchBoxNet(num_classes=output_classes_n, b=number_of_blocks, r=number_of_subblocks, c=number_of_channels)
+        self.model = MatchBoxNet(num_classes=output_classes_n, b=number_of_blocks, r=number_of_subblocks,
+                                 c=number_of_channels)
         self.loss = nn.NLLLoss()
 
         self.model.to(self.device)
@@ -153,9 +157,10 @@ class MatchboxNetLearner(Learner):
             self._preprocess_to_mfcc = value
 
     def _signal_to_mfcc(self, signal):
-        mfcc = np.apply_along_axis(lambda sample: get_mfcc(sample, self.sample_rate, n_mfcc=self.number_of_channels, length=40),
-                                   axis=1,
-                                   arr=signal)
+        mfcc = np.apply_along_axis(
+            lambda sample: get_mfcc(sample, self.sample_rate, n_mfcc=self.number_of_channels, length=40),
+            axis=1,
+            arr=signal)
         return mfcc
 
     def _get_model_output(self, x):
@@ -261,7 +266,8 @@ class MatchboxNetLearner(Learner):
         with open(os.path.join(path, folder_basename + ".json")) as jsonfile:
             metadata = json.load(jsonfile)
 
-        self.model.load_state_dict(t.load(metadata["model_paths"][0]))
+        model_filename = os.path.basename(metadata["model_paths"][0])
+        self.model.load_state_dict(t.load(os.path.join(path, model_filename)))
         self.model.eval()
 
     def optimize(self):
@@ -271,3 +277,16 @@ class MatchboxNetLearner(Learner):
         for module in self.model.modules():
             if hasattr(module, "reset_parameters"):
                 module.reset_parameters()
+
+    def download_pretrained(self, path="."):
+        target_directory = os.path.join(path, "MatchboxNet")
+        jsonurl = OPENDR_SERVER_URL + "perception/speech_recognition/MatchboxNet/MatchboxNet.json"
+        pturl = OPENDR_SERVER_URL + "perception/speech_recognition/MatchboxNet/MatchboxNet.pt"
+        if not os.path.exists(target_directory):
+            os.makedirs(target_directory, exist_ok=True)
+        try:
+            urlretrieve(jsonurl, os.path.join(target_directory, "MatchboxNet.json"))
+            urlretrieve(pturl, os.path.join(target_directory, "MatchboxNet.pt"))
+        except URLError as e:
+            print("Could not retrieve pretrained model files!")
+            raise e
