@@ -158,6 +158,16 @@ class TestMultilinearCompressiveLearner(unittest.TestCase):
         self.assertTrue(pred.confidence <= 1,
                         msg="Confidence of prediction must be less or equal than 1")
 
+    def test_infer_from_compressed_measurement(self):
+        learner, input_shape, compressed_shape, n_class, pretrained_backbone, init_backbone = get_random_learner()
+        img = Image(np.random.rand(*compressed_shape))
+        pred = learner.infer_from_compressed_measurement(img)
+        self.assertTrue(isinstance(pred, Category))
+        self.assertTrue(pred.data < learner.n_class,
+                        msg="Predicted class label must be less than the number of class")
+        self.assertTrue(pred.confidence <= 1,
+                        msg="Confidence of prediction must be less or equal than 1")
+
     def test_save_load(self):
         learner, input_shape, compressed_shape, n_class, _, _ = get_random_learner()
         temp_dir = tempfile.TemporaryDirectory()
@@ -204,6 +214,19 @@ class TestMultilinearCompressiveLearner(unittest.TestCase):
 
         learner.load(temp_dir.name)
         temp_dir.cleanup()
+
+    def test_get_sensing_parameters(self):
+        learner, input_shape, compressed_shape, n_class, _, _ = get_random_learner()
+        params = learner.get_sensing_parameters()
+        self.assertTrue(len(params) in [2, 3],
+                        msg='sensing parameters should be a list of 2 or 3 elements')
+
+        for idx, param in enumerate(params):
+            self.assertTrue(isinstance(param, np.ndarray),
+                            msg='each sensing parameter must be an instance of numpy.ndarray')
+            correct_shape = (input_shape[idx], compressed_shape[idx])
+            self.assertTrue(param.shape == correct_shape,
+                            msg='the {}-th parameter should have shape: {}'.format(idx, correct_shape))
 
 
 if __name__ == "__main__":
