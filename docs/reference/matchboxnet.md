@@ -143,7 +143,8 @@ This method saves the model in the directory provided by `path`.
 Parameters:
 
 - **path**: *str*  
-  Path to the directory where the model should be saved. Does not need to exist before the function call.
+  Path to the directory where the model should be saved.
+  Does not need to exist before the function call.
 
 #### `MatchboxNetLearner.load`
 
@@ -151,13 +152,29 @@ Parameters:
 MatchboxNetLearner.load(self, path)
 ```
 
-This method loads the model from the directory provided by `path`. In practice the same path as provided to `save`
-beforehand.
+This method loads the model from the directory provided by `path`.
+In practice the same path as provided to `save` beforehand.
 
 Parameters:
 
 - **path**: *str*  
   Path to the model directory to be loaded.
+
+
+#### `MatchboxNetLearner.download_pretrained`
+
+```python
+MatchboxNetLearner.download_pretrained(self, path)
+```
+
+This method downloads a pretrained model from the OpenDR FTP server.
+The pretrained model was trained on 20 classes of the GSC dataset in alphabetical classification order.
+A new directory will be created to the directory specified by path called "MatchboxNet", where the model will be saved.
+
+Parameters:
+
+- **path**: *str, default="."*   
+  Path to the parent directory where the model should be downloaded.
 
 #### Examples
 
@@ -202,6 +219,7 @@ Parameters:
   learner.load(os.path.join(".", "example", "directory", "path", "model"))
 
   signal, sampling_rate = librosa.load("command.wav", sr=learner.sample_rate)
+  signal = np.expand_dims(signal, axis=0)
   timeseries = Timeseries(signal)
   result = learner.infer(timeseries)
   print(result)
