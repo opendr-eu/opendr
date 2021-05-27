@@ -332,11 +332,11 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         for batch_idx, (data, label, index) in enumerate(process):
             with torch.no_grad():
                 if self.device == "cuda":
-                    data = Variable(data.float().cuda(self.output_device), requires_grad=False, volatile=True)
-                    label = Variable(label.long().cuda(self.output_device), requires_grad=False, volatile=True)
+                    data = Variable(data.float().cuda(self.output_device), requires_grad=False)
+                    label = Variable(label.long().cuda(self.output_device), requires_grad=False)
                 else:
-                    data = Variable(data.float(), requires_grad=False, volatile=True)
-                    label = Variable(label.long(), requires_grad=False, volatile=True)
+                    data = Variable(data.float(), requires_grad=False)
+                    label = Variable(label.long(), requires_grad=False)
                 output = self.model(data)
                 if isinstance(output, tuple):
                     output, l1 = output

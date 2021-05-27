@@ -49,7 +49,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         cls.logging_path = LOG_PATH_
         cls.tagcn_action_classifier = SpatioTemporalGCNLearner(device="cpu", temp_path=cls.temp_dir,
                                                                batch_size=5, epochs=1,
-                                                               checkpoint_after_iter=1, val_batch_size=1,
+                                                               checkpoint_after_iter=1, val_batch_size=5,
                                                                dataset_name='nturgbd_cv',
                                                                experiment_name='tagcn_nturgbd_cv_joint',
                                                                method_name='tagcn', num_frames=300, num_subframes=100)
