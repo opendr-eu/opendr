@@ -66,7 +66,7 @@ from os import path
 
 from opendr.engine.learners import Learner
 
-class MultiviewDataGenerationLearner:
+class MultiviewDataGenerationLearner(Learner):
  os.environ["CUDA_VISIBLE_DEVICES"] = "3"
  def __init__(self):
  
