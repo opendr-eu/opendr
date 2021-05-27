@@ -82,7 +82,7 @@ class TestLicense(unittest.TestCase):
             'src/perception/face_recognition/algorithm', 'src/perception/pose_estimation/lightweight_open_pose/algorithm'
         ]
 
-        skippedFilePaths = []
+        skippedFilePaths = ['/src/simulation/synthetic-muti-view-facial-image-generation/test_multipose.py']
 
         skippedDirectories = [
             'build'
