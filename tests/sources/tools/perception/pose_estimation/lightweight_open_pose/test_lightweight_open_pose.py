@@ -19,6 +19,7 @@ import os
 import torch
 from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import LightweightOpenPoseLearner
 from opendr.engine.datasets import ExternalDataset
+import warnings
 
 
 def rmfile(path):
@@ -45,7 +46,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "pose_estimation",
                                     "lightweight_open_pose", "lw_open_pose_temp")
         cls.pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
-                                                        checkpoint_after_iter=0)
+                                                        checkpoint_after_iter=0, num_workers=1)
         # Download all required files for testing
         cls.pose_estimator.download(mode="pretrained")
         cls.pose_estimator.download(mode="test_data")
@@ -69,6 +70,12 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
                          msg="Model parameters did not change after running fit.")
 
     def test_eval(self):
+        # Test eval will issue resource warnings due to some files left open in pycoco tools,
+        # as well as a deprecation warning due to a cast of a float to integer (hopefully they will be fixed in a future
+        # version)
+        warnings.simplefilter("ignore", ResourceWarning)
+        warnings.simplefilter("ignore", DeprecationWarning)
+
         eval_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "dataset"), dataset_type="COCO")
         self.pose_estimator.load(os.path.join(self.temp_dir, "openpose_default"))
         results_dict = self.pose_estimator.eval(eval_dataset, use_subset=False, verbose=True, silent=True,
@@ -79,6 +86,8 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
                             msg="Eval results dictionary contains empty list.")
         # Cleanup
         rmfile(os.path.join(self.temp_dir, "detections.json"))
+        warnings.simplefilter("default", ResourceWarning)
+        warnings.simplefilter("default", DeprecationWarning)
 
     def test_infer(self):
         self.pose_estimator.model = None
