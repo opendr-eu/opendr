@@ -64,7 +64,7 @@ from tqdm import tqdm
 from shutil import copyfile
 from os import path
 
-#from opendr.engine.learners import Learner
+from opendr.engine.learners import Learner
 
 class MultiviewDataGenerationLearner:
  os.environ["CUDA_VISIBLE_DEVICES"] = "3"
@@ -116,7 +116,7 @@ class MultiviewDataGenerationLearner:
 
   self.args2 = parser2.parse_args()
   
-  
+  super(Learner, self).__init__()
   
   
  def eval(self):
@@ -190,3 +190,21 @@ class MultiviewDataGenerationLearner:
   
   #STAGE No3: Generate Facial Images in specific pitch and yaw angles
   test_multipose.main()
+def fit(self):
+   #do nothing
+   print("do nothing")
+ def infer(self):
+   #do nothing
+   print("do nothing")
+ def load(self):
+   #do nothing
+   print("do nothing")
+ def optimize(self):
+   #do nothing
+   print("do nothing")
+ def reset(self):
+   #do nothing
+   print("do nothing")
+ def save(self):
+   #do nothing
+   print("do nothing")
