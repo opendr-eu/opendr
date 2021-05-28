@@ -1,7 +1,14 @@
 import abc
 from collections import OrderedDict
 
-import numba
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings('ignore')
+    import numba
+    from numba import errors
+    warnings.filterwarnings('ignore')
+    warnings.filterwarnings("ignore", category=errors.NumbaPerformanceWarning)
+
 import numpy as np
 
 from perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
@@ -11,6 +18,14 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.co
     points_in_convex_polygon_3d_jit,
     points_in_convex_polygon_jit,
 )
+
+from numba import errors
+
+warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore", category=errors.NumbaPerformanceWarning)
+# warnings.simplefilter('ignore', category=errors.NumbaDeprecationWarning)
+# warnings.simplefilter('ignore', category=errors.NumbaPendingDeprecationWarning)
+# warnings.simplefilter("ignore", category=errors.NumbaPerformanceWarning)
 
 
 class BatchSampler:

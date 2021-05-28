@@ -42,6 +42,18 @@ from perception.object_detection_3d.voxel_object_detection_3d.second_detector.da
 from engine.target import BoundingBox3DList
 from engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
+import warnings
+from numba import errors
+
+original_warn = warnings.warn
+
+
+def warn(warning, **kwargs):
+    if not isinstance(warning, errors.NumbaPerformanceWarning):
+        original_warn(warning, **kwargs)
+
+
+warnings.warn = warn
 
 
 class VoxelObjectDetection3DLearner(Learner):

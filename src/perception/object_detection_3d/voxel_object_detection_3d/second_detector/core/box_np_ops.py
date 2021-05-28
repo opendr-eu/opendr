@@ -15,7 +15,6 @@ except:
     box_ops_cc = load_pb11(["./cc/box_ops.cc"], current_dir / "box_ops_cc.so",
                            current_dir)
 
-
 def riou_cc(rbboxes, qrbboxes, standup_thresh=0.0):
     # less than 50ms when used in second one thread. 10x slower than gpu
     boxes_corners = center_to_corner_box2d(rbboxes[:, :2], rbboxes[:, 2:4],
@@ -739,7 +738,7 @@ def points_in_rbbox(points, rbbox, lidar=True):
     return indices
 
 
-@numba.jit(nopython=False)
+@numba.jit(forceobj=True)
 def corner_to_surfaces_3d(corners):
     """convert 3d box corners from corner function above
     to surfaces that normal vectors all direct to internal.
