@@ -52,7 +52,7 @@ class TestX3DLearner(unittest.TestCase):
             logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
 
     def test_downloaded(self):
-        assert Path(self.temp_dir) / "weights" / "x3d_s.pyth"
+        assert Path(self.temp_dir) / "weights" / f"x3d_{_BACKBONE}.pyth"
 
     def test_save_and_load(self):
         assert self.learner.model is not None
@@ -102,15 +102,19 @@ class TestX3DLearner(unittest.TestCase):
         # Input is Tensor
         results1 = self.learner.infer(batch)
         # Results is a batch with each item summing to 1.0
-        assert all([torch.sum(r.data) == 1.0 for r in results1])
+        assert all([torch.sum(r.confidence) == 1.0 for r in results1])
 
         # Input is Video
         results2 = self.learner.infer(Video(batch[0]))
-        assert torch.allclose(results1[0].data, results2[0].data)
+        assert results1[0].data == results2[0].data
+        assert torch.allclose(results1[0].confidence, results2[0].confidence)
 
         # Input is List[Video]
         results3 = self.learner.infer([Video(v) for v in batch])
-        assert all([torch.allclose(r1.data, r3.data) for (r1, r3) in zip(results1, results3)])
+        assert all([
+            r1.data == r3.data and torch.allclose(r1.confidence, r3.confidence)
+            for (r1, r3) in zip(results1, results3)
+        ])
 
     # Redundant test: Same code is executed internally in `test_optimize`
     # def test_save_load_onnx(self):
