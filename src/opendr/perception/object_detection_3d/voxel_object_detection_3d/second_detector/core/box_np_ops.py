@@ -15,6 +15,7 @@ except:
     box_ops_cc = load_pb11(["./cc/box_ops.cc"], current_dir / "box_ops_cc.so",
                            current_dir)
 
+
 def riou_cc(rbboxes, qrbboxes, standup_thresh=0.0):
     # less than 50ms when used in second one thread. 10x slower than gpu
     boxes_corners = center_to_corner_box2d(rbboxes[:, :2], rbboxes[:, 2:4],
