@@ -54,13 +54,13 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
                                     "voxel_object_detection_3d",
                                     "voxel_object_detection_3d_temp")
 
-        cls.config_tanet_car = os.path.join(".", "src", "perception",
+        cls.config_tanet_car = os.path.join(".", "src", "opendr", "perception",
                                             "object_detection_3d",
                                             "voxel_object_detection_3d",
                                             "second_detector", "configs", "tanet",
                                             "car", "test_short.proto")
 
-        cls.config_tanet_ped_cycle = os.path.join(".", "src", "perception",
+        cls.config_tanet_ped_cycle = os.path.join(".", "src", "opendr", "perception",
                                                   "object_detection_3d",
                                                   "voxel_object_detection_3d",
                                                   "second_detector", "configs", "tanet",
