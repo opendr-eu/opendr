@@ -185,7 +185,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                              "ort_session is None after optimizing the pretrained model.")
         # Cleanup
         self.pstgcn_action_classifier.ort_session = None
-        rmfile(os.path.join(self.temp_dir, self.experiment_name, "onnx_model_temp.onnx"))
+        rmfile(os.path.join(self.temp_dir, self.experiment_name))
 
     def test_save_load_onnx(self):
         self.pstgcn_action_classifier.topology = [5, 4, 5, 2, 3, 4, 3, 4]
@@ -201,7 +201,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertIsNotNone(self.pstgcn_action_classifier.ort_session, "ort_session is None after loading onnx model.")
         # Cleanup
         self.pstgcn_action_classifier.ort_session = None
-        rmfile(os.path.join(self.temp_dir, self.experiment_name, "onnx_model_temp.onnx"))
         rmdir(os.path.join(self.temp_dir, self.experiment_name))
 
 
