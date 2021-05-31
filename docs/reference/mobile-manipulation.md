@@ -114,110 +114,25 @@ Parameters:
   Path of the model to be loaded.
 
 
-### Class MobileManipulationEnv
-Bases: `gym.Env`
-
-The *MobileManipulationEnv* class is an environment to train an RL agent for mobile manipulation, given end-effector motions, and to run mobile manipulation tasks in both simulation and the real world.
-New tasks can easily be defined as task wrappers as they can be found in `mobileRL.env.tasks` and `mobileRL.env.tasks_chained`.
-
-The [MobileManipulationEnv](#src.control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env.py) class has the
-following public methods:
-
-#### `MobileManipulationEnv` constructor
-
-Constructor parameters:
-- **lr**: *float, default=1e-5*
-
 
 #### ROS Setup
 The repository consists of two main parts: a training environment written in C++ and connected to Python through bindings and the RL agents written in Python 3.
 
-As not all ROS packages work with python3, the setup relies on running the robot-specific packages in a python2 environment
-and our package in a python3 environment.
-The environment was tested for Ubuntu 18.04 and ROS melodic.
-
-###### Installation
-Install the appropriate version for your system (full install recommended): http://wiki.ros.org/ROS/Installation
-
-We provide implementations for the PR2, PAL Tiago and Toyota HSR robots.
-The following outlines the installation for the PR2.
-For the other robots please follow the official guides to install the respective ROS dependencies.
-We recommend to use separate catkin workspaces for each.
-
-Install the openDR dependencies and activate it's python environment
-
-Install libgp: `https://github.com/mblum/libgp.git`
-
-Create a catkin workspace (ideally a separate one for each robot)
+This means that the training environment relies on a running moveit node for initialisation. The dependencies for this module automatically set up and compile a catkin workspace with all required modules.
+To start required ros nodes, please run the following before using the `MobileRLLearner` class:
 
 ```sh
-mkdir ~/catkin_ws
-cd catkin_ws
-```
+source ${OPENDR_HOME}/lib/catkin_ws_mobile_manipulation/devel/setup.bash
+roslaunch mobile_manipulation_rl [pr2,tiago]_analytical
+````
 
-Copy or symlink openDR's mobile_manipulation module into `./src`
+The environment was tested for Ubuntu 18.04 and ROS melodic and assumes this version in its dependencies installation.
 
-```sh
-ln -s ln -s [opendr]/src/control/mobile_manipulation src/
-```
-
-Configure the workspace to use your environment's python3 (adjust path according to your executable)
-
-```sh
-catkin config -DPYTHON_EXECUTABLE=/home/honerkam/miniconda3/envs/opendr/bin/python -DPYTHON_INCLUDE_DIR=/home/honerkam/miniconda3/envs/opendr/include/python3.7m -DPYTHON_LIBRARY=/home/honerkam/miniconda3/envs/opendr/lib/libpython3.7m.so
-```
-
-Build the workspace and source the setup file
-
-```sh
-catkin build
-source devel/setup.bash
-```
-
-Tiago additionally requires small modifications to the robot descriptions to use the correct fixed joints. 
-Replace the following files after installing the Tiago packages:
-
-```sh
-cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_tiago.srdf.em src/tiago_moveit_config/config/srdf/tiago.srdf.em
-cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_tiago_pal-gripper.srdf src/tiago_moveit_config/config/srdf/tiago_pal-gripper.srdf
-cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_gripper.urdf.xacro src/pal_gripper/pal_gripper_description/urdf/gripper.urdf.xacro
-cp [opendr]/src/control/mobile_manipulation/robots_world/tiago/modified_wsg_gripper.urdf.xacro src/pal_wsg_gripper/pal_wsg_gripper_description/urdf/gripper.urdf.xacro
-```
-
-##### Run
-1. start a roscore
-
-```sh
-roscore
-```
-
-2a. training or evaluation in the analytical environment only:
-
-```sh
-roslaunch mobile_manipulation_rl pr2_analytical.launch
-```
-
-2b. evaluation in gazebo: _instead_ of 2a start gazebo with the pr2 robot as well moveit. Please run from outside the conda environment with a python2 interpreter.
-```sh
-roslaunch pr2_gazebo pr2_empty_world.launch
-roslaunch pr2_moveit_config move_group.launch
-```
-
-4. Run the demo script
-```sh
-cd opendr_internal/projects/control/mobile_manipulation/
-export PYTHONPATH=/home/honerkam/repos/opendr_internal/src:=$PYTHONPATH
-python src/project_mobile_manipulation/mobile_manipulation_demo.py
-```
-
-5. [Visualisation] start rviz:
+##### Visualisation
+All visualisations are done through rviz. For this start rviz with the provided configuration file as follows. To visualise the Tiago robot additionally adjust the reference frame in rviz from `odom` to `odom combined`.
 ```sh
 rviz -d rviz_config.config
 ```
-
-For HSR / Tiago: 
-- Roslaunch commands can be found in `mobile_manipulation/mobileRL/handle_launchfiles.py`
-- adjust the reference frame in rviz from `odom` to `odom combined`
 
 
 #### Examples
