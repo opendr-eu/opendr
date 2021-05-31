@@ -1,11 +1,10 @@
-import os
-import warnings
-from typing import Union, Optional
-
 import gym
 import numpy as np
+import os
+import warnings
 from stable_baselines3.common.callbacks import BaseCallback, EventCallback
 from stable_baselines3.common.vec_env import DummyVecEnv, VecEnv, sync_envs_normalization
+from typing import Union, Optional
 
 from control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
 

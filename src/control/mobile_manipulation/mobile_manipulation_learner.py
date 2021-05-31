@@ -34,23 +34,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import functools
-import os
-from pathlib import Path
-from typing import Optional
-
 import numpy as np
-
+import os
 import rospy
-
-from stable_baselines3.sac import SAC
+from pathlib import Path
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise, NormalActionNoise
 from stable_baselines3.common.vec_env import VecEnv
-
-from control.mobile_manipulation.mobileRL.stablebl_callbacks import MobileRLEvalCallback
-from control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
-from engine.learners import LearnerRL
-from engine.constants import OPENDR_SERVER_URL
+from stable_baselines3.sac import SAC
+from typing import Optional
 from urllib.request import urlretrieve
+
+from control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
+from control.mobile_manipulation.mobileRL.stablebl_callbacks import MobileRLEvalCallback
+from engine.constants import OPENDR_SERVER_URL
+from engine.learners import LearnerRL
 
 
 class MobileRLLearner(LearnerRL):
@@ -91,7 +88,7 @@ class MobileRLLearner(LearnerRL):
 
     @staticmethod
     def _download_pretrained(save_path: str, robot_name: str):
-        checkpoint_load_iter= 1_000_000
+        checkpoint_load_iter = 1_000_000
         filename = f"model_step{checkpoint_load_iter}.zip"
         file_destination = Path(save_path) / filename
         if not file_destination.exists():
@@ -208,8 +205,10 @@ class MobileRLLearner(LearnerRL):
             env = env.envs[0]
 
         prefix = ''
-        episode_rewards, episode_lengths, metrics, name_prefix = evaluation_rollout(self.stable_bl_agent, env, nr_evaluations, name_prefix=prefix,
-                                                                                    global_step=self.stable_bl_agent.num_timesteps, verbose=2)
+        episode_rewards, episode_lengths, metrics, name_prefix = evaluation_rollout(self.stable_bl_agent, env,
+                                                                                    nr_evaluations, name_prefix=prefix,
+                                                                                    global_step=self.stable_bl_agent.num_timesteps,
+                                                                                    verbose=2)
         env.clear()
         return episode_rewards, episode_lengths, metrics, name_prefix
 
@@ -235,7 +234,8 @@ class MobileRLLearner(LearnerRL):
         """
         if path == 'pretrained':
             path = str(self._download_pretrained(self.temp_path, self.stable_bl_agent.env.get_attr('env_name')[0]))
-        self.stable_bl_agent = self.stable_bl_agent.load(path, device=self.device, env=self.stable_bl_agent.env, tensorboard_log=self.temp_path)
+        self.stable_bl_agent = self.stable_bl_agent.load(path, device=self.device, env=self.stable_bl_agent.env,
+                                                         tensorboard_log=self.temp_path)
 
     def infer(self, batch, deterministic: bool = True):
         return self.stable_bl_agent.predict(batch, deterministic=deterministic)
@@ -245,4 +245,3 @@ class MobileRLLearner(LearnerRL):
 
     def optimize(self, target_device):
         raise NotImplementedError()
-

@@ -1,10 +1,9 @@
-import random
-from enum import IntEnum
-from typing import NamedTuple, Callable, Tuple
-
 import math
 import numpy as np
+import random
+from enum import IntEnum
 from gym import Wrapper
+from typing import NamedTuple, Callable, Tuple
 
 from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper
 from control.mobile_manipulation.mobileRL.envs.map import Map, EmptyMap

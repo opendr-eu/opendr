@@ -1,12 +1,10 @@
 import copy
-import os
-from pathlib import Path
-from typing import Tuple
-
 import numpy as np
 import rospy
 from gym import Env
+from pathlib import Path
 from pybindings import RobotObs, RobotPR2, RobotTiago  # , RobotHSR
+from typing import Tuple
 
 
 class ActionRanges:
