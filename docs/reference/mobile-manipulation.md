@@ -137,7 +137,7 @@ rviz -d rviz_config.config
 
 #### Examples
 * **Training in the analytical environment and evaluation in Gazebo on a Door Opening task**.
-  As described above, install ROS and build the workspace. Then start a roscore and the launch files.
+  As described above, install ROS and build the workspace. Then source the catkin workspace and run the launch file as described in the `ROS Setup` section above.
   ```python
     import rospy
     from pathlib import Path
@@ -194,6 +194,7 @@ rviz -d rviz_config.config
   ```
 
 * **Evaluate a pretrained model**.
+  Source the catkin workspace and run the launch file as described in the `ROS Setup` section above. Then run
   ```python
     import rospy
     from pathlib import Path
@@ -238,17 +239,12 @@ rviz -d rviz_config.config
                             device='cpu')
 
     # evaluate on door opening in the analytical environment
-    # to evaluate in gazebo:
-    # - PR2: run `roslaunch pr2_gazebo pr2_empty_world.launch` in a separate terminal (replacing `roslaunch mobile_manipulation_rl pr2_analytical`)
-    # - Tiago: run `roslaunch mobile_manipulation_rl tiago_gazebo.launch robot:=steel tuck_arm:=false laser_model:=false camera_model:=false`
-    # - HSR: run `roslaunch modulation_rl hsrb_empty_world.launch rviz:=false use_manipulation:=false use_navigation:=false use_perception:=false use_task:=false use_teleop:=false use_web:=false use_laser_odom:=false paused:=false`
-    #        and in a second terminal run `roslaunch modulation_rl hsr_move_group.launch joint_states_topic:=/hsrb/robot_state/joint_states` 
-    # - set world_type='gazebo'
-    
     evaluate_on_task(eval_config, eval_env_config=eval_config, agent=agent, task='door', world_type='sim')
 
     rospy.signal_shutdown("We are done")
   ```
+* **Execution in different environments**. 
+  The trained agent and environment can also be directly executed in the real world or the gazebo simulator. For this first start the appropriate ros nodes for your robot. Then pass `world_type='world'` for real world execution or `world_type='gazebo'` for gazebo to the `evaluate_on_task()` function.     
 
 
 #### Notes
