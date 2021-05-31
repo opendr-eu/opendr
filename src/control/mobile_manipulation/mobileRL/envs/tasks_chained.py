@@ -299,9 +299,6 @@ class DoorChainedTask(BaseChainedTask):
             ee_fn=partial(GMMPlannerWrapper, gmm_model_path=motion_plan_grasp, robot_config=self.env.robot_config))
 
         # opening goal: expects the object pose in the beginning of the movement
-        # angle = random.uniform(self.DOOR_ANGLE_OPEN_RNG[0], self.DOOR_ANGLE_OPEN_RNG[1])
-        # self.set_door_angle("shelf2", angle)
-        # door_pose_release = self.map.simulator.get_link_state("shelf2::Door")
         motion_plan_opening = str(self._motion_model_path / "GMM_move_KallaxTuer.csv")
         opening_goal = TaskGoal(
             gripper_goal_tip=DoorChainedTask.gmm_obj_origin_to_tip(motion_plan_opening, obj_origin_goal),
@@ -348,8 +345,6 @@ class DrawerChainedTask(BaseChainedTask):
 
     def draw_goal(self) -> List[TaskGoal]:
         # grasp goal
-        # self.map.simulator.set_joint_angle(model_name="target_drawer", joint_names=['/Drawer1Joint'], angles=[0])
-        # door_pose_closed = self.map.simulator.get_link_state("target_drawer::Drawer1")
         door_pose_closed = list_to_pose(
             multiply_tfs(pose_to_list(self.target_drawer_pose), pose_to_list(self.kallax_origin_to_drawer_pose), False))
         obj_origin_goal = [door_pose_closed.position.x + 0.04, door_pose_closed.position.y,

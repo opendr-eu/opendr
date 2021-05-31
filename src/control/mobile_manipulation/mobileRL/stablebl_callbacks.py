@@ -25,7 +25,6 @@ class MobileRLEvalCallback(EventCallback):
         according to performance on the eval env will be saved.
     :param deterministic: (bool) Whether the evaluation should
         use a stochastic or deterministic actions.
-    :param deterministic: (bool) Whether to render or not the environment during evaluation
     :param render: (bool) Whether to render or not the environment during evaluation
     :param verbose: (int)
     """
