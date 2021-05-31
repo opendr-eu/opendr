@@ -1,4 +1,2 @@
-# TODO: run this before running the tests
-# TODO: specify correct catkin_ws
-source devel/setup.bash
+source ${OPENDR_HOME}/lib/catkin_ws_mobile_manipulation/devel/setup.bash
 roslaunch mobile_manipulation_rl pr2_analytical
