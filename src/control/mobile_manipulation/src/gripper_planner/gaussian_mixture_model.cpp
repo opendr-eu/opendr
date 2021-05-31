@@ -8,8 +8,6 @@ GaussianMixtureModel::GaussianMixtureModel(double max_speed_gripper_rot, double 
   _kV{1},
   // duration in real time per time step in the fitted model
   _motion_duration{30} {
-  // loadFromFile(filename);
-  // adaptModel(newGoal);
 }
 
 GaussianMixtureModel::~GaussianMixtureModel() {
@@ -240,14 +238,6 @@ void GaussianMixtureModel::integrateModel(double current_time, double dt_real, E
   current_speed->coeffRef(0) = gripper_vel.x();
   current_speed->coeffRef(1) = gripper_vel.y();
   current_speed->coeffRef(2) = gripper_vel.z();
-  //	if(std::abs(current_speed->coeffRef(0)) >max_velocity || std::abs(current_speed->coeffRef(1)) >max_velocity ||
-  //std::abs(current_speed->coeffRef(2)) >max_velocity){ 		double max_element =
-  //std::max(std::abs(current_speed->coeffRef(0)),std::abs(current_speed->coeffRef(1))); 		max_element =
-  //std::max(max_element,std::abs((double)current_speed->coeffRef(2))); 		current_speed->coeffRef(0) =
-  //current_speed->coeffRef(0)/max_element*_max_speed_gripper; 		current_speed->coeffRef(1) =
-  //current_speed->coeffRef(1)/max_element*_max_speed_gripper; 		current_speed->coeffRef(2) =
-  //current_speed->coeffRef(2)/max_element*_max_speed_gripper;
-  //	}
 
   // limit rot speed gripper
   tf::Vector3 gripper_rot_vel(current_speed->coeffRef(3), current_speed->coeffRef(4), current_speed->coeffRef(5));
@@ -255,15 +245,6 @@ void GaussianMixtureModel::integrateModel(double current_time, double dt_real, E
   current_speed->coeffRef(3) = gripper_rot_vel.x();
   current_speed->coeffRef(4) = gripper_rot_vel.y();
   current_speed->coeffRef(5) = gripper_rot_vel.z();
-  //	if(std::abs(current_speed->coeffRef(3)) >_max_speed_gripper_rot || std::abs(current_speed->coeffRef(4))
-  //>_max_speed_gripper_rot || std::abs(current_speed->coeffRef(5))
-  //>_max_speed_gripper_rot){ 		double max_element =
-  //std::max(std::abs(current_speed->coeffRef(3)),std::abs(current_speed->coeffRef(4))); 		max_element =
-  // std::max(max_element,std::abs((double)current_speed->coeffRef(5))); 		current_speed->coeffRef(3) =
-  // current_speed->coeffRef(3)/max_element*_max_speed_gripper_rot; 		current_speed->coeffRef(4) =
-  //current_speed->coeffRef(4)/max_element*_max_speed_gripper_rot; 		current_speed->coeffRef(5) =
-  //current_speed->coeffRef(5)/max_element*_max_speed_gripper_rot;
-  //	}
 
   // limit robotbase speed
   // 'hack' to ensure that if starting far away the base won't out-run the gripper (due to z always being 0 in the
@@ -271,31 +252,12 @@ void GaussianMixtureModel::integrateModel(double current_time, double dt_real, E
   tf::Vector3 base_vel(current_speed->coeffRef(7), current_speed->coeffRef(8), unscaled_gripper_z);
   base_vel = utils::normScaleVel(base_vel, min_velocity * dt_real, max_velocity * dt_real);
   base_vel.setZ(0.0);
-  //    if (std::abs(gripper_vel.length() - max_velocity * dt_real) < 0.0001){
-  //        base_vel = base_vel / (base_vel.length() / tf::Vector3(gripper_vel.x(), gripper_vel.y(), 0.0).length());
-  //    }
   current_speed->coeffRef(7) = base_vel.x();
   current_speed->coeffRef(8) = base_vel.y();
-
-  //	if(std::abs(current_speed->coeffRef(7)) >max_velocity || std::abs(current_speed->coeffRef(8)) > max_velocity){
-  //		double max_element = std::max(std::abs(current_speed->coeffRef(7)),std::abs(current_speed->coeffRef(8)));
-  //		(*current_speed)[7] = current_speed->coeffRef(7)/max_element*(max_velocity);
-  //		(*current_speed)[8] = current_speed->coeffRef(8)/max_element*(max_velocity);
-  //	}
 
   // limit robotbase rot speed
   double lim = _max_speed_base_rot * dt_real;
   current_speed->coeffRef(12) = utils::clampDouble(current_speed->coeffRef(12), -lim, lim);
-  //	if(std::abs(current_speed->coeffRef(12)) >_max_speed_base_rot){
-  //		current_speed->coeffRef(12) = current_speed->coeffRef(12) / (std::abs(current_speed->coeffRef(12)) *
-  //_max_speed_base_rot);
-  //	}
-
-  // scale down to the real-world time step
-  // NOTE: think this should better be applied to the velocity limits above
-  //	*current_speed = *current_speed * dt_real;
-  // std::cout << "current_speed*dt_real->coeffRef(0:2) post: " << (*current_speed)(0) << ", " << (*current_speed)(1)<< ", " <<
-  // (*current_speed)(2) << std::endl;
 
   // update position
   *current_pose = *current_pose + *current_speed;  //+ currAcc*(dt*dt*0.5);

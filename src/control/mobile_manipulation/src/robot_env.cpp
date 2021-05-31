@@ -362,9 +362,6 @@ void RobotEnv::addTrajectoryPoint(const tf::Transform &desired_gripper_tf, bool 
     state_copy.setVariablePosition(
       "world_joint/theta", robot_state_.base_tf.getRotation().getAngle() * robot_state_.base_tf.getRotation().getAxis().getZ());
     robot_state::robotStateToRobotStateMsg(state_copy, drs.state);
-    // rviz won't accept these in map frame for some reason
-    // drs.state.joint_state.header.frame_id = "map";
-    // drs.state.multi_dof_joint_state.header.frame_id = "map";
     robstate_visualizer_.publish(drs);
   }
 }

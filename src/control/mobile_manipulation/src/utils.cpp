@@ -278,7 +278,6 @@ namespace utils {
     return (next * current.inverse()).normalized();
   }
 
-  // untested
   bool tfAlmostEqual(tf::Transform a, tf::Transform b) {
     bool equal = (a.getOrigin() - b.getOrigin()).length() < 0.05;
     // NOTE: not sure if this is invariant to all equivalent quaternions
