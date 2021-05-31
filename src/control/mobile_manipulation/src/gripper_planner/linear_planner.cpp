@@ -53,7 +53,6 @@ GripperPlan LinearPlanner::calcNextStep(const GripperPlan &prev_plan, const doub
 
 GripperPlan LinearPlanner::internalStep(double time, double dt, const RobotObs &robot_obs, const double &learned_vel_norm,
                                         bool update_prev_plan) {
-
   double min_vel, max_vel;
   if (learned_vel_norm >= 0.0) {
     min_vel = learned_vel_norm;
