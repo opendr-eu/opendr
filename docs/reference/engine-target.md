@@ -24,6 +24,21 @@ All the classes should implement the corresponding setter/getter functions to en
 type checking is performed (if there is no other technical obstacle to this, e.g., negative performance impact).
 
 
+### class engine.target.Category
+Bases: `engine.target.Target`
+
+The Category target is used for 1-of-K classification problems.
+It contains the predicted class or ground truth and optionally the description of the predicted class
+and the prediction confidence.
+
+The [Category](#class_engine.target.Category) class has the following public methods and attributes:
+#### Category(prediction, confidence=None)
+Construct a new [Category](#class_engine.target.Category).
+- *prediction* is a class integer.
+- *description* is an optional string describing the predicted class.
+- *confidence* is an optional one-dimensional array / tensor of class probabilitiess.
+
+
 ### class engine.target.Keypoint
 Bases: `engine.target.Target`
 
@@ -47,6 +62,8 @@ The [Pose](#class_engine.target.Pose) class has the following public methods:
 #### Pose(keypoints, confidence)
   Construct a new [Pose](#class_engine.target.Pose) object based on *keypoints*.
   *keypoints* is expected to be a list of [Keypoint](#class_engine.target.Keypoint) objects.
+  Keypoints can be accessed either by using their numerical id (e.g., pose[0]) or their name (e.g., pose['neck']). 
+  Please refer to `Pose.kpt_names` for a list of supported keypoints.
 
 
 ### class engine.target.BoundingBox3D

@@ -17,11 +17,11 @@ import unittest
 import shutil
 import os
 import torch
-from engine.datasets import PointCloudsDatasetIterator
-from perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
+from opendr.engine.datasets import PointCloudsDatasetIterator
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner
 )
-from perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
+from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
 
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -47,6 +47,8 @@ def rmdir(_dir):
 class TestVoxelObjectDetection3DLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        print("\n\n****************************************\nTEST Voxel Object Detection 3D Learner\n"
+              "****************************************")
         cls.temp_dir = os.path.join("tests", "sources", "tools",
                                     "perception", "object_detection_3d",
                                     "voxel_object_detection_3d",
@@ -66,17 +68,17 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
                                                   "test_short.proto")
 
         cls.config_pointpillars_car = os.path.join(
-            ".", "src", "perception", "object_detection_3d",
+            ".", "src", "opendr", "perception", "object_detection_3d",
             "voxel_object_detection_3d", "second_detector", "configs", "pointpillars",
             "car", "test_short.proto")
 
         cls.config_pointpillars_ped_cycle = os.path.join(
-            ".", "src", "perception", "object_detection_3d",
+            ".", "src", "opendr", "perception", "object_detection_3d",
             "voxel_object_detection_3d", "second_detector", "configs", "pointpillars",
             "ped_cycle", "test_short.proto")
 
         cls.subsets_path = os.path.join(
-            ".", "src", "perception", "object_detection_3d",
+            ".", "src", "opendr", "perception", "object_detection_3d",
             "datasets", "nano_kitti_subsets")
 
         cls.download_model_names = {
