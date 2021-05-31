@@ -66,12 +66,6 @@ def stop_launch_files(p_gazebo, p_moveit):
     if p_moveit:
         p_moveit.terminate()
 
-
-# def roskill():
-#     cmd = 'rosnode kill -a; killall -9 gzserver gzclient'
-#     return run(cmd)
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--env', type=str.lower, choices=['pr2', 'tiago', 'hsr'], help='')

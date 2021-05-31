@@ -268,9 +268,6 @@ class SceneMap(EmptyMap):
         self.simulator.delete_all_spawned()
         objects = self.get_scene_objects()
         self.simulator.spawn_scene_objects(objects)
-        # NOTE: depending where the robot is, this could lead to collision with
-        #   (i) the last position the robot had before the reset
-        #   (ii) the inital position the robot will take when resetting
         self.add_objects_to_floormap(objects)
 
     def clear(self):
