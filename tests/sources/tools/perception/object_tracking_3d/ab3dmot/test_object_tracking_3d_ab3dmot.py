@@ -16,10 +16,10 @@ import sys
 import unittest
 import shutil
 import os
-from perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_learner import (
+from opendr.perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_learner import (
     ObjectTracking3DAb3dmotLearner
 )
-from perception.object_tracking_3d.datasets.kitti_tracking import KittiTrackingDatasetIterator
+from opendr.perception.object_tracking_3d.datasets.kitti_tracking import KittiTrackingDatasetIterator
 
 
 def rmfile(path):
@@ -39,6 +39,8 @@ def rmdir(_dir):
 class TestObjectTracking3DAb3dmot(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        print("\n\n**********************************\nTEST Object Tracking 3D ab3dmot Learner\n"
+              "**********************************")
         cls.temp_dir = os.path.join("tests", "sources", "tools",
                                     "perception", "object_tracking_3d",
                                     "ab3dmot",

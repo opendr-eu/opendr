@@ -1,0 +1,33 @@
+<html>
+<head>
+    <title>Fall Detection Demo</title>
+</head>
+<body>
+<div style="text-align:center">
+    <h1>Fall Detection Demo</h1>
+    You can find below a stream of the robot's camera, along with extra information regarding the perception algorithms
+    and state. <br>
+    The data are streamed online either from the actual robot or from the simulation environment (according to
+    the employed setup).
+</div>
+<div style="text-align:center">
+    <h3>Video Stream</h3>
+    <img id="bg" src="{{ url_for('video_feed') }}">
+</div>
+<br><br>
+<div style="text-align:center">
+    <em>This project has received funding from the European Union’s Horizon 2020 research and innovation programme under
+        grant agreement No 871449 (<em><a href="https://opendr.eu">OpenDR</a></em>).</em><br>
+    <br>
+    <br>
+    <img src="{{ url_for('static', filename='eu.png') }}" height="70px">
+    <span style="display:inline-block; width: 50px;"></span>
+
+    <img src="{{ url_for('static', filename='opendr_logo.png') }}" height="70px">
+
+
+</div>
+</body>
+
+
+</html>
