@@ -108,7 +108,7 @@ class ResNet(Module):
         if input_size[0] == 112:
             self.fc = Linear(2048 * 4 * 4, 512)
         else:
-            self.fc = Linear(2048 * 8 * 8, 512)
+            self.fc = Linear(2048 * 7 * 7, 512)
         self.bn_o2 = BatchNorm1d(512)
 
         for m in self.modules():

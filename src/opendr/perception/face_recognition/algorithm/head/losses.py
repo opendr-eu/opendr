@@ -14,18 +14,17 @@ class ArcFace(nn.Module):
         Args:label
             in_features: size of each input sample
             out_features: size of each output sample
-            device_id: the ID of GPU where the model will be trained by model parallel.
-            if device_id=None, it will be trained on CPU without model parallel.
+            device: the device on which the model is trained. Supports 'cuda' and 'cpu'
             s: norm of input feature
             m: margin
             cos(theta+m)
         """
 
-    def __init__(self, in_features, out_features, device_id, s=64.0, m=0.50, easy_margin=False):
+    def __init__(self, in_features, out_features, device, s=64.0, m=0.50, easy_margin=False):
         super(ArcFace, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.device_id = device_id
+        self.device = device
 
         self.s = s
         self.m = m
@@ -50,8 +49,8 @@ class ArcFace(nn.Module):
             phi = torch.where(cosine > self.th, phi, cosine - self.mm)
         # --------------------------- Convert label to one-hot ---------------------------
         one_hot = torch.zeros(cosine.size())
-        if self.device_id == 'cuda':
-            one_hot = one_hot.cuda(self.device_id)
+        if self.device == 'cuda':
+            one_hot = one_hot.cuda(self.device)
         one_hot.scatter_(1, label.view(-1, 1).long(), 1)
         output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
         output *= self.s
@@ -64,18 +63,17 @@ class CosFace(nn.Module):
     Args:
         in_features: size of each input sample
         out_features: size of each output sample
-        device_id: the ID of GPU where the model will be trained by model parallel.
-                if device_id=None, it will be trained on CPU without model parallel.
+        device: the device on which the model is trained. Supports 'cuda' and 'cpu'
         s: norm of input feature
         m: margin
         cos(theta)-m
     """
 
-    def __init__(self, in_features, out_features, device_id, s=64.0, m=0.35):
+    def __init__(self, in_features, out_features, device, s=64.0, m=0.35):
         super(CosFace, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.device_id = device_id
+        self.device = device
         self.s = s
         self.m = m
 
@@ -88,8 +86,8 @@ class CosFace(nn.Module):
         phi = cosine - self.m
         # --------------------------- Convert label to one-hot ---------------------------
         one_hot = torch.zeros(cosine.size())
-        if self.device_id == 'cuda':
-            one_hot = one_hot.cuda(self.device_id)
+        if self.device == 'cuda':
+            one_hot = one_hot.cuda(self.device)
         one_hot.scatter_(1, label.view(-1, 1).long(), 1)
         output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
         output *= self.s
@@ -109,13 +107,12 @@ class SphereFace(nn.Module):
     Args:
         in_features: size of each input sample
         out_features: size of each output sample
-        device_id: the ID of GPU where the model will be trained by model parallel.
-                               if device_id=None, it will be trained on CPU without model parallel.
+        device: the device on which the model is trained. Supports 'cuda' and 'cpu'
         m: margin
         cos(m*theta)
     """
 
-    def __init__(self, in_features, out_features, device_id, m=4):
+    def __init__(self, in_features, out_features, device, m=4):
         super(SphereFace, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -125,7 +122,7 @@ class SphereFace(nn.Module):
         self.power = 1
         self.lambda_min = 5.0
         self.iter = 0
-        self.device_id = device_id
+        self.device = device
 
         self.weight = Parameter(torch.FloatTensor(out_features, in_features))
         nn.init.xavier_uniform_(self.weight)
@@ -157,8 +154,8 @@ class SphereFace(nn.Module):
 
         # --------------------------- Convert label to one-hot ---------------------------
         one_hot = torch.zeros(cos_theta.size())
-        if self.device_id == 'cuda':
-            one_hot = one_hot.cuda(self.device_id)
+        if self.device == 'cuda':
+            one_hot = one_hot.cuda(self.device)
         one_hot.scatter_(1, label.view(-1, 1), 1)
 
         # --------------------------- Calculate output ---------------------------
@@ -186,19 +183,18 @@ class AMSoftmax(nn.Module):
     Args:
         in_features: size of each input sample
         out_features: size of each output sample
-        device_id: the ID of GPU where the model will be trained by model parallel.
-                               if device_id=None, it will be trained on CPU without model parallel.
+        device: the device on which the model is trained. Supports 'cuda' and 'cpu'
         m: margin
         s: scale of outputs
     """
 
-    def __init__(self, in_features, out_features, device_id, m=0.35, s=30.0):
+    def __init__(self, in_features, out_features, device, m=0.35, s=30.0):
         super(AMSoftmax, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.m = m
         self.s = s
-        self.device_id = device_id
+        self.device = device
 
         self.kernel = Parameter(torch.Tensor(in_features, out_features))
         self.kernel.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)  # Initialize kernel
@@ -224,8 +220,7 @@ class Classifier(nn.Module):
         Args:
             in_features: size of each input sample
             out_features: size of each output sample
-            device_id: the ID of GPU where the model will be trained by model parallel.
-                       if device_id=None, it will be trained on CPU without model parallel.
+            device: the device on which the model is trained. Supports 'cuda' and 'cpu'
         """
 
     def __init__(self, in_features, out_features, device):
