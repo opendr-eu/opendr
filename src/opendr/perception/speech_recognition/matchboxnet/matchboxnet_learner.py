@@ -27,7 +27,7 @@ from torch.utils.data import DataLoader
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Timeseries
 from opendr.engine.learners import Learner
-from opendr.engine.target import SpeechCommand
+from opendr.engine.target import Category
 from opendr.perception.speech_recognition.matchboxnet.algorithm.audioutils import get_mfcc
 from opendr.perception.speech_recognition.matchboxnet.algorithm.model import MatchBoxNet
 
@@ -236,7 +236,7 @@ class MatchboxNetLearner(Learner):
         prediction = output.max(1, keepdim=True)
         batch_predictions = []
         for target, confidence in zip(prediction[1], prediction[0].exp()):
-            batch_predictions.append(SpeechCommand(target.item(), confidence=confidence.item()))
+            batch_predictions.append(Category(target.item(), confidence=confidence.item()))
         return batch_predictions[0] if len(batch_predictions) == 1 else batch_predictions
 
     def save(self, path):

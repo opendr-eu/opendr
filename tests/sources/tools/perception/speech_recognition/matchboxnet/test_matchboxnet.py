@@ -26,7 +26,7 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.perception.speech_recognition.matchboxnet.matchboxnet_learner import MatchboxNetLearner
 from opendr.engine.data import Timeseries
 from opendr.engine.datasets import DatasetIterator
-from opendr.engine.target import SpeechCommand
+from opendr.engine.target import Category
 
 TEST_BATCH_SIZE = 2
 TEST_EPOCHS = 1
@@ -82,12 +82,12 @@ class MatchboxNetTest(unittest.TestCase):
         batch = [Timeseries(np.ones((1, TEST_SIGNAL_LENGTH))) for _ in range(TEST_INFER_LENGTH)]
         results = self.learner.infer(batch)
         self.assertTrue(len(results) == TEST_INFER_LENGTH)
-        self.assertTrue(all([isinstance(x, SpeechCommand) for x in results]))
+        self.assertTrue(all([isinstance(x, Category) for x in results]))
 
     def test_infer_pure_signal(self):
         signal = Timeseries(np.ones((1, TEST_SIGNAL_LENGTH)))
         result = self.learner.infer(signal)
-        self.assertTrue(isinstance(result, SpeechCommand))
+        self.assertTrue(isinstance(result, Category))
 
     def test_reset(self):
         weights_before_reset = list(self.learner.model.parameters())[0].clone()
