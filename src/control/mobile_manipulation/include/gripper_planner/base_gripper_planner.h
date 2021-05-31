@@ -85,4 +85,4 @@ public:
   EEObs generateObsStep(const RobotObs &robot_obs);
 };
 
-  #endif  // MOBILE_MANIPULATION_RL_BASE_GRIPPER_PLANNER_H
+#endif  // MOBILE_MANIPULATION_RL_BASE_GRIPPER_PLANNER_H

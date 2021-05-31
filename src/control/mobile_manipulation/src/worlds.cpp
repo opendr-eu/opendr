@@ -24,9 +24,7 @@ void SimWorld::setModelState(std::string model_name, tf::Transform world_transfo
                              ros::Publisher &cmd_base_vel_pub) {
 }
 
-GazeboWorld::GazeboWorld() :
-  BaseWorld("gazebo", false){
-  };
+GazeboWorld::GazeboWorld() : BaseWorld("gazebo", false){};
 
 void GazeboWorld::setModelState(std::string model_name, tf::Transform world_transform, RoboConf robo_config,
                                 ros::Publisher &cmd_base_vel_pub) {
