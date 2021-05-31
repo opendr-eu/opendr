@@ -1,14 +1,13 @@
 import random
-from enum import IntEnum
-from typing import Iterable, NamedTuple
-
 import rospy
 import time
+from enum import IntEnum
 from gazebo_msgs.msg import LinkStates
 from gazebo_msgs.srv import DeleteModel, SpawnModel, GetModelState, SetModelState, SetModelConfiguration, \
     SetModelConfigurationRequest
 from geometry_msgs.msg import Pose
 from std_srvs.srv import Empty
+from typing import Iterable, NamedTuple
 
 from control.mobile_manipulation.mobileRL.envs.env_utils import publish_marker, clear_all_markers
 

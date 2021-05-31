@@ -1,9 +1,8 @@
-from typing import Union, List
-
 import numpy as np
 import rospy
 from geometry_msgs.msg import Quaternion, Pose, Point
 from scipy.spatial.transform import Rotation
+from typing import Union, List
 from visualization_msgs.msg import Marker
 
 

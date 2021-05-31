@@ -1,7 +1,6 @@
 import argparse
-from subprocess import Popen
-
 import time
+from subprocess import Popen
 
 """
 IMPORTANT: ENSURE THAT THIS FILE ONLY RELIES ON PYTHON2 COMPATIBLE SYNTAX
@@ -17,7 +16,8 @@ gazebo_cmds = {
 moveit_cmds = {
     'pr2': "roslaunch pr2_moveit_config move_group.launch".split(" "),
     'tiago': None,  # ['roslaunch', 'tiago_moveit_config', 'move_group.launch'],
-    'hsr': "roslaunch mobile_manipulation_rl hsr_move_group.launch joint_states_topic:=/hsrb/robot_state/joint_states".split(" ")
+    'hsr': "roslaunch mobile_manipulation_rl hsr_move_group.launch joint_states_topic:=/hsrb/robot_state/joint_states".split(
+        " ")
 }
 
 analytical_cmds = {
@@ -65,6 +65,7 @@ def stop_launch_files(p_gazebo, p_moveit):
         p_gazebo.terminate()
     if p_moveit:
         p_moveit.terminate()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

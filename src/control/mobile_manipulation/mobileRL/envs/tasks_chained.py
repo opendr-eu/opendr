@@ -1,16 +1,15 @@
 import copy
+import numpy as np
 import os
 import random
-from functools import partial
-from pathlib import Path
-from typing import List
-
-import numpy as np
 import time
-from geometry_msgs.msg import Point, Pose, Quaternion
-from urllib.request import urlretrieve
 import zipfile
+from functools import partial
+from geometry_msgs.msg import Point, Pose, Quaternion
+from pathlib import Path
 from pybindings import GMMPlanner, multiply_tfs
+from typing import List
+from urllib.request import urlretrieve
 
 from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper, GMMPlannerWrapper
 from control.mobile_manipulation.mobileRL.envs.env_utils import pose_to_list, list_to_pose
