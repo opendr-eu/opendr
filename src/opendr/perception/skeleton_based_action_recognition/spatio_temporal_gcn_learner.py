@@ -99,7 +99,7 @@ class SpatioTemporalGCNLearner(Learner):
             self.output_device = self.device_ind[0] if type(self.device_ind) is list else self.device_ind
         self.__init_seed(1)
 
-    def fit(self, dataset, val_dataset, logging_path='', silent=False, verbose=False,
+    def fit(self, dataset, val_dataset, logging_path='', silent=False, verbose=True,
             momentum=0.9, nesterov=True, weight_decay=0.0001, train_data_filename='train_joints.npy',
             train_labels_filename='train_labels.pkl', val_data_filename="val_joints.npy",
             val_labels_filename="val_labels.pkl", skeleton_data_type='joint'):
@@ -190,7 +190,7 @@ class SpatioTemporalGCNLearner(Learner):
             scheduler = self.lr_schedule
         else:
             scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer_, milestones=self.drop_after_epoch, gamma=0.1,
-                                                       last_epoch=-1, verbose=False)
+                                                       last_epoch=-1, verbose=True)
         # load data
         traindata = self.__prepare_dataset(dataset,
                                            data_filename=train_data_filename,
@@ -293,7 +293,7 @@ class SpatioTemporalGCNLearner(Learner):
         return {"train_loss": np.mean(loss_value), "eval_results": eval_results_list,
                 "best_accuracy": self.best_acc, "model_name": self.experiment_name}
 
-    def eval(self, val_dataset, val_loader=None, epoch=0, silent=False, verbose=False,
+    def eval(self, val_dataset, val_loader=None, epoch=0, silent=False, verbose=True,
              val_data_filename='val_joints.npy', val_labels_filename='val_labels.pkl', skeleton_data_type='joint',
              save_score=False, wrong_file=None, result_file=None, show_topk=[1, 5]):
         """
@@ -406,7 +406,7 @@ class SpatioTemporalGCNLearner(Learner):
                           labels_filename="train_labels.pkl",
                           skeleton_data_type='joint',
                           phase='train',
-                          verbose=False):
+                          verbose=True):
         """
         This internal method prepares the train dataset depending on what type of dataset is provided.
         If an ExternalDataset object type is provided, the method tried to prepare the dataset based on the original
@@ -536,7 +536,7 @@ class SpatioTemporalGCNLearner(Learner):
 
         self.__load_from_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"))
 
-    def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=False):
+    def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=True):
         """
         Converts the loaded regular PyTorch model to an ONNX model and saves it to disk.
         :param output_name: path and name to save the model, e.g. "/models/onnx_model.onnx"
@@ -572,7 +572,7 @@ class SpatioTemporalGCNLearner(Learner):
                           dynamic_axes={'onnx_input': {0: 'n'},  # variable lenght axes
                                         'onnx_output': {0: 'n'}})
 
-    def save(self, path, model_name='', verbose=False):
+    def save(self, path, model_name='', verbose=True):
         """
         This method is used to save a trained model.
         Provided with the path and model_name, it saves the model there with a proper format and a .json file
@@ -624,7 +624,7 @@ class SpatioTemporalGCNLearner(Learner):
         with open(json_model_path, 'w') as outfile:
             json.dump(model_metadata, outfile)
 
-    def load(self, path, model_name, verbose=False):
+    def load(self, path, model_name, verbose=True):
         """
         Loads the model from inside the path provided, based on the metadata.json file included.
         :param path: path of the directory the model was saved
@@ -645,7 +645,7 @@ class SpatioTemporalGCNLearner(Learner):
             if verbose:
                 print("Loaded ONNX model.")
 
-    def __load_from_pt(self, path, verbose=False):
+    def __load_from_pt(self, path, verbose=True):
         """Loads the .pt model weights (or checkpoint) from the path provided.
         :param path: path of the directory the model (checkpoint) was saved
         :type path: str
@@ -697,7 +697,7 @@ class SpatioTemporalGCNLearner(Learner):
 
     def multi_stream_eval(self, dataset, scores, data_filename='val_joints.npy',
                           labels_filename='val_labels.pkl', skeleton_data_type='joint',
-                          verbose=False, silent=True):
+                          verbose=True, silent=True):
         """
         :param dataset: ExternalDataset class object.
         :type dataset: object that holds the validation dataset
@@ -745,7 +745,7 @@ class SpatioTemporalGCNLearner(Learner):
                 pickle.dump(total_score, f)
         return total_score
 
-    def download(self, path=None, method_name="stgcn", mode="pretrained", verbose=False,
+    def download(self, path=None, method_name="stgcn", mode="pretrained", verbose=True,
                  url=OPENDR_SERVER_URL + "perception/skeleton_based_action_recognition/",
                  file_name='stgcn_nturgbd_cv_joint-49-29400'):
         """

@@ -56,7 +56,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                        dataset_name='nturgbd_cv', experiment_name='pstgcn_nturgbd_cv_joint',
                                        blocksize=20, numblocks=2, numlayers=2, topology=[],
                                        layer_threshold=1e-4, block_threshold=1e-4)
-        cls.experiment_name = 'pstgcn_nturgbd_cv'
+        cls.experiment_name = 'pstgcn_nturgbd_cv_joint'
         # Download all required files for testing
         cls.Pretrained_MODEL_PATH_J = cls.pstgcn_action_classifier.download(
             path=os.path.join(cls.temp_dir, "pretrained_models", "pstgcn"), method_name="pstgcn", mode="pretrained",
