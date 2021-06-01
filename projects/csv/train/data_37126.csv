@@ -1,0 +1,3 @@
+background,bamberg_000000_000180.png
+split,train
+model,result_0784,0.6724471996395752,0.6951790499362627,-3,169

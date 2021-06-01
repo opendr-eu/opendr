@@ -1,0 +1,52 @@
+Metadata-Version: 2.1
+Name: pickle5
+Version: 0.0.11
+Summary: Backport of the pickle 5 protocol (PEP 574) and other pickle changes
+Home-page: https://github.com/pitrou/pickle5-backport
+Author: Antoine Pitrou
+Author-email: antoine@python.org
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Python Software Foundation License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Description-Content-Type: text/x-rst
+
+==========================================================
+`pickle5` -- A backport of the pickle 5 protocol (PEP 574)
+==========================================================
+
+This package backports all features and APIs added in the ``pickle`` module
+in Python 3.8.3, including the
+`PEP 574 <https://www.python.org/dev/peps/pep-0574/>`_ additions.  It should
+work with Python 3.5, 3.6 and 3.7.
+
+Basic usage is similar to the ``pickle`` module, except that the module
+to be imported is ``pickle5``:
+
+.. code-block:: python
+
+   import pickle5 as pickle
+
+   pb = pickle.PickleBuffer(b"foo")
+   data = pickle.dumps(pb, protocol=5)
+   assert pickle.loads(data) == b"foo"
+
+Detailed documentation can be found in PEP 574 and the standard
+`pickle documentation <https://docs.python.org/3.8/library/pickle.html>`_.
+
+.. image:: https://travis-ci.org/pitrou/pickle5-backport.svg?branch=master
+   :target: https://travis-ci.org/pitrou/pickle5-backport
+   :align: left
+
+.. image:: https://ci.appveyor.com/api/projects/status/hk4lrl81wp0q283o/branch/master?svg=true
+   :target: https://ci.appveyor.com/project/pitrou/pickle5-backport/branch/master
+   :align: left
+
+

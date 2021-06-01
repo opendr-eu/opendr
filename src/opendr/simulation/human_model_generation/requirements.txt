@@ -1,0 +1,8 @@
+pyglet
+pycocotools
+opencv-python
+matplotlib
+scikit-image
+pyWavefront
+pickle5
+Pillow

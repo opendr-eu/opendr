@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: onnx
+Version: 1.8.0
+Summary: Open Neural Network Exchange
+Home-page: https://github.com/onnx/onnx
+Author: ONNX
+Author-email: onnx-technical-discuss@lists.lfai.foundation
+License: MIT
+Platform: UNKNOWN
+Requires-Dist: protobuf
+Requires-Dist: numpy
+Requires-Dist: six
+Requires-Dist: typing-extensions (>=3.6.2.1)
+Requires-Dist: typing (>=3.6.4) ; python_version < "3.5"
+Provides-Extra: mypy
+Requires-Dist: mypy (==0.600) ; extra == 'mypy'
+
+UNKNOWN
+
+

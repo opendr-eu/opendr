@@ -40,7 +40,7 @@
 import torch
 from torch import nn
 
-from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.conv import conv, conv_dw_no_bn
+from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.conv import conv, conv_dw_no_bn
 from collections import OrderedDict
 import torch.nn.functional as F
 

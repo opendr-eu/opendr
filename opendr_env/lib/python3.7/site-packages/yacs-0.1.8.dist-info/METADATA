@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: yacs
+Version: 0.1.8
+Summary: Yet Another Configuration System
+Home-page: https://github.com/rbgirshick/yacs
+Author: Ross Girshick
+Author-email: ross.girshick@gmail.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Requires-Dist: PyYAML
+
+A simple experiment configuration system for research
+
+

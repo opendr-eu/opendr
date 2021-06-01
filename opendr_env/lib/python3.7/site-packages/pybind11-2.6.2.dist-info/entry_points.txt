@@ -1,0 +1,3 @@
+[console_scripts]
+pybind11-config = pybind11.__main__:main
+

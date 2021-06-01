@@ -1,0 +1,3 @@
+[console_scripts]
+pyav = av.__main__:main
+

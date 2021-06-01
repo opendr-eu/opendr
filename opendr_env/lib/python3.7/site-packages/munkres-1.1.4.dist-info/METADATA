@@ -1,0 +1,29 @@
+Metadata-Version: 2.1
+Name: munkres
+Version: 1.1.4
+Summary: Munkres (Hungarian) algorithm for the Assignment Problem
+Home-page: https://software.clapper.org/munkres/
+Author: Brian Clapper
+Author-email: bmc@clapper.org
+License: Apache Software License
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Scientific/Engineering :: Mathematics
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Description-Content-Type: text/markdown
+
+
+Introduction
+============
+
+The Munkres module provides an implementation of the Munkres algorithm
+(also called the Hungarian algorithm or the Kuhn-Munkres algorithm),
+useful for solving the Assignment Problem.
+
+For complete usage documentation, see: https://software.clapper.org/munkres/
+
+
