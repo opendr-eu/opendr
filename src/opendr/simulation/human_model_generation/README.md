@@ -7,4 +7,4 @@ This folder contains code for:
 
 ## Sources
 
-Code for PIFu is taken from [a link](https://github.com/shunsukesaito/PIFu) with modifications to make them compatible with OpenDR specifications.
+Code for PIFu is taken from [https://github.com/shunsukesaito/PIFu](https://github.com/shunsukesaito/PIFu) with modifications to make them compatible with OpenDR specifications.
