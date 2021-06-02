@@ -33,6 +33,20 @@ __BibTeX__:
 
 
 
+
+### CoX3D
+CoX3D constitute the family of X3D networks transformed to _Continual 3D CNNs_ for online video recognition, which compute outputs frame-by-frame rather than by clip. In situations where the input is a continual video stream, this transformation achieves significant computational saving (≈10x), while resusing the network weight of X3D.
+
+__BibTeX__:
+```bibtex
+@article{hedegaard2021continual,
+  title={Continual 3D Convolutional Neural Networks for Real-time Processing of Videos},
+  author={Lukas Hedegaard},
+  year={2021}
+}
+```
+
+
 ## Datasets
 
 ### UCF-101
