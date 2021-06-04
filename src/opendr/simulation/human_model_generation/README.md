@@ -1,0 +1,10 @@
+# Human Model Generation from Image/s
+
+This folder contains code for:
+*  3D human model generation from images.
+*  3D pose approximation of human models.
+*  Synthetic multi-view image generation for human-centric perception tasks.
+
+## Sources
+
+Code for [PIFu](https://arxiv.org/abs/1905.05172) is taken from [https://github.com/shunsukesaito/PIFu](https://github.com/shunsukesaito/PIFu). It is modified to be compatible with OpenDR specifications.
