@@ -42,7 +42,7 @@ class TestCoX3DLearner(unittest.TestCase):
         )
 
         # Download mini dataset
-        cls.dataset_path = cls.temp_dir / "datasets" / "kinetics3micro"
+        cls.dataset_path = cls.temp_dir / "datasets" / "kinetics3"
         KineticsDataset.download_micro(cls.temp_dir / "datasets")
 
     # Skip this: CI system deletes files anyways, and the dataset and weights are reused in other test
