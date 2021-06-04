@@ -3,7 +3,7 @@
 This folder contains code for:
 *  3D human model generation from images.
 *  3D pose approximation of human models.
-*  Synthetic Multi-view image generation for human perception tasks.
+*  Synthetic multi-view image generation for human-centric perception tasks.
 
 ## Sources
 
