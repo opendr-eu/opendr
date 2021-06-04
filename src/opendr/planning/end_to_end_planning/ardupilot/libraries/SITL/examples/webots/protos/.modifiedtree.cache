@@ -1,0 +1,11 @@
+Webots Proto Cache File version 1.5
+protoFileHash: c01b93e8dad8b2cc2783c112b22f01ae
+needsRobotAncestor: 0
+baseType: Solid
+slotType: 
+parameters: translation,rotation,name,type,withSnow,height,radius,subdivision,enableBoundingObject,locked,isPickable
+tags: 
+license:  Copyright Cyberbotics Ltd. Licensed for use only with Webots.
+licenseUrl:  https://cyberbotics.com/webots_assets_license
+documentationUrl: 
+info: Efficient\s(with\sonly\s8\spolygones)\sand\scustomizable\soutdoor\stree.\nTree\stypes\sare:\n-\s'oak\stree'\n-\s'crab\sapple\stree'\n-\s'cherry\stree'\n-\s'birch\stree'\n-\s'palm\stree'\n-\s'spruce'\n-\s'white\spine'\n-\s'hackberry\stree'\n-\s'hazel\stree'\n\nThe\s'random'\stype\schoose\srandomly\sa\stree\stype\seach\stime\sthe\snode\sis\sregenerated.\n

@@ -1,0 +1,11 @@
+Webots Proto Cache File version 1.5
+protoFileHash: 31c5eecded5fc18cfa420f504335fbe0
+needsRobotAncestor: 0
+baseType: Group
+slotType: 
+parameters: height,radius,thickness,subdivision,accuracy
+tags: static
+license:  Copyright Cyberbotics Ltd. Licensed for use only with Webots.
+licenseUrl:  https://cyberbotics.com/webots_assets_license
+documentationUrl: 
+info: This\sbounding\sobject\swith\sa\spipe\sshape\sis\sformed\sby\sa\sgroup\sof\sboxes.\n

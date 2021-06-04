@@ -1,0 +1,822 @@
+#VRML_SIM R2021a utf8
+WorldInfo {
+  gravity 9.80665
+  physics "sitl_physics_env"
+  basicTimeStep 1
+  FPS 15
+  optimalThreadCount 4
+  coordinateSystem "NUE"
+  randomSeed 52
+}
+Viewpoint {
+  orientation -0.01770445277029876 0.9640126446822171 0.265266230879284 3.0130891230689523
+  position 19.267279003720816 17.264507233236515 -48.67650006933997
+  followType "Mounted Shot"
+}
+Robot {
+  translation 99 -0.9 0
+  rotation 0 0 1 0
+  children [
+    Emitter {
+      type "serial"
+      channel 1
+    }
+  ]
+  name "supervisor_sync"
+  boundingObject Box {
+    size 0.1 0.1 0.1
+  }
+  physics Physics {
+  }
+  controller "ardupilot_SITL_Supervisor"
+  supervisor TRUE
+}
+DEF DEF_VEHICLE Robot {
+  translation 15.1411 -0.91 -20.6903
+  rotation 0 1 0 0.785
+  children [
+    Robot {
+      children [
+        TouchSensor {
+          translation 0 0.03 0
+          rotation 0 1 0 1.57
+          boundingObject box {
+          }
+        }
+        RangeFinder {
+          translation 0 0.32 0
+          rotation 0.09018484661145616 0.991833346325549 0.09018484661145616 -1.57
+          maxRange 15
+        }
+      ]
+      controller "ros"
+    }
+    Receiver {
+      name "receiver_main"
+      type "serial"
+      channel 1
+      bufferSize 32
+    }
+    Emitter {
+      name "emitter_plugin"
+      description "commuicates with physics plugin"
+    }
+    Shape {
+      appearance Appearance {
+        material Material {
+        }
+      }
+      geometry Box {
+        size 0.1 0.1 0.1
+      }
+    }
+    Camera {
+      translation 0 0.12 0
+      rotation 0.12942795977353752 0.9831056944488316 0.12942795977353752 -1.5878343071795866
+      name "camera1"
+      width 128
+      height 128
+    }
+    Compass {
+      name "compass1"
+    }
+    GPS {
+      name "gps1"
+    }
+    Accelerometer {
+      name "accelerometer1"
+    }
+    Gyro {
+      name "gyro1"
+    }
+    InertialUnit {
+      name "inertial_unit"
+    }
+    Transform {
+      translation -0.09999999999999999 0 0
+      rotation -0.5773502691896258 0.5773502691896258 0.5773502691896258 2.094395
+      children [
+        Solid {
+          translation 0 0.35 0
+          rotation 1 0 0 1.5707959999999999
+          children [
+            Propeller {
+              shaftAxis 0 -1 0
+              thrustConstants -12.2583125 0
+              torqueConstants 18 0
+              device RotationalMotor {
+                name "motor3"
+                controlPID 10.001 0 0
+                maxVelocity 1000
+              }
+              fastHelix Solid {
+                children [
+                  Shape {
+                    appearance Appearance {
+                      material Material {
+                        diffuseColor 1 0 0.1
+                      }
+                    }
+                    geometry Cylinder {
+                      height 0.002
+                      radius 0.02
+                    }
+                  }
+                ]
+              }
+              slowHelix Solid {
+                rotation 0 1 0 1.1667874781290464
+                children [
+                  Shape {
+                    appearance Appearance {
+                      material Material {
+                        diffuseColor 1 0 0.1
+                      }
+                    }
+                    geometry Cylinder {
+                      height 0.002
+                      radius 0.02
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+          physics Physics {
+            mass 0.25
+          }
+        }
+        Shape {
+          appearance Appearance {
+            material Material {
+            }
+          }
+          geometry DEF DEF_ARM Cylinder {
+            height 0.1
+            radius 0.01
+          }
+        }
+      ]
+    }
+    Transform {
+      translation 0 0 0.09999999999999999
+      rotation 0 0.7071067811865476 0.7071067811865476 -3.1415923071795864
+      children [
+        Solid {
+          translation 0 0.35 0
+          rotation 1 0 0 1.5707959999999999
+          children [
+            Propeller {
+              shaftAxis 0 1 0
+              thrustConstants 12.2583125 0
+              torqueConstants 18 0
+              device RotationalMotor {
+                name "motor2"
+                controlPID 10.001 0 0
+                maxVelocity 1000
+              }
+              fastHelix Solid {
+                children [
+                  Shape {
+                    appearance Appearance {
+                      material Material {
+                        diffuseColor 1 0 0.1
+                      }
+                    }
+                    geometry Cylinder {
+                      height 0.002
+                      radius 0.02
+                    }
+                  }
+                ]
+              }
+              slowHelix Solid {
+                rotation 0 -1 0 5.370767303526115
+                children [
+                  Shape {
+                    appearance Appearance {
+                      material Material {
+                        diffuseColor 1 0 0.1
+                      }
+                    }
+                    geometry Cylinder {
+                      height 0.002
+                      radius 0.02
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+          name "solid(2)"
+          physics Physics {
+            mass 0.25
+          }
+        }
+        Shape {
+          appearance Appearance {
+            material Material {
+            }
+          }
+          geometry USE DEF_ARM
+        }
+      ]
+    }
+    Transform {
+      translation 0.09999999999999999 0 0
+      rotation 0.5773502691896258 0.5773502691896258 0.5773502691896258 -2.094395307179586
+      children [
+        Solid {
+          translation 0 0.35 0
+          rotation 1 0 0 1.5707959999999999
+          children [
+            Propeller {
+              shaftAxis 0 -1 0
+              thrustConstants -12.2583125 0
+              torqueConstants 18 0
+              device RotationalMotor {
+                name "motor1"
+                controlPID 10.001 0 0
+                maxVelocity 1000
+              }
+              fastHelix Solid {
+                children [
+                  Shape {
+                    appearance Appearance {
+                      material Material {
+                        diffuseColor 1 0 0.1
+                      }
+                    }
+                    geometry Cylinder {
+                      height 0.002
+                      radius 0.02
+                    }
+                  }
+                ]
+              }
+              slowHelix Solid {
+                rotation 0 1 0 5.486397909883531
+                children [
+                  Shape {
+                    appearance Appearance {
+                      material Material {
+                        diffuseColor 1 0 0.1
+                      }
+                    }
+                    geometry Cylinder {
+                      height 0.002
+                      radius 0.02
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+          name "solid(1)"
+          physics Physics {
+            mass 0.25
+          }
+        }
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 1 0.09999999999999999 0
+            }
+          }
+          geometry USE DEF_ARM
+        }
+      ]
+    }
+    Transform {
+      translation 0 0 -0.09999999999999999
+      rotation 1 0 0 -1.5707963071795863
+      children [
+        Solid {
+          translation 0 0.35 0
+          rotation 1 0 0 1.5707959999999999
+          children [
+            Propeller {
+              shaftAxis 0 1 0
+              thrustConstants 12.2583125 0
+              torqueConstants 18 0
+              device RotationalMotor {
+                name "motor4"
+                controlPID 10.001 0 0
+                maxVelocity 1000
+              }
+              fastHelix Solid {
+                children [
+                  Shape {
+                    appearance Appearance {
+                      material Material {
+                        diffuseColor 1 0 0.1
+                      }
+                    }
+                    geometry Cylinder {
+                      height 0.002
+                      radius 0.02
+                    }
+                  }
+                ]
+              }
+              slowHelix Solid {
+                rotation 0 -1 0 5.350616673324008
+                children [
+                  Shape {
+                    appearance Appearance {
+                      material Material {
+                        diffuseColor 1 0 0.1
+                      }
+                    }
+                    geometry Cylinder {
+                      height 0.002
+                      radius 0.02
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+          name "solid(3)"
+          physics Physics {
+            mass 0.25
+          }
+        }
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0.7999999999999999 0.7999999999999999 0.7999999999999999
+            }
+          }
+          geometry USE DEF_ARM
+        }
+      ]
+    }
+  ]
+  name "quad_plus_sitl"
+  boundingObject Box {
+    size 0.1 0.1 0.1
+  }
+  physics Physics {
+    density -1
+    mass 1.5
+    centerOfMass [
+      0 0 0
+    ]
+  }
+  rotationStep 0.261799
+  controller "ardupilot_SITL_QUAD"
+  controllerArgs [
+    "-p"
+    "5599"
+    "-df"
+    "0.01"
+  ]
+  customData "1"
+}
+modifiedtree {
+  translation 51 -0.95 0
+  name "tree7"
+}
+modifiedtree {
+  translation 40 -0.95 0
+  name "tree8"
+  type "hackberry tree"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation 34.2565 -0.95 0.276427
+  name "tree9"
+  type "hackberry tree"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation 33.7988 -0.95 -5.75285
+  name "tree13"
+  type "hackberry tree"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation 20.1582 -0.95 -5.66483
+  name "tree14"
+  type "crab apple tree"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation 14.9628 -0.95 -6.09153
+  name "tree15"
+  type "crab apple tree"
+  subdivision 5
+  locked FALSE
+}
+modifiedtree {
+  translation -1.02557 -0.95 -5.92704
+  name "tree26"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation -1.17473 -0.95 11.2235
+  rotation 0 1 0 0.523599
+  name "tree30"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation -1.69522 -0.95 4.5279
+  rotation 0 1 0 -2.3561953071795863
+  name "tree29"
+  type "crab apple tree"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation 4.12489 -0.95 13.558
+  name "tree28"
+  type "crab apple tree"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation 5.51819 -0.95 -5.07284
+  name "tree27(1)"
+  type "crab apple tree"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation 18.8087 -0.95 0.900952
+  name "tree16"
+  type "crab apple tree"
+  subdivision 5
+  locked FALSE
+}
+modifiedtree {
+  translation 14.4123 -0.95 5.47139
+  name "tree23"
+  type "crab apple tree"
+  subdivision 5
+  locked FALSE
+}
+modifiedtree {
+  translation 18.5628 -0.95 10.5981
+  name "tree21"
+  type "crab apple tree"
+  subdivision 5
+  locked FALSE
+}
+modifiedtree {
+  translation 39.8155 -0.95 -5.73208
+  name "tree12"
+  type "hackberry tree"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation 40.2099 -0.95 10.1398
+  name "tree11"
+  type "hackberry tree"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation 32.9337 -0.95 12.9281
+  name "tree11(2)"
+  type "hackberry tree"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation 35.7106 -0.95 6.00741
+  rotation 0 1 0 -1.5707953071795862
+  name "tree11(1)"
+  type "hackberry tree"
+  subdivision 3
+  locked FALSE
+}
+UnevenTerrain {
+  translation 14 -1 59
+  rotation 9.58979e-09 -1 9.58976e-09 -1.5707953071795862
+  size 53 5 100
+  appearance PBRAppearance {
+    baseColorMap ImageTexture {
+      url [
+        "/home/airlab-halil/Downloads/ground2.jpg"
+      ]
+    }
+    roughness 1
+    metalness 0
+  }
+  flatBounds TRUE
+}
+modifiedtree {
+  translation 55 -0.95 10
+  name "tree(2)"
+  type "crab apple tree"
+  radius 3
+  subdivision 4
+}
+SimpleChair {
+  translation 80 -1.96133e-05 5
+}
+SimpleChair {
+  translation 89.9878 -9.80665e-06 -10.3366
+  name "simple chair(1)"
+}
+SimpleChair {
+  translation 75.1152 -9.80665e-06 -1.60589
+  rotation 1 0 0 4.692820414042842e-06
+  name "simple chair(2)"
+}
+Background {
+  skyColor [
+    0.15 0.5 1
+  ]
+}
+Solid {
+  translation 128.996 -1 -35.3003
+  rotation 0 1 0 -1.5707953071795862
+  children [
+    HouseWithGarage {
+    }
+  ]
+}
+Solid {
+  translation 184.148 -0.9 20.4943
+  children [
+    HouseWithGarage {
+      rotation 0 1 0 -1.5707953071795862
+    }
+  ]
+  name "solid(1)"
+}
+DirectionalLight {
+  direction 0 -1 0
+}
+Floor {
+  translation 0 -1 0
+  size 500 750
+  appearance Grass {
+  }
+}
+SolidBox {
+  translation -30 3 4.5
+  size 2 8 0.5
+}
+SolidBox {
+  translation -32 3 8.5
+  name "box(1)"
+  size 2 8 0.5
+}
+SolidBox {
+  translation -25.3575 3 3.43715
+  name "box(2)"
+  size 2 8 0.5
+}
+SolidBox {
+  translation -35.4264 3 3.64042
+  name "box(3)"
+  size 2 8 0.5
+}
+SolidBox {
+  translation -34.8589 3 12.6527
+  name "box(4)"
+  size 2 8 0.5
+}
+SolidBox {
+  translation -32.1846 3 15
+  name "box(5)"
+  size 2 8 0.5
+}
+SolidBox {
+  translation -25.3295 3 8.12776
+  name "box(6)"
+  size 2 8 0.5
+}
+SolidBox {
+  translation -23.3006 3 13.4214
+  name "box(7)"
+  size 2 8 0.5
+}
+SolidBox {
+  translation -37.2324 3 8.80014
+  name "box(8)"
+  size 2 8 0.5
+}
+SolidBox {
+  translation -27.1224 3 16.575
+  name "box(10)"
+  size 2 8 0.5
+}
+SolidBox {
+  translation -28 3 11.5116
+  name "box(9)"
+  size 2 8 0.5
+}
+Floor {
+  translation 14 -0.95 8
+  name "floor(5)"
+  size 100 50
+  appearance PBRAppearance {
+    baseColorMap ImageTexture {
+      url [
+        "/home/airlab-halil/Documents/halil/OpenDR/WP7 Integration/3.jpg"
+      ]
+      filtering 3
+    }
+    roughness 1
+    metalness 0
+  }
+}
+modifiedtree {
+  translation 5.56133 -0.95 4.94058
+  name "tree29(1)"
+  subdivision 3
+  locked FALSE
+}
+modifiedtree {
+  translation 21.4797 -0.95 7.10138
+  rotation 0 0 1 2.85387e-06
+  name "tree18"
+  type "crab apple tree"
+  subdivision 5
+  locked FALSE
+}
+StraightRoadSegment {
+  translation 167 -0.95 -8
+  rotation 0 1 0 -3.141592653589793
+  name "road(4)"
+  id "1"
+  roadBorderHeight 0.1
+  length 24
+}
+Floor {
+  translation 160 -0.95 21
+  name "floor(3)"
+  size 35 24
+  appearance Parquetry {
+    type "dark strip"
+  }
+}
+Floor {
+  translation 151 -0.95 -24
+  name "floor(4)"
+  size 21 37
+  appearance Parquetry {
+    type "dark strip"
+  }
+}
+RoadIntersection {
+  translation 167 -0.95 0
+  rotation 0 1 0 0.7853996938995746
+}
+Windmill {
+  translation 86 -1 135
+}
+Floor {
+  translation 108 -0.95 125.1
+  name "floor(2)"
+  size 35 24
+  appearance Parquetry {
+    type "dark strip"
+  }
+}
+Cypress {
+  translation 107.848 -1 37.4327
+  name "cypress tree(3)"
+}
+Cypress {
+  translation 108.069 -1 45.8296
+  name "cypress tree(4)"
+}
+Cypress {
+  translation 107.424 -1 20.401
+}
+Cypress {
+  translation 107.401 -0.78 12.0747
+  name "cypress tree(2)"
+}
+Cypress {
+  translation 107.52 -1 29.133
+  name "cypress tree(1)"
+}
+StraightRoadSegment {
+  translation 227 -0.95 0
+  rotation 0 1 0 -1.5707996938995747
+  name "road(2)"
+  id "1"
+  roadBorderHeight 0.1
+  length 52
+}
+StraightRoadSegment {
+  translation 159 -0.95 0
+  rotation 0 1 0 -1.5707996938995747
+  name "road(3)"
+  id "1"
+  roadBorderHeight 0.1
+  length 32
+}
+Oak {
+  translation 112.63 -1 -1.54384
+}
+Roundabout {
+  translation 114 -0.95 0
+  rotation 0 1 0 -0.7853996938995746
+  connectedRoadIDs [
+    "1"
+  ]
+  borderHeight 0.1
+}
+Oak {
+  translation 112.477 -1 1.24417
+  name "oak tree(3)"
+}
+Oak {
+  translation 115.803 -1 -0.975352
+  name "oak tree(2)"
+}
+Oak {
+  translation 114.835 -1 1.29357
+  name "oak tree(1)"
+}
+StraightRoadSegment {
+  translation 114 -0.95 -113
+  id "1"
+  roadBorderHeight 0.1
+  length 100
+}
+StraightRoadSegment {
+  translation 114 -0.95 13
+  name "road(1)"
+  id "1"
+  roadBorderHeight 0.1
+  length 100
+}
+Floor {
+  translation 83 -0.98 0
+  name "floor(1)"
+  size 35 35
+  appearance Parquetry {
+    type "dark strip"
+  }
+}
+modifiedtree {
+  translation 57 -0.95 0
+  name "tree_6"
+  type "crab apple tree"
+}
+modifiedtree {
+  translation 54 -0.95 -6
+  name "tree_8"
+  type "crab apple tree"
+}
+DEF PIONEER_3AT Pioneer3at {
+  translation 17 -0.869405 -18
+  rotation 0 -1 0 -2.6179953071795863
+  name "Pioneer 3-AT(1)"
+  controller "ros"
+  controllerArgs [
+    "--name=pioneer3at"
+  ]
+  extensionSlot [
+    Camera {
+      translation 0 0.17 -0.22
+      width 256
+      height 128
+      motionBlur 500
+      noise 0.02
+    }
+    Accelerometer {
+      lookupTable [
+        -39.24 -39.24 0.005
+        39.24 39.24 0.005
+      ]
+    }
+    Gyro {
+      lookupTable [
+        -50 -50 0.005
+        50 50 0.005
+      ]
+    }
+    GPS {
+    }
+    InertialUnit {
+      rotation -0.577349935856137 0.577349935856137 0.5773509358560258 2.09439
+    }
+  ]
+}
+StripBuilding {
+  translation 122.215 -1 111.389
+  rotation 0 1 0 1.5707996938995747
+}
+Warehouse {
+  translation 108.69 -1 143.302
+}
+ModernSuburbanHouse {
+  translation 132.02 -0.9 -16.2363
+  rotation 0 1 0 3.14159
+}
