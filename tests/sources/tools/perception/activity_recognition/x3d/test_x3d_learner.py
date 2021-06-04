@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import shutil
+# import shutil
 import torch
 import unittest
 
@@ -32,7 +32,7 @@ class TestX3DLearner(unittest.TestCase):
     def setUpClass(cls):
         print("\n\n**********************************\nTEST Activity Recognition X3D Learner\n"
               "**********************************")
-        cls.temp_dir = Path("./tests/sources/tools/perception/activity_recognition/x3d/temp")
+        cls.temp_dir = Path("./tests/sources/tools/perception/activity_recognition/temp")
 
         # Download model weights
         X3DLearner.download(path=Path(cls.temp_dir) / "weights", model_names={_BACKBONE})
@@ -41,15 +41,16 @@ class TestX3DLearner(unittest.TestCase):
         )
 
         # Download mini dataset
-        cls.dataset_path = cls.temp_dir / "datasets" / "kinetics400mini"
-        KineticsDataset.download_mini(cls.temp_dir / "datasets")
+        cls.dataset_path = cls.temp_dir / "datasets" / "kinetics3micro"
+        KineticsDataset.download_micro(cls.temp_dir / "datasets")
 
-    @classmethod
-    def tearDownClass(cls):
-        try:
-            shutil.rmtree(str(cls.temp_dir))
-        except OSError as e:
-            logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
+    # Skip this: CI system deletes files anyways, and the dataset and weights are reused in other test
+    # @classmethod
+    # def tearDownClass(cls):
+    #     try:
+    #         shutil.rmtree(str(cls.temp_dir))
+    #     except OSError as e:
+    #         logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
 
     def test_downloaded(self):
         assert Path(self.temp_dir) / "weights" / f"x3d_{_BACKBONE}.pyth"
@@ -102,7 +103,7 @@ class TestX3DLearner(unittest.TestCase):
         # Input is Tensor
         results1 = self.learner.infer(batch)
         # Results is a batch with each item summing to 1.0
-        assert all([torch.sum(r.confidence) == 1.0 for r in results1])
+        assert all([torch.isclose(torch.sum(r.confidence), torch.tensor(1.0)) for r in results1])
 
         # Input is Video
         results2 = self.learner.infer(Video(batch[0]))
