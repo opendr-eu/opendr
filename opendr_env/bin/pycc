@@ -1,3 +1,0 @@
-#!/home/administrator/Documents/opendr_internal/opendr_env/bin/python
-from numba.pycc import main
-main()
