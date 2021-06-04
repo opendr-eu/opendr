@@ -140,7 +140,7 @@ class FeedForwardPolicy(ActorCriticPolicy):
 
 class MultiInputPolicy(FeedForwardPolicy):
     """
-    Policy object that implements actor critic, using a MLP (2 layers of 64)
+    Policy object that implements actor critic, using a CNN and MLP in parallel for multi class observation.
 
     :param sess: (TensorFlow session) The current TensorFlow session
     :param ob_space: (Gym Space) The observation space of the environment
