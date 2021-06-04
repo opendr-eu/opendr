@@ -203,7 +203,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
 
     @staticmethod
     def download_mini(path: Union[str, Path]):
-        """Download mini version of dataset
+        """Download mini version of dataset: One video of each class in Kinetics400
 
         Args:
             path (Union[str, Path]): Directory in which to store dataset
@@ -224,6 +224,33 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         urlretrieve(url=url, filename=zip_path)
 
         logger.info(f"Unzipping Kinetics400 mini to {(unzip_path)}")
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(unzip_path)
+        os.remove(zip_path)
+
+    @staticmethod
+    def download_micro(path: Union[str, Path]):
+        """Download micro version of dataset: One video of first three classes in Kinetics400
+
+        Args:
+            path (Union[str, Path]): Directory in which to store dataset
+        """
+        path.mkdir(parents=True, exist_ok=True)
+
+        url = os.path.join(
+            OPENDR_SERVER_URL,
+            "perception",
+            "activity_recognition",
+            "datasets",
+            "kinetics3micro.zip"
+        )
+        zip_path = str(Path(path) / "kinetics3micro.zip")
+        unzip_path = str(Path(path))
+
+        logger.info(f"Downloading Kinetics3 micro from {url}")
+        urlretrieve(url=url, filename=zip_path)
+
+        logger.info(f"Unzipping Kinetics3 micro to {(unzip_path)}")
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(unzip_path)
         os.remove(zip_path)
