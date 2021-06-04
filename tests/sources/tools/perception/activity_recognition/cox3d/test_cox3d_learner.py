@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import shutil
+# import shutil
 import torch
 import unittest
 import numpy as np
@@ -25,7 +25,7 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
-_BACKBONE = "s"
+_BACKBONE = "xs"
 
 
 class TestCoX3DLearner(unittest.TestCase):
@@ -33,7 +33,7 @@ class TestCoX3DLearner(unittest.TestCase):
     def setUpClass(cls):
         print("\n\n**********************************\nTEST Continual Activity Recognition CoX3D Learner\n"
               "**********************************")
-        cls.temp_dir = Path("./tests/sources/tools/perception/activity_recognition/cox3d/temp")
+        cls.temp_dir = Path("./tests/sources/tools/perception/activity_recognition/temp")
 
         # Download model weights
         CoX3DLearner.download(path=Path(cls.temp_dir) / "weights", model_names={_BACKBONE})
@@ -42,18 +42,19 @@ class TestCoX3DLearner(unittest.TestCase):
         )
 
         # Download mini dataset
-        cls.dataset_path = cls.temp_dir / "datasets" / "kinetics400mini"
-        KineticsDataset.download_mini(cls.temp_dir / "datasets")
+        cls.dataset_path = cls.temp_dir / "datasets" / "kinetics3micro"
+        KineticsDataset.download_micro(cls.temp_dir / "datasets")
 
-    @classmethod
-    def tearDownClass(cls):
-        try:
-            shutil.rmtree(str(cls.temp_dir))
-        except OSError as e:
-            logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
+    # Skip this: CI system deletes files anyways, and the dataset and weights are reused in other test
+    # @classmethod
+    # def tearDownClass(cls):
+    #     try:
+    #         shutil.rmtree(str(cls.temp_dir))
+    #     except OSError as e:
+    #         logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
 
     def test_downloaded(self):
-        assert Path(self.temp_dir) / "weights" / "x3d_s.pyth"
+        assert Path(self.temp_dir) / "weights" / "x3d_xs.pyth"
 
     def test_save_and_load(self):
         assert self.learner.model is not None
