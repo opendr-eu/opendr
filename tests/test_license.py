@@ -85,21 +85,16 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/activity_recognition/x3d/algorithm',
             'src/opendr/perception/activity_recognition/cox3d/algorithm',
             'src/opendr/perception/object_tracking_2d/fair_mot/algorithm',
-<<<<<<< HEAD
-            'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones'
-=======
+            'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones',
             'src/opendr/simulation/human_model_generation/PIFu'
->>>>>>> 17d21f2d631c6025c39a344755402f9fe62ba708
         ]
 
         skippedFilePaths = [
             'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
             'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
-<<<<<<< HEAD
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
-=======
-            'src/opendr/simulation/human_model_generation/pifu_generator.py'
->>>>>>> 17d21f2d631c6025c39a344755402f9fe62ba708
+            'src/opendr/simulation/human_model_generation/pifu_generator.py',
+            '/projects/simulation/human_model_generation/demos/model_generation.ipynb'
         ]
 
         skippedDirectories = [
