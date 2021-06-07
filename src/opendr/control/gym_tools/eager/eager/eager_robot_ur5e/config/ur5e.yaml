@@ -1,0 +1,139 @@
+sensors:
+  joint_sensors:
+    type: boxf32
+    high: [3.14159, 3.14159, 3.14159, 3.14159, 3.14159, 3.14159]
+    low: [-3.14159, -3.14159, -3.14159, -3.14159, -3.14159, -3.14159]
+
+actuators:
+  joints:
+    type: boxf32
+    high: [3.14159, 3.14159, 3.14159, 3.14159, 3.14159, 3.14159]
+    low: [-3.14159, -3.14159, -3.14159, -3.14159, -3.14159, -3.14159]
+
+states:
+  joint_pos:
+    type: boxf32
+    high: [3.14159, 3.14159, 3.14159, 3.14159, 3.14159, 3.14159]
+    low: [-3.14159, -3.14159, -3.14159, -3.14159, -3.14159, -3.14159]
+  joint_vel:
+    type: boxf32
+    high: [1, 1, 1, 1, 1, 1]
+    low: [-1, -1, -1, -1, -1, -1]
+#  pos:
+#    type: box
+#    high: [1, 1, 0]
+#    low: [-1, -1, 0]
+#  orientation:
+#    type: box
+#    high: [0, 0, 0, 1]
+#    low: [0, 0, 0, 1]
+#  vel:
+#    type: box
+#    high: [1, 1, 1]
+#    low: [-1, -1, -1]
+#  angular_vel:
+#    type: box
+#    high: [1, 1, 1]
+#    low: [-1, -1, -1]
+
+webots:
+  sensors:
+    joint_sensors:
+      names:
+      - shoulder_pan_joint_sensor
+      - shoulder_lift_joint_sensor
+      - elbow_joint_sensor
+      - wrist_1_joint_sensor
+      - wrist_2_joint_sensor
+      - wrist_3_joint_sensor
+  
+  actuators:
+    joints:
+      names:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+
+  states: # IMPORTANT! Only add states you are able to both read and reset in the physics engine
+    joint_pos:
+      names:
+      -
+    joint_vel:
+      names:
+      -
+
+real:
+  sensors:
+    joint_sensors:
+      topic: joint_states
+      msg_name: JointState
+
+  actuators:
+    joints:
+      server_name: follow_joint_trajectory
+      names: 
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+
+gazebo:
+  sensors:
+    joint_sensors:
+      topic: joint_states
+      msg_name: JointState
+      
+  actuators:
+    joints:
+      server_name: arm_controller/follow_joint_trajectory
+      names: 
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+
+  states: # IMPORTANT! Only add states you are able to both read and reset in the physics engine
+    joint_pos:
+      names:
+      -
+    joint_vel:
+      names:
+      -
+
+pybullet:
+  xacro: '$(find ur_e_description)/launch/ur5e_upload.launch'
+  xacro_args: 'limited:=true'
+  xacro_param: 'robot_description'
+  sensors:  # IMPORTANT! Currently, not possible to mix sensor measurements of links & joints
+    joint_sensors:
+      type: joint_pos # OPTIONS: joint_{pos, vel, force_torque, applied_torque}
+      names: [shoulder_pan_joint, shoulder_lift_joint, elbow_joint, wrist_1_joint, wrist_2_joint, wrist_3_joint]
+#    link_sensors:
+#      type: link_pos # OPTIONS: link_{pos, orientation, vel, angular_vel}
+#      name: [shoulder_link, upper_arm_link, forearm_link, wrist_1_link, wrist_2_link, wrist_3_link]
+
+  actuators:
+    joints:
+      type: joint
+      names: [shoulder_pan_joint, shoulder_lift_joint, elbow_joint, wrist_1_joint, wrist_2_joint, wrist_3_joint]
+      control_mode: position_control # position_control, velocity_control, torque_control, pd_control
+      vel_target: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+      pos_gain: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  # work with dt=0.0165 --> still too fast (unrealistic) behavior
+      vel_gain: [0.7, 0.7, 0.7, 0.7, 0.7, 0.7]  # work with dt=0.0165 --> still too fast (unrealistic) behavior
+
+  # IMPORTANT! Currently, not possible to mix states consisting of both links & joints,
+  # IMPORTANT! Only add states you are able to both read and reset in the physics engine (base_pose, base_vel, joint_pos, joint_vel)
+  states:
+    joint_pos:
+      type: joint_pos # OPTIONS: joint_{pos, vel, force_torque, applied_torque}
+      names: [shoulder_pan_joint, shoulder_lift_joint, elbow_joint, wrist_1_joint, wrist_2_joint, wrist_3_joint]
+    joint_vel:
+      type: joint_vel # OPTIONS: joint_{pos, vel, force_torque, applied_torque}
+      names: [shoulder_pan_joint, shoulder_lift_joint, elbow_joint, wrist_1_joint, wrist_2_joint, wrist_3_joint]

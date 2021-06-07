@@ -1,0 +1,24 @@
+#VRML_SIM R2021a utf8
+WorldInfo {
+  basicTimeStep 20
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation -0.6931032800836722 0.6931032800836722 0.1980295085953349 0.75
+  position 1.2 1.6 2.3
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 3 3
+}
+UR5e {
+  controller "ros"
+  controllerArgs [
+    "--name=ur5e1"
+    "--synchronize"
+  ]
+  supervisor TRUE
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>    
+  <arg name="ns" default=""  doc="Namespace of the robot." />
+	<arg name="robot_ip" default="192.168.1.102" doc="IP address of the robot."/>
+	
+	<group ns="$(arg ns)">
+		<!-- bringup robot -->
+		<include file="$(find ur_modern_driver)/launch/ur5_bringup.launch">
+		  <arg name="robot_ip" value="$(arg robot_ip)"/>
+		</include>
+
+		<!-- load ros controller -->
+		<include file="$(find ur_modern_driver)/launch/ur5_ros_control.launch"/>
+
+	</group>
+</launch>
