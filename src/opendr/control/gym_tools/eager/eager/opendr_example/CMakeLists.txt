@@ -38,5 +38,6 @@ include_directories(
 catkin_install_python(PROGRAMS
    scripts/example_multi_robot.py
    scripts/example_safe_actions.py
+   scripts/example_switch_engine.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
