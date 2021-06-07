@@ -1,12 +1,12 @@
 # OpenDR EAGER
 
-This folder contains the Engine Agnostic Gym Environment for Robotics (EAGER) toolkit. This toolkit allows users to create Gym environments that can be used with both real and simulated robots.
+This folder contains the Engine Agnostic Gym Environment for Robotics (EAGER) toolkit. 
+This toolkit allows users to create Gym environments that can be used with both real and simulated robots.
 
 ## Install
 
 If you have not done this yet, first install the OpenDR toolkit dependencies.
-The following command creates a virtual environment, so if you are working from another virtual environment, you probably first want to deactivate your current virtual environment.
-Go to the root of the OpenDR toolkit and run
+Go to the root of the OpenDR toolkit and run:
 ```
 source bin/setup.bash
 ```
