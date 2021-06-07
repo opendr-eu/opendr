@@ -17,6 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+catkin_python_setup()
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -30,14 +32,3 @@ catkin_package()
 include_directories(
     ${catkin_INCLUDE_DIRS}
 )
-
-#############
-## Install ##
-#############
-
-catkin_install_python(PROGRAMS
-   scripts/example_multi_robot.py
-   scripts/example_safe_actions.py
-   scripts/example_switch_engine.py
-   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
- )
