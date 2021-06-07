@@ -43,8 +43,8 @@ Constructor parameters:
   Specifies number of images to be bundled up in a batch during training.  
   This heavily affects memory usage, adjust according to your system.
   Should always be equal to or higher than the number of used CUDA devices.
-- **optimizer**: *{'sgd'}, default='adam'*  
-  Specifies the optimizer to be used. Currently, only SGD is supported.
+- **optimizer**: *{'sgd', 'adam'}, default='adam'*  
+  Specifies the optimizer to be used. Currently, only SGD and Adam are supported.
 - **checkpoint_after_iter**: *int, default=0*  
   Specifies per how many training iterations a checkpoint should be saved.
   If set to 0 no checkpoints will be saved.
