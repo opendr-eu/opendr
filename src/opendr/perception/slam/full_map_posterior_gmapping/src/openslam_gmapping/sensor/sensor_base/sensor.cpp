@@ -2,11 +2,8 @@
 
 namespace GMapping {
 
-    Sensor::Sensor(const std::string &name) {
-        m_name = name;
-    }
+  Sensor::Sensor(const std::string &name) { m_name = name; }
 
-    Sensor::~Sensor() {
-    }
+  Sensor::~Sensor() {}
 
-};// end namespace
+};  // namespace GMapping

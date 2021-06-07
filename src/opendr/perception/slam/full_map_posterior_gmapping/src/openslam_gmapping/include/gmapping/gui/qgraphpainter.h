@@ -2,85 +2,82 @@
  *
  * This file is part of the GMAPPING project
  *
- * GMAPPING Copyright (c) 2004 Giorgio Grisetti, 
+ * GMAPPING Copyright (c) 2004 Giorgio Grisetti,
  * Cyrill Stachniss, and Wolfram Burgard
  *
- * This software is licensed under the "Creative Commons 
- * License (Attribution-NonCommercial-ShareAlike 2.0)" 
- * and is copyrighted by Giorgio Grisetti, Cyrill Stachniss, 
+ * This software is licensed under the "Creative Commons
+ * License (Attribution-NonCommercial-ShareAlike 2.0)"
+ * and is copyrighted by Giorgio Grisetti, Cyrill Stachniss,
  * and Wolfram Burgard.
- * 
+ *
  * Further information on this license can be found at:
  * http://creativecommons.org/licenses/by-nc-sa/2.0/
- * 
+ *
  * GMAPPING is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied 
+ * but WITHOUT ANY WARRANTY; without even the implied
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.  
+ * PURPOSE.
  *
  *****************************************************************/
-
 
 #ifndef QGRAPHPAINTER_H
 #define QGRAPHPAINTER_H
 
+#include <gmapping/utils/gvalues.h>
 #include <qpainter.h>
 #include <qpixmap.h>
 #include <qstring.h>
 #include <qwidget.h>
 #include <qwmatrix.h>
 #include <deque>
-#include <gmapping/utils/gvalues.h>
 
 typedef std::deque<double> DoubleDeque;
 
 class QGraphPainter : public QWidget {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    QGraphPainter(QWidget *parent = 0, const char *name = 0, WFlags f = 0);
+  QGraphPainter(QWidget *parent = 0, const char *name = 0, WFlags f = 0);
 
-    virtual ~QGraphPainter();
+  virtual ~QGraphPainter();
 
-public
-    slots:
-            void
+public slots:
+  void
 
     clear();
 
-    void valueAdded(double);
+  void valueAdded(double);
 
-    void valueAdded(double, double, double);
+  void valueAdded(double, double, double);
 
-    void setYReference(double y);
+  void setYReference(double y);
 
-    void disableYReference();
+  void disableYReference();
 
-    void setRange(double min, double max);
+  void setRange(double min, double max);
 
-    void start(int period);
+  void start(int period);
 
-    void setTitle(const char *title);
+  void setTitle(const char *title);
 
-    void setAutoscale(bool a);
+  void setAutoscale(bool a);
 
-    bool getAutoscale() const;
+  bool getAutoscale() const;
 
 protected:
-    virtual void timerEvent(QTimerEvent *te);
+  virtual void timerEvent(QTimerEvent *te);
 
-    virtual void resizeEvent(QResizeEvent *);
+  virtual void resizeEvent(QResizeEvent *);
 
-    double min, max, reference;
-    DoubleDeque values;
-    bool autoscale;
-    bool m_useYReference;
-    int timer;
+  double min, max, reference;
+  DoubleDeque values;
+  bool autoscale;
+  bool m_useYReference;
+  int timer;
 
-    virtual void paintEvent(QPaintEvent *paintevent);
+  virtual void paintEvent(QPaintEvent *paintevent);
 
-    QPixmap *m_pixmap;
-    QString title;
+  QPixmap *m_pixmap;
+  QString title;
 };
 
 #endif
-

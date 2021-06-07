@@ -1,28 +1,27 @@
 #ifndef SENSOR_H
 #define SENSOR_H
 
-#include <string>
 #include <map>
+#include <string>
 
 namespace GMapping {
 
-    class Sensor {
-    public:
-        Sensor(const std::string &name = "");
+  class Sensor {
+  public:
+    Sensor(const std::string &name = "");
 
-        virtual ~Sensor();
+    virtual ~Sensor();
 
-        inline std::string getName() const { return m_name; }
+    inline std::string getName() const { return m_name; }
 
-        inline void setName(const std::string &name) { m_name = name; }
+    inline void setName(const std::string &name) { m_name = name; }
 
-    protected:
-        std::string m_name;
-    };
+  protected:
+    std::string m_name;
+  };
 
-    typedef std::map<std::string, Sensor *> SensorMap;
+  typedef std::map<std::string, Sensor *> SensorMap;
 
-}; //end namespace
+};  // namespace GMapping
 
 #endif
-

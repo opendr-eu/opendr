@@ -2,14 +2,11 @@
 
 namespace GMapping {
 
-    SensorReading::SensorReading(const Sensor *s, double t) {
-        m_sensor = s;
-        m_time = t;
-    }
+  SensorReading::SensorReading(const Sensor *s, double t) {
+    m_sensor = s;
+    m_time = t;
+  }
 
+  SensorReading::~SensorReading() {}
 
-    SensorReading::~SensorReading() {
-    }
-
-};
-
+};  // namespace GMapping
