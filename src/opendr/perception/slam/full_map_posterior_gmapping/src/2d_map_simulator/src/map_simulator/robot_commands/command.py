@@ -1,0 +1,53 @@
+from abc import ABCMeta, abstractmethod
+
+
+class Command:
+    """
+    Abstract class for creating simulated robot commands, such as movements, scans, or other.
+    Defines the required interfaces for commands.
+    """
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def __init__(self, config, callback, last_pose):
+        """
+        Used for initializing the abstract class and also performing argument verifications for child classes.
+        It sets the class' callback and last pose properties, so that they don't have to be done for every child class.
+
+        :param config: (dict) Dictionary containing configuration of the command.
+        :param callback: (callable) Function, lambda or other callable object to be executed
+                                    when calling the command object.
+        :param last_pose: (Pose) Last pose of the robot before this command. Mostly used for movement commands,
+                                 but required for all types of commands for consistency purposes during instantiation.
+        """
+
+        if not isinstance(config, dict):
+            raise TypeError("Config must be a dictionary.")
+
+        if not callable(callback):
+            raise AttributeError("Callback must be a function or other callable object.")
+
+        self._callback = callback
+        self._last_pose = last_pose
+        self._poses = []
+
+    def get_poses(self):
+        """
+        Returns the command's poses. If the command is not of the movement type, then it is an empty list.
+        DON'T OVERRIDE! unless you know what you are doing.
+
+        :return: (list) List of command's poses. Empty list if command is not movement.
+        """
+
+        return self._poses
+
+    def __call__(self):
+        """
+        Executes the callback function with itself as an argument, so that the command's properties and methods are
+        accessible from the callback.
+        DON'T OVERRIDE! unless you know what you are doing.
+
+        :return: () Whatever the callback function may return.
+        """
+
+        self._callback(self)
