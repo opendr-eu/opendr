@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node name="opendr_example" pkg="opendr_example" type="example_safe_actions.py" output="screen"/>
+</launch>

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="name" doc="The environment name."/>
+    <group ns="$(arg name)">
+        <node name="physics_bridge" pkg="eager_bridge_pybullet" type="pybullet_node.py" output="screen"/>
+    </group>
+</launch>
