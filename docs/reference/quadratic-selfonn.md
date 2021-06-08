@@ -7,7 +7,7 @@ Learner*.
 
 Bases: `engine.learners.Learner`
 
-The *QuadraticSelfOnnLearner* class is a wrapper of the MatchboxNet[[1]](#matchboxnet-arxiv) implementation. It is
+The *QuadraticSelfOnnLearner* class is a wrapper of a Quadratic Self-ONN[[1]](#qselfonn-arxiv) implementation. It is
 designed for limited-vocabulary speech command recognition tasks.
 
 The [QuadraticSelfOnnLearner](#src.perception.speech_recognition.quadraticselfonn_learner.py) class has the following public methods:
