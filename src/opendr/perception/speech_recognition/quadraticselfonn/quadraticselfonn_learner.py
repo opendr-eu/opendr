@@ -258,8 +258,8 @@ class QuadraticSelfOnnLearner(Learner):
         if not os.path.exists(target_directory):
             os.makedirs(target_directory, exist_ok=True)
         try:
-            urlretrieve(jsonurl, os.path.join(target_directory, ".json"))
-            urlretrieve(pturl, os.path.join(target_directory, ".pt"))
+            urlretrieve(jsonurl, os.path.join(target_directory, "QuadraticSelfOnn.json"))
+            urlretrieve(pturl, os.path.join(target_directory, "QuadraticSelfOnn.pt"))
         except URLError as e:
             print("Could not retrieve pretrained model files!")
             raise e

@@ -12,22 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import librosa
 import json
 import os
 import shutil
 import unittest
+from urllib.request import urlretrieve
 
 import numpy as np
 import torch as t
 
 from opendr.perception.speech_recognition.quadraticselfonn.quadraticselfonn_learner import QuadraticSelfOnnLearner
+from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Timeseries
 from opendr.engine.datasets import DatasetIterator
 from opendr.engine.target import Category
 
 TEST_BATCH_SIZE = 2
 TEST_EPOCHS = 1
-TEST_CLASSES_N = 2
+TEST_CLASSES_N = 20
 TEST_INFER_LENGTH = 2
 TEST_SIGNAL_LENGTH = 16000
 
@@ -52,6 +55,8 @@ class QuadraticSelfOnnTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.learner = QuadraticSelfOnnLearner(device="cpu", output_classes_n=TEST_CLASSES_N, iters=TEST_EPOCHS)
+        if not os.path.exists(TEMP_SAVE_DIR):
+            os.makedirs(TEMP_SAVE_DIR, exist_ok=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -107,7 +112,35 @@ class QuadraticSelfOnnTest(unittest.TestCase):
                                                         "inference_params",
                                                         "optimized",
                                                         "optimizer_info"]))
+        # Remove temporary files
+        try:
+            shutil.rmtree(TEMP_SAVE_DIR)
+        except OSError as e:
+            print(f"Exception when trying to remove temp directory: {e.strerror}")
 
+            
+    def test_infer_with_real_data(self):
+        if not os.path.exists(TEMP_SAVE_DIR):
+            os.makedirs(TEMP_SAVE_DIR, exist_ok=True)
+        testdata_ftp_address = OPENDR_SERVER_URL + "perception/speech_recognition/off.wav"
+        testdata_filename = os.path.join(TEMP_SAVE_DIR, "off.wav")
+        try:
+            urlretrieve(testdata_ftp_address, testdata_filename)
+        except Exception:
+            print("Could down download test data file")
+            raise
+        self.learner.download_pretrained(TEMP_SAVE_DIR)
+        model_directory = os.path.join(TEMP_SAVE_DIR, "QuadraticSelfOnn")
+        self.learner.load(model_directory)
+        values, _ = librosa.load(testdata_filename, sr=16000)
+        values = np.expand_dims(values, axis=0)
+        test_timeseries = Timeseries(values)
+        command = self.learner.infer(test_timeseries)
+        self.assertEqual(command.data, 8)
+        try:
+            shutil.rmtree(TEMP_SAVE_DIR)
+        except OSError as e:
+            print(f"Exception when trying to remove temp directory: {e.strerror}")
         # Remove temporary files
         try:
             shutil.rmtree(TEMP_SAVE_DIR)
