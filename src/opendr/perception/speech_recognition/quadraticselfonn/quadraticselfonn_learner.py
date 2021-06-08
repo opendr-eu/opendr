@@ -160,7 +160,6 @@ class QuadraticSelfOnnLearner(Learner):
                 logging.info(f"Epoch {epoch}")
             statistics[epoch] = {"batch_losses": []}
             for batch_id, (x, y) in enumerate(dataloader):
-                print("EPOCH", epoch, "BATCH", batch_id)
                 self.optimizer_func.zero_grad()
                 output = self._get_model_output(x)
                 y = y.to(self.device)

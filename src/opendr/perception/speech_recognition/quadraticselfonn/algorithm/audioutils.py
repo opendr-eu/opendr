@@ -20,6 +20,12 @@ import torch as t
 def _normalize(tensor: t.Tensor) -> t.Tensor:
     tensor.add_(-tensor.mean())
     tensor.div_(tensor.std())
+    minimum = tensor.min()
+    maximum = tensor.max()
+    if minimum - maximum != 0:
+        tensor *= 2
+        tensor -= (minimum + maximum)
+        tensor /= (maximum - minimum)
     return tensor
 
 
