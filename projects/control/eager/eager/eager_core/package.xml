@@ -21,15 +21,5 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>gym-pip</exec_depend>
-  <exec_depend>python3-future</exec_depend>
-  <exec_depend>python3-numpy</exec_depend>
-  <exec_depend>python3-tk</exec_depend>
-  <exec_depend>python3-empy</exec_depend>
-  <exec_depend>python3-defusedxml</exec_depend>
-  <exec_depend>python3-future</exec_depend>
-  <exec_depend>python3-netifaces</exec_depend>
-  <exec_depend>python3-stable-baselines3-pip</exec_depend>
-  <exec_depend>python3-pybullet-pip</exec_depend>
-
 
 </package>
