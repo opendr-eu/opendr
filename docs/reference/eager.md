@@ -111,24 +111,17 @@ executed at the end of episodes. This will allow users to automate their
 training procedures. This will also be provided for real-world training,
 but in that case there are limitations to the controllability of states.
 
-### Installation
+### Install
 
-If you have not done this yet, first install the OpenDR toolkit 
-dependencies. Go to the root of 
-the OpenDR toolkit and run
+If you have not done this yet, first activate the OpenDR virtual environment, by going to the root of the OpenDR toolkit and running:
 ```
 source bin/setup.bash
 ```
-Then run:
-```
-make install_runtime_dependencies
-```
 Now the EAGER toolkit can be installed (mind the source command):
 ```
-source $OPENDR_HOME/src/opendr/control/gym_tools/eager/install_eager.sh
+source $OPENDR_HOME/projects/control/eager/install_eager.sh
 ```
-You can check if installation was succesful by running one of the
-examples:
+You can check if installation was succesful by running one of the examples:
 ```
 roslaunch opendr_example example_action_processing.launch
 ```
@@ -140,13 +133,16 @@ or
 ```
 roslaunch opendr_example example_switch_engine.launch
 ```
-Note that the toolkit can now be used from the terminal in which 
-the install script is run. For usage in another terminal either 
-run the installation script there too (with source) or run:
+Note that the toolkit can now be used from the terminal in which the install script is run.
+For usage in another terminal either run the installation script there too (with source) or run:
 ```
-source $OPENDR_HOME/lib/ur_ws/devel/setup.bash
-source $OPENR_HOME/lib/eager_ws/devel/setup.bash
+source $OPENDR_HOME/projects/opendr_ws/devel/setup.bash
 ```
+
+#### Troubleshooting
+
+Currently, the EAGER toolkit has dependency conflicts with other tools of the OpenDR toolkit.
+Therefore launching *example_switch_engine.launch* results in an error due to an OpenCV conflict.
 
 ### OpenDR Implementation
 
