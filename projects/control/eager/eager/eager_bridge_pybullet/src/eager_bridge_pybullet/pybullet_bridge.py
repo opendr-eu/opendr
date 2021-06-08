@@ -478,7 +478,7 @@ class PyBulletBridge(PhysicsBridge):
             obs.append(depth[:, :, np.newaxis].astype(dtype))
         # todo: if float, probably calculate as value between [0, 1]
         # todo: Reduce computational load
-        obs = np.concatenate(obs, dtype=dtype, axis=2)  # computational load:  250 fps --> 190 fps
+        obs = np.concatenate(obs, axis=2).astype(dtype)  # computational load:  250 fps --> 190 fps
         obs = obs.flatten()  # computational load: 190 fps --> 185 fps
         obs = obs.tolist()  # computational load:  185 fps --> 85 fps
         buffer[name][obs_name] = obs
