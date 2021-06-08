@@ -34,4 +34,4 @@ source $OPENDR_HOME/projects/opendr_ws/devel/setup.bash
 ### Troubleshooting
 
 Currently, the EAGER toolkit has dependency conflicts with other tools of the OpenDR toolkit.
-Therefore launching *example_switch_engine.launch* results in an error due to an OpenCV conflict.
+Therefore launching *example_switch_engine.launch* results in an error when OpenDR runtime dependencies are installed, due to an OpenCV conflict.
