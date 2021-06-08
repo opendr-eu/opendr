@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# import shutil
+import shutil
 import torch
 import unittest
 import numpy as np
@@ -45,13 +45,12 @@ class TestCoX3DLearner(unittest.TestCase):
         cls.dataset_path = cls.temp_dir / "datasets" / "kinetics3"
         KineticsDataset.download_micro(cls.temp_dir / "datasets")
 
-    # Skip this: CI system deletes files anyways, and the dataset and weights are reused in other test
-    # @classmethod
-    # def tearDownClass(cls):
-    #     try:
-    #         shutil.rmtree(str(cls.temp_dir))
-    #     except OSError as e:
-    #         logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            shutil.rmtree(str(cls.temp_dir))
+        except OSError as e:
+            logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
 
     def test_downloaded(self):
         assert Path(self.temp_dir) / "weights" / "x3d_xs.pyth"
