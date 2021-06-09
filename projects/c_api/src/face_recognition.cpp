@@ -1,21 +1,20 @@
-/*
- * Copyright 2020-2021 OpenDR project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+//
+// Copyright 2020-2021 OpenDR project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-#include "../include/face_recognition.h"
-#include "../include/target.h"
+#include "face_recognition.h"
+#include "target.h"
 
 #include <cmath>
 #include <cstring>
@@ -36,7 +35,7 @@
 #include "opencv2/core/core_c.h"
 
 
-/***
+/**
  * Helper function for preprocessing images before feeding them into the face recognition model.
  * This function follows the OpenDR's face recognition pre-processing pipeline, which includes the following:
  * a) resizing the image into resize_target x resize_target pixels and then taking a center crop of size model_input_size,
