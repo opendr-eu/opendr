@@ -1,5 +1,7 @@
 from .helpers import load_checkpoint
 
+from .gen_efficientnet import *  # noqa: F401, F403
+
 
 def create_model(model_name='mnasnet_100', pretrained=None, num_classes=1000, in_chans=3, checkpoint_path='', **kwargs):
 
