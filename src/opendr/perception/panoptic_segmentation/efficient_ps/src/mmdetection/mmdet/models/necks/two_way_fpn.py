@@ -3,7 +3,7 @@ import torch.nn.functional as F
 from mmcv.cnn import xavier_init
 
 from mmdet.core import auto_fp16
-from mmdet.ops import ConvModule, DepthwiseSeparableConvModule
+from mmdet.ops import ConvModule
 from ..registry import NECKS
 
 
@@ -161,7 +161,7 @@ class TWOWAYFPN(nn.Module):
         for i in range(used_backbone_levels - 1, 0, -1):
             prev_shape = laterals_bottom[i - 1].shape[2:]
             laterals_bottom[i - 1] = laterals_bottom[i - 1] + F.interpolate(laterals_bottom[i], size=prev_shape, mode='nearest')
-        #laterals_bottom = laterals_bottom[::-1]
+        # laterals_bottom = laterals_bottom[::-1]
         # build outputs
         # part 1: from original levels
         outs = [self.fpn_convs[i](laterals_top[i] + laterals_bottom[::-1][i]) for i in range(used_backbone_levels)]

@@ -4,8 +4,7 @@ import torch.nn.functional as F
 from mmcv.cnn import kaiming_init
 from math import ceil
 
-from mmdet.core import auto_fp16, force_fp32
-from mmdet.ops import ConvModule, DepthwiseSeparableConvModule, build_upsample_layer
+from mmdet.ops import ConvModule, DepthwiseSeparableConvModule
 from ..registry import HEADS
 
 

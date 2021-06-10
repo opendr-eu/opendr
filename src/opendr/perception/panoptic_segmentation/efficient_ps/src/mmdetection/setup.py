@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 import os
-import subprocess
-import time
 from setuptools import find_packages, setup
-from os import path
 
 import torch
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension

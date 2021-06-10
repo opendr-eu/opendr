@@ -90,7 +90,6 @@ class LoadAnnotations(object):
         return results
 
     def _poly2mask(self, mask_ann, img_h, img_w):
-        #print (mask_ann)
         if isinstance(mask_ann, list):
             # polygon -- a single object might consist of multiple parts
             # we merge all parts into one mask rle code

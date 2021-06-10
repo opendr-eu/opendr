@@ -33,7 +33,7 @@ class TwoStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin, MaskTestMixin)
 
         self.eff_backbone_flag = False if 'efficient' not in backbone['type'] else True
 
-        if self.eff_backbone_flag == False:
+        if not self.eff_backbone_flag:
             self.backbone = builder.build_backbone(backbone)
         else:
             self.backbone = geffnet.create_model(backbone['type'],
@@ -75,7 +75,7 @@ class TwoStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin, MaskTestMixin)
 
     def init_weights(self, pretrained=None):
         super(TwoStageDetector, self).init_weights(pretrained)
-        if self.eff_backbone_flag == False:
+        if not self.eff_backbone_flag:
             self.backbone.init_weights(pretrained=pretrained)
 
         if self.with_neck:

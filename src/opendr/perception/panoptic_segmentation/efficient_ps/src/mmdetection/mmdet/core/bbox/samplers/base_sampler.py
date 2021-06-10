@@ -70,7 +70,7 @@ class BaseSampler(metaclass=ABCMeta):
         # (may be a bug of PyTorch)
         pos_inds = pos_inds.unique()
 
-        if pos_inds.numel() == 0 and gt_labels is not None:  #hack for now
+        if pos_inds.numel() == 0 and gt_labels is not None:  # hack for now
             bboxes = torch.cat([gt_bboxes, bboxes], dim=0)
             assign_result.add_gt_(gt_labels)
             gt_ones = bboxes.new_ones(gt_bboxes.shape[0], dtype=torch.uint8)

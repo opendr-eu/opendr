@@ -42,7 +42,7 @@ class EfficientPS(BaseDetector):
 
         self.eff_backbone_flag = False if 'efficient' not in backbone['type'] else True
 
-        if self.eff_backbone_flag == False:
+        if not self.eff_backbone_flag:
             self.backbone = builder.build_backbone(backbone)
         else:
             self.backbone = geffnet.create_model(backbone['type'],
@@ -75,7 +75,7 @@ class EfficientPS(BaseDetector):
         self.init_weights(pretrained=pretrained)
 
     def init_weights(self, pretrained=None):
-        if self.eff_backbone_flag == False:
+        if not self.eff_backbone_flag:
             self.backbone.init_weights(pretrained=pretrained)
 
         self.neck.init_weights()
@@ -97,7 +97,7 @@ class EfficientPS(BaseDetector):
         x = self.neck(x)
         return x
 
-    def forward_dummy(self, img):  #leave it for now
+    def forward_dummy(self, img):  # leave it for now
         """Used for computing network flops.
 
         See `mmdetection/tools/get_flops.py`

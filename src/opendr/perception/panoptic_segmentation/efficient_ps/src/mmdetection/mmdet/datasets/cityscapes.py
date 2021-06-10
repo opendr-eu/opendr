@@ -13,12 +13,9 @@ import pycocotools.mask as maskUtils
 from mmdet.utils import print_log
 from .coco import CocoDataset
 from .registry import DATASETS
-from .pipelines import LoadAnnotations
 
-from cityscapesscripts.evaluation.evalPanopticSemanticLabeling import pq_compute_multi_core, \
-                                                                      average_pq
+from cityscapesscripts.evaluation.evalPanopticSemanticLabeling import pq_compute_multi_core, average_pq
 
-import torch
 import json
 import shutil
 
