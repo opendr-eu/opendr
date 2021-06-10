@@ -50,8 +50,7 @@ def load_pretrained(model, url, filter_fn=None, strict=False, logger=None):
     pretrained_in_chans = state_dict[input_conv_weight].shape[1]
     if in_chans != pretrained_in_chans:
         if in_chans == 1:
-            print('=> Converting pretrained input conv {} from {} to 1 channel'.format(
-                input_conv_weight, pretrained_in_chans))
+            print('=> Converting pretrained input conv {} from {} to 1 channel'.format(input_conv_weight, pretrained_in_chans))
             conv1_weight = state_dict[input_conv_weight]
             state_dict[input_conv_weight] = conv1_weight.sum(dim=1, keepdim=True)
         else:
@@ -59,6 +58,7 @@ def load_pretrained(model, url, filter_fn=None, strict=False, logger=None):
                 input_conv_weight, pretrained_in_chans))
             del state_dict[input_conv_weight]
             strict = False
+
 
 #    classifier_weight = classifier + '.weight'
 #    pretrained_num_classes = state_dict[classifier_weight].shape[0]

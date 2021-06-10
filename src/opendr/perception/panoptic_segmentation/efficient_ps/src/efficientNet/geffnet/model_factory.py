@@ -5,13 +5,7 @@ from .gen_efficientnet import *
 from .mobilenetv3 import *
 
 
-def create_model(
-        model_name='mnasnet_100',
-        pretrained=None,
-        num_classes=1000,
-        in_chans=3,
-        checkpoint_path='',
-        **kwargs):
+def create_model(model_name='mnasnet_100', pretrained=None, num_classes=1000, in_chans=3, checkpoint_path='', **kwargs):
 
     model_kwargs = dict(num_classes=num_classes, in_chans=in_chans, pretrained=pretrained, **kwargs)
 

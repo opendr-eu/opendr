@@ -55,6 +55,7 @@ class Sigmoid(nn.Module):
     def forward(self, x):
         return x.sigmoid_() if self.inplace else x.sigmoid()
 
+
 class Identity(nn.Module):
     def __init__(self, inplace: bool = False):
         super(Identity, self).__init__()
@@ -66,6 +67,7 @@ class Identity(nn.Module):
 
 def tanh(x, inplace: bool = False):
     return x.tanh_() if inplace else x.tanh()
+
 
 # PyTorch has this, but not with a consistent inplace argmument interface
 class Tanh(nn.Module):
@@ -105,5 +107,3 @@ class HardSigmoid(nn.Module):
 
     def forward(self, x):
         return hard_sigmoid(x, self.inplace)
-
-

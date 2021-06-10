@@ -15,33 +15,40 @@ from .conv2d_layers import select_conv2d
 from .helpers import load_pretrained
 from .efficientnet_builder import *
 
-__all__ = ['mobilenetv3_rw', 'mobilenetv3_large_075', 'mobilenetv3_large_100', 'mobilenetv3_large_minimal_100',
-           'mobilenetv3_small_075', 'mobilenetv3_small_100', 'mobilenetv3_small_minimal_100',
-           'tf_mobilenetv3_large_075', 'tf_mobilenetv3_large_100', 'tf_mobilenetv3_large_minimal_100',
-           'tf_mobilenetv3_small_075', 'tf_mobilenetv3_small_100', 'tf_mobilenetv3_small_minimal_100']
+__all__ = [
+    'mobilenetv3_rw', 'mobilenetv3_large_075', 'mobilenetv3_large_100', 'mobilenetv3_large_minimal_100',
+    'mobilenetv3_small_075', 'mobilenetv3_small_100', 'mobilenetv3_small_minimal_100', 'tf_mobilenetv3_large_075',
+    'tf_mobilenetv3_large_100', 'tf_mobilenetv3_large_minimal_100', 'tf_mobilenetv3_small_075', 'tf_mobilenetv3_small_100',
+    'tf_mobilenetv3_small_minimal_100'
+]
 
 model_urls = {
     'mobilenetv3_rw':
-        'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/mobilenetv3_100-35495452.pth',
-    'mobilenetv3_large_075': None,
+    'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/mobilenetv3_100-35495452.pth',
+    'mobilenetv3_large_075':
+    None,
     'mobilenetv3_large_100':
-        'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/mobilenetv3_large_100_ra-f55367f5.pth',
-    'mobilenetv3_large_minimal_100': None,
-    'mobilenetv3_small_075': None,
-    'mobilenetv3_small_100': None,
-    'mobilenetv3_small_minimal_100': None,
+    'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/mobilenetv3_large_100_ra-f55367f5.pth',
+    'mobilenetv3_large_minimal_100':
+    None,
+    'mobilenetv3_small_075':
+    None,
+    'mobilenetv3_small_100':
+    None,
+    'mobilenetv3_small_minimal_100':
+    None,
     'tf_mobilenetv3_large_075':
-        'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mobilenetv3_large_075-150ee8b0.pth',
+    'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mobilenetv3_large_075-150ee8b0.pth',
     'tf_mobilenetv3_large_100':
-        'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mobilenetv3_large_100-427764d5.pth',
+    'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mobilenetv3_large_100-427764d5.pth',
     'tf_mobilenetv3_large_minimal_100':
-        'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mobilenetv3_large_minimal_100-8596ae28.pth',
+    'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mobilenetv3_large_minimal_100-8596ae28.pth',
     'tf_mobilenetv3_small_075':
-        'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mobilenetv3_small_075-da427f52.pth',
+    'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mobilenetv3_small_075-da427f52.pth',
     'tf_mobilenetv3_small_100':
-        'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mobilenetv3_small_100-37f49e2b.pth',
+    'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mobilenetv3_small_100-37f49e2b.pth',
     'tf_mobilenetv3_small_minimal_100':
-        'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mobilenetv3_small_minimal_100-922a7843.pth',
+    'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_mobilenetv3_small_minimal_100-922a7843.pth',
 }
 
 
@@ -53,10 +60,22 @@ class MobileNetV3(nn.Module):
 
     Paper: https://arxiv.org/abs/1905.02244
     """
-
-    def __init__(self, block_args, num_classes=1000, in_chans=3, stem_size=16, num_features=1280, head_bias=True,
-                 channel_multiplier=1.0, pad_type='', act_layer=HardSwish, drop_rate=0., drop_connect_rate=0.,
-                 se_kwargs=None, norm_layer=nn.BatchNorm2d, norm_kwargs=None, weight_init='goog'):
+    def __init__(self,
+                 block_args,
+                 num_classes=1000,
+                 in_chans=3,
+                 stem_size=16,
+                 num_features=1280,
+                 head_bias=True,
+                 channel_multiplier=1.0,
+                 pad_type='',
+                 act_layer=HardSwish,
+                 drop_rate=0.,
+                 drop_connect_rate=0.,
+                 se_kwargs=None,
+                 norm_layer=nn.BatchNorm2d,
+                 norm_kwargs=None,
+                 weight_init='goog'):
         super(MobileNetV3, self).__init__()
         self.drop_rate = drop_rate
 
@@ -66,9 +85,13 @@ class MobileNetV3(nn.Module):
         self.act1 = act_layer(inplace=True)
         in_chs = stem_size
 
-        builder = EfficientNetBuilder(
-            channel_multiplier, pad_type=pad_type, act_layer=act_layer, se_kwargs=se_kwargs,
-            norm_layer=norm_layer, norm_kwargs=norm_kwargs, drop_connect_rate=drop_connect_rate)
+        builder = EfficientNetBuilder(channel_multiplier,
+                                      pad_type=pad_type,
+                                      act_layer=act_layer,
+                                      se_kwargs=se_kwargs,
+                                      norm_layer=norm_layer,
+                                      norm_kwargs=norm_kwargs,
+                                      drop_connect_rate=drop_connect_rate)
         self.blocks = nn.Sequential(*builder(in_chs, block_args))
         in_chs = builder.in_chs
 
@@ -86,9 +109,7 @@ class MobileNetV3(nn.Module):
     def as_sequential(self):
         layers = [self.conv_stem, self.bn1, self.act1]
         layers.extend(self.blocks)
-        layers.extend([
-            self.global_pool, self.conv_head, self.act2,
-            nn.Flatten(), nn.Dropout(self.drop_rate), self.classifier])
+        layers.extend([self.global_pool, self.conv_head, self.act2, nn.Flatten(), nn.Dropout(self.drop_rate), self.classifier])
         return nn.Sequential(*layers)
 
     def features(self, x):
@@ -256,8 +277,7 @@ def _gen_mobilenet_v3(variant, channel_multiplier=1.0, pretrained=False, **kwarg
             stem_size=16,
             channel_multiplier=channel_multiplier,
             act_layer=resolve_act_layer(kwargs, act_layer),
-            se_kwargs=dict(
-                act_layer=get_act_layer('relu'), gate_fn=get_act_fn('hard_sigmoid'), reduce_mid=True, divisor=8),
+            se_kwargs=dict(act_layer=get_act_layer('relu'), gate_fn=get_act_fn('hard_sigmoid'), reduce_mid=True, divisor=8),
             norm_kwargs=resolve_bn_args(kwargs),
             **kwargs,
         )

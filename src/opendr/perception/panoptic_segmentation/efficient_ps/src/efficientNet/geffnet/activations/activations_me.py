@@ -13,9 +13,7 @@ import torch
 from torch import nn as nn
 from torch.nn import functional as F
 
-
-__all__ = ['swish_me', 'SwishMe', 'mish_me', 'MishMe',
-           'hard_sigmoid_me', 'HardSigmoidMe', 'hard_swish_me', 'HardSwishMe']
+__all__ = ['swish_me', 'SwishMe', 'mish_me', 'MishMe', 'hard_sigmoid_me', 'HardSigmoidMe', 'hard_swish_me', 'HardSwishMe']
 
 
 @torch.jit.script
@@ -39,7 +37,6 @@ class SwishJitAutoFn(torch.autograd.Function):
 
     TODO Rename to SiLU with addition to PyTorch
     """
-
     @staticmethod
     def forward(ctx, x):
         ctx.save_for_backward(x)
@@ -145,7 +142,7 @@ def hard_swish_jit_fwd(x):
 @torch.jit.script
 def hard_swish_jit_bwd(x, grad_output):
     m = torch.ones_like(x) * (x >= 3.)
-    m = torch.where((x >= -3.) & (x <= 3.),  x / 3. + .5, m)
+    m = torch.where((x >= -3.) & (x <= 3.), x / 3. + .5, m)
     return grad_output * m
 
 

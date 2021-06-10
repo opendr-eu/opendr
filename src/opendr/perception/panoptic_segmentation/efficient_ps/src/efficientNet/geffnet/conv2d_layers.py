@@ -24,6 +24,7 @@ def _ntuple(n):
         if isinstance(x, container_abcs.Iterable):
             return x
         return tuple(repeat(x, n))
+
     return parse
 
 
@@ -60,9 +61,13 @@ def _split_channels(num_chan, num_groups):
     return split
 
 
-def conv2d_same(
-        x, weight: torch.Tensor, bias: Optional[torch.Tensor] = None, stride: Tuple[int, int] = (1, 1),
-        padding: Tuple[int, int] = (0, 0), dilation: Tuple[int, int] = (1, 1), groups: int = 1):
+def conv2d_same(x,
+                weight: torch.Tensor,
+                bias: Optional[torch.Tensor] = None,
+                stride: Tuple[int, int] = (1, 1),
+                padding: Tuple[int, int] = (0, 0),
+                dilation: Tuple[int, int] = (1, 1),
+                groups: int = 1):
     ih, iw = x.size()[-2:]
     kh, kw = weight.size()[-2:]
     pad_h = _calc_same_pad(ih, kh, stride[0], dilation[0])
@@ -76,10 +81,8 @@ class Conv2dSame(nn.Conv2d):
     """
 
     # pylint: disable=unused-argument
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1,
-                 padding=0, dilation=1, groups=1, bias=True):
-        super(Conv2dSame, self).__init__(
-            in_channels, out_channels, kernel_size, stride, 0, dilation, groups, bias)
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True):
+        super(Conv2dSame, self).__init__(in_channels, out_channels, kernel_size, stride, 0, dilation, groups, bias)
 
     def forward(self, x):
         return conv2d_same(x, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
@@ -92,10 +95,8 @@ class Conv2dSameExport(nn.Conv2d):
     """
 
     # pylint: disable=unused-argument
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1,
-                 padding=0, dilation=1, groups=1, bias=True):
-        super(Conv2dSameExport, self).__init__(
-            in_channels, out_channels, kernel_size, stride, 0, dilation, groups, bias)
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True):
+        super(Conv2dSameExport, self).__init__(in_channels, out_channels, kernel_size, stride, 0, dilation, groups, bias)
         self.pad = None
         self.pad_input_size = (0, 0)
 
@@ -108,8 +109,7 @@ class Conv2dSameExport(nn.Conv2d):
 
         if self.pad is not None:
             x = self.pad(x)
-        return F.conv2d(
-            x, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+        return F.conv2d(x, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
 
 def get_padding_value(padding, kernel_size, **kwargs):
@@ -154,9 +154,7 @@ class MixedConv2d(nn.ModuleDict):
     Based on MDConv and GroupedConv in MixNet impl:
       https://github.com/tensorflow/tpu/blob/master/models/official/mnasnet/mixnet/custom_layers.py
     """
-
-    def __init__(self, in_channels, out_channels, kernel_size=3,
-                 stride=1, padding='', dilation=1, depthwise=False, **kwargs):
+    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding='', dilation=1, depthwise=False, **kwargs):
         super(MixedConv2d, self).__init__()
 
         kernel_size = kernel_size if isinstance(kernel_size, list) else [kernel_size]
@@ -169,10 +167,14 @@ class MixedConv2d(nn.ModuleDict):
             conv_groups = out_ch if depthwise else 1
             self.add_module(
                 str(idx),
-                create_conv2d_pad(
-                    in_ch, out_ch, k, stride=stride,
-                    padding=padding, dilation=dilation, groups=conv_groups, **kwargs)
-            )
+                create_conv2d_pad(in_ch,
+                                  out_ch,
+                                  k,
+                                  stride=stride,
+                                  padding=padding,
+                                  dilation=dilation,
+                                  groups=conv_groups,
+                                  **kwargs))
         self.splits = in_splits
 
     def forward(self, x):
@@ -186,12 +188,11 @@ def get_condconv_initializer(initializer, num_experts, expert_shape):
     def condconv_initializer(weight):
         """CondConv initializer function."""
         num_params = np.prod(expert_shape)
-        if (len(weight.shape) != 2 or weight.shape[0] != num_experts or
-                weight.shape[1] != num_params):
-            raise (ValueError(
-                'CondConv variables must have shape [num_experts, num_params]'))
+        if (len(weight.shape) != 2 or weight.shape[0] != num_experts or weight.shape[1] != num_params):
+            raise (ValueError('CondConv variables must have shape [num_experts, num_params]'))
         for i in range(num_experts):
             initializer(weight[i].view(expert_shape))
+
     return condconv_initializer
 
 
@@ -204,16 +205,23 @@ class CondConv2d(nn.Module):
     """
     __constants__ = ['bias', 'in_channels', 'out_channels', 'dynamic_padding']
 
-    def __init__(self, in_channels, out_channels, kernel_size=3,
-                 stride=1, padding='', dilation=1, groups=1, bias=False, num_experts=4):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size=3,
+                 stride=1,
+                 padding='',
+                 dilation=1,
+                 groups=1,
+                 bias=False,
+                 num_experts=4):
         super(CondConv2d, self).__init__()
 
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = _pair(kernel_size)
         self.stride = _pair(stride)
-        padding_val, is_padding_dynamic = get_padding_value(
-            padding, kernel_size, stride=stride, dilation=dilation)
+        padding_val, is_padding_dynamic = get_padding_value(padding, kernel_size, stride=stride, dilation=dilation)
         self.dynamic_padding = is_padding_dynamic  # if in forward to work with torchscript
         self.padding = _pair(padding_val)
         self.dilation = _pair(dilation)
@@ -227,7 +235,7 @@ class CondConv2d(nn.Module):
         self.weight = torch.nn.Parameter(torch.Tensor(self.num_experts, weight_num_param))
 
         if bias:
-            self.bias_shape = (self.out_channels,)
+            self.bias_shape = (self.out_channels, )
             self.bias = torch.nn.Parameter(torch.Tensor(self.num_experts, self.out_channels))
         else:
             self.register_parameter('bias', None)
@@ -235,14 +243,14 @@ class CondConv2d(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        init_weight = get_condconv_initializer(
-            partial(nn.init.kaiming_uniform_, a=math.sqrt(5)), self.num_experts, self.weight_shape)
+        init_weight = get_condconv_initializer(partial(nn.init.kaiming_uniform_, a=math.sqrt(5)), self.num_experts,
+                                               self.weight_shape)
         init_weight(self.weight)
         if self.bias is not None:
             fan_in = np.prod(self.weight_shape[1:])
             bound = 1 / math.sqrt(fan_in)
-            init_bias = get_condconv_initializer(
-                partial(nn.init.uniform_, a=-bound, b=bound), self.num_experts, self.bias_shape)
+            init_bias = get_condconv_initializer(partial(nn.init.uniform_, a=-bound, b=bound), self.num_experts,
+                                                 self.bias_shape)
             init_bias(self.bias)
 
     def forward(self, x, routing_weights):
@@ -257,13 +265,21 @@ class CondConv2d(nn.Module):
         # move batch elements with channels so each batch element can be efficiently convolved with separate kernel
         x = x.view(1, B * C, H, W)
         if self.dynamic_padding:
-            out = conv2d_same(
-                x, weight, bias, stride=self.stride, padding=self.padding,
-                dilation=self.dilation, groups=self.groups * B)
+            out = conv2d_same(x,
+                              weight,
+                              bias,
+                              stride=self.stride,
+                              padding=self.padding,
+                              dilation=self.dilation,
+                              groups=self.groups * B)
         else:
-            out = F.conv2d(
-                x, weight, bias, stride=self.stride, padding=self.padding,
-                dilation=self.dilation, groups=self.groups * B)
+            out = F.conv2d(x,
+                           weight,
+                           bias,
+                           stride=self.stride,
+                           padding=self.padding,
+                           dilation=self.dilation,
+                           groups=self.groups * B)
         out = out.permute([1, 0, 2, 3]).view(B, self.out_channels, out.shape[-2], out.shape[-1])
 
         # Literal port (from TF definition)

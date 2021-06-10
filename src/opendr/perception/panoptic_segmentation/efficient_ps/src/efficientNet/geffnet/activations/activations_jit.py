@@ -14,8 +14,9 @@ import torch
 from torch import nn as nn
 from torch.nn import functional as F
 
-__all__ = ['swish_jit', 'SwishJit', 'mish_jit', 'MishJit',
-           'hard_sigmoid_jit', 'HardSigmoidJit', 'hard_swish_jit', 'HardSwishJit']
+__all__ = [
+    'swish_jit', 'SwishJit', 'mish_jit', 'MishJit', 'hard_sigmoid_jit', 'HardSigmoidJit', 'hard_swish_jit', 'HardSwishJit'
+]
 
 
 @torch.jit.script

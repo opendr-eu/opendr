@@ -52,13 +52,11 @@ _ACT_LAYER_JIT = dict(
     mish=MishJit,
 )
 
-_ACT_LAYER_ME = dict(
-    silu=nn.SiLU if _has_silu else SwishMe,
-    swish=nn.SiLU if _has_silu else SwishMe,
-    mish=MishMe,
-    hard_swish=HardSwishMe,
-    hard_sigmoid=HardSigmoidMe
-)
+_ACT_LAYER_ME = dict(silu=nn.SiLU if _has_silu else SwishMe,
+                     swish=nn.SiLU if _has_silu else SwishMe,
+                     mish=MishMe,
+                     hard_swish=HardSwishMe,
+                     hard_sigmoid=HardSigmoidMe)
 
 _OVERRIDE_FN = dict()
 _OVERRIDE_LAYER = dict()
@@ -135,5 +133,3 @@ def get_act_layer(name='relu'):
     if use_jit and name in _ACT_FN_JIT:  # jit scripted models should be okay for export/scripting
         return _ACT_LAYER_JIT[name]
     return _ACT_LAYER_DEFAULT[name]
-
-

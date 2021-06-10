@@ -9,10 +9,11 @@ from .conv2d_layers import *
 from geffnet.activations import *
 from inplace_abn import ABN
 
-__all__ = ['get_bn_args_tf', 'resolve_bn_args', 'resolve_se_args', 'resolve_act_layer', 'make_divisible',
-           'round_channels', 'drop_connect', 'SqueezeExcite', 'ConvBnAct', 'DepthwiseSeparableConv',
-           'InvertedResidual', 'CondConvResidual', 'EdgeResidual', 'EfficientNetBuilder', 'decode_arch_def',
-           'initialize_weight_default', 'initialize_weight_goog', 'BN_MOMENTUM_TF_DEFAULT', 'BN_EPS_TF_DEFAULT'
+__all__ = [
+    'get_bn_args_tf', 'resolve_bn_args', 'resolve_se_args', 'resolve_act_layer', 'make_divisible', 'round_channels',
+    'drop_connect', 'SqueezeExcite', 'ConvBnAct', 'DepthwiseSeparableConv', 'InvertedResidual', 'CondConvResidual',
+    'EdgeResidual', 'EfficientNetBuilder', 'decode_arch_def', 'initialize_weight_default', 'initialize_weight_goog',
+    'BN_MOMENTUM_TF_DEFAULT', 'BN_EPS_TF_DEFAULT'
 ]
 
 # Defaults used for Google/Tensorflow training of mobile networks /w RMSprop as per
@@ -94,15 +95,13 @@ def drop_connect(inputs, training: bool = False, drop_connect_rate: float = 0.):
         return inputs
 
     keep_prob = 1 - drop_connect_rate
-    random_tensor = keep_prob + torch.rand(
-        (inputs.size()[0], 1, 1, 1), dtype=inputs.dtype, device=inputs.device)
+    random_tensor = keep_prob + torch.rand((inputs.size()[0], 1, 1, 1), dtype=inputs.dtype, device=inputs.device)
     random_tensor.floor_()  # binarize
     output = inputs.div(keep_prob) * random_tensor
     return output
 
 
 class SqueezeExcite(nn.Module):
-
     def __init__(self, in_chs, se_ratio=0.25, reduced_base_chs=None, act_layer=nn.ReLU, gate_fn=sigmoid, divisor=1):
         super(SqueezeExcite, self).__init__()
         reduced_chs = make_divisible((reduced_base_chs or in_chs) * se_ratio, divisor)
@@ -121,8 +120,15 @@ class SqueezeExcite(nn.Module):
 
 
 class ConvBnAct(nn.Module):
-    def __init__(self, in_chs, out_chs, kernel_size,
-                 stride=1, pad_type='', act_layer=nn.ReLU, norm_layer=nn.BatchNorm2d, norm_kwargs=None):
+    def __init__(self,
+                 in_chs,
+                 out_chs,
+                 kernel_size,
+                 stride=1,
+                 pad_type='',
+                 act_layer=nn.ReLU,
+                 norm_layer=nn.BatchNorm2d,
+                 norm_kwargs=None):
         super(ConvBnAct, self).__init__()
         assert stride in [1, 2]
         norm_kwargs = norm_kwargs or {}
@@ -142,18 +148,28 @@ class DepthwiseSeparableConv(nn.Module):
     Used for DS convs in MobileNet-V1 and in the place of IR blocks with an expansion
     factor of 1.0. This is an alternative to having a IR with optional first pw conv.
     """
-    def __init__(self, in_chs, out_chs, dw_kernel_size=3,
-                 stride=1, pad_type='', act_layer=nn.ReLU, noskip=False,
-                 pw_kernel_size=1, pw_act=False, se_ratio=0., se_kwargs=None,
-                 norm_layer=nn.BatchNorm2d, norm_kwargs=None, drop_connect_rate=0.):
+    def __init__(self,
+                 in_chs,
+                 out_chs,
+                 dw_kernel_size=3,
+                 stride=1,
+                 pad_type='',
+                 act_layer=nn.ReLU,
+                 noskip=False,
+                 pw_kernel_size=1,
+                 pw_act=False,
+                 se_ratio=0.,
+                 se_kwargs=None,
+                 norm_layer=nn.BatchNorm2d,
+                 norm_kwargs=None,
+                 drop_connect_rate=0.):
         super(DepthwiseSeparableConv, self).__init__()
         assert stride in [1, 2]
         norm_kwargs = norm_kwargs or {}
         self.has_residual = (stride == 1 and in_chs == out_chs) and not noskip
         self.drop_connect_rate = drop_connect_rate
 
-        self.conv_dw = select_conv2d(
-            in_chs, in_chs, dw_kernel_size, stride=stride, padding=pad_type, depthwise=True)
+        self.conv_dw = select_conv2d(in_chs, in_chs, dw_kernel_size, stride=stride, padding=pad_type, depthwise=True)
         self.bn1 = norm_layer(in_chs, **norm_kwargs)
         self.act1 = act_layer(inplace=True)
 
@@ -167,7 +183,7 @@ class DepthwiseSeparableConv(nn.Module):
         self.conv_pw = select_conv2d(in_chs, out_chs, pw_kernel_size, padding=pad_type)
         self.bn2 = norm_layer(out_chs, **norm_kwargs)
         self.act2 = act_layer(inplace=True) if pw_act else nn.Identity()
-        
+
     def forward(self, x):
         residual = x
 
@@ -190,12 +206,23 @@ class DepthwiseSeparableConv(nn.Module):
 
 class InvertedResidual(nn.Module):
     """ Inverted residual block w/ optional SE"""
-
-    def __init__(self, in_chs, out_chs, dw_kernel_size=3,
-                 stride=1, pad_type='', act_layer=nn.ReLU, noskip=False,
-                 exp_ratio=1.0, exp_kernel_size=1, pw_kernel_size=1,
-                 se_ratio=0., se_kwargs=None, norm_layer=nn.BatchNorm2d, norm_kwargs=None,
-                 conv_kwargs=None, drop_connect_rate=0.):
+    def __init__(self,
+                 in_chs,
+                 out_chs,
+                 dw_kernel_size=3,
+                 stride=1,
+                 pad_type='',
+                 act_layer=nn.ReLU,
+                 noskip=False,
+                 exp_ratio=1.0,
+                 exp_kernel_size=1,
+                 pw_kernel_size=1,
+                 se_ratio=0.,
+                 se_kwargs=None,
+                 norm_layer=nn.BatchNorm2d,
+                 norm_kwargs=None,
+                 conv_kwargs=None,
+                 drop_connect_rate=0.):
         super(InvertedResidual, self).__init__()
         norm_kwargs = norm_kwargs or {}
         conv_kwargs = conv_kwargs or {}
@@ -206,15 +233,20 @@ class InvertedResidual(nn.Module):
         # Point-wise expansion
         self.conv_pw = select_conv2d(in_chs, mid_chs, exp_kernel_size, padding=pad_type, **conv_kwargs)
         self.bn1 = norm_layer(mid_chs, **norm_kwargs)
-        if isinstance(self.bn1, ABN): 
+        if isinstance(self.bn1, ABN):
             self.bn1.activation = 'identity'
             self.act1 = nn.LeakyReLU()
-        else: 
+        else:
             self.act1 = act_layer(inplace=True)
 
         # Depth-wise convolution
-        self.conv_dw = select_conv2d(
-            mid_chs, mid_chs, dw_kernel_size, stride=stride, padding=pad_type, depthwise=True, **conv_kwargs)
+        self.conv_dw = select_conv2d(mid_chs,
+                                     mid_chs,
+                                     dw_kernel_size,
+                                     stride=stride,
+                                     padding=pad_type,
+                                     depthwise=True,
+                                     **conv_kwargs)
         self.bn2 = norm_layer(mid_chs, **norm_kwargs)
         self.act2 = act_layer(inplace=True)
         # Squeeze-and-excitation
@@ -227,8 +259,8 @@ class InvertedResidual(nn.Module):
         # Point-wise linear projection
         self.conv_pwl = select_conv2d(mid_chs, out_chs, pw_kernel_size, padding=pad_type, **conv_kwargs)
         self.bn3 = norm_layer(out_chs, **norm_kwargs)
-        if isinstance(self.bn3, ABN): 
-            self.bn3.activation = 'identity'  
+        if isinstance(self.bn3, ABN):
+            self.bn3.activation = 'identity'
 
     def forward(self, x):
         residual = x
@@ -249,7 +281,7 @@ class InvertedResidual(nn.Module):
         # Point-wise linear projection
         x = self.conv_pwl(x)
         x = self.bn3(x)
-        
+
         if self.has_residual:
             if self.drop_connect_rate > 0.:
                 x = drop_connect(x, self.training, self.drop_connect_rate)
@@ -259,22 +291,43 @@ class InvertedResidual(nn.Module):
 
 class CondConvResidual(InvertedResidual):
     """ Inverted residual block w/ CondConv routing"""
-
-    def __init__(self, in_chs, out_chs, dw_kernel_size=3,
-                 stride=1, pad_type='', act_layer=nn.ReLU, noskip=False,
-                 exp_ratio=1.0, exp_kernel_size=1, pw_kernel_size=1,
-                 se_ratio=0., se_kwargs=None, norm_layer=nn.BatchNorm2d, norm_kwargs=None,
-                 num_experts=0, drop_connect_rate=0.):
+    def __init__(self,
+                 in_chs,
+                 out_chs,
+                 dw_kernel_size=3,
+                 stride=1,
+                 pad_type='',
+                 act_layer=nn.ReLU,
+                 noskip=False,
+                 exp_ratio=1.0,
+                 exp_kernel_size=1,
+                 pw_kernel_size=1,
+                 se_ratio=0.,
+                 se_kwargs=None,
+                 norm_layer=nn.BatchNorm2d,
+                 norm_kwargs=None,
+                 num_experts=0,
+                 drop_connect_rate=0.):
 
         self.num_experts = num_experts
         conv_kwargs = dict(num_experts=self.num_experts)
 
-        super(CondConvResidual, self).__init__(
-            in_chs, out_chs, dw_kernel_size=dw_kernel_size, stride=stride, pad_type=pad_type,
-            act_layer=act_layer, noskip=noskip, exp_ratio=exp_ratio, exp_kernel_size=exp_kernel_size,
-            pw_kernel_size=pw_kernel_size, se_ratio=se_ratio, se_kwargs=se_kwargs,
-            norm_layer=norm_layer, norm_kwargs=norm_kwargs, conv_kwargs=conv_kwargs,
-            drop_connect_rate=drop_connect_rate)
+        super(CondConvResidual, self).__init__(in_chs,
+                                               out_chs,
+                                               dw_kernel_size=dw_kernel_size,
+                                               stride=stride,
+                                               pad_type=pad_type,
+                                               act_layer=act_layer,
+                                               noskip=noskip,
+                                               exp_ratio=exp_ratio,
+                                               exp_kernel_size=exp_kernel_size,
+                                               pw_kernel_size=pw_kernel_size,
+                                               se_ratio=se_ratio,
+                                               se_kwargs=se_kwargs,
+                                               norm_layer=norm_layer,
+                                               norm_kwargs=norm_kwargs,
+                                               conv_kwargs=conv_kwargs,
+                                               drop_connect_rate=drop_connect_rate)
 
         self.routing_fn = nn.Linear(in_chs, self.num_experts)
 
@@ -311,10 +364,22 @@ class CondConvResidual(InvertedResidual):
 
 class EdgeResidual(nn.Module):
     """ EdgeTPU Residual block with expansion convolution followed by pointwise-linear w/ stride"""
-
-    def __init__(self, in_chs, out_chs, exp_kernel_size=3, exp_ratio=1.0, fake_in_chs=0,
-                 stride=1, pad_type='', act_layer=nn.ReLU, noskip=False, pw_kernel_size=1,
-                 se_ratio=0., se_kwargs=None, norm_layer=nn.BatchNorm2d, norm_kwargs=None, drop_connect_rate=0.):
+    def __init__(self,
+                 in_chs,
+                 out_chs,
+                 exp_kernel_size=3,
+                 exp_ratio=1.0,
+                 fake_in_chs=0,
+                 stride=1,
+                 pad_type='',
+                 act_layer=nn.ReLU,
+                 noskip=False,
+                 pw_kernel_size=1,
+                 se_ratio=0.,
+                 se_kwargs=None,
+                 norm_layer=nn.BatchNorm2d,
+                 norm_kwargs=None,
+                 drop_connect_rate=0.):
         super(EdgeResidual, self).__init__()
         norm_kwargs = norm_kwargs or {}
         mid_chs = make_divisible(fake_in_chs * exp_ratio) if fake_in_chs > 0 else make_divisible(in_chs * exp_ratio)
@@ -369,10 +434,16 @@ class EfficientNetBuilder:
     https://github.com/facebookresearch/maskrcnn-benchmark/blob/master/maskrcnn_benchmark/modeling/backbone/fbnet_builder.py
 
     """
-
-    def __init__(self, channel_multiplier=1.0, channel_divisor=8, channel_min=None,
-                 pad_type='', act_layer=None, se_kwargs=None,
-                 norm_layer=nn.BatchNorm2d, norm_kwargs=None, drop_connect_rate=0.):
+    def __init__(self,
+                 channel_multiplier=1.0,
+                 channel_divisor=8,
+                 channel_min=None,
+                 pad_type='',
+                 act_layer=None,
+                 se_kwargs=None,
+                 norm_layer=nn.BatchNorm2d,
+                 norm_kwargs=None,
+                 drop_connect_rate=0.):
         self.channel_multiplier = channel_multiplier
         self.channel_divisor = channel_divisor
         self.channel_min = channel_min
@@ -650,8 +721,8 @@ def initialize_weight_goog(m, n='', fix_group_fanout=True):
         fan_out = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
         if fix_group_fanout:
             fan_out //= m.groups
-        init_weight_fn = get_condconv_initializer(
-            lambda w: w.data.normal_(0, math.sqrt(2.0 / fan_out)), m.num_experts, m.weight_shape)
+        init_weight_fn = get_condconv_initializer(lambda w: w.data.normal_(0, math.sqrt(2.0 / fan_out)), m.num_experts,
+                                                  m.weight_shape)
         init_weight_fn(m.weight)
         if m.bias is not None:
             m.bias.data.zero_()
@@ -677,8 +748,8 @@ def initialize_weight_goog(m, n='', fix_group_fanout=True):
 
 def initialize_weight_default(m, n=''):
     if isinstance(m, CondConv2d):
-        init_fn = get_condconv_initializer(partial(
-            nn.init.kaiming_normal_, mode='fan_out', nonlinearity='relu'), m.num_experts, m.weight_shape)
+        init_fn = get_condconv_initializer(partial(nn.init.kaiming_normal_, mode='fan_out', nonlinearity='relu'), m.num_experts,
+                                           m.weight_shape)
         init_fn(m.weight)
     elif isinstance(m, nn.Conv2d):
         nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
