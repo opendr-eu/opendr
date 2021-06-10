@@ -42,9 +42,11 @@ from pathlib import Path
 from stable_baselines import PPO2
 from stable_baselines.bench import Monitor
 from stable_baselines.common.vec_env import DummyVecEnv
+from stable_baselines.common.callbacks import CheckpointCallback
+from stable_baselines.results_plotter import load_results, ts2xy
 
-from engine.learners import LearnerRL
-from planning.end_to_end_planning.custom_policies.custom_policies import MultiInputPolicy, create_dual_extractor
+from opendr.engine.learners import LearnerRL
+from opendr.planning.end_to_end_planning.custom_policies.custom_policies import MultiInputPolicy, create_dual_extractor
 # from engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 
@@ -64,12 +66,17 @@ class EndToEndPlanningRLLearner(LearnerRL):
                                                         checkpoint_after_iter=checkpoint_after_iter,
                                                         checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
                                                         device=device, threshold=0.0, scale=1.0)
-        print("initiated")
         net_sizes = [64, 64]
         num_natural_feat = 3
         policy_kwargs = dict(extractor=create_dual_extractor(num_natural_feat),
                              net_arch=[dict(vf=net_sizes, pi=net_sizes)])
         self.env = env #DummyVecEnv(env)
+        if isinstance(self.env, DummyVecEnv):
+            self.env = self.env.envs[0]
+        if isinstance(self.env, Monitor):
+            self.env = self.env.env
+        # self.env = Monitor(self.env, filename=self.logdir)
+        self.env = DummyVecEnv([lambda: self.env])
         self.agent = PPO2(MultiInputPolicy, self.env, policy_kwargs=policy_kwargs, n_steps=128, verbose=1)
 
     def fit(self, env=None, val_env=None, logging_path='', silent=False, verbose=True):
@@ -83,7 +90,24 @@ class EndToEndPlanningRLLearner(LearnerRL):
         :param verbose: bool, enable verbosity
         :return:
         """
-        print("fit")
+        if env is not None:
+            if isinstance(env, gym.Env):
+                self.env = env
+            else:
+                print('env should be gym.Env')
+                return
+        self.last_checkpoint_time_step = 0
+        self.logdir = logging_path
+        if isinstance(self.env, DummyVecEnv):
+            self.env = self.env.envs[0]
+        if isinstance(self.env, Monitor):
+            self.env = self.env.env
+        self.env = Monitor(self.env, filename=self.logdir)
+        self.env = DummyVecEnv([lambda: self.env])
+        self.agent.set_env(self.env)
+        # checkpoint_callback = CheckpointCallback(save_freq=20, save_path=self.logdir,
+        #                                          name_prefix='rl_model')
+        self.agent.learn(total_timesteps=int(5e4), callback=self.callback)
 
     def eval(self, env, name_prefix='', nr_evaluations: int = None):
         """
@@ -92,10 +116,14 @@ class EndToEndPlanningRLLearner(LearnerRL):
         :param env: gym.Env, env to evaluate on
         :param name_prefix: str, name prefix for all logged variables
         :param nr_evaluations: int, number of episodes to evaluate over
-        :return:
+        :return: sum of rewards through the episode
         """
-        #env = Monitor(env, filename=logdir, allow_early_resets=True)
-        #env = DummyVecEnv([lambda: env])
+        if isinstance(self.env, DummyVecEnv):
+            self.env = self.env.envs[0]
+        if isinstance(self.env, Monitor):
+            self.env = self.env.env
+        env = Monitor(env, filename=self.logdir)
+        env = DummyVecEnv([lambda: env])
         self.agent.set_env(env)
         obs = env.reset()
         sum_of_rewards = 0
@@ -127,17 +155,41 @@ class EndToEndPlanningRLLearner(LearnerRL):
         :return: Whether load succeeded or not
         :rtype: bool
         """
-        self.agent = PPO2.load(path) # "./log/best_model11940with_mean_rew8.426711449999999.pkl")
+        self.agent = PPO2.load(path)
         self.agent.policy = MultiInputPolicy
         self.agent.set_env(self.env)
 
     def infer(self, batch, deterministic: bool = True):
+        """
+        Loads a model from the path provided.
+
+        :param batch: Path to saved model
+        :type batch: list
+        :param deterministic: use deterministic actions from the policy
+        :type deterministic: bool
+        :return: the selected action
+        :rtype: int
+        """
         return self.agent.predict(batch, deterministic=deterministic)
 
     def reset(self):
-        print("reset")
-        # raise NotImplementedError()
+        raise NotImplementedError()
 
     def optimize(self, target_device):
-        print("optimize")
-        # raise NotImplementedError()
+        raise NotImplementedError()
+
+    def callback(self, _locals, _globals):
+        x, y = ts2xy(load_results(self.logdir), 'timesteps')
+
+        if len(y) > 20:
+            mean_reward = np.mean(y[-20:])
+        else:
+            return True
+
+        if x[-1] - self.last_checkpoint_time_step > 20:
+            self.last_checkpoint_time_step = x[-1]
+            check_point_path = Path(self.logdir,
+                                    'checkpoint_save' + str(x[-1]) + 'with_mean_rew' + str(mean_reward) + '.pkl')
+            self.save(str(check_point_path))
+
+        return True

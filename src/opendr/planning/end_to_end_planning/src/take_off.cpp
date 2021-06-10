@@ -18,10 +18,9 @@ float current_pose_y;
 float current_pose_z;
 
 void current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
-    
-      current_pose_x = msg->pose.position.x;
-      current_pose_y = msg->pose.position.y;
-      current_pose_z = msg->pose.position.z;
+    current_pose_x = msg->pose.position.x;
+    current_pose_y = msg->pose.position.y;
+    current_pose_z = msg->pose.position.z;
 }
 
 int main(int argc, char **argv)
@@ -86,5 +85,5 @@ int main(int argc, char **argv)
     arming_client.call(arm_cmd);
     takeoff_client.call(takeoff_cmd);
                 
-   return 0;
+    return 0;
 }
