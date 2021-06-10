@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import numpy as np
+from typing import Optional, Dict
 
 
 class BaseTarget:
@@ -740,3 +741,68 @@ class TrackingAnnotation3DList(Target):
 
     def __str__(self):
         return str(self.kitti(True))
+
+
+#ToDo: Inherit from Target class
+class Heatmap():
+    """
+    This target is used for multi-class segmentation problems or multi-class problems that require heatmap annotations.
+    """
+
+    def __init__(self,
+                 data: np.ndarray,
+                 description: Optional[str] = None,
+                 class_names: Optional[Dict[int, str]] = None):
+        # super().__init__()
+        self._data = None
+        self._description = None
+        self._class_names = None
+
+        self.data = data
+        if description is not None:
+            self.description = description
+        if class_names is not None:
+            self.class_names = class_names
+
+    @property
+    def data(self) -> np.ndarray:
+        if self._data is None:
+            raise ValueError('Data is empty.')
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        if not isinstance(data, np.ndarray) or data.dtype != np.uint8:
+            raise TypeError('Data must be a numpy array of type uint8.')
+        self._data = data
+
+    @property
+    def description(self) -> str:
+        return self._description
+
+    @description.setter
+    def description(self, description: str):
+        if not isinstance(description, str):
+            raise TypeError('Description must be a string.')
+        self._description = description
+
+    @property
+    def class_names(self) -> Dict[int, str]:
+        return self._class_names
+
+    @class_names.setter
+    def class_names(self, class_names: Dict[int, str]):
+        if not isinstance(class_names, dict):
+            raise TypeError('Class_names must be a dictionary.')
+        for key, value in class_names.items():
+            if not isinstance(key, int):
+                raise TypeError('Keys of class_names must be integers.')
+            if not isinstance(value, str):
+                raise TypeError('Values of class_names must be string.')
+        self._class_names = class_names
+
+    def shape(self):
+        return self.data.shape
+
+    def __str__(self):
+        return str(self.data)
