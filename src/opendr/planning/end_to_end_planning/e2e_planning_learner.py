@@ -70,12 +70,9 @@ class EndToEndPlanningRLLearner(LearnerRL):
         num_natural_feat = 3
         policy_kwargs = dict(extractor=create_dual_extractor(num_natural_feat),
                              net_arch=[dict(vf=net_sizes, pi=net_sizes)])
-        self.env = env #DummyVecEnv(env)
+        self.env = env
         if isinstance(self.env, DummyVecEnv):
             self.env = self.env.envs[0]
-        if isinstance(self.env, Monitor):
-            self.env = self.env.env
-        # self.env = Monitor(self.env, filename=self.logdir)
         self.env = DummyVecEnv([lambda: self.env])
         self.agent = PPO2(MultiInputPolicy, self.env, policy_kwargs=policy_kwargs, n_steps=128, verbose=1)
 
@@ -105,8 +102,6 @@ class EndToEndPlanningRLLearner(LearnerRL):
         self.env = Monitor(self.env, filename=self.logdir)
         self.env = DummyVecEnv([lambda: self.env])
         self.agent.set_env(self.env)
-        # checkpoint_callback = CheckpointCallback(save_freq=20, save_path=self.logdir,
-        #                                          name_prefix='rl_model')
         self.agent.learn(total_timesteps=int(5e4), callback=self.callback)
 
     def eval(self, env, name_prefix='', nr_evaluations: int = None):
