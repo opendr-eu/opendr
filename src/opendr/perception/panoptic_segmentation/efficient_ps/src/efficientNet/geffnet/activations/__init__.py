@@ -1,3 +1,4 @@
+# flake8: noqa
 from geffnet import config
 from geffnet.activations.activations_me import *
 from geffnet.activations.activations_jit import *

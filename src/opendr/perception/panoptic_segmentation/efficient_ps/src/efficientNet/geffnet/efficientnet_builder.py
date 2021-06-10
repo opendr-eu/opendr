@@ -3,10 +3,16 @@
 Copyright 2020 Ross Wightman
 """
 import re
+import math
 from copy import deepcopy
+from functools import partial
 
-from .conv2d_layers import *
-from geffnet.activations import *
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from .conv2d_layers import select_conv2d, get_condconv_initializer, CondConv2d
+from geffnet.activations import sigmoid, get_act_layer
 from inplace_abn import ABN
 
 __all__ = [

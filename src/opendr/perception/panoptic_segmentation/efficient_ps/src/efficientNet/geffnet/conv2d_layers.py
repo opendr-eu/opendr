@@ -12,11 +12,11 @@ from torch._six import container_abcs
 
 from itertools import repeat
 from functools import partial
-from typing import Union, List, Tuple, Optional, Callable
+from typing import Tuple, Optional
 import numpy as np
 import math
 
-from .config import *
+from .config import is_exportable, is_scriptable
 
 
 def _ntuple(n):

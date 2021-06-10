@@ -27,13 +27,12 @@ A generic MobileNet class with building blocks to support a variety of models:
 Hacked together by / Copyright 2020 Ross Wightman
 """
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.utils.checkpoint as cp
 
-from .config import layer_config_kwargs, is_scriptable
+from .config import layer_config_kwargs
 from .conv2d_layers import select_conv2d
 from .helpers import load_pretrained
-from .efficientnet_builder import *
+from .efficientnet_builder import round_channels, EfficientNetBuilder, initialize_weight_default, initialize_weight_goog, \
+    decode_arch_def, resolve_act_layer, resolve_bn_args, BN_EPS_TF_DEFAULT
 
 __all__ = [
     'GenEfficientNet', 'mnasnet_050', 'mnasnet_075', 'mnasnet_100', 'mnasnet_b1', 'mnasnet_140', 'semnasnet_050',
@@ -237,8 +236,6 @@ class GenEfficientNet(nn.Module):
         self.conv_head = select_conv2d(in_chs, num_features, 1, padding=pad_type)
         self.bn2 = norm_layer(num_features, **norm_kwargs)
         self.act2 = act_layer(inplace=True)
-        #        self.global_pool = nn.AdaptiveAvgPool2d(1)
-        #        self.classifier = nn.Linear(num_features, num_classes)
 
         for n, m in self.named_modules():
             if weight_init == 'goog':
@@ -253,19 +250,10 @@ class GenEfficientNet(nn.Module):
         x = self.bn1(x)
         x = self.act1(x)
 
-        #prev_x = x
-
         for id, block in enumerate(self.blocks):
-            #            if 1 == 1:
-            #                if x.requires_grad:
-            #                    x = cp.checkpoint(block, x)
-            #            else:
             x = block(x)
-            if id in [1, 2, 4]:  #prev_x.size(2) > x.size(2): # # #
+            if id in [1, 2, 4]:
                 endpoints.append(x)
-            #elif id == 0:
-
-            #prev_x = x
 
         x = self.conv_head(x)
         x = self.bn2(x)
@@ -286,10 +274,6 @@ class GenEfficientNet(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        #        x = self.global_pool(x)
-        #        x = x.flatten(1)
-        #        if self.drop_rate > 0.:
-        #            x = F.dropout(x, p=self.drop_rate, training=self.training)
         return x
 
 
@@ -431,7 +415,7 @@ def _gen_fbnetc(variant, channel_multiplier=1.0, pretrained=False, **kwargs):
     """ FBNet-C
 
         Paper: https://arxiv.org/abs/1812.03443
-        Ref Impl: https://github.com/facebookresearch/maskrcnn-benchmark/blob/master/maskrcnn_benchmark/modeling/backbone/fbnet_modeldef.py
+        Ref Impl: https://github.com/facebookresearch/maskrcnn-benchmark/blob/master/maskrcnn_benchmark/modeling/backbone/fbnet_modeldef.py # noqa: E501
 
         NOTE: the impl above does not relate to the 'C' variant here, that was derived from paper,
         it was used to confirm some building block details
@@ -527,7 +511,7 @@ def _gen_efficientnet(variant, channel_multiplier=1.0, depth_multiplier=1.0, pre
     ]
 
     se_flag = kwargs.pop('se')
-    if se_flag == False:
+    if not se_flag:
         arch_def = [[
             ('_').join(block[0].split('_')[:-1]),
         ] for block in arch_def]

@@ -6,14 +6,10 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-# Get the long description from the README file
-#with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-#    long_description = f.read()
-
 exec(open('geffnet/version.py').read())
 setup(
     name='geffnet',
-    version=__version__,
+    # version=__version__,
     description='(Generic) EfficientNets for PyTorch',
     url='https://github.com/rwightman/gen-efficientnet-pytorch',
     author='Ross Wightman',
