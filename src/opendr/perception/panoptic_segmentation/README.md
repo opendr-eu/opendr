@@ -13,12 +13,13 @@ Two separate network heads create predictions for semantic and instance segmenta
 The final panoptic fusion model combines the output of the task-specific heads into a single panoptic segmentation map.
 
 Website: http://panoptic.cs.uni-freiburg.de <br>
+Arxiv: https://arxiv.org/abs/2004.02307 <br>
 GitHub repository: https://github.com/DeepSceneSeg/EfficientPS
 
 **BibTeX**:
 ```bibtex
 @article{mohan2020efficientps,
-  title={Efficientps: Efficient panoptic segmentation},
+  title={EfficientPS: Efficient Panoptic Segmentation},
   author={Mohan, Rohit and Valada, Abhinav},
   journal={International Journal of Computer Vision (IJCV)},
   year={2021}
