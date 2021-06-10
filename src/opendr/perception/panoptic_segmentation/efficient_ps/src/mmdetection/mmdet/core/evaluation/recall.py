@@ -62,11 +62,7 @@ def set_recall_param(proposal_nums, iou_thrs):
     return _proposal_nums, _iou_thrs
 
 
-def eval_recalls(gts,
-                 proposals,
-                 proposal_nums=None,
-                 iou_thrs=0.5,
-                 logger=None):
+def eval_recalls(gts, proposals, proposal_nums=None, iou_thrs=0.5, logger=None):
     """Calculate recalls.
 
     Args:
@@ -107,12 +103,7 @@ def eval_recalls(gts,
     return recalls
 
 
-def print_recall_summary(recalls,
-                         proposal_nums,
-                         iou_thrs,
-                         row_idxs=None,
-                         col_idxs=None,
-                         logger=None):
+def print_recall_summary(recalls, proposal_nums, iou_thrs, row_idxs=None, col_idxs=None, logger=None):
     """Print recalls in a table.
 
     Args:
@@ -133,10 +124,7 @@ def print_recall_summary(recalls,
     row_header = [''] + iou_thrs[col_idxs].tolist()
     table_data = [row_header]
     for i, num in enumerate(proposal_nums[row_idxs]):
-        row = [
-            '{:.3f}'.format(val)
-            for val in recalls[row_idxs[i], col_idxs].tolist()
-        ]
+        row = ['{:.3f}'.format(val) for val in recalls[row_idxs[i], col_idxs].tolist()]
         row.insert(0, num)
         table_data.append(row)
     table = AsciiTable(table_data)

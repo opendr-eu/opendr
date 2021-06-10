@@ -3,12 +3,7 @@ import torch
 from mmdet.ops.nms import nms_wrapper
 
 
-def multiclass_nms(multi_bboxes,
-                   multi_scores,
-                   score_thr,
-                   nms_cfg,
-                   max_num=-1,
-                   score_factors=None):
+def multiclass_nms(multi_bboxes, multi_scores, score_thr, nms_cfg, max_num=-1, score_factors=None):
     """NMS for multi-class bboxes.
 
     Args:
@@ -60,8 +55,7 @@ def multiclass_nms(multi_bboxes,
     nms_cfg_ = nms_cfg.copy()
     nms_type = nms_cfg_.pop('type', 'nms')
     nms_op = getattr(nms_wrapper, nms_type)
-    dets, keep = nms_op(
-        torch.cat([bboxes_for_nms, scores[:, None]], 1), **nms_cfg_)
+    dets, keep = nms_op(torch.cat([bboxes_for_nms, scores[:, None]], 1), **nms_cfg_)
     bboxes = bboxes[keep]
     scores = dets[:, -1]  # soft_nms will modify scores
     labels = labels[keep]

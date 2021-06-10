@@ -10,14 +10,7 @@ from .guided_anchor_head import FeatureAdaption, GuidedAnchorHead
 @HEADS.register_module
 class GARetinaHead(GuidedAnchorHead):
     """Guided-Anchor-based RetinaNet head."""
-
-    def __init__(self,
-                 num_classes,
-                 in_channels,
-                 stacked_convs=4,
-                 conv_cfg=None,
-                 norm_cfg=None,
-                 **kwargs):
+    def __init__(self, num_classes, in_channels, stacked_convs=4, conv_cfg=None, norm_cfg=None, **kwargs):
         self.stacked_convs = stacked_convs
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
@@ -30,44 +23,22 @@ class GARetinaHead(GuidedAnchorHead):
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
             self.cls_convs.append(
-                ConvModule(
-                    chn,
-                    self.feat_channels,
-                    3,
-                    stride=1,
-                    padding=1,
-                    conv_cfg=self.conv_cfg,
-                    norm_cfg=self.norm_cfg))
+                ConvModule(chn, self.feat_channels, 3, stride=1, padding=1, conv_cfg=self.conv_cfg, norm_cfg=self.norm_cfg))
             self.reg_convs.append(
-                ConvModule(
-                    chn,
-                    self.feat_channels,
-                    3,
-                    stride=1,
-                    padding=1,
-                    conv_cfg=self.conv_cfg,
-                    norm_cfg=self.norm_cfg))
+                ConvModule(chn, self.feat_channels, 3, stride=1, padding=1, conv_cfg=self.conv_cfg, norm_cfg=self.norm_cfg))
 
         self.conv_loc = nn.Conv2d(self.feat_channels, 1, 1)
-        self.conv_shape = nn.Conv2d(self.feat_channels, self.num_anchors * 2,
-                                    1)
-        self.feature_adaption_cls = FeatureAdaption(
-            self.feat_channels,
-            self.feat_channels,
-            kernel_size=3,
-            deformable_groups=self.deformable_groups)
-        self.feature_adaption_reg = FeatureAdaption(
-            self.feat_channels,
-            self.feat_channels,
-            kernel_size=3,
-            deformable_groups=self.deformable_groups)
-        self.retina_cls = MaskedConv2d(
-            self.feat_channels,
-            self.num_anchors * self.cls_out_channels,
-            3,
-            padding=1)
-        self.retina_reg = MaskedConv2d(
-            self.feat_channels, self.num_anchors * 4, 3, padding=1)
+        self.conv_shape = nn.Conv2d(self.feat_channels, self.num_anchors * 2, 1)
+        self.feature_adaption_cls = FeatureAdaption(self.feat_channels,
+                                                    self.feat_channels,
+                                                    kernel_size=3,
+                                                    deformable_groups=self.deformable_groups)
+        self.feature_adaption_reg = FeatureAdaption(self.feat_channels,
+                                                    self.feat_channels,
+                                                    kernel_size=3,
+                                                    deformable_groups=self.deformable_groups)
+        self.retina_cls = MaskedConv2d(self.feat_channels, self.num_anchors * self.cls_out_channels, 3, padding=1)
+        self.retina_reg = MaskedConv2d(self.feat_channels, self.num_anchors * 4, 3, padding=1)
 
     def init_weights(self):
         for m in self.cls_convs:

@@ -30,7 +30,6 @@ class ConvModule(nn.Module):
             sequence of "conv", "norm" and "act". Examples are
             ("conv", "norm", "act") and ("act", "conv", "norm").
     """
-
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -59,7 +58,7 @@ class ConvModule(nn.Module):
 
         self.with_norm = norm_cfg is not None
         self.with_activation = act_cfg is not None
-        
+
         # if the conv layer is before a norm layer, bias is unnecessary.
         if bias == 'auto':
             bias = False if self.with_norm else True
@@ -69,16 +68,15 @@ class ConvModule(nn.Module):
             warnings.warn('ConvModule has norm and bias at the same time')
 
         # build convolution layer
-        self.conv = build_conv_layer(
-            conv_cfg,
-            in_channels,
-            out_channels,
-            kernel_size,
-            stride=stride,
-            padding=padding,
-            dilation=dilation,
-            groups=groups,
-            bias=bias)
+        self.conv = build_conv_layer(conv_cfg,
+                                     in_channels,
+                                     out_channels,
+                                     kernel_size,
+                                     stride=stride,
+                                     padding=padding,
+                                     dilation=dilation,
+                                     groups=groups,
+                                     bias=bias)
         # export the attributes of self.conv to a higher level for convenience
         self.in_channels = self.conv.in_channels
         self.out_channels = self.conv.out_channels

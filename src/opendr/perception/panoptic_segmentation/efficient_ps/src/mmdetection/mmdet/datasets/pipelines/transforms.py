@@ -45,12 +45,7 @@ class Resize(object):
         keep_ratio (bool): Whether to keep the aspect ratio when resizing the
             image.
     """
-
-    def __init__(self,
-                 img_scale=None,
-                 multiscale_mode='range',
-                 ratio_range=None,
-                 keep_ratio=True):
+    def __init__(self, img_scale=None, multiscale_mode='range', ratio_range=None, keep_ratio=True):
         if img_scale is None:
             self.img_scale = None
         else:
@@ -83,12 +78,8 @@ class Resize(object):
         assert mmcv.is_list_of(img_scales, tuple) and len(img_scales) == 2
         img_scale_long = [max(s) for s in img_scales]
         img_scale_short = [min(s) for s in img_scales]
-        long_edge = np.random.randint(
-            min(img_scale_long),
-            max(img_scale_long) + 1)
-        short_edge = np.random.randint(
-            min(img_scale_short),
-            max(img_scale_short) + 1)
+        long_edge = np.random.randint(min(img_scale_long), max(img_scale_long) + 1)
+        short_edge = np.random.randint(min(img_scale_short), max(img_scale_short) + 1)
         img_scale = (long_edge, short_edge)
         return img_scale, None
 
@@ -103,8 +94,7 @@ class Resize(object):
 
     def _random_scale(self, results):
         if self.ratio_range is not None:
-            scale, scale_idx = self.random_sample_ratio(
-                self.img_scale[0], self.ratio_range)
+            scale, scale_idx = self.random_sample_ratio(self.img_scale[0], self.ratio_range)
         elif len(self.img_scale) == 1:
             scale, scale_idx = self.img_scale[0], 0
         elif self.multiscale_mode == 'range':
@@ -119,13 +109,10 @@ class Resize(object):
 
     def _resize_img(self, results):
         if self.keep_ratio:
-            img, scale_factor = mmcv.imrescale(
-                results['img'], results['scale'], return_scale=True)
+            img, scale_factor = mmcv.imrescale(results['img'], results['scale'], return_scale=True)
         else:
-            img, w_scale, h_scale = mmcv.imresize(
-                results['img'], results['scale'], return_scale=True)
-            scale_factor = np.array([w_scale, h_scale, w_scale, h_scale],
-                                    dtype=np.float32)
+            img, w_scale, h_scale = mmcv.imresize(results['img'], results['scale'], return_scale=True)
+            scale_factor = np.array([w_scale, h_scale, w_scale, h_scale], dtype=np.float32)
         results['img'] = img
         results['img_shape'] = img.shape
         results['pad_shape'] = img.shape  # in case that there is no padding
@@ -145,31 +132,21 @@ class Resize(object):
             if results[key] is None:
                 continue
             if self.keep_ratio:
-                masks = [
-                    mmcv.imrescale(
-                        mask, results['scale_factor'], interpolation='nearest')
-                    for mask in results[key]
-                ]
+                masks = [mmcv.imrescale(mask, results['scale_factor'], interpolation='nearest') for mask in results[key]]
             else:
                 mask_size = (results['img_shape'][1], results['img_shape'][0])
-                masks = [
-                    mmcv.imresize(mask, mask_size, interpolation='nearest')
-                    for mask in results[key]
-                ]
+                masks = [mmcv.imresize(mask, mask_size, interpolation='nearest') for mask in results[key]]
             if masks:
                 results[key] = np.stack(masks)
             else:
-                results[key] = np.empty(
-                    (0, ) + results['img_shape'], dtype=np.uint8)
+                results[key] = np.empty((0, ) + results['img_shape'], dtype=np.uint8)
 
     def _resize_seg(self, results):
         for key in results.get('seg_fields', []):
             if self.keep_ratio:
-                gt_seg = mmcv.imrescale(
-                    results[key], results['scale'], interpolation='nearest')
+                gt_seg = mmcv.imrescale(results[key], results['scale'], interpolation='nearest')
             else:
-                gt_seg = mmcv.imresize(
-                    results[key], results['scale'], interpolation='nearest')
+                gt_seg = mmcv.imresize(results[key], results['scale'], interpolation='nearest')
             results['gt_semantic_seg'] = gt_seg
 
     def __call__(self, results):
@@ -184,10 +161,7 @@ class Resize(object):
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += ('(img_scale={}, multiscale_mode={}, ratio_range={}, '
-                     'keep_ratio={})').format(self.img_scale,
-                                              self.multiscale_mode,
-                                              self.ratio_range,
-                                              self.keep_ratio)
+                     'keep_ratio={})').format(self.img_scale, self.multiscale_mode, self.ratio_range, self.keep_ratio)
         return repr_str
 
 
@@ -202,7 +176,6 @@ class RandomFlip(object):
     Args:
         flip_ratio (float, optional): The flipping probability.
     """
-
     def __init__(self, flip_ratio=None, direction='horizontal'):
         self.flip_ratio = flip_ratio
         self.direction = direction
@@ -228,8 +201,7 @@ class RandomFlip(object):
             flipped[..., 1::4] = h - bboxes[..., 3::4] - 1
             flipped[..., 3::4] = h - bboxes[..., 1::4] - 1
         else:
-            raise ValueError(
-                'Invalid flipping direction "{}"'.format(direction))
+            raise ValueError('Invalid flipping direction "{}"'.format(direction))
         return flipped
 
     def __call__(self, results):
@@ -240,34 +212,25 @@ class RandomFlip(object):
             results['flip_direction'] = self.direction
         if results['flip']:
             # flip image
-            results['img'] = mmcv.imflip(
-                results['img'], direction=results['flip_direction'])
+            results['img'] = mmcv.imflip(results['img'], direction=results['flip_direction'])
             # flip bboxes
             for key in results.get('bbox_fields', []):
-                results[key] = self.bbox_flip(results[key],
-                                              results['img_shape'],
-                                              results['flip_direction'])
+                results[key] = self.bbox_flip(results[key], results['img_shape'], results['flip_direction'])
             # flip masks
             for key in results.get('mask_fields', []):
-                masks = [
-                    mmcv.imflip(mask, direction=results['flip_direction'])
-                    for mask in results[key]
-                ]
+                masks = [mmcv.imflip(mask, direction=results['flip_direction']) for mask in results[key]]
                 if masks:
                     results[key] = np.stack(masks)
                 else:
-                    results[key] = np.empty(
-                        (0, ) + results['img_shape'], dtype=np.uint8)
+                    results[key] = np.empty((0, ) + results['img_shape'], dtype=np.uint8)
 
             # flip segs
             for key in results.get('seg_fields', []):
-                results[key] = mmcv.imflip(
-                    results[key], direction=results['flip_direction'])
+                results[key] = mmcv.imflip(results[key], direction=results['flip_direction'])
         return results
 
     def __repr__(self):
-        return self.__class__.__name__ + '(flip_ratio={})'.format(
-            self.flip_ratio)
+        return self.__class__.__name__ + '(flip_ratio={})'.format(self.flip_ratio)
 
 
 @PIPELINES.register_module
@@ -282,7 +245,6 @@ class Pad(object):
         size_divisor (int, optional): The divisor of padded size.
         pad_val (float, optional): Padding value, 0 by default.
     """
-
     def __init__(self, size=None, size_divisor=None, pad_val=0):
         self.size = size
         self.size_divisor = size_divisor
@@ -295,8 +257,7 @@ class Pad(object):
         if self.size is not None:
             padded_img = mmcv.impad(results['img'], self.size, self.pad_val)
         elif self.size_divisor is not None:
-            padded_img = mmcv.impad_to_multiple(
-                results['img'], self.size_divisor, pad_val=self.pad_val)
+            padded_img = mmcv.impad_to_multiple(results['img'], self.size_divisor, pad_val=self.pad_val)
         results['img'] = padded_img
         results['pad_shape'] = padded_img.shape
         results['pad_fixed_size'] = self.size
@@ -305,10 +266,7 @@ class Pad(object):
     def _pad_masks(self, results):
         pad_shape = results['pad_shape'][:2]
         for key in results.get('mask_fields', []):
-            padded_masks = [
-                mmcv.impad(mask, pad_shape, pad_val=self.pad_val)
-                for mask in results[key]
-            ]
+            padded_masks = [mmcv.impad(mask, pad_shape, pad_val=self.pad_val) for mask in results[key]]
             if padded_masks:
                 results[key] = np.stack(padded_masks, axis=0)
             else:
@@ -326,8 +284,7 @@ class Pad(object):
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += '(size={}, size_divisor={}, pad_val={})'.format(
-            self.size, self.size_divisor, self.pad_val)
+        repr_str += '(size={}, size_divisor={}, pad_val={})'.format(self.size, self.size_divisor, self.pad_val)
         return repr_str
 
 
@@ -341,23 +298,19 @@ class Normalize(object):
         to_rgb (bool): Whether to convert the image from BGR to RGB,
             default is true.
     """
-
     def __init__(self, mean, std, to_rgb=True):
         self.mean = np.array(mean, dtype=np.float32)
         self.std = np.array(std, dtype=np.float32)
         self.to_rgb = to_rgb
 
     def __call__(self, results):
-        results['img'] = mmcv.imnormalize(results['img'], self.mean, self.std,
-                                          self.to_rgb)
-        results['img_norm_cfg'] = dict(
-            mean=self.mean, std=self.std, to_rgb=self.to_rgb)
+        results['img'] = mmcv.imnormalize(results['img'], self.mean, self.std, self.to_rgb)
+        results['img_norm_cfg'] = dict(mean=self.mean, std=self.std, to_rgb=self.to_rgb)
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += '(mean={}, std={}, to_rgb={})'.format(
-            self.mean, self.std, self.to_rgb)
+        repr_str += '(mean={}, std={}, to_rgb={})'.format(self.mean, self.std, self.to_rgb)
         return repr_str
 
 
@@ -368,7 +321,6 @@ class RandomCrop(object):
     Args:
         crop_size (tuple): Expected size after cropping, (h, w).
     """
-
     def __init__(self, crop_size):
         self.crop_size = crop_size
 
@@ -389,8 +341,7 @@ class RandomCrop(object):
 
         # crop bboxes accordingly and clip to the image boundary
         for key in results.get('bbox_fields', []):
-            bbox_offset = np.array([offset_w, offset_h, offset_w, offset_h],
-                                   dtype=np.float32)
+            bbox_offset = np.array([offset_w, offset_h, offset_w, offset_h], dtype=np.float32)
             bboxes = results[key] - bbox_offset
             bboxes[:, 0::2] = np.clip(bboxes[:, 0::2], 0, img_shape[1] - 1)
             bboxes[:, 1::2] = np.clip(bboxes[:, 1::2], 0, img_shape[0] - 1)
@@ -403,8 +354,7 @@ class RandomCrop(object):
         # filter out the gt bboxes that are completely cropped
         if 'gt_bboxes' in results:
             gt_bboxes = results['gt_bboxes']
-            valid_inds = (gt_bboxes[:, 2] > gt_bboxes[:, 0]) & (
-                gt_bboxes[:, 3] > gt_bboxes[:, 1])
+            valid_inds = (gt_bboxes[:, 2] > gt_bboxes[:, 0]) & (gt_bboxes[:, 3] > gt_bboxes[:, 1])
             # if no gt bbox remains after cropping, just skip this image
             if not np.any(valid_inds):
                 return None
@@ -416,21 +366,18 @@ class RandomCrop(object):
             if 'gt_masks' in results:
                 valid_gt_masks = []
                 for i in np.where(valid_inds)[0]:
-                    gt_mask = results['gt_masks'][i][crop_y1:crop_y2,
-                                                     crop_x1:crop_x2]
+                    gt_mask = results['gt_masks'][i][crop_y1:crop_y2, crop_x1:crop_x2]
                     valid_gt_masks.append(gt_mask)
 
                 if valid_gt_masks:
                     results['gt_masks'] = np.stack(valid_gt_masks)
                 else:
-                    results['gt_masks'] = np.empty(
-                        (0, ) + results['img_shape'], dtype=np.uint8)
+                    results['gt_masks'] = np.empty((0, ) + results['img_shape'], dtype=np.uint8)
 
         return results
 
     def __repr__(self):
-        return self.__class__.__name__ + '(crop_size={})'.format(
-            self.crop_size)
+        return self.__class__.__name__ + '(crop_size={})'.format(self.crop_size)
 
 
 @PIPELINES.register_module
@@ -440,20 +387,17 @@ class SegRescale(object):
     Args:
         scale_factor (float): The scale factor of the final output.
     """
-
     def __init__(self, scale_factor=1):
         self.scale_factor = scale_factor
 
     def __call__(self, results):
         for key in results.get('seg_fields', []):
             if self.scale_factor != 1:
-                results[key] = mmcv.imrescale(
-                    results[key], self.scale_factor, interpolation='nearest')
+                results[key] = mmcv.imrescale(results[key], self.scale_factor, interpolation='nearest')
         return results
 
     def __repr__(self):
-        return self.__class__.__name__ + '(scale_factor={})'.format(
-            self.scale_factor)
+        return self.__class__.__name__ + '(scale_factor={})'.format(self.scale_factor)
 
 
 @PIPELINES.register_module
@@ -477,12 +421,7 @@ class PhotoMetricDistortion(object):
         saturation_range (tuple): range of saturation.
         hue_delta (int): delta of hue.
     """
-
-    def __init__(self,
-                 brightness_delta=32,
-                 contrast_range=(0.5, 1.5),
-                 saturation_range=(0.5, 1.5),
-                 hue_delta=18):
+    def __init__(self, brightness_delta=32, contrast_range=(0.5, 1.5), saturation_range=(0.5, 1.5), hue_delta=18):
         self.brightness_delta = brightness_delta
         self.contrast_lower, self.contrast_upper = contrast_range
         self.saturation_lower, self.saturation_upper = saturation_range
@@ -492,8 +431,7 @@ class PhotoMetricDistortion(object):
         img = results['img']
         # random brightness
         if random.randint(2):
-            delta = random.uniform(-self.brightness_delta,
-                                   self.brightness_delta)
+            delta = random.uniform(-self.brightness_delta, self.brightness_delta)
             img += delta
 
         # mode == 0 --> do random contrast first
@@ -501,8 +439,7 @@ class PhotoMetricDistortion(object):
         mode = random.randint(2)
         if mode == 1:
             if random.randint(2):
-                alpha = random.uniform(self.contrast_lower,
-                                       self.contrast_upper)
+                alpha = random.uniform(self.contrast_lower, self.contrast_upper)
                 img *= alpha
 
         # convert color from BGR to HSV
@@ -510,8 +447,7 @@ class PhotoMetricDistortion(object):
 
         # random saturation
         if random.randint(2):
-            img[..., 1] *= random.uniform(self.saturation_lower,
-                                          self.saturation_upper)
+            img[..., 1] *= random.uniform(self.saturation_lower, self.saturation_upper)
 
         # random hue
         if random.randint(2):
@@ -525,8 +461,7 @@ class PhotoMetricDistortion(object):
         # random contrast
         if mode == 0:
             if random.randint(2):
-                alpha = random.uniform(self.contrast_lower,
-                                       self.contrast_upper)
+                alpha = random.uniform(self.contrast_lower, self.contrast_upper)
                 img *= alpha
 
         # randomly swap channels
@@ -539,11 +474,10 @@ class PhotoMetricDistortion(object):
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += ('(brightness_delta={}, contrast_range={}, '
-                     'saturation_range={}, hue_delta={})').format(
-                         self.brightness_delta,
-                         (self.contrast_lower, self.contrast_upper),
-                         (self.saturation_lower, self.saturation_upper),
-                         self.hue_delta)
+                     'saturation_range={}, hue_delta={})').format(self.brightness_delta,
+                                                                  (self.contrast_lower, self.contrast_upper),
+                                                                  (self.saturation_lower, self.saturation_upper),
+                                                                  self.hue_delta)
         return repr_str
 
 
@@ -560,13 +494,7 @@ class Expand(object):
         ratio_range (tuple): range of expand ratio.
         prob (float): probability of applying this transformation
     """
-
-    def __init__(self,
-                 mean=(0, 0, 0),
-                 to_rgb=True,
-                 ratio_range=(1, 4),
-                 seg_ignore_label=None,
-                 prob=0.5):
+    def __init__(self, mean=(0, 0, 0), to_rgb=True, ratio_range=(1, 4), seg_ignore_label=None, prob=0.5):
         self.to_rgb = to_rgb
         self.ratio_range = ratio_range
         if to_rgb:
@@ -585,8 +513,7 @@ class Expand(object):
 
         h, w, c = img.shape
         ratio = random.uniform(self.min_ratio, self.max_ratio)
-        expand_img = np.full((int(h * ratio), int(w * ratio), c),
-                             self.mean).astype(img.dtype)
+        expand_img = np.full((int(h * ratio), int(w * ratio), c), self.mean).astype(img.dtype)
         left = int(random.uniform(0, w * ratio - w))
         top = int(random.uniform(0, h * ratio - h))
         expand_img[top:top + h, left:left + w] = img
@@ -598,23 +525,20 @@ class Expand(object):
         if 'gt_masks' in results:
             expand_gt_masks = []
             for mask in results['gt_masks']:
-                expand_mask = np.full((int(h * ratio), int(w * ratio)),
-                                      0).astype(mask.dtype)
+                expand_mask = np.full((int(h * ratio), int(w * ratio)), 0).astype(mask.dtype)
                 expand_mask[top:top + h, left:left + w] = mask
                 expand_gt_masks.append(expand_mask)
 
             if expand_gt_masks:
                 results['gt_masks'] = np.stack(expand_gt_masks)
             else:
-                results['gt_masks'] = np.empty(
-                    (0, ) + results['img_shape'], dtype=np.uint8)
+                results['gt_masks'] = np.empty((0, ) + results['img_shape'], dtype=np.uint8)
 
         # not tested
         if 'gt_semantic_seg' in results:
             assert self.seg_ignore_label is not None
             gt_seg = results['gt_semantic_seg']
-            expand_gt_seg = np.full((int(h * ratio), int(w * ratio)),
-                                    self.seg_ignore_label).astype(gt_seg.dtype)
+            expand_gt_seg = np.full((int(h * ratio), int(w * ratio)), self.seg_ignore_label).astype(gt_seg.dtype)
             expand_gt_seg[top:top + h, left:left + w] = gt_seg
             results['gt_semantic_seg'] = expand_gt_seg
         return results
@@ -640,7 +564,6 @@ class MinIoURandomCrop(object):
         min_crop_size (float): minimum crop's size (i.e. h,w := a*h, a*w,
         where a >= min_crop_size).
     """
-
     def __init__(self, min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3):
         # 1: return ori img
         self.min_ious = min_ious
@@ -648,9 +571,7 @@ class MinIoURandomCrop(object):
         self.min_crop_size = min_crop_size
 
     def __call__(self, results):
-        img, boxes, labels = [
-            results[k] for k in ('img', 'gt_bboxes', 'gt_labels')
-        ]
+        img, boxes, labels = [results[k] for k in ('img', 'gt_bboxes', 'gt_labels')]
         h, w, c = img.shape
         while True:
             mode = random.choice(self.sample_mode)
@@ -669,10 +590,8 @@ class MinIoURandomCrop(object):
                 left = random.uniform(w - new_w)
                 top = random.uniform(h - new_h)
 
-                patch = np.array(
-                    (int(left), int(top), int(left + new_w), int(top + new_h)))
-                overlaps = bbox_overlaps(
-                    patch.reshape(-1, 4), boxes.reshape(-1, 4)).reshape(-1)
+                patch = np.array((int(left), int(top), int(left + new_w), int(top + new_h)))
+                overlaps = bbox_overlaps(patch.reshape(-1, 4), boxes.reshape(-1, 4)).reshape(-1)
                 if len(overlaps) > 0 and overlaps.min() < min_iou:
                     continue
 
@@ -681,9 +600,7 @@ class MinIoURandomCrop(object):
                 if len(overlaps) > 0:
                     # adjust boxes
                     center = (boxes[:, :2] + boxes[:, 2:]) / 2
-                    mask = ((center[:, 0] > patch[0]) *
-                            (center[:, 1] > patch[1]) *
-                            (center[:, 0] < patch[2]) *
+                    mask = ((center[:, 0] > patch[0]) * (center[:, 1] > patch[1]) * (center[:, 0] < patch[2]) *
                             (center[:, 1] < patch[3]))
                     if not mask.any():
                         continue
@@ -699,15 +616,10 @@ class MinIoURandomCrop(object):
                     results['gt_labels'] = labels
 
                     if 'gt_masks' in results:
-                        valid_masks = [
-                            results['gt_masks'][i] for i in range(len(mask))
-                            if mask[i]
-                        ]
+                        valid_masks = [results['gt_masks'][i] for i in range(len(mask)) if mask[i]]
                         # here the valid_masks is not empty
-                        results['gt_masks'] = np.stack([
-                            gt_mask[patch[1]:patch[3], patch[0]:patch[2]]
-                            for gt_mask in valid_masks
-                        ])
+                        results['gt_masks'] = np.stack(
+                            [gt_mask[patch[1]:patch[3], patch[0]:patch[2]] for gt_mask in valid_masks])
 
                 # adjust the img no matter whether the gt is empty before crop
                 img = img[patch[1]:patch[3], patch[0]:patch[2]]
@@ -715,20 +627,17 @@ class MinIoURandomCrop(object):
 
                 # not tested
                 if 'gt_semantic_seg' in results:
-                    results['gt_semantic_seg'] = results['gt_semantic_seg'][
-                        patch[1]:patch[3], patch[0]:patch[2]]
+                    results['gt_semantic_seg'] = results['gt_semantic_seg'][patch[1]:patch[3], patch[0]:patch[2]]
                 return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += '(min_ious={}, min_crop_size={})'.format(
-            self.min_ious, self.min_crop_size)
+        repr_str += '(min_ious={}, min_crop_size={})'.format(self.min_ious, self.min_crop_size)
         return repr_str
 
 
 @PIPELINES.register_module
 class Corrupt(object):
-
     def __init__(self, corruption, severity=1):
         self.corruption = corruption
         self.severity = severity
@@ -736,28 +645,18 @@ class Corrupt(object):
     def __call__(self, results):
         if corrupt is None:
             raise RuntimeError('imagecorruptions is not installed')
-        results['img'] = corrupt(
-            results['img'].astype(np.uint8),
-            corruption_name=self.corruption,
-            severity=self.severity)
+        results['img'] = corrupt(results['img'].astype(np.uint8), corruption_name=self.corruption, severity=self.severity)
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += '(corruption={}, severity={})'.format(
-            self.corruption, self.severity)
+        repr_str += '(corruption={}, severity={})'.format(self.corruption, self.severity)
         return repr_str
 
 
 @PIPELINES.register_module
 class Albu(object):
-
-    def __init__(self,
-                 transforms,
-                 bbox_params=None,
-                 keymap=None,
-                 update_pad_shape=False,
-                 skip_img_without_anno=False):
+    def __init__(self, transforms, bbox_params=None, keymap=None, update_pad_shape=False, skip_img_without_anno=False):
         """
         Adds custom transformations from Albumentations lib.
         Please, visit `https://albumentations.readthedocs.io`
@@ -778,24 +677,17 @@ class Albu(object):
         self.skip_img_without_anno = skip_img_without_anno
 
         # A simple workaround to remove masks without boxes
-        if (isinstance(bbox_params, dict) and 'label_fields' in bbox_params
-                and 'filter_lost_elements' in bbox_params):
+        if (isinstance(bbox_params, dict) and 'label_fields' in bbox_params and 'filter_lost_elements' in bbox_params):
             self.filter_lost_elements = True
             self.origin_label_fields = bbox_params['label_fields']
             bbox_params['label_fields'] = ['idx_mapper']
             del bbox_params['filter_lost_elements']
 
-        self.bbox_params = (
-            self.albu_builder(bbox_params) if bbox_params else None)
-        self.aug = Compose([self.albu_builder(t) for t in self.transforms],
-                           bbox_params=self.bbox_params)
+        self.bbox_params = (self.albu_builder(bbox_params) if bbox_params else None)
+        self.aug = Compose([self.albu_builder(t) for t in self.transforms], bbox_params=self.bbox_params)
 
         if not keymap:
-            self.keymap_to_albu = {
-                'img': 'image',
-                'gt_masks': 'masks',
-                'gt_bboxes': 'bboxes'
-            }
+            self.keymap_to_albu = {'img': 'image', 'gt_masks': 'masks', 'gt_bboxes': 'bboxes'}
         else:
             self.keymap_to_albu = keymap
         self.keymap_back = {v: k for k, v in self.keymap_to_albu.items()}
@@ -820,15 +712,10 @@ class Albu(object):
         elif inspect.isclass(obj_type):
             obj_cls = obj_type
         else:
-            raise TypeError(
-                'type must be a str or valid type, but got {}'.format(
-                    type(obj_type)))
+            raise TypeError('type must be a str or valid type, but got {}'.format(type(obj_type)))
 
         if 'transforms' in args:
-            args['transforms'] = [
-                self.albu_builder(transform)
-                for transform in args['transforms']
-            ]
+            args['transforms'] = [self.albu_builder(transform) for transform in args['transforms']]
 
         return obj_cls(**args)
 
@@ -866,22 +753,18 @@ class Albu(object):
 
         if 'bboxes' in results:
             if isinstance(results['bboxes'], list):
-                results['bboxes'] = np.array(
-                    results['bboxes'], dtype=np.float32)
+                results['bboxes'] = np.array(results['bboxes'], dtype=np.float32)
             results['bboxes'] = results['bboxes'].reshape(-1, 4)
 
             # filter label_fields
             if self.filter_lost_elements:
 
                 for label in self.origin_label_fields:
-                    results[label] = np.array(
-                        [results[label][i] for i in results['idx_mapper']])
+                    results[label] = np.array([results[label][i] for i in results['idx_mapper']])
                 if 'masks' in results:
-                    results['masks'] = np.array(
-                        [results['masks'][i] for i in results['idx_mapper']])
+                    results['masks'] = np.array([results['masks'][i] for i in results['idx_mapper']])
 
-                if (not len(results['idx_mapper'])
-                        and self.skip_img_without_anno):
+                if (not len(results['idx_mapper']) and self.skip_img_without_anno):
                     return None
 
         if 'gt_labels' in results:

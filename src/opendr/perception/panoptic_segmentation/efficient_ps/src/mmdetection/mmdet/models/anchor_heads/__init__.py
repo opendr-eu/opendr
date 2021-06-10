@@ -14,8 +14,6 @@ from .sep_rpn_head import SepRPNHead
 from .ssd_head import SSDHead
 
 __all__ = [
-    'AnchorHead', 'GuidedAnchorHead', 'FeatureAdaption', 'RPNHead', 'SepRPNHead',
-    'GARPNHead', 'RetinaHead', 'RetinaSepBNHead', 'GARetinaHead', 'SSDHead',
-    'FCOSHead', 'RepPointsHead', 'FoveaHead', 'FreeAnchorRetinaHead',
-    'ATSSHead'
+    'AnchorHead', 'GuidedAnchorHead', 'FeatureAdaption', 'RPNHead', 'SepRPNHead', 'GARPNHead', 'RetinaHead', 'RetinaSepBNHead',
+    'GARetinaHead', 'SSDHead', 'FCOSHead', 'RepPointsHead', 'FoveaHead', 'FreeAnchorRetinaHead', 'ATSSHead'
 ]

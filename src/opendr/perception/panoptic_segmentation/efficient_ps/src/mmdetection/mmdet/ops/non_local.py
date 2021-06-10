@@ -20,14 +20,7 @@ class NonLocal2D(nn.Module):
             (only applicable to conv_out)
         mode (str): Options are `embedded_gaussian` and `dot_product`.
     """
-
-    def __init__(self,
-                 in_channels,
-                 reduction=2,
-                 use_scale=True,
-                 conv_cfg=None,
-                 norm_cfg=None,
-                 mode='embedded_gaussian'):
+    def __init__(self, in_channels, reduction=2, use_scale=True, conv_cfg=None, norm_cfg=None, mode='embedded_gaussian'):
         super(NonLocal2D, self).__init__()
         self.in_channels = in_channels
         self.reduction = reduction
@@ -38,19 +31,15 @@ class NonLocal2D(nn.Module):
 
         # g, theta, phi are actually `nn.Conv2d`. Here we use ConvModule for
         # potential usage.
-        self.g = ConvModule(
-            self.in_channels, self.inter_channels, kernel_size=1, act_cfg=None)
-        self.theta = ConvModule(
-            self.in_channels, self.inter_channels, kernel_size=1, act_cfg=None)
-        self.phi = ConvModule(
-            self.in_channels, self.inter_channels, kernel_size=1, act_cfg=None)
-        self.conv_out = ConvModule(
-            self.inter_channels,
-            self.in_channels,
-            kernel_size=1,
-            conv_cfg=conv_cfg,
-            norm_cfg=norm_cfg,
-            act_cfg=None)
+        self.g = ConvModule(self.in_channels, self.inter_channels, kernel_size=1, act_cfg=None)
+        self.theta = ConvModule(self.in_channels, self.inter_channels, kernel_size=1, act_cfg=None)
+        self.phi = ConvModule(self.in_channels, self.inter_channels, kernel_size=1, act_cfg=None)
+        self.conv_out = ConvModule(self.inter_channels,
+                                   self.in_channels,
+                                   kernel_size=1,
+                                   conv_cfg=conv_cfg,
+                                   norm_cfg=norm_cfg,
+                                   act_cfg=None)
 
         self.init_weights()
 

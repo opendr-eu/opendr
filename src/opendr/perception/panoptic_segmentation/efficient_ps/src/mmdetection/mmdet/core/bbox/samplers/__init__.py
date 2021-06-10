@@ -8,7 +8,6 @@ from .random_sampler import RandomSampler
 from .sampling_result import SamplingResult
 
 __all__ = [
-    'BaseSampler', 'PseudoSampler', 'RandomSampler',
-    'InstanceBalancedPosSampler', 'IoUBalancedNegSampler', 'CombinedSampler',
+    'BaseSampler', 'PseudoSampler', 'RandomSampler', 'InstanceBalancedPosSampler', 'IoUBalancedNegSampler', 'CombinedSampler',
     'OHEMSampler', 'SamplingResult'
 ]

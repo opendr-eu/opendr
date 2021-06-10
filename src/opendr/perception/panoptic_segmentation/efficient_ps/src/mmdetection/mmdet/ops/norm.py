@@ -6,8 +6,8 @@ norm_cfg = {
     'BN': ('bn', nn.BatchNorm2d),
     'SyncBN': ('bn', nn.SyncBatchNorm),
     'GN': ('gn', nn.GroupNorm),
-    'InPlaceABN': ('bn',InPlaceABN),
-    'InPlaceABNSync': ('bn',InPlaceABNSync),
+    'InPlaceABN': ('bn', InPlaceABN),
+    'InPlaceABNSync': ('bn', InPlaceABNSync),
     # and potentially 'SN'
 }
 

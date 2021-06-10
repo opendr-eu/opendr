@@ -16,7 +16,6 @@ class RetinaSepBNHead(AnchorHead):
     while in RetinaSepBNHead, conv layers are shared across different FPN
     levels, but BN layers are separated.
     """
-
     def __init__(self,
                  num_classes,
                  num_ins,
@@ -33,11 +32,9 @@ class RetinaSepBNHead(AnchorHead):
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.num_ins = num_ins
-        octave_scales = np.array(
-            [2**(i / scales_per_octave) for i in range(scales_per_octave)])
+        octave_scales = np.array([2**(i / scales_per_octave) for i in range(scales_per_octave)])
         anchor_scales = octave_scales * octave_base_scale
-        super(RetinaSepBNHead, self).__init__(
-            num_classes, in_channels, anchor_scales=anchor_scales, **kwargs)
+        super(RetinaSepBNHead, self).__init__(num_classes, in_channels, anchor_scales=anchor_scales, **kwargs)
 
     def _init_layers(self):
         self.relu = nn.ReLU(inplace=True)
@@ -49,36 +46,17 @@ class RetinaSepBNHead(AnchorHead):
             for i in range(self.stacked_convs):
                 chn = self.in_channels if i == 0 else self.feat_channels
                 cls_convs.append(
-                    ConvModule(
-                        chn,
-                        self.feat_channels,
-                        3,
-                        stride=1,
-                        padding=1,
-                        conv_cfg=self.conv_cfg,
-                        norm_cfg=self.norm_cfg))
+                    ConvModule(chn, self.feat_channels, 3, stride=1, padding=1, conv_cfg=self.conv_cfg, norm_cfg=self.norm_cfg))
                 reg_convs.append(
-                    ConvModule(
-                        chn,
-                        self.feat_channels,
-                        3,
-                        stride=1,
-                        padding=1,
-                        conv_cfg=self.conv_cfg,
-                        norm_cfg=self.norm_cfg))
+                    ConvModule(chn, self.feat_channels, 3, stride=1, padding=1, conv_cfg=self.conv_cfg, norm_cfg=self.norm_cfg))
             self.cls_convs.append(cls_convs)
             self.reg_convs.append(reg_convs)
         for i in range(self.stacked_convs):
             for j in range(1, self.num_ins):
                 self.cls_convs[j][i].conv = self.cls_convs[0][i].conv
                 self.reg_convs[j][i].conv = self.reg_convs[0][i].conv
-        self.retina_cls = nn.Conv2d(
-            self.feat_channels,
-            self.num_anchors * self.cls_out_channels,
-            3,
-            padding=1)
-        self.retina_reg = nn.Conv2d(
-            self.feat_channels, self.num_anchors * 4, 3, padding=1)
+        self.retina_cls = nn.Conv2d(self.feat_channels, self.num_anchors * self.cls_out_channels, 3, padding=1)
+        self.retina_reg = nn.Conv2d(self.feat_channels, self.num_anchors * 4, 3, padding=1)
 
     def init_weights(self):
         for m in self.cls_convs[0]:

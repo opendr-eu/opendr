@@ -60,10 +60,8 @@ class CustomDataset(Dataset):
                 self.img_prefix = osp.join(self.data_root, self.img_prefix)
             if not (self.seg_prefix is None or osp.isabs(self.seg_prefix)):
                 self.seg_prefix = osp.join(self.data_root, self.seg_prefix)
-            if not (self.proposal_file is None
-                    or osp.isabs(self.proposal_file)):
-                self.proposal_file = osp.join(self.data_root,
-                                              self.proposal_file)
+            if not (self.proposal_file is None or osp.isabs(self.proposal_file)):
+                self.proposal_file = osp.join(self.data_root, self.proposal_file)
         # load annotations (and proposals)
         self.img_infos = self.load_annotations(self.ann_file)
         if self.proposal_file is not None:
@@ -156,13 +154,7 @@ class CustomDataset(Dataset):
     def format_results(self, results, **kwargs):
         pass
 
-    def evaluate(self,
-                 results,
-                 metric='mAP',
-                 logger=None,
-                 proposal_nums=(100, 300, 1000),
-                 iou_thr=0.5,
-                 scale_ranges=None):
+    def evaluate(self, results, metric='mAP', logger=None, proposal_nums=(100, 300, 1000), iou_thr=0.5, scale_ranges=None):
         """Evaluate the dataset.
 
         Args:
@@ -189,24 +181,21 @@ class CustomDataset(Dataset):
         eval_results = {}
         if metric == 'mAP':
             assert isinstance(iou_thr, float)
-            mean_ap, _ = eval_map(
-                results,
-                annotations,
-                scale_ranges=scale_ranges,
-                iou_thr=iou_thr,
-                dataset=self.CLASSES,
-                logger=logger)
+            mean_ap, _ = eval_map(results,
+                                  annotations,
+                                  scale_ranges=scale_ranges,
+                                  iou_thr=iou_thr,
+                                  dataset=self.CLASSES,
+                                  logger=logger)
             eval_results['mAP'] = mean_ap
         elif metric == 'recall':
             gt_bboxes = [ann['bboxes'] for ann in annotations]
             if isinstance(iou_thr, float):
                 iou_thr = [iou_thr]
-            recalls = eval_recalls(
-                gt_bboxes, results, proposal_nums, iou_thr, logger=logger)
+            recalls = eval_recalls(gt_bboxes, results, proposal_nums, iou_thr, logger=logger)
             for i, num in enumerate(proposal_nums):
                 for j, iou in enumerate(iou_thr):
-                    eval_results['recall@{}@{}'.format(num, iou)] = recalls[i,
-                                                                            j]
+                    eval_results['recall@{}@{}'.format(num, iou)] = recalls[i, j]
             if recalls.shape[1] > 1:
                 ar = recalls.mean(axis=1)
                 for i, num in enumerate(proposal_nums):

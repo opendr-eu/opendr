@@ -14,7 +14,6 @@ class ConcatDataset(_ConcatDataset):
     Args:
         datasets (list[:obj:`Dataset`]): A list of datasets.
     """
-
     def __init__(self, datasets):
         super(ConcatDataset, self).__init__(datasets)
         self.CLASSES = datasets[0].CLASSES
@@ -38,7 +37,6 @@ class RepeatDataset(object):
         dataset (:obj:`Dataset`): The dataset to be repeated.
         times (int): Repeat times.
     """
-
     def __init__(self, dataset, times):
         self.dataset = dataset
         self.times = times

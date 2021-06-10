@@ -29,12 +29,7 @@ def calc_region(bbox, ratio, featmap_size=None):
     return (x1, y1, x2, y2)
 
 
-def ga_loc_target(gt_bboxes_list,
-                  featmap_sizes,
-                  anchor_scale,
-                  anchor_strides,
-                  center_ratio=0.2,
-                  ignore_ratio=0.5):
+def ga_loc_target(gt_bboxes_list, featmap_sizes, anchor_scale, anchor_strides, center_ratio=0.2, ignore_ratio=0.5):
     """Compute location targets for guided anchoring.
 
     Each feature map is divided into positive, negative and ignore regions.
@@ -62,13 +57,7 @@ def ga_loc_target(gt_bboxes_list,
     all_ignore_map = []
     for lvl_id in range(num_lvls):
         h, w = featmap_sizes[lvl_id]
-        loc_targets = torch.zeros(
-            img_per_gpu,
-            1,
-            h,
-            w,
-            device=gt_bboxes_list[0].device,
-            dtype=torch.float32)
+        loc_targets = torch.zeros(img_per_gpu, 1, h, w, device=gt_bboxes_list[0].device, dtype=torch.float32)
         loc_weights = torch.full_like(loc_targets, -1)
         ignore_map = torch.zeros_like(loc_targets)
         all_loc_targets.append(loc_targets)
@@ -76,57 +65,43 @@ def ga_loc_target(gt_bboxes_list,
         all_ignore_map.append(ignore_map)
     for img_id in range(img_per_gpu):
         gt_bboxes = gt_bboxes_list[img_id]
-        scale = torch.sqrt((gt_bboxes[:, 2] - gt_bboxes[:, 0] + 1) *
-                           (gt_bboxes[:, 3] - gt_bboxes[:, 1] + 1))
-        min_anchor_size = scale.new_full(
-            (1, ), float(anchor_scale * anchor_strides[0]))
+        scale = torch.sqrt((gt_bboxes[:, 2] - gt_bboxes[:, 0] + 1) * (gt_bboxes[:, 3] - gt_bboxes[:, 1] + 1))
+        min_anchor_size = scale.new_full((1, ), float(anchor_scale * anchor_strides[0]))
         # assign gt bboxes to different feature levels w.r.t. their scales
-        target_lvls = torch.floor(
-            torch.log2(scale) - torch.log2(min_anchor_size) + 0.5)
+        target_lvls = torch.floor(torch.log2(scale) - torch.log2(min_anchor_size) + 0.5)
         target_lvls = target_lvls.clamp(min=0, max=num_lvls - 1).long()
         for gt_id in range(gt_bboxes.size(0)):
             lvl = target_lvls[gt_id].item()
             # rescaled to corresponding feature map
             gt_ = gt_bboxes[gt_id, :4] / anchor_strides[lvl]
             # calculate ignore regions
-            ignore_x1, ignore_y1, ignore_x2, ignore_y2 = calc_region(
-                gt_, r2, featmap_sizes[lvl])
+            ignore_x1, ignore_y1, ignore_x2, ignore_y2 = calc_region(gt_, r2, featmap_sizes[lvl])
             # calculate positive (center) regions
-            ctr_x1, ctr_y1, ctr_x2, ctr_y2 = calc_region(
-                gt_, r1, featmap_sizes[lvl])
-            all_loc_targets[lvl][img_id, 0, ctr_y1:ctr_y2 + 1,
-                                 ctr_x1:ctr_x2 + 1] = 1
-            all_loc_weights[lvl][img_id, 0, ignore_y1:ignore_y2 + 1,
-                                 ignore_x1:ignore_x2 + 1] = 0
-            all_loc_weights[lvl][img_id, 0, ctr_y1:ctr_y2 + 1,
-                                 ctr_x1:ctr_x2 + 1] = 1
+            ctr_x1, ctr_y1, ctr_x2, ctr_y2 = calc_region(gt_, r1, featmap_sizes[lvl])
+            all_loc_targets[lvl][img_id, 0, ctr_y1:ctr_y2 + 1, ctr_x1:ctr_x2 + 1] = 1
+            all_loc_weights[lvl][img_id, 0, ignore_y1:ignore_y2 + 1, ignore_x1:ignore_x2 + 1] = 0
+            all_loc_weights[lvl][img_id, 0, ctr_y1:ctr_y2 + 1, ctr_x1:ctr_x2 + 1] = 1
             # calculate ignore map on nearby low level feature
             if lvl > 0:
                 d_lvl = lvl - 1
                 # rescaled to corresponding feature map
                 gt_ = gt_bboxes[gt_id, :4] / anchor_strides[d_lvl]
-                ignore_x1, ignore_y1, ignore_x2, ignore_y2 = calc_region(
-                    gt_, r2, featmap_sizes[d_lvl])
-                all_ignore_map[d_lvl][img_id, 0, ignore_y1:ignore_y2 + 1,
-                                      ignore_x1:ignore_x2 + 1] = 1
+                ignore_x1, ignore_y1, ignore_x2, ignore_y2 = calc_region(gt_, r2, featmap_sizes[d_lvl])
+                all_ignore_map[d_lvl][img_id, 0, ignore_y1:ignore_y2 + 1, ignore_x1:ignore_x2 + 1] = 1
             # calculate ignore map on nearby high level feature
             if lvl < num_lvls - 1:
                 u_lvl = lvl + 1
                 # rescaled to corresponding feature map
                 gt_ = gt_bboxes[gt_id, :4] / anchor_strides[u_lvl]
-                ignore_x1, ignore_y1, ignore_x2, ignore_y2 = calc_region(
-                    gt_, r2, featmap_sizes[u_lvl])
-                all_ignore_map[u_lvl][img_id, 0, ignore_y1:ignore_y2 + 1,
-                                      ignore_x1:ignore_x2 + 1] = 1
+                ignore_x1, ignore_y1, ignore_x2, ignore_y2 = calc_region(gt_, r2, featmap_sizes[u_lvl])
+                all_ignore_map[u_lvl][img_id, 0, ignore_y1:ignore_y2 + 1, ignore_x1:ignore_x2 + 1] = 1
     for lvl_id in range(num_lvls):
         # ignore negative regions w.r.t. ignore map
-        all_loc_weights[lvl_id][(all_loc_weights[lvl_id] < 0)
-                                & (all_ignore_map[lvl_id] > 0)] = 0
+        all_loc_weights[lvl_id][(all_loc_weights[lvl_id] < 0) & (all_ignore_map[lvl_id] > 0)] = 0
         # set negative regions with weight 0.1
         all_loc_weights[lvl_id][all_loc_weights[lvl_id] < 0] = 0.1
     # loc average factor to balance loss
-    loc_avg_factor = sum(
-        [t.size(0) * t.size(-1) * t.size(-2) for t in all_loc_targets]) / 200
+    loc_avg_factor = sum([t.size(0) * t.size(-1) * t.size(-2) for t in all_loc_targets]) / 200
     return all_loc_targets, all_loc_weights, loc_avg_factor
 
 
@@ -158,8 +133,7 @@ def ga_shape_target(approx_list,
         tuple
     """
     num_imgs = len(img_metas)
-    assert len(approx_list) == len(inside_flag_list) == len(
-        square_list) == num_imgs
+    assert len(approx_list) == len(inside_flag_list) == len(square_list) == num_imgs
     # anchor number of multi levels
     num_level_squares = [squares.size(0) for squares in square_list[0]]
     # concat all level anchors and flags to a single tensor
@@ -176,18 +150,17 @@ def ga_shape_target(approx_list,
     if gt_bboxes_ignore_list is None:
         gt_bboxes_ignore_list = [None for _ in range(num_imgs)]
     (all_bbox_anchors, all_bbox_gts, all_bbox_weights, pos_inds_list,
-     neg_inds_list) = multi_apply(
-         ga_shape_target_single,
-         approx_flat_list,
-         inside_flag_flat_list,
-         square_flat_list,
-         gt_bboxes_list,
-         gt_bboxes_ignore_list,
-         img_metas,
-         approxs_per_octave=approxs_per_octave,
-         cfg=cfg,
-         sampling=sampling,
-         unmap_outputs=unmap_outputs)
+     neg_inds_list) = multi_apply(ga_shape_target_single,
+                                  approx_flat_list,
+                                  inside_flag_flat_list,
+                                  square_flat_list,
+                                  gt_bboxes_list,
+                                  gt_bboxes_ignore_list,
+                                  img_metas,
+                                  approxs_per_octave=approxs_per_octave,
+                                  cfg=cfg,
+                                  sampling=sampling,
+                                  unmap_outputs=unmap_outputs)
     # no valid anchors
     if any([bbox_anchors is None for bbox_anchors in all_bbox_anchors]):
         return None
@@ -198,8 +171,7 @@ def ga_shape_target(approx_list,
     bbox_anchors_list = images_to_levels(all_bbox_anchors, num_level_squares)
     bbox_gts_list = images_to_levels(all_bbox_gts, num_level_squares)
     bbox_weights_list = images_to_levels(all_bbox_weights, num_level_squares)
-    return (bbox_anchors_list, bbox_gts_list, bbox_weights_list, num_total_pos,
-            num_total_neg)
+    return (bbox_anchors_list, bbox_gts_list, bbox_weights_list, num_total_pos, num_total_neg)
 
 
 def images_to_levels(target, num_level_anchors):
@@ -252,14 +224,12 @@ def ga_shape_target_single(flat_approxs,
     if not inside_flags.any():
         return (None, ) * 5
     # assign gt and sample anchors
-    expand_inside_flags = inside_flags[:, None].expand(
-        -1, approxs_per_octave).reshape(-1)
+    expand_inside_flags = inside_flags[:, None].expand(-1, approxs_per_octave).reshape(-1)
     approxs = flat_approxs[expand_inside_flags, :]
     squares = flat_squares[inside_flags, :]
 
     bbox_assigner = build_assigner(cfg.ga_assigner)
-    assign_result = bbox_assigner.assign(approxs, squares, approxs_per_octave,
-                                         gt_bboxes, gt_bboxes_ignore)
+    assign_result = bbox_assigner.assign(approxs, squares, approxs_per_octave, gt_bboxes, gt_bboxes_ignore)
     if sampling:
         bbox_sampler = build_sampler(cfg.ga_sampler)
     else:

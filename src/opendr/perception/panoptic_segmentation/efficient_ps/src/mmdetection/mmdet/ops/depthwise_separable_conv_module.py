@@ -40,7 +40,6 @@ class DepthwiseSeparableConvModule(nn.Module):
         kwargs (optional): Other shared arguments for depthwise and pointwise
             ConvModule. See ConvModule for ref.
     """
-
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -66,25 +65,18 @@ class DepthwiseSeparableConvModule(nn.Module):
         pw_act_cfg = pw_act_cfg if pw_act_cfg != 'default' else act_cfg
 
         # depthwise convolution
-        self.depthwise_conv = ConvModule(
-            in_channels,
-            in_channels,
-            kernel_size,
-            stride=stride,
-            padding=padding,
-            dilation=dilation,
-            groups=in_channels,
-            norm_cfg=dw_norm_cfg,
-            act_cfg=dw_act_cfg,
-            **kwargs)
+        self.depthwise_conv = ConvModule(in_channels,
+                                         in_channels,
+                                         kernel_size,
+                                         stride=stride,
+                                         padding=padding,
+                                         dilation=dilation,
+                                         groups=in_channels,
+                                         norm_cfg=dw_norm_cfg,
+                                         act_cfg=dw_act_cfg,
+                                         **kwargs)
 
-        self.pointwise_conv = ConvModule(
-            in_channels,
-            out_channels,
-            1,
-            norm_cfg=pw_norm_cfg,
-            act_cfg=pw_act_cfg,
-            **kwargs)
+        self.pointwise_conv = ConvModule(in_channels, out_channels, 1, norm_cfg=pw_norm_cfg, act_cfg=pw_act_cfg, **kwargs)
 
     def forward(self, x):
         x = self.depthwise_conv(x)

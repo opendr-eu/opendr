@@ -28,8 +28,7 @@ def init_detector(config, checkpoint=None, device='cuda:0'):
     if isinstance(config, str):
         config = mmcv.Config.fromfile(config)
     elif not isinstance(config, mmcv.Config):
-        raise TypeError('config must be a filename or Config object, '
-                        'but got {}'.format(type(config)))
+        raise TypeError('config must be a filename or Config object, ' 'but got {}'.format(type(config)))
     config.model.pretrained = None
     model = build_detector(config.model, test_cfg=config.test_cfg)
     if checkpoint is not None:
@@ -37,8 +36,7 @@ def init_detector(config, checkpoint=None, device='cuda:0'):
         if 'CLASSES' in checkpoint['meta']:
             model.CLASSES = checkpoint['meta']['CLASSES']
         else:
-            warnings.warn('Class names are not saved in the checkpoint\'s '
-                          'meta data, use COCO classes by default.')
+            warnings.warn('Class names are not saved in the checkpoint\'s ' 'meta data, use COCO classes by default.')
             model.CLASSES = get_classes('coco')
     model.cfg = config  # save the config in the model for convenience
     model.to(device)
@@ -47,7 +45,6 @@ def init_detector(config, checkpoint=None, device='cuda:0'):
 
 
 class LoadImage(object):
-
     def __call__(self, results):
         if isinstance(results['img'], str):
             results['filename'] = results['img']
@@ -84,7 +81,7 @@ def inference_detector(model, img, eval=None):
     # forward the model
     with torch.no_grad():
         if eval is not None:
-            data['eval'] = eval 
+            data['eval'] = eval
         result = model(return_loss=False, rescale=True, **data)
     return result
 
@@ -118,13 +115,7 @@ async def async_inference_detector(model, img):
 
 
 # TODO: merge this method with the one in BaseDetector
-def show_result(img,
-                result,
-                class_names,
-                score_thr=0.3,
-                wait_time=0,
-                show=True,
-                out_file=None):
+def show_result(img, result, class_names, score_thr=0.3, wait_time=0, show=True, out_file=None):
     """Visualize the detection results on the image.
 
     Args:
@@ -150,20 +141,14 @@ def show_result(img,
     else:
         bbox_result, segm_result = result, None
     bboxes = np.vstack(bbox_result)
-    labels = [
-        np.full(bbox.shape[0], i, dtype=np.int32)
-        for i, bbox in enumerate(bbox_result)
-    ]
+    labels = [np.full(bbox.shape[0], i, dtype=np.int32) for i, bbox in enumerate(bbox_result)]
     labels = np.concatenate(labels)
     # draw segmentation masks
     if segm_result is not None:
         segms = mmcv.concat_list(segm_result)
         inds = np.where(bboxes[:, -1] > score_thr)[0]
         np.random.seed(42)
-        color_masks = [
-            np.random.randint(0, 256, (1, 3), dtype=np.uint8)
-            for _ in range(max(labels) + 1)
-        ]
+        color_masks = [np.random.randint(0, 256, (1, 3), dtype=np.uint8) for _ in range(max(labels) + 1)]
         for i in inds:
             i = int(i)
             color_mask = color_masks[labels[i]]
@@ -173,24 +158,19 @@ def show_result(img,
     if out_file is not None:
         show = False
     # draw bounding boxes
-    mmcv.imshow_det_bboxes(
-        img,
-        bboxes,
-        labels,
-        class_names=class_names,
-        score_thr=score_thr,
-        show=show,
-        wait_time=wait_time,
-        out_file=out_file)
+    mmcv.imshow_det_bboxes(img,
+                           bboxes,
+                           labels,
+                           class_names=class_names,
+                           score_thr=score_thr,
+                           show=show,
+                           wait_time=wait_time,
+                           out_file=out_file)
     if not (show or out_file):
         return img
 
 
-def show_result_pyplot(img,
-                       result,
-                       class_names,
-                       score_thr=0.3,
-                       fig_size=(15, 10)):
+def show_result_pyplot(img, result, class_names, score_thr=0.3, fig_size=(15, 10)):
     """Visualize the detection results on the image.
 
     Args:
@@ -203,7 +183,6 @@ def show_result_pyplot(img,
         out_file (str, optional): If specified, the visualization result will
             be written to the out file instead of shown in a window.
     """
-    img = show_result(
-        img, result, class_names, score_thr=score_thr, show=False)
+    img = show_result(img, result, class_names, score_thr=score_thr, show=False)
     plt.figure(figsize=fig_size)
     plt.imshow(mmcv.bgr2rgb(img))

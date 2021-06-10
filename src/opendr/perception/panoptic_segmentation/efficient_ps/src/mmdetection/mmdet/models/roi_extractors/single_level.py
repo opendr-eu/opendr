@@ -21,12 +21,7 @@ class SingleRoIExtractor(nn.Module):
         featmap_strides (int): Strides of input feature maps.
         finest_scale (int): Scale threshold of mapping to level 0.
     """
-
-    def __init__(self,
-                 roi_layer,
-                 out_channels,
-                 featmap_strides,
-                 finest_scale=56):
+    def __init__(self, roi_layer, out_channels, featmap_strides, finest_scale=56):
         super(SingleRoIExtractor, self).__init__()
         self.roi_layers = self.build_roi_layers(roi_layer, featmap_strides)
         self.out_channels = out_channels
@@ -47,8 +42,7 @@ class SingleRoIExtractor(nn.Module):
         layer_type = cfg.pop('type')
         assert hasattr(ops, layer_type)
         layer_cls = getattr(ops, layer_type)
-        roi_layers = nn.ModuleList(
-            [layer_cls(spatial_scale=1 / s, **cfg) for s in featmap_strides])
+        roi_layers = nn.ModuleList([layer_cls(spatial_scale=1 / s, **cfg) for s in featmap_strides])
         return roi_layers
 
     def map_roi_levels(self, rois, num_levels):
@@ -66,8 +60,7 @@ class SingleRoIExtractor(nn.Module):
         Returns:
             Tensor: Level index (0-based) of each RoI, shape (k, )
         """
-        scale = torch.sqrt(
-            (rois[:, 3] - rois[:, 1] + 1) * (rois[:, 4] - rois[:, 2] + 1))
+        scale = torch.sqrt((rois[:, 3] - rois[:, 1] + 1) * (rois[:, 4] - rois[:, 2] + 1))
         target_lvls = torch.floor(torch.log2(scale / self.finest_scale + 1e-6))
         target_lvls = target_lvls.clamp(min=0, max=num_levels - 1).long()
         return target_lvls
@@ -94,8 +87,7 @@ class SingleRoIExtractor(nn.Module):
         out_size = self.roi_layers[0].out_size
         num_levels = len(feats)
         target_lvls = self.map_roi_levels(rois, num_levels)
-        roi_feats = feats[0].new_zeros(
-            rois.size(0), self.out_channels, *out_size)
+        roi_feats = feats[0].new_zeros(rois.size(0), self.out_channels, *out_size)
         if roi_scale_factor is not None:
             rois = self.roi_rescale(rois, roi_scale_factor)
         for i in range(num_levels):

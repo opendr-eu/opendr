@@ -18,14 +18,7 @@ if platform.system() != 'Windows':
     resource.setrlimit(resource.RLIMIT_NOFILE, (soft_limit, hard_limit))
 
 
-def build_dataloader(dataset,
-                     imgs_per_gpu,
-                     workers_per_gpu,
-                     num_gpus=1,
-                     dist=True,
-                     shuffle=True,
-                     seed=None,
-                     **kwargs):
+def build_dataloader(dataset, imgs_per_gpu, workers_per_gpu, num_gpus=1, dist=True, shuffle=True, seed=None, **kwargs):
     """Build PyTorch DataLoader.
 
     In distributed training, each GPU/process has a dataloader.
@@ -51,11 +44,9 @@ def build_dataloader(dataset,
         # DistributedGroupSampler will definitely shuffle the data to satisfy
         # that images on each GPU are in the same group
         if shuffle:
-            sampler = DistributedGroupSampler(dataset, imgs_per_gpu,
-                                              world_size, rank)
+            sampler = DistributedGroupSampler(dataset, imgs_per_gpu, world_size, rank)
         else:
-            sampler = DistributedSampler(
-                dataset, world_size, rank, shuffle=False)
+            sampler = DistributedSampler(dataset, world_size, rank, shuffle=False)
         batch_size = imgs_per_gpu
         num_workers = workers_per_gpu
     else:
@@ -63,19 +54,16 @@ def build_dataloader(dataset,
         batch_size = num_gpus * imgs_per_gpu
         num_workers = num_gpus * workers_per_gpu
 
-    init_fn = partial(
-        worker_init_fn, num_workers=num_workers, rank=rank,
-        seed=seed) if seed is not None else None
+    init_fn = partial(worker_init_fn, num_workers=num_workers, rank=rank, seed=seed) if seed is not None else None
 
-    data_loader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        sampler=sampler,
-        num_workers=num_workers,
-        collate_fn=partial(collate, samples_per_gpu=imgs_per_gpu),
-        pin_memory=False,
-        worker_init_fn=init_fn,
-        **kwargs)
+    data_loader = DataLoader(dataset,
+                             batch_size=batch_size,
+                             sampler=sampler,
+                             num_workers=num_workers,
+                             collate_fn=partial(collate, samples_per_gpu=imgs_per_gpu),
+                             pin_memory=False,
+                             worker_init_fn=init_fn,
+                             **kwargs)
 
     return data_loader
 

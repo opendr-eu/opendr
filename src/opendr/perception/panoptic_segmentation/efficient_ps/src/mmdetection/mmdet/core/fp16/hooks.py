@@ -23,13 +23,7 @@ class Fp16OptimizerHook(OptimizerHook):
     Args:
         loss_scale (float): Scale factor multiplied with loss.
     """
-
-    def __init__(self,
-                 grad_clip=None,
-                 coalesce=True,
-                 bucket_size_mb=-1,
-                 loss_scale=512.,
-                 distributed=True):
+    def __init__(self, grad_clip=None, coalesce=True, bucket_size_mb=-1, loss_scale=512., distributed=True):
         self.grad_clip = grad_clip
         self.coalesce = coalesce
         self.bucket_size_mb = bucket_size_mb
@@ -38,8 +32,7 @@ class Fp16OptimizerHook(OptimizerHook):
 
     def before_run(self, runner):
         # keep a copy of fp32 weights
-        runner.optimizer.param_groups = copy.deepcopy(
-            runner.optimizer.param_groups)
+        runner.optimizer.param_groups = copy.deepcopy(runner.optimizer.param_groups)
         # convert model to fp16
         wrap_fp16_model(runner.model)
 
@@ -98,8 +91,7 @@ def patch_norm_fp32(module):
     if isinstance(module, (nn.modules.batchnorm._BatchNorm, nn.GroupNorm)):
         module.float()
         if isinstance(module, nn.GroupNorm) or torch.__version__ < '1.3':
-            module.forward = patch_forward_method(module.forward, torch.half,
-                                                  torch.float)
+            module.forward = patch_forward_method(module.forward, torch.half, torch.float)
     for child in module.children():
         patch_norm_fp32(child)
     return module
@@ -117,10 +109,8 @@ def patch_forward_method(func, src_type, dst_type, convert_output=True):
     Returns:
         callable: The patched forward method.
     """
-
     def new_forward(*args, **kwargs):
-        output = func(*cast_tensor_type(args, src_type, dst_type),
-                      **cast_tensor_type(kwargs, src_type, dst_type))
+        output = func(*cast_tensor_type(args, src_type, dst_type), **cast_tensor_type(kwargs, src_type, dst_type))
         if convert_output:
             output = cast_tensor_type(output, dst_type, src_type)
         return output

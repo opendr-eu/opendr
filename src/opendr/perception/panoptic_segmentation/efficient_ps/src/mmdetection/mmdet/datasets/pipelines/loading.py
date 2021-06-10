@@ -9,15 +9,13 @@ from ..registry import PIPELINES
 
 @PIPELINES.register_module
 class LoadImageFromFile(object):
-
     def __init__(self, to_float32=False, color_type='color'):
         self.to_float32 = to_float32
         self.color_type = color_type
 
     def __call__(self, results):
         if results['img_prefix'] is not None:
-            filename = osp.join(results['img_prefix'],
-                                results['img_info']['filename'])
+            filename = osp.join(results['img_prefix'], results['img_info']['filename'])
         else:
             filename = results['img_info']['filename']
         img = mmcv.imread(filename, self.color_type)
@@ -31,15 +29,13 @@ class LoadImageFromFile(object):
         results['pad_shape'] = img.shape
         results['scale_factor'] = 1.0
         num_channels = 1 if len(img.shape) < 3 else img.shape[2]
-        results['img_norm_cfg'] = dict(
-            mean=np.zeros(num_channels, dtype=np.float32),
-            std=np.ones(num_channels, dtype=np.float32),
-            to_rgb=False)
+        results['img_norm_cfg'] = dict(mean=np.zeros(num_channels, dtype=np.float32),
+                                       std=np.ones(num_channels, dtype=np.float32),
+                                       to_rgb=False)
         return results
 
     def __repr__(self):
-        return '{} (to_float32={}, color_type={})'.format(
-            self.__class__.__name__, self.to_float32, self.color_type)
+        return '{} (to_float32={}, color_type={})'.format(self.__class__.__name__, self.to_float32, self.color_type)
 
 
 @PIPELINES.register_module
@@ -47,21 +43,16 @@ class LoadMultiChannelImageFromFiles(object):
     """ Load multi channel images from a list of separate channel files.
     Expects results['filename'] to be a list of filenames
     """
-
     def __init__(self, to_float32=True, color_type='unchanged'):
         self.to_float32 = to_float32
         self.color_type = color_type
 
     def __call__(self, results):
         if results['img_prefix'] is not None:
-            filename = [
-                osp.join(results['img_prefix'], fname)
-                for fname in results['img_info']['filename']
-            ]
+            filename = [osp.join(results['img_prefix'], fname) for fname in results['img_info']['filename']]
         else:
             filename = results['img_info']['filename']
-        img = np.stack(
-            [mmcv.imread(name, self.color_type) for name in filename], axis=-1)
+        img = np.stack([mmcv.imread(name, self.color_type) for name in filename], axis=-1)
         if self.to_float32:
             img = img.astype(np.float32)
         results['filename'] = filename
@@ -71,19 +62,12 @@ class LoadMultiChannelImageFromFiles(object):
         return results
 
     def __repr__(self):
-        return '{} (to_float32={}, color_type={})'.format(
-            self.__class__.__name__, self.to_float32, self.color_type)
+        return '{} (to_float32={}, color_type={})'.format(self.__class__.__name__, self.to_float32, self.color_type)
 
 
 @PIPELINES.register_module
 class LoadAnnotations(object):
-
-    def __init__(self,
-                 with_bbox=True,
-                 with_label=True,
-                 with_mask=False,
-                 with_seg=False,
-                 poly2mask=True):
+    def __init__(self, with_bbox=True, with_label=True, with_mask=False, with_seg=False, poly2mask=True):
         self.with_bbox = with_bbox
         self.with_label = with_label
         self.with_mask = with_mask
@@ -131,9 +115,8 @@ class LoadAnnotations(object):
         return results
 
     def _load_semantic_seg(self, results):
-        results['gt_semantic_seg'] = mmcv.imread(
-            osp.join(results['seg_prefix'], results['ann_info']['seg_map']),
-            flag='unchanged').squeeze()
+        results['gt_semantic_seg'] = mmcv.imread(osp.join(results['seg_prefix'], results['ann_info']['seg_map']),
+                                                 flag='unchanged').squeeze()
         results['seg_fields'].append('gt_semantic_seg')
         return results
 
@@ -153,23 +136,19 @@ class LoadAnnotations(object):
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += ('(with_bbox={}, with_label={}, with_mask={},'
-                     ' with_seg={})').format(self.with_bbox, self.with_label,
-                                             self.with_mask, self.with_seg)
+                     ' with_seg={})').format(self.with_bbox, self.with_label, self.with_mask, self.with_seg)
         return repr_str
 
 
 @PIPELINES.register_module
 class LoadProposals(object):
-
     def __init__(self, num_max_proposals=None):
         self.num_max_proposals = num_max_proposals
 
     def __call__(self, results):
         proposals = results['proposals']
         if proposals.shape[1] not in (4, 5):
-            raise AssertionError(
-                'proposals should have shapes (n, 4) or (n, 5), '
-                'but found {}'.format(proposals.shape))
+            raise AssertionError('proposals should have shapes (n, 4) or (n, 5), ' 'but found {}'.format(proposals.shape))
         proposals = proposals[:, :4]
 
         if self.num_max_proposals is not None:
@@ -182,5 +161,4 @@ class LoadProposals(object):
         return results
 
     def __repr__(self):
-        return self.__class__.__name__ + '(num_max_proposals={})'.format(
-            self.num_max_proposals)
+        return self.__class__.__name__ + '(num_max_proposals={})'.format(self.num_max_proposals)

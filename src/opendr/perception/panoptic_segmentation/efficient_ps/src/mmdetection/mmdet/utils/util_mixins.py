@@ -74,7 +74,6 @@ class NiceRepr(object):
         >>> baz = Baz()
         >>> assert str(baz) == '<Baz(5)>'
     """
-
     def __nice__(self):
         if hasattr(self, '__len__'):
             # It is a common pattern for objects to use __len__ in __nice__
@@ -82,8 +81,7 @@ class NiceRepr(object):
             return str(len(self))
         else:
             # In all other cases force the subclass to overload __nice__
-            raise NotImplementedError(
-                'Define the __nice__ method for {!r}'.format(self.__class__))
+            raise NotImplementedError('Define the __nice__ method for {!r}'.format(self.__class__))
 
     def __repr__(self):
         try:

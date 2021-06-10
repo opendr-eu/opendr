@@ -7,15 +7,8 @@ from . import roi_align_cuda
 
 
 class RoIAlignFunction(Function):
-
     @staticmethod
-    def forward(ctx,
-                features,
-                rois,
-                out_size,
-                spatial_scale,
-                sample_num=0,
-                aligned=True):
+    def forward(ctx, features, rois, out_size, spatial_scale, sample_num=0, aligned=True):
         out_h, out_w = _pair(out_size)
         assert isinstance(out_h, int) and isinstance(out_w, int)
         ctx.spatial_scale = spatial_scale
@@ -26,18 +19,13 @@ class RoIAlignFunction(Function):
 
         if features.is_cuda:
             if not aligned:
-                (batch_size, num_channels, data_height,
-                 data_width) = features.size()
+                (batch_size, num_channels, data_height, data_width) = features.size()
                 num_rois = rois.size(0)
 
-                output = features.new_zeros(num_rois, num_channels, out_h,
-                                            out_w)
-                roi_align_cuda.forward_v1(features, rois, out_h, out_w,
-                                          spatial_scale, sample_num, output)
+                output = features.new_zeros(num_rois, num_channels, out_h, out_w)
+                roi_align_cuda.forward_v1(features, rois, out_h, out_w, spatial_scale, sample_num, output)
             else:
-                output = roi_align_cuda.forward_v2(features, rois,
-                                                   spatial_scale, out_h, out_w,
-                                                   sample_num, aligned)
+                output = roi_align_cuda.forward_v2(features, rois, spatial_scale, out_h, out_w, sample_num, aligned)
         else:
             raise NotImplementedError
 
@@ -60,15 +48,11 @@ class RoIAlignFunction(Function):
         grad_input = grad_rois = None
         if not aligned:
             if ctx.needs_input_grad[0]:
-                grad_input = rois.new_zeros(batch_size, num_channels,
-                                            data_height, data_width)
-                roi_align_cuda.backward_v1(grad_output.contiguous(), rois,
-                                           out_h, out_w, spatial_scale,
-                                           sample_num, grad_input)
+                grad_input = rois.new_zeros(batch_size, num_channels, data_height, data_width)
+                roi_align_cuda.backward_v1(grad_output.contiguous(), rois, out_h, out_w, spatial_scale, sample_num, grad_input)
         else:
-            grad_input = roi_align_cuda.backward_v2(
-                grad_output, rois, spatial_scale, out_h, out_w, batch_size,
-                num_channels, data_height, data_width, sample_num, aligned)
+            grad_input = roi_align_cuda.backward_v2(grad_output, rois, spatial_scale, out_h, out_w, batch_size, num_channels,
+                                                    data_height, data_width, sample_num, aligned)
 
         return grad_input, grad_rois, None, None, None, None
 
@@ -77,13 +61,7 @@ roi_align = RoIAlignFunction.apply
 
 
 class RoIAlign(nn.Module):
-
-    def __init__(self,
-                 out_size,
-                 spatial_scale,
-                 sample_num=0,
-                 use_torchvision=False,
-                 aligned=False):
+    def __init__(self, out_size, spatial_scale, sample_num=0, use_torchvision=False, aligned=False):
         """
         Args:
             out_size (tuple): h, w
@@ -123,8 +101,7 @@ class RoIAlign(nn.Module):
         self.aligned = aligned
         self.sample_num = int(sample_num)
         self.use_torchvision = use_torchvision
-        assert not (use_torchvision and
-                    aligned), 'Torchvision does not support aligned RoIAlgin'
+        assert not (use_torchvision and aligned), 'Torchvision does not support aligned RoIAlgin'
 
     def forward(self, features, rois):
         """
@@ -137,16 +114,12 @@ class RoIAlign(nn.Module):
 
         if self.use_torchvision:
             from torchvision.ops import roi_align as tv_roi_align
-            return tv_roi_align(features, rois, self.out_size,
-                                self.spatial_scale, self.sample_num)
+            return tv_roi_align(features, rois, self.out_size, self.spatial_scale, self.sample_num)
         else:
-            return roi_align(features, rois, self.out_size, self.spatial_scale,
-                             self.sample_num, self.aligned)
+            return roi_align(features, rois, self.out_size, self.spatial_scale, self.sample_num, self.aligned)
 
     def __repr__(self):
         format_str = self.__class__.__name__
-        format_str += '(out_size={}, spatial_scale={}, sample_num={}'.format(
-            self.out_size, self.spatial_scale, self.sample_num)
-        format_str += ', use_torchvision={}, aligned={})'.format(
-            self.use_torchvision, self.aligned)
+        format_str += '(out_size={}, spatial_scale={}, sample_num={}'.format(self.out_size, self.spatial_scale, self.sample_num)
+        format_str += ', use_torchvision={}, aligned={})'.format(self.use_torchvision, self.aligned)
         return format_str

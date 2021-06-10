@@ -7,7 +7,6 @@ from . import grid_sampler_cuda
 
 
 class _GridSampler(Function):
-
     @staticmethod
     def forward(ctx, input, grid, mode_enum, padding_mode_enum, align_corners):
 
@@ -50,17 +49,12 @@ class _GridSampler(Function):
             else:
                 func = grid_sampler_cuda.grid_sampler_3d_backward_cpu
 
-        grad_input, grad_grid = func(grad_output, input, grid, mode_enum,
-                                     padding_mode_enum, align_corners)
+        grad_input, grad_grid = func(grad_output, input, grid, mode_enum, padding_mode_enum, align_corners)
 
         return grad_input, grad_grid, None, None, None
 
 
-def grid_sample(input,
-                grid,
-                mode='bilinear',
-                padding_mode='zeros',
-                align_corners=False):
+def grid_sample(input, grid, mode='bilinear', padding_mode='zeros', align_corners=False):
     if torch.__version__ >= '1.3':
         return F.grid_sample(input, grid, mode, padding_mode, align_corners)
     elif align_corners:
@@ -115,5 +109,4 @@ def grid_sample(input,
                 'but input has sizes {} with dimension {} being empty'.format(
                     input.sizes(), i)
 
-        return _GridSampler.apply(input, grid, mode_enum, padding_mode_enum,
-                                  align_corners)
+        return _GridSampler.apply(input, grid, mode_enum, padding_mode_enum, align_corners)

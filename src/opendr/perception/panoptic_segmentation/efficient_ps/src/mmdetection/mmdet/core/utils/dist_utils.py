@@ -2,8 +2,7 @@ from collections import OrderedDict
 
 import torch.distributed as dist
 from mmcv.runner import OptimizerHook
-from torch._utils import (_flatten_dense_tensors, _take_tensors,
-                          _unflatten_dense_tensors)
+from torch._utils import (_flatten_dense_tensors, _take_tensors, _unflatten_dense_tensors)
 
 
 def _allreduce_coalesced(tensors, world_size, bucket_size_mb=-1):
@@ -23,16 +22,12 @@ def _allreduce_coalesced(tensors, world_size, bucket_size_mb=-1):
         flat_tensors = _flatten_dense_tensors(bucket)
         dist.all_reduce(flat_tensors)
         flat_tensors.div_(world_size)
-        for tensor, synced in zip(
-                bucket, _unflatten_dense_tensors(flat_tensors, bucket)):
+        for tensor, synced in zip(bucket, _unflatten_dense_tensors(flat_tensors, bucket)):
             tensor.copy_(synced)
 
 
 def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
-    grads = [
-        param.grad.data for param in params
-        if param.requires_grad and param.grad is not None
-    ]
+    grads = [param.grad.data for param in params if param.requires_grad and param.grad is not None]
     world_size = dist.get_world_size()
     if coalesce:
         _allreduce_coalesced(grads, world_size, bucket_size_mb)
@@ -42,7 +37,6 @@ def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
 
 
 class DistOptimizerHook(OptimizerHook):
-
     def __init__(self, grad_clip=None, coalesce=True, bucket_size_mb=-1):
         self.grad_clip = grad_clip
         self.coalesce = coalesce

@@ -51,21 +51,13 @@ def bounded_iou_loss(pred, target, beta=0.2, eps=1e-3):
     dx = target_ctrx - pred_ctrx
     dy = target_ctry - pred_ctry
 
-    loss_dx = 1 - torch.max(
-        (target_w - 2 * dx.abs()) /
-        (target_w + 2 * dx.abs() + eps), torch.zeros_like(dx))
-    loss_dy = 1 - torch.max(
-        (target_h - 2 * dy.abs()) /
-        (target_h + 2 * dy.abs() + eps), torch.zeros_like(dy))
-    loss_dw = 1 - torch.min(target_w / (pred_w + eps), pred_w /
-                            (target_w + eps))
-    loss_dh = 1 - torch.min(target_h / (pred_h + eps), pred_h /
-                            (target_h + eps))
-    loss_comb = torch.stack([loss_dx, loss_dy, loss_dw, loss_dh],
-                            dim=-1).view(loss_dx.size(0), -1)
+    loss_dx = 1 - torch.max((target_w - 2 * dx.abs()) / (target_w + 2 * dx.abs() + eps), torch.zeros_like(dx))
+    loss_dy = 1 - torch.max((target_h - 2 * dy.abs()) / (target_h + 2 * dy.abs() + eps), torch.zeros_like(dy))
+    loss_dw = 1 - torch.min(target_w / (pred_w + eps), pred_w / (target_w + eps))
+    loss_dh = 1 - torch.min(target_h / (pred_h + eps), pred_h / (target_h + eps))
+    loss_comb = torch.stack([loss_dx, loss_dy, loss_dw, loss_dh], dim=-1).view(loss_dx.size(0), -1)
 
-    loss = torch.where(loss_comb < beta, 0.5 * loss_comb * loss_comb / beta,
-                       loss_comb - 0.5 * beta)
+    loss = torch.where(loss_comb < beta, 0.5 * loss_comb * loss_comb / beta, loss_comb - 0.5 * beta)
     return loss
 
 
@@ -116,39 +108,24 @@ def giou_loss(pred, target, eps=1e-7):
 
 @LOSSES.register_module
 class IoULoss(nn.Module):
-
     def __init__(self, eps=1e-6, reduction='mean', loss_weight=1.0):
         super(IoULoss, self).__init__()
         self.eps = eps
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self,
-                pred,
-                target,
-                weight=None,
-                avg_factor=None,
-                reduction_override=None,
-                **kwargs):
+    def forward(self, pred, target, weight=None, avg_factor=None, reduction_override=None, **kwargs):
         if weight is not None and not torch.any(weight > 0):
             return (pred * weight).sum()  # 0
         assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+        reduction = (reduction_override if reduction_override else self.reduction)
         loss = self.loss_weight * iou_loss(
-            pred,
-            target,
-            weight,
-            eps=self.eps,
-            reduction=reduction,
-            avg_factor=avg_factor,
-            **kwargs)
+            pred, target, weight, eps=self.eps, reduction=reduction, avg_factor=avg_factor, **kwargs)
         return loss
 
 
 @LOSSES.register_module
 class BoundedIoULoss(nn.Module):
-
     def __init__(self, beta=0.2, eps=1e-3, reduction='mean', loss_weight=1.0):
         super(BoundedIoULoss, self).__init__()
         self.beta = beta
@@ -156,57 +133,29 @@ class BoundedIoULoss(nn.Module):
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self,
-                pred,
-                target,
-                weight=None,
-                avg_factor=None,
-                reduction_override=None,
-                **kwargs):
+    def forward(self, pred, target, weight=None, avg_factor=None, reduction_override=None, **kwargs):
         if weight is not None and not torch.any(weight > 0):
             return (pred * weight).sum()  # 0
         assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+        reduction = (reduction_override if reduction_override else self.reduction)
         loss = self.loss_weight * bounded_iou_loss(
-            pred,
-            target,
-            weight,
-            beta=self.beta,
-            eps=self.eps,
-            reduction=reduction,
-            avg_factor=avg_factor,
-            **kwargs)
+            pred, target, weight, beta=self.beta, eps=self.eps, reduction=reduction, avg_factor=avg_factor, **kwargs)
         return loss
 
 
 @LOSSES.register_module
 class GIoULoss(nn.Module):
-
     def __init__(self, eps=1e-6, reduction='mean', loss_weight=1.0):
         super(GIoULoss, self).__init__()
         self.eps = eps
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self,
-                pred,
-                target,
-                weight=None,
-                avg_factor=None,
-                reduction_override=None,
-                **kwargs):
+    def forward(self, pred, target, weight=None, avg_factor=None, reduction_override=None, **kwargs):
         if weight is not None and not torch.any(weight > 0):
             return (pred * weight).sum()  # 0
         assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+        reduction = (reduction_override if reduction_override else self.reduction)
         loss = self.loss_weight * giou_loss(
-            pred,
-            target,
-            weight,
-            eps=self.eps,
-            reduction=reduction,
-            avg_factor=avg_factor,
-            **kwargs)
+            pred, target, weight, eps=self.eps, reduction=reduction, avg_factor=avg_factor, **kwargs)
         return loss

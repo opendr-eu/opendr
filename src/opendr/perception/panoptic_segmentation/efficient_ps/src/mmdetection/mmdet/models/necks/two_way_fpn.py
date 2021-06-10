@@ -46,7 +46,6 @@ class TWOWAYFPN(nn.Module):
         outputs[2].shape = torch.Size([1, 11, 84, 84])
         outputs[3].shape = torch.Size([1, 11, 43, 43])
     """
-
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -88,35 +87,32 @@ class TWOWAYFPN(nn.Module):
         self.fpn_convs = nn.ModuleList()
 
         for i in range(self.start_level, self.backbone_end_level):
-            l_conv = ConvModule(
-                in_channels[i],
-                out_channels,
-                1,
-                conv_cfg=conv_cfg,
-                norm_cfg=norm_cfg if not self.no_norm_on_lateral else None,
-                act_cfg=act_cfg,
-                inplace=False)
+            l_conv = ConvModule(in_channels[i],
+                                out_channels,
+                                1,
+                                conv_cfg=conv_cfg,
+                                norm_cfg=norm_cfg if not self.no_norm_on_lateral else None,
+                                act_cfg=act_cfg,
+                                inplace=False)
 
             self.lateral_convs_top.append(l_conv)
 
-        for i in range(self.backbone_end_level-1, self.start_level-1, -1):
-            l_conv = ConvModule(
-                in_channels[i],
-                out_channels,
-                1,
-                conv_cfg=conv_cfg,
-                norm_cfg=norm_cfg if not self.no_norm_on_lateral else None,
-                act_cfg=act_cfg,
-                inplace=False)
-            fpn_conv = ConvModule(
-                out_channels,
-                out_channels,
-                3,
-                padding=1,
-                conv_cfg=conv_cfg,
-                norm_cfg=norm_cfg,
-                act_cfg=act_cfg,
-                inplace=False)
+        for i in range(self.backbone_end_level - 1, self.start_level - 1, -1):
+            l_conv = ConvModule(in_channels[i],
+                                out_channels,
+                                1,
+                                conv_cfg=conv_cfg,
+                                norm_cfg=norm_cfg if not self.no_norm_on_lateral else None,
+                                act_cfg=act_cfg,
+                                inplace=False)
+            fpn_conv = ConvModule(out_channels,
+                                  out_channels,
+                                  3,
+                                  padding=1,
+                                  conv_cfg=conv_cfg,
+                                  norm_cfg=norm_cfg,
+                                  act_cfg=act_cfg,
+                                  inplace=False)
 
             self.lateral_convs_bottom.append(l_conv)
             self.fpn_convs.append(fpn_conv)
@@ -129,16 +125,15 @@ class TWOWAYFPN(nn.Module):
                     in_channels = self.in_channels[self.backbone_end_level - 1]
                 else:
                     in_channels = out_channels
-                extra_fpn_conv = ConvModule(
-                    in_channels,
-                    out_channels,
-                    3,
-                    stride=2,
-                    padding=1,
-                    conv_cfg=conv_cfg,
-                    norm_cfg=norm_cfg,
-                    act_cfg=act_cfg,
-                    inplace=False)
+                extra_fpn_conv = ConvModule(in_channels,
+                                            out_channels,
+                                            3,
+                                            stride=2,
+                                            padding=1,
+                                            conv_cfg=conv_cfg,
+                                            norm_cfg=norm_cfg,
+                                            act_cfg=act_cfg,
+                                            inplace=False)
                 self.fpn_convs.append(extra_fpn_conv)
 
     # default init_weights for conv(msra) and norm in ConvModule
@@ -152,32 +147,24 @@ class TWOWAYFPN(nn.Module):
         assert len(inputs) == len(self.in_channels)
 
         # build laterals
-        laterals_top = [
-            lateral_conv(inputs[i + self.start_level])
-            for i, lateral_conv in enumerate(self.lateral_convs_top)
-        ]
+        laterals_top = [lateral_conv(inputs[i + self.start_level]) for i, lateral_conv in enumerate(self.lateral_convs_top)]
         laterals_bottom = [
-            lateral_conv(inputs[self.backbone_end_level - 1 - i])
-            for i, lateral_conv in enumerate(self.lateral_convs_bottom)
+            lateral_conv(inputs[self.backbone_end_level - 1 - i]) for i, lateral_conv in enumerate(self.lateral_convs_bottom)
         ]
 
         # build top-down path
         used_backbone_levels = len(laterals_top)
         for i in range(used_backbone_levels - 1, 0, -1):
             prev_shape = laterals_top[i - 1].shape[2:]
-            laterals_top[i - 1] = laterals_top[i - 1] + F.interpolate(
-                      laterals_top[i], size=prev_shape, mode='nearest')
+            laterals_top[i - 1] = laterals_top[i - 1] + F.interpolate(laterals_top[i], size=prev_shape, mode='nearest')
 
         for i in range(used_backbone_levels - 1, 0, -1):
             prev_shape = laterals_bottom[i - 1].shape[2:]
-            laterals_bottom[i - 1] = laterals_bottom[i - 1] + F.interpolate(
-                         laterals_bottom[i], size=prev_shape, mode='nearest')
+            laterals_bottom[i - 1] = laterals_bottom[i - 1] + F.interpolate(laterals_bottom[i], size=prev_shape, mode='nearest')
         #laterals_bottom = laterals_bottom[::-1]
         # build outputs
         # part 1: from original levels
-        outs = [
-            self.fpn_convs[i](laterals_top[i]+laterals_bottom[::-1][i]) for i in range(used_backbone_levels)
-        ]
+        outs = [self.fpn_convs[i](laterals_top[i] + laterals_bottom[::-1][i]) for i in range(used_backbone_levels)]
         # part 2: add extra levels
         if self.num_outs > len(outs):
             # use max pool to get more levels on top of outputs

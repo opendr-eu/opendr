@@ -11,12 +11,9 @@ class EvalHook(Hook):
         dataloader (DataLoader): A PyTorch dataloader.
         interval (int): Evaluation interval (by epochs). Default: 1.
     """
-
     def __init__(self, dataloader, interval=1, **eval_kwargs):
         if not isinstance(dataloader, DataLoader):
-            raise TypeError(
-                'dataloader must be a pytorch DataLoader, but got {}'.format(
-                    type(dataloader)))
+            raise TypeError('dataloader must be a pytorch DataLoader, but got {}'.format(type(dataloader)))
         self.dataloader = dataloader
         self.interval = interval
         self.eval_kwargs = eval_kwargs
@@ -25,14 +22,12 @@ class EvalHook(Hook):
         if not self.every_n_epochs(runner, self.interval):
             return
         from mmdet.apis import single_gpu_test
-        evalm = self.eval_kwargs['metric']  
-        results = single_gpu_test(runner.model, self.dataloader, show=False, 
-                  eval=evalm if evalm[0]=='panoptic' else None)
+        evalm = self.eval_kwargs['metric']
+        results = single_gpu_test(runner.model, self.dataloader, show=False, eval=evalm if evalm[0] == 'panoptic' else None)
         self.evaluate(runner, results)
 
     def evaluate(self, runner, results):
-        eval_res = self.dataloader.dataset.evaluate(
-            results, logger=runner.logger, **self.eval_kwargs)
+        eval_res = self.dataloader.dataset.evaluate(results, logger=runner.logger, **self.eval_kwargs)
         for name, val in eval_res.items():
             runner.log_buffer.output[name] = val
         runner.log_buffer.ready = True
@@ -49,16 +44,9 @@ class DistEvalHook(EvalHook):
         gpu_collect (bool): Whether to use gpu or cpu to collect results.
             Default: False.
     """
-
-    def __init__(self,
-                 dataloader,
-                 interval=1,
-                 gpu_collect=False,
-                 **eval_kwargs):
+    def __init__(self, dataloader, interval=1, gpu_collect=False, **eval_kwargs):
         if not isinstance(dataloader, DataLoader):
-            raise TypeError(
-                'dataloader must be a pytorch DataLoader, but got {}'.format(
-                    type(dataloader)))
+            raise TypeError('dataloader must be a pytorch DataLoader, but got {}'.format(type(dataloader)))
         self.dataloader = dataloader
         self.interval = interval
         self.gpu_collect = gpu_collect
@@ -68,13 +56,12 @@ class DistEvalHook(EvalHook):
         if not self.every_n_epochs(runner, self.interval):
             return
         from mmdet.apis import multi_gpu_test
-        evalm = self.eval_kwargs['metric']  
-        results = multi_gpu_test(
-            runner.model,
-            self.dataloader,
-            tmpdir=osp.join(runner.work_dir, '.eval_hook'),
-            gpu_collect=self.gpu_collect,
-            eval=evalm if evalm[0]=='panoptic' else None)
+        evalm = self.eval_kwargs['metric']
+        results = multi_gpu_test(runner.model,
+                                 self.dataloader,
+                                 tmpdir=osp.join(runner.work_dir, '.eval_hook'),
+                                 gpu_collect=self.gpu_collect,
+                                 eval=evalm if evalm[0] == 'panoptic' else None)
 
         if runner.rank == 0:
             print('\n')

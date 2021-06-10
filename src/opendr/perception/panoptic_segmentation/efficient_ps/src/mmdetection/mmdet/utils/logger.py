@@ -61,6 +61,5 @@ def print_log(msg, logger=None, level=logging.INFO):
     elif isinstance(logger, logging.Logger):
         logger.log(level, msg)
     elif logger != 'silent':
-        raise TypeError(
-            'logger should be either a logging.Logger object, "root", '
-            '"silent" or None, but got {}'.format(logger))
+        raise TypeError('logger should be either a logging.Logger object, "root", '
+                        '"silent" or None, but got {}'.format(logger))

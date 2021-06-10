@@ -22,22 +22,18 @@ import torch
 import json
 import shutil
 
-PALETTE = [[128, 64, 128], [244, 35, 232], [70, 70, 70], [102, 102, 156],
-           [190, 153, 153], [153, 153, 153], [250, 170, 30], [220, 220, 0],
-           [107, 142, 35], [152, 251, 152], [70, 130, 180], [220, 20, 60],
-           [255, 0, 0], [0, 0, 142], [0, 0, 70], [0, 60, 100],
-           [0, 80, 100], [0, 0, 230], [119, 11, 32]]
+PALETTE = [[128, 64, 128], [244, 35, 232], [70, 70, 70], [102, 102, 156], [190, 153, 153], [153, 153, 153], [250, 170, 30],
+           [220, 220, 0], [107, 142, 35], [152, 251, 152], [70, 130, 180], [220, 20, 60], [255, 0, 0], [0, 0, 142], [0, 0, 70],
+           [0, 60, 100], [0, 80, 100], [0, 0, 230], [119, 11, 32]]
 
 
 @DATASETS.register_module
 class CityscapesDataset(CocoDataset):
 
-    CLASSES = ('person', 'rider', 'car', 'truck', 'bus', 'train', 'motorcycle',
-               'bicycle')
+    CLASSES = ('person', 'rider', 'car', 'truck', 'bus', 'train', 'motorcycle', 'bicycle')
 
-    STUFF_CLASSES = ('road', 'sidewalk', 'building', 'wall', 'fence', 'pole',
-               'traffic light', 'traffic sign', 'vegetation', 'terrain', 'sky')
-
+    STUFF_CLASSES = ('road', 'sidewalk', 'building', 'wall', 'fence', 'pole', 'traffic light', 'traffic sign', 'vegetation',
+                     'terrain', 'sky')
 
     def _filter_imgs(self, min_size=32):
         """Filter images too small or without ground truths."""
@@ -48,8 +44,7 @@ class CityscapesDataset(CocoDataset):
             ann_ids = self.coco.getAnnIds(imgIds=[img_id])
             ann_info = self.coco.loadAnns(ann_ids)
             all_iscrowd = all([_['iscrowd'] for _ in ann_info])
-            if self.filter_empty_gt and (self.img_ids[i] not in ids_with_ann
-                                         or all_iscrowd):
+            if self.filter_empty_gt and (self.img_ids[i] not in ids_with_ann or all_iscrowd):
                 continue
             if min(img_info['width'], img_info['height']) >= min_size:
                 valid_inds.append(i)
@@ -98,14 +93,9 @@ class CityscapesDataset(CocoDataset):
         else:
             gt_bboxes_ignore = np.zeros((0, 4), dtype=np.float32)
 
-        seg_map = img_info['filename'] 
+        seg_map = img_info['filename']
 
-        ann = dict(
-            bboxes=gt_bboxes,
-            labels=gt_labels,
-            bboxes_ignore=gt_bboxes_ignore,
-            masks=gt_masks_ann,
-            seg_map=seg_map)
+        ann = dict(bboxes=gt_bboxes, labels=gt_labels, bboxes_ignore=gt_bboxes_ignore, masks=gt_masks_ann, seg_map=seg_map)
 
         return ann
 
@@ -126,8 +116,7 @@ class CityscapesDataset(CocoDataset):
         try:
             import cityscapesscripts.helpers.labels as CSLabels
         except ImportError:
-            raise ImportError('Please run "pip install citscapesscripts" to '
-                              'install cityscapesscripts first.')
+            raise ImportError('Please run "pip install citscapesscripts" to ' 'install cityscapesscripts first.')
         result_files = []
         os.makedirs(outfile_prefix, exist_ok=True)
         prog_bar = mmcv.ProgressBar(len(self))
@@ -140,10 +129,7 @@ class CityscapesDataset(CocoDataset):
             bbox_result, segm_result = result[:2]
             bboxes = np.vstack(bbox_result)
             segms = mmcv.concat_list(segm_result)
-            labels = [
-                np.full(bbox.shape[0], i, dtype=np.int32)
-                for i, bbox in enumerate(bbox_result)
-            ]
+            labels = [np.full(bbox.shape[0], i, dtype=np.int32) for i, bbox in enumerate(bbox_result)]
             labels = np.concatenate(labels)
 
             assert len(bboxes) == len(segms) == len(labels)
@@ -156,12 +142,9 @@ class CityscapesDataset(CocoDataset):
                     class_id = CSLabels.name2label[classes].id
                     score = bboxes[i, -1]
                     mask = maskUtils.decode(segms[i]).astype(np.uint8)
-                    png_filename = osp.join(
-                        outfile_prefix,
-                        basename + '_{}_{}.png'.format(i, classes))
+                    png_filename = osp.join(outfile_prefix, basename + '_{}_{}.png'.format(i, classes))
                     mmcv.imwrite(mask, png_filename)
-                    fout.write('{} {} {}\n'.format(
-                        osp.basename(png_filename), class_id, score))
+                    fout.write('{} {} {}\n'.format(osp.basename(png_filename), class_id, score))
             result_files.append(pred_txt)
 
         return result_files
@@ -181,14 +164,12 @@ class CityscapesDataset(CocoDataset):
                 for saving txt/png files when txtfile_prefix is not specified.
         """
         assert isinstance(results, list), 'results must be a list'
-        assert len(results) == len(self), (
-            'The length of results is not equal to the dataset len: {} != {}'.
-            format(len(results), len(self)))
+        assert len(results) == len(self), ('The length of results is not equal to the dataset len: {} != {}'.format(
+            len(results), len(self)))
 
         assert isinstance(results, list), 'results must be a list'
-        assert len(results) == len(self), (
-            'The length of results is not equal to the dataset len: {} != {}'.
-            format(len(results), len(self)))
+        assert len(results) == len(self), ('The length of results is not equal to the dataset len: {} != {}'.format(
+            len(results), len(self)))
 
         if txtfile_prefix is None:
             tmp_dir = tempfile.TemporaryDirectory()
@@ -230,24 +211,19 @@ class CityscapesDataset(CocoDataset):
         metrics = metric.copy() if isinstance(metric, list) else [metric]
 
         if 'panoptic' in metrics:
-            eval_results.update(
-                self._evaluate_panoptic(results, outfile_prefix, logger))
-  
+            eval_results.update(self._evaluate_panoptic(results, outfile_prefix, logger))
+
         if 'cityscapes' in metrics:
-            eval_results.update(
-                self._evaluate_cityscapes(results, outfile_prefix, logger))
+            eval_results.update(self._evaluate_cityscapes(results, outfile_prefix, logger))
             metrics.remove('cityscapes')
 
         # left metrics are all coco metric
         if len(metrics) > 0 and 'panoptic' not in metrics:
             # create CocoDataset with CityscapesDataset annotation
-            self_coco = CocoDataset(self.ann_file, self.pipeline.transforms,
-                                    self.data_root, self.img_prefix,
-                                    self.seg_prefix, self.proposal_file,
-                                    self.test_mode, self.filter_empty_gt)
-            eval_results.update(
-                self_coco.evaluate(results, metrics, logger, outfile_prefix,
-                                   classwise, proposal_nums, iou_thrs))
+            self_coco = CocoDataset(self.ann_file, self.pipeline.transforms, self.data_root, self.img_prefix, self.seg_prefix,
+                                    self.proposal_file, self.test_mode, self.filter_empty_gt)
+            eval_results.update(self_coco.evaluate(results, metrics, logger, outfile_prefix, classwise, proposal_nums,
+                                                   iou_thrs))
 
         return eval_results
 
@@ -255,8 +231,7 @@ class CityscapesDataset(CocoDataset):
         try:
             import cityscapesscripts.evaluation.evalInstanceLevelSemanticLabeling as CSEval  # noqa
         except ImportError:
-            raise ImportError('Please run "pip install citscapesscripts" to '
-                              'install cityscapesscripts first.')
+            raise ImportError('Please run "pip install citscapesscripts" to ' 'install cityscapesscripts first.')
         msg = 'Evaluating in Cityscapes style'
         if logger is None:
             msg = '\n' + msg
@@ -270,9 +245,7 @@ class CityscapesDataset(CocoDataset):
             result_dir = osp.join(tmp_dir.name, 'results')
 
         eval_results = {}
-        print_log(
-            'Evaluating results under {} ...'.format(result_dir),
-            logger=logger)
+        print_log('Evaluating results under {} ...'.format(result_dir), logger=logger)
 
         # set global states in cityscapes evaluation API
         CSEval.args.cityscapesPath = os.path.join(self.img_prefix, '../../..')
@@ -280,11 +253,9 @@ class CityscapesDataset(CocoDataset):
         CSEval.args.predictionWalk = None
         CSEval.args.JSONOutput = False
         CSEval.args.colorized = False
-        CSEval.args.gtInstancesFile = os.path.join(result_dir,
-                                                   'gtInstances.json')
-        CSEval.args.groundTruthSearch = os.path.join(
-            self.img_prefix.replace('leftImg8bit', 'gtFine'),
-            '*/*_gtFine_instanceIds.png')
+        CSEval.args.gtInstancesFile = os.path.join(result_dir, 'gtInstances.json')
+        CSEval.args.groundTruthSearch = os.path.join(self.img_prefix.replace('leftImg8bit', 'gtFine'),
+                                                     '*/*_gtFine_instanceIds.png')
 
         groundTruthImgList = glob.glob(CSEval.args.groundTruthSearch)
         assert len(groundTruthImgList), \
@@ -293,9 +264,7 @@ class CityscapesDataset(CocoDataset):
         predictionImgList = []
         for gt in groundTruthImgList:
             predictionImgList.append(CSEval.getPrediction(gt, CSEval.args))
-        CSEval_results = CSEval.evaluateImgLists(predictionImgList,
-                                                 groundTruthImgList,
-                                                 CSEval.args)['averages']
+        CSEval_results = CSEval.evaluateImgLists(predictionImgList, groundTruthImgList, CSEval.args)['averages']
 
         eval_results['mAP'] = CSEval_results['allAp']
         eval_results['AP@50'] = CSEval_results['allAp50%']
@@ -312,11 +281,11 @@ class CityscapesDataset(CocoDataset):
         gt_folder = self.panoptic_gt
         pred_folder = 'tmpDir/tmp'
         pred_json = 'tmpDir/tmp_json'
-        
+
         assert os.path.isdir(gt_folder)
         assert os.path.isdir(pred_folder)
-        
-        pred_annotations = {}  
+
+        pred_annotations = {}
         for pred_ann in os.listdir(pred_json):
             with open(os.path.join(pred_json, pred_ann), 'r') as f:
                 tmp_json = json.load(f)
@@ -330,9 +299,7 @@ class CityscapesDataset(CocoDataset):
                 raise Exception('no prediction for the image with id: {}'.format(image_id))
             matched_annotations_list.append((gt_ann, pred_annotations[image_id]))
 
-
-        pq_stat = pq_compute_multi_core(matched_annotations_list, 
-                  gt_folder, pred_folder, categories)
+        pq_stat = pq_compute_multi_core(matched_annotations_list, gt_folder, pred_folder, categories)
 
         results = average_pq(pq_stat, categories)
 
@@ -342,12 +309,9 @@ class CityscapesDataset(CocoDataset):
 
         labels = sorted(results['per_class'].keys())
         for label in labels:
-            msg = "{:14s}| {:5.1f}  {:5.1f}  {:5.1f}".format(
-                categories[label]['name'],
-                100 * results['per_class'][label]['pq'],
-                100 * results['per_class'][label]['sq'],
-                100 * results['per_class'][label]['rq']
-            )
+            msg = "{:14s}| {:5.1f}  {:5.1f}  {:5.1f}".format(categories[label]['name'], 100 * results['per_class'][label]['pq'],
+                                                             100 * results['per_class'][label]['sq'],
+                                                             100 * results['per_class'][label]['rq'])
             print_log(msg, logger=logger)
 
         msg = "-" * 41
@@ -356,20 +320,14 @@ class CityscapesDataset(CocoDataset):
         msg = "{:14s}| {:>5s}  {:>5s}  {:>5s} {:>5s}".format("", "PQ", "SQ", "RQ", "N")
         print_log(msg, logger=logger)
 
-        eval_results = {} 
+        eval_results = {}
         for name in metrics:
-            msg = "{:14s}| {:5.1f}  {:5.1f}  {:5.1f} {:5d}".format(
-                name,
-                100 * results[name]['pq'],
-                100 * results[name]['sq'],
-                100 * results[name]['rq'],
-                results[name]['n']
-            )
+            msg = "{:14s}| {:5.1f}  {:5.1f}  {:5.1f} {:5d}".format(name, 100 * results[name]['pq'], 100 * results[name]['sq'],
+                                                                   100 * results[name]['rq'], results[name]['n'])
             print_log(msg, logger=logger)
-            eval_results[name+'_pq'] = 100 * results[name]['pq']
-            eval_results[name+'_sq'] = 100 * results[name]['sq']
-            eval_results[name+'_rq'] = 100 * results[name]['rq']
+            eval_results[name + '_pq'] = 100 * results[name]['pq']
+            eval_results[name + '_sq'] = 100 * results[name]['sq']
+            eval_results[name + '_rq'] = 100 * results[name]['rq']
 
         shutil.rmtree('tmpDir')
         return eval_results
-

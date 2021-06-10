@@ -14,7 +14,6 @@ from ..registry import HEADS
 
 @HEADS.register_module
 class FCNSepMaskHead(nn.Module):
-
     def __init__(self,
                  num_convs=4,
                  roi_feat_size=14,
@@ -27,17 +26,12 @@ class FCNSepMaskHead(nn.Module):
                  conv_cfg=None,
                  norm_cfg=None,
                  act_cfg=None,
-                 loss_mask=dict(
-                     type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)):
+                 loss_mask=dict(type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)):
         super(FCNSepMaskHead, self).__init__()
         self.upsample_cfg = upsample_cfg.copy()
-        if self.upsample_cfg['type'] not in [
-                None, 'deconv', 'nearest', 'bilinear', 'carafe'
-        ]:
-            raise ValueError(
-                'Invalid upsample method {}, accepted methods '
-                'are "deconv", "nearest", "bilinear", "carafe"'.format(
-                    self.upsample_cfg['type']))
+        if self.upsample_cfg['type'] not in [None, 'deconv', 'nearest', 'bilinear', 'carafe']:
+            raise ValueError('Invalid upsample method {}, accepted methods '
+                             'are "deconv", "nearest", "bilinear", "carafe"'.format(self.upsample_cfg['type']))
 
         self.num_convs = num_convs
         # WARN: roi_feat_size is reserved and not used
@@ -56,46 +50,35 @@ class FCNSepMaskHead(nn.Module):
 
         self.convs = nn.ModuleList()
         for i in range(self.num_convs):
-            in_channels = (
-                self.in_channels if i == 0 else self.conv_out_channels)
+            in_channels = (self.in_channels if i == 0 else self.conv_out_channels)
             padding = (self.conv_kernel_size - 1) // 2
             self.convs.append(
-                DepthwiseSeparableConvModule(
-                    in_channels,
-                    self.conv_out_channels,
-                    self.conv_kernel_size,
-                    padding=padding,
-                    conv_cfg=conv_cfg,
-                    norm_cfg=norm_cfg,
-                    act_cfg=act_cfg))
-        upsample_in_channels = (
-            self.conv_out_channels if self.num_convs > 0 else in_channels)
+                DepthwiseSeparableConvModule(in_channels,
+                                             self.conv_out_channels,
+                                             self.conv_kernel_size,
+                                             padding=padding,
+                                             conv_cfg=conv_cfg,
+                                             norm_cfg=norm_cfg,
+                                             act_cfg=act_cfg))
+        upsample_in_channels = (self.conv_out_channels if self.num_convs > 0 else in_channels)
         upsample_cfg_ = self.upsample_cfg.copy()
         if self.upsample_method is None:
             self.upsample = None
         elif self.upsample_method == 'deconv':
-            upsample_cfg_.update(
-                in_channels=upsample_in_channels,
-                out_channels=self.conv_out_channels,
-                kernel_size=self.scale_factor,
-                stride=self.scale_factor)
+            upsample_cfg_.update(in_channels=upsample_in_channels,
+                                 out_channels=self.conv_out_channels,
+                                 kernel_size=self.scale_factor,
+                                 stride=self.scale_factor)
         elif self.upsample_method == 'carafe':
-            upsample_cfg_.update(
-                channels=upsample_in_channels, scale_factor=self.scale_factor)
+            upsample_cfg_.update(channels=upsample_in_channels, scale_factor=self.scale_factor)
         else:
             # suppress warnings
-            align_corners = (None
-                             if self.upsample_method == 'nearest' else False)
-            upsample_cfg_.update(
-                scale_factor=self.scale_factor,
-                mode=self.upsample_method,
-                align_corners=align_corners)
+            align_corners = (None if self.upsample_method == 'nearest' else False)
+            upsample_cfg_.update(scale_factor=self.scale_factor, mode=self.upsample_method, align_corners=align_corners)
         self.upsample = build_upsample_layer(upsample_cfg_)
 
         out_channels = 1 if self.class_agnostic else self.num_classes
-        logits_in_channel = (
-            self.conv_out_channels
-            if self.upsample_method == 'deconv' else upsample_in_channels)
+        logits_in_channel = (self.conv_out_channels if self.upsample_method == 'deconv' else upsample_in_channels)
         self.conv_logits = nn.Conv2d(logits_in_channel, out_channels, 1)
         self.relu = nn.ReLU(inplace=True)
         self.debug_imgs = None
@@ -107,8 +90,7 @@ class FCNSepMaskHead(nn.Module):
             elif isinstance(m, CARAFEPack):
                 m.init_weights()
             else:
-                nn.init.kaiming_normal_(
-                    m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
                 nn.init.constant_(m.bias, 0)
 
     @auto_fp16()
@@ -124,26 +106,21 @@ class FCNSepMaskHead(nn.Module):
 
     def get_target(self, sampling_results, gt_masks, rcnn_train_cfg):
         pos_proposals = [res.pos_bboxes for res in sampling_results]
-        pos_assigned_gt_inds = [
-            res.pos_assigned_gt_inds for res in sampling_results
-        ]
-        mask_targets = mask_target(pos_proposals, pos_assigned_gt_inds,
-                                   gt_masks, rcnn_train_cfg)
+        pos_assigned_gt_inds = [res.pos_assigned_gt_inds for res in sampling_results]
+        mask_targets = mask_target(pos_proposals, pos_assigned_gt_inds, gt_masks, rcnn_train_cfg)
         return mask_targets
 
     @force_fp32(apply_to=('mask_pred', ))
     def loss(self, mask_pred, mask_targets, labels):
         loss = dict()
         if self.class_agnostic:
-            loss_mask = self.loss_mask(mask_pred, mask_targets,
-                                       torch.zeros_like(labels))
+            loss_mask = self.loss_mask(mask_pred, mask_targets, torch.zeros_like(labels))
         else:
             loss_mask = self.loss_mask(mask_pred, mask_targets, labels)
         loss['loss_mask'] = loss_mask
         return loss
 
-    def get_seg_masks(self, mask_pred, det_bboxes, det_labels, rcnn_test_cfg,
-                      ori_shape, scale_factor, rescale):
+    def get_seg_masks(self, mask_pred, det_bboxes, det_labels, rcnn_test_cfg, ori_shape, scale_factor, rescale):
         """Get segmentation masks from mask_pred and bboxes.
 
         Args:
@@ -192,8 +169,7 @@ class FCNSepMaskHead(nn.Module):
                 mask_pred_ = mask_pred[i, 0, :, :]
 
             bbox_mask = mmcv.imresize(mask_pred_, (w, h))
-            bbox_mask = (bbox_mask > rcnn_test_cfg.mask_thr_binary).astype(
-                np.uint8)
+            bbox_mask = (bbox_mask > rcnn_test_cfg.mask_thr_binary).astype(np.uint8)
 
             if rcnn_test_cfg.get('crop_mask', False):
                 im_mask = bbox_mask
@@ -202,8 +178,7 @@ class FCNSepMaskHead(nn.Module):
                 im_mask[bbox[1]:bbox[1] + h, bbox[0]:bbox[0] + w] = bbox_mask
 
             if rcnn_test_cfg.get('rle_mask_encode', True):
-                rle = mask_util.encode(
-                    np.array(im_mask[:, :, np.newaxis], order='F'))[0]
+                rle = mask_util.encode(np.array(im_mask[:, :, np.newaxis], order='F'))[0]
                 cls_segms[label - 1].append(rle)
             else:
                 cls_segms[label - 1].append(im_mask)

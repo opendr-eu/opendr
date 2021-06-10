@@ -4,11 +4,9 @@ import torch
 from torch.nn.modules.utils import _pair
 
 
-def mask_target(pos_proposals_list, pos_assigned_gt_inds_list, gt_masks_list,
-                cfg):
+def mask_target(pos_proposals_list, pos_assigned_gt_inds_list, gt_masks_list, cfg):
     cfg_list = [cfg for _ in range(len(pos_proposals_list))]
-    mask_targets = map(mask_target_single, pos_proposals_list,
-                       pos_assigned_gt_inds_list, gt_masks_list, cfg_list)
+    mask_targets = map(mask_target_single, pos_proposals_list, pos_assigned_gt_inds_list, gt_masks_list, cfg_list)
     mask_targets = torch.cat(list(mask_targets))
     return mask_targets
 
@@ -31,11 +29,9 @@ def mask_target_single(pos_proposals, pos_assigned_gt_inds, gt_masks, cfg):
             h = np.maximum(y2 - y1 + 1, 1)
             # mask is uint8 both before and after resizing
             # mask_size (h, w) to (w, h)
-            target = mmcv.imresize(gt_mask[y1:y1 + h, x1:x1 + w],
-                                   mask_size[::-1])
+            target = mmcv.imresize(gt_mask[y1:y1 + h, x1:x1 + w], mask_size[::-1])
             mask_targets.append(target)
-        mask_targets = torch.from_numpy(np.stack(mask_targets)).float().to(
-            pos_proposals.device)
+        mask_targets = torch.from_numpy(np.stack(mask_targets)).float().to(pos_proposals.device)
     else:
         mask_targets = pos_proposals.new_zeros((0, ) + mask_size)
     return mask_targets

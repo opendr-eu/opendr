@@ -5,7 +5,4 @@ from .htc_mask_head import HTCMaskHead
 from .maskiou_head import MaskIoUHead
 from .efficientps_semantic_head import EfficientPSSemanticHead
 
-__all__ = [
-    'FCNMaskHead', 'FCNSepMaskHead', 'HTCMaskHead', 'GridHead',
-    'MaskIoUHead', 'EfficientPSSemanticHead'
-]
+__all__ = ['FCNMaskHead', 'FCNSepMaskHead', 'HTCMaskHead', 'GridHead', 'MaskIoUHead', 'EfficientPSSemanticHead']

@@ -22,7 +22,6 @@ def accuracy(pred, target, topk=1):
 
 
 class Accuracy(nn.Module):
-
     def __init__(self, topk=(1, )):
         super().__init__()
         self.topk = topk

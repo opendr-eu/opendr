@@ -13,10 +13,7 @@ DEBUG_COMPLETED_TIME = bool(os.environ.get('DEBUG_COMPLETED_TIME', False))
 
 
 @contextlib.asynccontextmanager
-async def completed(trace_name='',
-                    name='',
-                    sleep_interval=0.05,
-                    streams: List[torch.cuda.Stream] = None):
+async def completed(trace_name='', name='', sleep_interval=0.05, streams: List[torch.cuda.Stream] = None):
     """
     Async context manager that waits for work to complete on
     given CUDA streams.
@@ -32,9 +29,7 @@ async def completed(trace_name='',
     else:
         streams = [s if s else stream_before_context_switch for s in streams]
 
-    end_events = [
-        torch.cuda.Event(enable_timing=DEBUG_COMPLETED_TIME) for _ in streams
-    ]
+    end_events = [torch.cuda.Event(enable_timing=DEBUG_COMPLETED_TIME) for _ in streams]
 
     if DEBUG_COMPLETED_TIME:
         start = torch.cuda.Event(enable_timing=True)
@@ -59,12 +54,10 @@ async def completed(trace_name='',
 
         # observed change of torch.is_grad_enabled() during concurrent run of
         # async_test_bboxes code
-        assert (grad_enabled_before == grad_enabled_after
-                ), 'Unexpected is_grad_enabled() value change'
+        assert (grad_enabled_before == grad_enabled_after), 'Unexpected is_grad_enabled() value change'
 
         are_done = [e.query() for e in end_events]
-        logger.debug('%s %s completed: %s streams: %s', trace_name, name,
-                     are_done, streams)
+        logger.debug('%s %s completed: %s streams: %s', trace_name, name, are_done, streams)
         with torch.cuda.stream(stream_before_context_switch):
             while not all(are_done):
                 await asyncio.sleep(sleep_interval)
@@ -86,14 +79,11 @@ async def completed(trace_name='',
             for i, stream in enumerate(streams):
                 elapsed_time = start.elapsed_time(end_events[i])
                 stream_times_ms += ' {} {:.2f} ms'.format(stream, elapsed_time)
-            logger.info('%s %s %.2f ms %s', trace_name, name, cpu_time,
-                        stream_times_ms)
+            logger.info('%s %s %.2f ms %s', trace_name, name, cpu_time, stream_times_ms)
 
 
 @contextlib.asynccontextmanager
-async def concurrent(streamqueue: asyncio.Queue,
-                     trace_name='concurrent',
-                     name='stream'):
+async def concurrent(streamqueue: asyncio.Queue, trace_name='concurrent', name='stream'):
     """Run code concurrently in different streams.
 
     :param streamqueue: asyncio.Queue instance.
@@ -113,13 +103,11 @@ async def concurrent(streamqueue: asyncio.Queue,
 
         try:
             with torch.cuda.stream(stream):
-                logger.debug('%s %s is starting, stream: %s', trace_name, name,
-                             stream)
+                logger.debug('%s %s is starting, stream: %s', trace_name, name, stream)
                 yield
                 current = torch.cuda.current_stream()
                 assert current == stream
-                logger.debug('%s %s has finished, stream: %s', trace_name,
-                             name, stream)
+                logger.debug('%s %s has finished, stream: %s', trace_name, name, stream)
         finally:
             streamqueue.task_done()
             streamqueue.put_nowait(stream)

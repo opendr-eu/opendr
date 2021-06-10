@@ -30,8 +30,7 @@ def merge_aug_proposals(aug_proposals, img_metas, rpn_test_cfg):
         scale_factor = img_info['scale_factor']
         flip = img_info['flip']
         _proposals = proposals.clone()
-        _proposals[:, :4] = bbox_mapping_back(_proposals[:, :4], img_shape,
-                                              scale_factor, flip)
+        _proposals[:, :4] = bbox_mapping_back(_proposals[:, :4], img_shape, scale_factor, flip)
         recovered_proposals.append(_proposals)
     aug_proposals = torch.cat(recovered_proposals, dim=0)
     merged_proposals, _ = nms(aug_proposals, rpn_test_cfg.nms_thr)
@@ -89,13 +88,9 @@ def merge_aug_masks(aug_masks, img_metas, rcnn_test_cfg, weights=None):
     Returns:
         tuple: (bboxes, scores)
     """
-    recovered_masks = [
-        mask if not img_info[0]['flip'] else mask[..., ::-1]
-        for mask, img_info in zip(aug_masks, img_metas)
-    ]
+    recovered_masks = [mask if not img_info[0]['flip'] else mask[..., ::-1] for mask, img_info in zip(aug_masks, img_metas)]
     if weights is None:
         merged_masks = np.mean(recovered_masks, axis=0)
     else:
-        merged_masks = np.average(
-            np.array(recovered_masks), axis=0, weights=np.array(weights))
+        merged_masks = np.average(np.array(recovered_masks), axis=0, weights=np.array(weights))
     return merged_masks

@@ -43,18 +43,17 @@ def point_target(proposals_list,
         gt_bboxes_ignore_list = [None for _ in range(num_imgs)]
     if gt_labels_list is None:
         gt_labels_list = [None for _ in range(num_imgs)]
-    (all_labels, all_label_weights, all_bbox_gt, all_proposals,
-     all_proposal_weights, pos_inds_list, neg_inds_list) = multi_apply(
-         point_target_single,
-         proposals_list,
-         valid_flag_list,
-         gt_bboxes_list,
-         gt_bboxes_ignore_list,
-         gt_labels_list,
-         cfg=cfg,
-         label_channels=label_channels,
-         sampling=sampling,
-         unmap_outputs=unmap_outputs)
+    (all_labels, all_label_weights, all_bbox_gt, all_proposals, all_proposal_weights, pos_inds_list,
+     neg_inds_list) = multi_apply(point_target_single,
+                                  proposals_list,
+                                  valid_flag_list,
+                                  gt_bboxes_list,
+                                  gt_bboxes_ignore_list,
+                                  gt_labels_list,
+                                  cfg=cfg,
+                                  label_channels=label_channels,
+                                  sampling=sampling,
+                                  unmap_outputs=unmap_outputs)
     # no valid points
     if any([labels is None for labels in all_labels]):
         return None
@@ -62,14 +61,11 @@ def point_target(proposals_list,
     num_total_pos = sum([max(inds.numel(), 1) for inds in pos_inds_list])
     num_total_neg = sum([max(inds.numel(), 1) for inds in neg_inds_list])
     labels_list = images_to_levels(all_labels, num_level_proposals)
-    label_weights_list = images_to_levels(all_label_weights,
-                                          num_level_proposals)
+    label_weights_list = images_to_levels(all_label_weights, num_level_proposals)
     bbox_gt_list = images_to_levels(all_bbox_gt, num_level_proposals)
     proposals_list = images_to_levels(all_proposals, num_level_proposals)
-    proposal_weights_list = images_to_levels(all_proposal_weights,
-                                             num_level_proposals)
-    return (labels_list, label_weights_list, bbox_gt_list, proposals_list,
-            proposal_weights_list, num_total_pos, num_total_neg)
+    proposal_weights_list = images_to_levels(all_proposal_weights, num_level_proposals)
+    return (labels_list, label_weights_list, bbox_gt_list, proposals_list, proposal_weights_list, num_total_pos, num_total_neg)
 
 
 def images_to_levels(target, num_level_grids):
@@ -103,15 +99,12 @@ def point_target_single(flat_proposals,
     proposals = flat_proposals[inside_flags, :]
 
     if sampling:
-        assign_result, sampling_result = assign_and_sample(
-            proposals, gt_bboxes, gt_bboxes_ignore, None, cfg)
+        assign_result, sampling_result = assign_and_sample(proposals, gt_bboxes, gt_bboxes_ignore, None, cfg)
     else:
         bbox_assigner = build_assigner(cfg.assigner)
-        assign_result = bbox_assigner.assign(proposals, gt_bboxes,
-                                             gt_bboxes_ignore, gt_labels)
+        assign_result = bbox_assigner.assign(proposals, gt_bboxes, gt_bboxes_ignore, gt_labels)
         bbox_sampler = PseudoSampler()
-        sampling_result = bbox_sampler.sample(assign_result, proposals,
-                                              gt_bboxes)
+        sampling_result = bbox_sampler.sample(assign_result, proposals, gt_bboxes)
 
     num_valid_proposals = proposals.shape[0]
     bbox_gt = proposals.new_zeros([num_valid_proposals, 4])
@@ -145,11 +138,9 @@ def point_target_single(flat_proposals,
         label_weights = unmap(label_weights, num_total_proposals, inside_flags)
         bbox_gt = unmap(bbox_gt, num_total_proposals, inside_flags)
         pos_proposals = unmap(pos_proposals, num_total_proposals, inside_flags)
-        proposals_weights = unmap(proposals_weights, num_total_proposals,
-                                  inside_flags)
+        proposals_weights = unmap(proposals_weights, num_total_proposals, inside_flags)
 
-    return (labels, label_weights, bbox_gt, pos_proposals, proposals_weights,
-            pos_inds, neg_inds)
+    return (labels, label_weights, bbox_gt, pos_proposals, proposals_weights, pos_inds, neg_inds)
 
 
 def unmap(data, count, inds, fill=0):

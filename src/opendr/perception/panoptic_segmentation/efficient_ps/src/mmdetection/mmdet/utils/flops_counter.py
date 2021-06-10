@@ -30,8 +30,7 @@ import torch
 import torch.nn as nn
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.nn.modules.conv import _ConvNd, _ConvTransposeMixin
-from torch.nn.modules.pooling import (_AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd,
-                                      _AvgPoolNd, _MaxPoolNd)
+from torch.nn.modules.pooling import (_AdaptiveAvgPoolNd, _AdaptiveMaxPoolNd, _AvgPoolNd, _MaxPoolNd)
 
 
 def get_model_complexity_info(model,
@@ -48,10 +47,9 @@ def get_model_complexity_info(model,
         input = input_constructor(input_res)
         _ = flops_model(**input)
     else:
-        batch = torch.ones(()).new_empty(
-            (1, *input_res),
-            dtype=next(flops_model.parameters()).dtype,
-            device=next(flops_model.parameters()).device)
+        batch = torch.ones(()).new_empty((1, *input_res),
+                                         dtype=next(flops_model.parameters()).dtype,
+                                         device=next(flops_model.parameters()).device)
         flops_model(batch)
 
     if print_per_layer_stat:
@@ -123,8 +121,7 @@ def print_model_with_flops(model, units='GMac', precision=3, ost=sys.stdout):
     def flops_repr(self):
         accumulated_flops_cost = self.accumulate_flops()
         return ', '.join([
-            flops_to_string(
-                accumulated_flops_cost, units=units, precision=precision),
+            flops_to_string(accumulated_flops_cost, units=units, precision=precision),
             '{:.3%} MACs'.format(accumulated_flops_cost / total_flops),
             self.original_extra_repr()
         ])
@@ -157,12 +154,9 @@ def get_model_parameters_number(model):
 def add_flops_counting_methods(net_main_module):
     # adding additional methods to the existing module object,
     # this is done this way so that each function has access to self object
-    net_main_module.start_flops_count = start_flops_count.__get__(
-        net_main_module)
-    net_main_module.stop_flops_count = stop_flops_count.__get__(
-        net_main_module)
-    net_main_module.reset_flops_count = reset_flops_count.__get__(
-        net_main_module)
+    net_main_module.start_flops_count = start_flops_count.__get__(net_main_module)
+    net_main_module.stop_flops_count = stop_flops_count.__get__(net_main_module)
+    net_main_module.reset_flops_count = reset_flops_count.__get__(net_main_module)
     net_main_module.compute_average_flops_cost = \
         compute_average_flops_cost.__get__(net_main_module)
 
@@ -223,7 +217,6 @@ def reset_flops_count(self):
 
 
 def add_flops_mask(module, mask):
-
     def add_flops_mask_func(module):
         if isinstance(module, torch.nn.Conv2d):
             module.__mask__ = mask
@@ -304,8 +297,7 @@ def deconv_flops_counter_hook(conv_module, input, output):
     groups = conv_module.groups
 
     filters_per_channel = out_channels // groups
-    conv_per_position_flops = (
-        kernel_height * kernel_width * in_channels * filters_per_channel)
+    conv_per_position_flops = (kernel_height * kernel_width * in_channels * filters_per_channel)
 
     active_elements_count = batch_size * input_height * input_width
     overall_conv_flops = conv_per_position_flops * active_elements_count
@@ -331,16 +323,14 @@ def conv_flops_counter_hook(conv_module, input, output):
     groups = conv_module.groups
 
     filters_per_channel = out_channels // groups
-    conv_per_position_flops = np.prod(
-        kernel_dims) * in_channels * filters_per_channel
+    conv_per_position_flops = np.prod(kernel_dims) * in_channels * filters_per_channel
 
     active_elements_count = batch_size * np.prod(output_dims)
 
     if conv_module.__mask__ is not None:
         # (b, 1, h, w)
         output_height, output_width = output.shape[2:]
-        flops_mask = conv_module.__mask__.expand(batch_size, 1, output_height,
-                                                 output_width)
+        flops_mask = conv_module.__mask__.expand(batch_size, 1, output_height, output_width)
         active_elements_count = flops_mask.sum()
 
     overall_conv_flops = conv_per_position_flops * active_elements_count
@@ -389,8 +379,7 @@ def batch_counter_hook(module, input, output):
         input = input[0]
         batch_size = len(input)
     else:
-        print('Warning! No positional inputs found for a module, '
-              'assuming batch size is 1.')
+        print('Warning! No positional inputs found for a module, ' 'assuming batch size is 1.')
     module.__batch_counter__ += batch_size
 
 

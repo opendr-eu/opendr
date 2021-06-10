@@ -6,7 +6,6 @@ from ..registry import PIPELINES
 
 @PIPELINES.register_module
 class Compose(object):
-
     def __init__(self, transforms):
         assert isinstance(transforms, collections.abc.Sequence)
         self.transforms = []

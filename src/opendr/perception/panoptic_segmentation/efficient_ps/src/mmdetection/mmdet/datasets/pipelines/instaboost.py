@@ -10,7 +10,6 @@ class InstaBoost(object):
     Segmentation Via Probability Map Guided Copy-Pasting"
     Implementation details can refer to https://github.com/GothicAi/Instaboost.
     """
-
     def __init__(self,
                  action_candidate=('normal', 'horizontal', 'skip'),
                  action_prob=(1, 0, 0),
@@ -24,12 +23,9 @@ class InstaBoost(object):
         try:
             import instaboostfast as instaboost
         except ImportError:
-            raise ImportError(
-                'Please run "pip install instaboostfast" '
-                'to install instaboostfast first for instaboost augmentation.')
-        self.cfg = instaboost.InstaBoostConfig(action_candidate, action_prob,
-                                               scale, dx, dy, theta,
-                                               color_prob, hflag)
+            raise ImportError('Please run "pip install instaboostfast" '
+                              'to install instaboostfast first for instaboost augmentation.')
+        self.cfg = instaboost.InstaBoostConfig(action_candidate, action_prob, scale, dx, dy, theta, color_prob, hflag)
         self.aug_ratio = aug_ratio
 
     def _load_anns(self, results):
@@ -45,11 +41,7 @@ class InstaBoost(object):
             mask = masks[i]
             x1, y1, x2, y2 = bbox
             bbox = [x1, y1, x2 - x1 + 1, y2 - y1 + 1]
-            anns.append({
-                'category_id': label,
-                'segmentation': mask,
-                'bbox': bbox
-            })
+            anns.append({'category_id': label, 'segmentation': mask, 'bbox': bbox})
 
         return anns
 
@@ -78,10 +70,8 @@ class InstaBoost(object):
             try:
                 import instaboostfast as instaboost
             except ImportError:
-                raise ImportError('Please run "pip install instaboostfast" '
-                                  'to install instaboostfast first.')
-            anns, img = instaboost.get_new_data(
-                anns, img, self.cfg, background=None)
+                raise ImportError('Please run "pip install instaboostfast" ' 'to install instaboostfast first.')
+            anns, img = instaboost.get_new_data(anns, img, self.cfg, background=None)
         results = self._parse_anns(results, anns, img)
         return results
 

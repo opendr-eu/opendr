@@ -26,8 +26,7 @@ def collect_env():
         if CUDA_HOME is not None and osp.isdir(CUDA_HOME):
             try:
                 nvcc = osp.join(CUDA_HOME, 'bin/nvcc')
-                nvcc = subprocess.check_output(
-                    '"{}" -V | tail -n1'.format(nvcc), shell=True)
+                nvcc = subprocess.check_output('"{}" -V | tail -n1'.format(nvcc), shell=True)
                 nvcc = nvcc.decode('utf-8').strip()
             except subprocess.SubprocessError:
                 nvcc = 'Not Available'

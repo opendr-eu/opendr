@@ -16,29 +16,19 @@ from .registry import DATASETS
 @DATASETS.register_module
 class CocoDataset(CustomDataset):
 
-    CLASSES = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
-               'train', 'truck', 'boat', 'traffic_light', 'fire_hydrant',
-               'stop_sign', 'parking_meter', 'bench', 'bird', 'cat', 'dog',
-               'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe',
-               'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee',
-               'skis', 'snowboard', 'sports_ball', 'kite', 'baseball_bat',
-               'baseball_glove', 'skateboard', 'surfboard', 'tennis_racket',
-               'bottle', 'wine_glass', 'cup', 'fork', 'knife', 'spoon', 'bowl',
-               'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot',
-               'hot_dog', 'pizza', 'donut', 'cake', 'chair', 'couch',
-               'potted_plant', 'bed', 'dining_table', 'toilet', 'tv', 'laptop',
-               'mouse', 'remote', 'keyboard', 'cell_phone', 'microwave',
-               'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock',
-               'vase', 'scissors', 'teddy_bear', 'hair_drier', 'toothbrush')
-
+    CLASSES = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic_light',
+               'fire_hydrant', 'stop_sign', 'parking_meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant',
+               'bear', 'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard',
+               'sports_ball', 'kite', 'baseball_bat', 'baseball_glove', 'skateboard', 'surfboard', 'tennis_racket', 'bottle',
+               'wine_glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange', 'broccoli',
+               'carrot', 'hot_dog', 'pizza', 'donut', 'cake', 'chair', 'couch', 'potted_plant', 'bed', 'dining_table', 'toilet',
+               'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell_phone', 'microwave', 'oven', 'toaster', 'sink',
+               'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy_bear', 'hair_drier', 'toothbrush')
 
     def load_annotations(self, ann_file):
         self.coco = COCO(ann_file)
         self.cat_ids = self.coco.getCatIds()
-        self.cat2label = {
-            cat_id: i + 1
-            for i, cat_id in enumerate(self.cat_ids)
-        }
+        self.cat2label = {cat_id: i + 1 for i, cat_id in enumerate(self.cat_ids)}
         self.img_ids = self.coco.getImgIds()
         img_infos = []
         for i in self.img_ids:
@@ -109,12 +99,7 @@ class CocoDataset(CustomDataset):
 
         seg_map = img_info['filename'].replace('jpg', 'png')
 
-        ann = dict(
-            bboxes=gt_bboxes,
-            labels=gt_labels,
-            bboxes_ignore=gt_bboxes_ignore,
-            masks=gt_masks_ann,
-            seg_map=seg_map)
+        ann = dict(bboxes=gt_bboxes, labels=gt_labels, bboxes_ignore=gt_bboxes_ignore, masks=gt_masks_ann, seg_map=seg_map)
 
         return ann
 
@@ -217,21 +202,18 @@ class CocoDataset(CustomDataset):
         if isinstance(results[0], list):
             json_results = self._det2json(results)
             result_files['bbox'] = '{}.{}.json'.format(outfile_prefix, 'bbox')
-            result_files['proposal'] = '{}.{}.json'.format(
-                outfile_prefix, 'bbox')
+            result_files['proposal'] = '{}.{}.json'.format(outfile_prefix, 'bbox')
             mmcv.dump(json_results, result_files['bbox'])
         elif isinstance(results[0], tuple):
             json_results = self._segm2json(results)
             result_files['bbox'] = '{}.{}.json'.format(outfile_prefix, 'bbox')
-            result_files['proposal'] = '{}.{}.json'.format(
-                outfile_prefix, 'bbox')
+            result_files['proposal'] = '{}.{}.json'.format(outfile_prefix, 'bbox')
             result_files['segm'] = '{}.{}.json'.format(outfile_prefix, 'segm')
             mmcv.dump(json_results[0], result_files['bbox'])
             mmcv.dump(json_results[1], result_files['segm'])
         elif isinstance(results[0], np.ndarray):
             json_results = self._proposal2json(results)
-            result_files['proposal'] = '{}.{}.json'.format(
-                outfile_prefix, 'proposal')
+            result_files['proposal'] = '{}.{}.json'.format(outfile_prefix, 'proposal')
             mmcv.dump(json_results, result_files['proposal'])
         else:
             raise TypeError('invalid type of results')
@@ -256,8 +238,7 @@ class CocoDataset(CustomDataset):
                 bboxes = np.zeros((0, 4))
             gt_bboxes.append(bboxes)
 
-        recalls = eval_recalls(
-            gt_bboxes, results, proposal_nums, iou_thrs, logger=logger)
+        recalls = eval_recalls(gt_bboxes, results, proposal_nums, iou_thrs, logger=logger)
         ar = recalls.mean(axis=1)
         return ar
 
@@ -276,9 +257,8 @@ class CocoDataset(CustomDataset):
                 for saving json files when jsonfile_prefix is not specified.
         """
         assert isinstance(results, list), 'results must be a list'
-        assert len(results) == len(self), (
-            'The length of results is not equal to the dataset len: {} != {}'.
-            format(len(results), len(self)))
+        assert len(results) == len(self), ('The length of results is not equal to the dataset len: {} != {}'.format(
+            len(results), len(self)))
 
         if jsonfile_prefix is None:
             tmp_dir = tempfile.TemporaryDirectory()
@@ -335,8 +315,7 @@ class CocoDataset(CustomDataset):
             print_log(msg, logger=logger)
 
             if metric == 'proposal_fast':
-                ar = self.fast_eval_recall(
-                    results, proposal_nums, iou_thrs, logger='silent')
+                ar = self.fast_eval_recall(results, proposal_nums, iou_thrs, logger='silent')
                 log_msg = []
                 for i, num in enumerate(proposal_nums):
                     eval_results['AR@{}'.format(num)] = ar[i]
@@ -350,10 +329,7 @@ class CocoDataset(CustomDataset):
             try:
                 cocoDt = cocoGt.loadRes(result_files[metric])
             except IndexError:
-                print_log(
-                    'The testing results of the whole dataset is empty.',
-                    logger=logger,
-                    level=logging.ERROR)
+                print_log('The testing results of the whole dataset is empty.', logger=logger, level=logging.ERROR)
                 break
 
             iou_type = 'bbox' if metric == 'proposal' else metric
@@ -365,10 +341,7 @@ class CocoDataset(CustomDataset):
                 cocoEval.evaluate()
                 cocoEval.accumulate()
                 cocoEval.summarize()
-                metric_items = [
-                    'AR@100', 'AR@300', 'AR@1000', 'AR_s@1000', 'AR_m@1000',
-                    'AR_l@1000'
-                ]
+                metric_items = ['AR@100', 'AR@300', 'AR@1000', 'AR_s@1000', 'AR_m@1000', 'AR_l@1000']
                 for i, item in enumerate(metric_items):
                     val = float('{:.3f}'.format(cocoEval.stats[i + 6]))
                     eval_results[item] = val
@@ -378,16 +351,13 @@ class CocoDataset(CustomDataset):
                 cocoEval.summarize()
                 if classwise:  # Compute per-category AP
                     pass  # TODO
-                metric_items = [
-                    'mAP', 'mAP_50', 'mAP_75', 'mAP_s', 'mAP_m', 'mAP_l'
-                ]
+                metric_items = ['mAP', 'mAP_50', 'mAP_75', 'mAP_s', 'mAP_m', 'mAP_l']
                 for i in range(len(metric_items)):
                     key = '{}_{}'.format(metric, metric_items[i])
                     val = float('{:.3f}'.format(cocoEval.stats[i]))
                     eval_results[key] = val
-                eval_results['{}_mAP_copypaste'.format(metric)] = (
-                    '{ap[0]:.3f} {ap[1]:.3f} {ap[2]:.3f} {ap[3]:.3f} '
-                    '{ap[4]:.3f} {ap[5]:.3f}').format(ap=cocoEval.stats[:6])
+                eval_results['{}_mAP_copypaste'.format(metric)] = ('{ap[0]:.3f} {ap[1]:.3f} {ap[2]:.3f} {ap[3]:.3f} '
+                                                                   '{ap[4]:.3f} {ap[5]:.3f}').format(ap=cocoEval.stats[:6])
         if tmp_dir is not None:
             tmp_dir.cleanup()
         return eval_results

@@ -88,15 +88,14 @@ def roi_sampling(x, bbx, idx, roi_size, interpolation="bilinear", padding="borde
     """
     return ROISampling.apply(x, bbx, idx, roi_size, interpolation, padding, valid_mask)
 
+
 def invert_roi_bbx(bbx, roi_size, img_size):
     """Compute bbx coordinates to perform inverse roi sampling"""
-    bbx = torch.stack([bbx[:,1], bbx[:,0], bbx[:,3], bbx[:, 2]], dim=1)
+    bbx = torch.stack([bbx[:, 1], bbx[:, 0], bbx[:, 3], bbx[:, 2]], dim=1)
     bbx_size = bbx[:, 2:] - bbx[:, :2]
-    return torch.cat([
-        -bbx.new(roi_size) * bbx[:, :2] / bbx_size,
-        bbx.new(roi_size) * (bbx.new(img_size) - bbx[:, :2]) / bbx_size
-    ], dim=1)
+    return torch.cat(
+        [-bbx.new(roi_size) * bbx[:, :2] / bbx_size,
+         bbx.new(roi_size) * (bbx.new(img_size) - bbx[:, :2]) / bbx_size], dim=1)
 
 
 __all__ = ['roi_sampling', 'invert_roi_bbx']
-
