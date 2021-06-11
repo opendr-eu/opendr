@@ -192,9 +192,22 @@ catkin_install_python(
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(
-    DIRECTORY
-    scenarios/
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scenarios
+        DIRECTORY
+            scenarios/
+        DESTINATION
+            ${CATKIN_PACKAGE_SHARE_DESTINATION}/scenarios
+)
+install(
+        DIRECTORY
+        launch/
+        DESTINATION
+        ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+install(
+        DIRECTORY
+            rosbags/
+        DESTINATION
+            ${CATKIN_PACKAGE_SHARE_DESTINATION}/rosbags
 )
 
 #############
@@ -209,3 +222,4 @@ install(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+

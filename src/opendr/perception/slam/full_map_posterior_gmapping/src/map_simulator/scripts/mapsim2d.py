@@ -49,9 +49,11 @@ if __name__ == '__main__':
         override_str = '{'
         for arg in override_args:
             arg_keyval = arg.split(":=")
-            override_str += '"' + str(arg_keyval[0]) + '":' + str(arg_keyval[1]) + ','
+            override_str += '"' + str(arg_keyval[0]) + '": "' + str(arg_keyval[1]) + '",'
 
         override_str = override_str[0:-1] + "}"
+
+    print("OVERRIDE_STR:   ", override_str)
 
     simulator = MapSimulator2D(args.input, arg_search_dirs, override_params=override_str)
     simulator.simulate(args.output, display=args.preview)
