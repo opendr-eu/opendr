@@ -1,0 +1,7 @@
+#! /usr/bin/env python
+
+from map_simulator.pose_error_calculator import PoseErrorCalculator
+
+if __name__ == "__main__":
+
+    pose_error_calc = PoseErrorCalculator()

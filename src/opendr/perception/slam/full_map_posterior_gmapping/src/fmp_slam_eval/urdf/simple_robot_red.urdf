@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<robot name="simple_robot">
+
+  <link name="base_link">
+    <visual name="base">
+      <geometry>
+        <cylinder length="0.1" radius="0.25"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.06"/>
+      <material name="red">
+        <color rgba="0.71 0.28 0.19 1"/>
+      </material>
+    </visual>
+
+        <!-- Right wheel -->
+    <visual name="right_wheel">
+      <geometry>
+        <cylinder length="0.05" radius="0.06"/>
+      </geometry>
+      <origin rpy="1.57075 0 0" xyz="0 0.25 0.06"/>
+      <material name="black">
+        <color rgba="0.0 0.0 0.0 1"/>
+      </material>
+    </visual>
+
+    <!-- Left wheel -->
+    <visual>
+      <geometry>
+        <cylinder length="0.05" radius="0.06"/>
+      </geometry>
+      <origin rpy="1.57075 0 0" xyz="0 -0.25 0.06"/>
+      <material name="black">
+        <color rgba="0.0 0.0 0.0 1"/>
+      </material>
+    </visual>
+
+    <!-- Stripe -->
+    <visual>
+      <geometry>
+        <box size="0.25 0.09 0.01"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0.125 0 0.11"/>
+      <material name="white">
+              <color rgba="0.9 0.9 0.9 1"/>
+      </material>
+    </visual>
+  </link>
+
+</robot>
