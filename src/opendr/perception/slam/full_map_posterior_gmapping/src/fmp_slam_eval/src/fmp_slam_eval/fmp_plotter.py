@@ -26,8 +26,8 @@ import datetime
 from collections import deque
 
 # Project Libraries
-from map_simulator.map_colorizer import MapColorizer
-from map_simulator.enums import DiscreteStates as DiSt
+from fmp_slam_eval.map_colorizer import MapColorizer
+from fmp_slam_eval.enums import DiscreteStates as DiSt
 from map_simulator.utils import map_msg_to_numpy, map_msg_extent, mkdir_p
 
 

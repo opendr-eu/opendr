@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from map_simulator.pose_error_calculator import PoseErrorCalculator
+from fmp_slam_eval.pose_error_calculator import PoseErrorCalculator
 
 if __name__ == "__main__":
 

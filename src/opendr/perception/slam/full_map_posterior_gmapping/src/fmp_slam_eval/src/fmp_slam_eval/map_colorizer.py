@@ -6,7 +6,7 @@ import matplotlib.cm
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize, LogNorm, BoundaryNorm
 
-from .enums import DiscreteStates as DiSt
+from fmp_slam_eval.enums import DiscreteStates as DiSt
 
 
 class MapColorizer:

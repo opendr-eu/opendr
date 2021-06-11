@@ -197,17 +197,17 @@ catkin_install_python(
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(
     DIRECTORY
-    launch/
+        launch/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
 install(
     DIRECTORY
-    urdf/
+        urdf/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf
 )
 install(
     DIRECTORY
-        ../fmp_slam/cfg/
+        cfg/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cfg
 )
 

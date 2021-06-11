@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>fmp_slam</name>
+  <name>fmp_slam_eval</name>
   <version>1.0.0</version>
   <description>FMP SLAM Evaluation Package</description>
 

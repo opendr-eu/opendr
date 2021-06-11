@@ -43,13 +43,6 @@ class GroundTruthMapping:
         self._standalone = rospy.get_param("~standalone", False)
         map_resolution = rospy.get_param("~resolution", 0.05)
 
-        self._sub_map = rospy.Subscriber("/map", OccupancyGrid, self._map_callback)
-        self._sub_eos = rospy.Subscriber("endOfSim", Bool, self._eos_callback)
-        self._gen_map = rospy.Subscriber("genMap", Bool, self._gen_map_callback)
-        self._sub_scan = rospy.Subscriber("/GT/base_scan", LaserScan, self._sensor_callback)
-        self._sub_doLoc = rospy.Subscriber("doLocOnly", Bool, self._loc_only_callback)
-        self._pub_map = rospy.Publisher("/GT/map", OccupancyGrid, queue_size=1)
-
         if self._standalone:
             self._map_resolution = map_resolution
         else:
@@ -69,6 +62,13 @@ class GroundTruthMapping:
         self._msg_seq = 0
 
         self._loc_only = False
+
+        self._sub_map = rospy.Subscriber("/map", OccupancyGrid, self._map_callback)
+        self._sub_eos = rospy.Subscriber("endOfSim", Bool, self._eos_callback)
+        self._gen_map = rospy.Subscriber("genMap", Bool, self._gen_map_callback)
+        self._sub_scan = rospy.Subscriber("/GT/base_scan", LaserScan, self._sensor_callback)
+        self._sub_doLoc = rospy.Subscriber("doLocOnly", Bool, self._loc_only_callback)
+        self._pub_map = rospy.Publisher("/GT/map", OccupancyGrid, queue_size=1)
 
         rospy.spin()
 

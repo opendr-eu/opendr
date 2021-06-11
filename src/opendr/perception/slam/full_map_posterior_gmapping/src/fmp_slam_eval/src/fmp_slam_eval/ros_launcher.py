@@ -6,7 +6,7 @@ import re
 
 import os
 from time import sleep
-from .net_utils import next_free_port
+from fmp_slam_eval.net_utils import next_free_port
 
 
 class ROSLauncher(object):
