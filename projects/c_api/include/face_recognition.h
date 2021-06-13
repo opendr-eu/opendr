@@ -74,7 +74,7 @@ void load_face_recognition_model(const char *model_path, face_recognition_model_
 opendr_category_target_t infer_face_recognition(face_recognition_model_t *model, opendr_image_t *image);
 
 /**
- * Build a face recognition database (containing images for persons to be recognized). This function expects the
+ * Builds a face recognition database (containing images for persons to be recognized). This function expects the
  * database_folder to have the same format as the main Python toolkit.
  * @param database_folder folder containing the database
  * @param output_path output path to store the binary database. This file should be loaded along with the face
@@ -85,7 +85,7 @@ void build_database_face_recognition(const char *database_folder, const char *ou
                                      face_recognition_model_t *model);
 
 /**
- * Loads an already build database into the face recognition model. After this step, the model can be used for
+ * Loads an already built database into the face recognition model. After this step, the model can be used for
  * performing inference.
  * @param database_path path to the database file
  * @param model the face recognition model to be used for inference
