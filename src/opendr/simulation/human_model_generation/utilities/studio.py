@@ -20,7 +20,7 @@ from PIL import Image
 
 from src.opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
     LightweightOpenPoseLearner
-from projects.simulation.human_model_generation.joint_extractor import Joint_extractor
+from src.opendr.simulation.human_model_generation.utilities.joint_extractor import Joint_extractor
 
 
 class Studio(pyglet.window.Window):

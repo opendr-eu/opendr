@@ -1,27 +1,22 @@
-import sys
 import os
 import time
 import json
 import random
-import tqdm
 import torch
 from torch.utils.data import DataLoader
-
-from projects.simulation.human_model_generation.PIFu.lib.options import BaseOptions
-from projects.simulation.human_model_generation.PIFu.lib.train_util import gen_mesh_color, reshape_sample_tensor,\
-    reshape_multiview_tensors, save_samples_rgb, calc_error_color
-from projects.simulation.human_model_generation.PIFu.lib.data import TrainDataset
-from projects.simulation.human_model_generation.PIFu.lib.model import ResBlkPIFuNet, HGPIFuNet
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+from tqdm import tqdm
+from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.options import BaseOptions
+from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.sample_util import save_samples_truncted_prob
+from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.train_util import reshape_multiview_tensors,\
+    reshape_sample_tensor, adjust_learning_rate, calc_error, gen_mesh
+from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.data import TrainDataset
+from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.model import HGPIFuNet
 
 # get options
 opt = BaseOptions().parse()
 
 
-def train_color(opt):
+def train(opt):
     # set cuda
     cuda = torch.device('cuda:%d' % opt.gpu_id)
 
@@ -45,44 +40,28 @@ def train_color(opt):
 
     # create net
     netG = HGPIFuNet(opt, projection_mode).to(device=cuda)
-
+    optimizerG = torch.optim.RMSprop(netG.parameters(), lr=opt.learning_rate, momentum=0, weight_decay=0)
     lr = opt.learning_rate
-
-    # Always use resnet for color regression
-    netC = ResBlkPIFuNet(opt).to(device=cuda)
-    optimizerC = torch.optim.Adam(netC.parameters(), lr=opt.learning_rate)
+    print('Using Network: ', netG.name)
 
     def set_train():
-        netG.eval()
-        netC.train()
+        netG.train()
 
     def set_eval():
         netG.eval()
-        netC.eval()
-
-    print('Using NetworkG: ', netG.name, 'networkC: ', netC.name)
 
     # load checkpoints
     if opt.load_netG_checkpoint_path is not None:
         print('loading for net G ...', opt.load_netG_checkpoint_path)
         netG.load_state_dict(torch.load(opt.load_netG_checkpoint_path, map_location=cuda))
-    else:
-        model_path_G = '%s/%s/netG_latest' % (opt.checkpoints_path, opt.name)
-        print('loading for net G ...', model_path_G)
-        netG.load_state_dict(torch.load(model_path_G, map_location=cuda))
-
-    if opt.load_netC_checkpoint_path is not None:
-        print('loading for net C ...', opt.load_netC_checkpoint_path)
-        netC.load_state_dict(torch.load(opt.load_netC_checkpoint_path, map_location=cuda))
 
     if opt.continue_train:
         if opt.resume_epoch < 0:
-            model_path_C = '%s/%s/netC_latest' % (opt.checkpoints_path, opt.name)
+            model_path = '%s/%s/netG_latest' % (opt.checkpoints_path, opt.name)
         else:
-            model_path_C = '%s/%s/netC_epoch_%d' % (opt.checkpoints_path, opt.name, opt.resume_epoch)
-
-        print('Resuming from ', model_path_C)
-        netC.load_state_dict(torch.load(model_path_C, map_location=cuda))
+            model_path = '%s/%s/netG_epoch_%d' % (opt.checkpoints_path, opt.name, opt.resume_epoch)
+        print('Resuming from ', model_path)
+        netG.load_state_dict(torch.load(model_path, map_location=cuda))
 
     os.makedirs(opt.checkpoints_path, exist_ok=True)
     os.makedirs(opt.results_path, exist_ok=True)
@@ -102,26 +81,24 @@ def train_color(opt):
         iter_data_time = time.time()
         for train_idx, train_data in enumerate(train_data_loader):
             iter_start_time = time.time()
+
             # retrieve the data
             image_tensor = train_data['img'].to(device=cuda)
             calib_tensor = train_data['calib'].to(device=cuda)
-            color_sample_tensor = train_data['color_samples'].to(device=cuda)
+            sample_tensor = train_data['samples'].to(device=cuda)
 
             image_tensor, calib_tensor = reshape_multiview_tensors(image_tensor, calib_tensor)
 
             if opt.num_views > 1:
-                color_sample_tensor = reshape_sample_tensor(color_sample_tensor, opt.num_views)
+                sample_tensor = reshape_sample_tensor(sample_tensor, opt.num_views)
 
-            rgb_tensor = train_data['rgbs'].to(device=cuda)
+            label_tensor = train_data['labels'].to(device=cuda)
 
-            with torch.no_grad():
-                netG.filter(image_tensor)
-            resC, error = netC.forward(image_tensor, netG.get_im_feat(), color_sample_tensor, calib_tensor,
-                                       labels=rgb_tensor)
+            res, error = netG.forward(image_tensor, sample_tensor, calib_tensor, labels=label_tensor)
 
-            optimizerC.zero_grad()
+            optimizerG.zero_grad()
             error.backward()
-            optimizerC.step()
+            optimizerG.step()
 
             iter_net_time = time.time()
             eta = ((iter_net_time - epoch_start_time) / (train_idx + 1)) * len(train_data_loader) - (
@@ -129,26 +106,27 @@ def train_color(opt):
 
             if train_idx % opt.freq_plot == 0:
                 print(
-                    'Name: {0} | Epoch: {1} | {2}/{3} | Err: {4:.06f} | LR: {5:.06f} | dataT: {6:.05f} | netT: {'
-                    '7:.05f} | ETA: {8:02d}:{9:02d}'.format(
-                        opt.name, epoch, train_idx, len(train_data_loader),
-                        error.item(),
-                        lr,
+                    'Name: {0} | Epoch: {1} | {2}/{3} | Err: {4:.06f} | LR: {5:.06f} | Sigma: {6:.02f} | dataT: {'
+                    '7:.05f} | netT: {8:.05f} | ETA: {9:02d}:{10:02d}'.format(
+                        opt.name, epoch, train_idx, len(train_data_loader), error.item(), lr, opt.sigma,
                         iter_start_time - iter_data_time,
                         iter_net_time - iter_start_time, int(eta // 60),
                         int(eta - 60 * (eta // 60))))
 
             if train_idx % opt.freq_save == 0 and train_idx != 0:
-                torch.save(netC.state_dict(), '%s/%s/netC_latest' % (opt.checkpoints_path, opt.name))
-                torch.save(netC.state_dict(), '%s/%s/netC_epoch_%d' % (opt.checkpoints_path, opt.name, epoch))
+                torch.save(netG.state_dict(), '%s/%s/netG_latest' % (opt.checkpoints_path, opt.name))
+                torch.save(netG.state_dict(), '%s/%s/netG_epoch_%d' % (opt.checkpoints_path, opt.name, epoch))
 
             if train_idx % opt.freq_save_ply == 0:
-                save_path = '%s/%s/pred_col.ply' % (opt.results_path, opt.name)
-                rgb = resC[0].transpose(0, 1).cpu() * 0.5 + 0.5
-                points = color_sample_tensor[0].transpose(0, 1).cpu()
-                save_samples_rgb(save_path, points.detach().numpy(), rgb.detach().numpy())
+                save_path = '%s/%s/pred.ply' % (opt.results_path, opt.name)
+                r = res[0].cpu()
+                points = sample_tensor[0].transpose(0, 1).cpu()
+                save_samples_truncted_prob(save_path, points.detach().numpy(), r.detach().numpy())
 
             iter_data_time = time.time()
+
+        # update learning rate
+        lr = adjust_learning_rate(optimizerG, epoch, lr, opt.schedule, opt.gamma)
 
         # test
         with torch.no_grad():
@@ -157,16 +135,24 @@ def train_color(opt):
             if not opt.no_num_eval:
                 test_losses = {}
                 print('calc error (test) ...')
-                test_color_error = calc_error_color(opt, netG, netC, cuda, test_dataset, 100)
-                print('eval test | color error:', test_color_error)
-                test_losses['test_color'] = test_color_error
+                test_errors = calc_error(opt, netG, cuda, test_dataset, 100)
+                print('eval test MSE: {0:06f} IOU: {1:06f} prec: {2:06f} recall: {3:06f}'.format(*test_errors))
+                MSE, IOU, prec, recall = test_errors
+                test_losses['MSE(test)'] = MSE
+                test_losses['IOU(test)'] = IOU
+                test_losses['prec(test)'] = prec
+                test_losses['recall(test)'] = recall
 
                 print('calc error (train) ...')
                 train_dataset.is_train = False
-                train_color_error = calc_error_color(opt, netG, netC, cuda, train_dataset, 100)
+                train_errors = calc_error(opt, netG, cuda, train_dataset, 100)
                 train_dataset.is_train = True
-                print('eval train | color error:', train_color_error)
-                test_losses['train_color'] = train_color_error
+                print('eval train MSE: {0:06f} IOU: {1:06f} prec: {2:06f} recall: {3:06f}'.format(*train_errors))
+                MSE, IOU, prec, recall = train_errors
+                test_losses['MSE(train)'] = MSE
+                test_losses['IOU(train)'] = IOU
+                test_losses['prec(train)'] = prec
+                test_losses['recall(train)'] = recall
 
             if not opt.no_gen_mesh:
                 print('generate mesh (test) ...')
@@ -174,7 +160,7 @@ def train_color(opt):
                     test_data = random.choice(test_dataset)
                     save_path = '%s/%s/test_eval_epoch%d_%s.obj' % (
                         opt.results_path, opt.name, epoch, test_data['name'])
-                    gen_mesh_color(opt, netG, netC, cuda, test_data, save_path)
+                    gen_mesh(opt, netG, cuda, test_data, save_path)
 
                 print('generate mesh (train) ...')
                 train_dataset.is_train = False
@@ -182,9 +168,9 @@ def train_color(opt):
                     train_data = random.choice(train_dataset)
                     save_path = '%s/%s/train_eval_epoch%d_%s.obj' % (
                         opt.results_path, opt.name, epoch, train_data['name'])
-                    gen_mesh_color(opt, netG, netC, cuda, train_data, save_path)
+                    gen_mesh(opt, netG, cuda, train_data, save_path)
                 train_dataset.is_train = True
 
 
 if __name__ == '__main__':
-    train_color(opt)
+    train(opt)

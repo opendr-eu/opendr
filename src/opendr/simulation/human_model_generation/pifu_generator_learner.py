@@ -1,20 +1,20 @@
-from projects.simulation.human_model_generation.model_generator import ModelGenerator
-from projects.simulation.human_model_generation.PIFu.lib.options import BaseOptions
-from projects.simulation.human_model_generation.PIFu.apps.eval import Evaluator
-from projects.simulation.human_model_generation.PIFu.apps.crop_img import process_imgs
-from projects.simulation.human_model_generation.model_3D import Model_3D
-from projects.simulation.human_model_generation.visualizer import Visualizer
+from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.options import BaseOptions
+from src.opendr.simulation.human_model_generation.utilities.PIFu.apps.eval import Evaluator
+from src.opendr.simulation.human_model_generation.utilities.PIFu.apps.crop_img import process_imgs
+from src.opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
+from src.opendr.simulation.human_model_generation.utilities.visualizer import Visualizer
 import os
-from projects.simulation.human_model_generation.studio import Studio
+from src.opendr.simulation.human_model_generation.utilities.studio import Studio
 import wget
 from os import path
+from src.opendr.engine.learners import Learner
 
 
-class PIFuGenerator(ModelGenerator):
+class PIFuGeneratorLearner(Learner):
     def __init__(self, device='cpu'):
         super().__init__()
         self.opt = BaseOptions().parse()
-        checkpoint_dir = os.path.join(os.path.split(__file__)[0], 'PIFu', 'checkpoints')
+        checkpoint_dir = os.path.join(os.path.split(__file__)[0], 'utilities', 'PIFu', 'checkpoints')
         net_G_path = os.path.join(checkpoint_dir, 'net_G')
         net_C_path = os.path.join(checkpoint_dir, 'net_C')
         if not path.exists(checkpoint_dir):
@@ -70,6 +70,24 @@ class PIFuGenerator(ModelGenerator):
             return model_3D
         except Exception as e:
             print("error:", e.args)
+
+    def eval(self):
+        pass
+
+    def fit(self):
+        pass
+
+    def load(self):
+        pass
+
+    def optimize(self):
+        pass
+
+    def reset(self):
+        pass
+
+    def save(self):
+        pass
 
     def get_img_views(self, model_3D, rotations, human_pose_3D=None, plot_kps=False):
         if human_pose_3D is not None:
