@@ -21,3 +21,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
     - [engine.target Module](engine-target.md)
     - [lightweight-open-pose Module](lightweight-open-pose.md)
     - [voxel-object-detection-3d Module](voxel-object-detection-3d.md)
+- [C inference API](c-api.md)
+    - [data.h](c-data-h.md)
+    - [target.h](c-target-h.md) 
+    - [opendr_utils.h](c-opendr-utils-h.md)
+    - [face_recognition.h](c-face-recognition-h.md)
