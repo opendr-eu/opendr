@@ -5,6 +5,7 @@ echo "Getting onnxruntime..."
 
 if [ ! -f /usr/local/lib/libonnxruntime.so ]; then
   echo "ONNX installation not found!"
+  pip3 install flake8 --upgrade
   git clone --recursive https://github.com/Microsoft/onnxruntime
   cd onnxruntime
 
