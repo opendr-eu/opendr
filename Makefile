@@ -44,6 +44,14 @@ unittest:
 	@+echo "Performing unit tests"
 	@+python3 -m unittest discover -s tests/sources/tools/
 
+libopendr:
+	@+echo "Building OpenDR C API "
+	@$(MAKE) -C projects/c_api all
+
+clean:
+	@+echo "Cleaning OpenDR C API"
+	@$(MAKE) -C projects/c_api clean
+
 help:
 	@+echo
 	@+echo -e "\033[32;1mOpenDR Makefile targets:\033[0m"
@@ -53,6 +61,8 @@ help:
 	@+echo -e "\033[33;1mmake help\033[0m\t\t# display this message and exit"
 	@+echo -e "\033[33;1mmake styletest\033[0m\t# run tests for style and licences"
 	@+echo -e "\033[33;1mmake unittest\033[0m\t# run unit tests"
+	@+echo -e "\033[33;1mmake libopendr\033[0m\t# builds the OpenDR C API"
+	@+echo -e "\033[33;1mmake clean\033[0m\t\t# cleans build and temporary files"
 	@+echo
 	@+echo -e "\033[32;1mNote:\033[0m You seem to have a processor with $(NUMBER_OF_PROCESSORS) virtual cores,"
 	@+echo -e "      hence the \033[33;1m-j$(THREADS)\033[0m option to speed-up the compilation."
