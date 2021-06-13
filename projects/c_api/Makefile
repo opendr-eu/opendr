@@ -27,7 +27,7 @@ LIB_DIR = lib
 
 CFLAGS  = -g
 INC = -I/usr/local/include/onnxruntime/core/session/ `pkg-config --cflags opencv4`
-LD =  -L/usr/lib/ -L/usr/local/lib/ -lstdc++ -lm -lonnxruntime -lgsl  `pkg-config --libs opencv4` -lboost_filesystem
+LD =  -L/usr/lib/ -L/usr/local/lib/ -lstdc++ -lm -lonnxruntime `pkg-config --libs opencv4` -lboost_filesystem
 OPENDR_INC = -I./include
 OPENDR_LD = -L./lib -lopendr
 
