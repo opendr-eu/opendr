@@ -1,273 +1,356 @@
-# Map Simulator
+# FMP SLAM Evaluation
 
-Python script for generating odometry and measurement datasets to test SLAM Algorithms.
+This module includes helper nodes and scripts, useful for characterizing and evaluating the results of some SLAM algorithms.
+# Nodes
 
-## Usage
+## err_collector
 
-In a ROS system with `roscore` running:
+This node collects the transtalional, rotational and total errors computed by another node and stores them in CSV files.
+Errors during the full-SLAM (mapping and localization) phase of a run are stored in one file, while (if used) errors
+measured during the Localization-Only phase are stored in a separate file. 
 
+### Subscribed Topics
+
+* **doLocOnly** ***(std_msg/Bool)***__:__<br/>
+    When the Localization-Only phase is started and the doLocOnly message is issued, the node switches from saving to the
+    mapping error file to the localization error file.
+
+* **tra_err** ***(std_msg/Float64)***__:__<br/>
+* **rot_err** ***(std_msg/Float64)***__:__<br/>
+* **tot_err** ***(std_msg/Float64)***__:__<br/>
+    Translational, rotational and total errors respectively of the SLAM corrected pose with respect to the ground truth pose.
+
+### Parameters
+* **~file_path** ***(str, default:*** __"~/Desktop/Experiments"__***)***__:__<br/>
+    Directory where the files with the collected errors will be stored in a CSV format.
+    Two files are constructed per run: a Mapping and a Localization-Only phase positional error files.
+    The path to the files is constructed as follows:
+    ```
+    <file_path>/<file_prefix><suffix>
+    ```
+  
+    where:
+    
+    * ***\<file_prefix\>*** is another parameter, explained in the following entry, and
+    * ***\<suffix\>*** takes the value of either the *\<mapping\_suffix\>* or
+    *<localization\_suffix>* parameter depending on the phase of the evaluation.
+
+* **~file_prefix** ***(str, default:*** __"error_data"__***)***__:__<br/>
+    Prefix for the file name of both the mapping error, and the localization-only error files.
+
+* **~mapping_suffix** ***(str, default:*** __"\_map"__***)***__:__<br/>
+    Suffix for the Mapping Phase error file.
+
+* **~localization_suffix** ***(str, default:*** __"\_loc"__***)***__:__<br/>
+    Suffix for the Localization-Only Phase error file.
+
+ 
+  file_path = rospy.get_param("~file_path", def_file_path)
+         file_prefix = rospy.get_param("~file_prefix", "error_data")
+         mapping_suffix = rospy.get_param("~mapping_suffix", "_map")
+         localization_suffix = rospy.get_param("~localization_suffix", "_loc")
+
+
+
+## fmp_plot
+Node for plotting the Full Map Posterior distribution and its properties as color maps. Depending on the parameters, it can
+either save the plots to a directory, publish them to a topic, or both.
+
+### Subscribed Topics
+* **map_model** ***(gmapping/mapModel)***__:__<br/>
+    Message specifying whether the SLAM algorithm is using the Reflection or Exponential Decay Rate map model.
+    
+* **fmp_alpha** ***(gmapping/doubleMap)***__:__<br/>
+* **fmp_beta** ***(gmapping/doubleMap)***__:__<br/>
+    Parameters of the Full Map Posterior distribution.
+
+### Published Topics
+If parameter ***~pub_image*** is set to True, then the node will publish the computed map distribution properties as images under the topics:
+
+
+* **/\<pub_topic_prefix\>/<\topic\>** ***(sensor_msgs/Image)***<br/>
+
+where:
+* *\<pub_topic_prefix\>*: is a parameter determining the prefix to be used by all published topics.
+* *\<topic\>*: are the topic names for the different distribution properties that can be published, namely:
+    * *stats/mean* and *stats/var*: for the mean and variance of the map posterior.
+    * *mlm*: for the raw, un-thresholded most likely map
+    * *param/alpha* and *param/beta*: for publishing the distribution's parameters as images.
+
+### Parameters
+
+* **~img_stat** ***(bool, default:*** __False__***)***__:__<br/>
+* **~img_mlm** ***(bool, default:*** __False__***)***__:__<br/>
+* **~img_para** ***(bool, default:*** __False__***)***__:__<br/>
+If set to true, generate the plots for the statistics (mean and variance), most-likely-map (raw, un-thresholded), and parameter (alpha and beta) respectively.
+
+
+* **~pub_img** ***(bool, default:*** __False__***)***__:__<br/>
+Publish the generated plots as images if set to true.
+* **~pub_topic_prefix** ***(str, default:*** __"/fmp_img/"__***)***__:__<br/>
+Prefix to be prepended to the published map plot topics.
+
+* **~save_img** ***(bool, default:*** __False__***)***__:__<br/>
+Save the generated plots as image files if set to true.
+* **~resolution** ***(int, default:*** __300__***)***__:__<br/>
+Resolution (in ppi) for the saved images.
+* **~path_prefix** ***(str, default:*** __"exp"__***)***__:__<br/>
+Prefix of the folder where the images are to be saved. Full folder name is constructed as <path_prefix>_<ts>, where <ts>
+is the time of execution formatted as *"yymmdd_HHMMSS"*, unless a full path is explicitly set under parameter ***~save_dir***.
+* **~save_dir** ***(str, default:*** __"~/Desktop/FMP_img/\<path\_prefix\>\_\<ts\>"__***)***__:__<br/>
+Full path where the images are going to be stored.
+
+
+
+## gt_mapping
+Node for computing the reflection map by considering the odometry transformations and the sensor scans as noise-free without
+having to use a full SLAM stack. Maps are published either when the node is stopping, or by command using a ***genMap*** message.
+
+This node is designed to make it easier to compare the map generated by a SLAM algorithm with a Ground Truth, or pure odometry map by using the same size, resolution and origin point.
+
+### Subscribed Topics
+* **/map** ***(nav_msgs/OccupancyGrid)***__:__<br/>
+Map generated by a SLAM algorithm. Used for determining the map's width, height, resolution and origin if not run as standalone node.
+
+* **endOfSim** ***(std_msg/Bool)***__:__<br/>
+Message signaling the end of a simulation. Used for stopping the node after all buffered scans have been processed and a map is published, in order to make it easier automate tests.
+
+* **genMap** ***(std_msg/Bool)***__:__<br/>
+Signal for manually forcing to publish a map with the data obtained so far, instead of waiting for the node to stop.
+
+* **doLocOnly** ***(std_msg/Bool)***__:__<br/>
+Signal that signifies that the SLAM algorithm will perform localization only, i.e. without updating its map, thus signaling
+this node to also not update the map with scans received after this message is received.
+
+* **/GT/base_scan** ***(sensor_msgs/LaserScan)***__:__<br/>
+LiDAR sensor measurements used for localization and map generation.
+
+### Published Topics
+* **/GT/map** ***(nav_msgs/OccupancyGrid)***__:__<br/>
+Map generated by considering the poses and measurements as noise-free.
+
+### Parameters
+* **~map_frame** ***(str, default:*** __"map"__***)***__:__<br/>
+* **~ref_frame** ***(str, default:*** __"map"__***)***__:__<br/>
+TF Frames for where to place the map's origin and the reference frame for the sensor respectively.
+
+* **~max_scan_buffer_len** ***(int, default:*** __1000__***)***__:__<br/>
+Maximum size of the buffer holding unprocessed scans, i.e. scans received before receiving a map message to determine the map's
+resolution in case not set to standalone.
+
+* **~occ_threshold** ***(float, default:*** __0.25__***)***__:__<br/>
+Threshold value for establishing the value of each cell as either free or occupied. Only values in [0, 1] allowed.
+
+* **~standalone** ***(bool, default:*** __False__***)***__:__<br/>
+If set to true, then the node will not take the size, resolution or origin from another map message.
+
+* **~resolution** ***(float, default:*** __0.05__***)***__:__<br/>
+Grid cell size in meters. Only used if ***~standalone*** is set to true.
+
+
+
+
+## occ_map_saver
+
+Simple node for saving published Occupancy Maps to image files.
+
+### Subscribed Topics
+* **/map** ***(nav_msgs/OccupancyGrid)***__:__<br/>
+Map to be saved to disc in *.png* format.
+
+### Parameters
+* **~path_prefix** ***(str, default:*** __"map"__***)***__:__<br/>
+Name of the directory where the map images are going to be saved. Appended to the execution timestamp unless a full path is explicitly set in ***~save_dir***.
+* **~file_prefix** ***(str, default:*** __"map"__***)***__:__<br/>
+Name of the image files that are going to be saved. A sequence number will be appended to this prefix to construct the full filename.
+* **~save_dir** ***(str, default:*** __"~/Desktop/OccMap/\<ts>\_\<path_prefix\>"__***)***__:__<br/>
+Explicit path to the save directory.
+
+
+
+
+## odom_pose
+
+Node for taking the noisy poses, and outputting them under a different transform tree in order to visualize the pure odometry (i.e. uncorrected) movements.
+Although useful, it is preferred to replicate the pure odometry transforms and scans directly within the ROSBag for better overall performance.
+
+### Subscribed Topics
+* **tf** ***(tf2_msgs/TFMessage)***__:__<br/>
+Transform messages. Used to determine when a transform has been published between the configured coordinate frames, instead of
+constantly polling for transforms.
+
+### Published Topics
+* **tf** ***(tf2_msgs/TFMessage)***__:__<br/>
+Publishes the same transformations under a tree with prefix ***~frame_prefix*** and a static, identity transform between
+the ***~map_frame*** and the ***~odom_frame*** as the pure-odometry transformations.
+
+### Parameters
+* **~map_frame** ***(str, default:*** __"map"__***)***__:__<br/>
+* **~odom_frame** ***(str, default:*** __"odom"__***)***__:__<br/>
+Name of the TF Frames for the map and odometry coordinate frames respectively.
+* **~frame_list** ***(str, default:*** __"[base_link, laser_link]"__***)***__:__<br/>
+Comma-separated list of TF Frames to filter the TF Messages with (along with the ***~odom_frame***), and to republish
+under the new TF Tree with prefix ***~frame_prefix***.
+
+* **~frame_prefix** ***(str, default:*** __"odo"__***)***__:__<br/>
+Prefix to be added to the TF Frames configured in the ***~frame_list*** (and ***~odom_frame***).
+E.g. for an existing frame *base_link* a new one will be created called *odo/base_link* and the noisy, dynamic transforms will be replicated for it.
+
+
+
+
+## pose_error_calc
+Node for computing the translational, rotational and total error of a given pose with respect to the ground truth pose.
+
+### Suscribed Topics
+* **tf** ***(tf2_msgs/TFMessage)***__:__<br/>
+Transform messages. Used to determine when a transform has been published between the configured coordinate frames, instead of
+constantly polling for transforms.
+
+* **doLocOnly** ***(std_msgs/Bool)***__:__<br/>
+When received, if set to log errors to a file, it will create a new, separate file for the errors of the Localization-Only phase.
+
+### Published Topics
+If set to publish the errors, the following messages will be output.
+
+* **tra_err** ***(std_msgs/Float64)***__:__<br/>
+* **rot_err** ***(std_msgs/Float64)***__:__<br/>
+* **tot_err** ***(std_msgs/Float64)***__:__<br/>
+Translational, rotational and total errors in relation to the ground truth respectively.
+
+### Parameters
+* **~lambda** ***(float, default:*** __0.1__***)***__:__<br/>
+Weight for the rotational error to compute the total error as:
+&#x3B5;_tot = &#x3B5;_tra + &#x3BB; · &#x3B5;_rot
+
+* **~pub_err** ***(bool, default:*** __True__***)***__:__<br/>
+Publish the translational, rotational and total errors if set to true.
+
+* **~log_err** ***(bool, default:*** __True__***)***__:__<br/>
+Save the translational, rotational and total errors to a file if set to true.
+
+* **~map_frame** ***(str, default:*** __"map"__***)***__:__<br/>
+Main reference frame to compare the corrected and ground truth poses from.
+
+* **~odom_frame** ***(str, default:*** __"odom"__***)***__:__<br/>
+* **~base_frame** ***(str, default:*** __"base_link"__***)***__:__<br/>
+Odometry and Robot base coordinate frames for the corrected poses respectively.
+
+* **~gt_odom_frame** ***(str, default:*** __"GT/odom"__***)***__:__<br/>
+* **~gt_base_frame** ***(str, default:*** __"GT/base_link"__***)***__:__<br/>
+Odometry and Robot base coordinate frames for the ground truth poses respectively.
+
+* **~log_dir** ***(str, default:*** __"~/Desktop/FMP_logs"__***)***__:__<br/>
+Path to the directory in which to store the pose error log files.
+* **~err_prefix** ***(str, default:*** __"pose_err"__***)***__:__<br/>
+Prefix for automatically constructed filenames. Generated files will be called *\<err_prefix\>\<suffix\>\<ts\>.csv*,
+where *\<ts\>* is the execution time in the format *yymmdd_HHMMSS* and *\<suffix\>* is either an empty string for
+errors during full-SLAM phase, or *\_loc* during Localization-Only phase.
+
+
+* **~err_file** ***(str, default:*** __"<\~log_dir\>/\<~err_prefix\>\_\<ts\>.csv"__***)***__:__<br/>
+* **~loc_err_file** ***(str, default:*** __"<\~log_dir\>/\<err_prefix\>\_loc\_\<ts\>.csv"__***)***__:__<br/>
+Path to the pose error files during Full-SLAM and Localization-Only phases respectively.
+
+* **~newline** ***(str, default:*** __"\n"__***)***__:__
+* **~delim** ***(str, default:*** __","__***)***__:__<br/>
+Row and column delimiters for the csv file.
+
+
+
+
+# Scripts
+
+## err_curves.py
+Script that reads the pose error files stored in a directory and generates curves with error bars.
+
+### Usage:
 ```commandline
-python2.7 map_simulator.py [-p] [-s <search_paths>] [-h] -i <input_file> [-o <output_file>] [<param_name>:<param_value>]...
+foo@bar:dir$ err_curves.py [-d <dir>] [-x <extension>] [-o <out_dir>] [-m <max_exps>]
+```
+### Arguments:
+* **dir** ***(str, default:*** __"~/Desktop/Experiments/MethodComparison/err"__***)***__:__<br>
+Directory where the pose error log files to be plotted are stored.
+
+* **extension** ***(str, default:*** __"csv"__***)***__:__<br>
+Extension of the pose error files to be plotted. Used for filtering in case other files are present in the directory.
+
+* **out_dir** ***(str, default:*** __"\<~dir\>/errbar"__***)***__:__<br>
+Directory where the error plots are to be saved.
+
+* **max_eps** ***(int, default:*** __0__***)***__:__<br>
+Maximum number of experiments to take into consideration for plotting the error curves. Used for limiting the ammount of
+data used for cases where the number of experiments varies a lot. If set to 0, then all experiments will be used for plotting.
+
+
+
+## err_histograms.py
+Script for generating histograms from the pose error files.
+
+### Usage:
+```commandline
+foo@bar:dir$ err_histograms.py [-d <dir>] [-x <extension>] [-o <out_dir>] [-c <combine_by>]
 ```
 
-### Command Arguments
-#### Positional Arguments
- * ***`-i <input_file>`***, ***`--input <input_file>`***: (String)<br/>
- Path to a JSON file containing the desired map, robot movement commands and parameters.
+### Arguments:
+* **dir** ***(str, default:*** __"~/Desktop/Experiments/MethodComparison/err"__***)***__:__<br>
+Directory where the pose error log files to be plotted are stored.
 
-#### Optional Arguments
- * ***`-o <output_file>`***, ***`--output <output_file>`***: (Optional, String)<br/>
- Path and filename where the output ROSBag file is to be saved. If none is provided, only the visualization will be run, without generating a ROSBag.
- * ***`-p`***, ***`--preview`***: (Optional)<br/>
- Display a step-by-step imulation using MatPlotLib.
- * ***`-s <paths>`***, ***`--search_paths <paths>`***: (Optional, String) *[Default: ".:robots:maps"]*<br/>
- Search paths for input and include files, separated by colons :.
- * ***`-h`***, ***`--help`***: (Optional)<br/>
- Display usage help.
- 
- #### Parameter Override
- Any parameter defined in the following section can be defined from the command line as well, and not just from the json files.
- Parameters entered through the command line will override any values previously defined in the json files.
- To enter a parameter, its name and value must be entered separated by a colon-equal sign and using spaces between different parameters.
- E.g.:<br/>
- ```
-python2.7 map_simulator.py ... meas_per_move:=1 odom_frame:=odom_combined ...
-```
-For more information on the possible parameters, please review the next section.
- 
- ## Parameters
- The JSON input files can define the following parameters.
- If a given parameter is not defined in any of the files (main input file or included sub-files), then the default value will be used.
- 
- 
- ### Include
-  * **include**: *(list of strings) [Default: None]*<br/>
-  Parameter files to be included during parsing for reusing parameters between experiments with a more convenient, reduced-typing, smarter approach.<br/>
-  E.g.:<br/>
-    ```json
-    "include": [
-        "common.json",
-        "map.json",
-        "movements.json"
-    ]
-    ```
- 
-The include procedure is done in the following manner:
-  * ***recursively*** and in a ***depth-first*** order:<br/>
-  If an included file contains *include* statement as well, the files listed are also included,<br/>
-     E.g.: Input file contains:
-     ```json
-     "include": [
-         "a.json",
-         "b.json",
-         "c.json"
-    ]
-     ```
-     and file `a.json` contains
-     ```json
-     "include": [
-         "d.json",
-         "e.json"
-    ]
-     ```
-     Then the include order will be: `a.json`, `d.json`, `e.json`, `b.json`, `c.json`.
-  * with ***duplicate detection***:<br/>
-  Parsed files are kept in a list and included only once, the first time (in depth-first order) it is included.
-  * ***last-in***:<br/>
-  The last definition of a parameter according to include order rules overrides any previous definitions.
-  ***Note:*** Included files are always parsed before any parameters configured locally in the file.
- 
- ### TF
- #### TF Frames
-  * **odom_frame**: (String) *[Default: "odom"]*<br/>
-  TF Frame for the odometry measurements.
-  * **base_frame**: (String) *[Default: "base_link"]*<br/>
-  TF Frame for the robot's base
-  * **laser_frame**: (String) *[Default:"laser_link"]*<br/>
-  TF Frame for the Laser Sensor
-  
-#### TF Transforms
- * **base_to_laser_tf**: (Array) *[Default: [[0.05, 0.0], [0]] ]*<br/>
- Transform between the base and laser frames in the format [[x, y], θ].
- 
-### Map
- * **obstacles**: (List of Objects) *[Default: [] (Empty Map)]*<br/>
- A world map is defined as a list of geometric obstacles.<br/>
-   E.g.:
-    ```json
-    "obstacles": [
-        {"type": "polygon", "vertices": [[-0.1, 1.0], [10.1, 1.0], [10.1, 1.1], [-0.1, 1.1]]},
-        {"type": "circle", "center": [4.0, 0.0], "radius": 10},
-        ...
-    ]
-    ```
-    Each obstacle is defined as a dictionary with a mandatory *type* and additional parameters depending on the type of geometric construct used.
-#### Obstacle Types
-##### Polygon
-Defined as a set of vertices connected by straight line segments.
-###### Arguments
- * **vertices**: (Array)<br/>
- List of ordered pairs of 2D points [x, y]. The order is relevant, as the segments of polyline connecting them are constructed between each consecutive pair of points, and between the last and first points.<br/>
- * **opacity**: (float) *[Default: 1.0]*<br/>
- Determines the probability with which the obstacle reflects a beam. A value of 1.0 makes the object always reflective, while 0.0 is completely transparent (so why bother defining the polygon in the first place).
- 
-###### Example
-```json
-{"type": "polygon", "vertices": [[-0.1, 1.0], [10.1, 1.0], [10.1, 1.1], [-0.1, 1.1]], "opacity": 0.5}
+* **extension** ***(str, default:*** __"csv"__***)***__:__<br>
+Extension of the pose error files to be plotted. Used for filtering in case other files are present in the directory.
+
+* **out_dir** ***(str, default:*** __"\<~dir\>/hist"__***)***__:__<br>
+Directory where the error histograms are to be saved.
+
+* **combine_by** ***(str, default:*** __"map_model"__***)***__:__<br>
+Field by which to group the histograms with. Valid values are:
+    * ***"n_moves"*** number of measurement steps.
+    * ***"m_model"*** map models.
+    * ***"p_weight"*** particle weighting methods.
+    * ***"imp_pose"*** pose improve methods.
+    * ***"err_type"*** error types.
+    * ***"test_env"*** test environments.
+
+
+## method_comparison.py
+Script for running experiments multiple times in order to capture statistical information using the simulated 10Loop datasets.
+It will run the algorithm for every possible combination of configured steps, map models, particle weighting methods, and pose
+improvement methods for a given number of iterations.
+
+### Usage:
+```commandline
+foo@bar:dir$ method_comparison.py [-i <iterations] [-m <moves>] [-mm <map_models>] [-pw <particle_weights>] [-pi <pose_improve>] [-f <launch file>] [-mp <multi_proc>] [-w <num_workers>] [-p <path>]
 ```
 
-### Robot Movements
+### Arguments:
 
-* **start_pose**: (Array) *[Default: [[0.0, 0.0], 0.0] ]*<br/>
-Position and Orientation [[x, y], θ] of the Robot's base frame at timestep *t = 0*.<br/>
-E.g.: `"start_pose": [[0.5, 0.5], [0.0]]`.
+* **iterations** ***(int, default:*** __100__***)***__:__<br>
+Number of times to run each experiment.
 
-* **initial_timestamp**: (Float | null) *[Default: null]*<br/>
-Timestamp of the initial pose message in seconds using Python's `time.time()` representation.
-If *null*, then the current system time will be used instead.<br/>
-E.g.:
-    * `"initial_timestamp": null`: Set initial stamp to current system time.
-    * `"initial_timestamp": 1596820827.48`: Set initial stamp to *August 7th 2020, 19:20:27.480*.
+* **moves** ***(str, default:*** __"20,30,40,50,60,70,80,90,100,120,140,160,180,200,240,270,300"__***)***__:__<br>
+Comma-separated list of number of moves to run the tests with. Valid ROSBags must exist for each of the selected moves.
 
-* **move_time_interval**: (Float) *[Default: 1000.0]*<br/>
-Unless otherwise specified, time in *ms* that each move command takes to execute.
-Used to advance the time stamp in the odometry messages.<br/>
-E.g.: `"move_time_interval": 1000.0`.
+* **map_models** ***(str, default:*** __"ref,dec"__***)***__:__<br>
+Comma-separated list of map model types. Supported values are:
+    * ***ref*** for the Reflection Model.
+    * ***dec*** for the Exponential Decay Rate Model.
 
-* **move_commands**: (List of Objects) *[Default: [] (No movement)]* Determines the position of the robot at every time step, and the total duration of the simulation.
+* **particle_weights** ***(str, default:*** __"cmh,ml"__***)***__:__<br>
+Coma-separated list of particle weighting methods. Supported values are:
+    * ***cmh*** for Closest Mean Hit Likelihood, the original GMapping method.
+    * ***ml*** for the Full Map Posterior Measurement Likelihood method.
 
-    ```json
-    "move_commands": [
-        {"type": "pose", "params": [[1.5, 0.5], 0.0]},
-        {"type": "pose", "params": [[2.5, 0.5], 0.0]},
-        ...
-    ]
-    ```
+* **pose_improve** ***(bool, default:*** __False__***)***__:__<br>
+If true, then the pose proposal distribution will be improved using scan matching.
 
-    Each command is defined by a type and additional parameters.
+* **launch_file** ***(string, default:*** __"$(find fmp_slam_eval)/launch/experiment.launch"__***)***__:__<br>
+Path to the launch file to be executed mutliple times.
 
-#### Movement Types
-##### Pose
-Defines the exact position and orientation of the robot at a given time step.
+* **multi_proc** ***(bool, default:*** __True__***)***__:__<br>
+Run multiple processes in parallel if set to true.
 
-###### Arguments
- * **params**: (Array) 2D Position and orientation [[x, y], θ]
+* **num_workers** ***(int, default:*** __-1__***)***__:__<br>
+Number of workers or processes to execute in parallel if *~multi_proc* is set to True. A value of -1 means to use as many workers as the number of CPU cores available.
 
-###### Example
-```json
-{"type": "pose", "params": [[1.5, 0.5], 0.0]}
-```
-
-##### Pose
-Defines the desired position and orientation of the robot at a given time step.
-From them, an initial rotation, a translation and a final rotation will be computed with respect to the previous desired pose.
-
-###### Arguments
- * **params**: (Array) 2D Position and orientation [[x, y], θ]
-
-###### Example
-```json
-{"type": "odometry", "params": [[1.5, 0.5], 0.0]}
-```
-
-
-### Measurements
-
-* **scan_topic**: (String) *[Default: "base_scan"]*<br/>
-Name of the message topic where the measurements will be published.<br/>
-E.g.: `"scan_topic": "base_scan"`.
-
-* **meas_per_move**: (Int) *[Default: 5]*<br/>
-Number of measurement scans to perform after each movement command.<br/>
-E.g.: `"meas_per_move": 3`.
-
-* **scan_time_interval**: (Float) *[Default: 50.0]*<br/>
-Time in *ms* that each measurement scan takes to execute.
-Used to advance the time stamp in the messages.<br/>
-E.g.: `"scan_time_interval": 50.0`.
-                        
-* **max_range**: (Float) *[Default: 20.0]*<br/>
-Maximum distance in *m* that a sensor can measure.
-If a beam does not hit an obstacle, then the returned value will be this.<br/>
-E.g.: `"max_range": 20.0`.
-
-* **num_rays**: (Int) *[Default: 180]*<br/>
-Number of measurements/beams/rays taken by the sensor in a single scan.
-Equally spaced between *start_ray* and *end_ray*.<br/>
-E.g.: `"num_rays": 1` for a single beam.
-  
-* **start_ray**: (Float) *[Default: -1.5707963268 (-π/2)]*<br/>
-Start angle in radians for the scan rays.<br/>
-E.g.: `"start_ray": -3.141592`
-
-* **end_ray**: (Float) *[Default: 1.5707963268 (π/2)]*<br/>
-End angle in radians for the scan rays.<br/>
-E.g.: `"end_ray": 3.141592`
-
-### Uncertainty
-
-* **deterministic**: (Bool) *[Default: false]*<br/>
-When true, then the ground truth positions and measurements will be displayed and saved to the ROSBag.
-Otherwise, zero-mean gaussian noise will be added to the odometry and sensor data according to the following covariances. 
-
-* **Pose_sigma**: (3x3 Matrix) *[Default: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.]] ]*<br/>
-Covariance matrix defining the uncertainty in the robot's pose (Only used for *pose*-type movements).<br/>
-    ```
-          ⎛ σxx σxy σxθ ⎞
-      Σ = ⎜ σyx σyy σyθ ⎟
-          ⎝ σθx σθy σθθ ⎠
-    ```
-    E.g.:
-    ```json
-    "pose_sigma": [[0.01, 0.00, 0.0],
-                   [0.00, 0.01, 0.0],
-                   [0.00, 0.00, 0.1]],
-    ```
-* **odometry_alpha**: (4 Vector) *[Default: [0.0, 0.0, 0.0, 0.0] ]*<br/>
-Weight parameters for odometry-based movements consisting of rotation,translation,rotation.<br/>
-    ```
-      α = ( α1 α2 α3 α4 )
-    ```
-    E.g.:
-    ```json
-    "odometry_alpha": [0.001, 0.01, 0.01, 0.001],
-    ```
-  
-* **measurement_sigma**: (2x2 Matrix) *[Default: [[0.0, 0.0], [0.0, 0.0]]*<br/>
-Covariance matrix defining the uncertainty in the robot's measurement bearings and ranges.<br/>
-    ```
-          ⎛ σφφ   σφz ⎞
-      Σ = ⎜           ⎟
-          ⎝ σzφ   σzz ⎠
-    ```
-    E.g.:
-    ```json
-    "measurement_sigma": [[0.010, 0.000],
-                          [0.000, 0.002]]
-    ```
-
-### Visualization
-
-* **render_move_pause**: (float) *[Default: 0.5]*<br/>
-Time in seconds that the simulation will pause after displaying a movement.
-
-* **render_sense_pause**: (float) *[Default: 0.35]*<br/>
-Time in seconds that the simulation will pause after displaying a measurement.
-
-
-# Ground Truth Mapper
-
-Python script for generating odometry and measurement datasets to test SLAM Algorithms.
-
-## Usage
-
-## Topics
-
-## Parameters
-
-
-
-
----
-
-JAB 2020
+* **path** ***(str, default:*** __"~/Desktop/Experiments/MethodComparison"__***)***__:__<br>
+Path where the results will be saved.

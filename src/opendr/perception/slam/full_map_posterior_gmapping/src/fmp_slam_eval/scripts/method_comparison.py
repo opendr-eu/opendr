@@ -74,7 +74,7 @@ def float_list(string):
 
 if __name__ == "__main__":
 
-    launchfile_package = "map_simulator"
+    launchfile_package = "fmp_slam_eval"
     pck = rospkg.RosPack()
     launch_pck_share = pck.get_path(launchfile_package)
     def_launch_file = path.join(launch_pck_share, "launch", "experiment.launch")
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     parser.add_argument('-w', '--num_workers', action='store', type=int, default=-1,
                         help='Number of workers/processes to run in parallel. (-1 to start one per core.')
     parser.add_argument('-p', '--path', action='store', type=str, default=def_file_path,
-                        help='Launch file to execute.')
+                        help='Path to save the results.')
 
     args = parser.parse_args()
 
