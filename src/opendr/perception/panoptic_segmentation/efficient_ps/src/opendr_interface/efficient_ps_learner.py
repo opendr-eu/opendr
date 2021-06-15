@@ -20,6 +20,7 @@ import warnings
 from typing import Optional, List, Dict, Any, Union, Tuple
 from pathlib import Path
 from tqdm import tqdm
+from pprint import pprint
 
 import torch
 from torch.utils.data import DataLoader, DistributedSampler, SequentialSampler
@@ -39,7 +40,7 @@ from mmdet.core import get_classes, save_panoptic_eval
 from mmdet.models import build_detector
 from mmdet.datasets.pipelines import Compose
 
-from cityscapesscripts.evaluation.evalPanopticSemanticLabeling import pq_compute_multi_core, average_pq
+from cityscapesscripts.evaluation.evalPanopticSemanticLabeling import pq_compute_multi_core, average_pq, pq_compute_single_core
 
 
 class EfficientPsLearner(Learner):
@@ -112,31 +113,23 @@ class EfficientPsLearner(Learner):
         dataloader = DataLoader(dataset, batch_size=self.batch_size, sampler=sampler, num_workers=num_workers,
                                 collate_fn=collate_fn)
 
+        matched_annotations_list = []
         with tqdm(dataloader, unit='batch') as pbar:
             for i, batch in enumerate(dataloader):
                 images = [data[0] for data in batch]
                 results = self.infer(images, return_raw_logits=True)
-                save_panoptic_eval(results, tmp_folder)
+                pred_annotation = prepare_results_for_evaluation(results, tmp_folder)
+                for gt, pred in zip([data[1] for data in batch], pred_annotation):
+                    matched_annotations_list.append((gt, pred))
                 pbar.update(1)
 
-        pred_folder = os.path.join(tmp_folder, 'tmp')
-        pred_json_folder = os.path.join(tmp_folder, 'tmp_json')
-
-        pred_annotations = {}
-        for pred_ann in os.listdir(pred_json_folder):
-            with open(os.path.join(pred_json_folder, pred_ann), 'r') as f:
-                tmp_json = json.load(f)
-            pred_annotations.update({el['image_id']: el for el in tmp_json['annotations']})
-
-        matched_annotations_list = []
-        for gt_ann in dataset.annotations:
-            image_id = gt_ann['image_id']
-            if image_id not in pred_annotations:
-                continue
-            matched_annotations_list.append((gt_ann, pred_annotations[image_id]))
-
-        pq_stat = pq_compute_multi_core(matched_annotations_list, dataset.ground_truth_folder, pred_folder,
-                                        dataset.categories)
+        pred_folder = tmp_folder
+        if num_workers > 0:
+            pq_stat = pq_compute_multi_core(matched_annotations_list, dataset.ground_truth_folder, pred_folder,
+                                            dataset.categories)
+        else:
+            pq_stat = pq_compute_single_core(0, matched_annotations_list, dataset.ground_truth_folder, pred_folder,
+                                             dataset.categories)
         eval_results = average_pq(pq_stat, dataset.categories)
 
         category_ids = sorted(eval_results['per_class'].keys())

@@ -11,31 +11,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import json
 from typing import List
 import numpy as np
 from mmdet.core.evaluation import cityscapes_originalIds
+from PIL import Image
 
 
 def collate_fn(batch):
     return batch
 
-def prepare_results_for_evaluation(results: List[np.ndarray]):
+def prepare_results_for_evaluation(results, path='tmpDir') -> List[dict]:
+    os.makedirs(path, exist_ok=True)
     originalIds = cityscapes_originalIds()
 
     processed_results = []
     for result in results:
         images = []
-        annotations = []
         pan_pred, cat_pred, meta = result
         pan_pred, cat_pred = pan_pred.numpy(), cat_pred.numpy()
-        # imgName = meta[0]['filename'].split('/')[-1]
-        # imageId = imgName.replace(".png", "")
-        # inputFileName = imgName
-        # outputFileName = imgName.replace(".png", "_panoptic.png")
-        # images.append({"id": imageId,
-        #                "width": int(pan_pred.shape[1]),
-        #                "height": int(pan_pred.shape[0]),
-        #                "file_name": inputFileName})
+        imgName = meta[0]['filename'].split('/')[-1]
+        imageId = imgName.replace(".png", "")
+        inputFileName = imgName
+        outputFileName = imgName.replace(".png", "_panoptic.png")
+        images.append({
+            "id": imageId,
+            "width": int(pan_pred.shape[1]),
+            "height": int(pan_pred.shape[0]),
+            "file_name": inputFileName
+        })
 
         pan_format = np.zeros((pan_pred.shape[0], pan_pred.shape[1], 3), dtype=np.uint8)
 
@@ -50,7 +55,7 @@ def prepare_results_for_evaluation(results: List[np.ndarray]):
                 semanticId = originalIds[cat_pred[panPredId]]
                 segmentId = semanticId * 1000 + panPredId
 
-            is_crowd = 0
+            isCrowd = 0
             categoryId = semanticId
 
             mask = pan_pred == panPredId
@@ -70,19 +75,16 @@ def prepare_results_for_evaluation(results: List[np.ndarray]):
             height = vert_idx[-1] - y + 1
             bbox = [int(x), int(y), int(width), int(height)]
 
-            segmInfo.append({"id": int(segmentId),
-                             "category_id": int(categoryId),
-                             "area": int(area),
-                             "bbox": bbox,
-                             "iscrowd": is_crowd})
-        processed_results.append(segmInfo)
-        # annotations.append({'image_id': imageId,
-        #                     'file_name': outputFileName,
-        #                     "segments_info": segmInfo})
-        #
-        # Image.fromarray(pan_format).save(os.path.join(base_path, outputFileName))
-        # d = {'images': images,
-        #      'annotations': annotations,
-        #      'categories': {}}
+            segmInfo.append({
+                "id": int(segmentId),
+                "category_id": int(categoryId),
+                "area": int(area),
+                "bbox": bbox,
+                "iscrowd": isCrowd
+            })
+        annotation = {'image_id': imageId, 'file_name': outputFileName, "segments_info": segmInfo}
 
+        Image.fromarray(pan_format).save(os.path.join(path, outputFileName))
+
+        processed_results.append(annotation)
     return processed_results

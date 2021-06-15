@@ -17,6 +17,7 @@ def main():
     learner = EfficientPsLearner(
         lr=0.07,
         iters=160,
+        batch_size=2,
         optimizer='sgd',
         device='cuda:0'
     )
