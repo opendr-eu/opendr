@@ -11,8 +11,8 @@ def createDir(path):
         os.makedirs(path, exist_ok=True)
 
 
-def save_panoptic_eval(results):
-    tmpDir = 'tmpDir'
+def save_panoptic_eval(results, path='tmpDir'):
+    tmpDir = path
     createDir(tmpDir)
     base_path = os.path.join(tmpDir, 'tmp')
     base_json = os.path.join(tmpDir, 'tmp_json')
