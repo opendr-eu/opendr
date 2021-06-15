@@ -34,6 +34,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# TODO: move this to opendr Makefile
 all:
 	cd algorithm/cython/; python setup.py build_ext --inplace; rm -rf build; cd ../../
 clean:

@@ -54,9 +54,9 @@ class TestRetinaFaceLearner(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
-        # rmdir(os.path.join(cls.temp_dir, "test_data"))
-        # rmdir(os.path.join(cls.temp_dir, "retinaface_resnet"))
-        # rmdir(os.path.join(cls.temp_dir))
+        rmfile(os.path.join(cls.temp_dir, "cov4.jpg"))
+        rmdir(os.path.join(cls.temp_dir, "retinaface_resnet"))
+        rmdir(os.path.join(cls.temp_dir))
         pass
 
     def test_fit(self):

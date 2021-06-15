@@ -14,9 +14,9 @@ import numpy as np
 
 
 def find_in_path(name, path):
-    "Find a file in a search path"
-    # Adapted fom
-    # http://code.activestate.com/recipes/52224-find-a-file-given-a-search-path/
+    """ Find a file in a search path.
+    Adapted from http://code.activestate.com/recipes/52224-find-a-file-given-a-search-path/
+    """
     for dir in path.split(os.pathsep):
         binpath = pjoin(dir, name)
         if os.path.exists(binpath):
