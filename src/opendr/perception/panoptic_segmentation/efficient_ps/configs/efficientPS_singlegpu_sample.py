@@ -71,7 +71,6 @@ model = dict(
         norm_cfg=dict(type='InPlaceABN', activation='leaky_relu', activation_param=0.01, requires_grad=True),
         act_cfg=None))
 
-
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -129,16 +128,17 @@ test_cfg = dict(
     panoptic=dict(
         overlap_thr=0.5,
         min_stuff_area=2048))
+
 # dataset settings
-dataset_type = 'CityscapesDataset'
-data_root = 'data/cityscapes/'
+# dataset_type = 'CityscapesDataset'
+# data_root = '/home/voedisch/git/EfficientPS/data/cityscapes/'
 img_norm_cfg = dict(
     mean=[106.433, 116.617, 119.559], std=[65.496, 67.6, 74.123], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True, with_seg=True),
     dict(type='Resize', img_scale=(2048, 1024), ratio_range=(0.5, 2.0), keep_ratio=True),
-    dict(type='RandomCrop', crop_size=(1024, 2048)),
+    dict(type='RandomCrop', crop_size=(256, 512)),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
@@ -149,7 +149,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(2048, 1024),
+        img_scale=(1024, 2048),
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
@@ -161,33 +161,35 @@ test_pipeline = [
         ])
 ]
 
-data = dict(
-    imgs_per_gpu=2,
-    workers_per_gpu=2,
-    train=dict(
-        type=dataset_type,
-        ann_file=data_root + 'annotations/train.json',
-        img_prefix=data_root + 'train/',
-         seg_prefix=data_root + 'stuffthingmaps/train/',
-        pipeline=train_pipeline),
-    val=dict(
-        type=dataset_type,
-        ann_file=data_root + 'annotations/val.json',
-        img_prefix=data_root + 'val/',
-        seg_prefix=data_root + 'stuffthingmaps/val/',
-        panoptic_gt=data_root + 'cityscapes_panoptic_val',
-        pipeline=test_pipeline),
-    test=dict(
-        type=dataset_type,
-        ann_file=data_root + 'annotations/val.json',
-        img_prefix=data_root + 'val/',
-        seg_prefix=data_root + 'stuffthingmaps/val/',
-        panoptic_gt=data_root + 'cityscapes_panoptic_val',
-        pipeline=test_pipeline))
-evaluation = dict(interval=1, metric=['panoptic'])
+# data = dict(
+#     imgs_per_gpu=1,  # batch_size
+#     workers_per_gpu=2,
+#     train=dict(
+#         type=dataset_type,
+#         ann_file=data_root + 'annotations/train_small.json',
+#         img_prefix=data_root + 'train_small/',
+#          seg_prefix=data_root + 'stuffthingmaps/train_small/',
+#         pipeline=train_pipeline),
+#     val=dict(
+#         type=dataset_type,
+#         ann_file=data_root + 'annotations/val.json',
+#         img_prefix=data_root + 'val/',
+#         seg_prefix=data_root + 'stuffthingmaps/val/',
+#         panoptic_gt=data_root + 'cityscapes_panoptic_val',
+#         pipeline=test_pipeline),
+#     test=dict(
+#         type=dataset_type,
+#         ann_file=data_root + 'annotations/val.json',
+#         img_prefix=data_root + 'val/',
+#         seg_prefix=data_root + 'stuffthingmaps/val/',
+#         panoptic_gt=data_root + 'cityscapes_panoptic_val',
+#         pipeline=test_pipeline))
+# evaluation = dict(interval=1, metric=['panoptic'])
+
 # optimizer
-optimizer = dict(type='SGD', lr=0.07, momentum=0.9, weight_decay=0.0001)
-optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+# optimizer = dict(type='SGD', lr=0.07, momentum=0.9, weight_decay=0.0001)
+# optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+
 # learning policy
 lr_config = dict(
     policy='step',
@@ -204,11 +206,12 @@ log_config = dict(
         dict(type='TensorboardLoggerHook')
     ])
 # yapf:enable
+
 # runtime settings
-total_epochs = 160
+# total_epochs = 160
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = None
+# work_dir = None
 load_from = None
 resume_from = None
-workflow = [('train', 1)]
+# workflow = [('train', 1)]

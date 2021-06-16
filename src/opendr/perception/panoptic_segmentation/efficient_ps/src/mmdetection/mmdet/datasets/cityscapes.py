@@ -228,7 +228,7 @@ class CityscapesDataset(CocoDataset):
         try:
             import cityscapesscripts.evaluation.evalInstanceLevelSemanticLabeling as CSEval  # noqa
         except ImportError:
-            raise ImportError('Please run "pip install citscapesscripts" to ' 'install cityscapesscripts first.')
+            raise ImportError('Please run "pip install citscapesscripts" to install cityscapesscripts first.')
         msg = 'Evaluating in Cityscapes style'
         if logger is None:
             msg = '\n' + msg
@@ -293,7 +293,8 @@ class CityscapesDataset(CocoDataset):
         for gt_ann in gt_json['annotations']:
             image_id = gt_ann['image_id']
             if image_id not in pred_annotations:
-                raise Exception('no prediction for the image with id: {}'.format(image_id))
+                # raise Exception('no prediction for the image with id: {}'.format(image_id))
+                continue
             matched_annotations_list.append((gt_ann, pred_annotations[image_id]))
 
         pq_stat = pq_compute_multi_core(matched_annotations_list, gt_folder, pred_folder, categories)
