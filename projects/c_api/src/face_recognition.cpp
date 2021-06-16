@@ -181,7 +181,7 @@ void free_face_recognition_model(face_recognition_model_t *model) {
     }
 
     if (model->database_ids) {
-        delete model->database_ids;
+        delete[] model->database_ids;
     }
 
     if (model->database) {
@@ -191,8 +191,8 @@ void free_face_recognition_model(face_recognition_model_t *model) {
 
     if (model->person_names) {
         for (int i = 0; i < model->n_persons; i++)
-            delete model->person_names[i];
-        delete model->person_names;
+            delete [] model->person_names[i];
+        delete[] model->person_names;
     }
 
 }
@@ -370,7 +370,7 @@ void load_database_face_recognition(const char *output_path, face_recognition_mo
 
     cv::Mat *database = new cv::Mat(cv::Size(width, height), CV_32F);
     memcpy(database->data, database_buff, sizeof(float) * width * height);
-    delete database_buff;
+    delete[] database_buff;
 
     model->database = database;
     model->database_ids = features_ids;
