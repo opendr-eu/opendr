@@ -58,3 +58,7 @@ Thumbs.db
 #Python virtual environment directory
 /venv
 
+# Caching
+.cache/
+logs/
+temp/

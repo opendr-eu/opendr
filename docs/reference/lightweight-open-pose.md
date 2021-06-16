@@ -8,12 +8,12 @@ Bases: `engine.learners.Learner`
 The *LightweightOpenPoseLearner* class is a wrapper of the Open Pose[[1]](#open-pose-1) implementation found on [Lightweight Open Pose](https://github.com/Daniil-Osokin/lightweight-human-pose-estimation.pytorch) [[2]](#open-pose-2).
 It can be used to perform human pose estimation on images (inference) and train new pose estimation models.
 
-The [LightweightOpenPoseLearner](#src.perception.lightweight_open_pose.lightweight_open_pose_learner.py) class has the
+The [LightweightOpenPoseLearner](#src.opendr.perception.lightweight_open_pose.lightweight_open_pose_learner.py) class has the
 following public methods:
 
 #### `LightweightOpenPoseLearner` constructor
 ```python
-LightweightOpenPoseLearner(self, lr, epochs, batch_size, devicea, backbone, lr_schedule, temp_path, checkpoint_after_iter, checkpoint_load_iter, val_after, log_after, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize, base_height, stride, img_mean, img_scale, pad_value)
+LightweightOpenPoseLearner(self, lr, epochs, batch_size, device, backbone, lr_schedule, temp_path, checkpoint_after_iter, checkpoint_load_iter, val_after, log_after, mobilenet_use_stride, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize, base_height, img_mean, img_scale, pad_value)
 ```
 
 Constructor parameters:
@@ -28,7 +28,7 @@ Constructor parameters:
 - **backbone**: *{'mobilenet, 'mobilenetv2', 'shufflenet'}, default='mobilenet'*  
     Specifies the backbone architecture.
 - **lr_schedule**: *str, default=' '*  
-  Specifies the learning rate scheduler.
+  Specifies the learning rate scheduler. Please provide a function that expects to receive as a sole argument the used optimizer.
 - **temp_path**: *str, default='temp'*  
   Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files. Moreover the JSON file that contains the evaluation detections is saved here.
 - **checkpoint_after_iter**: *int, default=5000*  
@@ -39,12 +39,16 @@ Constructor parameters:
   Specifies per how many training iterations a validation should be run.
 - **log_after**: *int, default=100*  
   Specifies per how many training iterations the log files will be updated.
+- **mobilenet_use_stride**: *bool, default=True*  
+  Whether to add an additional stride value in the mobilenet model, which reduces accuracy but increases inference speed.
 - **mobilenetv2_width**: *[0.0 - 1.0], default=1.0*  
   If the mobilenetv2 backbone is used, this parameter specified its size.
 - **shufflenet_groups**: *int, default=3*  
   If the shufflenet backbone is used, it specifies the number of groups to be used in grouped 1x1 convolutions in each ShuffleUnit.
-- **num_refinement_states**: *int, default=2*  
+- **num_refinement_stages**: *int, default=2*  
   Specifies the number of pose estimation refinement stages are added on the model's head, including the initial stage.
+- **batches_per_iter**: *int, default=1*  
+  Specifies per how many batches a backward optimizer step is performed.
 - **experiment_name**: *str, default='default'*  
   String name to attach to checkpoints.
 - **num_workers**: *int, default=8*  
@@ -61,14 +65,14 @@ Constructor parameters:
   Specifies whether the images along with the poses will be shown, one by one during evaluation.
 - **base_height**: *int, default=256*  
   Specifies the height, based on which the images will be resized before performing the forward pass.
-- **stride**: *int, default=8*  
-  Specifies the stride based on which padding will be performed.
 - **img_mean**: *list, default=(128, 128, 128)]*  
   Specifies the mean based on which the images are normalized.
 - **img_scale**: *float, default=1/256*  
   Specifies the scale based on which the images are normalized.
 - **pad_value**: *list, default=(0, 0, 0)*  
   Specifies the pad value based on which the images' width is padded.
+- **half_precision**: *bool, default=False*  
+  Enables inference using half (fp16) precision instead of single (fp32) precision. Valid only for GPU-based inference.   
 
 
 #### `LightweightOpenPoseLearner.fit`
@@ -165,12 +169,12 @@ LightweightOpenPoseLearner.save(self, path, verbose)
 ```
 
 This method is used to save a trained model.
-Provided with the path "/my/path/name" (absolute or relative), it creates the "name" directory, if it does not already 
+Provided with the path "/my/path/name" (absolute or relative), it creates the "name" directory, if it does not already
 exist. Inside this folder, the model is saved as "name.pth" and the metadata file as "name.json". If the directory
 already exists, the "name.pth" and "name.json" files are overwritten.
 
-If [`self.optimize`](#LightweightOpenPoseLearner.optimize) was run previously, it saves the optimized ONNX model in 
-a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously 
+If [`self.optimize`](#LightweightOpenPoseLearner.optimize) was run previously, it saves the optimized ONNX model in
+a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously
 during conversion.
 
 Parameters:
@@ -230,7 +234,7 @@ Parameters:
 #### Examples
 
 * **Training example using an `ExternalDataset`**.  
-  To train properly, the backbone weights are downloaded automatically in the `temp_path`. Default backbone is 
+  To train properly, the backbone weights are downloaded automatically in the `temp_path`. Default backbone is
   'mobilenet'.
   The training and evaluation dataset should be present in the path provided, along with the JSON annotation files.
   The default COCO 2017 training data can be found [here](https://cocodataset.org/#download) (train, val, annotations).
@@ -259,9 +263,9 @@ Parameters:
 
   pose_estimator = LightweightOpenPoseLearner(device="cuda", temp_path='./parent_dir')
   pose_estimator.download()  # Download the default pretrained mobilenet model in the temp_path
-  pose_estimator.load("./parent_dir/trained_model")
-  pose_estimator.download("test_data")  # Download a test data taken from COCO2017
-  
+  pose_estimator.load("./parent_dir/mobilenet_openpose")
+  pose_estimator.download(mode="test_data")  # Download a test data taken from COCO2017
+
   img = cv2.imread('./parent_dir/dataset/image/000000000785.jpg')
   orig_img = img.copy()  # Keep original image
   current_poses = pose_estimator.infer(img)
@@ -279,9 +283,9 @@ Parameters:
       LightweightOpenPoseLearner
 
   pose_estimator = LightweightOpenPoseLearner(temp_path='./parent_dir')
-  
+
   pose_estimator.download()  # Download the default pretrained mobilenet model in the temp_path
-  pose_estimator.load("./parent_dir/trained_model")
+  pose_estimator.load("./parent_dir/mobilenet_openpose")
   pose_estimator.optimize(do_constant_folding=True)
   pose_estimator.save('./parent_dir/optimized_model')
   ```
