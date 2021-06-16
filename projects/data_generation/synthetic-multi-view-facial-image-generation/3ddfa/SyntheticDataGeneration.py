@@ -36,35 +36,15 @@
 
 # !/usr/bin/env python3
 # coding: utf-8
-import sys
+from tqdm import tqdm
+from shutil import copyfile
+import cv2
 import os
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-
-parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
-
-sys.path.insert(0, parent_dir_path)
-
-import numpy as np
-import matplotlib.pyplot as mpplot
-import matplotlib.image as mpimg
 import main
 import inference
 import test_multipose
 import argparse
-import face_alignment
-from utils.ddfa import ToTensorGjz, NormalizeGjz, str2bool
-import torch
-import torchvision.transforms as transforms
-import mobilenet_v1
-import numpy as np
-import cv2
-import face_alignment
-from utils.ddfa import ToTensorGjz, NormalizeGjz, str2bool
-from tqdm import tqdm
-from shutil import copyfile
-from os import path
-
+from utils.ddfa import str2bool
 from opendr.engine.learners import Learner
 
 
@@ -127,7 +107,6 @@ class MultiviewDataGenerationLearner(Learner):
 
         # STAGE No1 : detect faces and fitting to 3d mesh by main.py execution
         list_im = []
-        images = []
 
         print("START")
 

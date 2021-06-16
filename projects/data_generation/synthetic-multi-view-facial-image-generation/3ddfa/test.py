@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-__author__ = 'cleardusk'
-
 """
 The pipeline of 3DDFA prediction: given one image, predict the 3d face vertices, 68 landmarks and visualization.
 
@@ -16,26 +14,16 @@ import mobilenet_v1
 import numpy as np
 import cv2
 import os
-import math
 from tqdm import tqdm
 import time
-# import face_alignment
-# import single_align
 from utils.ddfa import ToTensorGjz, NormalizeGjz, str2bool
-import scipy.io as sio
-from utils.inference import get_suffix, parse_roi_box_from_landmark, crop_img, predict_68pts, dump_to_ply, dump_vertex, \
-    draw_landmarks, predict_dense, parse_roi_box_from_bbox, get_colors, write_obj_with_colors, get_aligned_param, \
-    parse_quality_list_part
-from utils.cv_plot import plot_pose_box
-from utils.estimate_pose import parse_pose
+from utils.inference import parse_roi_box_from_landmark, crop_img, predict_68pts, parse_quality_list_part
 from utils.params import param_mean, param_std
-from utils.render import get_depths_image, cget_depths_image, cpncc, crender_colors
-from utils.paf import gen_img_paf
 import argparse
 import torch.backends.cudnn as cudnn
 from simple_dataset import McDataset
 from torch.utils.data import DataLoader
-
+__author__ = 'cleardusk'
 STD_SIZE = 120
 
 
@@ -57,7 +45,7 @@ def main(args):
         model = model.cuda()
     model.eval()
 
-    tri = sio.loadmat('visualize/tri.mat')['tri']
+    # tri = sio.loadmat('visualize/tri.mat')['tri']
     transform = transforms.Compose([ToTensorGjz(), NormalizeGjz(mean=127.5, std=128)])
 
     if not os.path.exists(args.save_dir):

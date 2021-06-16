@@ -1,25 +1,19 @@
 import torch.multiprocessing as multiprocessing
-
-multiprocessing.set_start_method('spawn', force=True)
-from models.networks.sync_batchnorm import DataParallelWithCallback
-import sys
 import numpy as np
 import os
-import data
 from util.iter_counter import IterationCounter
 from options.test_options import TestOptions
 from models.test_model import TestModel
 from util.visualizer import Visualizer
-from util import html, util
-from torch.multiprocessing import Process, Queue, Pool
+from util import util
+from torch.multiprocessing import Queue
 from data.data_utils import init_parallel_jobs
 from skimage import transform as trans
 import cv2
 import time
 import torch
 from models.networks.rotate_render import TestRender
-from options.base_options import BaseOptions
-import argparse
+multiprocessing.set_start_method('spawn', force=True)
 
 
 def create_path(a_path, b_path):
@@ -82,6 +76,7 @@ def save_img(img, save_path):
 
 
 def main():
+    import data
     opt = TestOptions().parse()
     data_info = data.dataset_info()
     datanum = data_info.get_dataset(opt)[0]
@@ -89,7 +84,7 @@ def main():
 
     dataloaders = data.create_dataloader_test(opt)
 
-    visualizer = Visualizer(opt)
+    Visualizer(opt)
     iter_counter = IterationCounter(opt, len(dataloaders[0]) * opt.render_thread)
     # create a webpage that summarizes the all results
 
@@ -140,12 +135,12 @@ def main():
                 os.path.join(save_path, opt.dataset + str(opt.list_start) + str(opt.list_end) + '_rotate_lmk.txt'), 'w')
             f.append(f_rotated)
 
-    test_tasks = init_parallel_jobs(testing_queue, dataloaders, iter_counter, opt, render_layer_list)
+    init_parallel_jobs(testing_queue, dataloaders, iter_counter, opt, render_layer_list)
     # test
-    landmarks = []
+    # landmarks = []
 
     process_num = opt.list_start
-    first_time = time.time()
+    # first_time = time.time()
     try:
         for i, data_i in enumerate(range(len(dataloaders[0]) * opt.render_thread)):
             # if i * opt.batchSize >= opt.how_many:
@@ -163,7 +158,7 @@ def main():
             # print(img_path)
             poses = data['pose_list']
             rotated_landmarks = data['rotated_landmarks'][:, :, :2].cpu().numpy().astype(np.float)
-            rotated_landmarks_106 = data['rotated_landmarks_106'][:, :, :2].cpu().numpy().astype(np.float)
+            # rotated_landmarks_106 = data['rotated_landmarks_106'][:, :, :2].cpu().numpy().astype(np.float)
 
             generate_rotateds = []
             for model in models:
@@ -202,7 +197,7 @@ def main():
                         util.save_image(warped, aligned_file_savepath, create_dir=True)
 
                     # save 106 landmarks
-                    rotated_keypoints_106 = rotated_landmarks_106[b]  # shape: 106 * 2
+                    # rotated_keypoints_106 = rotated_landmarks_106[b]  # shape: 106 * 2
 
             current_time = time.time()
             time_per_iter = (current_time - start_time) / opt.batchSize

@@ -1,4 +1,7 @@
-from models.networks.render import *
+import torch
+import pickle
+import numpy as np
+from models.networks.render import Render, angle2matrix, matrix2angle, P2sRt
 
 
 def _get_suffix(filename):
@@ -7,6 +10,7 @@ def _get_suffix(filename):
     if pos == -1:
         return ''
     return filename[pos + 1:]
+
 
 def _load(fp):
     suffix = _get_suffix(fp)
@@ -52,12 +56,11 @@ class TestRender(Render):
         box = param[-4:]
         return p, offset, alpha_shp, alpha_exp, box, original_angle
 
-
     def rotate_render(self, params, images, M=None, with_BG=False,
-                      pose_noise=False, large_pose=False, align=True, frontal=True, erode=True, grey_background=False, avg_BG=True, pose=None):
+                      pose_noise=False, large_pose=False, align=True, frontal=True, erode=True, grey_background=False,
+                      avg_BG=True, pose=None):
 
         bz, c, w, h = images.size()
-
 
         face_size = self.faces.size()
         self.faces_use = self.faces.expand(bz, face_size[1], face_size[2])
@@ -100,7 +103,9 @@ class TestRender(Render):
             rendered_images_erode = None
             if erode:
                 with torch.cuda.device(self.current_gpu):
-                    rendered_images, depths, masks, = self.renderer(vertices_ori_normal, self.faces_use, texs)  # rendered_images: batch * 3 * h * w, masks: batch * h * w
+                    rendered_images, depths, masks, = self.renderer(vertices_ori_normal, self.faces_use,
+                                                                    texs)
+                    # rendered_images: batch * 3 * h * w, masks: batch * h * w
                 masks_erode = self.generate_erode_mask(masks, kernal_size=15)
                 rendered_images = rendered_images.cpu()
                 if grey_background:
@@ -139,7 +144,9 @@ class TestRender(Render):
             texs_b = torch.cat(texs_b, 0)
 
             with torch.cuda.device(self.current_gpu):
-                # rendered_images_rotate, depths1, masks1, = self.renderer(vertices_ori_normal, self.faces, texs_b)  # rendered_images: batch * 3 * h * w, masks: batch * h * w
-                rendered_images_double, depths2, masks2, = self.renderer(vertices_aligned_normal, self.faces_use, texs_b)  # rendered_images: batch * 3 * h * w, masks: batch * h * w
+
+                rendered_images_double, depths2, masks2, = self.renderer(vertices_aligned_normal, self.faces_use,
+                                                                         texs_b)
+                # rendered_images: batch * 3 * h * w, masks: batch * h * w
 
         return rendered_images_double, self.torch_get_68_points(vertices_aligned_out), original_angles

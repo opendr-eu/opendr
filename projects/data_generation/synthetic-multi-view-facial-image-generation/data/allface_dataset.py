@@ -1,13 +1,11 @@
 import os
 import math
 import numpy as np
-from PIL import Image
 import skimage.transform as trans
 import cv2
 import torch
 from data import dataset_info
 from data.base_dataset import BaseDataset
-import util.util as util
 
 dataset_info = dataset_info()
 
@@ -124,7 +122,7 @@ class AllFaceDataset(BaseDataset):
     def __getitem__(self, index):
         # Label Image
 
-        randnum = np.random.randint(sum(self.sizes))
+        # randnum = np.random.randint(sum(self.sizes))
         dataset_num = np.random.randint(self.num_datasets)
 
         image_path = self.dataset_lists[dataset_num][index].strip()

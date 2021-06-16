@@ -1,18 +1,15 @@
 import torch.multiprocessing as multiprocessing
-
-multiprocessing.set_start_method('spawn', force=True)
-
 import sys
-from collections import OrderedDict
 from options.train_options import TrainOptions
 import data
 from trainers import create_trainer
 from util.iter_counter import IterationCounter
 from util.visualizer import Visualizer
-from torch.multiprocessing import Process, Queue, Pool
+from torch.multiprocessing import Queue
 from data.data_utils import init_parallel_jobs
-
 from models.networks.render import Render
+multiprocessing.set_start_method('spawn', force=True)
+
 
 if __name__ == '__main__':
 

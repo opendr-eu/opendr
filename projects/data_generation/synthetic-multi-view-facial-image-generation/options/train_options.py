@@ -37,7 +37,8 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--load_separately', action='store_true',
                             help='whether to continue train by loading separate models')
         parser.add_argument('--niter', type=int, default=50,
-                            help='# of iter at starting learning rate. This is NOT the total #epochs. Totla #epochs is niter + niter_decay')
+                            help='# of iter at starting learning rate. This is NOT the total #epochs. Totla #epochs is '
+                                 'niter + niter_decay')
         parser.add_argument('--niter_decay', type=int, default=1000,
                             help='# of iter to linearly decay learning rate to zero')
         parser.add_argument('--optimizer', type=str, default='adam')

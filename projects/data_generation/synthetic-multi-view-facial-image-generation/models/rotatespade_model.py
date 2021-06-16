@@ -233,8 +233,7 @@ class RotateSPADEModel(torch.nn.Module):
                 num = 2
             else:
                 num = 0
-            G_losses['VGG'] = self.criterionVGG(fake_image, real_image, num) \
-                              * self.opt.lambda_vgg
+            G_losses['VGG'] = self.criterionVGG(fake_image, real_image, num) * self.opt.lambda_vgg
 
         return G_losses, fake_image
 

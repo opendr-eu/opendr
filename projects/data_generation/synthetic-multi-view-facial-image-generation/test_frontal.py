@@ -1,23 +1,21 @@
+from models.test_model import TestModel
+from options.test_options import TestOptions
+from util.iter_counter import IterationCounter
+from util.visualizer import Visualizer
+from util import util
+from data.data_utils import init_parallel_jobs
+from models.networks.test_render import TestRender
 import torch.multiprocessing as multiprocessing
-
-multiprocessing.set_start_method('spawn', force=True)
-from models.networks.sync_batchnorm import DataParallelWithCallback
-import sys
 import numpy as np
 import os
 import data
-from util.iter_counter import IterationCounter
-from options.test_options import TestOptions
-from models.test_model import TestModel
-from util.visualizer import Visualizer
-from util import html, util
-from torch.multiprocessing import Process, Queue, Pool
-from data.data_utils import init_parallel_jobs
+from torch.multiprocessing import Queue
 from skimage import transform as trans
 import cv2
 import time
 import torch
-from models.networks.test_render import TestRender
+
+multiprocessing.set_start_method('spawn', force=True)
 
 
 def create_path(a_path, b_path):

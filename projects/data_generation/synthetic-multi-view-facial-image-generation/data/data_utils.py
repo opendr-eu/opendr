@@ -1,6 +1,5 @@
-import threading
 import traceback
-from torch.multiprocessing import Process, Queue, Pool
+from torch.multiprocessing import Process
 import numpy as np
 
 import os
@@ -9,9 +8,8 @@ import torch
 
 def get_input(data, render):
     real_image = data['image']
-    input_semantics, rotated_mesh, orig_landmarks, rotate_landmarks, \
-    rendered_images_erode, original_angles, Rd_a, rendered_images_rotate_artifacts \
-        = render.rotate_render(data['param_path'], real_image, data['M'])
+    input_semantics, rotated_mesh, orig_landmarks, rotate_landmarks,  rendered_images_erode, original_angles, \
+        Rd_a, rendered_images_rotate_artifacts = render.rotate_render(data['param_path'], real_image, data['M'])
     output = {}
     real_image = real_image * 2 - 1
     input_semantics = input_semantics * 2 - 1
@@ -49,7 +47,7 @@ def get_test_input(data, render):
 
 def get_multipose_test_input(data, render, yaw_poses, pitch_poses):
     real_image = data['image']
-    num_poses = len(yaw_poses) + len(pitch_poses)
+    # num_poses = len(yaw_poses) + len(pitch_poses)
     rotated_meshs = []
     rotated_landmarks_list = []
     original_angles_list = []

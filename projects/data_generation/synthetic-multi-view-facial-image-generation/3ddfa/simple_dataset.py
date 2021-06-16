@@ -1,4 +1,4 @@
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import Dataset
 import numpy as np
 import cv2
 from utils.inference import crop_img, parse_roi_box_from_landmark

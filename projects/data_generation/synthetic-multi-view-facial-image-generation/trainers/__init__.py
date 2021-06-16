@@ -1,5 +1,4 @@
 import importlib
-import torch
 
 
 def find_trainer_using_name(trainer_name):

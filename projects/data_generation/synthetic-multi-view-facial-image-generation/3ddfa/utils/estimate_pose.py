@@ -5,7 +5,7 @@
 Reference: https://github.com/YadiraF/PRNet/blob/master/utils/estimate_pose.py
 """
 
-from math import cos, sin, atan2, asin, sqrt
+from math import cos, sin, atan2, asin
 import numpy as np
 from .params import param_mean, param_std
 
@@ -50,6 +50,7 @@ def matrix2angle(R):
 
     return x, y, z
 
+
 def angle2matrix(angles):
     ''' get rotation matrix from three rotation angles(radian). The same as in 3DDFA.
     Args:
@@ -65,19 +66,20 @@ def angle2matrix(angles):
     y, x, z = angles[0], angles[1], angles[2]
 
     # x
-    Rx=np.array([[1,      0,       0],
-                 [0, cos(x),  -sin(x)],
-                 [0, sin(x),  cos(x)]])
+    Rx = np.array([[1, 0, 0],
+                   [0, cos(x), -sin(x)],
+                   [0, sin(x), cos(x)]])
     # y
-    Ry=np.array([[ cos(y), 0, sin(y)],
-                 [      0, 1,      0],
-                 [-sin(y), 0, cos(y)]])
+    Ry = np.array([[cos(y), 0, sin(y)],
+                   [0, 1, 0],
+                   [-sin(y), 0, cos(y)]])
     # z
-    Rz=np.array([[cos(z), -sin(z), 0],
-                 [sin(z),  cos(z), 0],
-                 [     0,       0, 1]])
+    Rz = np.array([[cos(z), -sin(z), 0],
+                   [sin(z), cos(z), 0],
+                   [0, 0, 1]])
     R = Rz.dot(Ry).dot(Rx)
     return R.astype(np.float32)
+
 
 def P2sRt(P):
     ''' decompositing camera matrix P.

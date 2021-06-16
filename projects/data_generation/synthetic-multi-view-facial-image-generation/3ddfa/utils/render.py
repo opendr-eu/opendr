@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-
 """
 Modified from https://raw.githubusercontent.com/YadiraF/PRNet/master/utils/render.py
 """
 
-__author__ = 'cleardusk'
-
 import numpy as np
 from .cython import mesh_core_cython
 from .params import pncc_code
+
+__author__ = 'cleardusk'
 
 
 def is_point_in_tri(point, tri_points):
@@ -63,7 +62,8 @@ def render_colors(vertices, colors, tri, h, w, c=3):
     image = np.zeros((h, w, c))
 
     depth_buffer = np.zeros([h, w]) - 999999.
-    # triangle depth: approximate the depth to the average value of z in each vertex(v0, v1, v2), since the vertices are closed to each other
+    # triangle depth: approximate the depth to the average value of z in each vertex(v0, v1, v2), since the vertices
+    # are closed to each other
     tri_depth = (vertices[2, tri[0, :]] + vertices[2, tri[1, :]] + vertices[2, tri[2, :]]) / 3.
     tri_tex = (colors[:, tri[0, :]] + colors[:, tri[1, :]] + colors[:, tri[2, :]]) / 3.
 
@@ -166,7 +166,7 @@ def cget_depths_image(img, vertices_lst, tri):
 
 
 def ncc(vertices):
-    ## simple version
+    # simple version
     # ncc_vertices = np.zeros_like(vertices)
     # x = vertices[0, :]
     # y = vertices[1, :]

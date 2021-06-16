@@ -8,10 +8,9 @@ import numpy as np
 import torch
 import torch.utils.data as data
 import cv2
-import pickle
 import argparse
-from .io import _numpy_to_tensor, _load_cpu, _load_gpu
-from .params import *
+from .io import _numpy_to_tensor, _load_cpu
+from .params import std_size, w_exp_base, w_shp_base, u_base, w_shp, param_std, param_mean, u, w_exp
 from .estimate_pose import P2sRt
 
 

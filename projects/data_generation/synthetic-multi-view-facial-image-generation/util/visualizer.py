@@ -4,7 +4,6 @@ import time
 from . import util
 from . import html
 import scipy.misc
-import torch
 import torchvision.utils as vutils
 from torch.utils.tensorboard import SummaryWriter
 
@@ -46,7 +45,7 @@ class Visualizer():
     # |visuals|: dictionary of images to display or save
     def display_current_results(self, visuals, epoch, step):
 
-        ## convert tensors to numpy arrays
+        # convert tensors to numpy arrays
 
         if self.tf_log:  # show images in tensorboard output
             img_summaries = []

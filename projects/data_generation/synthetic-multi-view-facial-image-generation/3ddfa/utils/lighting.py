@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-import sys
-
-sys.path.append('../')
+import path_helper
 import numpy as np
 from utils import render
 from utils.cython import mesh_core_cython
 
-_norm = lambda arr: arr / np.sqrt(np.sum(arr ** 2, axis=1))[:, None]
+__all__ = ['path_helper']
+
+
+def _norm(arr):
+    return arr / np.sqrt(np.sum(arr ** 2, axis=1))[:, None]
 
 
 def norm_vertices(vertices):

@@ -1,5 +1,4 @@
 from trainers.rotate_trainer import RotateTrainer
-from models.rotate_model import RotateModel
 from collections import OrderedDict
 import torch
 
@@ -19,8 +18,8 @@ class RotateSPADETrainer(RotateTrainer):
         g_losses, generated, self.input_mesh = self.pix2pix_model.forward(data=data, mode='generator')
         if not self.opt.train_rotate:
             with torch.no_grad():
-                g_rotate_losses, generated_rotate, self.input_rotated_mesh = self.pix2pix_model.forward(data=data,
-                                                                                                        mode='generator_rotated')
+                g_rotate_losses, generated_rotate, self.input_rotated_mesh =\
+                    self.pix2pix_model.forward(data=data, mode='generator_rotated')
 
         else:
             g_rotate_losses, generated_rotate, self.input_rotated_mesh = self.pix2pix_model.forward(data=data,

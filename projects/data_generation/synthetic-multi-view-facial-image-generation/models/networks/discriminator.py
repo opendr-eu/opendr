@@ -177,8 +177,6 @@ class ImageDiscriminator(BaseNetwork):
         return self.model(input)
 
 
-
-
 class ProjectionDiscriminator(BaseNetwork):
     @staticmethod
     def modify_commandline_options(parser, is_train):

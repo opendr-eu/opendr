@@ -112,6 +112,7 @@ class VGGLoss(nn.Module):
                 loss += self.weights[i] * self.criterion(x_vgg[i], y_vgg[i].detach())
         return loss
 
+
 class VGGwithContrastiveLoss(VGGLoss):
     def __init__(self, opt):
         super(VGGwithContrastiveLoss, self).__init__(opt)

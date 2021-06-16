@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-__author__ = 'cleardusk'
-
 """
 The pipeline of 3DDFA prediction: given one image, predict the 3d face vertices, 68 landmarks and visualization.
 
@@ -16,23 +14,17 @@ import mobilenet_v1
 import numpy as np
 import cv2
 import os
-import math
 from tqdm import tqdm
-import time
 import face_alignment
-from utils.ddfa import ToTensorGjz, NormalizeGjz, str2bool
+from utils.ddfa import ToTensorGjz, NormalizeGjz
 import scipy.io as sio
-from utils.inference import get_suffix, parse_roi_box_from_landmark, crop_img, predict_68pts, dump_to_ply, dump_vertex, \
-    draw_landmarks, predict_dense, parse_roi_box_from_bbox, get_colors, write_obj_with_colors, get_aligned_param, \
+from utils.inference import parse_roi_box_from_landmark, crop_img, predict_68pts, predict_dense, get_colors, \
     get_5lmk_from_68lmk
-from utils.cv_plot import plot_pose_box
 from utils.estimate_pose import parse_pose
 from utils.params import param_mean, param_std
-from utils.render import get_depths_image, cget_depths_image, cpncc, crender_colors
-from utils.paf import gen_img_paf
-import argparse
+from utils.render import crender_colors
 import torch.backends.cudnn as cudnn
-
+__author__ = 'cleardusk'
 STD_SIZE = 120
 
 
@@ -57,7 +49,7 @@ def main(args):
     tri = sio.loadmat('visualize/tri.mat')['tri']
     transform = transforms.Compose([ToTensorGjz(), NormalizeGjz(mean=127.5, std=128)])
 
-    # 2. parse images list 
+    # 2. parse images list
     with open(args.img_list) as f:
         img_list = [x.strip() for x in f.readlines()]
     landmark_list = []
@@ -75,9 +67,9 @@ def main(args):
         pts_res = []
         Ps = []  # Camera matrix collection
         poses = []  # pose collection, [todo: validate it]
-        vertices_lst = []  # store multiple face vertices
-        ind = 0
-        suffix = get_suffix(img_fp)
+        # vertices_lst = []  # store multiple face vertices
+        # ind = 0
+        # suffix = get_suffix(img_fp)
 
         # face alignment model use RGB as input, result is a tuple with landmarks and boxes
         preds = alignment_model.get_landmarks(img_ori[:, :, ::-1])
@@ -168,4 +160,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     '''
-    main(args)
+    # main(args)

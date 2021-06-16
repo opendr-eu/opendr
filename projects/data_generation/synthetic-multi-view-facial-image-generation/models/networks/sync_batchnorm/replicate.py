@@ -1,9 +1,9 @@
+import torch.multiprocessing as multiprocessing
 import functools
 import torch
-
 from torch.nn.parallel.data_parallel import DataParallel
 from .scatter_gather import scatter_kwargs
-
+multiprocessing.set_start_method('spawn', force=True)
 __all__ = [
     'CallbackContext',
     'execute_replication_callbacks',
@@ -82,7 +82,7 @@ class DataParallelWithCallback(DataParallel):
         replicas = self.replicate(self.module, self.device_ids[:len(inputs)])
         outputs = self.parallel_apply(replicas, inputs, kwargs)
         return self.gather(outputs, self.output_device)
-    
+
     def scatter(self, inputs, kwargs, device_ids, chunk_size):
         return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim, chunk_size=self.chunk_size)
 
@@ -90,7 +90,6 @@ class DataParallelWithCallback(DataParallel):
         modules = super(DataParallelWithCallback, self).replicate(module, device_ids)
         execute_replication_callbacks(modules)
         return modules
-
 
 
 def patch_replication_callback(data_parallel):

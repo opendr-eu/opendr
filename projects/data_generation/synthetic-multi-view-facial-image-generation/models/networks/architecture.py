@@ -93,7 +93,6 @@ class ResnetSPADEBlock(nn.Module):
         self.norm_0 = SPADE(spade_config_str, dim, semantic_nc)
         self.norm_1 = SPADE(spade_config_str, dim, semantic_nc)
 
-
     def forward(self, x, seg):
         dx = self.padding(x)
         dx = self.activation(self.norm_0(self.conv_0(dx), seg))
@@ -120,7 +119,7 @@ class ResnetBlock(nn.Module):
             activation,
             nn.ReflectionPad2d(pw),
             norm_layer(nn.Conv2d(dim, dim, kernel_size=kernel_size)),
-            ### add an activation
+            # add an activation
             activation,
         )
 

@@ -1,7 +1,6 @@
 import re
 import importlib
 import torch
-from argparse import Namespace
 import numpy as np
 from PIL import Image
 import os
@@ -152,8 +151,8 @@ def find_class_in_module(target_cls_name, module):
             cls = clsobj
 
     if cls is None:
-        print("In %s, there should be a class whose name matches %s in lowercase without underscore(_)" % (
-        module, target_cls_name))
+        print("In %s, there should be a class whose name matches %s in lowercase without underscore(_)" % (module,
+                                                                                                           target_cls_name))
         exit(0)
 
     return cls

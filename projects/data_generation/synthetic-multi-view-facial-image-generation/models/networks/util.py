@@ -4,7 +4,8 @@ import torch
 import numpy as np
 from PIL import Image
 import os
-from math import *
+from math import sin, cos, atan2, asin
+
 
 def P2sRt(P):
     ''' decompositing camera matrix P.
@@ -25,6 +26,7 @@ def P2sRt(P):
 
     R = np.concatenate((r1, r2, r3), 0)
     return s, R, t3d
+
 
 def matrix2angle(R):
     ''' compute three Euler angles from a Rotation Matrix. Ref: http://www.gregslabaugh.net/publications/euler.pdf
@@ -53,6 +55,7 @@ def matrix2angle(R):
 
     return [x, y, z]
 
+
 def angle2matrix(angles):
     ''' get rotation matrix from three rotation angles(radian). The same as in 3DDFA.
     Args:
@@ -68,19 +71,20 @@ def angle2matrix(angles):
     y, x, z = angles[0], angles[1], angles[2]
 
     # x
-    Rx=np.array([[1,      0,       0],
-                 [0, cos(x),  -sin(x)],
-                 [0, sin(x),  cos(x)]])
+    Rx = np.array([[1, 0, 0],
+                   [0, cos(x), -sin(x)],
+                   [0, sin(x), cos(x)]])
     # y
-    Ry=np.array([[ cos(y), 0, sin(y)],
-                 [      0, 1,      0],
-                 [-sin(y), 0, cos(y)]])
+    Ry = np.array([[cos(y), 0, sin(y)],
+                   [0, 1, 0],
+                   [-sin(y), 0, cos(y)]])
     # z
-    Rz=np.array([[cos(z), -sin(z), 0],
-                 [sin(z),  cos(z), 0],
-                 [     0,       0, 1]])
+    Rz = np.array([[cos(z), -sin(z), 0],
+                   [sin(z), cos(z), 0],
+                   [0, 0, 1]])
     R = Rz.dot(Ry).dot(Rx)
     return R.astype(np.float32)
+
 
 def tensor2im(input_image, imtype=np.uint8):
     """"Converts a Tensor array into a numpy image array.

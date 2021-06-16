@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-__author__ = 'cleardusk'
-
 """
 The pipeline of 3DDFA prediction: given one image, predict the 3d face vertices, 68 landmarks and visualization.
 
@@ -15,21 +13,19 @@ import torchvision.transforms as transforms
 import mobilenet_v1
 import numpy as np
 import cv2
-import os
 from os import path
 import face_alignment
-from utils.ddfa import ToTensorGjz, NormalizeGjz, str2bool
+from utils.ddfa import ToTensorGjz, NormalizeGjz
 import scipy.io as sio
 from utils.inference import get_suffix, parse_roi_box_from_landmark, crop_img, predict_68pts, dump_to_ply, dump_vertex, \
     draw_landmarks, predict_dense, parse_roi_box_from_bbox, get_colors, write_obj_with_colors
 from utils.cv_plot import plot_pose_box
 from utils.estimate_pose import parse_pose
-from utils.render import get_depths_image, cget_depths_image, cpncc
+from utils.render import cget_depths_image, cpncc
 from utils.paf import gen_img_paf
-import argparse
 import torch.backends.cudnn as cudnn
 import sys
-
+__author__ = 'cleardusk'
 STD_SIZE = 120
 
 
@@ -70,17 +66,22 @@ def main(args):
         print(img_fp)
         suffix = get_suffix(img_fp)
         wfp = '{}_{}.obj'.format(img_fp.replace(suffix, ''), 0)
-        if (path.exists(wfp) == False):
+        if not path.exists(wfp):
             img_ori = cv2.imread(img_fp)
             if img_ori is None:
                 print("Can't load image, please check the path", file=sys.stderr)
                 sys.exit(1)
+
+            try:
+                rect
+            except NameError:
+                rect = None
             '''
             if args.dlib_bbox:
                 rects = face_detector(img_ori, 1)
             else:
                 rects = []
-    
+
             if len(rects) == 0:
                 rects = dlib.rectangles()
                 rect_fp = img_fp + '.bbox'

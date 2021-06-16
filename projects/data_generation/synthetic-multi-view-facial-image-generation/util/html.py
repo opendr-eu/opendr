@@ -1,6 +1,6 @@
 import datetime
 import dominate
-from dominate.tags import *
+from dominate.tags import p, br, img, a, td, tr, table, h3, meta, h1
 import os
 
 

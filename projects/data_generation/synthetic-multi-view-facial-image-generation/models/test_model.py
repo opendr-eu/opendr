@@ -1,9 +1,5 @@
 import torch
 import models.networks as networks
-import util.util as util
-from data import curve
-import numpy as np
-import os
 from models.rotatespade_model import RotateSPADEModel
 
 
@@ -43,7 +39,7 @@ class TestModel(RotateSPADEModel):
 
             input_semantics = data['mesh']
             rotated_mesh = data['rotated_mesh']
-            BG = data['BG']
+            # BG = data['BG']
 
             if self.opt.label_mask:
                 input_semantics = (input_semantics + orig_seg_all[:, 4].unsqueeze(1) + orig_seg_all[:, 0].unsqueeze(1))

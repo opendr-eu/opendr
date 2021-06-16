@@ -5,10 +5,8 @@ import scipy.io as sio
 import pickle
 from data import curve
 import skimage.transform as trans
-from math import *
-import sys
+from math import cos, sin, atan2, asin
 import neural_renderer as nr
-
 
 
 def _get_suffix(filename):
@@ -91,17 +89,17 @@ def angle2matrix(angles):
     y, x, z = angles[0], angles[1], angles[2]
 
     # x
-    Rx=np.array([[1,      0,       0],
-                 [0, cos(x),  -sin(x)],
-                 [0, sin(x),  cos(x)]])
+    Rx = np.array([[1, 0, 0],
+                   [0, cos(x), -sin(x)],
+                   [0, sin(x), cos(x)]])
     # y
-    Ry=np.array([[ cos(y), 0, sin(y)],
-                 [      0, 1,      0],
-                 [-sin(y), 0, cos(y)]])
+    Ry = np.array([[cos(y), 0, sin(y)],
+                   [0, 1, 0],
+                   [-sin(y), 0, cos(y)]])
     # z
-    Rz=np.array([[cos(z), -sin(z), 0],
-                 [sin(z),  cos(z), 0],
-                 [     0,       0, 1]])
+    Rz = np.array([[cos(z), -sin(z), 0],
+                   [sin(z), cos(z), 0],
+                   [0, 0, 1]])
     R = Rz.dot(Ry).dot(Rx)
     return R.astype(np.float32)
 
@@ -119,14 +117,14 @@ class Render(object):
         self.pose_noise = getattr(opt, 'pose_noise', False)
         self.large_pose = getattr(opt, 'large_pose', False)
         u = u_shp + u_exp
-        tri = sio.loadmat('./3ddfa/visualize/tri.mat')['tri']   # 3 * 53215
+        tri = sio.loadmat('./3ddfa/visualize/tri.mat')['tri']  # 3 * 53215
         faces_np = np.expand_dims(tri.T, axis=0).astype(np.int32) - 1
 
         self.std_size = 120
 
-        opt.gpu_ids=0
-           
-        self.current_gpu =opt.gpu_ids
+        opt.gpu_ids = 0
+
+        self.current_gpu = opt.gpu_ids
         with torch.cuda.device(self.current_gpu):
             self.faces = torch.from_numpy(faces_np).cuda()
             self.renderer = nr.Renderer(camera_mode='look', image_size=self.render_size, perspective=False,
@@ -136,7 +134,6 @@ class Render(object):
             self.w_exp_cuda = torch.from_numpy(w_exp.astype(np.float32)).cuda()
 
     def random_p(self, s, angle):
-
 
         if np.random.randint(0, 2) == 0:
             angle[0] += np.random.uniform(-0.965, -0.342, 1)[0]
@@ -165,7 +162,7 @@ class Render(object):
         p = angle2matrix(angle) * s
         return p
 
-    def _parse_param(self, param, pose_noise=False, frontal=True, 
+    def _parse_param(self, param, pose_noise=False, frontal=True,
                      large_pose=False, yaw_pose=None, pitch_pose=None):
         """Work for both numpy and tensor"""
         p_ = param[:12].reshape(3, -1)
@@ -204,7 +201,6 @@ class Render(object):
                 else:
                     p = self.assign_large(s, angle)
 
-
         offset = p_[:, -1].reshape(3, 1)
         alpha_shp = param[12:52].reshape(-1, 1)
         alpha_exp = param[52:-4].reshape(-1, 1)
@@ -212,7 +208,7 @@ class Render(object):
         return p, offset, alpha_shp, alpha_exp, box, original_angle
 
     def affine_align(self, landmark=None, **kwargs):
-        M = None
+        # M = None
         src = np.array([
             [38.2946, 51.6963],
             [73.5318, 51.5014],
@@ -236,7 +232,7 @@ class Render(object):
         # faces: (faceN, 3)
         faces = faces.long()
         tex_out = tex_input[:, faces[0, :, 0], :] + tex_input[:, faces[0, :, 1], :] + tex_input[:, faces[0, :, 2], :]
-        return tex_out/3.0
+        return tex_out / 3.0
 
     def compute_tri_normal(self, vertex, tri):
         # Unit normals to the faces
@@ -298,11 +294,13 @@ class Render(object):
         return vertices2
 
     def generate_vertices_and_rescale_to_img(self, param, pose_noise=False,
-            mean_shp=False, mean_exp=False, frontal=True, large_pose=False, 
-            yaw_pose=None, pitch_pose=None):
+                                             mean_shp=False, mean_exp=False, frontal=True, large_pose=False,
+                                             yaw_pose=None, pitch_pose=None):
         p, offset, alpha_shp, alpha_exp, roi_bbox, original_angle = self._parse_param(param, pose_noise=pose_noise,
-                                                                                      frontal=frontal, large_pose=large_pose, 
-                                                                                      yaw_pose=yaw_pose, pitch_pose=pitch_pose)
+                                                                                      frontal=frontal,
+                                                                                      large_pose=large_pose,
+                                                                                      yaw_pose=yaw_pose,
+                                                                                      pitch_pose=pitch_pose)
         if mean_shp:
             alpha_shp.fill(0.0)
         if mean_exp:
@@ -313,13 +311,14 @@ class Render(object):
             alpha_exp = torch.from_numpy(alpha_exp.astype(np.float32)).cuda()
             offset = torch.from_numpy(offset.astype(np.float32)).cuda()
 
-        vertices = p.matmul((self.u_cuda + self.w_shp_cuda.matmul(alpha_shp) + self.w_exp_cuda.matmul(alpha_exp)).view(-1, 3).t()) + offset
+        vertices = p.matmul(
+            (self.u_cuda + self.w_shp_cuda.matmul(alpha_shp) + self.w_exp_cuda.matmul(alpha_exp)).view(-1,
+                                                                                                       3).t()) + offset
 
         vertices[1, :] = self.std_size + 1 - vertices[1, :]
         vertices = self.vertices_rescale(vertices, roi_bbox)
 
         return vertices, original_angle
-
 
     def flip_normalize_vertices(self, vertices):
         # flip and normalize vertices
@@ -338,9 +337,8 @@ class Render(object):
         # vertices_in_ori_img[:, 20000:random_num] = vertices_in_ori_img[:, 20000:random_num] * np.random.uniform(1.01,
         #                                                                          1.02) - np.random.uniform(0.5, 1.5)
 
-        
-        textures = img_ori[vertices_in_ori_img[1, :].round().clamp(0, h - 1).long(), \
-                   vertices_in_ori_img[0, :].round().clamp(0, w - 1).long(), :]
+        textures = img_ori[vertices_in_ori_img[1, :].round().clamp(0, h - 1).long(), vertices_in_ori_img[0, :].round().clamp(
+            0, w - 1).long(), :]
 
         N = textures.shape[0]
         with torch.cuda.device(self.current_gpu):
@@ -351,9 +349,8 @@ class Render(object):
 
         return tex_a
 
-
     def _forward(self, param_file, img_ori, M=None,
-                 pose_noise=True, mean_exp=False, mean_shp=False, align=True, frontal=True, 
+                 pose_noise=True, mean_exp=False, mean_shp=False, align=True, frontal=True,
                  large_pose=False, yaw_pose=None, pitch_pose=None):
         '''
         img_ori: rgb image, normalized within 0-1, h * w * 3
@@ -362,9 +359,10 @@ class Render(object):
         param = np.fromfile(param_file, sep=' ')
 
         vertices, original_angle = self.generate_vertices_and_rescale_to_img(param, pose_noise=pose_noise,
-                                                             mean_shp=mean_shp, mean_exp=mean_exp, frontal=frontal, 
-                                                             large_pose=large_pose, yaw_pose=yaw_pose, pitch_pose=pitch_pose)
-
+                                                                             mean_shp=mean_shp, mean_exp=mean_exp,
+                                                                             frontal=frontal,
+                                                                             large_pose=large_pose, yaw_pose=yaw_pose,
+                                                                             pitch_pose=pitch_pose)
 
         if not (pose_noise or mean_exp or mean_exp or frontal):
             print('pose_noise')
@@ -379,8 +377,8 @@ class Render(object):
             align_vertices = vertices.clone()
         else:
             vertices_in_ori_img, _ = self.generate_vertices_and_rescale_to_img(param, pose_noise=False,
-                                                                            mean_shp=False, mean_exp=False,
-                                                                            frontal=False, large_pose=False)
+                                                                               mean_shp=False, mean_exp=False,
+                                                                               frontal=False, large_pose=False)
             if M is not None:
                 vertices_in_ori_img = self.transform_vertices(M, vertices_in_ori_img)
             else:
@@ -405,21 +403,20 @@ class Render(object):
         c, h, w = img_ori.size()
         assert h == w
 
-        vertices_in_ori_img[:2, :] = vertices_in_ori_img[:2,
-                                     :] / self.render_size * h  # original image size is 400 * 400 * 3
+        vertices_in_ori_img[:2, :] = vertices_in_ori_img[:2, :] / self.render_size * h
+        # original image size is 400 * 400 * 3
 
         # original image size is 400 * 400 * 3
         vertices_out = vertices.clone()
         tex_a = self.get_render_from_vertices(img_ori, vertices_in_ori_img)
         vertices = self.flip_normalize_vertices(vertices)
-        vertices_in_ori_img[:2, :] = vertices_in_ori_img[:2,
-                                     :] / h * self.render_size
+        vertices_in_ori_img[:2, :] = vertices_in_ori_img[:2, :] / h * self.render_size
         return tex_a, vertices, vertices_out, vertices_in_ori_img, align_vertices, original_angle
 
-    def rotate_render(self, params, images, M=None, with_BG=False, pose_noise=False, large_pose=False, 
+    def rotate_render(self, params, images, M=None, with_BG=False, pose_noise=False, large_pose=False,
                       align=True, frontal=True, erode=True, grey_background=False, avg_BG=True,
                       yaw_pose=None, pitch_pose=None):
-        
+
         bz, c, w, h = images.size()
         pose_noise = self.pose_noise
         large_pose = self.large_pose
@@ -437,7 +434,7 @@ class Render(object):
         original_angles = torch.zeros(bz)
         with torch.no_grad():
             for n in range(bz):
-                tex_a, vertice, vertice_out, vertice_in_ori_img, align_vertice, original_angle\
+                tex_a, vertice, vertice_out, vertice_in_ori_img, align_vertice, original_angle \
                     = self._forward(params[n], images[n], M[n],
                                     pose_noise=pose_noise, align=align, frontal=frontal,
                                     large_pose=large_pose, yaw_pose=yaw_pose, pitch_pose=pitch_pose)
@@ -467,7 +464,8 @@ class Render(object):
             if erode:
 
                 with torch.cuda.device(self.current_gpu):
-                    rendered_images, depths, masks, = self.renderer(vertices_ori_normal, self.faces_use, texs)  # rendered_images: batch * 3 * h * w, masks: batch * h * w
+                    rendered_images, depths, masks, = self.renderer(vertices_ori_normal, self.faces_use, texs)
+                    # rendered_images: batch * 3 * h * w, masks: batch * h * w
                 masks_erode = self.generate_erode_mask(masks, kernal_size=self.opt.erode_kernel)
                 rendered_images = rendered_images.cpu()
                 Rd_a = rendered_images.clone()
@@ -529,14 +527,17 @@ class Render(object):
 
             # render back
             with torch.cuda.device(self.current_gpu):
-                rendered_images_rotate, depths1, masks1, = self.renderer(vertices_ori_normal, self.faces_use, texs_b)  # rendered_images: batch * 3 * h * w, masks: batch * h * w
-                rendered_images_rotate_artifacts, depths1, masks1, = self.renderer(vertices_aligned_normal, self.faces_use, texs_old)  # rendered_images: batch * 3 * h * w, masks: batch * h * w
-                rendered_images_double, depths2, masks2, = self.renderer(vertices_aligned_normal, self.faces_use, texs_b)  # rendered_images: batch * 3 * h * w, masks: batch * h * w
-
+                rendered_images_rotate, depths1, masks1, = self.renderer(vertices_ori_normal, self.faces_use, texs_b)
+                # rendered_images: batch * 3 * h * w, masks: batch * h * w
+                rendered_images_rotate_artifacts, depths1, masks1, = self.renderer(vertices_aligned_normal, self.faces_use,
+                                                                                   texs_old)
+                # rendered_images: batch * 3 * h * w, masks: batch * h * w
+                rendered_images_double, depths2, masks2, = self.renderer(vertices_aligned_normal, self.faces_use, texs_b)
+                # rendered_images: batch * 3 * h * w, masks: batch * h * w
 
             masks2 = masks2.unsqueeze(1)
             inv_masks2 = (torch.ones_like(masks2) - masks2).float().cpu()
-            BG = inv_masks2 * images
+            # BG = inv_masks2 * images
             if grey_background:
                 masks1 = masks1.unsqueeze(1)
 
@@ -545,10 +546,10 @@ class Render(object):
                 rendered_images_rotate = (inv_masks1 * 0.5 + rendered_images_rotate).clamp(0, 1)
                 rendered_images_double = (inv_masks2 * 0.5 + rendered_images_double).clamp(0, 1)
 
-
-        return rendered_images_rotate, rendered_images_double, \
-               self.torch_get_68_points(vertices_in_ori_img), self.torch_get_68_points(vertices_aligned_out), \
-               rendered_images_erode, original_angles, Rd_a, rendered_images_rotate_artifacts
+        artifacts = rendered_images_rotate_artifacts
+        return rendered_images_rotate, rendered_images_double, self.torch_get_68_points(
+            vertices_in_ori_img), self.torch_get_68_points(
+            vertices_aligned_out), rendered_images_erode, original_angles, Rd_a, artifacts
 
     def generate_erode_mask(self, masks, kernal_size=5):
         masks = masks.unsqueeze(1)
@@ -561,7 +562,6 @@ class Render(object):
         masks[:, :, random_start1:self.render_size - 10, :] = masks2[:, :, random_start1:self.render_size - 10, :]
         masks = (masks > np.random.uniform(0.8, 0.99)).float()
         return masks
-
 
     def get_seg_map(self, vertices, no_guassian=False, size=256):
         landmarks = self.torch_get_68_points(vertices)

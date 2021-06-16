@@ -8,38 +8,37 @@ from torch.utils.data.sampler import Sampler
 class dataset_info():
     def __init__(self):
         self.prefix = [
-                       './3ddfa/example/Images',
-                       'PREFIX-TO-YOUR-DATASET'
-                       ]
+            './3ddfa/example/Images',
+            'PREFIX-TO-YOUR-DATASET'
+        ]
         self.file_list = [
-                     './3ddfa/example/file_list.txt',
-                     'YOUE-FILE-LIST.txt'
-                     ]
+            './3ddfa/example/file_list.txt',
+            'YOUE-FILE-LIST.txt'
+        ]
 
         self.land_mark_list = [
-                          './3ddfa/example/realign_lmk',
-                          'LANDMARKS-OF-FACES-IN-YOUR-DATASET'
-                          ]
+            './3ddfa/example/realign_lmk',
+            'LANDMARKS-OF-FACES-IN-YOUR-DATASET'
+        ]
 
         self.params_dir = [
-                           './3ddfa/results',
-                           '3DFITTING-RESULTS-HOME-DIR'
-                           ]
+            './3ddfa/results',
+            '3DFITTING-RESULTS-HOME-DIR'
+        ]
         self.dataset_names = {'example': 0, 'YOUR-DATASET': 1}
         self.folder_level = [1, 2]
 
     def get_dataset(self, opt):
-
         dataset = opt.dataset.split(',')
         dataset_list = [self.dataset_names[dataset[i].lower()] for i in range(len(dataset))]
-        
+
         return dataset_list
 
 
 def find_dataset_using_name(dataset_name):
     # Given the option --dataset [datasetname],
     # the file "datasets/datasetname_dataset.py"
-    # will be imported. 
+    # will be imported.
     dataset_filename = "data." + dataset_name + "_dataset"
     datasetlib = importlib.import_module(dataset_filename)
 
@@ -50,9 +49,9 @@ def find_dataset_using_name(dataset_name):
     target_dataset_name = dataset_name.replace('_', '') + 'dataset'
     for name, cls in datasetlib.__dict__.items():
         if name.lower() == target_dataset_name.lower() \
-           and issubclass(cls, BaseDataset):
+                and issubclass(cls, BaseDataset):
             dataset = cls
-            
+
     if dataset is None:
         raise ValueError("In %s.py, there should be a subclass of BaseDataset "
                          "with class name that matches %s in lowercase." %
@@ -61,7 +60,7 @@ def find_dataset_using_name(dataset_name):
     return dataset
 
 
-def get_option_setter(dataset_name):    
+def get_option_setter(dataset_name):
     dataset_class = find_dataset_using_name(dataset_name)
     return dataset_class.modify_commandline_options
 
@@ -114,7 +113,7 @@ class MySampler(Sampler):
         assert len(indices) == self.total_size, 'indices {} != total_size {}'.format(len(indices), self.total_size)
 
         # subsample
-        offset = self.num_samples * self.rank
+        # offset = self.num_samples * self.rank
         # indices = indices[offset:offset + self.num_samples]
         indices = indices[self.rank::self.render_thread]
         if self.round_up or (not self.round_up and self.rank == 0):
@@ -135,7 +134,8 @@ def create_dataloader_test(opt):
     instance.initialize(opt)
     print("dataset [%s] of size %d was created" %
           (type(instance).__name__, len(instance)))
-    samplers = [MySampler(opt, instance, render_thread=opt.render_thread, rank=i, round_up=opt.isTrain) for i in range(opt.render_thread)]
+    samplers = [MySampler(opt, instance, render_thread=opt.render_thread, rank=i, round_up=opt.isTrain) for i in
+                range(opt.render_thread)]
     dataloaders = [
         torch.utils.data.DataLoader(
             instance,

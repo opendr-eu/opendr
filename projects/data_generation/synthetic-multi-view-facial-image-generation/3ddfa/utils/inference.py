@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # coding: utf-8
-__author__ = 'cleardusk'
 
 import numpy as np
-import math
 from math import sqrt
 import scipy.io as sio
 import matplotlib.pyplot as plt
 from .ddfa import reconstruct_vertex
 from .estimate_pose import matrix2angle, angle2matrix, P2sRt
+
+__author__ = 'cleardusk'
+__all__ = ['matrix2angle', 'angle2matrix']
 
 
 def get_5lmk_from_68lmk(lmk68):
@@ -205,8 +206,10 @@ def draw_landmarks(img, pts, style='fancy', wfp=None, show_flg=False, **kwargs):
             nums = [0, 17, 22, 27, 31, 36, 42, 48, 60, 68]
 
             # close eyes and mouths
-            plot_close = lambda i1, i2: plt.plot([pts[i][0, i1], pts[i][0, i2]], [pts[i][1, i1], pts[i][1, i2]],
-                                                 color=color, lw=lw, alpha=alpha - 0.1)
+            def plot_close(i1, i2):
+                return plt.plot([pts[i][0, i1], pts[i][0, i2]], [pts[i][1, i1], pts[i][1, i2]], color=color, lw=lw,
+                                alpha=alpha - 0.1)
+
             plot_close(41, 36)
             plot_close(47, 42)
             plot_close(59, 48)

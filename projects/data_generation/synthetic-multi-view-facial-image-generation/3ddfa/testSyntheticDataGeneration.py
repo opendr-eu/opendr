@@ -33,35 +33,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import sys
-import os
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-
-parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
-
-sys.path.insert(0, parent_dir_path)
-
-import numpy as np
-import matplotlib.pyplot as mpplot
-import matplotlib.image as mpimg
-import main
-import inference
-import test_multipose
+import path_helper
 from SyntheticDataGeneration import MultiviewDataGenerationLearner
-import argparse
-import face_alignment
-from utils.ddfa import ToTensorGjz, NormalizeGjz, str2bool
-import torch
-import torchvision.transforms as transforms
-import mobilenet_v1
-import numpy as np
-import cv2
-import face_alignment
-from utils.ddfa import ToTensorGjz, NormalizeGjz, str2bool
-from tqdm import tqdm
-from shutil import copyfile
-from os import path
+__all__ = ['path_helper']
 
 synthetic = MultiviewDataGenerationLearner()
 synthetic.eval()
