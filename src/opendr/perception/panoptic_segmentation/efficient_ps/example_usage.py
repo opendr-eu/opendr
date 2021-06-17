@@ -1,56 +1,58 @@
-from pprint import pprint
-import numpy as np
 import mmcv
 
-from torch.utils.data import DataLoader
+from pathlib import Path
+from typing import List, Tuple
 
 from opendr.perception.panoptic_segmentation.efficient_ps.src.opendr_interface.efficient_ps_learner import \
     EfficientPsLearner
-from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset, CityscapesDataset2
-# from opendr.perception.panoptic_segmentation.datasets.cityscapes import Image
+from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
 from opendr.engine.data import Image
 from opendr.engine.target import Heatmap
 
 
-def main():
-    dataset = CityscapesDataset(path='/home/voedisch/git/EfficientPS/data/cityscapes')
-    dataset2 = CityscapesDataset2(path='/home/voedisch/git/EfficientPS/data/dr_cityscapes/training')
-    dataset3 = CityscapesDataset2(path='/home/voedisch/git/EfficientPS/data/dr_cityscapes/test')
+def train():
+    train_dataset = CityscapesDataset(path='/home/voedisch/data/cityscapes/training')
+    val_dataset = CityscapesDataset(path='/home/voedisch/data/cityscapes/test')
 
     learner = EfficientPsLearner(
-        lr=0.07,
-        iters=1,
-        batch_size=2,
-        optimizer='SGD',
-        device='cuda:0'
+        iters=2,
+        batch_size=1,
+        device='cuda:0',
+        work_dir=str(Path(__file__).parent / 'work_dir'),
+        config_file=str(Path(__file__).parent / 'configs' / 'efficientPS_singlegpu_sample.py')
     )
+    learner.fit(train_dataset, val_dataset=val_dataset)
+    learner.save(path='/home/voedisch/data/checkpoints/sample')
 
-    # learner.save(path='/home/voedisch/git/EfficientPS/checkpoints/test/model.pth')
 
-    # eval_results = learner.eval(dataset, print_results=True)
+def evaluate():
+    val_dataset = CityscapesDataset(path='/home/voedisch/data/cityscapes/test')
 
-    # learner.fit(dataset2, val_dataset=dataset3)
+    learner = EfficientPsLearner(
+        device='cuda:0',
+        config_file=str(Path(__file__).parent / 'configs' / 'efficientPS_singlegpu_sample.py')
+    )
+    learner.load(path='/home/voedisch/data/checkpoints/efficientPS_cityscapes/model/model.pth')
+    learner.eval(val_dataset, print_results=True)
 
-    learner.load(path='/home/voedisch/git/EfficientPS/checkpoints/efficientPS_cityscapes/model/model.pth')
-    eval_results = learner.eval2(dataset3, print_results=True)
-    return
 
+def inference():
     image_filenames = [
-        '/home/voedisch/git/EfficientPS/data/dr_cityscapes/test/images/lindau_000001_000019.png',
-        '/home/voedisch/git/EfficientPS/data/dr_cityscapes/test/images/lindau_000002_000019.png',
-        '/home/voedisch/git/EfficientPS/data/dr_cityscapes/test/images/lindau_000003_000019.png',
-        '/home/voedisch/git/EfficientPS/data/dr_cityscapes/test/images/lindau_000004_000019.png',
-        '/home/voedisch/git/EfficientPS/data/dr_cityscapes/test/images/lindau_000006_000019.png',
-        '/home/voedisch/git/EfficientPS/data/dr_cityscapes/test/images/lindau_000007_000019.png',
-        '/home/voedisch/git/EfficientPS/data/dr_cityscapes/test/images/lindau_000008_000019.png'
+        '/home/voedisch/data/cityscapes/test/images/lindau_000001_000019',
+        '/home/voedisch/data/cityscapes/test/images/lindau_000002_000019',
+        '/home/voedisch/data/cityscapes/test/images/lindau_000003_000019',
     ]
     images = [Image(mmcv.imread(f)) for f in image_filenames]
 
-
-    predictions = learner.infer(images)
-
-    print('done')
+    learner = EfficientPsLearner(
+        device='cuda:0',
+        config_file=str(Path(__file__).parent / 'configs' / 'efficientPS_singlegpu_sample.py')
+    )
+    learner.load(path='/home/voedisch/data/checkpoints/efficientPS_cityscapes/model/model.pth')
+    predictions: List[Tuple[Heatmap, Heatmap]] = learner.infer(images)
 
 
 if __name__ == "__main__":
-    main()
+    train()
+    evaluate()
+    inference()
