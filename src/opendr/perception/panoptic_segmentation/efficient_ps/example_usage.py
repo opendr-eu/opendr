@@ -1,15 +1,20 @@
-import mmcv
-
 from pathlib import Path
 from typing import List, Tuple
 
-from opendr.perception.panoptic_segmentation.efficient_ps.src.opendr_interface.efficient_ps_learner import \
-    EfficientPsLearner
-from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
+import mmcv
+
 from opendr.engine.data import Image
 from opendr.engine.target import Heatmap
+from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
+from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
 
 DATA_ROOT = '/home/voedisch/data'
+
+
+def prepare_dataset():
+    CityscapesDataset.prepare_data('/home/voedisch/data/cityscapes', f'{DATA_ROOT}/cityscapes',
+                                   generate_train_evaluation=False)
+
 
 def train():
     train_dataset = CityscapesDataset(path=f'{DATA_ROOT}/cityscapes/training')
@@ -22,8 +27,7 @@ def train():
         device='cuda:0',
         config_file=str(Path(__file__).parent / 'configs' / 'efficientPS_singlegpu_sample.py')
     )
-    learner.fit(train_dataset, val_dataset=val_dataset, logging_path=str(Path(__file__).parent / 'work_dir'),
-                silent=True)
+    learner.fit(train_dataset, val_dataset=val_dataset, logging_path=str(Path(__file__).parent / 'work_dir'))
     learner.save(path=f'{DATA_ROOT}/checkpoints/sample/model.path')
 
 
@@ -55,9 +59,11 @@ def inference():
 
 
 if __name__ == "__main__":
-    train()
-    print('-' * 40 + '\n===> Training succeeded\n' + '-' * 40)
-    evaluate()
-    print('-' * 40 + '\n===> Evaluation succeeded\n' + '-' * 40)
-    inference()
-    print('-' * 40 + '\n===> Inference succeeded\n' + '-' * 40)
+    prepare_dataset()
+
+    # train()
+    # print('-' * 40 + '\n===> Training succeeded\n' + '-' * 40)
+    # evaluate()
+    # print('-' * 40 + '\n===> Evaluation succeeded\n' + '-' * 40)
+    # inference()
+    # print('-' * 40 + '\n===> Inference succeeded\n' + '-' * 40)

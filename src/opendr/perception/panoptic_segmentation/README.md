@@ -34,3 +34,52 @@ In order to comply with the OpenDR style references, minor changes have been app
 Please note that the original repository is heavily based on
 - [mmdetection](https://github.com/open-mmlab/mmdetection) by the [OpenMMLab](https://openmmlab.com/) project
 - [gen-efficient-net-pytorch](https://github.com/rwightman/gen-efficientnet-pytorch) authored by [Ross Wightman](https://github.com/rwightman)
+
+## Example Usage
+
+**Prepare the downloaded Cityscapes dataset**
+```python
+from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
+DOWNLOAD_PATH = '~/data/cityscapes_raw'
+DATA_ROOT = '~/data/cityscapes'
+CityscapesDataset.prepare_data(DOWNLOAD_PATH, DATA_ROOT)
+```
+
+**Run inference**
+```python
+import mmcv
+from opendr.engine.data import Image
+from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
+DATA_ROOT = '~/data/cityscapes'
+image_filenames = [
+    f'{DATA_ROOT}/val/images/lindau_000001_000019.png',
+    f'{DATA_ROOT}/val/images/lindau_000002_000019.png',
+    f'{DATA_ROOT}/val/images/lindau_000003_000019.png',
+]
+images = [Image(mmcv.imread(f)) for f in image_filenames]
+learner = EfficientPsLearner()
+learner.load('model.pth')
+learner.infer(images)
+``` 
+
+**Run evaluation**
+```python
+from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
+from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
+DATA_ROOT = '~/data/cityscapes'
+val_dataset = CityscapesDataset(path=f'{DATA_ROOT}/val')
+learner = EfficientPsLearner()
+learner.load('model.pth')
+learner.eval(val_dataset, print_results=True)
+```
+
+**Run training**
+```python
+from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
+from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
+DATA_ROOT = '~/data/cityscapes'
+train_dataset = CityscapesDataset(path=f'{DATA_ROOT}/training')
+val_dataset = CityscapesDataset(path=f'{DATA_ROOT}/val')
+learner = EfficientPsLearner()
+learner.fit(train_dataset, val_dataset)
+```

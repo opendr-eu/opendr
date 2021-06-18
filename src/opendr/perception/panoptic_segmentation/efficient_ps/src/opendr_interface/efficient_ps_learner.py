@@ -11,34 +11,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
+import logging
 import os
 import shutil
-import logging
+import time
+import warnings
+from pathlib import Path
+from typing import Optional, List, Dict, Any, Union, Tuple
 
 import numpy as np
-import warnings
-from typing import Optional, List, Dict, Any, Union, Tuple
-from pathlib import Path
-from tqdm import tqdm
-
 import torch
-from torch.utils.data import DataLoader, SequentialSampler
-
 from mmcv import Config
-from mmcv.runner import load_checkpoint, save_checkpoint, Runner
 from mmcv.parallel import scatter, collate, MMDataParallel
+from mmcv.runner import load_checkpoint, save_checkpoint, Runner
+from mmdet.apis.train import batch_processor
+from mmdet.core import get_classes, build_optimizer, EvalHook, save_panoptic_eval
+from mmdet.datasets import build_dataloader
+from mmdet.datasets.pipelines import Compose
+from mmdet.models import build_detector
+from mmdet.utils import collect_env
+from torch.utils.data import DataLoader, SequentialSampler
+from tqdm import tqdm
 
 from opendr.engine.learners import Learner
 from opendr.engine.target import Heatmap
 from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset, Image
-
-from mmdet.core import get_classes, build_optimizer, EvalHook, save_panoptic_eval
-from mmdet.models import build_detector
-from mmdet.datasets.pipelines import Compose
-from mmdet.datasets import build_dataloader
-from mmdet.apis.train import batch_processor
-from mmdet.utils import collect_env
 
 
 class EfficientPsLearner(Learner):
