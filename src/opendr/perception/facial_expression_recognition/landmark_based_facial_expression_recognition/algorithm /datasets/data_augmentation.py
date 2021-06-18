@@ -74,4 +74,3 @@ if __name__ == '__main__':
         label_path = arg.data_folder + '{}_label.pkl'.format(p)
         aug_path = arg.aug_data_folder + '{}_aug.npy'.format(p)
         gen_aug_data(landmark_path, label_path, aug_path)
-

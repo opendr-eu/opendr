@@ -67,4 +67,3 @@ if __name__ == '__main__':
                             sec = sec + frameRate
                             sec = round(sec, 2)
                             success = getFrame(vidcap, sec, framespth, count)
-

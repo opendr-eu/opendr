@@ -131,11 +131,11 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
         self.pstbln_facial_expression_classifier.ort_session = None
         self.pstbln_facial_expression_classifier.init_model()
         self.pstbln_facial_expression_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
-                                           model_name='test_pstgcn')
+                                                      model_name='test_pstgcn')
         self.pstbln_facial_expression_classifier.model = None
         self.pstbln_facial_expression_classifier.topology = [1]
         self.pstbln_facial_expression_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
-                                           model_name='test_pstgcn')
+                                                      model_name='test_pstgcn')
         self.assertIsNotNone(self.pstbln_facial_expression_classifier.model, "model is None after loading pt model.")
         # Cleanup
         rmdir(os.path.join(self.temp_dir, self.experiment_name))
@@ -157,11 +157,11 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
         self.pstbln_facial_expression_classifier.init_model()
         self.pstbln_facial_expression_classifier.optimize()
         self.pstbln_facial_expression_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
-                                           model_name='onnx_model_temp')
+                                                      model_name='onnx_model_temp')
         self.pstbln_facial_expression_classifier.model = None
         self.pstbln_facial_expression_classifier.topology = [1]
         self.pstbln_facial_expression_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
-                                           model_name='onnx_model_temp')
+                                                      model_name='onnx_model_temp')
         self.assertIsNotNone(self.pstbln_facial_expression_classifier.ort_session,
                              "ort_session is None after loading onnx model.")
         # Cleanup

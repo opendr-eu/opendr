@@ -27,12 +27,12 @@ def find_graph_edges(x):
     G = []
     N = neigh.shape[0]
     for i in range(N):
-      G.append((neigh[i][0], neigh[i][1]))
-      G.append((neigh[i][0], neigh[i][2]))
-      G.append((neigh[i][1], neigh[i][2]))
+        G.append((neigh[i][0], neigh[i][1]))
+        G.append((neigh[i][0], neigh[i][2]))
+        G.append((neigh[i][1], neigh[i][2]))
     # connect the master node (nose) to all other nodes
     for i in range(51):
-      G.append((i+1, 17))
+        G.append((i+1, 17))
     edges = G
     return edges
 
@@ -67,4 +67,3 @@ if __name__ == '__main__':
             landmark_path = arg.landmark_data_folder + '/{}/{}.npy'.format(arg.dataset_name, p)
             muscle_path = arg.muscle_data_folder + '/{}/{}_muscle.npy'.format(arg.dataset_name, p)
             gen_muscle_data(landmark_path, muscle_path)
-

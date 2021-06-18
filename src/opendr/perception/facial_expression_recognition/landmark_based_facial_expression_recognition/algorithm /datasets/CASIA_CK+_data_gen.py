@@ -23,7 +23,7 @@ def data_normalization(data):
     Data = torch.from_numpy(data)
     N, V, C, T, M = Data.size()
     Data = Data.permute(0, 2, 3, 1, 4).contiguous().view(N, C, T, V, M)
-    # remove the first 17 points ########
+    # remove the first 17 points
     Data = Data[:, :, :, 17:, :]
     N, C, T, V, M = Data.size()
     # normalization
@@ -142,4 +142,3 @@ if __name__ == '__main__':
         np.save(arg.output_folder + '_val_' + f + '.npy', Val)
         with open(arg.output_folder + '_val_labels_' + f + '.pkl', 'wb') as l:
             pickle.dump(Val_lbl, l)
-

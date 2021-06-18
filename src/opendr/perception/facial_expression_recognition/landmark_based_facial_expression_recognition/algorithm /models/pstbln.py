@@ -38,7 +38,8 @@ class BilinearMapping(nn.Module):
         super(BilinearMapping, self).__init__()
         self.cuda_ = cuda_
         self.num_subset = 3
-        self.graph_attn = nn.Parameter(torch.from_numpy(np.random.rand(self.num_subset, num_point, num_point).astype(np.float32)))
+        self.graph_attn = nn.Parameter(torch.from_numpy(np.random.rand(self.num_subset, num_point,
+                                                                       num_point).astype(np.float32)))
         nn.init.constant_(self.graph_attn, 1e-6)
         self.g_conv = nn.ModuleList()
         for i in range(self.num_subset):
@@ -123,10 +124,10 @@ class PSTBLN(nn.Module):
     def __init__(self, dataset_name, topology, blocksize, cuda_=False):
         super(PSTBLN, self).__init__()
         if dataset_name == 'CK+':
-            num_point =
+            num_point = 303
             num_class = 7
         elif dataset_name == 'CASIA':
-            num_point =
+            num_point = 309
             num_class = 6
         elif dataset_name == 'AFEW':
             num_point = 312

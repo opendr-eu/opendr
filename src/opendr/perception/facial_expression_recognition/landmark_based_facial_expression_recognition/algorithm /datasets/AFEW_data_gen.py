@@ -32,10 +32,10 @@ def data_normalization(data):
     Data = torch.from_numpy(data)
     N, V, C, T, M = Data.size()
     Data = Data.permute(0, 2, 3, 1, 4).contiguous().view(N, C, T, V, M)
-    # remove the first 17 points ########
+    # remove the first 17 points
     Data = Data[:, :, :, 17:, :]
     N, C, T, V, M = Data.size()
-    ####### normalization ###########
+    # normalization
     for n in range(N):
         for t in range(T):
             for v in range(V):
