@@ -130,8 +130,6 @@ test_cfg = dict(
         min_stuff_area=2048))
 
 # dataset settings
-# dataset_type = 'CityscapesDataset'
-# data_root = '/home/voedisch/git/EfficientPS/data/cityscapes/'
 img_norm_cfg = dict(
     mean=[106.433, 116.617, 119.559], std=[65.496, 67.6, 74.123], to_rgb=True)
 train_pipeline = [
@@ -160,58 +158,3 @@ test_pipeline = [
             dict(type='Collect', keys=['img']),
         ])
 ]
-
-# data = dict(
-#     imgs_per_gpu=1,  # batch_size
-#     workers_per_gpu=2,
-#     train=dict(
-#         type=dataset_type,
-#         ann_file=data_root + 'annotations/train_small.json',
-#         img_prefix=data_root + 'train_small/',
-#          seg_prefix=data_root + 'stuffthingmaps/train_small/',
-#         pipeline=train_pipeline),
-#     val=dict(
-#         type=dataset_type,
-#         ann_file=data_root + 'annotations/val.json',
-#         img_prefix=data_root + 'val/',
-#         seg_prefix=data_root + 'stuffthingmaps/val/',
-#         panoptic_gt=data_root + 'cityscapes_panoptic_val',
-#         pipeline=test_pipeline),
-#     test=dict(
-#         type=dataset_type,
-#         ann_file=data_root + 'annotations/val.json',
-#         img_prefix=data_root + 'val/',
-#         seg_prefix=data_root + 'stuffthingmaps/val/',
-#         panoptic_gt=data_root + 'cityscapes_panoptic_val',
-#         pipeline=test_pipeline))
-# evaluation = dict(interval=1, metric=['panoptic'])
-
-# optimizer
-# optimizer = dict(type='SGD', lr=0.07, momentum=0.9, weight_decay=0.0001)
-# optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
-
-# learning policy
-lr_config = dict(
-    policy='step',
-    warmup='linear',
-    warmup_iters=500,
-    warmup_ratio=1.0 / 3,
-    step=[120, 144])
-checkpoint_config = dict(interval=1)
-# yapf:disable
-log_config = dict(
-    interval=1,
-    hooks=[
-        dict(type='TextLoggerHook'),
-        dict(type='TensorboardLoggerHook')
-    ])
-# yapf:enable
-
-# runtime settings
-# total_epochs = 160
-dist_params = dict(backend='nccl')
-log_level = 'INFO'
-# work_dir = None
-load_from = None
-resume_from = None
-# workflow = [('train', 1)]

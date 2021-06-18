@@ -14,6 +14,7 @@
 import time
 import os
 import shutil
+import logging
 
 import numpy as np
 import warnings
@@ -41,22 +42,64 @@ from mmdet.utils import collect_env
 
 
 class EfficientPsLearner(Learner):
+    """
+    The EfficientPsLearner class provides the top-level API to training and evaluating the EfficientPS network.
+    Particularly, it facilitates easy inference on RGB images when using pre-trained model weights.
+    """
     def __init__(self,
                  lr: float = .07,
                  iters: int = 160,
                  batch_size: int = 1,
                  optimizer: str = 'SGD',
+                 lr_schedule: Optional[Dict[str, Any]] = None,
                  momentum: float = .9,
                  weight_decay: float = .0001,
                  optimizer_config: Optional[Dict[str, Any]] = None,
+                 checkpoint_after_iter: int = 1,
+                 temp_path: str = str(Path(__file__).parent / 'eval_tmp_dir'),
                  device: str = "cuda:0",
+                 num_workers: int = 1,
                  seed: Optional[float] = None,
-                 work_dir: str = str(Path(__file__).parents[2] / 'work_dir'),
                  config_file: str = str(Path(__file__).parents[2] / 'configs' / 'efficientPS_singlegpu_sample.py')
                  ):
-        super().__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer, device=device)
+        """
+        :param lr: learning rate [training]
+        :type lr: float
+        :param iters: number of iterations [training]
+        :type iters: int
+        :param batch_size: size of batches [training, evaluation]
+        :type batch_size: int
+        :param lr_schedule: further settings for the learning rate [training]
+        :type lr_schedule: dict
+        :param momentum: momentum used by the optimizer [training]
+        :type momentum: float
+        :param weight_decay: weight decay used by the optimizer [training]
+        :type weight_decay: float
+        :param optimizer_config: further settings for the optimizer [training]
+        :type optimizer_config: dict
+        :param checkpoint_after_iter: defines the interval in epochs to save checkpoints [training]
+        :type checkpoint_after_iter: int
+        :param temp_path: path to a temporary folder that will be created to evaluate the model [training, evaluation]
+        :type temp_path: str
+        :param device: the device to deploy the model
+        :type device: str
+        :param num_workers: number of workers used by the data loaders [training, evaluation]
+        :type num_workers: int
+        :param seed: random seed to shuffle the data during training [training]
+        :type seed: float, optional
+        :param config_file: path to a config file that contains the model and the data loading pipelines
+        :type config_file: str
+        """
+        super().__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer, temp_path=temp_path,
+                         device=device)
+        if lr_schedule is None:
+            lr_schedule = {'policy': 'step', 'warmup': 'linear', 'warmup_iters': 500, 'warmup_ratio': 1 / 3,
+                           'step': [120, 144]}
         if optimizer_config is None:
             optimizer_config = {'grad_clip': {'max_norm': 35, 'norm_type': 2}}
+        self._lr_schedule = lr_schedule
+        self._checkpoint_after_iter = checkpoint_after_iter
+        self._num_workers = num_workers
 
         self._cfg = Config.fromfile(config_file)
         self._cfg.workflow = [('train', 1)]
@@ -64,10 +107,12 @@ class EfficientPsLearner(Learner):
         self._cfg.optimizer = {'type': self.optimizer, 'lr': self.lr, 'momentum': momentum,
                                'weight_decay': weight_decay}
         self._cfg.optimizer_config = optimizer_config
+        self._cfg.lr_config = self.lr_schedule
         self._cfg.total_epochs = self.iters
+        self._cfg.checkpoint_config = {'interval': self.checkpoint_after_iter}
+        self._cfg.log_config = {'interval': 1, 'hooks': [{'type': 'TextLoggerHook'}, {'type': 'TensorboardLoggerHook'}]}
         self._cfg.gpus = 1  # Numbers of GPUs to use (only applicable to non-distributed training)
         self._cfg.seed = seed
-        self._cfg.work_dir = work_dir
 
         # Create model
         self.model = build_detector(self._cfg.model, train_cfg=self._cfg.train_cfg, test_cfg=self._cfg.test_cfg)
@@ -77,32 +122,32 @@ class EfficientPsLearner(Learner):
     def fit(self,
             dataset,
             val_dataset: Optional[CityscapesDataset] = None,
-            silent: Optional[bool] = True,
-            verbose: Optional[bool] = True,
-            num_workers: int = 1
+            logging_path: str = str(Path(__file__).parents[2] / 'work_dir'),
+            silent: bool=False,
+            verbose: Optional[bool]=None
             ):
         """
-        This method is used for training the algorithm on a train dataset and
-        validating on a val dataset.
-
-        Can be parameterized based on the learner attributes and custom hyperparameters
-        added by the implementation and returns stats regarding training and validation.
+        This method is used for training the algorithm on a train dataset and validating on a separate dataset.
 
         :param dataset: Object that holds the training dataset
         :type dataset: Dataset class type
         :param val_dataset: Object that holds the validation dataset
         :type val_dataset: Dataset class type, optional
-        :param verbose: if set to True, enables the maximum logging verbosity (depends on the actual algorithm)
-        :type verbose: bool, optional
-        :param silent: if set to True, disables printing training progress reports to STDOUT
-        :type silent: bool, optional
+        :param logging_path: Path to store the logging files, e.g., training progress and tensorboard logs
+        :type logging_path: str
+        :param silent: if True, disables printing training progress reports to STDOUT. The evaluation will still be shown.
+        :type silent: bool
         """
+        if verbose is not None:
+            warnings.warn('The verbose parameter is not supported and will be ignored.')
+
+        self._cfg.work_dir = logging_path
 
         dataset.pipeline = self._cfg.train_pipeline
         dataloaders = [build_dataloader(
             dataset.get_mmdet_dataset(),
             self.batch_size,
-            num_workers,
+            self.num_workers,
             self._cfg.gpus,
             dist=False,
             seed=self._cfg.seed
@@ -112,6 +157,9 @@ class EfficientPsLearner(Learner):
         self.model = MMDataParallel(self.model, device_ids=range(self._cfg.gpus)).cuda()
 
         optimizer = build_optimizer(self.model, self._cfg.optimizer)
+        logger = logging.getLogger()
+        if silent:
+            logger.propagate = False
 
         # Record some important information such as environment info and seed
         env_info_dict = collect_env()
@@ -123,6 +171,7 @@ class EfficientPsLearner(Learner):
             batch_processor,
             optimizer,
             self._cfg.work_dir,
+            logger=logger,
             meta=meta
         )
 
@@ -136,45 +185,58 @@ class EfficientPsLearner(Learner):
             val_dataloader = build_dataloader(
                 val_dataset.get_mmdet_dataset(test_mode=True),
                 imgs_per_gpu=1,
-                workers_per_gpu=num_workers,
+                workers_per_gpu=self.num_workers,
                 dist=False,
                 shuffle=False
             )
             runner.register_hook(EvalHook(val_dataloader, interval=1, metric=['panoptic']))
 
         runner.run(dataloaders, self._cfg.workflow, self.iters)
+        self._is_model_trained = True
 
     def eval(self,
              dataset: Any,
-             num_workers: int = 0,
-             tmp_directory: str = 'eval_tmp_dir',
              print_results: bool = False
-             ):
+             ) -> Dict[str, Any]:
+        """
+        This method is used to evaluate the algorithm on a dataset and returns the following stats:
+            - Panoptic Quality (PQ)
+            - Segmentation Quality (SQ)
+            - Recognition Quality (RQ)
+
+        :param dataset: Object that holds the evaluation dataset
+        :type dataset: Dataset class type
+        :param print_results: If set to True, the computed metrics will be printed to STDOUT
+        :type print_results: bool
+        :return: Returns stats regarding the evaluation
+        :rtype: dict
+        """
         sampler = SequentialSampler(dataset)
-        dataloader = DataLoader(dataset, batch_size=self.batch_size, sampler=sampler, num_workers=num_workers,
+        dataloader = DataLoader(dataset, batch_size=self.batch_size, sampler=sampler, num_workers=self.num_workers,
                                 collate_fn=lambda x: x)
 
         with tqdm(dataloader, unit='batch') as pbar:
             for i, batch in enumerate(dataloader):
                 images = [data[0] for data in batch]
                 predictions = self.infer(images, return_raw_logits=True)
-                save_panoptic_eval(predictions, path=tmp_directory)
+                save_panoptic_eval(predictions, path=self.temp_path)
                 pbar.update(1)
 
-        results = dataset.evaluate(os.path.join(tmp_directory, 'tmp'), os.path.join(tmp_directory, 'tmp_json'))
+        results = dataset.evaluate(os.path.join(self.temp_path, 'tmp'), os.path.join(self.temp_path, 'tmp_json'))
 
         if print_results:
             msg = f"{'Category':<14s}| {'PQ':>5s} {'SQ':>5s} {'RQ':>5s} {'N':>5s}\n"
             msg += "-" * 41 + "\n"
             for x in ['All', 'Things', 'Stuff']:
-                msg += f"{x:<14s}| {results[x]['pq'] * 100:>5.1f} {results[x]['sq'] * 100:>5.1f} {results[x]['rq'] * 100:>5.1f} {results[x]['n']:>5d}\n"
+                msg += f"{x:<14s}| {results[x]['pq'] * 100:>5.1f} {results[x]['sq'] * 100:>5.1f} "
+                msg += f"{results[x]['rq'] * 100:>5.1f} {results[x]['n']:>5d}\n"
             msg += "-" * 41 + "\n"
             for cat, value in results['per_class'].items():
                 msg += f"{cat:<14s}| {value['pq'] * 100:>5.1f} {value['sq'] * 100:>5.1f} {value['rq'] * 100:>5.1f}\n"
             msg = msg[:-1]
             print(msg)
 
-        shutil.rmtree(tmp_directory)
+        shutil.rmtree(self.temp_path)
         return results
 
     def infer(self,
@@ -290,5 +352,35 @@ class EfficientPsLearner(Learner):
         raise NotImplementedError
 
     @property
-    def config(self):
+    def config(self) -> dict:
+        """
+        Getter of internal configurations required by the mmdet API.
+
+        :return: mmdet configuration
+        :rtype: dict
+        """
         return self._cfg
+
+    @property
+    def num_workers(self) -> int:
+        """
+        Getter of number of workers used in the data loaders.
+
+        :return: number of workers
+        :rtype: int
+        """
+        return self._num_workers
+
+    @num_workers.setter
+    def num_workers(self, value: int):
+        """
+        Setter for number of workers used in the data loaders. This will perform the necessary type and value checking.
+
+        :param value: number of workers
+        :type value: int
+        """
+        if not isinstance(value, int):
+            raise TypeError('num_workers should be an integer.')
+        elif value < 0:
+            raise ValueError('num_workers cannot be negative.')
+        self._num_workers = value
