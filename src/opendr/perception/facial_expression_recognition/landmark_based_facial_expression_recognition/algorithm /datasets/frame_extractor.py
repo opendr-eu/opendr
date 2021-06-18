@@ -14,7 +14,6 @@
 
 
 import os
-import ffmpeg
 import subprocess
 import cv2
 import argparse

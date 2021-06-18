@@ -97,7 +97,7 @@ class ST_BLN_block(nn.Module):
         super(ST_BLN_block, self).__init__()
 
         if layer_ind == 0:
-            in_channels = in_channels
+            in_channels = 2
             residual = False
         else:
             in_channels = topology[layer_ind - 1] * blocksize
