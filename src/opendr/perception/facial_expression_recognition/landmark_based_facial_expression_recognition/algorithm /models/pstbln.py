@@ -92,7 +92,7 @@ class TemporalConvolution(nn.Module):
 
 
 class ST_BLN_block(nn.Module):
-    def __init__(self, topology, blocksize, layer_ind, num_point, cuda_ = False, stride=1, residual=True):
+    def __init__(self, topology, blocksize, layer_ind, num_point, cuda_=False, stride=1, residual=True):
         super(ST_BLN_block, self).__init__()
 
         if layer_ind == 0:
@@ -120,18 +120,29 @@ class ST_BLN_block(nn.Module):
 
 
 class PSTBLN(nn.Module):
-    def __init__(self, topology, blocksize, num_class=6, num_point=312, num_person=1, in_channels=2):
+    def __init__(self, dataset_name, topology, blocksize, cuda_=False):
         super(PSTBLN, self).__init__()
-
+        if dataset_name == 'CK+':
+            num_point =
+            num_class = 7
+        elif dataset_name == 'CASIA':
+            num_point =
+            num_class = 6
+        elif dataset_name == 'AFEW':
+            num_point = 312
+            num_class = 7
+        num_person = 1
+        in_channels = 2
         self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point)
         weights_init(self.data_bn, bs=1)
         self.dropout_ = nn.Dropout(p=0.2)
         self.topology = topology
+        self.cuda_ = cuda_
         self.num_layers = len(self.topology)
         self.block_size = blocksize
         self.layers = nn.ModuleDict(
-            {'l{}'.format(i): ST_BLN_block(self.topology, self.block_size, i, num_point=num_point) for i in
-             range(self.num_layers)})
+            {'l{}'.format(i): ST_BLN_block(self.topology, self.block_size, i, num_point=num_point, cuda_=self.cuda_)
+             for i in range(self.num_layers)})
 
         self.fc = nn.Linear(self.block_size * topology[-1], num_class)  # the normal one
         weights_init(self.fc, bs=num_class)
