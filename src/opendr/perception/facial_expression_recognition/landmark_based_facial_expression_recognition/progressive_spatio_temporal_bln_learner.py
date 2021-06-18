@@ -44,7 +44,7 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.perception.facial_expression_recognition.\
     landmark_based_facial_expression_recognition.algorithm.models.pstbln import PSTBLN
 from opendr.perception.facial_expression_recognition.\
-    landmark_based_facial_expression_recognition.algorithm.datasets.feeder import Feeder
+    landmark_based_facial_expression_recognition.algorithm.feeders.feeder import Feeder
 
 
 class ProgressiveSpatioTemporalBLNLearner(Learner):
@@ -178,7 +178,6 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         traindata = self.__prepare_dataset(dataset,
                                            data_filename=train_data_filename,
                                            labels_filename=train_labels_filename,
-                                           phase='train',
                                            verbose=verbose and not silent)
         train_loader = DataLoader(dataset=traindata,
                                   batch_size=self.batch_size,
@@ -190,7 +189,6 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         valdata = self.__prepare_dataset(val_dataset,
                                          data_filename=val_data_filename,
                                          labels_filename=val_labels_filename,
-                                         phase='val',
                                          verbose=verbose and not silent)
         val_loader = DataLoader(dataset=valdata,
                                 batch_size=self.val_batch_size,
@@ -322,7 +320,6 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
             valdata = self.__prepare_dataset(val_dataset,
                                              data_filename=val_data_filename,
                                              labels_filename=val_labels_filename,
-                                             phase='val',
                                              verbose=verbose and not silent)
             val_loader = DataLoader(dataset=valdata,
                                     batch_size=self.val_batch_size,
@@ -450,11 +447,11 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
             if self.logging:
                 shutil.copy2(inspect.getfile(PSTBLN), self.logging_path)
             if self.device == 'cuda':
-                self.model = PSTBLN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.blocksize,
+                self.model = PSTBLN(dataset_name=self.dataset_name, topology=self.topology, blocksize=self.blocksize,
                                     cuda_=True).cuda(self.output_device)
                 self.loss = nn.CrossEntropyLoss().cuda(self.output_device)
             else:
-                self.model = PSTBLN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.blocksize,
+                self.model = PSTBLN(dataset_name=self.dataset_name, topology=self.topology, blocksize=self.blocksize,
                                     cuda_=False)
                 self.loss = nn.CrossEntropyLoss()
             # print(self.model)
@@ -606,10 +603,12 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         :type do_constant_folding: bool, optional
         """
         # Input to the model
-        if self.dataset_name == 'CASIA' or self.dataset_name == 'CK+':
-            c, t, v, m = [2, 5, 51, 1]
+        if self.dataset_name == 'CASIA':
+            c, t, v, m = [2, 5, 309, 1]
+        elif self.dataset_name == 'CK+':
+            c, t, v, m = [2, 150, 303, 1]
         elif self.dataset_name == 'AFEW':
-            c, t, v, m = [2, 150, 51, 1]
+            c, t, v, m = [2, 150, 312, 1]
         else:
             raise ValueError(self.dataset_name + "is not a valid dataset name. Supported datasets: CASIA,"
                                                  " CK+, AFEW")

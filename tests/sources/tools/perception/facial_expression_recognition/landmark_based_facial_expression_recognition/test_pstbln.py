@@ -56,7 +56,7 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
                                                   device="cpu", temp_path=cls.temp_dir,
                                                   batch_size=5, epochs=1,
                                                   checkpoint_after_iter=1, val_batch_size=5,
-                                                  dataset_name='afew', experiment_name='pstbln_mcdo_casia',
+                                                  dataset_name='CASIA', experiment_name='pstbln_mcdo_casia',
                                                   blocksize=5, numblocks=2, numlayers=2, topology=[],
                                                   layer_threshold=1e-4, block_threshold=1e-4)
         cls.experiment_name = 'pstbln_mcdo_casia'
@@ -157,11 +157,11 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
         self.pstbln_facial_expression_classifier.init_model()
         self.pstbln_facial_expression_classifier.optimize()
         self.pstbln_facial_expression_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
-                                                      model_name='onnx_model_temp')
+                                                      model_name='onnx_model')
         self.pstbln_facial_expression_classifier.model = None
         self.pstbln_facial_expression_classifier.topology = [1]
         self.pstbln_facial_expression_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
-                                                      model_name='onnx_model_temp')
+                                                      model_name='onnx_model')
         self.assertIsNotNone(self.pstbln_facial_expression_classifier.ort_session,
                              "ort_session is None after loading onnx model.")
         # Cleanup
