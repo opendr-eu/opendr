@@ -37,7 +37,7 @@ Please note that the original repository is heavily based on
 
 ## Example Usage
 
-**Prepare the downloaded Cityscapes dataset**
+**Prepare the downloaded Cityscapes dataset** (see the [datasets' readme](./datasets/README.md) as well)
 ```python
 from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
 DOWNLOAD_PATH = '~/data/cityscapes_raw'
