@@ -256,9 +256,9 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
         if output_path.exists():
             raise ValueError('The specified output path already exists.')
         if not (input_path / 'leftImg8bit').exists():
-            raise ValueError('Please download the image files first: leftImg8bit_trainvaltest.zip')
+            raise ValueError('Please download and extract the image files first: leftImg8bit_trainvaltest.zip')
         if not (input_path / 'gtFine').exists():
-            raise ValueError('Please download the gound truth fine annotations first: gtFine_trainvaltest.zip')
+            raise ValueError('Please download and extract the ground truth fine annotations first: gtFine_trainvaltest.zip')
 
         # COCO-style category list
         coco_categories = []
@@ -291,10 +291,10 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
                     for coco_img, coco_ann in pool.imap(
                             partial(
                                 _process_data,
-                                image_base_dir=img_input_dir,
-                                mask_base_dir=mask_input_dir,
-                                image_dir=img_split_dir,
-                                mask_dir=mask_split_dir
+                                image_input_dir=img_input_dir,
+                                mask_input_dir=mask_input_dir,
+                                image_output_dir=img_split_dir,
+                                mask_output_dir=mask_split_dir
                             ),
                             img_list
                     ):

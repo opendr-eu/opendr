@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import requests
 import logging
 import os
 import shutil
@@ -29,7 +30,7 @@ from mmdet.core import get_classes, build_optimizer, EvalHook, save_panoptic_eva
 from mmdet.datasets import build_dataloader
 from mmdet.datasets.pipelines import Compose
 from mmdet.models import build_detector
-from mmdet.utils import collect_env
+from mmdet.utils import collect_env, get_root_logger
 from torch.utils.data import DataLoader, SequentialSampler
 from tqdm import tqdm
 
@@ -43,6 +44,7 @@ class EfficientPsLearner(Learner):
     The EfficientPsLearner class provides the top-level API to training and evaluating the EfficientPS network.
     Particularly, it facilitates easy inference on RGB images when using pre-trained model weights.
     """
+
     def __init__(self,
                  lr: float = .07,
                  iters: int = 160,
@@ -57,7 +59,7 @@ class EfficientPsLearner(Learner):
                  device: str = "cuda:0",
                  num_workers: int = 1,
                  seed: Optional[float] = None,
-                 config_file: str = str(Path(__file__).parents[2] / 'configs' / 'efficientPS_singlegpu_sample.py')
+                 config_file: str = str(Path(__file__).parents[2] / 'configs' / 'singlegpu_sample.py')
                  ):
         """
         :param lr: learning rate [training]
@@ -120,8 +122,8 @@ class EfficientPsLearner(Learner):
             dataset,
             val_dataset: Optional[CityscapesDataset] = None,
             logging_path: str = str(Path(__file__).parents[2] / 'work_dir'),
-            silent: bool=False,
-            verbose: Optional[bool]=None
+            silent: bool = False,
+            verbose: Optional[bool] = None
             ):
         """
         This method is used for training the algorithm on a train dataset and validating on a separate dataset.
@@ -154,9 +156,10 @@ class EfficientPsLearner(Learner):
         self.model = MMDataParallel(self.model, device_ids=range(self._cfg.gpus)).cuda()
 
         optimizer = build_optimizer(self.model, self._cfg.optimizer)
-        logger = logging.getLogger()
         if silent:
-            logger.propagate = False
+            logger = get_root_logger(log_level=logging.WARN)
+        else:
+            logger = get_root_logger(log_level=logging.INFO)
 
         # Record some important information such as environment info and seed
         env_info_dict = collect_env()
@@ -345,8 +348,38 @@ class EfficientPsLearner(Learner):
         # Not needed for this learner since it is stateless.
         raise NotImplementedError
 
-    def download(self) -> bool:
-        raise NotImplementedError
+    @staticmethod
+    def download(path: str, trained_on: str = 'cityscapes') -> None:
+        """
+        Download model weights that have been trained on various datasets.
+
+        Currently, the following models are available:
+            - Cityscapes
+            - KITTI
+
+        :param path: Path to save the model weights
+        :type path: str
+        :param trained_on: Dataset on which the model has been trained
+        :type trained_on: str
+        """
+        available_models = {
+            'cityscapes': 'http://panoptic.cs.uni-freiburg.de/static/models/efficientPS_cityscapes.zip',
+            'kitti': 'http://panoptic.cs.uni-freiburg.de/static/models/efficientPS_kitti.zip'
+        }
+        if trained_on not in available_models.keys():
+            raise ValueError(f'Could not find model weights pre-trained on {trained_on}. '
+                             f'Valid options are {list(available_models.keys())}')
+
+        url = available_models[trained_on]
+        filename = os.path.join(path, url.split('/')[-1])
+
+        resp = requests.get(url, stream=True)
+        total = int(resp.headers.get('content-length', 0))
+        with open(filename, 'wb') as file, tqdm(desc=filename, total=total, unit='iB', unit_scale=True,
+                                             unit_divisor=1024, ) as pbar:
+            for data in resp.iter_content(chunk_size=1024):
+                size = file.write(data)
+                pbar.update(size)
 
     @property
     def config(self) -> dict:
