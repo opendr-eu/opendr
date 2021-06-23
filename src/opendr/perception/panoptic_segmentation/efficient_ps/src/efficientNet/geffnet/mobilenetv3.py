@@ -23,7 +23,6 @@ __all__ = [
     'tf_mobilenetv3_small_minimal_100'
 ]
 
-
 model_urls = {
     'mobilenetv3_rw':
     'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/mobilenetv3_100-35495452.pth',
