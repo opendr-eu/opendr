@@ -1,2 +1,4 @@
-src/*/*.egg-info
-src/*/.eggs
+algorithm/*/*.egg-info
+algorithm/*/.eggs
+
+example_usage.py

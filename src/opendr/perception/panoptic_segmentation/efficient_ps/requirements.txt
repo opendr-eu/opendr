@@ -2,13 +2,12 @@ torch==1.7.1
 torchvision==0.8.2
 tqdm
 mmcv==0.5.9
-git+git://github.com/waspinator/pycococreator.git@0.2.0
-git+https://github.com/mapillary/inplace_abn.git
-# ./src/geffnet
-# ./src/mmdetetection
-
 future
 tensorboard
-
-# required by mmdet
 cityscapesscripts==2.2.0
+
+git+git://github.com/waspinator/pycococreator.git@0.2.0
+git+https://github.com/mapillary/inplace_abn.git
+
+./algorithm/efficientNet
+./algorithm/mmdetection
