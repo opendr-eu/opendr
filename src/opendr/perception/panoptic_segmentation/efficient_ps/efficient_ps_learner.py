@@ -34,9 +34,11 @@ from mmdet.utils import collect_env, get_root_logger
 from torch.utils.data import DataLoader, SequentialSampler
 from tqdm import tqdm
 
+from opendr.engine.data import Image
 from opendr.engine.learners import Learner
 from opendr.engine.target import Heatmap
-from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset, Image
+from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset, KittiDataset
+from opendr.perception.panoptic_segmentation.datasets import Image as ImageWithFilename
 
 
 class EfficientPsLearner(Learner):
@@ -59,7 +61,7 @@ class EfficientPsLearner(Learner):
                  device: str = "cuda:0",
                  num_workers: int = 1,
                  seed: Optional[float] = None,
-                 config_file: str = str(Path(__file__).parents[2] / 'configs' / 'singlegpu_sample.py')
+                 config_file: str = str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
                  ):
         """
         :param lr: learning rate [training]
@@ -68,6 +70,8 @@ class EfficientPsLearner(Learner):
         :type iters: int
         :param batch_size: size of batches [training, evaluation]
         :type batch_size: int
+        :param optimizer: type of the utilized optimizer [training]
+        :type optimizer: str
         :param lr_schedule: further settings for the learning rate [training]
         :type lr_schedule: dict
         :param momentum: momentum used by the optimizer [training]
@@ -119,9 +123,9 @@ class EfficientPsLearner(Learner):
         self._is_model_trained = False
 
     def fit(self,
-            dataset,
-            val_dataset: Optional[CityscapesDataset] = None,
-            logging_path: str = str(Path(__file__).parents[2] / 'work_dir'),
+            dataset: Any,
+            val_dataset: Optional[Union[CityscapesDataset, KittiDataset]] = None,
+            logging_path: str = str(Path(__file__).parent / 'logging'),
             silent: bool = False,
             verbose: Optional[bool] = None
             ):
@@ -215,7 +219,7 @@ class EfficientPsLearner(Learner):
         dataloader = DataLoader(dataset, batch_size=self.batch_size, sampler=sampler, num_workers=self.num_workers,
                                 collate_fn=lambda x: x)
 
-        with tqdm(dataloader, unit='batch') as pbar:
+        with tqdm(dataloader, unit='batch', desc='Evaluating...') as pbar:
             for i, batch in enumerate(dataloader):
                 images = [data[0] for data in batch]
                 predictions = self.infer(images, return_raw_logits=True)
@@ -240,9 +244,9 @@ class EfficientPsLearner(Learner):
         return results
 
     def infer(self,
-              batch: Union[Image, List[Image]],
+              batch: Union[Image, List[Image], ImageWithFilename, List[ImageWithFilename]],
               return_raw_logits: bool = False
-              ) -> Union[List[Tuple[Heatmap, Heatmap]], np.ndarray]:
+              ) -> Union[List[Tuple[Heatmap, Heatmap]], Tuple[Heatmap, Heatmap], np.ndarray]:
         """
         This method performs inference on the batch provided.
 
@@ -264,13 +268,15 @@ class EfficientPsLearner(Learner):
         device = next(self.model.parameters()).device
 
         # Convert to the format expected by the mmdetection API
-        if isinstance(batch, Image):
-            batch = [Image]
+        single_image_mode = False
+        if isinstance(batch, Image) or isinstance(batch, ImageWithFilename):
+            batch = [batch]
+            single_image_mode = True
         mmdet_batch = []
         for img in batch:
-            try:
+            if isinstance(img, ImageWithFilename):
                 filename = img.filename
-            except AttributeError:
+            else:
                 filename = None
             mmdet_img = {'filename': filename, 'img': img.numpy(), 'img_shape': img.numpy().shape,
                          'ori_shape': img.numpy().shape}
@@ -298,7 +304,10 @@ class EfficientPsLearner(Learner):
                     semantic_pred = Heatmap(semantic_pred.astype(np.uint8), description='Semantic prediction')
                     results.append((instance_pred, semantic_pred))
 
-        return results
+        if single_image_mode:
+            return results[0]
+        else:
+            return results
 
     def save(self, path: str) -> bool:
         """
@@ -349,37 +358,52 @@ class EfficientPsLearner(Learner):
         raise NotImplementedError
 
     @staticmethod
-    def download(path: str, trained_on: str = 'cityscapes') -> None:
+    def download(path: str, mode: str = 'model', trained_on: str = 'cityscapes') -> str:
         """
-        Download model weights that have been trained on various datasets.
+        Download data from the OpenDR server. Valid modes include pre-trained model weights and data used in the unit tests.
 
-        Currently, the following models are available:
+        Currently, the following pre-trained models are available:
             - Cityscapes
-            - KITTI
+            - KITTI panoptic segmentation dataset
 
         :param path: Path to save the model weights
         :type path: str
-        :param trained_on: Dataset on which the model has been trained
+        :param mode: What kind of data to download
+        :type mode: str
+        :param trained_on: Dataset on which the model has been trained [applicable only to mode == 'model']
         :type trained_on: str
+        :return: Path to the downloaded file
+        :rtype: str
         """
-        available_models = {
-            'cityscapes': 'http://panoptic.cs.uni-freiburg.de/static/models/efficientPS_cityscapes.zip',
-            'kitti': 'http://panoptic.cs.uni-freiburg.de/static/models/efficientPS_kitti.zip'
-        }
-        if trained_on not in available_models.keys():
-            raise ValueError(f'Could not find model weights pre-trained on {trained_on}. '
-                             f'Valid options are {list(available_models.keys())}')
+        # ToDo: Adjust URLs
+        if mode == 'model':
+            models = {
+                'cityscapes': 'http://panoptic.cs.uni-freiburg.de/static/models/efficientPS_cityscapes.zip',
+                'kitti': 'http://panoptic.cs.uni-freiburg.de/static/models/efficientPS_kitti.zip'
+            }
+            if trained_on not in models.keys():
+                raise ValueError(f'Could not find model weights pre-trained on {trained_on}. '
+                                 f'Valid options are {list(models.keys())}')
 
-        url = available_models[trained_on]
-        filename = os.path.join(path, url.split('/')[-1])
+            url = models[trained_on]
+            filename = os.path.join(path, url.split('/')[-1])
+
+        elif mode == 'test_data':
+            raise NotImplementedError
+            # url = ''
+            # filename = ''
+
+        else:
+            raise ValueError('Invalid mode. Valid options are ["model", "test_data"]')
 
         resp = requests.get(url, stream=True)
         total = int(resp.headers.get('content-length', 0))
         with open(filename, 'wb') as file, tqdm(desc=filename, total=total, unit='iB', unit_scale=True,
-                                             unit_divisor=1024, ) as pbar:
+                                                unit_divisor=1024, ) as pbar:
             for data in resp.iter_content(chunk_size=1024):
                 size = file.write(data)
                 pbar.update(size)
+        return filename
 
     @property
     def config(self) -> dict:
