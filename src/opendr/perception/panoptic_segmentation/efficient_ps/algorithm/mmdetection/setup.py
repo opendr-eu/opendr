@@ -146,7 +146,6 @@ if __name__ == '__main__':
         name='mmdet',
         version=get_version(),
         description='Open MMLab Detection Toolbox and Benchmark',
-        # long_description=readme(),
         author='OpenMMLab',
         author_email='chenkaidev@gmail.com',
         keywords='computer vision, object detection',
@@ -166,12 +165,6 @@ if __name__ == '__main__':
         setup_requires=parse_requirements('requirements/build.txt'),
         tests_require=parse_requirements('requirements/tests.txt'),
         install_requires=parse_requirements('requirements/runtime.txt'),
-        #        extras_require={
-        #            'all': parse_requirements('requirements.txt'),
-        #            'tests': parse_requirements('requirements/tests.txt'),
-        #            'build': parse_requirements('requirements/build.txt'),
-        #            'optional': parse_requirements('requirements/optional.txt'),
-        #        },
         ext_modules=[
             make_cuda_ext(name='compiling_info', module='mmdet.ops.utils', sources=['src/compiling_info.cpp']),
             make_cuda_ext(name='nms_cpu', module='mmdet.ops.nms', sources=['src/nms_cpu.cpp']),

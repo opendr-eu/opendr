@@ -266,3 +266,18 @@ The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class 
   Return the [BoundingBoxList](#class_engine.target.BoundingBoxList) object constructed from this object.
 #### boxes()
   Return the list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) boxes.
+
+
+### class engine.target.Heatmap
+Bases: *ToDo: Inherit from engine.target.Target (issue #90)*
+
+This target is used for multi-class segmentation problems or multi-class problems that require heatmap annotations/outputs.
+
+The [Heatmap](#class_engine.target.Heatmap) class has the following public methods:
+#### Heatmap(data, description=None, class_names=None)
+  Construct a new [Heatmap](#class_engine.target.Heatmap) object based from *data*.
+  - *data* is expected to be a numpy array
+  - *description* is expected to be a string [optional]
+  - *class_names* is expected to be a dictionary and can be used for mapping class IDs (integer) to names (string) [optional]
+#### shape()
+  Returns the shape of the underlying *data* object.

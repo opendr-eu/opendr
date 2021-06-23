@@ -9,5 +9,5 @@ cityscapesscripts==2.2.0
 git+git://github.com/waspinator/pycococreator.git@0.2.0
 git+https://github.com/mapillary/inplace_abn.git
 
-./algorithm/efficientNet
-./algorithm/mmdetection
+-e ./algorithm/efficientNet
+-e ./algorithm/mmdetection
