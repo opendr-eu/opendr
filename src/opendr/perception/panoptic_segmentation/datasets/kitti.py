@@ -231,6 +231,18 @@ class KittiDataset(ExternalDataset, DatasetIterator):
     @staticmethod
     def prepare_data(input_path: Union[str, bytes, os.PathLike], output_path: Union[str, bytes, os.PathLike],
                      generate_train_evaluation: bool = False, num_workers: int = mp.cpu_count()):
+        """
+        Convert the raw KITTI panoptic segmentation dataset to match the expected folder structure.
+
+        :param input_path: path to the raw Cityscapes dataset
+        :type input_path: str, bytes, PathLike
+        :param output_path: path to the converted Cityscapes dataset
+        :type output_path: str, bytes, PathLike
+        :param generate_train_evaluation: if set to True, the training set will prepared to be used for evaluation. Usually, this is not required.
+        :type generate_train_evaluation: bool
+        :param num_workers: number of workers to be used in parallel
+        :type num_workers: int
+        """
         if not isinstance(input_path, Path):
             input_path = Path(input_path)
         if not isinstance(output_path, Path):
@@ -244,8 +256,9 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         if not input_path.exists():
             raise ValueError('The specified input path does not exist.')
         if output_path.exists():
-            # raise ValueError('The specified output path already exists.')
-            shutil.rmtree(output_path)
+            raise ValueError('The specified output path already exists.')
+        if not (input_path / 'training').exists() or not (input_path / 'validation').exists():
+            raise ValueError('Please download and extract the KITTI panoptic segmentation dataset first: http://panoptic.cs.uni-freiburg.de/')
 
         # COCO-style category list
         coco_categories = []
