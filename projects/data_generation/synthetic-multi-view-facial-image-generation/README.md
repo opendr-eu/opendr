@@ -2,13 +2,12 @@
 
 [[Paper]](https://arxiv.org/abs/2003.08124)
 
-We utilize with small modifications  publicly available code in order to be easily executed, a novel un-supervised framework that can synthesize 
-photorealistic rotated faces using only single-view image collections 
-in the wild. The key insight is that rotating faces in the 3D space back and forth, 
+We utilize with small modifications  (in order to be easily executed) publicly available code, namely an  un-supervised framework that can synthesize 
+photorealistic rotated facial images using as input  a single facial image, or multiple such images (one per person). The key insight of the utilized method is that rotating faces in the 3D space back and forth, 
 and re-rendering them to the 2D plane can serve as a strong self-supervision.
 
 #Sources:
-* Face Alignment in Full Pose Range: A 3D Total Solution (IEEETPAMI 2017)
+* Face Alignment in Full Pose Range: A 3D Total Solution (IEEE TPAMI 2017)
 * Neural 3D Mesh Renderer (CVPR 2018)
 * Rotate-and-Render: Unsupervised Photorealistic Face Rotation from Single-View Images (CVPR 2020)
 ## Requirements
