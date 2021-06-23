@@ -17,14 +17,14 @@ import os
 import shutil
 from functools import partial
 from pathlib import Path
-from typing import Tuple, Any, Dict, Union, List
+from typing import Tuple, Any, Dict, Union, List, Optional
 
+import cv2
 import mmcv
 import numpy as np
 from PIL import Image as PilImage
 from cityscapesscripts.evaluation.evalPanopticSemanticLabeling import pq_compute_multi_core, average_pq
 from cityscapesscripts.helpers.labels import labels as cs_labels
-from cityscapesscripts.preparation.createPanopticImgs import convert2panoptic
 from mmdet.datasets import CityscapesDataset as MmdetCityscapesDataset
 from mmdet.datasets import build_dataset
 from pycococreatortools import pycococreatortools as pct
@@ -34,11 +34,13 @@ from opendr.engine.datasets import ExternalDataset, DatasetIterator
 from opendr.perception.panoptic_segmentation.datasets.utils import Image
 
 
-class CityscapesDataset(ExternalDataset, DatasetIterator):
+class KittiDataset(ExternalDataset, DatasetIterator):
     """
-    The CityscapesDataset class provides the OpenDR and mmdet APIs for different use cases. Inference using pre-trained
+    The KittiDataset class provides the OpenDR and mmdet APIs for different use cases. Inference using pre-trained
     models is supported by the OpenDR interface, for training and evaluation an instance of the respective mmdet version
     is created.
+
+    The KITTI panoptic segmentation dataset can be found on the EfficientPS website: http://panoptic.cs.uni-freiburg.de
 
     Use the static method prepare_data() to convert the raw Cityscapes dataset to the structure below.
 
@@ -50,7 +52,7 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
     │   ├── img_0.png
     │   └── ...
     ├── panoptic_gt       [only required for evaluation]
-    │   ├── img_0_gtFine_panoptic.png
+    │   ├── img_0.png
     │   └── ...
     └── stuffthingmaps
         ├── img_0.png
@@ -62,7 +64,7 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
         :param path: path to the top level directory of the dataset
         :type path: str
         """
-        super().__init__(path=path, dataset_type='cityscapes')
+        super().__init__(path=path, dataset_type='kitti')
 
         self._image_folder = Path(self.path) / 'images'
         self._segmentation_folder = Path(self.path) / 'stuffthingmaps'
@@ -80,7 +82,7 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
             assert self._panoptic_gt_file.exists()
             self._panoptic_gt_filenames = sorted([f for f in self._panoptic_gt_folder.glob('*') if f.is_file()])
             for img, gt in zip(self._image_filenames, self._panoptic_gt_filenames):
-                assert img.name == gt.name.replace('_gtFine_panoptic', '')
+                assert img.name == gt.name
 
         self._pipeline = None
         self._mmdet_dataset = (None, None)  # (object, test_mode)
@@ -229,40 +231,33 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
     @staticmethod
     def prepare_data(input_path: Union[str, bytes, os.PathLike], output_path: Union[str, bytes, os.PathLike],
                      generate_train_evaluation: bool = False, num_workers: int = mp.cpu_count()):
-        """
-        Convert the raw Cityscapes dataset to match the expected folder structure.
-
-        :param input_path: path to the raw Cityscapes dataset
-        :type input_path: str, bytes, PathLike
-        :param output_path: path to the converted Cityscapes dataset
-        :type output_path: str, bytes, PathLike
-        :param generate_train_evaluation: if set to True, the training set will prepared to be used for evaluation. Usually, this is not required.
-        :type generate_train_evaluation: bool
-        :param num_workers: number of workers to be used in parallel
-        :type num_workers: int
-        """
         if not isinstance(input_path, Path):
             input_path = Path(input_path)
         if not isinstance(output_path, Path):
             output_path = Path(output_path)
 
         splits = {
-            "train": ("leftImg8bit/train", "gtFine/train"),
-            "val": ("leftImg8bit/val", "gtFine/val"),
+            "train": ("training/images", "training/annotations"),
+            "val": ("validation/images", "validation/annotations"),
         }
 
         if not input_path.exists():
             raise ValueError('The specified input path does not exist.')
         if output_path.exists():
-            raise ValueError('The specified output path already exists.')
-        if not (input_path / 'leftImg8bit').exists():
-            raise ValueError('Please download and extract the image files first: leftImg8bit_trainvaltest.zip')
-        if not (input_path / 'gtFine').exists():
-            raise ValueError('Please download and extract the ground truth fine annotations first: gtFine_trainvaltest.zip')
+            # raise ValueError('The specified output path already exists.')
+            shutil.rmtree(output_path)
 
         # COCO-style category list
         coco_categories = []
+        categories = []
         for label in cs_labels:
+            if label.ignoreInEval:
+                continue
+            categories.append({'id': int(label.id),
+                               'name': label.name,
+                               'color': label.color,
+                               'supercategory': label.category,
+                               'isthing': 1 if label.hasInstances else 0})
             if label.trainId != 255 and label.trainId != -1 and label.hasInstances:
                 coco_categories.append({"id": label.trainId, "name": label.name})
 
@@ -280,60 +275,68 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
             img_split_dir.mkdir(parents=True)
             mask_split_dir.mkdir(parents=True)
 
+            if split == 'val' or generate_train_evaluation:
+                eval_output_dir = output_path / split / 'panoptic_gt'
+                eval_output_dir.mkdir(parents=True)
+            else:
+                eval_output_dir = None
+
             img_input_dir = input_path / split_img_subdir
             mask_input_dir = input_path / split_mask_subdir
-            img_list = [(file.parent.name, file.stem.replace('_gtFine_instanceIds', ''), 'gtFine') for file in
-                        mask_input_dir.glob('*/*_instanceIds.png')]
+            img_list = [file.stem for file in mask_input_dir.glob('*.png')]
+
+            images = []
+            annotations = []
 
             # Convert to COCO detection format
             with tqdm(total=len(img_list), desc=f'Converting {split}') as pbar:
                 with mp.Pool(processes=num_workers, initializer=_Counter.init_counter, initargs=(_Counter(0),)) as pool:
-                    for coco_img, coco_ann in pool.imap(
+                    for coco_img, coco_ann, city_img, city_ann in pool.imap(
                             partial(
                                 _process_data,
                                 image_input_dir=img_input_dir,
                                 mask_input_dir=mask_input_dir,
                                 image_output_dir=img_split_dir,
-                                mask_output_dir=mask_split_dir
+                                mask_output_dir=mask_split_dir,
+                                eval_output_dir=eval_output_dir
                             ),
                             img_list
                     ):
                         coco_out["images"].append(coco_img)
                         coco_out["annotations"] += coco_ann
+                        images.append(city_img)
+                        annotations.append(city_ann)
                         pbar.update(1)
+
+            if split == 'val' or generate_train_evaluation:
+                d = {'images': images,
+                     'annotations': annotations,
+                     'categories': categories}
+                with open(output_path / split / 'panoptic_gt.json', 'w') as f:
+                    json.dump(d, f, indent=4)
 
             # Write COCO detection format annotation
             with open(output_path / split / 'annotations.json', "w") as f:
                 json.dump(coco_out, f, indent=4)
 
-        # Generate panoptic ground truth data used during evaluation
-        set_names = ['val']
-        if generate_train_evaluation:
-            set_names.append('train')
-        for split in set_names:
-            convert2panoptic(
-                cityscapesPath=input_path / 'gtFine',
-                outputFolder=output_path,
-                setNames=[split]
-            )
-            shutil.move(output_path / f'cityscapes_panoptic_{split}', output_path / split / 'panoptic_gt')
-            shutil.move(output_path / f'cityscapes_panoptic_{split}.json', output_path / split / 'panoptic_gt.json')
 
-
-def _process_data(image, image_input_dir: Path, mask_input_dir: Path, image_output_dir: Path, mask_output_dir: Path):
-    img_dir, img_id, lbl_cat = image
+def _process_data(img_id: str, image_input_dir: Path, mask_input_dir: Path, image_output_dir: Path,
+                  mask_output_dir: Path, eval_output_dir: Optional[Path]):
     img_unique_id = counter.increment()
     coco_ann = []
 
     # Load the annotation
-    with PilImage.open(mask_input_dir / img_dir / f"{img_id}_{lbl_cat}_instanceIds.png") as lbl_img:
-        lbl = np.array(lbl_img)
-        lbl_size = lbl_img.size
-    ids = np.unique(lbl)
+    with PilImage.open(mask_input_dir / f"{img_id}.png") as lbl_img:
+        lbl = cv2.resize(np.array(lbl_img), (1280, 384), interpolation=cv2.INTER_NEAREST)
+        lbl_size = lbl.shape[:2][::-1]
+
+    color_ids = np.vstack({tuple(r) for r in lbl.reshape(-1, 3)})
 
     # Compress the labels and compute cat
-    lbl_out = np.ones(lbl.shape, np.uint8) * 255
-    for city_id in ids:
+    lbl_out = np.ones(lbl.shape[:2], np.uint8) * 255
+    segmInfo = []
+    for color_id in color_ids:
+        city_id = color_id[2] * 256 * 256 + color_id[1] * 256 + color_id[0]
         if city_id < 1000:
             # Stuff or group
             cls_i = city_id
@@ -350,7 +353,27 @@ def _process_data(image, image_input_dir: Path, mask_input_dir: Path, image_outp
         # Extract all necessary information
         iss_class_id = cs_labels[cls_i].trainId
 
-        mask_i = lbl == city_id
+        mask_i = np.logical_and(np.logical_and(lbl[:, :, 0] == color_id[0], lbl[:, :, 1] == color_id[1]),
+                                lbl[:, :, 2] == color_id[2])
+
+        area = np.sum(mask_i)  # segment area computation
+
+        # bbox computation for a segment
+        hor = np.sum(mask_i, axis=0)
+        hor_idx = np.nonzero(hor)[0]
+        x = hor_idx[0]
+        width = hor_idx[-1] - x + 1
+        vert = np.sum(mask_i, axis=1)
+        vert_idx = np.nonzero(vert)[0]
+        y = vert_idx[0]
+        height = vert_idx[-1] - y + 1
+        bbox = [int(x), int(y), int(width), int(height)]
+
+        segmInfo.append({"id": int(city_id),
+                         "category_id": int(cls_i),
+                         "area": int(area),
+                         "bbox": bbox,
+                         "iscrowd": iscrowd_i})
 
         lbl_out[mask_i] = iss_class_id
 
@@ -361,14 +384,25 @@ def _process_data(image, image_input_dir: Path, mask_input_dir: Path, image_outp
             if coco_ann_i is not None:
                 coco_ann.append(coco_ann_i)
 
-        # COCO detection format image annotation
-        coco_img = pct.create_image_info(img_unique_id, f'{img_id}.png', lbl_size)
+    # COCO detection format image annotation
+    coco_img = pct.create_image_info(img_unique_id, f'{img_id}.png', lbl_size)
 
-        # Write output
-        PilImage.fromarray(lbl_out).save(mask_output_dir / f'{img_id}.png')
-        shutil.copy(image_input_dir / img_dir / f'{img_id}_leftImg8bit.png', image_output_dir / f'{img_id}.png')
+    # Write output
+    PilImage.fromarray(lbl_out).save(mask_output_dir / f'{img_id}.png')
+    shutil.copy(image_input_dir / f'{img_id}.png', image_output_dir / f'{img_id}.png')
+    if eval_output_dir is not None:
+        PilImage.fromarray(lbl).save(eval_output_dir / f'{img_id}.png')
 
-        return coco_img, coco_ann
+    city_ann = {'image_id': img_id,
+                'file_name': f'{img_id}.png',
+                'segments_info': segmInfo}
+
+    city_img = {"id": img_id,
+                "width": int(lbl.shape[1]),
+                "height": int(lbl.shape[0]),
+                "file_name": f'{img_id}.png'}
+
+    return coco_img, coco_ann, city_img, city_ann
 
 
 class _Counter:

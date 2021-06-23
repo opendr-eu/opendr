@@ -5,11 +5,12 @@ import mmcv
 
 from opendr.engine.data import Image
 from opendr.engine.target import Heatmap
-from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
+from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset, KittiDataset
 from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
 
 DATA_ROOT = '/home/voedisch/data'
 CITYSCAPES_ROOT = f'{DATA_ROOT}/cityscapes_pt_small'
+KITTI_ROOT = f'{DATA_ROOT}/kitti_pt'
 
 
 def download_models():
@@ -18,7 +19,8 @@ def download_models():
 
 
 def prepare_dataset():
-    CityscapesDataset.prepare_data('/home/voedisch/data/cityscapes', CITYSCAPES_ROOT)
+    # CityscapesDataset.prepare_data('/home/voedisch/data/cityscapes', CITYSCAPES_ROOT)
+    KittiDataset.prepare_data('/home/voedisch/data/kitti_panoptic', KITTI_ROOT)
 
 
 def train():
