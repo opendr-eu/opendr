@@ -8,8 +8,8 @@ from opendr.engine.target import Heatmap
 from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset, KittiDataset
 from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
 
-DATA_ROOT = '/home/voedisch/data'
-CITYSCAPES_ROOT = f'{DATA_ROOT}/cityscapes_pt_small'
+DATA_ROOT = '/home/user/data'
+CITYSCAPES_ROOT = f'{DATA_ROOT}/cityscapes_pt'
 KITTI_ROOT = f'{DATA_ROOT}/kitti_pt'
 
 
@@ -19,7 +19,7 @@ def download_models():
 
 
 def prepare_dataset():
-    # CityscapesDataset.prepare_data('/home/voedisch/data/cityscapes', CITYSCAPES_ROOT)
+    CityscapesDataset.prepare_data('/home/voedisch/data/cityscapes', CITYSCAPES_ROOT)
     KittiDataset.prepare_data('/home/voedisch/data/kitti_panoptic', KITTI_ROOT)
 
 
@@ -66,12 +66,12 @@ def inference():
 
 
 if __name__ == "__main__":
-    # download_models()
+    download_models()
     prepare_dataset()
 
-    # train()
-    # print('-' * 40 + '\n===> Training succeeded\n' + '-' * 40)
-    # evaluate()
-    # print('-' * 40 + '\n===> Evaluation succeeded\n' + '-' * 40)
-    # inference()
-    # print('-' * 40 + '\n===> Inference succeeded\n' + '-' * 40)
+    train()
+    print('-' * 40 + '\n===> Training succeeded\n' + '-' * 40)
+    evaluate()
+    print('-' * 40 + '\n===> Evaluation succeeded\n' + '-' * 40)
+    inference()
+    print('-' * 40 + '\n===> Inference succeeded\n' + '-' * 40)
