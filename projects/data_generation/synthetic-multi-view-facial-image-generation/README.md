@@ -2,7 +2,7 @@
 
 [[Paper]](https://arxiv.org/abs/2003.08124)
 
-We cite with small modifications of publicly available code in order to be easily executed, a novel un-supervised framework that can synthesize 
+We utilize with small modifications  publicly available code in order to be easily executed, a novel un-supervised framework that can synthesize 
 photorealistic rotated faces using only single-view image collections 
 in the wild. The key insight is that rotating faces in the 3D space back and forth, 
 and re-rendering them to the 2D plane can serve as a strong self-supervision.
