@@ -11,11 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import requests
 import logging
 import os
 import shutil
 import time
+import urllib
 import warnings
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Union, Tuple
@@ -34,6 +34,7 @@ from mmdet.utils import collect_env, get_root_logger
 from torch.utils.data import DataLoader, SequentialSampler
 from tqdm import tqdm
 
+from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Image
 from opendr.engine.learners import Learner
 from opendr.engine.target import Heatmap
@@ -378,31 +379,33 @@ class EfficientPsLearner(Learner):
         # ToDo: Adjust URLs
         if mode == 'model':
             models = {
-                'cityscapes': 'http://panoptic.cs.uni-freiburg.de/static/models/efficientPS_cityscapes.zip',
-                'kitti': 'http://panoptic.cs.uni-freiburg.de/static/models/efficientPS_kitti.zip'
+                'cityscapes': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/models/model_cityscapes.pth',
+                'kitti': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/models/model_kitti.pth'
             }
             if trained_on not in models.keys():
                 raise ValueError(f'Could not find model weights pre-trained on {trained_on}. '
                                  f'Valid options are {list(models.keys())}')
-
             url = models[trained_on]
-            filename = os.path.join(path, url.split('/')[-1])
-
         elif mode == 'test_data':
-            raise NotImplementedError
-            # url = ''
-            # filename = ''
-
+            url = f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/test_data/test_data.zip'
         else:
             raise ValueError('Invalid mode. Valid options are ["model", "test_data"]')
 
-        resp = requests.get(url, stream=True)
-        total = int(resp.headers.get('content-length', 0))
-        with open(filename, 'wb') as file, tqdm(desc=filename, total=total, unit='iB', unit_scale=True,
-                                                unit_divisor=1024, ) as pbar:
-            for data in resp.iter_content(chunk_size=1024):
-                size = file.write(data)
-                pbar.update(size)
+        filename = os.path.join(path, url.split('/')[-1])
+
+        def pbar_hook(pbar: tqdm):
+            prev_b = [0]
+
+            def update_to(b=1, bsize=1, total=None):
+                if total is not None:
+                    pbar.total = total
+                pbar.update((b - prev_b[0]) * bsize)
+                prev_b[0] = b
+
+            return update_to
+
+        with tqdm(unit='B', unit_scale=True, unit_divisor=1024, miniters=1, desc=f'Downloading {filename}') as pbar:
+            urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
         return filename
 
     @property

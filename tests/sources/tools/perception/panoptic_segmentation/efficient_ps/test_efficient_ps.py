@@ -11,20 +11,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import os
 import shutil
+import unittest
 import warnings
-import mmcv
-from typing import List, Tuple
 import zipfile
+from typing import List, Tuple
+
+import mmcv
 
 from opendr.engine.data import Image
 from opendr.engine.target import Heatmap
-
-from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
 from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
 from opendr.perception.panoptic_segmentation.datasets import Image as ImageWithFilename
+from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
 
 
 def rmfile(path):
@@ -52,9 +52,10 @@ class TestEfficientPsLearner(unittest.TestCase):
 
         # Download all required files for testing
         cls.model_weights = EfficientPsLearner.download(path=cls.temp_dir, trained_on='cityscapes')
-        cls.test_data = EfficientPsLearner.download(path=cls.temp_dir, mode='test_data')
-        with zipfile.ZipFile(cls.test_data, 'r') as f:
-            f.extractall(os.path.dirname(cls.test_data))
+        test_data_zipped = EfficientPsLearner.download(path=cls.temp_dir, mode='test_data')
+        cls.test_data = os.path.join(cls.temp_dir, 'test_data')
+        with zipfile.ZipFile(test_data_zipped, 'r') as f:
+            f.extractall(cls.test_data)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -73,7 +74,7 @@ class TestEfficientPsLearner(unittest.TestCase):
         # From mmdet base code
         warnings.simplefilter('ignore', UserWarning)
         warnings.simplefilter('ignore', DeprecationWarning)
-        
+
         val_dataset = CityscapesDataset(path=os.path.join(self.test_data, 'eval_data'))
         learner = EfficientPsLearner(batch_size=1)
         learner.load(self.model_weights)

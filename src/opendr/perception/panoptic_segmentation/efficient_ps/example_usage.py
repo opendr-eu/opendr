@@ -32,8 +32,8 @@ def download_models():
 
 
 def prepare_dataset():
-    CityscapesDataset.prepare_data('/home/voedisch/data/cityscapes', CITYSCAPES_ROOT)
-    KittiDataset.prepare_data('/home/voedisch/data/kitti_panoptic', KITTI_ROOT)
+    CityscapesDataset.prepare_data('/home/user/data/cityscapes', CITYSCAPES_ROOT)
+    KittiDataset.prepare_data('/home/user/data/kitti_panoptic', KITTI_ROOT)
 
 
 def train():
