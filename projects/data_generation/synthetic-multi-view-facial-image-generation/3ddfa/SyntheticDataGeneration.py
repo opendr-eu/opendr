@@ -40,24 +40,28 @@ from tqdm import tqdm
 from shutil import copyfile
 import cv2
 import os
+import sys
+import path_helper
 import main
 import inference
 import test_multipose
 import argparse
 from utils.ddfa import str2bool
-from opendr.engine.learners import Learner
+sys.path.append("./../../../../")
+from src.opendr.engine.learners import Learner
 
 
 class MultiviewDataGenerationLearner(Learner):
-    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-    def __init__(self):
+    def __init__(self, path_in='blabla', path_3ddfa='blabla', val_yaw='10,20', val_pitch=' 30,40'):
 
-        self.rootdir = input("Enter the folder with subfolders of images: ")
-        self.path = input("Enter the path of folder 3ddfa, e.g.'/home/<user>/Documents/Rotate-and-Render/3ddfa/': ")
-        self.key = str(self.path + "/example/Images/")
-        self.key1 = str(self.path + "/example/")
-        self.key2 = str(self.path + "/results/")
+        self.path_in=path_in
+        self.key = str(path_3ddfa + "/example/Images/")
+        self.key1 = str(path_3ddfa + "/example/")
+        self.key2 = str(path_3ddfa + "/results/")
+        self.val_yaw=val_yaw
+        self.val_pitch=val_pitch
 
         parser = argparse.ArgumentParser(description='3DDFA inference pipeline')
         parser.add_argument('-f', '--files', nargs='+',
@@ -111,7 +115,7 @@ class MultiviewDataGenerationLearner(Learner):
         print("START")
 
         a = open("file_list.txt", "w")
-        for subdir, dirs, files in os.walk(self.rootdir):
+        for subdir, dirs, files in os.walk(self.path_in):
             print(subdir)
             print(dirs)
             current_directory_path = os.path.abspath(subdir)
@@ -135,7 +139,7 @@ class MultiviewDataGenerationLearner(Learner):
 
         im_list2 = []
         d = open(os.path.join(self.key1, 'realign_lmk'), "w")
-        for subdir, dirs, files in os.walk(self.rootdir):
+        for subdir, dirs, files in os.walk(self.path_in):
             current_directory_path = os.path.abspath(subdir)
             self.args2.img_prefix = current_directory_path
             self.args2.save_dir = os.path.abspath(self.key2)
@@ -172,34 +176,34 @@ class MultiviewDataGenerationLearner(Learner):
         d.close()
 
         # STAGE No3: Generate Facial Images in specific pitch and yaw angles
-        test_multipose.main()
+        test_multipose.main(self.val_yaw, self.val_pitch)
 
 
-def fit(self):
-    # do nothing
-    print("do nothing")
+    def fit(self):
+      # do nothing
+      print("do nothing")
+
+ 
+    def infer(self):
+     # do nothing
+     print("do nothing")
 
 
-def infer(self):
-    # do nothing
-    print("do nothing")
+    def load(self):
+     # do nothing
+     print("do nothing")
 
 
-def load(self):
-    # do nothing
-    print("do nothing")
+    def optimize(self):
+     # do nothing
+     print("do nothing")
 
 
-def optimize(self):
-    # do nothing
-    print("do nothing")
+    def reset(self):
+     # do nothing
+     print("do nothing")
 
 
-def reset(self):
-    # do nothing
-    print("do nothing")
-
-
-def save(self):
-    # do nothing
-    print("do nothing")
+    def save(self):
+     # do nothing
+     print("do nothing")

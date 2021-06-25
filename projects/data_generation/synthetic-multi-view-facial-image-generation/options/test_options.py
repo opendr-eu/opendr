@@ -4,12 +4,12 @@ from .base_options import BaseOptions
 class TestOptions(BaseOptions):
     def initialize(self, parser):
         BaseOptions.initialize(self, parser)
-        list_yaw = []
-        list_pitch = []
-        val_yaw = input("Enter the yaw poses': ")
-        list_yaw = [float(x) for x in val_yaw.split(",")]
-        val_pitch = input("Enter the pitch poses': ")
-        list_pitch = [float(x) for x in val_pitch.split(",")]
+        #list_yaw = []
+        #list_pitch = []
+        #val_yaw = input("Enter the yaw poses': ")
+        #list_yaw = [float(x) for x in val_yaw.split(",")]
+        #val_pitch = input("Enter the pitch poses': ")
+        #list_pitch = [float(x) for x in val_pitch.split(",")]
         parser.add_argument('--results_dir', type=str, default='./results/', help='saves results here.')
         parser.add_argument('--list_num', type=int, default=0, help='list num')
         parser.add_argument('--which_epoch', type=str, default='latest',
@@ -21,10 +21,10 @@ class TestOptions(BaseOptions):
         parser.add_argument('--names', type=str, default='Bernard_Giraudeau', help='dataset')
         parser.add_argument('--multi_gpu', action='store_true', help='whether to use multi gpus')
         parser.add_argument('--align', action='store_true', help='whether to save align')
-        parser.add_argument('--yaw_poses', type=float, default=list_yaw, nargs='+',
-                            help='yaw poses list during testing')
-        parser.add_argument('--pitch_poses', type=float, default=list_pitch, nargs='+',
-                            help='pitch poses list during testing')
+        #parser.add_argument('--yaw_poses', type=str, default='30,40', nargs='+',
+                     #       help='yaw poses list during testing')
+        #parser.add_argument('--pitch_poses', type=str, default='10,20', nargs='+',
+                      #      help='pitch poses list during testing')
         parser.add_argument('--posesrandom', action='store_true', help='whether to random the poses')
 
         parser.set_defaults(preprocess_mode='scale_width_and_crop', crop_size=256, load_size=256, display_winsize=256)

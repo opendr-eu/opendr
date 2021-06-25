@@ -12,6 +12,7 @@ from skimage import transform as trans
 import cv2
 import time
 import torch
+import math
 from models.networks.rotate_render import TestRender
 multiprocessing.set_start_method('spawn', force=True)
 
@@ -75,14 +76,27 @@ def save_img(img, save_path):
     return image_numpy
 
 
-def main():
+def main(val_yaw, val_pitch):
     import data
     opt = TestOptions().parse()
     data_info = data.dataset_info()
+    opt.yaw_poses=[float(x) for x in val_yaw.split(",")]
+    opt.pitch_poses=[float(x) for x in val_pitch.split(",")]
+    if not opt.isTrain:
+            # change radian to angle
+            if opt.yaw_poses is not None:
+                for pose in opt.yaw_poses:
+                    assert abs(pose) <= 90, "yaw pose must be between [-90, 90]"
+                opt.yaw_poses = [round(x / 180.0 * math.pi, 2) for x in opt.yaw_poses]
+            if opt.pitch_poses is not None:
+                for pose in opt.pitch_poses:
+                    assert abs(pose) <= 90, "pitch pose must be between [-90, 90]"
+                opt.pitch_poses = [round(x / 180.0 * math.pi, 2) for x in opt.pitch_poses]                       
     datanum = data_info.get_dataset(opt)[0]
     folderlevel = data_info.folder_level[datanum]
 
     dataloaders = data.create_dataloader_test(opt)
+    
 
     Visualizer(opt)
     iter_counter = IterationCounter(opt, len(dataloaders[0]) * opt.render_thread)

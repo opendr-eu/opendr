@@ -108,7 +108,7 @@ class Render(object):
     def __init__(self, opt):
         self.opt = opt
         self.render_size = opt.crop_size
-        self.d = './3ddfa/train.configs'
+        self.d = './train.configs'
         w_shp = _load(osp.join(self.d, 'w_shp_sim.npy'))
         w_exp = _load(osp.join(self.d, 'w_exp_sim.npy'))  # simplified version
         u_shp = _load(osp.join(self.d, 'u_shp.npy'))
@@ -117,7 +117,7 @@ class Render(object):
         self.pose_noise = getattr(opt, 'pose_noise', False)
         self.large_pose = getattr(opt, 'large_pose', False)
         u = u_shp + u_exp
-        tri = sio.loadmat('./3ddfa/visualize/tri.mat')['tri']  # 3 * 53215
+        tri = sio.loadmat('./visualize/tri.mat')['tri']  # 3 * 53215
         faces_np = np.expand_dims(tri.T, axis=0).astype(np.int32) - 1
 
         self.std_size = 120

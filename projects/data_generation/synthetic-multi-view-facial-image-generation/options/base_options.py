@@ -19,19 +19,19 @@ class BaseOptions():
         parser.add_argument('--name', type=str, default='rs_model',
                             help='name of the experiment. It decides where to store samples and models')
 
-        parser.add_argument('--gpu_ids', type=str, default='3', nargs='+', help='useless')
+        parser.add_argument('--gpu_ids', type=str, default='0', nargs='+', help='useless')
         parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
-        parser.add_argument('--model', type=str, default='rotate', help='which model to use, rotate|rotatespade')
+        parser.add_argument('--model', type=str, default='rotatespade', help='which model to use, rotate|rotatespade')
         parser.add_argument('--trainer', type=str, default='rotate', help='which trainer to use, rotate|rotatespade')
+        parser.add_argument('--norm_D', type=str, default='spectralsyncbatch',
+                            help='instance normalization or batch normalization')
         parser.add_argument('--norm_G', type=str, default='spectralsyncbatch',
                             help='instance normalization or batch normalization')
-        parser.add_argument('--norm_D', type=str, default='spectralinstance',
+        parser.add_argument('--norm_E', type=str, default='spectralsyncbatch',
                             help='instance normalization or batch normalization')
-        parser.add_argument('--norm_E', type=str, default='spectralinstance',
-                            help='instance normalization or batch normalization')
-        parser.add_argument('--phase', type=str, default='train', help='train, val, test, etc')
+        parser.add_argument('--phase', type=str, default='test', help='train, val, test, etc')
 
-        parser.add_argument('--device_count', type=int, default=2, help='the total number of gpus to use')  # 2
+        parser.add_argument('--device_count', type=int, default=1, help='the total number of gpus to use')  # 2
         parser.add_argument('--render_thread', type=int, default=1, help='number of gpus used for rendering')  # 1
         parser.add_argument('--chunk_size', default=1, type=int, nargs='+',
                             help='specify the batch size on each training gpu. Training gpu # = device_count - render_thread')
@@ -60,7 +60,7 @@ class BaseOptions():
         parser.add_argument('--use_BG', action='store_true', help='')
         parser.add_argument('--use_vae', action='store_true', help='')
         # for setting inputs
-        parser.add_argument('--dataset', type=str, default='ms1m,casia', help='dataset')
+        parser.add_argument('--dataset', type=str, default='example', help='dataset')
         parser.add_argument('--dataset_mode', type=str, default='allface')
         parser.add_argument('--landmark_align', action='store_true', help='wether there is landmark_align')
         parser.add_argument('--serial_batches', action='store_true',
@@ -189,7 +189,7 @@ class BaseOptions():
         self.print_options(opt)
         if opt.isTrain:
             self.save_options(opt)
-
+        ''' 
         if not opt.isTrain:
             # change radian to angle
             if opt.yaw_poses is not None:
@@ -200,7 +200,7 @@ class BaseOptions():
                 for pose in opt.pitch_poses:
                     assert abs(pose) <= 90, "pitch pose must be between [-90, 90]"
                 opt.pitch_poses = [round(x / 180.0 * math.pi, 2) for x in opt.pitch_poses]
-
+        ''' 
         # Set semantic_nc based on the option.
         # This will be convenient in many places
         opt.semantic_nc = opt.label_nc + (3 if opt.use_BG else 0)
