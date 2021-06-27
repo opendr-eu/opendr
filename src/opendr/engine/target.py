@@ -758,3 +758,31 @@ class SpeechCommand(Target):
             return f"Class {self.data} speech command with confidence {self.confidence}"
         else:
             return f"Class {self.data} speech command"
+        
+        
+class Heatmap(Target):
+    """
+    A class used for semantic segmentation. 
+    
+    """
+
+    def __init__(self, data):
+        super().__init__()
+        self.data = data
+        
+    def numpy(self):
+        """
+        Returns a NumPy-compatible representation of data.
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        # Since this class stores the data as NumPy arrays, we can directly return the data
+        return self.data
+
+    def __str__(self):
+        """
+        Returns a human-friendly string-based representation of the data.
+        :return: a human-friendly string-based representation of the data
+        :rtype: str
+        """
+        return str(self.data)
