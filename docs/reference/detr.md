@@ -40,8 +40,8 @@ Constructor parameters:
 - **threshold**: *float, default=0.7*
   Specifies the threshold for object detection inference. An object is detected if the confidence of the output is higher than the specified threshold.
 - **num_classes**: *int, default=91*
-  Specifies the number of classes of the model. The default is 91, since this is the number of classes in the COCO dataset, but modifying the num_classes allows the user to train on its own dataset. 
-  It is also possible to use pretrained DETR models with the specified num_classes, since the head of the pretrained model with be modified appropriately. 
+  Specifies the number of classes of the model. The default is 91, since this is the number of classes in the COCO dataset, but modifying the num_classes allows the user to train on its own dataset.
+  It is also possible to use pretrained DETR models with the specified num_classes, since the head of the pretrained model with be modified appropriately.
   In this way, a model that was pretrained on the coco dataset can be finetuned to another dataset. Training on other datasets than COCO can be done by creating a DatasetIterator that outputs (Image, BoundingBoxList) tuples.
   Below you can find an example that shows how you can create such a DatasetIterator.
 - **return_segmentations**: *bool, default=False*
@@ -145,29 +145,26 @@ Parameters:
   ONNX format optimization.
   If True, the constant-folding optimization is applied to the model during export. Constant-folding optimization will replace some of the ops that have all constant inputs, with pre-computed constant nodes.
 
-#### `DetrLearner.download_model`
+#### `DetrLearner.download`
 ```python
-DetrLearner.download_model(self, panoptic, backbone, dilation, pretrained)
+DetrLearner.download(self, panoptic, backbone, dilation, pretrained)
 ```
 
-Method for downloading (pretrained) models from the [DETR github](https://github.com/facebookresearch/detr).
+Download utility for various DETR components. Downloads files depending on mode and
+        saves them in the path provided. It supports downloading:
+        1) the default resnet50 and resnet101 pretrained models
+        2) resnet50 and resnet101 weights needed for training
+        3) a test dataset with a single COCO image and its annotation
 
 Parameters:
-- **panoptic** : *bool, default=False.*
-  This bool differentiates between coco or coco_panoptic models. If False, a coco model is downloaded instead of a coco_panoptic model.
-- **backbone** : *str, default='resnet50'*
+- **path** : *str, default=None.*
+  Local path to save the files.
+- **mode** : *str, default='pretrained'*
   This str determines the backbone that is used in the model. There are two possible backbones: "resnet50" and "resnet101".
-- **dilation** : *bool, default=False*
+- **verbose** : *bool, default=False*
   If set to true, dilation is used in the model, otherwise not.
 - **pretrained** : *bool, default=True*
-  If True, a pretrained model is downloaded.
-
-#### `DetrLearner.download_nano_coco`
-```python
-DetrLearner.download_nano_coco(self)
-```
-
-Method for downloading a minimal coco dataset from the OpenDR server that contains a single image for running tests. The dataset will be saved in the `temp_path`.
+  Whether to print all output in the console. The default is False.
 
 #### Examples
 
@@ -186,15 +183,15 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
 
   training_dataset = ExternalDataset(path="./data", dataset_type="COCO")
   validation_dataset = ExternalDataset(path="./data", dataset_type="COCO")
-  
+
   detr_learner.fit(dataset=training_dataset, val_dataset=validation_dataset, logging_path="./logs")
   detr_learner.save('./saved_models/trained_model')
   ```
 * **Training example with a custom `DatasetIterator`.**
-  This example serves to show how a custom dataset can be created by a user and used for training. 
+  This example serves to show how a custom dataset can be created by a user and used for training.
   In this way, the user can easily train on its own dataset. In order to do this, the user should create a `DatasetIterator` object that outputs `(Image, BoundingboxList)` tuples.
   Here we show an example for doing this for the COCO dataset, but this can be done for any dataset as long as the `DatasetIterator` outputs `(Image, BoundingboxList)` tuples.
-  
+
     ```python
     import os
     import numpy as np
@@ -204,8 +201,8 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
     from opendr.engine.target import BoundingBoxList
     from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
     from PIL import Image as im
-    
-    
+
+
     # We create a DatasetIterator object that loads coco images and annotations and outputs (Image, BoundingBoxList) tuples.
     class CocoDatasetIterator(DatasetIterator):
         def __init__(self, image_folder, annotations_file):
@@ -213,45 +210,45 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
             self.root = os.path.expanduser(image_folder)
             self.coco = COCO(annotations_file)
             self.ids = list(self.coco.imgs.keys())
-    
+
         def __getitem__(self, idx):
             # Get ids of image and annotations
             img_id = self.ids[idx]
             ann_ids = self.coco.getAnnIds(imgIds=img_id)
-            
+
             # Load the annotations with pycocotools
             target = self.coco.loadAnns(ann_ids)
-            
+
             # Convert coco annotations to BoundingBoxList objects
             bounding_box_list = BoundingBoxList.from_coco(target, image_id=img_id)
-            
+
             # Load images
             path = self.coco.loadImgs(img_id)[0]['file_name']
             img = im.open(os.path.join(self.root, path)).convert('RGB')
-            
+
             # Convert image to Image object
             image = Image(np.array(img))
-            
+
             return image, bounding_box_list
-    
+
         def __len__(self):
             return len(self.ids)
-    
+
     # We create a learner that trains for 3 epochs
     learner = DetrLearner(iters=3, temp_path="temp")
-    
+
     # We download a pretrained detr model from the detr repo
-    learner.download_model(pretrained=True)
-    
+    learner.download()
+
     # Download dummy dataset with a single picture
-    learner.download_nano_coco()
-    
+    learner.download("test_data")
+
     # The dummy dataset is stored in the temp_path
     image_folder = "temp/nano_coco/image"
     annotations_file = "temp/nano_coco/instances.json"
-    
+
     dataset = CocoDatasetIterator(image_folder, annotations_file)
-    
+
     learner.fit(dataset)
 
     ```
@@ -263,7 +260,7 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
     import requests
     from PIL import Image as im
     from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
-    
+
     # COCO classes
     classes = [
         'N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
@@ -281,11 +278,11 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
         'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
         'toothbrush'
     ]
-    
+
     # colors for visualization
     colors = [[0.000, 0.447, 0.741], [0.850, 0.325, 0.098], [0.929, 0.694, 0.125],
               [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
-    
+
     # Function for plotting results
     def plot_results(pil_img, boxes):
         plt.figure(figsize=(16,10))
@@ -298,20 +295,20 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
             ax.text(box.left, box.top, text, fontsize=15, bbox=dict(facecolor='yellow', alpha=0.5))
         plt.axis('off')
         plt.show()
-    
+
     # Download an image
     url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
     img = im.open(requests.get(url, stream=True).raw)
-    
+
     learner = DetrLearner(threshold=0.7)
-    learner.download_model(backbone="resnet50", dilation=True)
+    learner.download()
     bounding_box_list = learner.infer(img)
     plot_results(img, bounding_box_list)
     ```
 
 * **Inference and result drawing example on a test .jpg image with segmentations, similar to [detr_demo colab](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/DETR_panoptic.ipynb#scrollTo=LAjJjP9kAHhA).**
 	This example shows how to perform inference on an image and draw the resulting bounding boxes and segmentations using a detr model that is pretrained on the coco_panoptic dataset.
-	
+
     ```python
 	import numpy as np
     import matplotlib.pyplot as plt
@@ -321,7 +318,7 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
     from PIL import Image as im
     import opendr
     from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
-    
+
     # These are the COCO classes
     CLASSES = [
         'N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
@@ -339,8 +336,8 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
         'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
         'toothbrush'
     ]
-    
-    
+
+
     # Function for plotting results
     def plot_results(pil_img, boxes):
         plt.figure(figsize=(16,10))
@@ -360,7 +357,7 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
             poly = np.array(seg).reshape((int(len(seg)/2), 2))
             polygons.append(Polygon(poly))
             color.append(c)
-            
+
             ax.text(box.left, box.top, text, fontsize=15, bbox=dict(facecolor='yellow', alpha=0.5))
         p = PatchCollection(polygons, facecolor=color, linewidths=0, alpha=0.4)
         ax.add_collection(p)
@@ -368,15 +365,15 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
         ax.add_collection(p)
         plt.axis('off')
         plt.show()
-    
+
     # Download an image
     url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
     img = im.open(requests.get(url, stream=True).raw)
-    
+
     # We want to return the segmentations and plot those, so we set return_segmentations to True.
     # Also, we have to modify the number of classes, since the number of panoptic classes in the pretrained detr model is 250.
     learner = DetrLearner(return_segmentations=True, num_classes=250)
-    learner.download_model(backbone="resnet50")
+    learner.download()
     bounding_box_list = learner.infer(img)
     plot_results(img, bounding_box_list)
     ```
@@ -387,7 +384,7 @@ Method for downloading a minimal coco dataset from the OpenDR server that contai
   from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
 
   detr_learner = DetrLearner()
-  detr_learner.download_model()  
+  detr_learner.download()  
   detr_learner.optimize()
   detr_learner.save('./parent_dir/optimized_model')
   ```

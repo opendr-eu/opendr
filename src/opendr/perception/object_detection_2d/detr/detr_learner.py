@@ -658,49 +658,67 @@ class DetrLearner(Learner):
 
         """
 
-    def download_model(
-            self, 
-            backbone='resnet50', 
-            dilation=False,
-            pretrained=True
-            ):
+    def download(self, path=None, mode="pretrained", verbose=False):
         """
-        Download utility for downloading detr models.
+        Download utility for various DETR components. Downloads files depending on mode and
+        saves them in the path provided. It supports downloading:
+        1) the default resnet50 and resnet101 pretrained models
+        2) resnet50 and resnet101 weights needed for training
+        3) a test dataset with a single COCO image and its annotation
 
         Parameters
         ----------
-        panoptic : bool, optional
-            This bool differentiates between coco or coco_panoptic models.
-            If set to false, the coco model is downloaded instead of the
-            coco_panoptic model. The default is False.
-        backbone : str, optional
-            This str determines the backbone that is used in the model. There
-            are two possible backbones: "resnet50" and "resnet101". The
-            default is 'resnet50'.
-        dilation : bool, optional
-            If set to true, dilation is used in the model, otherwise not. The
-            default is False.
-        pretrained : bool, optional
-            If set to true, a pretrained model is downloaded. The default is
-            True.
+        path : str
+            Local path to save the files. The default is None.
+        mode : str, optional
+            What file to download, can be one of "pretrained", "weights", "test_data". The default is "pretrained".
+        verbose : bool, optional
+            Whether to print all output in the console. The default is False.
 
         Raises
         ------
-        ValueError
-            If an unsupported backbone is given, a value error is raised.
+        UserWarning
+            In case the current backbone is not supported, i.e. it is not 
+            resnet50 or resnet101, a UserWarning is raised.
 
         Returns
         -------
         None.
 
         """
-        torch.hub.set_dir(self.temp_path)
+        valid_modes = ["weights", "pretrained", "test_data"]
+        if mode not in valid_modes:
+            raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
+        
+        if path is None:
+            path = self.temp_path
 
-        supportedBackbones = ['resnet50', 'resnet101']
-        if backbone.lower() in supportedBackbones:
-            model_name = f'detr_{backbone}'
-            self.backbone = self.args.backbone = backbone
-            if dilation:
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if mode == "pretrained" or mode == "weights":
+            # Create model's folder
+            path = os.path.join(path, "detr_default")
+            if not os.path.exists(path):
+                os.makedirs(path)
+            
+            torch.hub.set_dir(path)
+            
+            if mode == "pretrained":
+                pretrained = True
+            else:
+                pretrained = False
+            
+            supportedBackbones = ['resnet50', 'resnet101']
+            if self.backbone in supportedBackbones:
+                model_name = 'detr_{}'.format(self.backbone)
+            else:
+                raise UserWarning(
+                    "Backbone {} does not support download modes".format(
+                        self.backbone) + "\"pretrained\" and \"weights\"./n" + 
+                    "Supported backbones are: {}".format(supportedBackbones)
+                    )
+            if self.args.dilation:
                 model_name = model_name + '_dc5'
                 self.args.dilation = True
             else:
@@ -710,6 +728,7 @@ class DetrLearner(Learner):
                 self.model, self.postprocessors = torch.hub.load(
                     'facebookresearch/detr',
                     model_name,
+                    verbose=verbose,
                     pretrained=pretrained,
                     return_postprocessor=True,
                     threshold=self.threshold
@@ -722,8 +741,9 @@ class DetrLearner(Learner):
                 self.model = torch.hub.load(
                     'facebookresearch/detr',
                     model_name,
+                    verbose=verbose,
                     pretrained=pretrained,
-                    return_postprocessor=False
+                    return_postprocessor=False,
                     )
                 if self.args.num_classes != 91:
                     self.model.class_embed = torch.nn.Linear(
@@ -743,25 +763,20 @@ class DetrLearner(Learner):
                 self.model_without_ddp = self.model.module
 
             self.n_parameters = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-        else:
-            raise ValueError(self.backbone + " not a valid backbone. Supported backbones:" + str(supportedBackbones))
-    
-    def download_nano_coco(self):
-        url=OPENDR_SERVER_URL + "perception/object_detection_2d/detr/nano_coco/"
-        
-        if not os.path.exists(os.path.join(self.temp_path, "nano_coco")):
-            os.makedirs(os.path.join(self.temp_path, "nano_coco"))
-        
-        if not os.path.exists(os.path.join(self.temp_path, "nano_coco", "image")):
-            os.makedirs(os.path.join(self.temp_path, "nano_coco", "image"))
-        
-        # Download annotation file
-        file_url = os.path.join(url, "instances.json")
-        urlretrieve(file_url, os.path.join(self.temp_path, "nano_coco", "instances.json"))
-        # Download test image
-        file_url = os.path.join(url, "image", "000000391895.jpg")
-        urlretrieve(file_url, os.path.join(self.temp_path, "nano_coco", "image", "000000391895.jpg"))
-        
+        elif mode == "test_data":
+            url=OPENDR_SERVER_URL + "perception/object_detection_2d/detr/nano_coco/"
+            if not os.path.exists(os.path.join(path, "nano_coco")):
+                os.makedirs(os.path.join(path, "nano_coco"))
+            
+            if not os.path.exists(os.path.join(path, "nano_coco", "image")):
+                os.makedirs(os.path.join(path, "nano_coco", "image"))
+            
+            # Download annotation file
+            file_url = os.path.join(url, "instances.json")
+            urlretrieve(file_url, os.path.join(path, "nano_coco", "instances.json"))
+            # Download test image
+            file_url = os.path.join(url, "image", "000000391895.jpg")
+            urlretrieve(file_url, os.path.join(path, "nano_coco", "image", "000000391895.jpg"))
     
     def __create_criterion(self):
         """

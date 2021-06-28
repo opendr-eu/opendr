@@ -57,11 +57,11 @@ class TestDetrLearner(unittest.TestCase):
                                   backbone=cls.model_backbone,
                                   device=DEVICE)
         
-        cls.learner.download_model(backbone=cls.model_backbone)
+        cls.learner.download()
         
         print("Model downloaded", file=sys.stderr)
         
-        cls.learner.download_nano_coco()
+        cls.learner.download(mode="test_data")
         
         print("Data downloaded", file=sys.stderr)
         
@@ -96,15 +96,13 @@ class TestDetrLearner(unittest.TestCase):
         self.learner.model = None
         self.learner.ort_session = None
         
-        self.learner.download_model(
-            backbone=self.model_backbone
-        )
+        self.learner.download()
         
         result = self.learner.eval(
             self.dataset,
             images_folder='image',
             annotations_folder='',
-            annotations_file='instances.json'
+            annotations_file='instances.json',
         )
 
         self.assertGreater(len(result), 0)
@@ -113,9 +111,7 @@ class TestDetrLearner(unittest.TestCase):
         self.learner.model = None
         self.learner.ort_session = None
         
-        self.learner.download_model(
-            backbone="resnet50"
-        )
+        self.learner.download()
         
         image_path = os.path.join(
             self.dataset_path, 
@@ -135,9 +131,7 @@ class TestDetrLearner(unittest.TestCase):
         
         model_dir = os.path.join(self.temp_dir, "test_model")
         
-        self.learner.download_model(
-            backbone="resnet50"
-        )
+        self.learner.download()
         
         self.learner.save(model_dir)
         
@@ -159,9 +153,7 @@ class TestDetrLearner(unittest.TestCase):
         self.learner.model = None
         self.learner.ort_session = None
         
-        self.learner.download_model(
-            backbone="resnet50"
-        )
+        self.learner.download()
 
         self.learner.optimize()
 
