@@ -40,7 +40,8 @@ def rmdir(_dir):
 # LOG_PATH_ =
 # os.path.join(".", "tests", "sources", "tools", "perception", "landmark_based_facial_expression_recognition", "logs")
 PATH_ = \
-    './tests/sources/tools/perception/landmark_based_facial_expression_recognition/facial_expression_recognition_temp'
+    './tests/sources/tools/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/' \
+    'facial_expression_recognition_temp'
 LOG_PATH_ = ''
 
 
