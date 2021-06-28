@@ -1,3 +1,4 @@
+#include "gmapping/log/carmenconfiguration.h"
 #include <assert.h>
 #include <gmapping/sensor/sensor_odometry/odometrysensor.h>
 #include <gmapping/sensor/sensor_range/rangesensor.h>
@@ -5,7 +6,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
-#include "gmapping/log/carmenconfiguration.h"
 
 #define LINEBUFFER_SIZE 10000
 

@@ -22,14 +22,13 @@ from cv_bridge import CvBridge
 import matplotlib
 import matplotlib.pyplot as plt
 
-# Use non-interactive plotting back-end due to issues with rospy.spin()
-matplotlib.use('SVG')
-
-
 # Project Libraries
 from fmp_slam_eval.map_colorizer import MapColorizer
 from fmp_slam_eval.enums import DiscreteStates as DiSt
 from map_simulator.utils import map_msg_to_numpy, map_msg_extent, mkdir_p
+
+# Use non-interactive plotting back-end due to issues with rospy.spin()
+matplotlib.use('SVG')
 
 
 class FMPPlotter:

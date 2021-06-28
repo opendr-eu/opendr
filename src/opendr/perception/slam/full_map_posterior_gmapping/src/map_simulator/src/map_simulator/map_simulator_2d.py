@@ -232,7 +232,7 @@ class MapSimulator2D:
         pose0_cmd_dict = {"position": self._real_pose.position, "orientation": self._real_pose.orientation}
         pose0_cmd_cfg = cmd_callbacks['pose']
         pose0_cmd_cls = pose0_cmd_cfg['class']
-        pose0_cmd_cb  = pose0_cmd_cfg['callback']
+        pose0_cmd_cb = pose0_cmd_cfg['callback']
         self._commands.append(pose0_cmd_cls(pose0_cmd_dict, pose0_cmd_cb, None))
 
         # Parse Commands
@@ -595,12 +595,9 @@ class MapSimulator2D:
 
                 # Add Noise
                 alpha = self._params['odometry_alpha']
-                delta_rot1_hat += np.random.normal(0, alpha[0] * np.abs(delta_rot1)
-                                                   + alpha[1] * delta_trans)
-                delta_trans_hat += np.random.normal(0, alpha[2] * delta_trans
-                                                    + alpha[3] * (np.abs(delta_rot1) + np.abs(delta_rot2)))
-                delta_rot2_hat += np.random.normal(0, alpha[0] * np.abs(delta_rot2)
-                                                   + alpha[1] * delta_trans)
+                delta_rot1_hat += np.random.normal(0, alpha[0] * np.abs(delta_rot1) + alpha[1] * delta_trans)
+                delta_trans_hat += np.random.normal(0, alpha[2] * delta_trans + alpha[3] * (np.abs(delta_rot1) + np.abs(delta_rot2)))
+                delta_rot2_hat += np.random.normal(0, alpha[0] * np.abs(delta_rot2) + alpha[1] * delta_trans)
 
                 theta1 = self._noisy_pose.orientation + delta_rot1_hat
                 new_noisy_position = self._noisy_pose.position + (delta_trans_hat *
