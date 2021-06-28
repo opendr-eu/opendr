@@ -35,7 +35,7 @@ def rmdir(_dir):
         print("Error: %s - %s." % (e.filename, e.strerror))
 
 
-class TestRetinaFaceLearner(unittest.TestCase):
+class TestSSDLearner(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
