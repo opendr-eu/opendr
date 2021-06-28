@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from abc import ABC
 import numpy as np
 
 
-class BaseTarget:
+class BaseTarget(ABC):
     """
-    Root BaseTarget class has been created to allow for setting the hierarchy of different targets.
+    Root BaseTarget abstract class has been created to allow for setting the hierarchy of different targets.
     Classes that inherit from BaseTarget can be used either as outputs of an algorithm or as ground
     truth annotations, but there is no guarantee that this is always possible, i.e. that both options are possible.
 
@@ -41,9 +42,9 @@ class Target(BaseTarget):
 
     def __init__(self):
         super().__init__()
-        self.data = None
-        self.confidence = None
-        self.action = None
+        self._data = None
+        self._confidence = None
+        self._action = None
 
     @property
     def data(self):
@@ -51,7 +52,7 @@ class Target(BaseTarget):
         Getter of data field.
         This returns the internal representation of the data.
         :return: the actual data held by the object
-        :rtype: Type of data
+        :rtype: varies according to the actual concrete implementation
         """
         return self._data
 
@@ -69,14 +70,14 @@ class Target(BaseTarget):
         Getter of confidence field.
         This returns the confidence for the current target.
         :return: the confidence held by the object
-        :rtype: Type of data
+        :rtype: float
         """
         return self._confidence
 
     @confidence.setter
     def confidence(self, confidence):
         """
-        Setter for the confidence field. This will perform the necessary type checking (if needed).
+        Setter for the confidence field. This can be used to perform the necessary type checking (if needed).
         :param: confidence to be used for assigning confidence to this object
         """
         self._confidence = confidence
@@ -87,7 +88,7 @@ class Target(BaseTarget):
         Getter of action field.
         This returns the selected/expected action.
         :return: the action data held by the object
-        :rtype: Type of data
+        :rtype: Action
         """
         return self._action
 
@@ -118,17 +119,58 @@ class Category(Target):
                 One-dimensional array / tensor of class probabilities. Defaults to None.
         """
         super().__init__()
-        self.data = prediction
-        self.confidence = confidence
-        self.description = description
+        self._description = None
 
-    @Target.data.setter
+        if prediction is not None:
+            self.data = prediction
+
+        if description is not None:
+            self.description = description
+
+        if confidence is not None:
+            self.confidence = confidence
+
+    @property
+    def description(self):
+        """
+        Getter of description field.
+        This returns the description of the corresponding class.
+        :return: the description of the corresponding class
+        :rtype: str
+        """
+        return self.description
+
+    @description.setter
+    def description(self, description):
+        """
+        Setter for description.
+        :param: description to be assigned for the winning class
+        """
+        if isinstance(description, str):
+            self._description = description
+        else:
+            raise ValueError("Description should be a string")
+
+    @property
+    def data(self):
+        """
+        Getter of data.
+
+        :return: the actual category held by the object
+        :rtype: int
+        """
+        if self._data is None:
+            raise ValueError("Category is empty")
+
+        return self._data
+
+    @data.setter
     def data(self, data):
         """
         Setter for data. Category expects data of int type.
         :param: data to be used for creating a Category object
         """
-        if isinstance(data, int) or not data:
+        if isinstance(data, int):
             self._data = data
         else:
             raise ValueError("Category expects integers as data")
@@ -179,15 +221,52 @@ class Pose(Target):
         super().__init__()
         self.data = keypoints
         self.confidence = confidence
-        self.id = None
+        self._id = None
 
-    @Target.data.setter
+    @property
+    def id(self):
+        """
+        Getter of human id.
+
+        :return: the actual human id held by the object
+        :rtype: int
+        """
+        if self.id is None:
+            raise ValueError("No id set for the Pose")
+
+        return self._data
+
+    @id.setter
+    def id(self, data):
+        """
+        Setter for data. Category expects data of int type.
+        :param: data to be used for creating a Category object
+        """
+        if isinstance(data, int):
+            self._id = id
+        else:
+            raise ValueError("Pose is should be an integer")
+
+    @property
+    def data(self):
+        """
+        Getter of data.
+
+        :return: the actual pose data held by the object
+        :rtype: numpy.ndarray
+        """
+        if self._data is None:
+            raise ValueError("Pose object is empty")
+
+        return self._data
+
+    @data.setter
     def data(self, data):
         """
         Setter for data. Pose expects a NumPy array or a list
         :param: data to be used for creating Pose
         """
-        if isinstance(data, np.ndarray) or isinstance(data, list) or not data:
+        if isinstance(data, np.ndarray):
             self._data = data
         else:
             raise ValueError("Pose expects either NumPy arrays or lists as data")
