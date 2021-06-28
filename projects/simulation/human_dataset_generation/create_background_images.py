@@ -110,7 +110,7 @@ if __name__ == "__main__":
     # Reformate CitySCapes Dataset
     add_cityscapes_background_imgs(rgb_in=opt.rgb_in, segm_in=opt.segm_in,
                                    imgs_dir_out=opt.imgs_dir_out, human_colors=opt.human_colors,
-                                   placements_colors=opt.placement_colors)
+                                   placement_colors=opt.placement_colors)
     '''
     generate_img_ids(imgs_dir_in=opt.imgs_dir_in, imgs_dict_path=opt.imgs_dict_path, id_start=1)
     '''
