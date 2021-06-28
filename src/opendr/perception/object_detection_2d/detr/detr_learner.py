@@ -37,7 +37,7 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Image
 from opendr.engine.learners import Learner
 from opendr.engine.datasets import ExternalDataset, DatasetIterator, MappedDatasetIterator
-from opendr.engine.target import BoundingBox, BoundingBoxList
+from opendr.engine.target import CocoBoundingBox, BoundingBoxList
 
 import torchvision.transforms as T
 import numpy as np
@@ -579,12 +579,12 @@ class DetrLearner(Learner):
         if len(segmentations) == len(scores):
             for p, (xmin, ymin, xmax, ymax), segmentation in zip(scores.tolist(), boxes.tolist(), segmentations):
                 cl = np.argmax(p)
-                box = BoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl], segmentation=segmentation)
+                box = CocoBoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl], segmentation=segmentation)
                 boxlist.append(box)
         else:
             for p, (xmin, ymin, xmax, ymax) in zip(scores.tolist(), boxes.tolist()):
                 cl = np.argmax(p)
-                box = BoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl])
+                box = CocoBoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl])
                 boxlist.append(box)
         return BoundingBoxList(boxlist)
 
