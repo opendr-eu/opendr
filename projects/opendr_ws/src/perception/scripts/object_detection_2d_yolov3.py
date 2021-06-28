@@ -19,13 +19,13 @@ import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.object_detection_2d.retinaface.retinaface_learner import RetinaFaceLearner
+from opendr.perception.object_detection_2d.yolov3.yolov3_learner import YOLOv3DetectorLearner
 from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
 
 
-class FaceDetectionNode:
+class ObjectDetectionYOLONode:
     def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_boxes_annotated",
-                 face_detections_topic="/opendr/faces", device="cuda", backbone="resnet"):
+                 detections_topic="/opendr/objects", device="cuda", backbone="darknet53"):
         """
         Creates a ROS Node for face detection
         :param input_image_topic: Topic from which we are reading the input image
@@ -33,20 +33,20 @@ class FaceDetectionNode:
         :param output_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
         annotated image)
         :type output_image_topic: str
-        :param face_detections_topic: Topic to which we are publishing the annotations (if None, we are not publishing
+        :param detections_topic: Topic to which we are publishing the annotations (if None, we are not publishing
         annotated pose annotations)
-        :type face_detections_topic:  str
+        :type detections_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
-        :param backbone: retinaface backbone, options are ('mnet' and 'resnet'), where 'mnet' detects masked faces as well
+        :param backbone: backbone network
         :type backbone: str
         """
 
         # Initialize the face detector
-        self.face_detector = RetinaFaceLearner(backbone=backbone, device=device)
-        self.face_detector.download(path=".", verbose=True)
-        self.face_detector.load("retinaface_{}".format(backbone))
-        self.class_names = ["face", "masked_face"]
+        self.object_detector = YOLOv3DetectorLearner(backbone=backbone, device=device)
+        self.object_detector.download(path=".", verbose=True)
+        self.object_detector.load("yolo_default")
+        self.class_names = self.object_detector.classes
 
         # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
@@ -57,10 +57,10 @@ class FaceDetectionNode:
         else:
             self.image_publisher = None
 
-        if face_detections_topic is not None:
-            self.face_publisher = rospy.Publisher(face_detections_topic, Detection2DArray, queue_size=10)
+        if detections_topic is not None:
+            self.bbox_publisher = rospy.Publisher(detections_topic, Detection2DArray, queue_size=10)
         else:
-            self.face_publisher = None
+            self.bbox_publisher = None
 
         rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
 
@@ -73,17 +73,18 @@ class FaceDetectionNode:
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data)
+        rospy.loginfo("image info: {}".format(image.numpy().shape))
 
         # Run pose estimation
-        boxes = self.face_detector.infer(image)
+        boxes = self.object_detector.infer(image, threshold=0.1, keep_size=False)
 
         # Get an OpenCV image back
         image = np.float32(image.numpy())
 
         # Convert detected boxes to ROS type and publish
         ros_boxes = self.bridge.to_ros_boxes(boxes)
-        if self.face_publisher is not None:
-            self.face_publisher.publish(ros_boxes)
+        if self.bbox_publisher is not None:
+            self.bbox_publisher.publish(ros_boxes)
             rospy.loginfo("Published face boxes")
 
         # Annotate image and publish result
@@ -110,17 +111,12 @@ if __name__ == '__main__':
         device = 'cpu'
 
     # initialize ROS node
-    rospy.init_node('opendr_face_detection', anonymous=True)
-    rospy.loginfo("Face detection node started!")
+    rospy.init_node('opendr_object_detection', anonymous=True)
+    rospy.loginfo("Object detection node started!")
 
-    # get network backbone ("mnet" detects masked faces as well)
-    backbone = rospy.get_param("~backbone", "resnet")
     input_image_topic = rospy.get_param("~input_image_topic", "/videofile/image_raw")
-    rospy.loginfo("Using backbone: {}".format(backbone))
-    assert backbone in ["resnet", "mnet"], "backbone should be one of ['resnet', 'mnet']"
 
     # created node object
-    face_detection_node = FaceDetectionNode(device=device, backbone=backbone,
-                                            input_image_topic=input_image_topic)
+    object_detection_node = ObjectDetectionYOLONode(device=device, input_image_topic=input_image_topic)
     # begin ROS communications
     rospy.spin()

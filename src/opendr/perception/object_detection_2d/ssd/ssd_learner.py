@@ -257,7 +257,7 @@ class SingleShotDetectorLearner(Learner):
         # self._model = model_zoo.get_model(model_name, classes=classes, pretrained_base=True)
         # self._model = model_zoo.get_model(model_name, classes=classes, pretrained=True)
         # self._model.reset_class(classes, reuse_weights=[cname for cname in classes if cname in self._model.classes])
-        if self._model is None:
+        if self._model is None or classes != self.classes:
             model_name = 'ssd_{}_{}_custom'.format(self.img_size, self.backbone)
             self._model = model_zoo.get_model(model_name, classes=classes, pretrained=False, pretrained_base=True)
             with warnings.catch_warnings(record=True):
@@ -567,6 +567,9 @@ class SingleShotDetectorLearner(Learner):
         class_IDs = class_IDs[0, :, 0].asnumpy()
         scores = scores[0, :, 0].asnumpy()
         mask = np.where((class_IDs >= 0) & (scores > threshold))[0]
+        if mask.size == 0:
+            return BoundingBoxList([])
+
         scores = scores[mask, np.newaxis]
         class_IDs = class_IDs[mask, np.newaxis]
         boxes = boxes[0, mask, :].asnumpy()
