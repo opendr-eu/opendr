@@ -41,8 +41,8 @@ import sys
 import roslib
 import os
 
-roslib.load_manifest('gmapping')
 import rostest
+roslib.load_manifest('gmapping')
 
 
 class TestGmapping(unittest.TestCase):

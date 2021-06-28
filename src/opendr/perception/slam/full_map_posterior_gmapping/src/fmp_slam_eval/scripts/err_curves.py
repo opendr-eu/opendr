@@ -47,9 +47,9 @@ if __name__ == "__main__":
     path_file_options = [sorted(list(set(c))) for c in path_file_options]
 
     move_options = sorted(map(int, [o[:o.find('mv')] for o in path_file_options[0]]))
-    #move_options.remove(20)
+    # move_options.remove(20)
 
-    #rem_options = [path_file_options[2]] + path_file_options[4:]
+    # rem_options = [path_file_options[2]] + path_file_options[4:]
     rem_options = path_file_options[3:]
     rem_combinations = itertools.product(*rem_options)
 
@@ -73,11 +73,11 @@ if __name__ == "__main__":
 
             file_means = [col_lbl + "_mean"]
             file_sdevs = [col_lbl + "_sdv"]
-            file_sems  = [col_lbl + "_sem"]
-            file_runs  = [col_lbl + "_runs"]
+            file_sems = [col_lbl + "_sem"]
+            file_runs = [col_lbl + "_runs"]
 
             curve_lbl = "_".join(o2)
-            #curve_lbl = str(o2)
+            # curve_lbl = str(o2)
 
             means = []
             sdevs = []

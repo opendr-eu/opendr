@@ -7,10 +7,10 @@ class DiscreteStates(Enum):
     """
 
     #   KEY   | Val |   Text     |    Color        |  Label
-    UNDEFINED =  1  , 'undefined', 'lightsteelblue', 'Undef.'
-    UNIFORM   =  2  , 'uniform'  , 'violet'        , 'Unif. (0, 1)'
-    BIMODAL   =  3  , 'bimodal'  , 'mediumpurple'  , 'BiMod. {0, 1}'
-    ZERO      =  4  , 'zero'     , 'white'         , '0'
+    UNDEFINED = 1, 'undefined', 'lightsteelblue', 'Undef.'
+    UNIFORM = 2, 'uniform', 'violet', 'Unif. (0, 1)'
+    BIMODAL = 3, 'bimodal', 'mediumpurple', 'BiMod. {0, 1}'
+    ZERO = 4, 'zero', 'white', '0'
 
     def __new__(cls, v, text, color, label):
         """
@@ -49,7 +49,7 @@ class DiscreteStates(Enum):
         :return: (list) List of Discrete States ordered by value.
         """
 
-        ordered_ds_list = sorted(ds_list, key=lambda x : x.value)
+        ordered_ds_list = sorted(ds_list, key=lambda x: x.value)
         return ordered_ds_list
 
     @classmethod

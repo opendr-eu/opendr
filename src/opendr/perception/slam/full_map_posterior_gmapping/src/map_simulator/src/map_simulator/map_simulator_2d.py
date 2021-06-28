@@ -72,7 +72,7 @@ class MapSimulator2D:
 
             "base_to_laser_tf": {"def": [[0, 0], 0], "desc": "Base to Laser Transform"},
 
-            "scan_topic": {"def": "base_scan"      , "desc": "ROS Topic for scan messages"},
+            "scan_topic": {"def": "base_scan", "desc": "ROS Topic for scan messages"},
 
             "deterministic": {"def": False,           "desc": "Deterministic process"},
 
@@ -112,22 +112,22 @@ class MapSimulator2D:
         # and insert an entry  with its pre-processing and runtime callbacks here:
         cmd_callbacks = {
             # Movement Commands
-            "pose":               {"class": MovePoseCommand           , "callback": self._callback_cmd_moves  },
-            "odom":               {"class": MovePoseCommand           , "callback": self._callback_cmd_moves  },
-            "interpolation":      {"class": MoveInterpolationCommand  , "callback": self._callback_cmd_moves  },
-            "linear":             {"class": MoveLinearCommand         , "callback": self._callback_cmd_moves  },
-            "rotation":           {"class": MoveRotationCommand       , "callback": self._callback_cmd_moves  },
-            "circular":           {"class": MoveCircularCommand       , "callback": self._callback_cmd_moves  },
+            "pose":               {"class": MovePoseCommand,          "callback": self._callback_cmd_moves},
+            "odom":               {"class": MovePoseCommand,          "callback": self._callback_cmd_moves},
+            "interpolation":      {"class": MoveInterpolationCommand, "callback": self._callback_cmd_moves},
+            "linear":             {"class": MoveLinearCommand,        "callback": self._callback_cmd_moves},
+            "rotation":           {"class": MoveRotationCommand,      "callback": self._callback_cmd_moves},
+            "circular":           {"class": MoveCircularCommand,      "callback": self._callback_cmd_moves},
 
             # Measurement Commands
-            "scan":               {"class": ScanCommand               , "callback": self._callback_cmd_scans  },
+            "scan":               {"class": ScanCommand,              "callback": self._callback_cmd_scans},
 
             # Message Commands
-            "bool_msg":           {"class": BoolMessageCommand        , "callback": self._callback_cmd_msg    },
+            "bool_msg":           {"class": BoolMessageCommand,       "callback": self._callback_cmd_msg},
 
             # Misc Commands
-            "sleep":              {"class": SleepCommand              , "callback": self._callback_cmd_sleep  },
-            "comment":            {"class": CommentCommand            , "callback": self._callback_cmd_comment}
+            "sleep":              {"class": SleepCommand,             "callback": self._callback_cmd_sleep},
+            "comment":            {"class": CommentCommand,           "callback": self._callback_cmd_comment}
         }
 
         # Obstacle class dictionary

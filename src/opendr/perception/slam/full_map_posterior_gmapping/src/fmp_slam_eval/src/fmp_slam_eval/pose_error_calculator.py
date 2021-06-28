@@ -33,8 +33,8 @@ class PoseErrorCalculator:
 
         # Error Accumulators
         self._cum_trans_err = 0
-        self._cum_rot_err   = 0
-        self._cum_tot_err   = 0
+        self._cum_rot_err = 0
+        self._cum_tot_err = 0
 
         # Buffers for current and last step's transformation matrices
         self._curr_gt_mb_pose = None
@@ -46,10 +46,10 @@ class PoseErrorCalculator:
         self._last_rot_err_q = quaternion_from_euler(0, 0, 0)
         # and info
         self._curr_seq = None
-        self._curr_ts  = None
+        self._curr_ts = None
         self._curr_processed = False
         self._last_seq = None
-        self._last_ts  = None
+        self._last_ts = None
         self._last_processed = False
 
         self._first_pose = True
@@ -202,7 +202,7 @@ class PoseErrorCalculator:
         """
 
         self._last_seq = self._curr_seq
-        self._last_ts  = self._curr_ts
+        self._last_ts = self._curr_ts
         self._last_processed = self._curr_processed
         self._last_sl_ob_pose = self._curr_sl_ob_pose
         self._last_gt_mb_pose = self._curr_gt_mb_pose
@@ -210,7 +210,7 @@ class PoseErrorCalculator:
         if seq is not None and ts is not None and processed is not None and \
                 sl_ob_pose is not None and gt_mb_pose is not None:
             self._curr_seq = seq
-            self._curr_ts  = ts
+            self._curr_ts = ts
             self._curr_processed = processed
             self._curr_sl_ob_pose = sl_ob_pose
             self._curr_gt_mb_pose = gt_mb_pose
@@ -242,8 +242,8 @@ class PoseErrorCalculator:
 
         # Collect transform information
         for transform in msg.transforms:
-            seq     = transform.header.seq
-            ts      = transform.header.stamp
+            seq = transform.header.seq
+            ts = transform.header.stamp
             p_frame = transform.header.frame_id
             c_frame = transform.child_frame_id
 

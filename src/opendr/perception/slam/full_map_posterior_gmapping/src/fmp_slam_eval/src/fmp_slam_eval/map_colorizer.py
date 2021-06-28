@@ -62,7 +62,7 @@ class MapColorizer:
         # Color range
         self._v_min = 0
         self._v_max = 1
-        
+
         self._cb_tick_count = 10
 
         # Continuous Interval Parameters
@@ -86,7 +86,7 @@ class MapColorizer:
         """
 
         self._wm_extent = wm_extent
-        
+
     def set_cb_orientation(self, orientation):
         """
         Set the color bar orientation in the plots
@@ -100,7 +100,7 @@ class MapColorizer:
             self._cb_orientation = orientation
         else:
             self._cb_orientation = 'horizontal'
-    
+
     def set_aspect_ratio(self, aspect_ratio):
         """
         Set the aspect ratio of the plots. Probably useless given that wm_extent is also in use.
@@ -111,7 +111,7 @@ class MapColorizer:
         """
 
         self._aspect_ratio = aspect_ratio
-        
+
     def set_cb_tick_count(self, cb_tick_count):
         """
         Set the number of ticks in the continuous color bar
@@ -519,7 +519,7 @@ if __name__ == '__main__':
     alpha[undef_mask] = ma.masked
 
     means = ma.divide(alpha, visits)
-    
+
     means_ds = ma.zeros(means.shape)
     means_ds[undef_mask] = DiSt.UNDEFINED.value
     means_ds[~undef_mask] = ma.masked

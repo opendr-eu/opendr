@@ -1,6 +1,6 @@
+#include "gmapping/log/sensorstream.h"
 #include <assert.h>
 #include <sstream>
-#include "gmapping/log/sensorstream.h"
 //#define LINEBUFFER_SIZE 1000000 //for not Cyrill to unbless me, it is better to exagerate :-))
 // Can't declare a buffer that big on the stack.  So we'll risk Cyrill's
 // unblessing, and make it smaller.

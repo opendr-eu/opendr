@@ -1,3 +1,11 @@
+# OS Libraries
+import os
+import os.path
+import datetime
+
+# Data Structure Libraries
+from collections import deque
+
 # ROS Libraries
 import rospy
 
@@ -9,21 +17,14 @@ from gmapping.msg import doubleMap, mapModel
 # Math Libraries
 import numpy as np
 import numpy.ma as ma
-
-import matplotlib
-# Use non-interactive plotting back-end due to issues with rospy.spin()
-matplotlib.use('SVG')
-import matplotlib.pyplot as plt
-
 from cv_bridge import CvBridge
 
-# OS Libraries
-import os
-import os.path
-import datetime
+import matplotlib
+import matplotlib.pyplot as plt
 
-# Data Structure Libraries
-from collections import deque
+# Use non-interactive plotting back-end due to issues with rospy.spin()
+matplotlib.use('SVG')
+
 
 # Project Libraries
 from fmp_slam_eval.map_colorizer import MapColorizer
@@ -57,7 +58,7 @@ class FMPPlotter:
         # do_img_raw  = rospy.get_param("~img_raw" , False)
         # do_img_fmp  = rospy.get_param("~img_fmp" , False)
         do_img_stat = rospy.get_param("~img_stat", False)
-        do_img_mlm  = rospy.get_param("~img_mlm" , False)
+        do_img_mlm = rospy.get_param("~img_mlm", False)
         do_img_para = rospy.get_param("~img_para", False)
 
         self._pub_img = rospy.get_param("~pub_img", False)
@@ -80,8 +81,8 @@ class FMPPlotter:
         # Image config dictionary
         sub_img_stat_mean_cfg = {"key": "mean", "dir": os.path.join("stats", "mean"), "file_prefix": "mean",
                                  "topic": "stats/mean", "calc_f": self._calc_mean}
-        sub_img_stat_var_cfg  = {"key": "var", "dir": os.path.join("stats", "var"), "file_prefix": "var",
-                                 "topic": "stats/var", "calc_f": self._calc_var}
+        sub_img_stat_var_cfg = {"key": "var", "dir": os.path.join("stats", "var"), "file_prefix": "var",
+                                "topic": "stats/var", "calc_f": self._calc_var}
         img_stat_cfg = {"do": do_img_stat, "img": [sub_img_stat_mean_cfg, sub_img_stat_var_cfg]}
 
         sub_img_mlm_cfg = {"key": "mlm", "dir": "mlm", "file_prefix": "mlm",
@@ -460,7 +461,7 @@ class FMPPlotter:
             denominator = np.multiply(beta, beta)
 
             undef_mask = (denominator == 0)
-            zero_mask  = (numerator == 0)
+            zero_mask = (numerator == 0)
 
             all_mask = np.logical_or(undef_mask, zero_mask)
 

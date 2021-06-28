@@ -54,7 +54,7 @@ def get_arg(dic, key, default, add_if_not_in=True, valid_vals=None):
 if __name__ == "__main__":
     """
     Wrapper script for the experiment.launch launch file.
-    
+
     It helps for redirecting the log files to the experiment save directory,
     and in setting the time stamp for the directory's name,
     as these two seemingly simple tasks proved impossible to do directly using ROS's launch infrastructure.

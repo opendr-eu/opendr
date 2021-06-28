@@ -176,7 +176,7 @@ class GroundTruthMapping:
             return
 
         dims = world2map(np.array([self._max_x, self._max_y]), np.zeros(2), self._map_resolution) - \
-               world2map(np.array([self._min_x, self._min_y]), np.zeros(2), self._map_resolution)
+            world2map(np.array([self._min_x, self._min_y]), np.zeros(2), self._map_resolution)
 
         self._height = dims[1] + 1
         self._width = dims[0] + 1
@@ -262,7 +262,7 @@ class GroundTruthMapping:
             if visits <= 0:
                 continue
 
-            ix, iy = world2map(pos, self._map_origin , self._map_resolution)
+            ix, iy = world2map(pos, self._map_origin, self._map_resolution)
             # Ignore cells not contained in image
             if ix >= self._width or iy >= self._height:
                 continue

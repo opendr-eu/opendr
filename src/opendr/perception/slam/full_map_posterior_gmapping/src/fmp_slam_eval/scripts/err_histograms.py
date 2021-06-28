@@ -23,12 +23,12 @@ if __name__ == "__main__":
     def_out_path = path.join(def_data_path, "hist")
 
     file_filters = {
-        'n_moves':  {'arg_abr': 'n', 'desc': 'number of moves'           , 'index': 0, 'values': []},
-        'm_model':  {'arg_abr': 'm', 'desc': 'map models'                , 'index': 1, 'values': []},
+        'n_moves':  {'arg_abr': 'n', 'desc': 'number of moves',            'index': 0, 'values': []},
+        'm_model':  {'arg_abr': 'm', 'desc': 'map models',                 'index': 1, 'values': []},
         'p_weight': {'arg_abr': 'w', 'desc': 'particle weighting methods', 'index': 2, 'values': []},
-        'imp_pose': {'arg_abr': 'i', 'desc': 'pose improve methods'      , 'index': 3, 'values': []},
-        'err_type': {'arg_abr': 'e', 'desc': 'error types'               , 'index': 4, 'values': []},
-        'test_env': {'arg_abr': 't', 'desc': 'test environments'         , 'index': 5, 'values': []}
+        'imp_pose': {'arg_abr': 'i', 'desc': 'pose improve methods',       'index': 3, 'values': []},
+        'err_type': {'arg_abr': 'e', 'desc': 'error types',                'index': 4, 'values': []},
+        'test_env': {'arg_abr': 't', 'desc': 'test environments',          'index': 5, 'values': []}
     }
 
     chc_file_filters = sorted(list(file_filters.keys()), key=lambda x: file_filters[x]['index'])
@@ -154,8 +154,8 @@ if __name__ == "__main__":
     lines = [FS.join(data_header)]
 
     mean_line = ["Means"]
-    var_line  = ["Variances"]
-    sem_line  = ["Standard_Error_of_the_Mean"]
+    var_line = ["Variances"]
+    sem_line = ["Standard_Error_of_the_Mean"]
 
     for e_data in data:
         mean_line.append(str(np.mean(e_data)))

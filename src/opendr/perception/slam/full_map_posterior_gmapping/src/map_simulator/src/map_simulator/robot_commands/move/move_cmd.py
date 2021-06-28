@@ -35,7 +35,6 @@ class MoveCommand(Command):
 
             self._deterministic = det
 
-
         if "scans" in config:
             scans = config["scans"]
             if not isinstance(scans, int):

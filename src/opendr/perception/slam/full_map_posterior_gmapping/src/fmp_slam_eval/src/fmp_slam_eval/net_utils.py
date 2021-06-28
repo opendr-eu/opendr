@@ -1,5 +1,6 @@
 import socket
 
+
 def next_free_port(host="localhost", port=1024, max_port=65535):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     p = port

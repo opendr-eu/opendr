@@ -16,7 +16,7 @@ class SleepCommand(MiscCommand):
                                     when calling the command object.
         :param last_pose: (Pose) Last pose of the robot before this command. Unused.
         """
-        
+
         super(SleepCommand, self).__init__(config, callback, last_pose)
 
         if 'duration' in config:
