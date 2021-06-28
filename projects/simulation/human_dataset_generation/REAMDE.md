@@ -28,8 +28,8 @@ The folder hierarchy should look like this:
 ```
 3. Run the following script to reformat the CityScapes dataset
 ```
-python create_background_images.py
-```
+python create_background_images.py -rgb_in ./background_images/CityScapes/in/all/rgb -segm_in ./background_images/CityScapes/in/all/segm -imgs_dir_out ./background_images/CityScapes/out -human_colors ./background_images/CityScapes/human_colormap.txt -placement_colors ./background_images/CityScapes/locations_colormap.txt
+``` 
 4. Run the following script to generate the dataset
 ```
 python create_dataset.py
