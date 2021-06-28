@@ -20,7 +20,6 @@ from pathlib import Path
 from typing import Tuple, Any, Dict, Union, List, Optional
 
 import cv2
-import mmcv
 import numpy as np
 from PIL import Image as PilImage
 from cityscapesscripts.evaluation.evalPanopticSemanticLabeling import pq_compute_multi_core, average_pq
@@ -215,7 +214,7 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         :rtype: Tuple of (Image, None)
         """
         image_filename = self._image_filenames[idx]
-        image = Image(mmcv.imread(image_filename), image_filename.name)
+        image = Image(cv2.imread(image_filename), image_filename.name)
 
         return image, None
 
@@ -258,7 +257,8 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         if output_path.exists():
             raise ValueError('The specified output path already exists.')
         if not (input_path / 'training').exists() or not (input_path / 'validation').exists():
-            raise ValueError('Please download and extract the KITTI panoptic segmentation dataset first: http://panoptic.cs.uni-freiburg.de/')
+            raise ValueError(
+                'Please download and extract the KITTI panoptic segmentation dataset first: http://panoptic.cs.uni-freiburg.de/')
 
         # COCO-style category list
         coco_categories = []

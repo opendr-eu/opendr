@@ -18,7 +18,7 @@ import warnings
 import zipfile
 from typing import List, Tuple
 
-import mmcv
+import cv2
 
 from opendr.engine.data import Image
 from opendr.engine.target import Heatmap
@@ -83,14 +83,14 @@ class TestEfficientPsLearner(unittest.TestCase):
 
     def test_infer_single_image(self):
         image_filename = os.path.join(self.test_data, 'infer_data', 'lindau_000001_000019.png')
-        image = Image(mmcv.imread(image_filename))
+        image = Image(cv2.imread(image_filename))
         learner = EfficientPsLearner()
         learner.load(self.model_weights)
         prediction: Tuple[Heatmap, Heatmap] = learner.infer(image)
         for heatmap in prediction:
             self.assertIsInstance(heatmap, Heatmap)
 
-        image_with_filename = ImageWithFilename(mmcv.imread(image_filename), filename='lindau_000001_000019.png')
+        image_with_filename = ImageWithFilename(cv2.imread(image_filename), filename='lindau_000001_000019.png')
         prediction: Tuple[Heatmap, Heatmap] = learner.infer(image_with_filename)
         for heatmap in prediction:
             self.assertIsInstance(heatmap, Heatmap)
@@ -100,7 +100,7 @@ class TestEfficientPsLearner(unittest.TestCase):
             os.path.join(self.test_data, 'infer_data', 'lindau_000001_000019.png'),
             os.path.join(self.test_data, 'infer_data', 'lindau_000003_000019.png'),
         ]
-        images = [Image(mmcv.imread(f)) for f in image_filenames]
+        images = [Image(cv2.imread(f)) for f in image_filenames]
         learner = EfficientPsLearner()
         learner.load(self.model_weights)
         predictions: List[Tuple[Heatmap, Heatmap]] = learner.infer(images)

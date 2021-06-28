@@ -19,7 +19,7 @@ from functools import partial
 from pathlib import Path
 from typing import Tuple, Any, Dict, Union, List
 
-import mmcv
+import cv2
 import numpy as np
 from PIL import Image as PilImage
 from cityscapesscripts.evaluation.evalPanopticSemanticLabeling import pq_compute_multi_core, average_pq
@@ -213,7 +213,7 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
         :rtype: Tuple of (Image, None)
         """
         image_filename = self._image_filenames[idx]
-        image = Image(mmcv.imread(image_filename), image_filename.name)
+        image = Image(cv2.imread(image_filename), image_filename.name)
 
         return image, None
 
@@ -258,7 +258,8 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
         if not (input_path / 'leftImg8bit').exists():
             raise ValueError('Please download and extract the image files first: leftImg8bit_trainvaltest.zip')
         if not (input_path / 'gtFine').exists():
-            raise ValueError('Please download and extract the ground truth fine annotations first: gtFine_trainvaltest.zip')
+            raise ValueError(
+                'Please download and extract the ground truth fine annotations first: gtFine_trainvaltest.zip')
 
         # COCO-style category list
         coco_categories = []

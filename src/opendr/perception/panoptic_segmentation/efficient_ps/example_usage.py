@@ -14,7 +14,7 @@
 from pathlib import Path
 from typing import List, Tuple
 
-import mmcv
+import cv2
 
 from opendr.engine.data import Image
 from opendr.engine.target import Heatmap
@@ -64,11 +64,11 @@ def evaluate():
 
 def inference():
     image_filenames = [
-        f'{CITYSCAPES_ROOT}/test/images/lindau_000001_000019.png',
-        f'{CITYSCAPES_ROOT}/test/images/lindau_000002_000019.png',
-        f'{CITYSCAPES_ROOT}/test/images/lindau_000003_000019.png',
+        f'{CITYSCAPES_ROOT}/val/images/lindau_000001_000019.png',
+        f'{CITYSCAPES_ROOT}/val/images/lindau_000002_000019.png',
+        f'{CITYSCAPES_ROOT}/val/images/lindau_000003_000019.png',
     ]
-    images = [Image(mmcv.imread(f)) for f in image_filenames]
+    images = [Image(cv2.imread(f)) for f in image_filenames]
 
     learner = EfficientPsLearner(
         device='cuda:0',
