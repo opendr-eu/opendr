@@ -19,6 +19,7 @@ from urllib.request import urlretrieve
 from urllib.error import URLError
 
 import numpy as np
+import torch
 import torch as t
 import torch.nn as nn
 import torch.optim as optim
@@ -267,7 +268,7 @@ class MatchboxNetLearner(Learner):
             metadata = json.load(jsonfile)
 
         model_filename = os.path.basename(metadata["model_paths"][0])
-        self.model.load_state_dict(t.load(os.path.join(path, model_filename)))
+        self.model.load_state_dict(t.load(os.path.join(path, model_filename), map_location=torch.device(self.device)))
         self.model.eval()
 
     def optimize(self):
