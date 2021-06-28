@@ -231,21 +231,19 @@ class Pose(Target):
         :return: the actual human id held by the object
         :rtype: int
         """
-        if self.id is None:
-            raise ValueError("No id set for the Pose")
-
-        return self._data
+        return self._id
 
     @id.setter
-    def id(self, data):
+    def id(self, id):
         """
         Setter for human id to which the Pose corresponds to. Pose expects id to be of int type.
+        Please note that None is a valid value, since a pose is not always accompanied with an id.
         :param: human id to which the Pose corresponds to
         """
-        if isinstance(data, int):
+        if isinstance(id, int) or id is None:
             self._id = id
         else:
-            raise ValueError("Pose is should be an integer")
+            raise ValueError("Pose id should be an integer")
 
     @property
     def data(self):
