@@ -118,7 +118,6 @@ class QuadraticSelfOnnTest(unittest.TestCase):
         except OSError as e:
             print(f"Exception when trying to remove temp directory: {e.strerror}")
 
-            
     def test_infer_with_real_data(self):
         if not os.path.exists(TEMP_SAVE_DIR):
             os.makedirs(TEMP_SAVE_DIR, exist_ok=True)
