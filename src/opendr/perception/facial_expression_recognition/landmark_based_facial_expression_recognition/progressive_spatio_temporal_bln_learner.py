@@ -52,7 +52,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                  checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path='temp',
                  device='cuda', num_workers=32, epochs=400, experiment_name='pstbln_casia',
                  device_ind=[0], val_batch_size=128, drop_after_epoch=[400],
-                 start_epoch=0, dataset_name='oulu_casia',
+                 start_epoch=0, dataset_name='CASIA',
                  blocksize=5, numblocks=100, numlayers=10, topology=[],
                  layer_threshold=1e-4, block_threshold=1e-4):
         super(ProgressiveSpatioTemporalBLNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
