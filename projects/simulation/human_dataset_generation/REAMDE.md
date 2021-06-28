@@ -18,11 +18,11 @@ chmod +x download_models.sh
 The folder hierarchy should look like this:
 ```
 ├─ background_images
-|  ├─ in
-|  |  └─ CityScapes
-|  |      ├─ leftImg8Bit
-|  |      └─ gtCoarse
-|  └─ out
+|  ├─ CityScapes
+|     └─ in
+|     |   ├─ leftImg8Bit
+|     |   └─ gtCoarse
+|     └─ out
 |      
 ...
 ```
