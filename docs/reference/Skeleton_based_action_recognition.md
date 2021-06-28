@@ -40,7 +40,7 @@ SpatioTemporalGCNLearner(self, lr, batch_size, optimizer_name, lr_schedule,
 ```
 
 Constructor parameters:
-- **lr**: *float, default=0.01*  
+- **lr**: *float, default=0.1*  
   Specifies the initial learning rate to be used during training.
 - **batch_size**: *int, default=128*  
   Specifies number of skeleton sequences to be bundled up in a batch during training. This heavily affects memory usage, adjust according to your system.
@@ -421,7 +421,7 @@ ProgressiveSpatioTemporalGCNLearner(self, lr, batch_size, optimizer_name, lr_sch
 ```
 
 Constructor parameters:
-- **lr**: *float, default=0.01*  
+- **lr**: *float, default=0.1*  
   Specifies the initial learning rate to be used during training.
 - **batch_size**: *int, default=128*  
   Specifies number of skeleton sequences to be bundled up in a batch during training. This heavily affects memory usage, adjust according to your system.
@@ -791,16 +791,14 @@ recognition. In Proceedings of the AAAI conference on artificial intelligence (V
 https://arxiv.org/abs/1609.02907)
 
 <a id="2">[2]</a> 
-[Heidari, N., & Iosifidis, A. (2020). Temporal Attention-Augmented Graph Convolutional Network for Efficient Skeleton-
-Based Human Action Recognition. arXiv preprint arXiv: 2010.12221.](https://arxiv.org/abs/2010.12221)
+[Heidari, Negar, and Alexandros Iosifidis. "Temporal attention-augmented graph convolutional network for efficient skeleton-based human action recognition." 2020 25th International Conference on Pattern Recognition (ICPR). IEEE, 2021.](https://ieeexplore.ieee.org/abstract/document/9412091)
 
 <a id="3">[3]</a> 
 [Heidari, N., & Iosifidis, A. (2020). On the spatial attention in Spatio-Temporal Graph Convolutional Networks for 
 skeleton-based human action recognition. arXiv preprint arXiv: 2011.03833.](https://arxiv.org/abs/2011.03833)
 
 <a id="4">[4]</a> 
-[Heidari, N., & Iosifidis, A. (2020). Progressive Spatio-Temporal Graph Convolutional Network for Skeleton-Based Human 
-Action Recognition. arXiv preprint arXiv:2011.05668.](https://arxiv.org/pdf/2011.05668.pdf)
+[Heidari, Negar, and Alexandras Iosifidis. "Progressive Spatio-Temporal Graph Convolutional Network for Skeleton-Based Human Action Recognition." ICASSP 2021-2021 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP). IEEE, 2021.](https://ieeexplore.ieee.org/abstract/document/9413860)
 
 <a id="5">[5]</a> 
 [Shahroudy, A., Liu, J., Ng, T. T., & Wang, G. (2016). Ntu rgb+ d: A large scale dataset for 3d human activity analysis.
