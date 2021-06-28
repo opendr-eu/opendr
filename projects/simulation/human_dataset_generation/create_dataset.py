@@ -1,22 +1,45 @@
-import os
+# Copyright 1996-2020 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+import os
 import argparse
 import gc
 from data_generator import Data_generator
 import pyglet
-import pickle 
+import pickle
 import json
 from datetime import date
 import cv2
 import csv
+import numpy as np
 
 
 def generate_data(csv_dt_path='./csv/data2.csv', models_dir='./3D_models', back_imgs_dir='./background_imgs',
                   models_dict_path='./3D_models/models_dict.pkl', back_imgs_dict_path='./background_imgs/imgs_dict.pkl',
-                  csv_tr_path=None, dataset_dir=None):
+                  csv_tr_path=None, dataset_dir=None, placement_colors='./locations_colormap.txt'):
+
+    # Pixel colors for roads/sidewalks/terrain
+    with open(placement_colors) as csvfile:
+        labels_pm = []
+        reader = csv.reader(csvfile, delimiter=',')
+        for row in reader:
+            row_ints = [int(i) for i in row]
+            labels_pm.append(np.array(row_ints))
+
     data_gen = Data_generator(models_dir, back_imgs_dir, csv_dt_path=csv_dt_path, model_dict_path=models_dict_path,
                               back_imgs_dict_path=back_imgs_dict_path, csv_tr_path=csv_tr_path,
-                              data_out_dir=dataset_dir)
+                              data_out_dir=dataset_dir, placement_colors=labels_pm)
     pyglet.clock.schedule(data_gen.update)
     pyglet.app.run()
     pyglet.clock.unschedule(data_gen.update)
@@ -47,8 +70,8 @@ def generate_data_ids(data_path='./dataset', dict_path='./dataset/data_ids.pkl',
 def to_coco_format(annots_dir, model_ids_path, data_ids_path, split, json_path, annot_id):
     with open(data_ids_path, 'rb') as pkl_file:
         data_ids = pickle.load(pkl_file)
-    with open(model_ids_path, 'rb') as pkl_file:
-        model_ids = pickle.load(pkl_file)
+    # with open(model_ids_path, 'rb') as pkl_file:
+    #     model_ids = pickle.load(pkl_file)
     today = date.today()
     info = {
         "description": "AUTH dataset",
@@ -111,7 +134,7 @@ def to_coco_format(annots_dir, model_ids_path, data_ids_path, split, json_path, 
                         data_lab.append(row[j])
                 elif cnt > 0:
                     model_name = row[2]
-                    model_id = row[3]
+                    # model_id = row[3]
                     bb_x = int(float(row[4]))
                     bb_y = int(float(row[5]))
                     bb_width = int(float(row[6]))
@@ -156,6 +179,7 @@ if __name__ == "__main__":
     parser.add_argument('-back_imgs_dict_path', type=str, default='./background_images/CityScapes/img_ids.pkl')
     parser.add_argument('-csv_dir', type=str, default='./csv')
     parser.add_argument('-dataset_dir', type=str, default='./dataset')
+    parser.add_argument('-placement_colors', type=str, default='./locations_colormap.txt')
 
     opt = parser.parse_args()
 
@@ -174,7 +198,6 @@ if __name__ == "__main__":
                           back_imgs_dir=opt.back_imgs_out, dataset_dir=opt.dataset_dir,
                           models_dict_path=opt.models_dict_path, back_imgs_dict_path=opt.back_imgs_dict_path)
 
-
     # generate IDs for the generated data
     generate_data_ids(opt.dataset_dir, data_dict_path, splits)
 
@@ -183,4 +206,3 @@ if __name__ == "__main__":
     for j in range(len(splits)):
         json_path = os.path.join(opt.dataset_dir, splits[j], "auth_" + splits[j] + '.json')
         annot_id = to_coco_format(opt.dataset_dir, opt.models_dict_path, data_dict_path, splits[j], json_path, annot_id)
-

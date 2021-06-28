@@ -1,14 +1,25 @@
+# Copyright 1996-2020 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import ctypes
 import os
-
-
 import math
-
 import pyglet.gl
 from pywavefront import visualization, Wavefront
 import numpy as np
-from pyglet.window import key, mouse, pyglet
-import pickle 
+from pyglet.window import pyglet
+import pickle
 import cv2
 import csv
 from background import Background
@@ -16,7 +27,7 @@ from background import Background
 
 class Data_generator(pyglet.window.Window):
     def __init__(self, models_dir, background_dir, csv_dt_path='', model_dict_path='', back_imgs_dict_path='',
-                 data_out_dir=None, csv_tr_path=None):
+                 data_out_dir=None, csv_tr_path=None, placement_colors=[]):
         super(Data_generator, self).__init__(resizable=True)
         self.camera_size = (1920, 640)
         self.set_size(self.camera_size[0], self.camera_size[1])
@@ -38,7 +49,7 @@ class Data_generator(pyglet.window.Window):
         # models_data[x] = {'filename', 'pitch', 'yaw', 'img_pos}
         self.lightfv = ctypes.c_float * 4
         self.y_tr_offset = 1.0
-        self.background = Background(self.background_dir, self.background_img_fl, 81, 25, 0, 0, -8)
+        self.background = Background(self.background_dir, self.background_img_fl, 81, 25, 0, 0, -8, placement_colors)
         print("Proccessing: " + self.csv_name + "...")
         self.cam_dist = 3.5
         self.background.set_dist(self.cam_dist - 33.5)
@@ -67,7 +78,6 @@ class Data_generator(pyglet.window.Window):
 
     def csv_dt_parser(self, csv_path):
         data = []
-        background_path = []
         models_data = []
         with open(csv_path) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
@@ -242,7 +252,7 @@ class Data_generator(pyglet.window.Window):
                 win_y = pyglet.gl.GLdouble()
                 win_z = pyglet.gl.GLdouble()
                 pyglet.gl.gluProject(self.models_data[i]['joints_3D'][key][0], self.models_data[i]['joints_3D'][key][1],
-                           self.models_data[i]['joints_3D'][key][2], mvmat, pmat, view, win_x, win_y, win_z)
+                                     self.models_data[i]['joints_3D'][key][2], mvmat, pmat, view, win_x, win_y, win_z)
                 joints_2D[key] = np.asarray([win_x.value, self.camera_size[1] - win_y.value]).astype(np.int)
             self.models_data[i]['joints_2D'] = joints_2D
             bbox_2D_c = np.zeros((len(self.models_data[i]['box_3D']), 3))
@@ -304,8 +314,8 @@ class Data_generator(pyglet.window.Window):
         annot_dir = os.path.join(self.data_out_dir, 'labels')
         if not os.path.exists(annot_dir):
             os.mkdir(annot_dir)
-        f_lab = os.path.join(annot_dir, '00'+str(int(self.csv_name.replace('data_',''))+600000 - 1) + '.csv')
-        f_img = os.path.join(images_dir, '00'+str(int(self.csv_name.replace('data_',''))+600000 - 1) + '.png')
+        f_lab = os.path.join(annot_dir, '00' + str(int(self.csv_name.replace('data_', '')) + 600000 - 1) + '.csv')
+        f_img = os.path.join(images_dir, '00' + str(int(self.csv_name.replace('data_', '')) + 600000 - 1) + '.png')
         pyglet.image.get_buffer_manager().get_color_buffer().save(f_img)
         with open(f_lab, 'w') as csv_lab:
             annot_spec = 'back_img_name,back_img_id,model_name,model_id,bb_x,bb_y,bb_w,bb_h'

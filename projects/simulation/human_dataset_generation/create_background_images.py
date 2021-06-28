@@ -13,18 +13,23 @@
 # limitations under the License.
 
 import os
-from pycocotools.coco import COCO
+# from pycocotools.coco import COCO
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from shutil import copyfile
 import pickle5 as pickle
-import glob
+# import glob
 import cv2
 import argparse
 import csv
 
-#Keep only images from CityScapes (a) without humans (persons/riders) (b) with roads/sidewalks/terrain
-def add_cityscapes_background_imgs(rgb_in='./background_images/CityScapes/in/all/rgb', segm_in='./background_images/CityScapes/in/all/segm', human_colors = './background_images/CityScapes/human_colormap.txt', placement_colors='./background_images/CityScapes/locations_colormap.txt',imgs_dir_out='./background_images/out'):
+
+# Keep only images from CityScapes (a) without humans (persons/riders) (b) with roads/sidewalks/terrain
+def add_cityscapes_background_imgs(rgb_in='./background_images/CityScapes/in/all/rgb',
+                                   segm_in='./background_images/CityScapes/in/all/segm',
+                                   human_colors='./background_images/CityScapes/human_colormap.txt',
+                                   placement_colors='./background_images/CityScapes/locations_colormap.txt',
+                                   imgs_dir_out='./background_images/out'):
 
     if not os.path.exists(os.path.join(imgs_dir_out, 'segm')):
         os.makedirs(os.path.join(imgs_dir_out, 'segm'))
@@ -32,7 +37,7 @@ def add_cityscapes_background_imgs(rgb_in='./background_images/CityScapes/in/all
         os.makedirs(os.path.join(imgs_dir_out, 'rgb'))
     img_names = [f for f in os.listdir(segm_in) if os.path.isfile(os.path.join(segm_in, f))]
 
-    #Pixel colors for humans (persons/riders)
+    # Pixel colors for humans (persons/riders)
     with open(human_colors) as csvfile:
         labels_rm = []
         reader = csv.reader(csvfile, delimiter=',')
@@ -40,7 +45,7 @@ def add_cityscapes_background_imgs(rgb_in='./background_images/CityScapes/in/all
             row_ints = [int(i) for i in row]
             labels_rm.append(np.array(row_ints))
 
-    #Pixel colors for roads/sidewalks/terrain
+    # Pixel colors for roads/sidewalks/terrain
     with open(placement_colors) as csvfile:
         labels_pm = []
         reader = csv.reader(csvfile, delimiter=',')
@@ -50,10 +55,10 @@ def add_cityscapes_background_imgs(rgb_in='./background_images/CityScapes/in/all
 
     for i in range(len(img_names)):
 
-        rgb_path_in = os.path.join(rgb_in,img_names[i])
-        segm_path_in = os.path.join(segm_in,img_names[i])
-        rgb_path_out = os.path.join(imgs_dir_out,'rgb',img_names[i])
-        segm_path_out = os.path.join(imgs_dir_out,'segm',img_names[i])
+        rgb_path_in = os.path.join(rgb_in, img_names[i])
+        segm_path_in = os.path.join(segm_in, img_names[i])
+        rgb_path_out = os.path.join(imgs_dir_out, 'rgb', img_names[i])
+        segm_path_out = os.path.join(imgs_dir_out, 'segm', img_names[i])
         img = cv2.imread(segm_path_in)
         msks_n = []
         for i in range(len(labels_rm)):
@@ -103,8 +108,9 @@ if __name__ == "__main__":
     opt = parser.parse_args()
 
     # Reformate CitySCapes Dataset
-    add_cityscapes_background_imgs(rgb_in=opt.rgb_in, segm_in = opt.segm_in,
-                                   imgs_dir_out=opt.imgs_dir_out, human_colors = opt.human_colors, placements_colors = opt.placement_colors)
+    add_cityscapes_background_imgs(rgb_in=opt.rgb_in, segm_in=opt.segm_in,
+                                   imgs_dir_out=opt.imgs_dir_out, human_colors=opt.human_colors,
+                                   placements_colors=opt.placement_colors)
     '''
     generate_img_ids(imgs_dir_in=opt.imgs_dir_in, imgs_dict_path=opt.imgs_dict_path, id_start=1)
     '''
