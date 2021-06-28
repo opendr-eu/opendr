@@ -328,11 +328,12 @@ class DetectionDatasetCOCOEval(DetectionEvalMetric):
         ap_default = np.mean(precision[precision > -1])
         print('~~~~ Mean and per-category AP @ IoU=[{:.2f},{:.2f}] '
               '~~~~'.format(IoU_lo_thresh, IoU_hi_thresh))
-        print('{:.1f}'.format(100 * ap_default))
+        print('{}: {:.1f}'.format('mAP', 100 * ap_default))
         for cls_ind, cls in enumerate(self.classes):
             precision = coco_eval.eval['precision'][ind_lo:(ind_hi + 1), :, cls_ind, 0, 2]
             ap = np.mean(precision[precision > -1])
             self.results[cls] = ap
+            print('{}: {:.1f}'.format(cls, 100 * ap))
         self.results["map"] = np.mean(ap_default)
 
         print('~~~~ Summary metrics ~~~~')
@@ -381,7 +382,7 @@ class CustomEvalMetric(DetectionEvalMetric):
 
     def get(self):
         print('This evaluation class does not compute any metrics but is intended for use with custom evaluation schemes,'
-              'by accumulating the detections and corresponding groundtruth.')
+              'by accumulating the detections and corresponding groundtruth boxes.')
         return list(self.results.keys()), list(self.results.values())
 
     def get_dts(self):
