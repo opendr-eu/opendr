@@ -1,0 +1,1 @@
+{"model_paths": ["./temp/bisenet_camvid/bisenet_camvid.pth"], "framework": "pytorch", "format": "pth", "has_data": false, "inference_params": {}, "optimized": false, "optimizer_info": {}}
