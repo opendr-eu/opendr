@@ -17,7 +17,7 @@ import os
 import numpy as np
 # import matplotlib.pyplot as plt
 from shutil import copyfile
-import pickle5 as pickle
+import pickle
 # import glob
 import cv2
 import argparse
