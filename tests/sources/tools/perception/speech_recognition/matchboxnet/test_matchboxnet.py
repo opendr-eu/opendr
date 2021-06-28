@@ -58,7 +58,6 @@ class MatchboxNetTest(unittest.TestCase):
         if not os.path.exists(TEMP_SAVE_DIR):
             os.makedirs(TEMP_SAVE_DIR, exist_ok=True)
 
-
     @classmethod
     def tearDownClass(cls):
         del cls.learner
@@ -119,8 +118,7 @@ class MatchboxNetTest(unittest.TestCase):
             shutil.rmtree(TEMP_SAVE_DIR)
         except OSError as e:
             print(f"Exception when trying to remove temp directory: {e.strerror}")
-            
-            
+
     def test_infer_with_real_data(self):
         if not os.path.exists(TEMP_SAVE_DIR):
             os.makedirs(TEMP_SAVE_DIR, exist_ok=True)
@@ -130,7 +128,7 @@ class MatchboxNetTest(unittest.TestCase):
             urlretrieve(testdata_ftp_address, testdata_filename)
         except Exception:
             print("Could down download test data file")
-            raise    
+            raise
         self.learner.download_pretrained(TEMP_SAVE_DIR)
         model_directory = os.path.join(TEMP_SAVE_DIR, "MatchboxNet")
         self.learner.load(model_directory)
@@ -143,7 +141,6 @@ class MatchboxNetTest(unittest.TestCase):
             shutil.rmtree(TEMP_SAVE_DIR)
         except OSError as e:
             print(f"Exception when trying to remove temp directory: {e.strerror}")
-
 
 
 if __name__ == "__main__":
