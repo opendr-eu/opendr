@@ -58,7 +58,12 @@ class TestClangFormat(unittest.TestCase):
             'tests'
         ]
         skippedPaths = []
-        skippedFiles = []
+        skippedFiles = [
+            'src/opendr/perception/object_detection_2d/retinaface/algorithm/cython/gpu_nms.cpp',
+            'src/opendr/perception/object_detection_2d/retinaface/algorithm/cython/anchors.c',
+            'src/opendr/perception/object_detection_2d/retinaface/algorithm/cython/bbox.c',
+            'src/opendr/perception/object_detection_2d/retinaface/algorithm/cython/cpu_nms.c',
+        ]
         skippedDirectories = [
             'build',
             'python'
