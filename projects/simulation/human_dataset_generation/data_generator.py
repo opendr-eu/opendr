@@ -1,46 +1,22 @@
-# Copyright 2020 Aristotle University of Thessaloniki
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
 import ctypes
 import os
+
+
 import math
+
+import pyglet.gl
 from pywavefront import visualization, Wavefront
 import numpy as np
-import pyglet
-import pickle5 as pickle
+from pyglet.window import key, mouse, pyglet
+import pickle 
 import cv2
 import csv
 from background import Background
 
 
 class Data_generator(pyglet.window.Window):
-    """
-    This class is used for generating synthetic data using human models (.obj) and background images.
-    """
-
     def __init__(self, models_dir, background_dir, csv_dt_path='', model_dict_path='', back_imgs_dict_path='',
                  data_out_dir=None, csv_tr_path=None):
-        """
-        :param models_dir: Path to the directory with human models
-        :param background_dir: Path to the directory with background images
-        :param csv_dt_path: Path to the directory for .csv files with descriptions
-        :param model_dict_path: Path to the dictionary (pkl) of human models
-        :param back_imgs_dict_path: Path to the dictionary (.pkl) of background images
-        :param data_out_dir: Path the directory of the
-        :param csv_tr_path:
-        """
         super(Data_generator, self).__init__(resizable=True)
         self.camera_size = (1920, 640)
         self.set_size(self.camera_size[0], self.camera_size[1])
@@ -56,8 +32,10 @@ class Data_generator(pyglet.window.Window):
         with open(back_imgs_dict_path, 'rb') as pkl_file:
             back_img_ids = pickle.load(pkl_file)
         self.assign_ids(model_ids, back_img_ids)
+        # self.background_dir = os.path.join(self.background_dir,self.split)
         self.models_dir = models_dir
         self.load_meshes_and_data()
+        # models_data[x] = {'filename', 'pitch', 'yaw', 'img_pos}
         self.lightfv = ctypes.c_float * 4
         self.y_tr_offset = 1.0
         self.background = Background(self.background_dir, self.background_img_fl, 81, 25, 0, 0, -8)
@@ -85,9 +63,11 @@ class Data_generator(pyglet.window.Window):
         for j in range(len(back_img_ids)):
             if self.background_img_fl == back_img_ids[j]['filename']:
                 self.background_img_id = back_img_ids[j]['id']
+                print(self.background_img_id)
 
     def csv_dt_parser(self, csv_path):
         data = []
+        background_path = []
         models_data = []
         with open(csv_path) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
@@ -138,6 +118,7 @@ class Data_generator(pyglet.window.Window):
                     if row[0] == self.models_data[i]['filename']:
                         self.models_data[i]['transformation']['translation'] = np.array(
                             [float(row[1]), - float(row[2]), -float(row[3])])
+                        # self.models_data[i]['rotation']['roll'] = int(row[4])
                         self.models_data[i]['transformation']['rotation']['pitch'] = int(row[5])
                         self.models_data[i]['transformation']['rotation']['yaw'] = int(row[6])
 
@@ -206,6 +187,7 @@ class Data_generator(pyglet.window.Window):
         self.shot_ok = self.shot_ok + 1
 
     def draw_model(self):
+
         if self.first:
             for i in range(len(self.models_data)):
                 near_x = pyglet.gl.GLdouble()
@@ -260,7 +242,7 @@ class Data_generator(pyglet.window.Window):
                 win_y = pyglet.gl.GLdouble()
                 win_z = pyglet.gl.GLdouble()
                 pyglet.gl.gluProject(self.models_data[i]['joints_3D'][key][0], self.models_data[i]['joints_3D'][key][1],
-                                     self.models_data[i]['joints_3D'][key][2], mvmat, pmat, view, win_x, win_y, win_z)
+                           self.models_data[i]['joints_3D'][key][2], mvmat, pmat, view, win_x, win_y, win_z)
                 joints_2D[key] = np.asarray([win_x.value, self.camera_size[1] - win_y.value]).astype(np.int)
             self.models_data[i]['joints_2D'] = joints_2D
             bbox_2D_c = np.zeros((len(self.models_data[i]['box_3D']), 3))
@@ -292,11 +274,11 @@ class Data_generator(pyglet.window.Window):
                              self.models_data[i]['box_2D'][1][0] - self.models_data[i]['box_2D'][0][0],
                              self.models_data[i]['box_2D'][1][1] - self.models_data[i]['box_2D'][0][1]])
             kps = []
-            for j_k in self.models_data[i]['joints_2D']:
+            for key in self.models_data[i]['joints_2D']:
                 kp = {
-                    "name": j_k,
+                    "name": key,
                     "coords": np.array(
-                        [self.models_data[i]['joints_2D'][j_k][0], self.models_data[i]['joints_2D'][j_k][1]])
+                        [self.models_data[i]['joints_2D'][key][0], self.models_data[i]['joints_2D'][key][1]])
                 }
                 kps.append(kp)
             model_data = {
@@ -322,14 +304,14 @@ class Data_generator(pyglet.window.Window):
         annot_dir = os.path.join(self.data_out_dir, 'labels')
         if not os.path.exists(annot_dir):
             os.mkdir(annot_dir)
-        f_lab = os.path.join(annot_dir, self.csv_name + '.csv')
-        f_img = os.path.join(images_dir, self.csv_name + '.png')
+        f_lab = os.path.join(annot_dir, '00'+str(int(self.csv_name.replace('data_',''))+600000 - 1) + '.csv')
+        f_img = os.path.join(images_dir, '00'+str(int(self.csv_name.replace('data_',''))+600000 - 1) + '.png')
         pyglet.image.get_buffer_manager().get_color_buffer().save(f_img)
         with open(f_lab, 'w') as csv_lab:
             annot_spec = 'back_img_name,back_img_id,model_name,model_id,bb_x,bb_y,bb_w,bb_h'
-            for j_k in self.models_data[0]['joints_2D']:
+            for key in self.models_data[0]['joints_2D']:
                 for xy in ['x', 'y']:
-                    annot_spec = annot_spec + ',' + j_k + '_' + xy
+                    annot_spec = annot_spec + ',' + key + '_' + xy
             annot_spec = annot_spec + '\n'
             csv_lab.write(annot_spec)
             for i in range(len(self.models_data)):
@@ -338,8 +320,8 @@ class Data_generator(pyglet.window.Window):
                     self.models_data[i]['box_2D'][0][0]) + ',' + str(self.models_data[i]['box_2D'][0][1]) + ',' + str(
                     self.models_data[i]['box_2D'][1][0] - self.models_data[i]['box_2D'][0][0]) + ',' + str(
                     self.models_data[i]['box_2D'][1][1] - self.models_data[i]['box_2D'][0][1])
-                for j_k in self.models_data[i]['joints_2D']:
-                    annot_data = annot_data + ',' + str(self.models_data[i]['joints_2D'][j_k][0]) + ',' + str(
-                        self.models_data[i]['joints_2D'][j_k][1])
+                for key in self.models_data[i]['joints_2D']:
+                    annot_data = annot_data + ',' + str(self.models_data[i]['joints_2D'][key][0]) + ',' + str(
+                        self.models_data[i]['joints_2D'][key][1])
                 annot_data = annot_data + '\n'
                 csv_lab.write(annot_data)

@@ -1,23 +1,10 @@
-# Copyright 2020 Aristotle University of Thessaloniki
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import os
+
 import argparse
 import gc
 from data_generator import Data_generator
 import pyglet
-import pickle5 as pickle
+import pickle 
 import json
 from datetime import date
 import cv2
@@ -57,9 +44,11 @@ def generate_data_ids(data_path='./dataset', dict_path='./dataset/data_ids.pkl',
         pickle.dump(dict_ids, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def to_coco_format(annots_dir, data_ids_path, split, json_path, annot_id):
+def to_coco_format(annots_dir, model_ids_path, data_ids_path, split, json_path, annot_id):
     with open(data_ids_path, 'rb') as pkl_file:
         data_ids = pickle.load(pkl_file)
+    with open(model_ids_path, 'rb') as pkl_file:
+        model_ids = pickle.load(pkl_file)
     today = date.today()
     info = {
         "description": "AUTH dataset",
@@ -68,6 +57,7 @@ def to_coco_format(annots_dir, data_ids_path, split, json_path, annot_id):
         "data_created": today.strftime("%d/%m/%Y")
     }
     images = []
+    print(len(data_ids))
     annots = []
     for (dir_path, dirnames, filenames) in os.walk(os.path.join(annots_dir, split, 'labels')):
         annots.extend(filenames)
@@ -121,6 +111,7 @@ def to_coco_format(annots_dir, data_ids_path, split, json_path, annot_id):
                         data_lab.append(row[j])
                 elif cnt > 0:
                     model_name = row[2]
+                    model_id = row[3]
                     bb_x = int(float(row[4]))
                     bb_y = int(float(row[5]))
                     bb_width = int(float(row[6]))
@@ -133,6 +124,7 @@ def to_coco_format(annots_dir, data_ids_path, split, json_path, annot_id):
                     joints = [int(val) for sublist in joints for val in sublist]
                     annot = {
                         "id": annot_id,
+                        # "category_id": int(model_id),
                         "category_id": 1,
                         "image_id": img_id,
                         "bbox": [bb_x, bb_y, bb_width, bb_height],
@@ -159,11 +151,9 @@ def to_coco_format(annots_dir, data_ids_path, split, json_path, annot_id):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-models_dir', type=str, default='./human_models')
-    parser.add_argument('-back_imgs_dir', type=str, default='/home/administrator/Downloads/Human_Data_Gen_v2'
-                                                            '/background_images/out')
+    parser.add_argument('-back_imgs_out', type=str, default='./background_images/CityScapes/out')
     parser.add_argument('-models_dict_path', type=str, default='./human_models/model_ids.pkl')
-    parser.add_argument('-back_imgs_dict_path', type=str, default='/home/administrator/Downloads/Human_Data_Gen_v2'
-                                                                  '/background_images/out/img_ids.pkl')
+    parser.add_argument('-back_imgs_dict_path', type=str, default='./background_images/CityScapes/img_ids.pkl')
     parser.add_argument('-csv_dir', type=str, default='./csv')
     parser.add_argument('-dataset_dir', type=str, default='./dataset')
 
@@ -181,12 +171,16 @@ if __name__ == "__main__":
         for i in range(0, len(csv_paths)):
             generate_data(csv_dt_path=os.path.join(os.path.join(opt.csv_dir, splits[j]), csv_paths[i]),
                           models_dir=opt.models_dir,
-                          back_imgs_dir=opt.back_imgs_dir, dataset_dir=opt.dataset_dir,
+                          back_imgs_dir=opt.back_imgs_out, dataset_dir=opt.dataset_dir,
                           models_dict_path=opt.models_dict_path, back_imgs_dict_path=opt.back_imgs_dict_path)
 
+
+    # generate IDs for the generated data
     generate_data_ids(opt.dataset_dir, data_dict_path, splits)
 
+    # Export annotation to COCO format
     annot_id = 0
     for j in range(len(splits)):
         json_path = os.path.join(opt.dataset_dir, splits[j], "auth_" + splits[j] + '.json')
-        annot_id = to_coco_format(opt.dataset_dir, data_dict_path, splits[j], json_path, annot_id)
+        annot_id = to_coco_format(opt.dataset_dir, opt.models_dict_path, data_dict_path, splits[j], json_path, annot_id)
+

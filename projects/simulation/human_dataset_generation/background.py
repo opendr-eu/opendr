@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import numpy as np
+from pyglet.window import pyglet
 import math
-import pyglet
+from pyglet.gl import *
 import os
 from PIL import Image
 import cv2
@@ -116,42 +118,45 @@ class Background:
         self.zpos = z_pos
 
     def draw(self):
-        pyglet.gl.glPushMatrix()
-        pyglet.gl.glTranslatef(self.xpos, self.ypos, self.zpos, 0)
-        pyglet.gl.glScalef(self.size, self.size, self.size)
-        pyglet.gl.glColor3f(1, 1, 1)
-        pyglet.gl.glEnable(pyglet.gl.GL_TEXTURE_2D)
-        pyglet.gl.glBindTexture(pyglet.gl.GL_TEXTURE_2D, self.texture)
-        self.vlist.draw(pyglet.gl.GL_TRIANGLE_STRIP)
-        pyglet.gl.glDisable(pyglet.gl.GL_TEXTURE_2D)
-        pyglet.gl.glPopMatrix()
+        glPushMatrix()
+        glTranslatef(self.xpos, self.ypos, self.zpos, 0)
+        glScalef(self.size, self.size, self.size)
+        glColor3f(1, 1, 1)
+        glEnable(GL_TEXTURE_2D)
+        glBindTexture(GL_TEXTURE_2D, self.texture)
+        self.vlist.draw(GL_TRIANGLE_STRIP)
+        glDisable(GL_TEXTURE_2D)
+        glPopMatrix()
 
     def get_pos(self):
         return self.xpos, self.ypos, self.z_pos
 
     def select_texture(self):
         texture_file = os.path.join(self.img_dir, 'rgb', self.img_fl)
-        labels_file = os.path.join(self.img_dir, 'labels', self.img_fl)
+        labels_file = os.path.join(self.img_dir, 'segm', self.img_fl)
+        print(self.img_fl)
         self.texture = self.loadTexture(texture_file)
         self.labels = cv2.imread(labels_file)
         new_size = (1020, 340)
         self.labels = cv2.resize(self.labels, new_size)
-        self.labels_cls = [np.array([128, 64, 128]), np.array([244, 35, 232]), np.array([152, 251, 152])]
+        #self.labels_cls = [np.array([128, 64, 128]), np.array([192, 0, 0])] #kitti
+        self.labels_cls = [np.array([128, 64, 128]), np.array([244, 35, 232]), np.array([152,251,152])] #kitti
+
 
     def loadTexture(self, filename):
         self.img = Image.open(filename).transpose(Image.FLIP_TOP_BOTTOM)
         new_size = (1020, 340)
         self.img = self.img.resize(new_size)
         textureIDs = (pyglet.gl.GLuint * 1)()
-        pyglet.gl.glGenTextures(1, textureIDs)
+        glGenTextures(1, textureIDs)
         textureID = textureIDs[0]
         # print('generating texture', textureID, 'from', filename)
-        pyglet.gl.glBindTexture(pyglet.gl.GL_TEXTURE_2D, textureID)
-        pyglet.gl.glTexParameterf(pyglet.gl.GL_TEXTURE_2D, pyglet.gl.GL_TEXTURE_WRAP_S, pyglet.gl.GL_REPEAT)
-        pyglet.gl.glTexParameterf(pyglet.gl.GL_TEXTURE_2D, pyglet.gl.GL_TEXTURE_WRAP_T, pyglet.gl.GL_REPEAT)
-        pyglet.gl.glTexParameterf(pyglet.gl.GL_TEXTURE_2D, pyglet.gl.GL_TEXTURE_MAG_FILTER, pyglet.gl.GL_NEAREST)
-        pyglet.gl.glTexParameterf(pyglet.gl.GL_TEXTURE_2D, pyglet.gl.GL_TEXTURE_MIN_FILTER, pyglet.gl.GL_NEAREST)
-        pyglet.gl.glTexImage2D(pyglet.gl.GL_TEXTURE_2D, 0, pyglet.gl.GL_RGB, self.img.size[0], self.img.size[1],
-                               0, pyglet.gl.GL_RGB, pyglet.gl.GL_UNSIGNED_BYTE, self.img.tobytes())
-        pyglet.gl.glBindTexture(pyglet.gl.GL_TEXTURE_2D, 0)
+        glBindTexture(GL_TEXTURE_2D, textureID)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.img.size[0], self.img.size[1],
+                     0, GL_RGB, GL_UNSIGNED_BYTE, self.img.tobytes())
+        glBindTexture(GL_TEXTURE_2D, 0)
         return textureID
