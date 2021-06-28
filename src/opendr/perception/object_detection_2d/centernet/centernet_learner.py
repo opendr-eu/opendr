@@ -21,18 +21,19 @@ import warnings
 from tqdm import tqdm
 from urllib.request import urlretrieve
 
-# gluoncv ssd imports
+# gluoncv imports
 from gluoncv.data.transforms import presets
 from gluoncv.data.batchify import Tuple, Stack, Pad
 import mxnet as mx
 from mxnet import gluon
 from mxnet import autograd
+import gluoncv as gcv
+# gcv.utils.check_version('0.6.0')
 from gluoncv import model_zoo
 from gluoncv import utils as gutils
 from gluoncv.utils import LRScheduler, LRSequential
 from gluoncv.utils.metrics.voc_detection import VOC07MApMetric
 from gluoncv.utils.metrics.coco_detection import COCODetectionMetric
-from gluoncv.data import MixupDetection, RandomTransformDataLoader
 
 # OpenDR engine imports
 from opendr.engine.learners import Learner
@@ -50,18 +51,18 @@ from opendr.perception.object_detection_2d.datasets import DetectionDataset
 gutils.random.seed(0)
 
 
-class YOLOv3DetectorLearner(Learner):
-    supported_backbones = ["darknet53", "mobilenet1.0", "mobilenet0.25"]
+class CenterNetDetectorLearner(Learner):
+    supported_backbones = ["resnet50_v1b"]
 
-    def __init__(self, lr=1e-3, epochs=120, batch_size=8, device='cuda', backbone='darknet53', img_size=416,
+    def __init__(self, lr=1e-3, epochs=120, batch_size=8, device='cuda', backbone='resnet50_v1b', img_size=512,
                  lr_schedule='step', temp_path='temp', checkpoint_after_iter=5, checkpoint_load_iter=0,
-                 val_after=5, log_after=100, num_workers=8, weight_decay=5e-4, momentum=0.9, mixup=False,
-                 no_mixup_epochs=0, label_smoothing=False, random_shape=False, warmup_epochs=0, lr_decay_period=0,
-                 lr_decay_epoch='160,180', lr_decay=0.1):
-        super(YOLOv3DetectorLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
-                                                    checkpoint_after_iter=checkpoint_after_iter,
-                                                    checkpoint_load_iter=checkpoint_load_iter,
-                                                    temp_path=temp_path, device=device, backbone=backbone)
+                 val_after=5, log_after=100, num_workers=8, weight_decay=5e-4, momentum=0.9,
+                 transfer=True, transfer_dataset='coco', scale=1., topk=100, wh_weight=0.1, center_reg_weight=1.0,
+                 lr_decay_epoch='160,180', lr_decay=0.1, warmup_epochs=0, flip_validation=False, infer_only=False):
+        super(CenterNetDetectorLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
+                                                       checkpoint_after_iter=checkpoint_after_iter,
+                                                       checkpoint_load_iter=checkpoint_load_iter,
+                                                       temp_path=temp_path, device=device, backbone=backbone)
         assert self.lr_schedule in ['step', 'cosine', 'poly']
         self.epochs = epochs
         self.log_after = log_after
@@ -70,21 +71,18 @@ class YOLOv3DetectorLearner(Learner):
         self.backbone = backbone.lower()
         self.parent_dir = temp_path
         self.checkpoint_str_format = "checkpoint_epoch_{}.params"
+        self._infer_only = infer_only
 
-        self.random_shape = random_shape
-        self.mixup = mixup
-        self.no_mixup_epochs = no_mixup_epochs
-        if self.no_mixup_epochs >= self.epochs:
-            self.mixup = False
-        self.label_smoothing = label_smoothing
-        self.supported_sizes = [320, 416, 608]
-        self.lr_decay_period = lr_decay_period
-        self.lr_decay_epoch = lr_decay_epoch
+        self.scale = scale
+        self.topk = topk
+        self.flip_validation = flip_validation
+        self.data_shape = img_size
+
         self.lr_decay = lr_decay
+        self.lr_decay_epoch = lr_decay_epoch
         self.warmup_epochs = warmup_epochs
-
-        if self.backbone not in self.supported_backbones:
-            raise ValueError(self.backbone + " backbone is not supported.")
+        self.wh_weight = wh_weight
+        self.center_reg_weight = center_reg_weight
 
         if self.device == 'cuda':
             self.ctx = mx.gpu(0)
@@ -95,12 +93,10 @@ class YOLOv3DetectorLearner(Learner):
         self.weight_decay = weight_decay
         self.momentum = momentum
 
-        model_name = 'yolo3_{}_voc'.format(self.backbone)
-        net = model_zoo.get_model(model_name, pretrained=False, pretrained_base=True)
+        net = model_zoo.get_model('center_net_{}_voc'.format(self.backbone),
+                                  pretrained=False,
+                                  pretrained_base=True)
         self._model = net
-        with warnings.catch_warnings(record=True):
-            warnings.simplefilter("always")
-            self._model.initialize()
         self.classes = ['None']
 
     def create_model(self, classes):
@@ -109,14 +105,16 @@ class YOLOv3DetectorLearner(Learner):
         :param classes: list of classes contained in the training set
         :type classes: list
         """
+
         if self._model is None or classes != self.classes:
-            model_name = 'yolo3_{}_voc'.format(self.backbone)
-            net = model_zoo.get_model(model_name, pretrained=False, pretrained_base=True)
-            self._model = net
+            self._model = model_zoo.get_model('center_net_{}_voc'.format(self.backbone),
+                                              pretrained=False,
+                                              pretrained_base=True)
             with warnings.catch_warnings(record=True):
                 warnings.simplefilter("always")
                 self._model.initialize()
-
+            self._model.collect_params().reset_ctx(self.ctx)
+            self._model.hybridize()
         self._model.reset_class(classes)
         self.classes = classes
 
@@ -138,20 +136,26 @@ class YOLOv3DetectorLearner(Learner):
         :return: returns stats regarding the training and validation process
         :rtype: dict
         """
-
         # set save dir for checkpoint saving
-        save_prefix = 'yolo3_{}_{}_{}'.format(self.img_size, self.backbone, dataset.dataset_type)
+        save_prefix = 'centernet_{}_{}'.format(self.backbone, dataset.dataset_type)
 
         # get dataset in compatible format
         dataset = self.__prepare_dataset(dataset)
-
         self.create_model(dataset.classes)
         if verbose:
             print('Saving models as {}'.format(save_prefix))
 
-        # smooth labels
-        if self.label_smoothing:
-            self._model._target_generator._label_smooth = True
+        # get net & set device
+        if self.device == 'cuda':
+            ctx = [mx.gpu(0)]
+        else:
+            ctx = [mx.cpu()]
+        if verbose:
+            print("Using device: ", self.device, ctx)
+
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("always")
+            self._model.initialize()
 
         checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(save_prefix))
         if self.checkpoint_after_iter != 0 and not os.path.exists(checkpoints_folder):
@@ -177,52 +181,12 @@ class YOLOv3DetectorLearner(Learner):
                              ") doesn't correspond to a log checkpoint.\nNo such file or directory."
                 raise e
 
-        # get net & set device
-        if self.device == 'cuda':
-            ctx = [mx.gpu(0)]
-        else:
-            ctx = [mx.cpu()]
-        if verbose:
-            print("Using device: ", self.device, ctx)
-
-        with warnings.catch_warnings(record=True):
-            warnings.simplefilter("always")
-            self._model.initialize()
-        if verbose:
-            print("Network:")
-            print(self._model)
-
-        train_transform = presets.yolo.YOLO3DefaultTrainTransform(self.img_size, self.img_size, self._model, mixup=self.mixup)
-        if self.mixup:
-            dataset = MixupDetection(dataset)
-            dataset.set_mixup(np.random.beta, 1.5, 1.5)
-
-        batchify_fn = Tuple(*([Stack() for _ in range(6)] + [Pad(axis=0, pad_val=-1) for _ in range(1)]))
-
-        if not self.random_shape:
-            dataset = dataset.transform(train_transform)
-            train_loader = gluon.data.DataLoader(
-                dataset,
-                self.batch_size,
-                shuffle=True,
-                batchify_fn=batchify_fn,
-                last_batch='rollover',
-                num_workers=self.num_workers
-            )
-        else:
-            transform_fns = [presets.yolo.YOLO3DefaultTrainTransform(x * 32, x * 32, self._model, mixup=self.mixup)
-                             for x in range(10, 20)]
-            train_loader = RandomTransformDataLoader(
-                transform_fns, dataset, batch_size=self.batch_size, interval=10, last_batch='rollover',
-                shuffle=True, batchify_fn=batchify_fn, num_workers=self.num_workers)
-
-        # lr schedule
-        num_batches = int(len(train_loader) / self.batch_size)
-        if self.lr_decay_period > 0:
-            lr_decay_epoch = list(range(self.lr_decay_period, self.epochs, self.lr_decay_period))
-        else:
-            lr_decay_epoch = [int(i) for i in self.lr_decay_epoch.split(',')]
-        lr_decay_epoch = [e - self.warmup_epochs for e in lr_decay_epoch]
+        self._model.collect_params().reset_ctx(ctx)
+        # lr decay policy
+        lr_decay = float(self.lr_decay)
+        lr_steps = sorted([int(ls) for ls in self.lr_decay_epoch.split(',') if ls.strip()])
+        lr_decay_epoch = [e - self.warmup_epochs for e in lr_steps]
+        num_batches = len(dataset) // self.batch_size
         lr_scheduler = LRSequential([
             LRScheduler('linear', base_lr=0, target_lr=self.lr,
                         nepochs=self.warmup_epochs, iters_per_epoch=num_batches),
@@ -230,86 +194,85 @@ class YOLOv3DetectorLearner(Learner):
                         nepochs=self.epochs - self.warmup_epochs,
                         iters_per_epoch=num_batches,
                         step_epoch=lr_decay_epoch,
-                        step_factor=self.lr_decay, power=2),
+                        step_factor=lr_decay, power=2),
         ])
 
-        self._model.collect_params().reset_ctx(ctx)
-        trainer = gluon.Trainer(self._model.collect_params(),
-                                'sgd', {'lr_scheduler': lr_scheduler,
-                                        'wd': self.weight_decay,
-                                        'momentum': self.momentum},
-                                kvstore='local', update_on_kvstore=None)
+        for k, v in self._model.collect_params('.*bias').items():
+            v.wd_mult = 0.0
+        trainer = gluon.Trainer(
+            self._model.collect_params(), 'adam',
+            {'wd': self.weight_decay,
+             'lr_scheduler': lr_scheduler})
 
-        # metrics
-        obj_metrics = mx.metric.Loss('ObjLoss')
-        center_metrics = mx.metric.Loss('BoxCenterLoss')
-        scale_metrics = mx.metric.Loss('BoxScaleLoss')
-        cls_metrics = mx.metric.Loss('ClassLoss')
+        width, height = self.data_shape, self.data_shape
+        num_class = len(dataset.classes)
+        batchify_fn = Tuple([Stack() for _ in range(6)])  # stack image, cls_targets, box_targets
+        train_loader = gluon.data.DataLoader(
+            dataset.transform(presets.center_net.CenterNetDefaultTrainTransform(
+                width, height, num_class=num_class, scale_factor=self._model.scale)),
+            self.batch_size, True, batchify_fn=batchify_fn, last_batch='rollover', num_workers=self.num_workers)
 
-        training_dict = {"ObjLoss": [], "BoxCenterLoss": [], "BoxScaleLoss": [], "ClassLoss": [], "val_map": []}
+        heatmap_loss = gcv.loss.HeatmapFocalLoss(from_logits=True)
+        wh_loss = gcv.loss.MaskedL1Loss(weight=self.wh_weight)
+        center_reg_loss = gcv.loss.MaskedL1Loss(weight=self.center_reg_weight)
+        heatmap_loss_metric = mx.metric.Loss('HeatmapFocal')
+        wh_metric = mx.metric.Loss('WHL1')
+        center_reg_metric = mx.metric.Loss('CenterRegL1')
 
-        n_iters = 0
+        training_dict = {"HeatmapFocal": [], "WHL1": [], "CenterRegL1": [], "val_map": []}
+
         for epoch in range(start_epoch, self.epochs):
             print('[Epoch {}/{} lr={}]'.format(epoch, self.epochs, trainer.learning_rate))
 
-            if self.mixup and self.epochs - epoch == self.no_mixup_epochs:
-                # use train_loader without mixup
-                train_loader._dataset.set_mixup(None)
-
+            wh_metric.reset()
+            center_reg_metric.reset()
             tic = time.time()
-            mx.nd.waitall()
             self._model.hybridize()
+
             for i, batch in enumerate(train_loader):
-                data = gluon.utils.split_and_load(batch[0], ctx_list=ctx, batch_axis=0)
-                # objectness, center_targets, scale_targets, weights, class_targets
-                fixed_targets = [gluon.utils.split_and_load(batch[it], ctx_list=ctx, batch_axis=0) for it in range(1, 6)]
-                gt_boxes = gluon.utils.split_and_load(batch[6], ctx_list=ctx, batch_axis=0)
-                sum_losses = []
-                obj_losses = []
-                center_losses = []
-                scale_losses = []
-                cls_losses = []
+                split_data = [gluon.utils.split_and_load(batch[ind], ctx_list=ctx, batch_axis=0) for ind in range(6)]
+                # data, heatmap_targets, wh_targets, wh_masks, center_reg_targets, center_reg_masks = split_data
+                # batch_size = self.batch_size
                 with autograd.record():
-                    for ix, x in enumerate(data):
-                        obj_loss, center_loss, scale_loss, cls_loss = self._model(x,
-                                                                                  gt_boxes[ix],
-                                                                                  *[ft[ix] for ft in fixed_targets])
-                        sum_losses.append(obj_loss + center_loss + scale_loss + cls_loss)
-                        obj_losses.append(obj_loss)
-                        center_losses.append(center_loss)
-                        scale_losses.append(scale_loss)
-                        cls_losses.append(cls_loss)
+                    sum_losses = []
+                    heatmap_losses = []
+                    wh_losses = []
+                    center_reg_losses = []
+                    wh_preds = []
+                    center_reg_preds = []
+                    for x, heatmap_target, wh_target, wh_mask, center_reg_target, center_reg_mask in zip(*split_data):
+                        heatmap_pred, wh_pred, center_reg_pred = self._model(x)
+                        wh_preds.append(wh_pred)
+                        center_reg_preds.append(center_reg_pred)
+                        wh_losses.append(wh_loss(wh_pred, wh_target, wh_mask))
+                        center_reg_losses.append(center_reg_loss(center_reg_pred, center_reg_target, center_reg_mask))
+                        heatmap_losses.append(heatmap_loss(heatmap_pred, heatmap_target))
+                        curr_loss = heatmap_losses[-1] + wh_losses[-1] + center_reg_losses[-1]
+                        sum_losses.append(curr_loss)
                     autograd.backward(sum_losses)
-                trainer.step(self.batch_size)
-                n_iters += 1
+                trainer.step(len(sum_losses))  # step with # gpus
 
-                obj_metrics.update(0, obj_losses)
-                center_metrics.update(0, center_losses)
-                scale_metrics.update(0, scale_losses)
-                cls_metrics.update(0, cls_losses)
-
-                if n_iters % self.log_after == self.log_after - 1:
-                    name1, loss1 = obj_metrics.get()
-                    name2, loss2 = center_metrics.get()
-                    name3, loss3 = scale_metrics.get()
-                    name4, loss4 = cls_metrics.get()
-                    print('[Epoch {}][Batch {}] {}={:.3f}, {}={:.3f}, {}={:.3f}, {}={:.3f}'.format(
-                        epoch, i, name1, loss1, name2, loss2, name3, loss3, name4, loss4
-                    ))
-                    training_dict[name1].append(loss1)
+                heatmap_loss_metric.update(0, heatmap_losses)
+                wh_metric.update(0, wh_losses)
+                center_reg_metric.update(0, center_reg_losses)
+                if i % self.log_after == self.log_after - 1:
+                    name2, loss2 = wh_metric.get()
+                    name3, loss3 = center_reg_metric.get()
+                    name4, loss4 = heatmap_loss_metric.get()
                     training_dict[name2].append(loss2)
                     training_dict[name3].append(loss3)
                     training_dict[name4].append(loss4)
+                    print(
+                        '[Epoch {}][Batch {}], LR={}, {}={:.3f}, {}={:.3f}, {}={:.3f}'.format(
+                            epoch, i, trainer.learning_rate, name2, loss2, name3, loss3,
+                            name4, loss4))
 
-            toc = time.time()
+            name2, loss2 = wh_metric.get()
+            name3, loss3 = center_reg_metric.get()
+            name4, loss4 = heatmap_loss_metric.get()
 
-            name1, loss1 = obj_metrics.get()
-            name2, loss2 = center_metrics.get()
-            name3, loss3 = scale_metrics.get()
-            name4, loss4 = cls_metrics.get()
-            print('[Epoch {}] Training cost: {:.3f}, {}={:.3f}, {}={:.3f}, {}={:.3f}, {}={:.3f}'.format(
-                epoch, toc - tic, name1, loss1, name2, loss2, name3, loss3, name4, loss4
-            ))
+            print('[Epoch {}] Training cost: {:.3f}, {}={:.3f}, {}={:.3f}, {}={:.3f}'.format(
+                epoch, (time.time() - tic), name2, loss2, name3, loss3, name4, loss4))
 
             if epoch % self.val_after == self.val_after - 1 and val_dataset is not None:
                 if verbose:
@@ -340,24 +303,20 @@ class YOLOv3DetectorLearner(Learner):
         :type verbose: bool, optional
         :rtype: dict
         """
-
         autograd.set_training(False)
 
-        # TODO: multi-gpu?
+        # NOTE: multi-gpu is a little bugged
         if self.device == 'cuda':
             ctx = [mx.gpu(0)]
         else:
             ctx = [mx.cpu()]
         print(self.device, ctx)
 
-        self._model.set_nms(nms_thresh=0.45, nms_topk=400)
-        mx.nd.waitall()
-        self._model.hybridize()
-
         dataset, eval_metric = self.__prepare_val_dataset(dataset, data_shape=self.img_size)
+
         eval_metric.reset()
 
-        val_transform = presets.yolo.YOLO3DefaultValTransform(self.img_size, self.img_size)
+        val_transform = presets.center_net.CenterNetDefaultValTransform(self.img_size, self.img_size)
         dataset = dataset.transform(val_transform)
 
         val_batchify_fn = Tuple(Stack(), Pad(pad_val=-1))
@@ -374,6 +333,14 @@ class YOLOv3DetectorLearner(Learner):
                 batchify_fn=val_batchify_fn, last_batch='keep',
                 num_workers=self.num_workers
             )
+
+        self._model.flip_test = self.flip_validation
+        mx.nd.waitall()
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("always")
+            self._model.initialize()
+        self._model.collect_params().reset_ctx(ctx)
+        self._model.hybridize()
 
         for batch in tqdm(val_loader, total=len(val_loader)):
             data = gluon.utils.split_and_load(batch[0], ctx_list=ctx, batch_axis=0, even_split=False)
@@ -392,9 +359,10 @@ class YOLOv3DetectorLearner(Learner):
                 # clip to image size
                 det_bboxes.append(bboxes.clip(0, batch[0].shape[2]))
                 # split ground truths
-                gt_ids.append(y.slice_axis(axis=-1, begin=4, end=5))
+                gt_labels = y.slice_axis(axis=-1, begin=4, end=5)
+                gt_ids.append(gt_labels)
                 gt_bboxes.append(y.slice_axis(axis=-1, begin=0, end=4))
-                gt_difficults.append(y.slice_axis(axis=-1, begin=5, end=6) if y.shape[-1] > 5 else np.zeros(ids.shape))
+                gt_difficults.append(y.slice_axis(axis=-1, begin=5, end=6) if y.shape[-1] > 5 else np.zeros(gt_labels.shape))
 
             # update metric
             eval_metric.update(det_bboxes, det_ids, det_scores, gt_bboxes, gt_ids, gt_difficults)
@@ -405,7 +373,7 @@ class YOLOv3DetectorLearner(Learner):
         eval_dict = {k.lower(): v for k, v in zip(map_name, mean_ap)}
         return eval_dict
 
-    def infer(self, img, threshold=0.1, keep_size=True):
+    def infer(self, img, threshold=0.2, keep_size=True):
         """
         Performs inference on a single image and returns the resulting bounding boxes.
         :param img: image to perform inference on
@@ -425,7 +393,11 @@ class YOLOv3DetectorLearner(Learner):
         elif isinstance(img, np.ndarray):
             _img = img
         else:
-            raise ValueError("Input should be of type Image or numpy array.")
+            if img is not None:
+                error_msg = "Input should be of type Image or numpy array."
+            else:
+                error_msg = "Input image is of type None."
+            raise ValueError(error_msg)
 
         height, width, _ = _img.shape
         img_mx = mx.image.image.nd.from_numpy(_img)
@@ -433,18 +405,17 @@ class YOLOv3DetectorLearner(Learner):
         if keep_size:
             x, img_mx = transform_test(img_mx)
         else:
-            x, img_mx = presets.yolo.transform_test(img_mx, short=self.img_size)
+            x, img_mx = presets.center_net.transform_test(img_mx, short=self.img_size)
 
         h_mx, w_mx, _ = img_mx.shape
         x = x.as_in_context(self.ctx)
         class_IDs, scores, boxes = self._model(x)
 
-        class_IDs = class_IDs[0, :, 0].asnumpy()
-        scores = scores[0, :, 0].asnumpy()
+        class_IDs = class_IDs[0, :].asnumpy()
+        scores = scores[0, :].asnumpy()
         mask = np.where((class_IDs >= 0) & (scores > threshold))[0]
         if mask.size == 0:
             return BoundingBoxList([])
-
         scores = scores[mask, np.newaxis]
         class_IDs = class_IDs[mask, np.newaxis]
         boxes = boxes[0, mask, :].asnumpy()
@@ -471,11 +442,11 @@ class YOLOv3DetectorLearner(Learner):
         :param verbose: whether to print a success message or not, defaults to False
         :type verbose: bool, optional
         """
+        if self._model is None:
+            raise UserWarning("No model is loaded, cannot save.")
+
         model_name = os.path.basename(path)
         os.makedirs(path, exist_ok=True)
-
-        if verbose:
-            print(model_name)
 
         model_metadata = {"model_paths": [model_name + ".params"], "framework": "mxnet", "format": "params", "has_data": False,
                           "inference_params": {}, "optimized": False, "optimizer_info": {}, "backbone": self.backbone,
@@ -483,13 +454,11 @@ class YOLOv3DetectorLearner(Learner):
 
         self._model.save_parameters(os.path.join(path, model_metadata["model_paths"][0]))
         if verbose:
-            print("Model parameters saved.")
-
-        with open(os.path.join(path, model_name + '.json'), 'w', encoding='utf-8') as f:
-            json.dump(model_metadata, f, ensure_ascii=False, indent=4)
+            print("Saved model.")
+        with open(os.path.join(path, model_name + ".json"), 'w') as outfile:
+            json.dump(model_metadata, outfile)
         if verbose:
-            print("Model metadata saved.")
-        return True
+            print("Saved model metadata.")
 
     def load(self, path, verbose=True):
         """
@@ -501,23 +470,21 @@ class YOLOv3DetectorLearner(Learner):
         """
         # first, get model_name from path
         model_name = os.path.basename(path)
-        if verbose:
-            print("Model name:", model_name, "-->", os.path.join(path, model_name + ".json"))
+
         with open(os.path.join(path, model_name + ".json")) as metadata_file:
             metadata = json.load(metadata_file)
 
         self.backbone = metadata["backbone"]
-        self.create_model(metadata["classes"])
-        self._model.load_parameters(os.path.join(path, metadata["model_paths"][0]))
-        self._model.collect_params().reset_ctx(self.ctx)
-        self._model.hybridize()
-        if verbose:
-            print("Loaded parameters and metadata.")
-        return True
+        if not metadata["optimized"]:
+            self.create_model(metadata["classes"])
+            self._model.load_parameters(os.path.join(path, metadata["model_paths"][0]))
+            self._model.collect_params().reset_ctx(self.ctx)
+            self._model.hybridize()
+            if verbose:
+                print("Loaded mxnet model.")
 
     def download(self, path=None, mode="pretrained", verbose=False,
-                 url=OPENDR_SERVER_URL + "/perception/object_detection_2d/yolov3/"):
-        # url='ftp://155.207.131.93/perception/object_detection_2d/yolov3/'):
+                 url=OPENDR_SERVER_URL + "/perception/object_detection_2d/centernet/"):
         """
         Downloads all files necessary for inference, evaluation and training. Valid mode options are: ["pretrained",
         "images", "test_data"].
@@ -543,7 +510,7 @@ class YOLOv3DetectorLearner(Learner):
             os.makedirs(path)
 
         if mode == "pretrained":
-            path = os.path.join(path, "yolo_default")
+            path = os.path.join(path, "centernet_default")
             if not os.path.exists(path):
                 os.makedirs(path)
 
@@ -551,25 +518,25 @@ class YOLOv3DetectorLearner(Learner):
                 print("Downloading pretrained model...")
 
             file_url = os.path.join(url, "pretrained",
-                                    "yolo_voc",
-                                    "yolo_voc.json")
+                                    "centernet_voc",
+                                    "centernet_voc.json")
             if verbose:
                 print("Downloading metadata...")
-            urlretrieve(file_url, os.path.join(path, "yolo_default.json"))
+            urlretrieve(file_url, os.path.join(path, "centernet_default.json"))
 
             if verbose:
                 print("Downloading params...")
-            file_url = os.path.join(url, "pretrained", "yolo_voc",
-                                         "yolo_voc.params")
+            file_url = os.path.join(url, "pretrained", "centernet_voc",
+                                    "centernet_voc.params")
 
             urlretrieve(file_url,
-                        os.path.join(path, "yolo_voc.params"))
+                        os.path.join(path, "centernet_voc.params"))
 
         elif mode == "images":
-            file_url = os.path.join(url, "images", "cat.jpg")
+            file_url = os.path.join(url, "images", "bicycles.jpg")
             if verbose:
                 print("Downloading example image...")
-            urlretrieve(file_url, os.path.join(path, "cat.jpg"))
+            urlretrieve(file_url, os.path.join(path, "bicycles.jpg"))
 
         elif mode == "test_data":
             os.makedirs(os.path.join(path, "test_data"), exist_ok=True)

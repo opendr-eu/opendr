@@ -15,16 +15,14 @@
 import argparse
 
 from opendr.engine.datasets import ExternalDataset
-from opendr.perception.object_detection_2d.yolov3.yolov3_learner import YOLOv3DetectorLearner
+from opendr.perception.object_detection_2d.centernet.centernet_learner import CenterNetDetectorLearner
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", help="Dataset to train on", type=str, default="voc", choices=["voc", "coco",
                                                                                                    "widerperson"])
-    parser.add_argument("--backbone", help="Backbone network", type=str, default="darknet53", choices=["darknet53",
-                                                                                                       "mobilenet1.0",
-                                                                                                       "mobilenet0.25"])
+    parser.add_argument("--backbone", help="Backbone network", type=str, default="resnet50_v1b", choices=["resnet50_v1b"])
     parser.add_argument("--data-root", help="Dataset root folder", type=str)
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--batch-size", help="Batch size to use for training", type=int, default=6)
@@ -47,8 +45,8 @@ if __name__ == '__main__':
         dataset = WiderPersonDataset(root=args.data_root, splits=['train'])
         val_dataset = WiderPersonDataset(root=args.data_root, splits=['val'])
 
-    yolo = YOLOv3DetectorLearner(device=args.device, batch_size=args.batch_size, lr=args.lr, val_after=args.val_after,
-                                 epochs=args.n_epochs, backbone=args.backbone)
+    centernet = CenterNetDetectorLearner(device=args.device, batch_size=args.batch_size, lr=args.lr, val_after=args.val_after,
+                                         epochs=args.n_epochs, backbone=args.backbone)
 
-    yolo.fit(dataset, val_dataset)
-    yolo.save("./yolo_saved_model")
+    centernet.fit(dataset, val_dataset)
+    centernet.save("saved_centernet_model")

@@ -30,7 +30,9 @@ from pyflakes.reporter import Reporter
 skippedDirectories = [
     '.git',
     'dependencies',
-    'lib'
+    'lib',
+    'build',
+    'devel'
 ]
 
 
