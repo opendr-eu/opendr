@@ -239,8 +239,8 @@ class Pose(Target):
     @id.setter
     def id(self, data):
         """
-        Setter for data. Category expects data of int type.
-        :param: data to be used for creating a Category object
+        Setter for human id to which the Pose corresponds to. Pose expects id to be of int type.
+        :param: human id to which the Pose corresponds to
         """
         if isinstance(data, int):
             self._id = id
