@@ -1,19 +1,19 @@
 /*
  * Copyright 2015 Aldebaran
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
  */
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "slam_gmapping.h"
 
 #include <iostream>
@@ -27,12 +27,15 @@ int main(int argc, char **argv) {
    */
   namespace po = boost::program_options;
   po::options_description desc("Options");
-  desc.add_options()("help", "Print help messages")("scan_topic", po::value<std::string>()->default_value("/scan"),
-                                                    "topic that contains the laserScan in the rosbag")(
+  // clang-format off
+  desc.add_options()("help", "Print help messages")(
+      "scan_topic", po::value<std::string>()->default_value("/scan"),
+    "topic that contains the laserScan in the rosbag")(
     "bag_filename", po::value<std::string>()->required(), "ros bag filename")(
     "seed", po::value<unsigned long int>()->default_value(0), "seed")(
     "max_duration_buffer", po::value<unsigned long int>()->default_value(99999), "max tf buffer duration")(
     "on_done", po::value<std::string>(), "command to execute when done");
+  // clang-format on
 
   po::variables_map vm;
   try {

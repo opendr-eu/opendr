@@ -20,10 +20,22 @@
  *
  *****************************************************************/
 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "gmapping/gui/gsp_thread.h"
 #include <gmapping/configfile/configfile.h>
 #include <gmapping/utils/commandline.h>
 #include <gmapping/utils/stat.h>
-#include "gmapping/gui/gsp_thread.h"
 
 #ifdef CARMEN_SUPPORT
 #include <gmapping/carmenwrapper/carmenwrapper.h>
@@ -92,8 +104,7 @@ int GridSlamProcessorThread::init(int argc, const char *const *argv) {
     considerOdometryCovariance = cfg.value("gfs", "considerOdometryCovariance", considerOdometryCovariance);
   }
 
-  CMD_PARSE_BEGIN(1, argc)
-;
+  CMD_PARSE_BEGIN(1, argc);
   parseString("-cfg", configfilename); /* to avoid the warning*/
   parseString("-filename", filename);
   parseString("-outfilename", outfilename);
@@ -381,8 +392,7 @@ void *GridSlamProcessorThread::fastslamthread(GridSlamProcessorThread *gpt) {
 #undef printParam
 
   if (gpt->randseed != 0)
-
- sampleGaussian(1, gpt->randseed);
+    sampleGaussian(1, gpt->randseed);
   if (!gpt->infoStream()) {
     cerr << "cant open info stream for writing by unuseful debug messages" << endl;
   } else {
@@ -425,12 +435,14 @@ void *GridSlamProcessorThread::fastslamthread(GridSlamProcessorThread *gpt) {
             delete *it;
           cerr << "Done" << endl;
         }
-        // 				if (0 && processed){
-        // 					cerr << "generating copy" << endl;;
-        // 					GridSlamProcessor* m_gsp=gpt->clone();
-        // 					Map<double, DoubleArray2D, false>*  pmap=m_gsp->getParticles()[0].map.toDoubleMap()
-        // ; 					cerr << "deleting" << endl; 					delete m_gsp; 					delete pmap;
-        // 				}
+        // if (0 && processed){
+        // 	cerr << "generating copy" << endl;;
+        // 	GridSlamProcessor* m_gsp=gpt->clone();
+        // 	Map<double, DoubleArray2D, false>*  pmap=m_gsp->getParticles()[0].map.toDoubleMap();
+        // 	cerr << "deleting" << endl;
+        // 	delete m_gsp;
+        // 	delete pmap;
+        // }
       }
       const OdometryReading *o = dynamic_cast<const OdometryReading *>(r);
       if (o && gpt->running) {
@@ -508,8 +520,7 @@ void GridSlamProcessorThread::onOdometryUpdate() {
   weightSums.clear();
   for (GridSlamProcessor::ParticleVector::const_iterator part = getParticles().begin(); part != getParticles().end(); part++) {
     hypotheses.push_back(part->pose);
-    weightSums.push_back(part->weightSum)
-;
+    weightSums.push_back(part->weightSum);
   }
 
   ParticleMoveEvent *event = new ParticleMoveEvent;

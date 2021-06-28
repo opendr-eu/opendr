@@ -32,6 +32,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import PIL.Image
 import unittest
@@ -75,7 +86,7 @@ class TestGmapping(unittest.TestCase):
                 error_count = error_count + 1
                 error_total = error_total + abs(p0 - p1)
         error_avg = float(error_total) / float(len(im0d))
-        print '%d / %d = %.6f (%.6f)' % (error_total, len(im0d), error_avg, total_error_tol)
+        print("{} / {} = {:%.6f} ({:%.6f})".format(error_total, len(im0d), error_avg, total_error_tol))
         self.assertTrue(error_avg <= total_error_tol)
 
     def test_basic_localization_stage(self):
@@ -86,13 +97,13 @@ class TestGmapping(unittest.TestCase):
             import rospy
             rospy.init_node('test', anonymous=True)
             while rospy.rostime.get_time() == 0.0:
-                print 'Waiting for initial time publication'
+                print("Waiting for initial time publication")
                 time.sleep(0.1)
             start_time = rospy.rostime.get_time()
 
             while (rospy.rostime.get_time() - start_time) < target_time:
-                print 'Waiting for end time %.6f (current: %.6f)' % (
-                  target_time, (rospy.rostime.get_time() - start_time))
+                print("Waiting for end time {:%.6f} (current: {:%.6f})".format(
+                  target_time, (rospy.rostime.get_time() - start_time)))
                 time.sleep(0.1)
 
         f0 = os.path.join(roslib.packages.get_pkg_dir('gmapping'), 'test', 'basic_localization_stage_groundtruth')

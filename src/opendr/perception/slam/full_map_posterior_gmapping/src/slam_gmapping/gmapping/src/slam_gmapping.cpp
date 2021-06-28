@@ -30,6 +30,18 @@
 /* Author: Brian Gerkey */
 /* Modified by: Charles DuHadway */
 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 /**
 
 @mainpage slam_gmapping
@@ -904,8 +916,12 @@ void SlamGMapping::updateMap(const sensor_msgs::LaserScan &scan) {
   }
 
   double alpha = publishFullPosterior_ ? smap.getAlpha() : 1.0;
-  double beta =
-    publishFullPosterior_ ? smap.getBeta() : mapModel_ == GMapping::ScanMatcherMap::MapModel::ExpDecayModel ? 0.0 : 1.0;
+  // clang-format off
+  // Ignore clang-format due to it going back-and-forth with the line breaks
+  double beta = publishFullPosterior_ ? smap.getBeta() : mapModel_ == GMapping::ScanMatcherMap::MapModel::ExpDecayModel ? 0.0 :
+                                                                                                                          1.0;
+  // clang-format on
+
   double d = smap.getDelta() * sqrt(2);
 
   for (int x = 0; x < smap.getMapSizeX(); x++) {
