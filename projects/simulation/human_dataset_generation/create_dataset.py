@@ -27,7 +27,7 @@ import numpy as np
 
 def generate_data(csv_dt_path='./csv/data2.csv', models_dir='./3D_models', back_imgs_dir='./background_imgs',
                   models_dict_path='./3D_models/models_dict.pkl', back_imgs_dict_path='./background_imgs/imgs_dict.pkl',
-                  csv_tr_path=None, dataset_dir=None, placement_colors='./locations_colormap.txt'):
+                  csv_tr_path=None, dataset_dir=None, placement_colors='./background_images/CityScapes/locations_colormap.txt'):
 
     # Pixel colors for roads/sidewalks/terrain
     with open(placement_colors) as csvfile:
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     parser.add_argument('-back_imgs_dict_path', type=str, default='./background_images/CityScapes/img_ids.pkl')
     parser.add_argument('-csv_dir', type=str, default='./csv')
     parser.add_argument('-dataset_dir', type=str, default='./dataset')
-    parser.add_argument('-placement_colors', type=str, default='./locations_colormap.txt')
+    parser.add_argument('-placement_colors', type=str, default='./background_images/CityScapeslocations_colormap.txt')
 
     opt = parser.parse_args()
 
