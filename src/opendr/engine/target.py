@@ -138,7 +138,7 @@ class Category(Target):
         :return: the description of the corresponding class
         :rtype: str
         """
-        return self.description
+        return self._description
 
     @description.setter
     def description(self, description):
