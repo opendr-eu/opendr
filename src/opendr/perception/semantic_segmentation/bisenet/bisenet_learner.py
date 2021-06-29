@@ -165,7 +165,7 @@ class BisenetLearner(Learner):
 
 return {'precision': precision, 'miou': miou}
 
-    def infer(self, img, csvpath, spath):
+    def infer(self, img, csvpath, spath=None):
         """
         This method is used to perform semantic segmentation on an image.
         It returns a heatmap of the given image.
@@ -192,10 +192,11 @@ return {'precision': precision, 'miou': miou}
         predict = reverse_one_hot(predict)
         predict = colour_code_segmentation(np.array(predict), label_info)
         heatmap = Heatmap(predict)
-        heatmap = heatmap.numpy()
-        heatmap = cv2.resize(np.uint8(heatmap), (960, 720))
-        sspath = os.path.join(spath, 'heatmap_example.png')
-        cv2.imwrite(sspath, cv2.cvtColor(heatmap, cv2.COLOR_RGB2BGR))
+        # optionally save output heatmap as image
+        #heatmap_np = heatmap.numpy()
+        #heatmap_np = cv2.resize(np.uint8(heatmap_np), (960, 720))
+        #sspath = os.path.join(spath, 'heatmap_example.png')
+        #cv2.imwrite(sspath, cv2.cvtColor(heatmap_np, cv2.COLOR_RGB2BGR))
 
         return heatmap
 
