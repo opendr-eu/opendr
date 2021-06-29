@@ -165,7 +165,7 @@ class BisenetLearner(Learner):
 
             return {'precision': precision, 'miou': miou}
 
-    def infer(self, img, csvpath, spath=None):
+    def infer(self, img, spath=None):
         """
         This method is used to perform semantic segmentation on an image.
         It returns a heatmap of the given image.
@@ -182,18 +182,16 @@ class BisenetLearner(Learner):
         image = PILImage.fromarray(image).convert('RGB')
         image = transforms.ToTensor()(image)
         image = transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))(image).unsqueeze(0)
-        # read csv label path
-        label_info = get_label_info(os.path.join(csvpath, 'class_dict.csv'))
         # predict
         if self.model is None:
             raise UserWarning("No model is loaded, cannot run inference. Load a model first using load().")
         self.model.eval()
-        predict = self.model(image).squeeze().cpu()
-        predict = reverse_one_hot(predict)
-        predict = colour_code_segmentation(np.array(predict), label_info)
+        predict = self.model(image).argmax(dim=1).squeeze().cpu()
         heatmap = Heatmap(predict)
         # optionally save output heatmap as image
         # heatmap_np = heatmap.numpy()
+        # colors = np.random.randint(0, 256, (256, 3), dtype=np.uint8)
+        # heatmap_np = colors[heatmap_np]
         # heatmap_np = cv2.resize(np.uint8(heatmap_np), (960, 720))
         # sspath = os.path.join(spath, 'heatmap_example.png')
         # cv2.imwrite(sspath, cv2.cvtColor(heatmap_np, cv2.COLOR_RGB2BGR))
