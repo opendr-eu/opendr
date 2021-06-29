@@ -1,3 +1,5 @@
+#!/bin/bash
+
 wget --load-cookies /tmp/cookies.txt "ftp://opendrdata.csd.auth.gr/simulation/human_data_generation_framework/human_models.tar.gz" -O human_models.tar.gz && rm -rf /tmp/cookies.txt
 
 tar -xzvf human_models.tar.gz
