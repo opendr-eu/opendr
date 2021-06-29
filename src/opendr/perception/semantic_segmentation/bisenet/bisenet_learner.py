@@ -163,7 +163,7 @@ class BisenetLearner(Learner):
                 print('precision for test: %.3f' % precision)
                 print('mIoU for validation: %.3f' % miou)
 
-return {'precision': precision, 'miou': miou}
+            return {'precision': precision, 'miou': miou}
 
     def infer(self, img, csvpath, spath=None):
         """
@@ -193,10 +193,10 @@ return {'precision': precision, 'miou': miou}
         predict = colour_code_segmentation(np.array(predict), label_info)
         heatmap = Heatmap(predict)
         # optionally save output heatmap as image
-        #heatmap_np = heatmap.numpy()
-        #heatmap_np = cv2.resize(np.uint8(heatmap_np), (960, 720))
-        #sspath = os.path.join(spath, 'heatmap_example.png')
-        #cv2.imwrite(sspath, cv2.cvtColor(heatmap_np, cv2.COLOR_RGB2BGR))
+        # heatmap_np = heatmap.numpy()
+        # heatmap_np = cv2.resize(np.uint8(heatmap_np), (960, 720))
+        # sspath = os.path.join(spath, 'heatmap_example.png')
+        # cv2.imwrite(sspath, cv2.cvtColor(heatmap_np, cv2.COLOR_RGB2BGR))
 
         return heatmap
 
