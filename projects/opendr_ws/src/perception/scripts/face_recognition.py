@@ -30,15 +30,15 @@ class FaceRecognitionNode:
                  face_id_topic="/opendr/face_recognition_id", database_path="./database", device="cuda",
                  backbone='mobilefacenet'):
         """
-        Creates a ROS Node for pose detection
+        Creates a ROS Node for face recognition
         :param input_image_topic: Topic from which we are reading the input image
         :type input_image_topic: str
-        :param output_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
-        annotated image)
-        :type output_image_topic: str
-        :param pose_annotations_topic: Topic to which we are publishing the annotations (if None, we are not publishing
-        annotated pose annotations)
-        :type pose_annotations_topic:  str
+        :param face_recognition_topic: Topic to which we are publishing the recognized face info
+        (if None, we are not publishing the info)
+        :type face_recognition_topic: str
+        :param face_id_topic: Topic to which we are publishing the ID of the recognized person
+         (if None, we are not publishing the ID)
+        :type face_id_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
