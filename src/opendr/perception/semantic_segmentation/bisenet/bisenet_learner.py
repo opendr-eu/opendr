@@ -25,7 +25,7 @@ from PIL import Image as PILImage
 from urllib.request import urlretrieve
 from opendr.perception.semantic_segmentation.bisenet.algorithm.model.build_BiSeNet import BiSeNet
 from opendr.perception.semantic_segmentation.bisenet.algorithm.utils import reverse_one_hot, compute_global_accuracy, \
-    fast_hist, per_class_iu, get_label_info, colour_code_segmentation
+    fast_hist, per_class_iu
 from opendr.engine.learners import Learner
 from opendr.engine.data import Image
 from opendr.engine.constants import OPENDR_SERVER_URL
@@ -191,10 +191,10 @@ class BisenetLearner(Learner):
         # optionally save output heatmap as image
         # heatmap_np = heatmap.numpy()
         # colors = np.random.randint(0, 256, (256, 3), dtype=np.uint8)
-        # heatmap_np = colors[heatmap_np]
-        # heatmap_np = cv2.resize(np.uint8(heatmap_np), (960, 720))
+        # heatmap_o = colors[heatmap_np]
+        # heatmap_o = cv2.resize(np.uint8(heatmap_o), (960, 720))
         # sspath = os.path.join(spath, 'heatmap_example.png')
-        # cv2.imwrite(sspath, cv2.cvtColor(heatmap_np, cv2.COLOR_RGB2BGR))
+        # cv2.imwrite(sspath, cv2.cvtColor(heatmap_o, cv2.COLOR_RGB2BGR))
 
         return heatmap
 
@@ -205,7 +205,7 @@ class BisenetLearner(Learner):
         Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
         1)  pretrained model
-        2) testing images
+        2)  testing images
 
         :param path: Local path to save the files, defaults to self.temp_path if None
         :type path: str, path, optional
