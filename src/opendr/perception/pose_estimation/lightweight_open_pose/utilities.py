@@ -14,7 +14,7 @@
 
 import numpy as np
 import cv2
-from src.opendr.engine.target import Pose
+from opendr.engine.target import Pose
 
 # More information on body-part id naming on target.py - Pose class.
 # For in-depth explanation of BODY_PARTS_KPT_IDS and BODY_PARTS_PAF_IDS see
