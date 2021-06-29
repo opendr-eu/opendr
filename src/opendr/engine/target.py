@@ -243,7 +243,7 @@ class Pose(Target):
         if isinstance(id, int) or id is None:
             self._id = id
         else:
-            raise ValueError("Pose id should be an integer")
+            raise ValueError("Pose id should be an integer or None")
 
     @property
     def data(self):
@@ -264,7 +264,7 @@ class Pose(Target):
         Setter for data. Pose expects a NumPy array or a list
         :param: data to be used for creating Pose
         """
-        if isinstance(data, np.ndarray):
+        if isinstance(data, np.ndarray) or isinstance(data, list):
             self._data = data
         else:
             raise ValueError("Pose expects either NumPy arrays or lists as data")
