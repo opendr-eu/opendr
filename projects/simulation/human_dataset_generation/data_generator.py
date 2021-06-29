@@ -28,7 +28,7 @@ from background import Background
 class DataGenerator(pyglet.window.Window):
     def __init__(self, models_dir, background_dir, csv_dt_path='', model_dict_path='', back_imgs_dict_path='',
                  data_out_dir=None, csv_tr_path=None, placement_colors=[]):
-        super(Data_generator, self).__init__(resizable=True)
+        super(DataGenerator, self).__init__(resizable=True)
         self.camera_size = (1920, 640)
         self.set_size(self.camera_size[0], self.camera_size[1])
         self.background_dir = background_dir
