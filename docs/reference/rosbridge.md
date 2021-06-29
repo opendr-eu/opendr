@@ -79,7 +79,48 @@ Parameters:
 - **message**: *engine.target.Pose*  
   OpenDR pose to be converted to ROS pose.
 
+#### `ROSBridge.to_ros_face`
+
+```python
+ROSBridge.to_ros_face(self,
+                      category)
+```
+Converts an OpenDR Category into a ROS ObjectHypothesis containing the engine.target.category.data and engine.target.category.confidence.
+
+Parameters:
+
+- **message**: *engine.target.Category*  
+  OpenDR category to be converted to ROS ObjectHypothesis.
+
+#### `ROSBridge.to_ros_face_id`
+
+```python
+ROSBridge.to_ros_face_id(self,
+                      category)
+```
+Converts an OpenDR Category into a ROS String containing the name of the human recognized.
+
+Parameters:
+
+- **message**: *engine.target.Category*  
+  OpenDR category to be converted to ROS string.
+  
+#### `ROSBridge.from_ros_face`
+
+```python
+ROSBridge.from_ros_face(self,
+                      ros_hypothesis)
+```
+Converts a Ros ObjectHypothesis into an OpenDR Category.
+
+Parameters:
+
+- **message**: *ros_bridge.msg.ObjectHypothesis*  
+  ROS objecthypothesis to be converted into an OpenDR category.
+  
 
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
 2. `ros_bridge.msg.Pose` is used as an equivelant to `engine.target.Pose`
+3. `std_msgs.msg.String` is used as an equivelant to `engine.target.Category.description`
+4. `vision_msgs.msg.ObjectHypothesis` is used as an equivelant to `engine.target.Category.id` and `engine.target.Category.confidence`

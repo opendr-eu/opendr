@@ -10,7 +10,7 @@ class FocalLoss(nn.Module):
         super(FocalLoss, self).__init__()
         self.gamma = gamma
         self.eps = eps
-        self.ce = nn.CrossEntropyLoss()
+        self.ce = nn.CrossEntropyLoss(reduction='none')
 
     def forward(self, input, target):
         logp = self.ce(input, target)

@@ -14,9 +14,11 @@
 
 from opendr.engine.data import Image
 from opendr.engine.target import Pose
+from opendr.engine.target import Category
 import numpy as np
 from cv_bridge import CvBridge
-from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose
+from std_msgs.msg import String
+from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose, ObjectHypothesis
 from geometry_msgs.msg import Pose2D
 
 
@@ -107,3 +109,40 @@ class ROSBridge:
         pose = Pose(data, confidence)
         pose.id = pose_id
         return pose
+
+    def to_ros_face(self, category):
+        """
+        Converts an OpenDR category into a ObjectHypothesis msg that can carry the Category.data and Category.confidence.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.data and category.confidence
+        :rtype: vision_msgs.msg.ObjectHypothesis
+        """
+        result = ObjectHypothesis()
+        result.id = category.data
+        result.score = category.confidence
+        return result
+
+    def to_ros_face_id(self, category):
+        """
+        Converts an OpenDR category into a string msg that can carry the Category.description.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.description
+        :rtype: std_msgs.msg.String
+        """
+        result = String()
+        result.data = category.description
+        return result
+
+    def from_ros_face(self, ros_hypothesis):
+        """
+        Converts a ROS message with category payload into an OpenDR category
+        :param ros_hypothesis: the objecthypothesis to be converted
+        :type ros_face: vision_msgs.msg.ObjectHypothesis
+        :return: an OpenDR category
+        :rtype: engine.target.Category
+        """
+        category = Category(prediction=ros_hypothesis.id, description=None,
+                            confidence=ros_hypothesis.score)
+        return category
