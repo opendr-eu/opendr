@@ -15,7 +15,7 @@
 import os
 import argparse
 import gc
-from data_generator import Data_generator
+from data_generator import DataGenerator
 import pyglet
 import pickle
 import json
@@ -37,7 +37,7 @@ def generate_data(csv_dt_path='./csv/data2.csv', models_dir='./3D_models', back_
             row_ints = [int(i) for i in row]
             labels_pm.append(np.array(row_ints))
 
-    data_gen = Data_generator(models_dir, back_imgs_dir, csv_dt_path=csv_dt_path, model_dict_path=models_dict_path,
+    data_gen = DataGenerator(models_dir, back_imgs_dir, csv_dt_path=csv_dt_path, model_dict_path=models_dict_path,
                               back_imgs_dict_path=back_imgs_dict_path, csv_tr_path=csv_tr_path,
                               data_out_dir=dataset_dir, placement_colors=labels_pm)
     pyglet.clock.schedule(data_gen.update)
