@@ -30,35 +30,35 @@ from torchvision import transforms
 from urllib.request import urlretrieve
 
 # OpenDR engine imports
-from src.opendr.engine.learners import Learner
-from src.opendr.engine.datasets import ExternalDataset, DatasetIterator
-from src.opendr.engine.data import Image
-from src.opendr.engine.target import Pose
-from src.opendr.engine.constants import OPENDR_SERVER_URL
+from opendr.engine.learners import Learner
+from opendr.engine.datasets import ExternalDataset, DatasetIterator
+from opendr.engine.data import Image
+from opendr.engine.target import Pose
+from opendr.engine.constants import OPENDR_SERVER_URL
 
 # OpenDR lightweight_open_pose imports
-from src.opendr.perception.pose_estimation.lightweight_open_pose.filtered_pose import FilteredPose
-from src.opendr.perception.pose_estimation.lightweight_open_pose.utilities import track_poses
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_mobilenet import \
+from opendr.perception.pose_estimation.lightweight_open_pose.filtered_pose import FilteredPose
+from opendr.perception.pose_estimation.lightweight_open_pose.utilities import track_poses
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_mobilenet import \
     PoseEstimationWithMobileNet
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_mobilenet_v2 import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_mobilenet_v2 import \
     PoseEstimationWithMobileNetV2
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_shufflenet import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_shufflenet import \
     PoseEstimationWithShuffleNet
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.get_parameters import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.get_parameters import \
     get_parameters_conv, get_parameters_bn, get_parameters_conv_depthwise
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.load_state import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.load_state import \
     load_state  # , load_from_mobilenet
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.loss import l2_loss
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.keypoints import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.loss import l2_loss
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.keypoints import \
     extract_keypoints, group_keypoints
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.datasets.coco import CocoTrainDataset
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.datasets.coco import CocoValDataset
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.datasets.transformations import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.datasets.coco import CocoTrainDataset
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.datasets.coco import CocoValDataset
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.datasets.transformations import \
     ConvertKeypoints, Scale, Rotate, CropPad, Flip
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.val import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.val import \
     convert_to_coco_format, run_coco_eval, normalize, pad_width
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.scripts import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.scripts import \
     prepare_train_labels, make_val_subset
 
 cv2.setNumThreads(0)
