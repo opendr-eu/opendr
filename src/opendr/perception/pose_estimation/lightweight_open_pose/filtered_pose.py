@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from src.opendr.engine.target import Pose
-from src.opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.one_euro_filter import OneEuroFilter
+from opendr.engine.target import Pose
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.one_euro_filter import OneEuroFilter
 
 
 class FilteredPose(Pose):
