@@ -532,11 +532,11 @@ class SpatioTemporalGCNLearner(Learner):
             # Create temp directory
             os.makedirs(os.path.join(self.parent_dir, self.experiment_name), exist_ok=True)
             self.__convert_to_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"),
-                                   do_constant_folding)
+                                   do_constant_folding, verbose=False)
 
         self.__load_from_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"))
 
-    def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=True):
+    def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=False):
         """
         Converts the loaded regular PyTorch model to an ONNX model and saves it to disk.
         :param output_name: path and name to save the model, e.g. "/models/onnx_model.onnx"

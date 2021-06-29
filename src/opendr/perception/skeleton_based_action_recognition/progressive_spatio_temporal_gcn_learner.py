@@ -570,7 +570,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
             # Create temp directory
             os.makedirs(os.path.join(self.parent_dir, self.experiment_name), exist_ok=True)
             self.__convert_to_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"),
-                                   do_constant_folding)
+                                   do_constant_folding, verbose=False)
 
         self.__load_from_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"))
 
