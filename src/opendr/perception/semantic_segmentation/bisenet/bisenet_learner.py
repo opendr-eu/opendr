@@ -206,7 +206,7 @@ return {'precision': precision, 'miou': miou}
         Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
         1)  pretrained model
-        3) testing images
+        2) testing images
 
         :param path: Local path to save the files, defaults to self.temp_path if None
         :type path: str, path, optional
