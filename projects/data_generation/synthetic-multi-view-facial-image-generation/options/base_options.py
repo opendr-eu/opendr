@@ -30,7 +30,6 @@ class BaseOptions():
         parser.add_argument('--norm_E', type=str, default='spectralinstance',
                             help='instance normalization or batch normalization')
         parser.add_argument('--phase', type=str, default='test', help='train, val, test, etc')
-
         parser.add_argument('--device_count', type=int, default=1, help='the total number of gpus to use')  # 2
         parser.add_argument('--render_thread', type=int, default=1, help='number of gpus used for rendering')  # 1
         parser.add_argument('--chunk_size', default=1, type=int, nargs='+',
@@ -189,7 +188,7 @@ class BaseOptions():
         self.print_options(opt)
         if opt.isTrain:
             self.save_options(opt)
-        ''' 
+        '''
         if not opt.isTrain:
             # change radian to angle
             if opt.yaw_poses is not None:
@@ -200,7 +199,7 @@ class BaseOptions():
                 for pose in opt.pitch_poses:
                     assert abs(pose) <= 90, "pitch pose must be between [-90, 90]"
                 opt.pitch_poses = [round(x / 180.0 * math.pi, 2) for x in opt.pitch_poses]
-        ''' 
+        '''
         # Set semantic_nc based on the option.
         # This will be convenient in many places
         opt.semantic_nc = opt.label_nc + (3 if opt.use_BG else 0)

@@ -368,7 +368,7 @@ class RotateSPADEModel(torch.nn.Module):
                             'Pretrained network %s has excessive layers; Only loading layers that are used' % network_label)
                 except:
                     print('Pretrained network %s has fewer layers; The following are not initialized:' % network_label)
-                    
+
                     for k, v in pretrained_dict.items():
                         if v.size() == model_dict[k].size():
                             model_dict[k] = v

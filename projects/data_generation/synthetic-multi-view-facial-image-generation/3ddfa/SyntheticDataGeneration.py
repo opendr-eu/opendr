@@ -47,7 +47,7 @@ import inference
 import test_multipose
 import argparse
 from utils.ddfa import str2bool
-sys.path.append("./../../../../")
+import path_helper2
 from src.opendr.engine.learners import Learner
 
 
@@ -56,13 +56,13 @@ class MultiviewDataGenerationLearner(Learner):
 
     def __init__(self, path_in='blabla', path_3ddfa='blabla', save_path='blabla', val_yaw='10,20', val_pitch=' 30,40'):
 
-        self.path_in=path_in
+        self.path_in = path_in
         self.key = str(path_3ddfa + "/example/Images/")
         self.key1 = str(path_3ddfa + "/example/")
         self.key2 = str(path_3ddfa + "/results/")
-        self.save_path=save_path
-        self.val_yaw=val_yaw
-        self.val_pitch=val_pitch
+        self.save_path = save_path
+        self.val_yaw = val_yaw
+        self.val_pitch = val_pitch
 
         parser = argparse.ArgumentParser(description='3DDFA inference pipeline')
         parser.add_argument('-f', '--files', nargs='+',
@@ -91,8 +91,7 @@ class MultiviewDataGenerationLearner(Learner):
 
         parser2 = argparse.ArgumentParser(description='3DDFA inference pipeline')
         parser2.add_argument('-m', '--mode', default='gpu', type=str, help='gpu or cpu mode')
-        parser2.add_argument('--bbox_init', default='two', type=str,
-                             help='one|two: one-step bbox initialization or two-step')
+        parser2.add_argument('--bbox_init', default='two', type=str, help='one|two: one-step bbox initialization or two-step')
         parser2.add_argument('--dump_2d_img', default='true', type=str2bool, help='whether to save 3d rendered image')
         parser2.add_argument('--dump_param', default='true', type=str2bool, help='whether to save param')
         parser2.add_argument('--dump_lmk', default='true', type=str2bool, help='whether to save landmarks')
@@ -106,7 +105,7 @@ class MultiviewDataGenerationLearner(Learner):
 
         self.args2 = parser2.parse_args()
 
-        #super(Learner, self).__init__()
+        super(Learner, self).__init__()
 
     def eval(self):
 
@@ -179,32 +178,20 @@ class MultiviewDataGenerationLearner(Learner):
         # STAGE No3: Generate Facial Images in specific pitch and yaw angles
         test_multipose.main(self.save_path, self.val_yaw, self.val_pitch)
 
-
     def fit(self):
-      # do nothing
-      print("do nothing")
+        print("do nothing")
 
- 
     def infer(self):
-     # do nothing
-     print("do nothing")
-
+        print("do nothing")
 
     def load(self):
-     # do nothing
-     print("do nothing")
-
+        print("do nothing")
 
     def optimize(self):
-     # do nothing
-     print("do nothing")
-
+        print("do nothing")
 
     def reset(self):
-     # do nothing
-     print("do nothing")
-
+        print("do nothing")
 
     def save(self):
-     # do nothing
-     print("do nothing")
+        print("do nothing")

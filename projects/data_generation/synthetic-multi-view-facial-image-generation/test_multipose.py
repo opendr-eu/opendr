@@ -80,9 +80,9 @@ def main(save_path, val_yaw, val_pitch):
     import data
     opt = TestOptions().parse()
     data_info = data.dataset_info()
-    opt.yaw_poses=[float(x) for x in val_yaw.split(",")]
-    opt.pitch_poses=[float(x) for x in val_pitch.split(",")]
-    opt.save_path=save_path
+    opt.yaw_poses = [float(x) for x in val_yaw.split(",")]
+    opt.pitch_poses = [float(x) for x in val_pitch.split(",")]
+    opt.save_path = save_path
     if not opt.isTrain:
             # change radian to angle
             if opt.yaw_poses is not None:
@@ -92,13 +92,10 @@ def main(save_path, val_yaw, val_pitch):
             if opt.pitch_poses is not None:
                 for pose in opt.pitch_poses:
                     assert abs(pose) <= 90, "pitch pose must be between [-90, 90]"
-                opt.pitch_poses = [round(x / 180.0 * math.pi, 2) for x in opt.pitch_poses]                       
+                opt.pitch_poses = [round(x / 180.0 * math.pi, 2) for x in opt.pitch_poses]
     datanum = data_info.get_dataset(opt)[0]
     folderlevel = data_info.folder_level[datanum]
-
     dataloaders = data.create_dataloader_test(opt)
-    
-
     Visualizer(opt)
     iter_counter = IterationCounter(opt, len(dataloaders[0]) * opt.render_thread)
     # create a webpage that summarizes the all results
