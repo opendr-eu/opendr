@@ -78,7 +78,7 @@ class TestBisenetLearner(unittest.TestCase):
     def test_infer(self):
         self.learner.load(os.path.join(self.temp_dir, "bisenet_camvid"))
         img = cv2.imread(os.path.join(self.temp_dir, "test1.png"))
-        self.assertIsNotNone(self.learner.infer(img, os.path.join(self.dataset_path, "CamVid"), self.temp_dir),
+        self.assertIsNotNone(self.learner.infer(img),
                              msg="Returned empty Heatmap.")
 
     def test_save_load(self):
