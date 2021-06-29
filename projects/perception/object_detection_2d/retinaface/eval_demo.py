@@ -23,7 +23,7 @@ if __name__ == '__main__':
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--backbone", help="Network backbone", type=str, default="resnet", choices=["resnet", "mnet"])
     parser.add_argument("--pyramid", help="Image pyramid flag", dest='pyramid', action='store_true', default=False)
-    parser.add_argument("--flip", help="Imafe flip flag", dest='flip', action='store_true', default=False)
+    parser.add_argument("--flip", help="Image flip flag", dest='flip', action='store_true', default=False)
 
     args = parser.parse_args()
 
