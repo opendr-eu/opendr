@@ -758,8 +758,8 @@ class SpeechCommand(Target):
             return f"Class {self.data} speech command with confidence {self.confidence}"
         else:
             return f"Class {self.data} speech command"
-        
-        
+
+
 class Heatmap(Target):
     """
     A class used for semantic segmentation.
