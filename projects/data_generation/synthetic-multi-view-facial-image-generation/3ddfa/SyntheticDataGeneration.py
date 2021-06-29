@@ -49,6 +49,7 @@ import argparse
 from utils.ddfa import str2bool
 import path_helper2
 from src.opendr.engine.learners import Learner
+__all__ = ['sys', 'path_helper', 'path_helper2']
 
 
 class MultiviewDataGenerationLearner(Learner):
