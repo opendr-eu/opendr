@@ -52,14 +52,15 @@ from src.opendr.engine.learners import Learner
 
 
 class MultiviewDataGenerationLearner(Learner):
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0,3"
 
-    def __init__(self, path_in='blabla', path_3ddfa='blabla', val_yaw='10,20', val_pitch=' 30,40'):
+    def __init__(self, path_in='blabla', path_3ddfa='blabla', save_path='blabla', val_yaw='10,20', val_pitch=' 30,40'):
 
         self.path_in=path_in
         self.key = str(path_3ddfa + "/example/Images/")
         self.key1 = str(path_3ddfa + "/example/")
         self.key2 = str(path_3ddfa + "/results/")
+        self.save_path=save_path
         self.val_yaw=val_yaw
         self.val_pitch=val_pitch
 
@@ -105,7 +106,7 @@ class MultiviewDataGenerationLearner(Learner):
 
         self.args2 = parser2.parse_args()
 
-        super(Learner, self).__init__()
+        #super(Learner, self).__init__()
 
     def eval(self):
 
@@ -176,7 +177,7 @@ class MultiviewDataGenerationLearner(Learner):
         d.close()
 
         # STAGE No3: Generate Facial Images in specific pitch and yaw angles
-        test_multipose.main(self.val_yaw, self.val_pitch)
+        test_multipose.main(self.save_path, self.val_yaw, self.val_pitch)
 
 
     def fit(self):

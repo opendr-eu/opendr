@@ -76,12 +76,13 @@ def save_img(img, save_path):
     return image_numpy
 
 
-def main(val_yaw, val_pitch):
+def main(save_path, val_yaw, val_pitch):
     import data
     opt = TestOptions().parse()
     data_info = data.dataset_info()
     opt.yaw_poses=[float(x) for x in val_yaw.split(",")]
     opt.pitch_poses=[float(x) for x in val_pitch.split(",")]
+    opt.save_path=save_path
     if not opt.isTrain:
             # change radian to angle
             if opt.yaw_poses is not None:

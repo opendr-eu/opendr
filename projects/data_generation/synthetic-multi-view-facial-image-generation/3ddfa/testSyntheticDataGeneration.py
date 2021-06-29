@@ -39,10 +39,11 @@ from SyntheticDataGeneration import MultiviewDataGenerationLearner
 __all__ = ['path_helper']
 
 parser=argparse.ArgumentParser()
-parser.add_argument('-path_in', default='/home/user/Pictures/TEST', type=str, help='Give the path of image folder')
-parser.add_argument('-path_3ddfa', default='/home/user/Documents/OPENDR/OPENDR_data_generation/opendr_internal/projects/data_generation/synthetic-multi-view-facial-image-generation/3ddfa', type=str, help='Give the path of 3ddfa folder')
+parser.add_argument('-path_in', default='/home/ekakalets/Pictures/TEST', type=str, help='Give the path of image folder')
+parser.add_argument('-path_3ddfa', default='/home/ekakalets/Documents/OPENDR/OPENDR_data_generation/opendr_internal/projects/data_generation/synthetic-multi-view-facial-image-generation/3ddfa', type=str, help='Give the path of 3ddfa folder')
+parser.add_argument('-save_path', default='/home/ekakalets/Documents/OPENDR/OPENDR_data_generation/opendr_internal/projects/data_generation/synthetic-multi-view-facial-image-generation/results', type=str, help='Give the path of results folder')
 parser.add_argument('-val_yaw',  default="10,20", nargs='+',type=str, help='yaw poses list during testing. Give a string of values between [-90, 90] seperated with commas')
 parser.add_argument('-val_pitch', default="30,40", nargs='+', type=str,  help='pitch poses list during testing. Give a string of values between [-90, 90] seperated with commas')
 args=parser.parse_args()
-synthetic = MultiviewDataGenerationLearner(path_in=args.path_in, path_3ddfa=args.path_3ddfa, val_yaw=args.val_yaw, val_pitch=args.val_pitch)
+synthetic = MultiviewDataGenerationLearner(path_in=args.path_in, path_3ddfa=args.path_3ddfa, save_path=args.save_path ,val_yaw=args.val_yaw, val_pitch=args.val_pitch)
 synthetic.eval()

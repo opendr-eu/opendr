@@ -23,11 +23,11 @@ class BaseOptions():
         parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
         parser.add_argument('--model', type=str, default='rotatespade', help='which model to use, rotate|rotatespade')
         parser.add_argument('--trainer', type=str, default='rotate', help='which trainer to use, rotate|rotatespade')
-        parser.add_argument('--norm_D', type=str, default='spectralsyncbatch',
-                            help='instance normalization or batch normalization')
         parser.add_argument('--norm_G', type=str, default='spectralsyncbatch',
                             help='instance normalization or batch normalization')
-        parser.add_argument('--norm_E', type=str, default='spectralsyncbatch',
+        parser.add_argument('--norm_D', type=str, default='spectralinstance',
+                            help='instance normalization or batch normalization')
+        parser.add_argument('--norm_E', type=str, default='spectralinstance',
                             help='instance normalization or batch normalization')
         parser.add_argument('--phase', type=str, default='test', help='train, val, test, etc')
 
