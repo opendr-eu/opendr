@@ -163,7 +163,7 @@ class BisenetLearner(Learner):
                 print('precision for test: %.3f' % precision)
                 print('mIoU for validation: %.3f' % miou)
 
-            return precision, miou
+return {'precision': precision, 'miou': miou}
 
     def infer(self, img, csvpath, spath):
         """
