@@ -51,21 +51,6 @@
 
   <arg name="capabilities" default=""/>
   <arg name="disable_capabilities" default=""/>
-  <!-- load these non-default MoveGroup capabilities (space seperated) -->
-  <!--
-  <arg name="capabilities" value="
-                a_package/AwsomeMotionPlanningCapability
-                another_package/GraspPlanningPipeline
-                " />
-  -->
-
-  <!-- inhibit these default MoveGroup capabilities (space seperated) -->
-  <!--
-  <arg name="disable_capabilities" value="
-                move_group/MoveGroupKinematicsService
-                move_group/ClearOctomapService
-                " />
-  -->
 
   <!-- Start the actual move_group node/action server -->
   <node name="move_group" launch-prefix="" pkg="moveit_ros_move_group" type="move_group" respawn="false" output="screen" args="">
