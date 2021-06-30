@@ -1,25 +1,24 @@
-## SingleShotDetector module
+## CenterNetDetectorLearner module
 
-The *ssd* module contains the *SingleShotDetectorLearner* class, which inherits from the abstract class *Learner*.
+The *centernet* module contains the *CenterNetDetectorLearner* class, which inherits from the abstract class *Learner*.
 
-### Class SingleShotDetectorLearner
+### Class CenterNetDetectorLearner
 Bases: `engine.learners.Learner`
 
-The *SingleShotDetectorLearner* class is a wrapper of the SSD detector[[1]](#ssd-1)
-[GluonCV implementation](https://github.com/dmlc/gluon-cv/blob/master/gluoncv/model_zoo/ssd/ssd.py).
+The *CenterNetDetectorLearner* class is a wrapper of the SSD detector[[1]](#yolo-1)
+[GluonCV implementation](https://github.com/dmlc/gluon-cv/blob/master/gluoncv/model_zoo/center_net/center_net.py).
 It can be used to perform object detection on images (inference) as well as train new object detection models.
 
-The [SingleShotDetectorLearner](#src.opendr.perception.object_detection_2d.ssd.ssd_learner.py) class has the following 
+The [CenterNetDetectorLearner](#src.opendr.perception.object_detection_2d.centernet.centernet_learner.py) class has the following 
 public methods:
 
-#### `SingleShotDetectorLearner` constructor
+#### `CenterNetDetectorLearner` constructor
 ```python
-SingleShotDetectorLearner(self, lr, epochs, batch_size,
-                          device, backbone,
-                          img_size, lr_schedule, temp_path,
-                          checkpoint_after_iter, checkpoint_load_iter,
-                          val_after, log_after, num_workers,
-                          weight_decay, momentum)
+CenterNetDetectorLearner(self, lr, epochs, batch_size, device, backbone, img_size,
+                         lr_schedule, temp_path, checkpoint_after_iter, checkpoint_load_iter,
+                         val_after, log_after, num_workers, weight_decay, momentum,
+                         scale, topk, wh_weight, center_reg_weight,
+                         lr_decay_epoch, lr_decay, warmup_epochs, flip_validation)
 ```
 
 Constructor parameter explanation:
@@ -35,14 +34,14 @@ Constructor parameter explanation:
 - **device**: *{'cuda', 'cpu'}, default='cuda'*
   Specifies the device to be used.
   
-- **backbone**: *{'vgg16_atrous', 'resnet50_v1', 'mobilenet1.0', 'mobilenet0.25', 'resnet34_v1b'}, default='vgg16_atrous'*
-  Specifies the backbone architecture. 
+- **backbone**: *{'resnet50_v1b'}, default='resnet50_v1b'*
+  Specifies the backbone architecture. Currently only *'resnet50_v1b'* is supported.
   
-- **img_size**: *{512, 300}, default=512* 
+- **img_size**: *int, default=512* 
   Specifies the image size to be used during training.
   
-- **lr_schedule**: *{'', 'warmup'}, default=''* Specifies the desired learning rate schedule. If *'warmup'*, training starts 
-  with a lower learning rate than the specified *lr* and gradually reaches it within the first epochs of training.
+- **lr_schedule**: *{'constant', 'step', 'linear', 'poly', 'cosine'}, default='step'* 
+  Specifies the desired learning rate schedule.
   
 - **temp_path**: *str, default=''*
   Specifies a path to be used for storage of checkpoints during training. 
@@ -56,7 +55,7 @@ Constructor parameter explanation:
 - **val_after**: *int, default=5*
   Epoch interval between evaluations during training.
   
-- **log_after**: *int, default=20*
+- **log_after**: *int, default=100*
   Specifies interval (in iterations/batches) between information logging on *stdout*.
   
 - **num_workers**: *int, default=8* Specifies the number of workers to be used when loading the dataset.
@@ -67,10 +66,32 @@ Constructor parameter explanation:
 - **momentum**: *float, default=0.9*
   Specifies the momentum to be used for optimizer during training.
   
+- **mixup**: *bool default=False*
+  Specifies whether to use an image mixing strategy during training.
+
+- **no_mixup_epochs**: *int, default=0*
+  If *mixup* is True, specifies the number of epochs for which mixup is disabled in 
+  the beginning of the training process.
   
-#### `SingleShotDetectorLearner.fit`
+- **label_smoothing**: *bool default=False* Specifies whether to use label smoothing during training.
+
+- **random_shape**: *bool, default=False* Specifies whether to resize input images during training to random multiples of *32*.
+
+- **warmup_epochs**: *int, default=0* Specifies the number of epochs at the beginning of training, during which the learning 
+  rate is annealed until it reaches the specified *lr*.
+  
+- **lr_decay_period**: *int, default=0* Specifies the interval at which the learning rate drops.
+
+- **lr_decay_epoch**: *str, default='80,100'* Specifies the epochs at which the learning rate is dropped during training. 
+  Must be a string using commas as a delimiter. Ignored if *lr_decay_period* is set to a value larger than 0.
+  
+- **lr_decay**: *float, default=0.1* Specifies the rate by which the learning rate drops during training.
+
+  
+  
+#### `CenterNetDetectorLearner.fit`
 ```python
-SingleShotDetectorLearner.fit(self, dataset, val_dataset, verbose)
+CenterNetDetectorLearner.fit(self, dataset, val_dataset, verbose)
 ```
 
 This method is used to train the algorithm on a `DetectionDataset` or `ExternalDataset` dataset and also performs evaluation 
@@ -85,9 +106,9 @@ Parameters:
 - **verbose**: *bool, default=True*
   If True, enables maximum verbosity.
   
-#### `SingleShotDetectorLearner.eval`
+#### `YOLOv3DetectorLearner.eval`
 ```python
-SingleShotDetectorLearner.eval(self, dataset, use_subset, subset_size, verbose)
+CenterNetDetectorLearner.eval(self, dataset, use_subset, subset_size, verbose)
 ```
 
 Performs evaluation on a dataset or a subset of a dataset.
@@ -104,9 +125,9 @@ Parameters:
 - **verbose**: *bool default=True*
   If True, enables maximum verbosity.
   
-#### `SingleShotDetectorLearner.infer`
+#### `CenterNetDetectorLearner.infer`
 ```python
-SingleShotDetectorLearner.infer(self, img, threshold=0.2, keep_size=False)
+CenterNetDetectorLearner.infer(self, img, threshold=0.2, keep_size=False)
 ```
 
 Performs inference on a single image.
@@ -120,9 +141,9 @@ Parameters:
 - **keep_size**: *bool, default=False* 
   Specifies whether to resize the input image to *self.img_size* or keep original image dimensions.
   
-#### `SingleShotDetectorLearner.save`
+#### `CenterNetDetectorLearner.save`
 ```python
-SingleShotDetectorLearner.save(self, path, verbose)
+CenterNetDetectorLearner.save(self, path, verbose)
 ```
 
 Saves a model in OpenDR format at the specified path. The model name is extracted from the base folder in the specified path.
@@ -133,9 +154,9 @@ Parameters:
 - **verbose**: *bool default=True*
   If True, enables maximum verbosity.
   
-#### `SingleShotDetectorLearner.load`
+#### `CenterNetDetectorLearner.load`
 ```python
-SingleShotDetectorLearner.load(self, path, verbose)
+CenterNetDetectorLearner.load(self, path, verbose)
 ```
 
 Loads a model which was previously saved in OpenDR format at the specified path.
@@ -147,9 +168,9 @@ Parameters:
 - **verbose**: *bool default=True*
   If True, enables maximum verbosity.
   
-#### `SingleShotDetectorLearner.download`
+#### `CenterNetDetectorLearner.download`
 ```python
-SingleShotDetectorLearner.download(self, path, mode, verbose, url)
+CenterNetDetectorLearner.download(self, path, mode, verbose, url)
 ```
 
 Downloads data needed for the various functions of the learner, e.g., pretrained models as well as test data.
@@ -159,7 +180,7 @@ Parameters:
   
 - **mode**: *{'pretrained', 'images', 'test_data'}, default='pretrained'*
   If *'pretrained'*, downloads a pretrained detector model. If *'images'*, downloads an image to perform inference on. If 
-  *'test_data'* downloads a dummy dataset for testing purposes. 
+  *'test_data'* downloads a dummy dataset for testing purposes.
   
 - **verbose**: *bool default=True*
   If True, enables maximum verbosity.
@@ -168,5 +189,5 @@ Parameters:
   URL of the FTP server.
   
 #### References
-<a name="ssd-1" href="https://arxiv.org/abs/1512.02325">[1]</a> SSD: Single Shot MultiBox Detector,
-[arXiv](https://arxiv.org/abs/1512.02325).
+<a name="ssd-1" href="https://arxiv.org/abs/1904.08189">[1]</a> CenterNet: Keypoint Triplets for Object Detection,
+[arXiv](https://arxiv.org/abs/1904.08189).

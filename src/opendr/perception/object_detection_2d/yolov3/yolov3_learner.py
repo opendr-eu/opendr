@@ -57,7 +57,7 @@ class YOLOv3DetectorLearner(Learner):
                  lr_schedule='step', temp_path='temp', checkpoint_after_iter=5, checkpoint_load_iter=0,
                  val_after=5, log_after=100, num_workers=8, weight_decay=5e-4, momentum=0.9, mixup=False,
                  no_mixup_epochs=0, label_smoothing=False, random_shape=False, warmup_epochs=0, lr_decay_period=0,
-                 lr_decay_epoch='160,180', lr_decay=0.1):
+                 lr_decay_epoch='80,100', lr_decay=0.1):
         super(YOLOv3DetectorLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                     checkpoint_after_iter=checkpoint_after_iter,
                                                     checkpoint_load_iter=checkpoint_load_iter,
@@ -326,7 +326,7 @@ class YOLOv3DetectorLearner(Learner):
 
         return training_dict
 
-    def eval(self, dataset, use_subset=False, subset_size=100, verbose=False):
+    def eval(self, dataset, use_subset=False, subset_size=100, verbose=True):
         """
         This method performs evaluation on a given dataset and returns a dictionary with the evaluation results.
         :param dataset: dataset object, to perform evaluation on

@@ -55,10 +55,10 @@ class CenterNetDetectorLearner(Learner):
     supported_backbones = ["resnet50_v1b"]
 
     def __init__(self, lr=1e-3, epochs=120, batch_size=8, device='cuda', backbone='resnet50_v1b', img_size=512,
-                 lr_schedule='step', temp_path='temp', checkpoint_after_iter=5, checkpoint_load_iter=0,
+                 lr_schedule='step', temp_path='', checkpoint_after_iter=0, checkpoint_load_iter=0,
                  val_after=5, log_after=100, num_workers=8, weight_decay=5e-4, momentum=0.9,
-                 transfer=True, transfer_dataset='coco', scale=1., topk=100, wh_weight=0.1, center_reg_weight=1.0,
-                 lr_decay_epoch='160,180', lr_decay=0.1, warmup_epochs=0, flip_validation=False, infer_only=False):
+                 scale=1., wh_weight=0.1, center_reg_weight=1.0,
+                 lr_decay_epoch='80,100', lr_decay=0.1, warmup_epochs=0, flip_validation=False):
         super(CenterNetDetectorLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                        checkpoint_after_iter=checkpoint_after_iter,
                                                        checkpoint_load_iter=checkpoint_load_iter,
@@ -71,10 +71,8 @@ class CenterNetDetectorLearner(Learner):
         self.backbone = backbone.lower()
         self.parent_dir = temp_path
         self.checkpoint_str_format = "checkpoint_epoch_{}.params"
-        self._infer_only = infer_only
 
         self.scale = scale
-        self.topk = topk
         self.flip_validation = flip_validation
         self.data_shape = img_size
 
