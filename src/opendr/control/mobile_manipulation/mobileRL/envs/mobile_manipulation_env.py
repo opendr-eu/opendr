@@ -13,12 +13,11 @@
 # limitations under the License.
 
 import numpy as np
-from gym import spaces, Env
-from pybindings import RobotObs
-
 from control.mobile_manipulation.mobileRL.envs.eeplanner import EEPlanner
 from control.mobile_manipulation.mobileRL.envs.map import Map, DummyMap
 from control.mobile_manipulation.mobileRL.envs.robotenv import RobotEnv, ActionRanges, unscale_action
+from gym import spaces, Env
+from pybindings import RobotObs
 
 
 class MobileManipulationEnv(Env):

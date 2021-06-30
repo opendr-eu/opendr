@@ -16,11 +16,10 @@ import numpy as np
 import rospy
 import time
 import torch
-from matplotlib import pyplot as plt
-from stable_baselines3.common import logger
-
 from control.mobile_manipulation.mobileRL.envs.env_utils import calc_disc_return
 from control.mobile_manipulation.mobileRL.utils import create_env
+from matplotlib import pyplot as plt
+from stable_baselines3.common import logger
 
 
 def episode_is_success(nr_kin_fails: int, nr_collisions: int, goal_reached: bool) -> bool:

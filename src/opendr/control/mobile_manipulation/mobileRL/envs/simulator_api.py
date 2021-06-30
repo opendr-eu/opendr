@@ -15,6 +15,7 @@
 import random
 import rospy
 import time
+from control.mobile_manipulation.mobileRL.envs.env_utils import publish_marker, clear_all_markers
 from enum import IntEnum
 from gazebo_msgs.msg import LinkStates
 from gazebo_msgs.srv import DeleteModel, SpawnModel, GetModelState, SetModelState, SetModelConfiguration, \
@@ -22,8 +23,6 @@ from gazebo_msgs.srv import DeleteModel, SpawnModel, GetModelState, SetModelStat
 from geometry_msgs.msg import Pose
 from std_srvs.srv import Empty
 from typing import Iterable, NamedTuple
-
-from control.mobile_manipulation.mobileRL.envs.env_utils import publish_marker, clear_all_markers
 
 
 class ObjectGeometry(IntEnum):

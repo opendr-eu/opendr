@@ -16,17 +16,16 @@ import functools
 import numpy as np
 import os
 import rospy
+from control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
+from control.mobile_manipulation.mobileRL.stablebl_callbacks import MobileRLEvalCallback
+from engine.constants import OPENDR_SERVER_URL
+from engine.learners import LearnerRL
 from pathlib import Path
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise, NormalActionNoise
 from stable_baselines3.common.vec_env import VecEnv
 from stable_baselines3.sac import SAC
 from typing import Optional
 from urllib.request import urlretrieve
-
-from control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
-from control.mobile_manipulation.mobileRL.stablebl_callbacks import MobileRLEvalCallback
-from engine.constants import OPENDR_SERVER_URL
-from engine.learners import LearnerRL
 
 
 class MobileRLLearner(LearnerRL):
