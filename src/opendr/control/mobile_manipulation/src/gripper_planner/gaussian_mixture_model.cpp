@@ -85,11 +85,6 @@ void GaussianMixtureModel::adaptModel(tf::Transform obj_origin_goal, tf::Vector3
       tf_Mu_base_i.getOrigin().x(), tf_Mu_base_i.getOrigin().y(), tf_Mu_base_i.getOrigin().z(), tf_Mu_base_i.getRotation().x(),
       tf_Mu_base_i.getRotation().y(), tf_Mu_base_i.getRotation().z(), tf_Mu_base_i.getRotation().w();
 
-    // restrict torso height to bounds
-    // if (Mu_i_eigen(10)<0.746)
-    //     Mu_i_eigen(10) = 0.746;
-    // else if (Mu_i_eigen(11)>1.06)
-    //     Mu_i_eigen(10) = 1.06;
     // keep model height
     Mu_i_eigen(10) = 1.0;  //_MuEigenBck[i](10);
     _MuEigen.push_back(Mu_i_eigen);
