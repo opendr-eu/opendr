@@ -211,7 +211,10 @@ class MobileRLLearner(LearnerRL):
                                                                                     global_step=self.stable_bl_agent.num_timesteps,
                                                                                     verbose=2)
         env.clear()
-        return episode_rewards, episode_lengths, metrics, name_prefix
+        return {"episode_rewards": episode_rewards,
+                "episode_lengths": episode_lengths,
+                "metrics": metrics,
+                "name_prefix": name_prefix}
 
     def save(self, path):
         """
