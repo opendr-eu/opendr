@@ -47,6 +47,7 @@ import cv2
 import onnxruntime as ort
 from tqdm import tqdm
 import os
+import ntpath
 import json
 import shutil
 from urllib.request import urlretrieve
@@ -636,7 +637,7 @@ class FaceRecognitionLearner(Learner):
         torch.save(head_custom_dict, os.path.join(path, "head_{}_iter_{}".format(
             self.network_head, self.epoch)))
 
-    def download(self, path=None, mode="pretrained"):
+    def download(self, path=None, mode="pretrained", verbose=False):
         """
         Download utility for various Face Recognition components. Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
@@ -660,6 +661,9 @@ class FaceRecognitionLearner(Learner):
             if not os.path.exists(path):
                 os.makedirs(path)
 
+            if verbose:
+                print("Downloading pretrained model...")
+
             if self.mode == 'backbone_only' or self.mode == 'finetune':
                 if not os.path.exists(os.path.join(path, 'backbone_' + self.backbone + '.pth')):
                     url = OPENDR_SERVER_URL + 'perception/face_recognition/'
@@ -667,9 +671,11 @@ class FaceRecognitionLearner(Learner):
                     url_backbone_json = os.path.join(url, 'backbone_' + self.backbone + '.json')
                     urlretrieve(url_backbone, os.path.join(path, 'backbone_' + self.backbone + '.pth'))
                     urlretrieve(url_backbone_json, os.path.join(path, 'backbone_' + self.backbone + '.json'))
-                    print('Model downloaded')
+                    if verbose:
+                        print('Model downloaded')
                 else:
-                    print('Model already exists')
+                    if verbose:
+                        print('Model already exists')
             else:
                 raise UserWarning('Only a pretrained backbone can be downloaded,'
                                   ' change Learners mode to "backbone_only" or "finetune"')
@@ -693,9 +699,11 @@ class FaceRecognitionLearner(Learner):
                     for j in range(1, 3):
                         image_dl = os.path.join(ftp_parent, str(j) + '.jpg')
                         urlretrieve(image_dl, os.path.join(image_path, str(j) + '.jpg'))
-                print('Data Downloaded')
+                if verbose:
+                    print('Data Downloaded')
             else:
-                print('Data already downloaded')
+                if verbose:
+                    print('Data already downloaded')
 
     def save(self, path, verbose=False):
         """
@@ -711,135 +719,182 @@ class FaceRecognitionLearner(Learner):
         :param verbose: whether to print success message or not, defaults to 'False'
         :type verbose: bool, optional
         """
-        if not os.path.exists(path):
-            os.makedirs(path)
+
+        if self.model is None and self.ort_session is None:
+            raise UserWarning("No model is loaded, cannot save.")
+
+        folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
+        # Also extract folder name without any extension if extension is erroneously provided
+        folder_name_no_ext = folder_name.split(sep='.')[0]
+
+        # Extract path without folder name, by removing folder name from original path
+        path_no_folder_name = path.replace(folder_name, '')
+        # If tail is '', then path was a/b/c/, which leaves a trailing double '/'
+        if tail == '':
+            path_no_folder_name = path_no_folder_name[0:-1]  # Remove one '/'
+
+        # Create model directory
+        full_path_to_model_folder = path_no_folder_name + folder_name_no_ext
+        os.makedirs(full_path_to_model_folder, exist_ok=True)
 
         if self.mode == 'backbone_only' or self.mode == 'finetune' or \
                 (self.mode == 'full' and self.network_head != 'classifier'):
-            self.__save_backbone(path)
+            self.__save_backbone(full_path_to_model_folder, folder_name_no_ext, verbose)
         else:
             if self.mode == 'head_only':
-                self.__save_head(path)
+                self.__save_head(full_path_to_model_folder, folder_name_no_ext, verbose)
             elif self.mode == 'full' and self.network_head == 'classifier':
-                self.__save_backbone(path)
+                self.__save_backbone(full_path_to_model_folder, folder_name_no_ext, verbose)
                 self.__save_head(path)
 
-    def __save_backbone(self, path):
+    def __save_backbone(self, full_path_to_model_folder, folder_name_no_ext, verbose):
         if self.ort_backbone_session is None:
-            backbone_metadata = {'model_paths': os.path.join(path, 'backbone_' + self.backbone + '.pth'),
+            backbone_metadata = {'model_paths': [folder_name_no_ext + '_backbone.pth'],
                                  'framework': 'pytorch',
                                  'format': 'pth',
                                  'has_data': False,
                                  'inference_params': {'threshold': self.threshold},
                                  'optimized': False,
-                                 'optimizer_info': {}
+                                 'optimizer_info': {},
+                                 'backbone': self.backbone
                                  }
-            torch.save(self.backbone_model.state_dict(), os.path.join(path, 'backbone_' + self.backbone + '.pth'))
+            torch.save(self.backbone_model.state_dict(), os.path.join(full_path_to_model_folder, backbone_metadata['model_paths'][0]))
+            if verbose:
+                print("Saved Pytorch backbone model.")
         else:
-            backbone_metadata = {'model_paths': os.path.join(path, 'onnx_' + self.backbone + '_backbone_model.onnx'),
+            backbone_metadata = {'model_paths': [folder_name_no_ext + '_backbone.onnx'],
                                  'framework': 'pytorch',
                                  'format': 'onnx',
                                  'has_data': False,
                                  'inference_params': {'threshold': self.threshold},
                                  'optimized': True,
-                                 'optimizer_info': {}
+                                 'optimizer_info': {},
+                                 'backbone': self.backbone
                                  }
             shutil.copy2(os.path.join(self.temp_path, 'onnx_' + self.backbone + '_backbone_model.onnx'),
-                         backbone_metadata['model_paths'])
-        with open(os.path.join(path, 'backbone_' + self.backbone + '.json'), 'w', encoding='utf-8') as f:
+                         os.path.join(full_path_to_model_folder, backbone_metadata['model_paths'][0]))
+            if verbose:
+                print("Saved ONNX backbone model.")
+        with open(os.path.join(full_path_to_model_folder, folder_name_no_ext + '_backbone.json'), 'w',
+                  encoding='utf-8') as f:
             json.dump(backbone_metadata, f, ensure_ascii=False, indent=4)
 
-    def __save_head(self, path):
+    def __save_head(self, full_path_to_model_folder, folder_name_no_ext, verbose):
         if self.ort_head_session is None:
-            head_metadata = {'model_paths': os.path.join(path, 'head_' + self.network_head + '.pth'),
+            head_metadata = {'model_paths': [folder_name_no_ext + '_head.pth'],
                              'framework': 'pytorch',
                              'format': 'pth',
                              'has_data': False,
                              'inference_params': {'num_class': self.num_class,
                                                   'classes': self.classes},
                              'optimized': False,
-                             'optimizer_info': {}
+                             'optimizer_info': {},
+                             'head': self.network_head
                              }
 
             torch.save(self.network_head_model.state_dict(),
-                       os.path.join(path, 'head_' + self.network_head + '.pth'))
+                       os.path.join(full_path_to_model_folder, head_metadata['model_paths'][0]))
+            if verbose:
+                print("Saved Pytorch head model.")
         else:
-            head_metadata = {'model_paths': os.path.join(path, 'onnx_' + self.network_head + '_head_model.onnx'),
+            head_metadata = {'model_paths': [folder_name_no_ext + '_head.onnx'],
                              'framework': 'pytorch',
                              'format': 'onnx',
                              'has_data': False,
                              'inference_params': {'num_class': self.num_class,
                                                   'classes': self.classes},
                              'optimized': True,
-                             'optimizer_info': {}
+                             'optimizer_info': {},
+                             'head': self.network_head
                              }
             shutil.copy2(self.temp_path + 'onnx_' + self.network_head + '_head_model.onnx',
-                         head_metadata['model_paths'])
-        with open(os.path.join(path, 'head_' + self.network_head + '.json'), 'w', encoding='utf-8') as f:
+                         os.path.join(full_path_to_model_folder, head_metadata['model_paths'][0]))
+        with open(os.path.join(full_path_to_model_folder, folder_name_no_ext + '_head.json'), 'w',
+                  encoding='utf-8') as f:
             json.dump(head_metadata, f, ensure_ascii=False, indent=4)
 
-    def load(self, path=None):
+    @staticmethod
+    def __extract_trailing(path):
+        """
+        Extracts the trailing folder name or filename from a path provided in an OS-generic way, also handling
+        cases where the last trailing character is a separator. Returns the folder name and the split head and tail.
+        :param path: the path to extract the trailing filename or folder name from
+        :type path: str
+        :return: the folder name, the head and tail of the path
+        :rtype: tuple of three strings
+        """
+        head, tail = ntpath.split(path)
+        folder_name = tail or ntpath.basename(head)  # handle both a/b/c and a/b/c/
+        return folder_name, head, tail
+
+    def load(self, path, verbose=False):
         """
         Load implementation is meant for external usage to load a previously saved model for inference.
         :param path: the path of the model to be loaded
         :type path: str
         """
-        if self.mode in ['backbone_only', 'head_only', 'finetune']:
-            print("Loading backbone '{}'".format(self.backbone))
-            self.__load_backbone(path)
-        elif self.network_head == 'classifier' and self.mode == 'full':
-            print("Loading backbone '{}' and head '{}'".format(self.backbone, self.network_head))
-            self.__load_backbone(path)
-            self.__load_head(path)
+        model_name, _, _ = self.__extract_trailing(path)  # Trailing folder name from the path provided
 
-    def __load_backbone(self, path):
-        if os.path.exists(os.path.join(path, 'backbone_' + self.backbone + '.json')):
-            with open(os.path.join(path, 'backbone_' + self.backbone + '.json')) as f:
+        if self.mode in ['backbone_only', 'head_only', 'finetune']:
+            self.__load_backbone(path, model_name, verbose)
+            if verbose:
+                print("Loaded backbone model.")
+        elif self.network_head == 'classifier' and self.mode == 'full':
+            self.__load_backbone(path, model_name, verbose)
+            if verbose:
+                print("Loaded backbone model.")
+            self.__load_head(path)
+            if verbose:
+                print("Loaded head model.")
+
+    def __load_backbone(self, path, model_name):
+        if os.path.exists(os.path.join(path, model_name + '_backbone.json')):
+            with open(os.path.join(path, model_name + '_backbone.json')) as f:
                 metadata = json.load(f)
             self.threshold = metadata['inference_params']['threshold']
         else:
-            raise UserWarning('No backbone_' + self.backbone + '.json found. Please have a check')
+            raise UserWarning('No ' + model_name + '_backbone.json found. Please have a check')
         if metadata['optimized']:
-            if os.path.exists(os.path.join(path, 'onnx_' + self.backbone + '_backbone_model.onnx')):
-                self.__load_from_onnx(path)
+            if os.path.exists(os.path.join(path, model_name + '_backbone.onnx')):
+                self.__load_from_onnx(path, model_name)
             else:
-                raise UserWarning('No onnx_' + self.backbone + '_backbone_model.onnx found. Please have a check')
+                raise UserWarning('No ' + model_name + '_backbone.onnx found. Please have a check')
         else:
-            if os.path.exists(os.path.join(path, 'backbone_' + self.backbone + '.pth')):
+            if os.path.exists(os.path.join(path, model_name + '_backbone.pth')):
                 self.__create_model(num_class=0)
                 self.backbone_model.load_state_dict(torch.load(
-                    os.path.join(path, 'backbone_' + self.backbone + '.pth'), map_location=torch.device(self.device)))
+                    os.path.join(path, model_name + '_backbone.pth'), map_location=torch.device(self.device)))
                 self._model = {self.backbone_model, self.network_head_model}
             else:
-                raise UserWarning('No backbone_' + self.backbone + '.pth found. Please have a check')
+                raise UserWarning('No ' + model_name + '_backbone.pth found. Please have a check')
 
-    def __load_head(self, path):
-        if os.path.exists(os.path.join(path, 'head_' + self.network_head + '.json')):
-            with open(os.path.join(path, 'head_' + self.network_head + '.json')) as f:
+    def __load_head(self, path, model_name):
+        if os.path.exists(os.path.join(path, model_name + '_head.json')):
+            with open(os.path.join(path, model_name + '_head.json')) as f:
                 metadata = json.load(f)
             self.classes = metadata['inference_params']['classes']
             self.num_class = metadata['inference_params']['num_class']
         else:
-            raise UserWarning('No head_' + self.network_head + '.json found. Please have a check')
+            raise UserWarning('No ' + model_name + '_head.json found. Please have a check')
         if metadata['optimized']:
-            if os.path.exists(os.path.join(path, 'onnx_' + self.network_head + '_head_model.onnx')):
-                self.__load_from_onnx(path)
+            if os.path.exists(os.path.join(path, model_name + '_head.onnx')):
+                self.__load_from_onnx(path, model_name)
             else:
-                raise UserWarning('No onnx_' + self.backbone + '_head_model.onnx found. Please have a check')
+                raise UserWarning('No ' + model_name + '_head.onnx found. Please have a check')
         else:
-            if os.path.exists(os.path.join(path, 'head_' + self.network_head + '.pth')):
+            if os.path.exists(os.path.join(path, model_name + '_head.pth')):
                 self.__create_model(num_class=self.num_class)
                 self._model = {self.backbone_model, self.network_head_model}
                 self.network_head_model.load_state_dict(torch.load(
-                    os.path.join(path, 'head_' + self.network_head + '.pth')))
+                    os.path.join(path, model_name + '_head.pth')))
             else:
-                raise UserWarning('No head_' + self.network_head + '.pth found. Please have a check')
+                raise UserWarning('No ' + model_name + '_head.pth found. Please have a check')
 
-    def __load_from_onnx(self, path):
-        path_backbone = os.path.join(path, 'onnx_' + self.backbone + '_backbone_model.onnx')
+    def __load_from_onnx(self, path, model_name):
+        path_backbone = os.path.join(path, model_name + '_backbone.onnx')
         self.ort_backbone_session = ort.InferenceSession(path_backbone)
         if self.mode == 'full' and self.network_head == 'classifier':
-            path_head = os.path.join(path, 'onnx_' + self.network_head + '_head_model.onnx')
+            path_head = os.path.join(path, model_name + '_head.onnx')
             self.ort_head_session = ort.InferenceSession(path_head)
 
     def __convert_to_onnx(self, verbose=False):
