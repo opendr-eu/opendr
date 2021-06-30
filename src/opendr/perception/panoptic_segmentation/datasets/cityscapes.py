@@ -213,7 +213,7 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
         :rtype: Tuple of (Image, None)
         """
         image_filename = self._image_filenames[idx]
-        image = Image(cv2.imread(image_filename), image_filename.name)
+        image = Image(cv2.imread(str(image_filename)), image_filename.name)
 
         return image, None
 

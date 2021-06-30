@@ -10,7 +10,7 @@ if [ "$#" -ge 1 ]; then
        TYPE=$1
 fi
 
-pip install ConfigParser numpy cython
+pip install ConfigParser numpy cython torch==1.5.1
 
 python parse_dependencies.py $TYPE
 # install dependencies one by one to prevent interdependency errors

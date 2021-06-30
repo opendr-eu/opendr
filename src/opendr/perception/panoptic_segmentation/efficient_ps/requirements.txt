@@ -1,10 +1,10 @@
-torch==1.7.1
-torchvision==0.8.2
+torch==1.5.1
+torchvision
 tqdm
 mmcv==0.5.9
 future
 tensorboard
-cityscapesscripts==2.2.0
+cityscapesscripts>=2.2.0
 
 git+git://github.com/waspinator/pycococreator.git@0.2.0
 git+https://github.com/mapillary/inplace_abn.git
