@@ -16,10 +16,10 @@
 #include <gripper_planner/gmm_planner.hpp>
 #include <gripper_planner/linear_planner.hpp>
 //#include <mobile_manipulation_rl/robot_hsr.hpp>
-#include <mobile_manipulation_rl/robot_pr2.hpp>
-#include <mobile_manipulation_rl/robot_tiago.hpp>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <mobile_manipulation_rl/robot_pr2.hpp>
+#include <mobile_manipulation_rl/robot_tiago.hpp>
 
 namespace py = pybind11;
 
