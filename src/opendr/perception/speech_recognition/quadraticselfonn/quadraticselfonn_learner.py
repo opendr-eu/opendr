@@ -240,6 +240,8 @@ class QuadraticSelfOnnLearner(Learner):
             metadata = json.load(jsonfile)
 
         model_filename = os.path.basename(metadata["model_paths"][0])
+        if "\\" in model_filename:
+            model_filename = model_filename.split("\\")[-1]
         self.model.load_state_dict(t.load(os.path.join(path, model_filename)))
         self.model.eval()
 
