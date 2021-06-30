@@ -66,7 +66,7 @@ from opendr.perception.object_detection_2d.datasets.transforms import BoundingBo
 class RetinaFaceLearner(Learner):
     def __init__(self, backbone='resnet', lr=0.001, batch_size=2, checkpoint_after_iter=0, checkpoint_load_iter=0,
                  lr_steps='0', epochs=100, momentum=0.9, weight_decay=5e-4, log_after=20, prefix='',
-                 shuffle=True, flip=False, val_after=5, temp_path='', device='cuda', ):
+                 shuffle=True, flip=False, val_after=5, temp_path='', device='cuda'):
         super(RetinaFaceLearner, self).__init__(lr=lr, batch_size=batch_size, backbone=backbone,
                                                 checkpoint_after_iter=checkpoint_after_iter,
                                                 checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
@@ -119,7 +119,7 @@ class RetinaFaceLearner(Learner):
             ctx = [mx.cpu()]
         return ctx
 
-    def fit(self, dataset, val_dataset=None, from_scratch=False, logging_path='', silent=False, verbose=True):
+    def fit(self, dataset, val_dataset=None, from_scratch=False, silent=False, verbose=True):
         """
         This method is used to train the detector on the WIDER Face dataset. Validation if performed if a val_dataset is
         provided.
@@ -129,8 +129,6 @@ class RetinaFaceLearner(Learner):
         :type val_dataset: opendr.perception.object_detection_2d.datasets.DetectionDataset, optional
         :param from_scratch: indicates whether to train from scratch or to download and use a pretrained backbone
         :type from_scratch: bool, optional
-        :param logging_path: ignored
-        :type logging_path: str, optional
         :param silent: if set to True, disables all printing to STDOUT, defaults to False
         :type silent: bool, optional
         :param verbose: if set to True, additional information is printed to STDOUT, defaults to True
@@ -510,7 +508,7 @@ class RetinaFaceLearner(Learner):
                 img = img.data
             if isinstance(labels, BoundingBoxList):
                 labels = BoundingBoxListToNumpyArray()(labels)
-            do_flip = self.flip
+            do_flip = flip
 
             if not pyramid:
                 # target_size = 1600
@@ -611,11 +609,6 @@ class RetinaFaceLearner(Learner):
                 fixed_param_names.append(name)
             idx += 1
         return fixed_param_names
-
-    def load_pretrained(self, path):
-        generate_config(self.backbone, 'retinaface')
-        self.detector = RetinaFace(prefix=path, ctx_id=self.gpu_id, network=self.net)
-        self._model = self.detector.model
 
     def infer(self, img, threshold=0.8, nms_threshold=0.4, scales=[1024, 1980], mask_thresh=0.8):
         """

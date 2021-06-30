@@ -95,6 +95,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
             'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
+            'src/opendr/perception/object_detection_2d/retinaface/Makefile',
         ]
 
         skippedDirectories = [
