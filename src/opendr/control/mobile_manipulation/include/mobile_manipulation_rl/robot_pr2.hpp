@@ -15,10 +15,10 @@
 #pragma once
 #include <actionlib/client/simple_action_client.h>
 #include <geometry_msgs/Twist.h>
-#include <mobile_manipulation_rl/robot_env.hpp>
 #include <pr2_controllers_msgs/JointTrajectoryAction.h>
 #include <pr2_controllers_msgs/Pr2GripperCommandAction.h>
 #include <pr2_mechanism_msgs/SwitchController.h>
+#include <mobile_manipulation_rl/robot_env.hpp>
 
 // Our Action interface type, provided as a typedef for convenience
 typedef actionlib::SimpleActionClient<pr2_controllers_msgs::Pr2GripperCommandAction> GripperClientPR2;

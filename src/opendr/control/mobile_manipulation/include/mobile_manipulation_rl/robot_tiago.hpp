@@ -12,16 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #pragma once
 #include <actionlib/client/simple_action_client.h>
 #include <control_msgs/FollowJointTrajectoryAction.h>
 #include <geometry_msgs/Twist.h>
-#include <mobile_manipulation_rl/robot_env.hpp>
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <pr2_mechanism_msgs/SwitchController.h>
 #include <ros/topic.h>
+#include <mobile_manipulation_rl/robot_env.hpp>
 // #include <controller_manager_msgs/SwitchController.h>
 
 typedef actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> TrajClientTiago;
