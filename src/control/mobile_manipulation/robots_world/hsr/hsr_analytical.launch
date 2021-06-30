@@ -6,12 +6,10 @@
   <arg name="robot_description" default="robot_description"/>
   <arg name="upload_robot_model_launch" default="$(find mobile_manipulation_rl)/robots_world/hsr/upload_hsrb.launch"/>
 
-  <!-- Load universal robot description format (URDF) -->
   <include if="$(arg load_robot_description)" file="$(arg upload_robot_model_launch)" >
     <remap to="$(arg robot_description)" from="/robot_description" />
   </include>
 
-  <!-- The semantic description that corresponds to the URDF -->
   <param name="$(arg robot_description)_semantic" textfile="$(find hsrb_moveit_config)/config/hsrb.srdf" />
 
   <!-- Load updated joint limits (override information from URDF) -->
@@ -28,7 +26,6 @@
 
 
 
-  <!-- Start the actual move_group node/action server -->
   <node name="move_group" launch-prefix="" pkg="moveit_ros_move_group" type="move_group" respawn="false" output="screen" args="">
     <!-- Set the display variable, in case OpenGL code is used internally -->
     <env name="DISPLAY" value="$(optenv DISPLAY :0)" />
@@ -38,23 +35,18 @@
     <param name="jiggle_fraction" value="0.05" />
     <param name="default_workspace_bounds" value="2.0" />
 
-    <!-- MoveGroup capabilities to load -->
     <param name="capabilities" value="move_group/MoveGroupKinematicsService
 				      move_group/MoveGroupMoveAction
 				      move_group/MoveGroupStateValidationService
 				      move_group/MoveGroupGetPlanningSceneService
 				      " />
-<!--                       move_group/MoveGroupCartesianPathService -->
-<!-- 				      move_group/MoveGroupPickPlaceAction -->
-<!-- 				      move_group/MoveGroupPlanService -->
-<!-- 				      move_group/MoveGroupQueryPlannersService -->
+
     <!-- Publish the planning scene of the physical robot so that rviz plugin can know actual robot -->
     <param name="planning_scene_monitor/publish_planning_scene" value="true" />
     <param name="planning_scene_monitor/publish_geometry_updates" value="false" />
     <param name="planning_scene_monitor/publish_state_updates" value="false" />
     <param name="planning_scene_monitor/publish_transforms_updates" value="false" />
 
-    <!-- Remap joint_states -->
     <remap from="joint_states" to="joint_states" />
   </node>
 
