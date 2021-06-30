@@ -54,6 +54,8 @@ class MatchboxNetTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        print("\n\n**********************************\nTEST Speech command recognition MatchboxNetLearner\n"
+              "**********************************")
         cls.learner = MatchboxNetLearner(device="cpu", output_classes_n=TEST_CLASSES_N, iters=TEST_EPOCHS)
         if not os.path.exists(TEMP_SAVE_DIR):
             os.makedirs(TEMP_SAVE_DIR, exist_ok=True)
