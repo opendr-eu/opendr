@@ -44,7 +44,7 @@ class Map:
                  map_frame_rviz: str,
                  inflation_radius: float,
                  local_map_size_meters: float = 3.0,
-                 origin: Optional[Tuple[float, float, float]] = None):
+                 origin: Optional[Tuple[float, float, float]]=None):
         # m per cell (per pixel)
         self._resolution = 0.1
         self.map_path = floorplan if isinstance(floorplan, (str, Path)) else None
@@ -176,7 +176,7 @@ class EmptyMap(Map):
                  initial_base_rng_y=(0, 0),
                  initial_base_rng_yaw=(0, 0),
                  # W x H
-                 size_meters: Tuple[float, float] = (11, 11),
+                 size_meters: Tuple[float, float]=(11, 11),
                  resolution: float = 0.1):
         super(EmptyMap, self).__init__(
             floorplan=self.get_empty_floorplan(size_meters=size_meters, resolution=resolution),
