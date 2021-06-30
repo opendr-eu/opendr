@@ -87,8 +87,6 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/object_tracking_2d/fair_mot/algorithm',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones',
             'src/opendr/perception/object_detection_2d/retinaface/algorithm',
-            'projects/opendr_ws/devel',
-            'projects/opendr_ws/build'
         ]
 
         skippedFilePaths = [

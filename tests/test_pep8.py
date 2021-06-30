@@ -31,8 +31,6 @@ skippedDirectories = [
     '.git',
     'dependencies',
     'lib',
-    'build',
-    'devel'
 ]
 
 
