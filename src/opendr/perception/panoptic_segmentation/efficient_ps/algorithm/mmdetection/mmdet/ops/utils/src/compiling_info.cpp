@@ -4,7 +4,9 @@
 #include <torch/extension.h>
 
 #ifdef WITH_CUDA
-int get_cudart_version() { return CUDART_VERSION; }
+int get_cudart_version() {
+  return CUDART_VERSION;
+}
 #endif
 
 std::string get_compiling_cuda_version() {
@@ -37,10 +39,7 @@ std::string get_compiler_version() {
 #endif
 
 #if defined(__clang_major__)
-  {
-    ss << "clang " << __clang_major__ << "." << __clang_minor__ << "."
-       << __clang_patchlevel__;
-  }
+  { ss << "clang " << __clang_major__ << "." << __clang_minor__ << "." << __clang_patchlevel__; }
 #endif
 
 #if defined(_MSC_VER)
@@ -51,6 +50,5 @@ std::string get_compiler_version() {
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("get_compiler_version", &get_compiler_version, "get_compiler_version");
-  m.def("get_compiling_cuda_version", &get_compiling_cuda_version,
-        "get_compiling_cuda_version");
+  m.def("get_compiling_cuda_version", &get_compiling_cuda_version, "get_compiling_cuda_version");
 }

@@ -3,12 +3,12 @@
 #include <torch/extension.h>
 #include <torch/torch.h>
 
-#include "utils/checks.h"
 #include "roi_sampling.h"
+#include "utils/checks.h"
 
-std::tuple<at::Tensor, at::Tensor> roi_sampling_forward(
-    const at::Tensor& x, const at::Tensor& bbx, const at::Tensor& idx, std::tuple<int, int> out_size,
-    Interpolation interpolation, PaddingMode padding, bool valid_mask) {
+std::tuple<at::Tensor, at::Tensor> roi_sampling_forward(const at::Tensor &x, const at::Tensor &bbx, const at::Tensor &idx,
+                                                        std::tuple<int, int> out_size, Interpolation interpolation,
+                                                        PaddingMode padding, bool valid_mask) {
   // Check dimensions
   TORCH_CHECK(x.ndimension() == 4, "x must be a 4-dimensional tensor");
   TORCH_CHECK(bbx.ndimension() == 2, "bbx must be a 2-dimensional tensor");
@@ -33,9 +33,8 @@ std::tuple<at::Tensor, at::Tensor> roi_sampling_forward(
   }
 }
 
-at::Tensor roi_sampling_backward(
-    const at::Tensor& dy, const at::Tensor& bbx, const at::Tensor& idx, std::tuple<int, int, int> in_size,
-    Interpolation interpolation, PaddingMode padding) {
+at::Tensor roi_sampling_backward(const at::Tensor &dy, const at::Tensor &bbx, const at::Tensor &idx,
+                                 std::tuple<int, int, int> in_size, Interpolation interpolation, PaddingMode padding) {
   // Check dimensions
   TORCH_CHECK(dy.ndimension() == 4, "dy must be a 4-dimensional tensor");
   TORCH_CHECK(bbx.ndimension() == 2, "bbx must be a 2-dimensional tensor");
@@ -61,9 +60,7 @@ at::Tensor roi_sampling_backward(
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-  pybind11::enum_<PaddingMode>(m, "PaddingMode")
-    .value("Zero", PaddingMode::Zero)
-    .value("Border", PaddingMode::Border);
+  pybind11::enum_<PaddingMode>(m, "PaddingMode").value("Zero", PaddingMode::Zero).value("Border", PaddingMode::Border);
 
   pybind11::enum_<Interpolation>(m, "Interpolation")
     .value("Bilinear", Interpolation::Bilinear)

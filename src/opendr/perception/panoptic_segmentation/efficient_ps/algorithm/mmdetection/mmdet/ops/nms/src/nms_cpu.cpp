@@ -2,8 +2,7 @@
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 #include <torch/extension.h>
 
-template <typename scalar_t>
-at::Tensor nms_cpu_kernel(const at::Tensor& dets, const float threshold) {
+template<typename scalar_t> at::Tensor nms_cpu_kernel(const at::Tensor &dets, const float threshold) {
   AT_ASSERTM(!dets.type().is_cuda(), "dets must be a CPU tensor");
 
   if (dets.numel() == 0) {
@@ -21,8 +20,7 @@ at::Tensor nms_cpu_kernel(const at::Tensor& dets, const float threshold) {
   auto order_t = std::get<1>(scores.sort(0, /* descending=*/true));
 
   auto ndets = dets.size(0);
-  at::Tensor suppressed_t =
-      at::zeros({ndets}, dets.options().dtype(at::kByte).device(at::kCPU));
+  at::Tensor suppressed_t = at::zeros({ndets}, dets.options().dtype(at::kByte).device(at::kCPU));
 
   auto suppressed = suppressed_t.data<uint8_t>();
   auto order = order_t.data<int64_t>();
@@ -34,7 +32,8 @@ at::Tensor nms_cpu_kernel(const at::Tensor& dets, const float threshold) {
 
   for (int64_t _i = 0; _i < ndets; _i++) {
     auto i = order[_i];
-    if (suppressed[i] == 1) continue;
+    if (suppressed[i] == 1)
+      continue;
     auto ix1 = x1[i];
     auto iy1 = y1[i];
     auto ix2 = x2[i];
@@ -43,7 +42,8 @@ at::Tensor nms_cpu_kernel(const at::Tensor& dets, const float threshold) {
 
     for (int64_t _j = _i + 1; _j < ndets; _j++) {
       auto j = order[_j];
-      if (suppressed[j] == 1) continue;
+      if (suppressed[j] == 1)
+        continue;
       auto xx1 = std::max(ix1, x1[j]);
       auto yy1 = std::max(iy1, y1[j]);
       auto xx2 = std::min(ix2, x2[j]);
@@ -53,23 +53,22 @@ at::Tensor nms_cpu_kernel(const at::Tensor& dets, const float threshold) {
       auto h = std::max(static_cast<scalar_t>(0), yy2 - yy1 + 1);
       auto inter = w * h;
       auto ovr = inter / (iarea + areas[j] - inter);
-      if (ovr >= threshold) suppressed[j] = 1;
+      if (ovr >= threshold)
+        suppressed[j] = 1;
     }
   }
   return at::nonzero(suppressed_t == 0).squeeze(1);
 }
 
-at::Tensor nms(const at::Tensor& dets, const float threshold) {
+at::Tensor nms(const at::Tensor &dets, const float threshold) {
   at::Tensor result;
-  AT_DISPATCH_FLOATING_TYPES(dets.scalar_type(), "nms", [&] {
-    result = nms_cpu_kernel<scalar_t>(dets, threshold);
-  });
+  AT_DISPATCH_FLOATING_TYPES(dets.scalar_type(), "nms", [&] { result = nms_cpu_kernel<scalar_t>(dets, threshold); });
   return result;
 }
 
-template <typename scalar_t>
-at::Tensor soft_nms_cpu_kernel(const at::Tensor& dets, const float threshold,
-                               const unsigned char method, const float sigma, const float min_score) {
+template<typename scalar_t>
+at::Tensor soft_nms_cpu_kernel(const at::Tensor &dets, const float threshold, const unsigned char method, const float sigma,
+                               const float min_score) {
   AT_ASSERTM(!dets.type().is_cuda(), "dets must be a CPU tensor");
 
   if (dets.numel() == 0) {
@@ -110,12 +109,12 @@ at::Tensor soft_nms_cpu_kernel(const at::Tensor& dets, const float threshold,
 
     pos = i + 1;
     // get max box
-    while (pos < ndets){
-        if (max_score < scores[pos]) {
-            max_score = scores[pos];
-            max_pos = pos;
-        }
-        pos = pos + 1;
+    while (pos < ndets) {
+      if (max_score < scores[pos]) {
+        max_score = scores[pos];
+        max_pos = pos;
+      }
+      pos = pos + 1;
     }
     // add max box as a detection
     x1[i] = x1[max_pos];
@@ -127,10 +126,10 @@ at::Tensor soft_nms_cpu_kernel(const at::Tensor& dets, const float threshold,
     inds[i] = inds[max_pos];
 
     // swap ith box with position of max box
-    x1[max_pos] =  ix1;
-    y1[max_pos] =  iy1;
-    x2[max_pos] =  ix2;
-    y2[max_pos] =  iy2;
+    x1[max_pos] = ix1;
+    y1[max_pos] = iy1;
+    x2[max_pos] = ix2;
+    y2[max_pos] = iy2;
     scores[max_pos] = iscore;
     areas[max_pos] = iarea;
     inds[max_pos] = iind;
@@ -157,18 +156,16 @@ at::Tensor soft_nms_cpu_kernel(const at::Tensor& dets, const float threshold,
 
       scalar_t weight = 1.;
       if (method == 1) {
-        if (ovr > threshold) weight = 1 - ovr;
-      }
-      else if (method == 2) {
+        if (ovr > threshold)
+          weight = 1 - ovr;
+      } else if (method == 2) {
         weight = std::exp(-(ovr * ovr) / sigma);
-      }
-      else {
+      } else {
         // original NMS
         if (ovr > threshold) {
-            weight = 0;
-        }
-        else {
-            weight = 1;
+          weight = 0;
+        } else {
+          weight = 1;
         }
       }
       scores[pos] = weight * scores[pos];
@@ -182,7 +179,7 @@ at::Tensor soft_nms_cpu_kernel(const at::Tensor& dets, const float threshold,
         scores[pos] = scores[ndets - 1];
         areas[pos] = areas[ndets - 1];
         inds[pos] = inds[ndets - 1];
-        ndets = ndets -1;
+        ndets = ndets - 1;
         pos = pos - 1;
       }
       pos = pos + 1;
@@ -196,16 +193,15 @@ at::Tensor soft_nms_cpu_kernel(const at::Tensor& dets, const float threshold,
   result[4] = scores_t.slice(0, 0, ndets);
   result[5] = inds_t.slice(0, 0, ndets);
 
-  result =result.t().contiguous();
+  result = result.t().contiguous();
   return result;
 }
 
-at::Tensor soft_nms(const at::Tensor& dets, const float threshold,
-                    const unsigned char method, const float sigma, const float min_score) {
+at::Tensor soft_nms(const at::Tensor &dets, const float threshold, const unsigned char method, const float sigma,
+                    const float min_score) {
   at::Tensor result;
-  AT_DISPATCH_FLOATING_TYPES(dets.scalar_type(), "soft_nms", [&] {
-    result = soft_nms_cpu_kernel<scalar_t>(dets, threshold, method, sigma, min_score);
-  });
+  AT_DISPATCH_FLOATING_TYPES(dets.scalar_type(), "soft_nms",
+                             [&] { result = soft_nms_cpu_kernel<scalar_t>(dets, threshold, method, sigma, min_score); });
   return result;
 }
 

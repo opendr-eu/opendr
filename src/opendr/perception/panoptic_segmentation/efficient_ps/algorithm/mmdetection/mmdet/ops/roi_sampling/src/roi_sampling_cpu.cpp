@@ -3,18 +3,11 @@
 #include "roi_sampling.h"
 
 template<typename scalar_t, typename coord_t, typename Sampler>
-void roi_sampling_forward_impl(
-    at::TensorAccessor<scalar_t, 4> x,
-    at::TensorAccessor<coord_t, 2> bbx,
-    at::TensorAccessor<int64_t, 1> idx,
-    at::TensorAccessor<scalar_t, 4> y,
-    at::TensorAccessor<uint8_t, 3> mask,
-    bool valid_mask,
-    Sampler sampler) {
-  auto roi_height = static_cast<coord_t>(y.size(2)),
-       roi_width  = static_cast<coord_t>(y.size(3));
-  auto img_height = static_cast<coord_t>(x.size(2)),
-       img_width  = static_cast<coord_t>(x.size(3));
+void roi_sampling_forward_impl(at::TensorAccessor<scalar_t, 4> x, at::TensorAccessor<coord_t, 2> bbx,
+                               at::TensorAccessor<int64_t, 1> idx, at::TensorAccessor<scalar_t, 4> y,
+                               at::TensorAccessor<uint8_t, 3> mask, bool valid_mask, Sampler sampler) {
+  auto roi_height = static_cast<coord_t>(y.size(2)), roi_width = static_cast<coord_t>(y.size(3));
+  auto img_height = static_cast<coord_t>(x.size(2)), img_width = static_cast<coord_t>(x.size(3));
 
   for (int64_t n = 0; n < idx.size(0); ++n) {
     auto img_idx = idx[n];
@@ -42,47 +35,42 @@ void roi_sampling_forward_impl(
   }
 }
 
-std::tuple<at::Tensor, at::Tensor> roi_sampling_forward_cpu(
-    const at::Tensor& x, const at::Tensor& bbx, const at::Tensor& idx, std::tuple<int, int> out_size,
-    Interpolation interpolation, PaddingMode padding, bool valid_mask) {
-
+std::tuple<at::Tensor, at::Tensor> roi_sampling_forward_cpu(const at::Tensor &x, const at::Tensor &bbx, const at::Tensor &idx,
+                                                            std::tuple<int, int> out_size, Interpolation interpolation,
+                                                            PaddingMode padding, bool valid_mask) {
   // Prepare outputs
   auto y = at::empty({idx.size(0), x.size(1), std::get<0>(out_size), std::get<1>(out_size)}, x.options());
-  auto mask = valid_mask
-      ? at::zeros({idx.size(0), std::get<0>(out_size), std::get<1>(out_size)}, x.options().dtype(at::kByte))
-      : at::zeros({1, 1, 1}, x.options().dtype(at::kByte));
+  auto mask = valid_mask ?
+                at::zeros({idx.size(0), std::get<0>(out_size), std::get<1>(out_size)}, x.options().dtype(at::kByte)) :
+                at::zeros({1, 1, 1}, x.options().dtype(at::kByte));
 
   AT_DISPATCH_ALL_TYPES(x.scalar_type(), "roi_sampling_forward_cpu", ([&] {
-    using coord_t = float;
-    using index_t = int64_t;
+                          using coord_t = float;
+                          using index_t = int64_t;
 
-    auto _x = x.accessor<scalar_t, 4>();
-    auto _bbx = bbx.accessor<coord_t, 2>();
-    auto _idx = idx.accessor<index_t, 1>();
-    auto _y = y.accessor<scalar_t, 4>();
-    auto _mask = mask.accessor<uint8_t, 3>();
+                          auto _x = x.accessor<scalar_t, 4>();
+                          auto _bbx = bbx.accessor<coord_t, 2>();
+                          auto _idx = idx.accessor<index_t, 1>();
+                          auto _y = y.accessor<scalar_t, 4>();
+                          auto _mask = mask.accessor<uint8_t, 3>();
 
-    DISPATCH_INTERPOLATION_PADDING_MODES(interpolation, padding, ([&] {
-      indexer_t indexer(x.size(2), x.size(3));
-      interpolator_t interpolator;
-      sampler_t sampler(indexer, interpolator);
+                          DISPATCH_INTERPOLATION_PADDING_MODES(interpolation, padding, ([&] {
+                                                                 indexer_t indexer(x.size(2), x.size(3));
+                                                                 interpolator_t interpolator;
+                                                                 sampler_t sampler(indexer, interpolator);
 
-      roi_sampling_forward_impl<scalar_t, coord_t, sampler_t>(_x, _bbx, _idx, _y, _mask, valid_mask, sampler);
-    }));
-  }));
+                                                                 roi_sampling_forward_impl<scalar_t, coord_t, sampler_t>(
+                                                                   _x, _bbx, _idx, _y, _mask, valid_mask, sampler);
+                                                               }));
+                        }));
 
   return std::make_tuple(y, mask);
 }
 
 template<typename scalar_t, typename coord_t, typename Sampler>
-void roi_sampling_backward_impl(
-    at::TensorAccessor<scalar_t, 4> dy,
-    at::TensorAccessor<coord_t, 2> bbx,
-    at::TensorAccessor<int64_t, 1> idx,
-    at::TensorAccessor<scalar_t, 4> dx,
-    Sampler sampler) {
-  auto roi_height = static_cast<coord_t>(dy.size(2)),
-       roi_width  = static_cast<coord_t>(dy.size(3));
+void roi_sampling_backward_impl(at::TensorAccessor<scalar_t, 4> dy, at::TensorAccessor<coord_t, 2> bbx,
+                                at::TensorAccessor<int64_t, 1> idx, at::TensorAccessor<scalar_t, 4> dx, Sampler sampler) {
+  auto roi_height = static_cast<coord_t>(dy.size(2)), roi_width = static_cast<coord_t>(dy.size(3));
 
   for (int64_t n = 0; n < idx.size(0); ++n) {
     auto img_idx = idx[n];
@@ -105,30 +93,29 @@ void roi_sampling_backward_impl(
   }
 }
 
-at::Tensor roi_sampling_backward_cpu(
-    const at::Tensor& dy, const at::Tensor& bbx, const at::Tensor& idx, std::tuple<int, int, int> in_size,
-    Interpolation interpolation, PaddingMode padding) {
-
+at::Tensor roi_sampling_backward_cpu(const at::Tensor &dy, const at::Tensor &bbx, const at::Tensor &idx,
+                                     std::tuple<int, int, int> in_size, Interpolation interpolation, PaddingMode padding) {
   // Prepare output
   auto dx = at::zeros({std::get<0>(in_size), dy.size(1), std::get<1>(in_size), std::get<2>(in_size)}, dy.options());
 
   AT_DISPATCH_ALL_TYPES(dy.scalar_type(), "roi_sampling_backward_cpu", ([&] {
-    using coord_t = float;
-    using index_t = int64_t;
+                          using coord_t = float;
+                          using index_t = int64_t;
 
-    auto _dy = dy.accessor<scalar_t, 4>();
-    auto _bbx = bbx.accessor<coord_t, 2>();
-    auto _idx = idx.accessor<index_t, 1>();
-    auto _dx = dx.accessor<scalar_t, 4>();
+                          auto _dy = dy.accessor<scalar_t, 4>();
+                          auto _bbx = bbx.accessor<coord_t, 2>();
+                          auto _idx = idx.accessor<index_t, 1>();
+                          auto _dx = dx.accessor<scalar_t, 4>();
 
-    DISPATCH_INTERPOLATION_PADDING_MODES(interpolation, padding, ([&] {
-      indexer_t indexer(dx.size(2), dx.size(3));
-      interpolator_t interpolator;
-      sampler_t sampler(indexer, interpolator);
+                          DISPATCH_INTERPOLATION_PADDING_MODES(interpolation, padding, ([&] {
+                                                                 indexer_t indexer(dx.size(2), dx.size(3));
+                                                                 interpolator_t interpolator;
+                                                                 sampler_t sampler(indexer, interpolator);
 
-      roi_sampling_backward_impl<scalar_t, coord_t, sampler_t>(_dy, _bbx, _idx, _dx, sampler);
-    }));
-  }));
+                                                                 roi_sampling_backward_impl<scalar_t, coord_t, sampler_t>(
+                                                                   _dy, _bbx, _idx, _dx, sampler);
+                                                               }));
+                        }));
 
   return dx;
 }

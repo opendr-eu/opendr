@@ -3,30 +3,22 @@
 #include <cmath>
 #include <vector>
 
-int ROIPoolForwardLaucher(const at::Tensor features, const at::Tensor rois,
-                          const float spatial_scale, const int channels,
-                          const int height, const int width, const int num_rois,
-                          const int pooled_h, const int pooled_w,
+int ROIPoolForwardLaucher(const at::Tensor features, const at::Tensor rois, const float spatial_scale, const int channels,
+                          const int height, const int width, const int num_rois, const int pooled_h, const int pooled_w,
                           at::Tensor output, at::Tensor argmax);
 
-int ROIPoolBackwardLaucher(const at::Tensor top_grad, const at::Tensor rois,
-                           const at::Tensor argmax, const float spatial_scale,
-                           const int batch_size, const int channels,
-                           const int height, const int width,
-                           const int num_rois, const int pooled_h,
-                           const int pooled_w, at::Tensor bottom_grad);
+int ROIPoolBackwardLaucher(const at::Tensor top_grad, const at::Tensor rois, const at::Tensor argmax, const float spatial_scale,
+                           const int batch_size, const int channels, const int height, const int width, const int num_rois,
+                           const int pooled_h, const int pooled_w, at::Tensor bottom_grad);
 
 #define CHECK_CUDA(x) TORCH_CHECK(x.type().is_cuda(), #x, " must be a CUDAtensor ")
-#define CHECK_CONTIGUOUS(x) \
-  TORCH_CHECK(x.is_contiguous(), #x, " must be contiguous ")
+#define CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x, " must be contiguous ")
 #define CHECK_INPUT(x) \
   CHECK_CUDA(x);       \
   CHECK_CONTIGUOUS(x)
 
-int roi_pooling_forward_cuda(at::Tensor features, at::Tensor rois,
-                             int pooled_height, int pooled_width,
-                             float spatial_scale, at::Tensor output,
-                             at::Tensor argmax) {
+int roi_pooling_forward_cuda(at::Tensor features, at::Tensor rois, int pooled_height, int pooled_width, float spatial_scale,
+                             at::Tensor output, at::Tensor argmax) {
   CHECK_INPUT(features);
   CHECK_INPUT(rois);
   CHECK_INPUT(output);
@@ -46,14 +38,13 @@ int roi_pooling_forward_cuda(at::Tensor features, at::Tensor rois,
   int height = features.size(2);
   int width = features.size(3);
 
-  ROIPoolForwardLaucher(features, rois, spatial_scale, channels, height, width,
-                        num_rois, pooled_height, pooled_width, output, argmax);
+  ROIPoolForwardLaucher(features, rois, spatial_scale, channels, height, width, num_rois, pooled_height, pooled_width, output,
+                        argmax);
 
   return 1;
 }
 
-int roi_pooling_backward_cuda(at::Tensor top_grad, at::Tensor rois,
-                              at::Tensor argmax, float spatial_scale,
+int roi_pooling_backward_cuda(at::Tensor top_grad, at::Tensor rois, at::Tensor argmax, float spatial_scale,
                               at::Tensor bottom_grad) {
   CHECK_INPUT(top_grad);
   CHECK_INPUT(rois);
@@ -75,8 +66,7 @@ int roi_pooling_backward_cuda(at::Tensor top_grad, at::Tensor rois,
   int height = bottom_grad.size(2);
   int width = bottom_grad.size(3);
 
-  ROIPoolBackwardLaucher(top_grad, rois, argmax, spatial_scale, batch_size,
-                         channels, height, width, num_rois, pooled_height,
+  ROIPoolBackwardLaucher(top_grad, rois, argmax, spatial_scale, batch_size, channels, height, width, num_rois, pooled_height,
                          pooled_width, bottom_grad);
 
   return 1;
