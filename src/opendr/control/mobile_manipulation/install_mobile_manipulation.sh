@@ -5,7 +5,7 @@ if [[ -z "$OPENDR_HOME" ]]; then
        exit 1
 fi
 
-MODULE_PATH=${OPENDR_HOME}/src/control/mobile_manipulation
+MODULE_PATH=${OPENDR_HOME}/src/opendr/control/mobile_manipulation
 WS_PATH=${OPENDR_HOME}/lib/catkin_ws_mobile_manipulation
 
 # libgp

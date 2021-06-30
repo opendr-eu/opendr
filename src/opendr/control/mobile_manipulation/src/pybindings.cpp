@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gripper_planner/base_gripper_planner.h>
-#include <gripper_planner/gmm_planner.h>
-#include <gripper_planner/linear_planner.h>
-//#include <mobile_manipulation_rl/robot_hsr.h>
-#include <mobile_manipulation_rl/robot_pr2.h>
-#include <mobile_manipulation_rl/robot_tiago.h>
+#include <gripper_planner/base_gripper_planner.hpp>
+#include <gripper_planner/gmm_planner.hpp>
+#include <gripper_planner/linear_planner.hpp>
+//#include <mobile_manipulation_rl/robot_hsr.hpp>
+#include <mobile_manipulation_rl/robot_pr2.hpp>
+#include <mobile_manipulation_rl/robot_tiago.hpp>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 

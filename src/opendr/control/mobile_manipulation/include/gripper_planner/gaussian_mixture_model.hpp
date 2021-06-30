@@ -34,7 +34,7 @@
 #include <string>
 #include "tf/transform_datatypes.h"
 
-#include <mobile_manipulation_rl/utils.h>
+#include <mobile_manipulation_rl/utils.hpp>
 
 class GaussianMixtureModel {
 public:

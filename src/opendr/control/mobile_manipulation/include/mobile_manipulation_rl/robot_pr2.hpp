@@ -15,7 +15,7 @@
 #pragma once
 #include <actionlib/client/simple_action_client.h>
 #include <geometry_msgs/Twist.h>
-#include <mobile_manipulation_rl/robot_env.h>
+#include <mobile_manipulation_rl/robot_env.hpp>
 #include <pr2_controllers_msgs/JointTrajectoryAction.h>
 #include <pr2_controllers_msgs/Pr2GripperCommandAction.h>
 #include <pr2_mechanism_msgs/SwitchController.h>

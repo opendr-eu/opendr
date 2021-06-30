@@ -55,7 +55,7 @@ target_link_libraries(myutils yaml-cpp ${catkin_LIBRARIES})
 add_library(gaussian_mixture_model src/gripper_planner/gaussian_mixture_model.cpp)
 target_link_libraries(gaussian_mixture_model myutils ${catkin_LIBRARIES})
 
-add_library(base_gripper_planner include/gripper_planner/base_gripper_planner.h src/gripper_planner/base_gripper_planner.cpp)
+add_library(base_gripper_planner include/gripper_planner/base_gripper_planner.hpp src/gripper_planner/base_gripper_planner.cpp)
 target_link_libraries(base_gripper_planner myutils ${catkin_LIBRARIES})
 
 add_library(linear_planner src/gripper_planner/linear_planner.cpp)

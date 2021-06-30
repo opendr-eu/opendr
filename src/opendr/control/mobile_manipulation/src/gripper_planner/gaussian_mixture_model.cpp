@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gripper_planner/gaussian_mixture_model.h>
+#include <gripper_planner/gaussian_mixture_model.hpp>
 
 GaussianMixtureModel::GaussianMixtureModel(double max_speed_gripper_rot, double max_speed_base_rot) :
   _max_speed_gripper_rot{max_speed_gripper_rot},

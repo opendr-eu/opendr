@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <mobile_manipulation_rl/worlds.h>
+#include <mobile_manipulation_rl/worlds.hpp>
 
 BaseWorld::BaseWorld(std::string name, bool is_analytical) : name_{name}, is_analytical_{is_analytical} {
   if (name_ != "sim") {

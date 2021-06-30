@@ -14,8 +14,8 @@
 
 #pragma once
 
-#include "gripper_planner/base_gripper_planner.h"
-#include "gripper_planner/gaussian_mixture_model.h"
+#include "gripper_planner/base_gripper_planner.hpp"
+#include "gripper_planner/gaussian_mixture_model.hpp"
 
 class GMMPlanner : public BaseGripperPlanner {
 private:

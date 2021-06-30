@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gripper_planner/base_gripper_planner.h>
+#include <gripper_planner/base_gripper_planner.hpp>
 
 BaseGripperPlanner::BaseGripperPlanner(const std::vector<double> &gripper_goal_wrist,
                                        const std::vector<double> &initial_gripper_tf, const std::vector<double> &base_goal,

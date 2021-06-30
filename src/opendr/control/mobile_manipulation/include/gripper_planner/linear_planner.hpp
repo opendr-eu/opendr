@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "gripper_planner/base_gripper_planner.h"
+#include "gripper_planner/base_gripper_planner.hpp"
 
 class LinearPlanner : public BaseGripperPlanner {
 private:

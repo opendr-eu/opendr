@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <mobile_manipulation_rl/robot_tiago.h>
+#include <mobile_manipulation_rl/robot_tiago.hpp>
 
 RobotTiago::RobotTiago(uint32_t seed, std::string strategy, std::string world_type, bool init_controllers,
                        double penalty_scaling, double time_step, bool perform_collision_check, std::string node_handle_name,

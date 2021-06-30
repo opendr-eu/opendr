@@ -25,7 +25,7 @@
 #include "tf/transform_datatypes.h"
 #include "visualization_msgs/MarkerArray.h"
 
-#include "../mobile_manipulation_rl/utils.h"
+#include "../mobile_manipulation_rl/utils.hpp"
 
 struct EEObs {
   const std::vector<double> next_gripper_tf;

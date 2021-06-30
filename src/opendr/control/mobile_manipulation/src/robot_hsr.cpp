@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <mobile_manipulation_rl/robot_hsr.h>
+#include <mobile_manipulation_rl/robot_hsr.hpp>
 using Eigen::Affine3d;
 using Eigen::AngleAxisd;
 using Eigen::Translation3d;

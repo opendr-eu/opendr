@@ -46,8 +46,8 @@
 #include "tf/transform_datatypes.h"
 #include "visualization_msgs/MarkerArray.h"
 
-#include "mobile_manipulation_rl/utils.h"
-#include "mobile_manipulation_rl/worlds.h"
+#include "mobile_manipulation_rl/utils.hpp"
+#include "mobile_manipulation_rl/worlds.hpp"
 
 struct RobotState {
   tf::Transform base_tf;              // in world frame

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mobile_manipulation_rl/robot_env.h"
+#include "mobile_manipulation_rl/robot_env.hpp"
 
 RobotEnv::RobotEnv(uint32_t seed, std::string strategy, std::string world_type, bool init_controllers, double penalty_scaling,
                    double time_step_world, bool perform_collision_check, std::string node_handle_name, bool verbose,
