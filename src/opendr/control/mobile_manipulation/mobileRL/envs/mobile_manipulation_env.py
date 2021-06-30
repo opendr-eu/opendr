@@ -141,10 +141,10 @@ class MobileManipulationEnv(Env):
         return self._to_agent_obs(robot_obs, ee_obs_train_freq.ee_velocities_rel), reward, done, robot_info
 
     def _to_agent_obs(self, robot_obs: RobotObs, ee_velocities_rel, local_map=None) -> list:
-        obs_vector = (robot_obs.relative_gripper_tf
-                      + ee_velocities_rel
-                      + self._robot.world_to_relative_tf(self._ee_planner.gripper_goal_wrist)
-                      + robot_obs.joint_values)
+        obs_vector = robot_obs.relative_gripper_tf \
+                      + ee_velocities_rel \
+                      + self._robot.world_to_relative_tf(self._ee_planner.gripper_goal_wrist) \
+                      + robot_obs.joint_values
         if not self._use_map_obs:
             return obs_vector
         else:

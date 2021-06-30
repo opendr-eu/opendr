@@ -21,13 +21,12 @@ import sys
 import time
 import torch
 import yaml
-from pathlib import Path
-from stable_baselines3.common.utils import configure_logger
-
 from control.mobile_manipulation.mobileRL.envs import ALL_TASKS
 from control.mobile_manipulation.mobileRL.evaluation import evaluate_on_task
 from control.mobile_manipulation.mobileRL.utils import create_env
 from control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
+from pathlib import Path
+from stable_baselines3.common.utils import configure_logger
 
 
 def str2bool(v):
@@ -71,23 +70,30 @@ def parse_args(config_path):
     parser.add_argument('--task', type=str.lower, default='rndstartrndgoal', choices=all_tasks,
                         help='Train on a specific task env. Might override some other choices.')
     parser.add_argument('--time_step', type=float, default=0.02,
-                        help='Time steps at which the RL agent makes decisions during actual execution. NOTE: time_step for training is hardcoded in robot_env.cpp.')
+                        help='Time steps at which the RL agent makes decisions during actual execution. NOTE: time_step '
+                             'for training is hardcoded in robot_env.cpp.')
     parser.add_argument('--slow_down_real_exec', type=float, default=1.0,
                         help='How much to slow down the planned gripper trajectories during real execun')
     parser.add_argument('--world_type', type=str, default="sim", choices=["sim", "gazebo", "world"],
-                        help="What kind of movement execution and where to get updated values from. Sim: analytical environemt, don't call controllers, gazebo: gazebo simulator, world: real world")
+                        help="What kind of movement execution and where to get updated values from. Sim: analytical "
+                             "environemt, don't call controllers, gazebo: gazebo simulator, world: real world")
     parser.add_argument('--strategy', type=str.lower, default="dirvel", choices=["relvelm", "relveld", "dirvel"],
-                        help='What velocities to learn: modulate, velocity relative to the gripper velocity, direct base velocity')
+                        help='What velocities to learn: modulate, velocity relative to the gripper velocity, direct base '
+                             'velocity')
     parser.add_argument('--ik_fail_thresh', type=int, default=20,
-                        help='number of failures after which on it is considered as failed (i.e. failed: failures > ik_fail_thresh)')
+                        help='number of failures after which on it is considered as failed (i.e. failed: '
+                             'failures > ik_fail_thresh)')
     parser.add_argument('--ik_fail_thresh_eval', type=int, default=100,
-                        help='different eval threshold to make comparable across settings and investigate if it can recover from failures')
+                        help='different eval threshold to make comparable across settings and investigate if it can '
+                             'recover from failures')
     parser.add_argument('--penalty_scaling', type=float, default=0.01,
                         help='by how much to scale the penalties to incentivise minimal modulation')
     parser.add_argument('--learn_vel_norm', type=float, default=-1,
-                        help="Learn the norm of the next EE-motion. Value is the factor weighting the loss for this. -1 to not learn it.")
+                        help="Learn the norm of the next EE-motion. Value is the factor weighting the loss for this. -1 "
+                             "to not learn it.")
     parser.add_argument('--perform_collision_check', type=str2bool, nargs='?', const=True, default=True,
-                        help='Use the planning scen to perform collision checks (both with environment and self collisions)')
+                        help='Use the planning scen to perform collision checks (both with environment and self '
+                             'collisions)')
     parser.add_argument('--vis_env', type=str2bool, nargs='?', const=True, default=True,
                         help='Whether to publish markers to rviz')
     parser.add_argument('--transition_noise_base', type=float, default=0.0,
@@ -117,7 +123,8 @@ def parse_args(config_path):
     parser.add_argument('--restore_model_path', type=str, default='pretrained',
                         help='Restore the model and config under this path')
     parser.add_argument('--checkpoint_load_iter', type=int, default=0,
-                        help='Restore the model named model_step{x}. See ./model_checkpoints/[robot] for pretrained checkpoints. Note: does not restore the config automatically.')
+                        help='Restore the model named model_step{x}. See ./model_checkpoints/[robot] for pretrained '
+                             'checkpoints. Note: does not restore the config automatically.')
     parser.add_argument('--name', type=str, default="", help='name for this run')
 
     args = parser.parse_args()

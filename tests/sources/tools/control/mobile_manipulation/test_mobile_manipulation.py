@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
 import os
 import shutil
-import unittest
-from pathlib import Path
-
-import numpy as np
 import torch
-
-from control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
+import unittest
 from control.mobile_manipulation.mobileRL.utils import create_env
+from control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
+from pathlib import Path
 
 TEST_ITERS = 3
 TEMP_SAVE_DIR = Path(__file__).parent / "mobile_manipulation_tmp"
@@ -54,7 +52,8 @@ class MobileManipulationTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.env = create_env(EVAL_ENV_CONFIG, task='rndstartrndgoal', node_handle="train_env", wrap_in_dummy_vec=True, flatten_obs=True)
+        cls.env = create_env(EVAL_ENV_CONFIG, task='rndstartrndgoal', node_handle="train_env", wrap_in_dummy_vec=True,
+                             flatten_obs=True)
         cls.learner = MobileRLLearner(cls.env, device="cpu", iters=TEST_ITERS, temp_path=str(TEMP_SAVE_DIR))
 
     @classmethod

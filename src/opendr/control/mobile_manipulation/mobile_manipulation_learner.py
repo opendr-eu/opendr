@@ -183,10 +183,12 @@ class MobileRLLearner(LearnerRL):
             env = env.envs[0]
 
         prefix = ''
-        episode_rewards, episode_lengths, metrics, name_prefix = evaluation_rollout(self.stable_bl_agent, env,
-                                                                                    nr_evaluations, name_prefix=prefix,
-                                                                                    global_step=self.stable_bl_agent.num_timesteps,
-                                                                                    verbose=2)
+        episode_rewards, episode_lengths, metrics, name_prefix = evaluation_rollout(
+            self.stable_bl_agent,
+            env,
+            nr_evaluations, name_prefix=prefix,
+            global_step=self.stable_bl_agent.num_timesteps,
+            verbose=2)
         env.clear()
         return {"episode_rewards": episode_rewards,
                 "episode_lengths": episode_lengths,

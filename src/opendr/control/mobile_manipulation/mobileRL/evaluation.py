@@ -94,7 +94,8 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
                   f"Avg. return (undisc) {metrics[f'return_undisc']:.2f}, (disc) {metrics[f'return_disc']:.2f}, "
                   f"Avg failures {metrics[f'ik_fails']:.2f}, Avg success: {metrics['success']:.2f}")
     rospy.loginfo(
-        f"IK fails: {metrics[f'ik_b{ik_fail_thresh}']:.2f}p < {ik_fail_thresh}, {metrics[f'ik_b11']:.2f}p < 11, {metrics[f'ik_zero_fail']:.2f}p < 1")
+        f"IK fails: {metrics[f'ik_b{ik_fail_thresh}']:.2f}p < {ik_fail_thresh}, {metrics[f'ik_b11']:.2f}p < 11, "
+        f"{metrics[f'ik_zero_fail']:.2f}p < 1")
     rospy.loginfo("---------------------------------------")
 
     log_dict.update({(f'{name_prefix}/{k}' if ('step' not in k) else k): v for k, v in metrics.items()})

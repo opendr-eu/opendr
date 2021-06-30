@@ -58,9 +58,9 @@ class BaseTask(Wrapper):
 
     @property
     def loggingname(self):
-        return (self.taskname()
-                + (f"_hs{self._default_head_start}" if self._default_head_start else "")
-                + (f"_{self.get_world()}" if self.get_world() != "sim" else ""))
+        return self.taskname() \
+                + (f"_hs{self._default_head_start}" if self._default_head_start else "") \
+                + (f"_{self.get_world()}" if self.get_world() != "sim" else "")
 
     @staticmethod
     def requires_simulator() -> bool:

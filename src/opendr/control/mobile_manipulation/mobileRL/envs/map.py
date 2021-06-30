@@ -102,7 +102,10 @@ class Map:
         return map
 
     def meter_to_pixels(self, xypose_meter: np.ndarray, round: bool = True):
-        """In ROS the y-axis points upwards with origin at the center, in pixelspace it points downwards with origin in the top left corner"""
+        """
+        In ROS the y-axis points upwards with origin at the center, in pixelspace it points downwards with origin in the
+        top left corner
+        """
         xypose_meter = xypose_meter.copy()
         xypose_meter[..., 0] += self._origin_W_meter
         xypose_meter[..., 1] = self._origin_H_meter - xypose_meter[..., 1]

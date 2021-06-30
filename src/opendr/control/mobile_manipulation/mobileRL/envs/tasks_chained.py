@@ -86,8 +86,10 @@ class BaseChainedTask(BaseTask):
         self._current_goal = 0
         self._goals = self.draw_goal()
         first_goal = self._goals[self._current_goal]
-        assert self._success_thres_dist == first_goal.success_thres_dist, "Can't handle this case yet, would lead to different thresholds for ee and robot"
-        assert self._success_thres_rot == first_goal.success_thres_rot, "Can't handle this case yet, would lead to different thresholds for ee and robot"
+        assert self._success_thres_dist == first_goal.success_thres_dist, "Can't handle this case yet, would lead to " \
+                                                                          "different thresholds for ee and robot"
+        assert self._success_thres_rot == first_goal.success_thres_rot, "Can't handle this case yet, would lead to " \
+                                                                        "different thresholds for ee and robot"
         return super().reset(first_goal)
 
     def _episode_cleanup(self):
