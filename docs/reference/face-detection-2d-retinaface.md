@@ -6,7 +6,7 @@ The *retinaface* module contains the *RetinaFaceLearner* class, which inherits f
 Bases: `engine.learners.Learner`
 
 The *RetinaFaceLearner* class is a wrapper of the RetinaFace detector[[1]](#retinaface-1) implementation found on 
-[deepinsight implementation](https://www.github.com/deepinsight/insightface) [[2]](#retinaface-2).
+[deepinsight implementation](https://www.github.com/deepinsight/insightface).
 It can be used to perform face detection on images (inference) as well as train new face detection models.
 
 The [RetinaFaceLearner](#src.opendr.perception.object_detection_2d.retinaface.retinaface_learner.py) class has the following 
@@ -180,6 +180,16 @@ Parameters:
   Specifies the folder where data will be downloaded. If *None*, the *self.temp_path* directory is used instead.
   
 - **mode**: *{'pretrained', 'images', 'backbone', 'annotations'}, default='pretrained'*
-  If *'pretrained'*, downlaods a pretrained detector model based on *self.backbone*. If *'backbone'*, downloads a pretained 
+  If *'pretrained'*, downloads a pretrained detector model based on *self.backbone*. If *'backbone'*, downloads a pretrained 
   backbone network based on *self.backbone*, used to train a model from pretrained weights. If *'images'*, downloads an 
   image to perform inference on. If *'annotations'*, downloads additional landmark annotations to be used during training.
+  
+- **verbose**: *bool, default=True*
+  If True, maximum verbosity if enabled.
+  
+- **url**: *str, default=OpenDR FTP URL* 
+  URL of the FTP server.
+  
+#### References
+<a name="retinaface-1" href="https://arxiv.org/abs/1905.00641">[1]</a> RetinaFace: Single-stage Dense Face Localisation in the Wild,
+[arXiv](https://arxiv.org/abs/1905.00641).
