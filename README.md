@@ -2,7 +2,7 @@
 OpenDR Internal Repository
 
 
-This is the internal repository of [OpenDR Project](opendr.eu) that contains the development version of OpenDR toolkit. Note that this version is not yet production ready, so this repository is not yet intended to be used for any purpose, since it might contain unstable code that undergoes heavy development. The first public version of OpenDR toolkit is scheduled to be released on Dec. 2021.
+This is the internal repository of [OpenDR Project](https://opendr.eu) that contains the development version of OpenDR toolkit. Note that this version is not yet production ready, so this repository is not yet intended to be used for any purpose, since it might contain unstable code that undergoes heavy development. The first public version of OpenDR toolkit is scheduled to be released on Dec. 2021.
 
 
 *OpenDR project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871449.*
