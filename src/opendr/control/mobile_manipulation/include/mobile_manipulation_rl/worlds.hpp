@@ -47,11 +47,6 @@ public:
 };
 
 class GazeboWorld : public BaseWorld {
-private:
-  //    ros::ServiceClient set_model_state_client_;
-  //    ros::ServiceClient set_model_configuration_client_;
-  //    ros::ServiceClient pause_gazebo_client_;
-  //    ros::ServiceClient unpause_gazebo_client_;
 public:
   GazeboWorld();
   void setModelState(std::string model_name, tf::Transform world_transform, RoboConf robo_config,
