@@ -24,9 +24,9 @@ All the classes should implement the corresponding setter/getter functions to en
 type checking is performed (if there is no other technical obstacle to this, e.g., negative performance impact).
 
 `Target` provides the following fields that can be used by classes that inhert `Target`:
-- `data`, which holds the actual predictions/annotations,
-- `confidence`, which holds the prediction/annotation confidence,
-- `action`, which provides the expected active perception output.
+- *data*, which holds the actual predictions/annotations,
+- *confidence*, which holds the prediction/annotation confidence,
+- *action*, which provides the expected active perception output.
 
 
 ### class engine.target.Category
