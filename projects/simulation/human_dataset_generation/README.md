@@ -11,7 +11,7 @@ chmod +x download_models.sh
 ./download_models.sh
 ```
 
-2. Download the CityScapes dataset from www.cityscapes-dataset.net <br />
+2. Download the Cityscapes dataset from www.cityscapes-dataset.net <br />
     * RGB images: (a) leftImg8bit_trainvaltest.zip,  (b) leftImg8bit_trainextra.zip <br />
     * Annotation images: gtCoarse.zip <br />
 
@@ -45,4 +45,3 @@ If you make use of the dataset, please cite the following reference in any publi
   year={2021}
 }
 ```
-
