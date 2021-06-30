@@ -53,8 +53,8 @@ def build_optimizer(model, optimizer_cfg):
         base_lr = optimizer_cfg['lr']
         base_wd = optimizer_cfg.get('weight_decay', None)
         # weight_decay must be explicitly specified if mult is specified
-        if ('bias_decay_mult' in paramwise_options or 'norm_decay_mult' in paramwise_options
-                or 'dwconv_decay_mult' in paramwise_options):
+        if ('bias_decay_mult' in paramwise_options or 'norm_decay_mult' in paramwise_options or
+                'dwconv_decay_mult' in paramwise_options):
             assert base_wd is not None
         # get param-wise options
         bias_lr_mult = paramwise_options.get('bias_lr_mult', 1.)

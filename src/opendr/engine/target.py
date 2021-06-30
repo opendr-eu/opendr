@@ -751,9 +751,8 @@ class Heatmap():
 
     def __init__(self,
                  data: np.ndarray,
-                 description: Optional[str] = None,
-                 class_names: Optional[Dict[int, str]] = None):
-        # super().__init__()
+                 description: Optional[str]=None,
+                 class_names: Optional[Dict[int, str]]=None):
         self._data = None
         self._description = None
         self._class_names = None

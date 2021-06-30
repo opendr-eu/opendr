@@ -8,8 +8,6 @@ import mmcv
 import torch
 import torchvision
 
-import mmdet
-
 
 def collect_env():
     env_info = {}

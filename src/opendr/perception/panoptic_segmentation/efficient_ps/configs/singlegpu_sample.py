@@ -1,15 +1,28 @@
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # model settings
 model = dict(
     type='EfficientPS',
     pretrained=True,
     backbone=dict(
         type='tf_efficientnet_b5',
-        act_cfg = dict(type="Identity"),  
+        act_cfg=dict(type="Identity"),
         norm_cfg=dict(type='InPlaceABN', activation='leaky_relu', activation_param=0.01, requires_grad=True),
         style='pytorch'),
     neck=dict(
         type='TWOWAYFPN',
-        in_channels=[40, 64, 176, 2048], #b0[24, 40, 112, 1280], #b4[32, 56, 160, 1792],
+        in_channels=[40, 64, 176, 2048],  # b0[24, 40, 112, 1280], #b4[32, 56, 160, 1792],
         out_channels=256,
         norm_cfg=dict(type='InPlaceABN', activation='leaky_relu', activation_param=0.01, requires_grad=True),
         act_cfg=None,

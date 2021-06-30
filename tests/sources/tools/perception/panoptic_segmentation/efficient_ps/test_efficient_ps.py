@@ -16,7 +16,6 @@ import shutil
 import unittest
 import warnings
 import zipfile
-from typing import List, Tuple
 
 import cv2
 
@@ -86,12 +85,12 @@ class TestEfficientPsLearner(unittest.TestCase):
         image = Image(cv2.imread(image_filename))
         learner = EfficientPsLearner()
         learner.load(self.model_weights)
-        prediction: Tuple[Heatmap, Heatmap] = learner.infer(image)
+        prediction = learner.infer(image)
         for heatmap in prediction:
             self.assertIsInstance(heatmap, Heatmap)
 
         image_with_filename = ImageWithFilename(cv2.imread(image_filename), filename='lindau_000001_000019.png')
-        prediction: Tuple[Heatmap, Heatmap] = learner.infer(image_with_filename)
+        learner.infer(image_with_filename)
         for heatmap in prediction:
             self.assertIsInstance(heatmap, Heatmap)
 
@@ -103,7 +102,7 @@ class TestEfficientPsLearner(unittest.TestCase):
         images = [Image(cv2.imread(f)) for f in image_filenames]
         learner = EfficientPsLearner()
         learner.load(self.model_weights)
-        predictions: List[Tuple[Heatmap, Heatmap]] = learner.infer(images)
+        predictions = learner.infer(images)
         for prediction in predictions:
             for heatmap in prediction:
                 self.assertIsInstance(heatmap, Heatmap)

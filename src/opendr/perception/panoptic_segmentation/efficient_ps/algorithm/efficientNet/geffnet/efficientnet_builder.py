@@ -232,7 +232,7 @@ class InvertedResidual(nn.Module):
         super(InvertedResidual, self).__init__()
         norm_kwargs = norm_kwargs or {}
         conv_kwargs = conv_kwargs or {}
-        mid_chs: int = make_divisible(in_chs * exp_ratio)
+        mid_chs = make_divisible(in_chs * exp_ratio)  # int
         self.has_residual = (in_chs == out_chs and stride == 1) and not noskip
         self.drop_connect_rate = drop_connect_rate
 

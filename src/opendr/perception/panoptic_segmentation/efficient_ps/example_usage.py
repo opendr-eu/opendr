@@ -12,12 +12,10 @@
 # limitations under the License.
 
 from pathlib import Path
-from typing import List, Tuple
 
 import cv2
 
 from opendr.engine.data import Image
-from opendr.engine.target import Heatmap
 from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset, KittiDataset
 from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
 
@@ -75,7 +73,7 @@ def inference():
         config_file=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
     )
     learner.load(path=f'{DATA_ROOT}/checkpoints/efficientPS/cityscapes/model.pth')
-    predictions: List[Tuple[Heatmap, Heatmap]] = learner.infer(images)
+    learner.infer(images)
 
 
 if __name__ == "__main__":

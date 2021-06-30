@@ -13,7 +13,7 @@ DEBUG_COMPLETED_TIME = bool(os.environ.get('DEBUG_COMPLETED_TIME', False))
 
 
 @contextlib.asynccontextmanager
-async def completed(trace_name='', name='', sleep_interval=0.05, streams: List[torch.cuda.Stream] = None):
+async def completed(trace_name='', name='', sleep_interval=0.05, streams: List[torch.cuda.Stream]=None):
     """
     Async context manager that waits for work to complete on
     given CUDA streams.

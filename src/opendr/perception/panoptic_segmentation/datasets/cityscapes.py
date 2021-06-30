@@ -236,7 +236,8 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
         :type input_path: str, bytes, PathLike
         :param output_path: path to the converted Cityscapes dataset
         :type output_path: str, bytes, PathLike
-        :param generate_train_evaluation: if set to True, the training set will prepared to be used for evaluation. Usually, this is not required.
+        :param generate_train_evaluation: if set to True, the training set will prepared to be used for evaluation.
+            Usually, this is not required.
         :type generate_train_evaluation: bool
         :param num_workers: number of workers to be used in parallel
         :type num_workers: int

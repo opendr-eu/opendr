@@ -64,9 +64,9 @@ def _split_channels(num_chan, num_groups):
 def conv2d_same(x,
                 weight: torch.Tensor,
                 bias: Optional[torch.Tensor] = None,
-                stride: Tuple[int, int] = (1, 1),
-                padding: Tuple[int, int] = (0, 0),
-                dilation: Tuple[int, int] = (1, 1),
+                stride: Tuple[int, int]=(1, 1),
+                padding: Tuple[int, int]=(0, 0),
+                dilation: Tuple[int, int]=(1, 1),
                 groups: int = 1):
     ih, iw = x.size()[-2:]
     kh, kw = weight.size()[-2:]
