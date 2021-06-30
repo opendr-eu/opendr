@@ -762,7 +762,7 @@ class SpeechCommand(Target):
 
 class Heatmap(Target):
     """
-    This target is used for multi-class segmentation problems. 
+    This target is used for multi-class segmentation problems.
     """
 
     def __init__(self, data):
