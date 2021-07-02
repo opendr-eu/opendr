@@ -22,7 +22,7 @@ def np_to_mx(img_np):
     """
     Convert numpy image to MXNet image.
     """
-    img_mx = mx.image.image.nd.from_numpy(img_np)
+    img_mx = mx.image.image.nd.from_numpy(np.float32(img_np))
     return img_mx
 
 

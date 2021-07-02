@@ -553,7 +553,7 @@ class SingleShotDetectorLearner(Learner):
             raise ValueError("Input should be of type Image or numpy array.")
 
         height, width, _ = _img.shape
-        img_mx = mx.image.image.nd.from_numpy(_img)
+        img_mx = mx.image.image.nd.from_numpy(np.float32(_img))
 
         if keep_size:
             x, img_mx = transform_test(img_mx)
