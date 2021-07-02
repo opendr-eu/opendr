@@ -2,79 +2,6 @@
 
 The *landmark_based_facial_expression_recognition* module contains the *ProgressiveSpatioTemporalBLNLearner* class, which inherits from the abstract class *Learner*.
 
-#### Data preparation  
-  Download the [AFEW](https://cs.anu.edu.au/few/AFEW.html) [[1,2]](#1,2), [CK+](https://www.pitt.edu/~emotion/ck-spread.htm) [[3,4]](#3,4), and [Oulu-CASIA](https://www.oulu.fi/cmvs/node/41316) [[5]](#5) datasets. 
-  In order to extract facial landmarks from the images, you need to download a pretrained landmark extractor model. We used Dlib's landmark extractor 
-  which can be downloaded from [here](http://dlib.net/face_landmark_detection.py.html). Please not that these datasets and the landmark extractor model
-  cannot be used for any commercial purposes. 
-  ##### AFEW data preparation:  
-  AFEW dataset consists a set of video clips collected from movies with actively moving faces in different illumination and environmental conditions. The following preprocessing steps are needed to generate the appropriate 
-  landmark data for the method. 
-  - Convert the .avi videos to .mp4 format and then extract the video frames using the following function:
-  
-  ```python
-  from OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import frame_extractor
-  python frame_extractor.py --video_folder ./data/AFEW_videos/ --frames_folder ./data/AFEW/
-  ```
-  You need to specify the path of the videos as `--video_folder` and the path of the extracted frames data as `--frames_folder`. 
-  
-  - Place the downloaded landmark-extractor model in the data directory and extract the facial landmarks from the extracted frames by running the following script:
-  
-  ```python
-  from OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import landmark_extractor
-  python landmark_extractor.py --dataset_name AFEW --shape_predictor ./data/shape_predictor_68_face_landmarks.dat --frames_folder ./data/AFEW/ --landmark_folder ./data/AFEW_landmarks/
-  ```
-  You need to specify the path of the landmark extractor as `--shape_predictor` and the path of the extracted frames and extracted landmarks as `--frames_folder` and `--landmark_folder` . 
-
- - After extracting the facial landmarks for each category, run the following script for data preprocessing and augmentation: 
-  
-  ```python
-  from OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import AFEW_data_gen
-  from OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import data_augmentation
-  python AFEW_data_gen.py --landmark_folder  ./data/AFEW_landmarks/ --data_folder ./data/AFEW_data/ 
-  python data_aumentation.py --data_folder ./data/AFEW_data/ --aug_data_folder ./data/AFEW_aug_data/
-  ```
-  The preprocessed augmented data will be saved in the `--aug_data_folder` path. After generating the preprocessed facial landmark data, generate the facial muscle data as follows:
-  ```python
-  from OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import gen_facial_muscles_data
-  python gen_facial_muscles_data.py --dataset_name AFEW --landmark_data_folder ./data/AFEW_aug_data/ --muscle_data_folder ./data/muscle_data/
-  ```
-  
-  
-##### CK+ data preparation:  
-  CK+ dataset consists of a set of image sequences starting from a neutral expression to peak expression and the expressions are performed by different subjects. 
-  We select the first frame and the last three frames (including the peak expression) of each sequence for landmark extraction.
-  In this dataset, only a subset of image sequences are labeled. The first step in the data preparation is to separate the labeled data for each subject, and place each sample in a folder named by its class label. 
-  - Extract the facial landmarks and generate the preprocessed train and test data for 10-fold cross validation using the following script:
-
-  ```python
-  from OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import CASIA_CK+_data_gen
-  from OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import landmark_extractor
-  python landmark_extractor.py --dataset_name CK+ --shape_predictor ./data/shape_predictor_68_face_landmarks.dat --frames_folder ./data/CK+/ --landmark_folder ./data/CK+_landmarks/
-  python CASIA_CK+_data_gen.py --dataset_name CK+ --landmark_folder  ./data/CK+_landmarks/ --output_folder ./data/CK+_10fold/
-  ```
-  - After generating the preprocessed facial landmark data, generate the facial muscle data as follows:
-  ```python
-  from OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import gen_facial_muscles_data
-  python gen_facial_muscles_data.py --dataset_name CK+ --landmark_data_folder ./data/CK+_10fold/ --muscle_data_folder ./data/muscle_data/
-  ```
-
-##### Oulu-CASIA data preparation:  
-  Oulu-CASIA dataset also consists of a set of image sequences starting from a neutral expression to peak expression and the expressions are performed by different subjects. 
-  We used the image sequences captured by the VIS system under NI illumination and we select the first frame and the last three frames (including the peak expression) of each sequence for landmark extraction. 
-  - Extract the facial landmarks and generate the preprocessed train and test data for 10-fold cross validation using the following script:
-  ```python
-  from OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import CASIA_CK+_data_gen
-  from OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import landmark_extractor
-  python landmark_extractor.py --dataset_name CASIA --shape_predictor ./data/shape_predictor_68_face_landmarks.dat --frames_folder ./data/CASIA/ --landmark_folder ./data/CASIA_landmarks/
-  python CASIA_CK+_data_gen.py --dataset_name CASIA --landmark_folder  ./data/CASIA_landmarks/ --output_folder ./data/CASIA_10fold/
-  ```
-  - After generating the preprocessed facial landmark data, generate the facial muscle data as follows:
-  ```python
-  from OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import gen_facial_muscles_data
-  python gen_facial_muscles_data.py --dataset_name CASIA --landmark_data_folder ./data/CASIA_10fold/ --muscle_data_folder ./data/muscle_data/
-  ```
-
 ### Class ProgressiveSpatioTemporalBLNLearner
 Bases: `engine.learners.Learner`
 
@@ -89,9 +16,9 @@ following public methods:
 ProgressiveSpatioTemporalBLNLearner(self, lr, batch_size, optimizer_name, lr_schedule,
                                     checkpoint_after_iter, checkpoint_load_iter, temp_path,
                                     device, num_workers, epochs, experiment_name,
-                                    device_ind, val_batch_size, drop_after_epoch,
+                                    device_indices, val_batch_size, drop_after_epoch,
                                     start_epoch, dataset_name, 
-                                    blocksize, numblocks, numlayers, topology,
+                                    block_size, num_blocks, num_layers, topology,
                                     layer_threshold, block_threshold)
 ```
 
@@ -108,7 +35,7 @@ Constructor parameters:
   Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
 - **checkpoint_load_iter**: *int, default=0*  
   Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
-- **temp_path**: *str, default=''*  
+- **temp_path**: *str, default='temp'*  
   Specifies a path where the algorithm saves the checkpoints and onnx optimized model (if needed).
 - **device**: *{'cpu', 'cuda'}, default='cuda'*  
   Specifies the device to be used.
@@ -118,11 +45,11 @@ Constructor parameters:
   Specifies the number of epochs the training should run for.
 - **experiment_name**: *str, default='pstbln_casia'*  
   String name to attach to checkpoints.
-- **device_ind**: *list, default=[0]*  
+- **device_indices**: *list, default=[0]*  
   List of GPU indices to be used if the device is 'cuda'. 
-- **val_batch_size**: *int, default=256*  
+- **val_batch_size**: *int, default=128*  
   Specifies number of samples to be bundled up in a batch during evaluation. This heavily affects memory usage, adjust according to your system.
-- **drop_after_epoch**: *list, default=[1000]*  
+- **drop_after_epoch**: *list, default=[400]*  
   List of epoch numbers in which the optimizer drops the learning rate.  
 - **start_epoch**: *int, default=0*  
   Specifies the starting epoch number for training.  
@@ -130,9 +57,9 @@ Constructor parameters:
   Specifies the name of dataset that is used for training and evaluation. 
 - **block_size**: *int, default=5*  
   Specifies the number of output channels (or neurons) that are added to each layer of the network at each progression iteration. 
-- **numblocks**: *int, default=100*  
+- **num_blocks**: *int, default=100*  
   Specifies the maximum number of blocks that are added to each layer of the network at each progression iteration. 
-- **numlayers**: *int, default=10*  
+- **num_layers**: *int, default=10*  
   Specifies the maximum number of layers that are built for the network.
 - **topology**: *list, default=[]*  
   Specifies the initial topology of the network. The default is set to [], since the method gets an empty network as input and builds it progressively. 
@@ -154,46 +81,46 @@ ProgressiveSpatioTemporalBLNLearner.fit(self, dataset, val_dataset, logging_path
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
 Parameters:
 - **dataset**: *object*  
-Object that holds the training dataset.
-Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+  Object that holds the training dataset.
+  Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
 - **val_dataset**: *object*
-Object that holds the validation dataset. 
+  Object that holds the validation dataset. 
 - **logging_path**: *str, default=''*  
-Path to save TensorBoard log files and the training log files.
-If set to None or '', TensorBoard logging is disabled and no log file is created. 
+  Path to save TensorBoard log files and the training log files.
+  If set to None or '', TensorBoard logging is disabled and no log file is created. 
 - **silent**: *bool, default=False*  
-If set to True, disables all printing of training progress reports and other information to STDOUT.
+  If set to True, disables all printing of training progress reports and other information to STDOUT.
 - **verbose**: *bool, default=True***  
-If set to True, enables the maximum verbosity.
+  If set to True, enables the maximum verbosity.
 - **momentum**: *float, default=0.9*  
-Specifies the momentum value for optimizer. 
+  Specifies the momentum value for optimizer. 
 - **nesterov**: *bool, default=True***  
-If set to true, the optimizer uses nesterov.  
+  If set to true, the optimizer uses Nesterov's momentum.  
 - **weight_decay**: *float, default=0.0001***  
-Specifies the weight_decay value of the optimizer. 
+  Specifies the weight_decay value of the optimizer. 
 - **monte_carlo_dropout**: *bool, default=True*** 
-If set to True, enables the Monte Carlo Dropout in inference
+  If set to True, enables the Monte Carlo Dropout in inference.
 - **mcdo_repeats**: *int, default=100*** 
-Specifies the number of times that inference is repeated for Monte Carlo Dropout
+  Specifies the number of times that inference is repeated for Monte Carlo Dropout.
 - **train_data_filename**: *str, default='train.npy'*  
-Filename that contains the training data. 
-This file should be contained in the dataset path provided.
-Note that this is a file name, not a path.
+  Filename that contains the training data. 
+  This file should be contained in the dataset path provided.
+  Note that this is a file name, not a path.
 - **train_labels_filename**: *str, default='train_labels.pkl'*  
-Filename of the labels .pkl file. 
-This file should be contained in the dataset path provided.
+  Filename of the labels .pkl file. 
+  This file should be contained in the dataset path provided.
 - **val_data_filename**: *str, default='val.npy'*  
-Filename that contains the validation data.
-This file should be contained in the dataset path provided.
-Note that this is a filename, not a path.
+  Filename that contains the validation data.
+  This file should be contained in the dataset path provided.
+  Note that this is a filename, not a path.
 - **val_labels_filename**: *str, default='val_labels.pkl'*  
-Filename of the validation labels .pkl file.
-This file should be contained in the dataset path provided.
+  Filename of the validation labels .pkl file.
+  This file should be contained in the dataset path provided.
 
 
 #### `ProgressiveSpatioTemporalBLNLearner.eval`
 ```python
-ProgressiveSpatioTemporalBLNLearner.eval(self, val_dataset, epoch, monte_carlo_dropout, 
+ProgressiveSpatioTemporalBLNLearner.eval(self, val_dataset, val_loader, epoch, monte_carlo_dropout, 
                                          mcdo_repeats, silent, verbose,
                                          val_data_filename, val_labels_filename,
                                          save_score, wrong_file, result_file, show_topk)
@@ -206,12 +133,15 @@ Parameters:
 - **val_dataset**: *object*  
   Object that holds the evaluation dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+- **val_loader**: *object, default=None*  
+  Object that holds a Python iterable over the evaluation dataset.
+  Object of `torch.utils.data.DataLoader` class.
 - **epoch**: *int, default=0*  
   The training epoch in which the model is evaluated. 
 - **monte_carlo_dropout**: *bool, default=True*** 
-  If set to True, enables the Monte Carlo Dropout in inference
+  If set to True, enables the Monte Carlo Dropout in inference.
 - **mcdo_repeats**: *int, default=100*** 
-  Specifies the number of times that inference is repeated for Monte Carlo Dropout
+  Specifies the number of times that inference is repeated for Monte Carlo Dropout.
 - **silent**: *bool, default=False*  
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
 - **verbose**: *bool, default=True*  
@@ -244,7 +174,7 @@ This method is used to initialize the imported model and its loss function.
 #### `ProgressiveSpatioTemporalBLNLearner.network_builder`
 ```python
 ProgressiveSpatioTemporalBLNLearner.network_builder(self, dataset, val_dataset, monte_carlo_dropout, 
-                                                    mcdo_repeats, train_data_filename,
+                                                    mcdo_repeats, logging_path, train_data_filename,
                                                     train_labels_filename, val_data_filename,
                                                     val_labels_filename, verbose)
 ```
@@ -257,9 +187,11 @@ Parameters:
   Object that holds the evaluation dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
 - **monte_carlo_dropout**: *bool, default=True*** 
-  If set to True, enables the Monte Carlo Dropout in inference
+  If set to True, enables the Monte Carlo Dropout in inference.
 - **mcdo_repeats**: *int, default=100*** 
-  Specifies the number of times that inference is repeated for Monte Carlo Dropout
+  Specifies the number of times that inference is repeated for Monte Carlo Dropout.
+- **logging_path**: *str, default=''*** 
+  path to save tensorboard log files. If set to None or '', tensorboard logging is disabled.
 - **train_data_filename**: *str, default='train.npy'*  
   Filename that contains the training data. 
   This file should be contained in the dataset path provided.
@@ -287,11 +219,11 @@ It returns the action category as an object of `engine.target.Category` if a pro
 
 Parameters:
 - **facial_landmarks_batch**: *object***  
-  Object of type engine.data.SkeletonSequence.
+  Object of type `engine.data.SkeletonSequence`.
 - **monte_carlo_dropout**: *bool, default=True*** 
-  If set to True, enables the Monte Carlo Dropout in inference
+  If set to True, enables the Monte Carlo Dropout in inference.
 - **mcdo_repeats**: *int, default=100*** 
-  Specifies the number of times that inference is repeated for Monte Carlo Dropout
+  Specifies the number of times that inference is repeated for Monte Carlo Dropout.
 
 #### `ProgressiveSpatioTemporalBLNLearner.save`
 ```python
@@ -311,7 +243,7 @@ Parameters:
   Path to save the model.
 - **model_name**: *str*  
   The file name to be saved. 
-- **verbose**: *bool, default=False*  
+- **verbose**: *bool, default=True*  
   If set to True, prints a message on success.
 
 #### `ProgressiveSpatioTemporalBLNLearner.load`
@@ -327,7 +259,7 @@ Parameters:
   Path of the model to be loaded.
 - **model_name**: *str*  
   The file name to be loaded. 
-- **verbose**: *bool, default=False*  
+- **verbose**: *bool, default=True*  
   If set to True, prints a message on success.
 
 
@@ -354,14 +286,91 @@ Downloads files depending on mode and saves them in the path provided. It suppor
 
 Parameters:
 - **path**: *str, default=None*  
-  Local path to save the files, defaults to self.parent_dir if None.
+  Local path to save the files, defaults to `self.parent_dir` if None.
 - **mode**: *str, default="train_data"*  
   What file to download, can be one of "pretrained", "train_data", "val_data", "test_data"
-- **verbose**: *bool, default=False*  
+- **verbose**: *bool, default=True*  
   Whether to print messages in the console.
-- **url**: *str, default=OpenDR FTP URL*  
+- **url**: *str, default=opendr FTP URL*  
   URL of the FTP server.
 
+
+
+#### Data preparation  
+  Download the [AFEW](https://cs.anu.edu.au/few/AFEW.html) [[1]](https://www.computer.org/csdl/magazine/mu/2012/03/mmu2012030034/13rRUxjQyrW), [[2]](https://dl.acm.org/doi/abs/10.1145/2663204.2666275), and [CK+](https://www.pitt.edu/~emotion/ck-spread.htm) [[3]](https://ieeexplore.ieee.org/abstract/document/5543262), [[4]](https://ieeexplore.ieee.org/abstract/document/840611) and [Oulu-CASIA](https://www.oulu.fi/cmvs/node/41316) [[5]](https://www.sciencedirect.com/science/article/pii/S0262885611000515) datasets. 
+  In order to extract facial landmarks from the images, you need to download a pretrained landmark extractor model. 
+  We used Dlib's landmark extractor which can be downloaded from [here](http://dlib.net/face_landmark_detection.py.html). 
+  Please note that these datasets and the landmark extractor model cannot be used for any commercial purposes. 
+  
+  ##### AFEW data preparation:  
+  AFEW dataset consists of a set of video clips collected from movies with actively moving faces in different illumination and environmental conditions. 
+  The following preprocessing steps are needed to generate the appropriate landmark data for the method. 
+  - Convert the .avi videos to .mp4 format and then extract the video frames using the following function:
+  
+  ```python
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import frame_extractor
+  python frame_extractor.py --video_folder ./data/AFEW_videos/ --frames_folder ./data/AFEW/
+  ```
+  You need to specify the path of the videos as `--video_folder` and the path of the extracted frames data as `--frames_folder`. 
+  
+  - Place the downloaded landmark-extractor model in the data directory and extract the facial landmarks from the extracted frames by running the following script:
+  
+  ```python
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import landmark_extractor
+  python landmark_extractor.py --dataset_name AFEW --shape_predictor ./data/shape_predictor_68_face_landmarks.dat --frames_folder ./data/AFEW/ --landmark_folder ./data/AFEW_landmarks/
+  ```
+  You need to specify the path of the landmark extractor as `--shape_predictor` and the path of the extracted frames and extracted landmarks as `--frames_folder` and `--landmark_folder`. 
+
+ - After extracting the facial landmarks for each category, run the following script for data preprocessing and augmentation: 
+  
+  ```python
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import AFEW_data_gen
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import data_augmentation
+  python AFEW_data_gen.py --landmark_folder  ./data/AFEW_landmarks/ --data_folder ./data/AFEW_data/ 
+  python data_aumentation.py --data_folder ./data/AFEW_data/ --aug_data_folder ./data/AFEW_aug_data/
+  ```
+  The preprocessed augmented data will be saved in the `--aug_data_folder` path. 
+  After generating the preprocessed facial landmark data, generate the facial muscle data as follows:
+  ```python
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import gen_facial_muscles_data
+  python gen_facial_muscles_data.py --dataset_name AFEW --landmark_data_folder ./data/AFEW_aug_data/ --muscle_data_folder ./data/muscle_data/
+  ```
+  
+  
+##### CK+ data preparation:  
+  CK+ dataset consists of a set of image sequences starting from a neutral expression to peak expression and the expressions are performed by different subjects. 
+  We select the first frame and the last three frames (including the peak expression) of each sequence for landmark extraction.
+  In this dataset, only a subset of image sequences are labeled. 
+  The first step in the data preparation is to separate the labeled data for each subject, and place each sample in a folder named by its class label. 
+  - Extract the facial landmarks and generate the preprocessed train and test data for 10-fold cross validation using the following script:
+
+  ```python
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import CASIA_CK+_data_gen
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import landmark_extractor
+  python landmark_extractor.py --dataset_name CK+ --shape_predictor ./data/shape_predictor_68_face_landmarks.dat --frames_folder ./data/CK+/ --landmark_folder ./data/CK+_landmarks/
+  python CASIA_CK+_data_gen.py --dataset_name CK+ --landmark_folder  ./data/CK+_landmarks/ --output_folder ./data/CK+_10fold/
+  ```
+  - After generating the preprocessed facial landmark data, generate the facial muscle data as follows:
+  ```python
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import gen_facial_muscles_data
+  python gen_facial_muscles_data.py --dataset_name CK+ --landmark_data_folder ./data/CK+_10fold/ --muscle_data_folder ./data/muscle_data/
+  ```
+
+##### Oulu-CASIA data preparation:  
+  Oulu-CASIA dataset also consists of a set of image sequences starting from a neutral expression to peak expression and the expressions are performed by different subjects. 
+  We used the image sequences captured by the VIS system under NI illumination and we select the first frame and the last three frames (including the peak expression) of each sequence for landmark extraction. 
+  - Extract the facial landmarks and generate the preprocessed train and test data for 10-fold cross validation using the following script:
+  ```python
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import CASIA_CK+_data_gen
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import landmark_extractor
+  python landmark_extractor.py --dataset_name CASIA --shape_predictor ./data/shape_predictor_68_face_landmarks.dat --frames_folder ./data/CASIA/ --landmark_folder ./data/CASIA_landmarks/
+  python CASIA_CK+_data_gen.py --dataset_name CASIA --landmark_folder  ./data/CASIA_landmarks/ --output_folder ./data/CASIA_10fold/
+  ```
+  - After generating the preprocessed facial landmark data, generate the facial muscle data as follows:
+  ```python
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import gen_facial_muscles_data
+  python gen_facial_muscles_data.py --dataset_name CASIA --landmark_data_folder ./data/CASIA_10fold/ --muscle_data_folder ./data/muscle_data/
+  ```
 
 #### Examples
 
@@ -370,8 +379,8 @@ Parameters:
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
-  from OpenDR.perception.OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
-  from OpenDR.engine.datasets import ExternalDataset
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
+  from opendr.engine.datasets import ExternalDataset
   training_dataset = ExternalDataset(path='./data/AFEW_aug_data', dataset_type='AFEW')
   validation_dataset = ExternalDataset(path='./data/AFEW_aug_data', dataset_type='AFEW')
   
@@ -379,11 +388,12 @@ Parameters:
                                                        batch_size=64, epochs=400,
                                                        checkpoint_after_iter=10, val_batch_size=128,
                                                        dataset_name='AFEW', experiment_name='pstbln_afew',
-                                                       blocksize=5, numblocks=10, numlayers=10, topology=[],
+                                                       block_size=5, num_blocks=10, num_layers=10, topology=[],
                                                        layer_threshold=1e-4, block_threshold=1e-4)
   
   pstbln_learner.network_builder(dataset=training_dataset, val_dataset=validation_dataset,
                                  monte_carlo_dropout=True, mcdo_repeats=100,
+                                 logging_path='',
                                  train_data_filename='train.npy',
                                  train_labels_filename='train_labels.pkl',
                                  val_data_filename="val.npy",
@@ -395,12 +405,12 @@ Parameters:
 * **Inference on a test landmark sequence**
   ```python
   import numpy
-  from OpenDR.perception.OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
   pstbln_learner = ProgressiveSpatioTemporalBLNLearner(temp_path='./parent_dir',
                                                        batch_size=64, epochs=400,
                                                        checkpoint_after_iter=10, val_batch_size=128,
                                                        dataset_name='AFEW', experiment_name='pstbln_afew',
-                                                       blocksize=5, numblocks=10, numlayers=10, topology=[],
+                                                       block_size=5, num_blocks=10, num_layers=10, topology=[],
                                                        layer_threshold=1e-4, block_threshold=1e-4)
   
   # Download the test data and place it in the parent_dir
@@ -412,13 +422,13 @@ Parameters:
 * **Optimization example for a previously trained model.**
   Inference can be run with the trained model after running self.optimize.
   ```python
-  from OpenDR.perception.OpenDR.perception.facial_expression_recognition.landmark_based_facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
+  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
 
   pstbln_learner = ProgressiveSpatioTemporalBLNLearner(temp_path='./parent_dir',
                                                       batch_size=64, epochs=400,
                                                       checkpoint_after_iter=10, val_batch_size=128,
                                                       dataset_name='AFEW', experiment_name='pstbln_afew',
-                                                      blocksize=5, numblocks=10, numlayers=10, topology=[],
+                                                      block_size=5, num_blocks=10, num_layers=10, topology=[],
                                                       layer_threshold=1e-4, block_threshold=1e-4) 
   
   pstbln_learner.load(path='./parent_dir/pretrained_models', file_name='pretrained_pstbln')

@@ -37,8 +37,6 @@ def rmdir(_dir):
         print("Error: %s - %s." % (e.filename, e.strerror))
 
 
-# LOG_PATH_ =
-# os.path.join(".", "tests", "sources", "tools", "perception", "landmark_based_facial_expression_recognition", "logs")
 PATH_ = \
     './tests/sources/tools/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/' \
     'facial_expression_recognition_temp'
@@ -49,7 +47,7 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         print(
-            "\n\n**********************************\nTEST landmark_based_facial_expression_recognition learner \n*****"
+            "\n\n**********************************\nTEST ProgressiveSpatioTemporalBLNLearner \n*****"
             "*****************************")
         cls.temp_dir = PATH_
         cls.logging_path = LOG_PATH_

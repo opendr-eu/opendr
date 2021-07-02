@@ -51,16 +51,16 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
     def __init__(self, lr=1e-1, batch_size=128, optimizer_name='sgd', lr_schedule='',
                  checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path='temp',
                  device='cuda', num_workers=32, epochs=400, experiment_name='pstbln_casia',
-                 device_ind=[0], val_batch_size=128, drop_after_epoch=[400],
+                 device_indices=[0], val_batch_size=128, drop_after_epoch=[400],
                  start_epoch=0, dataset_name='CASIA',
-                 blocksize=5, numblocks=100, numlayers=10, topology=[],
+                 block_size=5, num_blocks=100, num_layers=10, topology=[],
                  layer_threshold=1e-4, block_threshold=1e-4):
         super(ProgressiveSpatioTemporalBLNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                                   checkpoint_after_iter=checkpoint_after_iter,
                                                                   checkpoint_load_iter=checkpoint_load_iter,
                                                                   temp_path=temp_path, device=device)
         self.device = device
-        self.device_ind = device_ind
+        self.device_indices = device_indices
         self.parent_dir = temp_path
         self.epochs = epochs
         self.num_workers = num_workers
@@ -81,9 +81,9 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         self.logging = False
         self.best_acc = 0
         self.start_epoch = start_epoch
-        self.blocksize = blocksize
-        self.numblocks = numblocks
-        self.numlayers = numlayers
+        self.block_size = block_size
+        self.num_blocks = num_blocks
+        self.num_layers = num_layers
         self.topology = topology
         self.layer_threshold = layer_threshold
         self.block_threshold = block_threshold
@@ -92,7 +92,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
             raise ValueError(self.dataset_name +
                              "is not a valid dataset name. Supported datasets: nturgbd_cv, nturgbd_cs, kinetics")
         if self.device == 'cuda':
-            self.output_device = self.device_ind[0] if type(self.device_ind) is list else self.device_ind
+            self.output_device = self.device_indices[0] if type(self.device_indices) is list else self.device_indices
         self.__init_seed(1)
 
     def fit(self, dataset, val_dataset, logging_path='', silent=False, verbose=True,
@@ -148,9 +148,9 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
             self.logging = False
 
         if self.device == 'cuda':
-            if type(self.device_ind) is list:
-                if len(self.device_ind) > 1:
-                    self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
+            if type(self.device_indices) is list:
+                if len(self.device_indices) > 1:
+                    self.model = nn.DataParallel(self.model, device_ids=self.device_indices,
                                                  output_device=self.output_device)
         # set the optimizer
         if self.optimizer_name == 'sgd':
@@ -282,6 +282,8 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         This method is used for evaluating the algorithm on a val dataset.
         :param val_dataset: object that holds the val dataset
         :type val_dataset: ExternalDataset class object or DatasetIterator class object
+        :param val_loader: Object that holds a Python iterable over the evaluation dataset.
+        :type val_loader: `torch.utils.data.DataLoader` class object, optional.
         :param epoch: the number of epochs that the method is trained up to now. Default to 0 when we validate a
         pretrained model.
         :type epoch: int, optional
@@ -447,11 +449,11 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
             if self.logging:
                 shutil.copy2(inspect.getfile(PSTBLN), self.logging_path)
             if self.device == 'cuda':
-                self.model = PSTBLN(dataset_name=self.dataset_name, topology=self.topology, blocksize=self.blocksize,
+                self.model = PSTBLN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.block_size,
                                     cuda_=True).cuda(self.output_device)
                 self.loss = nn.CrossEntropyLoss().cuda(self.output_device)
             else:
-                self.model = PSTBLN(dataset_name=self.dataset_name, topology=self.topology, blocksize=self.blocksize,
+                self.model = PSTBLN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.block_size,
                                     cuda_=False)
                 self.loss = nn.CrossEntropyLoss()
             # print(self.model)
@@ -464,10 +466,10 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         loss_layer_old = 1e+10
         loss_block_old = 1e+10
         loss_layer_new = 1e+10
-        for layer_iter in range(self.numlayers):
+        for layer_iter in range(self.num_layers):
             # add a new layer
             self.topology.append(0)
-            for block_iter in range(self.numblocks):
+            for block_iter in range(self.num_blocks):
                 if verbose:
                     print('######################################################################\n')
                     print('layer.' + str(layer_iter) + '_block.' + str(block_iter))
@@ -631,7 +633,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                           dynamic_axes={'onnx_input': {0: 'n'},  # variable lenght axes
                                         'onnx_output': {0: 'n'}})
 
-    def save(self, path, model_name='', verbose=True):
+    def save(self, path, model_name, verbose=True):
         """
         This method is used to save a trained model.
         Provided with the path and model_name, it saves the model there with a proper format and a .json file
