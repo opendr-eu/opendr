@@ -74,6 +74,9 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         rmdir(os.path.join(cls.temp_dir))
 
     def test_fit(self):
+        print(
+            "\n\n**********************************\nTest STGCN fit function \n*"
+            "*********************************")
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="NTURGBD")
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
         self.stgcn_action_classifier.model = None
@@ -88,6 +91,9 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                          msg="Model parameters did not change after running fit.")
 
     def test_eval(self):
+        print(
+            "\n\n**********************************\nTest STGCN eval function \n*"
+            "*********************************")
         model_saved_path = self.Pretrained_MODEL_PATH_J
         model_name = 'stgcn_nturgbd_cv_joint-49-29400'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
@@ -100,6 +106,9 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                             msg="Eval results contains empty list.")
 
     def test_infer(self):
+        print(
+            "\n\n**********************************\nTest STGCN infer function \n*"
+            "*********************************")
         test_data = np.load(self.Test_DATASET_PATH)[0:1]
         model_saved_path = self.Pretrained_MODEL_PATH_J
         model_name = 'stgcn_nturgbd_cv_joint-49-29400'
@@ -109,6 +118,9 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertIsNotNone(category.confidence, msg="The predicted confidence score is None")
 
     def test_save_load(self):
+        print(
+            "\n\n**********************************\nTest STGCN save_load function \n*"
+            "*********************************")
         self.stgcn_action_classifier.model = None
         self.stgcn_action_classifier.ort_session = None
         self.stgcn_action_classifier.init_model()
@@ -122,6 +134,9 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         rmdir(os.path.join(self.temp_dir, self.experiment_name))
 
     def test_save_load_onnx(self):
+        print(
+            "\n\n**********************************\nTest STGCN saveload ONNX function \n*"
+            "*********************************")
         self.stgcn_action_classifier.model = None
         self.stgcn_action_classifier.ort_session = None
         self.stgcn_action_classifier.init_model()
@@ -137,6 +152,9 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.stgcn_action_classifier.ort_session = None
 
     def test_optimize(self):
+        print(
+            "\n\n**********************************\nTest STGCN optimize function \n*"
+            "*********************************")
         model_saved_path = self.Pretrained_MODEL_PATH_J
         model_name = 'stgcn_nturgbd_cv_joint-49-29400'
         self.stgcn_action_classifier.model = None
