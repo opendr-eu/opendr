@@ -89,47 +89,46 @@ SpatioTemporalGCNLearner.fit(self, dataset, val_dataset, logging_path, silent, v
                              train_labels_filename, val_data_filename,
                              val_labels_filename, skeleton_data_type)
 ```
-
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
 Parameters:
-  - **dataset**: *object*  
-    Object that holds the training dataset.
-    Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-  - **val_dataset**: *object*
-    Object that holds the validation dataset. 
-  - **logging_path**: *str, default=''*  
-    Path to save TensorBoard log files and the training log files.
-    If set to None or '', TensorBoard logging is disabled and no log file is created. 
-  - **silent**: *bool, default=False*  
-    If set to True, disables all printing of training progress reports and other information to STDOUT.
-  - **verbose**: *bool, default=True***  
-    If set to True, enables the maximum verbosity.
-  - **momentum**: *float, default=0.9*  
-    Specifies the momentum value for optimizer. 
-  - **nesterov**: *bool, default=True***  
-    If set to true, the optimizer uses nesterov.  
-  - **weight_decay**: *float, default=0.0001***  
-    Specifies the weight_decay value of the optimizer. 
-  - **train_data_filename**: *str, default='train_joints.npy'*  
-    Filename that contains the training data. 
-    This file should be contained in the dataset path provided.
-    Note that this is a file name, not a path.
-  - **train_labels_filename**: *str, default='train_labels.pkl'*  
-    Filename of the labels .pkl file. 
-    This file should be contained in the dataset path provided.
-  - **val_data_filename**: *str, default='val_joints.npy'*  
-    Filename that contains the validation data.
-    This file should be contained in the dataset path provided.
-    Note that this is a filename, not a path.
-  - **val_labels_filename**: *str, default='val_labels.pkl'*  
-    Filename of the validation labels .pkl file.
-    This file should be contained in the dataset path provided.
-  - **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*  
-    The data stream that should be used for training and evaluation. 
-    
+- **dataset**: *object*  
+  Object that holds the training dataset.
+  Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+- **val_dataset**: *object*
+  Object that holds the validation dataset. 
+- **logging_path**: *str, default=''*  
+  Path to save TensorBoard log files and the training log files.
+  If set to None or '', TensorBoard logging is disabled and no log file is created. 
+- **silent**: *bool, default=False*  
+  If set to True, disables all printing of training progress reports and other information to STDOUT.
+- **verbose**: *bool, default=True***  
+  If set to True, enables the maximum verbosity.
+- **momentum**: *float, default=0.9*  
+  Specifies the momentum value for optimizer. 
+- **nesterov**: *bool, default=True***  
+  If set to true, the optimizer uses Nesterov's momentum.  
+- **weight_decay**: *float, default=0.0001***  
+  Specifies the weight_decay value of the optimizer. 
+- **train_data_filename**: *str, default='train_joints.npy'*  
+  Filename that contains the training data. 
+  This file should be contained in the dataset path provided.
+  Note that this is a file name, not a path.
+- **train_labels_filename**: *str, default='train_labels.pkl'*  
+  Filename of the labels .pkl file. 
+  This file should be contained in the dataset path provided.
+- **val_data_filename**: *str, default='val_joints.npy'*  
+  Filename that contains the validation data.
+  This file should be contained in the dataset path provided.
+  Note that this is a filename, not a path.
+- **val_labels_filename**: *str, default='val_labels.pkl'*  
+  Filename of the validation labels .pkl file.
+  This file should be contained in the dataset path provided.
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*  
+  The data stream that should be used for training and evaluation. 
+
 #### `SpatioTemporalGCNLearner.eval`
 ```python
-SpatioTemporalGCNLearner.eval(self, val_dataset, epoch, silent, verbose,
+SpatioTemporalGCNLearner.eval(self, val_dataset, val_loader, epoch, silent, verbose,
                               val_data_filename, val_labels_filename, skeleton_data_type,
                               save_score, wrong_file, result_file, show_topk)
 ```
@@ -140,6 +139,9 @@ Parameters:
 - **val_dataset**: *object*  
   Object that holds the evaluation dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+- **val_loader**: *object, default=None*  
+  Object that holds a Python iterable over the evaluation dataset.
+  Object of `torch.utils.data.DataLoader` class.
 - **epoch**: *int, default=0*  
   The training epoch in which the model is evaluated. 
 - **silent**: *bool, default=False*  
@@ -478,44 +480,44 @@ ProgressiveSpatioTemporalGCNLearner.fit(self, dataset, val_dataset, logging_path
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
 Parameters:
 - **dataset**: *object*  
-Object that holds the training dataset.
-Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+  Object that holds the training dataset.
+  Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
 - **val_dataset**: *object*
-Object that holds the validation dataset. 
+  Object that holds the validation dataset. 
 - **logging_path**: *str, default=''*  
-Path to save TensorBoard log files and the training log files.
-If set to None or '', TensorBoard logging is disabled and no log file is created. 
+  Path to save TensorBoard log files and the training log files.
+  If set to None or '', TensorBoard logging is disabled and no log file is created. 
 - **silent**: *bool, default=False*  
-If set to True, disables all printing of training progress reports and other information to STDOUT.
+  If set to True, disables all printing of training progress reports and other information to STDOUT.
 - **verbose**: *bool, default=True***  
-If set to True, enables the maximum verbosity.
+  If set to True, enables the maximum verbosity.
 - **momentum**: *float, default=0.9*  
-Specifies the momentum value for optimizer. 
+  Specifies the momentum value for optimizer. 
 - **nesterov**: *bool, default=True***  
-If set to true, the optimizer uses nesterov.  
+  If set to true, the optimizer uses Nesterov's momentum.  
 - **weight_decay**: *float, default=0.0001***  
-Specifies the weight_decay value of the optimizer. 
+  Specifies the weight_decay value of the optimizer. 
 - **train_data_filename**: *str, default='train_joints.npy'*  
-Filename that contains the training data. 
-This file should be contained in the dataset path provided.
-Note that this is a file name, not a path.
+  Filename that contains the training data. 
+  This file should be contained in the dataset path provided.
+  Note that this is a file name, not a path.
 - **train_labels_filename**: *str, default='train_labels.pkl'*  
-Filename of the labels .pkl file. 
-This file should be contained in the dataset path provided.
+  Filename of the labels .pkl file. 
+  This file should be contained in the dataset path provided.
 - **val_data_filename**: *str, default='val_joints.npy'*  
-Filename that contains the validation data.
-This file should be contained in the dataset path provided.
-Note that this is a filename, not a path.
+  Filename that contains the validation data.
+  This file should be contained in the dataset path provided.
+  Note that this is a filename, not a path.
 - **val_labels_filename**: *str, default='val_labels.pkl'*  
-Filename of the validation labels .pkl file.
-This file should be contained in the dataset path provided.
+  Filename of the validation labels .pkl file.
+  This file should be contained in the dataset path provided.
 - **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*  
-The data stream that should be used for training and evaluation. 
+  The data stream that should be used for training and evaluation. 
 
 
 #### `ProgressiveSpatioTemporalGCNLearner.eval`
 ```python
-ProgressiveSpatioTemporalGCNLearner.eval(self, val_dataset, epoch, silent, verbose,
+ProgressiveSpatioTemporalGCNLearner.eval(self, val_dataset, val_loader, epoch, silent, verbose,
                                          val_data_filename, val_labels_filename, skeleton_data_type,
                                          save_score, wrong_file, result_file, show_topk)
 ```
@@ -527,6 +529,9 @@ Parameters:
 - **val_dataset**: *object*  
   Object that holds the evaluation dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+- **val_loader**: *object, default=None*  
+  Object that holds a Python iterable over the evaluation dataset.
+  Object of `torch.utils.data.DataLoader` class.
 - **epoch**: *int, default=0*  
   The training epoch in which the model is evaluated. 
 - **silent**: *bool, default=False*  
