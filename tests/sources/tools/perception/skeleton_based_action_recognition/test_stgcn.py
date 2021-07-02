@@ -89,7 +89,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertFalse(torch.equal(m, list(self.stgcn_action_classifier.model.parameters())[0]),
                          msg="Model parameters did not change after running fit.")
 
-    '''def test_eval(self):
+    def test_eval(self):
         print(
             "\n\n**********************************\nTest STGCN eval function \n*"
             "*********************************")
@@ -164,7 +164,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                              "ort_session is None after optimizing the pretrained model.")
         # Cleanup
         self.stgcn_action_classifier.ort_session = None
-        rmfile(os.path.join(self.temp_dir, self.experiment_name))'''
+        rmfile(os.path.join(self.temp_dir, self.experiment_name))
 
 
 if __name__ == "__main__":
