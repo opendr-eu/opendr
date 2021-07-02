@@ -187,5 +187,5 @@ Parameters:
   URL of the FTP server.
   
 #### References
-<a name="ssd-1" href="https://arxiv.org/abs/1804.02767">[1]</a> YOLOv3: An Incremental Improvement,
+<a name="yolo-1" href="https://arxiv.org/abs/1804.02767">[1]</a> YOLOv3: An Incremental Improvement,
 [arXiv](https://arxiv.org/abs/1804.02767).
