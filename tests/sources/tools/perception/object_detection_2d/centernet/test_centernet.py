@@ -45,7 +45,7 @@ class TestCenterNetDetectorLearner(unittest.TestCase):
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "centernet", "centernet_temp")
         cls.detector = CenterNetDetectorLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
-                                                checkpoint_after_iter=0, lr=1e-4)
+                                                checkpoint_after_iter=0, lr=1e-4, img_size=320)
         # Download all required files for testing
         cls.detector.download(mode="pretrained")
         cls.detector.download(mode="images")

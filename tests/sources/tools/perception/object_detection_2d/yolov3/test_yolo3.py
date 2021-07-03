@@ -45,7 +45,7 @@ class TestYOLOv3DetectorLearner(unittest.TestCase):
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "yolov3", "yolov3_temp")
         cls.detector = YOLOv3DetectorLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
-                                             checkpoint_after_iter=0, lr=1e-4)
+                                             checkpoint_after_iter=0, lr=1e-4, num_workers=1, img_size=320)
         # Download all required files for testing
         cls.detector.download(mode="pretrained")
         cls.detector.download(mode="images")
@@ -62,7 +62,7 @@ class TestYOLOv3DetectorLearner(unittest.TestCase):
     def test_fit(self):
         training_dataset = WiderPersonDataset(root=os.path.join(self.temp_dir, "test_data"), splits=['train'])
         m = list(self.detector._model.collect_params().values())[1].data().asnumpy().copy()
-        self.detector.fit(dataset=training_dataset, silent=True)
+        self.detector.fit(dataset=training_dataset, verbose=True)
         n = list(self.detector._model.collect_params().values())[1].data().asnumpy()
         self.assertFalse(np.array_equal(m, n),
                          msg="Model parameters did not change after running fit.")

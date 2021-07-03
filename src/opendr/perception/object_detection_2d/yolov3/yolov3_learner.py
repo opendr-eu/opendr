@@ -87,7 +87,11 @@ class YOLOv3DetectorLearner(Learner):
             raise ValueError(self.backbone + " backbone is not supported.")
 
         if self.device == 'cuda':
-            self.ctx = mx.gpu(0)
+            if mx.context.num_gpus() > 0:
+                self.ctx = mx.gpu(0)
+            else:
+                print('No GPU found, using CPU...')
+                self.ctx = mx.cpu()
         else:
             self.ctx = mx.cpu()
 
@@ -103,7 +107,7 @@ class YOLOv3DetectorLearner(Learner):
             self._model.initialize()
         self.classes = ['None']
 
-    def create_model(self, classes):
+    def __create_model(self, classes):
         """
         Base method for detector creation, based on gluoncv implementation.
         :param classes: list of classes contained in the training set
@@ -145,7 +149,7 @@ class YOLOv3DetectorLearner(Learner):
         # get dataset in compatible format
         dataset = self.__prepare_dataset(dataset)
 
-        self.create_model(dataset.classes)
+        self.__create_model(dataset.classes)
         if verbose:
             print('Saving models as {}'.format(save_prefix))
 
@@ -179,7 +183,10 @@ class YOLOv3DetectorLearner(Learner):
 
         # get net & set device
         if self.device == 'cuda':
-            ctx = [mx.gpu(0)]
+            if mx.context.num_gpus() > 0:
+                ctx = [mx.gpu(0)]
+            else:
+                ctx = [mx.cpu()]
         else:
             ctx = [mx.cpu()]
         if verbose:
@@ -345,7 +352,10 @@ class YOLOv3DetectorLearner(Learner):
 
         # TODO: multi-gpu?
         if self.device == 'cuda':
-            ctx = [mx.gpu(0)]
+            if mx.context.num_gpus() > 0:
+                ctx = [mx.gpu(0)]
+            else:
+                ctx = [mx.cpu()]
         else:
             ctx = [mx.cpu()]
         print(self.device, ctx)
@@ -507,7 +517,7 @@ class YOLOv3DetectorLearner(Learner):
             metadata = json.load(metadata_file)
 
         self.backbone = metadata["backbone"]
-        self.create_model(metadata["classes"])
+        self.__create_model(metadata["classes"])
         self._model.load_parameters(os.path.join(path, metadata["model_paths"][0]))
         self._model.collect_params().reset_ctx(self.ctx)
         self._model.hybridize()

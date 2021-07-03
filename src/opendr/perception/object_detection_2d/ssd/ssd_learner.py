@@ -83,7 +83,10 @@ class SingleShotDetectorLearner(Learner):
                                                                     self.supported_backbones[self.backbone]))
 
         if self.device == 'cuda':
-            self.ctx = mx.gpu(0)
+            if mx.context.num_gpus() > 0:
+                self.ctx = mx.gpu(0)
+            else:
+                self.ctx = mx.cpu()
         else:
             self.ctx = mx.cpu()
 
@@ -156,7 +159,7 @@ class SingleShotDetectorLearner(Learner):
             metadata = json.load(f)
 
         self.backbone = metadata["backbone"]
-        self.create_model(metadata["classes"])
+        self.__create_model(metadata["classes"])
 
         self._model.load_parameters(os.path.join(path, metadata["model_paths"][0]))
         self._model.collect_params().reset_ctx(self.ctx)
@@ -248,7 +251,7 @@ class SingleShotDetectorLearner(Learner):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def create_model(self, classes):
+    def __create_model(self, classes):
         """
         Base method for detector creation, based on gluoncv implementation.
         :param classes: list of classes contained in the training set
@@ -293,7 +296,7 @@ class SingleShotDetectorLearner(Learner):
         dataset = self.__prepare_dataset(dataset)
 
         # set save dir for checkpoint saving
-        self.create_model(dataset.classes)
+        self.__create_model(dataset.classes)
         if verbose:
             print("Saving models as: {}".format(save_prefix))
 
@@ -317,7 +320,10 @@ class SingleShotDetectorLearner(Learner):
         # set device
         # NOTE: multi-gpu a little bugged
         if self.device == 'cuda':
-            ctx = [mx.gpu(0)]
+            if mx.context.num_gpus() > 0:
+                ctx = [mx.gpu(0)]
+            else:
+                ctx = [mx.cpu()]
         else:
             ctx = [mx.cpu()]
 
@@ -464,7 +470,10 @@ class SingleShotDetectorLearner(Learner):
         autograd.set_training(False)
         # NOTE: multi-gpu is a little bugged
         if self.device == 'cuda':
-            ctx = [mx.gpu(0)]
+            if mx.context.num_gpus() > 0:
+                ctx = [mx.gpu(0)]
+            else:
+                ctx = [mx.cpu()]
         else:
             ctx = [mx.cpu()]
         print(self.device, ctx)
