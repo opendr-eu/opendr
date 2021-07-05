@@ -22,8 +22,8 @@ from torch import nn
 
 from opendr.perception.object_detection_2d.detr.algorithm.util import box_ops
 from opendr.perception.object_detection_2d.detr.algorithm.util.misc import (NestedTensor, nested_tensor_from_tensor_list,
-                       accuracy, get_world_size, interpolate,
-                       is_dist_avail_and_initialized)
+                                                                            accuracy, get_world_size, interpolate,
+                                                                            is_dist_avail_and_initialized)
 
 from .backbone import build_backbone
 from .matcher import build_matcher
@@ -34,6 +34,7 @@ from .transformer import build_transformer
 
 class DETR(nn.Module):
     """ This is the DETR module that performs object detection """
+
     def __init__(self, backbone, transformer, num_classes, num_queries, aux_loss=False):
         """ Initializes the model.
         Parameters:
@@ -100,6 +101,7 @@ class SetCriterion(nn.Module):
         1) we compute hungarian assignment between ground truth boxes and the outputs of the model
         2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
     """
+
     def __init__(self, num_classes, matcher, weight_dict, eos_coef, losses):
         """ Create the criterion.
         Parameters:
@@ -367,6 +369,7 @@ def build(args):
 
     return model, criterion, postprocessors
 
+
 def build_c(args):
     # the `num_classes` naming here is somewhat misleading.
     # it indeed corresponds to `max_obj_id + 1`, where max_obj_id
@@ -399,6 +402,7 @@ def build_c(args):
     criterion.to(device)
 
     return criterion
+
 
 def build_pp(args):
     # the `num_classes` naming here is somewhat misleading.

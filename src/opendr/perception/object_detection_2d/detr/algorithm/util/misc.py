@@ -482,9 +482,11 @@ def interpolate(input, size=None, scale_factor=None, mode="nearest", align_corne
     else:
         return torchvision.ops.misc.interpolate(input, size, scale_factor, mode, align_corners)
 
+
 class Struct:
     def __init__(self, **entries):
         self.__dict__.update(entries)
+
 
 def load_config(model_config_path="configs/model_config.yaml"):
     with open(model_config_path) as file:

@@ -148,6 +148,7 @@ class BoundingBox(Target):
     This target is used for 2D Object Detection.
     A bounding box is described by the left-top corner and its width and height.
     """
+
     def __init__(
         self,
         name,
@@ -186,26 +187,28 @@ class BoundingBox(Target):
             ], dtype=np.float32)
 
         return result
-    
+
     def coco(self, with_confidence=True):
         result = {}
         result['bbox'] = [self.left, self.top, self.width, self.height]
         result['category_id'] = self.name
         result['area'] = self.width * self.height
         return result
-        
+
     def __repr__(self):
         return "BoundingBox " + str(self)
 
     def __str__(self):
         return str(self.mot())
-    
+
+
 class CocoBoundingBox(BoundingBox):
     """
     This target is used for 2D Object Detection with COCO format targets.
     A bounding box is described by the left-top corner and its width and height.
     Also, a segmentation of the target is returned if available.
     """
+
     def __init__(
         self,
         name,
@@ -218,12 +221,12 @@ class CocoBoundingBox(BoundingBox):
         iscrowd=0,
         score=0,
     ):
-        super().__init__(name=name, left=left, top=top, width=width, 
+        super().__init__(name=name, left=left, top=top, width=width,
                          height=height, score=score)
         self.segmentation = segmentation
         self.iscrowd = iscrowd
         self.area = area
-    
+
     def coco(self, with_confidence=True):
         result = {}
         result['bbox'] = [self.left, self.top, self.width, self.height]
@@ -237,7 +240,7 @@ class CocoBoundingBox(BoundingBox):
         if with_confidence:
             result['confidence'] = self.confidence
         return result
-        
+
     def __repr__(self):
         return "BoundingBox " + str(self)
 
@@ -250,6 +253,7 @@ class BoundingBoxList(Target):
     This target is used for 2D Object Detection.
     A bounding box is described by the left-top corner and its width and height.
     """
+
     def __init__(
         self,
         boxes,
@@ -259,11 +263,11 @@ class BoundingBoxList(Target):
         self.data = boxes
         self.image_id = image_id
         self.confidence = np.mean([box.confidence for box in self.data])
-        
+
     @staticmethod
     def from_coco(boxes_coco, image_id=0):
         count = len(boxes_coco)
-        
+
         boxes = []
         for i in range(count):
             if 'segmentation' in boxes_coco[i]:
@@ -297,17 +301,17 @@ class BoundingBoxList(Target):
         ])
 
         return result
-    
+
     def coco(self, with_confidence=True):
         result = []
         for box in self.data:
-            result.append(box.coco(with_confidence))   
+            result.append(box.coco(with_confidence))
         return result
-    
+
     @property
     def boxes(self):
         return self.data
-    
+
     def image_id(self):
         return self.image_id
 

@@ -48,24 +48,24 @@ from PIL import Image as im
 
 class DetrLearner(Learner):
     def __init__(
-        self,
-        model_config_path=os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            "algorithm/configs/model_config.yaml"
-            ),
-        iters=10,
-        lr=1e-4,
-        batch_size=1,
-        optimizer="adamw",
-        backbone="resnet50",
-        checkpoint_after_iter=0,
-        checkpoint_load_iter=0,
-        temp_path="temp",
-        device="cuda",
-        threshold=0.7,
-        num_classes=91,
-        return_segmentations=False,
-        ):
+            self,
+            model_config_path=os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                "algorithm/configs/model_config.yaml"
+                ),
+            iters=10,
+            lr=1e-4,
+            batch_size=1,
+            optimizer="adamw",
+            backbone="resnet50",
+            checkpoint_after_iter=0,
+            checkpoint_load_iter=0,
+            temp_path="temp",
+            device="cuda",
+            threshold=0.7,
+            num_classes=91,
+            return_segmentations=False,
+            ):
 
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(DetrLearner, self).__init__(
@@ -86,8 +86,8 @@ class DetrLearner(Learner):
         self.args.backbone = self.backbone
         self.args.device = self.device
         self.args.num_classes = num_classes
-        self.args.dataset_file = "coco"        
-        
+        self.args.dataset_file = "coco"
+
         if return_segmentations:
             self.args.masks = True
             self.args.dataset_file = "coco_panoptic"
@@ -133,7 +133,7 @@ class DetrLearner(Learner):
     def save(self, path, verbose=False):
         """
         Method for saving the current model in the path provided.
-        
+
         Parameters
         ----------
         path : str
@@ -141,7 +141,7 @@ class DetrLearner(Learner):
             will be created.
         verbose : bool, optional
             Enables the maximum verbosity. The default is False.
-            
+
         Raises
         ------
         UserWarning
@@ -151,11 +151,11 @@ class DetrLearner(Learner):
         -------
         bool
             If True, model was saved was successfully.
-            
+
         """
         if self.model is None and self.ort_session is None:
             raise UserWarning("No model is loaded, cannot save.")
-            
+
         folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
         # Also extract folder name without any extension if extension is erroneously provided
         folder_name_no_ext = folder_name.split(sep='.')[0]
@@ -170,13 +170,13 @@ class DetrLearner(Learner):
         full_path_to_model_folder = path_no_folder_name + folder_name_no_ext
         os.makedirs(full_path_to_model_folder, exist_ok=True)
 
-
         if not os.path.exists(path):
             os.makedirs(path)
-        
+
         model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
-                          "inference_params": {'threshold' : self.threshold}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
-            
+                          "inference_params": {'threshold': self.threshold}, "optimized": None, "optimizer_info": {},
+                          "backbone": self.backbone}
+
         if self.ort_session is None:
             model_metadata["model_paths"] = [folder_name_no_ext + ".pth"]
             model_metadata["optimized"] = False
@@ -221,16 +221,16 @@ class DetrLearner(Learner):
 
         """
         model_name, _, _ = self.__extract_trailing(path)  # Trailing folder name from the path provided
-        
+
         if os.path.exists(os.path.join(path, model_name + ".json")):
             with open(os.path.join(path, model_name + ".json")) as metadata_file:
                 metadata = json.load(metadata_file)
             self.threshold = metadata['inference_params']['threshold']
         else:
             raise UserWarning('No ' + os.path.join(path, model_name + ".json") + ' found. Please have a check')
-        
+
         model_path = os.path.join(path, metadata['model_paths'][0])
-        
+
         if metadata['optimized']:
             self.ort_session = ort.InferenceSession(model_path)
             print("Loaded ONNX model.")
@@ -448,9 +448,9 @@ class DetrLearner(Learner):
                     self.model, self.criterion, self.postprocessors,
                     data_loader_val, base_ds, device, self.temp_path,
                     verbose=verbose, silent=silent)
-        
+
         # End of code copied from https://github.com/facebookresearch/detr/blob/master/main.py
-        
+
             if logging:
                 for k, v in train_stats.items():
                     if isinstance(v, list):
@@ -464,10 +464,10 @@ class DetrLearner(Learner):
 
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
-        
+
         if logging:
             writer.close()
-        
+
         if not silent:
             print('Training time {}'.format(total_time_str))
         if val_dataset is not None:
@@ -535,12 +535,12 @@ class DetrLearner(Learner):
                                      sampler=sampler_val, drop_last=False,
                                      collate_fn=utils.collate_fn,
                                      num_workers=self.args.num_workers)
-        
+
         if isinstance(dataset, ExternalDataset):
             base_ds = get_coco_api_from_dataset(dataset_val)
         else:
             base_ds = None
-            
+
         test_stats, _ = evaluate(
                 self.model, self.criterion, self.postprocessors,
                 data_loader_val, base_ds, device,
@@ -569,10 +569,10 @@ class DetrLearner(Learner):
         if not isinstance(image, Image):
             image = Image(image)
         img = im.fromarray(image.numpy())
-        
-        scores, boxes, segmentations = detect(img, self.infer_transform, self.model, 
-                                              self.postprocessors, self.device, 
-                                              self.threshold, self.ort_session, 
+
+        scores, boxes, segmentations = detect(img, self.infer_transform, self.model,
+                                              self.postprocessors, self.device,
+                                              self.threshold, self.ort_session,
                                               self.args.masks)
 
         boxlist = []
@@ -616,7 +616,7 @@ class DetrLearner(Learner):
         if self.ort_session is not None:
             print("Model is already optimized in ONNX.")
             return False
-            
+
         if self.args.masks:
             print("Optimization not yet implemented if return_segmentations is True")
             return False
@@ -678,7 +678,7 @@ class DetrLearner(Learner):
         Raises
         ------
         UserWarning
-            In case the current backbone is not supported, i.e. it is not 
+            In case the current backbone is not supported, i.e. it is not
             resnet50 or resnet101, a UserWarning is raised.
 
         Returns
@@ -689,7 +689,7 @@ class DetrLearner(Learner):
         valid_modes = ["weights", "pretrained", "test_data"]
         if mode not in valid_modes:
             raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
-        
+
         if path is None:
             path = self.temp_path
 
@@ -701,21 +701,21 @@ class DetrLearner(Learner):
             path = os.path.join(path, "detr_default")
             if not os.path.exists(path):
                 os.makedirs(path)
-            
+
             torch.hub.set_dir(path)
-            
+
             if mode == "pretrained":
                 pretrained = True
             else:
                 pretrained = False
-            
+
             supportedBackbones = ['resnet50', 'resnet101']
             if self.backbone in supportedBackbones:
                 model_name = 'detr_{}'.format(self.backbone)
             else:
                 raise UserWarning(
                     "Backbone {} does not support download modes".format(
-                        self.backbone) + "\"pretrained\" and \"weights\"./n" + 
+                        self.backbone) + "\"pretrained\" and \"weights\"./n" +
                     "Supported backbones are: {}".format(supportedBackbones)
                     )
             if self.args.dilation:
@@ -751,10 +751,10 @@ class DetrLearner(Learner):
                         out_features=self.args.num_classes+1)
                 self.args.dataset_file = 'coco'
 
-            self.ort_session = None            
+            self.ort_session = None
 
             device = torch.device(self.device)
-            
+
             self.model.to(device)
             self.model_without_ddp = self.model
 
@@ -764,20 +764,20 @@ class DetrLearner(Learner):
 
             self.n_parameters = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         elif mode == "test_data":
-            url=OPENDR_SERVER_URL + "perception/object_detection_2d/detr/nano_coco/"
+            url = OPENDR_SERVER_URL + "perception/object_detection_2d/detr/nano_coco/"
             if not os.path.exists(os.path.join(path, "nano_coco")):
                 os.makedirs(os.path.join(path, "nano_coco"))
-            
+
             if not os.path.exists(os.path.join(path, "nano_coco", "image")):
                 os.makedirs(os.path.join(path, "nano_coco", "image"))
-            
+
             # Download annotation file
             file_url = os.path.join(url, "instances.json")
             urlretrieve(file_url, os.path.join(path, "nano_coco", "instances.json"))
             # Download test image
             file_url = os.path.join(url, "image", "000000391895.jpg")
             urlretrieve(file_url, os.path.join(path, "nano_coco", "image", "000000391895.jpg"))
-    
+
     def __create_criterion(self):
         """
         Internal model for creating the criterion.
@@ -902,7 +902,7 @@ class DetrLearner(Learner):
         if isinstance(dataset, ExternalDataset):
             if dataset.dataset_type.lower() not in ["coco", "coco_panoptic"]:
                 raise UserWarning("dataset_type must be \"COCO\" or \"COCO_PANOPTIC\"")
-            
+
             if dataset.dataset_type.lower() == "coco_panoptic":
                 self.arg.dataset_file = "coco_panoptic"
 
@@ -926,11 +926,11 @@ class DetrLearner(Learner):
             return build_dataset(images_folder, annotations_folder,
                                  annotations_file, image_set, self.args.masks,
                                  dataset.dataset_type.lower())
-        
-        # Create Map function for converting (Image, BoundingboxList) to detr format 
+
+        # Create Map function for converting (Image, BoundingboxList) to detr format
         map_function = map_bounding_box_list_to_coco(image_set, self.args.masks)
         return MappedDatasetIterator(dataset, map_function)
-    
+
     @staticmethod
     def __extract_trailing(path):
         """

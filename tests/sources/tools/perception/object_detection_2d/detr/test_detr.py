@@ -57,23 +57,21 @@ class TestDetrLearner(unittest.TestCase):
                                   temp_path=cls.temp_dir,
                                   backbone=cls.model_backbone,
                                   device=DEVICE)
-        
+
         cls.learner.download()
-        
+
         print("Model downloaded", file=sys.stderr)
-        
+
         cls.learner.download(mode="test_data")
-        
+
         print("Data downloaded", file=sys.stderr)
-        
+
         cls.dataset_path = os.path.join(cls.temp_dir, "nano_coco")
-        
         cls.dataset = ExternalDataset(
-            cls.dataset_path, 
+            cls.dataset_path,
             "coco"
         )
 
-        
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
@@ -91,21 +89,21 @@ class TestDetrLearner(unittest.TestCase):
         self.learner.model = None
         self.learner.ort_session = None
         self.learner.download()
-        
+
         m = list(self.learner.model.parameters())[0].clone()
-        
+
         self.learner.fit(
             self.dataset,
-            annotations_folder="", 
-            train_annotations_file="instances.json", 
-            train_images_folder="image", 
+            annotations_folder="",
+            train_annotations_file="instances.json",
+            train_images_folder="image",
             verbose=True
         )
-        
+
         self.assertFalse(torch.equal(m, list(self.learner.model.parameters())[0]),
                          msg="Model parameters did not change after running fit.")
-        
-         # Cleanup
+
+        # Cleanup
         warnings.simplefilter("default", ResourceWarning)
         warnings.simplefilter("default", DeprecationWarning)
 
@@ -115,19 +113,19 @@ class TestDetrLearner(unittest.TestCase):
         # version)
         warnings.simplefilter("ignore", ResourceWarning)
         warnings.simplefilter("ignore", DeprecationWarning)
-        
+
         self.learner.model = None
         self.learner.ort_session = None
-        
+
         self.learner.download()
-        
+
         results_dict = self.learner.eval(
             self.dataset,
             images_folder='image',
             annotations_folder='',
             annotations_file='instances.json',
         )
-        
+
         self.assertNotEqual(len(results_dict), 0,
                             msg="Eval results dictionary contains empty list.")
         # Cleanup
@@ -137,31 +135,31 @@ class TestDetrLearner(unittest.TestCase):
     def test_infer(self):
         self.learner.model = None
         self.learner.ort_session = None
-        
+
         self.learner.download()
-        
+
         image_path = os.path.join(
-            self.dataset_path, 
+            self.dataset_path,
             "image",
             "000000391895.jpg"
             )
-        
+
         image = Image.open(image_path)
-        
+
         result = self.learner.infer(image)
-        
+
         self.assertGreater(len(result), 0)
 
     def test_save(self):
         self.learner.model = None
         self.learner.ort_session = None
-        
+
         model_dir = os.path.join(self.temp_dir, "test_model")
-        
+
         self.learner.download()
-        
+
         self.learner.save(model_dir)
-        
+
         starting_param_1 = list(self.learner.model.parameters())[0].clone()
 
         learner2 = DetrLearner(
@@ -173,9 +171,9 @@ class TestDetrLearner(unittest.TestCase):
 
         new_param = list(learner2.model.parameters())[0].clone()
         self.assertTrue(torch.equal(starting_param_1, new_param))
-        
+
         rmdir(model_dir)
-        
+
     def test_save_load(self):
         self.learner.model = None
         self.learner.ort_session = None
@@ -186,14 +184,14 @@ class TestDetrLearner(unittest.TestCase):
         self.assertIsNotNone(self.learner.model, "model is None after loading pth model.")
         # Cleanup
         rmdir(os.path.join(self.temp_dir, "test_model"))
-        
+
     def test_save_load_onnx(self):
         # ONNX will issue TracerWarnings, but these can be ignored safely if
-        # because we use this function to create tensors out of constant 
+        # because we use this function to create tensors out of constant
         # variables that are the same every time we call this function.
         warnings.simplefilter("ignore",  TracerWarning)
         warnings.simplefilter("ignore",  RuntimeWarning)
-        
+
         self.learner.model = None
         self.learner.ort_session = None
         self.learner.download()
@@ -207,17 +205,17 @@ class TestDetrLearner(unittest.TestCase):
         rmdir(os.path.join(self.temp_dir, "test_model"))
         warnings.simplefilter("default",  TracerWarning)
         warnings.simplefilter("default",  RuntimeWarning)
-        
+
     def test_optimize(self):
         # ONNX will issue TracerWarnings, but these can be ignored safely if
-        # because we use this function to create tensors out of constant 
+        # because we use this function to create tensors out of constant
         # variables that are the same every time we call this function.
         warnings.simplefilter("ignore",  TracerWarning)
         warnings.simplefilter("ignore",  RuntimeWarning)
-        
+
         self.learner.model = None
         self.learner.ort_session = None
-        
+
         self.learner.download()
 
         self.learner.optimize()

@@ -26,6 +26,7 @@ from pycocotools import mask as coco_mask
 import opendr.perception.object_detection_2d.detr.algorithm.datasets.transforms as T
 from PIL import Image as im
 
+
 class CocoDetection(torchvision.datasets.CocoDetection):
     def __init__(self, img_folder, ann_file, transforms, return_masks):
         super(CocoDetection, self).__init__(img_folder, ann_file)
@@ -123,21 +124,23 @@ class ConvertCocoPolysToMask(object):
 
         return image, target
 
-def map_bounding_box_list_to_coco(image_set, return_masks):       
+
+def map_bounding_box_list_to_coco(image_set, return_masks):
     prepare = ConvertCocoPolysToMask(return_masks)
     transforms = make_coco_transforms(image_set)
-    
+
     def map(data):
         image, target = data
         numpy_image = image.numpy()
         pil_image = im.fromarray(numpy_image)
-        
-        coco_target = {'image_id' : target.image_id, 'annotations' : target.coco()}
+
+        coco_target = {'image_id': target.image_id, 'annotations': target.coco()}
         image, target = prepare(pil_image, coco_target)
         transformed_img, transformed_target = transforms(image, target)
         return transformed_img, transformed_target
 
     return map
+
 
 def make_coco_transforms(image_set):
 

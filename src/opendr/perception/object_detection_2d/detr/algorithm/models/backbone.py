@@ -2,8 +2,6 @@
 """
 Backbone modules.
 """
-from collections import OrderedDict
-
 import torch
 import torch.nn.functional as F
 import torchvision
@@ -82,6 +80,7 @@ class BackboneBase(nn.Module):
 
 class Backbone(BackboneBase):
     """ResNet backbone with frozen BatchNorm."""
+
     def __init__(self, name: str,
                  train_backbone: bool,
                  return_interm_layers: bool,
