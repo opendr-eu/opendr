@@ -1,6 +1,6 @@
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.options import BaseOptions
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.train_util import gen_mesh_color
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.model import ResBlkPIFuNet, HGPIFuNet
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.options import BaseOptions
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.train_util import gen_mesh_color
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.model import ResBlkPIFuNet, HGPIFuNet
 import torchvision.transforms as transforms
 import torch
 import numpy as np
