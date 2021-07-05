@@ -1,5 +1,5 @@
-from src.opendr.simulation.human_model_generation.utilities.PIFu.apps.eval import Evaluator
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.options import BaseOptions
+from opendr.simulation.human_model_generation.utilities.PIFu.apps.eval import Evaluator
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.options import BaseOptions
 
 
 class Model_inference_module:
