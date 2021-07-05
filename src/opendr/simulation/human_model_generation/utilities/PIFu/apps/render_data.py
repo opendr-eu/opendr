@@ -1,6 +1,6 @@
 import numpy as np
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.renderer.mesh import load_obj_mesh, compute_tangent
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.renderer.camera import Camera
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.renderer.mesh import load_obj_mesh, compute_tangent
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.renderer.camera import Camera
 import os
 import cv2
 import math
