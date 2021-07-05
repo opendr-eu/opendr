@@ -1,13 +1,13 @@
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.options import BaseOptions
-from src.opendr.simulation.human_model_generation.utilities.PIFu.apps.eval import Evaluator
-from src.opendr.simulation.human_model_generation.utilities.PIFu.apps.crop_img import process_imgs
-from src.opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
-from src.opendr.simulation.human_model_generation.utilities.visualizer import Visualizer
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.options import BaseOptions
+from opendr.simulation.human_model_generation.utilities.PIFu.apps.eval import Evaluator
+from opendr.simulation.human_model_generation.utilities.PIFu.apps.crop_img import process_imgs
+from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
+from opendr.simulation.human_model_generation.utilities.visualizer import Visualizer
 import os
-from src.opendr.simulation.human_model_generation.utilities.studio import Studio
+from opendr.simulation.human_model_generation.utilities.studio import Studio
 import wget
 from os import path
-from src.opendr.engine.learners import Learner
+from opendr.engine.learners import Learner
 
 
 class PIFuGeneratorLearner(Learner):
