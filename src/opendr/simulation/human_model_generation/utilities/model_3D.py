@@ -1,4 +1,4 @@
-# Copyright 1996-2020 OpenDR European Project
+# Copyright 2020 Aristotle University of Thessaloniki
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 
 class Model_3D:
     def __init__(self, verts, faces, vert_colors=None):
