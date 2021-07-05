@@ -5,12 +5,12 @@ import random
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.options import BaseOptions
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.sample_util import save_samples_truncted_prob
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.train_util import reshape_multiview_tensors,\
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.options import BaseOptions
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.sample_util import save_samples_truncted_prob
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.train_util import reshape_multiview_tensors,\
     reshape_sample_tensor, adjust_learning_rate, calc_error, gen_mesh
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.data import TrainDataset
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.model import HGPIFuNet
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.data import TrainDataset
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.model import HGPIFuNet
 
 # get options
 opt = BaseOptions().parse()
