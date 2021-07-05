@@ -7,11 +7,11 @@ import tqdm
 import torch
 from torch.utils.data import DataLoader
 
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.options import BaseOptions
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.train_util import gen_mesh_color, reshape_sample_tensor,\
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.options import BaseOptions
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.train_util import gen_mesh_color, reshape_sample_tensor,\
     reshape_multiview_tensors, save_samples_rgb, calc_error_color
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.data import TrainDataset
-from src.opendr.simulation.human_model_generation.utilities.PIFu.lib.model import ResBlkPIFuNet, HGPIFuNet
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.data import TrainDataset
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.model import ResBlkPIFuNet, HGPIFuNet
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
