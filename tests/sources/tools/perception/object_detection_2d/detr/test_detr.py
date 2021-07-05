@@ -17,11 +17,12 @@ import unittest
 import shutil
 import os
 import torch
-
+import warnings
+from torch.jit import TracerWarning
 from opendr.engine.datasets import ExternalDataset
 from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
-
 from PIL import Image
+
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -76,13 +77,22 @@ class TestDetrLearner(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
-        rmdir(os.path.join(cls.temp_dir, 'checkpoints'))
-        rmdir(os.path.join(cls.temp_dir, 'facebookresearch_detr_master'))
+        rmdir(os.path.join(cls.temp_dir, 'detr_default/checkpoints'))
+        rmdir(os.path.join(cls.temp_dir, 'detr_default/facebookresearch_detr_master'))
+        rmdir(os.path.join(cls.temp_dir, 'detr_default'))
         rmdir(os.path.join(cls.temp_dir))
 
     def test_fit(self):
+        # Test fit will issue resource warnings due to some files left open in pycoco tools,
+        # as well as a deprecation warning due to a cast of a float to integer (hopefully they will be fixed in a future
+        # version)
+        warnings.simplefilter("ignore", ResourceWarning)
+        warnings.simplefilter("ignore", DeprecationWarning)
         self.learner.model = None
         self.learner.ort_session = None
+        self.learner.download()
+        
+        m = list(self.learner.model.parameters())[0].clone()
         
         self.learner.fit(
             self.dataset,
@@ -91,21 +101,38 @@ class TestDetrLearner(unittest.TestCase):
             train_images_folder="image", 
             verbose=True
         )
+        
+        self.assertFalse(torch.equal(m, list(self.learner.model.parameters())[0]),
+                         msg="Model parameters did not change after running fit.")
+        
+         # Cleanup
+        warnings.simplefilter("default", ResourceWarning)
+        warnings.simplefilter("default", DeprecationWarning)
 
     def test_eval(self):
+        # Test eval will issue resource warnings due to some files left open in pycoco tools,
+        # as well as a deprecation warning due to a cast of a float to integer (hopefully they will be fixed in a future
+        # version)
+        warnings.simplefilter("ignore", ResourceWarning)
+        warnings.simplefilter("ignore", DeprecationWarning)
+        
         self.learner.model = None
         self.learner.ort_session = None
         
         self.learner.download()
         
-        result = self.learner.eval(
+        results_dict = self.learner.eval(
             self.dataset,
             images_folder='image',
             annotations_folder='',
             annotations_file='instances.json',
         )
-
-        self.assertGreater(len(result), 0)
+        
+        self.assertNotEqual(len(results_dict), 0,
+                            msg="Eval results dictionary contains empty list.")
+        # Cleanup
+        warnings.simplefilter("default", ResourceWarning)
+        warnings.simplefilter("default", DeprecationWarning)
 
     def test_infer(self):
         self.learner.model = None
@@ -149,13 +176,56 @@ class TestDetrLearner(unittest.TestCase):
         
         rmdir(model_dir)
         
+    def test_save_load(self):
+        self.learner.model = None
+        self.learner.ort_session = None
+        self.learner.download()
+        self.learner.save(os.path.join(self.temp_dir, "test_model"))
+        self.learner.model = None
+        self.learner.load(os.path.join(self.temp_dir, "test_model"))
+        self.assertIsNotNone(self.learner.model, "model is None after loading pth model.")
+        # Cleanup
+        rmdir(os.path.join(self.temp_dir, "test_model"))
+        
+    def test_save_load_onnx(self):
+        # ONNX will issue TracerWarnings, but these can be ignored safely if
+        # because we use this function to create tensors out of constant 
+        # variables that are the same every time we call this function.
+        warnings.simplefilter("ignore",  TracerWarning)
+        warnings.simplefilter("ignore",  RuntimeWarning)
+        
+        self.learner.model = None
+        self.learner.ort_session = None
+        self.learner.download()
+        self.learner.optimize()
+        self.learner.save(os.path.join(self.temp_dir, "test_model"))
+        self.learner.model = None
+        self.learner.load(os.path.join(self.temp_dir, "test_model"))
+        self.assertIsNotNone(self.learner.ort_session, "ort_session is None after loading onnx model.")
+        # Cleanup
+        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
+        rmdir(os.path.join(self.temp_dir, "test_model"))
+        warnings.simplefilter("default",  TracerWarning)
+        warnings.simplefilter("default",  RuntimeWarning)
+        
     def test_optimize(self):
+        # ONNX will issue TracerWarnings, but these can be ignored safely if
+        # because we use this function to create tensors out of constant 
+        # variables that are the same every time we call this function.
+        warnings.simplefilter("ignore",  TracerWarning)
+        warnings.simplefilter("ignore",  RuntimeWarning)
+        
         self.learner.model = None
         self.learner.ort_session = None
         
         self.learner.download()
 
         self.learner.optimize()
+        self.assertIsNotNone(self.learner.ort_session)
+        # Cleanup
+        rmfile(os.path.join(self.temp_dir, "onnx_model_temp.onnx"))
+        warnings.simplefilter("default",  TracerWarning)
+        warnings.simplefilter("default",  RuntimeWarning)
 
 
 if __name__ == "__main__":
