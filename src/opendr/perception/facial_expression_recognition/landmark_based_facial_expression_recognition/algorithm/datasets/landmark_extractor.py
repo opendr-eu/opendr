@@ -1,7 +1,14 @@
-"""
-Modified based on: Adrian Rosebrock, Facial landmarks with dlib, OpenCV, and Python, PyImageSearch,
-https://www.pyimagesearch.com/2017/04/03/facial-landmarks-dlib-opencv-python/, accessed on 27 August 2020
-"""
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 import os
 from imutils import face_utils
@@ -13,7 +20,7 @@ import cv2
 
 
 def landmark_extractor(input_path, output_path, predictor_path):
-    # initialize dlib's face detector (HOG-based) and then create
+    # dlib's face detector
     detector = dlib.get_frontal_face_detector()
     # the facial landmark predictor
     predictor = dlib.shape_predictor(predictor_path)
@@ -22,15 +29,12 @@ def landmark_extractor(input_path, output_path, predictor_path):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     rects = detector(gray, 1)
     for (i, rect) in enumerate(rects):
-        # determine the facial landmarks for the face region
         shape = predictor(gray, rect)
         shape = face_utils.shape_to_np(shape)
         print(output_path)
         np.save(output_path, shape)
-        # draw the face bounding box
         (x, y, w, h) = face_utils.rect_to_bb(rect)
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        # draw rectangles and landmarks on the image
         (x, y, w, h) = face_utils.rect_to_bb(rect)
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
         for (x, y) in shape:
