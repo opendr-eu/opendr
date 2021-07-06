@@ -53,40 +53,49 @@ class TestRetinaFaceLearner(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        print('Removing temporary directories for RetinaFace...')
         # Clean up downloaded files
         rmfile(os.path.join(cls.temp_dir, "cov4.jpg"))
         rmdir(os.path.join(cls.temp_dir, "retinaface_resnet"))
         rmdir(os.path.join(cls.temp_dir))
-        pass
+        print('Finished cleaning for RetinaFace...')
 
     def test_fit(self):
+        print('Starting training test for RetinaFace...')
         training_dataset = WiderFaceDataset(root=self.temp_dir, splits=['train'])
         m = list(self.detector._model.get_params()[0].values())[0].asnumpy().copy()
         self.detector.fit(dataset=training_dataset, silent=True)
         n = list(self.detector._model.get_params()[0].values())[0].asnumpy()
         self.assertFalse(np.array_equal(m, n),
                          msg="Model parameters did not change after running fit.")
+        print('Finished training test for RetinaFace...')
 
     def test_eval(self):
+        print('Starting evaluation test for RetinaFace...')
         eval_dataset = WiderFaceDataset(root=self.temp_dir, splits=['train'])
         self.detector.load(os.path.join(self.temp_dir, "retinaface_resnet"))
         results_dict = self.detector.eval(eval_dataset, flip=False, pyramid=False)
         self.assertIsNotNone(results_dict['recall'],
                              msg="Eval results dictionary not returned.")
+        print('Finished evaluation test for RetinaFace...')
 
     def test_infer(self):
+        print('Starting inference test for RetinaFace...')
         self.detector.load(os.path.join(self.temp_dir, "retinaface_resnet"))
         img = cv2.imread(os.path.join(self.temp_dir, "cov4.jpg"))
         self.assertIsNotNone(self.detector.infer(img),
                              msg="Returned empty BoundinBoxList.")
+        print('Finished inference test for RetinaFace...')
 
     def test_save_load(self):
+        print('Starting save/load test for RetinaFace...')
         self.detector.save(os.path.join(self.temp_dir, "test_model"))
         self.detector._model = None
         self.detector.load(os.path.join(self.temp_dir, "test_model"))
         self.assertIsNotNone(self.detector._model, "model is None after loading model.")
         # Cleanup
         rmdir(os.path.join(self.temp_dir, "test_model"))
+        print('Finished save/load test for RetinaFace...')
 
 
 if __name__ == "__main__":
