@@ -45,7 +45,7 @@ class TestYOLOv3DetectorLearner(unittest.TestCase):
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "yolov3", "yolov3_temp")
         cls.detector = YOLOv3DetectorLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
-                                             checkpoint_after_iter=0, lr=1e-4, num_workers=1, img_size=320)
+                                             checkpoint_after_iter=0, lr=1e-4, num_workers=0, img_size=320)
         # Download all required files for testing
         cls.detector.download(mode="pretrained")
         cls.detector.download(mode="images")

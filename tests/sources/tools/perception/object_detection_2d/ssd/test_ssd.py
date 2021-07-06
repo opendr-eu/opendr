@@ -45,7 +45,7 @@ class TestSSDLearner(unittest.TestCase):
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "ssd", "ssd_temp")
         cls.detector = SingleShotDetectorLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
-                                                 checkpoint_after_iter=0, lr=1e-4, num_workers=1)
+                                                 checkpoint_after_iter=0, lr=1e-4, num_workers=0)
         # Download all required files for testing
         cls.detector.download(mode="pretrained")
         cls.detector.download(mode="images")

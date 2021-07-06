@@ -100,7 +100,7 @@ class YOLOv3DetectorLearner(Learner):
         self.momentum = momentum
 
         model_name = 'yolo3_{}_voc'.format(self.backbone)
-        net = model_zoo.get_model(model_name, pretrained=False, pretrained_base=True)
+        net = model_zoo.get_model(model_name, pretrained=False, pretrained_base=True, root=self.temp_path)
         self._model = net
         with warnings.catch_warnings(record=True):
             warnings.simplefilter("always")
@@ -115,7 +115,8 @@ class YOLOv3DetectorLearner(Learner):
         """
         if self._model is None or classes != self.classes:
             model_name = 'yolo3_{}_voc'.format(self.backbone)
-            net = model_zoo.get_model(model_name, pretrained=False, pretrained_base=True)
+            net = model_zoo.get_model(model_name, pretrained=False, pretrained_base=True,
+                                      root=self.temp_path)
             self._model = net
             with warnings.catch_warnings(record=True):
                 warnings.simplefilter("always")

@@ -95,7 +95,7 @@ class SingleShotDetectorLearner(Learner):
         self.momentum = momentum
 
         model_name = 'ssd_{}_{}_voc'.format(self.img_size, self.backbone)
-        net = model_zoo.get_model(model_name, pretrained=False, pretrained_base=True)
+        net = model_zoo.get_model(model_name, pretrained=False, pretrained_base=True, root=self.temp_path)
         self._model = net
         with warnings.catch_warnings(record=True):
             warnings.simplefilter("always")
@@ -262,7 +262,8 @@ class SingleShotDetectorLearner(Learner):
         # self._model.reset_class(classes, reuse_weights=[cname for cname in classes if cname in self._model.classes])
         if self._model is None or classes != self.classes:
             model_name = 'ssd_{}_{}_custom'.format(self.img_size, self.backbone)
-            self._model = model_zoo.get_model(model_name, classes=classes, pretrained=False, pretrained_base=True)
+            self._model = model_zoo.get_model(model_name, classes=classes, pretrained=False, pretrained_base=True,
+                                              root=self.temp_path)
             with warnings.catch_warnings(record=True):
                 warnings.simplefilter("always")
                 self._model.initialize()
