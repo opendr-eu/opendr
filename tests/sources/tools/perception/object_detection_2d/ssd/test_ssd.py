@@ -61,9 +61,9 @@ class TestSSDLearner(unittest.TestCase):
 
     def test_fit(self):
         training_dataset = WiderPersonDataset(root=os.path.join(self.temp_dir, "test_data"), splits=['train'])
-        m = list(self.detector._model.collect_params().values())[1].data().asnumpy().copy()
+        m = list(self.detector._model.collect_params().values())[2].data().asnumpy().copy()
         self.detector.fit(dataset=training_dataset, silent=True)
-        n = list(self.detector._model.collect_params().values())[1].data().asnumpy()
+        n = list(self.detector._model.collect_params().values())[2].data().asnumpy()
         self.assertFalse(np.array_equal(m, n),
                          msg="Model parameters did not change after running fit.")
 
