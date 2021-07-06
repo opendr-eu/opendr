@@ -512,9 +512,9 @@ class RetinaFaceLearner(Learner):
 
             if not pyramid:
                 # target_size = 1600
-                target_size = 1024
+                target_size = 640
                 # max_size = 2150
-                max_size = 1920
+                max_size = 1024
                 im_shape = img.shape
                 im_size_min = np.min(im_shape[0:2])
                 im_size_max = np.max(im_shape[0:2])
