@@ -39,7 +39,7 @@ class TestRetinaFaceLearner(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print("\n\n**********************************\nTEST SingleShotDetector Learner\n"
+        print("\n\n**********************************\nTEST RetinaFace Learner\n"
               "**********************************")
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
