@@ -29,11 +29,11 @@ The folder hierarchy should look like this:
 3. Run the following script to reformat the Cityscapes dataset
 ```
 python reformat_cityscapes.py -data_dir ./background_images/Cityscapes/in
-python create_background_images.py -rgb_in ./background_images/Cityscapes/in/all/rgb -segm_in ./background_images/Cityscapes/in/all/segm -imgs_dir_out ./background_images/Cityscapes/out -human_colors ./background_images/CityScapes/human_colormap.txt -placement_colors ./background_images/CityScapes/locations_colormap.txt
+python create_background_images.py -rgb_in ./background_images/Cityscapes/in/all/rgb -segm_in ./background_images/Cityscapes/in/all/segm -imgs_dir_out ./background_images/Cityscapes/out -human_colors ./background_images/Cityscapes/human_colormap.txt -placement_colors ./background_images/Cityscapes/locations_colormap.txt
 ``` 
 4. Run the following script to generate the dataset
 ```
-python create_dataset.py -models_dir ./human_models -back_imgs_out ./background_images/CityScapes/out -csv_dir ./csv -dataset_dir ./dataset
+python create_dataset.py -models_dir ./human_models -back_imgs_out ./background_images/Cityscapes/out -csv_dir ./csv -dataset_dir ./dataset
 ```   
 ## Citation
 If you make use of the dataset, please cite the following reference in any publications:
