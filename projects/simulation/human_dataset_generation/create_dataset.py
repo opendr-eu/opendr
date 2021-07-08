@@ -27,7 +27,7 @@ import numpy as np
 
 def generate_data(csv_dt_path='./csv/data2.csv', models_dir='./3D_models', back_imgs_dir='./background_imgs',
                   models_dict_path='./3D_models/models_dict.pkl', back_imgs_dict_path='./background_imgs/imgs_dict.pkl',
-                  csv_tr_path=None, dataset_dir=None, placement_colors='./background_images/CityScapes/locations_colormap.txt'):
+                  csv_tr_path=None, dataset_dir=None, placement_colors='./background_images/Cityscapes/locations_colormap.txt'):
 
     # Pixel colors for roads/sidewalks/terrain
     with open(placement_colors) as csvfile:
