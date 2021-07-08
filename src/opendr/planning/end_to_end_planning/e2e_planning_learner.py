@@ -47,6 +47,7 @@ from stable_baselines.results_plotter import load_results, ts2xy
 
 from opendr.engine.learners import LearnerRL
 from opendr.planning.end_to_end_planning.custom_policies.custom_policies import MultiInputPolicy, create_dual_extractor
+import opendr
 # from engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 
@@ -104,20 +105,18 @@ class EndToEndPlanningRLLearner(LearnerRL):
         self.agent.set_env(self.env)
         self.agent.learn(total_timesteps=int(5e4), callback=self.callback)
 
-    def eval(self, env, name_prefix='', nr_evaluations: int = None):
+    def eval(self, env):
         """
         Evaluate the agent on the specified environment.
 
         :param env: gym.Env, env to evaluate on
-        :param name_prefix: str, name prefix for all logged variables
-        :param nr_evaluations: int, number of episodes to evaluate over
         :return: sum of rewards through the episode
         """
-        if isinstance(self.env, DummyVecEnv):
-            self.env = self.env.envs[0]
-        if isinstance(self.env, Monitor):
-            self.env = self.env.env
-        env = Monitor(env, filename=self.logdir)
+        if isinstance(env, DummyVecEnv):
+            env = env.envs[0]
+        if isinstance(env, Monitor):
+            env = env.env
+        # env = Monitor(env, filename=self.logdir)
         env = DummyVecEnv([lambda: env])
         self.agent.set_env(env)
         obs = env.reset()
