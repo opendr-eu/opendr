@@ -24,11 +24,11 @@ import argparse
 import csv
 
 
-# Keep only images from CityScapes (a) without humans (persons/riders) (b) with roads/sidewalks/terrain
-def add_cityscapes_background_imgs(rgb_in='./background_images/CityScapes/in/all/rgb',
-                                   segm_in='./background_images/CityScapes/in/all/segm',
-                                   human_colors='./background_images/CityScapes/human_colormap.txt',
-                                   placement_colors='./background_images/CityScapes/locations_colormap.txt',
+# Keep only images from Cityscapes (a) without humans (persons/riders) (b) with roads/sidewalks/terrain
+def add_cityscapes_background_imgs(rgb_in='./background_images/Cityscapes/in/all/rgb',
+                                   segm_in='./background_images/Cityscapes/in/all/segm',
+                                   human_colors='./background_images/Cityscapes/human_colormap.txt',
+                                   placement_colors='./background_images/Cityscapes/locations_colormap.txt',
                                    imgs_dir_out='./background_images/out'):
 
     if not os.path.exists(os.path.join(imgs_dir_out, 'segm')):
