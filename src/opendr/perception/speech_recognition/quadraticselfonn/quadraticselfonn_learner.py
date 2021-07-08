@@ -219,7 +219,7 @@ class QuadraticSelfOnnLearner(Learner):
         folder_basename = os.path.basename(path)
         model_path = os.path.join(path, folder_basename + ".pt")
 
-        metadata = {"model_paths": [model_path],
+        metadata = {"model_paths": [folder_basename + ".pt"],
                     "framework": "pytorch",
                     "format": "pt",
                     "has_data": False,
