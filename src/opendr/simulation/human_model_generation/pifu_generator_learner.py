@@ -5,8 +5,6 @@ from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
 from opendr.simulation.human_model_generation.utilities.visualizer import Visualizer
 import os
 from opendr.simulation.human_model_generation.utilities.studio import Studio
-import wget
-from os import path
 from opendr.engine.learners import Learner
 from opendr.engine.data import Image
 from opendr.simulation.human_model_generation.utilities.PIFu.lib.model import ResBlkPIFuNet, HGPIFuNet
