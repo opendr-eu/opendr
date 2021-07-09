@@ -113,7 +113,7 @@ class TestCoX3DLearner(unittest.TestCase):
 
         # Input is List[Image]
         results3 = self.learner.infer([Image(v, dtype=np.float) for v in batch])
-        assert all([torch.allclose(r1.confidence, r3.confidence) for (r1, r3) in zip(results1, results3)])
+        assert all([torch.allclose(r1.confidence, r3.confidence, atol=1e-07) for (r1, r3) in zip(results1, results3)])
 
     def test_optimize(self):
         self.learner.ort_session = None
