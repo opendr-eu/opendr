@@ -17,7 +17,8 @@ import os
 import argparse
 import pyglet
 import numpy as np
-from PIL import Image
+from PIL import Image as PIL_image
+from opendr.engine.data import Image
 import cv2
 
 
@@ -109,13 +110,13 @@ class Visualizer(pyglet.window.Window):
     def exit_callback(self, dt):
         if self.exit > 0:
             img = pyglet.image.get_buffer_manager().get_color_buffer().get_image_data()
-            img = Image.frombytes('RGB', (self.width, self.height), img.get_data('RGB', img.width * len('RGB')), 'raw')
-            img = np.array(img)[::-1, :, :].astype(np.float32) / 255.0
+            img = PIL_image.frombytes('RGB', (self.width, self.height), img.get_data('RGB', img.width * len('RGB')), 'raw')
+            img = np.array(img)[::-1, :, ::-1].astype(np.float32)
             if self.plot_kps:
                 for kp in self.kps2D[self.rotation_id]:
                     img = cv2.circle(img, (self.kps2D[self.rotation_id][kp][0], self.kps2D[self.rotation_id][kp][1]), 1,
                                      (0, 1.0, 0), 2)
-            self.imgs.append(img)
+            self.imgs.append(Image(img))
             self.rotation_id = self.rotation_id + 1
             if self.rotation_id >= len(self.rotations):
                 self.close()
