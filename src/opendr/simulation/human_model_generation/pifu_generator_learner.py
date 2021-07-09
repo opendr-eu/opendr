@@ -8,6 +8,12 @@ from opendr.simulation.human_model_generation.utilities.studio import Studio
 import wget
 from os import path
 from opendr.engine.learners import Learner
+from opendr.engine.data import Image
+from opendr.simulation.human_model_generation.utilities.PIFu.lib.model import ResBlkPIFuNet, HGPIFuNet
+from opendr.engine.constants import OPENDR_SERVER_URL
+import torch
+import json
+from urllib.request import urlretrieve
 
 
 class PIFuGeneratorLearner(Learner):
@@ -17,17 +23,9 @@ class PIFuGeneratorLearner(Learner):
         checkpoint_dir = os.path.join(os.path.split(__file__)[0], 'utilities', 'PIFu', 'checkpoints')
         net_G_path = os.path.join(checkpoint_dir, 'net_G')
         net_C_path = os.path.join(checkpoint_dir, 'net_C')
-        if not path.exists(checkpoint_dir):
-            os.mkdir(checkpoint_dir)
-        if not path.exists(net_G_path):
-            wget.download("https://drive.google.com/uc?export=download&id=1zEmVXG2VHy0MMzngcRshB4D8Sr_oLHsm",
-                          out=checkpoint_dir)
-        if not path.exists(net_C_path):
-            wget.download("https://drive.google.com/uc?export=download&id=1V83B6GDIjYMfHdpg-KcCSAPgHxpafHgd",
-                          out=checkpoint_dir)
+        self.download(checkpoint_dir)
         if device == 'cuda':
             self.opt.cuda = True
-
         self.opt.load_netG_checkpoint_path = net_G_path
         self.opt.load_netC_checkpoint_path = net_C_path
         # Network configuration
@@ -40,9 +38,27 @@ class PIFuGeneratorLearner(Learner):
         self.opt.hg_down = 'ave_pool'
         self.opt.norm = 'group'
         self.opt.norm_color = 'group'
-        self.evaluator = Evaluator(self.opt)
+        self.opt.projection_mode = 'orthogonal'
+        # create net
+        # set cuda
+        if self.opt.cuda and torch.cuda.is_available():
+            self.cuda = torch.device('cuda:%d' % self.opt.gpu_id)
+        else:
+            self.cuda = torch.device('cpu')
+        self.netG = HGPIFuNet(self.opt, self.opt.projection_mode).to(device=self.cuda)
+        self.netC = ResBlkPIFuNet(self.opt).to(device=self.cuda)
+        self.load('./utilities/PIFu/checkpoints')
+        self.evaluator = Evaluator(self.opt, self.netG, self.netC, self.cuda)
 
     def infer(self, imgs_rgb, imgs_msk=None, obj_path=None, extract_pose=False):
+        for i in range(len(imgs_rgb)):
+            if not isinstance(imgs_rgb[i], Image):
+                imgs_rgb[i] = Image(imgs_rgb[i])
+            imgs_rgb[i] = imgs_rgb[i].numpy()
+        for i in range(len(imgs_msk)):
+            if not isinstance(imgs_msk[i], Image):
+                imgs_msk[i] = Image(imgs_msk[i])
+            imgs_msk[i] = imgs_msk[i].numpy()
         if imgs_msk is None or len(imgs_rgb) != 1 or len(imgs_msk) != 1:
             print('Wrong input...')
             return
@@ -52,10 +68,6 @@ class PIFuGeneratorLearner(Learner):
         if (obj_path is not None) and (not os.path.exists(os.path.dirname(obj_path))):
             print("OBJ cannot be saved in the given directory...")
             return
-        if imgs_msk[0].mode != 'L':
-            imgs_msk[0] = imgs_msk[0].convert('L')
-        if imgs_rgb[0].mode != 'RGB':
-            imgs_rgb[0] = imgs_rgb[0].convert('RGB')
         try:
             [imgs_rgb[0], imgs_msk[0]] = process_imgs(imgs_rgb[0], imgs_msk[0])
             [verts, faces, colors] = self.evaluator.eval(self.evaluator.load_image(imgs_rgb[0], imgs_msk[0]), use_octree=True)
@@ -71,22 +83,28 @@ class PIFuGeneratorLearner(Learner):
         except Exception as e:
             print("error:", e.args)
 
-    def eval(self):
-        pass
+    def load(self, path):
+        with open(os.path.join(path, "PIFu_default.json")) as metadata_file:
+            metadata = json.load(metadata_file)
+            load_netG_checkpoint_path = os.path.join(path, metadata['model_paths'][1])
+            load_netC_checkpoint_path = os.path.join(path, metadata['model_paths'][0])
+            self.netG.load_state_dict(torch.load(load_netG_checkpoint_path, map_location=self.cuda))
+            self.netC.load_state_dict(torch.load(load_netC_checkpoint_path, map_location=self.cuda))
+            print("PIFu model is loaded.")
 
-    def fit(self):
-        pass
-
-    def load(self):
-        pass
-
-    def optimize(self):
+    def optimize(self, **kwargs):
         pass
 
     def reset(self):
         pass
 
-    def save(self):
+    def save(self, **kwargs):
+        pass
+
+    def eval(self, **kwargs):
+        pass
+
+    def fit(self, **kwargs):
         pass
 
     def get_img_views(self, model_3D, rotations, human_pose_3D=None, plot_kps=False):
@@ -95,3 +113,25 @@ class PIFuGeneratorLearner(Learner):
         else:
             visualizer = Visualizer(out_path='./', mesh=model_3D)
         return visualizer.infer(rotations=rotations)
+
+    def download(self, path=None,
+                 url=OPENDR_SERVER_URL + "simulation/human_model_generation/checkpoints/"):
+        if path is None:
+            path = self.temp_path
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if (not os.path.exists(os.path.join(path, "PIFu_default.json"))) or \
+                (not os.path.exists(os.path.join(path, "net_C"))) or \
+                (not os.path.exists(os.path.join(path, "net_G"))):
+            print("Downloading pretrained model...")
+            file_url = os.path.join(url, "PIFu_defaults.json")
+            urlretrieve(file_url, os.path.join(path, "PIFu_defaults.json"))
+            file_url = os.path.join(url, "netC")
+            urlretrieve(file_url, os.path.join(path, "netC"))
+
+            file_url = os.path.join(url, "netG")
+            urlretrieve(file_url, os.path.join(path, "netG"))
+
+            print("Pretrained model download complete.")
