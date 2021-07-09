@@ -4,7 +4,6 @@ import numpy as np
 
 from pathlib import Path
 import argparse
-from PIL import Image
 
 
 def get_bbox(msk):
