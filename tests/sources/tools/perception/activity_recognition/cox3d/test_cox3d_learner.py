@@ -109,7 +109,7 @@ class TestCoX3DLearner(unittest.TestCase):
 
         # Input is Image
         results2 = self.learner.infer(Image(batch[0], dtype=np.float))
-        assert torch.allclose(results1[0].confidence, results2[0].confidence)
+        assert torch.allclose(results1[0].confidence, results2[0].confidence, atol=1e-07)
 
         # Input is List[Image]
         results3 = self.learner.infer([Image(v, dtype=np.float) for v in batch])
