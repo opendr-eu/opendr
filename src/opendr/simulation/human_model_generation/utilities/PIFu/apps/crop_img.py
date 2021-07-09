@@ -17,8 +17,8 @@ def get_bbox(msk):
 
 
 def process_imgs(img, msk, bbox=None):
-    img = np.array(img)
-    msk = np.array(msk)
+    # img = np.array(img)
+    # msk = np.array(msk)
     if bbox is None:
         bbox = get_bbox(msk > 100)
     cx = (bbox[3] + bbox[2]) // 2
@@ -49,8 +49,6 @@ def process_imgs(img, msk, bbox=None):
 
     kernel = np.ones((3, 3), np.uint8)
     msk = cv2.erode((255 * (msk > 100)).astype(np.uint8), kernel, iterations=1)
-    img = Image.fromarray(img)
-    msk = Image.fromarray(msk)
     return img, msk
 
 
