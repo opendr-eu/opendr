@@ -124,12 +124,12 @@ class PIFuGeneratorLearner(Learner):
                 (not os.path.exists(os.path.join(path, "net_C"))) or \
                 (not os.path.exists(os.path.join(path, "net_G"))):
             print("Downloading pretrained model...")
-            file_url = os.path.join(url, "PIFu_defaults.json")
-            urlretrieve(file_url, os.path.join(path, "PIFu_defaults.json"))
-            file_url = os.path.join(url, "netC")
-            urlretrieve(file_url, os.path.join(path, "netC"))
+            file_url = os.path.join(url, "PIFu_default.json")
+            urlretrieve(file_url, os.path.join(path, "PIFu_default.json"))
+            file_url = os.path.join(url, "net_C")
+            urlretrieve(file_url, os.path.join(path, "net_C"))
 
-            file_url = os.path.join(url, "netG")
-            urlretrieve(file_url, os.path.join(path, "netG"))
+            file_url = os.path.join(url, "net_G")
+            urlretrieve(file_url, os.path.join(path, "net_G"))
 
             print("Pretrained model download complete.")
