@@ -45,7 +45,7 @@ class PIFuGeneratorLearner(Learner):
             self.cuda = torch.device('cpu')
         self.netG = HGPIFuNet(self.opt, self.opt.projection_mode).to(device=self.cuda)
         self.netC = ResBlkPIFuNet(self.opt).to(device=self.cuda)
-        self.load('./utilities/PIFu/checkpoints')
+        self.load(os.path.abspath(os.path.dirname(__file__))+'/utilities/PIFu/checkpoints')
         self.evaluator = Evaluator(self.opt, self.netG, self.netC, self.cuda)
 
     def infer(self, imgs_rgb, imgs_msk=None, obj_path=None, extract_pose=False):
