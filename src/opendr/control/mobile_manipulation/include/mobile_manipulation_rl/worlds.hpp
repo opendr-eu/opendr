@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef MOBILE_MANIPULATION_RL_WORLDS_H
+#define MOBILE_MANIPULATION_RL_WORLDS_H
 
 #include <eigen_conversions/eigen_msg.h>
 #include <gazebo_msgs/GetModelState.h>
@@ -67,3 +68,5 @@ public:
   void setModelState(std::string model_name, tf::Transform world_transform, RoboConf robo_config,
                      ros::Publisher &cmd_base_vel_pub) override;
 };
+
+#endif  // MOBILE_MANIPULATION_RL_WORLDS_H

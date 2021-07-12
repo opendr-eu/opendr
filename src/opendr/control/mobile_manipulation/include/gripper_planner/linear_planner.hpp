@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef MOBILE_MANIPULATION_RL_LINEAR_PLANNER_H
+#define MOBILE_MANIPULATION_RL_LINEAR_PLANNER_H
 
 #include "gripper_planner/base_gripper_planner.hpp"
 
@@ -37,3 +38,5 @@ public:
   GripperPlan internalStep(double time, double dt, const RobotObs &robot_obs, const double &learned_vel_norm,
                            bool update_prev_plan) override;
 };
+
+#endif  // MOBILE_MANIPULATION_RL_LINEAR_PLANNER_H

@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef MOBILE_MANIPULATION_RL_ROBOT_PR2_H
+#define MOBILE_MANIPULATION_RL_ROBOT_PR2_H
+
 #include <actionlib/client/simple_action_client.h>
 #include <geometry_msgs/Twist.h>
 #include <pr2_controllers_msgs/JointTrajectoryAction.h>
@@ -51,3 +53,4 @@ public:
   void openGripper(double position, bool wait_for_result) override;
   void closeGripper(double position, bool wait_for_result) override;
 };
+#endif  // MOBILE_MANIPULATION_RL_ROBOT_PR2_H

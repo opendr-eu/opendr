@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef MOBILE_MANIPULATION_RL_ROBOT_HSR_H
+#define MOBILE_MANIPULATION_RL_ROBOT_HSR_H
 #include <mobile_manipulation_rl/robot_env.hpp>
 
 #include <tmc_robot_kinematics_model/numeric_ik_solver.hpp>
@@ -71,3 +72,4 @@ public:
   double getIkSlackRotDist() const { return ik_slack_rot_dist_; };
   bool getSolDistReward() const { return sol_dist_reward_; };
 };
+#endif  // MOBILE_MANIPULATION_RL_ROBOT_HSR_H

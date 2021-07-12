@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef MOBILE_MANIPULATION_RL_GMM_PLANNER_H
+#define MOBILE_MANIPULATION_RL_GMM_PLANNER_H
 
 #include "gripper_planner/base_gripper_planner.hpp"
 #include "gripper_planner/gaussian_mixture_model.hpp"
@@ -45,3 +46,5 @@ public:
 
   std::vector<double> objOriginToTip(const std::vector<double> &obj_origin);
 };
+
+#endif  // MOBILE_MANIPULATION_RL_GMM_PLANNER_H
