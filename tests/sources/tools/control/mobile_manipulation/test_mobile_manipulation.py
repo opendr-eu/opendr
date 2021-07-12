@@ -61,7 +61,7 @@ class MobileManipulationTest(unittest.TestCase):
         del cls.learner
 
     def test_ckpt_download(self):
-        ckpt_folder = self.learner._download_pretrained(str(TEMP_SAVE_DIR), 'pr2')
+        ckpt_folder = self.learner.download(str(TEMP_SAVE_DIR), robot_name='pr2')
         self.assertTrue(Path(ckpt_folder).exists, "Checkpoint file could not be downloaded")
         # Remove temporary files
         try:

@@ -64,19 +64,17 @@ class MobileRLLearner(LearnerRL):
                 restore_model_path = os.path.join(restore_model_path, f"model_step{checkpoint_load_iter}")
             self.load(restore_model_path)
 
-    @staticmethod
-    def _download_pretrained(save_path: str, robot_name: str):
+    def download(self, path=None, mode="pretrained", verbose=False, url=OPENDR_SERVER_URL + "control/mobile_manipulation/", robot_name: str=None):
+        assert mode == 'pretrained', "Unknown mode"
+        assert robot_name is not None, robot_name
+        if path is None:
+            path = self.temp_path
         checkpoint_load_iter = 1_000_000
         filename = f"model_step{checkpoint_load_iter}.zip"
-        file_destination = Path(save_path) / filename
+        file_destination = Path(path) / filename
         if not file_destination.exists():
             file_destination.parent.mkdir(parents=True, exist_ok=True)
-            url = os.path.join(
-                OPENDR_SERVER_URL,
-                "control",
-                "mobile_manipulation",
-                robot_name,
-                filename)
+            url = os.path.join(url, robot_name, filename)
             urlretrieve(url=url, filename=file_destination)
         return file_destination
 
@@ -216,7 +214,7 @@ class MobileRLLearner(LearnerRL):
         :rtype: bool
         """
         if path == 'pretrained':
-            path = str(self._download_pretrained(self.temp_path, self.stable_bl_agent.env.get_attr('env_name')[0]))
+            path = str(self.download(self.temp_path, robot_name=self.stable_bl_agent.env.get_attr('env_name')[0]))
         self.stable_bl_agent = self.stable_bl_agent.load(path, device=self.device, env=self.stable_bl_agent.env,
                                                          tensorboard_log=self.temp_path)
 
