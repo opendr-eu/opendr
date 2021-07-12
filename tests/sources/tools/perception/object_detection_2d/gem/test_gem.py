@@ -98,7 +98,8 @@ class TestGemLearner(unittest.TestCase):
         self.learner.ort_session = None
 
         self.learner.fit(
-            verbose=True
+            verbose=True,
+            out_dir=os.path.join(self.temp_dir, "outputs"),
         )
 
         # Cleanup
