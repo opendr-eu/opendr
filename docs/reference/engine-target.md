@@ -62,7 +62,7 @@ The [Pose](#class_engine.target.Pose) class has the following public methods:
 #### Pose(keypoints, confidence)
   Construct a new [Pose](#class_engine.target.Pose) object based on *keypoints*.
   *keypoints* is expected to be a list of [Keypoint](#class_engine.target.Keypoint) objects.
-  Keypoints can be accessed either by using their numerical id (e.g., pose[0]) or their name (e.g., pose['neck']). 
+  Keypoints can be accessed either by using their numerical id (e.g., pose[0]) or their name (e.g., pose['neck']).
   Please refer to `Pose.kpt_names` for a list of supported keypoints.
 
 
@@ -156,7 +156,7 @@ The [TrackingAnnotation3D](#class_engine.target.TrackingAnnotation3D) class has 
   - *frame* is an index of a frame for this box.
 #### kitti(with_tracking_info=True)
   Return the annotation in KITTI format.
-  - If *with_tracking_info* is `True`, `frame` and `id` data are also returned. 
+  - If *with_tracking_info* is `True`, `frame` and `id` data are also returned.
 #### bounding_box_3d()
   Return the [BoundingBox3D](#class_engine.target.BoundingBox3D) object constructed from this object by discarding `frame` and `id` data.
 #### frame()
@@ -177,7 +177,7 @@ The [TrackingAnnotation3DList](#class_engine.target.TrackingAnnotation3DList) cl
   *tracking_bounding_boxes_3d* is expected to be a list of [TrackingAnnotation3D](#class_engine.target.TrackingAnnotation3D).
 #### kitti(with_tracking_info=True)
   Return the annotation in KITTI format.
-  - If *with_tracking_info* is `True`, `frame` and `id` data are also returned. 
+  - If *with_tracking_info* is `True`, `frame` and `id` data are also returned.
 #### boxes()
   Return the list of [TrackingAnnotation3D](#class_engine.target.TrackingAnnotation3D) boxes.
 #### bounding_box_3d_list()
@@ -201,17 +201,37 @@ The [BoundingBox](#class_engine.target.BoundingBox) class has the following publ
   - *width* is expected to be a number representing the width of the box.
   - *height* is expected to be a number representing the height of the box.
   - *score* is expected to be a number describing the prediction confidence.
-  - *segmentation* is expected to be a list of polygon vertices around the object (`iscrowd=False`) or a run-length-encoded (RLE) bit mask (`iscrowd=True`).
-  - *iscrowd* is expected to be a bool describing whether the `BoundingBox` represents a crowd (a group of objects).
-    If `True`, `segmentation` is a run-length-encoded (RLE) bit mask. If `False`, `segmentation` is a list of polygon vertices around the object.
-    For more information see this [tutorial](https://www.immersivelimit.com/tutorials/create-coco-annotations-from-scratch)
-  - *area* is expected to be an integer describing the area of the segmentation.
 #### mot(with_confidence=True, frame=-1))
   Return the annotation in [MOT](https://motchallenge.net/instructions) format.
 #### coco()
   Return the annotation in [COCO detection](https://cocodataset.org/#detection-2019) format.
   For more information and a detailed description of COCO annotations, see this [COCO annotations tutorial](https://www.immersivelimit.com/tutorials/create-coco-annotations-from-scratch).
-  If the `BoundingBox` does not contain a segmentation of the object (`segmentation=[]`), the returned COCO annotation will contain no `segmentation` and `iscrowd` items and an `area` item with a value that is equal to the `width` times the `height` of the `BoundingBox`. 
+
+### class engine.target.CocoBoundingBox
+Bases: `engine.target.BoundingBox`
+
+This target is used for 2D Object Detection and describes 2D bounding box in image plane containing an object of interest in [COCO detection](https://cocodataset.org/#detection-2019) format.
+A bounding box is described by the left-top corner and its width and height.
+The main difference with the `BoundingBox` target, is that the `CocoBoundingBox` target can also contain information on the object's segmentation.
+
+The [BoundingBox](#class_engine.target.BoundingBox) class has the following public methods:
+#### CocoBoundingBox(name, left, top, width, height, score=0, segmentation=[], iscrowd=0, area=0)
+  Construct a new [BoundingBox](#class_engine.target.BoundingBox) object based on the given data.
+  - *name* is expected to be a string or a number representing the class of the object.
+  - *left* is expected to be a number representing the x position of the left-top corner.
+  - *top* is expected to be a number representing the y position of the left-top corner.
+  - *width* is expected to be a number representing the width of the box.
+  - *height* is expected to be a number representing the height of the box.
+  - *score* is expected to be a number describing the prediction confidence.
+  - *segmentation* is expected to be a list of polygon vertices around the object (`iscrowd=False`) or a run-length-encoded (RLE) bit mask (`iscrowd=True`).
+  - *iscrowd* is expected to be a bool describing whether the `BoundingBox` represents a crowd (a group of objects).
+    If `True`, `segmentation` is a run-length-encoded (RLE) bit mask. If `False`, `segmentation` is a list of polygon vertices around the object.
+    For more information see this [tutorial](https://www.immersivelimit.com/tutorials/create-coco-annotations-from-scratch).
+  - *area* is expected to be an integer describing the area of the segmentation.
+#### coco()
+  Return the annotation in [COCO detection](https://cocodataset.org/#detection-2019) format.
+  For more information and a detailed description of COCO annotations, see this [COCO annotations tutorial](https://www.immersivelimit.com/tutorials/create-coco-annotations-from-scratch).
+  If the `CocoBoundingBox` does not contain a segmentation of the object (`segmentation=[]`), the returned COCO annotation will contain no `segmentation` and `iscrowd` items and an `area` item with a value that is equal to the `width` times the `height` of the `CocoBoundingBox`.
 
 ### class engine.target.BoundingBoxList
 Bases: `engine.target.Target`
@@ -232,7 +252,7 @@ The [BoundingBoxList](#class_engine.target.BoundingBoxList) class has the follow
 	Return the annotation in [COCO detection](https://cocodataset.org/#detection-2019) format.
 #### boxes()
   Return the list of [BoundingBox](#class_engine.target.BoundingBox) boxes.
-  
+
 
 ### class engine.target.TrackingAnnotation
 Bases: `engine.target.Target`

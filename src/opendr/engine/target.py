@@ -148,6 +148,7 @@ class BoundingBox(Target):
     This target is used for 2D Object Detection.
     A bounding box is described by the left-top corner and its width and height.
     """
+
     def __init__(
         self,
         name,
@@ -156,9 +157,6 @@ class BoundingBox(Target):
         width,
         height,
         score=0,
-        segmentation=[],
-        iscrowd=0,
-        area=0
     ):
         super().__init__()
         self.name = name
@@ -167,9 +165,6 @@ class BoundingBox(Target):
         self.width = width
         self.height = height
         self.confidence = score
-        self.segmentation = segmentation
-        self.iscrowd = iscrowd
-        self.area = area
 
     def mot(self, with_confidence=True, frame=-1):
 
@@ -192,8 +187,47 @@ class BoundingBox(Target):
             ], dtype=np.float32)
 
         return result
-    
-    def coco(self):
+
+    def coco(self, with_confidence=True):
+        result = {}
+        result['bbox'] = [self.left, self.top, self.width, self.height]
+        result['category_id'] = self.name
+        result['area'] = self.width * self.height
+        return result
+
+    def __repr__(self):
+        return "BoundingBox " + str(self)
+
+    def __str__(self):
+        return str(self.mot())
+
+
+class CocoBoundingBox(BoundingBox):
+    """
+    This target is used for 2D Object Detection with COCO format targets.
+    A bounding box is described by the left-top corner and its width and height.
+    Also, a segmentation of the target is returned if available.
+    """
+
+    def __init__(
+        self,
+        name,
+        left,
+        top,
+        width,
+        height,
+        segmentation=[],
+        area=0,
+        iscrowd=0,
+        score=0,
+    ):
+        super().__init__(name=name, left=left, top=top, width=width,
+                         height=height, score=score)
+        self.segmentation = segmentation
+        self.iscrowd = iscrowd
+        self.area = area
+
+    def coco(self, with_confidence=True):
         result = {}
         result['bbox'] = [self.left, self.top, self.width, self.height]
         result['category_id'] = self.name
@@ -203,13 +237,15 @@ class BoundingBox(Target):
             result['iscrowd'] = self.iscrowd
         else:
             result['area'] = self.width * self.height
+        if with_confidence:
+            result['confidence'] = self.confidence
         return result
-        
+
     def __repr__(self):
         return "BoundingBox " + str(self)
 
     def __str__(self):
-        return str(self.mot())
+        return str(self.coco())
 
 
 class BoundingBoxList(Target):
@@ -217,26 +253,25 @@ class BoundingBoxList(Target):
     This target is used for 2D Object Detection.
     A bounding box is described by the left-top corner and its width and height.
     """
+
     def __init__(
         self,
         boxes,
-        image_id=0
+        image_id=0,
     ):
         super().__init__()
         self.data = boxes
         self.image_id = image_id
         self.confidence = np.mean([box.confidence for box in self.data])
-        
+
     @staticmethod
     def from_coco(boxes_coco, image_id=0):
         count = len(boxes_coco)
-        
+
         boxes = []
         for i in range(count):
             if 'segmentation' in boxes_coco[i]:
                 segmentation = boxes_coco[i]['segmentation']
-            else:
-                segmentation = []
             if 'iscrowd' in boxes_coco[i]:
                 iscrowd = boxes_coco[i]['iscrowd']
             else:
@@ -245,7 +280,7 @@ class BoundingBoxList(Target):
                 area = boxes_coco[i]['area']
             else:
                 area = boxes_coco[i]['bbox'][2] * boxes_coco[i]['bbox'][3]
-            box = BoundingBox(
+            box = CocoBoundingBox(
                 boxes_coco[i]['category_id'],
                 boxes_coco[i]['bbox'][0],
                 boxes_coco[i]['bbox'][1],
@@ -253,7 +288,7 @@ class BoundingBoxList(Target):
                 boxes_coco[i]['bbox'][3],
                 segmentation=segmentation,
                 iscrowd=iscrowd,
-                area=area
+                area=area,
             )
             boxes.append(box)
 
@@ -266,21 +301,17 @@ class BoundingBoxList(Target):
         ])
 
         return result
-    
-    def coco(self):
+
+    def coco(self, with_confidence=True):
         result = []
-        
         for box in self.data:
-            result.append(
-                box.coco()
-            )
-            
+            result.append(box.coco(with_confidence))
         return result
-    
+
     @property
     def boxes(self):
         return self.data
-    
+
     def image_id(self):
         return self.image_id
 

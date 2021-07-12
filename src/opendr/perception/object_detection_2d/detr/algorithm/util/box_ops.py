@@ -1,3 +1,4 @@
+
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 # Modifications Copyright 2021 - present, OpenDR European Project
@@ -5,14 +6,15 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Utilities for bounding box manipulation and GIoU.
 """
@@ -33,11 +35,13 @@ def box_xyxy_to_cxcywh(x):
          (x1 - x0), (y1 - y0)]
     return torch.stack(b, dim=-1)
 
+
 def rescale_bboxes(out_bbox, size, device):
-        img_w, img_h = size
-        b = box_cxcywh_to_xyxy(out_bbox)
-        b = b * torch.tensor([img_w, img_h, img_w, img_h], dtype=torch.float32).to(torch.device(device))
-        return b
+    img_w, img_h = size
+    b = box_cxcywh_to_xyxy(out_bbox)
+    b = b * torch.tensor([img_w, img_h, img_w, img_h], dtype=torch.float32).to(torch.device(device))
+    return b
+
 
 # modified from torchvision to also return the union
 def box_iou(boxes1, boxes2):
