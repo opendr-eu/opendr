@@ -153,36 +153,22 @@ Parameters:
 - **path**: *str*
   Path of the model to be loaded.
 
-#### `GEMLearner.create_model`
-```python
-GEMLearner.create_model(self, backbone, pretrained)
-```
+  #### `GEMLearner.download`
+  ```python
+  GEMLearner.download(self, path, mode, verbose)
+  ```
+  Download utility for downloading pretrained models and test data.
 
-Method for creating the multimodal model with the specified backbone and fusion method. Currently only supports *resnet50* as the backbone, and two fusion methods namely scalar averaged *'sc_avg'* (default method) and average baseline *'avg_baseline'* described by *GEMLearner.fusion_method* variable. Loading pretrained weights are supported in two ways: 1) partially loading weights from single modal DETR with *resnet50* backbone, and 2) from *'gem_scavg_e294_mAP0983_rn50_l515_7cls.pth'* (backbone: *'resnet50'*, fusion_method: *'scalar averaged'*, trained on *RGB-Infrared l515_dataset*.
-
-Parameters:
-- **backbone** : *str, default='resnet50'*
-  This str determines the backbone that is used in the model. Currently only supports *"resnet50"* backbone.
-- **pretrained** : *str, default=None*
-  Three options: *None*, *'gem_l515'* and *'detr_coco'*.
-
-#### `GEMLearner.download_sample_images`
-```python
-GEMLearner.download_sample_images(self, path)
-```
-
-Method for downloading two sample images for testing *infer* function.
-
-Parameters:
-- **path** : *str*
-  This str determines the root folder to save sample images.
-
-#### `GEMLearner.download_l515`
-```python
-GEMLearner.download_l515(self)
-```
-
-Method for downloading *RGB-Infrared l515* dataset from the OpenDR server. The dataset will be saved in the path described by *GEMLearner.datasetargs.dataset_root* which actually get this path from *'dataset_config.yaml'* file.
+  Parameters:
+  - **path** : *str*
+    Determines the path to the location where the downloaded files will be stored.
+  - **mode** : *str*
+    Determines the files that will be downloaded. Valid values are: "weights_detr", "pretrained_detr", "pretrained_gem", "test_data_l515" and "test_data_sample_images".
+    In case of "weights_detr", the weigths for single modal DETR with *resnet50* backbone are downloaded. In case of "pretrained_detr", the weigths for single modal pretrained DETR with *resnet50* backbone are downloaded. In case of "pretrained_gem", the weights from *'gem_scavg_e294_mAP0983_rn50_l515_7cls.pth'* (backbone: *'resnet50'*, fusion_method: *'scalar averaged'*, trained on *RGB-Infrared l515_dataset* are downloaded.
+    In case of "test_data_l515", the *RGB-Infrared l515* dataset is downloaded from the OpenDR server.
+    In case of "test_data_sample images", two sample images for testing the *infer* function are downloaded.
+  - **verbose** : *bool*
+    Enables the maximum verbosity.
 
 #### Examples
 

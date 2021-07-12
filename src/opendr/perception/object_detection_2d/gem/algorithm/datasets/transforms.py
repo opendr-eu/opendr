@@ -1,9 +1,22 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Transforms and data augmentation for both image + bbox.
 """
 import random
-
+import numbers
 import PIL
 import torch
 import torchvision.transforms as T
@@ -13,12 +26,9 @@ from opendr.perception.object_detection_2d.detr.algorithm.util.box_ops import bo
 from opendr.perception.object_detection_2d.detr.algorithm.util.misc import interpolate
 
 from PIL import Image, ImageChops
-import numbers, math
-from torch import Tensor
 import numpy as np
-import warnings
 import cv2
-import time
+
 
 def crop(image, target, region):
     cropped_image = F.crop(image, *region)
@@ -151,6 +161,7 @@ def pad(image, target, padding):
         target['masks'] = torch.nn.functional.pad(target['masks'], (0, padding[0], 0, padding[1]))
     return padded_image, target
 
+
 class seededRandomCrop(object):
     """Crop the given PIL Image at a random location.
 
@@ -218,7 +229,7 @@ class seededRandomCrop(object):
         j = random.randint(0, w - tw)
         return i, j, th, tw
 
-    def __call__(self, img):
+    def __call__(self, img, seed=0):
         """
         Args:
             img (PIL Image): Image to be cropped.
@@ -242,6 +253,7 @@ class seededRandomCrop(object):
 
     def __repr__(self):
         return self.__class__.__name__ + '(size={0}, padding={1})'.format(self.size, self.padding)
+
 
 class RandomCrop(object):
     def __init__(self, size):
@@ -309,9 +321,11 @@ class RandomPad(object):
         pad_y = random.randint(0, self.max_pad)
         return pad(img, target, (pad_x, pad_y))
 
+
 class RandomShadows(object):
-    def __init__(self, p=0.5, high_ratio=(1,2), low_ratio=(0.01, 0.5), left_low_ratio=(0.4,0.6), \
-    left_high_ratio=(0,0.2), right_low_ratio=(0.4,0.6), right_high_ratio = (0,0.2)):
+
+    def __init__(self, p=0.5, high_ratio=(1, 2), low_ratio=(0.01, 0.5), left_low_ratio=(0.4, 0.6),
+                 left_high_ratio=(0, 0.2), right_low_ratio=(0.4, 0.6), right_high_ratio=(0, 0.2)):
         self.p = p
         self.high_ratio = high_ratio
         self.low_ratio = low_ratio
@@ -321,8 +335,7 @@ class RandomShadows(object):
         self.right_high_ratio = right_high_ratio
 
     @staticmethod
-    def process(img, high_ratio, low_ratio, left_low_ratio, left_high_ratio, \
-            right_low_ratio, right_high_ratio, seed):
+    def process(img, high_ratio, low_ratio, left_low_ratio, left_high_ratio, right_low_ratio, right_high_ratio, seed):
 
         w, h = img.size
         random.seed(seed)
@@ -342,8 +355,8 @@ class RandomShadows(object):
 
         contour = np.array([tl, tr, br, bl], dtype=np.int32)
 
-        mask = np.zeros([h, w, 3],np.uint8)
-        cv2.fillPoly(mask,[contour],(255,255,255))
+        mask = np.zeros([h, w, 3], np.uint8)
+        cv2.fillPoly(mask, [contour], (255, 255, 255))
         inverted_mask = cv2.bitwise_not(mask)
         # we need to convert this cv2 masks to PIL images
         # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -361,12 +374,12 @@ class RandomShadows(object):
     def __call__(self, img, target, seed):
         random.seed(seed)
         if random.uniform(0, 1) < self.p:
-            img = self.process(img, self.high_ratio, self.low_ratio, \
-            self.left_low_ratio, self.left_high_ratio, self.right_low_ratio, \
-            self.right_high_ratio, seed)
+            img = self.process(img, self.high_ratio, self.low_ratio, self.left_low_ratio,
+                               self.left_high_ratio, self.right_low_ratio, self.right_high_ratio, seed)
             return img, target
         else:
             return img, target
+
 
 class RedChannel(object):
 
@@ -375,6 +388,7 @@ class RedChannel(object):
 
     def __call__(self, img, target, seed):
         return self.red(img), target
+
 
 class RedChannel_class(object):
     def __init__(self, num_output_channels=1):
@@ -388,11 +402,13 @@ class RedChannel_class(object):
     def __repr__(self):
         return self.__class__.__name__ + '(num_output_channels={0})'.format(self.num_output_channels)
 
+
 class RandomSelect(object):
     """
     Randomly selects between transforms1 and transforms2,
     with probability p for transforms1 and (1 - p) for transforms2
     """
+
     def __init__(self, transforms1, transforms2, p=0.5):
         self.transforms1 = transforms1
         self.transforms2 = transforms2
@@ -403,6 +419,7 @@ class RandomSelect(object):
         if random.random() < self.p:
             return self.transforms1(img, target, seed)
         return self.transforms2(img, target, seed)
+
 
 class ToTensor(object):
     def __call__(self, img, target, seed=None):
@@ -441,6 +458,7 @@ class ToTensor(object):
 #
 #     img[..., i:i + h, j:j + w] = img_adjusted[..., i:i + h, j:j + w]
 #     return img
+
 
 class RandomErasing(object):
 

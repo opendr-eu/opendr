@@ -1,35 +1,33 @@
-# Copyright 2021 - present, OpenDR European Project
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import datetime
 import json
-import shutil
 import random
 import time
 import warnings
 import torch
 import ntpath
-from torch.utils.data import DataLoader, DistributedSampler
+from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-from pathlib import Path
 from urllib.request import urlretrieve
 
 from opendr.perception.object_detection_2d.detr.algorithm.datasets import get_coco_api_from_dataset
 from opendr.perception.object_detection_2d.detr.algorithm.datasets.coco import map_bounding_box_list_to_coco
 from opendr.perception.object_detection_2d.gem.algorithm.util.detect import detect
+from opendr.perception.object_detection_2d.gem.algorithm.util.sampler import (RandomSampler, SequentialSampler,
+                                                                              DistributedSamplerWrapper)
 from opendr.perception.object_detection_2d.gem.algorithm.datasets import build_dataset
 from opendr.perception.object_detection_2d.gem.algorithm.engine import evaluate, train_one_epoch
 from opendr.perception.object_detection_2d.gem.algorithm.models import build_model, build_criterion, build_postprocessors
@@ -38,165 +36,44 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Image
 from opendr.engine.learners import Learner
 from opendr.engine.datasets import ExternalDataset, DatasetIterator, MappedDatasetIterator
-from opendr.engine.target import BoundingBox, BoundingBoxList
+from opendr.engine.target import CocoBoundingBox, BoundingBoxList
 
 import torchvision.transforms as T
 import numpy as np
-import onnxruntime as ort
 import opendr.perception.object_detection_2d.detr.algorithm.util.misc as utils
 from PIL import Image as im
 
 import zipfile
 
-from torch.utils.data.sampler import Sampler
-from torch.utils.data import Dataset
 
-# Imports for DatasetFromSampler and DistributedSamplerWrapper
-from typing import Optional
-from operator import itemgetter
-
-
-class RandomSampler(Sampler):
-  def __init__(self, dataset, seed=None):
-    self.dataset = dataset
-    if seed is not None:
-        self.seed = seed
-
-  def set_seed(self, seed=None):
-    if seed is not None:
-        self.seed = seed
-    else:
-        random.seed(time.process_time())
-        self.seed = random.randint(0, 2**32 - 1)
-        return self.seed
-
-  def __iter__(self):
-    n = len(self.dataset)
-    indexes = list(range(n))
-    random.Random(self.seed).shuffle(indexes)
-    return iter(indexes)
-
-  def __len__(self):
-    return len(self.dataset)
-
-class SequentialSampler(Sampler):
-    r"""Samples elements sequentially, always in the same order.
-    Arguments:
-        data_source (Dataset): dataset to sample from
-    """
-    # dataset: Sized
-
-    def __init__(self, dataset):
-        self.dataset = dataset
-
-    def __iter__(self):
-        return iter(range(len(self.dataset)))
-
-    def __len__(self) -> int:
-        return len(self.dataset)
-
-class DatasetFromSampler(Dataset):
-    """Dataset to create indexes from `Sampler`.
-    Args:
-        sampler: PyTorch sampler
-    """
-
-    def __init__(self, sampler: Sampler):
-        """Initialisation for DatasetFromSampler."""
-        self.sampler = sampler
-        self.sampler_list = None
-
-    def __getitem__(self, index: int):
-        """Gets element of the dataset.
-        Args:
-            index: index of the element in the dataset
-        Returns:
-            Single element by index
-        """
-        if self.sampler_list is None:
-            self.sampler_list = list(self.sampler)
-        return self.sampler_list[index]
-
-    def __len__(self) -> int:
-        """
-        Returns:
-            int: length of the dataset
-        """
-        return len(self.sampler)
-
-class DistributedSamplerWrapper(DistributedSampler):
-    """
-    Wrapper over `Sampler` for distributed training.
-    Allows you to use any sampler in distributed mode.
-    It is especially useful in conjunction with
-    `torch.nn.parallel.DistributedDataParallel`. In such case, each
-    process can pass a DistributedSamplerWrapper instance as a DataLoader
-    sampler, and load a subset of subsampled data of the original dataset
-    that is exclusive to it.
-    .. note::
-        Sampler is assumed to be of constant size.
-    """
-
+class GemLearner(Learner):
     def __init__(
-        self,
-        sampler,
-        num_replicas: Optional[int] = None,
-        rank: Optional[int] = None,
-        shuffle: bool = False,
-    ):
-        """
-        Args:
-            sampler: Sampler used for subsampling
-            num_replicas (int, optional): Number of processes participating in
-              distributed training
-            rank (int, optional): Rank of the current process
-              within ``num_replicas``
-            shuffle (bool, optional): If true (default),
-              sampler will shuffle the indices
-        """
-        super(DistributedSamplerWrapper, self).__init__(
-            DatasetFromSampler(sampler),
-            num_replicas=num_replicas,
-            rank=rank,
-            shuffle=shuffle,
-        )
-        self.sampler = sampler
-
-    def __iter__(self):
-        """@TODO: Docs. Contribution is welcome."""
-        self.dataset = DatasetFromSampler(self.sampler)
-        indexes_of_indexes = super().__iter__()
-        subsampler_indexes = self.dataset
-        return iter(itemgetter(*indexes_of_indexes)(subsampler_indexes))
-
-class GEMLearner(Learner):
-    def __init__(
-        self,
-        model_config_path=os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            "algorithm/configs/model_config.yaml"
-            ),
-        dataset_config_path=os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            "algorithm/configs/dataset_config.yaml"
-            ),
-        iters=10,
-        dataset=None,
-        lr=1e-4,
-        batch_size=1,
-        optimizer="adamw",
-        backbone="resnet50",
-        checkpoint_after_iter=0,
-        checkpoint_load_iter=0,
-        temp_path="temp",
-        device="cuda",
-        threshold=0.7,
-        num_classes=91,
-        return_segmentations=False,
-        ):
+            self,
+            model_config_path=os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                "algorithm/configs/model_config.yaml"
+                ),
+            dataset_config_path=os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                "algorithm/configs/dataset_config.yaml"
+                ),
+            iters=10,
+            dataset=None,
+            lr=1e-4,
+            batch_size=1,
+            optimizer="adamw",
+            backbone="resnet50",
+            checkpoint_after_iter=0,
+            checkpoint_load_iter=0,
+            temp_path="temp",
+            device="cuda",
+            threshold=0.7,
+            num_classes=91,
+            return_segmentations=False,
+            ):
 
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
-        super(GEMLearner, self).__init__(
+        super(GemLearner, self).__init__(
             iters=iters,
             lr=lr,
             batch_size=batch_size,
@@ -217,7 +94,7 @@ class GEMLearner(Learner):
         self.args.num_classes = num_classes
         self.args.dataset_file = "coco"
 
-        self.dataset=dataset
+        self.dataset = dataset
         if self.dataset is not None:
             print("True")
             self.deleteme()
@@ -305,12 +182,12 @@ class GEMLearner(Learner):
         full_path_to_model_folder = path_no_folder_name + folder_name_no_ext
         os.makedirs(full_path_to_model_folder, exist_ok=True)
 
-
         if not os.path.exists(path):
             os.makedirs(path)
 
         model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
-                          "inference_params": {'threshold' : self.threshold}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
+                          "inference_params": {'threshold': self.threshold}, "optimized": None, "optimizer_info": {},
+                          "backbone": self.backbone}
 
         model_metadata["model_paths"] = [folder_name_no_ext + ".pth"]
         model_metadata["optimized"] = False
@@ -394,76 +271,22 @@ class GEMLearner(Learner):
             self.epoch = self.checkpoint_load_iter = checkpoint['epoch'] + 1
         print(f'Loaded checkpoint{self.checkpoint_load_iter:04}.pth')
 
-    def create_model(self, backbone='resnet50', pretrained=None):
-        """
-        Method for creating a model
-
-        Returns
-        -------
-        None.
-
-        """
-        supportedBackbones = ['resnet50']
-        if backbone.lower() in supportedBackbones:
-            self.__create_model()
-
-            if pretrained == 'detr_coco':
-                torch.hub.set_dir(self.temp_path)
-                detr_model = torch.hub.load(
-                    'facebookresearch/detr',
-                    f'detr_{backbone}',
-                    pretrained=pretrained,
-                    return_postprocessor=False
-                    )
-                if self.args.num_classes != 91:
-                    detr_model.class_embed = torch.nn.Linear(
-                        in_features=detr_model.class_embed.in_features,
-                        out_features=self.args.num_classes+1)
-
-                pretrained_dict = detr_model.state_dict()
-                backbone_ir_entries_dict = {k.replace('backbone', 'backbone_ir'): v for k, v in pretrained_dict.items() \
-                        if 'backbone' in k}
-                pretrained_dict.update(backbone_ir_entries_dict)
-                print("Loading detr_resnet50 weights (partially)...")
-                self.model_without_ddp.load_state_dict(pretrained_dict, strict=False)
-                print("Weights Loaded.")
-
-            elif pretrained == 'gem_l515':
-                pretrained_model_local_path = './pretrained_models/gem_scavg_e294_mAP0983_rn50_l515_7cls.pth'
-                if not os.path.exists(pretrained_model_local_path):
-                    pretrained_model_url = OPENDR_SERVER_URL + 'perception/object_detection_2d/gem/models/gem_scavg_e294_mAP0983_rn50_l515_7cls.pth'
-                    if not os.path.exists('./pretrained_models'):
-                        os.makedirs('./pretrained_models')
-                    # Download pretrained_model from ftp server
-                    print("Downloading pretrained model from " + OPENDR_SERVER_URL)
-                    urlretrieve(pretrained_model_url, pretrained_model_local_path)
-
-                pretrained_model = torch.load(pretrained_model_local_path, map_location='cpu')
-                pretrained_dict = pretrained_model['model']
-
-                print("Loading gem_l515 weights...")
-                self.model_without_ddp.load_state_dict(pretrained_dict, strict=True)
-                print("Weights Loaded.")
-        else:
-            print("Backbone currently not supported")
-
-
     def fit(self, m1_train_edataset=None,
-                  m2_train_edataset=None,
-                  annotations_folder=None,
-                  m1_train_annotations_file=None,
-                  m2_train_annotations_file=None,
-                  m1_train_images_folder=None,
-                  m2_train_images_folder=None,
-                  out_dir='outputs',
-                  trial_dir='trial',
-                  logging_path='', silent=False, verbose=True,
-                  m1_val_edataset=None,
-                  m2_val_edataset=None,
-                  m1_val_annotations_file=None,
-                  m2_val_annotations_file=None,
-                  m1_val_images_folder=None,
-                  m2_val_images_folder=None,
+            m2_train_edataset=None,
+            annotations_folder=None,
+            m1_train_annotations_file=None,
+            m2_train_annotations_file=None,
+            m1_train_images_folder=None,
+            m2_train_images_folder=None,
+            out_dir='outputs',
+            trial_dir='trial',
+            logging_path='', silent=False, verbose=True,
+            m1_val_edataset=None,
+            m2_val_edataset=None,
+            m1_val_annotations_file=None,
+            m2_val_annotations_file=None,
+            m1_val_images_folder=None,
+            m2_val_images_folder=None,
             ):
         """
         This method is used for training the algorithm on a train dataset and validating on a val dataset.
@@ -504,8 +327,7 @@ class GEMLearner(Learner):
             Returns stats regarding the last evaluation ran.
 
         """
-        dataset_location = os.path.join(self.datasetargs.dataset_root, \
-                            self.datasetargs.dataset_name)
+        dataset_location = os.path.join(self.datasetargs.dataset_root, self.datasetargs.dataset_name)
         if m1_train_edataset is None:
             m1_train_edataset = ExternalDataset(dataset_location, 'coco')
         if m2_train_edataset is None:
@@ -625,7 +447,7 @@ class GEMLearner(Learner):
                 annotations_file_name=m2_val_annotations_file,
                 seed=val_seed
                 )
-            m2_sampler_val_main = SequentialSampler(m2_dataset_val)
+            # m2_sampler_val_main = SequentialSampler(m2_dataset_val)
 
         if not self.args.distributed:
             m1_sampler_train = m1_sampler_train_main
@@ -633,14 +455,14 @@ class GEMLearner(Learner):
 
             if m1_val_edataset is not None and m2_val_edataset is not None:
                 m1_sampler_val = m1_sampler_val_main
-                m2_sampler_val = m2_sampler_val_main
+                # m2_sampler_val = m2_sampler_val_main
         else:
             m1_sampler_train = DistributedSamplerWrapper(m1_sampler_train_main)
             m2_sampler_train = DistributedSamplerWrapper(m2_sampler_train_main)
 
             if m1_val_edataset is not None and m2_val_edataset is not None:
                 m1_sampler_val = DistributedSamplerWrapper(m1_sampler_val_main)
-                m2_sampler_val = DistributedSamplerWrapper(m2_sampler_val_main)
+                # m2_sampler_val = DistributedSamplerWrapper(m2_sampler_val_main)
 
         # Starting from here, code has been modified from https://github.com/facebookresearch/detr/blob/master/main.py
 
@@ -673,22 +495,22 @@ class GEMLearner(Learner):
                 collate_fn=utils.collate_fn,
                 num_workers=self.args.num_workers
                 )
-            m2_data_loader_val = DataLoader(
-                m2_dataset_val,
-                self.batch_size,
-                sampler=m2_sampler_val,
-                drop_last=False,
-                collate_fn=utils.collate_fn,
-                num_workers=self.args.num_workers
-                )
+            # m2_data_loader_val = DataLoader(
+            #     m2_dataset_val,
+            #     self.batch_size,
+            #     sampler=m2_sampler_val,
+            #     drop_last=False,
+            #     collate_fn=utils.collate_fn,
+            #     num_workers=self.args.num_workers
+            #     )
             base_ds = get_coco_api_from_dataset(m1_dataset_val)
 
         if not silent:
             print("Start training")
         start_time = time.time()
         for self.epoch in range(self.checkpoint_load_iter, self.iters):
-            if self.args.distributed:
-                sampler_train.set_epoch(self.epoch)
+            # if self.args.distributed:
+            #     sampler_train.set_epoch(self.epoch)
             train_stats = train_one_epoch(
                 self.model,
                 self.criterion,
@@ -791,8 +613,7 @@ class GEMLearner(Learner):
         if self.model is None:
             raise UserWarning('A model should be loaded first')
 
-        dataset_location = os.path.join(self.datasetargs.dataset_root, \
-                            self.datasetargs.dataset_name)
+        dataset_location = os.path.join(self.datasetargs.dataset_root, self.datasetargs.dataset_name)
         if m1_edataset is None:
             m1_edataset = ExternalDataset(dataset_location, 'coco')
         if m2_edataset is None:
@@ -901,12 +722,12 @@ class GEMLearner(Learner):
         if len(segmentations) == len(scores):
             for p, (xmin, ymin, xmax, ymax), segmentation in zip(scores.tolist(), boxes.tolist(), segmentations):
                 cl = np.argmax(p)
-                box = BoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl], segmentation=segmentation)
+                box = CocoBoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl], segmentation=segmentation)
                 boxlist.append(box)
         else:
             for p, (xmin, ymin, xmax, ymax) in zip(scores.tolist(), boxes.tolist()):
                 cl = np.argmax(p)
-                box = BoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl])
+                box = CocoBoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl])
                 boxlist.append(box)
         return BoundingBoxList(boxlist)
 
@@ -944,33 +765,98 @@ class GEMLearner(Learner):
 
         """
 
-    def download_l515(self):
+    def download(self, path=None, mode="pretrained_gem", verbose=False):
+        supported_backbones = ['resnet50']
+        valid_modes = ["weights_detr", "pretrained_detr", "pretrained_gem", "test_data_l515", "test_data_sample_images"]
+        if mode not in valid_modes:
+            raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
 
-        url=OPENDR_SERVER_URL + "perception/object_detection_2d/gem/l515_dataset.zip"
-        if not os.path.exists(self.datasetargs.dataset_root):
-            os.makedirs(self.datasetargs.dataset_root)
-        if not os.path.exists(os.path.join(self.datasetargs.dataset_root, 'l515_dataset')):
-            print("Downloading l515_dataset...")
-            urlretrieve(url, os.path.join(self.datasetargs.dataset_root, 'l515_dataset.zip'))
-            print("Downloaded.")
-        if os.path.exists(os.path.join(self.datasetargs.dataset_root, 'l515_dataset.zip')):
-            try:
-                with zipfile.ZipFile(os.path.join(self.datasetargs.dataset_root, 'l515_dataset.zip'), 'r') as zip_ref:
-                    zip_ref.extractall(self.datasetargs.dataset_root)
-                os.remove(os.path.join(self.datasetargs.dataset_root, 'l515_dataset.zip'))
-            except:
-                print("Error unzipping {} file.".format('l515_dataset.zip'))
+        if path is None:
+            path = self.temp_path
 
-    def download_sample_images(self, path='./'):
-        if not os.path.exists(os.path.join(path, 'rgb')):
-            os.makedirs(os.path.join(path, 'rgb'))
-        if not os.path.exists(os.path.join(path, 'aligned_infra')):
-            os.makedirs(os.path.join(path, 'aligned_infra'))
-        if not (os.path.exists(os.path.join(path, 'rgb/2021_04_22_21_35_47_852516.jpg')) and os.path.exists(os.path.join(path, 'aligned_infra/2021_04_22_21_35_47_852516.jpg'))):
-            img1_url = OPENDR_SERVER_URL + "perception/object_detection_2d/gem/sample_images/rgb/2021_04_22_21_35_47_852516.jpg"
-            img2_url = OPENDR_SERVER_URL + "perception/object_detection_2d/gem/sample_images/aligned_infra/2021_04_22_21_35_47_852516.jpg"
-            urlretrieve(img1_url, os.path.join(path, 'rgb/2021_04_22_21_35_47_852516.jpg'))
-            urlretrieve(img2_url, os.path.join(path, 'aligned_infra/2021_04_22_21_35_47_852516.jpg'))
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if mode == "pretrained_detr" or mode == "weights_detr":
+            if self.backbone not in supported_backbones:
+                raise UserWarning("Backbone {} currently not supported, valid backbones are: {}".format(
+                    self.backbone, supported_backbones))
+            self.__create_model()
+            if mode == 'pretrained_detr':
+                pretrained = True
+            else:
+                pretrained = False
+            torch.hub.set_dir(self.temp_path)
+            detr_model = torch.hub.load(
+                'facebookresearch/detr',
+                f'detr_{self.backbone}',
+                pretrained=pretrained,
+                return_postprocessor=False
+                )
+            if self.args.num_classes != 91:
+                detr_model.class_embed = torch.nn.Linear(
+                    in_features=detr_model.class_embed.in_features,
+                    out_features=self.args.num_classes+1)
+
+            pretrained_dict = detr_model.state_dict()
+            backbone_ir_entries_dict = {k.replace('backbone', 'backbone_ir'): v for k, v in pretrained_dict.items() if
+                                        'backbone' in k}
+            pretrained_dict.update(backbone_ir_entries_dict)
+            print("Loading detr_resnet50 weights (partially)...")
+            self.model_without_ddp.load_state_dict(pretrained_dict, strict=False)
+            print("Weights Loaded.")
+
+        elif mode == 'pretrained_gem':
+            self.__create_model()
+            if self.backbone not in supported_backbones:
+                raise UserWarning("Backbone {} currently not supported, valid backbones are: {}".format(
+                    self.backbone, supported_backbones))
+            pretrained_model_local_path = os.path.join(path, "pretrained_models/gem_scavg_e294_mAP0983_rn50_l515_7cls.pth")
+            if not os.path.exists(pretrained_model_local_path):
+                pretrained_model_url = (
+                    OPENDR_SERVER_URL +
+                    'perception/object_detection_2d/gem/models/gem_scavg_e294_mAP0983_rn50_l515_7cls.pth'
+                    )
+                if not os.path.exists(os.path.join(path, 'pretrained_models')):
+                    os.makedirs(os.path.join(path, 'pretrained_models'))
+                # Download pretrained_model from ftp server
+                print("Downloading pretrained model from " + OPENDR_SERVER_URL)
+                urlretrieve(pretrained_model_url, pretrained_model_local_path)
+
+            pretrained_model = torch.load(pretrained_model_local_path, map_location='cpu')
+            pretrained_dict = pretrained_model['model']
+
+            print("Loading gem_l515 weights...")
+            self.model_without_ddp.load_state_dict(pretrained_dict, strict=True)
+            print("Weights Loaded.")
+
+        elif mode == "test_data_l515":
+            url = OPENDR_SERVER_URL + "perception/object_detection_2d/gem/l515_dataset.zip"
+            dataset_root = path
+            self.datasetargs.dataset_root = dataset_root
+            if not os.path.exists(dataset_root):
+                os.makedirs(dataset_root)
+            if not os.path.exists(os.path.join(dataset_root, 'l515_dataset')):
+                print("Downloading l515_dataset...")
+                urlretrieve(url, os.path.join(dataset_root, 'l515_dataset.zip'))
+                print("Downloaded.")
+            if os.path.exists(os.path.join(dataset_root, 'l515_dataset.zip')):
+                with zipfile.ZipFile(os.path.join(dataset_root, 'l515_dataset.zip'), 'r') as zip_ref:
+                    zip_ref.extractall(dataset_root)
+                os.remove(os.path.join(dataset_root, 'l515_dataset.zip'))
+        elif mode == "test_data_sample_images":
+            if not os.path.exists(os.path.join(path, 'rgb')):
+                os.makedirs(os.path.join(path, 'rgb'))
+            if not os.path.exists(os.path.join(path, 'aligned_infra')):
+                os.makedirs(os.path.join(path, 'aligned_infra'))
+            if not (os.path.exists(os.path.join(path, 'rgb/2021_04_22_21_35_47_852516.jpg')) and
+                    os.path.exists(os.path.join(path, 'aligned_infra/2021_04_22_21_35_47_852516.jpg'))):
+                img1_url = (OPENDR_SERVER_URL +
+                            "perception/object_detection_2d/gem/sample_images/rgb/2021_04_22_21_35_47_852516.jpg")
+                img2_url = (OPENDR_SERVER_URL +
+                            "perception/object_detection_2d/gem/sample_images/aligned_infra/2021_04_22_21_35_47_852516.jpg")
+                urlretrieve(img1_url, os.path.join(path, 'rgb/2021_04_22_21_35_47_852516.jpg'))
+                urlretrieve(img2_url, os.path.join(path, 'aligned_infra/2021_04_22_21_35_47_852516.jpg'))
 
     def __create_criterion(self):
         """

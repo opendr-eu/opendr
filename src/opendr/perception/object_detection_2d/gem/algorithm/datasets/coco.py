@@ -2,17 +2,19 @@
 
 # Modifications Copyright 2021 - present, OpenDR European Project
 
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 COCO dataset which returns image_id for evaluation.
 
@@ -28,6 +30,7 @@ from PIL import Image as im
 
 import random
 import time
+
 
 class CocoDetection(torchvision.datasets.CocoDetection):
     def __init__(self, img_folder, ann_file, seed, transforms, return_masks):
@@ -58,6 +61,7 @@ class CocoDetection(torchvision.datasets.CocoDetection):
             return
         # return orig_img, img, target
         return img, target
+
 
 def convert_coco_poly_to_mask(segmentations, height, width):
     masks = []
@@ -140,6 +144,7 @@ class ConvertCocoPolysToMask(object):
 
         return image, target
 
+
 def map_bounding_box_list_to_coco(image_set, return_masks):
     prepare = ConvertCocoPolysToMask(return_masks)
     transforms = make_coco_transforms(image_set)
@@ -149,12 +154,13 @@ def map_bounding_box_list_to_coco(image_set, return_masks):
         numpy_image = image.numpy()
         pil_image = im.fromarray(numpy_image)
 
-        coco_target = {'image_id' : target.image_id, 'annotations' : target.coco()}
+        coco_target = {'image_id': target.image_id, 'annotations': target.coco()}
         image, target = prepare(pil_image, coco_target)
         transformed_img, transformed_target = transforms(image, target)
         return transformed_img, transformed_target
 
     return map
+
 
 def make_coco_transforms(image_set):
 

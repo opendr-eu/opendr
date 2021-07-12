@@ -83,7 +83,7 @@ class BackboneBase(nn.Module):
 
     def forward(self, tensor_list: NestedTensor):
         xs = self.body(tensor_list.tensors)
-        out = Dict[str, NestedTensor] = {}
+        out: Dict[str, NestedTensor] = {}  # nopep8
         for name, x in xs.items():
             m = tensor_list.mask
             assert m is not None
@@ -112,7 +112,7 @@ class Joiner(nn.Sequential):
 
     def forward(self, tensor_list: NestedTensor):
         xs = self[0](tensor_list)
-        out = List[NestedTensor] = []
+        out: List[NestedTensor] = []  # nopep8
         pos = []
         for name, x in xs.items():
             out.append(x)

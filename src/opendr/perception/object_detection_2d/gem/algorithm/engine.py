@@ -1,23 +1,23 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-# Modifications Copyright 2021 - present, OpenDR European Project
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Train and eval functions used in main.py
 """
 import math
-import os
+# import os
 import sys
 from typing import Iterable
 
@@ -25,10 +25,8 @@ import torch
 
 import opendr.perception.object_detection_2d.gem.algorithm.util.misc as utils
 from opendr.perception.object_detection_2d.detr.algorithm.datasets.coco_eval import CocoEvaluator
-from opendr.perception.object_detection_2d.detr.algorithm.datasets.panoptic_eval import PanopticEvaluator
+# from opendr.perception.object_detection_2d.detr.algorithm.datasets.panoptic_eval import PanopticEvaluator
 
-import cv2
-import numpy as np
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                     m1_data_loader: Iterable,
@@ -46,7 +44,8 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
     print_freq = 10
 
     # for samples, targets in metric_logger.log_every(data_loader, print_freq, header, verbose=verbose, silent=silent):
-    for [m1_samples, targets], [m2_samples, _] in metric_logger.log_every(zip(m1_data_loader, m2_data_loader), print_freq, len(m1_data_loader), header):
+    for [m1_samples, targets], [m2_samples, _] in metric_logger.log_every(zip(m1_data_loader, m2_data_loader), print_freq,
+                                                                          len(m1_data_loader), header):
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
         m1_samples = m1_samples.to(device)
@@ -118,16 +117,18 @@ def evaluate(model, criterion, postprocessors, m1_data_loader, m2_data_loader, b
         coco_evaluator = None
 
     panoptic_evaluator = None
-    if 'panoptic' in postprocessors.keys():
-        panoptic_evaluator = PanopticEvaluator(
-            data_loader.dataset.ann_file,
-            data_loader.dataset.ann_folder,
-            output_dir=os.path.join(output_dir, "panoptic_eval"),
-        )
+    # if 'panoptic' in postprocessors.keys():
+    #     panoptic_evaluator = PanopticEvaluator(
+    #         data_loader.dataset.ann_file,
+    #         data_loader.dataset.ann_folder,
+    #         output_dir=os.path.join(output_dir, "panoptic_eval"),
+    #     )
 
     print_freq = 10
 
-    for [m1_samples, targets], [m2_samples, _] in metric_logger.log_every(zip(m1_data_loader, m2_data_loader), print_freq, len(m1_data_loader), header,  verbose=verbose, silent=silent):
+    for [m1_samples, targets], [m2_samples, _] in metric_logger.log_every(zip(m1_data_loader, m2_data_loader),
+                                                                          print_freq, len(m1_data_loader), header,
+                                                                          verbose=verbose, silent=silent):
 
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 

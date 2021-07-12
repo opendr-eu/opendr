@@ -1,4 +1,17 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 DETR model and criterion classes.
 """
@@ -8,16 +21,17 @@ from torch import nn
 
 from opendr.perception.object_detection_2d.detr.algorithm.util import box_ops
 from opendr.perception.object_detection_2d.detr.algorithm.util.misc import (NestedTensor, nested_tensor_from_tensor_list,
-                       accuracy, get_world_size, interpolate,
-                       is_dist_avail_and_initialized)
-from opendr.perception.object_detection_2d.gem.algorithm.util.misc import mm_nested_tensor_from_tensor_list
+                                                                            accuracy, get_world_size, interpolate,
+                                                                            is_dist_avail_and_initialized)
 
 from opendr.perception.object_detection_2d.detr.algorithm.models.backbone import build_backbone
 # from .backbone_custom import build_backbone
 from opendr.perception.object_detection_2d.detr.algorithm.models.matcher import build_matcher
-from opendr.perception.object_detection_2d.detr.algorithm.models.segmentation import (DETRsegm, PostProcessPanoptic, PostProcessSegm,
-                           dice_loss, sigmoid_focal_loss)
+from opendr.perception.object_detection_2d.detr.algorithm.models.segmentation import (DETRsegm, PostProcessPanoptic,
+                                                                                      PostProcessSegm,
+                                                                                      dice_loss, sigmoid_focal_loss)
 from opendr.perception.object_detection_2d.detr.algorithm.models.transformer import build_transformer
+
 
 class Weight_relu(nn.Module):
     def __init__(self):
@@ -60,8 +74,12 @@ class Weight_relu(nn.Module):
                     nn.init.constant_(m.bias, 0)
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
 
+
 class sc_avg_detr(nn.Module):
-    """ This is the Scalar Average Multi-Modal DETR module that performs object detection """
+    """
+    This is the Scalar Average Multi-Modal DETR module that performs object detection
+    """
+
     def __init__(self, backbone, transformer, num_classes, num_queries, aux_loss=False):
         """ Initializes the model.
         Parameters:
@@ -75,7 +93,7 @@ class sc_avg_detr(nn.Module):
         super().__init__()
         self.num_queries = num_queries
         self.transformer = transformer
-        hidden_dim = transformer.d_model # 512 by default
+        hidden_dim = transformer.d_model  # 512 by default
         self.class_embed = nn.Linear(hidden_dim, num_classes + 1)
         self.bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
         self.query_embed = nn.Embedding(num_queries, hidden_dim)
@@ -90,7 +108,7 @@ class sc_avg_detr(nn.Module):
         print("Model Created")
 
     def forward(self, samples: NestedTensor):
-        """ The forward expects a NestedTensor, which consists of:
+        """ The forward expects a NestedTensor, which consists of:
                - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
                - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
 
@@ -118,8 +136,8 @@ class sc_avg_detr(nn.Module):
         x2, _ = self.weight_ir(src_ir)
 
         with torch.no_grad():
-            mean_src = torch.mean(src[:,0:16,:,:])
-            mean_src_ir = torch.mean(src_ir[:,0:16,:,:])
+            mean_src = torch.mean(src[:, 0:16, :, :])
+            mean_src_ir = torch.mean(src_ir[:, 0:16, :, :])
 
         x1 = torch.mul(mean_src, x1)
         x2 = torch.mul(mean_src_ir, x2)
@@ -136,13 +154,17 @@ class sc_avg_detr(nn.Module):
         out['auxiliary_test'] = (x1, x2)
         return out
 
+
 class avg_baseline(nn.Module):
-    """ This is the Average Baseline of MultiModal DETR module that performs object detection """
+    """
+    This is the Average Baseline of MultiModal DETR module that performs object detection
+    """
+
     def __init__(self, backbone, transformer, num_classes, num_queries, aux_loss=False):
         super().__init__()
         self.num_queries = num_queries
         self.transformer = transformer
-        hidden_dim = transformer.d_model # 512 by default
+        hidden_dim = transformer.d_model  # 512 by default
         self.class_embed = nn.Linear(hidden_dim, num_classes + 1)
         self.bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
         self.query_embed = nn.Embedding(num_queries, hidden_dim)
@@ -175,21 +197,24 @@ class avg_baseline(nn.Module):
         out['auxiliary_test'] = (1, 1)
         return out
 
+
 @torch.jit.unused
 def _set_aux_loss(outputs_class, outputs_coord):
-        # this is a workaround to make torchscript happy, as torchscript
-        # doesn't support dictionary with non-homogeneous values, such
-        # as a dict having both a Tensor and a list.
-        return [{'pred_logits': a, 'pred_boxes': b}
-                for a, b in zip(outputs_class[:-1], outputs_coord[:-1])]
+    # this is a workaround to make torchscript happy, as torchscript
+    # doesn't support dictionary with non-homogeneous values, such
+    # as a dict having both a Tensor and a list.
+    return [{'pred_logits': a, 'pred_boxes': b}
+            for a, b in zip(outputs_class[:-1], outputs_coord[:-1])]
 
 
 class SetCriterion(nn.Module):
-    """ This class computes the loss for DETR.
+    """
+    This class computes the loss for DETR.
     The process happens in two steps:
         1) we compute hungarian assignment between ground truth boxes and the outputs of the model
         2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
     """
+
     def __init__(self, num_classes, matcher, weight_dict, eos_coef, losses):
         """ Create the criterion.
         Parameters:
@@ -411,7 +436,7 @@ class MLP(nn.Module):
 def build(args, fusion_method):
     # "You should always use num_classes = max_id + 1 where max_id is the highest class ID that you have in your dataset."
     # Reference: https://github.com/facebookresearch/detr/issues/108#issuecomment-650269223
-    device = torch.device(args.device)
+    # device = torch.device(args.device)
     backbone = build_backbone(args)
     transformer = build_transformer(args)
     if fusion_method == 'sc_avg':
@@ -434,6 +459,7 @@ def build(args, fusion_method):
     if args.masks:
         model = DETRsegm(model, freeze_detr=(args.frozen_weights is not None))
     return model
+
 
 def build_c(args):
     device = torch.device(args.device)
@@ -459,6 +485,7 @@ def build_c(args):
     criterion.to(device)
 
     return criterion
+
 
 def build_pp(args):
     postprocessors = {'bbox': PostProcess()}
