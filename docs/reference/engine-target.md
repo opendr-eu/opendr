@@ -266,14 +266,3 @@ The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class 
   Return the [BoundingBoxList](#class_engine.target.BoundingBoxList) object constructed from this object.
 #### boxes()
   Return the list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) boxes.
-
-### class engine.target.SpeechCommand
-Bases: `engine.target.Target`
-
-This target is used for speech command recognition. Contains the predicted class or ground truth
-and optionally the prediction confidence.
-
-The [SpeechCommand](#class_engine.target.SpeechCommand) class has the following public methods:
-#### SpeechCommand(prediction, confidence=None)
-Construct a new [SpeechCommand](#class_engine.target.SpeechCommand) object based from *prediction*.
-*prediction* is expected to be an integer designating the class and optional *confidence* a float between 0 and 1.
