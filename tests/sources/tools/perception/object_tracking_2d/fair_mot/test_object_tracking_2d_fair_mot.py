@@ -16,7 +16,6 @@ import sys
 import unittest
 import shutil
 import os
-import gc
 import torch
 from opendr.perception.object_tracking_2d.datasets.mot_dataset import (
     MotDataset,
@@ -111,8 +110,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
             )
             new_param = list(learner.model.parameters())[0].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
-            del dataset, learner, starting_param, new_param
-            gc.collect()
+
             print("Fit", name, "ok", file=sys.stderr)
 
         for name in self.model_names:
@@ -143,8 +141,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
             )
             new_param = list(learner.model.parameters())[0].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
-            del learner, starting_param, new_param, dataset, eval_dataset
-            gc.collect()
+
             print("Fit iterator", name, "ok", file=sys.stderr)
 
         for name in self.model_names:
@@ -166,8 +163,6 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
             result = learner.eval(eval_dataset)
 
             self.assertGreater(len(result["mota"]), 0)
-            del eval_dataset, learner, result
-            gc.collect()
 
         for name in self.model_names:
             test_model(name)
@@ -196,9 +191,6 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
 
             self.assertTrue(len(result) == 2)
             self.assertTrue(len(result[0]) > 0)
-
-            del eval_dataset, learner, result
-            gc.collect()
 
         for name in self.model_names:
             test_model(name)
@@ -231,9 +223,6 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
             new_param = list(learner2.model.parameters())[0].clone()
             self.assertTrue(torch.equal(starting_param_1, new_param))
 
-            del learner, learner2, new_param
-            gc.collect()
-
         for name in self.model_names:
             test_model(name)
 
@@ -250,9 +239,6 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
 
             with self.assertRaises(Exception):
                 learner.optimize()
-
-            del learner
-            gc.collect()
 
         for name in self.model_names:
             test_model(name)
