@@ -73,6 +73,7 @@ class TestRetinaFaceLearner(unittest.TestCase):
         self.assertFalse(np.array_equal(m, n),
                          msg="Model parameters did not change after running fit.")
         del training_dataset, m, n
+        gc.collect()
         print('Finished training test for RetinaFace...')
 
     def test_eval(self):
@@ -83,6 +84,7 @@ class TestRetinaFaceLearner(unittest.TestCase):
         self.assertIsNotNone(results_dict['recall'],
                              msg="Eval results dictionary not returned.")
         del eval_dataset, results_dict
+        gc.collect()
         print('Finished evaluation test for RetinaFace...')
 
     def test_infer(self):
@@ -92,6 +94,7 @@ class TestRetinaFaceLearner(unittest.TestCase):
         self.assertIsNotNone(self.detector.infer(img),
                              msg="Returned empty BoundinBoxList.")
         del img
+        gc.collect()
         print('Finished inference test for RetinaFace...')
 
     def test_save_load(self):

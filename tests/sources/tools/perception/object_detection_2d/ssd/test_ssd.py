@@ -74,6 +74,7 @@ class TestSSDLearner(unittest.TestCase):
         self.assertFalse(np.array_equal(m, n),
                          msg="Model parameters did not change after running fit.")
         del training_dataset, m, n
+        gc.collect()
         print('Finished training test for SSD...')
 
     def test_eval(self):
@@ -84,6 +85,7 @@ class TestSSDLearner(unittest.TestCase):
         self.assertIsNotNone(results_dict['map'],
                              msg="Eval results dictionary not returned.")
         del eval_dataset, results_dict
+        gc.collect()
         print('Finished evaluation test for SSD...')
 
     def test_infer(self):
@@ -93,6 +95,7 @@ class TestSSDLearner(unittest.TestCase):
         self.assertIsNotNone(self.detector.infer(img),
                              msg="Returned empty BoundingBoxList.")
         del img
+        gc.collect()
         print('Finished inference test for SSD...')
 
     def test_save_load(self):
