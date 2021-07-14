@@ -743,7 +743,7 @@ class TrackingAnnotation3DList(Target):
         return str(self.kitti(True))
 
 
-#ToDo: Inherit from Target class
+# ToDo: Inherit from Target class and merge with version proposed in the semantic segmentation branch
 class Heatmap():
     """
     This target is used for multi-class segmentation problems or multi-class problems that require heatmap annotations.
