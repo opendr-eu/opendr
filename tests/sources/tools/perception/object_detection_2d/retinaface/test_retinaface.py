@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import unittest
+import gc
 import cv2
 import shutil
 import os
@@ -58,6 +59,9 @@ class TestRetinaFaceLearner(unittest.TestCase):
         rmfile(os.path.join(cls.temp_dir, "cov4.jpg"))
         rmdir(os.path.join(cls.temp_dir, "retinaface_resnet"))
         rmdir(os.path.join(cls.temp_dir))
+
+        del cls.detector
+        gc.collect()
         print('Finished cleaning for RetinaFace...')
 
     def test_fit(self):
@@ -68,6 +72,7 @@ class TestRetinaFaceLearner(unittest.TestCase):
         n = list(self.detector._model.get_params()[0].values())[0].asnumpy()
         self.assertFalse(np.array_equal(m, n),
                          msg="Model parameters did not change after running fit.")
+        del training_dataset, m, n
         print('Finished training test for RetinaFace...')
 
     def test_eval(self):
@@ -77,6 +82,7 @@ class TestRetinaFaceLearner(unittest.TestCase):
         results_dict = self.detector.eval(eval_dataset, flip=False, pyramid=False)
         self.assertIsNotNone(results_dict['recall'],
                              msg="Eval results dictionary not returned.")
+        del eval_dataset, results_dict
         print('Finished evaluation test for RetinaFace...')
 
     def test_infer(self):
@@ -85,6 +91,7 @@ class TestRetinaFaceLearner(unittest.TestCase):
         img = cv2.imread(os.path.join(self.temp_dir, "cov4.jpg"))
         self.assertIsNotNone(self.detector.infer(img),
                              msg="Returned empty BoundinBoxList.")
+        del img
         print('Finished inference test for RetinaFace...')
 
     def test_save_load(self):

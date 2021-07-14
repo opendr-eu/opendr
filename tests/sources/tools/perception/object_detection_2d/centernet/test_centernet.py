@@ -14,6 +14,7 @@
 
 import unittest
 import cv2
+import gc
 import shutil
 import os
 import numpy as np
@@ -59,6 +60,9 @@ class TestCenterNetDetectorLearner(unittest.TestCase):
         rmdir(os.path.join(cls.temp_dir, "centernet_default"))
         rmdir(os.path.join(cls.temp_dir, "test_data"))
         rmdir(os.path.join(cls.temp_dir))
+
+        del cls.detector
+        gc.collect()
         print('Finished cleaning for CenterNet...')
 
     def test_fit(self):
@@ -69,6 +73,7 @@ class TestCenterNetDetectorLearner(unittest.TestCase):
         n = list(self.detector._model.collect_params().values())[1].data().asnumpy()
         self.assertFalse(np.array_equal(m, n),
                          msg="Model parameters did not change after running fit.")
+        del training_dataset, m, n
         print('Finished training test for CenterNet...')
 
     def test_eval(self):
@@ -78,6 +83,7 @@ class TestCenterNetDetectorLearner(unittest.TestCase):
         results_dict = self.detector.eval(eval_dataset)
         self.assertIsNotNone(results_dict['map'],
                              msg="Eval results dictionary not returned.")
+        del eval_dataset, results_dict
         print('Finished evaluation test for CenterNet...')
 
     def test_infer(self):
@@ -86,6 +92,7 @@ class TestCenterNetDetectorLearner(unittest.TestCase):
         img = cv2.imread(os.path.join(self.temp_dir, "bicycles.jpg"))
         self.assertIsNotNone(self.detector.infer(img),
                              msg="Returned empty BoundingBoxList.")
+        del img
         print('Finished inference test for CenterNet...')
 
     def test_save_load(self):
