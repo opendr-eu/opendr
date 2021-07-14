@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="mode" default="fast" doc="Set the Webots mode."/>
+    <arg name="no_gui" default="false" doc="Start Webots with minimal GUI."/>
+    <arg name="world" doc="WeBots world file (.wbt)."/>
+    <include file="$(find webots_ros)/launch/webots.launch">
+        <arg name="mode" value="$(arg mode)"/>
+        <arg name="no_gui" value="$(arg no_gui)"/>
+        <arg name="world" value="$(arg world)"/>
+    </include>
+</launch>

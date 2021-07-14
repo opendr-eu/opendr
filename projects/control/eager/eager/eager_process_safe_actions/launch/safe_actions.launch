@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="ns" doc="Namespace of the robot."/>
+
+	<!-- Custom arguments for action processor -->
+	<arg name="robot_type" doc="Robot type"/>
+	<arg name="moveit_package" doc="Moveit package name"/>
+	<arg name="urdf_path" doc="Path to robot description"/>
+	<arg name="object_frame" doc="Frame in which the collision object is placed."/>
+	<arg name="joint_names" doc="Joint names"/>
+  <arg name="group_name" doc="Specifies the name of the move_group"/>
+  <arg name="checks_per_rad" doc="Specifies the number of collision checks per radian"/>
+  <arg name="vel_limit" doc="Specifies the joint velocity limit in rad/s"/>
+  <arg name="duration" doc="Specifies the duration for the joint trajectory point action in s"/>
+
+	<!-- MoveIt arguments -->
+	<arg name="allow_trajectory_execution" default="false" doc="Specifies whether MoveIt trajectory execution should be launched"/>
+	<arg name="publish_monitored_planning_scene" default="false"/>
+  <arg name="fake_execution" default="false"/>
+
+	<group ns="$(arg ns)">
+
+	  <!-- Launch moveit for collision checking -->
+
+	  <!-- Load universal robot description format (URDF) -->
+		<param name="robot_description" command="$(find xacro)/xacro --inorder '$(arg urdf_path)'" />
+
+		<include file="$(eval find(arg('moveit_package')) + '/launch/move_group.launch')">
+			<arg name="allow_trajectory_execution" value="$(arg allow_trajectory_execution)"/>
+			<arg name="publish_monitored_planning_scene" value="$(arg publish_monitored_planning_scene)"/>
+			<arg name="fake_execution" value="$(arg fake_execution)"/>
+		</include>
+
+	  <node name="safe_actions" pkg="eager_process_safe_actions" type="safe_actions_node.py">
+	  	<rosparam param="joint_names" subst_value="True">$(arg joint_names)</rosparam>
+	    <param name="group_name" value="$(arg group_name)"/>
+	    <param name="checks_per_rad" value="$(arg checks_per_rad)"/>
+	    <param name="vel_limit" value="$(arg vel_limit)"/>
+	    <param name="duration" value="$(arg duration)"/>
+			<param name="object_frame" value="$(arg object_frame)"/>
+	  </node>
+	</group>
+
+</launch>

@@ -1,0 +1,10 @@
+gym>=0.18.0
+numpy
+empy
+rospkg
+defusedxml
+scenic
+future
+netifaces
+stable-baselines3>=0.10.0
+pybullet>=3.1.7

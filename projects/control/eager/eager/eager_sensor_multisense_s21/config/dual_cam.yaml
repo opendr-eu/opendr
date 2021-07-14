@@ -1,0 +1,51 @@
+sensors:
+  camera_right:
+    type: boxu8
+    high: 255
+    low: 0
+    shape: [1024, 544, 4]
+  camera_left:
+    type: boxu8
+    high: 255
+    low: 0
+    shape: [1024, 544, 4]
+
+webots:
+  sensors:
+    camera_right:
+      type: camera
+      names:
+        - MultiSense_S21_right_camera
+    camera_left:
+      type: camera
+      names:
+        - MultiSense_S21_left_camera
+
+pybullet:
+  urdf:
+  sensors:
+    camera_right:
+      type: camera_rgbd
+      names: [MultiSense_S21_right_camera]
+      intrinsic:
+        fov: 80.21 # (deg)
+        near_val: 0.1 # (m)
+        far_val: 100 # (m)
+      extrinsic:
+        pos: [0, 0, 0.05] # (m)
+        euler: [0, -45, 0]  # [roll, pitch, yaw] (deg)
+        dist: 1.0 # (m)
+        up_axis: 2
+
+    camera_left:
+      type: camera_rgbd
+      names: [MultiSense_S21_left_camera]
+      intrinsic:
+        fov: 80.21 # (deg)
+        near_val: 0.1 # (m)
+        far_val: 100 # (m)
+      extrinsic:
+        pos: [0, 0, 0.05] # (m)
+        euler: [0, -45, 0]  # [roll, pitch, yaw] (deg)
+        dist: 1.0 # (m)
+        up_axis: 2
