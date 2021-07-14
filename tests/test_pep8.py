@@ -30,8 +30,7 @@ from pyflakes.reporter import Reporter
 skippedDirectories = [
     '.git',
     'dependencies',
-    'lib',
-    'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm'  # fixed everything except F401 and F403
+    'lib'
 ]
 
 
