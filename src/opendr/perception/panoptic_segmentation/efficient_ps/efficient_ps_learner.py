@@ -224,7 +224,7 @@ class EfficientPsLearner(Learner):
             for i, batch in enumerate(dataloader):
                 images = [data[0] for data in batch]
                 predictions = self.infer(images, return_raw_logits=True)
-                save_panoptic_eval(predictions, path=self.temp_path)
+                save_panoptic_eval_(predictions, path=self.temp_path)
                 pbar.update(1)
 
         results = dataset.evaluate(os.path.join(self.temp_path, 'tmp'), os.path.join(self.temp_path, 'tmp_json'))
@@ -441,3 +441,10 @@ class EfficientPsLearner(Learner):
         elif value < 0:
             raise ValueError('num_workers cannot be negative.')
         self._num_workers = value
+
+
+def save_panoptic_eval_(results, path: str='tmpDir'):
+    """Overwrite hard-coded path to temporary directory"""
+    save_panoptic_eval(results)
+    if path != 'tmpDir':
+        shutil.move('tmpDir', path)
