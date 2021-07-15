@@ -32,14 +32,14 @@ def read_ini(path):
         python_dependencies = parser.get(section, 'python')
         if python_dependencies:
             for package in python_dependencies.split('\n'):
-                f = open(python_file, "a")
-                f.write(package + '\n')
+                with open(python_file, "a") as f:
+                    f.write(os.path.expandvars(package) + '\n')
     if parser.has_option(section, 'linux'):
         linux_dependencies = parser.get(section, 'linux')
         if linux_dependencies:
             for package in linux_dependencies.split('\n'):
-                f = open(linux_file, "a")
-                f.write(package + '\n')
+                with open(linux_file, "a") as f:
+                    f.write(os.path.expandvars(package) + '\n')
 
 
 # Parse arguments
