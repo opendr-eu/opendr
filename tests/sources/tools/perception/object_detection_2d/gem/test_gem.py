@@ -63,19 +63,21 @@ class TestGemLearner(unittest.TestCase):
 
         print("Model downloaded", file=sys.stderr)
 
-        cls.learner.download(mode='test_data_l515')
+        cls.learner.download(mode='test_data_sample_dataset')
+
+        cls.learner.download(mode='test_data_sample_images')
 
         print("Data downloaded", file=sys.stderr)
         cls.dataset_location = os.path.join(cls.temp_dir,
-                                            cls.learner.datasetargs.dataset_name,
+                                            'sample_dataset',
                                             )
         cls.m1_dataset = ExternalDataset(
             cls.dataset_location,
-            "coco"
+            "coco",
         )
         cls.m2_dataset = ExternalDataset(
             cls.dataset_location,
-            "coco"
+            "coco",
         )
 
     @classmethod
@@ -84,7 +86,8 @@ class TestGemLearner(unittest.TestCase):
         rmdir(os.path.join(cls.temp_dir, 'pretrained_models'))
         rmdir(os.path.join(cls.temp_dir, 'checkpoints'))
         rmdir(os.path.join(cls.temp_dir, 'facebookresearch_detr_master'))
-        rmdir(os.path.join(cls.temp_dir, 'l515_dataset'))
+        rmdir(os.path.join(cls.temp_dir, 'sample_dataset'))
+        rmdir(os.path.join(cls.temp_dir, 'sample_images'))
         rmdir(os.path.join(cls.temp_dir, 'outputs'))
         rmdir(cls.temp_dir)
 
@@ -97,10 +100,32 @@ class TestGemLearner(unittest.TestCase):
         self.learner.model = None
         self.learner.ort_session = None
 
+        self.learner.download(mode='pretrained_gem')
+
+        m = list(self.learner.model.parameters())[0].clone()
+
         self.learner.fit(
-            verbose=True,
+            m1_train_edataset=self.m1_dataset,
+            m2_train_edataset=self.m2_dataset,
+            annotations_folder='annotations',
+            m1_train_annotations_file='RGB_26May2021_14h19m_coco.json',
+            m2_train_annotations_file='Thermal_26May2021_14h19m_coco.json',
+            m1_train_images_folder='train/m1',
+            m2_train_images_folder='train/m2',
             out_dir=os.path.join(self.temp_dir, "outputs"),
-        )
+            trial_dir=os.path.join(self.temp_dir, "trial"),
+            logging_path='',
+            m1_val_edataset=self.m1_dataset,
+            m2_val_edataset=self.m2_dataset,
+            m1_val_annotations_file='RGB_26May2021_14h19m_coco.json',
+            m2_val_annotations_file='Thermal_26May2021_14h19m_coco.json',
+            m1_val_images_folder='val/m1',
+            m2_val_images_folder='val/m2',
+            verbose=True,
+            )
+
+        self.assertFalse(torch.equal(m, list(self.learner.model.parameters())[0]),
+                         msg="Model parameters did not change after running fit.")
 
         # Cleanup
         warnings.simplefilter("default", ResourceWarning)
@@ -117,7 +142,15 @@ class TestGemLearner(unittest.TestCase):
 
         self.learner.download(mode='pretrained_gem')
 
-        result = self.learner.eval()
+        result = self.learner.eval(
+            m1_edataset=self.m1_dataset,
+            m2_edataset=self.m2_dataset,
+            m1_images_folder='val/m1',
+            m2_images_folder='val/m2',
+            annotations_folder='annotations',
+            m1_annotations_file='RGB_26May2021_14h19m_coco.json',
+            m2_annotations_file='Thermal_26May2021_14h19m_coco.json',
+            )
 
         self.assertGreater(len(result), 0)
 
@@ -131,8 +164,8 @@ class TestGemLearner(unittest.TestCase):
 
         self.learner.download(mode='pretrained_gem')
 
-        m1_image = Image.open(os.path.join(self.dataset_location, "rgb/2021_04_22_21_35_47_852516.jpg"))
-        m2_image = Image.open(os.path.join(self.dataset_location, "infra_aligned/2021_04_22_21_35_47_852516.jpg"))
+        m1_image = Image.open(os.path.join(self.temp_dir, "sample_images/rgb/2021_04_22_21_35_47_852516.jpg"))
+        m2_image = Image.open(os.path.join(self.temp_dir, 'sample_images/aligned_infra/2021_04_22_21_35_47_852516.jpg'))
 
         result = self.learner.infer(m1_image, m2_image)
 
