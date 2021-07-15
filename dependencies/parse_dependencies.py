@@ -31,13 +31,13 @@ def read_ini(path):
     if parser.has_option(section, 'python'):
         python_dependencies = parser.get(section, 'python')
         if python_dependencies:
-            for package in python_dependencies.split():
+            for package in python_dependencies.split('\n'):
                 f = open(python_file, "a")
                 f.write(package + '\n')
     if parser.has_option(section, 'linux'):
         linux_dependencies = parser.get(section, 'linux')
         if linux_dependencies:
-            for package in linux_dependencies.split():
+            for package in linux_dependencies.split('\n'):
                 f = open(linux_file, "a")
                 f.write(package + '\n')
 
