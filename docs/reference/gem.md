@@ -1,20 +1,20 @@
 
 ## gem module
 
-The *gem* module contains the *GEMLearner* class, which inherits from the abstract class *Learner*.
+The *gem* module contains the *GemLearner* class, which inherits from the abstract class *Learner*.
 
-### Class GEMLearner
+### Class GemLearner
 Bases: `engine.learners.Learner`
 
-The *GEMLearner* class is a multimodal wrapper inspired by DETR [[1]](#detr-paper) object detection algorithm based on the original [DETR implementation](https://github.com/facebookresearch/detr). The fusion methodologies employed in *GEMLearner* are explained in GEM article [[2]](#gem-paper).
+The *GemLearner* class is a multimodal wrapper inspired by DETR [[1]](#detr-paper) object detection algorithm based on the original [DETR implementation](https://github.com/facebookresearch/detr). The fusion methodologies employed in *GemLearner* are explained in GEM article [[2]](#gem-paper).
 It can be used to perform object detection on images (inference) and train GEM object detection models.
 
-The [GEMLearner](#src.perception.object_detection_2d.detr.detr_learner.py) class has the
+The [GemLearner](#src.perception.object_detection_2d.detr.detr_learner.py) class has the
 following public methods:
 
-#### `GEMLearner` constructor
+#### `GemLearner` constructor
 ```python
-GEMLearner(model_config_path, dataset_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, num_classes, return_segmentations)
+GemLearner(model_config_path, dataset_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, num_classes, return_segmentations)
 ```
 
 Constructor parameters:
@@ -49,9 +49,9 @@ Constructor parameters:
 - **return_segmentations**: *bool, default=False*
   Specifies whether the model returns, next to bounding boxes, segmentations of objects. Currently this feature is not supported in GEM.
 
-#### `GEMLearner.fit`
+#### `GemLearner.fit`
 ```python
-GEMLearner.fit(m1_train_edataset, m2_train_edataset, annotations_folder, m1_train_annotations_file, m2_train_annotations_file, m1_train_images_folder, m2_train_images_folder, out_dir, trial_dir, logging_path, silent, verbose, m1_val_edataset, m2_val_edataset, m1_val_annotations_file, m2_val_annotations_file, m1_val_images_folder, m2_val_images_folder)
+GemLearner.fit(m1_train_edataset, m2_train_edataset, annotations_folder, m1_train_annotations_file, m2_train_annotations_file, m1_train_images_folder, m2_train_images_folder, out_dir, trial_dir, logging_path, silent, verbose, m1_val_edataset, m2_val_edataset, m1_val_annotations_file, m2_val_annotations_file, m1_val_images_folder, m2_val_images_folder)
 ```
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
 Returns a dictionary containing stats regarding the last evaluation ran.
@@ -93,9 +93,9 @@ Parameters:
 - **m2_val_images_folder** : *str, default=None*
     Same as *m1_val_images_folder*.
 
-#### `GEMLearner.eval`
+#### `GemLearner.eval`
 ```python
-GEMLearner.eval(self, m1_edataset, m2_edataset, m1_images_folder, m2_images_folder, annotations_folder, m1_annotations_file, m2_annotations_file)
+GemLearner.eval(self, m1_edataset, m2_edataset, m1_images_folder, m2_images_folder, annotations_folder, m1_annotations_file, m2_annotations_file)
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
@@ -116,9 +116,9 @@ Parameters:
 - **m2_annotations_file** : *str, default='instances_val2017.json'*
     Same as *m1_annotations_file*.
 
-#### `GEMLearner.infer`
+#### `GemLearner.infer`
 ```python
-GEMLearner.infer(self, m1_image, m2_image)
+GemLearner.infer(self, m1_image, m2_image)
 ```
 
 This method is used to perform object detection on an image.
@@ -130,9 +130,9 @@ Parameters:
 - **m2_image : *object*
     Same as *m1_image*.
 
-#### `GEMLearner.save`
+#### `GemLearner.save`
 ```python
-GEMLearner.save(self, path)
+GemLearner.save(self, path)
 ```
 This method is used to save a trained model.
 Provided with the path, it creates the "name" directory, if it does not already
@@ -142,9 +142,9 @@ Parameters:
 - **path**: *str*
   Path to save the model, including the filename.
 
-#### `GEMLearner.load`
+#### `GemLearner.load`
 ```python
-GEMLearner.load(self, path)
+GemLearner.load(self, path)
 ```
 This method is used to load a previously saved model from its saved folder.
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
@@ -153,9 +153,9 @@ Parameters:
 - **path**: *str*
   Path of the model to be loaded.
 
-  #### `GEMLearner.download`
+  #### `GemLearner.download`
   ```python
-  GEMLearner.download(self, path, mode, verbose)
+  GemLearner.download(self, path, mode, verbose)
   ```
   Download utility for downloading pretrained models and test data.
 
@@ -176,18 +176,18 @@ Parameters:
   The details of multimodal training and evaluation dataset should be described in the *dataset_config.yaml* file.   The `batch_size` argument should be adjusted according to available memory.
 
 ```python
-from opendr.perception.object_detection_2d.gem.gem_learner import GEMLearner
+from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
 
-learner = GEMLearner(iters=1, batch_size=1, num_classes=7)
+learner = GemLearner(iters=1, batch_size=1, num_classes=7)
 learner.fit()
 ```
 
 To load pretrained weights from single modal DETR trained on COCO dataset and save after the training is finished:
 ```python
-from opendr.perception.object_detection_2d.gem.gem_learner import GEMLearner
+from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
 
-learner = GEMLearner(iters=1, batch_size=1, num_classes=7)
-learner.create_model(pretrained='detr_coco')
+learner = GemLearner(iters=1, batch_size=1, num_classes=7)
+learner.download(mode='pretrained_coco')
 learner.fit()
 learner.save('./saved_models/trained_model')
 ```
@@ -195,11 +195,10 @@ learner.save('./saved_models/trained_model')
 * **Inference and result drawing example on the sample images can be downloaded from OpenDR server, similar to single modal inference in [detr_demo colab].(https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/detr_demo.ipynb#scrollTo=Jf59UNQ37QhJ).**
 	This example shows how to perform inference on sample images and draw the resulting bounding boxes using a gem model that is pretrained on the *RGB-Infrared l515 datset*.
 ```python
-from opendr.perception.object_detection_2d.gem.gem_learner import GEMLearner
+from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
 from PIL import Image
 
-import matplotlib.pyplot as plt
-plt.switch_backend("TkAgg")
+from matplotlib import pyplot as plt
 
 # l515_dataset classes
 classes = ['chair', 'cycle', 'bin', 'laptop', 'drill', 'rocker']
@@ -208,9 +207,10 @@ classes = ['chair', 'cycle', 'bin', 'laptop', 'drill', 'rocker']
 colors = [[0.000, 0.447, 0.741], [0.850, 0.325, 0.098], [0.929, 0.694, 0.125],
           [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
 
+
 # Function for plotting results
 def plot_results(pil_img, boxes):
-    plt.figure(figsize=(16,10))
+    plt.figure(figsize=(16, 10))
     plt.imshow(pil_img)
     ax = plt.gca()
     for box, c in zip(boxes, colors*100):
@@ -221,13 +221,14 @@ def plot_results(pil_img, boxes):
     plt.axis('off')
     plt.show()
 
-learner = GEMLearner(num_classes=7)
-learner.fusion_method = 'sc_avg'
-learner.create_model(pretrained='gem_l515')
 
-learner.download_sample_images(path='./sample_images')
-m1_img = Image.open('./sample_images/rgb/2021_04_22_21_35_47_852516.jpg')
-m2_img = Image.open('./sample_images/aligned_infra/2021_04_22_21_35_47_852516.jpg')
+learner = GemLearner(num_classes=7, device='cpu')
+learner.fusion_method = 'sc_avg'
+learner.download(mode='pretrained_gem')
+learner.download(mode='test_data_sample_images')
+
+m1_img = Image.open('temp/sample_images/rgb/2021_04_22_21_35_47_852516.jpg')
+m2_img = Image.open('temp/sample_images/aligned_infra/2021_04_22_21_35_47_852516.jpg')
 
 bounding_box_list = learner.infer(m1_img, m2_img)
 plot_results(m1_img, bounding_box_list)
