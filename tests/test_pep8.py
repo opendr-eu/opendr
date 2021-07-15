@@ -30,7 +30,8 @@ from pyflakes.reporter import Reporter
 skippedDirectories = [
     '.git',
     'dependencies',
-    'lib'
+    'lib',
+    'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS'
 ]
 
 

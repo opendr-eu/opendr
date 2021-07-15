@@ -57,7 +57,9 @@ class TestClangFormat(unittest.TestCase):
             'src',
             'tests'
         ]
-        skippedPaths = []
+        skippedPaths = [
+            'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS'
+        ]
         skippedFiles = []
         skippedDirectories = [
             'build',
