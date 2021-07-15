@@ -15,7 +15,7 @@ pip install ConfigParser numpy cython torch==1.7.1
 python parse_dependencies.py $TYPE
 # install dependencies one by one to prevent interdependency errors
 if [ -f "python_dependencies.txt" ]; then
-       cat python_dependencies.txt | xargs python -m pip install
+       cat python_dependencies.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -d '\n' -n 1 python -m pip install
 fi
 if [ -f "linux_dependencies.txt" ]; then
        cat linux_dependencies.txt | xargs sudo apt-get install
