@@ -619,11 +619,16 @@ class GemLearner(Learner):
         if m2_edataset is None:
             m2_edataset = ExternalDataset(dataset_location, 'coco')
 
-        annotations_folder = self.datasetargs.annotations_folder
-        m1_images_folder = self.datasetargs.m1_val_images_folder
-        m2_images_folder = self.datasetargs.m2_val_images_folder
-        m1_annotations_file = self.datasetargs.m1_val_annotations_file
-        m2_annotations_file = self.datasetargs.m2_val_annotations_file
+        if annotations_folder is None:
+            annotations_folder = self.datasetargs.annotations_folder
+        if m1_annotations_file is None:
+            m1_annotations_file = self.datasetargs.m1_val_annotations_file
+        if m2_annotations_file is None:
+            m2_annotations_file = self.datasetargs.m2_val_annotations_file
+        if m1_images_folder is None:
+            m1_images_folder = self.datasetargs.m1_val_images_folder
+        if m2_images_folder is None:
+            m2_images_folder = self.datasetargs.m2_val_images_folder
 
         if self.postprocessors is None:
             self.__create_postprocessors()
@@ -767,7 +772,8 @@ class GemLearner(Learner):
 
     def download(self, path=None, mode="pretrained_gem", verbose=False):
         supported_backbones = ['resnet50']
-        valid_modes = ["weights_detr", "pretrained_detr", "pretrained_gem", "test_data_l515", "test_data_sample_images"]
+        valid_modes = ["weights_detr", "pretrained_detr", "pretrained_gem", "test_data_l515", "test_data_sample_dataset",
+                       "test_data_sample_images"]
         if mode not in valid_modes:
             raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
 
@@ -833,7 +839,6 @@ class GemLearner(Learner):
         elif mode == "test_data_l515":
             url = OPENDR_SERVER_URL + "perception/object_detection_2d/gem/l515_dataset.zip"
             dataset_root = path
-            self.datasetargs.dataset_root = dataset_root
             if not os.path.exists(dataset_root):
                 os.makedirs(dataset_root)
             if not os.path.exists(os.path.join(dataset_root, 'l515_dataset')):
@@ -844,7 +849,23 @@ class GemLearner(Learner):
                 with zipfile.ZipFile(os.path.join(dataset_root, 'l515_dataset.zip'), 'r') as zip_ref:
                     zip_ref.extractall(dataset_root)
                 os.remove(os.path.join(dataset_root, 'l515_dataset.zip'))
+
+        elif mode == "test_data_sample_dataset":
+            url = OPENDR_SERVER_URL + "perception/object_detection_2d/gem/sample_dataset.zip"
+            dataset_root = path
+            if not os.path.exists(dataset_root):
+                os.makedirs(dataset_root)
+            if not os.path.exists(os.path.join(dataset_root, 'sample_dataset')):
+                print("Downloading sample_dataset...")
+                urlretrieve(url, os.path.join(dataset_root, 'sample_dataset.zip'))
+                print("Downloaded.")
+            if os.path.exists(os.path.join(dataset_root, 'sample_dataset.zip')):
+                with zipfile.ZipFile(os.path.join(dataset_root, 'sample_dataset.zip'), 'r') as zip_ref:
+                    zip_ref.extractall(dataset_root)
+                os.remove(os.path.join(dataset_root, 'sample_dataset.zip'))
+
         elif mode == "test_data_sample_images":
+            path = os.path.join(path, 'sample_images')
             if not os.path.exists(os.path.join(path, 'rgb')):
                 os.makedirs(os.path.join(path, 'rgb'))
             if not os.path.exists(os.path.join(path, 'aligned_infra')):
