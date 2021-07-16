@@ -62,7 +62,7 @@ class PIFuGeneratorLearner(Learner):
         if imgs_rgb[0].size != imgs_msk[0].size:
             raise NotImplementedError('Images must have the same resolution...')
         if (obj_path is not None) and (not os.path.exists(os.path.dirname(obj_path))):
-            raise NotImplementedError("OBJ cannot be saved in the given directory...")
+            raise NotImplementedError('OBJ cannot be saved in the given directory...')
         try:
             [imgs_rgb[0], imgs_msk[0]] = process_imgs(imgs_rgb[0], imgs_msk[0])
             [verts, faces, colors] = self.evaluator.eval(self.evaluator.load_image(imgs_rgb[0], imgs_msk[0]), use_octree=True)
@@ -76,7 +76,7 @@ class PIFuGeneratorLearner(Learner):
                 return [model_3D, human_poses_3D]
             return model_3D
         except Exception as e:
-            raise NotImplementedError("error: "+ e.args)
+            raise NotImplementedError('error: '+ e.args)
 
     def load(self, path):
         with open(os.path.join(path, "PIFu_default.json")) as metadata_file:
