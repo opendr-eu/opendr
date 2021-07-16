@@ -896,8 +896,8 @@ class TrackingAnnotation3DList(Target):
         return str(self.kitti(True))
 
 
-# ToDo: Inherit from Target class and merge with version proposed in the semantic segmentation branch
-class Heatmap():
+# ToDo: Merge with version proposed in the semantic segmentation branch
+class Heatmap(Target):
     """
     This target is used for multi-class segmentation problems or multi-class problems that require heatmap annotations.
     """
@@ -906,7 +906,7 @@ class Heatmap():
                  data: np.ndarray,
                  description: Optional[str]=None,
                  class_names: Optional[Dict[int, str]]=None):
-        self._data = None
+        super().__init__()
         self._description = None
         self._class_names = None
 
