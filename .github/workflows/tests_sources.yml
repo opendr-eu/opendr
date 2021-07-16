@@ -46,11 +46,13 @@ jobs:
         export UBUNTU_VERSION=ubuntu1804
         export CUDA_SHORT=10.2
         export CUDA_LONG=10.2.89-1
-        export CUDNN=8
+        export INSTALLER=cuda-repo-${UBUNTU_VERSION}_${CUDA}_amd64.deb
+        wget http://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/${INSTALLER}
+        sudo dpkg -i ${INSTALLER}
         wget https://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/7fa2af80.pub
         sudo apt-key add 7fa2af80.pub
         sudo apt update -qq
-        sudo apt install -y cuda-${CUDA_SHORT/./-} libcudnn${CUDNN}
+        sudo apt install -y cuda-${CUDA_SHORT/./-} cuda-cufft-dev-${CUDA_SHORT/./-}
         sudo apt clean
         export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
         export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${CUDA_HOME}/include:${LD_LIBRARY_PATH}
