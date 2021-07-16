@@ -155,4 +155,4 @@ class Model_inference_module:
             data = evaluator.load_image(self.opt.img_path, self.opt.single)
             evaluator.eval(data, True)
         except Exception as e:
-            print("error:", e.args)
+            raise NotImplementedError("error:", e.args)
