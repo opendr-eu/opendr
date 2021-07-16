@@ -58,14 +58,11 @@ class PIFuGeneratorLearner(Learner):
                 imgs_msk[i] = Image(imgs_msk[i])
             imgs_msk[i] = imgs_msk[i].numpy()
         if imgs_msk is None or len(imgs_rgb) != 1 or len(imgs_msk) != 1:
-            print('Wrong input...')
-            return
+            raise NotImplementedError('Wrong input...')
         if imgs_rgb[0].size != imgs_msk[0].size:
-            print('Images must have the same resolution...')
-            return
+            raise NotImplementedError('Images must have the same resolution...')
         if (obj_path is not None) and (not os.path.exists(os.path.dirname(obj_path))):
-            print("OBJ cannot be saved in the given directory...")
-            return
+            raise NotImplementedError("OBJ cannot be saved in the given directory...")
         try:
             [imgs_rgb[0], imgs_msk[0]] = process_imgs(imgs_rgb[0], imgs_msk[0])
             [verts, faces, colors] = self.evaluator.eval(self.evaluator.load_image(imgs_rgb[0], imgs_msk[0]), use_octree=True)
