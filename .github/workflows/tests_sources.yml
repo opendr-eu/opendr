@@ -47,8 +47,6 @@ jobs:
         export CUDA_SHORT=10.2
         export CUDA_LONG=10.2.89-1
         export CUDNN=8
-#        wget http://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/cuda-${CUDA_SHORT/./-}_${CUDA_LONG}_amd64.deb
-#        sudo dpkg -i ${INSTALLER}
         wget https://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/7fa2af80.pub
         sudo apt-key add 7fa2af80.pub
         sudo apt update -qq
