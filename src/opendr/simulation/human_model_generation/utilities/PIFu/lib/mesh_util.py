@@ -48,7 +48,7 @@ def reconstruction(net, cuda, calib_tensor,
         verts = verts.T
         return verts, faces, normals, values
     except:
-        print('error cannot marching cubes')
+        raise NotImplementedError('error cannot marching cubes')
         return -1
 
 
