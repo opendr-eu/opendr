@@ -40,7 +40,7 @@ class QuadraticSelfOnnLearner(Learner):
                  optimizer='sgd',
                  checkpoint_after_iter=0,
                  checkpoint_load_iter=0,
-                 temp_path='',
+                 temp_path='temp',
                  device='cuda',
                  expansion_order=3,
                  output_classes_n=20,

@@ -55,7 +55,7 @@ class QuadraticSelfOnnTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         print("\n\n**********************************\nTEST Speech Quadratic Self-ONN Learner\n"
-             "**********************************")
+              "**********************************")
         cls.learner = QuadraticSelfOnnLearner(device="cpu", output_classes_n=TEST_CLASSES_N, iters=TEST_EPOCHS)
 
         if not os.path.exists(TEMP_SAVE_DIR):
