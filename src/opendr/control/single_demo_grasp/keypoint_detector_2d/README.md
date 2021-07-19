@@ -1,11 +1,15 @@
-# single demonstration grasp package
+# Single Demonstration Grasp Package
 
-containing tools for augmentation, training and inference. it also provides a ros node for streaming camera frames and run inference on them.
+Containing tools for augmentation to generate training and test datasets as well as learner class for single demonstration grasp method.
 
 ## Installation 
 
-TBD ASAP
+Single Demo Grasp is based on keypoint_rcnn model which is implemented by [Detectron2](https://github.com/facebookresearch/detectron2).
 
-## Usage
+To install detectron2 module:
+``` 
+pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu101/torch1.7/index.html
+``` 
 
-TBD ASAP
+
+
