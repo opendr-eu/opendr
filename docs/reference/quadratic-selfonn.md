@@ -1,14 +1,14 @@
 ## quadraticselfonn module
 
-The *quadraticselfonn* module contains the *QuadraticSelfOnnLearner* class, which inherits from the abstract class *
-Learner*.
+The *quadraticselfonn* module contains the *QuadraticSelfOnnLearner* class, which inherits from the abstract class *Learner*.
 
 ### Class QuadraticSelfOnnLearner
 
 Bases: `engine.learners.Learner`
 
-The *QuadraticSelfOnnLearner* class is a wrapper of a Quadratic Self-ONN[[1]](#qselfonn-arxiv) implementation. It is
-designed for limited-vocabulary speech command recognition tasks.
+The *QuadraticSelfOnnLearner* class is a wrapper of a Quadratic Self-ONN[[1]](#qselfonn-arxiv) implementation.
+It is designed for limited-vocabulary speech command recognition tasks.
+
 
 The [QuadraticSelfOnnLearner](#src.perception.speech_recognition.quadraticselfonn_learner.py) class has the following public methods:
 
@@ -48,15 +48,15 @@ Constructor parameters:
   Specifies per how many training iterations a checkpoint should be saved. If set to 0 no checkpoints will be saved.
   Saves the models to the `temp_path` as "QuadraticSelfOnn-\<epoch\>.pth"
 - **checkpoint_load_iter**: *int, default=0*   
-  Specifies a checkpoint to load based on the number of iterations before fitting. If set to 0 no checkpoint will be
-  loaded.
+  Specifies a checkpoint to load based on the number of iterations before fitting.
+  If set to 0 no checkpoint will be loaded.
 - **temp_path**: *str, default='temp'*  
   Specifies the path to the directory where the checkpoints will be saved.
 - **device**: *{'cpu', 'cuda'}, default='cuda'*  
   Specifies the device to be used.
 - **expansion_order**: *int, default='3'*  
-  Specifies the Taylor series expansion order for the network. See the [paper](#qselfonn-arxiv) for further information
-  and visualization.
+  Specifies the Taylor series expansion order for the network.
+  See the [paper](#qselfonn-arxiv) for further information and visualization.
 - **output_classes_n**: *int, default=20*  
   Specifies the number of output classes the samples can be categorized to.
 - **momentum**: *float, default=0.9*  
@@ -65,8 +65,8 @@ Constructor parameters:
   Specifies whether the learner should transform the input to a MFCC. If the input is already converted to a 2D signal, turn this off.
   Expects a 1D signal if set to true.
 - **sample_rate**: *int, default=16000*  
-  Specifies the assumed sampling rate for the input signals used in the MFCC conversion. Does nothing if *
-  preprocess_to_mfcc* is set to false.
+  Specifies the assumed sampling rate for the input signals used in the MFCC conversion.
+  Does nothing if *preprocess_to_mfcc* is set to false.
 
 #### `QuadraticSelfOnnLearner.fit`
 
@@ -79,8 +79,10 @@ QuadraticSelfOnnLearner.fit(self,
                             verbose)
 ```
 
-This method is used for training the algorithm on a train dataset and validating on a val dataset. Returns a dictionary
-containing stats regarding the last evaluation ran. Parameters:
+This method is used for training the algorithm on a train dataset and validating on a val dataset.
+Returns a dictionary containing stats regarding the last evaluation ran.
+
+Parameters:
 
 - **dataset**: *DatasetIterator*  
   Object that holds the training dataset. Will be used by a PyTorch `DataLoader`.
@@ -100,8 +102,9 @@ containing stats regarding the last evaluation ran. Parameters:
 QuadraticSelfOnnLearner.eval(self, dataset)
 ```
 
-This method is used to evaluate a trained model on an evaluation dataset. Returns a dictionary containing stats
-regarding evaluation.  
+This method is used to evaluate a trained model on an evaluation dataset.
+Returns a dictionary containing stats regarding evaluation.  
+
 Parameters:
 
 - **dataset**: *DatasetIterator*  
@@ -120,7 +123,7 @@ This method is used to classify signals. Can be used to infer a single utterance
 Parameters:
 
 - **batch**: *Timeseries* or *List*[*Timeseries*]   
-  Either a Timeseries or a list of Timeseries.
+  Either a `Timeseries` or a list of `Timeseries`.
 
 #### `QuadraticSelfOnnLearner.save`
 
