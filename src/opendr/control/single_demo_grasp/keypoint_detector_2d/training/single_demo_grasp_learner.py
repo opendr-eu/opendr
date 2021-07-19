@@ -18,7 +18,7 @@ import os
 import sys
 import numpy as np
 import cv2
-from matplotlib import pyplot as plt
+import random
 
 # Detectron imports
 import detectron2
@@ -41,14 +41,14 @@ from opendr.control.single_demo_grasp.keypoint_detector_2d.training.learner_util
 
 class SingleDemoGraspLearner(Learner):
 
-    def __init__(self, object_name = '', dataset_dir = '', lr = 0.0008, batch_size = 4,
+    def __init__(self, object_name = '', dataset_dir = '', lr = 0.0008, batch_size = 2,
                     num_workers = 2, num_classes = 1, iters = 1000,
                                             threshold = 0.8,    device = 'cuda'):
-        super(SingleDemoGraspLearner, self).__init__(lr = lr, threshold = threshold
+        super(SingleDemoGraspLearner, self).__init__(lr = lr, threshold = threshold,
                             batch_size = batch_size, device = device)
 
         self.object_name = object_name
-        self.image_dir = dataset_dir
+        self.dataset_dir = dataset_dir
         self.num_workers = num_workers
         self.num_classes = num_classes
         self.batch_size = batch_size
@@ -56,8 +56,8 @@ class SingleDemoGraspLearner(Learner):
         self.device = device
         self.iters = iters
         self.threshold = threshold
-
-    def init_model(self, img_per_batch, lr_rate, max_iterations):
+        self.output_dir =  os.getcwd() + "/output/" + object_name + "/"
+    def init_model(self):
 
 
         self.cfg = get_cfg()
@@ -70,23 +70,22 @@ class SingleDemoGraspLearner(Learner):
         self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
                             "COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml")
         self.cfg.MODEL.DEVICE = self.device
-        self.cfg.SOLVER.IMS_PER_BATCH = img_per_batch
-        self.cfg.SOLVER.BASE_LR = lr_rate
-        self.cfg.SOLVER.MAX_ITER = iters
+        self.cfg.SOLVER.IMS_PER_BATCH = self.batch_size
+        self.cfg.SOLVER.BASE_LR = self.lr_rate
+        self.cfg.SOLVER.MAX_ITER = self.iters
         self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = self.num_classes
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.NUM_KEYPOINTS = self.num_kps
-        self.cfg.OUTPUT_DIR = os.getcwd() + "/output/" + self.object_name + "/"
+        self.cfg.OUTPUT_DIR = self.output_dir
         os.makedirs(self.cfg.OUTPUT_DIR, exist_ok = True)
 
 
 
     def fit(self):
-
+        self.metadata = self._prepare_datasets(self.object_name)
         self.init_model()
-        metadata = _prepare_dataset(self.object_name)
         trainer = DefaultTrainer(self.cfg)
-        self.trainer.resume_or_load(resume=False)
-        self.trainer.train()
+        trainer.resume_or_load(resume=False)
+        trainer.train()
 
     def infer(self, img_data):
 
@@ -136,21 +135,24 @@ class SingleDemoGraspLearner(Learner):
 
     def _prepare_datasets(self, dataset_name):
 
-        bbx_train = np.load(self.image_dir + dataset_name + '/annotations/boxes_train.npy', encoding='bytes')
-        bbx_val = np.load(self.image_dir + dataset_name + '/annotations/boxes_val.npy', encoding='bytes')
-        kps_train = np.load(self.image_dir + dataset_name + '/annotations/kps_train.npy', encoding='bytes')
-        kps_val = np.load(self.image_dir + dataset_name + '/annotations/kps_val.npy', encoding='bytes')
-        vars()[object_name+'_metadata'] = register_datasets(DatasetCatalog, MetadataCatalog,
-                    self.image_dir, dataset_name, bbx_train, kps_train, bbx_val, kps_val)
+        bbx_train = np.load(self.dataset_dir + dataset_name + '/annotations/boxes_train.npy', encoding='bytes')
+        bbx_val = np.load(self.dataset_dir + dataset_name + '/annotations/boxes_val.npy', encoding='bytes')
+        kps_train = np.load(self.dataset_dir + dataset_name + '/annotations/kps_train.npy', encoding='bytes')
+        kps_val = np.load(self.dataset_dir + dataset_name + '/annotations/kps_val.npy', encoding='bytes')
+        vars()[object_name+'_metadata'], train_set, val_set = register_datasets(DatasetCatalog, MetadataCatalog,
+                    self.dataset_dir, dataset_name, bbx_train, kps_train, bbx_val, kps_val)
 
-        self.num_train = len(self.bbx_train)
-        self.num_val = len(self.bbx_val)
-        self.num_kps = len(self.kps_train[0][0])
-
+        self.num_train = len(bbx_train)
+        self.num_val = len(bbx_val)
+        self.num_kps = len(kps_train[0][0])
+        self.train_set = train_set
+        self.val_set = val_set
         return vars()[object_name+'_metadata']
 
     def load(self, path_to_model):
 
+        self.metadata = self._prepare_datasets(self.object_name)
+        self.init_model()
         if os.path.isfile(path_to_model):
 
             print("Found the model, loading...")

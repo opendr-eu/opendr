@@ -61,10 +61,10 @@ img_aug_train, boxes_train, kps_train = Augment_train_straight_box_n_kps(object_
 _, boxes_val, kps_val = Augment_train_straight_box_n_kps(object_name, new_img, val_scale,
     bbx_points, grasp_line, "val", test)
 
-np.save(object_name+'/images/annotations/boxes_train.npy',boxes_train)
-np.save(object_name+'/images/annotations/boxes_val.npy',boxes_val)
-np.save(object_name+'/images/annotations/kps_train.npy',kps_train)
-np.save(object_name+'/images/annotations/kps_val.npy',kps_val)
+np.save('datasets/' + object_name + '/annotations/boxes_train.npy',boxes_train)
+np.save('datasets/' + object_name + '/annotations/boxes_val.npy',boxes_val)
+np.save('datasets/' + object_name + '/annotations/kps_train.npy',kps_train)
+np.save('datasets/' + object_name + '/annotations/kps_val.npy',kps_val)
 i=randint(0,train_scale-1)
 test_box=boxes_train[i]
 test_kps=kps_train[i]

@@ -94,20 +94,23 @@ def register_datasets(DatasetCatalog, MetadataCatalog, image_dir, object_name,
     for d in ["train"]:
 
         DatasetCatalog.register(object_name + "_" + d, lambda d=d: get_train_dicts(
-                                    image_dir + d, bbx_train, kps_train, num_train))
+                                    image_dir + object_name + "/" + d, bbx_train, kps_train, num_train))
 
         MetadataCatalog.get(object_name + "_"  + d).set(thing_classes=[object_name])
         MetadataCatalog.get(object_name + "_"  + d).set(keypoint_names=kps_names)
         MetadataCatalog.get(object_name + "_"  + d).set(keypoint_flip_map=[])
 
+    train_set = get_train_dicts(image_dir + object_name + "/" + d, bbx_train, kps_train, num_train)
 
     for d in ["val"]:
 
         DatasetCatalog.register(object_name + "_" + d, lambda d=d: get_val_dicts(
-                                    image_dir + d, bbx_val, kps_val, num_val))
+                                    image_dir + object_name + "/" + d, bbx_val, kps_val, num_val))
 
         MetadataCatalog.get(object_name + "_"  + d).set(thing_classes = [object_name])
         MetadataCatalog.get(object_name + "_"  + d).set(keypoint_names = kps_names)
         MetadataCatalog.get(object_name + "_"  + d).set(keypoint_flip_map = [])
 
-    return MetadataCatalog.get(object_name + "_" +"train")
+    val_set = get_val_dicts(image_dir + object_name + "/" + d, bbx_val, kps_val, num_val)
+
+    return MetadataCatalog.get(object_name + "_" +"train"), train_set, val_set

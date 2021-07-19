@@ -194,7 +194,7 @@ def Augment_train_straight_box_n_kps(object_name, images,scale, bbx_in, grasp_li
         after=bbs_aug.bounding_boxes[0]
         boxes.append((after.x1,after.y1,after.x2,after.y2))
         img = Image.fromarray(image_aug[0], 'RGB')
-        outdir = object_name+"/images/"+group+"/"+str(batch_idx)+".jpg"
+        outdir = "datasets/" + object_name + "/" + group + "/" + str(batch_idx) + ".jpg"
         img.save(outdir)
 
 
