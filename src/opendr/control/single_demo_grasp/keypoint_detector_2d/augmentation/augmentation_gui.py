@@ -19,7 +19,6 @@
 import os
 import os.path as path
 import numpy as np
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import cv2
