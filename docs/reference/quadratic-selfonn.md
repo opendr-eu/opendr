@@ -188,7 +188,7 @@ class RandomDataset(DatasetIterator):
     def __getitem__(self, item):
         return np.random.rand(16000), np.random.choice(10)
 
-learner = QuadraticSelfOnnLearner(output_clases_n=10, iters=10, expansion_order=3)
+learner = QuadraticSelfOnnLearner(output_classes_n=10, iters=10, expansion_order=3)
 training_dataset = RandomDataset()
 validation_dataset = RandomDataset()
 
@@ -202,6 +202,7 @@ learner.save(os.path.join(".", "example", "directory", "path", "model"))
 ```python
 import librosa
 import numpy as np
+import os
 
 from opendr.engine.data import Timeseries
 from opendr.perception.speech_recognition.quadraticselfonn.quadraticselfonn_learner import QuadraticSelfOnnLearner
