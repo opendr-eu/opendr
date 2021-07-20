@@ -107,12 +107,12 @@ class TestX3DLearner(unittest.TestCase):
         # Input is Video
         results2 = self.learner.infer(Video(batch[0]))
         assert results1[0].data == results2[0].data
-        assert torch.allclose(results1[0].confidence, results2[0].confidence)
+        assert torch.allclose(results1[0].confidence, results2[0].confidence, atol=1e-6)
 
         # Input is List[Video]
         results3 = self.learner.infer([Video(v) for v in batch])
         assert all([
-            r1.data == r3.data and torch.allclose(r1.confidence, r3.confidence)
+            r1.data == r3.data and torch.allclose(r1.confidence, r3.confidence, atol=1e-6)
             for (r1, r3) in zip(results1, results3)
         ])
 
