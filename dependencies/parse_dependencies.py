@@ -59,7 +59,7 @@ if os.path.exists(linux_file):
 read_ini('dependencies.ini')
 # Loop through tools and extract dependencies
 opendr_home = os.environ.get('OPENDR_HOME')
-for subdir, dirs, files in os.walk(opendr_home + '/src'):
+for subdir, dirs, files in os.walk(os.path.join(opendr_home, 'src')):
     for filename in files:
         if filename == 'dependencies.ini':
-            read_ini(subdir + os.sep + filename)
+            read_ini(os.path.join(subdir, filename))

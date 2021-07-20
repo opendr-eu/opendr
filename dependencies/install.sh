@@ -10,11 +10,12 @@ if [ "$#" -ge 1 ]; then
        TYPE=$1
 fi
 
-pip install ConfigParser numpy cython
+# Required to parse the dependency files
+pip install ConfigParser
 
 python parse_dependencies.py $TYPE
 if [ -f "python_dependencies.txt" ]; then
-       python -m pip install -r python_dependencies.txt
+       pip install -r python_dependencies.txt
 fi
 if [ -f "linux_dependencies.txt" ]; then
        cat linux_dependencies.txt | xargs sudo apt-get install
