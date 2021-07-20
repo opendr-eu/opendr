@@ -13,9 +13,8 @@ fi
 pip install ConfigParser numpy cython
 
 python parse_dependencies.py $TYPE
-# install dependencies one by one to prevent interdependency errors
 if [ -f "python_dependencies.txt" ]; then
-       cat python_dependencies.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 python -m pip install
+       python -m pip install -r python_dependencies.txt
 fi
 if [ -f "linux_dependencies.txt" ]; then
        cat linux_dependencies.txt | xargs sudo apt-get install
