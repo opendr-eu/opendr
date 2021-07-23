@@ -76,7 +76,7 @@ class PIFuGeneratorLearner(Learner):
                 return [model_3D, human_poses_3D]
             return model_3D
         except Exception as e:
-            raise NotImplementedError('error: '+ e.args)
+            raise NotImplementedError('error: ' + e.args)
 
     def load(self, path):
         with open(os.path.join(path, "PIFu_default.json")) as metadata_file:
