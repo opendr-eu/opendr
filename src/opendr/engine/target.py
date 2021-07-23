@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from abc import ABC
 import numpy as np
 
 
-class BaseTarget:
+class BaseTarget(ABC):
     """
-    Root BaseTarget class has been created to allow for setting the hierarchy of different targets.
+    Root BaseTarget abstract class has been created to allow for setting the hierarchy of different targets.
     Classes that inherit from BaseTarget can be used either as outputs of an algorithm or as ground
     truth annotations, but there is no guarantee that this is always possible, i.e. that both options are possible.
 
@@ -41,9 +42,63 @@ class Target(BaseTarget):
 
     def __init__(self):
         super().__init__()
-        self.data = None
-        self.confidence = None
-        self.action = None
+        self._data = None
+        self._confidence = None
+        self._action = None
+
+    @property
+    def data(self):
+        """
+        Getter of data field.
+        This returns the internal representation of the data.
+        :return: the actual data held by the object
+        :rtype: varies according to the actual concrete implementation
+        """
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """
+        Setter for data. This will perform the necessary type checking (if needed).
+        :param: data to be assigned to the object
+        """
+        self._data = data
+
+    @property
+    def confidence(self):
+        """
+        Getter of confidence field.
+        This returns the confidence for the current target.
+        :return: the confidence held by the object
+        :rtype: float
+        """
+        return self._confidence
+
+    @confidence.setter
+    def confidence(self, confidence):
+        """
+        Setter for the confidence field. This can be used to perform the necessary type checking (if needed).
+        :param: confidence to be used for assigning confidence to this object
+        """
+        self._confidence = confidence
+
+    @property
+    def action(self):
+        """
+        Getter of action field.
+        This returns the selected/expected action.
+        :return: the action data held by the object
+        :rtype: Action
+        """
+        return self._action
+
+    @action.setter
+    def action(self, action):
+        """
+        Setter for action. This will perform the necessary type checking (if needed).
+        :param: action to be assigned to the object
+        """
+        self._action = action
 
 
 class Category(Target):
@@ -64,9 +119,61 @@ class Category(Target):
                 One-dimensional array / tensor of class probabilities. Defaults to None.
         """
         super().__init__()
-        self.data = prediction
-        self.confidence = confidence
-        self.description = description
+        self._description = None
+
+        if prediction is not None:
+            self.data = prediction
+
+        if description is not None:
+            self.description = description
+
+        if confidence is not None:
+            self.confidence = confidence
+
+    @property
+    def description(self):
+        """
+        Getter of description field.
+        This returns the description of the corresponding class.
+        :return: the description of the corresponding class
+        :rtype: str
+        """
+        return self._description
+
+    @description.setter
+    def description(self, description):
+        """
+        Setter for description.
+        :param: description to be assigned for the winning class
+        """
+        if isinstance(description, str):
+            self._description = description
+        else:
+            raise ValueError("Description should be a string")
+
+    @property
+    def data(self):
+        """
+        Getter of data.
+
+        :return: the actual category held by the object
+        :rtype: int
+        """
+        if self._data is None:
+            raise ValueError("Category is empty")
+
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """
+        Setter for data. Category expects data of int type.
+        :param: data to be used for creating a Category object
+        """
+        if isinstance(data, int):
+            self._data = data
+        else:
+            raise ValueError("Category expects integers as data")
 
     def __str__(self):
         if self.description is None:
@@ -114,7 +221,53 @@ class Pose(Target):
         super().__init__()
         self.data = keypoints
         self.confidence = confidence
-        self.id = None
+        self._id = None
+
+    @property
+    def id(self):
+        """
+        Getter of human id.
+
+        :return: the actual human id held by the object
+        :rtype: int
+        """
+        return self._id
+
+    @id.setter
+    def id(self, id):
+        """
+        Setter for human id to which the Pose corresponds to. Pose expects id to be of int type.
+        Please note that None is a valid value, since a pose is not always accompanied with an id.
+        :param: human id to which the Pose corresponds to
+        """
+        if isinstance(id, int) or id is None:
+            self._id = id
+        else:
+            raise ValueError("Pose id should be an integer or None")
+
+    @property
+    def data(self):
+        """
+        Getter of data.
+
+        :return: the actual pose data held by the object
+        :rtype: numpy.ndarray
+        """
+        if self._data is None:
+            raise ValueError("Pose object is empty")
+
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """
+        Setter for data. Pose expects a NumPy array or a list
+        :param: data to be used for creating Pose
+        """
+        if isinstance(data, np.ndarray) or isinstance(data, list):
+            self._data = data
+        else:
+            raise ValueError("Pose expects either NumPy arrays or lists as data")
 
     def __str__(self):
         """Matches kpt_names and keypoints x,y to get the best human-readable format for pose."""
@@ -740,21 +893,3 @@ class TrackingAnnotation3DList(Target):
 
     def __str__(self):
         return str(self.kitti(True))
-
-
-class SpeechCommand(Target):
-    """
-    This target is used for speech command recognition. Contains the predicted class or ground truth
-    and optionally the prediction confidence.
-    """
-
-    def __init__(self, prediction, confidence=None):
-        super().__init__()
-        self.data = prediction
-        self.confidence = confidence
-
-    def __str__(self):
-        if self.confidence is not None:
-            return f"Class {self.data} speech command with confidence {self.confidence}"
-        else:
-            return f"Class {self.data} speech command"
