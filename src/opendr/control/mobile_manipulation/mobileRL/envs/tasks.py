@@ -90,7 +90,7 @@ class BaseTask(Wrapper):
 
     def reset(self, task_goal: TaskGoal = None):
         if task_goal is None:
-            task_goal: TaskGoal = self.draw_goal()
+            task_goal = self.draw_goal()
         ee_planner = task_goal.ee_fn(gripper_goal_tip=task_goal.gripper_goal_tip,
                                      gripper_goal_wrist=self.env.tip_to_gripper_tf(task_goal.gripper_goal_tip),
                                      head_start=task_goal.head_start,

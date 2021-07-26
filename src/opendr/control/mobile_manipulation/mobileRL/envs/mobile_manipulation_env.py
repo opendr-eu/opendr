@@ -33,7 +33,7 @@ class MobileManipulationEnv(Env):
                  slow_down_real_exec: float,
                  flatten_obs: bool = False):
         self._robot = robot_env
-        self._ee_planner: EEPlanner = None
+        self._ee_planner = None
         # each task wrapper should set a map at initialisation if needed
         # placeholder with no computational costs for when not needed
         self.map = DummyMap()
