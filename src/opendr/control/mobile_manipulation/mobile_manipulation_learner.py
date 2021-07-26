@@ -64,7 +64,11 @@ class MobileRLLearner(LearnerRL):
                 restore_model_path = os.path.join(restore_model_path, f"model_step{checkpoint_load_iter}")
             self.load(restore_model_path)
 
-    def download(self, path=None, mode="pretrained", verbose=False, url=OPENDR_SERVER_URL + "control/mobile_manipulation/", robot_name: str=None):
+    def download(self, path=None,
+                 mode="pretrained",
+                 verbose=False,
+                 url=OPENDR_SERVER_URL + "control/mobile_manipulation/",
+                 robot_name: str = None):
         assert mode == 'pretrained', "Unknown mode"
         assert robot_name is not None, robot_name
         if path is None:
