@@ -15,12 +15,13 @@
 import math
 import numpy as np
 import random
+from collections import namedtuple
 from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper
 from control.mobile_manipulation.mobileRL.envs.map import Map, EmptyMap
 from control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 from enum import IntEnum
 from gym import Wrapper
-from typing import NamedTuple, Callable, Tuple
+from typing import Callable, Tuple
 
 
 class GripperActions(IntEnum):
@@ -29,13 +30,7 @@ class GripperActions(IntEnum):
     GRASP = 2
 
 
-class TaskGoal(NamedTuple):
-    gripper_goal_tip: list
-    end_action: GripperActions
-    success_thres_dist: float
-    success_thres_rot: float
-    head_start: float
-    ee_fn: Callable
+TaskGoal = namedtuple("TaskGoal", "gripper_goal_tip end_action success_thres_dist success_thres_rot head_start ee_fn")
 
 
 def sample_circle_goal(goal_dist_rng: Tuple[float, float], goal_height_rng: Tuple[float, float]) -> list:

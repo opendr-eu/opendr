@@ -15,6 +15,7 @@
 import random
 import rospy
 import time
+from collections import namedtuple
 from control.mobile_manipulation.mobileRL.envs.env_utils import publish_marker, clear_all_markers
 from enum import IntEnum
 from gazebo_msgs.msg import LinkStates
@@ -22,7 +23,7 @@ from gazebo_msgs.srv import DeleteModel, SpawnModel, GetModelState, SetModelStat
     SetModelConfigurationRequest
 from geometry_msgs.msg import Pose
 from std_srvs.srv import Empty
-from typing import Iterable, NamedTuple
+from typing import Iterable
 
 
 class ObjectGeometry(IntEnum):
@@ -31,12 +32,7 @@ class ObjectGeometry(IntEnum):
     RECTANGLE = 1
 
 
-class GazeboObject(NamedTuple):
-    database_name: str
-    x: float
-    y: float
-    z: float
-    geometry: ObjectGeometry = ObjectGeometry.UNKNOWN
+GazeboObject = namedtuple("GazeboObject", "database_name x y z geometry")
 
 
 class WorldObjects:
@@ -51,11 +47,7 @@ class WorldObjects:
     reemc_table_low = GazeboObject('reemc_table_low', 0.75, 0.75, 0.41, ObjectGeometry.RECTANGLE)
 
 
-class SpawnObject(NamedTuple):
-    name: str
-    world_object: GazeboObject
-    pose: Pose
-    frame: str
+SpawnObject = namedtuple("SpawnObject", "name world_object pose frame")
 
 
 class SimulatorAPI:
