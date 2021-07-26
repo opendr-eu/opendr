@@ -110,7 +110,7 @@ class MobileManipulationEnv(Env):
               close_gripper: bool = False):
         # first clear map so robot cannot crash into objects when resetting, then respawn the scene
         self.map.clear()
-        robot_obs = self._robot.reset(initial_base_pose=self.map.draw_initial_base_pose(
+        self._robot.reset(initial_base_pose=self.map.draw_initial_base_pose(
             ee_planner.gripper_goal_wrist if ee_planner is not None else None),
             initial_joint_distribution=initial_joint_distribution,
             success_thres_dist=success_thres_dist,

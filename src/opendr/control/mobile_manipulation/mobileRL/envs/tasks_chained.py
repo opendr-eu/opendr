@@ -196,7 +196,7 @@ class PickNPlaceChainedTask(BaseChainedTask):
         self._pick_obj = WorldObjects.muesli2
         self._pick_table = WorldObjects.reemc_table_low
         self._place_table = WorldObjects.reemc_table_low
-        self._ee_fn = LinearPlannerWrapper if (obstacle_configuration == 'none') else PointToPoint2DPlannerWrapper
+        self._ee_fn = LinearPlannerWrapper
 
     def get_goal_objects(self, start_table_pos=Point(x=3.3, y=0, z=0), end_table_rng=(-1.5, 2, -3, -2.5)):
         objects = []

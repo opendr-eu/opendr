@@ -112,7 +112,7 @@ class MobileRLEvalCallback(EventCallback):
         if (self.n_calls == 1) or (self.eval_freq > 0 and self.n_calls % self.eval_freq == 0):
             episode_rewards, episode_lengths, metrics, name_prefix = self.do_eval()
 
-            mean_reward, std_reward = np.mean(episode_rewards), np.std(episode_rewards)
+            mean_reward = np.mean(episode_rewards)
             mean_ep_length, std_ep_length = np.mean(episode_lengths), np.std(episode_lengths)
 
             if self.verbose > 0:

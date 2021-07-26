@@ -78,15 +78,15 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
 
     ik_fail_thresh = env._ik_fail_thresh
     fails_per_episode = np.array(fails_per_episode)
-    metrics = {f'return_undisc': np.mean(episode_rewards),
-               f'return_disc': np.mean(episode_returns),
-               f'epoch_len': np.mean(episode_lengths),
-               f'ik_b{ik_fail_thresh}': np.mean(fails_per_episode <= ik_fail_thresh),
-               f'ik_b11': np.mean(fails_per_episode < 11),
-               f'ik_zero_fail': np.mean(fails_per_episode == 0),
-               f'ik_fails': np.mean(fails_per_episode),
-               f'goal_reached': np.mean(goal_reached),
-               f'success': np.mean(episode_successes),
+    metrics = {'return_undisc': np.mean(episode_rewards),
+               'return_disc': np.mean(episode_returns),
+               'epoch_len': np.mean(episode_lengths),
+               'ik_b{ik_fail_thresh}': np.mean(fails_per_episode <= ik_fail_thresh),
+               'ik_b11': np.mean(fails_per_episode < 11),
+               'ik_zero_fail': np.mean(fails_per_episode == 0),
+               'ik_fails': np.mean(fails_per_episode),
+               'goal_reached': np.mean(goal_reached),
+               'success': np.mean(episode_successes),
                'global_step': global_step,
                'timesteps_total': global_step}
     rospy.loginfo("---------------------------------------")

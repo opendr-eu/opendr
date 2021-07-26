@@ -21,7 +21,7 @@ from control.mobile_manipulation.mobileRL.envs.map import Map, EmptyMap
 from control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 from enum import IntEnum
 from gym import Wrapper
-from typing import Callable, Tuple
+from typing import Tuple
 
 
 class GripperActions(IntEnum):

@@ -162,7 +162,7 @@ class MobileRLLearner(LearnerRL):
                                    callback=eval_callback,
                                    eval_env=None)
 
-        self.stable_bl_agent.save(os.path.join(logging_path, f'last_model'))
+        self.stable_bl_agent.save(os.path.join(logging_path, 'last_model'))
 
         for e in [env, val_env]:
             if e is not None:
