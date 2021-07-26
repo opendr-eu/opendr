@@ -21,7 +21,15 @@ if [ ! -d ${LIBGP_PATH} ]; then
 fi
 
 # tiago
-ROS_DISTRO=melodic
+UBUNTU_VERSION_NUMBER=$(lsb_release -r |cut -f2)
+case "$UBUNTU_VERSION_NUMBER" in
+  "18.04")
+    ROS_DISTRO=melodic;;
+  "20.04")
+    ROS_DISTRO=noetic;;
+  *)
+    echo "Not tested for this ubuntu version" && exit 1;;
+esac
 if [ ! -f ${WS_PATH}/tiago_public.rosinstall ]; then
   mkdir ${WS_PATH} \
     && cd ${WS_PATH} \
