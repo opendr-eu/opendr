@@ -40,17 +40,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
-    - uses: Jimver/cuda-toolkit@v0.2.4
-      id: cuda-toolkit
-      if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
-      with:
-        cuda: '10.2.89'
-    - name: Test CUDA installation
-      if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
-      run: |
-        echo "Installed cuda version is: ${{steps.cuda-toolkit.outputs.cuda}}"
-        echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
-        nvcc -V
     - name: Test Sources
       if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
       run: |
@@ -65,6 +54,7 @@ jobs:
         export OPENDR_HOME=$PWD
         export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
         export DISABLE_BCOLZ_AVX2=true
+        pip install torch==1.7.1+cpu torchvision==0.8.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
         make install_compilation_dependencies
         make install_runtime_dependencies
         pip install -r tests/sources/requirements.txt
