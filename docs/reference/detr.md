@@ -176,8 +176,8 @@ Parameters:
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
-  from OpenDR.perception.object_detection_2d.detr.detr_learner import DetrLearner
-  from OpenDR.engine.datasets import ExternalDataset
+  from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
+  from opendr.engine.datasets import ExternalDataset
 
   detr_learner = DetrLearner(temp_path='./parent_dir', batch_size=8, device="cuda")
 
