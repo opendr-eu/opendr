@@ -1,0 +1,8 @@
+flask
+# black
+# isort>=5.7
+# flake8-black
+numpy
+opencv-contrib-python
+imutils
+pandas
