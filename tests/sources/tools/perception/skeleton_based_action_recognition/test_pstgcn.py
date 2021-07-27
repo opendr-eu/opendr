@@ -140,7 +140,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                            model_name='test_pstgcn')
         self.assertIsNotNone(self.pstgcn_action_classifier.model, "model is None after loading pt model.")
         # Cleanup
-        # rmdir(os.path.join(self.temp_dir, self.experiment_name))
 
     def test_multi_stream_eval(self):
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
@@ -184,7 +183,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                              "ort_session is None after optimizing the pretrained model.")
         # Cleanup
         self.pstgcn_action_classifier.ort_session = None
-        # rmfile(os.path.join(self.temp_dir, self.experiment_name))
 
     def test_save_load_onnx(self):
         self.pstgcn_action_classifier.topology = [5, 4, 5, 2, 3, 4, 3, 4]
@@ -200,7 +198,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertIsNotNone(self.pstgcn_action_classifier.ort_session, "ort_session is None after loading onnx model.")
         # Cleanup
         self.pstgcn_action_classifier.ort_session = None
-        # rmdir(os.path.join(self.temp_dir, self.experiment_name))
 
 
 if __name__ == "__main__":

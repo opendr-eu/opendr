@@ -148,7 +148,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                           model_name='test_tagcn')
         self.assertIsNotNone(self.tagcn_action_classifier.model, "model is None after loading pt model.")
         # Cleanup
-        # rmdir(os.path.join(self.temp_dir, self.experiment_name))
 
     def test_save_load_onnx(self):
         self.tagcn_action_classifier.model = None
@@ -162,7 +161,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                           model_name='onnx_model_temp')
         self.assertIsNotNone(self.tagcn_action_classifier.ort_session, "ort_session is None after loading onnx model.")
         # Cleanup
-        # rmdir(os.path.join(self.temp_dir, self.experiment_name))
         self.tagcn_action_classifier.ort_session = None
 
     def test_optimize(self):
@@ -176,7 +174,6 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                              "ort_session is None after optimizing the pretrained model.")
         # Cleanup
         self.tagcn_action_classifier.ort_session = None
-        # rmfile(os.path.join(self.temp_dir, self.experiment_name))
 
 
 if __name__ == "__main__":

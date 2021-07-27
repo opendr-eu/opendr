@@ -526,15 +526,15 @@ class SpatioTemporalGCNLearner(Learner):
         if self.ort_session is not None:
             raise UserWarning("Model is already optimized in ONNX.")
         try:
-            self.__convert_to_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"),
+            self.__convert_to_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model.onnx"),
                                    do_constant_folding)
         except FileNotFoundError:
             # Create temp directory
             os.makedirs(os.path.join(self.parent_dir, self.experiment_name), exist_ok=True)
-            self.__convert_to_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"),
+            self.__convert_to_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model.onnx"),
                                    do_constant_folding, verbose=False)
 
-        self.__load_from_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"))
+        self.__load_from_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model.onnx"))
 
     def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=False):
         """
@@ -613,7 +613,7 @@ class SpatioTemporalGCNLearner(Learner):
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             # Copy already optimized model from temp path
-            shutil.copy2(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"),
+            shutil.copy2(os.path.join(self.parent_dir, self.experiment_name, "onnx_model.onnx"),
                          model_metadata["model_paths"][0])
             model_metadata["optimized"] = True
             if verbose:
