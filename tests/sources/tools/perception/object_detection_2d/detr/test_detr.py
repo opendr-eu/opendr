@@ -47,6 +47,8 @@ def rmdir(_dir):
 class TestDetrLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        print("\n\n**********************************\nTEST Object Detection DETR Learner\n"
+              "**********************************")
         cls.temp_dir = os.path.join("tests", "sources", "tools",
                                     "perception", "object_detection_2d",
                                     "detr", "detr_temp")
