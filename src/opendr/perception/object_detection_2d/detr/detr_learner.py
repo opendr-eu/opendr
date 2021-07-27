@@ -657,7 +657,7 @@ class DetrLearner(Learner):
 
         """
 
-    def download(self, path=None, mode="pretrained", verbose=False):
+    def download(self, path=None, mode="pretrained", verbose=True):
         """
         Download utility for various DETR components. Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
@@ -823,7 +823,7 @@ class DetrLearner(Learner):
         elif self.optimizer == "sgd":
             self.torch_optimizer = torch.optim.SGD(param_dicts, lr=self.lr, weight_decay=self.args.weight_decay)
         else:
-            warnings.warn("Unavailbale optimizer specified, using adamw instead. Possible optimizers are; adam, adamw and sgd")
+            warnings.warn("Unavailbale optimizer specified, using adamw instead. Possible optimizers are: adam, adamw and sgd")
             self.torch_optimizer = torch.optim.AdamW(param_dicts, lr=self.lr, weight_decay=self.weight_decay)
 
     def __create_scheduler(self):
