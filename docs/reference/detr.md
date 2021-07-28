@@ -124,6 +124,8 @@ Parameters:
 - **annotations_file** : *str, default='instances_val2017.json'*
   Filename of the annotations json file.
   This file should be contained in the dataset path provided.
+- **verbose** : *bool, default=True*
+  Enables the maximum verbosity.
 
 #### `DetrLearner.infer`
 ```python
