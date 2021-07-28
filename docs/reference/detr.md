@@ -14,7 +14,7 @@ following public methods:
 
 #### `DetrLearner` constructor
 ```python
-DetrLearner(model_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter,
+DetrLearner(self, model_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter,
 temp_path, device, threshold, num_classes, return_segmentations)
 ```
 
@@ -61,7 +61,7 @@ Constructor parameters:
   Below you can find an example that shows how you can create such a `DatasetIterator`.
 - **return_segmentations**: *bool, default=False*
   Specifies whether the model returns, next to bounding boxes, segmentations of objects.
-  If *True*, the `download_model()` method will download pretrained coco_panoptic models.
+  If *True*, the `download()` method will download COCO panoptic models.
 
 #### `DetrLearner.fit`
 ```python
@@ -127,7 +127,7 @@ Parameters:
 
 #### `DetrLearner.infer`
 ```python
-DetrLearner.infer(image)
+DetrLearner.infer(self, image)
 ```
 
 This method is used to perform object detection on an image.
@@ -141,7 +141,7 @@ Parameters:
 
 #### `DetrLearner.save`
 ```python
-DetrLearner.save(self, path)
+DetrLearner.save(self, path, verbose)
 ```
 
 This method is used to save a trained model.
@@ -155,6 +155,8 @@ If [`self.optimize`](#DetrLearner.optimize) was run previously, it saves the opt
 Parameters:
 - **path**: *str*
   Path to save the model, including the filename.
+- **verbose**: *bool, default=False*
+  Enables the maximum verbosity.
 
 #### `DetrLearner.load`
 ```python
