@@ -90,7 +90,7 @@ class TestDetrLearner(unittest.TestCase):
         warnings.simplefilter("ignore", DeprecationWarning)
         self.learner.model = None
         self.learner.ort_session = None
-        self.learner.download()
+        self.learner.download(verbose=False)
 
         m = list(self.learner.model.parameters())[0].clone()
 
@@ -99,7 +99,7 @@ class TestDetrLearner(unittest.TestCase):
             annotations_folder="",
             train_annotations_file="instances.json",
             train_images_folder="image",
-            verbose=True
+            silent=True
         )
 
         self.assertFalse(torch.equal(m, list(self.learner.model.parameters())[0]),
@@ -119,13 +119,14 @@ class TestDetrLearner(unittest.TestCase):
         self.learner.model = None
         self.learner.ort_session = None
 
-        self.learner.download()
+        self.learner.download(verbose=False)
 
         results_dict = self.learner.eval(
             self.dataset,
             images_folder='image',
             annotations_folder='',
             annotations_file='instances.json',
+            verbose=False,
         )
 
         self.assertNotEqual(len(results_dict), 0,
@@ -138,12 +139,12 @@ class TestDetrLearner(unittest.TestCase):
         self.learner.model = None
         self.learner.ort_session = None
 
-        self.learner.download()
+        self.learner.download(verbose=False)
 
         image_path = os.path.join(
             self.dataset_path,
             "image",
-            "000000391895.jpg"
+            "000000391895.jpg",
             )
 
         image = Image.open(image_path)
@@ -158,7 +159,7 @@ class TestDetrLearner(unittest.TestCase):
 
         model_dir = os.path.join(self.temp_dir, "test_model")
 
-        self.learner.download()
+        self.learner.download(verbose=False)
 
         self.learner.save(model_dir)
 
@@ -179,7 +180,7 @@ class TestDetrLearner(unittest.TestCase):
     def test_save_load(self):
         self.learner.model = None
         self.learner.ort_session = None
-        self.learner.download()
+        self.learner.download(verbose=False)
         self.learner.save(os.path.join(self.temp_dir, "test_model"))
         self.learner.model = None
         self.learner.load(os.path.join(self.temp_dir, "test_model"))
@@ -188,7 +189,7 @@ class TestDetrLearner(unittest.TestCase):
         rmdir(os.path.join(self.temp_dir, "test_model"))
 
     def test_save_load_onnx(self):
-        # ONNX will issue TracerWarnings, but these can be ignored safely if
+        # ONNX will issue TracerWarnings, but these can be ignored safely
         # because we use this function to create tensors out of constant
         # variables that are the same every time we call this function.
         warnings.simplefilter("ignore",  TracerWarning)
@@ -196,7 +197,7 @@ class TestDetrLearner(unittest.TestCase):
 
         self.learner.model = None
         self.learner.ort_session = None
-        self.learner.download()
+        self.learner.download(verbose=False)
         self.learner.optimize()
         self.learner.save(os.path.join(self.temp_dir, "test_model"))
         self.learner.model = None
@@ -209,7 +210,7 @@ class TestDetrLearner(unittest.TestCase):
         warnings.simplefilter("default",  RuntimeWarning)
 
     def test_optimize(self):
-        # ONNX will issue TracerWarnings, but these can be ignored safely if
+        # ONNX will issue TracerWarnings, but these can be ignored safely
         # because we use this function to create tensors out of constant
         # variables that are the same every time we call this function.
         warnings.simplefilter("ignore",  TracerWarning)
@@ -218,7 +219,7 @@ class TestDetrLearner(unittest.TestCase):
         self.learner.model = None
         self.learner.ort_session = None
 
-        self.learner.download()
+        self.learner.download(verbose=False)
 
         self.learner.optimize()
         self.assertIsNotNone(self.learner.ort_session)
