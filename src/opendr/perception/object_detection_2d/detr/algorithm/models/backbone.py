@@ -22,7 +22,6 @@ import torch.nn.functional as F
 import torchvision
 from torch import nn
 from torchvision.models._utils import IntermediateLayerGetter
-from typing import Dict, List
 
 from opendr.perception.object_detection_2d.detr.algorithm.util.misc import NestedTensor, is_main_process
 
