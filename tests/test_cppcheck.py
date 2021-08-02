@@ -74,7 +74,6 @@ class TestCppCheck(unittest.TestCase):
                                     break
                             if not shouldSkip:
                                 command += ' \"' + line + '\"'
-                            continue
             for source in skippedfiles:
                 command += ' --suppress=\"*:' + source + '\"'
         else:
