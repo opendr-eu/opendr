@@ -91,9 +91,6 @@ class TestCppCheck(unittest.TestCase):
             'src/c',
         ]
         skippedDirs = [
-            'src/webots/external',
-            'include/opencv2',
-            'include/qt'
         ]
         includeDirs = [
             'include/'
