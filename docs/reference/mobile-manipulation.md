@@ -16,7 +16,7 @@ The [MobileRLLearner](#src.opendr.control.mobile_manipulation.mobile_manipulatio
 Constructor parameters:
 - **lr**: *float, default=1e-5*  
   Specifies the initial learning rate to be used during training.
-- **iters**: *int, default=1'000'000*  
+- **iters**: *int, default=1_000_000*  
   Specifies the number of steps the training should run for.
 - **batch_size**: *int, default=64*  
   Specifies the batch size during training.
