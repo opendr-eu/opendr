@@ -129,7 +129,8 @@ roslaunch mobile_manipulation_rl [pr2,tiago]_analytical
 The environment was tested for Ubuntu 18.04 and ROS melodic and assumes this version in its dependencies installation.
 
 ##### Visualisation
-All visualisations are done through rviz. For this start rviz with the provided configuration file as follows. To visualise the Tiago robot additionally adjust the reference frame in rviz from `odom` to `odom combined`.
+All visualisations are done through rviz. For this start rviz with the provided configuration file as follows.
+To visualise the TIAGo robot additionally adjust the reference frame in rviz from `odom` to `odom combined`.
 ```sh
 rviz -d rviz_config.config
 ```
