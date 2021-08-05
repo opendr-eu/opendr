@@ -69,7 +69,7 @@ Parameters:
   If specified use this env to train.
 - **val_env**: *gym.Env, default=None*
   If specified periodically evaluate on this environment.
-- **logging_path**: *str, default = ''*
+- **logging_path**: *str, default=''*
   Path for logging and checkpointing.
 - **silent**: *bool, default=False* 
   Disable verbosity.
