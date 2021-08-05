@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import functools
+import gym
 import numpy as np
 import os
 import rospy
@@ -29,7 +30,7 @@ from urllib.request import urlretrieve
 
 
 class MobileRLLearner(LearnerRL):
-    def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',
+    def __init__(self, env: gym.Env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',
                  lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=20_000, checkpoint_load_iter=0,
                  restore_model_path: Optional[str] = None, temp_path='', device='cuda', seed: int = None,
                  buffer_size: int = 100_000, learning_starts: int = 0, tau: float = 0.001, gamma: float = 0.99,

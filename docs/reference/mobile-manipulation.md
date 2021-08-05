@@ -14,6 +14,8 @@ The [MobileRLLearner](#src.control.mobile_manipulation.mobile_manipulation_learn
 #### `MobileRLLearner` constructor
 
 Constructor parameters:
+- **env**: *gym.Env*
+  Reinforcment learning environment to train or evaluate the agent on.
 - **lr**: *float, default=1e-5*  
   Specifies the initial learning rate to be used during training.
 - **iters**: *int, default=1'000'000*  
@@ -32,7 +34,7 @@ Constructor parameters:
   Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
 - **restore_model_path**: *str, default=None*
   Path to load checkpoints from. Set to 'pretrained' to load one of the provided checkpoints.
-- **temp_path**: *str, default='temp'*  
+- **temp_path**: *str, default=''*  
   Specifies a path where the algorithm stores log files and saves checkpoints.
 - **device**: *{'cpu', 'cuda'}, default='cuda'*  
   Specifies the device to be used.
