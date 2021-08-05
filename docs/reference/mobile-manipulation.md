@@ -145,7 +145,7 @@ rviz -d rviz_config.config
     from opendr.control.mobile_manipulation.mobileRL.utils import create_env
     from opendr.control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
 
-    # need a node to for visualisation
+    # need a node for visualisation
     rospy.init_node('kinematic_feasibility_py', anonymous=False)
 
     main_path = Path(__file__).parent
@@ -202,7 +202,7 @@ rviz -d rviz_config.config
     from opendr.control.mobile_manipulation.mobileRL.utils import create_env
     from opendr.control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
 
-    # need a node to for visualisation
+    # need a node for visualisation
     rospy.init_node('kinematic_feasibility_py', anonymous=False)
 
     main_path = Path(__file__).parent

@@ -186,7 +186,7 @@ def set_seed(seed: int):
 
 
 def main():
-    # need a node to for visualisation
+    # need a node for visualisation
     rospy.init_node('kinematic_feasibility_py', anonymous=False)
 
     main_path = Path(__file__).parent
