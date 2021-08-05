@@ -139,7 +139,8 @@ rviz -d rviz_config.config
 
 #### Examples
 * **Training in the analytical environment and evaluation in Gazebo on a Door Opening task**.
-  As described above, install ROS and build the workspace. Then source the catkin workspace and run the launch file as described in the `ROS Setup` section above.
+As described above, install ROS and build the workspace.
+Then source the catkin workspace and run the launch file as described in the `ROS Setup` section above.
   ```python
     import rospy
     from pathlib import Path
