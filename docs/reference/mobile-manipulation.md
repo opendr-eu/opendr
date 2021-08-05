@@ -9,7 +9,7 @@ The *MobileRLLearner* class is an RL agent that can be used to train wheeled rob
 `mobileRL.env.mobile_manipulation_env` environments and the task wrappers around it in `mobileRL.env.tasks` and `mobileRL.env.tasks_chained`. 
 Originally published in [[1]](#kinematic-feasibility), demonstrations can be found on [Learning Kinematic Feasibility for Mobile Manipulation through Deep Reinforcement Learning](http://kinematic-rl.cs.uni-freiburg.de/).
 
-The [MobileRLLearner](#src.control.mobile_manipulation.mobile_manipulation_learner.py) class has the following public methods:
+The [MobileRLLearner](#src.opendr.control.mobile_manipulation.mobile_manipulation_learner.py) class has the following public methods:
 
 #### `MobileRLLearner` constructor
 
