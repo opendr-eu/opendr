@@ -5,8 +5,22 @@ if [[ -z "$OPENDR_HOME" ]]; then
        exit 1
 fi
 
+if [[ -z "$ROS_DISTRO" ]]; then
+       echo "ROS_DISTRO is not defined"
+       exit 1
+fi
+
 MODULE_PATH=${OPENDR_HOME}/src/opendr/control/mobile_manipulation
 WS_PATH=${OPENDR_HOME}/lib/catkin_ws_mobile_manipulation
+
+# ROS
+sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
+apt-get update && apt-get install \
+  ros-${ROS_DISTRO}-ros-base ros-${ROS_DISTRO}-pybind11-catkin \
+  ros-${ROS_DISTRO}-moveit \
+  ros-${ROS_DISTRO}-pr2-simulator \
+  ros-${ROS_DISTRO}-moveit-pr2
 
 # libgp
 LIBGP_PATH=${OPENDR_HOME}/lib/libgp
@@ -21,15 +35,6 @@ if [ ! -d ${LIBGP_PATH} ]; then
 fi
 
 # tiago
-UBUNTU_VERSION_NUMBER=$(lsb_release -r |cut -f2)
-case "$UBUNTU_VERSION_NUMBER" in
-  "18.04")
-    ROS_DISTRO=melodic;;
-  "20.04")
-    ROS_DISTRO=noetic;;
-  *)
-    echo "Not tested for this ubuntu version" && exit 1;;
-esac
 if [ ! -f ${WS_PATH}/tiago_public.rosinstall ]; then
   mkdir ${WS_PATH} \
     && cd ${WS_PATH} \
@@ -40,7 +45,7 @@ if [ ! -f ${WS_PATH}/tiago_public.rosinstall ]; then
     && apt-get update \
     && rosdep install -y -r -q --from-paths src --ignore-src --rosdistro $ROS_DISTRO --skip-keys="opencv2 opencv2-nonfree pal_laser_filters speed_limit_node sensor_to_cloud hokuyo_node libdw-dev python-graphitesend-pip python-statsd pal_filters pal_vo_server pal_usb_utils pal_pcl pal_pcl_points_throttle_and_filter pal_karto pal_local_joint_control camera_calibration_files pal_startup_msgs pal-orbbec-openni2 dummy_actuators_manager pal_local_planner gravity_compensation_controller current_limit_controller dynamic_footprint dynamixel_cpp tf_lookup opencv3 tiago_pcl_tutorial" \
     && echo "update the moveit configs with the global joint" \
-    cp ${MODULE_PATH}/robots_world/tiago/modified_tiago.srdf.em src/tiago_moveit_config/config/srdf/tiago.srdf.em \
+    && cp ${MODULE_PATH}/robots_world/tiago/modified_tiago.srdf.em src/tiago_moveit_config/config/srdf/tiago.srdf.em \
     && cp ${MODULE_PATH}/robots_world/tiago/modified_tiago_pal-gripper.srdf src/tiago_moveit_config/config/srdf/tiago_pal-gripper.srdf \
     && cp ${MODULE_PATH}/robots_world/tiago/modified_gripper.urdf.xacro src/pal_gripper/pal_gripper_description/urdf/gripper.urdf.xacro \
     && cp ${MODULE_PATH}/robots_world/tiago/modified_wsg_gripper.urdf.xacro src/pal_wsg_gripper/pal_wsg_gripper_description/urdf/gripper.urdf.xacro
@@ -54,7 +59,7 @@ cd ${WS_PATH}
 ln -s ${MODULE_PATH} src
 catkin config -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
 catkin config --blacklist tiago_pcl_tutorial
-source /opt/ros/melodic/setup.bash
+source /opt/ros/${ROS_DISTRO}/setup.bash
 # will fail if we don't specify `-j x`
 catkin build -j 8
 # NOTE: users have to work in the shell that has sourced this file
