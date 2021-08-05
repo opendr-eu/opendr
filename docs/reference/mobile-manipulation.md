@@ -67,7 +67,7 @@ Train the agent on the environment.
 Parameters:
 - **env**: *gym.Env, default=None*
   If specified use this env to train.
-- **val_env**:  *gym.Env, default=None*
+- **val_env**: *gym.Env, default=None*
   If specified periodically evaluate on this env.
 - **logging_path**: *str, default = ''*
   Path for logging and checkpointing.
