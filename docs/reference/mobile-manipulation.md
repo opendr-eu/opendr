@@ -9,7 +9,7 @@ The *MobileRLLearner* class is an RL agent that can be used to train wheeled rob
 `mobileRL.env.mobile_manipulation_env` environments and the task wrappers around it in `mobileRL.env.tasks` and `mobileRL.env.tasks_chained`. 
 Originally published in [[1]](#kinematic-feasibility), demonstrations can be found on [Learning Kinematic Feasibility for Mobile Manipulation through Deep Reinforcement Learning](http://kinematic-rl.cs.uni-freiburg.de/).
 
-The [MobileRLLearner](#src.control.mobile_manipulation.mobile_manipulation_learner.py) class has the following public methods:
+The [MobileRLLearner](#src.opendr.control.mobile_manipulation.mobile_manipulation_learner.py) class has the following public methods:
 
 #### `MobileRLLearner` constructor
 
@@ -18,7 +18,7 @@ Constructor parameters:
   Reinforcment learning environment to train or evaluate the agent on.
 - **lr**: *float, default=1e-5*  
   Specifies the initial learning rate to be used during training.
-- **iters**: *int, default=1'000'000*  
+- **iters**: *int, default=1_000_000*  
   Specifies the number of steps the training should run for.
 - **batch_size**: *int, default=64*  
   Specifies the batch size during training.
@@ -69,9 +69,9 @@ Train the agent on the environment.
 Parameters:
 - **env**: *gym.Env, default=None*
   If specified use this env to train.
-- **val_env**:  *gym.Env, default=None*
-  If specified periodically evaluate on this env.
-- **logging_path**: *str, default = ''*
+- **val_env**: *gym.Env, default=None*
+  If specified periodically evaluate on this environment.
+- **logging_path**: *str, default=''*
   Path for logging and checkpointing.
 - **silent**: *bool, default=False* 
   Disable verbosity.
@@ -87,7 +87,7 @@ Evaluate the agent on the specified environment.
 
 Parameters:
 - **env**: *gym.Env, default=None*
-  Env to evaluate on.
+  Environment to evaluate on.
 - **name_prefix**: *str, default=''*
   Name prefix for all logged variables.
 - **nr_evaluations**: *int, default=None*
@@ -120,8 +120,9 @@ Parameters:
 #### ROS Setup
 The repository consists of two main parts: a training environment written in C++ and connected to Python through bindings and the RL agents written in Python 3.
 
-This means that the training environment relies on a running moveit node for initialisation. The dependencies for this module automatically set up and compile a catkin workspace with all required modules.
-To start required ros nodes, please run the following before using the `MobileRLLearner` class:
+This means that the training environment relies on a running moveit node for initialisation.
+The dependencies for this module automatically set up and compile a catkin workspace with all required modules.
+To start required ROS nodes, please run the following before using the `MobileRLLearner` class:
 
 ```sh
 source ${OPENDR_HOME}/lib/catkin_ws_mobile_manipulation/devel/setup.bash
@@ -131,7 +132,8 @@ roslaunch mobile_manipulation_rl [pr2,tiago]_analytical
 The environment was tested for Ubuntu 18.04 and ROS melodic and assumes this version in its dependencies installation.
 
 ##### Visualisation
-All visualisations are done through rviz. For this start rviz with the provided configuration file as follows. To visualise the Tiago robot additionally adjust the reference frame in rviz from `odom` to `odom combined`.
+All visualisations are done through rviz. For this start rviz with the provided configuration file as follows.
+To visualise the TIAGo robot additionally adjust the reference frame in rviz from `odom` to `odom combined`.
 ```sh
 rviz -d rviz_config.config
 ```
@@ -139,7 +141,8 @@ rviz -d rviz_config.config
 
 #### Examples
 * **Training in the analytical environment and evaluation in Gazebo on a Door Opening task**.
-  As described above, install ROS and build the workspace. Then source the catkin workspace and run the launch file as described in the `ROS Setup` section above.
+As described above, install ROS and build the workspace.
+Then source the catkin workspace and run the launch file as described in the `ROS Setup` section above.
   ```python
     import rospy
     from pathlib import Path
