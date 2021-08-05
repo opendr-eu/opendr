@@ -250,8 +250,9 @@ rviz -d rviz_config.config
 #### Notes
 
 ##### HSR
-The HSR environment relies on packages that are part of the proprietory HSR simulator. If you have an HSR account with Toyota,
-please follow these steps to use the environment. Otherwise ignore this section to use the other environments we provide.
+The HSR environment relies on packages that are part of the proprietory HSR simulator.
+If you have an HSR account with Toyota, please follow these steps to use the environment.
+Otherwise ignore this section to use the other environments we provide.
 
 - Check the commented out parts in the `# HSR` section as well as the building of the workspace further below in the `Dockerfile` to install the requirements.
 - Comment in the following lines in `CMakeLists.txt`:
