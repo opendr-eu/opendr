@@ -118,7 +118,8 @@ Parameters:
 #### ROS Setup
 The repository consists of two main parts: a training environment written in C++ and connected to Python through bindings and the RL agents written in Python 3.
 
-This means that the training environment relies on a running moveit node for initialisation. The dependencies for this module automatically set up and compile a catkin workspace with all required modules.
+This means that the training environment relies on a running moveit node for initialisation.
+The dependencies for this module automatically set up and compile a catkin workspace with all required modules.
 To start required ros nodes, please run the following before using the `MobileRLLearner` class:
 
 ```sh
