@@ -120,7 +120,7 @@ The repository consists of two main parts: a training environment written in C++
 
 This means that the training environment relies on a running moveit node for initialisation.
 The dependencies for this module automatically set up and compile a catkin workspace with all required modules.
-To start required ros nodes, please run the following before using the `MobileRLLearner` class:
+To start required ROS nodes, please run the following before using the `MobileRLLearner` class:
 
 ```sh
 source ${OPENDR_HOME}/lib/catkin_ws_mobile_manipulation/devel/setup.bash
