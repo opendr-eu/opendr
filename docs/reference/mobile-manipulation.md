@@ -85,7 +85,7 @@ Evaluate the agent on the specified environment.
 
 Parameters:
 - **env**: *gym.Env, default=None*
-  Env to evaluate on.
+  Environment to evaluate on.
 - **name_prefix**: *str, default=''*
   Name prefix for all logged variables.
 - **nr_evaluations**: *int, default=None*
