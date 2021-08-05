@@ -1,5 +1,2 @@
-# file types
-*.pyc
 # directories
-logs/
 .idea_pycharm/
