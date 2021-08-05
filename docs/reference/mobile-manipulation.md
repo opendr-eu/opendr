@@ -141,9 +141,9 @@ rviz -d rviz_config.config
   ```python
     import rospy
     from pathlib import Path
-    from control.mobile_manipulation.mobileRL.evaluation import evaluate_on_task
-    from control.mobile_manipulation.mobileRL.utils import create_env
-    from control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
+    from opendr.control.mobile_manipulation.mobileRL.evaluation import evaluate_on_task
+    from opendr.control.mobile_manipulation.mobileRL.utils import create_env
+    from opendr.control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
 
     # need a node to for visualisation
     rospy.init_node('kinematic_feasibility_py', anonymous=False)
