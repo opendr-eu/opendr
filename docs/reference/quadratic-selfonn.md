@@ -210,6 +210,7 @@ from opendr.perception.speech_recognition.quadraticselfonn.quadraticselfonn_lear
 learner = QuadraticSelfOnnLearner(output_classes_n=10)
 learner.load(os.path.join(".", "example", "directory", "path", "model"))
 
+# Assuming you have recorded your own voice sample in command.wav in the current directory
 signal, sampling_rate = librosa.load("command.wav", sr=learner.sample_rate)
 signal = np.expand_dims(signal, axis=0)
 timeseries = Timeseries(signal)
