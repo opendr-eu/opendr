@@ -139,10 +139,6 @@ class QuadraticSelfOnnTest(unittest.TestCase):
         test_timeseries = Timeseries(values)
         command = self.learner.infer(test_timeseries)
         self.assertEqual(command.data, 8)
-        try:
-            shutil.rmtree(TEMP_SAVE_DIR)
-        except OSError as e:
-            print(f"Exception when trying to remove temp directory: {e.strerror}")
         # Remove temporary files
         try:
             shutil.rmtree(TEMP_SAVE_DIR)
