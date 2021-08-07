@@ -144,6 +144,7 @@ class QuadraticSelfOnnTest(unittest.TestCase):
             shutil.rmtree(TEMP_SAVE_DIR)
         except OSError as e:
             print(f"Exception when trying to remove temp directory: {e.strerror}")
+            return
 
 
 if __name__ == "__main__":
