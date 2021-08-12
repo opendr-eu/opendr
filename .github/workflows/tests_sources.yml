@@ -55,4 +55,4 @@ jobs:
         make install_compilation_dependencies
         make install_runtime_dependencies
         pip install -r tests/sources/requirements.txt
-        python -m unittest discover -s tests/sources
+        python -m unittest discover -s tests/sources/tools/perception/skeleton_based_action_recognition/
