@@ -119,6 +119,33 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
         rmdir(os.path.join(cls.temp_dir))
         pass
 
+    def test_fit(self):
+        def test_model(name, config):
+            print("Fit", name, "start", file=sys.stderr)
+            model_path = os.path.join(self.temp_dir, "test_fit_" + name)
+            dataset = KittiDataset(self.dataset_path, self.subsets_path)
+
+            learner = VoxelObjectDetection3DLearner(
+                model_config_path=config, device=DEVICE,
+                checkpoint_after_iter=2,
+            )
+
+            starting_param = list(learner.model.parameters())[0].clone()
+            learner.fit(
+                dataset,
+                model_dir=model_path,
+                verbose=True,
+                evaluate=False,
+            )
+            new_param = list(learner.model.parameters())[0].clone()
+            self.assertFalse(torch.equal(starting_param, new_param))
+
+            del learner
+            print("Fit", name, "ok", file=sys.stderr)
+
+        for name, config in self.car_configs.items():
+            test_model(name, config)
+
     def test_eval(self):
         def test_model(name, config):
             print("Eval", name, "start", file=sys.stderr)
