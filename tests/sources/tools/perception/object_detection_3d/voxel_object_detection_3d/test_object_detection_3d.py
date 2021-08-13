@@ -21,7 +21,7 @@ from opendr.engine.datasets import PointCloudsDatasetIterator
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner
 )
-from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
+from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset
 
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
