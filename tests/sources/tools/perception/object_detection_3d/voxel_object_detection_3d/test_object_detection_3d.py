@@ -21,7 +21,7 @@ from opendr.engine.datasets import PointCloudsDatasetIterator
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner
 )
-from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset
+from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
 
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -119,29 +119,39 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
         rmdir(os.path.join(cls.temp_dir))
         pass
 
-    def test_fit(self):
+    def test_fit_iterator(self):
         def test_model(name, config):
-            print("Fit", name, "start", file=sys.stderr)
-            model_path = os.path.join(self.temp_dir, "test_fit_" + name)
-            dataset = KittiDataset(self.dataset_path, self.subsets_path)
+            print("Fit iterator", name, "start", file=sys.stderr)
+            model_path = os.path.join(self.temp_dir, "test_fit_iterator_" + name)
+            dataset = LabeledPointCloudsDatasetIterator(
+                self.dataset_path + "/training/velodyne_reduced",
+                self.dataset_path + "/training/label_2",
+                self.dataset_path + "/training/calib",
+            )
+
+            val_dataset = LabeledPointCloudsDatasetIterator(
+                self.dataset_path + "/training/velodyne_reduced",
+                self.dataset_path + "/training/label_2",
+                self.dataset_path + "/training/calib",
+            )
 
             learner = VoxelObjectDetection3DLearner(
                 model_config_path=config, device=DEVICE,
-                checkpoint_after_iter=2,
+                checkpoint_after_iter=90,
             )
 
             starting_param = list(learner.model.parameters())[0].clone()
             learner.fit(
                 dataset,
+                val_dataset=val_dataset,
                 model_dir=model_path,
-                verbose=True,
                 evaluate=False,
             )
             new_param = list(learner.model.parameters())[0].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
 
             del learner
-            print("Fit", name, "ok", file=sys.stderr)
+            print("Fit iterator", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
             test_model(name, config)
