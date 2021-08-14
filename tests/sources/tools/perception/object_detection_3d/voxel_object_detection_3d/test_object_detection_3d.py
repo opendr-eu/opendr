@@ -202,6 +202,34 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
         for name, config in self.car_configs.items():
             test_model(name, config)
 
+    def test_infer(self):
+        def test_model(name, config):
+            print("Infer", name, "start", file=sys.stderr)
+
+            dataset = PointCloudsDatasetIterator(self.dataset_path + "/testing/velodyne_reduced")
+
+            learner = VoxelObjectDetection3DLearner(
+                model_config_path=config, device=DEVICE
+            )
+
+            result = learner.infer(
+                dataset[0]
+            )
+
+            self.assertTrue(len(result) > 0)
+
+            result = learner.infer(
+                [dataset[0], dataset[1], dataset[2]]
+            )
+            self.assertTrue(len(result) == 3)
+            self.assertTrue(len(result[0]) > 0)
+
+            del learner
+            print("Infer", name, "ok", file=sys.stderr)
+
+        for name, config in self.car_configs.items():
+            test_model(name, config)
+
     def test_save(self):
         def test_model(name, config):
             print("Save", name, "start", file=sys.stderr)
