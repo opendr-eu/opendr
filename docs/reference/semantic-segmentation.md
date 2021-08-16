@@ -64,7 +64,7 @@ Constructor parameters:
 
 #### `BisenetLearner.fit`
 ```python
-BisenetLearner.fit(self, dataset, val_dataset=None, val_dataset=None, logging_path='', silent=False, verbose=True)
+BisenetLearner.fit(self, dataset, val_dataset=None, logging_path='', silent=False, verbose=True)
 ```
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
