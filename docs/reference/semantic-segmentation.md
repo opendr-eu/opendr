@@ -97,7 +97,7 @@ Parameters:
 
 #### `BisenetLearner.infer`
 ```python
-BisenetLearner.infer(img, spath=None)
+BisenetLearner.infer(self, img, spath)
 ```
 
 This method is used to perform segmentation on an image
