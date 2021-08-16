@@ -88,7 +88,7 @@ Returns a dictionary containing stats regarding evaluation.
 Parameters:
   - **dataset**: *Dataset*  
     Dataset on which to evaluate model.
-  - **silent**: *bool default=False* 
+  - **silent**: *bool, default=False* 
 
   - **verbose**: *bool default=True*  
 
