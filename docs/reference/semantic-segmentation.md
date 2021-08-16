@@ -18,30 +18,28 @@ following public methods:
 
 #### `BisenetLearner` constructor
 ```python
-BisenetLearner(self, lr, iters, batch_size, optimizer, checkpoint_after_iter, checkpoint_load_iter, val_after, temp_path, device, loss, weight_decay, momentum, drop_last, pin_memory, num_workers, num_classes)
+BisenetLearner(self, lr, iters, batch_size, optimizer, temp_path, checkpoint_after_iter, checkpoint_load_iter, device, val_after, weight_decay, momentum, drop_last, pin_memory, num_workers, num_classes, crop_height, crop_width, context_path)
 ```
 
 Constructor parameters:
   - **lr**: *float, default=0.01*  
     Learning rate during optimization. 
-  - **iters**: *int, default=500*  
+  - **iters**: *int, default=1*  
     Number of epochs to train for. 
   - **batch_size**: *int, default=2*  
     Dataloader batch size. Defaults to 2.
   - **optimizer**: *str, default="sgd"*  
     Name of optimizer to use ("sgd" ,"rmsprop", or "adam"). 
+  - **temp_path**: *str, default='./temp'*  
+    Path in which to store temporary files. 
   - **checkpoint_after_iter**: *int, default=0*  
     Save chackpoint after specific epochs. 
   - **checkpoint_load_iter**: *int, default=0*  
     Unused parameter. 
-  - **val_after**: *int, default=0*  
-    Perform validation after specific epochs. 
-  - **temp_path**: *str, default='./temp'*  
-    Path in which to store temporary files. 
-  - **device**: *str, default="cuda"*  
+  - **device**: *str, default="cpu"*  
     Name of computational device ("cpu" or "cuda"). 
-  - **loss_func**: *str, default=torch.nn.CrossEntropyLoss()*  
-    Loss function used during optimization. 
+  - **val_after**: *int, default=1*  
+    Perform validation after specific epochs. 
   - **weight_decay**: *[type], default=1e-5*  
     Weight decay used for optimization. 
   - **momentum**: *float, default=0.9*  
