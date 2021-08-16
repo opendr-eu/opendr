@@ -62,7 +62,7 @@ Constructor parameters:
 
 #### `BisenetLearner.fit`
 ```python
-BisenetLearner.fit(self, dataset, val_dataset=None, logging_path='', silent=False, verbose=True)
+BisenetLearner.fit(self, dataset, val_dataset, logging_path='', silent, verbose)
 ```
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
@@ -73,22 +73,25 @@ Parameters:
   - **val_dataset**: *Dataset, default=None*  
     Validation dataset. If none is given, validation steps are skipped.
   - **logging_path**: *str default=''* 
-  - **silent**: *bool default=False* 
-  - **verbose**: *bool default=True*  
+  - **silent**: *bool, default=False*  
+    If set to True, disables all printing of training progress reports and other information to STDOUT.  
+  - **verbose**: *bool, default=True*  
+    If set to True, enables the maximum logging verbosity. 
 
 
 #### `BisenetLearner.eval`
 ```python
-BisenetLearner.eval(self, dataset, silent=False, verbose=True)
+BisenetLearner.eval(self, dataset, silent, verbose)
 ```
 This method is used to evaluate a trained model on an evaluation dataset.
 Returns a dictionary containing stats regarding evaluation.  
 Parameters:
   - **dataset**: *Dataset*  
     Dataset on which to evaluate model.
-  - **silent**: *bool, default=False* 
-
-  - **verbose**: *bool default=True*  
+  - **silent**: *bool, default=False*  
+    If set to True, disables all printing of training progress reports and other information to STDOUT.  
+  - **verbose**: *bool, default=True*  
+    If set to True, enables the maximum logging verbosity. 
 
 
 
