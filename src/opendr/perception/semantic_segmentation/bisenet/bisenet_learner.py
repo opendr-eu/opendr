@@ -38,36 +38,36 @@ class BisenetLearner(Learner):
                  iters=1,
                  batch_size=2,
                  optimizer='sgd',
-                 device='cpu',
-                 context_path='resnet18',
                  temp_path='',
                  checkpoint_after_iter=0,
                  checkpoint_load_iter=0,
+                 device='cpu',
                  val_after=1,
-                 pin_memory=False,
-                 num_classes=12,
                  weight_decay=5e-4,
-                 drop_last=True,
                  momentum=0.9,
+                 drop_last=True,
+                 pin_memory=False,
+                 num_workers=4,
+                 num_classes=12,
                  crop_height=720,
                  crop_width=960,
-                 num_workers=4):
+                 context_path='resnet18'):
         super(BisenetLearner, self).__init__(lr=lr, batch_size=batch_size, iters=iters, optimizer=optimizer,
                                              temp_path=temp_path,
                                              checkpoint_after_iter=checkpoint_after_iter,
                                              checkpoint_load_iter=checkpoint_load_iter, device=device)
 
-        self.context_path = context_path
+        self.val_after = val_after
         self.weight_decay = weight_decay
         self.momentum = momentum
+        self.drop_last = drop_last
         self.pin_memory = pin_memory
         self.num_workers = num_workers
         self.num_classes = num_classes
-        self.loss_func = torch.nn.CrossEntropyLoss()
-        self.drop_last = drop_last
-        self.val_after = val_after
         self.crop_height = crop_height
         self.crop_width = crop_width
+        self.context_path = context_path
+        self.loss_func = torch.nn.CrossEntropyLoss()
         self.build_model()
 
         if self.optimizer == "sgd":
