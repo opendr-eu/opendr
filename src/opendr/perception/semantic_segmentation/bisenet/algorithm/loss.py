@@ -27,12 +27,9 @@ class DiceLoss(nn.Module):
         output = F.softmax(output, dim=1)
         output = flatten(output)
         target = flatten(target)
-        # intersect = (output * target).sum(-1).sum() + self.epsilon
-        # denominator = ((output + target).sum(-1)).sum() + self.epsilon
 
         intersect = (output * target).sum(-1)
         denominator = (output + target).sum(-1)
         dice = intersect / denominator
         dice = torch.mean(dice)
         return 1 - dice
-        # return 1 - 2. * intersect / denominator
