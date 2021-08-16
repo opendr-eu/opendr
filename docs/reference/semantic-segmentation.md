@@ -74,7 +74,7 @@ Parameters:
     Training dataset.
   - **val_dataset**: *Dataset, default=None*  
     Validation dataset. If none is given, validation steps are skipped.
-  - **logging_path**: *str default=' '* 
+  - **logging_path**: *str default=''* 
   - **silent**: *bool default=False* 
   - **verbose**: *bool default=True*  
 
