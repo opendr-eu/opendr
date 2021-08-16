@@ -22,7 +22,6 @@ def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
     return lr
 
 
-# return lr
 
 def get_label_info(csv_path):
     # return label -> {label_name: [r_value, g_value, b_value, ...}
@@ -43,12 +42,10 @@ def one_hot_it(label, label_info):
     semantic_map = np.zeros(label.shape[:-1])
     for index, info in enumerate(label_info):
         color = label_info[info]
-        # colour_map = np.full((label.shape[0], label.shape[1], label.shape[2]), colour, dtype=int)
         equality = np.equal(label, color)
         class_map = np.all(equality, axis=-1)
         semantic_map[class_map] = index
-    # semantic_map.append(class_map)
-    # semantic_map = np.stack(semantic_map, axis=-1)
+
     return semantic_map
 
 
@@ -61,10 +58,8 @@ def one_hot_it_v11(label, label_info):
         color = label_info[info][:3]
         class_11 = label_info[info][3]
         if class_11 == 1:
-            # colour_map = np.full((label.shape[0], label.shape[1], label.shape[2]), colour, dtype=int)
             equality = np.equal(label, color)
             class_map = np.all(equality, axis=-1)
-            # semantic_map[class_map] = index
             semantic_map[class_map] = class_index
             class_index += 1
         else:
@@ -82,10 +77,8 @@ def one_hot_it_v11_dice(label, label_info):
         color = label_info[info][:3]
         class_11 = label_info[info][3]
         if class_11 == 1:
-            # colour_map = np.full((label.shape[0], label.shape[1], label.shape[2]), colour, dtype=int)
             equality = np.equal(label, color)
             class_map = np.all(equality, axis=-1)
-            # semantic_map[class_map] = index
             semantic_map.append(class_map)
         else:
             equality = np.equal(label, color)
@@ -110,14 +103,6 @@ def reverse_one_hot(image):
         with a depth size of 1, where each pixel value is the classified
         class key.
     """
-    # w = image.shape[0]
-    # h = image.shape[1]
-    # x = np.zeros([w,h,1])
-
-    # for i in range(0, w):
-    #     for j in range(0, h):
-    #         index, value = max(enumerate(image[i, j, :]), key=operator.itemgetter(1))
-    #         x[i, j] = index
     image = image.permute(1, 2, 0)
     x = torch.argmax(image, dim=-1)
     return x
@@ -135,13 +120,6 @@ def colour_code_segmentation(image, label_values):
         Colour coded image for segmentation visualization
     """
 
-    # w = image.shape[0]
-    # h = image.shape[1]
-    # x = np.zeros([w,h,3])
-    # colour_codes = label_values
-    # for i in range(0, w):
-    #     for j in range(0, h):
-    #         x[i, j, :] = colour_codes[int(image[i, j])]
     label_values = [label_values[key][:3] for key in label_values if label_values[key][3] == 1]
     label_values.append([0, 0, 0])
     colour_codes = np.array(label_values)
