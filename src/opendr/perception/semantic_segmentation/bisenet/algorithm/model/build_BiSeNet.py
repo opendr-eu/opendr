@@ -47,7 +47,6 @@ class AttentionRefinementModule(torch.nn.Module):
         x = self.avgpool(input)
         assert self.in_channels == x.size(1), 'in_channels and out_channels should all be {}'.format(x.size(1))
         x = self.conv(x)
-        # x = self.sigmoid(self.bn(x))
         x = self.sigmoid(x)
         # channels of input and x should be same
         x = torch.mul(input, x)
@@ -57,9 +56,6 @@ class AttentionRefinementModule(torch.nn.Module):
 class FeatureFusionModule(torch.nn.Module):
     def __init__(self, num_classes, in_channels):
         super().__init__()
-        # self.in_channels = input_1.channels + input_2.channels
-        # resnet101 3328 = 256(from context path) + 1024(from spatial path) + 2048(from spatial path)
-        # resnet18  1024 = 256(from context path) + 256(from spatial path) + 512(from spatial path)
         self.in_channels = in_channels
 
         self.convblock = ConvBlock(in_channels=self.in_channels, out_channels=num_classes, stride=1)
@@ -176,7 +172,6 @@ if __name__ == '__main__':
 
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     model = BiSeNet(32, 'resnet18')
-    # model = nn.DataParallel(model)
 
     model = model.cuda()
     x = torch.rand(2, 3, 256, 256)
