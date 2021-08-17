@@ -12,7 +12,6 @@ It is used to train Semantic Segmentation models on RGB images and run inference
 
 
 
-
 The [BisenetLearner](#src.opendr.perception.semantic_segmentation.bisenet.bisenet_learner.py) class has the
 following public methods:
 
@@ -93,7 +92,6 @@ Parameters:
     If set to True, enables the maximum logging verbosity. 
 
 
-
 #### `BisenetLearner.infer`
 ```python
 BisenetLearner.infer(self, img, spath)
@@ -147,7 +145,6 @@ BisenetLearner.load(self, path)
 ```
 
 This method is used to load a previously saved model from its saved folder.
-
 
 Parameters:
 - **path**: *str*  
