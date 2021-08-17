@@ -113,7 +113,7 @@ Parameters:
 
 #### `BisenetLearner.save`
 ```python
-BisenetLearner.save(self, path)
+BisenetLearner.save(self, path, verbose)
 ```
 
 Save model weights and metadata to path.
@@ -121,11 +121,13 @@ Save model weights and metadata to path.
 Parameters:
 - **path**: *str*  
   Directory in which to save model weights and meta data.
+- **verbose**: *bool, default=True*  
+  If set to True, enables the maximum logging verbosity. 
 
 
 #### `BisenetLearner.load`
 ```python
-BisenetLearner.load(self, path)
+BisenetLearner.load(self, path, mode, verbose, url)
 ```
 
 This method is used to load a previously saved model from its saved folder.
@@ -134,6 +136,12 @@ This method is used to load a previously saved model from its saved folder.
 Parameters:
 - **path**: *str*  
   Path to metadata file in json format or to weights path.
+- **mode**: *{'pretrained', 'images'}, default='pretrained'*
+  If *'pretrained'*, downloads a pretrained segmentation model. If *'images'*, downloads an image to perform inference on. 
+- **verbose**: *bool default=True*
+  If True, enables maximum verbosity.
+- **url**: *str, default=OpenDR FTP URL* 
+  URL of the FTP server.
 
 
 
