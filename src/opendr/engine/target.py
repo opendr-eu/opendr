@@ -14,7 +14,7 @@
 
 from abc import ABC
 import numpy as np
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple, Any
 
 
 class BaseTarget(ABC):
@@ -896,23 +896,21 @@ class TrackingAnnotation3DList(Target):
         return str(self.kitti(True))
 
 
-# ToDo: Merge with version proposed in the semantic segmentation branch
 class Heatmap(Target):
     """
     This target is used for multi-class segmentation problems or multi-class problems that require heatmap annotations.
+
+    The data has to be a NumPy array.
+    The attribute 'class_names' can be used to store a mapping from the numerical labels to string representations.
     """
 
     def __init__(self,
                  data: np.ndarray,
-                 description: Optional[str]=None,
-                 class_names: Optional[Dict[int, str]]=None):
+                 class_names: Optional[Dict[Any, str]]=None):
         super().__init__()
-        self._description = None
         self._class_names = None
 
         self.data = data
-        if description is not None:
-            self.description = description
         if class_names is not None:
             self.class_names = class_names
 
@@ -924,37 +922,44 @@ class Heatmap(Target):
 
     @data.setter
     def data(self, data):
-        if not isinstance(data, np.ndarray) or data.dtype != np.uint8:
-            raise TypeError('Data must be a numpy array of type uint8.')
+        if not isinstance(data, np.ndarray):
+            raise TypeError('Data must be a numpy array.')
         self._data = data
 
     @property
-    def description(self) -> str:
-        return self._description
-
-    @description.setter
-    def description(self, description: str):
-        if not isinstance(description, str):
-            raise TypeError('Description must be a string.')
-        self._description = description
-
-    @property
-    def class_names(self) -> Dict[int, str]:
+    def class_names(self) -> Dict[Any, str]:
         return self._class_names
 
     @class_names.setter
-    def class_names(self, class_names: Dict[int, str]):
+    def class_names(self, class_names: Dict[Any, str]):
         if not isinstance(class_names, dict):
             raise TypeError('Class_names must be a dictionary.')
         for key, value in class_names.items():
-            if not isinstance(key, int):
-                raise TypeError('Keys of class_names must be integers.')
             if not isinstance(value, str):
                 raise TypeError('Values of class_names must be string.')
         self._class_names = class_names
 
-    def shape(self):
+    def numpy(self) -> np.ndarray:
+        """
+        Returns a NumPy-compatible representation of data.
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        # Since this class stores the data as NumPy arrays, we can directly return the data.
+        return self.data
+
+    def shape(self) -> Tuple[int, ...]:
+        """
+        Returns the shape of the underlying NumPy array.
+        :return: shape of the data object
+        :rtype: tuple of integers
+        """
         return self.data.shape
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """
+        Returns a human-friendly string-based representation of the data.
+        :return: a human-friendly string-based representation of the data
+        :rtype: str
+        """
         return str(self.data)

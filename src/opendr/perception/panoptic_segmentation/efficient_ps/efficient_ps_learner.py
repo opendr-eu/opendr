@@ -301,8 +301,8 @@ class EfficientPsLearner(Learner):
                     # instance head but not by the semantic segmentation head
                     # We mask them as 255 in the semantic segmentation map
 
-                    instance_pred = Heatmap(instance_pred.astype(np.uint8), description='Instance prediction')
-                    semantic_pred = Heatmap(semantic_pred.astype(np.uint8), description='Semantic prediction')
+                    instance_pred = Heatmap(instance_pred.astype(np.uint8))
+                    semantic_pred = Heatmap(semantic_pred.astype(np.uint8))
                     results.append((instance_pred, semantic_pred))
 
         if single_image_mode:
