@@ -62,7 +62,7 @@ Constructor parameters:
 
 #### `BisenetLearner.fit`
 ```python
-BisenetLearner.fit(self, dataset, val_dataset, logging_path='', silent, verbose)
+BisenetLearner.fit(self, dataset, val_dataset, silent, verbose)
 ```
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
@@ -72,7 +72,6 @@ Parameters:
     Training dataset.
   - **val_dataset**: *Dataset, default=None*  
     Validation dataset. If none is given, validation steps are skipped.
-  - **logging_path**: *str default=''* 
   - **silent**: *bool, default=False*  
     If set to True, disables all printing of training progress reports and other information to STDOUT.  
   - **verbose**: *bool, default=True*  
@@ -95,7 +94,6 @@ Parameters:
 
 
 
-
 #### `BisenetLearner.infer`
 ```python
 BisenetLearner.infer(self, img, spath)
@@ -109,6 +107,24 @@ Parameters:
     Image to predict a heatmap.
   - **spath**: *str, defulat=None*     
     Path to save an additional output as image.  
+
+
+#### `BisenetLearner.download`
+```python
+BisenetLearner.download(self, path, mode, verbose, url)
+```
+
+Download pretrained models and testing images to path.
+
+Parameters:
+- **path**: *str*  
+  Path to metadata file in json format or to weights path.
+- **mode**: *{'pretrained', 'testingImage'}, default='pretrained'*
+  If *'pretrained'*, downloads a pretrained segmentation model. If *'testingImage'*, downloads an image to perform inference on. 
+- **verbose**: *bool default=True*
+  If True, enables maximum verbosity.
+- **url**: *str, default=OpenDR FTP URL* 
+  URL of the FTP server.
 
 
 #### `BisenetLearner.save`
@@ -127,7 +143,7 @@ Parameters:
 
 #### `BisenetLearner.load`
 ```python
-BisenetLearner.load(self, path, mode, verbose, url)
+BisenetLearner.load(self, path)
 ```
 
 This method is used to load a previously saved model from its saved folder.
@@ -135,26 +151,8 @@ This method is used to load a previously saved model from its saved folder.
 
 Parameters:
 - **path**: *str*  
-  Path to metadata file in json format or to weights path.
-- **mode**: *{'pretrained', 'images'}, default='pretrained'*
-  If *'pretrained'*, downloads a pretrained segmentation model. If *'images'*, downloads an image to perform inference on. 
-- **verbose**: *bool default=True*
-  If True, enables maximum verbosity.
-- **url**: *str, default=OpenDR FTP URL* 
-  URL of the FTP server.
-
-
-
-#### `BisenetLearner.download`
-```python
-BisenetLearner.download(self, path, mode)
-```
-
-Download pretrained models and testing images to path.
-
-Parameters:
-- **path**: *str*  
   Local path to save the files.
+
 
 
 #### References
