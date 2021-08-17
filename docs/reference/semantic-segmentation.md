@@ -119,11 +119,11 @@ Download pretrained models and testing images to path.
 Parameters:
 - **path**: *str*  
   Path to metadata file in json format or to weights path.
-- **mode**: *{'pretrained', 'testingImage'}, default='pretrained'*
+- **mode**: *{'pretrained', 'testingImage'}, default='pretrained'*  
   If *'pretrained'*, downloads a pretrained segmentation model. If *'testingImage'*, downloads an image to perform inference on. 
-- **verbose**: *bool default=True*
+- **verbose**: *bool default=True*  
   If True, enables maximum verbosity.
-- **url**: *str, default=OpenDR FTP URL* 
+- **url**: *str, default=OpenDR FTP URL*   
   URL of the FTP server.
 
 
