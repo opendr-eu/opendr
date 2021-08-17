@@ -103,7 +103,7 @@ Returns a `engine.target.Heatmap` object.
 Parameters:
   - **img**: *Image*  
     Image to predict a heatmap.
-  - **spath**: *str, defulat=None*     
+  - **spath**: *str, default=None*     
     Path to save an additional output as image.  
 
 
