@@ -52,11 +52,11 @@ Constructor parameters:
     Number of workers in dataloader. 
   - **num_classes**: *int, default=12*  
     Number of classes to predict among. 
-  - **crop_height**: *int, default=720*
+  - **crop_height**: *int, default=720*  
     Input image height.
-  - **crop_width**: *int, default=960*
+  - **crop_width**: *int, default=960*  
     Input image width.
-  - **context_path**: *str, default='resnet18'*
+  - **context_path**: *str, default='resnet18'*  
     Context path for the bisenet model.
 
 
@@ -107,7 +107,7 @@ Returns a `engine.target.Heatmap` object.
 Parameters:
   - **img**: *Image*  
     Image to predict a heatmap.
-  - **spath**: *str, defulat=None*   
+  - **spath**: *str, defulat=None*     
     Path to save an additional output as image.  
 
 
