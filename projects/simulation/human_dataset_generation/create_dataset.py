@@ -49,7 +49,6 @@ def generate_data(csv_dt_path='./csv/data2.csv', models_dir='./3D_models', back_
     gc.collect()
     return data
 
-  
 
 def generate_data_ids(data_path='./dataset', dict_path='./dataset/data_ids.pkl', splits=['train', 'test']):
     f = []
