@@ -26,8 +26,8 @@ Constructor parameters:
     Learning rate during optimization. 
   - **iters**: *int, default=1*  
     Number of epochs to train for. 
-  - **batch_size**: *int, default=2*  
-    Dataloader batch size. Defaults to 2.
+  - **batch_size**: *int, default=1*  
+    Dataloader batch size. Defaults to 1.
   - **optimizer**: *str, default="sgd"*  
     Name of optimizer to use ("sgd" ,"rmsprop", or "adam"). 
   - **temp_path**: *str, default='./temp'*  
