@@ -82,7 +82,7 @@ class BisenetLearner(Learner):
         if self.device == 'cuda':
             self.model = torch.nn.DataParallel(self.model).cuda()
 
-    def fit(self, dataset, val_dataset=None, logging_path='', silent=False, verbose=True):
+    def fit(self, dataset, val_dataset=None, silent=False, verbose=True):
         """
         This method is used for training the algorithm on a train dataset
 
@@ -209,7 +209,7 @@ class BisenetLearner(Learner):
 
         :param path: Local path to save the files, defaults to self.temp_path if None
         :type path: str, path, optional
-        :param mode:  "pretrained", "images", defaults to "pretrained"
+        :param mode:  "pretrained", "testingImage", defaults to "pretrained"
         :type mode: str, optional
         :param verbose: Whether to print messages in the console, defaults to False
         :type verbose: bool, optional
