@@ -68,7 +68,7 @@ BisenetLearner.fit(self, dataset, val_dataset, silent, verbose)
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
 
 Parameters:
-  - **dataset**: *Dataset*:  
+  - **dataset**: *Dataset*    
     Training dataset.
   - **val_dataset**: *Dataset, default=None*  
     Validation dataset. If none is given, validation steps are skipped.
