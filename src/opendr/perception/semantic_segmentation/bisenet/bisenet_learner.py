@@ -36,7 +36,7 @@ class BisenetLearner(Learner):
     def __init__(self,
                  lr=0.01,
                  iters=1,
-                 batch_size=2,
+                 batch_size=1,
                  optimizer='sgd',
                  temp_path='',
                  checkpoint_after_iter=0,
