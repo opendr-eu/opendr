@@ -742,24 +742,6 @@ class TrackingAnnotation3DList(Target):
         return str(self.kitti(True))
 
 
-class SpeechCommand(Target):
-    """
-    This target is used for speech command recognition. Contains the predicted class or ground truth
-    and optionally the prediction confidence.
-    """
-
-    def __init__(self, prediction, confidence=None):
-        super().__init__()
-        self.data = prediction
-        self.confidence = confidence
-
-    def __str__(self):
-        if self.confidence is not None:
-            return f"Class {self.data} speech command with confidence {self.confidence}"
-        else:
-            return f"Class {self.data} speech command"
-
-
 class Heatmap(Target):
     """
     This target is used for multi-class segmentation problems.
