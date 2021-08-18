@@ -23,6 +23,11 @@ targets, this class serves as the basis for the more specialized forms of target
 All the classes should implement the corresponding setter/getter functions to ensure that the necessary
 type checking is performed (if there is no other technical obstacle to this, e.g., negative performance impact).
 
+`Target` provides the following fields that can be used by classes that inhert `Target`:
+- *data*, which holds the actual predictions/annotations,
+- *confidence*, which holds the prediction/annotation confidence,
+- *action*, which provides the expected active perception output.
+
 
 ### class engine.target.Category
 Bases: `engine.target.Target`
@@ -266,6 +271,7 @@ The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class 
   Return the [BoundingBoxList](#class_engine.target.BoundingBoxList) object constructed from this object.
 #### boxes()
   Return the list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) boxes.
+
 
 
 ### class engine.target.Heatmap
