@@ -25,6 +25,7 @@ from imutils import resize
 from flask import Flask, Response, render_template
 from pathlib import Path
 import pandas as pd
+from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
 
 # OpenDR imports
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import VoxelObjectDetection3DLearner
@@ -90,9 +91,21 @@ def voxel_object_detection_3d(config_path, model_name=None):
     # Init model
     learner = VoxelObjectDetection3DLearner(config_path)
 
-    # if model_name is not None:
-    #     learner.download(model_name, "./models")
-    # learner.load("./" + model_name)
+    if model_name is not None:
+        learner.download(model_name, "./models")
+    learner.load("./models/" + model_name, verbose=True)
+
+    # dataset = KittiDataset("/data/sets/kitti_second")
+
+    # dataset_path = "/data/sets/kitti_second"
+
+    # val_dataset = LabeledPointCloudsDatasetIterator(
+    #     dataset_path + "/training/velodyne",
+    #     dataset_path + "/training/label_2",
+    #     dataset_path + "/training/calib",
+    # )
+
+    # r = learner.eval(val_dataset)
 
     print("Learner created")
 
@@ -102,16 +115,19 @@ def voxel_object_detection_3d(config_path, model_name=None):
             point_cloud: PointCloud = next(lidar_data_generator)
             print("Point cloud created")
 
-            frame = draw_point_cloud_bev(point_cloud.data)
+            predictions = learner.infer(point_cloud)
+
+            print("found", len(predictions), "objects")
+
+            frame = draw_point_cloud_bev(point_cloud.data, predictions)
             draw_fps(frame, fps())
 
-            
             print("frame created")
 
             with lock:
                 output_frame = frame.copy()
-        except Exception:
-            pass
+        except Exception as e:
+            print(e)
 
 
 def generate():

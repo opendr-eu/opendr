@@ -12,7 +12,7 @@ def disk_point_cloud_generator(path, num_point_features=4, cycle=True):
     while i < len(dataset) or cycle:
         yield dataset[i % len(dataset)]
         i += 1
-        sleep(0.5)
+        sleep(2.0)
 
 
 def lidar_point_cloud_generator(lidar):

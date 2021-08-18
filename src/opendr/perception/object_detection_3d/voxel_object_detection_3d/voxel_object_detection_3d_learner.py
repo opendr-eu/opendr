@@ -48,6 +48,7 @@ from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_dete
 from opendr.engine.target import BoundingBox3DList
 from opendr.engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
+from urllib.error import URLError
 import warnings
 from numba import errors
 
@@ -507,7 +508,7 @@ class VoxelObjectDetection3DLearner(Learner):
             ), os.path.join(
                 model_dir, model_name + ".pth"
             ))
-        except Exception:
+        except URLError:
             urlretrieve(os.path.join(
                 url, model_name + ".tckpt"
             ), os.path.join(

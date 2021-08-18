@@ -2,38 +2,27 @@ import cv2
 import numpy as np
 import math
 from metrics import MinMetric, MaxMetric
+from PIL import Image, ImageDraw
+
 
 def draw_point_cloud_bev(
-    point_cloud,
-    boxes=[],
-    scale=5,
+    point_cloud, predictions=None, scale=10,
 ):
     x_min = MinMetric()
     y_min = MinMetric()
-    d_min = MinMetric()
-    z_min = MinMetric()
     x_max = MaxMetric()
     y_max = MaxMetric()
-    z_max = MaxMetric()
-    d_max = MaxMetric()
 
-    x_min.update(-90)
+    x_min.update(0)
     x_max.update(90)
 
-    y_min.update(-90)
-    y_max.update(90)
+    y_min.update(-40)
+    y_max.update(40)
 
-    # for i in range(len(point_cloud)):
-    #     x, y, z = point_cloud[i, :3]
-
-    #     d = math.sqrt(x*x + y*y + z*z)
-
-    #     x_min.update(x)
-    #     x_max.update(x)
-    #     y_min.update(y)
-    #     y_max.update(y)
-    #     z_min.update(z)
-    #     z_max.update(z)
+    point_cloud = point_cloud[point_cloud[:, 0] > x_min.get()]
+    point_cloud = point_cloud[point_cloud[:, 0] < x_max.get()]
+    point_cloud = point_cloud[point_cloud[:, 1] > y_min.get()]
+    point_cloud = point_cloud[point_cloud[:, 1] < y_max.get()]
 
     x_size = x_max.get() - x_min.get()
     y_size = y_max.get() - y_min.get()
@@ -44,18 +33,9 @@ def draw_point_cloud_bev(
     point_cloud_x = (
         image_size_x - 1 - (point_cloud[:, 0] - x_min.get()) * scale
     ).astype(np.int32)
-    point_cloud_y = ((point_cloud[:, 1] - y_min.get()) * scale).astype(np.int32)
-    # point_cloud_d = 1 - 0.2 * (point_cloud[:, 2] - d_min.get()) / (
-    #     d_max.get() - d_min.get()
-    # )
-    # colors = np.stack(
-    #     [
-    #         255, #  point_cloud_d,
-    #         255, #  point_cloud_d * (1 - point_cloud[:, 3]),
-    #         255, #  point_cloud_d * (1 - point_cloud[:, 3]),
-    #     ],
-    #     axis=-1,
-    # ).astype(np.uint8)
+    point_cloud_y = ((point_cloud[:, 1] - y_min.get()) * scale).astype(
+        np.int32
+    )
 
     colors = np.array([255, 255, 255], dtype=np.uint8)
 
@@ -85,26 +65,36 @@ def draw_point_cloud_bev(
 
         return [(y, x) for (x, y) in result]
 
-    for (x, y, z, w, h, d, rotation) in boxes:
-        # center_3d = image[y, x][:3] + offset
-        # x_3d, y_3d = center_3d[:2]
-        # x_bev = (image_size_x - 1 - (x_3d - x_min.get()) * scale).astype(
-        #     np.int32
-        # )
-        # y_bev = ((y_3d - y_min.get()) * scale).astype(np.int32)
+    pil_image = Image.new(
+        "RGB", (image_size_y + 1, image_size_x + 1), color="black"
+    )
+    pil_draw = ImageDraw.Draw(pil_image)
 
-        # half_size_x, half_size_y = (size[:2] * scale / 2).astype(np.int32)
+    for box in predictions:
 
-        # pil_draw.polygon(
-        #     rotate_rectangle(
-        #         x_bev, y_bev, half_size_x, half_size_y, rotation + math.pi / 2
-        #     ),
-        #     fill=(192, 102, 50),
-        #     outline=(255, 0, 255),
-        # )
-        pass
+        x_3d, y_3d = box.location[:2]
+        size = box.dimensions
+        rotation = box.rotation_y
+        x_bev = (image_size_x - 1 - (x_3d - x_min.get()) * scale).astype(
+            np.int32
+        )
+        y_bev = ((y_3d - y_min.get()) * scale).astype(np.int32)
 
-    # color_image = (np.array(pil_image) / 255.0).astype(np.float32)
+        half_size_x, half_size_y = (size[:2] * scale / 2).astype(np.int32)
+
+        pil_draw.polygon(
+            rotate_rectangle(
+                x_bev,
+                y_bev,
+                half_size_x,
+                half_size_y,
+                rotation,  # + math.pi / 2
+            ),
+            fill=(192, 102, 50),
+            outline=(255, 0, 255),
+        )
+
+    color_image = np.array(pil_image)
     color_image[point_cloud_x, point_cloud_y] = colors
 
     return color_image
