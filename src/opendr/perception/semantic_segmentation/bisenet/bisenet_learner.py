@@ -205,7 +205,7 @@ class BisenetLearner(Learner):
         Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
         1)  pretrained model
-        2)  testing images
+        2)  testing image
 
         :param path: Local path to save the files, defaults to self.temp_path if None
         :type path: str, path, optional
