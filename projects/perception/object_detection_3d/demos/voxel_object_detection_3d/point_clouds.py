@@ -7,17 +7,22 @@ from PIL import Image, ImageDraw
 
 def draw_point_cloud_bev(
     point_cloud, predictions=None, scale=10,
+    xs=[-90, 90], ys=[-90, 90]
 ):
     x_min = MinMetric()
     y_min = MinMetric()
     x_max = MaxMetric()
     y_max = MaxMetric()
 
-    x_min.update(0)
-    x_max.update(90)
+    # x_min.update(0)
+    # x_max.update(90)
+    # y_min.update(-40)
+    # y_max.update(40)
 
-    y_min.update(-40)
-    y_max.update(40)
+    x_min.update(xs[0])
+    x_max.update(xs[1])
+    y_min.update(ys[0])
+    y_max.update(ys[1])
 
     point_cloud = point_cloud[point_cloud[:, 0] > x_min.get()]
     point_cloud = point_cloud[point_cloud[:, 0] < x_max.get()]

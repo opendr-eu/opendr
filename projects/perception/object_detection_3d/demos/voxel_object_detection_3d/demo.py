@@ -25,14 +25,15 @@ from imutils import resize
 from flask import Flask, Response, render_template
 from pathlib import Path
 import pandas as pd
-from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
+# from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
 
 # OpenDR imports
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import VoxelObjectDetection3DLearner
+# from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import VoxelObjectDetection3DLearner
 from opendr.engine.data import PointCloud
 
 from data_generators import lidar_point_cloud_generator, disk_point_cloud_generator
 from point_clouds import draw_point_cloud_bev
+from rplidar_processor import RPLidar
 
 TEXT_COLOR = (255, 0, 255)  # B G R
 
@@ -42,7 +43,9 @@ TEXT_COLOR = (255, 0, 255)  # B G R
 # are viewing tthe stream)
 output_frame = None
 lock = threading.Lock()
-lidar_data_generator = None
+point_cloud_generator = None
+
+lidar_type = "velodyne"
 
 
 # initialize a flask object
@@ -56,13 +59,13 @@ def index():
 
 
 def runnig_fps(alpha=0.1):
-    t0 = time.time_ns()
+    t0 = time.time()
     fps_avg = 10
 
     def wrapped():
         nonlocal t0, alpha, fps_avg
-        t1 = time.time_ns()
-        delta = (t1 - t0) * 1e-9
+        t1 = time.time()
+        delta = (t1 - t0)
         t0 = t1
         fps_avg = alpha * (1 / delta) + (1 - alpha) * fps_avg
         return fps_avg
@@ -83,17 +86,17 @@ def draw_fps(frame, fps):
 
 
 def voxel_object_detection_3d(config_path, model_name=None):
-    global lidar_data_generator, output_frame, lock
+    global point_cloud_generator, output_frame, lock, lidar_type
 
     # Prep stats
     fps = runnig_fps()
 
     # Init model
-    learner = VoxelObjectDetection3DLearner(config_path)
+    # learner = VoxelObjectDetection3DLearner(config_path)
 
-    if model_name is not None:
-        learner.download(model_name, "./models")
-    learner.load("./models/" + model_name, verbose=True)
+    # if model_name is not None:
+    #     learner.download(model_name, "./models")
+    # learner.load("./models/" + model_name, verbose=True)
 
     # dataset = KittiDataset("/data/sets/kitti_second")
 
@@ -109,17 +112,32 @@ def voxel_object_detection_3d(config_path, model_name=None):
 
     print("Learner created")
 
+    if lidar_type == "velodyne":
+        xs = [0, 90]
+        ys = [-50, 50]
+        scale = 10
+    elif lidar_type == "rplidar":
+        xs = [-10, 10]
+        ys = [-10, 10]
+        scale = 20
+    else:
+        xs = [-90, 90]
+        ys = [-90, 90]
+        scale = 10
+        
+
     # Loop over frames from the video stream
     while True:
         try:
-            point_cloud: PointCloud = next(lidar_data_generator)
+            point_cloud: PointCloud = next(point_cloud_generator)
             print("Point cloud created")
 
-            predictions = learner.infer(point_cloud)
+            # predictions = learner.infer(point_cloud)
+            predictions = []
 
             print("found", len(predictions), "objects")
 
-            frame = draw_point_cloud_bev(point_cloud.data, predictions)
+            frame = draw_point_cloud_bev(point_cloud.data, predictions, scale, xs, ys)
             draw_fps(frame, fps())
 
             print("frame created")
@@ -128,6 +146,7 @@ def voxel_object_detection_3d(config_path, model_name=None):
                 output_frame = frame.copy()
         except Exception as e:
             print(e)
+            raise e
 
 
 def generate():
@@ -217,12 +236,26 @@ if __name__ == "__main__":
         help="Which algortihm to run",
         choices=["voxel"],
     )
+    ap.add_argument(
+        "-rpp",
+        "--rplidar_port",
+        type=str,
+        default="",
+        help="Port for RPLidar",
+    )
     args = vars(ap.parse_args())
 
-    lidar_data_generator = {
-        "disk": disk_point_cloud_generator(args["data_path"])
-    }[args["source"]]
+    point_cloud_generator = {
+        "disk": lambda: disk_point_cloud_generator(args["data_path"]),
+        "rplidar": lambda: lidar_point_cloud_generator(RPLidar(args["rplidar_port"])),
+    }[args["source"]]()
     # time.sleep(2.0)
+
+    lidar_type = {
+        "disk": "velodyne",
+        "velodyne": "velodyne",
+        "rplidar": "rplidar",
+    }[args["source"]]
 
     algorithm = {
         "voxel": voxel_object_detection_3d,
