@@ -25,7 +25,7 @@ extern "C" {
  * OpenDR data type for representing images
  */
 struct opendr_image {
-    void *data;
+  void *data;
 };
 typedef struct opendr_image opendr_image_t;
 

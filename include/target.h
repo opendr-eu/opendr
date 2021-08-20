@@ -24,8 +24,8 @@ extern "C" {
  * OpenDR data type for representing classification targets
  */
 struct opendr_category_target {
-    int data;
-    float confidence;
+  int data;
+  float confidence;
 };
 typedef struct opendr_category_target opendr_category_target_t;
 

@@ -21,17 +21,17 @@
 #include <opencv2/imgproc.hpp>
 
 void load_image(const char *path, opendr_image_t *image) {
-    cv::Mat opencv_image = cv::imread(path, cv::IMREAD_COLOR);
-    if (opencv_image.empty()) {
-        image->data = NULL;
-    } else {
-        image->data = new cv::Mat(opencv_image);
-    }
+  cv::Mat opencv_image = cv::imread(path, cv::IMREAD_COLOR);
+  if (opencv_image.empty()) {
+    image->data = NULL;
+  } else {
+    image->data = new cv::Mat(opencv_image);
+  }
 }
 
 void free_image(opendr_image_t *image) {
-    if (image->data) {
-        cv::Mat *opencv_image = static_cast<cv::Mat *>(image->data);
-        delete opencv_image;
-    }
+  if (image->data) {
+    cv::Mat *opencv_image = static_cast<cv::Mat *>(image->data);
+    delete opencv_image;
+  }
 }

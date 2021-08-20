@@ -25,34 +25,33 @@ extern "C" {
 #endif
 
 struct face_recognition_model {
-    // ONNX session objects
-    void *onnx_session;
-    void *env;
-    void *session_options;
+  // ONNX session objects
+  void *onnx_session;
+  void *session_options;
 
-    // Sizes for resizing and cropping an input image
-    int model_size;
-    int resize_size;
+  // Sizes for resizing and cropping an input image
+  int model_size;
+  int resize_size;
 
-    // Statistics for normalization
-    float mean_value;
-    float std_value;
+  // Statistics for normalization
+  float mean_value;
+  float std_value;
 
-    // Recognition threshold
-    float threshold;
+  // Recognition threshold
+  float threshold;
 
-    // Feature dimension
-    int output_size;
+  // Feature dimension
+  int output_size;
 
-    // Database data
-    void *database;
-    int *database_ids;
-    char **person_names;
+  // Database data
+  void *database;
+  int *database_ids;
+  char **person_names;
 
-    // Number of persons in the database
-    int n_persons;
-    // Number of features vectors in the database
-    int n_features;
+  // Number of persons in the database
+  int n_persons;
+  // Number of features vectors in the database
+  int n_features;
 };
 typedef struct face_recognition_model face_recognition_model_t;
 
