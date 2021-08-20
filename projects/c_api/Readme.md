@@ -15,15 +15,17 @@ In order to build the library you should:
 
 0. Install the required binary dependencies:
 
-```make install_dependencies```
+```sh
+make install_dependencies
 
 1. Build the static library
 
-```make liboperdr```
+```sh
+make liboperdr
 
 2. (Optionally) Download the necessary resources and verify that everything works as expected:
 
-```
+```sh
 make download
 make runtests
 ```
@@ -39,10 +41,9 @@ gcc you_program.c -o your_binary -I./include -L./lib -lopendr
 ## Demo Applications
 C API comes with a number of demo applications inside the `samples` folder that demonstrate the usage of the API.
 You can build them and try them (check the `build` folder for the executables) using the following command:
-```
-makefile demos
-```
-Make sure that you have downloaded the necessary resources before running the demo (`makefile download`) and that you execute the binaries from the root folder of the C API. 
+```sh
+make demos
+Make sure that you have downloaded the necessary resources before running the demo (`make download`) and that you execute the binaries from the root folder of the C API. 
 
 ## Supported tools
 Currently, the following tools are exposing a C API:
