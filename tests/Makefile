@@ -21,9 +21,9 @@ WGET = wget -r -q
 MV = mv
 
 MKDIR_P = mkdir -p
-BUILD_DIR = build
+BUILD_DIR = $(OPENDR_HOME)/build
+DATA_DIR = data
 LIB_DIR = $(OPENDR_HOME)/lib
-DATA_DIR = ./data
 
 CFLAGS  = -fPIC
 INC = -I/usr/local/include/onnxruntime/core/session/ `pkg-config --cflags opencv4`
@@ -31,7 +31,7 @@ LD =  -L/usr/lib/ -L/usr/local/lib/ -lstdc++ -lm -lonnxruntime `pkg-config --lib
 OPENDR_INC = -I$(OPENDR_HOME)/include
 OPENDR_LD = -L$(OPENDR_HOME)/lib -lopendr
 
-all: download demos
+all: tests
 
 demos: $(BUILD_DIR)/face_recognition_demo
 
@@ -50,13 +50,21 @@ download:
 		$(RM) -r opendrdata.csd.auth.gr; \
 	fi;
 
-$(BUILD_DIR)/face_recognition_demo:
-	$(MKDIR_P) $(BUILD_DIR)
-	@+echo "Building face recognition demo..."
-	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/face_recognition_demo samples/face_recognition/face_recognition_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
+$(BUILD_DIR)/test_opendr_utils:
+	@+echo "Building C API test..."
+	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/test_opendr_utils sources/c_api/test_opendr_utils.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
+
+$(BUILD_DIR)/test_face_recognition:
+	@+echo "Building face recognition test..."
+	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/test_face_recognition sources/c_api/test_face_recognition.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
+
+tests: $(BUILD_DIR)/test_opendr_utils $(BUILD_DIR)/test_face_recognition
+
+clean_data:
+	@+$(RM) -rf $(DATA_DIR)
 
 clean:
-	@+echo "Cleaning C API demo binaries and temporary files..."
-	@+$(RM) $(BUILD_DIR)/*
-	@+$(RM) -rf $(DATA_DIR)
+	@+echo "Cleaning C API binaries and temporary files..."
+	@+$(RM) $(BUILD_DIR)/test_opendr_utils
+	@+$(RM) $(BUILD_DIR)/test_face_recognition
 	@+echo "Done!"

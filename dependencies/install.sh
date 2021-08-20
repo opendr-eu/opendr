@@ -20,3 +20,7 @@ fi
 if [ -f "linux_dependencies.txt" ]; then
        cat linux_dependencies.txt | xargs sudo apt-get install
 fi
+
+if [ "$TYPE" == "compilation" ]; then
+    bash install_onnx.sh
+fi

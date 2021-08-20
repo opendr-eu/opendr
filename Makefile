@@ -45,12 +45,11 @@ unittest:
 	@+python3 -m unittest discover -s tests/sources/tools/
 
 libopendr:
-	@+echo "Building OpenDR C API "
-	@$(MAKE) -C projects/c_api all
+	@$(MAKE) -C src/c_api all
+
 
 clean:
-	@+echo "Cleaning OpenDR C API"
-	@$(MAKE) -C projects/c_api clean
+	@$(MAKE) -C src/c_api clean
 
 help:
 	@+echo
