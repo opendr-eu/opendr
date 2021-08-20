@@ -126,6 +126,7 @@ class PIFuGeneratorLearner(Learner):
             file_url = os.path.join(url, "net_C")
             urlretrieve(file_url, os.path.join(path, "net_C"))
 
+            
             file_url = os.path.join(url, "net_G")
             urlretrieve(file_url, os.path.join(path, "net_G"))
 
