@@ -1,9 +1,9 @@
-echo "Installing dependencies..."
-sudo apt install build-essential cmake libboost-filesystem-dev libopencv-dev
-
-echo "Getting onnxruntime..."
-
 if [ ! -f /usr/local/lib/libonnxruntime.so ]; then
+
+  echo "Installing dependencies..."
+  sudo apt install build-essential cmake libboost-filesystem-dev libopencv-dev
+
+  echo "Getting onnxruntime..."
   echo "ONNX installation not found!"
   pip3 install flake8 --upgrade
   git clone --recursive https://github.com/Microsoft/onnxruntime
