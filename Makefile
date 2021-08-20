@@ -35,6 +35,7 @@ install_runtime_dependencies:
 install_compilation_dependencies:
 	@+echo "#"; echo "# * Install Compilation Dependencies *"; echo "#"
 	@+cd dependencies; ./install.sh compilation
+	@+cd dependencies; ./install_onnx.sh
 
 styletest:
 	@+echo "Testing file licences and code-style"

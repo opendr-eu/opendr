@@ -42,7 +42,3 @@ if [ -f "python_dependencies.txt" ]; then
        pip install -r python_dependencies.txt
        rm python_dependencies.txt
 fi
-
-if [ "$TYPE" == "compilation" ]; then
-    bash install_onnx.sh
-fi
