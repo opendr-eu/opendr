@@ -9,7 +9,7 @@ Therefore, to use the C API you should first use the Python API to train a model
 
 In order to build the library you should:
 
-1. Build the static library
+1. Build the OpenDR C API library
 
 ```sh
 make liboperdr
