@@ -15,7 +15,8 @@ In order to build the library you should:
 
 0. Install the required binary dependencies:
 
-```make install_dependencies```
+```sh
+make install_dependencies
 
 1. Build the static library
 
