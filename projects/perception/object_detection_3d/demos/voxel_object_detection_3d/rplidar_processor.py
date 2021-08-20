@@ -3,6 +3,7 @@ import numpy as np
 import math
 from opendr.engine.data import PointCloud
 import threading
+import atexit
 
 
 def create_point_cloud(scan, z=0):
@@ -44,6 +45,8 @@ class RPLidar():
         self.last_point_cloud = np.zeros((0, 3), dtype=np.float32)
 
         self.running = True
+
+        atexit.register(self.stop)
 
     def __itereate_scans(self):
 

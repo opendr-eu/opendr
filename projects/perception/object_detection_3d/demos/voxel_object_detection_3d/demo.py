@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
 import os
 import argparse
 import threading
@@ -22,20 +23,20 @@ import torch
 import torchvision
 import cv2
 from imutils import resize
-from flask import Flask, Response, render_template
+from flask import Flask, Response, render_template, request
 from pathlib import Path
 import pandas as pd
 # from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
 
 # OpenDR imports
-# from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import VoxelObjectDetection3DLearner
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import VoxelObjectDetection3DLearner
 from opendr.engine.data import PointCloud
 
 from data_generators import lidar_point_cloud_generator, disk_point_cloud_generator
-from point_clouds import draw_point_cloud_bev
+from draw_point_clouds import draw_point_cloud_bev, draw_point_cloud_projected, draw_point_cloud_projected_2
 from rplidar_processor import RPLidar
 
-TEXT_COLOR = (255, 0, 255)  # B G R
+TEXT_COLOR = (255, 112, 255)  # B G R
 
 
 # Initialize the output frame and a lock used to ensure thread-safe
@@ -44,6 +45,7 @@ TEXT_COLOR = (255, 0, 255)  # B G R
 output_frame = None
 lock = threading.Lock()
 point_cloud_generator = None
+keys_pressed = []
 
 lidar_type = "velodyne"
 
@@ -85,6 +87,54 @@ def draw_fps(frame, fps):
     )
 
 
+def draw_dict(frame, dict):
+
+    i = 0
+
+    for k, v in dict.items():
+        cv2.putText(
+            frame,
+            f"{k}: {v}",
+            (10, frame.shape[0] - 10 - 30 * i),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            TEXT_COLOR,
+            1,
+        )
+        i += 1
+
+
+def stack_images(images, mode="horizontal"):
+
+    max_width, max_height = 0, 0
+
+    for image in images:
+        width, height, _ = image.shape
+        max_width = max(max_width, width)
+        max_height = max(max_height, height)
+    
+    if mode == "horizontal":
+        for i in range(len(images)):
+            width, _, _ = images[i].shape
+            
+            delta = max_width - width
+            pad = delta // 2
+
+            images[i] = np.pad(images[i], [(pad, pad + delta % 2), (0, 0), (0, 0)])
+    
+        return cv2.hconcat(images)
+    elif mode == "vertical":
+        for i in range(len(images)):
+            _, height, _ = images[i].shape
+            
+            delta = max_height - height
+            pad = delta // 2
+
+            images[i] = np.pad(images[i], [(0, 0), (pad, pad + delta % 2), (0, 0)])
+    
+        return cv2.vconcat(images)
+
+
 def voxel_object_detection_3d(config_path, model_name=None):
     global point_cloud_generator, output_frame, lock, lidar_type
 
@@ -92,11 +142,11 @@ def voxel_object_detection_3d(config_path, model_name=None):
     fps = runnig_fps()
 
     # Init model
-    # learner = VoxelObjectDetection3DLearner(config_path)
+    learner = VoxelObjectDetection3DLearner(config_path)
 
-    # if model_name is not None:
-    #     learner.download(model_name, "./models")
-    # learner.load("./models/" + model_name, verbose=True)
+    if model_name is not None:
+        learner.download(model_name, "./models")
+    learner.load("./models/" + model_name, verbose=True)
 
     # dataset = KittiDataset("/data/sets/kitti_second")
 
@@ -110,37 +160,139 @@ def voxel_object_detection_3d(config_path, model_name=None):
 
     # r = learner.eval(val_dataset)
 
+    # tvec = np.array([0, 0, 0], dtype=np.float32)
+    # rvec = np.array([0, 0, 0], dtype=np.float32)
+    # fx = 10
+    # fy = 10
+    # tvec = np.array([-1.25, 4.71, -12], dtype=np.float32)
+    # rvec = np.array([2.4, 15.6, 10.8], dtype=np.float32)
+    # fx = 864
+    # fy = 384
+    tvec0 = np.array([0, 4.8, 2.4], dtype=np.float32)
+    tvec = np.array([2.4, 22.8, 13.20], dtype=np.float32)
+    rvec0 = np.array([-5.33, 15.39, 6.6], dtype=np.float32)
+    rvec = np.array([-6.28, 15.39, 5.03], dtype=np.float32)
+    fx = 864.98
+    fy = 384.43
+    # tvec = np.array([-10.8, -16.8, -12], dtype=np.float32)
+    # rvec = np.array([-2.32, 0.6, -1.2], dtype=np.float32)
+    # fx = 384
+    # fy = 384
+
+    def process_key(key):
+        
+        nonlocal tvec, rvec, fx, fy
+
+        dt = 1.2
+        dr = math.pi / 10
+
+        if key == 2:
+            tvec += np.array([0.00, dt, 0.00], dtype=np.float32)
+        elif key == 3:
+            tvec += np.array([-dt, 0.00, 0.00], dtype=np.float32)
+        elif key == 0:
+            tvec += np.array([0.00, -dt, 0.00], dtype=np.float32)
+        elif key == 1:
+            tvec += np.array([dt, 0.00, 0.00], dtype=np.float32)
+            
+        if key == 4:
+            rvec += np.array([0.00, dr, 0.00], dtype=np.float32)
+        elif key == 5:
+            rvec += np.array([-dr, 0.00, 0.00], dtype=np.float32)
+        elif key == 6:
+            rvec += np.array([0.00, -dr, 0.00], dtype=np.float32)
+        elif key == 7:
+            rvec += np.array([dr, 0.00, 0.00], dtype=np.float32)
+        elif key == 8:
+            rvec += np.array([0.00, 0.00, -dr], dtype=np.float32)
+        elif key == 9:
+            rvec += np.array([0.00, 0.00, dr], dtype=np.float32)
+
+        elif key == 10:
+            fx /= 1.5
+        elif key == 11:
+            fx *= 1.5
+        elif key == 12:
+            fy /= 1.5
+        elif key == 13:
+            fy *= 1.5
+
+        elif key == 14:
+            tvec += np.array([0.00, 0.00, dt], dtype=np.float32)
+        elif key == 15:
+            tvec += np.array([0.00, 0.00, -dt], dtype=np.float32)
+
+        elif key == 98:
+            tvec = np.array([0.00, 0.00, 0.00], dtype=np.float32)
+        elif key == 99:
+            rvec = np.array([0.00, 0.00, 0.00], dtype=np.float32)
+        elif key == 100:
+            tvec = np.array([0.00, 0.00, 0.00], dtype=np.float32)
+            rvec = np.array([0.00, 0.00, 0.00], dtype=np.float32)
+            fx = 10
+            fy = 10
+
     print("Learner created")
 
     if lidar_type == "velodyne":
         xs = [0, 90]
         ys = [-50, 50]
         scale = 10
+        image_size_x = 600
+        image_size_y = 1800
     elif lidar_type == "rplidar":
         xs = [-10, 10]
         ys = [-10, 10]
-        scale = 20
+        scale = 30
+        image_size_x = 60
+        image_size_y = 60
     else:
         xs = [-90, 90]
         ys = [-90, 90]
         scale = 10
-        
+        image_size_x = 600
+        image_size_y = 600
+    
 
     # Loop over frames from the video stream
     while True:
         try:
             point_cloud: PointCloud = next(point_cloud_generator)
-            print("Point cloud created")
+            # print("Point cloud created")
 
-            # predictions = learner.infer(point_cloud)
+            predictions = learner.infer(point_cloud)
             predictions = []
 
-            print("found", len(predictions), "objects")
+            # print("found", len(predictions), "objects")
 
-            frame = draw_point_cloud_bev(point_cloud.data, predictions, scale, xs, ys)
-            draw_fps(frame, fps())
+            frame_bev = draw_point_cloud_bev(point_cloud.data, predictions, scale, xs, ys)
+            frame_proj = draw_point_cloud_projected(
+                point_cloud.data, predictions, tvec=tvec0, rvec=rvec0,
+                image_size_x=image_size_x, image_size_y=image_size_y,
+                fx=fx, fy=fy,
+            )
+            frame_proj_2 = draw_point_cloud_projected_2(
+                point_cloud.data, predictions, tvec=tvec, rvec=rvec,
+                image_size_x=image_size_x, image_size_y=image_size_y,
+                fx=fx, fy=fy,
+            )
+            
+            frame = stack_images([frame_proj, frame_proj_2], "vertical")
+            frame = stack_images([frame, frame_bev], "vertical")
+            
+            draw_dict(frame, {
+                "FPS": fps(),
+                "tvec": tvec,
+                "rvec": rvec,
+                "f": [fx, fy],
+            })
 
-            print("frame created")
+            # print("frame created")
+
+            for key in keys_pressed:
+                process_key(key)
+            
+            keys_pressed.clear()
 
             with lock:
                 output_frame = frame.copy()
@@ -181,6 +333,17 @@ def video_feed():
     # return the response generated along with the specific media
     # type (mime type)
     return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
+    
+@app.route("/keypress", methods = ['POST'])
+def process_keypress():
+
+    global keys_pressed
+
+    data = request.get_json()
+    key = data["key"]
+    keys_pressed.append(key)
+
+    return ('', 204)
 
 
 # check to see if this is the main thread of execution
@@ -246,7 +409,7 @@ if __name__ == "__main__":
     args = vars(ap.parse_args())
 
     point_cloud_generator = {
-        "disk": lambda: disk_point_cloud_generator(args["data_path"]),
+        "disk": lambda: disk_point_cloud_generator(args["data_path"], count=None),
         "rplidar": lambda: lidar_point_cloud_generator(RPLidar(args["rplidar_port"])),
     }[args["source"]]()
     # time.sleep(2.0)
