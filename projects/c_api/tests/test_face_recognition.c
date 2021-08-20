@@ -27,7 +27,7 @@ void model_creation_test() {
     // Create a face recognition model
     face_recognition_model_t model;
 
-    //Load a pretrained model
+    // Load a pretrained model
     load_face_recognition_model("data/optimized_model", &model);
 
     assert(model.onnx_session);
