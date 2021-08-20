@@ -273,7 +273,6 @@ The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class 
   Return the list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) boxes.
 
 
-
 ### class engine.target.Heatmap
 Bases: `engine.target.Target`
 
@@ -284,3 +283,4 @@ The [Heatmap](#class_engine.target.Heatmap) class has the following public metho
 Construct a new [Heatmap](#class_engine.target.Heatmap) object based on the given data.
 #### numpy()
 Return NumPy-compatible representation of data.
+

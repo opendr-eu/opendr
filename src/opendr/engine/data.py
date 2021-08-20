@@ -60,7 +60,7 @@ class Data(ABC):
 
         :param: data to be used for creating a vector
         """
-        self.data = data
+        self._data = data
 
     @abstractmethod
     def __str__(self):
