@@ -22,7 +22,6 @@ def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
     return lr
 
 
-
 def get_label_info(csv_path):
     # return label -> {label_name: [r_value, g_value, b_value, ...}
     ann = pd.read_csv(csv_path)
