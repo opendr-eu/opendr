@@ -49,15 +49,13 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-20.04' && contains(github.event.pull_request.labels.*.name, 'test tools') }}
       run: |
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
+        sudo apt-get update
         export OPENDR_HOME=$PWD
         export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
         export DISABLE_BCOLZ_AVX2=true
-        sudo apt-get update
-        sudo apt-get install -y libopencv-dev
-        export PACKAGE_CONFIG_PATH=/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig
+        make install_compilation_dependencies
         pkg-config --cflags opencv4
         exit 1
-        make install_compilation_dependencies
         make install_runtime_dependencies
         make libopendr
         pip install -r tests/sources/requirements.txt
