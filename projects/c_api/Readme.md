@@ -20,7 +20,8 @@ make install_dependencies
 
 1. Build the static library
 
-```make liboperdr```
+```sh
+make liboperdr
 
 2. (Optionally) Download the necessary resources and verify that everything works as expected:
 
