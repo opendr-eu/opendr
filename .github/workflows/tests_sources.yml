@@ -54,5 +54,7 @@ jobs:
         export DISABLE_BCOLZ_AVX2=true
         make install_compilation_dependencies
         make install_runtime_dependencies
+        make libopendr
         pip install -r tests/sources/requirements.txt
         python -m unittest discover -s tests/sources
+        make ctests

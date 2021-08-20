@@ -27,13 +27,12 @@ LIB_DIR = $(OPENDR_HOME)/lib
 
 CFLAGS  = -fPIC
 INC = -I/usr/local/include/onnxruntime/core/session/ `pkg-config --cflags opencv4`
-LD =  -L/usr/lib/ -L/usr/local/lib/ -lstdc++ -lm -lonnxruntime `pkg-config --libs opencv4` -lboost_filesystem
+LD =  -L/usr/lib/ -L/usr/local/lib/ -lstdc++ -lm -lonnxruntime `pkg-config --libs opencv4` -lboost_filesystem  `pkg-config --cflags --libs check`
 OPENDR_INC = -I$(OPENDR_HOME)/include
 OPENDR_LD = -L$(OPENDR_HOME)/lib -lopendr
+LD_RUN = LD_LIBRARY_PATH=$(OPENDR_HOME)/lib:$(LD_LIBRARY_PATH)
 
 all: tests
-
-demos: $(BUILD_DIR)/face_recognition_demo
 
 download:
 	@+if [ -a $(DATA_DIR) ] ; \
@@ -60,11 +59,13 @@ $(BUILD_DIR)/test_face_recognition:
 
 tests: $(BUILD_DIR)/test_opendr_utils $(BUILD_DIR)/test_face_recognition
 
-clean_data:
-	@+$(RM) -rf $(DATA_DIR)
+runtests: download tests
+	@+$(LD_RUN) $(BUILD_DIR)/test_opendr_utils 2>/dev/null
+	@+$(LD_RUN) $(BUILD_DIR)/test_face_recognition 2>/dev/null
 
 clean:
-	@+echo "Cleaning C API binaries and temporary files..."
+	@+echo "Cleaning C tests binaries and temporary files..."
 	@+$(RM) $(BUILD_DIR)/test_opendr_utils
 	@+$(RM) $(BUILD_DIR)/test_face_recognition
+	@+$(RM) -rf $(DATA_DIR)
 	@+echo "Done!"

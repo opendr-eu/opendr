@@ -47,9 +47,13 @@ unittest:
 libopendr:
 	@$(MAKE) -C src/c_api all
 
+ctests: libopendr
+	@$(MAKE) -C tests runtests
+
 
 clean:
 	@$(MAKE) -C src/c_api clean
+	@$(MAKE) -C tests clean
 
 help:
 	@+echo
