@@ -14,42 +14,38 @@
  * limitations under the License.
  */
 
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "face_recognition.h"
 #include "opendr_utils.h"
-#include <assert.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
 
 void model_creation_test() {
-
     // Create a face recognition model
     face_recognition_model_t model;
 
-    //Load a pretrained model
+    // Load a pretrained model
     load_face_recognition_model("data/optimized_model", &model);
 
     assert(model.onnx_session);
     assert(model.env);
     assert(model.session_options);
 
-    //Release the resources
+    // Release the resources
     free_face_recognition_model(&model);
 
-    //Load a model that does not exist
+    // Load a model that does not exist
     load_face_recognition_model("data/optimized_model_not_existant", &model);
     assert(!model.onnx_session);
     assert(!model.env);
     assert(!model.session_options);
 
-    //Release the resources
+    // Release the resources
     free_face_recognition_model(&model);
-
 }
 
 void database_creation_test() {
-
     face_recognition_model_t model;
     load_face_recognition_model("data/optimized_model", &model);
 
@@ -66,9 +62,8 @@ void database_creation_test() {
     assert(!model.database);
     assert(!model.database_ids);
 
-    //Release the resources
+    // Release the resources
     free_face_recognition_model(&model);
-
 }
 
 void inference_creation_test() {
@@ -81,7 +76,7 @@ void inference_creation_test() {
     build_database_face_recognition("data/database", "data/database.dat", &model);
     load_database_face_recognition("data/database.dat", &model);
 
-    //Load an image and performance inference
+    // Load an image and performance inference
     opendr_image_t image;
     load_image("data/database/1/1.jpg", &image);
     opendr_category_target_t res = infer_face_recognition(&model, &image);
@@ -90,24 +85,21 @@ void inference_creation_test() {
     decode_category_face_recognition(&model, res, buff);
     assert(!strcmp(buff, "1"));
 
-    //Load another image
+    // Load another image
     load_image("data/database/5/1.jpg", &image);
     res = infer_face_recognition(&model, &image);
     free_image(&image);
     decode_category_face_recognition(&model, res, buff);
     assert(!strcmp(buff, "5"));
 
-    //Free the model resources
+    // Free the model resources
     free_face_recognition_model(&model);
-
 }
 
 int main(int argc, char *argv[]) {
-
     model_creation_test();
     database_creation_test();
     inference_creation_test();
 
     return 0;
-
 }

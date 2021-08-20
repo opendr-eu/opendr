@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-#include "opendr_utils.h"
 #include <assert.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include "opendr_utils.h"
 
-void image_load_test(){
-
-    //Load an image and performance inference
+void image_load_test() {
+    // Load an image and performance inference
     opendr_image_t image;
     // An example of an image that exist
     load_image("data/database/1/1.jpg", &image);
     assert(image.data);
     // An example of an image that does not exist
     load_image("images/not_existant/1.jpg", &image);
-    assert(image.data==0);
+    assert(image.data == 0);
 
     // Free the resources
     free_image(&image);

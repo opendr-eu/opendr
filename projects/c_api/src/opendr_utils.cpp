@@ -13,13 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "data.h"
 #include "opendr_utils.h"
+#include "data.h"
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
-
 
 void load_image(const char *path, opendr_image_t *image) {
     cv::Mat opencv_image = cv::imread(path, cv::IMREAD_COLOR);
@@ -28,11 +27,9 @@ void load_image(const char *path, opendr_image_t *image) {
     } else {
         image->data = new cv::Mat(opencv_image);
     }
-
 }
 
 void free_image(opendr_image_t *image) {
-
     if (image->data) {
         cv::Mat *opencv_image = static_cast<cv::Mat *>(image->data);
         delete opencv_image;
