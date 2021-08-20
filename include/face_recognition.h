@@ -27,6 +27,7 @@ extern "C" {
 struct face_recognition_model {
   // ONNX session objects
   void *onnx_session;
+  void *env;
   void *session_options;
 
   // Sizes for resizing and cropping an input image
