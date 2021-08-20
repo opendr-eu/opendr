@@ -49,6 +49,7 @@ libopendr:
 
 ctests: libopendr
 	@$(MAKE) -C tests runtests
+	@$(MAKE) -C tests clean
 
 
 clean:
