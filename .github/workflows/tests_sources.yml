@@ -52,7 +52,8 @@ jobs:
         export OPENDR_HOME=$PWD
         export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
         export DISABLE_BCOLZ_AVX2=true
-        sudo apt install libopencv-dev
+        sudo apt-get update
+        sudo apt-get install -y libopencv-dev
         export PACKAGE_CONFIG_PATH=/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig
         pkg-config --cflags opencv4
         exit 1
