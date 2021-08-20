@@ -25,7 +25,7 @@ make liboperdr
 
 2. (Optionally) Download the necessary resources and verify that everything works as expected:
 
-```
+```sh
 make download
 make runtests
 ```
