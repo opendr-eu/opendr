@@ -16,7 +16,6 @@
 #ifndef C_API_TARGET_H
 #define C_API_TARGET_H
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -24,7 +23,7 @@ extern "C" {
 /***
  * OpenDR data type for representing classification targets
  */
-struct opendr_category_target{
+struct opendr_category_target {
     int data;
     float confidence;
 };
@@ -34,5 +33,4 @@ typedef struct opendr_category_target opendr_category_target_t;
 }
 #endif
 
-
-#endif //C_API_TARGET_H
+#endif  // C_API_TARGET_H

@@ -20,13 +20,12 @@
 #include "opendr_utils.h"
 #include "target.h"
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct face_recognition_model {
-    //ONNX session objects
+    // ONNX session objects
     void *onnx_session;
     void *env;
     void *session_options;
@@ -35,7 +34,7 @@ struct face_recognition_model {
     int model_size;
     int resize_size;
 
-    //Statistics for normalization
+    // Statistics for normalization
     float mean_value;
     float std_value;
 
@@ -45,18 +44,17 @@ struct face_recognition_model {
     // Feature dimension
     int output_size;
 
-    //Database data
+    // Database data
     void *database;
     int *database_ids;
     char **person_names;
 
-    //Number of persons in the database
+    // Number of persons in the database
     int n_persons;
-    //Number of features vectors in the database
+    // Number of features vectors in the database
     int n_features;
 };
 typedef struct face_recognition_model face_recognition_model_t;
-
 
 /**
  * Loads a face recognition model saved in OpenDR format
@@ -81,8 +79,7 @@ opendr_category_target_t infer_face_recognition(face_recognition_model_t *model,
  * recognition model before performing inference.
  * @param model the face recognition model to be used for extracting the database features
  */
-void build_database_face_recognition(const char *database_folder, const char *output_path,
-                                     face_recognition_model_t *model);
+void build_database_face_recognition(const char *database_folder, const char *output_path, face_recognition_model_t *model);
 
 /**
  * Loads an already built database into the face recognition model. After this step, the model can be used for
@@ -98,8 +95,7 @@ void load_database_face_recognition(const char *database_path, face_recognition_
  * @param category the predicted category
  * @param person_name buffer to store the person name
  */
-void decode_category_face_recognition(face_recognition_model_t *model, opendr_category_target_t category,
-                                      char *person_name);
+void decode_category_face_recognition(face_recognition_model_t *model, opendr_category_target_t category, char *person_name);
 
 /**
  * Releases the memory allocated for a face recognition model
@@ -107,9 +103,8 @@ void decode_category_face_recognition(face_recognition_model_t *model, opendr_ca
  */
 void free_face_recognition_model(face_recognition_model_t *model);
 
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif //C_API_FACE_RECOGNITION_H
+#endif  // C_API_FACE_RECOGNITION_H

@@ -19,7 +19,6 @@
 
 #include "data.h"
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,17 +30,14 @@ extern "C" {
  */
 void load_image(const char *path, opendr_image_t *image);
 
-
 /**
  * Releases the memory allocated for an OpenDR image structure
  * @param image OpenDR image structure to release
  */
 void free_image(opendr_image_t *image);
 
-
 #ifdef __cplusplus
 }
 #endif
 
-
-#endif //C_API_OPENDR_UTILS_H
+#endif  // C_API_OPENDR_UTILS_H

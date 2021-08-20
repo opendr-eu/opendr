@@ -17,7 +17,6 @@
 #ifndef C_API_DATA_H
 #define C_API_DATA_H
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,4 +33,4 @@ typedef struct opendr_image opendr_image_t;
 }
 #endif
 
-#endif //C_API_DATA_H
+#endif  // C_API_DATA_H
