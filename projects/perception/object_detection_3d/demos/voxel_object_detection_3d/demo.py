@@ -144,7 +144,7 @@ def voxel_object_detection_3d(config_path, model_name=None):
     # Init model
     learner = VoxelObjectDetection3DLearner(config_path)
 
-    if model_name is not None:
+    if model_name is not None and not os.path.exists("./models/" + model_name):
         learner.download(model_name, "./models")
     learner.load("./models/" + model_name, verbose=True)
 
@@ -235,11 +235,13 @@ def voxel_object_detection_3d(config_path, model_name=None):
     print("Learner created")
 
     if lidar_type == "velodyne":
-        xs = [0, 90]
+        xs = [-20, 90]
         ys = [-50, 50]
-        scale = 10
-        image_size_x = 600
-        image_size_y = 1800
+        scale = 20
+        # image_size_x = 600
+        # image_size_y = 1800
+        image_size_x = 1000
+        image_size_y = 3000
     elif lidar_type == "rplidar":
         xs = [-10, 10]
         ys = [-10, 10]
@@ -261,12 +263,12 @@ def voxel_object_detection_3d(config_path, model_name=None):
             # print("Point cloud created")
 
             predictions = learner.infer(point_cloud)
-            predictions = []
+            # predictions = []
 
-            # print("found", len(predictions), "objects")
+            print("found", len(predictions), "objects")
 
             frame_bev = draw_point_cloud_bev(point_cloud.data, predictions, scale, xs, ys)
-            frame_proj = draw_point_cloud_projected(
+            frame_proj = draw_point_cloud_projected_2(
                 point_cloud.data, predictions, tvec=tvec0, rvec=rvec0,
                 image_size_x=image_size_x, image_size_y=image_size_y,
                 fx=fx, fy=fy,
@@ -276,9 +278,10 @@ def voxel_object_detection_3d(config_path, model_name=None):
                 image_size_x=image_size_x, image_size_y=image_size_y,
                 fx=fx, fy=fy,
             )
-            
-            frame = stack_images([frame_proj, frame_proj_2], "vertical")
-            frame = stack_images([frame, frame_bev], "vertical")
+            frame = frame_proj_2
+            # frame = stack_images([frame_proj, frame], "vertical")
+            # frame = stack_images([frame, frame_bev], "vertical")
+            frame = stack_images([frame, frame_bev], "horizontal")
             
             draw_dict(frame, {
                 "FPS": fps(),
@@ -298,7 +301,8 @@ def voxel_object_detection_3d(config_path, model_name=None):
                 output_frame = frame.copy()
         except Exception as e:
             print(e)
-            raise e
+            torch.cuda.empty_cache()
+            # raise e
 
 
 def generate():

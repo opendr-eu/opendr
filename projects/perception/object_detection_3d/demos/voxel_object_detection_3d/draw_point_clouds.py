@@ -4,6 +4,22 @@ import math
 from metrics import MinMetric, MaxMetric
 from PIL import Image, ImageDraw
 
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.box_np_ops import (
+    center_to_corner_box3d
+)
+
+box_draw_indicies = [
+    (1, 4),
+    (2, 5),
+    (3, 6),
+    (0, 7),
+    (5,),
+    (6,),
+    (7,),
+    (4,),
+]
+
+
 
 def draw_point_cloud_bev(
     point_cloud, predictions=None, scale=10,
@@ -163,18 +179,18 @@ def draw_point_cloud_projected_2(
     # D - distortion coefficients
     # xyzs - Nx3 3d points
 
-    if len(point_cloud) > 0:
-        
-        pc = point_cloud[:, :3].astype(np.float64)
-        pc = pc[:,[1, 0, 2]]
-        # pc[:, 2] /= 10
-        # pc /= 100
+    pc = point_cloud[:, :3].astype(np.float64)
+    pc = pc[:,[1, 0, 2]]
+    # pc[:, 2] /= 10
+    # pc /= 100
 
-        R = cv2.Rodrigues(rvec)[0]
-        t = tvec
-        K = cameraMatrix
-        D = distCoef
-        xyzs = pc
+    R = cv2.Rodrigues(rvec)[0]
+    t = tvec
+    K = cameraMatrix
+    D = distCoef
+
+    def project(xyzs, drop):
+        nonlocal R, t, K, D
 
         proj_mat = np.dot(K,np.hstack((R, t[:, np.newaxis])))
         # proj_mat = np.dot(K, np.hstack((R, t)))
@@ -191,8 +207,22 @@ def draw_point_cloud_projected_2(
         # xy = cv2.undistortPoints(np.expand_dims(xy, axis=0), np.eye(3), D).squeeze()
 
         # drop all points behind camera
-        xy = xy[z > 0]
+        if drop:
+            xy = xy[z > 0]
         projections = xy.astype(np.int32)
+
+        return projections
+
+    if len(point_cloud) > 0:
+        projections = project(pc, True)
+
+        prediction_locations = np.stack([b.location for b in predictions.boxes])
+        prediction_dimensions = np.stack([b.dimensions for b in predictions.boxes])
+        prediction_rotations = np.stack([b.rotation_y for b in predictions.boxes])
+
+        prediction_corners = center_to_corner_box3d(
+            prediction_locations, prediction_dimensions, prediction_rotations, [0.5, 0.5, 0], 2
+        )
 
         projections = projections[projections[:, 0] >= 0]
         projections = projections[projections[:, 1] >= 0]
@@ -200,10 +230,24 @@ def draw_point_cloud_projected_2(
         projections = projections[projections[:, 1] < image_size_y]
     else:
         projections = np.zeros((0, 2), dtype=np.int32)
+        prediction_corners = np.zeros((0, 8, 3), dtype=np.float32)
+        prediction_locations = np.zeros((0, 3), dtype=np.float32)
         
     colors = np.array([255, 255, 255], dtype=np.uint8)
 
     color_image = np.zeros([image_size_x, image_size_y, 3], dtype=np.uint8)
     color_image[projections[:, 0], projections[:, 1]] = colors
+    
+    prediction_corners = prediction_corners[:, :, [1, 0, 2]]
 
+    for corners in prediction_corners:
+        projected_corners = project(corners, False)
+        projected_corners = projected_corners[:, [1, 0]]
+
+        for i, links in enumerate(box_draw_indicies):
+            for p in links:
+                cv2.line(color_image, projected_corners[i], projected_corners[p], (255, 0, 0), 4)
+    for l in project(prediction_locations[:,[1, 0, 2]], False):
+        cv2.circle(color_image, l[[1, 0]], 10, (0, 11, 125), 10)
+    
     return color_image
