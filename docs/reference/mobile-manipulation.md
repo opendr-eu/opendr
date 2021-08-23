@@ -61,7 +61,7 @@ Constructor parameters:
 
 #### `MobileRLLearner.fit`
 ```python
-MobileRLLearner.fit(self, env=None, val_env=None, logging_path='', silent=True, verbose=True)
+MobileRLLearner.fit(self, env, val_env, logging_path, silent, verbose)
 ```
 
 Train the agent on the environment.
