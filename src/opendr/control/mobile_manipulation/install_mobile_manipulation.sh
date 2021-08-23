@@ -14,7 +14,7 @@ MODULE_PATH=${OPENDR_HOME}/src/opendr/control/mobile_manipulation
 WS_PATH=${OPENDR_HOME}/lib/catkin_ws_mobile_manipulation
 
 # ROS
-apt-get update && apt-get install \
+sudo apt-get update && sudo apt-get install \
   ros-${ROS_DISTRO}-ros-base ros-${ROS_DISTRO}-pybind11-catkin \
   ros-${ROS_DISTRO}-moveit \
   ros-${ROS_DISTRO}-pr2-simulator \
@@ -41,7 +41,7 @@ if [ ! -f ${WS_PATH}/tiago_public.rosinstall ]; then
     && yes | rosinstall src /opt/ros/$ROS_DISTRO tiago_public.rosinstall \
     && rosdep init \
     && rosdep update --rosdistro $ROS_DISTRO \
-    && apt-get update \
+    && sudo apt-get update \
     && rosdep install -y -r -q --from-paths src --ignore-src --rosdistro $ROS_DISTRO --skip-keys="opencv2 opencv2-nonfree pal_laser_filters speed_limit_node sensor_to_cloud hokuyo_node libdw-dev python-graphitesend-pip python-statsd pal_filters pal_vo_server pal_usb_utils pal_pcl pal_pcl_points_throttle_and_filter pal_karto pal_local_joint_control camera_calibration_files pal_startup_msgs pal-orbbec-openni2 dummy_actuators_manager pal_local_planner gravity_compensation_controller current_limit_controller dynamic_footprint dynamixel_cpp tf_lookup opencv3 tiago_pcl_tutorial" \
     && echo "update the moveit configs with the global joint" \
     && cp ${MODULE_PATH}/robots_world/tiago/modified_tiago.srdf.em src/tiago_moveit_config/config/srdf/tiago.srdf.em \
