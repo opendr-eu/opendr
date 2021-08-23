@@ -22,8 +22,8 @@ sudo apt-get update && sudo apt-get install \
   ros-${ROS_DISTRO}-ros-base \
   ros-${ROS_DISTRO}-pybind11-catkin \
   ros-${ROS_DISTRO}-moveit \
-  ros-${ROS_DISTRO}-pr2-simulator \
-  ros-${ROS_DISTRO}-moveit-pr2
+  ros-melodic-pr2-simulator \
+  ros-melodic-moveit-pr2
 source /opt/ros/${ROS_DISTRO}/setup.bash
 
 # libgp
