@@ -62,6 +62,6 @@ ln -s ${MODULE_PATH} src
 catkin config -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=${PYTHON_LIBRARY} --blacklist tiago_pcl_tutorial
 source /opt/ros/${ROS_DISTRO}/setup.bash
 # will fail if we don't specify `-j x`
-catkin build -j 8
+catkin build -j 8 -c
 # NOTE: users have to work in the shell that has sourced this file
 source devel/setup.bash
