@@ -24,7 +24,7 @@ install_runtime_dependencies:
 	@+echo "#"; echo "# * Install Runtime Dependencies *"; echo "#"
 
 install_compilation_dependencies:
-	@+echo "#"; echo "# * Install Compilation Dependencies *"; echo "#"
+	@+echo "#"; echo "# * Install Compilation Dependencies for Mobile Manipulation *"; echo "#"
 	@./install_mobile_manipulation.sh
 
 help:
