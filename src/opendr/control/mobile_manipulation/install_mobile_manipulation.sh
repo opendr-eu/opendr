@@ -13,17 +13,13 @@ fi
 MODULE_PATH=${OPENDR_HOME}/src/opendr/control/mobile_manipulation
 WS_PATH=${OPENDR_HOME}/lib/catkin_ws_mobile_manipulation
 
-
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
-
 # ROS
 sudo apt-get update && sudo apt-get install \
   ros-${ROS_DISTRO}-ros-base \
   ros-${ROS_DISTRO}-pybind11-catkin \
   ros-${ROS_DISTRO}-moveit \
-  ros-melodic-pr2-simulator \
-  ros-melodic-moveit-pr2
+  ros-${ROS_DISTRO}-pr2-simulator \
+  ros-${ROS_DISTRO}-moveit-pr2
 source /opt/ros/${ROS_DISTRO}/setup.bash
 
 # libgp
