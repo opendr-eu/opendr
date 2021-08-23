@@ -57,8 +57,7 @@ PYTHON_INCLUDE_DIR="$(python -c "from sysconfig import get_paths as gp; print(gp
 PYTHON_LIBRARY="$(python3 -c 'from distutils import sysconfig; print("/".join([sysconfig.get_config_var("LIBPL"), sysconfig.get_config_var("LDLIBRARY")]))')"
 cd ${WS_PATH}
 ln -s ${MODULE_PATH} src
-catkin config -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
-catkin config --blacklist tiago_pcl_tutorial
+catkin config -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=${PYTHON_LIBRARY} --blacklist tiago_pcl_tutorial
 source /opt/ros/${ROS_DISTRO}/setup.bash
 # will fail if we don't specify `-j x`
 catkin build -j 8
