@@ -43,7 +43,7 @@ class DummyDataset(DatasetIterator):
     def __getitem__(self, i):
         x = np.random.rand(self.in_channels, self.series_length)
         y = np.random.randint(low=0, high=self.n_class)
-        return Timeseries(x), Category(y, self.n_class)
+        return Timeseries(x), Category(y)
 
 
 class TestGatedRecurrentUnitLearner(unittest.TestCase):
