@@ -26,15 +26,27 @@ from imutils import resize
 from flask import Flask, Response, render_template, request
 from pathlib import Path
 import pandas as pd
+
 # from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
 
 # OpenDR imports
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import VoxelObjectDetection3DLearner
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
+    VoxelObjectDetection3DLearner,
+)
+from opendr.perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_learner import (
+    ObjectTracking3DAb3dmotLearner,
+)
 from opendr.engine.data import PointCloud
 
-from data_generators import lidar_point_cloud_generator, disk_point_cloud_generator
-from draw_point_clouds import draw_point_cloud_bev, draw_point_cloud_projected, draw_point_cloud_projected_2
-from rplidar_processor import RPLidar
+from data_generators import (
+    lidar_point_cloud_generator,
+    disk_point_cloud_generator,
+)
+from draw_point_clouds import (
+    draw_point_cloud_bev,
+    draw_point_cloud_projected,
+    draw_point_cloud_projected_2,
+)
 
 TEXT_COLOR = (255, 112, 255)  # B G R
 
@@ -54,6 +66,12 @@ lidar_type = "velodyne"
 app = Flask(__name__)
 
 
+def rplidar(*args):
+    from rplidar_processor import RPLidar
+
+    return RPLidar(*args)
+
+
 @app.route("/")
 def index():
     # return the rendered template
@@ -67,7 +85,7 @@ def runnig_fps(alpha=0.1):
     def wrapped():
         nonlocal t0, alpha, fps_avg
         t1 = time.time()
-        delta = (t1 - t0)
+        delta = t1 - t0
         t0 = t1
         fps_avg = alpha * (1 / delta) + (1 - alpha) * fps_avg
         return fps_avg
@@ -112,26 +130,30 @@ def stack_images(images, mode="horizontal"):
         width, height, _ = image.shape
         max_width = max(max_width, width)
         max_height = max(max_height, height)
-    
+
     if mode == "horizontal":
         for i in range(len(images)):
             width, _, _ = images[i].shape
-            
+
             delta = max_width - width
             pad = delta // 2
 
-            images[i] = np.pad(images[i], [(pad, pad + delta % 2), (0, 0), (0, 0)])
-    
+            images[i] = np.pad(
+                images[i], [(pad, pad + delta % 2), (0, 0), (0, 0)]
+            )
+
         return cv2.hconcat(images)
     elif mode == "vertical":
         for i in range(len(images)):
             _, height, _ = images[i].shape
-            
+
             delta = max_height - height
             pad = delta // 2
 
-            images[i] = np.pad(images[i], [(0, 0), (pad, pad + delta % 2), (0, 0)])
-    
+            images[i] = np.pad(
+                images[i], [(0, 0), (pad, pad + delta % 2), (0, 0)]
+            )
+
         return cv2.vconcat(images)
 
 
@@ -142,11 +164,15 @@ def voxel_object_detection_3d(config_path, model_name=None):
     fps = runnig_fps()
 
     # Init model
-    learner = VoxelObjectDetection3DLearner(config_path)
+    detection_learner = VoxelObjectDetection3DLearner(config_path)
 
-    if model_name is not None and not os.path.exists("./models/" + model_name):
-        learner.download(model_name, "./models")
-    learner.load("./models/" + model_name, verbose=True)
+    if model_name is not None and not os.path.exists(
+        "./models/" + model_name
+    ):
+        detection_learner.download(model_name, "./models")
+    detection_learner.load("./models/" + model_name, verbose=True)
+
+    tracking_learner = ObjectTracking3DAb3dmotLearner()
 
     # dataset = KittiDataset("/data/sets/kitti_second")
 
@@ -180,7 +206,7 @@ def voxel_object_detection_3d(config_path, model_name=None):
     # fy = 384
 
     def process_key(key):
-        
+
         nonlocal tvec, rvec, fx, fy
 
         dt = 1.2
@@ -194,7 +220,7 @@ def voxel_object_detection_3d(config_path, model_name=None):
             tvec += np.array([0.00, -dt, 0.00], dtype=np.float32)
         elif key == 1:
             tvec += np.array([dt, 0.00, 0.00], dtype=np.float32)
-            
+
         if key == 4:
             rvec += np.array([0.00, dr, 0.00], dtype=np.float32)
         elif key == 5:
@@ -254,7 +280,6 @@ def voxel_object_detection_3d(config_path, model_name=None):
         scale = 10
         image_size_x = 600
         image_size_y = 600
-    
 
     # Loop over frames from the video stream
     while True:
@@ -262,47 +287,63 @@ def voxel_object_detection_3d(config_path, model_name=None):
             point_cloud: PointCloud = next(point_cloud_generator)
             # print("Point cloud created")
 
-            predictions = learner.infer(point_cloud)
+            predictions = detection_learner.infer(point_cloud)
+            tracking_predictions = tracking_learner.infer(predictions)
             # predictions = []
 
-            print("found", len(predictions), "objects")
+            print("found", len(predictions), "objects", "and", len(tracking_predictions), "tracklets")
 
-            frame_bev = draw_point_cloud_bev(point_cloud.data, predictions, scale, xs, ys)
-            frame_proj = draw_point_cloud_projected_2(
-                point_cloud.data, predictions, tvec=tvec0, rvec=rvec0,
-                image_size_x=image_size_x, image_size_y=image_size_y,
-                fx=fx, fy=fy,
+            frame_bev = draw_point_cloud_bev(
+                point_cloud.data, tracking_predictions, scale, xs, ys
             )
+            frame_bev_2 = draw_point_cloud_bev(
+                point_cloud.data, predictions, scale, xs, ys
+            )
+
+            # frame_proj = draw_point_cloud_projected_2(
+            #     point_cloud.data,
+            #     predictions,
+            #     tvec=tvec0,
+            #     rvec=rvec0,
+            #     image_size_x=image_size_x,
+            #     image_size_y=image_size_y,
+            #     fx=fx,
+            #     fy=fy,
+            # )
             frame_proj_2 = draw_point_cloud_projected_2(
-                point_cloud.data, predictions, tvec=tvec, rvec=rvec,
-                image_size_x=image_size_x, image_size_y=image_size_y,
-                fx=fx, fy=fy,
+                point_cloud.data,
+                predictions,
+                tvec=tvec,
+                rvec=rvec,
+                image_size_x=image_size_x,
+                image_size_y=image_size_y,
+                fx=fx,
+                fy=fy,
             )
             frame = frame_proj_2
             # frame = stack_images([frame_proj, frame], "vertical")
             # frame = stack_images([frame, frame_bev], "vertical")
             frame = stack_images([frame, frame_bev], "horizontal")
-            
-            draw_dict(frame, {
-                "FPS": fps(),
-                "tvec": tvec,
-                "rvec": rvec,
-                "f": [fx, fy],
-            })
+            frame = stack_images([frame, frame_bev_2], "horizontal")
+
+            draw_dict(
+                frame,
+                {"FPS": fps(), "tvec": tvec, "rvec": rvec, "f": [fx, fy],},
+            )
 
             # print("frame created")
 
             for key in keys_pressed:
                 process_key(key)
-            
+
             keys_pressed.clear()
 
             with lock:
                 output_frame = frame.copy()
         except Exception as e:
             print(e)
-            torch.cuda.empty_cache()
-            # raise e
+            # torch.cuda.empty_cache()
+            raise e
 
 
 def generate():
@@ -328,7 +369,9 @@ def generate():
         # yield the output frame in the byte format
         yield (
             b"--frame\r\n"
-            b"Content-Type: image/jpeg\r\n\r\n" + bytearray(encodedImage) + b"\r\n"
+            b"Content-Type: image/jpeg\r\n\r\n"
+            + bytearray(encodedImage)
+            + b"\r\n"
         )
 
 
@@ -336,9 +379,12 @@ def generate():
 def video_feed():
     # return the response generated along with the specific media
     # type (mime type)
-    return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
-    
-@app.route("/keypress", methods = ['POST'])
+    return Response(
+        generate(), mimetype="multipart/x-mixed-replace; boundary=frame"
+    )
+
+
+@app.route("/keypress", methods=["POST"])
 def process_keypress():
 
     global keys_pressed
@@ -347,7 +393,7 @@ def process_keypress():
     key = data["key"]
     keys_pressed.append(key)
 
-    return ('', 204)
+    return ("", 204)
 
 
 # check to see if this is the main thread of execution
@@ -382,11 +428,7 @@ if __name__ == "__main__":
         help="Model configuration file",
     )
     ap.add_argument(
-        "-s",
-        "--source",
-        type=str,
-        default="disk",
-        help="Data source",
+        "-s", "--source", type=str, default="disk", help="Data source",
     )
     ap.add_argument(
         "-dp",
@@ -413,8 +455,12 @@ if __name__ == "__main__":
     args = vars(ap.parse_args())
 
     point_cloud_generator = {
-        "disk": lambda: disk_point_cloud_generator(args["data_path"], count=None),
-        "rplidar": lambda: lidar_point_cloud_generator(RPLidar(args["rplidar_port"])),
+        "disk": lambda: disk_point_cloud_generator(
+            args["data_path"], count=None
+        ),
+        "rplidar": lambda: lidar_point_cloud_generator(
+            rplidar(args["rplidar_port"])
+        ),
     }[args["source"]]()
     # time.sleep(2.0)
 
@@ -424,12 +470,12 @@ if __name__ == "__main__":
         "rplidar": "rplidar",
     }[args["source"]]
 
-    algorithm = {
-        "voxel": voxel_object_detection_3d,
-    }[args["algorithm"]]
+    algorithm = {"voxel": voxel_object_detection_3d,}[args["algorithm"]]
 
     # start a thread that will perform detection
-    t = threading.Thread(target=algorithm, args=(args["model_config"], args["model_name"]))
+    t = threading.Thread(
+        target=algorithm, args=(args["model_config"], args["model_name"])
+    )
     t.daemon = True
     t.start()
 
