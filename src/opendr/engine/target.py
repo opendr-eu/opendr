@@ -614,7 +614,7 @@ class BoundingBox3DList(Target):
     ):
         super().__init__()
         self.data = bounding_boxes_3d
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
 
     @staticmethod
     def from_kitti(boxes_kitti):
@@ -800,7 +800,7 @@ class TrackingAnnotation3DList(Target):
     ):
         super().__init__()
         self.data = tracking_bounding_boxes_3d
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
 
     @staticmethod
     def from_kitti(boxes_kitti, ids, frames=None):
