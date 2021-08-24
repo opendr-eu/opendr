@@ -294,8 +294,8 @@ class BisenetLearner(Learner):
             metadata = json.load(jsonfile)
 
         if self.device == 'cpu':
-            self.model.load_state_dict(torch.load(os.path.join(path, metadata["model_paths"][0])),
-                                       map_location=torch.device('cpu'))
+            self.model.load_state_dict(torch.load(os.path.join(path, metadata["model_paths"][0]),
+                                                  map_location=torch.device('cpu')),)
         elif self.device == 'cuda':
             self.model.module.load_state_dict(torch.load(os.path.join(path, metadata["model_paths"][0])))
         self.model.eval()
