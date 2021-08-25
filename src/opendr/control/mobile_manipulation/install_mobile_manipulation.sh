@@ -15,7 +15,7 @@ WS_PATH=${OPENDR_HOME}/lib/catkin_ws_mobile_manipulation
 
 # ROS
 sudo apt-get update && sudo apt-get install \
-  ros-${ROS_DISTRO}-ros-base \
+  ros-${ROS_DISTRO}-ros-desktop \
   ros-${ROS_DISTRO}-pybind11-catkin \
   ros-${ROS_DISTRO}-moveit \
 # TODO: these are not avalaible for noetic
