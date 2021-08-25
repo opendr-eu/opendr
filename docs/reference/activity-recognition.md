@@ -198,7 +198,7 @@ Parameters:
 
   learner = X3DLearner(backbone="xs", device="cpu")
   test_ds = KineticsDataset(path="./datasets/kinetics400", frames_per_clip=4, split="test")
-  results = self.learner.eval(test_ds)  # Dict with accuracy and loss
+  results = learner.eval(test_ds)  # Dict with accuracy and loss
   ```
 
 
@@ -339,7 +339,7 @@ Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d
 * **Fit model**.  
 
   ```python
-  from OpenDR.perception.activity_recognition.cox3d.cox3d_learner import X3DLearner
+  from OpenDR.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
   from OpenDR.perception.activity_recognition.datasets.kinetics import KineticsDataset
 
   learner = CoX3DLearner(backbone="s", device="cpu")
@@ -357,7 +357,7 @@ Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d
 
   learner = CoX3DLearner(backbone="s", device="cpu")
   test_ds = KineticsDataset(path="./datasets/kinetics400", frames_per_clip=4, split="test")
-  results = self.learner.eval(test_ds)  # Dict with accuracy and loss
+  results = learner.eval(test_ds)  # Dict with accuracy and loss
   ```
 
 
