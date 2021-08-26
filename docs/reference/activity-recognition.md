@@ -180,8 +180,8 @@ Parameters:
 * **Fit model**.  
 
   ```python
-  from OpenDR.perception.activity_recognition.x3d.x3d_learner import X3DLearner
-  from OpenDR.perception.activity_recognition.datasets.kinetics import KineticsDataset
+  from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
+  from opendr.perception.activity_recognition.datasets.kinetics import KineticsDataset
 
   learner = X3DLearner(backbone="xs", device="cpu")
   train_ds = KineticsDataset(path="./datasets/kinetics400", frames_per_clip=4, split="train")
@@ -193,8 +193,8 @@ Parameters:
 * **Evaluate model**.  
 
   ```python
-  from OpenDR.perception.activity_recognition.x3d.x3d_learner import X3DLearner
-  from OpenDR.perception.activity_recognition.datasets.kinetics import KineticsDataset
+  from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
+  from opendr.perception.activity_recognition.datasets.kinetics import KineticsDataset
 
   learner = X3DLearner(backbone="xs", device="cpu")
   test_ds = KineticsDataset(path="./datasets/kinetics400", frames_per_clip=4, split="test")
@@ -205,7 +205,7 @@ Parameters:
 * **Download pretrained model weights and initialize.**
 
   ```python
-  from OpenDR.perception.activity_recognition.x3d.x3d_learner import X3DLearner
+  from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
   from pathlib import Path
 
   weights_path = Path("./weights/")
@@ -339,8 +339,8 @@ Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d
 * **Fit model**.  
 
   ```python
-  from OpenDR.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
-  from OpenDR.perception.activity_recognition.datasets.kinetics import KineticsDataset
+  from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
+  from opendr.perception.activity_recognition.datasets.kinetics import KineticsDataset
 
   learner = CoX3DLearner(backbone="s", device="cpu")
   train_ds = KineticsDataset(path="./datasets/kinetics400", frames_per_clip=4, split="train")
@@ -352,8 +352,8 @@ Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d
 * **Evaluate model**.  
 
   ```python
-  from OpenDR.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
-  from OpenDR.perception.activity_recognition.datasets.kinetics import KineticsDataset
+  from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
+  from opendr.perception.activity_recognition.datasets.kinetics import KineticsDataset
 
   learner = CoX3DLearner(backbone="s", device="cpu")
   test_ds = KineticsDataset(path="./datasets/kinetics400", frames_per_clip=4, split="test")
@@ -364,7 +364,7 @@ Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d
 * **Download pretrained model weights and initialize.**
 
   ```python
-  from OpenDR.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
+  from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
   from pathlib import Path
 
   weights_path = Path("./weights/")
@@ -376,7 +376,7 @@ Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d
 * **Run frame-wise inference using extended temporal window size.**
 
   ```python
-  from OpenDR.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
+  from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
   from pathlib import Path
 
   learner = CoX3DLearner(backbone="s", temporal_window_size=64).load(weights_path)
