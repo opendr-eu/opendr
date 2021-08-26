@@ -47,4 +47,5 @@ parser.add_argument('-val_pitch', default="30,40", nargs='+', type=str,  help='p
 args = parser.parse_args()
 synthetic = MultiviewDataGenerationLearner(path_in=args.path_in, path_3ddfa=args.path_3ddfa, save_path=args.save_path,
                                            val_yaw=args.val_yaw, val_pitch=args.val_pitch)
-synthetic.eval()
+if __name__ == '__main__':
+  synthetic.eval()
