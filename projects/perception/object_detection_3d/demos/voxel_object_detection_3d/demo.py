@@ -66,10 +66,16 @@ lidar_type = "velodyne"
 app = Flask(__name__)
 
 
-def rplidar(*args):
+def rplidar(*args, **kwargs):
     from rplidar_processor import RPLidar
 
-    return RPLidar(*args)
+    return RPLidar(*args, **kwargs)
+
+
+def o3mlidar(*args, **kwargs):
+    from o3m_lidar.o3m_lidar import O3MLidar
+
+    return O3MLidar(*args, **kwargs)
 
 
 @app.route("/")
@@ -105,7 +111,7 @@ def draw_fps(frame, fps):
     )
 
 
-def draw_dict(frame, dict):
+def draw_dict(frame, dict, scale=5):
 
     i = 0
 
@@ -113,11 +119,11 @@ def draw_dict(frame, dict):
         cv2.putText(
             frame,
             f"{k}: {v}",
-            (10, frame.shape[0] - 10 - 30 * i),
+            (10, frame.shape[0] - 10 - 30 * scale * i),
             cv2.FONT_HERSHEY_SIMPLEX,
-            1,
+            scale,
             TEXT_COLOR,
-            1,
+            scale,
         )
         i += 1
 
@@ -157,22 +163,35 @@ def stack_images(images, mode="horizontal"):
         return cv2.vconcat(images)
 
 
-def voxel_object_detection_3d(config_path, model_name=None):
+def voxel_object_detection_3d(config_path, model_name=None): 
     global point_cloud_generator, output_frame, lock, lidar_type
+
+    with lock:
+        output_frame = np.zeros((400, 400, 3), dtype=np.uint8)
+        draw_dict(output_frame, {"Loading": "model"}, 1)
 
     # Prep stats
     fps = runnig_fps()
 
-    # Init model
-    detection_learner = VoxelObjectDetection3DLearner(config_path)
+    predict = model_name is not None and model_name != "None"
 
-    if model_name is not None and not os.path.exists(
-        "./models/" + model_name
-    ):
-        detection_learner.download(model_name, "./models")
-    detection_learner.load("./models/" + model_name, verbose=True)
+    if predict:
 
-    tracking_learner = ObjectTracking3DAb3dmotLearner()
+        # Init model
+        detection_learner = VoxelObjectDetection3DLearner(config_path)
+
+        if model_name is not None and not os.path.exists(
+            "./models/" + model_name
+        ):
+            detection_learner.download(model_name, "./models")
+        detection_learner.load("./models/" + model_name, verbose=True)
+        tracking_learner = ObjectTracking3DAb3dmotLearner()
+        print("Learner created")
+    
+    else:
+        detection_learner = None
+        tracking_learner = None
+
 
     # dataset = KittiDataset("/data/sets/kitti_second")
 
@@ -194,12 +213,6 @@ def voxel_object_detection_3d(config_path, model_name=None):
     # rvec = np.array([2.4, 15.6, 10.8], dtype=np.float32)
     # fx = 864
     # fy = 384
-    tvec0 = np.array([0, 4.8, 2.4], dtype=np.float32)
-    tvec = np.array([2.4, 22.8, 13.20], dtype=np.float32)
-    rvec0 = np.array([-5.33, 15.39, 6.6], dtype=np.float32)
-    rvec = np.array([-6.28, 15.39, 5.03], dtype=np.float32)
-    fx = 864.98
-    fy = 384.43
     # tvec = np.array([-10.8, -16.8, -12], dtype=np.float32)
     # rvec = np.array([-2.32, 0.6, -1.2], dtype=np.float32)
     # fx = 384
@@ -258,8 +271,6 @@ def voxel_object_detection_3d(config_path, model_name=None):
             fx = 10
             fy = 10
 
-    print("Learner created")
-
     if lidar_type == "velodyne":
         xs = [-20, 90]
         ys = [-50, 50]
@@ -268,30 +279,69 @@ def voxel_object_detection_3d(config_path, model_name=None):
         # image_size_y = 1800
         image_size_x = 1000
         image_size_y = 3000
+        font_scale=4
+        tvec0 = np.array([0, 4.8, 2.4], dtype=np.float32)
+        tvec = np.array([2.4, 22.8, 13.20], dtype=np.float32)
+        rvec0 = np.array([-5.33, 15.39, 6.6], dtype=np.float32)
+        rvec = np.array([-6.28, 15.39, 5.03], dtype=np.float32)
+        fx = 864.98
+        fy = 384.43
     elif lidar_type == "rplidar":
         xs = [-10, 10]
         ys = [-10, 10]
         scale = 30
         image_size_x = 60
-        image_size_y = 60
-    else:
-        xs = [-90, 90]
-        ys = [-90, 90]
-        scale = 10
+        image_size_y = 6
+        
+        tvec0 = np.array([0, 4.8, 2.4], dtype=np.float32)
+        tvec = np.array([2.4, 22.8, 13.20], dtype=np.float32)
+        rvec0 = np.array([-5.33, 15.39, 6.6], dtype=np.float32)
+        rvec = np.array([-6.28, 15.39, 5.03], dtype=np.float32)
+        fx = 864.98
+        fy = 384.430
+        font_scale=0.5
+    elif lidar_type == "o3mlidar":
+        xs = [-8, 8]
+        ys = [-8, 8]
+        scale = 40
         image_size_x = 600
         image_size_y = 600
+        font_scale=1
+        tvec = np.array([4.8, 2.4, 13.2], dtype=np.float32)
+        rvec = np.array([-6.28, 15.39, 5.03], dtype=np.float32)
+        fx = 864.98
+        fy = 864.98
+    else:
+        xs = [-20, 90]
+        ys = [-50, 50]
+        scale = 20
+        # image_size_x = 600
+        # image_size_y = 1800
+        image_size_x = 1000
+        image_size_y = 3000
+        font_scale=4
 
     # Loop over frames from the video stream
     while True:
         try:
             point_cloud: PointCloud = next(point_cloud_generator)
+
+            # point_cloud.data[:, :3] *= 2
+
+            if len(point_cloud.data) <= 0:
+                continue
+
             # print("Point cloud created")
 
-            predictions = detection_learner.infer(point_cloud)
-            tracking_predictions = tracking_learner.infer(predictions)
-            # predictions = []
+            if predict:
+                predictions = detection_learner.infer(point_cloud)
+                tracking_predictions = tracking_learner.infer(predictions)
+            else:
+                predictions = []
+                tracking_predictions = []
 
-            print("found", len(predictions), "objects", "and", len(tracking_predictions), "tracklets")
+            if len(predictions) > 0:
+                print("found", len(predictions), "objects", "and", len(tracking_predictions), "tracklets")
 
             frame_bev = draw_point_cloud_bev(
                 point_cloud.data, tracking_predictions, scale, xs, ys
@@ -329,6 +379,7 @@ def voxel_object_detection_3d(config_path, model_name=None):
             draw_dict(
                 frame,
                 {"FPS": fps(), "tvec": tvec, "rvec": rvec, "f": [fx, fy],},
+                font_scale
             )
 
             # print("frame created")
@@ -415,16 +466,14 @@ if __name__ == "__main__":
         "-mn",
         "--model_name",
         type=str,
-        default="pointpillars_ped_cycle_xyres_16",
+        default="None",
         help="Pretrained model name",
     )
     ap.add_argument(
         "-mc",
         "--model_config",
         type=str,
-        default=os.path.join(
-            "configs", "pointpillars_ped_cycle_xyres_16.proto"
-        ),
+        default="None",
         help="Model configuration file",
     )
     ap.add_argument(
@@ -452,6 +501,27 @@ if __name__ == "__main__":
         default="",
         help="Port for RPLidar",
     )
+    ap.add_argument(
+        "-o3mp",
+        "--o3m_port",
+        type=int,
+        default=42000,
+        help="Port for O3M Lidar",
+    )
+    ap.add_argument(
+        "-o3mip",
+        "--o3m_ip",
+        type=str,
+        default="0.0.0.0",
+        help="IP for O3M Lidar",
+    )
+    ap.add_argument(
+        "-o3mbs",
+        "--o3m_buffer_size",
+        type=int,
+        default=1460,
+        help="Buffer size for O3M Lidar",
+    )
     args = vars(ap.parse_args())
 
     point_cloud_generator = {
@@ -461,6 +531,9 @@ if __name__ == "__main__":
         "rplidar": lambda: lidar_point_cloud_generator(
             rplidar(args["rplidar_port"])
         ),
+        "o3mlidar": lambda: lidar_point_cloud_generator(
+            o3mlidar(ip=args["o3m_ip"], port=args["o3m_port"], buffer_size=args["o3m_buffer_size"])
+        ),
     }[args["source"]]()
     # time.sleep(2.0)
 
@@ -468,6 +541,7 @@ if __name__ == "__main__":
         "disk": "velodyne",
         "velodyne": "velodyne",
         "rplidar": "rplidar",
+        "o3mlidar": "o3mlidar",
     }[args["source"]]
 
     algorithm = {"voxel": voxel_object_detection_3d,}[args["algorithm"]]
