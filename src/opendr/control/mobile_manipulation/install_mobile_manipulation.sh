@@ -70,13 +70,13 @@ if [ ! -f ${WS_PATH}/mobile_manipulation.rosinstall ]; then
   && cp ${MODULE_PATH}/robots_world/tiago/modified_tiago.srdf.em src/tiago_moveit_config/config/srdf/tiago.srdf.em
 fi
 # build the catkin workspace
-PYTHON_EXECUTABLE="$(which python3)"
-PYTHON_INCLUDE_DIR="$(python -c "from sysconfig import get_paths as gp; print(gp()['include'])")"
-PYTHON_LIBRARY="$(python3 -c 'from distutils import sysconfig; print("/".join([sysconfig.get_config_var("LIBPL"), sysconfig.get_config_var("LDLIBRARY")]))')"
+#PYTHON_EXECUTABLE="$(which python3)"
+#PYTHON_INCLUDE_DIR="$(python -c "from sysconfig import get_paths as gp; print(gp()['include'])")"
+#PYTHON_LIBRARY="$(python3 -c 'from distutils import sysconfig; print("/".join([sysconfig.get_config_var("LIBPL"), sysconfig.get_config_var("LDLIBRARY")]))')"
 cd ${WS_PATH}
 # link the mobile_manipulation package into the ws
 ln -s ${MODULE_PATH} src/
-catkin config -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=${PYTHON_LIBRARY} --blacklist tiago_pcl_tutorial tiago_opencv_tutorial
+#catkin config -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=${PYTHON_LIBRARY} --blacklist tiago_pcl_tutorial tiago_opencv_tutorial
 source /opt/ros/${ROS_DISTRO}/setup.bash
 # will fail if we don't specify `-j x`
 catkin build -j
