@@ -22,7 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
         )
 find_package(Eigen REQUIRED)
 find_package(cmake_modules REQUIRED)
-pkg_check_modules(LIBGP libgp)
 find_package(yaml-cpp REQUIRED)
 include_directories(
         include
@@ -68,7 +67,7 @@ add_library(worlds src/worlds.cpp)
 target_link_libraries(worlds myutils ${catkin_LIBRARIES})
 
 add_library(robot_env src/robot_env.cpp)
-target_link_libraries(robot_env worlds myutils ${LIBGP_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(robot_env worlds myutils ${catkin_LIBRARIES})
 
 add_library(robot_pr2 src/robot_pr2.cpp)
 target_link_libraries(robot_pr2 worlds myutils ${catkin_LIBRARIES})
@@ -85,5 +84,5 @@ pybind_add_module(pybindings SHARED src/worlds src/robot_env src/pybindings src/
         src/gripper_planner/gaussian_mixture_model)
 target_link_libraries(pybindings PRIVATE worlds robot_env robot_pr2 robot_tiago myutils
         base_gripper_planner linear_planner gmm_planner gaussian_mixture_model
-        ${LIBGP_LIBRARIES} ${catkin_LIBRARIES}
+        ${catkin_LIBRARIES}
         )

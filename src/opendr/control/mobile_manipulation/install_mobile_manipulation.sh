@@ -26,18 +26,6 @@ sudo apt-get update && sudo apt-get install -y \
   ros-${ROS_DISTRO}-gazebo-msgs
 source /opt/ros/${ROS_DISTRO}/setup.bash
 
-## libgp
-LIBGP_PATH=${OPENDR_HOME}/lib/libgp
-if [ ! -d ${LIBGP_PATH} ]; then
-  git clone --single-branch --depth 1 https://github.com/mblum/libgp.git ${LIBGP_PATH} \
-    && cd ${LIBGP_PATH} \
-    && mkdir build \
-    && cd build \
-    && cmake -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF .. \
-    && make \
-    && sudo make install
-fi
-#
 ## tiago
 ## TODO: not sure why failing if only putting python3-rosdep into dependencies.ini
 #if [ ! -f ${WS_PATH}/tiago_public.rosinstall ]; then
