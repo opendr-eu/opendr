@@ -15,8 +15,8 @@
 import numpy as np
 import random
 from PIL import Image, ImageDraw, ImageOps
-from control.mobile_manipulation.mobileRL.envs.env_utils import quaternion_to_yaw
-from control.mobile_manipulation.mobileRL.envs.simulator_api import GazeboAPI, DummySimulatorAPI, SpawnObject, \
+from opendr.control.mobile_manipulation.mobileRL.envs.env_utils import quaternion_to_yaw
+from opendr.control.mobile_manipulation.mobileRL.envs.simulator_api import GazeboAPI, DummySimulatorAPI, SpawnObject, \
     ObjectGeometry
 from matplotlib import pyplot as plt
 from pathlib import Path

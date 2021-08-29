@@ -16,9 +16,9 @@ import math
 import numpy as np
 import random
 from collections import namedtuple
-from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper
-from control.mobile_manipulation.mobileRL.envs.map import Map, EmptyMap
-from control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
+from opendr.control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper
+from opendr.control.mobile_manipulation.mobileRL.envs.map import Map, EmptyMap
+from opendr.control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 from enum import IntEnum
 from gym import Wrapper
 from typing import Tuple

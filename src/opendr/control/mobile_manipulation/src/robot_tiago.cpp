@@ -95,6 +95,7 @@ bool RobotTiago::getArmSuccess() {
     // throw std::runtime_error("The arm_client_ failed.");
     success &= false;
   }
+  return success;
 }
 
 void RobotTiago::openGripper(double position, bool wait_for_result) {

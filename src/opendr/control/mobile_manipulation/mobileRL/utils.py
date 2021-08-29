@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from control.mobile_manipulation.mobileRL.envs import ALL_TASKS
-from control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
-from control.mobile_manipulation.mobileRL.envs.robotenv import RobotEnv
+from opendr.control.mobile_manipulation.mobileRL.envs import ALL_TASKS
+from opendr.control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
+from opendr.control.mobile_manipulation.mobileRL.envs.robotenv import RobotEnv
 from stable_baselines3.common.vec_env import DummyVecEnv
 
 

@@ -17,16 +17,18 @@ import gym
 import numpy as np
 import os
 import rospy
-from control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
-from control.mobile_manipulation.mobileRL.stablebl_callbacks import MobileRLEvalCallback
-from engine.constants import OPENDR_SERVER_URL
-from engine.learners import LearnerRL
 from pathlib import Path
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise, NormalActionNoise
+from stable_baselines3.common.utils import configure_logger
 from stable_baselines3.common.vec_env import VecEnv
 from stable_baselines3.sac import SAC
 from typing import Optional
 from urllib.request import urlretrieve
+
+from opendr.control.mobile_manipulation.mobileRL.evaluation import evaluation_rollout
+from opendr.control.mobile_manipulation.mobileRL.stablebl_callbacks import MobileRLEvalCallback
+from opendr.engine.constants import OPENDR_SERVER_URL
+from opendr.engine.learners import LearnerRL
 
 
 class MobileRLLearner(LearnerRL):
@@ -184,6 +186,13 @@ class MobileRLLearner(LearnerRL):
         if isinstance(env, VecEnv):
             assert env.num_envs == 1, "You must pass only one environment when using this function"
             env = env.envs[0]
+
+        if self.stable_bl_agent.logger is None:
+            self.stable_bl_agent.set_logger(configure_logger(self.stable_bl_agent.verbose,
+                                                             self.stable_bl_agent.tensorboard_log,
+                                                             tb_log_name="SAC",
+                                                             reset_num_timesteps=False))
+
 
         prefix = ''
         episode_rewards, episode_lengths, metrics, name_prefix = evaluation_rollout(

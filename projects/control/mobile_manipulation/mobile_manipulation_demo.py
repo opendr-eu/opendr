@@ -21,10 +21,10 @@ import sys
 import time
 import torch
 import yaml
-from control.mobile_manipulation.mobileRL.envs import ALL_TASKS
-from control.mobile_manipulation.mobileRL.evaluation import evaluate_on_task
-from control.mobile_manipulation.mobileRL.utils import create_env
-from control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
+from opendr.control.mobile_manipulation.mobileRL.envs import ALL_TASKS
+from opendr.control.mobile_manipulation.mobileRL.evaluation import evaluate_on_task
+from opendr.control.mobile_manipulation.mobileRL.utils import create_env
+from opendr.control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
 from pathlib import Path
 from stable_baselines3.common.utils import configure_logger
 

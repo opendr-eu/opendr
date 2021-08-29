@@ -18,13 +18,13 @@ import os
 import random
 import time
 import zipfile
-from control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper, GMMPlannerWrapper
-from control.mobile_manipulation.mobileRL.envs.env_utils import pose_to_list, list_to_pose
-from control.mobile_manipulation.mobileRL.envs.map import SceneMap
-from control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
-from control.mobile_manipulation.mobileRL.envs.simulator_api import WorldObjects, SpawnObject
-from control.mobile_manipulation.mobileRL.envs.tasks import BaseTask, TaskGoal, GripperActions
-from engine.constants import OPENDR_SERVER_URL
+from opendr.control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper, GMMPlannerWrapper
+from opendr.control.mobile_manipulation.mobileRL.envs.env_utils import pose_to_list, list_to_pose
+from opendr.control.mobile_manipulation.mobileRL.envs.map import SceneMap
+from opendr.control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
+from opendr.control.mobile_manipulation.mobileRL.envs.simulator_api import WorldObjects, SpawnObject
+from opendr.control.mobile_manipulation.mobileRL.envs.tasks import BaseTask, TaskGoal, GripperActions
+from opendr.engine.constants import OPENDR_SERVER_URL
 from functools import partial
 from geometry_msgs.msg import Point, Pose, Quaternion
 from pathlib import Path

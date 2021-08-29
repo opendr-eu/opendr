@@ -16,10 +16,9 @@ import numpy as np
 import rospy
 import time
 import torch
-from control.mobile_manipulation.mobileRL.envs.env_utils import calc_disc_return
-from control.mobile_manipulation.mobileRL.utils import create_env
+from opendr.control.mobile_manipulation.mobileRL.envs.env_utils import calc_disc_return
+from opendr.control.mobile_manipulation.mobileRL.utils import create_env
 from matplotlib import pyplot as plt
-from stable_baselines3.common import logger
 
 
 def episode_is_success(nr_kin_fails: int, nr_collisions: int, goal_reached: bool) -> bool:
@@ -81,7 +80,7 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
     metrics = {'return_undisc': np.mean(episode_rewards),
                'return_disc': np.mean(episode_returns),
                'epoch_len': np.mean(episode_lengths),
-               'ik_b{ik_fail_thresh}': np.mean(fails_per_episode <= ik_fail_thresh),
+               f'ik_b{ik_fail_thresh}': np.mean(fails_per_episode <= ik_fail_thresh),
                'ik_b11': np.mean(fails_per_episode < 11),
                'ik_zero_fail': np.mean(fails_per_episode == 0),
                'ik_fails': np.mean(fails_per_episode),
@@ -100,7 +99,7 @@ def evaluation_rollout(policy, env, num_eval_episodes: int, global_step: int, ve
 
     log_dict.update({(f'{name_prefix}/{k}' if ('step' not in k) else k): v for k, v in metrics.items()})
     for k, v in log_dict.items():
-        logger.record(k, v)
+        policy.logger.record(k, v)
 
     plt.close('all')
     return episode_rewards, episode_lengths, metrics, name_prefix

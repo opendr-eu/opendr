@@ -17,8 +17,8 @@ import os
 import shutil
 import torch
 import unittest
-from control.mobile_manipulation.mobileRL.utils import create_env
-from control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
+from opendr.control.mobile_manipulation.mobileRL.utils import create_env
+from opendr.control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
 from pathlib import Path
 
 TEST_ITERS = 3
@@ -77,17 +77,15 @@ class MobileManipulationTest(unittest.TestCase):
 
     def test_eval(self):
         nr_evaluations = 1
-        episode_rewards, episode_lengths, metrics, name_prefix = self.learner.eval(self.env,
-                                                                                   nr_evaluations=nr_evaluations)
-        self.assertTrue(len(episode_rewards) == nr_evaluations, "Episode rewards have incorrect length.")
-        self.assertTrue((np.array(episode_rewards) <= 0.0).all(), "Test reward not below 0.")
-        self.assertTrue((np.array(episode_lengths) >= 0.0).all(), "Test episode lengths is negative")
+        metrics = self.learner.eval(self.env, nr_evaluations=nr_evaluations)
+        self.assertTrue(len(metrics['episode_rewards']) == nr_evaluations, f"Episode rewards have incorrect length.")
+        self.assertTrue((np.array(metrics['episode_rewards']) <= 0.0).all(), "Test reward not below 0.")
+        self.assertTrue((np.array(metrics['episode_lengths']) >= 0.0).all(), "Test episode lengths is negative")
 
     def test_eval_pretrained(self):
         nr_evaluations = 10
         self.learner.load('pretrained')
-        episode_rewards, episode_lengths, metrics, name_prefix = self.learner.eval(self.env,
-                                                                                   nr_evaluations=nr_evaluations)
+        metrics = self.learner.eval(self.env, nr_evaluations=nr_evaluations)
         self.assertTrue(metrics['success'] > 0.5, f"Success rate of pretrained model is only {metrics['success']}")
 
     def test_infer(self):
