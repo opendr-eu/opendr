@@ -58,6 +58,7 @@ fi
 #fi
 mkdir -p ${WS_PATH}/src \
   && cd ${WS_PATH} \
+  && sudo apt --fix-broken install \
   && sudo apt-get install python3-rosdep \
   && sudo rosdep init \
   && rosdep update --rosdistro $ROS_DISTRO \
