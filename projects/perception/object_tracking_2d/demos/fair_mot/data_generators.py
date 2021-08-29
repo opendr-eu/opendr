@@ -1,0 +1,25 @@
+from time import sleep
+import cv2
+import numpy as np
+from opendr.engine.data import Image
+from opendr.perception.object_tracking_2d.datasets.mot_dataset import RawMotDatasetIterator
+
+
+def disk_image_generator(path, splits, count=None, cycle=True):
+    dataset = RawMotDatasetIterator(path, splits)
+
+    i = 0
+
+    len_dataset = len(dataset) if count is None else count
+
+    while i < len_dataset or cycle:
+        yield dataset[i % len_dataset][0]
+        i += 1
+
+
+def camera_image_generator(video_source):
+
+    while True:
+        image = video_source.read()
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        yield Image(image)
