@@ -193,7 +193,6 @@ class MobileRLLearner(LearnerRL):
                                                              tb_log_name="SAC",
                                                              reset_num_timesteps=False))
 
-
         prefix = ''
         episode_rewards, episode_lengths, metrics, name_prefix = evaluation_rollout(
             self.stable_bl_agent,
