@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from stable_baselines3.common.vec_env import DummyVecEnv
+
 from opendr.control.mobile_manipulation.mobileRL.envs import ALL_TASKS
 from opendr.control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 from opendr.control.mobile_manipulation.mobileRL.envs.robotenv import RobotEnv
-from stable_baselines3.common.vec_env import DummyVecEnv
 
 
 def wrap_in_task(env, task: str, default_head_start: float, wrap_in_dummy_vec: bool, **env_kwargs):

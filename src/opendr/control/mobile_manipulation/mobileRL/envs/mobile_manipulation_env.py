@@ -13,11 +13,12 @@
 # limitations under the License.
 
 import numpy as np
+from gym import spaces, Env
+from pybindings import RobotObs
+
 from opendr.control.mobile_manipulation.mobileRL.envs.eeplanner import EEPlanner
 from opendr.control.mobile_manipulation.mobileRL.envs.map import Map, DummyMap
 from opendr.control.mobile_manipulation.mobileRL.envs.robotenv import RobotEnv, ActionRanges, unscale_action
-from gym import spaces, Env
-from pybindings import RobotObs
 
 
 class MobileManipulationEnv(Env):
@@ -142,9 +143,9 @@ class MobileManipulationEnv(Env):
 
     def _to_agent_obs(self, robot_obs: RobotObs, ee_velocities_rel, local_map=None) -> list:
         obs_vector = robot_obs.relative_gripper_tf \
-                      + ee_velocities_rel \
-                      + self._robot.world_to_relative_tf(self._ee_planner.gripper_goal_wrist) \
-                      + robot_obs.joint_values
+                     + ee_velocities_rel \
+                     + self._robot.world_to_relative_tf(self._ee_planner.gripper_goal_wrist) \
+                     + robot_obs.joint_values
         if not self._use_map_obs:
             return obs_vector
         else:

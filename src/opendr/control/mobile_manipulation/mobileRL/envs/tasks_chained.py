@@ -18,6 +18,13 @@ import os
 import random
 import time
 import zipfile
+from functools import partial
+from geometry_msgs.msg import Point, Pose, Quaternion
+from pathlib import Path
+from pybindings import GMMPlanner, multiply_tfs
+from typing import List
+from urllib.request import urlretrieve
+
 from opendr.control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper, GMMPlannerWrapper
 from opendr.control.mobile_manipulation.mobileRL.envs.env_utils import pose_to_list, list_to_pose
 from opendr.control.mobile_manipulation.mobileRL.envs.map import SceneMap
@@ -25,12 +32,6 @@ from opendr.control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env im
 from opendr.control.mobile_manipulation.mobileRL.envs.simulator_api import WorldObjects, SpawnObject
 from opendr.control.mobile_manipulation.mobileRL.envs.tasks import BaseTask, TaskGoal, GripperActions
 from opendr.engine.constants import OPENDR_SERVER_URL
-from functools import partial
-from geometry_msgs.msg import Point, Pose, Quaternion
-from pathlib import Path
-from pybindings import GMMPlanner, multiply_tfs
-from typing import List
-from urllib.request import urlretrieve
 
 
 def download_gmm_models():

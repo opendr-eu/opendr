@@ -16,12 +16,13 @@ import math
 import numpy as np
 import random
 from collections import namedtuple
-from opendr.control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper
-from opendr.control.mobile_manipulation.mobileRL.envs.map import Map, EmptyMap
-from opendr.control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 from enum import IntEnum
 from gym import Wrapper
 from typing import Tuple
+
+from opendr.control.mobile_manipulation.mobileRL.envs.eeplanner import LinearPlannerWrapper
+from opendr.control.mobile_manipulation.mobileRL.envs.map import Map, EmptyMap
+from opendr.control.mobile_manipulation.mobileRL.envs.mobile_manipulation_env import MobileManipulationEnv
 
 
 class GripperActions(IntEnum):
@@ -54,8 +55,8 @@ class BaseTask(Wrapper):
     @property
     def loggingname(self):
         return self.taskname() \
-                + (f"_hs{self._default_head_start}" if self._default_head_start else "") \
-                + (f"_{self.get_world()}" if self.get_world() != "sim" else "")
+               + (f"_hs{self._default_head_start}" if self._default_head_start else "") \
+               + (f"_{self.get_world()}" if self.get_world() != "sim" else "")
 
     @staticmethod
     def requires_simulator() -> bool:

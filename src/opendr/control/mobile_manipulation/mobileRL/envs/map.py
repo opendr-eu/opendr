@@ -15,12 +15,13 @@
 import numpy as np
 import random
 from PIL import Image, ImageDraw, ImageOps
-from opendr.control.mobile_manipulation.mobileRL.envs.env_utils import quaternion_to_yaw
-from opendr.control.mobile_manipulation.mobileRL.envs.simulator_api import GazeboAPI, DummySimulatorAPI, SpawnObject, \
-    ObjectGeometry
 from matplotlib import pyplot as plt
 from pathlib import Path
 from typing import Union, List, Tuple, Optional
+
+from opendr.control.mobile_manipulation.mobileRL.envs.env_utils import quaternion_to_yaw
+from opendr.control.mobile_manipulation.mobileRL.envs.simulator_api import GazeboAPI, DummySimulatorAPI, SpawnObject, \
+    ObjectGeometry
 
 SMALL_NUMBER = 1e-6
 

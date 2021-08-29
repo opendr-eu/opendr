@@ -78,7 +78,7 @@ class MobileManipulationTest(unittest.TestCase):
     def test_eval(self):
         nr_evaluations = 1
         metrics = self.learner.eval(self.env, nr_evaluations=nr_evaluations)
-        self.assertTrue(len(metrics['episode_rewards']) == nr_evaluations, f"Episode rewards have incorrect length.")
+        self.assertTrue(len(metrics['episode_rewards']) == nr_evaluations, "Episode rewards have incorrect length.")
         self.assertTrue((np.array(metrics['episode_rewards']) <= 0.0).all(), "Test reward not below 0.")
         self.assertTrue((np.array(metrics['episode_lengths']) >= 0.0).all(), "Test episode lengths is negative")
 
