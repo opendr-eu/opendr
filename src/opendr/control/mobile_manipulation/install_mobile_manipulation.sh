@@ -56,19 +56,19 @@ fi
 #    && cp ${MODULE_PATH}/robots_world/tiago/modified_gripper.urdf.xacro src/pal_gripper/pal_gripper_description/urdf/gripper.urdf.xacro \
 #    && cp ${MODULE_PATH}/robots_world/tiago/modified_wsg_gripper.urdf.xacro src/pal_wsg_gripper/pal_wsg_gripper_description/urdf/gripper.urdf.xacro
 #fi
-mkdir -p ${WS_PATH}/src \
+if [ ! -f ${WS_PATH}/mobile_manipulation.rosinstall ]; then
+  mkdir -p ${WS_PATH}/src \
   && cd ${WS_PATH} \
-  && sudo apt --fix-broken install \
+  && sudo apt-get update \
   && sudo apt-get install python3-rosdep \
   && sudo rosdep init \
   && rosdep update --rosdistro $ROS_DISTRO \
-  && sudo apt-get update \
   && cp ${MODULE_PATH}/mobile_manipulation.rosinstall . \
   && yes | rosinstall src /opt/ros/$ROS_DISTRO mobile_manipulation.rosinstall \
   && rosdep install -y -r --from-paths src --ignore-src --rosdistro $ROS_DISTRO --skip-keys="opencv2 opencv2-nonfree pal_laser_filters speed_limit_node sensor_to_cloud hokuyo_node libdw-dev python-graphitesend-pip python-statsd pal_filters pal_vo_server pal_usb_utils pal_pcl pal_pcl_points_throttle_and_filter pal_karto pal_local_joint_control camera_calibration_files pal_startup_msgs pal-orbbec-openni2 dummy_actuators_manager pal_local_planner gravity_compensation_controller current_limit_controller dynamic_footprint dynamixel_cpp tf_lookup opencv3 tiago_pcl_tutorial" \
   && echo "update the moveit configs with the global joint" \
-  && cp ${MODULE_PATH}/robots_world/tiago/modified_tiago.srdf.em src/tiago_moveit_config/config/srdf/tiago.srdf.em \
-
+  && cp ${MODULE_PATH}/robots_world/tiago/modified_tiago.srdf.em src/tiago_moveit_config/config/srdf/tiago.srdf.em
+fi
 # build the catkin workspace
 PYTHON_EXECUTABLE="$(which python3)"
 PYTHON_INCLUDE_DIR="$(python -c "from sysconfig import get_paths as gp; print(gp()['include'])")"
