@@ -126,10 +126,10 @@ To start required ROS nodes, please run the following before using the `MobileRL
 
 ```sh
 source ${OPENDR_HOME}/lib/catkin_ws_mobile_manipulation/devel/setup.bash
-roslaunch mobile_manipulation_rl [pr2,tiago]_analytical
+roslaunch mobile_manipulation_rl [pr2,tiago]_analytical.launch
 ````
 
-The environment requires a working ROS installation. Note that it was tested for Ubuntu 18.04 and ROS melodic. The makefile will install the packages according to the ROS_DISTRO environment variable.
+The environment requires a working ROS installation. The makefile will install the packages according to the ROS_DISTRO environment variable.
 
 ##### Visualisation
 All visualisations are done through rviz. For this start rviz with the provided configuration file as follows.
