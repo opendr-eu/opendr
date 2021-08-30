@@ -75,7 +75,10 @@ RgbdHandGestureLearner(self, n_class, architecture, pretrained, lr_scheduler, op
   
 - **batch_size**: *int, default=32*   
   Specifies the size of mini-batches.  
-  
+
+- **n_workers**: *int, default=4*   
+  Specifies number of threads to be used in data loading. 
+
 - **checkpoint_after_iter**: *int, default=1*  
   Specifies the frequency to save checkpoints.  
   The default behavior saves checkpoint after every epoch.  
@@ -216,7 +219,7 @@ Note that under the given directory path, `"metadata.json"` and `"model_weights.
 
 - **path**: *str*  
   Directory path of the model to be loaded.  
-- **verbose**: *bool*, default to True   
+- **verbose**: *bool, default=True*  
   If set to True, print acknowledge message when model loading is successful.  
 
 #### `RgbdHandGestureLearner.download`
@@ -273,8 +276,7 @@ If the dataset is not available under the given path, it will be downloaded and 
   The training and validation data object can be constructed easily by using our convenient method `get_hand_gesture_dataset()` as follows:   
 
   ```python
-  from opendr.perception.multimodal_human_centric.rgbd_hand_gesture_learner.rgbd_hand_gesture_learner import \
-    RgbdHandGestureLearner, get_hand_gesture_dataset 
+  from opendr.perception.multimodal_human_centric.rgbd_hand_gesture_learner.rgbd_hand_gesture_learner import RgbdHandGestureLearner, get_hand_gesture_dataset 
 
   # download the dataset to the current directory
   train_set, val_set, n_class, text_labels = get_hand_gesture_dataset('.')
@@ -292,8 +294,7 @@ If the dataset is not available under the given path, it will be downloaded and 
   At the moment, only a light-weight pretrained `mobilenet_v2` is provided so we will create a learner instance with `mobilenet_v2` as the architecture.  
 
    ```python
-  from opendr.perception.multimodal_human_centric.rgbd_hand_gesture_learner.rgbd_hand_gesture_learner import \
-    RgbdHandGestureLearner 
+  from opendr.perception.multimodal_human_centric.rgbd_hand_gesture_learner.rgbd_hand_gesture_learner import RgbdHandGestureLearner 
 
   learner = RgbdHandGestureLearner(n_class=16, architecture='mobilenet_v2')
   ```

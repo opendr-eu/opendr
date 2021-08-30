@@ -500,7 +500,7 @@ class RgbdHandGestureLearner(Learner):
             raise UserWarning('No pretrained model for architecture "{}"'.format(self.architecture))
 
     def optimize(self):
-        pass
+        raise NotImplementedError
 
     def reset(self):
-        pass
+        raise NotImplementedError
