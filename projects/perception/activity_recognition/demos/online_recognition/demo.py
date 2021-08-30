@@ -168,14 +168,14 @@ def clean_kinetics_preds(preds):
     return preds
 
 
-def x3d_activity_recognition(model_name):
+def x3d_activity_recognition(model_name, device):
     global vs, output_frame, lock
 
     # Prep stats
     fps = runnig_fps()
 
     # Init model
-    learner = X3DLearner(device="cpu", backbone=model_name, num_workers=0)
+    learner = X3DLearner(device=device, backbone=model_name, num_workers=0)
     X3DLearner.download(path="model_weights", model_names={model_name})
     learner.load(Path("model_weights") / f"x3d_{model_name}.pyth")
 
@@ -208,14 +208,14 @@ def x3d_activity_recognition(model_name):
             pass
 
 
-def cox3d_activity_recognition(model_name):
+def cox3d_activity_recognition(model_name, device):
     global vs, output_frame, lock
 
     # Prep stats
     fps = runnig_fps()
 
     # Init model
-    learner = CoX3DLearner(device="cpu", backbone=model_name, num_workers=0)
+    learner = CoX3DLearner(device=device, backbone=model_name, num_workers=0)
     CoX3DLearner.download(path="model_weights", model_names={model_name})
     learner.load(Path("model_weights") / f"x3d_{model_name}.pyth")
 
@@ -301,6 +301,13 @@ if __name__ == "__main__":
         help="Model identifier",
     )
     ap.add_argument(
+        "-d",
+        "--device",
+        type=str,
+        default="cpu",
+        help="Device",
+    )
+    ap.add_argument(
         "-v",
         "--video_source",
         type=int,
@@ -328,7 +335,7 @@ if __name__ == "__main__":
     }[args["algorithm"]]
 
     # start a thread that will perform motion detection
-    t = threading.Thread(target=algorithm, args=(args["model_name"],))
+    t = threading.Thread(target=algorithm, args=(args["model_name"], args["device"]))
     t.daemon = True
     t.start()
 
