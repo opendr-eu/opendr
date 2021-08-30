@@ -86,7 +86,8 @@ class MobileManipulationTest(unittest.TestCase):
         nr_evaluations = 10
         self.learner.load('pretrained')
         metrics = self.learner.eval(self.env, nr_evaluations=nr_evaluations)
-        self.assertTrue(metrics['metrics']['success'] > 0.5, f"Success rate of pretrained model is only {metrics['success']}")
+        success = metrics['metrics']['success']
+        self.assertTrue(success > 0.5, f"Success rate of pretrained model is only {success}")
 
     def test_infer(self):
         obs = self.env.observation_space.sample()
