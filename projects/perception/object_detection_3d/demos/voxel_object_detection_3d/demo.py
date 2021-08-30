@@ -187,6 +187,8 @@ def voxel_object_detection_3d(config_path, model_name=None):
         detection_learner.load("./models/" + model_name, verbose=True)
         tracking_learner = ObjectTracking3DAb3dmotLearner()
         print("Learner created")
+        # from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset
+        # detection_learner.eval(KittiDataset('/media/io/HDDAU657455/FILES/KITTI/second', '/media/io/HDDAU657455/FILES/opendr/opendr_internal/src/opendr/perception/object_detection_3d/datasets/kitti_subsets'))
     
     else:
         detection_learner = None
@@ -278,14 +280,12 @@ def voxel_object_detection_3d(config_path, model_name=None):
         # image_size_x = 600
         # image_size_y = 1800
         image_size_x = 1000
-        image_size_y = 3000
+        image_size_y = 1000
         font_scale=4
-        tvec0 = np.array([0, 4.8, 2.4], dtype=np.float32)
-        tvec = np.array([2.4, 22.8, 13.20], dtype=np.float32)
-        rvec0 = np.array([-5.33, 15.39, 6.6], dtype=np.float32)
-        rvec = np.array([-6.28, 15.39, 5.03], dtype=np.float32)
+        tvec = np.array([10.8, 8.34, 16.8], dtype=np.float32)
+        rvec = np.array([-10.67, 26.69, 6.914], dtype=np.float32)
         fx = 864.98
-        fy = 384.43
+        fy = 864.98
     elif lidar_type == "rplidar":
         xs = [-10, 10]
         ys = [-10, 10]
@@ -293,12 +293,12 @@ def voxel_object_detection_3d(config_path, model_name=None):
         image_size_x = 60
         image_size_y = 6
         
-        tvec0 = np.array([0, 4.8, 2.4], dtype=np.float32)
-        tvec = np.array([2.4, 22.8, 13.20], dtype=np.float32)
-        rvec0 = np.array([-5.33, 15.39, 6.6], dtype=np.float32)
-        rvec = np.array([-6.28, 15.39, 5.03], dtype=np.float32)
+        tvec = np.array([10.8, 8.34, 16.8], dtype=np.float32)
+        rvec = np.array([-10.67, 26.69, 6.914], dtype=np.float32)
+        # tvec = np.array([2.4, 22.8, 13.20], dtype=np.float32)
+        # rvec = np.array([-6.28, 15.39, 5.03], dtype=np.float32)
         fx = 864.98
-        fy = 384.430
+        fy = 864.98
         font_scale=0.5
     elif lidar_type == "o3mlidar":
         xs = [-8, 8]
@@ -394,7 +394,7 @@ def voxel_object_detection_3d(config_path, model_name=None):
         except Exception as e:
             print(e)
             # torch.cuda.empty_cache()
-            raise e
+            # raise e
 
 
 def generate():
