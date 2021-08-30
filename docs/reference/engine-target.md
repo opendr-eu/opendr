@@ -23,19 +23,25 @@ targets, this class serves as the basis for the more specialized forms of target
 All the classes should implement the corresponding setter/getter functions to ensure that the necessary
 type checking is performed (if there is no other technical obstacle to this, e.g., negative performance impact).
 
+`Target` provides the following fields that can be used by classes that inhert `Target`:
+- *data*, which holds the actual predictions/annotations,
+- *confidence*, which holds the prediction/annotation confidence,
+- *action*, which provides the expected active perception output.
+
 
 ### class engine.target.Category
 Bases: `engine.target.Target`
 
 The Category target is used for 1-of-K classification problems.
-It contains the predicted class or ground truth and optionally the prediction confidence.
+It contains the predicted class or ground truth and optionally the description of the predicted class
+and the prediction confidence.
 
 The [Category](#class_engine.target.Category) class has the following public methods and attributes:
 #### Category(prediction, confidence=None)
 Construct a new [Category](#class_engine.target.Category).
 - *prediction* is a class integer.
+- *description* is an optional string describing the predicted class.
 - *confidence* is an optional one-dimensional array / tensor of class probabilitiess.
-
 
 
 ### class engine.target.Keypoint
@@ -265,14 +271,3 @@ The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class 
   Return the [BoundingBoxList](#class_engine.target.BoundingBoxList) object constructed from this object.
 #### boxes()
   Return the list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) boxes.
-
-### class engine.target.SpeechCommand
-Bases: `engine.target.Target`
-
-This target is used for speech command recognition. Contains the predicted class or ground truth
-and optionally the prediction confidence.
-
-The [SpeechCommand](#class_engine.target.SpeechCommand) class has the following public methods:
-#### SpeechCommand(prediction, confidence=None)
-Construct a new [SpeechCommand](#class_engine.target.SpeechCommand) object based from *prediction*.
-*prediction* is expected to be an integer designating the class and optional *confidence* a float between 0 and 1.

@@ -69,8 +69,8 @@ class MultilinearCompressiveLearner(Learner):
                  lr_scheduler=get_cosine_lr_scheduler(1e-3, 1e-5),
                  optimizer='adam',
                  weight_decay=1e-4,
-                 n_init_epoch=100,
-                 n_epoch=300,
+                 n_init_iters=100,
+                 iters=300,
                  batch_size=32,
                  checkpoint_after_iter=1,
                  checkpoint_load_iter=0,
@@ -115,8 +115,8 @@ class MultilinearCompressiveLearner(Learner):
         self.init_backbone = init_backbone
         self.n_class = n_class
         self.lr_scheduler = lr_scheduler
-        self.n_init_epoch = n_init_epoch
-        self.n_epoch = n_epoch
+        self.n_init_epoch = n_init_iters
+        self.n_epoch = iters
         self.batch_size = batch_size
         self.checkpoint_freq = checkpoint_after_iter
         self.epoch_idx = checkpoint_load_iter
@@ -361,10 +361,65 @@ class MultilinearCompressiveLearner(Learner):
 
         img = np.expand_dims(img.transpose(2, 0, 1), 0)
 
-        tensor_img = torch.tensor(img, device=torch.device(self.device)).float()
-        prob_prediction = torch.nn.functional.softmax(self.model(tensor_img).flatten(), dim=0)
-        class_prediction = prob_prediction.argmax(dim=-1).cpu().item()
-        prediction = Category(class_prediction, prob_prediction[class_prediction].cpu().item())
+        with torch.no_grad():
+            tensor_img = torch.tensor(img, device=torch.device(self.device)).float()
+            prob_prediction = torch.nn.functional.softmax(self.model(tensor_img).flatten(), dim=0)
+            class_prediction = prob_prediction.argmax(dim=-1).cpu().item()
+            prediction = Category(class_prediction, confidence=prob_prediction[class_prediction].cpu().item())
+
+        return prediction
+
+    def get_sensing_parameters(self):
+        """
+        This method is used to get the sensing parameters
+
+        :return: parameters of sensing operators
+        :rtype: list of numpy array
+
+        """
+
+        params = [x.detach().cpu().numpy() for x in list(self.model.sense_synth_module.synthesis_module.parameters())]
+        # reverse the order from pytorch order to normal image order
+        if len(params) == 3:
+            params = [params[1], params[2], params[0]]
+
+        return params
+
+    def infer_from_compressed_measurement(self, measurement):
+        """
+        This method is used to generate class prediction given the compressed measurement
+
+        :param measurement: compressed measurement to generate class prediction
+        :type measurement: engine.data.Image
+
+        :return: predicted label
+        :rtype: engine.target.Category
+
+        """
+
+        if not isinstance(measurement, Image):
+            msg = 'Input to `infer_from_compressed_measurement()` must be an instance of engine.data.Image\n' +\
+                  'Received an instance of type: {}'.format(type(measurement))
+            raise TypeError(msg)
+
+        self.model.to(torch.device(self.device))
+        self.model.eval()
+
+        measurement = measurement.numpy()
+
+        if not tuple(measurement.shape) == tuple(self.compressed_shape):
+            msg = 'Dimensions of the given compressed measurement "{}"'.format(measurement.shape) +\
+                  'do not match `compressed_shape` "{}" of the model'.format(tuple(self.compressed_shape))
+            raise ValueError(msg)
+
+        measurement = np.expand_dims(measurement.transpose(2, 0, 1), 0)
+
+        with torch.no_grad():
+            tensor_measurement = torch.tensor(measurement, device=torch.device(self.device)).float()
+            prob_prediction = self.model.infer_from_measurement(tensor_measurement).flatten()
+            prob_prediction = torch.nn.functional.softmax(prob_prediction, dim=0)
+            class_prediction = prob_prediction.argmax(dim=-1).cpu().item()
+            prediction = Category(class_prediction, confidence=prob_prediction[class_prediction].cpu().item())
 
         return prediction
 
@@ -420,8 +475,6 @@ class MultilinearCompressiveLearner(Learner):
 
         except Exception as error:
             raise error
-
-        return True
 
     def load(self, path, verbose=True):
         """

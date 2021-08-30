@@ -60,7 +60,7 @@ class Data(ABC):
 
         :param: data to be used for creating a vector
         """
-        self.data = data
+        self._data = data
 
     @abstractmethod
     def __str__(self):
@@ -413,13 +413,14 @@ class PointCloudWithCalibration(PointCloud):
     - returning a NumPy compatible representation of data (numpy())
     """
 
-    def __init__(self, data=None, calib=None):
+    def __init__(self, data=None, calib=None, image_shape=None):
         super().__init__(data)
 
         if data is not None:
             self.data = data
 
         self.calib = calib
+        self.image_shape = image_shape
 
     @property
     def data(self):

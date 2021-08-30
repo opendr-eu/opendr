@@ -65,7 +65,7 @@ class GatedRecurrentUnitLearner(Learner):
                  optimizer='adam',
                  weight_decay=0.0,
                  dropout=0.2,
-                 n_epoch=200,
+                 iters=200,
                  batch_size=32,
                  checkpoint_after_iter=1,
                  checkpoint_load_iter=0,
@@ -79,9 +79,9 @@ class GatedRecurrentUnitLearner(Learner):
                                                         temp_path=temp_path,
                                                         device=device)
 
-        assert checkpoint_load_iter in [-1, 0],\
-            'check_point_load_iter must be -1 or 0, with 0 indicating training from scratch,' +\
-            '-1 indicating training from latest checkpoint if temp_path is given'
+        assert checkpoint_load_iter < iters,\
+            '`check_point_load_iter` must be less or equal than `iters`\n' +\
+            'given check_point_load_iter={} and iters={}'.format(checkpoint_load_iter, iters)
 
         assert optimizer in ['adam', 'sgd'],\
             'given optimizer "{}" is not supported, please select set optimizer to "adam" or "sgd"'.format(optimizer)
@@ -91,7 +91,7 @@ class GatedRecurrentUnitLearner(Learner):
         self.recurrent_unit = recurrent_unit
         self.n_class = n_class
         self.lr_scheduler = lr_scheduler
-        self.n_epoch = n_epoch
+        self.n_epoch = iters
         self.batch_size = batch_size
         self.checkpoint_freq = checkpoint_after_iter
         self.epoch_idx = checkpoint_load_iter
@@ -318,8 +318,8 @@ class GatedRecurrentUnitLearner(Learner):
         """
         This method is used to generate class prediction given a time-series
 
-        :param img: image to generate class prediction
-        :type img: engine.data.Timeseries
+        :param series: time-series to generate class prediction
+        :type series: engine.data.Timeseries
 
         :return: predicted label
         :rtype: engine.target.Category
@@ -348,10 +348,11 @@ class GatedRecurrentUnitLearner(Learner):
         self.model.to(torch.device(self.device))
         self.model.eval()
         series = np.expand_dims(series, 0)
-        series = torch.tensor(series, device=torch.device(self.device)).float()
-        prob_prediction = torch.nn.functional.softmax(self.model(series).flatten(), dim=0)
-        class_prediction = prob_prediction.argmax().cpu().item()
-        prediction = Category(class_prediction, prob_prediction[class_prediction].cpu().item())
+        with torch.no_grad():
+            series = torch.tensor(series, device=torch.device(self.device)).float()
+            prob_prediction = torch.nn.functional.softmax(self.model(series).flatten(), dim=0)
+            class_prediction = prob_prediction.argmax().cpu().item()
+            prediction = Category(class_prediction, confidence=prob_prediction[class_prediction].cpu().item())
         return prediction
 
     def save(self, path, verbose=True):
@@ -377,7 +378,7 @@ class GatedRecurrentUnitLearner(Learner):
                     'in_channels': self.in_channels,
                     'series_length': self.series_length,
                     'recurrent_unit': self.recurrent_unit,
-                    'model_paths': model_weight_file,
+                    'model_paths': ['model_weights.pt'],
                     'has_data': False,
                     'inference_params': {},
                     'optimized': False,
@@ -423,17 +424,17 @@ class GatedRecurrentUnitLearner(Learner):
             raise ValueError('Given path "{}" is not a directory'.format(path))
 
         metadata_file = os.path.join(path, 'metadata.json')
-        model_weight_file = os.path.join(path, 'model_weights.pt')
-
         assert os.path.exists(metadata_file),\
             'Metadata file ("metadata.json") does not exist under the given path "{}"'.format(path)
-
-        assert os.path.exists(model_weight_file),\
-            'Model weights ("model_weights.pt") does not exist under the given path "{}"'.format(path)
 
         fid = open(metadata_file, 'r')
         metadata = json.load(fid)
         fid.close()
+
+        model_weight_file = os.path.join(path, metadata['model_paths'][0])
+
+        assert os.path.exists(model_weight_file),\
+            'Model weights ("model_weights.pt") does not exist under the given path "{}"'.format(path)
 
         assert metadata['in_channels'] == self.in_channels,\
             'Parameter `in_channels` provided during initialization does not match ' +\

@@ -21,6 +21,7 @@ import os
 import sys
 from configparser import ConfigParser
 
+python_prerequisites_file = "python_prerequisites.txt"
 python_file = "python_dependencies.txt"
 linux_file = "linux_dependencies.txt"
 
@@ -28,18 +29,16 @@ linux_file = "linux_dependencies.txt"
 def read_ini(path):
     parser = ConfigParser()
     parser.read(path)
-    if parser.has_option(section, 'python'):
-        python_dependencies = parser.get(section, 'python')
-        if python_dependencies:
-            for package in python_dependencies.split():
-                f = open(python_file, "a")
-                f.write(package + '\n')
-    if parser.has_option(section, 'linux'):
-        linux_dependencies = parser.get(section, 'linux')
-        if linux_dependencies:
-            for package in linux_dependencies.split():
-                f = open(linux_file, "a")
-                f.write(package + '\n')
+    def read_ini_key(key, summary_file):
+        if parser.has_option(section, key):
+            dependencies = parser.get(section, key)
+            if dependencies:
+                for package in dependencies.split('\n'):
+                    with open(summary_file, "a") as f:
+                        f.write(os.path.expandvars(package) + '\n')
+    read_ini_key('python-dependencies', python_prerequisites_file)
+    read_ini_key('python', python_file)
+    read_ini_key('linux', linux_file)
 
 
 # Parse arguments
@@ -48,8 +47,11 @@ if len(sys.argv) > 1:
     section = sys.argv[1]
 if section not in ["runtime", "compilation"]:
     sys.exit("Invalid dependencies type: " + section + ".\nExpected: [runtime, compilation]")
+global_dependencies = True if '--global' in sys.argv else False
 
 # Clear dependencies
+if os.path.exists(python_prerequisites_file):
+    os.remove(python_prerequisites_file)
 if os.path.exists(python_file):
     os.remove(python_file)
 if os.path.exists(linux_file):
@@ -58,8 +60,9 @@ if os.path.exists(linux_file):
 # Extract generic dependencies
 read_ini('dependencies.ini')
 # Loop through tools and extract dependencies
-opendr_home = os.environ.get('OPENDR_HOME')
-for subdir, dirs, files in os.walk(opendr_home + '/src'):
-    for filename in files:
-        if filename == 'dependencies.ini':
-            read_ini(subdir + os.sep + filename)
+if not global_dependencies:
+    opendr_home = os.environ.get('OPENDR_HOME')
+    for subdir, dirs, files in os.walk(os.path.join(opendr_home, 'src')):
+        for filename in files:
+            if filename == 'dependencies.ini':
+                read_ini(os.path.join(subdir, filename))

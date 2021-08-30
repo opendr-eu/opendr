@@ -203,11 +203,16 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
 
     @staticmethod
     def download_mini(path: Union[str, Path]):
-        """Download mini version of dataset
+        """Download mini version of dataset: One video of each class in Kinetics400
 
         Args:
             path (Union[str, Path]): Directory in which to store dataset
         """
+        path = Path(path)
+        if path.exists():
+            logger.info("Kinetics400 mini already exists. Skipping download.")
+            return
+
         path.mkdir(parents=True, exist_ok=True)
 
         url = os.path.join(
@@ -224,6 +229,38 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         urlretrieve(url=url, filename=zip_path)
 
         logger.info(f"Unzipping Kinetics400 mini to {(unzip_path)}")
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(unzip_path)
+        os.remove(zip_path)
+
+    @staticmethod
+    def download_micro(path: Union[str, Path]):
+        """Download micro version of dataset: One video of first three classes in Kinetics400
+
+        Args:
+            path (Union[str, Path]): Directory in which to store dataset
+        """
+        path = Path(path)
+        if path.exists():
+            logger.info("Kinetics3 already exists. Skipping download.")
+            return
+
+        path.mkdir(parents=True, exist_ok=True)
+
+        url = os.path.join(
+            OPENDR_SERVER_URL,
+            "perception",
+            "activity_recognition",
+            "datasets",
+            "kinetics3.zip"
+        )
+        zip_path = str(Path(path) / "kinetics3.zip")
+        unzip_path = str(Path(path))
+
+        logger.info(f"Downloading Kinetics3 from {url}")
+        urlretrieve(url=url, filename=zip_path)
+
+        logger.info(f"Unzipping Kinetics3 to {(unzip_path)}")
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(unzip_path)
         os.remove(zip_path)

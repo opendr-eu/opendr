@@ -10,7 +10,7 @@ defaults:
 
 jobs:
   cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') }}
     runs-on: ubuntu-latest
     steps:
     - uses: rokroskar/workflow-run-cleanup-action@master
@@ -18,15 +18,15 @@ jobs:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
   test-sources:
     needs: cleanup-runs
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') }}
     strategy:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04, macos-10.15]
         include:
           - os: ubuntu-18.04
-            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-9"
+            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
           - os: ubuntu-20.04
-            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-9"
+            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
           - os: macos-10.15
             DEPENDENCIES_INSTALLATION: "brew install clang-format cppcheck"
     runs-on: ${{ matrix.os }}
@@ -46,11 +46,12 @@ jobs:
         pip install -r tests/requirements.txt
         python -m unittest discover -s tests
     - name: Test API
-      if: matrix.os == 'ubuntu-20.04'
+      if: ${{ matrix.os == 'ubuntu-20.04' && contains(github.event.pull_request.labels.*.name, 'test tools') }}
       run: |
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
         export OPENDR_HOME=$PWD
         export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+        export DISABLE_BCOLZ_AVX2=true
         make install_compilation_dependencies
         make install_runtime_dependencies
         pip install -r tests/sources/requirements.txt
