@@ -1,6 +1,7 @@
 ## attention_neural_bag_of_feature_learner module
 
-The *attention_neural_bag_of_feature* module contains the *AttentionNeuralBagOfFeatureLearner* class, which inherits from the abstract class *Learner*. In addition, the module also contains the convenient function to download and construct the AF dataset [[2]](#af), which is an ECG dataset for heart anomaly detection. 
+The *attention_neural_bag_of_feature* module contains the *AttentionNeuralBagOfFeatureLearner* class, which inherits from the abstract class *Learner*.
+In addition, the module also contains the convenient function to download and construct the AF dataset [[2]](#af), which is an ECG dataset for heart anomaly detection. 
 
 ### Class AttentionNeuralBagOfFeatureLearner 
 Bases: `engine.learners.Learner`
@@ -73,9 +74,14 @@ AttentionNeuralBagOfFeatureLearner(self, in_channels, series_length, n_class, n_
 AttentionNeuralBagOfFeatureLearner.fit(self, train_set, val_set, test_set, class_weight, logging_path, silent, verbose)
 ```
 
-This method is used for training the model using the provided train set. If validation set is provided, it is used to validate the best model weights during the optimization process. That is, the final model weight is the one that produces the best validation F1 during optimization. If validation set is not provided, the final model weight is the one that produces the best training F1 during optimization.   
+This method is used for training the model using the provided train set.
+If validation set is provided, it is used to validate the best model weights during the optimization process. 
+That is, the final model weight is the one that produces the best validation F1 during optimization. 
+If validation set is not provided, the final model weight is the one that produces the best training F1 during optimization.   
 
-Returns a dictionary containing a list of accuracy, precision, recall, f1 measures (dict key: `"train_cross_entropy"`, `"train_acc"`, `"train_precision"`, `"train_recall"`, `"train_f1"`, `"val_cross_entropy"`, `"val_acc"`, `"val_precision"`, `"val_recall"`, `"val_f1"`, `"test_cross_entropy"`, `"test_acc"`, `"test_precision"`, `"test_recall"`, `"test_f1"`) during the entire optimization process. Note that the last value in the provided lists do not necessarily correspond to the final model performance due to the model selection policy mentioned above. To get the final performance on a dataset, please use the `eval` method of `AttentionNeuralBagOfFeatureLearner`.   
+Returns a dictionary containing a list of accuracy, precision, recall, f1 measures (dict key: `"train_cross_entropy"`, `"train_acc"`, `"train_precision"`, `"train_recall"`, `"train_f1"`, `"val_cross_entropy"`, `"val_acc"`, `"val_precision"`, `"val_recall"`, `"val_f1"`, `"test_cross_entropy"`, `"test_acc"`, `"test_precision"`, `"test_recall"`, `"test_f1"`) during the entire optimization process. 
+Note that the last value in the provided lists do not necessarily correspond to the final model performance due to the model selection policy mentioned above. 
+To get the final performance on a dataset, please use the `eval` method of `AttentionNeuralBagOfFeatureLearner`.   
  
 **Parameters**: 
  
@@ -158,8 +164,10 @@ Returns an instance of `engine.target.Category` representing the prediction.
 AttentionNeuralBagOfFeatureLearner.save(path, verbose)
 ```
 
-This method is used to save the current model instance under a given path. The saved model can be loaded later by calling `AttentionNeuralBagOfFeatureLearner.load(path)`  
-Two files are saved under the given directory path, namely `metadata.json` and `model_weights.pt`. The former keeps the metadata and the latter keeps the model weights
+This method is used to save the current model instance under a given path. 
+The saved model can be loaded later by calling `AttentionNeuralBagOfFeatureLearner.load(path)`  
+Two files are saved under the given directory path, namely `metadata.json` and `model_weights.pt`. 
+The former keeps the metadata and the latter keeps the model weights.
 
 **Parameters**:
 
@@ -174,7 +182,8 @@ Two files are saved under the given directory path, namely `metadata.json` and `
 AttentionNeuralBagOfFeatureLearner.load(path, verbose)
 ```
 
-This method is used to load a previously saved model (by calling `AttentionNeuralBagOfFeatureLearner.save(path)`) from a given directory. Note that under the given directory path, `metadata.json` and `model_weights.pt` must exist.   
+This method is used to load a previously saved model (by calling `AttentionNeuralBagOfFeatureLearner.save(path)`) from a given directory. 
+Note that under the given directory path, `metadata.json` and `model_weights.pt` must exist.   
 
 **Parameters**: 
  
@@ -188,12 +197,15 @@ This method is used to load a previously saved model (by calling `AttentionNeura
 AttentionNeuralBagOfFeatureLearner.download(path, fold_idx)
 ```
 
-This method is used to download pretrained models for the AF dataset given different cross validation fold index. Pretrained models are available for `series_length=30` and `n_class=4`, `n_codeword in [256, 512]`, `quantization_type='nbof'` and `attention_type='temporal'`. The input series must be a univariate series, i.e., `in_channels=1`.   
+This method is used to download pretrained models for the AF dataset given different cross validation fold index. 
+Pretrained models are available for `series_length=30` and `n_class=4`, `n_codeword in [256, 512]`, `quantization_type='nbof'` and `attention_type='temporal'`. 
+The input series must be a univariate series, i.e., `in_channels=1`.   
 
 **Parameters**:
 
 - **path**: *str*   
-  Directory path to download the model. Note that under this path, `metadata.json` and `model_weights.pt` will be downloaded, thus, to download different models, different paths should be given to avoid overwriting previously downloaded model. In addition, the downloaded pretrained model weights can be loaded by calling `AttentionNeuralBagOfFeatureLearner.load(path)` afterward.      
+  Directory path to download the model. Note that under this path, `metadata.json` and `model_weights.pt` will be downloaded, thus, to download different models, different paths should be given to avoid overwriting previously downloaded model. 
+  In addition, the downloaded pretrained model weights can be loaded by calling `AttentionNeuralBagOfFeatureLearner.load(path)` afterward.      
 - **fold_idx**: *{0, 1, 2, 3, 4}*   
   The index of the cross validation fold. 
   The AF dataset was divided into 5 folds and we provide the pretrained models for different cross-validation folds.  
