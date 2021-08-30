@@ -357,7 +357,7 @@ class AttentionNeuralBagOfFeatureLearner(Learner):
         series = torch.tensor(series, device=torch.device(self.device)).float()
         prob_prediction = torch.nn.functional.softmax(self.model(series).flatten(), dim=0)
         class_prediction = prob_prediction.argmax().cpu().item()
-        prediction = Category(class_prediction, prob_prediction[class_prediction].cpu().item())
+        prediction = Category(class_prediction, confidence=prob_prediction[class_prediction].cpu().item())
 
         return prediction
 
@@ -546,7 +546,7 @@ class AttentionNeuralBagOfFeatureLearner(Learner):
         print('Pretrained model downloaded to the following directory\n{}'.format(path))
 
     def optimize(self):
-        pass
+        raise NotImplementedError
 
     def reset(self):
-        pass
+        raise NotImplementedError

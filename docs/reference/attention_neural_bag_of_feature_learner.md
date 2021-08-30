@@ -24,7 +24,7 @@ AttentionNeuralBagOfFeatureLearner(self, in_channels, series_length, n_class, n_
   Specifies length of the input series.   
 - **n_class**: *int*   
   Specifies the number of target classes.    
-- **n_codeword**: *int*   
+- **n_codeword**: *int, default=256*   
   Specifies the number of codewords in the bag-of-feature layer.   
 - **quantization_type**: *{"nbof", "tnbof"}, default="nbof"*  
   Specifies the type of quantization layer.  
@@ -33,7 +33,7 @@ AttentionNeuralBagOfFeatureLearner(self, in_channels, series_length, n_class, n_
   Specifies the type of attention mechanism.  
   There are two types of attention: the spatial attention mechanism that focuses on the different codewords ("spatial") or the temporal attention mechanism that focuses on different temporal instances ("temporal").    
 - **lr_scheduler**: *callable, default=`opendr.perception.heart_anomaly_detection.attention_neural_bag_of_feature.attention_neural_bag_of_feature_learner.get_cosine_lr_scheduler(2e-4, 1e-5)`*     
-  Specifies the function that computes the learning rate, given the total number of epoch `n_epoch` and the current epoch index `epoch_idx`.  
+  Specifies the function that computes the learning rate, given the total number of epochs `n_epoch` and the current epoch index `epoch_idx`.  
   That is, the optimizer uses this function to determine the learning rate at a given epoch index.  
   Calling `lr_scheduler(n_epoch, epoch_idx)` should return the corresponding learning rate that should be used for the given epoch index.   
   The default `lr_scheduler` implements a schedule that gradually reduces the learning rate from the initial learning rate (`2e-4`) to the final learning rate (`1e-5`) using cosine function.  
@@ -46,7 +46,7 @@ AttentionNeuralBagOfFeatureLearner(self, in_channels, series_length, n_class, n_
   Specifies the weight decay coefficient.     
 - **dropout**: *float, default=0.2*     
   Specifies the dropout rate.   
-- **iters**: *int, default=200*      
+- **iters**: *int, default=300*      
   Specifies the number of epochs used to train the model.      
 - **batch_size**: *int, default=32*     
   Specifies the size of minit-batches.    
