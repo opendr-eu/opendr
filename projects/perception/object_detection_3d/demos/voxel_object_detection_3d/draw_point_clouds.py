@@ -278,12 +278,12 @@ def draw_point_cloud_projected_2(
             for p in links:
                 cv2.line(
                     color_image,
-                    projected_corners[i],
-                    projected_corners[p],
+                    tuple(projected_corners[i]),
+                    tuple(projected_corners[p]),
                     (255, 0, 0),
                     4,
                 )
     for l in project(prediction_locations[:, [1, 0, 2]], False):
-        cv2.circle(color_image, l[[1, 0]], 10, (0, 11, 125), 10)
+        cv2.circle(color_image, tuple(l[[1, 0]]), 10, (0, 11, 125), 10)
 
     return color_image
