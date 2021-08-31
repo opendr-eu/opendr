@@ -6,7 +6,7 @@ from opendr.perception.object_tracking_2d.datasets.mot_dataset import RawMotData
 
 
 def disk_image_generator(path, splits, count=None, cycle=True):
-    dataset = RawMotDatasetIterator(path, splits)
+    dataset = RawMotDatasetIterator(path, splits, scan_labels=False)
 
     i = 0
 
@@ -22,4 +22,7 @@ def camera_image_generator(video_source):
     while True:
         image = video_source.read()
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = np.ascontiguousarray(np.moveaxis(image, [0, 1, 2], [1, 2, 0]))
+        # (480, 640, 3)
+        # (3, 1080, 1920)
         yield Image(image)

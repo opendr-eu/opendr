@@ -42,7 +42,7 @@ TEXT_COLOR = (255, 0, 255)  # B G R
 output_frame = None
 image_generator = None
 lock = threading.Lock()
-colors = [(255, 0, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0)]
+colors = [(255, 0, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0), (35, 69, 55), (43, 63, 54), (37, 70, 54), (50, 67, 54), (51, 66, 49), (43, 75, 64), (55, 65, 42), (53, 63, 42), (43, 46, 38), (41, 41, 36), (70, 54, 35), (70, 54, 41), (65, 54, 40), (63, 55, 38), (63, 54, 35), (83, 73, 49), (81, 65, 45), (75, 65, 42), (85, 74, 60), (79, 64, 55), (75, 67, 59), (74, 75, 70), (70, 71, 62), (57, 62, 46), (68, 54, 45), (66, 52, 43), (69, 54, 43), (73, 59, 47), (30, 52, 66), (41, 55, 65), (36, 54, 64), (44, 87, 120), (124, 129, 124), (109, 120, 118), (119, 132, 142), (105, 125, 137), (108, 94, 83), (93, 78, 70), (90, 76, 66), (90, 76, 66), (90, 77, 65), (91, 82, 68), (85, 77, 66), (84, 79, 58), (133, 113, 88), (130, 127, 121), (120, 109, 95), (112, 110, 102), (113, 110, 97), (103, 109, 99), (122, 124, 118), (198, 234, 221), (194, 230, 236)]
 
 
 # initialize a flask object
@@ -89,7 +89,7 @@ def draw_predictions(frame, predictions: TrackingAnnotationList):
     for prediction in predictions.boxes:
         prediction: TrackingAnnotation = prediction
 
-        color = colors[prediction.id * 10 % len(colors)]
+        color = colors[prediction.id * 7 % len(colors)]
 
         cv2.rectangle(frame, (int(prediction.top), int(prediction.left)), (int(prediction.top + prediction.width), int(prediction.left + prediction.height)), color, 2)
 
@@ -149,7 +149,7 @@ def fair_mot_tracking(model_name, device):
                 predictions = learner.infer(image)
                 print("Found", len(predictions), "objects")
 
-            frame = np.moveaxis(image.data, [0, 1, 2], [2, 0, 1]).copy()
+            frame = np.ascontiguousarray(np.moveaxis(image.data, [0, 1, 2], [2, 0, 1]).copy())
             
             if predict:
                 draw_predictions(frame, predictions)
@@ -159,8 +159,9 @@ def fair_mot_tracking(model_name, device):
 
             with lock:
                 output_frame = frame.copy()
-        except Exception:
-            pass
+        except Exception as e:
+            print(e)
+            raise e
 
 
 def generate():
