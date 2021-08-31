@@ -48,7 +48,7 @@ class PALayer(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(dim_pa, dim_pa // reduction_pa),
             nn.ReLU(inplace=True),
-            nn.Linear(dim_pa // reduction_pa, dim_pa),
+            nn.Linear(dim_pa // reduction_pa, dim_pa),  
         )
 
     def forward(self, x):

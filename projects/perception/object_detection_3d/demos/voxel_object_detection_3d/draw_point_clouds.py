@@ -91,7 +91,7 @@ def draw_point_cloud_bev(
 
     font = ImageFont.truetype("./fonts/arial.ttf", 40)
 
-    for box in predictions:
+    for box in predictions.boxes:
 
         x_3d, y_3d = box.location[:2]
         size = box.dimensions
@@ -112,7 +112,7 @@ def draw_point_cloud_bev(
                 y_bev,
                 half_size_x,
                 half_size_y,
-                rotation,  # + math.pi / 2
+                rotation
             ),
             fill=(192, 102, 50),
             outline=(255, 0, 255),
