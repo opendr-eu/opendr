@@ -52,13 +52,13 @@ def index():
 
 
 def runnig_fps(alpha=0.1):
-    t0 = time.time_ns()
+    t0 = time.time()
     fps_avg = 10
 
     def wrapped():
         nonlocal t0, alpha, fps_avg
-        t1 = time.time_ns()
-        delta = (t1 - t0) * 1e-9
+        t1 = time.time()
+        delta = (t1 - t0)
         t0 = t1
         fps_avg = alpha * (1 / delta) + (1 - alpha) * fps_avg
         return fps_avg
