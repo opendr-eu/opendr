@@ -10,13 +10,35 @@ if [ "$#" -ge 1 ]; then
        TYPE=$1
 fi
 
-pip install ConfigParser numpy cython
+# Required to parse the dependency files
+pip install ConfigParser
 
-python parse_dependencies.py $TYPE
-# install dependencies one by one to prevent interdependency errors
-if [ -f "python_dependencies.txt" ]; then
-       cat python_dependencies.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 python -m pip install
-fi
+# Install global dependencies
+python parse_dependencies.py $TYPE --global
 if [ -f "linux_dependencies.txt" ]; then
        cat linux_dependencies.txt | xargs sudo apt-get install
+       rm linux_dependencies.txt
+fi
+if [ -f "python_prerequisites.txt" ]; then
+       pip install -r python_prerequisites.txt
+       rm python_prerequisites.txt
+fi
+if [ -f "python_dependencies.txt" ]; then
+       pip install -r python_dependencies.txt
+       rm python_dependencies.txt
+fi
+
+# Install the dependencies from the work packages
+python parse_dependencies.py $TYPE
+if [ -f "linux_dependencies.txt" ]; then
+       cat linux_dependencies.txt | xargs sudo apt-get install
+       rm linux_dependencies.txt
+fi
+if [ -f "python_prerequisites.txt" ]; then
+       pip install -r python_prerequisites.txt
+       rm python_prerequisites.txt
+fi
+if [ -f "python_dependencies.txt" ]; then
+       pip install -r python_dependencies.txt
+       rm python_dependencies.txt
 fi
