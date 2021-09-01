@@ -8,10 +8,6 @@ Bases: `engine.learners.Learner`
 
 The *BisenetLearner* class is a wrapper of the BiseNet model [[1]](#bisenetp) found on [BiseNet] (https://github.com/ooooverflow/BiSeNet).
 It is used to train Semantic Segmentation models on RGB images and run inference.
-
-
-
-
 The [BisenetLearner](#src.opendr.perception.semantic_segmentation.bisenet.bisenet_learner.py) class has the
 following public methods:
 
