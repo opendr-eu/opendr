@@ -16,11 +16,11 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 ## Table of Contents
 
 - [Inference and Training API](inference-and-training-api.md)
-    - [engine Module](engine-module.md)
+    - `engine` Module
         - [engine.data Module](engine-data.md)
         - [engine.datasets Module](engine-datasets.md)
         - [engine.target Module](engine-target.md)
-    - [perception Module](perception-module.md)
+    - `perception` Module
         - [face_recognition_learner Module](face-recognition.md)
         - [lightweight-open-pose Module](lightweight-open-pose.md)
         - [voxel-object-detection-3d Module](voxel-object-detection-3d.md)
