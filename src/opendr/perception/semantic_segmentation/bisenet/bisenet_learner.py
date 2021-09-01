@@ -302,7 +302,7 @@ class BisenetLearner(Learner):
 
     def reset(self):
         """This method is not used in this implementation."""
-        return NotImplementedError
+        raise NotImplementedError
 
     def optimize(self, target_device):
         """This method is not used in this implementation."""
