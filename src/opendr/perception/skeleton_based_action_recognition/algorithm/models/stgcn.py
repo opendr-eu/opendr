@@ -115,7 +115,7 @@ class STGCN(nn.Module):
             in_channels = 3
             self.graph = NTUGraph()
         elif dataset_name == 'kinetics':
-            num_class = 400
+            num_class = 60 #400
             num_point = 18
             num_person = 2
             in_channels = 3
