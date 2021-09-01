@@ -24,7 +24,7 @@ Constructor parameters:
     Dataloader batch size. Defaults to 1.
   - **optimizer**: *str, default="sgd"*  
     Name of optimizer to use ("sgd" ,"rmsprop", or "adam"). 
-  - **temp_path**: *str, default='./temp'*  
+  - **temp_path**: *str, default=''*  
     Path in which to store temporary files. 
   - **checkpoint_after_iter**: *int, default=0*  
     Save chackpoint after specific epochs. 
@@ -34,7 +34,7 @@ Constructor parameters:
     Name of computational device ("cpu" or "cuda"). 
   - **val_after**: *int, default=1*  
     Perform validation after specific epochs. 
-  - **weight_decay**: *[type], default=1e-5*  
+  - **weight_decay**: *[type], default=5e-4*  
     Weight decay used for optimization. 
   - **momentum**: *float, default=0.9*  
     Momentum used for optimization. 
@@ -110,11 +110,11 @@ BisenetLearner.download(self, path, mode, verbose, url)
 Download pretrained models and testing images to path.
 
 Parameters:
-- **path**: *str*  
+- **path**: *str, default=None*  
   Path to metadata file in json format or to weights path.
 - **mode**: *{'pretrained', 'testingImage'}, default='pretrained'*  
   If *'pretrained'*, downloads a pretrained segmentation model. If *'testingImage'*, downloads an image to perform inference on. 
-- **verbose**: *bool default=True*  
+- **verbose**: *bool, default=True*  
   If True, enables maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*   
   URL of the FTP server.
