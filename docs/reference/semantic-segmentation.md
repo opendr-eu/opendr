@@ -134,7 +134,7 @@ Save model weights and metadata to path.
 
 Parameters:
 - **path**: *str*  
-  Directory in which to save model weights and meta data.
+  Directory in which to save model weights and metadata.
 - **verbose**: *bool, default=True*  
   If set to True, enables the maximum logging verbosity. 
 
