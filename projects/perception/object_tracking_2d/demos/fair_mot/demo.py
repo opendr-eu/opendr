@@ -56,13 +56,13 @@ def index():
 
 
 def runnig_fps(alpha=0.1):
-    t0 = time.time_ns()
+    t0 = time.time()
     fps_avg = 10
 
     def wrapped():
         nonlocal t0, alpha, fps_avg
-        t1 = time.time_ns()
-        delta = (t1 - t0) * 1e-9
+        t1 = time.time()
+        delta = (t1 - t0)
         t0 = t1
         fps_avg = alpha * (1 / delta) + (1 - alpha) * fps_avg
         return fps_avg
@@ -82,6 +82,24 @@ def draw_fps(frame, fps):
     )
 
 
+def draw_dict(frame, dict, scale=5):
+
+    i = 0
+
+    for k, v in dict.items():
+        cv2.putText(
+            frame,
+            f"{k}: {v}",
+            (10, frame.shape[0] - 10 - 30 * scale * i),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            scale,
+            TEXT_COLOR,
+            scale,
+        )
+        i += 1
+
+
+
 def draw_predictions(frame, predictions: TrackingAnnotationList):
     global colors
 
@@ -92,30 +110,6 @@ def draw_predictions(frame, predictions: TrackingAnnotationList):
         color = colors[prediction.id * 7 % len(colors)]
 
         cv2.rectangle(frame, (int(prediction.top), int(prediction.left)), (int(prediction.top + prediction.width), int(prediction.left + prediction.height)), color, 2)
-
-def video_har_preprocessing(image_size: int, window_size: int):
-    frames = []
-
-    standardize = torchvision.transforms.Normalize(
-        mean=(0.45, 0.45, 0.45), std=(0.225, 0.225, 0.225)
-    )
-
-    def wrapped(frame):
-        nonlocal frames, standardize
-        frame = resize(frame, height=image_size, width=image_size)
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = torch.tensor(frame).permute((2, 0, 1))  # H, W, C -> C, H, W
-        frame = frame / 255.0  # [0, 255] -> [0.0, 1.0]
-        frame = standardize(frame)
-        if not frames:
-            frames = [frame for _ in range(window_size)]
-        else:
-            frames.pop(0)
-            frames.append(frame)
-        vid = Video(torch.stack(frames, dim=1))
-        return vid
-
-    return wrapped
 
 
 def fair_mot_tracking(model_name, device):
@@ -143,11 +137,17 @@ def fair_mot_tracking(model_name, device):
     # Loop over frames from the video stream
     while True:
         try:
-            image: Image = next(image_generator)
 
+            t = time.time()
+            image: Image = next(image_generator)
+            image_time = time.time() - t
+
+            t = time.time()
             if predict:
                 predictions = learner.infer(image)
                 print("Found", len(predictions), "objects")
+            predict_time = time.time() - t
+            t = time.time()
 
             frame = np.ascontiguousarray(np.moveaxis(image.data, [0, 1, 2], [2, 0, 1]).copy())
             
@@ -155,7 +155,22 @@ def fair_mot_tracking(model_name, device):
                 draw_predictions(frame, predictions)
 
             frame = cv2.flip(frame, 1)
-            draw_fps(frame, fps())
+            draw_time = time.time() - t
+
+            total_time = predict_time + image_time + draw_time
+
+            draw_dict(
+                frame,
+                {
+                    "FPS": fps(),
+                    "predict": str(int(predict_time * 100 / total_time)) + "%",
+                    "get data": str(int(image_time * 100 / total_time)) + "%",
+                    "draw": str(int(draw_time * 100 / total_time)) + "%",
+                    # "tvec": tvec, "rvec": rvec, "f": [fx, fy],
+                },
+                1
+            )
+
 
             with lock:
                 output_frame = frame.copy()
