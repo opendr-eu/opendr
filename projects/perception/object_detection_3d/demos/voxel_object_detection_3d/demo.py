@@ -324,7 +324,12 @@ def voxel_object_detection_3d(config_path, model_name=None):
     # Loop over frames from the video stream
     while True:
         try:
+            
+            t = time.time()
+
             point_cloud: PointCloud = next(point_cloud_generator)
+
+            pc_time = time.time() - t
 
             # point_cloud.data[:, :3] *= 2
 
@@ -332,6 +337,9 @@ def voxel_object_detection_3d(config_path, model_name=None):
                 continue
 
             # print("Point cloud created")
+
+
+            t = time.time()
 
             if predict:
                 predictions = detection_learner.infer(point_cloud)
@@ -342,6 +350,9 @@ def voxel_object_detection_3d(config_path, model_name=None):
 
             if len(predictions) > 0:
                 print("found", len(predictions), "objects", "and", len(tracking_predictions), "tracklets")
+
+            predict_time = time.time() - t
+            t = time.time()
 
             frame_bev = draw_point_cloud_bev(
                 point_cloud.data, tracking_predictions, scale, xs, ys
@@ -373,12 +384,23 @@ def voxel_object_detection_3d(config_path, model_name=None):
             frame = frame_proj_2
             # frame = stack_images([frame_proj, frame], "vertical")
             # frame = stack_images([frame, frame_bev], "vertical")
-            frame = stack_images([frame, frame_bev], "horizontal")
+            # frame = stack_images([frame, frame_bev], "horizontal")
             frame = stack_images([frame, frame_bev_2], "horizontal")
+
+            draw_time = time.time() - t
+
+
+            total_time = pc_time + predict_time + draw_time
 
             draw_dict(
                 frame,
-                {"FPS": fps(), "tvec": tvec, "rvec": rvec, "f": [fx, fy],},
+                {
+                    "FPS": fps(),
+                    "predict": str(int(predict_time * 100 / total_time)) + "%",
+                    "get data": str(int(pc_time * 100 / total_time)) + "%",
+                    "draw": str(int(draw_time * 100 / total_time)) + "%",
+                    # "tvec": tvec, "rvec": rvec, "f": [fx, fy],
+                },
                 font_scale
             )
 
