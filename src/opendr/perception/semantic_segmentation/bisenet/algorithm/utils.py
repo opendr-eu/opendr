@@ -68,26 +68,6 @@ def one_hot_it_v11(label, label_info):
     return semantic_map
 
 
-def one_hot_it_v11_dice(label, label_info):
-    # return semantic_map -> [H, W, class_num]
-    semantic_map = []
-    void = np.zeros(label.shape[:2])
-    for index, info in enumerate(label_info):
-        color = label_info[info][:3]
-        class_11 = label_info[info][3]
-        if class_11 == 1:
-            equality = np.equal(label, color)
-            class_map = np.all(equality, axis=-1)
-            semantic_map.append(class_map)
-        else:
-            equality = np.equal(label, color)
-            class_map = np.all(equality, axis=-1)
-            void[class_map] = 1
-    semantic_map.append(void)
-    semantic_map = np.stack(semantic_map, axis=-1).astype(np.float)
-    return semantic_map
-
-
 def reverse_one_hot(image):
     """
     Transform a 2D array in one-hot format (depth is num_classes),
