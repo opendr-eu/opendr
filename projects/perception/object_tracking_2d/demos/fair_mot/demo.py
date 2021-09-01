@@ -107,7 +107,7 @@ def draw_predictions(frame, predictions: TrackingAnnotationList):
     for prediction in predictions.boxes:
         prediction: TrackingAnnotation = prediction
 
-        color = colors[prediction.id * 7 % len(colors)]
+        color = colors[prediction.id * 1 % len(colors)]
 
         cv2.rectangle(frame, (int(prediction.top), int(prediction.left)), (int(prediction.top + prediction.width), int(prediction.left + prediction.height)), color, 2)
 
