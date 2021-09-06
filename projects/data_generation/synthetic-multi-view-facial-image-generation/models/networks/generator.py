@@ -33,7 +33,7 @@ class RotateGenerator(BaseNetwork):
                             help='kernel size of the resnet block')
         parser.add_argument('--resnet_initial_kernel_size', type=int, default=7,
                             help='kernel size of the first convolution')
-        parser.set_defaults(norm_G='spectralinstance')
+        parser.set_defaults(norm_G='spectralsyncbatch')
         return parser
 
     def __init__(self, opt):
