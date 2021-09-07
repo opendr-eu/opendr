@@ -50,6 +50,7 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
     strategy:
       matrix:
+        os: [ubuntu-20.04]
         package:
           - engine
           - utils
@@ -63,7 +64,7 @@ jobs:
           - perception/pose_estimation
           - perception/speech_recognition
           # - perception/object_tracking_3d
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.8
