@@ -22,6 +22,19 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04, macos-10.15]
+        package:
+          - engine
+          - utils
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/object_detection_3d
+          - perception/object_tracking_2d
+          - perception/object_tracking_3d
+          - perception/pose_estimation
+          - perception/speech_recognition
         include:
           - os: ubuntu-18.04
             DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
@@ -55,4 +68,4 @@ jobs:
         make install_compilation_dependencies
         make install_runtime_dependencies
         pip install -r tests/sources/requirements.txt
-        python -m unittest discover -s tests/sources
+        python -m unittest discover -s tests/sources/${{ matrix.package }}
