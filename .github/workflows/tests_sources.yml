@@ -73,7 +73,6 @@ jobs:
     - name: Test Tools
       if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
       run: |
-        sudo apt -y install clang-format-10 cppcheck
         export OPENDR_HOME=$PWD
         export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
         export DISABLE_BCOLZ_AVX2=true
