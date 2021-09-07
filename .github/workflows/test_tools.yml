@@ -1,4 +1,4 @@
-name: Test Sources
+name: Test Tools
 
 on:
   pull_request:
