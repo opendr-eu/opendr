@@ -188,7 +188,7 @@ class BisenetLearner(Learner):
         self.model.eval()
         predict = self.model(image).argmax(dim=1).squeeze().cpu()
         heatmap = Heatmap(predict)
-        # optionally save output heatmap as image 
+        # optionally save output heatmap as image
         # heatmap_np = heatmap.numpy()
         # colors = np.random.randint(0, 256, (256, 3), dtype=np.uint8)
         # heatmap_o = colors[heatmap_np]
