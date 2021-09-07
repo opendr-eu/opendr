@@ -10,7 +10,7 @@ defaults:
 
 jobs:
   cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') }}
     runs-on: ubuntu-latest
     steps:
     - uses: rokroskar/workflow-run-cleanup-action@master
@@ -45,3 +45,41 @@ jobs:
         export OPENDR_HOME=$PWD
         pip install -r tests/requirements.txt
         python -m unittest discover -s tests
+  test-tools:
+    needs: cleanup-runs
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
+    strategy:
+      matrix:
+        package:
+          - engine
+          - utils
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/object_detection_3d
+          - perception/object_tracking_2d
+          - perception/object_tracking_3d
+          - perception/pose_estimation
+          - perception/speech_recognition
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      if: github.event.pull_request.draft == false
+    - name: Set up Python 3.8
+      if: github.event.pull_request.draft == false
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Test Tools
+      if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
+      run: |
+        sudo apt -y install clang-format-10 cppcheck
+        export OPENDR_HOME=$PWD
+        export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+        export DISABLE_BCOLZ_AVX2=true
+        make install_compilation_dependencies
+        make install_runtime_dependencies
+        pip install -r tests/sources/requirements.txt
+        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
