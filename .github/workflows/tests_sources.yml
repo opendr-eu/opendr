@@ -10,7 +10,7 @@ defaults:
 
 jobs:
   cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') }}
     runs-on: ubuntu-latest
     steps:
     - uses: rokroskar/workflow-run-cleanup-action@master
@@ -22,19 +22,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04, macos-10.15]
-        package:
-          - engine
-          - utils
-          - perception/activity_recognition
-          - perception/compressive_learning
-          - perception/face_recognition
-          - perception/heart_anomaly_detection
-          - perception/multimodal_human_centric
-          - perception/object_detection_3d
-          - perception/object_tracking_2d
-          - perception/object_tracking_3d
-          - perception/pose_estimation
-          - perception/speech_recognition
         include:
           - os: ubuntu-18.04
             DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
@@ -58,14 +45,3 @@ jobs:
         export OPENDR_HOME=$PWD
         pip install -r tests/requirements.txt
         python -m unittest discover -s tests
-    - name: Test API
-      if: ${{ matrix.os == 'ubuntu-20.04' && contains(github.event.pull_request.labels.*.name, 'test tools') }}
-      run: |
-        ${{ matrix.DEPENDENCIES_INSTALLATION }}
-        export OPENDR_HOME=$PWD
-        export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
-        export DISABLE_BCOLZ_AVX2=true
-        make install_compilation_dependencies
-        make install_runtime_dependencies
-        pip install -r tests/sources/requirements.txt
-        python -m unittest discover -s tests/sources/${{ matrix.package }}
