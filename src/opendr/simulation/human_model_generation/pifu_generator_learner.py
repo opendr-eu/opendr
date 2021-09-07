@@ -13,6 +13,7 @@ import torch
 import json
 from urllib.request import urlretrieve
 
+
 class PIFuGeneratorLearner(Learner):
     def __init__(self, device='cpu'):
         super().__init__()
