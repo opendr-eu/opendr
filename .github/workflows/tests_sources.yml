@@ -66,9 +66,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
-      if: github.event.pull_request.draft == false
     - name: Set up Python 3.8
-      if: github.event.pull_request.draft == false
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
