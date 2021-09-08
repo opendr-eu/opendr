@@ -85,7 +85,8 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/activity_recognition/x3d/algorithm',
             'src/opendr/perception/activity_recognition/cox3d/algorithm',
             'src/opendr/perception/object_tracking_2d/fair_mot/algorithm',
-            'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones'
+            'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones',
+            'src/opendr/perception/object_detection_2d/retinaface/algorithm'
         ]
 
         skippedFilePaths = [
