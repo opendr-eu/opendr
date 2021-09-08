@@ -181,7 +181,7 @@ class Render(object):
                 # flag = -1 if angle[1] < 0 else 1
                 # angle[1] = flag * abs(pitch_pose)
             # elif angle[1] < 0:
-               # angle[1] = 0
+                # angle[1] = 0
             p = angle2matrix(angle) * s
         else:
             if frontal:
