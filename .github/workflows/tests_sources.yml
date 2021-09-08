@@ -24,9 +24,9 @@ jobs:
         os: [ubuntu-18.04, ubuntu-20.04, macos-10.15]
         include:
           - os: ubuntu-18.04
-            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-9"
+            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
           - os: ubuntu-20.04
-            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-9"
+            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
           - os: macos-10.15
             DEPENDENCIES_INSTALLATION: "brew install clang-format cppcheck"
     runs-on: ${{ matrix.os }}
@@ -45,14 +45,39 @@ jobs:
         export OPENDR_HOME=$PWD
         pip install -r tests/requirements.txt
         python -m unittest discover -s tests
-    - name: Test API
-      if: ${{ matrix.os == 'ubuntu-20.04' && contains(github.event.pull_request.labels.*.name, 'test tools') }}
+  test-tools:
+    needs: cleanup-runs
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        package:
+          - engine
+          - utils
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/object_tracking_2d
+          - perception/object_detection_3d
+          - perception/pose_estimation
+          - perception/speech_recognition
+          # - perception/object_tracking_3d
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Test Tools
+      if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
       run: |
-        ${{ matrix.DEPENDENCIES_INSTALLATION }}
         export OPENDR_HOME=$PWD
         export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
         export DISABLE_BCOLZ_AVX2=true
         make install_compilation_dependencies
         make install_runtime_dependencies
         pip install -r tests/sources/requirements.txt
-        python -m unittest discover -s tests/sources
+        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}

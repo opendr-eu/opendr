@@ -12,19 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch
-import numpy as np
+from .architectures import (
+    architectures,
+    get_builtin_architectures,
+    get_pretrained_architectures
+)
+from .data import RgbdDataset, DataWrapper, get_hand_gesture_dataset
 
-
-class DataWrapper:
-    def __init__(self, opendr_dataset):
-        self.dataset = opendr_dataset
-
-    def __len__(self,):
-        return len(self.dataset)
-
-    def __getitem__(self, i):
-        x, y = self.dataset.__getitem__(i)
-        # change from rows x cols x channels to channels x rows x cols
-        x = np.transpose(x.numpy(), axes=(2, 0, 1))
-        return torch.from_numpy(x).float(), torch.tensor([y.data, ]).long()
+__all__ = ['architectures',
+           'get_builtin_architectures',
+           'get_pretrained_architectures',
+           'RgbdDataset',
+           'DataWrapper',
+           'get_hand_gesture_dataset']
