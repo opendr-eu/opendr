@@ -86,13 +86,15 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/activity_recognition/cox3d/algorithm',
             'src/opendr/perception/object_tracking_2d/fair_mot/algorithm',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones',
-            'src/opendr/perception/object_detection_2d/retinaface/algorithm'
+            'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
+            'src/opendr/perception/object_detection_2d/retinaface/algorithm',
         ]
 
         skippedFilePaths = [
             'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
             'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
+            'src/opendr/perception/object_detection_2d/retinaface/Makefile',
         ]
 
         skippedDirectories = [
