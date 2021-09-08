@@ -124,7 +124,7 @@ def draw_preds(frame, preds: Dict):  #LH
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--onnx", help="Use ONNX", default=False, action="store_true")
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cpu")
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
     parser.add_argument('--video', type=str, default='./videos/input.mp4',
