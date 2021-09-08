@@ -110,7 +110,7 @@ def center_crop(frame):
     e = min(height, width)
     x0 = (width - e) // 2
     y0 = (height - e) // 2
-    cropped_frame = frame[y0 : y0 + e, x0 : x0 + e]
+    cropped_frame = frame[y0: y0 + e, x0: x0 + e]
     return cropped_frame
 
 
