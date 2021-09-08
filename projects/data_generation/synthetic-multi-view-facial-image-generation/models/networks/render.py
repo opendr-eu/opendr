@@ -174,14 +174,14 @@ class Render(object):
             # angle[0] = yaw_pose if yaw_pose is not None
             if yaw_pose is not None:
                 angle[0] = yaw_pose
-                #flag = -1 if angle[0] < 0 else 1
-                #angle[0] = flag * abs(yaw_pose)
+                # flag = -1 if angle[0] < 0 else 1
+                # angle[0] = flag * abs(yaw_pose)
             if pitch_pose is not None:
                 angle[1] = pitch_pose
-                #flag = -1 if angle[1] < 0 else 1
-                #angle[1] = flag * abs(pitch_pose)
-            #elif angle[1] < 0:
-            #    angle[1] = 0
+                # flag = -1 if angle[1] < 0 else 1
+                # angle[1] = flag * abs(pitch_pose)
+            # elif angle[1] < 0:
+               # angle[1] = 0
             p = angle2matrix(angle) * s
         else:
             if frontal:
