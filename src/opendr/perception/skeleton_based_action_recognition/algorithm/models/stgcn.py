@@ -110,10 +110,10 @@ class STGCN(nn.Module):
         super(STGCN, self).__init__()
         if dataset_name == 'nturgbd_cv' or dataset_name == 'nturgbd_cs':
             num_class = 60
-            num_point = 25
+            num_point = 18  #25
             num_person = 2
-            in_channels = 3
-            self.graph = NTUGraph()
+            in_channels = 2  #3
+            self.graph = KineticsGraph()  #NTUGraph()
         elif dataset_name == 'kinetics':
             num_class = 400
             num_point = 18
@@ -126,7 +126,7 @@ class STGCN(nn.Module):
         weights_init(self.data_bn, bs=1)
 
         self.layers = nn.ModuleDict(
-            {'layer1': ST_GCN_block(3, 64, A, cuda_, residual=False),
+            {'layer1': ST_GCN_block(in_channels, 64, A, cuda_, residual=False),
              'layer2': ST_GCN_block(64, 64, A, cuda_),
              'layer3': ST_GCN_block(64, 64, A, cuda_),
              'layer4': ST_GCN_block(64, 64, A, cuda_),
