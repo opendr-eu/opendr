@@ -81,13 +81,11 @@ jobs:
         make install_runtime_dependencies        
         pip install -r tests/sources/requirements.txt
 
-        if: matrix.package  != 'ctests'
-        run: |
-          python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
-          
-        if: matrix.package  == 'ctests'
-        run: |
+        if [ ${{ matrix.package }} = "ctests" ]; then
           make install_compilation_dependencies
           make libopendr
           make ctests
+        else
+            python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+        fi
           
