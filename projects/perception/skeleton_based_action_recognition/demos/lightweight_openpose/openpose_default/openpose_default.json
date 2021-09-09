@@ -1,0 +1,1 @@
+{"model_paths": ["openpose_default.pth"], "framework": "pytorch", "format": "pth", "has_data": false, "inference_params": {}, "optimized": false, "optimizer_info": {}, "backbone": "mobilenet"}

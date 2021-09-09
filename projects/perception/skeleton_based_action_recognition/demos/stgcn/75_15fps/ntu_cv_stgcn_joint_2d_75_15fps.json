@@ -1,0 +1,1 @@
+{"model_paths": ["./temp_dir/new/pstgcn/pstgcn_nturgbd_cv_joint-8-4/pstgcn_nturgbd_cv_joint-8-4.pt"], "framework": "pytorch", "format": "pt", "has_data": false, "inference_params": {}, "optimized": false, "optimizer_info": {}}
