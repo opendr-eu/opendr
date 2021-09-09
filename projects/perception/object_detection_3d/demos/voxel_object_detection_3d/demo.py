@@ -416,7 +416,7 @@ def voxel_object_detection_3d(config_path, model_name=None):
         except Exception as e:
             print(e)
             # torch.cuda.empty_cache()
-            # raise e
+            raise e
 
 
 def generate():

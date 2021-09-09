@@ -31,7 +31,7 @@ from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
 from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
 from opendr.engine.data import Video, Image
 
-TEXT_COLOR = (255, 0, 255)  # B G R
+TEXT_COLOR = (0, 0, 255)  # B G R
 
 
 # Initialize the output frame and a lock used to ensure thread-safe
@@ -297,14 +297,14 @@ if __name__ == "__main__":
         "-m",
         "--model_name",
         type=str,
-        default="xs",
+        default="m",
         help="Model identifier",
     )
     ap.add_argument(
         "-d",
         "--device",
         type=str,
-        default="cpu",
+        default="cuda",
         help="Device",
     )
     ap.add_argument(
@@ -318,7 +318,7 @@ if __name__ == "__main__":
         "-a",
         "--algorithm",
         type=str,
-        default="x3d",
+        default="cox3d",
         help="Which algortihm to run",
         choices=["cox3d", "x3d"],
     )
