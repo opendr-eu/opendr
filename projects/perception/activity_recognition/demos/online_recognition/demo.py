@@ -123,7 +123,7 @@ def image_har_preprocessing(image_size: int):
         frame = torch.tensor(frame).permute((2, 0, 1))  # H, W, C -> C, H, W
         frame = frame / 255.0  # [0, 255] -> [0.0, 1.0]
         frame = standardize(frame)
-        return Image(frame, dtype=np.float)
+        return Image(frame, dtype=float)
 
     return wrapped
 
