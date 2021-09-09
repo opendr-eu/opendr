@@ -25,6 +25,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [lightweight-open-pose Module](lightweight-open-pose.md)
         - [activity_recognition Module](activity_recognition.md)
         - [edgespeechnets Module](edgespeechnets.md)
+        - [quadraticselfonn Module](quadratic-selfonn.md)
+        - [rgbd_hand_gesture_learner Module](rgbd_hand_gesture_learner.md)
         - [gated_recurrent_unit](gated_recurrent_unit.md)
         - [matchboxnet Module](matchboxnet.md)
         - [voxel-object-detection-3d Module](voxel-object-detection-3d.md)
