@@ -19,7 +19,6 @@ from urllib.request import urlretrieve
 from urllib.error import URLError
 
 import numpy as np
-import torch
 import torch as t
 import torch.nn as nn
 import torch.optim as optim
@@ -29,44 +28,39 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Timeseries
 from opendr.engine.learners import Learner
 from opendr.engine.target import Category
-from opendr.perception.speech_recognition.matchboxnet.algorithm.audioutils import get_mfcc
-from opendr.perception.speech_recognition.matchboxnet.algorithm.model import MatchBoxNet
+from opendr.perception.speech_recognition.quadraticselfonn.algorithm.audioutils import get_mfcc
+from opendr.perception.speech_recognition.quadraticselfonn.algorithm.model import QuadraticSelfOnnNet
 
 
-class MatchboxNetLearner(Learner):
+class QuadraticSelfOnnLearner(Learner):
     def __init__(self,
-                 lr=3e-4,
+                 lr=0.01,
                  iters=30,
                  batch_size=64,
-                 optimizer='adam',
+                 optimizer='sgd',
                  checkpoint_after_iter=0,
                  checkpoint_load_iter=0,
-                 temp_path='',
+                 temp_path='temp',
                  device='cuda',
-                 number_of_blocks=3,
-                 number_of_subblocks=1,
-                 number_of_channels=64,
+                 expansion_order=3,
                  output_classes_n=20,
                  momentum=0.9,
                  preprocess_to_mfcc=True,
                  sample_rate=16000
                  ):
-        super(MatchboxNetLearner, self).__init__(lr=lr, iters=iters, batch_size=batch_size,
-                                                 optimizer=optimizer,
-                                                 checkpoint_after_iter=checkpoint_after_iter,
-                                                 checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
-                                                 device=device)
-        self.logger = logging.getLogger("MatchboxNetLearner")
-        self.number_of_blocks = number_of_blocks
-        self.number_of_subblocks = number_of_subblocks
-        self.number_of_channels = number_of_channels
+        super(QuadraticSelfOnnLearner, self).__init__(lr=lr, iters=iters, batch_size=batch_size,
+                                                      optimizer=optimizer,
+                                                      checkpoint_after_iter=checkpoint_after_iter,
+                                                      checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
+                                                      device=device)
+        self.logger = logging.getLogger("QuadraticSelfOnnLearner")
         self.momentum = momentum
         self.preprocess_to_mfcc = preprocess_to_mfcc
         self.sample_rate = sample_rate
         self.output_classes_n = output_classes_n
+        self.expansion_order = expansion_order
 
-        self.model = MatchBoxNet(num_classes=output_classes_n, b=number_of_blocks, r=number_of_subblocks,
-                                 c=number_of_channels)
+        self.model = QuadraticSelfOnnNet(self.output_classes_n, q=self.expansion_order)
         self.loss = nn.NLLLoss()
 
         self.model.to(self.device)
@@ -78,40 +72,18 @@ class MatchboxNetLearner(Learner):
             self.optimizer_func = optim.Adam(self.model.parameters(), lr=self.lr)
         else:
             self.logger.warning("Only SGD and Adam optimizers are available for this method.")
-            self.optimizer_func = optim.Adam(self.model.parameters(), lr=self.lr)
+            self.optimizer_func = optim.SGD(self.model.parameters(), lr=self.lr, momentum=self.momentum)
 
     @property
-    def number_of_blocks(self):
-        return self._number_of_blocks
+    def expansion_order(self):
+        return self._expansion_order
 
-    @number_of_blocks.setter
-    def number_of_blocks(self, value: int):
+    @expansion_order.setter
+    def expansion_order(self, value):
         if type(value) is not int or value < 1:
-            raise TypeError("MatchboxNet b-value should be a positive integer")
+            raise TypeError("The expansion order should be a positive integer")
         else:
-            self._number_of_blocks = value
-
-    @property
-    def number_of_subblocks(self):
-        return self._number_of_subblocks
-
-    @number_of_subblocks.setter
-    def number_of_subblocks(self, value: int):
-        if type(value) is not int or value < 1:
-            raise TypeError("MatchboxNet r-value should be a positive integer")
-        else:
-            self._number_of_subblocks = value
-
-    @property
-    def number_of_channels(self):
-        return self._number_of_channels
-
-    @number_of_channels.setter
-    def number_of_channels(self, value: int):
-        if type(value) is not int or value < 1:
-            raise TypeError("MatchboxNet c-value should be a positive integer")
-        else:
-            self._number_of_channels = value
+            self._expansion_order = value
 
     @property
     def momentum(self):
@@ -159,7 +131,7 @@ class MatchboxNetLearner(Learner):
 
     def _signal_to_mfcc(self, signal):
         mfcc = np.apply_along_axis(
-            lambda sample: get_mfcc(sample, self.sample_rate, n_mfcc=self.number_of_channels, length=40),
+            lambda sample: get_mfcc(sample, self.sample_rate, n_mfcc=20, length=34),
             axis=1,
             arr=signal)
         return mfcc
@@ -168,7 +140,7 @@ class MatchboxNetLearner(Learner):
         if self.preprocess_to_mfcc:
             x = self._signal_to_mfcc(x)
         x = t.Tensor(x)
-        x = x.to(self.device)
+        x = x.unsqueeze(1).to(self.device)
         predictions = self.model(x)
         return predictions
 
@@ -176,7 +148,7 @@ class MatchboxNetLearner(Learner):
         dataloader = DataLoader(dataset, batch_size=self.batch_size, pin_memory=self.device == "cuda", shuffle=True)
         if not self.checkpoint_load_iter == 0:
             checkpoint_filename = os.path.join(
-                self.temp_path + f"MatchboxNet-{self.checkpoint_load_iter}.pth")
+                self.temp_path + f"QuadraticSelfONN-{self.checkpoint_load_iter}.pth")
             if os.path.exists(checkpoint_filename):
                 self.load(checkpoint_filename)
             else:
@@ -204,7 +176,7 @@ class MatchboxNetLearner(Learner):
                                  f"Accuracy: {statistics[epoch]['validation_results']['test_accuracy']:.4}\n"
                                  f"Total loss: {statistics[epoch]['validation_results']['test_total_loss']:.7}")
             if not self.checkpoint_after_iter == 0 and epoch % self.checkpoint_after_iter == 0:
-                filename = os.path.join(self.temp_path + f"MatchboxNet-{epoch}.pth")
+                filename = os.path.join(self.temp_path + f"QuadraticSelfONN-{epoch}.pth")
                 self.save(filename)
                 if not silent:
                     logging.info(f"Saved checkpoint to {filename}")
@@ -247,7 +219,7 @@ class MatchboxNetLearner(Learner):
         folder_basename = os.path.basename(path)
         model_path = os.path.join(path, folder_basename + ".pt")
 
-        metadata = {"model_paths": [model_path],
+        metadata = {"model_paths": [folder_basename + ".pt"],
                     "framework": "pytorch",
                     "format": "pt",
                     "has_data": False,
@@ -268,10 +240,12 @@ class MatchboxNetLearner(Learner):
             metadata = json.load(jsonfile)
 
         model_filename = os.path.basename(metadata["model_paths"][0])
-        self.model.load_state_dict(t.load(os.path.join(path, model_filename), map_location=torch.device(self.device)))
+        if "\\" in model_filename:
+            model_filename = model_filename.split("\\")[-1]
+        self.model.load_state_dict(t.load(os.path.join(path, model_filename)))
         self.model.eval()
 
-    def optimize(self):
+    def optimize(self, **kwargs):
         pass
 
     def reset(self):
@@ -280,14 +254,14 @@ class MatchboxNetLearner(Learner):
                 module.reset_parameters()
 
     def download_pretrained(self, path="."):
-        target_directory = os.path.join(path, "MatchboxNet")
-        jsonurl = OPENDR_SERVER_URL + "perception/speech_recognition/MatchboxNet/MatchboxNet.json"
-        pturl = OPENDR_SERVER_URL + "perception/speech_recognition/MatchboxNet/MatchboxNet.pt"
+        target_directory = os.path.join(path, "QuadraticSelfOnn")
+        jsonurl = OPENDR_SERVER_URL + "perception/speech_recognition/QuadraticSelfOnn/QuadraticSelfOnn.json"
+        pturl = OPENDR_SERVER_URL + "perception/speech_recognition/QuadraticSelfOnn/QuadraticSelfOnn.pt"
         if not os.path.exists(target_directory):
             os.makedirs(target_directory, exist_ok=True)
         try:
-            urlretrieve(jsonurl, os.path.join(target_directory, "MatchboxNet.json"))
-            urlretrieve(pturl, os.path.join(target_directory, "MatchboxNet.pt"))
+            urlretrieve(jsonurl, os.path.join(target_directory, "QuadraticSelfOnn.json"))
+            urlretrieve(pturl, os.path.join(target_directory, "QuadraticSelfOnn.pt"))
         except URLError as e:
             print("Could not retrieve pretrained model files!")
             raise e
