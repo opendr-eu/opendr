@@ -79,7 +79,7 @@ jobs:
         export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
         export DISABLE_BCOLZ_AVX2=true
         make install_compilation_dependencies
-        make install_runtime_dependencies        
+        make install_runtime_dependencies
         pip install -r tests/sources/requirements.txt
 
         if [ ${{ matrix.package }} = "ctests" ]; then
