@@ -16,8 +16,21 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 ## Table of Contents
 
 - [Inference and Training API](inference-and-training-api.md)
-    - [engine.data Module](engine-data.md)
-    - [engine.datasets Module](engine-datasets.md)
-    - [engine.target Module](engine-target.md)
-    - [lightweight-open-pose Module](lightweight-open-pose.md)
-    - [voxel-object-detection-3d Module](voxel-object-detection-3d.md)
+    - `engine` Module
+        - [engine.data Module](engine-data.md)
+        - [engine.datasets Module](engine-datasets.md)
+        - [engine.target Module](engine-target.md)
+    - `perception` Module
+        - [face_recognition_learner Module](face-recognition.md)
+        - [lightweight-open-pose Module](lightweight-open-pose.md)
+        - [activity_recognition Module](activity_recognition.md)
+        - [edgespeechnets Module](edgespeechnets.md)
+        - [quadraticselfonn Module](quadratic-selfonn.md)
+        - [rgbd_hand_gesture_learner Module](rgbd_hand_gesture_learner.md)
+        - [gated_recurrent_unit](gated_recurrent_unit.md)
+        - [matchboxnet Module](matchboxnet.md)
+        - [voxel-object-detection-3d Module](voxel-object-detection-3d.md)
+        - [object_tracking_2d_fair_mot Module](object-tracking-2d-fair-mot.md)
+        - [object_tracking_3d_ab3dmot Module](object-tracking-3d-ab3dmot.md)
+        - [multilinear_compressive_learning Module](multilinear_compressive_learning.md)
+- [ROSBridge Package](rosbridge.md)
