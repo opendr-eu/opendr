@@ -63,7 +63,6 @@ jobs:
           - perception/object_detection_3d
           - perception/pose_estimation
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
           # - perception/object_tracking_3d
     runs-on: ${{ matrix.os }}
     steps:
