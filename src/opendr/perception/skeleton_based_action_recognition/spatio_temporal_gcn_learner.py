@@ -52,8 +52,8 @@ class SpatioTemporalGCNLearner(Learner):
                  checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path='temp',
                  device='cuda', num_workers=32, epochs=50, experiment_name='stgcn_nturgbd',
                  device_ind=[0], val_batch_size=256, drop_after_epoch=[30, 40],
-                 start_epoch=0, dataset_name='nturgbd_cv',
-                 method_name='stgcn', stbln_symmetric=False, num_frames=300, num_subframes=100):
+                 start_epoch=0, dataset_name='nturgbd_cv', num_class=60, num_point=25, num_person=2, in_channels=3,
+                 graph_type='ntu', method_name='stgcn', stbln_symmetric=False, num_frames=300, num_subframes=100):
         super(SpatioTemporalGCNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                        checkpoint_after_iter=checkpoint_after_iter,
                                                        checkpoint_load_iter=checkpoint_load_iter,
@@ -76,6 +76,11 @@ class SpatioTemporalGCNLearner(Learner):
         self.model_train_state = True
         self.ort_session = None
         self.dataset_name = dataset_name
+        self.num_class = num_class
+        self.num_point = num_point
+        self.num_person = num_person
+        self.in_channels = in_channels
+        self.graph_type = graph_type
         self.global_step = 0
         self.logging = False
         self.best_acc = 0
@@ -87,10 +92,12 @@ class SpatioTemporalGCNLearner(Learner):
 
         if self.num_subframes > self.num_frames:
             raise ValueError('number of subframes should be smaller than number of frames.')
-
         if self.dataset_name is None:
             raise ValueError(self.dataset_name +
                              "is not a valid dataset name. Supported datasets: nturgbd_cv, nturgbd_cs, kinetics")
+        if self.graph_type is None:
+            raise ValueError(self.graph_type +
+                             "is not a valid graph type. Supported graphs: ntu, openpose")
         if self.method_name is None or self.method_name not in ['stgcn', 'tagcn', 'stbln']:
             raise ValueError(self.method_name +
                              "is not a valid dataset name. Supported methods: stgcn, tagcn, stbln")
@@ -460,15 +467,21 @@ class SpatioTemporalGCNLearner(Learner):
         """Initializes the imported model."""
         cuda_ = (self.device == 'cuda')
         if self.method_name == 'stgcn':
-            self.model = STGCN(self.dataset_name, cuda_=cuda_)
+            self.model = STGCN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
+                               in_channels=self.in_channels, graph_type=self.graph_type,
+                               cuda_=cuda_)
             if self.logging:
                 shutil.copy2(inspect.getfile(STGCN), self.logging_path)
         elif self.method_name == 'tagcn':
-            self.model = TAGCN(self.dataset_name, self.num_frames, self.num_subframes, cuda_=cuda_)
+            self.model = TAGCN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
+                               in_channels=self.in_channels, graph_type=self.graph_type,
+                               num_frames=self.num_frames, num_selected_frames=self.num_subframes, cuda_=cuda_)
             if self.logging:
                 shutil.copy2(inspect.getfile(TAGCN), self.logging_path)
         elif self.method_name == 'stbln':
-            self.model = STBLN(self.dataset_name, self.stbln_symmetric, cuda_=cuda_)
+            self.model = STBLN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
+                               in_channels=self.in_channels, symmetric=self.stbln_symmetric,
+                               cuda_=cuda_)
             if self.logging:
                 shutil.copy2(inspect.getfile(STBLN), self.logging_path)
         self.loss = nn.CrossEntropyLoss()
@@ -545,13 +558,7 @@ class SpatioTemporalGCNLearner(Learner):
         :type do_constant_folding: bool, optional
         """
         # Input to the model
-        if self.dataset_name == 'nturgbd_cv' or self.dataset_name == 'nturgbd_cs':
-            c, t, v, m = [3, 300, 25, 2]
-        elif self.dataset_name == 'kinetics':
-            c, t, v, m = [3, 300, 18, 2]
-        else:
-            raise ValueError(self.dataset_name + "is not a valid dataset name. Supported datasets: nturgbd_cv,"
-                                                 " nturgbd_cs, kinetics")
+        c, t, v, m = [self.in_channels, 300, self.num_point, self.num_person]
         n = self.batch_size
         onnx_input = torch.randn(n, c, t, v, m)
         if self.device == "cuda":

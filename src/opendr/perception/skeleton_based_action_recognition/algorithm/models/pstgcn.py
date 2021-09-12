@@ -115,20 +115,12 @@ class ST_GCN_block(nn.Module):
 
 
 class PSTGCN(nn.Module):
-    def __init__(self, topology, block_size, dataset_name='nturgbd_cv', cuda_=False):
+    def __init__(self, topology, block_size, num_class, num_point, num_person, in_channels, graph_type, cuda_=False):
         super(PSTGCN, self).__init__()
 
-        if dataset_name == 'nturgbd_cv' or dataset_name == 'nturgbd_cs':
-            num_class = 60
-            num_point = 25
-            num_person = 2
-            in_channels = 3
+        if graph_type == 'ntu':
             self.graph = NTUGraph()
-        elif dataset_name == 'kinetics':
-            num_class = 400
-            num_point = 18
-            num_person = 2
-            in_channels = 3
+        elif graph_type == 'openpose':
             self.graph = KineticsGraph()
 
         A = self.graph.A
