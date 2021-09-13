@@ -18,7 +18,6 @@ import shutil
 import unittest
 from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
 from opendr.engine.datasets import ExternalDataset
-from utils.opendr_device import is_unsupported_device
 
 
 def rmfile(path):
@@ -35,7 +34,6 @@ def rmdir(_dir):
         print("Error: %s - %s." % (e.filename, e.strerror))
 
 
-@unittest.skipIf(is_unsupported_device(FaceRecognitionLearner), 'Unsupported device.')
 class TestFaceRecognitionLearner(unittest.TestCase):
 
     @classmethod
