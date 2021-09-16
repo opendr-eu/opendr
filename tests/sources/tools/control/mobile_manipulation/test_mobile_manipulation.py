@@ -52,6 +52,8 @@ class MobileManipulationTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        print("\n\n**********************************\nTEST Mobile RL Learner\n"
+              "**********************************")
         cls.env = create_env(EVAL_ENV_CONFIG, task='rndstartrndgoal', node_handle="train_env", wrap_in_dummy_vec=True,
                              flatten_obs=True)
         cls.learner = MobileRLLearner(cls.env, device="cpu", iters=TEST_ITERS, temp_path=str(TEMP_SAVE_DIR))
