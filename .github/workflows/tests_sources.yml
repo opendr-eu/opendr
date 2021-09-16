@@ -67,15 +67,15 @@ jobs:
           - perception/speech_recognition
           - control/mobile_manipulation
           # - perception/object_tracking_3d
-          include:
-            - os: ubuntu-18.04
-              DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
-            - os: ubuntu-20.04
-              DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck \
-              && sudo sh -c 'echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list' \
-              && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -"
-            - os: macos-10.15
-              DEPENDENCIES_INSTALLATION: "brew install clang-format cppcheck"
+        include:
+          - os: ubuntu-18.04
+            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
+          - os: ubuntu-20.04
+            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck \
+            && sudo sh -c 'echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list' \
+            && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -"
+          - os: macos-10.15
+            DEPENDENCIES_INSTALLATION: "brew install clang-format cppcheck"
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
