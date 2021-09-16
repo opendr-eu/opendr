@@ -65,6 +65,7 @@ jobs:
           - perception/object_detection_3d
           - perception/pose_estimation
           - perception/speech_recognition
+          - control/mobile_manipulation
           # - perception/object_tracking_3d
     runs-on: ${{ matrix.os }}
     steps:
