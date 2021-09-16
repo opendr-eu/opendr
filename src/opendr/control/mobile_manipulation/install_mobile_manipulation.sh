@@ -23,15 +23,14 @@ sudo apt-get update && sudo apt-get install -y \
   ros-${ROS_DISTRO}-pr2-controllers-msgs \
   ros-${ROS_DISTRO}-pr2-mechanism-msgs \
   ros-${ROS_DISTRO}-pr2-description \
-  ros-${ROS_DISTRO}-gazebo-msgs || exit;
+  ros-${ROS_DISTRO}-gazebo-msgs \
+  python3-rosdep || exit;
 source /opt/ros/${ROS_DISTRO}/setup.bash
 
 ## packages to install from source
 if [ ! -f ${WS_PATH}/mobile_manipulation_pr2.rosinstall ]; then
   mkdir -p ${WS_PATH}/src \
   && cd ${WS_PATH} \
-  && sudo apt-get update \
-  && sudo apt-get install python3-rosdep \
   && sudo rosdep init \
   && rosdep update --rosdistro $ROS_DISTRO \
   && cp ${MODULE_PATH}/mobile_manipulation_pr2.rosinstall . \
