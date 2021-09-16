@@ -72,6 +72,16 @@ Constructor parameters:
   Specifies the starting epoch number for training.  
 - **dataset_name**: *str {'kinetics', 'nturgbd_cv', 'nturgbd_cs'}, default='nturgbd_cv'*  
   Specifies the name of dataset that is used for training and evaluation. 
+- **num_class**: *int, default=60*  
+  Specifies the number of classes for the action dataset. 
+- **num_point**: *int, default=25*  
+  Specifies the number of body joints in each skeleton. 
+- **num_person**: *int, default=2*  
+  Specifies the number of body skeletons in each frame.
+- **in_channels**: *int, default=3*  
+  Specifies the number of input channels for each body joint.  
+- **graph_type**: *str {'kinetics', 'ntu'}, default='ntu'*  
+  Specifies the type of graph structure associated with the dataset. 
 - **method_name**: *str {'stgcn', 'stbln', 'tagcn'}, default='stgcn'*  
   Specifies the name of method to be trained and evaluated. For each method, a different model is trained. 
 - **stbln_symmetric**: *bool, default=False*  
@@ -455,6 +465,16 @@ Constructor parameters:
   Specifies the starting epoch number for training.  
 - **dataset_name**: *str {'kinetics', 'nturgbd_cv', 'nturgbd_cs'}, default='nturgbd_cv'*  
   Specifies the name of dataset that is used for training and evaluation. 
+- **num_class**: *int, default=60*  
+  Specifies the number of classes for the action dataset. 
+- **num_point**: *int, default=25*  
+  Specifies the number of body joints in each skeleton. 
+- **num_person**: *int, default=2*  
+  Specifies the number of body skeletons in each frame.
+- **in_channels**: *int, default=3*  
+  Specifies the number of input channels for each body joint.  
+- **graph_type**: *str {'kinetics', 'ntu'}, default='ntu'*  
+  Specifies the type of graph structure associated with the dataset. 
 - **block_size**: *int, default=20*  
   Specifies the number of output channels (or neurons) that are added to each layer of the network at each progression iteration. 
 - **numblocks**: *int, default=10*  
