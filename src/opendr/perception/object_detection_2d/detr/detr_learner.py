@@ -21,6 +21,7 @@ import time
 import warnings
 import torch
 import ntpath
+import contextlib
 from torch.utils.data import DataLoader, DistributedSampler
 from torch.utils.tensorboard import SummaryWriter
 from pathlib import Path
@@ -367,7 +368,8 @@ class DetrLearner(Learner):
             image_set="train",
             images_folder_name=train_images_folder,
             annotations_folder_name=annotations_folder,
-            annotations_file_name=train_annotations_file
+            annotations_file_name=train_annotations_file,
+            verbose=verbose,
             )
 
         if val_dataset is not None:
@@ -376,7 +378,8 @@ class DetrLearner(Learner):
                 image_set="val",
                 images_folder_name=val_images_folder,
                 annotations_folder_name=annotations_folder,
-                annotations_file_name=val_annotations_file
+                annotations_file_name=val_annotations_file,
+                verbose=verbose,
                 )
 
         # Starting from here, code is mainly copied from https://github.com/facebookresearch/detr/blob/master/main.py
@@ -477,7 +480,8 @@ class DetrLearner(Learner):
              dataset,
              images_folder='val2017',
              annotations_folder='Annotations',
-             annotations_file='instances_val2017.json'
+             annotations_file='instances_val2017.json',
+             verbose=True,
              ):
         """
         This method is used to evaluate a trained model on an evaluation dataset.
@@ -495,6 +499,8 @@ class DetrLearner(Learner):
         annotations_file : str, optional
             Filename of the annotations json file. This file should be contained in the
             dataset path provided. The default is 'instances_val2017.json'.
+        verbose : bool, optional
+            Enables the maximum verbosity. The default is True.
 
         Raises
         ------
@@ -522,7 +528,8 @@ class DetrLearner(Learner):
             image_set="val",
             images_folder_name=images_folder,
             annotations_folder_name=annotations_folder,
-            annotations_file_name=annotations_file
+            annotations_file_name=annotations_file,
+            verbose=verbose,
             )
 
         if self.args.distributed:
@@ -543,7 +550,7 @@ class DetrLearner(Learner):
         test_stats, _ = evaluate(
                 self.model, self.criterion, self.postprocessors,
                 data_loader_val, base_ds, device,
-                self.temp_path
+                self.temp_path, verbose=verbose,
             )
 
         return test_stats
@@ -657,7 +664,7 @@ class DetrLearner(Learner):
 
         """
 
-    def download(self, path=None, mode="pretrained", verbose=False):
+    def download(self, path=None, mode="pretrained", verbose=True):
         """
         Download utility for various DETR components. Downloads files depending on mode and
         saves them in the path provided. It supports downloading:
@@ -823,7 +830,7 @@ class DetrLearner(Learner):
         elif self.optimizer == "sgd":
             self.torch_optimizer = torch.optim.SGD(param_dicts, lr=self.lr, weight_decay=self.args.weight_decay)
         else:
-            warnings.warn("Unavailbale optimizer specified, using adamw instead. Possible optimizers are; adam, adamw and sgd")
+            warnings.warn("Unavailbale optimizer specified, using adamw instead. Possible optimizers are: adam, adamw and sgd")
             self.torch_optimizer = torch.optim.AdamW(param_dicts, lr=self.lr, weight_decay=self.weight_decay)
 
     def __create_scheduler(self):
@@ -857,7 +864,8 @@ class DetrLearner(Learner):
                           image_set="train",
                           images_folder_name="train2017",
                           annotations_folder_name="Annotations",
-                          annotations_file_name="instances_train2017.json"
+                          annotations_file_name="instances_train2017.json",
+                          verbose=False,
                           ):
         """
         This internal method prepares the dataset depending on what type of dataset is provided.
@@ -921,10 +929,18 @@ class DetrLearner(Learner):
             if not os.path.isfile(annotations_file):
                 raise UserWarning("Didn't find \"" + annotations_file +
                                   "\" file in the dataset path provided.")
-
-            return build_dataset(images_folder, annotations_folder,
-                                 annotations_file, image_set, self.args.masks,
-                                 dataset.dataset_type.lower())
+            if verbose:
+                coco_dataset = build_dataset(images_folder, annotations_folder,
+                                             annotations_file, image_set, self.args.masks,
+                                             dataset.dataset_type.lower())
+            else:
+                # suppress pycocotools prints
+                with open(os.devnull, 'w') as devnull:
+                    with contextlib.redirect_stdout(devnull):
+                        coco_dataset = build_dataset(images_folder, annotations_folder,
+                                                     annotations_file, image_set, self.args.masks,
+                                                     dataset.dataset_type.lower())
+            return coco_dataset
 
         # Create Map function for converting (Image, BoundingboxList) to detr format
         map_function = map_bounding_box_list_to_coco(image_set, self.args.masks)

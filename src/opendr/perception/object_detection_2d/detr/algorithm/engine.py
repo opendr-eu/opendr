@@ -20,6 +20,7 @@ Train and eval functions used in main.py
 import math
 import os
 import sys
+import contextlib
 from typing import Iterable
 
 import torch
@@ -153,7 +154,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device,
 
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
-    if not silent:
+    if verbose:
         print("Averaged stats:", metric_logger)
     if coco_evaluator is not None:
         coco_evaluator.synchronize_between_processes()
@@ -162,8 +163,15 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device,
 
     # accumulate predictions from all images
     if coco_evaluator is not None:
-        coco_evaluator.accumulate()
-        coco_evaluator.summarize()
+        if verbose:
+            coco_evaluator.accumulate()
+            coco_evaluator.summarize()
+        else:
+            # suppress pycocotools prints
+            with open(os.devnull, 'w') as devnull:
+                with contextlib.redirect_stdout(devnull):
+                    coco_evaluator.accumulate()
+                    coco_evaluator.summarize()
     panoptic_res = None
     if panoptic_evaluator is not None:
         panoptic_res = panoptic_evaluator.summarize()

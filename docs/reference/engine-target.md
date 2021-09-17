@@ -220,19 +220,19 @@ A bounding box is described by the left-top corner and its width and height.
 The main difference with the `BoundingBox` target, is that the `CocoBoundingBox` target can also contain information on the object's segmentation.
 
 The [CocoBoundingBox](#class_engine.target.CocoBoundingBox) class has the following public methods:
-#### CocoBoundingBox(name, left, top, width, height, score=0, segmentation=[], iscrowd=0, area=0)
+#### CocoBoundingBox(name, left, top, width, height, segmentation=[], area=0, iscrowd=0, score=0)
   Construct a new [CocoBoundingBox](#class_engine.target.CocoBoundingBox) object based on the given data.
   - *name* is expected to be a string or a number representing the class of the object.
   - *left* is expected to be a number representing the x position of the left-top corner.
   - *top* is expected to be a number representing the y position of the left-top corner.
   - *width* is expected to be a number representing the width of the box.
   - *height* is expected to be a number representing the height of the box.
-  - *score* is expected to be a number describing the prediction confidence.
   - *segmentation* is expected to be a list of polygon vertices around the object (`iscrowd=False`) or a run-length-encoded (RLE) bit mask (`iscrowd=True`).
-  - *iscrowd* is expected to be a bool describing whether the `CocoBoundingBox` represents a crowd (a group of objects).
-    If `True`, `segmentation` is a run-length-encoded (RLE) bit mask. If `False`, `segmentation` is a list of polygon vertices around the object.
-    For more information see this [tutorial](https://www.immersivelimit.com/tutorials/create-coco-annotations-from-scratch).
   - *area* is expected to be an integer describing the area of the segmentation.
+  - *iscrowd* is expected to be a bool describing whether the `CocoBoundingBox` represents a crowd (a group of objects).
+    If *True*, `segmentation` is a run-length-encoded (RLE) bit mask. If *False*, `segmentation` is a list of polygon vertices around the object.
+    For more information see this [tutorial](https://www.immersivelimit.com/tutorials/create-coco-annotations-from-scratch).
+  - *score* is expected to be a number describing the prediction confidence.
 #### coco()
   Return the annotation in [COCO detection](https://cocodataset.org/#detection-2019) format.
   For more information and a detailed description of COCO annotations, see this [COCO annotations tutorial](https://www.immersivelimit.com/tutorials/create-coco-annotations-from-scratch).
