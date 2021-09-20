@@ -45,7 +45,7 @@ DATA_ROOT = '~/data/cityscapes'
 CityscapesDataset.prepare_data(DOWNLOAD_PATH, DATA_ROOT)
 ```
 
-**Run inference**
+**Run inference and visualize result**
 ```python
 import mmcv
 from opendr.engine.data import Image
@@ -59,7 +59,9 @@ image_filenames = [
 images = [Image(mmcv.imread(f)) for f in image_filenames]
 learner = EfficientPsLearner()
 learner.load('model.pth')
-learner.infer(images)
+predictions = learner.infer(images)
+for image, prediction in zip(images, predictions):
+    EfficientPsLearner.visualize(image, prediction)
 ``` 
 
 **Run evaluation**
