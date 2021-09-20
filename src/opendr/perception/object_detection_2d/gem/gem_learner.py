@@ -83,7 +83,7 @@ class GemLearner(Learner):
             checkpoint_load_iter=checkpoint_load_iter,
             temp_path=temp_path,
             device=device,
-            threshold=threshold
+            threshold=threshold,
         )
 
         # Add arguments to a structure like in the original implementation
@@ -580,7 +580,8 @@ class GemLearner(Learner):
              m2_images_folder='m2_val2017',
              annotations_folder='Annotations',
              m1_annotations_file='m1_instances_val2017.json',
-             m2_annotations_file='m2_instances_val2017.json'
+             m2_annotations_file='m2_instances_val2017.json',
+             verbose=True,
              ):
         """
         This method is used to evaluate a trained model on an evaluation dataset.
@@ -689,7 +690,7 @@ class GemLearner(Learner):
         test_stats, _ = evaluate(
                 self.model, self.criterion, self.postprocessors,
                 m1_data_loader, m2_data_loader, base_ds, device,
-                self.temp_path
+                self.temp_path, verbose=verbose
             )
 
         return test_stats
