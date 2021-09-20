@@ -32,9 +32,8 @@ and put it in ```./checkpoints/rs_model```.
 2.	Execute 3ddfa/testSyntheticDataGeneration.py specifying the input images  folder, the output folder, the desired degrees (range -90 to 90) for generating the facial images in multiple view angles pitch and yaw  as indicated in the command line: 
 ```sh
 cd 3ddfa
-```
+```sh
 python3 testSyntheticDataGeneration.py
-```
 
 3. Results are multi-view facial images for every person identity in a respective folder called  ```results/rs_model/example/```
 
