@@ -88,7 +88,6 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones',
             'projects/data_generation/synthetic-multi-view-facial-image-generation',
             'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures'
-
         ]
 
         skippedFilePaths = [
