@@ -86,7 +86,7 @@ class TestCppCheck(unittest.TestCase):
         return command
 
     def test_sources_with_cppcheck(self):
-        """Test Webots with Cppcheck."""
+        """Test C API with Cppcheck."""
         sourceDirs = [
             'src/c',
         ]
@@ -107,6 +107,7 @@ class TestCppCheck(unittest.TestCase):
         if not sources:
             return
         command += sources
+        print('src: ', command)
         self.run_cppcheck(command)
 
     def test_projects_with_cppcheck(self):
@@ -127,6 +128,7 @@ class TestCppCheck(unittest.TestCase):
         if not sources:
             return
         command += sources
+        print('projects: ', command)
         self.run_cppcheck(command)
 
 
