@@ -37,7 +37,7 @@ cd 3ddfa
 python3 testSyntheticDataGeneration.py
 ```
 
-3 Results are multi-view facial images for every person identity in a respective folder called  ```results/rs_model/example/```
+3. Results are multi-view facial images for every person identity in a respective folder called  ```results/rs_model/example/```
 
 
 ## License and Citation
