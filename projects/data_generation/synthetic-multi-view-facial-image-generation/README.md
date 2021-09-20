@@ -29,12 +29,12 @@ pip3 install neural_renderer_pytorch
 1. Download the [checkpoint](https://cicloud.csd.auth.gr/owncloud/remote.php/webdav/OpenDR/FTP%20Server%20Material/simulation/latest_net_G.zip)
 and put it in ```./checkpoints/rs_model```.
 
-2.	Execute 3ddfa/testSyntheticDataGeneration.py specifying the input images  folder, the output folder, the desired degrees (range -90 to 90) for generating the facial images in multiple view angles pitch and yaw  as indicated in the command line: 
+2.	Execute the one-step OPENDR function 3ddfa/testSyntheticDataGeneration.py specifying the input images  folder, the output folder, the desired degrees (range -90 to 90) for generating the facial images in multiple view angles pitch and yaw  as indicated in the command line: 
 ```sh
 cd 3ddfa
-```sh
-python3 testSyntheticDataGeneration.py
 
+python3 testSyntheticDataGeneration.py
+```
 3. Results are multi-view facial images for every person identity in a respective folder called  ```results/rs_model/example/```
 
 
@@ -43,7 +43,15 @@ The usage of this software is under [CC-BY-4.0](https://github.com/Hangz-nju-cuh
 
 
 ## Acknowledgement
+Large parts of the code are taken from: 
 * The structure of this codebase is borrowed from [SPADE](https://github.com/NVlabs/SPADE).
 * The [SyncBN](https://github.com/vacancy/Synchronized-BatchNorm-PyTorch) module is used in the current code.
-* We directly borrow the [3DDFA](https://github.com/cleardusk/3DDFA) implementation for 3D reconstruction.
-* We directly borrow the code [Rotate-and-Render](https://github.com/Hangz-nju-cuhk/Rotate-and-Render/)
+* The [3DDFA](https://github.com/cleardusk/3DDFA) implementation for 3D reconstruction.
+* The code [Rotate-and-Render](https://github.com/Hangz-nju-cuhk/Rotate-and-Render/)  
+  
+with the following modifications to make them compatible with the OpenDR specifications:
+## Minor Modifications
+1. All scripts: PEP8 changes
+2. ```3ddfa/main.py, 3ddfa/inference.py, test_multipose.py``` Modified to work as a callable functions
+3. ```options/base_options.py, options/test_options.py ``` Commented out/change several parameters to easily executed 
+4. ```models/networks/render.py``` Minor functional changes 
