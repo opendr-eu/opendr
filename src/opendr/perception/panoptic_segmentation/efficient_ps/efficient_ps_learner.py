@@ -419,14 +419,14 @@ class EfficientPsLearner(Learner):
                   show_figure: bool=True,
                   save_figure: bool=False,
                   figure_filename: Optional[str]=None,
-                  figure_size: Tuple[float, float] = (15, 10),
+                  figure_size: Tuple[float, float]=(15, 10),
                   detailed: bool=False):
         assert figure_filename is not None if save_figure else True
 
         PALETTE.append([0, 0, 0])
         colors = np.array(PALETTE, dtype=np.uint8)
 
-        image_img = PilImage.fromarray(image.data[:,:,::-1])  # convert BGR (mmcv, cv2) to RGB (PIL)
+        image_img = PilImage.fromarray(image.data[:, :, ::-1])  # convert BGR (mmcv, cv2) to RGB (PIL)
 
         # Extract class information from semantic segmentation
         semantics = prediction[1].data.copy()
