@@ -39,10 +39,12 @@ install_compilation_dependencies:
 
 styletest:
 	@+echo "Testing file licences and code-style"
+	@+python3 -m pip install -r tests/requirements.txt
 	@+python3 -m unittest discover -s tests
 
 unittest:
 	@+echo "Performing unit tests"
+	@+python3 -m pip install -r tests/sources/requirements.txt
 	@+python3 -m unittest discover -s tests/sources/tools/
 
 libopendr:

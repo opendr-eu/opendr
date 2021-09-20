@@ -43,6 +43,7 @@ jobs:
       run: |
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
         export OPENDR_HOME=$PWD
+        export OPENDR_DEVICE=cpu
         pip install -r tests/requirements.txt
         python -m unittest discover -s tests
   test-tools:
@@ -76,6 +77,7 @@ jobs:
       if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
       run: |
         export OPENDR_HOME=$PWD
+        export OPENDR_DEVICE=cpu
         export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
         export DISABLE_BCOLZ_AVX2=true
         make install_compilation_dependencies
