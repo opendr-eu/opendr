@@ -46,6 +46,8 @@ def rmdir(_dir):
 class TestGemLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        print("\n\n*********************************\nTEST Object Detection GEM Learner\n"
+              "*********************************")
         cls.temp_dir = os.path.join("tests", "sources", "tools",
                                     "perception", "object_detection_2d",
                                     "gem", "gem_temp")
@@ -115,13 +117,13 @@ class TestGemLearner(unittest.TestCase):
             out_dir=os.path.join(self.temp_dir, "outputs"),
             trial_dir=os.path.join(self.temp_dir, "trial"),
             logging_path='',
+            verbose=False,
             m1_val_edataset=self.m1_dataset,
             m2_val_edataset=self.m2_dataset,
             m1_val_annotations_file='RGB_26May2021_14h19m_coco.json',
             m2_val_annotations_file='Thermal_26May2021_14h19m_coco.json',
             m1_val_images_folder='val/m1',
             m2_val_images_folder='val/m2',
-            verbose=True,
             )
 
         self.assertFalse(torch.equal(m, list(self.learner.model.parameters())[0]),
@@ -150,6 +152,7 @@ class TestGemLearner(unittest.TestCase):
             annotations_folder='annotations',
             m1_annotations_file='RGB_26May2021_14h19m_coco.json',
             m2_annotations_file='Thermal_26May2021_14h19m_coco.json',
+            verbose=False,
             )
 
         self.assertGreater(len(result), 0)
