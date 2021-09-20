@@ -17,8 +17,9 @@
 Train and eval functions used in main.py
 """
 import math
-# import os
+import os
 import sys
+import contextlib
 from typing import Iterable
 
 import torch
@@ -44,8 +45,8 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
     print_freq = 10
 
     # for samples, targets in metric_logger.log_every(data_loader, print_freq, header, verbose=verbose, silent=silent):
-    for [m1_samples, targets], [m2_samples, _] in metric_logger.log_every(zip(m1_data_loader, m2_data_loader), print_freq,
-                                                                          len(m1_data_loader), header):
+    for [m1_samples, targets], [m2_samples, _] in metric_logger.log_every(
+            zip(m1_data_loader, m2_data_loader), print_freq, len(m1_data_loader), header, verbose=verbose, silent=silent):
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
         m1_samples = m1_samples.to(device)
@@ -94,14 +95,14 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
-    if not silent:
+    if verbose:
         print("Averaged stats:", metric_logger)
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
 
 
 @torch.no_grad()
-def evaluate(model, criterion, postprocessors, m1_data_loader, m2_data_loader, base_ds, device,
-             output_dir, verbose=True, silent=False):
+def evaluate(model, criterion, postprocessors, m1_data_loader, m2_data_loader, base_ds, device, output_dir,
+             verbose=True, silent=False):
     model.eval()
     criterion.eval()
 
@@ -187,7 +188,7 @@ def evaluate(model, criterion, postprocessors, m1_data_loader, m2_data_loader, b
 
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
-    if not silent:
+    if verbose:
         print("Averaged stats:", metric_logger)
     if coco_evaluator is not None:
         coco_evaluator.synchronize_between_processes()
@@ -196,8 +197,15 @@ def evaluate(model, criterion, postprocessors, m1_data_loader, m2_data_loader, b
 
     # accumulate predictions from all images
     if coco_evaluator is not None:
-        coco_evaluator.accumulate()
-        coco_evaluator.summarize()
+        if verbose:
+            coco_evaluator.accumulate()
+            coco_evaluator.summarize()
+        else:
+            # suppress pycocotools prints
+            with open(os.devnull, 'w') as devnull:
+                with contextlib.redirect_stdout(devnull):
+                    coco_evaluator.accumulate()
+                    coco_evaluator.summarize()
     panoptic_res = None
     if panoptic_evaluator is not None:
         panoptic_res = panoptic_evaluator.summarize()
