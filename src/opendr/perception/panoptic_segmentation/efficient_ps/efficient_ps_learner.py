@@ -20,17 +20,23 @@ import warnings
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Union, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from PIL import Image as PilImage
+from matplotlib import gridspec
 from mmcv import Config
 from mmcv.parallel import scatter, collate, MMDataParallel
 from mmcv.runner import load_checkpoint, save_checkpoint, Runner
 from mmdet.apis.train import batch_processor
 from mmdet.core import get_classes, build_optimizer, EvalHook, save_panoptic_eval
 from mmdet.datasets import build_dataloader
+from mmdet.datasets.cityscapes import PALETTE
 from mmdet.datasets.pipelines import Compose
 from mmdet.models import build_detector
 from mmdet.utils import collect_env, get_root_logger
+from skimage.morphology import dilation
+from skimage.segmentation import find_boundaries
 from torch.utils.data import DataLoader, SequentialSampler
 from tqdm import tqdm
 
@@ -376,7 +382,6 @@ class EfficientPsLearner(Learner):
         :return: Path to the downloaded file
         :rtype: str
         """
-        # ToDo: Adjust URLs
         if mode == 'model':
             models = {
                 'cityscapes': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/models/model_cityscapes.pth',
@@ -407,6 +412,72 @@ class EfficientPsLearner(Learner):
         with tqdm(unit='B', unit_scale=True, unit_divisor=1024, miniters=1, desc=f'Downloading {filename}') as pbar:
             urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
         return filename
+
+    @staticmethod
+    def visualize(image: Union[Image, ImageWithFilename],
+                  prediction: Tuple[Heatmap, Heatmap],
+                  show_figure: bool=True,
+                  save_figure: bool=False,
+                  figure_filename: Optional[str]=None,
+                  figure_size: Tuple[float, float] = (15, 10),
+                  detailed: bool=False):
+        assert figure_filename is not None if save_figure else True
+
+        PALETTE.append([0, 0, 0])
+        colors = np.array(PALETTE, dtype=np.uint8)
+
+        image_img = PilImage.fromarray(image.data[:,:,::-1])  # convert BGR (mmcv, cv2) to RGB (PIL)
+
+        # Extract class information from semantic segmentation
+        semantics = prediction[1].data.copy()
+        is_background = (semantics < 11) | (semantics == 255)
+        semantics[semantics == 255] = colors.shape[0] - 1
+        semantics_img = PilImage.fromarray(colors[semantics])
+
+        # Extract information from instance segmentation
+        instances = prediction[0].data.copy()
+        instances[is_background] = 0
+        contours = find_boundaries(instances, mode='outer', background=0).astype(np.uint8) * 255
+        contours = dilation(contours)
+        contours = np.expand_dims(contours, -1).repeat(4, -1)
+        contours_img = PilImage.fromarray(contours, mode='RGBA')
+
+        # Combine all of the above
+        panoptics_img = PilImage.blend(image_img, semantics_img, .5).convert(mode='RGBA')
+        panoptics_img = PilImage.alpha_composite(panoptics_img, contours_img)
+        panoptics_img.convert(mode='RGB')
+
+        if detailed:
+            plt.figure(figsize=figure_size)
+            grid_spec = gridspec.GridSpec(2, 2)
+            grid_spec.update(wspace=.05, hspace=.05)
+            plt.subplot(grid_spec[0])
+            plt.imshow(image_img)
+            plt.axis('off')
+            plt.title('input image')
+            plt.subplot(grid_spec[1])
+            plt.imshow(panoptics_img)
+            plt.axis('off')
+            plt.title('panoptic map')
+            plt.subplot(grid_spec[2])
+            plt.imshow(semantics_img)
+            plt.axis('off')
+            plt.title('semantic map')
+            plt.subplot(grid_spec[3])
+            plt.imshow(contours_img)
+            plt.axis('off')
+            plt.title('contours map')
+            if save_figure:
+                plt.savefig(figure_filename, bbox_inches='tight')
+            if show_figure:
+                plt.show()
+            plt.close()
+
+        else:
+            if save_figure:
+                panoptics_img.save(figure_filename)
+            if show_figure:
+                panoptics_img.show()
 
     @property
     def config(self) -> dict:

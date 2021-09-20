@@ -127,6 +127,25 @@ class TestEfficientPsLearner(unittest.TestCase):
         self.assertTrue(learner._is_model_trained)
         self.assertTrue(successful)
 
+    def test_save_visualization(self):
+        image_filename = os.path.join(self.test_data, 'infer_data', 'lindau_000001_000019.png')
+        temp_prediction_path = os.path.join(self.temp_dir, 'prediction.png')
+        image = Image(cv2.imread(image_filename))
+        learner = EfficientPsLearner()
+        learner.load(self.model_weights)
+        prediction = learner.infer(image)
+        # Make sure that no file has been written to that path yet
+        if os.path.exists(temp_prediction_path):
+            rmfile(temp_prediction_path)
+        EfficientPsLearner.visualize(image, prediction, show_figure=False, save_figure=True,
+                                     figure_filename=temp_prediction_path)
+        self.assertTrue(os.path.exists(temp_prediction_path))
+        rmfile(temp_prediction_path)
+        EfficientPsLearner.visualize(image, prediction, show_figure=False, save_figure=True,
+                                     figure_filename=temp_prediction_path, detailed=True)
+        self.assertTrue(os.path.exists(temp_prediction_path))
+        rmfile(temp_prediction_path)
+
 
 if __name__ == '__main__':
     unittest.main()

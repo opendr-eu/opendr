@@ -89,7 +89,7 @@ EfficientPsLearner.infer(batch, return_raw_logits=False)
 ```
 
 Parameters:
-- **batch**: *Image*, *List[Image]*
+- **batch**: *Image*, *ImageWithFilename*, *List[Image]*, *List[ImageWithFilename]*
   Image(s) to feed to the network.
 - **return_raw_logits**: *bool*
   If True, the raw network output will be returned. Otherwise, the returned object will hold Tuples of Heatmaps of the OpenDR interface.
@@ -140,3 +140,24 @@ Parameters:
 Return:
 - **filename**: *str*
   Absolute path to the downloaded file or directory.
+
+#### `EfficientPsLearner.visualize`
+```python
+EfficientPsLearner.visualize(image, prediction, show_figure=True, save_figure=False, figure_filename=None, figure_size=(15, 10), detailed=False)
+```
+
+Parameters:
+- **image**: *Image*, *ImageWithFilename*
+  BGR image used for inference.
+- **prediction**: *Tuple[Heatmap, Heatmap]*
+  The semantic and instance segmentation maps obtained with the `infer()` method.
+- **show_figure**: *bool*
+  If True, the generated figure will be shown on screen.
+- **save_figure**: *bool*
+  If True, the generated figure will be saved to disk. The **figure_filename** has to be set.
+- **figure_filename**: *str*
+  The path used to save the figure if **save_figure** is True.
+- **figure_size**: *Tuple[float, float]*
+  The size of the figure in inches. Only used for the detailed version. Otherwise, the size of the input data is used.
+- **detailed**: *bool*
+  If True, the generated figure will be a compilation of the input color image, the semantic segmentation map, a contours plot showing the individual objects, and a combined panoptic segmentation overlay on the color image. Otherwise, only the latter will be shown.

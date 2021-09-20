@@ -26,3 +26,9 @@ class Image(BaseImage):
         if self._filename is None:
             raise ValueError("Filename is not set.")
         return self._filename
+
+    @filename.setter
+    def filename(self, filename: str):
+        if not isinstance(filename, str):
+            raise TypeError("The filename has to be provided as a string.")
+        self._filename = filename

@@ -73,7 +73,9 @@ def inference():
         config_file=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
     )
     learner.load(path=f'{DATA_ROOT}/checkpoints/efficientPS/cityscapes/model.pth')
-    learner.infer(images)
+    predictions = learner.infer(images)
+    for image, prediction in zip(images, predictions):
+        EfficientPsLearner.visualize(image, prediction)
 
 
 if __name__ == "__main__":
