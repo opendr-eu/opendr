@@ -25,11 +25,14 @@ python_prerequisites_file = "python_prerequisites.txt"
 python_file = "python_dependencies.txt"
 linux_file = "linux_dependencies.txt"
 
-
 def read_ini(path):
+    opendr_device = os.environ.get('OPENDR_DEVICE', default='cpu')
     parser = ConfigParser()
     parser.read(path)
     def read_ini_key(key, summary_file):
+        tool_device = parser.get('device', 'opendr_device', fallback='cpu')
+        if opendr_device == 'cpu' and tool_device == 'gpu':
+            return
         if parser.has_option(section, key):
             dependencies = parser.get(section, key)
             if dependencies:
