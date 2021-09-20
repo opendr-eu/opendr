@@ -112,7 +112,7 @@ class TestCppCheck(unittest.TestCase):
     def test_projects_with_cppcheck(self):
         """Test projects with Cppcheck."""
         sourceDirs = [
-            'projects/c_api/src'
+            'projects/c_api'
         ]
         skippedDirs = [
         ]
