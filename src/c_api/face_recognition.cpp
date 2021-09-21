@@ -139,7 +139,6 @@ void load_face_recognition_model(const char *model_path, face_recognition_model_
   Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "opendr_env");
 
   Ort::SessionOptions *session_options = new Ort::SessionOptions;
-  session_options->SetIntraOpNumThreads(1);
   session_options->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
   Ort::Session *session = new Ort::Session(*env, onnx_model_path.c_str(), *session_options);

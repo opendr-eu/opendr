@@ -25,7 +25,7 @@ BUILD_DIR = $(OPENDR_HOME)/build
 LIB_DIR = $(OPENDR_HOME)/lib
 
 CFLAGS  = -fPIC
-INC = -I/usr/local/include/onnxruntime/core/session/ `pkg-config --cflags opencv4`
+INC = -I/usr/local/include/onnxruntime/ `pkg-config --cflags opencv4`
 LD =  -L/usr/lib/ -L/usr/local/lib/ -lstdc++ -lm -lonnxruntime `pkg-config --libs opencv4` -lboost_filesystem
 OPENDR_INC = -I$(OPENDR_HOME)/include
 OPENDR_LD = -L$(OPENDR_HOME)//lib -lopendr
