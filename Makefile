@@ -51,7 +51,6 @@ libopendr:
 	@$(MAKE) -C src/c_api all
 
 ctests: libopendr
-	export OMP_NUM_THREADS=2
 	@$(MAKE) -C tests runtests
 	@$(MAKE) -C tests clean
 
