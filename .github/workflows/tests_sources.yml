@@ -85,8 +85,7 @@ jobs:
         pip install -r tests/sources/requirements.txt
 
         if [ ${{ matrix.package }} = "ctests" ]; then
-          make libopendr
-          make ctests
+            make ctests
         else
             python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
