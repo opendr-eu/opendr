@@ -309,11 +309,11 @@ void build_database_face_recognition(const char *database_folder, const char *ou
   fout.close();
 }
 
-void load_database_face_recognition(const char *output_path, face_recognition_model_t *model) {
+void load_database_face_recognition(const char *database_path, face_recognition_model_t *model) {
   model->database = NULL;
   model->database_ids = NULL;
 
-  std::ifstream fin(output_path, std::ios::out | std::ios::binary);
+  std::ifstream fin(database_path, std::ios::out | std::ios::binary);
 
   if (!fin.is_open()) {
     std::cerr << "Cannot load database file (check that file exists and you have created the database)." << std::endl;
