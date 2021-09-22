@@ -89,6 +89,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
             'src/opendr/perception/skeleton_based_action_recognition/algorithm',
             'projects/data_generation/synthetic-multi-view-facial-image-generation'
+            'src/opendr/perception/skeleton_based_action_recognition/algorithm'
         ]
 
         skippedFilePaths = [
