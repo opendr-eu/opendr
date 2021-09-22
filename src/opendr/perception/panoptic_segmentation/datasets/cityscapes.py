@@ -253,7 +253,7 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
         }
 
         if not input_path.exists():
-            raise ValueError('The specified input path does not exist.')
+            raise ValueError(f'The specified input path does not exist: {input_path}')
         if output_path.exists():
             raise ValueError('The specified output path already exists.')
         if not (input_path / 'leftImg8bit').exists():

@@ -15,6 +15,7 @@ import json
 import multiprocessing as mp
 import os
 import shutil
+import warnings
 from functools import partial
 from pathlib import Path
 from typing import Tuple, Any, Dict, Union, List, Optional
@@ -254,7 +255,7 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         }
 
         if not input_path.exists():
-            raise ValueError('The specified input path does not exist.')
+            raise ValueError(f'The specified input path does not exist: {input_path}')
         if output_path.exists():
             raise ValueError('The specified output path already exists.')
         if not (input_path / 'training').exists() or not (input_path / 'validation').exists():
@@ -344,7 +345,7 @@ def _process_data(img_id: str, image_input_dir: Path, mask_input_dir: Path, imag
         lbl = cv2.resize(np.array(lbl_img), (1280, 384), interpolation=cv2.INTER_NEAREST)
         lbl_size = lbl.shape[:2][::-1]
 
-    color_ids = np.vstack({tuple(r) for r in lbl.reshape(-1, 3)})
+    color_ids = np.vstack(list(set(tuple(r) for r in lbl.reshape(-1, 3))))
 
     # Compress the labels and compute cat
     lbl_out = np.ones(lbl.shape[:2], np.uint8) * 255
@@ -394,7 +395,10 @@ def _process_data(img_id: str, image_input_dir: Path, mask_input_dir: Path, imag
         # Compute COCO detection format annotation
         if cs_labels[cls_i].hasInstances:
             category_info = {"id": iss_class_id, "is_crowd": iscrowd_i}
-            coco_ann_i = pct.create_annotation_info(counter.increment(), img_unique_id, category_info, mask_i, lbl_size)
+            # Suppress warnings from pycococreatortools
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                coco_ann_i = pct.create_annotation_info(counter.increment(), img_unique_id, category_info, mask_i, lbl_size)
             if coco_ann_i is not None:
                 coco_ann.append(coco_ann_i)
 

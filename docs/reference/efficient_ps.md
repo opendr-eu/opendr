@@ -135,7 +135,7 @@ Parameters:
 - **mode**: *str*
   Valid options are 'model' to download pre-trained model weights and 'test_data' to run the unit tests.
 - **trained_on**: *str*
-  Specifies which model weights to download. Pre-trained models are available for the Cityscapes and KITTI panoptic segmentation datasets.\
+  Specifies which model weights to download. Pre-trained models are available for the Cityscapes and KITTI panoptic segmentation datasets.
   
 Return:
 - **filename**: *str*

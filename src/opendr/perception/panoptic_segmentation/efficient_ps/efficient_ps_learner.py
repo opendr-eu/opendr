@@ -222,11 +222,13 @@ class EfficientPsLearner(Learner):
         :return: Returns stats regarding the evaluation
         :rtype: dict
         """
+        shutil.rmtree(self.temp_path, ignore_errors=True) # Ensure that no previous results are in this folder
+
         sampler = SequentialSampler(dataset)
         dataloader = DataLoader(dataset, batch_size=self.batch_size, sampler=sampler, num_workers=self.num_workers,
                                 collate_fn=lambda x: x)
 
-        with tqdm(dataloader, unit='batch', desc='Evaluating...') as pbar:
+        with tqdm(dataloader, unit='batch', desc='Evaluation') as pbar:
             for i, batch in enumerate(dataloader):
                 images = [data[0] for data in batch]
                 predictions = self.infer(images, return_raw_logits=True)
@@ -397,6 +399,7 @@ class EfficientPsLearner(Learner):
             raise ValueError('Invalid mode. Valid options are ["model", "test_data"]')
 
         filename = os.path.join(path, url.split('/')[-1])
+        os.makedirs(path, exist_ok=True)
 
         def pbar_hook(pbar: tqdm):
             prev_b = [0]
@@ -518,4 +521,5 @@ def save_panoptic_eval_(results, path: str='tmpDir'):
     """Overwrite hard-coded path to temporary directory"""
     save_panoptic_eval(results)
     if path != 'tmpDir':
-        shutil.move('tmpDir', path)
+        shutil.copytree('tmpDir', path, dirs_exist_ok=True)
+        shutil.rmtree('tmpDir')
