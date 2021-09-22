@@ -33,4 +33,5 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [object_tracking_2d_fair_mot Module](object-tracking-2d-fair-mot.md)
         - [object_tracking_3d_ab3dmot Module](object-tracking-3d-ab3dmot.md)
         - [multilinear_compressive_learning Module](multilinear_compressive_learning.md)
+        - [skeleton_based_action_recognition](skeleton_based_action_recognition.md)
 - [ROSBridge Package](rosbridge.md)
