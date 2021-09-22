@@ -104,14 +104,6 @@ class TestLicense(unittest.TestCase):
         extensions = ['*.c', '*.cpp', '*.h', '*.hpp', '*.py', '*.java', 'Makefile']
 
         self.sources = []
-
-        # Explictly adding OpenDR files that are in excluded directories
-        addedFilePaths = [
-            'projects/data_generation/synthetic-multi-view-facial-image-generation/3ddfa/SyntheticDataGeneration.py',
-            'projects/data_generation/synthetic-multi-view-facial-image-generation/3ddfa/testSyntheticDataGeneration.py'
-        ]
-        self.sources.extend(addedFilePaths)
-
         for directory in directories:
             for rootPath, dirNames, fileNames in os.walk(os.environ['OPENDR_HOME'] + os.sep + directory.replace('/', os.sep)):
                 shouldContinue = False
