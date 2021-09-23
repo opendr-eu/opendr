@@ -4,9 +4,5 @@ This folder contains the BiseNet algorithm for semantic segmentation in the Open
 
 ## Sources
 
-The algorithm files are copied from [BiseNet](
-https://github.com/ooooverflow/BiSeNet) with minor modifications.
-
-
-
+The algorithm files are copied from [BiseNet](https://github.com/ooooverflow/BiSeNet) with minor modifications.
 
