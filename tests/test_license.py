@@ -87,6 +87,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/object_tracking_2d/fair_mot/algorithm',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones',
             'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
+            'src/opendr/perception/skeleton_based_action_recognition/algorithm',
             'src/opendr/perception/semantic_segmentation/bisenet/algorithm'
         ]
 
