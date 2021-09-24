@@ -34,7 +34,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [object_tracking_3d_ab3dmot Module](object-tracking-3d-ab3dmot.md)
         - [multilinear_compressive_learning Module](multilinear_compressive_learning.md)
         - [skeleton_based_action_recognition](skeleton_based_action_recognition.md)
-        
+    - `control` Module
+      - [mobile_manipulation Module](mobile-manipulation.md)
 - [ROSBridge Package](rosbridge.md)
 - [C Inference API](c-api.md)
     - [data.h](c-data-h.md)
