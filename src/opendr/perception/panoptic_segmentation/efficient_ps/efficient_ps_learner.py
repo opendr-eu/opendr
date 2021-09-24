@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 import os
 import shutil
@@ -29,17 +30,16 @@ from matplotlib import gridspec
 from mmcv import Config
 from mmcv.parallel import scatter, collate, MMDataParallel
 from mmcv.runner import load_checkpoint, save_checkpoint, Runner
+from mmdet.apis import single_gpu_test
 from mmdet.apis.train import batch_processor
-from mmdet.core import get_classes, build_optimizer, EvalHook, save_panoptic_eval
+from mmdet.core import get_classes, build_optimizer, EvalHook
 from mmdet.datasets import build_dataloader
 from mmdet.datasets.cityscapes import PALETTE
 from mmdet.datasets.pipelines import Compose
 from mmdet.models import build_detector
 from mmdet.utils import collect_env, get_root_logger
-from mmdet.apis import single_gpu_test
 from skimage.morphology import dilation
 from skimage.segmentation import find_boundaries
-from torch.utils.data import DataLoader, SequentialSampler
 from tqdm import tqdm
 
 from opendr.engine.constants import OPENDR_SERVER_URL
@@ -211,7 +211,7 @@ class EfficientPsLearner(Learner):
 
     def eval(self,
              dataset: Any,
-             print_results: bool=False
+             print_results: bool = False
              ) -> Dict[str, Any]:
         """
         This method is used to evaluate the algorithm on a dataset and returns the following stats:
@@ -337,9 +337,34 @@ class EfficientPsLearner(Learner):
         if not self._is_model_trained:
             warnings.warn('The current model has not been trained.')
 
+        # Create structure according to OpenDR specification
+        dir_path = Path(path) / 'efficient_ps'
+        if dir_path.exists():
+            warnings.warn('The given path already exists. Any content will be overwritten.')
+        else:
+            dir_path.mkdir(parents=True)
+        model_path = dir_path / 'model.pth'
+        meta_path = dir_path / 'efficient_ps.json'
+
+        meta_data = {
+            'model_paths': [f'/{model_path.parent.name}/{model_path.name}'],
+            'framework': 'pytorch',
+            'format': 'pth',
+            'has_data': False,
+            'inference_params': {},
+            'optimized': self._is_model_trained,
+            'optimizer_info': {}
+        }
+
+        with open(meta_path, 'w') as f:
+            json.dump(meta_data, f, indent=True, sort_keys=True)
+
         try:
-            save_checkpoint(self.model, path)
+            # Save the actual model
+            save_checkpoint(self.model, str(model_path))
         except TypeError:
+            return False
+        if not model_path.exists() or not meta_path.exists():
             return False
         return True
 
@@ -352,18 +377,32 @@ class EfficientPsLearner(Learner):
         :return: Whether load succeeded or not
         :rtype: bool
         """
-        try:
-            checkpoint = load_checkpoint(self.model, path)
-            if 'CLASSES' in checkpoint['meta']:
-                self.model.CLASSES = checkpoint['meta']['CLASSES']
-            else:
-                warnings.warn(
-                    'Class names are not saved in the checkpoint\'s meta data, use Cityscapes classes by default.')
-                self.model.CLASSES = get_classes('cityscapes')
-            self._is_model_trained = True
-        except RuntimeError:
-            return False
-        return True
+        if '.pth' in path:  # Read the actual model
+            try:
+                checkpoint = load_checkpoint(self.model, path)
+                if 'CLASSES' in checkpoint['meta']:
+                    self.model.CLASSES = checkpoint['meta']['CLASSES']
+                else:
+                    warnings.warn(
+                        'Class names are not saved in the checkpoint\'s meta data, use Cityscapes classes by default.')
+                    self.model.CLASSES = get_classes('cityscapes')
+                self._is_model_trained = True
+            except RuntimeError:
+                return False
+            return True
+        else:  # OpenDR specification
+            meta_path = Path(path) / f'{Path(path).name}.json'
+            if not meta_path.exists():
+                warnings.warn(f'No model meta data found at {meta_path}')
+                return False
+            with open(meta_path, 'r') as f:
+                meta_data = json.load(f)
+            # According to the OpenDR specification, the model path is given with a leading slash
+            model_path = Path(path) / str(meta_data['model_paths']).lstrip('/')
+            if not model_path.exists():
+                warnings.warn(f'No model weights found at {model_path}')
+                return False
+            return self.load(str(model_path))
 
     def optimize(self, target_device: str) -> bool:
         # Not needed for this learner.
@@ -522,11 +561,3 @@ class EfficientPsLearner(Learner):
         elif value < 0:
             raise ValueError('num_workers cannot be negative.')
         self._num_workers = value
-
-
-def save_panoptic_eval_(results, path: str = 'tmpDir'):
-    """Overwrite hard-coded path to temporary directory"""
-    save_panoptic_eval(results)
-    if path != 'tmpDir':
-        shutil.copytree('tmpDir', path, dirs_exist_ok=True)
-        shutil.rmtree('tmpDir')
