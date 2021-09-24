@@ -64,6 +64,8 @@ jobs:
           - perception/object_detection_3d
           - perception/pose_estimation
           - perception/speech_recognition
+          - ctests
+          - perception/skeleton_based_action_recognition
           - control/mobile_manipulation
           # - perception/object_tracking_3d
         include:
@@ -89,5 +91,10 @@ jobs:
         make install_compilation_dependencies
         make install_runtime_dependencies
         pip install -r tests/sources/requirements.txt
-        source tests/sources/tools/control/mobile_manipulation/run_ros.sh
-        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+        if [ ${{ matrix.package }} = "ctests" ]; then
+            make ctests
+        else
+            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+            python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+        fi
+
