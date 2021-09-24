@@ -36,7 +36,7 @@ install_compilation_dependencies:
 	@+echo "#"; echo "# * Install Compilation Dependencies *"; echo "#"
 	@+cd dependencies; ./install.sh compilation
 	@+cd dependencies; ./install_onnx.sh
-    @+make --silent -C src/opendr/control/mobile_manipulation $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
+	@+make --silent -C src/opendr/control/mobile_manipulation $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
 
 styletest:
 	@+echo "Testing file licences and code-style"
