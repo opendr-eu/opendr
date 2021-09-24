@@ -127,6 +127,8 @@ class BisenetLearner(Learner):
                 if not silent and verbose:
                     print('Validation...')
                 self.eval(val_dataset)
+                
+        return {'Total Loss':loss_train_mean}
 
     def eval(self, dataset, silent=False, verbose=True):
 
@@ -165,7 +167,7 @@ class BisenetLearner(Learner):
 
             return {'precision': precision, 'miou': miou}
 
-    def infer(self, img, spath=None):
+    def infer(self, img):
         """
         This method is used to perform semantic segmentation on an image.
         It returns a heatmap of the given image.
