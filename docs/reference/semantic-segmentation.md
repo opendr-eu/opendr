@@ -89,7 +89,7 @@ Parameters:
 
 #### `BisenetLearner.infer`
 ```python
-BisenetLearner.infer(self, img, spath)
+BisenetLearner.infer(self, img)
 ```
 
 This method is used to perform segmentation on an image
@@ -97,9 +97,7 @@ Returns a `engine.target.Heatmap` object.
 
 Parameters:
   - **img**: *Image*  
-    Image to predict a heatmap.
-  - **spath**: *str, default=None*     
-    Path to save an additional output as image.  
+    Image to predict a heatmap.  
 
 
 #### `BisenetLearner.download`
