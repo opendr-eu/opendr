@@ -30,8 +30,8 @@ from mmdet.datasets import build_dataset
 from pycococreatortools import pycococreatortools as pct
 from tqdm import tqdm
 
+from opendr.engine.data import Image
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
-from opendr.perception.panoptic_segmentation.datasets.utils import Image
 
 
 class CityscapesDataset(ExternalDataset, DatasetIterator):
@@ -213,7 +213,7 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
         :rtype: Tuple of (Image, None)
         """
         image_filename = self._image_filenames[idx]
-        image = Image(cv2.imread(str(image_filename)), image_filename.name)
+        image = Image(cv2.imread(str(image_filename)))
 
         return image, None
 

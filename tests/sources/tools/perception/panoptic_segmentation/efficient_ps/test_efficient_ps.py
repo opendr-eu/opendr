@@ -22,7 +22,6 @@ import cv2
 from opendr.engine.data import Image
 from opendr.engine.target import Heatmap
 from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
-from opendr.perception.panoptic_segmentation.datasets import Image as ImageWithFilename
 from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
 
 
@@ -47,6 +46,7 @@ class TestEfficientPsLearner(unittest.TestCase):
 
         cls.temp_dir = os.path.join('tests', 'sources', 'tools', 'perception', 'panoptic_segmentation', 'efficient_ps',
                                     'efficient_ps_temp')
+        rmdir(cls.temp_dir)
         os.makedirs(cls.temp_dir)
 
         # Download all required files for testing
@@ -86,11 +86,6 @@ class TestEfficientPsLearner(unittest.TestCase):
         learner = EfficientPsLearner()
         learner.load(self.model_weights)
         prediction = learner.infer(image)
-        for heatmap in prediction:
-            self.assertIsInstance(heatmap, Heatmap)
-
-        image_with_filename = ImageWithFilename(cv2.imread(image_filename), filename='lindau_000001_000019.png')
-        learner.infer(image_with_filename)
         for heatmap in prediction:
             self.assertIsInstance(heatmap, Heatmap)
 

@@ -14,6 +14,7 @@
 import logging
 import os
 import shutil
+import sys
 import time
 import urllib
 import warnings
@@ -35,6 +36,7 @@ from mmdet.datasets.cityscapes import PALETTE
 from mmdet.datasets.pipelines import Compose
 from mmdet.models import build_detector
 from mmdet.utils import collect_env, get_root_logger
+from mmdet.apis import single_gpu_test
 from skimage.morphology import dilation
 from skimage.segmentation import find_boundaries
 from torch.utils.data import DataLoader, SequentialSampler
@@ -45,7 +47,6 @@ from opendr.engine.data import Image
 from opendr.engine.learners import Learner
 from opendr.engine.target import Heatmap
 from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset, KittiDataset
-from opendr.perception.panoptic_segmentation.datasets import Image as ImageWithFilename
 
 
 class EfficientPsLearner(Learner):
@@ -55,20 +56,20 @@ class EfficientPsLearner(Learner):
     """
 
     def __init__(self,
-                 lr: float=.07,
-                 iters: int=160,
-                 batch_size: int=1,
-                 optimizer: str='SGD',
-                 lr_schedule: Optional[Dict[str, Any]]=None,
-                 momentum: float=.9,
-                 weight_decay: float=.0001,
-                 optimizer_config: Optional[Dict[str, Any]]=None,
-                 checkpoint_after_iter: int=1,
-                 temp_path: str=str(Path(__file__).parent / 'eval_tmp_dir'),
-                 device: str="cuda:0",
-                 num_workers: int=1,
-                 seed: Optional[float]=None,
-                 config_file: str=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
+                 lr: float = .07,
+                 iters: int = 160,
+                 batch_size: int = 1,
+                 optimizer: str = 'SGD',
+                 lr_schedule: Optional[Dict[str, Any]] = None,
+                 momentum: float = .9,
+                 weight_decay: float = .0001,
+                 optimizer_config: Optional[Dict[str, Any]] = None,
+                 checkpoint_after_iter: int = 1,
+                 temp_path: str = str(Path(__file__).parent / 'eval_tmp_dir'),
+                 device: str = "cuda:0",
+                 num_workers: int = 1,
+                 seed: Optional[float] = None,
+                 config_file: str = str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
                  ):
         """
         :param lr: learning rate [training]
@@ -129,12 +130,15 @@ class EfficientPsLearner(Learner):
         self.model.to(self.device)
         self._is_model_trained = False
 
+    def __del__(self):
+        shutil.rmtree(self.temp_path, ignore_errors=True)
+
     def fit(self,
             dataset: Any,
-            val_dataset: Optional[Union[CityscapesDataset, KittiDataset]]=None,
-            logging_path: str=str(Path(__file__).parent / 'logging'),
-            silent: bool=False,
-            verbose: Optional[bool]=None
+            val_dataset: Optional[Union[CityscapesDataset, KittiDataset]] = None,
+            logging_path: str = str(Path(__file__).parent / 'logging'),
+            silent: bool = False,
+            verbose: Optional[bool] = None
             ):
         """
         This method is used for training the algorithm on a train dataset and validating on a separate dataset.
@@ -222,23 +226,31 @@ class EfficientPsLearner(Learner):
         :return: Returns stats regarding the evaluation
         :rtype: dict
         """
-        shutil.rmtree(self.temp_path, ignore_errors=True) # Ensure that no previous results are in this folder
+        dataset.pipeline = self._cfg.test_pipeline
+        dataloader = build_dataloader(
+            dataset.get_mmdet_dataset(test_mode=True),
+            imgs_per_gpu=1,
+            workers_per_gpu=self.num_workers,
+            dist=False,
+            shuffle=False
+        )
 
-        sampler = SequentialSampler(dataset)
-        dataloader = DataLoader(dataset, batch_size=self.batch_size, sampler=sampler, num_workers=self.num_workers,
-                                collate_fn=lambda x: x)
+        # Put model on GPUs
+        self.model = MMDataParallel(self.model, device_ids=range(self._cfg.gpus)).cuda()
 
-        with tqdm(dataloader, unit='batch', desc='Evaluation') as pbar:
-            for i, batch in enumerate(dataloader):
-                images = [data[0] for data in batch]
-                predictions = self.infer(images, return_raw_logits=True)
-                save_panoptic_eval_(predictions, path=self.temp_path)
-                pbar.update(1)
+        # Run evaluation
+        single_gpu_test(self.model, dataloader, show=False, eval=['panoptic'])
+        std_temp_path = str(Path(__file__).parent / 'tmpDir')  # This is hard-coded in the base code
+        if self.temp_path != std_temp_path:
+            shutil.copytree(std_temp_path, self.temp_path, dirs_exist_ok=True)
+            shutil.rmtree(std_temp_path)
 
+        sys.stdout = open(os.devnull, 'w')  # Block prints to STDOUT
         results = dataset.evaluate(os.path.join(self.temp_path, 'tmp'), os.path.join(self.temp_path, 'tmp_json'))
+        sys.stdout = sys.__stdout__
 
         if print_results:
-            msg = f"{'Category':<14s}| {'PQ':>5s} {'SQ':>5s} {'RQ':>5s} {'N':>5s}\n"
+            msg = f"\n{'Category':<14s}| {'PQ':>5s} {'SQ':>5s} {'RQ':>5s} {'N':>5s}\n"
             msg += "-" * 41 + "\n"
             for x in ['All', 'Things', 'Stuff']:
                 msg += f"{x:<14s}| {results[x]['pq'] * 100:>5.1f} {results[x]['sq'] * 100:>5.1f} "
@@ -249,12 +261,11 @@ class EfficientPsLearner(Learner):
             msg = msg[:-1]
             print(msg)
 
-        shutil.rmtree(self.temp_path)
         return results
 
     def infer(self,
-              batch: Union[Image, List[Image], ImageWithFilename, List[ImageWithFilename]],
-              return_raw_logits: bool=False
+              batch: Union[Image, List[Image]],
+              return_raw_logits: bool = False
               ) -> Union[List[Tuple[Heatmap, Heatmap]], Tuple[Heatmap, Heatmap], np.ndarray]:
         """
         This method performs inference on the batch provided.
@@ -278,16 +289,12 @@ class EfficientPsLearner(Learner):
 
         # Convert to the format expected by the mmdetection API
         single_image_mode = False
-        if isinstance(batch, Image) or isinstance(batch, ImageWithFilename):
+        if isinstance(batch, Image):
             batch = [batch]
             single_image_mode = True
         mmdet_batch = []
         for img in batch:
-            if isinstance(img, ImageWithFilename):
-                filename = img.filename
-            else:
-                filename = None
-            mmdet_img = {'filename': filename, 'img': img.numpy(), 'img_shape': img.numpy().shape,
+            mmdet_img = {'filename': None, 'img': img.numpy(), 'img_shape': img.numpy().shape,
                          'ori_shape': img.numpy().shape}
             mmdet_img = test_pipeline(mmdet_img)
             mmdet_batch.append(scatter(collate([mmdet_img], samples_per_gpu=1), [device])[0])
@@ -367,7 +374,7 @@ class EfficientPsLearner(Learner):
         raise NotImplementedError
 
     @staticmethod
-    def download(path: str, mode: str='model', trained_on: str='cityscapes') -> str:
+    def download(path: str, mode: str = 'model', trained_on: str = 'cityscapes') -> str:
         """
         Download data from the OpenDR server. Valid modes include pre-trained model weights and data used in the unit tests.
 
@@ -417,13 +424,13 @@ class EfficientPsLearner(Learner):
         return filename
 
     @staticmethod
-    def visualize(image: Union[Image, ImageWithFilename],
+    def visualize(image: Image,
                   prediction: Tuple[Heatmap, Heatmap],
-                  show_figure: bool=True,
-                  save_figure: bool=False,
-                  figure_filename: Optional[str]=None,
-                  figure_size: Tuple[float, float]=(15, 10),
-                  detailed: bool=False):
+                  show_figure: bool = True,
+                  save_figure: bool = False,
+                  figure_filename: Optional[str] = None,
+                  figure_size: Tuple[float, float] = (15, 10),
+                  detailed: bool = False):
         assert figure_filename is not None if save_figure else True
 
         PALETTE.append([0, 0, 0])
@@ -517,7 +524,7 @@ class EfficientPsLearner(Learner):
         self._num_workers = value
 
 
-def save_panoptic_eval_(results, path: str='tmpDir'):
+def save_panoptic_eval_(results, path: str = 'tmpDir'):
     """Overwrite hard-coded path to temporary directory"""
     save_panoptic_eval(results)
     if path != 'tmpDir':

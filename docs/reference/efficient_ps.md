@@ -89,7 +89,7 @@ EfficientPsLearner.infer(batch, return_raw_logits=False)
 ```
 
 Parameters:
-- **batch**: *Image*, *ImageWithFilename*, *List[Image]*, *List[ImageWithFilename]*
+- **batch**: *Image*, *List[Image]*
   Image(s) to feed to the network.
 - **return_raw_logits**: *bool*
   If True, the raw network output will be returned. Otherwise, the returned object will hold Tuples of Heatmaps of the OpenDR interface.
@@ -147,7 +147,7 @@ EfficientPsLearner.visualize(image, prediction, show_figure=True, save_figure=Fa
 ```
 
 Parameters:
-- **image**: *Image*, *ImageWithFilename*
+- **image**: *Image*
   BGR image used for inference.
 - **prediction**: *Tuple[Heatmap, Heatmap]*
   The semantic and instance segmentation maps obtained with the `infer()` method.
