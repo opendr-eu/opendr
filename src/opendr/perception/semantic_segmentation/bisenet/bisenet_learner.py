@@ -128,7 +128,7 @@ class BisenetLearner(Learner):
                     print('Validation...')
                 self.eval(val_dataset)
                 
-        return {'Total Loss':loss_train_mean}
+        return {'Total Loss': loss_train_mean}
 
     def eval(self, dataset, silent=False, verbose=True):
 
