@@ -127,7 +127,7 @@ class BisenetLearner(Learner):
                 if not silent and verbose:
                     print('Validation...')
                 self.eval(val_dataset)
-                
+
         return {'Total Loss': loss_train_mean}
 
     def eval(self, dataset, silent=False, verbose=True):
