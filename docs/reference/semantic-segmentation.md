@@ -92,7 +92,7 @@ Parameters:
 BisenetLearner.infer(self, img)
 ```
 
-This method is used to perform segmentation on an image
+This method is used to perform segmentation on an image.
 Returns a `engine.target.Heatmap` object.
 
 Parameters:
