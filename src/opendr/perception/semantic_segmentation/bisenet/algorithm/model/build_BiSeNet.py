@@ -87,7 +87,7 @@ class BiSeNet(torch.nn.Module):
         # build context path
         self.context_path = build_contextpath(name=context_path)
 
-        # build attention refinement module  for resnet 101
+        # build attention refinement module for resnet 101
         if context_path == 'resnet101':
             self.attention_refinement_module1 = AttentionRefinementModule(1024, 1024)
             self.attention_refinement_module2 = AttentionRefinementModule(2048, 2048)
