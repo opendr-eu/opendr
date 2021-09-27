@@ -148,4 +148,4 @@ Parameters:
 
 #### References
 <a name="bisenetp" href="https://arxiv.org/abs/1808.00897">[1]</a> BiSeNet: Bilateral Segmentation Network for Real-time Semantic Segmentation,
-[arXiv]https://arxiv.org/abs/1808.00897).  
+[arXiv](https://arxiv.org/abs/1808.00897).  
