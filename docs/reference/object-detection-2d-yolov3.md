@@ -94,6 +94,7 @@ YOLOv3DetectorLearner.fit(self, dataset, val_dataset, verbose)
 
 This method is used to train the algorithm on a `DetectionDataset` or `ExternalDataset` dataset and also performs evaluation 
 on a validation set using the trained model. Returns a dictionary containing stats regarding the training process.
+
 Parameters:
 - **dataset**: *object*
   Object that holds the training dataset.
@@ -110,6 +111,7 @@ YOLOv3DetectorLearner.eval(self, dataset, use_subset, subset_size, verbose)
 ```
 
 Performs evaluation on a dataset or a subset of a dataset.
+
 Parameters:
 - **dataset**: *object*
   Object that holds dataset to perform evaluation on.
@@ -125,10 +127,11 @@ Parameters:
   
 #### `YOLOv3DetectorLearner.infer`
 ```python
-YOLOv3DetectorLearner.infer(self, img, threshold=0.2, keep_size=False)
+YOLOv3DetectorLearner.infer(self, img, threshold, keep_size)
 ```
 
 Performs inference on a single image.
+
 Parameters:
 - **img**: *object*
   Object of type engine.data.Image.
@@ -145,6 +148,7 @@ YOLOv3DetectorLearner.save(self, path, verbose)
 ```
 
 Saves a model in OpenDR format at the specified path. The model name is extracted from the base folder in the specified path.
+
 Parameters:
 - **path**: *str*
   Specifies the folder where the model will be saved. The model name is extracted from the base folder of this path.
@@ -172,6 +176,7 @@ YOLOv3DetectorLearner.download(self, path, mode, verbose, url)
 ```
 
 Downloads data needed for the various functions of the learner, e.g., pretrained models as well as test data.
+
 Parameters:
 - **path**: *str, default=None*
   Specifies the folder where data will be downloaded. If *None*, the *self.temp_path* directory is used instead.

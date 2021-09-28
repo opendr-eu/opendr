@@ -77,6 +77,7 @@ RetinaFaceLearner.fit(self, dataset, val_dataset, from_scratch, silent, verbose)
 
 This method is used to train the algorithm on the `WiderFaceDetection` dataset and also performs evaluation on a validation 
 set using the trained model. Returns a dictionary containing stats regarding the training process.
+
 Parameters:
 - **dataset**: *object*
   Object that holds the training dataset. Must be of `WiderFaceDetection` type.
@@ -99,6 +100,7 @@ RetinaFaceLearner.eval(self, dataset, verbose, use_subset, subset_size, pyramid,
 ```
 
 Performs evaluation on a dataset or a subset of a dataset.
+
 Parameters:
 - **dataset**: *object*
   Object that holds dataset to perform evaluation on.
@@ -120,10 +122,11 @@ Parameters:
   
 #### `RetinaFaceLearner.infer`
 ```python
-RetinaFaceLearner.infer(self, img, threshold=0.8, nms_threshold=0.4, scales=[1024, 1980], mask_thresh=0.8)
+RetinaFaceLearner.infer(self, img, threshold, nms_threshold, scales, mask_thresh)
 ```
 
 Performs inference on a single image.
+
 Parameters:
 - **img**: *object*
   Object of type engine.data.Image.
@@ -131,7 +134,7 @@ Parameters:
 - **threshold**: *float, default=0.8*
   Defines the detection threshold. Bounding boxes with confidence under this value are discarded.
   
-- **nms_threshold**: *float, default=0.45*
+- **nms_threshold**: *float, default=0.4*
   Defines the NMS threshold.
   
 - **scales**: *list, default=[1024, 1980]*
@@ -147,6 +150,7 @@ RetinaFaceLearner.save(self, path, verbose)
 ```
 
 Saves a model in OpenDR format at the specified path. The model name is extracted from the base folder in the specified path.
+
 Parameters:
 - **path**: *str*
   Specifies the folder where the model will be saved. The model name is extracted from the base folder of this path.
@@ -175,6 +179,7 @@ RetinaFaceLearner.download(self, path, mode, verbose, url)
 
 Downloads data needed for the various functions of the learner, e.g., data for training, pretrained models and backbones as 
 well as test data.
+
 Parameters:
 - **path**: *str, default=None*
   Specifies the folder where data will be downloaded. If *None*, the *self.temp_path* directory is used instead.

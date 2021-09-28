@@ -5,9 +5,7 @@ This folder contains the OpenDR Learner class for RetinaFace for 2D face detecti
 
 Sources
 ------
-Large parts of the Learner code are taken from the official
-[deepinsight implementation](https://www.github.com/deepinsight/insightface) with modifications
-to make it compatible with OpenDR specifications. The original code is licensed under the MIT license:
+Large parts of the Learner code are taken from the official [deepinsight implementation](https://www.github.com/deepinsight/insightface) with modifications to make it compatible with OpenDR specifications. The original code is licensed under the MIT license:
 ```
 MIT License
 
@@ -36,8 +34,7 @@ Usage
 ------
 - ```make``` should be run from the parent directory to build some sources.
 - Only ```resnet``` network is supported for training, and only the WIDER Face dataset can be used for training.
-- The ```temp_path``` folder is used to save checkpoints during training, as well as a ```.pkl``` file which is generated 
-  during training and contains the roidb.
+- The ```temp_path``` folder is used to save checkpoints during training, as well as a ```.pkl``` file which is generated during training and contains the roidb.
 - To train the detector, some extra data must be downloaded and placed in the directory of the WIDER Face dataset. The directory structure of the dataset should look like:
   
   ``` 

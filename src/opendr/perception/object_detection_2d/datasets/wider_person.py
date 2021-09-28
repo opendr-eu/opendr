@@ -79,7 +79,6 @@ class WiderPersonDataset(DetectionDataset):
                             self.bboxes.append(BoundingBoxList(boxes=bounding_boxes))
                             image_paths.append(os.path.join(self.image_dir, image_name + '.jpg'))
                         cur_line += 2 + n_boxes
-        # print(image_paths)
         dataset_type = 'wider_person'
         super().__init__(classes=classes, dataset_type=dataset_type, image_paths=image_paths,
                          image_transform=image_transform, target_transform=target_transform,

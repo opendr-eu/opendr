@@ -57,7 +57,7 @@ def locate_cuda():
     return cudaconfig
 
 
-# Test if cuda could be foun
+# Test if cuda could be found
 try:
     CUDA = locate_cuda()
 except EnvironmentError:

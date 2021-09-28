@@ -75,6 +75,7 @@ SingleShotDetectorLearner.fit(self, dataset, val_dataset, verbose)
 
 This method is used to train the algorithm on a `DetectionDataset` or `ExternalDataset` dataset and also performs evaluation 
 on a validation set using the trained model. Returns a dictionary containing stats regarding the training process.
+
 Parameters:
 - **dataset**: *object*
   Object that holds the training dataset.
@@ -91,6 +92,7 @@ SingleShotDetectorLearner.eval(self, dataset, use_subset, subset_size, verbose)
 ```
 
 Performs evaluation on a dataset or a subset of a dataset.
+
 Parameters:
 - **dataset**: *object*
   Object that holds dataset to perform evaluation on.
@@ -106,10 +108,11 @@ Parameters:
   
 #### `SingleShotDetectorLearner.infer`
 ```python
-SingleShotDetectorLearner.infer(self, img, threshold=0.2, keep_size=False)
+SingleShotDetectorLearner.infer(self, img, threshold, keep_size)
 ```
 
 Performs inference on a single image.
+
 Parameters:
 - **img**: *object*
   Object of type engine.data.Image.
