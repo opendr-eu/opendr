@@ -67,6 +67,7 @@ jobs:
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
           - control/mobile_manipulation
+          - perception/object_detection_2d
           # - perception/object_tracking_3d
         include:
           - os: ubuntu-20.04
