@@ -118,7 +118,6 @@ if __name__ == '__main__':
 
     dataset = WiderFaceDataset('/home/administrator/data/wider', splits=['train', 'val'])
 
-
     all_boxes = [[[] for _ in range(len(dataset))]
                  for _ in range(dataset.num_classes)]
 
