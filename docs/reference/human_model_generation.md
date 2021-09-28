@@ -14,8 +14,7 @@ following public methods:
 
 #### `PIFuGeneratorLearner` constructor
 ```python
-PIFuGeneratorLearner(self, model_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter,
-temp_path, device, threshold, num_classes, return_segmentations)
+PIFuGeneratorLearner(self)
 ```
 #### References
 <a name="pifu-paper" href="https://shunsukesaito.github.io/PIFu/">[1]</a>
