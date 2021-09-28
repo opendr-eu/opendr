@@ -21,7 +21,6 @@ class CascadeRefineOperator(mx.operator.CustomOp):
         stride = self.stride
         sstride = str(stride)
         base_size = config.RPN_ANCHOR_CFG[sstride]['BASE_SIZE']
-        # allowed_border = config.RPN_ANCHOR_CFG[sstride]['ALLOWED_BORDER']
         ratios = config.RPN_ANCHOR_CFG[sstride]['RATIOS']
         scales = config.RPN_ANCHOR_CFG[sstride]['SCALES']
         base_anchors = generate_anchors(base_size=base_size, ratios=list(ratios), scales=np.array(scales, dtype=np.float32),
@@ -85,14 +84,11 @@ class CascadeRefineOperator(mx.operator.CustomOp):
         gt_boxes = gt_label['gt_boxes']
         if landmark:
             gt_landmarks = gt_label['gt_landmarks']
-            # gt_landmarks = gt_landmarks[nonneg]
             assert gt_boxes.shape[0] == gt_landmarks.shape[0]
-        # feat_strides = config.RPN_FEAT_STRIDE
         bbox_pred_len = 4
         landmark_pred_len = 10
         num_anchors = anchors.shape[0]
         A = self.A
-        # total_anchors = num_anchors
         feat_height, feat_width = config.SCALES[0][0] // self.stride, config.SCALES[0][0] // self.stride
 
         # label: 1 is positive, 0 is negative, -1 is dont care
@@ -190,29 +186,17 @@ class CascadeRefineOperator(mx.operator.CustomOp):
         label['%s_label' % prefix] = _label[0]
         label['%s_bbox_target' % prefix] = bbox_target[0]
         label['%s_bbox_weight' % prefix] = bbox_weight[0]
-        # if landmark:
-        #     landmark_target = landmark_target.reshape((1, feat_height * feat_width,
-        #                                                A * landmark_pred_len)).transpose(0, 2, 1)
-        #     landmark_target /= config.TRAIN.LANDMARK_STD
-        #     landmark_weight = landmark_weight.reshape((1, feat_height * feat_width,
-        #                                                A * landmark_pred_len)).transpose((0, 2, 1))
-        #     label['%s_landmark_target' % prefix] = landmark_target[0]
-        #     label['%s_landmark_weight' % prefix] = landmark_weight[0]
 
         return label
 
     def forward(self, is_train, req, in_data, out_data, aux):
         self.nbatch += 1
-        # ta = datetime.datetime.now()
         global STAT
         A = config.NUM_ANCHORS
 
-        # cls_label_t0 = in_data[0].asnumpy()  # BS, AHW
-        # cls_score_t0 = in_data[1].asnumpy()  # BS, C, AHW
         cls_score = in_data[2].asnumpy()  # BS, C, AHW
         bbox_pred_t0 = in_data[3].asnumpy()  # BS, AC, HW
         bbox_target_t0 = in_data[4].asnumpy()  # BS, AC, HW
-        # cls_label_raw = in_data[5].asnumpy()  # BS, AHW
         gt_boxes = in_data[6].asnumpy()  # BS, N, C=4+1
 
         batch_size = cls_score.shape[0]
@@ -228,8 +212,6 @@ class CascadeRefineOperator(mx.operator.CustomOp):
         bbox_target_t0 = bbox_target_t0.transpose((0, 2, 1))
         bbox_target_t0 = bbox_target_t0.reshape((bbox_target_t0.shape[0], -1, 4))
 
-        # _stat = [0, 0, 0]
-        # SEL_TOPK = config.TRAIN.RPN_BATCH_SIZE
         FAST = False
         for ibatch in range(batch_size):
             if not FAST:
@@ -248,7 +230,6 @@ class CascadeRefineOperator(mx.operator.CustomOp):
                 fg_score = cls_score[ibatch, 1, :] - cls_score[ibatch, 0, :]
                 fg_inds = np.where(labels > 0)[0]
                 num_fg = int(config.TRAIN.RPN_FG_FRACTION * config.TRAIN.RPN_BATCH_SIZE)
-                # origin_num_fg = len(fg_inds)
                 if len(fg_inds) > num_fg:
                     if self.mode == 0:
                         disable_inds = np.random.choice(fg_inds, size=(len(fg_inds) - num_fg), replace=False)
@@ -267,12 +248,10 @@ class CascadeRefineOperator(mx.operator.CustomOp):
                     num_bg = max(48, n_fg * int(1.0 / config.TRAIN.RPN_FG_FRACTION - 1))
 
                 bg_inds = np.where(labels == 0)[0]
-                # origin_num_bg = len(bg_inds)
                 if num_bg == 0:
                     labels[bg_inds] = -1
                 elif len(bg_inds) > num_bg:
                     # sort ohem scores
-
                     if self.mode == 0:
                         disable_inds = np.random.choice(bg_inds, size=(len(bg_inds) - num_bg), replace=False)
                         labels[disable_inds] = -1
@@ -291,32 +270,6 @@ class CascadeRefineOperator(mx.operator.CustomOp):
                 valid_count[ibatch][0] = n_fg
                 labels_out[ibatch] = labels
                 bbox_target_out[ibatch] = new_bbox_target
-        #     else:  # FAST MODE
-        #         fg_score_t0 = cls_score_t0[ibatch, 1, :] - cls_score_t0[ibatch, 0, :]
-        #         sort_idx_t0 = np.argsort(fg_score_t0.flatten())[::-1][0:SEL_TOPK]
-        #         _bbox_pred_t0 = bbox_pred_t0[ibatch][sort_idx_t0]
-        #         _bbox_target_t0 = bbox_target_t0[ibatch][sort_idx_t0]
-        #         anchors_t0 = self.apply_bbox_pred(_bbox_pred_t0)
-        #         gt_anchors = self.apply_bbox_pred(_bbox_target_t0)
-        #         gt_label = {'gt_boxes': gt_anchors}
-        #         new_label_dict = self.assign_anchor_fpn(gt_label, anchors_t0, False, prefix=self.prefix)
-        #         labels = new_label_dict['%s_label' % self.prefix]
-        #         new_bbox_target = new_label_dict['%s_bbox_target' % self.prefix]
-        #         _anchor_weight = np.zeros((num_anchors, 1), dtype=np.float32)
-        #         fg_score = cls_score[ibatch, 1, :] - cls_score[ibatch, 0, :]
-        #         fg_inds = np.where(labels > 0)[0]
-        #         _labels = np.empty(shape=labels.shape, dtype=np.float32)
-        #         _labels.fill(-1)
-        #         _labels[sort_idx_idx] = labels
-        #
-        #         anchor_weight[ibatch] = _anchor_weight
-        #         valid_count[ibatch][0] = len(fg_inds)
-        #         labels_out[ibatch] = _labels
-        #         bbox_target_out[ibatch] = new_bbox_target
-        #
-        # for ind, val in enumerate([labels_out, bbox_target_out, anchor_weight, valid_count]):
-        #     val = mx.nd.array(val)
-        #     self.assign(out_data[ind], req[ind], val)
 
     def backward(self, req, out_grad, in_data, out_data, in_grad, aux):
         for i in range(len(in_grad)):
