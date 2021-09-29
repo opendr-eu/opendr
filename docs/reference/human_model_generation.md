@@ -18,7 +18,6 @@ PIFuGeneratorLearner(self, device, checkpoint_dir)
 ```
 
 Constructor parameter explanation:
-
 - **device**: *{'cuda', 'cpu'}, default='cuda'*
   Specifies the device to be used.
 
@@ -26,12 +25,13 @@ Constructor parameter explanation:
   Specifies a path to be used for loading the checkpoints for inference. 
   
 #### `PIFuGeneratorLearner.infer`
-
-This method generates a 3D human model from a single image. The joints of the 3D model in the 3D space can be optionally approximated. A future release will allow the use of multiple images as input. 
-
 ```python
 PIFuGeneratorLearner.infer(self, imgs_rgb, imgs_msk, obj_path, extract_pose)
 ```
+
+This method generates a 3D human model from a single image. The joints of the 3D model in the 3D space can be optionally approximated. A future release will allow the use of multiple images as input. 
+
+Parameters:
 - **imgs_rgb**: *list, default=None *
   List of images of type engine.data.Image. Those images will be used as input. At the current release, the list's length must be 1. 
 
@@ -45,27 +45,35 @@ PIFuGeneratorLearner.infer(self, imgs_rgb, imgs_msk, obj_path, extract_pose)
 Specifies whether the joints of the 3D model in the 3D space will be approximated or not.
 
 #### `PIFuGeneratorLearner.load`
-
-This method loads a pretrained model.
-
 ```python
 PIFuGeneratorLearner.load(self, path)
 ```  
+
+This method loads a pretrained model.
+
+Parameters:
+- **path**: *str*
+  Specifies the folder where the model will be loaded from.
+  
 #### `PIFuGeneratorLearner.download`
-
-This method downloads the needed pretrained models.
-
 ```python
 PIFuGeneratorLearner.download(self, path, url)
 ```  
 
+This method downloads the needed pretrained models.
+
+Parameters:
+- **path**: *str, default=None*
+  Specifies the folder where data will be downloaded.
+  
+- **url**: *str, default=OpenDR FTP URL* 
+  URL of the FTP server.
+
 #### `PIFuGeneratorLearner.get_img_views`
-
-This method generate renderings of the generated 3D human model from a given set of rotation angles (yaw only).
-
 ```python
 PIFuGeneratorLearner.get_img_views(self, model_3D, rotations, human_pose_3D, plot_kps)
 ```  
+This method generate renderings of the generated 3D human model from a given set of rotation angles (yaw only).
   
 #### References
 <a name="pifu-paper" href="https://shunsukesaito.github.io/PIFu/">[1]</a>
