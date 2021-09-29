@@ -73,7 +73,21 @@ Parameters:
 ```python
 PIFuGeneratorLearner.get_img_views(self, model_3D, rotations, human_pose_3D, plot_kps)
 ```  
-This method generate renderings of the generated 3D human model from a given set of rotation angles (yaw only).
+This method generate renderings of the generated 3D human model from a given list of rotation angles (yaw only).
+
+Parameters:
+- **model_3D**: *object, default=None*
+Object of type simulation.human_model_genration.utilities.model_3D.Model_3D. It holds the human 3D model. 
+
+- **rotations**: *list, default=None
+List of yaw angles used in the generation of the renderings of a 3D human model from various views.
+
+- **human_pose_3D**: *list, default=None
+List of keypoints, which contains the name of each keypoint along with their coodinates [x,y,z] in the 3D space.
+
+- **plot_kps**: *bool, default=False* 
+Specifies whether the projections of the joints will be plotted in the renderings.
+
   
 #### References
 <a name="pifu-paper" href="https://shunsukesaito.github.io/PIFu/">[1]</a>
