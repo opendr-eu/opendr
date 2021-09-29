@@ -30,6 +30,20 @@ Constructor parameter explanation:
 PIFuGeneratorLearner.infer(self, mgs_rgb, imgs_msk, obj_path, extract_pose)
 ```
   
+#### `PIFuGeneratorLearner.load`
+```python
+PIFuGeneratorLearner.load(self, path)
+```  
+#### `PIFuGeneratorLearner.download`
+```python
+PIFuGeneratorLearner.download(self, path, url)
+```  
+
+#### `PIFuGeneratorLearner.get_img_views`
+```python
+PIFuGeneratorLearner.get_img_views(self, model_3D, rotations, human_pose_3D, plot_kps)
+```  
+  
 #### References
 <a name="pifu-paper" href="https://shunsukesaito.github.io/PIFu/">[1]</a>
 PIFu: Pixel-Aligned Implicit Function for High-Resolution Clothed Human Digitization,
