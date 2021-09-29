@@ -26,6 +26,9 @@ Constructor parameter explanation:
   Specifies a path to be used for loading the checkpoints for inference. 
   
 #### `PIFuGeneratorLearner.infer`
+
+This method generates a 3D human model from a single image. The joints of the 3D model in the 3D space can be optionally approximated. A future release will allow the use of multiple images as input. 
+
 ```python
 PIFuGeneratorLearner.infer(self, mgs_rgb, imgs_msk, obj_path, extract_pose)
 ```
