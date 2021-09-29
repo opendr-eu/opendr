@@ -33,10 +33,10 @@ This method generates a 3D human model from a single image. The joints of the 3D
 PIFuGeneratorLearner.infer(self, imgs_rgb, imgs_msk, obj_path, extract_pose)
 ```
 - **imgs_rgb**: *list, default=None *
-  List of images of type engine.data.Image. Those images will be used as input. At the current release, the list's length must be 1 (```len(imgs_rgb)==1```). 
+  List of images of type engine.data.Image. Those images will be used as input. At the current release, the list's length must be 1. 
 
 - **imgs_msk**: *list, default=None *
-  List of images of type engine.data.Image. Those images will be used as masks, depicting the silhouette of the portrayed human. At the current release, the list's length must be of ```len(imgs_msk)==1```. 
+  List of images of type engine.data.Image. Those images will be used as masks, depicting the silhouette of the portrayed human. At the current release, the list's length must be 1. 
   
 - **obj_path**: *str, default=None*
   Specifies a path for saving the generated 3D human model in OBJ format.
