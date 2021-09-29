@@ -48,7 +48,7 @@ PIFuGeneratorLearner.load(self, path)
 This method loads a pretrained model.
 
 Parameters:
-- **path**: *str*\
+- **path**: *str, default=None**\
 Specifies the folder where the model will be loaded from.
   
 #### `PIFuGeneratorLearner.download`
