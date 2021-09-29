@@ -68,7 +68,7 @@ URL of the FTP server.
 ```python
 PIFuGeneratorLearner.get_img_views(self, model_3D, rotations, human_pose_3D, plot_kps)
 ```  
-This method generate renderings of the generated 3D human model from a given list of rotation angles (yaw only). The renderings are returned as a List of objects of type engine.data.Image. In the case where the locations of the model's joints in the 3D space were used as input, a list of keypoints is returned, containing the name of each keypoint along with their coodinates [x,y] in the image space.  
+This method generate renderings of the generated 3D human model from a given list of rotation angles (yaw only). The renderings are returned as a List of objects of type engine.data.Image. In the case where the locations of the model's joints in the 3D space were provided as input, a list of keypoints is returned, containing the name of each keypoint along with their coodinates [x,y] in the image space.  
 
 Parameters:
 - **model_3D**: *object, default=None*\
