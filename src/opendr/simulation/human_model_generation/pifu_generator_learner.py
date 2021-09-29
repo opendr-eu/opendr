@@ -15,17 +15,17 @@ from urllib.request import urlretrieve
 
 
 class PIFuGeneratorLearner(Learner):
-    def __init__(self, device='cpu'):
+    def __init__(self, device='cpu', checkpoint_dir='utilities/PIFu/checkpoints'):
         super().__init__()
+
         self.opt = BaseOptions().parse()
-        checkpoint_dir = os.path.join(os.path.split(__file__)[0], 'utilities', 'PIFu', 'checkpoints')
-        net_G_path = os.path.join(checkpoint_dir, 'net_G')
-        net_C_path = os.path.join(checkpoint_dir, 'net_C')
+
+        if not os.path.exists(checkpoint_dir):
+            os.mkdir(checkpoint_dir)
+        self.opt.load_netG_checkpoint_path = os.path.join(checkpoint_dir, 'net_G')
+        self.opt.load_netC_checkpoint_path = os.path.join(checkpoint_dir, 'net_C')
         self.download(checkpoint_dir)
-        if device == 'cuda':
-            self.opt.cuda = True
-        self.opt.load_netG_checkpoint_path = net_G_path
-        self.opt.load_netC_checkpoint_path = net_C_path
+
         # Network configuration
         self.opt.batch_size = 1
         self.opt.mlp_dim = [257, 1024, 512, 256, 128, 1]
@@ -37,15 +37,17 @@ class PIFuGeneratorLearner(Learner):
         self.opt.norm = 'group'
         self.opt.norm_color = 'group'
         self.opt.projection_mode = 'orthogonal'
-        # create net
+
         # set cuda
-        if self.opt.cuda and torch.cuda.is_available():
+        if device == 'cuda' and torch.cuda.is_available():
+            self.opt.cuda = True
             self.cuda = torch.device('cuda:%d' % self.opt.gpu_id)
         else:
             self.cuda = torch.device('cpu')
+
         self.netG = HGPIFuNet(self.opt, self.opt.projection_mode).to(device=self.cuda)
         self.netC = ResBlkPIFuNet(self.opt).to(device=self.cuda)
-        self.load(os.path.abspath(os.path.dirname(__file__))+'/utilities/PIFu/checkpoints')
+        self.load(checkpoint_dir)
         self.evaluator = Evaluator(self.opt, self.netG, self.netC, self.cuda)
 
     def infer(self, imgs_rgb, imgs_msk=None, obj_path=None, extract_pose=False):
@@ -88,19 +90,19 @@ class PIFuGeneratorLearner(Learner):
             print("PIFu model is loaded.")
 
     def optimize(self, **kwargs):
-        pass
+        raise NotImplementedError
 
     def reset(self):
-        pass
+        raise NotImplementedError
 
     def save(self, **kwargs):
-        pass
+        raise NotImplementedError
 
     def eval(self, **kwargs):
-        pass
+        raise NotImplementedError
 
     def fit(self, **kwargs):
-        pass
+        raise NotImplementedError
 
     def get_img_views(self, model_3D, rotations, human_pose_3D=None, plot_kps=False):
         if human_pose_3D is not None:
