@@ -18,7 +18,7 @@ PIFuGeneratorLearner(self, device, checkpoint_dir)
 ```
 
 Constructor parameter explanation:
-- **device**: *{'cuda', 'cpu'}, default='cuda'*\n
+- **device**: *{'cuda', 'cpu'}, default='cuda'*\
   Specifies the device to be used.
 - **checkpoint_dir**: *str, default='utilities/PIFu/checkpoints'*
 Specifies a path to be used for loading the checkpoints for inference. 
