@@ -31,15 +31,24 @@ PIFuGeneratorLearner.infer(self, mgs_rgb, imgs_msk, obj_path, extract_pose)
 ```
   
 #### `PIFuGeneratorLearner.load`
+
+This method loads a pretrained model.
+
 ```python
 PIFuGeneratorLearner.load(self, path)
 ```  
 #### `PIFuGeneratorLearner.download`
+
+This method downloads the needed pretrained models.
+
 ```python
 PIFuGeneratorLearner.download(self, path, url)
 ```  
 
 #### `PIFuGeneratorLearner.get_img_views`
+
+This method generate renderings of the generated 3D human model from a given set of rotation angles (yaw only).
+
 ```python
 PIFuGeneratorLearner.get_img_views(self, model_3D, rotations, human_pose_3D, plot_kps)
 ```  
