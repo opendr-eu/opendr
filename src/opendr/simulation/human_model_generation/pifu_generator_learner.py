@@ -50,7 +50,7 @@ class PIFuGeneratorLearner(Learner):
         self.load(checkpoint_dir)
         self.evaluator = Evaluator(self.opt, self.netG, self.netC, self.cuda)
 
-    def infer(self, imgs_rgb, imgs_msk=None, obj_path=None, extract_pose=False):
+    def infer(self, imgs_rgb=None, imgs_msk=None, obj_path=None, extract_pose=False):
         for i in range(len(imgs_rgb)):
             if not isinstance(imgs_rgb[i], Image):
                 imgs_rgb[i] = Image(imgs_rgb[i])
