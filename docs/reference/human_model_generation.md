@@ -14,8 +14,17 @@ following public methods:
 
 #### `PIFuGeneratorLearner` constructor
 ```python
-PIFuGeneratorLearner(self)
+PIFuGeneratorLearner(self, device, checkpoint_dir)
 ```
+
+Constructor parameter explanation:
+
+- **device**: *{'cuda', 'cpu'}, default='cuda'*
+  Specifies the device to be used.
+
+- **checkpoint_dir**: *str, default='utilities/PIFu/checkpoints'*
+  Specifies a path to be used for loading the checkpoints for inference. 
+  
 #### References
 <a name="pifu-paper" href="https://shunsukesaito.github.io/PIFu/">[1]</a>
 PIFu: Pixel-Aligned Implicit Function for High-Resolution Clothed Human Digitization,
