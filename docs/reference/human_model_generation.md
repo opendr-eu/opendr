@@ -25,6 +25,11 @@ Constructor parameter explanation:
 - **checkpoint_dir**: *str, default='utilities/PIFu/checkpoints'*
   Specifies a path to be used for loading the checkpoints for inference. 
   
+#### `PIFuGeneratorLearner.infer`
+```python
+PIFuGeneratorLearner.infer(self, mgs_rgb, imgs_msk, obj_path, extract_pose)
+```
+  
 #### References
 <a name="pifu-paper" href="https://shunsukesaito.github.io/PIFu/">[1]</a>
 PIFu: Pixel-Aligned Implicit Function for High-Resolution Clothed Human Digitization,
