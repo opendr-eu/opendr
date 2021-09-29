@@ -28,7 +28,7 @@ Specifies a path to be used for loading the checkpoints for inference.
 PIFuGeneratorLearner.infer(self, imgs_rgb, imgs_msk, obj_path, extract_pose)
 ```
 
-This method generates a 3D human model from a single image. The joints of the 3D model in the 3D space can be optionally approximated. A future release will allow the use of multiple images as input. 
+This method generates a 3D human model from a single image. A future release will allow the use of multiple images as input. The joints of the 3D model in the 3D space can be optionally approximated. The method returns the 3D human model as an object of type simulation.human_model_genration.utilities.model_3D.Model_3D. If the locations of the model's were computed, they are also returned as a List, which contains the name of each keypoint along with their coodinates [x,y,z] in the 3D space.
 
 Parameters:
 - **imgs_rgb**: *list, default=None*\
