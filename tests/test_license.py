@@ -88,6 +88,10 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones',
             'src/opendr/simulation/human_model_generation/utilities/PIFu',
             'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures'
+            'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
+            'src/opendr/perception/skeleton_based_action_recognition/algorithm',
+            'src/opendr/perception/semantic_segmentation/bisenet/algorithm',
+            'src/opendr/perception/object_detection_2d/retinaface/algorithm',
         ]
 
         skippedFilePaths = [
@@ -96,6 +100,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
             'src/opendr/simulation/human_model_generation/pifu_generator_learner.py',
             'projects/simulation/human_model_generation/demos/model_generation.ipynb'
+            'src/opendr/perception/object_detection_2d/retinaface/Makefile',
         ]
 
         skippedDirectories = [
