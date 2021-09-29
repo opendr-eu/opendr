@@ -32,10 +32,10 @@ PIFuGeneratorLearner.infer(self, imgs_rgb, imgs_msk, obj_path, extract_pose)
 This method generates a 3D human model from a single image. The joints of the 3D model in the 3D space can be optionally approximated. A future release will allow the use of multiple images as input. 
 
 Parameters:
-- **imgs_rgb**: *list, default=None *
+- **imgs_rgb**: *list, default=None*
   List of images of type engine.data.Image. Those images will be used as input. At the current release, the list's length must be 1. 
 
-- **imgs_msk**: *list, default=None *
+- **imgs_msk**: *list, default=None*
   List of images of type engine.data.Image. Those images will be used as masks, depicting the silhouette of the portrayed human. At the current release, the list's length must be 1. 
   
 - **obj_path**: *str, default=None*
@@ -79,10 +79,10 @@ Parameters:
 - **model_3D**: *object, default=None*
 Object of type simulation.human_model_genration.utilities.model_3D.Model_3D. It holds the human 3D model. 
 
-- **rotations**: *list, default=None
+- **rotations**: *list, default=None*
 List of yaw angles used in the generation of the renderings of a 3D human model from various views.
 
-- **human_pose_3D**: *list, default=None
+- **human_pose_3D**: *list, default=None*
 List of keypoints, which contains the name of each keypoint along with their coodinates [x,y,z] in the 3D space.
 
 - **plot_kps**: *bool, default=False* 
