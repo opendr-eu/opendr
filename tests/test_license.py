@@ -99,7 +99,7 @@ class TestLicense(unittest.TestCase):
             'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
             'src/opendr/simulation/human_model_generation/pifu_generator_learner.py',
-            'projects/simulation/human_model_generation/demos/model_generation.ipynb'
+            'projects/simulation/human_model_generation/demos/model_generation.ipynb',
             'src/opendr/perception/object_detection_2d/retinaface/Makefile',
         ]
 
