@@ -20,7 +20,6 @@ PIFuGeneratorLearner(self, device, checkpoint_dir)
 Constructor parameter explanation:
 - **device**: *{'cuda', 'cpu'}, default='cuda'*
   Specifies the device to be used.
-
 - **checkpoint_dir**: *str, default='utilities/PIFu/checkpoints'*
 Specifies a path to be used for loading the checkpoints for inference. 
   
@@ -34,13 +33,10 @@ This method generates a 3D human model from a single image. The joints of the 3D
 Parameters:
 - **imgs_rgb**: *list, default=None*
   List of images of type engine.data.Image. Those images will be used as input. At the current release, the list's length must be 1. 
-
 - **imgs_msk**: *list, default=None*
   List of images of type engine.data.Image. Those images will be used as masks, depicting the silhouette of the portrayed human. At the current release, the list's length must be 1. 
-  
 - **obj_path**: *str, default=None*
   Specifies a path for saving the generated 3D human model in OBJ format.
-  
  - **extract_pose**: *bool, default=False* 
 Specifies whether the joints of the 3D model in the 3D space will be approximated or not.
 
