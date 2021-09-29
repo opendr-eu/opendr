@@ -22,7 +22,7 @@ Constructor parameter explanation:
   Specifies the device to be used.
 
 - **checkpoint_dir**: *str, default='utilities/PIFu/checkpoints'*
-  Specifies a path to be used for loading the checkpoints for inference. 
+Specifies a path to be used for loading the checkpoints for inference. 
   
 #### `PIFuGeneratorLearner.infer`
 ```python
