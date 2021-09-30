@@ -31,7 +31,7 @@ from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
 from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
 from opendr.engine.data import Video, Image
 
-TEXT_COLOR = (255, 0, 255)  # B G R
+TEXT_COLOR = (0, 0, 255)  # B G R
 
 
 # Initialize the output frame and a lock used to ensure thread-safe
@@ -72,13 +72,16 @@ def draw_fps(frame, fps):
         f"{fps:.1f} FPS",
         (10, frame.shape[0] - 10),
         cv2.FONT_HERSHEY_SIMPLEX,
-        1,
+        1.1,
         TEXT_COLOR,
-        1,
+        2,
     )
 
 
-def draw_preds(frame, preds: Dict):
+def draw_preds(frame, preds: Dict, threshold=0.0):
+    if preds[next(iter(preds))] < threshold:
+        return
+
     base_skip = 40
     delta_skip = 30
     for i, (cls, prob) in enumerate(preds.items()):
@@ -87,9 +90,9 @@ def draw_preds(frame, preds: Dict):
             f"{prob:04.3f} {cls}",
             (10, base_skip + i * delta_skip),
             cv2.FONT_HERSHEY_SIMPLEX,
-            1,
+            1.1,
             TEXT_COLOR,
-            1,
+            2,
         )
 
 
@@ -107,7 +110,7 @@ def center_crop(frame):
     e = min(height, width)
     x0 = (width - e) // 2
     y0 = (height - e) // 2
-    cropped_frame = frame[y0:y0 + e, x0:x0 + e]
+    cropped_frame = frame[y0: y0 + e, x0: x0 + e]
     return cropped_frame
 
 
@@ -168,14 +171,14 @@ def clean_kinetics_preds(preds):
     return preds
 
 
-def x3d_activity_recognition(model_name):
+def x3d_activity_recognition(model_name, device):
     global vs, output_frame, lock
 
     # Prep stats
     fps = runnig_fps()
 
     # Init model
-    learner = X3DLearner(device="cpu", backbone=model_name, num_workers=0)
+    learner = X3DLearner(device=device, backbone=model_name, num_workers=0)
     X3DLearner.download(path="model_weights", model_names={model_name})
     learner.load(Path("model_weights") / f"x3d_{model_name}.pyth")
 
@@ -208,14 +211,14 @@ def x3d_activity_recognition(model_name):
             pass
 
 
-def cox3d_activity_recognition(model_name):
+def cox3d_activity_recognition(model_name, device):
     global vs, output_frame, lock
 
     # Prep stats
     fps = runnig_fps()
 
     # Init model
-    learner = CoX3DLearner(device="cpu", backbone=model_name, num_workers=0)
+    learner = CoX3DLearner(device=device, backbone=model_name, num_workers=0)
     CoX3DLearner.download(path="model_weights", model_names={model_name})
     learner.load(Path("model_weights") / f"x3d_{model_name}.pyth")
 
@@ -301,6 +304,13 @@ if __name__ == "__main__":
         help="Model identifier",
     )
     ap.add_argument(
+        "-d",
+        "--device",
+        type=str,
+        default="cpu",
+        help="Device",
+    )
+    ap.add_argument(
         "-v",
         "--video_source",
         type=int,
@@ -328,7 +338,7 @@ if __name__ == "__main__":
     }[args["algorithm"]]
 
     # start a thread that will perform motion detection
-    t = threading.Thread(target=algorithm, args=(args["model_name"],))
+    t = threading.Thread(target=algorithm, args=(args["model_name"], args["device"]))
     t.daemon = True
     t.start()
 
