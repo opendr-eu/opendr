@@ -79,14 +79,26 @@ class TestLicense(unittest.TestCase):
         ]
 
         skippedDirectoryPaths = [
-            'src/perception/pose_estimation/lightweight_open_pose/algorithm',
-            'src/perception/object_detection_3d/voxel_object_detection_3d/second_detector',
-            'src/perception/object_tracking_2d/deep_sort/algorithm',
-            'src/perception/object_tracking_2d/fair_mot/algorithm',
-            'src/perception/face_recognition/algorithm'
+            'src/opendr/perception/pose_estimation/lightweight_open_pose/algorithm',
+            'src/opendr/perception/object_detection_3d/voxel_object_detection_3d/second_detector',
+            'src/opendr/perception/face_recognition/algorithm',
+            'src/opendr/perception/activity_recognition/x3d/algorithm',
+            'src/opendr/perception/activity_recognition/cox3d/algorithm',
+            'src/opendr/perception/object_tracking_2d/fair_mot/algorithm',
+            'src/opendr/perception/object_tracking_2d/deep_sort/algorithm',
+            'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones',
+            'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
+            'src/opendr/perception/skeleton_based_action_recognition/algorithm',
+            'src/opendr/perception/semantic_segmentation/bisenet/algorithm',
+            'src/opendr/perception/object_detection_2d/retinaface/algorithm',
         ]
 
-        skippedFilePaths = []
+        skippedFilePaths = [
+            'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
+            'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
+            'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
+            'src/opendr/perception/object_detection_2d/retinaface/Makefile',
+        ]
 
         skippedDirectories = [
             'build'

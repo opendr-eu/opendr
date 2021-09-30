@@ -110,6 +110,23 @@ The [ImageWithDetections](#class_engine.data.ImageWithDetections) class has the 
   Set the internal *data* argument.
   *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array, where the
   dimensions can be organized as e.g. (channels, width, height).
+### class engine.data.Video
+Bases: `engine.data.Data`
+
+A class used for representing video data.
+
+The [Video](#class_engine.data.Video) class has the following public methods:
+#### Video(data=None)
+  Construct a new [Video](#class_engine.data.Video) object based on *data*.
+  *data* is expected to be a 4-D array of shape (channels, time_steps, height, width).
+
+#### data()
+  Return *data* argument.
+  Return type is a float32 [NumPy](https://numpy.org) array.
+
+#### data(data)
+  Set the internal *data* argument.
+  *data* is expected to be a 4-D array that can be casted into a 4-D [NumPy](https://numpy.org) array, where the dimensions can be organized as e.g. (channels, width, height).
 
 #### numpy()
   Return a  [NumPy](https://numpy.org)-compatible representation of data.
@@ -162,6 +179,43 @@ The [PointCloudWithCalibration](#class_engine.data.PointCloudWithCalibration) cl
   Set the internal *data* argument.
   *data* is expected to be a 2-D array that can be casted into a 2-D [NumPy](https://numpy.org) array, where the
   dimensions can be organized as e.g. (number_of_points, channels).
+
+#### numpy()
+  Return a  [NumPy](https://numpy.org)-compatible representation of data.
+  Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+
+
+### class engine.data.SkeletonSequence
+Bases: `engine.data.Data`
+
+A class used for representing a sequence of body skeletons in a video.
+
+The [SkeletonSequence](#class_engine.data.SkeletonSequence) class has the following public methods:
+#### SkeletonSequence(data=None)
+  Construct a new [SkeletonSequence](#class_engine.data.SkeletonSequence) object based on *data*.
+  *data* is expected to be a 5-D array that can be casted into a 5-D [NumPy](https://numpy.org) array.
+  The array's dimensions are defined as follows: 
+  
+  `N, C, T, V, M = array.shape()`,
+  
+  - `N` is the number of samples, 
+  - `C` is the number of channels for each of the body joints 
+  - `T` is the number of skeletons in each sequence 
+  - `V` is the number of body joints in each skeleton
+  - `M` is the number of persons (or skeletons) in each frame. 
+  
+  Accordingly, an array of size `[10, 3, 300, 18, 2]` contains `10` samples 
+  each containing a sequence of `300` skeletons while each skeleton has `2` persons each of which has `18` joints
+  and each body joint has `3` channels.  
+
+#### data()
+  Return *data* argument.
+  Return type is float32 5-D [NumPy](https://numpy.org) array.
+
+#### data(data)
+  Set the internal *data* argument.
+  *data* is expected to be a 5-D array that can be casted into a 5-D [NumPy](https://numpy.org) array, where the
+  dimensions can be organized as e.g. (num_samples, channels, frames, joints, persons).
 
 #### numpy()
   Return a  [NumPy](https://numpy.org)-compatible representation of data.
