@@ -1004,27 +1004,3 @@ class Heatmap(Target):
         :rtype: str
         """
         return str(self.data)
-
-
-class ClassificationTarget(Target):
-    """
-    This target is used for classification tasks.
-    """
-    def __init__(
-        self,
-        id,
-        class_names=None,
-    ):
-        super().__init__()
-        self.id = id
-        self.class_names = class_names
-
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-
-        if self.class_names is None:
-            return "ClassificationTarget (" + str(self.id) + ")"
-        else:
-            return "ClassificationTarget (" + str(self.class_names[self.id]) + ")"

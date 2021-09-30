@@ -21,7 +21,7 @@ from zipfile import ZipFile
 from urllib.request import urlretrieve
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Image
-from opendr.engine.target import ClassificationTarget
+from opendr.engine.target import Category
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
 
 
@@ -113,7 +113,7 @@ class Market1501DatasetIterator(DatasetIterator):
         )
 
         return (
-            Image(img), ClassificationTarget(label)
+            Image(img), Category(label)
         )
 
     def get_data(self, img_path, label_path):

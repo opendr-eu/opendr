@@ -420,7 +420,7 @@ class ObjectTracking2DDeepSortLearner(Learner):
             def image_to_pil(image: Image):
                 return PilImage.fromarray(image.numpy())
 
-            return MappedDatasetIterator(dataset, lambda data: (image_to_pil(data[0]), data[1].id))
+            return MappedDatasetIterator(dataset, lambda data: (image_to_pil(data[0]), data[1].data))
 
         if isinstance(dataset, ExternalDataset):
 
