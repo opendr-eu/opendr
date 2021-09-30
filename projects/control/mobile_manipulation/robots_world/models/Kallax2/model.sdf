@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="Kallax2">
+    <link name="Kallaxbase">
+      <inertial>
+        <mass>100</mass>
+      </inertial>
+
+      <collision name="KallaxBaseTop">
+	  <pose>0.007 0.02 0.155 0 0 0 </pose>
+        <geometry>
+            <box>
+                <size>0.415 0.39 0.03</size>
+            </box>
+        </geometry>
+      </collision>
+      <collision name="KallaxBaseLeft">
+	  <pose>-0.185 0.02 -0.03 0 0 0 </pose>
+        <geometry>
+            <box>
+                <size>0.03 0.39 0.37</size>
+            </box>
+        </geometry>
+      </collision>
+      <collision name="KallaxBaseBottom">
+	  <pose>0.005 0.02 -0.225 0 0 0 </pose>
+        <geometry>
+            <box>
+                <size>0.415 0.39 0.03</size>
+            </box>
+        </geometry>
+      </collision>
+
+      <collision name="KallaxBaseRight">
+	  <pose>0.1950 0.02 -0.03 0 0 0 </pose>
+        <geometry>
+            <box>
+                <size>0.03 0.39 0.37</size>
+            </box>
+        </geometry>
+      </collision>
+      <collision name="KallaxBaseBack">
+	  <pose>0 0.215 -0.045 0 0 0 </pose>
+        <geometry>
+            <box>
+                <size>0.39 0.03 0.39</size>
+            </box>
+        </geometry>
+      </collision>
+
+      <visual name="Basevisual">
+        <pose>0 0 0 0 -0.01 0 </pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://Kallax2/meshes/Kallax.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="Door">
+      <pose>0.02 -0.17 -0.017 0 0 -1.57478</pose>
+      <inertial>
+        <mass>0.8</mass>
+      </inertial>
+      <collision name="DoorBase">
+	  <pose>0 -0.01 -0.015 0 0 0 </pose>
+        <geometry>
+            <box>
+                <size>0.016 0.31 0.31</size>
+            </box>
+        </geometry>
+      </collision>
+
+      <collision name="DoorHandle">
+	  <pose>0.035 -0.15 -0.015 0 0 0</pose>
+        <geometry>
+	    <cylinder>
+            	<radius>0.005</radius>
+            	<length>0.115</length>
+            </cylinder>
+        </geometry>
+      </collision>
+      <visual name="Doorvisual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://Kallax2/meshes/Kallax_Tuer.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint name='/DoorJoint' type='revolute'>
+      <child>Door</child>
+      <parent>Kallaxbase</parent>
+      <pose>0 0.165 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>150</upper>
+          <effort>10</effort>
+          <velocity>1000</velocity>
+        </limit>
+        <dynamics>
+          <damping>10</damping>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+        </ode>
+      </physics>
+    </joint>
+
+    <joint name='fixe_to_world' type='fixed'>
+        <child>Kallaxbase</child>
+        <parent>world</parent>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+        </axis>
+      </joint>
+
+  </model>
+</sdf>
