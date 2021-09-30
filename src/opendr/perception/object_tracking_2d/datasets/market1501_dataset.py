@@ -19,10 +19,10 @@ import time
 import numpy as np
 from zipfile import ZipFile
 from urllib.request import urlretrieve
-from engine.constants import OPENDR_SERVER_URL
-from engine.data import Image
-from engine.target import ClassificationTarget
-from engine.datasets import ExternalDataset, DatasetIterator
+from opendr.engine.constants import OPENDR_SERVER_URL
+from opendr.engine.data import Image
+from opendr.engine.target import ClassificationTarget
+from opendr.engine.datasets import ExternalDataset, DatasetIterator
 
 
 class Market1501Dataset(ExternalDataset):

@@ -178,10 +178,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
+  from opendr.perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
       ObjectTracking2DDeepSortLearner,
   )
-  from perception.object_tracking_2d.datasets.market1501_dataset import (
+  from opendr.perception.object_tracking_2d.datasets.market1501_dataset import (
       Market1501Dataset,
   )
 
@@ -216,10 +216,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
+  from opendr.perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
       ObjectTracking2DDeepSortLearner,
   )
-  from perception.object_tracking_2d.datasets.market1501_dataset import (
+  from opendr.perception.object_tracking_2d.datasets.market1501_dataset import (
       Market1501Dataset,
   )
 
@@ -259,10 +259,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
+  from opendr.perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
       ObjectTracking2DDeepSortLearner,
   )
-  from perception.object_tracking_2d.datasets.market1501_dataset import (
+  from opendr.perception.object_tracking_2d.datasets.market1501_dataset import (
       Market1501Dataset,
   )
 
@@ -308,10 +308,10 @@ Parameters:
   ```python
   import os
   import torch
-  from perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
+  from opendr.perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
       ObjectTracking2DDeepSortLearner,
   )
-  from perception.object_tracking_2d.datasets.market1501_dataset import (
+  from opendr.perception.object_tracking_2d.datasets.market1501_dataset import (
       Market1501Dataset,
   )
 

@@ -17,9 +17,9 @@
 
 
 import numpy as np
-from perception.object_tracking_2d.deep_sort.algorithm.deep_sort import build_tracker
-from engine.data import ImageWithDetections
-from engine.target import TrackingAnnotation, TrackingAnnotationList
+from opendr.perception.object_tracking_2d.deep_sort.algorithm.deep_sort import build_tracker
+from opendr.engine.data import ImageWithDetections
+from opendr.engine.target import TrackingAnnotation, TrackingAnnotationList
 
 
 class DeepSortTracker(object):

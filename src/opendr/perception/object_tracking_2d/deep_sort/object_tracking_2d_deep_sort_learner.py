@@ -20,15 +20,15 @@ import shutil
 import onnxruntime as ort
 from PIL import Image as PilImage
 from torchvision.transforms import transforms as T
-from engine.learners import Learner
-from engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetIterator
-from perception.object_tracking_2d.logger import Logger
-from perception.object_tracking_2d.datasets.market1501_dataset import Market1501DatasetIterator
-from perception.object_tracking_2d.deep_sort.algorithm.run import train
-from perception.object_tracking_2d.fair_mot.algorithm.run import evaluate
-from perception.object_tracking_2d.deep_sort.algorithm.deep_sort_tracker import DeepSortTracker
-from engine.data import Image, ImageWithDetections
-from engine.constants import OPENDR_SERVER_URL
+from opendr.engine.learners import Learner
+from opendr.engine.datasets import DatasetIterator, ExternalDataset, MappedDatasetIterator
+from opendr.perception.object_tracking_2d.logger import Logger
+from opendr.perception.object_tracking_2d.datasets.market1501_dataset import Market1501DatasetIterator
+from opendr.perception.object_tracking_2d.deep_sort.algorithm.run import train
+from opendr.perception.object_tracking_2d.fair_mot.algorithm.run import evaluate
+from opendr.perception.object_tracking_2d.deep_sort.algorithm.deep_sort_tracker import DeepSortTracker
+from opendr.engine.data import Image, ImageWithDetections
+from opendr.engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 
 

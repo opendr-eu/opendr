@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from engine.target import BoundingBoxList
+from opendr.engine.target import BoundingBoxList
 import numpy as np
 import torch
 from typing import Union

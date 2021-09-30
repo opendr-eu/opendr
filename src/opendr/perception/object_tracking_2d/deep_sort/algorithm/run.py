@@ -17,9 +17,9 @@
 import os
 import torch
 import time
-from perception.object_tracking_2d.deep_sort.algorithm.deep_sort.deep.model import Net
-from engine.datasets import MappedDatasetIterator
-from perception.object_tracking_2d.logger import Logger
+from opendr.perception.object_tracking_2d.deep_sort.algorithm.deep_sort.deep.model import Net
+from opendr.engine.datasets import MappedDatasetIterator
+from opendr.perception.object_tracking_2d.logger import Logger
 
 
 def train(

@@ -28,7 +28,7 @@ from collections import OrderedDict
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 from opendr.engine.constants import OPENDR_SERVER_URL
-from opendr.engine.data import Image
+from opendr.engine.data import Image, ImageWithDetections
 from opendr.engine.target import TrackingAnnotationList
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
 from torchvision.transforms import transforms as T

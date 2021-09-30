@@ -17,14 +17,14 @@ import unittest
 import shutil
 import os
 import torch
-from perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
+from opendr.perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
     ObjectTracking2DDeepSortLearner,
 )
-from perception.object_tracking_2d.datasets.market1501_dataset import (
+from opendr.perception.object_tracking_2d.datasets.market1501_dataset import (
     Market1501Dataset,
     Market1501DatasetIterator,
 )
-from perception.object_tracking_2d.datasets.mot_dataset import (
+from opendr.perception.object_tracking_2d.datasets.mot_dataset import (
     MotDataset,
     RawMotWithDetectionsDatasetIterator,
 )
@@ -59,7 +59,7 @@ class TestObjectTracking2DDeepSortLearner(unittest.TestCase):
 
         cls.train_split_paths = {
             "nano_mot20": os.path.join(
-                ".", "src", "perception", "object_tracking_2d",
+                ".", "src", "opendr", "perception", "object_tracking_2d",
                 "datasets", "splits", "nano_mot20.train"
             )
         }
@@ -153,7 +153,7 @@ class TestObjectTracking2DDeepSortLearner(unittest.TestCase):
             model_path = os.path.join(self.temp_dir, name)
             train_split_paths = {
                 "nano_mot20": os.path.join(
-                    ".", "src", "perception", "object_tracking_2d",
+                    ".", "src", "opendr", "perception", "object_tracking_2d",
                     "datasets", "splits", "nano_mot20.train"
                 )
             }
@@ -180,7 +180,7 @@ class TestObjectTracking2DDeepSortLearner(unittest.TestCase):
             model_path = os.path.join(self.temp_dir, name)
             train_split_paths = {
                 "nano_mot20": os.path.join(
-                    ".", "src", "perception", "object_tracking_2d",
+                    ".", "src", "opendr", "perception", "object_tracking_2d",
                     "datasets", "splits", "nano_mot20.train"
                 )
             }
@@ -242,7 +242,7 @@ class TestObjectTracking2DDeepSortLearner(unittest.TestCase):
             model_path = os.path.join(self.temp_dir, name)
             train_split_paths = {
                 "nano_mot20": os.path.join(
-                    ".", "src", "perception", "object_tracking_2d",
+                    ".", "src", "opendr", "perception", "object_tracking_2d",
                     "datasets", "splits", "nano_mot20.train"
                 )
             }
