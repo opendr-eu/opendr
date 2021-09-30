@@ -54,9 +54,9 @@ from numba import errors
 original_warn = warnings.warn
 
 
-def warn(warning, **kwargs):
+def warn(warning, *args, **kwargs):
     if not isinstance(warning, errors.NumbaPerformanceWarning):
-        original_warn(warning, **kwargs)
+        original_warn(warning, *args, **kwargs)
 
 
 warnings.warn = warn
