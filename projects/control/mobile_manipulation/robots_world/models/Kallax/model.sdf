@@ -1,0 +1,265 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <model name="Kallax">
+    <link name="Kallaxbase">
+      <inertial>
+        <mass>10</mass>
+      </inertial>
+
+      <collision name="KallaxBaseTop">
+	<pose>0.007 0.02 0.155 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.415 0.39 0.03</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="KallaxBaseLeft">
+	<pose>-0.185 0.02 -0.03 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.03 0.39 0.37</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="KallaxBaseBottom">
+	<pose>0.005 0.02 -0.225 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.415 0.39 0.03</size>
+            </box>                
+        </geometry>
+      </collision>
+
+
+      <collision name="KallaxBaseRight">
+	<pose>0.1950 0.02 -0.03 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.03 0.39 0.37</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="KallaxBaseBack">
+	<pose>0 0.215 -0.045 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.39 0.03 0.39</size>
+            </box>                
+        </geometry>
+      </collision>
+
+      <visual name="Basevisual">
+        <pose>0 0 0 0 -0.01 0 </pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://Kallax/meshes/Kallax.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+    </link>
+
+
+
+    <link name="Drawer1">
+      <pose>-0.015 0.03  -0.185 0 0 0</pose>
+      <inertial>
+        <mass>0.4</mass>
+      </inertial>
+      <collision name="Drawer1Bottom">
+	<pose>0.03 -0.04 0.005 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.3 0.33 0.01</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="Drawer1Front">
+	<pose>0.026 -0.205 0.065 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.32 0.01 0.155</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="Drawer1Back">
+	<pose>0.025 0.125 0.04 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.3 0.01 0.07</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="Drawer1Left">
+	<pose>-0.125 -0.035 0.04 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.01 0.345 0.07</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="Drawer1Right">
+	<pose>0.165 -0.035 0.04 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.01 0.345 0.07</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="D1handle">
+	<pose>0.03 -0.22 0.06 0 0 1.57478</pose>
+        <geometry>          
+            <box>
+                <size>0.04 0.13 0.02</size>
+            </box>                
+        </geometry>
+      </collision>
+      <visual name="Drawervisual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://Kallax/meshes/KallaxDrawer1.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+
+
+
+    <link name="Drawer2">
+      <!-- <pose>-0.015 0.035 -0.016 0 0 0</pose> -->
+      <pose>-0.015 0.03 -0.016 0 0 0</pose>
+      <inertial>
+        <mass>0.4</mass>
+      </inertial>
+      <collision name="Drawer2Bottom">
+	<pose>0.03 -0.04 0.005 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.3 0.33 0.01</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="Drawer2Front">
+	<pose>0.026 -0.205 0.065 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.32 0.01 0.155</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="Drawer2Back">
+	<pose>0.025 0.125 0.04 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.3 0.01 0.07</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="Drawer2Left">
+	<pose>-0.125 -0.035 0.04 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.01 0.345 0.07</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="Drawer2Right">
+	<pose>0.165 -0.035 0.04 0 0 0 </pose>
+        <geometry>          
+            <box>
+                <size>0.01 0.345 0.07</size>
+            </box>                
+        </geometry>
+      </collision>
+      <collision name="Drawer2Handle">
+	<pose>0.03 -0.22 0.06 0 0 1.57478</pose>
+        <geometry>          
+            <box>
+                <size>0.04 0.13 0.02</size>
+            </box>                
+        </geometry>
+      </collision>
+      <visual name="Drawervisual2">
+        <pose>0.025 -0.06 0.05 0 0 0 </pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://Kallax/meshes/KallaxDrawer2.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+
+    <joint name='/Drawer1Joint' type='prismatic'>
+      <child>Drawer1</child>
+      <parent>Kallaxbase</parent>
+      <pose>0 -0.02 -0.02 0 0 0</pose>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-0.35</lower>
+          <upper>0</upper>
+          <effort>1e+1</effort>
+          <velocity>1000</velocity>
+        </limit>
+        <dynamics>
+          <damping>10</damping>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+        </ode>
+      </physics>
+    </joint>
+
+
+
+    <joint name='/Drawer2Joint' type='prismatic'>
+      <child>Drawer2</child>
+      <parent>Kallaxbase</parent>
+      <pose>0 -0.02 0.09 0 0 0</pose>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-0.35</lower>
+          <upper>0</upper>
+          <effort>1e+1</effort>
+          <velocity>1000</velocity>
+        </limit>
+        <dynamics>
+          <damping>10</damping>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+        </ode>
+      </physics>
+    </joint>
+
+    <joint name='fixe_to_world' type='fixed'>
+      <child>Kallaxbase</child>
+      <parent>world</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+      </axis>
+    </joint>
+
+  </model>
+</sdf>

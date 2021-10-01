@@ -340,11 +340,64 @@ class BoundingBox(Target):
 
         return result
 
+    def coco(self, with_confidence=True):
+        result = {}
+        result['bbox'] = [self.left, self.top, self.width, self.height]
+        result['category_id'] = self.name
+        result['area'] = self.width * self.height
+        return result
+
     def __repr__(self):
         return "BoundingBox " + str(self)
 
     def __str__(self):
         return str(self.mot())
+
+
+class CocoBoundingBox(BoundingBox):
+    """
+    This target is used for 2D Object Detection with COCO format targets.
+    A bounding box is described by the left-top corner and its width and height.
+    Also, a segmentation of the target is returned if available.
+    """
+
+    def __init__(
+        self,
+        name,
+        left,
+        top,
+        width,
+        height,
+        segmentation=[],
+        area=0,
+        iscrowd=0,
+        score=0,
+    ):
+        super().__init__(name=name, left=left, top=top, width=width,
+                         height=height, score=score)
+        self.segmentation = segmentation
+        self.iscrowd = iscrowd
+        self.area = area
+
+    def coco(self, with_confidence=True):
+        result = {}
+        result['bbox'] = [self.left, self.top, self.width, self.height]
+        result['category_id'] = self.name
+        if len(self.segmentation) > 0:
+            result['area'] = self.area
+            result['segmentation'] = self.segmentation
+            result['iscrowd'] = self.iscrowd
+        else:
+            result['area'] = self.width * self.height
+        if with_confidence:
+            result['confidence'] = self.confidence
+        return result
+
+    def __repr__(self):
+        return "BoundingBox " + str(self)
+
+    def __str__(self):
+        return str(self.coco())
 
 
 class BoundingBoxList(Target):
@@ -359,6 +412,36 @@ class BoundingBoxList(Target):
         super().__init__()
         self.data = boxes
         self.confidence = np.mean([box.confidence for box in self.data])
+
+    @staticmethod
+    def from_coco(boxes_coco, image_id=0):
+        count = len(boxes_coco)
+
+        boxes = []
+        for i in range(count):
+            if 'segmentation' in boxes_coco[i]:
+                segmentation = boxes_coco[i]['segmentation']
+            if 'iscrowd' in boxes_coco[i]:
+                iscrowd = boxes_coco[i]['iscrowd']
+            else:
+                iscrowd = 0
+            if 'area' in boxes_coco[i]:
+                area = boxes_coco[i]['area']
+            else:
+                area = boxes_coco[i]['bbox'][2] * boxes_coco[i]['bbox'][3]
+            box = CocoBoundingBox(
+                boxes_coco[i]['category_id'],
+                boxes_coco[i]['bbox'][0],
+                boxes_coco[i]['bbox'][1],
+                boxes_coco[i]['bbox'][2],
+                boxes_coco[i]['bbox'][3],
+                segmentation=segmentation,
+                iscrowd=iscrowd,
+                area=area,
+            )
+            boxes.append(box)
+
+        return BoundingBoxList(boxes, image_id=image_id)
 
     def mot(self, with_confidence=True):
 
@@ -893,3 +976,30 @@ class TrackingAnnotation3DList(Target):
 
     def __str__(self):
         return str(self.kitti(True))
+
+
+class Heatmap(Target):
+    """
+    This target is used for multi-class segmentation problems.
+    """
+
+    def __init__(self, data):
+        super().__init__()
+        self.data = data
+
+    def numpy(self):
+        """
+        Returns a NumPy-compatible representation of data.
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        # Since this class stores the data as NumPy arrays, we can directly return the data
+        return self.data
+
+    def __str__(self):
+        """
+        Returns a human-friendly string-based representation of the data.
+        :return: a human-friendly string-based representation of the data
+        :rtype: str
+        """
+        return str(self.data)
