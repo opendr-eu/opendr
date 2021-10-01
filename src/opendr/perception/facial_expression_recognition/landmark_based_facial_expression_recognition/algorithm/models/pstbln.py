@@ -38,9 +38,9 @@ class BilinearMapping(nn.Module):
         super(BilinearMapping, self).__init__()
         self.cuda_ = cuda_
         self.num_subset = 3
-        self.graph_attn = nn.Parameter(torch.from_numpy(np.random.rand(self.num_subset, num_point,
+        self.rand_graph = nn.Parameter(torch.from_numpy(np.random.rand(self.num_subset, num_point,
                                                                        num_point).astype(np.float32)))
-        nn.init.constant_(self.graph_attn, 1e-6)
+        nn.init.constant_(self.rand_graph, 1e-6)
         self.g_conv = nn.ModuleList()
         for i in range(self.num_subset):
             self.g_conv.append(nn.Conv2d(in_channels, out_channels, 1))
@@ -62,7 +62,7 @@ class BilinearMapping(nn.Module):
 
     def forward(self, x):
         N, C, T, V = x.size()
-        A = self.graph_attn
+        A = self.rand_graph
         if self.cuda_:
             A = A.cuda(x.get_device())
         hidden_ = None
