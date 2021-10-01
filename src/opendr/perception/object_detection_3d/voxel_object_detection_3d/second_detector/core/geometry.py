@@ -92,7 +92,6 @@ def surface_equ_3d_jit(polygon_surfaces):
     return normal_vec, -d
 
 
-# @numba.jit()
 def points_in_convex_polygon_3d_jit(points,
                                     polygon_surfaces,
                                     num_surfaces=None):
