@@ -31,7 +31,7 @@ from opendr.perception.facial_expression_recognition.perception.landmark_based_f
 def preds2label(labels_csv_path, confidence):
     k = 3
     class_scores, class_inds = torch.topk(confidence, k=k)
-    expression_classes =  pandas.read_csv(labels_csv_path, verbose=True, index_col=0).to_dict()["name"]
+    expression_classes = pandas.read_csv(labels_csv_path, verbose=True, index_col=0).to_dict()["name"]
     labels = {expression_classes[int(class_inds[j])]: float(class_scores[j].item())for j in range(k)}
     return labels
 
