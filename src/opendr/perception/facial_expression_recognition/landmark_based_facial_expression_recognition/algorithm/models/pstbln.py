@@ -121,19 +121,9 @@ class ST_BLN_block(nn.Module):
 
 
 class PSTBLN(nn.Module):
-    def __init__(self, dataset_name, topology, blocksize, cuda_=False):
+    def __init__(self, topology, blocksize, num_class, num_point, num_person=1, in_channels=2,
+                 cuda_=False):
         super(PSTBLN, self).__init__()
-        if dataset_name == 'CK+':
-            num_point = 303
-            num_class = 7
-        elif dataset_name == 'CASIA':
-            num_point = 309
-            num_class = 6
-        elif dataset_name == 'AFEW':
-            num_point = 312
-            num_class = 7
-        num_person = 1
-        in_channels = 2
         self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point)
         weights_init(self.data_bn, bs=1)
         self.dropout_ = nn.Dropout(p=0.2)

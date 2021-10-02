@@ -17,7 +17,8 @@ ProgressiveSpatioTemporalBLNLearner(self, lr, batch_size, optimizer_name, lr_sch
                                     checkpoint_after_iter, checkpoint_load_iter, temp_path,
                                     device, num_workers, epochs, experiment_name,
                                     device_indices, val_batch_size, drop_after_epoch,
-                                    start_epoch, dataset_name, 
+                                    start_epoch, dataset_name, num_class, num_point,  
+                                    num_person, in_channels, 
                                     block_size, num_blocks, num_layers, topology,
                                     layer_threshold, block_threshold)
 ```
@@ -55,6 +56,14 @@ Constructor parameters:
   Specifies the starting epoch number for training.  
 - **dataset_name**: *str {'AFEW', 'CASIA', 'CK+'}, default='CASIA'*  
   Specifies the name of dataset that is used for training and evaluation. 
+- **num_class**: *int, default=6*  
+  Specifies the number of classes for the dataset. 
+- **num_point**: *int, default=309*  
+  Specifies the number of facial landmarks in each image. 
+- **num_person**: *int, default=1*  
+  Specifies the number of faces in each frame.
+- **in_channels**: *int, default=2*  
+  Specifies the number of input channels for each landmark.  
 - **block_size**: *int, default=5*  
   Specifies the number of output channels (or neurons) that are added to each layer of the network at each progression iteration. 
 - **num_blocks**: *int, default=100*  
@@ -330,7 +339,7 @@ Parameters:
   python data_aumentation.py --data_folder ./data/AFEW_data/ --aug_data_folder ./data/AFEW_aug_data/
   ```
   The preprocessed augmented data will be saved in the `--aug_data_folder` path. 
-  After generating the preprocessed facial landmark data, generate the facial muscle data as follows:
+  After generating the preprocessed facial landmark data, generate the facial graph edges data as follows:
   ```python
   from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import gen_facial_muscles_data
   python gen_facial_muscles_data.py --dataset_name AFEW --landmark_data_folder ./data/AFEW_aug_data/ --muscle_data_folder ./data/muscle_data/

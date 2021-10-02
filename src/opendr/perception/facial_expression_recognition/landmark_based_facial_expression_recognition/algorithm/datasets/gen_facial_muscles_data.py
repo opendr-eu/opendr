@@ -37,9 +37,8 @@ def find_graph_edges(x):
     return edges
 
 
-def gen_muscle_data(landmark_path, muscle_path):
+def gen_muscle_data(data, muscle_path):
     """Generate facial muscle data from facial landmarks"""
-    data = np.load(landmark_path)
     N, C, T, V, M = data.shape
     edges = find_graph_edges(data)
     V_muscle = len(edges)
@@ -48,6 +47,7 @@ def gen_muscle_data(landmark_path, muscle_path):
     fp_sp[:, :, :, :V, :] = data
     for edge_id, (source_node, target_node) in enumerate(edges):
         fp_sp[:, :, :, edge_id, :] = data[:, :, :, source_node-1, :] - data[:, :, :, target_node-1, :]
+    return fp_sp
 
 
 if __name__ == '__main__':
@@ -61,9 +61,11 @@ if __name__ == '__main__':
         if arg.dataset_name == 'CASIA' or arg.dataset_name == 'CK+':
             for i in range(10):
                 landmark_path = arg.landmark_data_folder + '/{}/{}_{}.npy'.format(arg.dataset_name, p, i)
+                landmark_data = np.load(landmark_path)
                 muscle_path = arg.muscle_data_folder + '/{}/{}_muscle_{}.npy'.format(arg.dataset_name, p, i)
-                gen_muscle_data(landmark_path, muscle_path)
+                muscle_data = gen_muscle_data(landmark_data, muscle_path)
         elif arg.dataset_name == 'AFEW':
             landmark_path = arg.landmark_data_folder + '/{}/{}.npy'.format(arg.dataset_name, p)
+            landmark_data = np.load(landmark_path)
             muscle_path = arg.muscle_data_folder + '/{}/{}_muscle.npy'.format(arg.dataset_name, p)
-            gen_muscle_data(landmark_path, muscle_path)
+            muscle_data = gen_muscle_data(landmark_data, muscle_path)

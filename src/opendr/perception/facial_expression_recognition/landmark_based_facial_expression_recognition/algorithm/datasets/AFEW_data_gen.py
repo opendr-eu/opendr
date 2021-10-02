@@ -20,28 +20,29 @@ import pickle
 
 
 def tile(a, dim, n_tile):
+    a = torch.from_numpy(a)
     init_dim = a.size(dim)
     repeat_idx = [1] * a.dim()
     repeat_idx[dim] = n_tile
     a = a.repeat(*repeat_idx)
     order_index = torch.LongTensor(np.concatenate([init_dim * np.arange(n_tile) + i for i in range(init_dim)]))
-    return torch.index_select(a, dim, order_index)
+    tiled = torch.index_select(a, dim, order_index)
+    return tiled.numpy()
 
 
 def data_normalization(data):
-    Data = torch.from_numpy(data)
-    N, V, C, T, M = Data.size()
-    Data = Data.permute(0, 2, 3, 1, 4).contiguous().view(N, C, T, V, M)
+    data = torch.from_numpy(data)
+    N, V, C, T, M = data.size()
+    data = data.permute(0, 2, 3, 1, 4).contiguous().view(N, C, T, V, M)
     # remove the first 17 points
-    Data = Data[:, :, :, 17:, :]
-    N, C, T, V, M = Data.size()
+    data = data[:, :, :, 17:, :]
+    N, C, T, V, M = data.size()
     # normalization
     for n in range(N):
         for t in range(T):
             for v in range(V):
-                Data[n, :, t, v, :] = Data[n, :, t, v, :] - Data[n, :, t, 16, :]
-    Data = Data.numpy()
-    return Data
+                data[n, :, t, v, :] = data[n, :, t, v, :] - data[n, :, t, 16, :]
+    return data.numpy()
 
 
 def afew_data_gen(landmark_path, c, num_frames, num_landmarks, num_dim, num_faces):
@@ -55,33 +56,21 @@ def afew_data_gen(landmark_path, c, num_frames, num_landmarks, num_dim, num_face
         if T > 0:  # if the sample video is a nonzero sample
             sample_numpy = np.zeros((num_landmarks, num_dim, T, num_faces))
             for j in range(T):
-                if os.path.isfile(landmark_path + str(j + 1) + '.npy'):
-                    tmp = np.load(landmark_path + str(j + 1) + '.npy')
-                    sample_numpy[:, :, j, 0] = tmp
-                    dif = num_frames - T
-                    num_tiles = int(dif / T)
-                    if dif == 0:
-                        sample_new = sample_numpy
-                    elif num_tiles > 0 and dif > 0:
-                        sample_numpy = torch.from_numpy(sample_numpy)
-                        sample_numpy = tile(sample_numpy, 2, num_tiles)
-                        sample_numpy = sample_numpy.numpy()
-                        T_new = sample_numpy.shape[2]
-                        dif_new = num_frames - T_new
-                        if dif_new > 0:
-                            sample_new = np.zeros((num_landmarks, num_dim, num_frames, num_faces))
-                            sample_new[:, :, :T_new, :] = sample_numpy[:, :, :, :]
-                            for k in range(dif_new):
-                                sample_new[:, :, T_new + k, :] = sample_numpy[:, :, -1, :]
-                        else:
-                            sample_new = sample_numpy
-                    elif num_tiles == 0 and dif > 0:
-                        sample_new = np.zeros((num_landmarks, num_dim, num_frames, num_faces))
-                        sample_new[:, :, 0:T, :] = sample_numpy[:, :, :, :]
-                        for k in range(dif):
-                            sample_new[:, :, T + k, :] = sample_numpy[:, :, -1, :]
-                    class_numpy[s, :, :, :, :] = sample_new
-                    s = s + 1  # nonzero sample
+                if os.path.isfile(landmark_path + str(j) + '.npy'):
+                    sample_numpy[:, :, j, 0] = np.load(landmark_path + str(j) + '.npy')
+            dif = num_frames - T
+            num_tiles = int(dif / T)
+            while dif > 0:
+                if num_tiles == 0:
+                    for k in range(dif):
+                        sample_numpy[:, :, T + k, :] = sample_numpy[:, :, -1, :]
+                elif num_tiles > 0:
+                    sample_numpy = tile(sample_numpy[:, :, :T, 0], 2, num_tiles)
+                T = sample_numpy.shape[2]
+                dif = num_frames - T
+                num_tiles = int(dif / T)
+            class_numpy[s, :, :, :, :] = sample_numpy
+            s = s + 1  # nonzero sample
     np.save(landmark_path + c + '.npy', class_numpy)
     return class_numpy
 

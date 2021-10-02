@@ -55,7 +55,8 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
                                                   device="cpu", temp_path=cls.temp_dir,
                                                   batch_size=5, epochs=1,
                                                   checkpoint_after_iter=1, val_batch_size=5,
-                                                  dataset_name='CASIA', experiment_name='pstbln_mcdo_casia',
+                                                  dataset_name='CASIA', num_class=6, num_point=309, num_person=1,
+                                                  in_channels=2, experiment_name='pstbln_mcdo_casia',
                                                   blocksize=5, numblocks=2, numlayers=2, topology=[],
                                                   layer_threshold=1e-4, block_threshold=1e-4)
         cls.experiment_name = 'pstbln_mcdo_casia'

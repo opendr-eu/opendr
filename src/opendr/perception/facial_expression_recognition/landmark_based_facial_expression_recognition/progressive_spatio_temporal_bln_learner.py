@@ -52,7 +52,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                  checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path='temp',
                  device='cuda', num_workers=32, epochs=400, experiment_name='pstbln_casia',
                  device_indices=[0], val_batch_size=128, drop_after_epoch=[400],
-                 start_epoch=0, dataset_name='CASIA',
+                 start_epoch=0, dataset_name='CASIA', num_class=6, num_point=309, num_person=1, in_channels=2,
                  block_size=5, num_blocks=100, num_layers=10, topology=[],
                  layer_threshold=1e-4, block_threshold=1e-4):
         super(ProgressiveSpatioTemporalBLNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
@@ -77,6 +77,10 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         self.model_train_state = True
         self.ort_session = None
         self.dataset_name = dataset_name
+        self.num_class = num_class
+        self.num_point = num_point
+        self.num_person = num_person
+        self.in_channels = in_channels
         self.global_step = 0
         self.logging = False
         self.best_acc = 0
@@ -449,11 +453,13 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
             if self.logging:
                 shutil.copy2(inspect.getfile(PSTBLN), self.logging_path)
             if self.device == 'cuda':
-                self.model = PSTBLN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.block_size,
+                self.model = PSTBLN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
+                                    in_channels=self.in_channels, topology=self.topology, block_size=self.block_size,
                                     cuda_=True).cuda(self.output_device)
                 self.loss = nn.CrossEntropyLoss().cuda(self.output_device)
             else:
-                self.model = PSTBLN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.block_size,
+                self.model = PSTBLN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
+                                    in_channels=self.in_channels, topology=self.topology, block_size=self.block_size,
                                     cuda_=False)
                 self.loss = nn.CrossEntropyLoss()
             # print(self.model)
@@ -737,7 +743,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                 self.init_model()
 
             for current_key in self.model.state_dict():
-                if 'graph_attn' in current_key:
+                if 'rand_graph' in current_key:
                     if current_key in old_keys:
                         new_state_dict = OrderedDict({current_key: weights[current_key]})
                         self.model.load_state_dict(new_state_dict, strict=False)

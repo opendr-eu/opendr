@@ -20,19 +20,18 @@ import argparse
 
 
 def data_normalization(data):
-    Data = torch.from_numpy(data)
-    N, V, C, T, M = Data.size()
-    Data = Data.permute(0, 2, 3, 1, 4).contiguous().view(N, C, T, V, M)
+    data = torch.from_numpy(data)
+    N, V, C, T, M = data.size()
+    data = data.permute(0, 2, 3, 1, 4).contiguous().view(N, C, T, V, M)
     # remove the first 17 points
-    Data = Data[:, :, :, 17:, :]
-    N, C, T, V, M = Data.size()
+    data = data[:, :, :, 17:, :]
+    N, C, T, V, M = data.size()
     # normalization
     for n in range(N):
         for t in range(T):
             for v in range(V):
-                Data[n, :, t, v, :] = Data[n, :, t, v, :] - Data[n, :, t, 16, :]
-    Data = Data.numpy()
-    return Data
+                data[n, :, t, v, :] = data[n, :, t, v, :] - data[n, :, t, 16, :]
+    return data.numpy()
 
 
 def data_gen(landmark_path, num_frames, num_landmarks, num_dim, num_faces, classes):
@@ -49,7 +48,7 @@ def data_gen(landmark_path, num_frames, num_landmarks, num_dim, num_faces, class
             T = len(files)
             if T > 0:  # if the sample video is a nonzero sample
                 sample_numpy = np.zeros((num_landmarks, num_dim, num_frames, num_faces))
-                for j in range(4):
+                for j in range(num_frames-1):
                     if os.path.isfile(class_path + str(T - j - 1) + '.npy'):
                         sample_numpy[:, :, -1 - j, 0] = np.load(class_path + str(T - j - 1) + '.npy')
                 for j in range(T):

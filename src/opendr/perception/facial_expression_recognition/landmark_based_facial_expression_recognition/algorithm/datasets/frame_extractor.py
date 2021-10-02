@@ -59,10 +59,10 @@ if __name__ == '__main__':
                             os.makedirs(framespth)
                         sec = 0
                         frameRate = 0.5  # it captures frames every 0.5 second
-                        count = 1
+                        count = 0
                         success = getFrame(vidcap, sec, framespth, count)
                         while success:
-                            count = count + 1
+                            count += 1
                             sec = sec + frameRate
                             sec = round(sec, 2)
                             success = getFrame(vidcap, sec, framespth, count)
