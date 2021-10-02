@@ -94,31 +94,34 @@ def pose2numpy(args, num_current_frames, poses_list):
     return skeleton_seq
 
 
-# taken from LH:
+def select_2_poses(poses):
+    selected_poses = []
+    energy = []
+    for i in range(len(poses)):
+        s = poses[i].data[:, 0].std() + poses[i].data[:, 1].std()
+        energy.append(s)
+    energy = np.array(energy)
+    index = energy.argsort()[::-1][0:2]
+    selected_poses.append(poses[index])
+    return selected_poses
 
 
-NTU60_ClASSES = pd.read_csv("./ntu60_labels.csv", verbose=True, index_col=0).to_dict()["name"] #LH
+NTU60_ClASSES = pd.read_csv("./ntu60_labels.csv", verbose=True, index_col=0).to_dict()["name"]
 
 
-def preds2label(confidence):  #LH
+def preds2label(confidence):
     k = 3
     class_scores, class_inds = torch.topk(confidence, k=k)
     labels = {NTU60_ClASSES[int(class_inds[j])]: float(class_scores[j].item())for j in range(k)}
     return labels
 
 
-def draw_preds(frame, preds: Dict):  #LH
-    base_skip = 40
-    delta_skip = 30
+def draw_preds(frame, preds: Dict):
     for i, (cls, prob) in enumerate(preds.items()):
-        cv2.putText(frame,
-                    f"{prob:04.3f} {cls}",
-                    (10, base_skip + i * delta_skip),
+        cv2.putText(frame, f"{prob:04.3f} {cls}",
+                    (10, 40 + i * 30),
                     cv2.FONT_HERSHEY_SIMPLEX,
-                    1,
-                    (0, 255, 255),  # B G R,
-                    2,
-                    )
+                    1, (0, 255, 255), 2,)
 
 
 if __name__ == '__main__':
@@ -127,19 +130,15 @@ if __name__ == '__main__':
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
-    parser.add_argument('--video', type=str, default='./videos/input.mp4',
-                        help='path to video file or camera id')  #
-    parser.add_argument('--pose', type=str, default='./lightweight_openpose/openpose_default',
-                        help='path to pose estimator model')
+    parser.add_argument('--video', default=0,
+                        help='path to video file or camera id')
     parser.add_argument('--method', type=str, default='stgcn',
                         help='action detection method')
-    parser.add_argument('--action_checkpoint_path', type=str, default='./stgcn/75_15fps',
-                        help='path to action detector model')
-    parser.add_argument('--action_checkpoint_name', type=str, default='ntu_cv_stgcn_joint_2d_75_15fps',
+    parser.add_argument('--action_checkpoint_name', type=str, default='stgcn_ntu_cv_lw_openpose',
                         help='action detector model name')
-    parser.add_argument('--num_frames', type=int, default=75,
+    parser.add_argument('--num_frames', type=int, default=300,
                         help='number of frames to be processed for each action')
-    parser.add_argument('--fps', type=int, default=15,
+    parser.add_argument('--fps', type=int, default=30,
                         help='number of frames per second to be processed by pose estimator and action detector')
 
     args = parser.parse_args()
@@ -158,8 +157,8 @@ if __name__ == '__main__':
     # pose estimator
     pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
                                                 mobilenet_use_stride=stride, half_precision=half_precision)
-    # add download
-    pose_estimator.load(args.pose)
+    pose_estimator.download(path=".", verbose=True)
+    pose_estimator.load("openpose_default")
 
     # Action classifier
     if args.method == 'pstgcn':
@@ -168,17 +167,17 @@ if __name__ == '__main__':
     else:
         action_classifier = SpatioTemporalGCNLearner(device=device, dataset_name='nturgbd_cv', method_name=args.method)
 
-    model_saved_path = args.action_checkpoint_path
-    model_name = args.action_checkpoint_name
-    action_classifier.load(model_saved_path, model_name)
+    model_saved_path = action_classifier.download(path=os.path.join("./pretrained_models", args.method),
+                                                  method_name=args.method, mode="pretrained",
+                                                  file_name=args.action_checkpoint_name)
+    action_classifier.load(model_saved_path, args.action_checkpoint_name)
 
     # Optimization
     if onnx:
         pose_estimator.optimize()
         action_classifier.optimize()
 
-    image_provider = VideoReader(0)
-    #image_provider = VideoReader(args.video)
+    image_provider = VideoReader(args.video)  # loading a video or get the camera id 0
 
     counter, avg_fps = 0, 0
     poses_list = []
@@ -190,18 +189,10 @@ if __name__ == '__main__':
             poses = pose_estimator.infer(img)
             for pose in poses:
                 draw(img, pose)
-            # select two poses with highest confidence score
-            if len(poses) > 2:
-                selected_poses = []
-                posescores = []
-                for i in range(len(poses)):
-                    posescores.append(poses[i].confidence)
-                sorted_idx = sorted(range(len(posescores)), key=lambda k: posescores[k])
-                for i in range(2):
-                    selected_poses.append(poses[sorted_idx[i]])
-                poses = selected_poses
-
             if len(poses) > 0:
+                if len(poses) > 2:
+                    # select two poses with highest energy
+                    poses = select_2_poses(poses)
                 counter += 1
                 print(counter)
                 poses_list.append(poses)
@@ -233,5 +224,3 @@ if __name__ == '__main__':
     print("Average inference fps: ", avg_fps)
     image_provider.release()
     cv2.destroyAllWindows()
-
-

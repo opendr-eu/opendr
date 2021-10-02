@@ -127,8 +127,8 @@ def infer3Dpose(pose_estimator, img, upsample_ratio=4, track=True, smooth=True):
     for n in range(len(pose_entries)):
         if len(pose_entries[n]) == 0:
             continue
-        pose_keypoints = np.ones((num_keypoints, 2), dtype=np.int32) * -1  # changed by me
-        keypoints_scores = np.ones((num_keypoints, 1), dtype=np.float32) * -1  # changed by me
+        pose_keypoints = np.ones((num_keypoints, 2), dtype=np.int32) * -1
+        keypoints_scores = np.ones((num_keypoints, 1), dtype=np.float32) * -1
         for kpt_id in range(num_keypoints):
             if pose_entries[n][kpt_id] != -1.0:  # keypoint was found
                 pose_keypoints[kpt_id, 0] = int(all_keypoints[int(pose_entries[n][kpt_id]), 0])
@@ -189,21 +189,13 @@ def pose2numpy(num_frames, poses_list, kptscores_list, num_channels=3):
 
 def select_2_poses(poses):
     selected_poses = []
-    posescores = []
-    for i in range(len(poses)):
-        posescores.append(poses[i].confidence)
-    sorted_idx = sorted(range(len(posescores)), key=lambda k: posescores[k])
-    for i in range(2):
-        selected_poses.append(poses[sorted_idx[i]])
-
-    '''selected_poses = []
     energy = []
     for i in range(len(poses)):
         s = poses[i].data[:, 0].std() + poses[i].data[:, 1].std()
         energy.append(s)
     energy = np.array(energy)
     index = energy.argsort()[::-1][0:2]
-    selected_poses.append(poses[index])'''
+    selected_poses.append(poses[index])
     return selected_poses
 
 
@@ -260,7 +252,7 @@ def data_gen(args, pose_estimator, out_path, benchmark, part):
         for img in image_provider:
             poses, kptscores = infer3Dpose(pose_estimator, img)
             if len(poses) > 2:
-                # select two poses with highest confidence score
+                # select two poses with highest energy
                 poses = select_2_poses(poses)
             if len(poses) > 0:
                 counter += 1
@@ -285,12 +277,10 @@ if __name__ == '__main__':
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
     parser.add_argument('--videos_path', type=str, default='/mnt/archive/nh/NTU60_RGB_Videos/nturgb+d_rgb',
-                        help='path to video files')  #
-    parser.add_argument('--pose', type=str, default='./lightweight_openpose/openpose_default',
-                        help='path to pose estimator model')
-    parser.add_argument("--num_channels", help="number of channels for each keypoint", default=3)
+                        help='path to video files')
+    parser.add_argument("--num_channels", help="number of channels for each keypoint", default=2)
     parser.add_argument('--ignored_sample_path', default='./samples_with_missing_skeletons.txt')
-    parser.add_argument('--out_folder', default='/mnt/archive/nh/NTU60_Skeletons_LightweightOpenPose/3dSkeletons')
+    parser.add_argument('--out_folder', default='/mnt/archive/nh/NTU60_Skeletons_LightweightOpenPose/2dSkeletons')
     args = parser.parse_args()
 
     onnx, device, accelerate = args.onnx, args.device, args.accelerate
@@ -306,8 +296,9 @@ if __name__ == '__main__':
     # pose estimator
     pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
                                                 mobilenet_use_stride=stride, half_precision=half_precision)
-    # pose_estimator.load("./lightweight_openpose/openpose_default")
-    pose_estimator.load(args.pose)
+    pose_estimator.download(path=".", verbose=True)
+    pose_estimator.load("openpose_default")
+
     # Optimization
     if onnx:
         pose_estimator.optimize()
