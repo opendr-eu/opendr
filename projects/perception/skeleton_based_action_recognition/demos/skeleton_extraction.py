@@ -245,7 +245,7 @@ def data_gen(args, pose_estimator, out_path, benchmark, part):
     for i, s in enumerate(tqdm(sample_names)):
         video_path = os.path.join(args.videos_path, s + '_rgb.avi')
         image_provider = VideoReader(video_path)
-        counter, avg_fps = 0, 0
+        counter = 0
         poses_list = []
         kptscores_list = []
         pose_estimator.previous_poses = []
