@@ -313,5 +313,3 @@ if __name__ == '__main__':
                 os.makedirs(out_path)
             print(b, p)
             data_gen(args, pose_estimator, out_path, benchmark=b, part=p)
-
-
