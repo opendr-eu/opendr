@@ -53,7 +53,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                  device='cuda', num_workers=32, epochs=400, experiment_name='pstbln_casia',
                  device_indices=[0], val_batch_size=128, drop_after_epoch=[400],
                  start_epoch=0, dataset_name='CASIA', num_class=6, num_point=309, num_person=1, in_channels=2,
-                 block_size=5, num_blocks=100, num_layers=10, topology=[],
+                 blocksize=5, num_blocks=100, num_layers=10, topology=[],
                  layer_threshold=1e-4, block_threshold=1e-4):
         super(ProgressiveSpatioTemporalBLNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                                   checkpoint_after_iter=checkpoint_after_iter,
@@ -85,7 +85,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         self.logging = False
         self.best_acc = 0
         self.start_epoch = start_epoch
-        self.block_size = block_size
+        self.blocksize = blocksize
         self.num_blocks = num_blocks
         self.num_layers = num_layers
         self.topology = topology
@@ -454,12 +454,12 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                 shutil.copy2(inspect.getfile(PSTBLN), self.logging_path)
             if self.device == 'cuda':
                 self.model = PSTBLN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
-                                    in_channels=self.in_channels, topology=self.topology, block_size=self.block_size,
+                                    in_channels=self.in_channels, topology=self.topology, blocksize=self.blocksize,
                                     cuda_=True).cuda(self.output_device)
                 self.loss = nn.CrossEntropyLoss().cuda(self.output_device)
             else:
                 self.model = PSTBLN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
-                                    in_channels=self.in_channels, topology=self.topology, block_size=self.block_size,
+                                    in_channels=self.in_channels, topology=self.topology, blocksize=self.blocksize,
                                     cuda_=False)
                 self.loss = nn.CrossEntropyLoss()
             # print(self.model)
