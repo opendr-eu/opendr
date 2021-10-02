@@ -68,7 +68,7 @@ jobs:
           - perception/semantic_segmentation
           - control/mobile_manipulation
           - perception/object_detection_2d
-          - perception/landmark_based_facial_expression_recognition
+          - perception/facial_expression_recognition/landmark_based_facial_expression_recognition
           # - perception/object_tracking_3d
         include:
           - os: ubuntu-20.04
