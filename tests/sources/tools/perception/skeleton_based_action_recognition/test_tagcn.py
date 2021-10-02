@@ -50,6 +50,8 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                                                batch_size=5, epochs=1,
                                                                checkpoint_after_iter=1, val_batch_size=5,
                                                                dataset_name='nturgbd_cv',
+                                                               num_class=60, num_point=25, num_person=2, in_channels=3,
+                                                               graph_type='ntu',
                                                                experiment_name='tagcn_nturgbd_cv_joint',
                                                                method_name='tagcn', num_frames=300, num_subframes=100)
         cls.experiment_name = 'tagcn_nturgbd_cv_joint'

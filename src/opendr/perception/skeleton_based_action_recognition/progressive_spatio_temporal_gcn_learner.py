@@ -50,8 +50,8 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                  checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path='temp',
                  device='cuda', num_workers=32, epochs=50, experiment_name='pstgcn_nturgbd',
                  device_ind=[0], val_batch_size=256, drop_after_epoch=[30, 40],
-                 start_epoch=0, dataset_name='nturgbd_cv',
-                 blocksize=20, numblocks=10, numlayers=10, topology=[],
+                 start_epoch=0, dataset_name='nturgbd_cv', num_class=60, num_point=25, num_person=2, in_channels=3,
+                 graph_type='ntu', blocksize=20, numblocks=10, numlayers=10, topology=[],
                  layer_threshold=1e-4, block_threshold=1e-4):
         super(ProgressiveSpatioTemporalGCNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                                   checkpoint_after_iter=checkpoint_after_iter,
@@ -75,6 +75,11 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         self.model_train_state = True
         self.ort_session = None
         self.dataset_name = dataset_name
+        self.num_class = num_class
+        self.num_point = num_point
+        self.num_person = num_person
+        self.in_channels = in_channels
+        self.graph_type = graph_type
         self.global_step = 0
         self.logging = False
         self.best_acc = 0
@@ -89,6 +94,9 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         if self.dataset_name is None:
             raise ValueError(self.dataset_name +
                              "is not a valid dataset name. Supported datasets: nturgbd_cv, nturgbd_cs, kinetics")
+        if self.graph_type is None:
+            raise ValueError(self.graph_type +
+                             "is not a valid graph type. Supported graphs: ntu, openpose")
         if self.device == 'cuda':
             self.output_device = self.device_ind[0] if type(self.device_ind) is list else self.device_ind
         self.__init_seed(1)
@@ -441,11 +449,15 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
             if self.logging:
                 shutil.copy2(inspect.getfile(PSTGCN), self.logging_path)
             if self.device == 'cuda':
-                self.model = PSTGCN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.blocksize,
+                self.model = PSTGCN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
+                                    in_channels=self.in_channels, graph_type=self.graph_type,
+                                    topology=self.topology, block_size=self.blocksize,
                                     cuda_=True).cuda(self.output_device)
                 self.loss = nn.CrossEntropyLoss().cuda(self.output_device)
             else:
-                self.model = PSTGCN(dataset_name=self.dataset_name, topology=self.topology, block_size=self.blocksize,
+                self.model = PSTGCN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
+                                    in_channels=self.in_channels, graph_type=self.graph_type,
+                                    topology=self.topology, block_size=self.blocksize,
                                     cuda_=False)
                 self.loss = nn.CrossEntropyLoss()
             # print(self.model)
@@ -583,13 +595,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         :type do_constant_folding: bool, optional
         """
         # Input to the model
-        if self.dataset_name == 'nturgbd_cv' or self.dataset_name == 'nturgbd_cs':
-            c, t, v, m = [3, 300, 25, 2]
-        elif self.dataset_name == 'kinetics':
-            c, t, v, m = [3, 300, 18, 2]
-        else:
-            raise ValueError(self.dataset_name + "is not a valid dataset name. Supported datasets: nturgbd_cv,"
-                                                 " nturgbd_cs, kinetics")
+        c, t, v, m = [self.in_channels, 300, self.num_point, self.num_person]
         n = self.batch_size
         onnx_input = torch.randn(n, c, t, v, m)
         if self.device == "cuda":
