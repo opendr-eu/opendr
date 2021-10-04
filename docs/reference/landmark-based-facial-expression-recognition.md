@@ -32,7 +32,7 @@ Constructor parameters:
   Specifies the optimizer type that should be used.
 - **lr_schedule**: *str, default=' '*  
   Specifies the learning rate scheduler.
-- **checkpoint_after_iter**: *int, default=0*
+- **checkpoint_after_iter**: *int, default=0*  
   Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
 - **checkpoint_load_iter**: *int, default=0*  
   Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
