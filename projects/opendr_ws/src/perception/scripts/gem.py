@@ -16,43 +16,138 @@
 
 import rospy
 import torch
+import message_filters
+import cv2
+import time
 import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.object_detection_2d.detr.algorithm.util.draw import draw
 from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
+
+# l515_dataset classes
+classes = ['chair', 'cycle', 'bin', 'laptop', 'drill', 'rocker', 'can']
+
+# colors for visualization
+colors = [[0.000, 0.447, 0.741], [0.850, 0.325, 0.098], [0.929, 0.694, 0.125],
+          [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
+
+
+def plot_results(image, boxes, w_sensor1, fps):
+    """
+    Helper function for creating the annotated images.
+    :param image: Image that is to be annotated
+    :type image: numpy.ndarray
+    :param boxes: List of detected bounding boxes
+    :type boxes: opendr.engine.target.BoundingBoxList
+    :param w_sensor1: Weight of the first modality (color image)
+    :type w_sensor1: float
+    :param fps: Frames per second
+    :type fps: int
+    :return: Image with annotations
+    :rtype: numpy.ndarray
+    """
+    cv2.putText(image, "FPS: {:.1f}".format(fps), (1100, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+    for box, c in zip(boxes, colors * 100):
+        if box.confidence > 0.7:
+            top_left = [int(box.left), int(box.top)]
+            bottom_right = [int(box.left + box.width), int(box.top + box.height)]
+            cv2.rectangle(image, (top_left[0], top_left[1]), (bottom_right[0], bottom_right[1]), (51, 102, 255), 2)
+            cv2.rectangle(image, (0, 0), (int(image.shape[1] * w_sensor1), 30), (255, 0, 0), -1)
+            cv2.rectangle(image, (int(image.shape[1] * w_sensor1), 0), (image.shape[1], 30), (51, 153, 51), -1)
+
+            text = f'{classes[box.name - 1]}: {box.confidence:0.2f}'
+            cv2.putText(image, text, (top_left[0], top_left[1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+    return image
 
 
 class GemNode:
 
-    def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_detection_annotated",
-                 detection_annotations_topic="/opendr/detections", device="cuda"):
+    def __init__(self,
+                 input_color_topic="/camera/color/image_raw",
+                 input_infra_topic="/camera/infra/image_raw",
+                 output_color_topic="/opendr/color_detection_annotated",
+                 output_infra_topic="/opendr/infra_detection_annotated",
+                 detection_annotations_topic="/opendr/detections",
+                 device="cuda",
+                 pts_color=None,
+                 pts_infra=None,
+                 ):
         """
         Creates a ROS Node for object detection with GEM
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
-        :param output_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
-        annotated image)
-        :type output_image_topic: str
-        :param detection_annotations_topic: Topic to which we are publishing the annotations (if None, we are not publishing
-        annotations)
+        :param input_color_topic: Topic from which we are reading the input color image
+        :type input_color_topic: str
+        :param input_infra_topic: Topic from which we are reading the input infrared image
+        :type: input_infra_topic: str
+        :param output_color_topic: Topic to which we are publishing the annotated color image (if None, we are not
+        publishing annotated image)
+        :type output_color_topic: str
+        :param output_infra_topic: Topic to which we are publishing the annotated infrared image (if None, we are not
+        publishing annotated image)
+        :type output_infra_topic: str
+        :param detection_annotations_topic: Topic to which we are publishing the annotations (if None, we are
+        not publishing annotations)
         :type detection_annotations_topic:  str
-        :param device: device on which we are running inference ('cpu' or 'cuda')
+        :param device: Device on which we are running inference ('cpu' or 'cuda')
         :type device: str
+        :param pts_color: Point on the color image that define alignment with the infrared image. These are camera
+        specific and can be obtained using get_color_infra_alignment.py which is located in the
+        opendr/perception/object_detection2d/utils module.
+        :type pts_color: {list, numpy.ndarray}
+        :param pts_infra: Points on the infrared image that define alignment with color image. These are camera specific
+        and can be obtained using get_color_infra_alignment.py which is located in the
+        opendr/perception/object_detection2d/utils module.
+        :type pts_infra: {list, numpy.ndarray}
         """
-
-        if output_image_topic is not None:
-            self.image_publisher = rospy.Publisher(output_image_topic, ROS_Image, queue_size=10)
+        rospy.init_node('gem', anonymous=True)
+        if output_color_topic is not None:
+            self.rgb_publisher = rospy.Publisher(output_color_topic, ROS_Image, queue_size=10)
         else:
-            self.image_publisher = None
+            self.rgb_publisher = None
+        if output_infra_topic is not None:
+            self.ir_publisher = rospy.Publisher(output_infra_topic, ROS_Image, queue_size=10)
+        else:
+            self.ir_publisher = None
 
         if detection_annotations_topic is not None:
             self.detection_publisher = rospy.Publisher(detection_annotations_topic, Detection2DArray, queue_size=10)
         else:
             self.detection_publisher = None
+        if pts_infra is None:
+            pts_infra = np.array([[478, 248], [465, 338], [458, 325], [468, 256],
+                                  [341, 240], [335, 310], [324, 321], [311, 383],
+                                  [434, 365], [135, 384], [67, 257], [167, 206],
+                                  [124, 131], [364, 276], [424, 269], [277, 131],
+                                  [41, 310], [202, 320], [188, 318], [188, 308],
+                                  [196, 241], [499, 317], [311, 164], [220, 216],
+                                  [435, 352], [213, 363], [390, 364], [212, 368],
+                                  [390, 370], [467, 324], [415, 364]])
+            rospy.logwarn(
+                '\nUsing default calibration values for pts_infra!' +
+                '\nThese are probably incorrect.' +
+                '\nThe correct values for pts_infra can be found by running get_color_infra_alignment.py.' +
+                '\nThis file is located in the opendr/perception/object_detection2d/utils module.'
+            )
+        if pts_color is None:
+            pts_color = np.array([[910, 397], [889, 572], [874, 552], [891, 411],
+                                  [635, 385], [619, 525], [603, 544], [576, 682],
+                                  [810, 619], [216, 688], [90, 423], [281, 310],
+                                  [193, 163], [684, 449], [806, 431], [504, 170],
+                                  [24, 538], [353, 552], [323, 550], [323, 529],
+                                  [344, 387], [961, 533], [570, 233], [392, 336],
+                                  [831, 610], [378, 638], [742, 630], [378, 648],
+                                  [742, 640], [895, 550], [787, 630]])
+            rospy.logwarn(
+                '\nUsing default calibration values for pts_color!' +
+                '\nThese are probably incorrect.' +
+                '\nThe correct values for pts_color can be found by running get_color_infra_alignment.py.' +
+                '\nThis file is located in the opendr/perception/object_detection2d/utils module.'
+            )
+        # Object classes
+        self.classes = ['N/A', 'chair', 'cycle', 'bin', 'laptop', 'drill', 'rocker']
 
-        rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
+        # Estimating Homography matrix for aligning infra with RGB
+        self.h, status = cv2.findHomography(pts_infra, pts_color)
 
         self.bridge = ROSBridge()
 
@@ -63,42 +158,64 @@ class GemNode:
                                       num_classes=7,
                                       device=device,
                                       )
+        self.gem_learner.fusion_method = 'sc_avg'
         self.gem_learner.download(path=".", verbose=True)
+
+        # Subscribers
+        msg_rgb = message_filters.Subscriber(input_color_topic, ROS_Image)
+        msg_ir = message_filters.Subscriber(input_infra_topic, ROS_Image)
+
+        sync = message_filters.TimeSynchronizer([msg_rgb, msg_ir], 1)
+        sync.registerCallback(self.callback)
 
     def listen(self):
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('gem', anonymous=True)
+        self.fps_list = []
         rospy.loginfo("GEM node started!")
         rospy.spin()
 
-    def callback(self, data):
+    def callback(self, msg_rgb, msg_ir):
         """
         Callback that process the input data and publishes to the corresponding topics
-        :param data: input message
-        :type data: sensor_msgs.msg.Image
+        :param msg_rgb: input color image message
+        :type msg_rgb: sensor_msgs.msg.Image
+        :param msg_ir: input infrared image message
+        :type msg_ir: sensor_msgs.msg.Image
         """
+        # Convert images to OpenDR standard
+        image_rgb = self.bridge.from_ros_image(msg_rgb).numpy()
+        image_ir_raw = self.bridge.from_ros_image(msg_ir).numpy()
+        image_ir = cv2.warpPerspective(image_ir_raw, self.h, (image_rgb.shape[1], image_rgb.shape[0]))
 
-        # Convert sensor_msgs.msg.Image into OpenDR Image
-        image = self.bridge.from_ros_image(data)
+        # Perform inference on images
+        start = time.time()
+        boxes, w_sensor1, _ = self.gem_learner.infer(image_rgb, image_ir)
+        end = time.time()
 
-        # Run detection estimation
-        boxes = self.gem_learner.infer(image)
+        # Calculate fps
+        fps = 1 / (end - start)
+        self.fps_list.append(fps)
+        if len(self.fps_list) > 10:
+            del self.fps_list[0]
+        mean_fps = sum(self.fps_list) / len(self.fps_list)
 
-        # Get an OpenCV image back
-        image = np.float32(image.numpy())
         #  Annotate image and publish results:
         if self.detection_publisher is not None:
             ros_detection = self.bridge.to_ros_bounding_box_list(boxes)
             self.detection_publisher.publish(ros_detection)
             # We get can the data back using self.bridge.from_ros_bounding_box_list(ros_detection)
             # e.g., opendr_detection = self.bridge.from_ros_bounding_box_list(ros_detection)
-            draw(image, boxes)
 
-        if self.image_publisher is not None:
-            message = self.bridge.to_ros_image(np.uint8(image))
-            self.image_publisher.publish(message)
+        if self.rgb_publisher is not None:
+            plot_rgb = plot_results(image_rgb, boxes, w_sensor1, mean_fps)
+            message = self.bridge.to_ros_image(np.uint8(plot_rgb))
+            self.rgb_publisher.publish(message)
+        if self.ir_publisher is not None:
+            plot_ir = plot_results(image_ir, boxes, w_sensor1, mean_fps)
+            message = self.bridge.to_ros_image(np.uint8(plot_ir))
+            self.ir_publisher.publish(message)
 
 
 if __name__ == '__main__':
@@ -112,6 +229,5 @@ if __name__ == '__main__':
             device = 'cpu'
     except:
         device = 'cpu'
-
     detection_estimation_node = GemNode(device=device)
     detection_estimation_node.listen()
