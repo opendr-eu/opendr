@@ -170,7 +170,7 @@ class TestGemLearner(unittest.TestCase):
         m1_image = Image.open(os.path.join(self.temp_dir, "sample_images/rgb/2021_04_22_21_35_47_852516.jpg"))
         m2_image = Image.open(os.path.join(self.temp_dir, 'sample_images/aligned_infra/2021_04_22_21_35_47_852516.jpg'))
 
-        result = self.learner.infer(m1_image, m2_image)
+        result, _, _ = self.learner.infer(m1_image, m2_image)
 
         self.assertGreater(len(result), 0)
 
