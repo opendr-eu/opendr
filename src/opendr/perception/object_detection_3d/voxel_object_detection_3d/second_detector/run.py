@@ -660,7 +660,7 @@ def predict_kitti_to_anno(
     image_shape=None
 ):
     batch_image_shape = example["image_shape"] if "image_shape" in example else (
-        [image_shape] * len(example["labels"])
+        [image_shape] * len(example["P2"])
     )
 
     if use_coarse_to_fine:
