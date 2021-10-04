@@ -211,7 +211,7 @@ class EfficientPsLearner(Learner):
 
     def eval(self,
              dataset: Any,
-             print_results: bool = False
+             print_results: bool=False
              ) -> Dict[str, Any]:
         """
         This method is used to evaluate the algorithm on a dataset and returns the following stats:
@@ -240,14 +240,16 @@ class EfficientPsLearner(Learner):
 
         # Run evaluation
         single_gpu_test(self.model, dataloader, show=False, eval=['panoptic'])
-        std_temp_path = str(Path(__file__).parent / 'tmpDir')  # This is hard-coded in the base code
+        std_temp_path = Path('tmpDir').absolute()  # This is hard-coded in the base code
         if self.temp_path != std_temp_path:
             shutil.copytree(std_temp_path, self.temp_path, dirs_exist_ok=True)
             shutil.rmtree(std_temp_path)
 
+        prev_stdout = sys.stdout
         sys.stdout = open(os.devnull, 'w')  # Block prints to STDOUT
         results = dataset.evaluate(os.path.join(self.temp_path, 'tmp'), os.path.join(self.temp_path, 'tmp_json'))
-        sys.stdout = sys.__stdout__
+        sys.stdout.close()
+        sys.stdout = prev_stdout
 
         if print_results:
             msg = f"\n{'Category':<14s}| {'PQ':>5s} {'SQ':>5s} {'RQ':>5s} {'N':>5s}\n"
