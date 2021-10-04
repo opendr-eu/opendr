@@ -626,7 +626,6 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
             onnx_input = Variable(onnx_input.float().cuda(self.output_device), requires_grad=False)
         else:
             onnx_input = Variable(onnx_input.float(), requires_grad=False)
-        # torch_out = self.model(onnx_input)
         # Export the model
         torch.onnx.export(self.model,  # model being run
                           onnx_input,  # model input (or a tuple for multiple inputs)
