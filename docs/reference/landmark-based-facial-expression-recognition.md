@@ -188,6 +188,7 @@ ProgressiveSpatioTemporalBLNLearner.network_builder(self, dataset, val_dataset, 
                                                     val_labels_filename, verbose)
 ```
 This method builds the network topology progressively. 
+
 Parameters:
 
 - **dataset**: *object*  
