@@ -560,6 +560,6 @@ class EfficientPsLearner(Learner):
         """
         if not isinstance(value, int):
             raise TypeError('num_workers should be an integer.')
-        elif value < 0:
-            raise ValueError('num_workers cannot be negative.')
+        elif value <= 0:
+            raise ValueError('num_workers should be positive.')
         self._num_workers = value

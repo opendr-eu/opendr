@@ -1,6 +1,6 @@
 # Cityscapes
 
-1. Download the raw files:
+1. Download the raw files (requires creating an account):
     1. Download [leftImg8bit_trainvaltest.zip](https://www.cityscapes-dataset.com/file-handling/?packageID=3).
     2. Download [gtFine_trainvaltest.zip](https://www.cityscapes-dataset.com/file-handling/?packageID=1).
 2. Extract both files.

@@ -30,6 +30,7 @@ def download_models():
 
 
 def prepare_dataset():
+    # These methods require downloading the data first as described in the README in the datasets folder
     CityscapesDataset.prepare_data('/home/user/data/cityscapes', CITYSCAPES_ROOT)
     KittiDataset.prepare_data('/home/user/data/kitti_panoptic', KITTI_ROOT)
 
