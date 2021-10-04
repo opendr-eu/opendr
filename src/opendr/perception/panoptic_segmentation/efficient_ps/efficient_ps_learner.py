@@ -56,20 +56,20 @@ class EfficientPsLearner(Learner):
     """
 
     def __init__(self,
-                 lr: float = .07,
-                 iters: int = 160,
-                 batch_size: int = 1,
-                 optimizer: str = 'SGD',
-                 lr_schedule: Optional[Dict[str, Any]] = None,
-                 momentum: float = .9,
-                 weight_decay: float = .0001,
-                 optimizer_config: Optional[Dict[str, Any]] = None,
-                 checkpoint_after_iter: int = 1,
-                 temp_path: str = str(Path(__file__).parent / 'eval_tmp_dir'),
-                 device: str = "cuda:0",
-                 num_workers: int = 1,
-                 seed: Optional[float] = None,
-                 config_file: str = str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
+                 lr: float=.07,
+                 iters: int=160,
+                 batch_size: int=1,
+                 optimizer: str='SGD',
+                 lr_schedule: Optional[Dict[str, Any]]=None,
+                 momentum: float=.9,
+                 weight_decay: float=.0001,
+                 optimizer_config: Optional[Dict[str, Any]]=None,
+                 checkpoint_after_iter: int=1,
+                 temp_path: str=str(Path(__file__).parent / 'eval_tmp_dir'),
+                 device: str="cuda:0",
+                 num_workers: int=1,
+                 seed: Optional[float]=None,
+                 config_file: str=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
                  ):
         """
         :param lr: learning rate [training]
@@ -135,10 +135,10 @@ class EfficientPsLearner(Learner):
 
     def fit(self,
             dataset: Any,
-            val_dataset: Optional[Union[CityscapesDataset, KittiDataset]] = None,
-            logging_path: str = str(Path(__file__).parent / 'logging'),
-            silent: bool = False,
-            verbose: Optional[bool] = None
+            val_dataset: Optional[Union[CityscapesDataset, KittiDataset]]=None,
+            logging_path: str=str(Path(__file__).parent / 'logging'),
+            silent: bool=False,
+            verbose: Optional[bool]=None
             ):
         """
         This method is used for training the algorithm on a train dataset and validating on a separate dataset.
@@ -267,7 +267,7 @@ class EfficientPsLearner(Learner):
 
     def infer(self,
               batch: Union[Image, List[Image]],
-              return_raw_logits: bool = False
+              return_raw_logits: bool=False
               ) -> Union[List[Tuple[Heatmap, Heatmap]], Tuple[Heatmap, Heatmap], np.ndarray]:
         """
         This method performs inference on the batch provided.
@@ -415,7 +415,7 @@ class EfficientPsLearner(Learner):
         raise NotImplementedError
 
     @staticmethod
-    def download(path: str, mode: str = 'model', trained_on: str = 'cityscapes') -> str:
+    def download(path: str, mode: str='model', trained_on: str='cityscapes') -> str:
         """
         Download data from the OpenDR server. Valid modes include pre-trained model weights and data used in the unit tests.
 
@@ -467,11 +467,11 @@ class EfficientPsLearner(Learner):
     @staticmethod
     def visualize(image: Image,
                   prediction: Tuple[Heatmap, Heatmap],
-                  show_figure: bool = True,
-                  save_figure: bool = False,
-                  figure_filename: Optional[str] = None,
-                  figure_size: Tuple[float, float] = (15, 10),
-                  detailed: bool = False):
+                  show_figure: bool=True,
+                  save_figure: bool=False,
+                  figure_filename: Optional[str]=None,
+                  figure_size: Tuple[float, float]=(15, 10),
+                  detailed: bool=False):
         assert figure_filename is not None if save_figure else True
 
         PALETTE.append([0, 0, 0])
