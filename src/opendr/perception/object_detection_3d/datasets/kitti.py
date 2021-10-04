@@ -16,6 +16,7 @@
 
 import os
 import numpy as np
+from skimage import io
 from distutils.dir_util import copy_tree
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
 from opendr.engine.data import PointCloudWithCalibration
@@ -175,18 +176,20 @@ class KittiDataset(ExternalDataset):
 
 class LabeledPointCloudsDatasetIterator(DatasetIterator):
     def __init__(
-        self, lidar_path, label_path, calib_path, num_point_features=4
+        self, lidar_path, label_path, calib_path, image_path=None, num_point_features=4
     ):
         super().__init__()
 
         self.lidar_path = lidar_path
         self.label_path = label_path
         self.calib_path = calib_path
+        self.image_path = image_path
         self.num_point_features = num_point_features
 
-        self.lidar_files = os.listdir(self.lidar_path)
-        self.label_files = os.listdir(self.label_path)
-        self.calib_files = os.listdir(self.calib_path)
+        self.lidar_files = sorted(os.listdir(self.lidar_path))
+        self.label_files = sorted(os.listdir(self.label_path))
+        self.calib_files = sorted(os.listdir(self.calib_path))
+        self.image_files = sorted(os.listdir(self.image_path)) if self.image_path is not None else None
 
         if len(self.lidar_files) != len(self.label_files) or len(
             self.lidar_files
@@ -210,7 +213,13 @@ class LabeledPointCloudsDatasetIterator(DatasetIterator):
             )
         )
 
-        result = (PointCloudWithCalibration(points, calib), target)
+        image_shape = None if self.image_files is None else (
+            np.array(io.imread(
+                os.path.join(self.image_path, self.image_files[idx])
+            ).shape[:2], dtype=np.int32)
+        )
+
+        result = (PointCloudWithCalibration(points, calib, image_shape), target)
 
         return result
 
