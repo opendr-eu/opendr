@@ -86,9 +86,9 @@ class TestCppCheck(unittest.TestCase):
         return command
 
     def test_sources_with_cppcheck(self):
-        """Test C API with Cppcheck."""
+        """Test Webots with Cppcheck."""
         sourceDirs = [
-            'src/c_api',
+            'src/c',
         ]
         skippedDirs = [
         ]
@@ -112,7 +112,7 @@ class TestCppCheck(unittest.TestCase):
     def test_projects_with_cppcheck(self):
         """Test projects with Cppcheck."""
         sourceDirs = [
-            'projects/c_api'
+            'projects/c_api/src'
         ]
         skippedDirs = [
         ]

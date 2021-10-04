@@ -1,6 +1,0 @@
-- git: {local-name: tiago_moveit_config,          uri: 'https://github.com/pal-robotics/tiago_moveit_config.git', version: 'kinetic-devel'}
-- git: {local-name: tiago_robot,                  uri: 'https://github.com/pal-robotics/tiago_robot.git', version: 'kinetic-devel'}
-- git: {local-name: tiago_description_calibration,uri: 'https://github.com/pal-robotics/tiago_description_calibration.git', version: 'indigo-devel'}
-- git: {local-name: pmb2_robot,                   uri: 'https://github.com/pal-robotics/pmb2_robot.git', version: 'kinetic-devel'}
-- git: {local-name: hey5_description,             uri: 'https://github.com/pal-robotics/hey5_description.git', version: 'master'}
-- git: {local-name: pal_gripper,                  uri: 'https://github.com/pal-robotics/pal_gripper.git', version: 'kinetic-devel'}

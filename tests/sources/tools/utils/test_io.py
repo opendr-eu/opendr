@@ -25,7 +25,6 @@ logger = getLogger(__name__)
 class TestIO(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        print("\n\n**********************************\nTEST utils.io \n**********************************")
         cls.temp_dir = Path(
             "./tests/sources/tools/utils/temp"
         )

@@ -54,13 +54,13 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
                                     "voxel_object_detection_3d",
                                     "voxel_object_detection_3d_temp")
 
-        cls.config_tanet_car = os.path.join(".", "src", "opendr", "perception",
+        cls.config_tanet_car = os.path.join(".", "src", "perception",
                                             "object_detection_3d",
                                             "voxel_object_detection_3d",
                                             "second_detector", "configs", "tanet",
                                             "car", "test_short.proto")
 
-        cls.config_tanet_ped_cycle = os.path.join(".", "src", "opendr", "perception",
+        cls.config_tanet_ped_cycle = os.path.join(".", "src", "perception",
                                                   "object_detection_3d",
                                                   "voxel_object_detection_3d",
                                                   "second_detector", "configs", "tanet",
@@ -122,7 +122,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
     def test_fit(self):
 
         def test_model(name, config):
-            print("Fit", name, "start", file=sys.stderr)
             model_path = os.path.join(self.temp_dir, "test_fit_" + name)
             dataset = KittiDataset(self.dataset_path, self.subsets_path)
 
@@ -141,7 +140,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             new_param = list(learner.model.parameters())[0].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
 
-            del learner
             print("Fit", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
@@ -149,7 +147,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
     def test_fit_iterator(self):
         def test_model(name, config):
-            print("Fit iterator", name, "start", file=sys.stderr)
             model_path = os.path.join(self.temp_dir, "test_fit_iterator_" + name)
             dataset = LabeledPointCloudsDatasetIterator(
                 self.dataset_path + "/training/velodyne_reduced",
@@ -178,7 +175,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             new_param = list(learner.model.parameters())[0].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
 
-            del learner
             print("Fit iterator", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
@@ -186,7 +182,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
     def test_eval(self):
         def test_model(name, config):
-            print("Eval", name, "start", file=sys.stderr)
             model_path = os.path.join(self.temp_dir, self.download_model_names[name])
             dataset = KittiDataset(self.dataset_path, self.subsets_path)
 
@@ -196,15 +191,11 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
             self.assertTrue(mAPbbox[0][0][0] > 1 and mAPbbox[0][0][0] < 95, msg=mAPbbox[0][0][0])
 
-            del learner
-            print("Eval", name, "ok", file=sys.stderr)
-
         for name, config in self.car_configs.items():
             test_model(name, config)
 
     def test_infer(self):
         def test_model(name, config):
-            print("Infer", name, "start", file=sys.stderr)
 
             dataset = PointCloudsDatasetIterator(self.dataset_path + "/testing/velodyne_reduced")
 
@@ -224,15 +215,11 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             self.assertTrue(len(result) == 3)
             self.assertTrue(len(result[0]) > 0)
 
-            del learner
-            print("Infer", name, "ok", file=sys.stderr)
-
         for name, config in self.car_configs.items():
             test_model(name, config)
 
     def test_save(self):
         def test_model(name, config):
-            print("Save", name, "start", file=sys.stderr)
             model_path = os.path.join(self.temp_dir, "test_save_" + name)
             save_path = os.path.join(model_path, "save")
 
@@ -252,16 +239,11 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             self.assertFalse(torch.equal(starting_param_1, starting_param_2))
             self.assertTrue(torch.equal(starting_param_1, new_param))
 
-            del learner
-            del learner2
-            print("Save", name, "ok", file=sys.stderr)
-
         for name, config in self.car_configs.items():
             test_model(name, config)
 
     def test_optimize(self):
         def test_model(name, config):
-            print("Optimize", name, "start", file=sys.stderr)
             model_path = os.path.join(self.temp_dir, "test_optimize_" + name)
 
             dataset = PointCloudsDatasetIterator(self.dataset_path + "/testing/velodyne_reduced")
@@ -285,10 +267,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             learner2.load(model_path, True)
 
             self.assertTrue(learner2.model.rpn_ort_session is not None)
-
-            del learner
-            del learner2
-            print("Optimize", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
             test_model(name, config)

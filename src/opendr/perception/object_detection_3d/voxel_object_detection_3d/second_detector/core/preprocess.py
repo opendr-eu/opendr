@@ -1,5 +1,7 @@
 import abc
 from collections import OrderedDict
+
+import numba
 import numpy as np
 
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
@@ -9,8 +11,6 @@ from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_dete
     points_in_convex_polygon_3d_jit,
     points_in_convex_polygon_jit,
 )
-
-import numba
 
 
 class BatchSampler:
