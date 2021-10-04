@@ -341,11 +341,64 @@ class BoundingBox(Target):
 
         return result
 
+    def coco(self, with_confidence=True):
+        result = {}
+        result['bbox'] = [self.left, self.top, self.width, self.height]
+        result['category_id'] = self.name
+        result['area'] = self.width * self.height
+        return result
+
     def __repr__(self):
         return "BoundingBox " + str(self)
 
     def __str__(self):
         return str(self.mot())
+
+
+class CocoBoundingBox(BoundingBox):
+    """
+    This target is used for 2D Object Detection with COCO format targets.
+    A bounding box is described by the left-top corner and its width and height.
+    Also, a segmentation of the target is returned if available.
+    """
+
+    def __init__(
+        self,
+        name,
+        left,
+        top,
+        width,
+        height,
+        segmentation=[],
+        area=0,
+        iscrowd=0,
+        score=0,
+    ):
+        super().__init__(name=name, left=left, top=top, width=width,
+                         height=height, score=score)
+        self.segmentation = segmentation
+        self.iscrowd = iscrowd
+        self.area = area
+
+    def coco(self, with_confidence=True):
+        result = {}
+        result['bbox'] = [self.left, self.top, self.width, self.height]
+        result['category_id'] = self.name
+        if len(self.segmentation) > 0:
+            result['area'] = self.area
+            result['segmentation'] = self.segmentation
+            result['iscrowd'] = self.iscrowd
+        else:
+            result['area'] = self.width * self.height
+        if with_confidence:
+            result['confidence'] = self.confidence
+        return result
+
+    def __repr__(self):
+        return "BoundingBox " + str(self)
+
+    def __str__(self):
+        return str(self.coco())
 
 
 class BoundingBoxList(Target):
@@ -360,6 +413,36 @@ class BoundingBoxList(Target):
         super().__init__()
         self.data = boxes
         self.confidence = np.mean([box.confidence for box in self.data])
+
+    @staticmethod
+    def from_coco(boxes_coco, image_id=0):
+        count = len(boxes_coco)
+
+        boxes = []
+        for i in range(count):
+            if 'segmentation' in boxes_coco[i]:
+                segmentation = boxes_coco[i]['segmentation']
+            if 'iscrowd' in boxes_coco[i]:
+                iscrowd = boxes_coco[i]['iscrowd']
+            else:
+                iscrowd = 0
+            if 'area' in boxes_coco[i]:
+                area = boxes_coco[i]['area']
+            else:
+                area = boxes_coco[i]['bbox'][2] * boxes_coco[i]['bbox'][3]
+            box = CocoBoundingBox(
+                boxes_coco[i]['category_id'],
+                boxes_coco[i]['bbox'][0],
+                boxes_coco[i]['bbox'][1],
+                boxes_coco[i]['bbox'][2],
+                boxes_coco[i]['bbox'][3],
+                segmentation=segmentation,
+                iscrowd=iscrowd,
+                area=area,
+            )
+            boxes.append(box)
+
+        return BoundingBoxList(boxes, image_id=image_id)
 
     def mot(self, with_confidence=True):
 
@@ -553,6 +636,11 @@ class BoundingBox3D(Target):
         result["location"] = np.array([self.data["location"]])
         result["rotation_y"] = np.array([self.data["rotation_y"]])
         result["score"] = np.array([self.confidence])
+        num_ground_truths = 1
+        num_objects = 1
+        index = list(range(num_objects)) + [-1] * (num_ground_truths - num_objects)
+        result["index"] = np.array(index, dtype=np.int32)
+        result["group_ids"] = np.arange(num_ground_truths, dtype=np.int32)
 
         return result
 
@@ -676,6 +764,12 @@ class BoundingBox3DList(Target):
             result["location"] = np.array(result["location"])
             result["rotation_y"] = np.array(result["rotation_y"])
             result["score"] = np.array(result["score"])
+
+            num_ground_truths = len(result["name"])
+            num_objects = len([x for x in result["name"] if x != "DontCare"])
+            index = list(range(num_objects)) + [-1] * (num_ground_truths - num_objects)
+            result["index"] = np.array(index, dtype=np.int32)
+            result["group_ids"] = np.arange(num_ground_truths, dtype=np.int32)
 
         return result
 

@@ -16,7 +16,7 @@ pip install ConfigParser
 # Install global dependencies
 python parse_dependencies.py $TYPE --global
 if [ -f "linux_dependencies.txt" ]; then
-       cat linux_dependencies.txt | xargs sudo apt-get install
+       cat linux_dependencies.txt | xargs sudo apt-get install --yes
        rm linux_dependencies.txt
 fi
 if [ -f "python_prerequisites.txt" ]; then
@@ -31,7 +31,7 @@ fi
 # Install the dependencies from the work packages
 python parse_dependencies.py $TYPE
 if [ -f "linux_dependencies.txt" ]; then
-       cat linux_dependencies.txt | xargs sudo apt-get install
+       cat linux_dependencies.txt | xargs sudo apt-get install --yes
        rm linux_dependencies.txt
 fi
 if [ -f "python_prerequisites.txt" ]; then
