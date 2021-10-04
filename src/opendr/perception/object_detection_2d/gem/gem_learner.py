@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import os
 import datetime
 import json
@@ -30,7 +31,8 @@ from opendr.perception.object_detection_2d.gem.algorithm.util.sampler import (Ra
                                                                               DistributedSamplerWrapper)
 from opendr.perception.object_detection_2d.gem.algorithm.datasets import build_dataset
 from opendr.perception.object_detection_2d.gem.algorithm.engine import evaluate, train_one_epoch
-from opendr.perception.object_detection_2d.gem.algorithm.models import build_model, build_criterion, build_postprocessors
+from opendr.perception.object_detection_2d.gem.algorithm.models import build_model, build_criterion, \
+    build_postprocessors
 
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Image
@@ -52,11 +54,11 @@ class GemLearner(Learner):
             model_config_path=os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
                 "algorithm/configs/model_config.yaml"
-                ),
+            ),
             dataset_config_path=os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
                 "algorithm/configs/dataset_config.yaml"
-                ),
+            ),
             iters=10,
             dataset=None,
             lr=1e-4,
@@ -70,7 +72,7 @@ class GemLearner(Learner):
             threshold=0.7,
             num_classes=91,
             return_segmentations=False,
-            ):
+    ):
 
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(GemLearner, self).__init__(
@@ -260,9 +262,9 @@ class GemLearner(Learner):
             checkpoint = torch.load(path, map_location="cpu")
         except FileNotFoundError as e:
             e.strerror = path + " not found, " \
-                "provided checkpoint_load_iter (" + \
-                str(self.checkpoint_load_iter) + \
-                ") doesn't correspond to a saved checkpoint.\nNo such file or directory."
+                                "provided checkpoint_load_iter (" + \
+                         str(self.checkpoint_load_iter) + \
+                         ") doesn't correspond to a saved checkpoint.\nNo such file or directory."
             raise e
         self.model_without_ddp.load_state_dict(checkpoint['model'])
         if 'optimizer' in checkpoint and 'lr_scheduler' in checkpoint and 'epoch' in checkpoint:
@@ -369,7 +371,7 @@ class GemLearner(Learner):
                 os.makedirs(output_dir)
             else:
                 current_time = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M-%S")
-                output_dir = os.path.join(out_dir, trial_dir+'_'+current_time)
+                output_dir = os.path.join(out_dir, trial_dir + '_' + current_time)
                 os.makedirs(output_dir)
 
         if logging_path != '' and logging_path is not None:
@@ -412,7 +414,7 @@ class GemLearner(Learner):
             images_folder_name=m1_train_images_folder,
             annotations_folder_name=annotations_folder,
             annotations_file_name=m1_train_annotations_file
-            )
+        )
 
         train_seed = m1_dataset_train.set_seed()
         m1_sampler_train_main = RandomSampler(m1_dataset_train)
@@ -425,7 +427,7 @@ class GemLearner(Learner):
             annotations_folder_name=annotations_folder,
             annotations_file_name=m2_train_annotations_file,
             seed=train_seed
-            )
+        )
         m2_sampler_train_main = RandomSampler(m2_dataset_train, m1_sampler_seed)
 
         if m1_val_edataset is not None and m2_val_edataset is not None:
@@ -435,7 +437,7 @@ class GemLearner(Learner):
                 images_folder_name=m1_val_images_folder,
                 annotations_folder_name=annotations_folder,
                 annotations_file_name=m1_val_annotations_file
-                )
+            )
             m1_sampler_val_main = SequentialSampler(m1_dataset_val)
             val_seed = m1_dataset_val.set_seed()
 
@@ -446,8 +448,7 @@ class GemLearner(Learner):
                 annotations_folder_name=annotations_folder,
                 annotations_file_name=m2_val_annotations_file,
                 seed=val_seed
-                )
-            # m2_sampler_val_main = SequentialSampler(m2_dataset_val)
+            )
 
         if not self.args.distributed:
             m1_sampler_train = m1_sampler_train_main
@@ -455,14 +456,12 @@ class GemLearner(Learner):
 
             if m1_val_edataset is not None and m2_val_edataset is not None:
                 m1_sampler_val = m1_sampler_val_main
-                # m2_sampler_val = m2_sampler_val_main
         else:
             m1_sampler_train = DistributedSamplerWrapper(m1_sampler_train_main)
             m2_sampler_train = DistributedSamplerWrapper(m2_sampler_train_main)
 
             if m1_val_edataset is not None and m2_val_edataset is not None:
                 m1_sampler_val = DistributedSamplerWrapper(m1_sampler_val_main)
-                # m2_sampler_val = DistributedSamplerWrapper(m2_sampler_val_main)
 
         # Starting from here, code has been modified from https://github.com/facebookresearch/detr/blob/master/main.py
 
@@ -473,18 +472,18 @@ class GemLearner(Learner):
             m2_sampler_train, self.batch_size, drop_last=True)
 
         m1_data_loader_train = DataLoader(
-                m1_dataset_train,
-                batch_sampler=m1_batch_sampler_train,
-                collate_fn=utils.collate_fn,
-                num_workers=self.args.num_workers
-                )
+            m1_dataset_train,
+            batch_sampler=m1_batch_sampler_train,
+            collate_fn=utils.collate_fn,
+            num_workers=self.args.num_workers
+        )
 
         m2_data_loader_train = DataLoader(
-                m2_dataset_train,
-                batch_sampler=m2_batch_sampler_train,
-                collate_fn=utils.collate_fn,
-                num_workers=self.args.num_workers
-                )
+            m2_dataset_train,
+            batch_sampler=m2_batch_sampler_train,
+            collate_fn=utils.collate_fn,
+            num_workers=self.args.num_workers
+        )
 
         if m1_val_edataset is not None and m2_val_edataset is not None:
             m1_data_loader_val = DataLoader(
@@ -494,23 +493,13 @@ class GemLearner(Learner):
                 drop_last=False,
                 collate_fn=utils.collate_fn,
                 num_workers=self.args.num_workers
-                )
-            # m2_data_loader_val = DataLoader(
-            #     m2_dataset_val,
-            #     self.batch_size,
-            #     sampler=m2_sampler_val,
-            #     drop_last=False,
-            #     collate_fn=utils.collate_fn,
-            #     num_workers=self.args.num_workers
-            #     )
+            )
             base_ds = get_coco_api_from_dataset(m1_dataset_val)
 
         if not silent:
             print("Start training")
         start_time = time.time()
         for self.epoch in range(self.checkpoint_load_iter, self.iters):
-            # if self.args.distributed:
-            #     sampler_train.set_epoch(self.epoch)
             train_stats = train_one_epoch(
                 self.model,
                 self.criterion,
@@ -522,7 +511,7 @@ class GemLearner(Learner):
                 self.args.clip_max_norm,
                 # verbose=verbose,
                 silent=silent
-                )
+            )
             self.lr_scheduler.step()
             checkpoint_paths = [os.path.join(output_dir, 'checkpoint.pth')]
             # extra checkpoint every checkpoint_after_iter epochs
@@ -644,7 +633,7 @@ class GemLearner(Learner):
             images_folder_name=m1_images_folder,
             annotations_folder_name=annotations_folder,
             annotations_file_name=m1_annotations_file
-            )
+        )
         m1_sampler_main = SequentialSampler(m1_dataset)
         m1_eval_seed = m1_dataset.set_seed()
 
@@ -655,7 +644,7 @@ class GemLearner(Learner):
             annotations_folder_name=annotations_folder,
             annotations_file_name=m2_annotations_file,
             seed=m1_eval_seed
-            )
+        )
         m2_sampler_main = SequentialSampler(m2_dataset)
 
         if not self.args.distributed:
@@ -672,7 +661,7 @@ class GemLearner(Learner):
             drop_last=False,
             collate_fn=utils.collate_fn,
             num_workers=self.args.num_workers
-            )
+        )
         m2_data_loader = DataLoader(
             m2_dataset,
             self.batch_size,
@@ -680,7 +669,7 @@ class GemLearner(Learner):
             drop_last=False,
             collate_fn=utils.collate_fn,
             num_workers=self.args.num_workers
-            )
+        )
 
         if isinstance(m1_edataset, ExternalDataset):
             base_ds = get_coco_api_from_dataset(m1_dataset)
@@ -688,10 +677,10 @@ class GemLearner(Learner):
             base_ds = None
 
         test_stats, _ = evaluate(
-                self.model, self.criterion, self.postprocessors,
-                m1_data_loader, m2_data_loader, base_ds, device,
-                self.temp_path, verbose=verbose
-            )
+            self.model, self.criterion, self.postprocessors,
+            m1_data_loader, m2_data_loader, base_ds, device,
+            self.temp_path, verbose=verbose
+        )
 
         return test_stats
 
@@ -719,23 +708,31 @@ class GemLearner(Learner):
         m1_img = im.fromarray(m1_image.numpy())
         m2_img = im.fromarray(m2_image.numpy())
 
-        scores, boxes, segmentations = detect(m1_img, m2_img, self.infer_transform, self.model,
-                                              self.postprocessors, self.device,
-                                              self.threshold, self.ort_session,
-                                              )
+        scores, boxes, segmentations, contrib = detect(m1_img, m2_img, self.infer_transform, self.model,
+                                                       self.postprocessors, self.device, self.threshold,
+                                                       self.ort_session,
+                                                       )
+        weight1 = contrib[0].data
+        weight1 = weight1.cpu().detach().numpy()
+
+        weight2 = contrib[1].data
+        weight2 = weight2.cpu().detach().numpy()
+
+        normed_weight1 = weight1 / (weight1 + weight2)
+        normed_weight2 = weight2 / (weight1 + weight2)
 
         boxlist = []
         if len(segmentations) == len(scores):
             for p, (xmin, ymin, xmax, ymax), segmentation in zip(scores.tolist(), boxes.tolist(), segmentations):
                 cl = np.argmax(p)
-                box = CocoBoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl], segmentation=segmentation)
+                box = CocoBoundingBox(cl, xmin, ymin, xmax - xmin, ymax - ymin, score=p[cl], segmentation=segmentation)
                 boxlist.append(box)
         else:
             for p, (xmin, ymin, xmax, ymax) in zip(scores.tolist(), boxes.tolist()):
                 cl = np.argmax(p)
-                box = CocoBoundingBox(cl, xmin, ymin, xmax-xmin, ymax-ymin, score=p[cl])
+                box = CocoBoundingBox(cl, xmin, ymin, xmax - xmin, ymax - ymin, score=p[cl])
                 boxlist.append(box)
-        return BoundingBoxList(boxlist)
+        return BoundingBoxList(boxlist), normed_weight1, normed_weight2
 
     def optimize(self, do_constant_folding=False):
         """
@@ -772,8 +769,8 @@ class GemLearner(Learner):
         """
 
     def download(self, path=None, mode="pretrained_gem", verbose=False):
-        supported_backbones = ['resnet50']
-        valid_modes = ["weights_detr", "pretrained_detr", "pretrained_gem", "test_data_l515", "test_data_sample_dataset",
+        valid_modes = ["weights_detr", "pretrained_detr", "pretrained_gem", "test_data_l515",
+                       "test_data_sample_dataset",
                        "test_data_sample_images"]
         if mode not in valid_modes:
             raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
@@ -785,7 +782,10 @@ class GemLearner(Learner):
             os.makedirs(path)
 
         if mode == "pretrained_detr" or mode == "weights_detr":
-            if self.backbone not in supported_backbones:
+            supported_backbones = ['resnet50', 'resnet101']
+            if self.backbone in supported_backbones:
+                pass
+            else:
                 raise UserWarning("Backbone {} currently not supported, valid backbones are: {}".format(
                     self.backbone, supported_backbones))
             self.__create_model()
@@ -796,34 +796,41 @@ class GemLearner(Learner):
             torch.hub.set_dir(self.temp_path)
             detr_model = torch.hub.load(
                 'facebookresearch/detr',
-                f'detr_{self.backbone}',
+                'detr_{}'.format(self.backbone),
                 pretrained=pretrained,
                 return_postprocessor=False
-                )
+            )
             if self.args.num_classes != 91:
                 detr_model.class_embed = torch.nn.Linear(
                     in_features=detr_model.class_embed.in_features,
-                    out_features=self.args.num_classes+1)
+                    out_features=self.args.num_classes + 1)
 
             pretrained_dict = detr_model.state_dict()
             backbone_ir_entries_dict = {k.replace('backbone', 'backbone_ir'): v for k, v in pretrained_dict.items() if
                                         'backbone' in k}
             pretrained_dict.update(backbone_ir_entries_dict)
-            print("Loading detr_resnet50 weights (partially)...")
+            print("Loading detr_{} weights (partially)...".format(self.backbone))
             self.model_without_ddp.load_state_dict(pretrained_dict, strict=False)
             print("Weights Loaded.")
 
         elif mode == 'pretrained_gem':
             self.__create_model()
+            supported_backbones = ['resnet50', 'mobilenetv2']
             if self.backbone not in supported_backbones:
-                raise UserWarning("Backbone {} currently not supported, valid backbones are: {}".format(
-                    self.backbone, supported_backbones))
-            pretrained_model_local_path = os.path.join(path, "pretrained_models/gem_scavg_e294_mAP0983_rn50_l515_7cls.pth")
+                raise UserWarning(
+                    "Backbone {} currently not supported, valid backbones are: {}".format(
+                        self.backbone, supported_backbones))
+            if self.backbone == 'resnet50':
+                model_file = 'gem_scavg_e294_mAP0983_rn50_l515_7cls.pth'
+            elif self.backbone == 'mobilenetv2':
+                model_file = 'gem_scavg_e1106_mAP0833_mnet2_l515_7cls.pth'
+            pretrained_model_local_path = os.path.join(
+                path, "pretrained_models/{}".format(model_file))
             if not os.path.exists(pretrained_model_local_path):
                 pretrained_model_url = (
-                    OPENDR_SERVER_URL +
-                    'perception/object_detection_2d/gem/models/gem_scavg_e294_mAP0983_rn50_l515_7cls.pth'
-                    )
+                        OPENDR_SERVER_URL +
+                        'perception/object_detection_2d/gem/models/{}'.format(model_file)
+                )
                 if not os.path.exists(os.path.join(path, 'pretrained_models')):
                     os.makedirs(os.path.join(path, 'pretrained_models'))
                 # Download pretrained_model from ftp server
@@ -912,9 +919,11 @@ class GemLearner(Learner):
 
         """
         param_dicts = [
-            {"params": [p for n, p in self.model_without_ddp.named_parameters() if "backbone" not in n and p.requires_grad]},
+            {"params": [p for n, p in self.model_without_ddp.named_parameters() if
+                        "backbone" not in n and p.requires_grad]},
             {
-                "params": [p for n, p in self.model_without_ddp.named_parameters() if "backbone" in n and p.requires_grad],
+                "params": [p for n, p in self.model_without_ddp.named_parameters() if
+                           "backbone" in n and p.requires_grad],
                 "lr": self.args.lr_backbone,
             },
         ]
@@ -926,7 +935,8 @@ class GemLearner(Learner):
         elif self.optimizer == "sgd":
             self.torch_optimizer = torch.optim.SGD(param_dicts, lr=self.lr, weight_decay=self.args.weight_decay)
         else:
-            warnings.warn("Unavailbale optimizer specified, using adamw instead. Possible optimizers are; adam, adamw and sgd")
+            warnings.warn(
+                "Unavailbale optimizer specified, using adamw instead. Possible optimizers are; adam, adamw and sgd")
             self.torch_optimizer = torch.optim.AdamW(param_dicts, lr=self.lr, weight_decay=self.weight_decay)
 
     def __create_scheduler(self):
@@ -945,7 +955,7 @@ class GemLearner(Learner):
         self.ort_session = None
 
         device = torch.device(self.device)
-        self.model = build_model(self.args, self.fusion_method)
+        self.model = build_model(self.args, self.fusion_method, self.backbone)
         self.model.to(device)
 
         self.model_without_ddp = self.model
