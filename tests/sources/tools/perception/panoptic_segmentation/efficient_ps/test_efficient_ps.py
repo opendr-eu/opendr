@@ -41,13 +41,12 @@ def rmdir(_dir):
 
 class TestEfficientPsLearner(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         print('\n\n**********************************\nTEST EfficientPS Learner\n**********************************')
 
         cls.temp_dir = os.path.join('tests', 'sources', 'tools', 'perception', 'panoptic_segmentation', 'efficient_ps',
                                     'efficient_ps_temp')
-        if os.path.exists(cls.temp_dir):
-            rmdir(cls.temp_dir)
+        rmdir(cls.temp_dir)
         os.makedirs(cls.temp_dir)
 
         # Download all required files for testing
@@ -58,7 +57,7 @@ class TestEfficientPsLearner(unittest.TestCase):
             f.extractall(cls.test_data)
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         # Clean up downloaded files
         rmdir(cls.temp_dir)
 
@@ -108,17 +107,16 @@ class TestEfficientPsLearner(unittest.TestCase):
         warnings.simplefilter('ignore', UserWarning)
 
         learner = EfficientPsLearner()
-        temp_model_path = os.path.join(self.temp_dir, 'checkpoints')
+        temp_model_path = os.path.join(self.temp_dir, 'model.pth')
         # Make sure that no model has been written to that path yet
         if os.path.exists(temp_model_path):
-            rmdir(temp_model_path)
+            rmfile(temp_model_path)
         successful = learner.save(temp_model_path)
-        self.assertTrue(os.path.exists(os.path.join(temp_model_path, 'efficient_ps', 'efficient_ps.json')))
-        self.assertTrue(os.path.exists(os.path.join(temp_model_path, 'efficient_ps', 'model.pth')))
+        self.assertTrue(os.path.exists(temp_model_path))
         self.assertTrue(successful)
-        rmdir(temp_model_path)
+        rmfile(temp_model_path)
 
-    def test_load_pretrained(self):
+    def test_load(self):
         learner = EfficientPsLearner()
         successful = learner.load(self.model_weights)
         self.assertTrue(learner._is_model_trained)
