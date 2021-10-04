@@ -25,5 +25,5 @@ def build_criterion(args):
     return build_c(args)
 
 
-def build_model(args, fusion_method):
-    return build(args, fusion_method)
+def build_model(args, fusion_method, backbone_name):
+    return build(args, fusion_method, backbone_name)

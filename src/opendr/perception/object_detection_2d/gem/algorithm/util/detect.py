@@ -41,4 +41,6 @@ def detect(m1_im, m2_im, transform, model, postprocessor, device, threshold, ort
     bboxes_scaled = rescale_bboxes(outputs['pred_boxes'][0, keep], m1_im.size, device)
 
     segmentations = []
-    return probas[keep], bboxes_scaled, segmentations
+
+    sensor_contrib = outputs['auxiliary_test']
+    return probas[keep], bboxes_scaled, segmentations, sensor_contrib

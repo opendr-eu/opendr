@@ -20,12 +20,14 @@ import torch.nn.functional as F
 from torch import nn
 
 from opendr.perception.object_detection_2d.detr.algorithm.util import box_ops
-from opendr.perception.object_detection_2d.detr.algorithm.util.misc import (NestedTensor, nested_tensor_from_tensor_list,
+from opendr.perception.object_detection_2d.detr.algorithm.util.misc import (NestedTensor,
+                                                                            nested_tensor_from_tensor_list,
                                                                             accuracy, get_world_size, interpolate,
                                                                             is_dist_avail_and_initialized)
 
 from opendr.perception.object_detection_2d.detr.algorithm.models.backbone import build_backbone
-# from .backbone_custom import build_backbone
+from opendr.perception.object_detection_2d.gem.algorithm.models.backbone_mobilenetv2 import (build_backbone as
+                                                                                             build_mobilenetv2_backbone)
 from opendr.perception.object_detection_2d.detr.algorithm.models.matcher import build_matcher
 from opendr.perception.object_detection_2d.detr.algorithm.models.segmentation import (DETRsegm, PostProcessPanoptic,
                                                                                       PostProcessSegm,
@@ -34,11 +36,15 @@ from opendr.perception.object_detection_2d.detr.algorithm.models.transformer imp
 
 
 class Weight_relu(nn.Module):
-    def __init__(self):
+    def __init__(self, backbone_name):
         super(Weight_relu, self).__init__()
 
-        self.conv1024out = nn.Conv2d(in_channels=2048, out_channels=1024, kernel_size=1)
-        # self.conv1024out = nn.Conv2d(in_channels=1280, out_channels=1024, kernel_size=1)
+        if backbone_name == 'resnet50':
+            self.conv1024out = nn.Conv2d(in_channels=2048, out_channels=1024, kernel_size=1)
+        elif backbone_name == 'mobilenetv2':
+            self.conv1024out = nn.Conv2d(in_channels=1280, out_channels=1024, kernel_size=1)
+        else:
+            print("backbone_name can only be resnet50 or mobilenetv2 currently.")
         self.adapt_pool16x16 = nn.AdaptiveAvgPool2d((16, 16))
         self.conv256out = nn.Conv2d(in_channels=1024, out_channels=256, kernel_size=1)
         self.conv1out = nn.Conv2d(in_channels=256, out_channels=1, kernel_size=1)
@@ -80,7 +86,7 @@ class sc_avg_detr(nn.Module):
     This is the Scalar Average Multi-Modal DETR module that performs object detection
     """
 
-    def __init__(self, backbone, transformer, num_classes, num_queries, aux_loss=False):
+    def __init__(self, backbone, backbone_name, transformer, num_classes, num_queries, aux_loss=False):
         """ Initializes the model.
         Parameters:
             backbone: torch module of the backbone to be used. See backbone.py
@@ -102,8 +108,8 @@ class sc_avg_detr(nn.Module):
         self.backbone_ir = backbone
         self.aux_loss = aux_loss
 
-        self.weight_rgb = Weight_relu()
-        self.weight_ir = Weight_relu()
+        self.weight_rgb = Weight_relu(backbone_name)
+        self.weight_ir = Weight_relu(backbone_name)
 
         print("Model Created")
 
@@ -433,23 +439,36 @@ class MLP(nn.Module):
         return x
 
 
-def build(args, fusion_method):
-    # "You should always use num_classes = max_id + 1 where max_id is the highest class ID that you have in your dataset."
-    # Reference: https://github.com/facebookresearch/detr/issues/108#issuecomment-650269223
+def build(args, fusion_method, backbone_name):
+    # "You should always use num_classes = max_id + 1 where max_id is the highest class ID that you have in your
+    # dataset." Reference: https://github.com/facebookresearch/detr/issues/108#issuecomment-650269223
     # device = torch.device(args.device)
-    backbone = build_backbone(args)
     transformer = build_transformer(args)
-    if fusion_method == 'sc_avg':
+    if fusion_method == 'sc_avg' and backbone_name == 'resnet50':
+        backbone = build_backbone(args)
         model = sc_avg_detr(
             backbone,
+            backbone_name,
             transformer,
             num_classes=args.num_classes,
             num_queries=args.num_queries,
             aux_loss=args.aux_loss,
         )
-    elif fusion_method == 'avg_baseline':
+    elif fusion_method == 'sc_avg' and backbone_name == 'mobilenetv2':
+        backbone = build_mobilenetv2_backbone(args)
+        model = sc_avg_detr(
+            backbone,
+            backbone_name,
+            transformer,
+            num_classes=args.num_classes,
+            num_queries=args.num_queries,
+            aux_loss=args.aux_loss,
+        )
+    elif fusion_method == 'avg_baseline' and backbone_name == 'resnet50':
+        backbone = build_backbone(args)
         model = avg_baseline(
             backbone,
+            backbone_name,
             transformer,
             num_classes=args.num_classes,
             num_queries=args.num_queries,
