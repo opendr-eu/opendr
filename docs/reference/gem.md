@@ -152,7 +152,9 @@ GemLearner.infer(self, m1_image, m2_image)
 ```
 
 This method is used to perform object detection on an image.
-Returns an engine.target.BoundingBoxList object, which contains bounding boxes that are described by the left-top corner and its width and height, or returns an empty list if no detections were made.
+Returns an engine.target.BoundingBoxList object, which contains bounding boxes that are described by the left-top corner
+and its width and height, or returns an empty list if no detections were made.
+Also returns the weights of the two modalities.
 
 Parameters:
 - **m1_image** : *object*
@@ -270,7 +272,7 @@ learner.download(mode='test_data_sample_images')
 m1_img = Image.open('temp/sample_images/rgb/2021_04_22_21_35_47_852516.jpg')
 m2_img = Image.open('temp/sample_images/aligned_infra/2021_04_22_21_35_47_852516.jpg')
 
-bounding_box_list = learner.infer(m1_img, m2_img)
+bounding_box_list, _, _ = learner.infer(m1_img, m2_img)
 plot_results(m1_img, bounding_box_list)
 ```
 #### References
