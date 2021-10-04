@@ -35,6 +35,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [multilinear_compressive_learning Module](multilinear_compressive_learning.md)
         - [skeleton_based_action_recognition](skeleton_based_action_recognition.md)
         - [semantic-segmentation Module](semantic-segmentation.md)
+        - [landmark_based_facial_expression_recognition](landmark-based-facial-expression-recognition.md)
     - `control` Module
       - [mobile_manipulation Module](mobile-manipulation.md)
 - [ROSBridge Package](rosbridge.md)
