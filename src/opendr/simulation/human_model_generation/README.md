@@ -7,7 +7,7 @@ This folder contains code for:
 
 ## Sources
 
-Code for [PIFu](https://arxiv.org/abs/1905.05172) is taken from [https://github.com/shunsukesaito/PIFu](https://github.com/shunsukesaito/PIFu). It is modified to be compatible with OpenDR specifications. The original code is licensed under the MIT license:
+Code for [PIFu](https://arxiv.org/abs/1905.05172) is taken from [https://github.com/shunsukesaito/PIFu](https://github.com/shunsukesaito/PIFu). It is modified to be compatible with OpenDR specifications. Part of the original code is located in 'utilities/PIFu' directory and is licensed under the MIT license:
 ```
 MIT License
 
