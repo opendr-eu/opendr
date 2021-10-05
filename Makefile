@@ -31,6 +31,7 @@ release: install_compilation_dependencies
 install_runtime_dependencies:
 	@+echo "#"; echo "# * Install Runtime Dependencies *"; echo "#"
 	@+cd dependencies; ./install.sh runtime
+	@+cd src/opendr/perception/object_detection_2d/retinaface; make
 
 install_compilation_dependencies:
 	@+echo "#"; echo "# * Install Compilation Dependencies *"; echo "#"
@@ -74,3 +75,4 @@ help:
 	@+echo
 	@+echo -e "\033[32;1mNote:\033[0m You seem to have a processor with $(NUMBER_OF_PROCESSORS) virtual cores,"
 	@+echo -e "      hence the \033[33;1m-j$(THREADS)\033[0m option to speed-up the compilation."
+

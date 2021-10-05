@@ -108,6 +108,54 @@ class ROSBridge:
         pose.id = pose_id
         return pose
 
+    def to_ros_boxes(self, box_list):
+        """
+        Converts an OpenDR BoundingBoxList into a Detection2DArray msg that can carry the same information.
+        Each bounding box is represented by its center coordinates as well as its width/height dimensions.
+        :param box_list: OpenDR bounding boxes to be converted
+        :type box_list: engine.target.BoundingBoxList
+        :return: ROS message with the bounding boxes
+        :rtype: vision_msgs.msg.Detection2DArray
+        """
+        boxes = box_list.data
+        ros_boxes = Detection2DArray()
+        for idx, box in enumerate(boxes):
+            ros_box = Detection2D()
+            ros_box.bbox = BoundingBox2D()
+            ros_box.results.append(ObjectHypothesisWithPose())
+            ros_box.bbox.center = Pose2D()
+            ros_box.bbox.center.x = box.left + box.width / 2.
+            ros_box.bbox.center.y = box.top + box.height / 2.
+            ros_box.bbox.size_x = box.width
+            ros_box.bbox.size_y = box.height
+            ros_box.results[0].id = box.name
+            if box.confidence:
+                ros_box.results[0].score = box.confidence
+            ros_boxes.detections.append(ros_box)
+        return ros_boxes
+
+    def from_ros_boxes(self, ros_detections):
+        """
+        Converts a ROS message with bounding boxes into an OpenDR BoundingBoxList
+        :param ros_detections: the boxes to be converted (represented as vision_msgs.msg.Detection2DArray)
+        :type ros_detections: vision_msgs.msg.Detection2DArray
+        :return: an OpenDR BoundingBoxList
+        :rtype: engine.target.BoundingBoxList
+        """
+        ros_boxes = ros_detections.detections
+        bboxes = BoundingBoxList(boxes=[])
+
+        for idx, box in enumerate(ros_boxes):
+            width = box.bbox.size_x
+            height = box.bbox.size_y
+            left = box.bbox.center.x - width / 2.
+            top = box.bbox.center.y - height / 2.
+            id = box.results[0].id
+            bbox = BoundingBox(top=top, left=left, width=width, height=height, name=id)
+            bboxes.data.append(bbox)
+
+        return bboxes
+
     def to_ros_bounding_box_list(self, bounding_box_list):
         """
         Converts an OpenDR bounding_box_list into a Detection2DArray msg that can carry the same information

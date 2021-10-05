@@ -89,7 +89,9 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
             'src/opendr/perception/skeleton_based_action_recognition/algorithm',
             'projects/data_generation/synthetic-multi-view-facial-image-generation',
-            'src/opendr/perception/skeleton_based_action_recognition/algorithm'
+            'src/opendr/perception/skeleton_based_action_recognition/algorithm',
+            'src/opendr/perception/semantic_segmentation/bisenet/algorithm',
+            'src/opendr/perception/object_detection_2d/retinaface/algorithm'
         ]
 
         skippedFilePaths = [
@@ -97,7 +99,8 @@ class TestLicense(unittest.TestCase):
             'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
             'projects/data_generation/synthetic-multi-view-facial-image-generation/test_frontal.py',
-            'projects/data_generation/synthetic-multi-view-facial-image-generation/train.py'
+            'projects/data_generation/synthetic-multi-view-facial-image-generation/train.py',
+            'src/opendr/perception/object_detection_2d/retinaface/Makefile'
         ]
 
         skippedDirectories = [
