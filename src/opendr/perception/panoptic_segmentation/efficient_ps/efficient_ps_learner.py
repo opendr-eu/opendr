@@ -29,7 +29,7 @@ from PIL import Image as PilImage
 from matplotlib import gridspec
 from mmcv import Config
 from mmcv.parallel import scatter, collate, MMDataParallel
-from mmcv.runner import load_checkpoint, save_checkpoint, Runner
+from mmcv.runner import load_checkpoint, save_checkpoint, Runner, TextLoggerHook
 from mmdet.apis import single_gpu_test
 from mmdet.apis.train import batch_processor
 from mmdet.core import get_classes, build_optimizer, EvalHook
@@ -134,12 +134,12 @@ class EfficientPsLearner(Learner):
         shutil.rmtree(self.temp_path, ignore_errors=True)
 
     def fit(self,
-            dataset: Any,
+            dataset: Union[CityscapesDataset, KittiDataset],
             val_dataset: Optional[Union[CityscapesDataset, KittiDataset]]=None,
             logging_path: str=str(Path(__file__).parent / 'logging'),
             silent: bool=False,
             verbose: Optional[bool]=None
-            ):
+            ) -> Dict[str, List[Dict[str, Any]]]:
         """
         This method is used for training the algorithm on a train dataset and validating on a separate dataset.
 
@@ -149,8 +149,11 @@ class EfficientPsLearner(Learner):
         :type val_dataset: Dataset class type, optional
         :param logging_path: Path to store the logging files, e.g., training progress and tensorboard logs
         :type logging_path: str
-        :param silent: if True, disables printing training progress reports to STDOUT. The evaluation will still be shown.
+        :param silent: If True, disables printing training progress to STDOUT. The evaluation will still be shown.
         :type silent: bool
+        :return: Returns a dictionary with the keys 'train' and 'val', containing the training progress, e.g., losses,
+        and the evaluation if a val_dataset is provided.
+        :rtype: dict
         """
         if verbose is not None:
             warnings.warn('The verbose parameter is not supported and will be ignored.')
@@ -209,8 +212,25 @@ class EfficientPsLearner(Learner):
         runner.run(dataloaders, self._cfg.workflow, self.iters)
         self._is_model_trained = True
 
+        # Load training statistics from file dumped by the logger
+        results = {'train': []}
+        if val_dataset is not None:
+            results['val'] = []
+        for hook in runner.hooks:
+            if isinstance(hook, TextLoggerHook):
+                with open(hook.json_log_path, 'r') as f:
+                    for line in f:
+                        stats = json.loads(line)
+                        if 'mode' in stats:
+                            mode = stats.pop('mode', None)
+                            results[mode].append(stats)
+                break
+
+        return results
+
+
     def eval(self,
-             dataset: Any,
+             dataset: Union[CityscapesDataset, KittiDataset],
              print_results: bool=False
              ) -> Dict[str, Any]:
         """

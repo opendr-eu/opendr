@@ -19,20 +19,20 @@ from opendr.engine.data import Image
 from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset, KittiDataset
 from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
 
-DATA_ROOT = '/home/user/data'
-CITYSCAPES_ROOT = f'{DATA_ROOT}/cityscapes_pt'
-KITTI_ROOT = f'{DATA_ROOT}/kitti_pt'
+DATA_ROOT = '/home/USER/data/efficientPS'
+CITYSCAPES_ROOT = f'{DATA_ROOT}/converted_datasets/cityscapes'
+KITTI_ROOT = f'{DATA_ROOT}/converted_datasets/kitti_panoptic'
 
 
 def download_models():
-    EfficientPsLearner.download(f'{DATA_ROOT}/checkpoints/efficientPS/', trained_on='cityscapes')
-    EfficientPsLearner.download(f'{DATA_ROOT}/checkpoints/efficientPS/', trained_on='kitti')
+    EfficientPsLearner.download(f'{DATA_ROOT}/checkpoints', trained_on='cityscapes')
+    EfficientPsLearner.download(f'{DATA_ROOT}/checkpoints', trained_on='kitti')
 
 
 def prepare_dataset():
     # These methods require downloading the data first as described in the README in the datasets folder
-    CityscapesDataset.prepare_data('/home/user/data/cityscapes', CITYSCAPES_ROOT)
-    KittiDataset.prepare_data('/home/user/data/kitti_panoptic', KITTI_ROOT)
+    CityscapesDataset.prepare_data(f'{DATA_ROOT}/raw_datasets/cityscapes', CITYSCAPES_ROOT)
+    KittiDataset.prepare_data(f'{DATA_ROOT}/raw_datasets/kitti_panoptic', KITTI_ROOT)
 
 
 def train():
@@ -46,8 +46,9 @@ def train():
         device='cuda:0',
         config_file=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
     )
-    learner.fit(train_dataset, val_dataset=val_dataset, logging_path=str(Path(__file__).parent / 'work_dir'))
-    learner.save(path=f'{DATA_ROOT}/checkpoints/efficientPS/sample/model.pth')
+    train_stats = learner.fit(train_dataset, val_dataset=val_dataset,
+                              logging_path=str(Path(__file__).parent / 'work_dir'))
+    learner.save(path=f'{DATA_ROOT}/checkpoints/efficientPS')
 
 
 def evaluate():
@@ -57,8 +58,8 @@ def evaluate():
         device='cuda:0',
         config_file=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
     )
-    learner.load(path=f'{DATA_ROOT}/checkpoints/efficientPS/kitti/model.pth')
-    learner.eval(val_dataset, print_results=True)
+    learner.load(path=f'{DATA_ROOT}/checkpoints/model_cityscapes.pth')
+    eval_stats = learner.eval(val_dataset, print_results=True)
 
 
 def inference():
@@ -73,7 +74,7 @@ def inference():
         device='cuda:0',
         config_file=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
     )
-    learner.load(path=f'{DATA_ROOT}/checkpoints/efficientPS/cityscapes/model.pth')
+    learner.load(path=f'{DATA_ROOT}/checkpoints/model_cityscapes.pth')
     predictions = learner.infer(images)
     for image, prediction in zip(images, predictions):
         EfficientPsLearner.visualize(image, prediction)
