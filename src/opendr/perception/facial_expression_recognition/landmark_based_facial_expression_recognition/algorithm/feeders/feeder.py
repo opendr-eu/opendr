@@ -1,5 +1,6 @@
 """
 Modified based on: https://github.com/open-mmlab/mmskeleton
+open-mmlab/mmskeleton is licensed under the Apache License 2.0
 """
 
 import numpy as np
