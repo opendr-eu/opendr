@@ -27,10 +27,11 @@ import json
 from urllib.request import urlretrieve
 from opendr.simulation.human_model_generation.utilities.PIFu.pifu_funcs import config_vanilla_parameters, config_nets
 
+
 class PIFuGeneratorLearner(Learner):
     def __init__(self, device='cpu', checkpoint_dir=None):
         super().__init__()
-        if checkpoint_dir == None:
+        if checkpoint_dir is None:
             checkpoint_dir = os.path.join(os.environ['OPENDR_HOME'], 'src', 'opendr', 'simulation',
                                           'human_model_generation',  'utilities', 'PIFu', 'checkpoints')
         self.opt = BaseOptions().parse()
@@ -53,7 +54,7 @@ class PIFuGeneratorLearner(Learner):
         self.load(checkpoint_dir)
         self.evaluator = Evaluator(self.opt, self.netG, self.netC, self.cuda)
 
-    def infer(self, imgs_rgb = None, imgs_msk=None, obj_path=None, extract_pose=False):
+    def infer(self, imgs_rgb=None, imgs_msk=None, obj_path=None, extract_pose=False):
         for i in range(len(imgs_rgb)):
             if not isinstance(imgs_rgb[i], Image):
                 imgs_rgb[i] = Image(imgs_rgb[i])
@@ -107,7 +108,7 @@ class PIFuGeneratorLearner(Learner):
     def fit(self, **kwargs):
         raise NotImplementedError
 
-    def get_img_views(self, model_3D = None, rotations=None, human_pose_3D=None, plot_kps=False):
+    def get_img_views(self, model_3D=None, rotations=None, human_pose_3D=None, plot_kps=False):
         if rotations is None:
             raise NotImplementedError('List of rotations is empty...')
         if human_pose_3D is not None:
