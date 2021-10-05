@@ -16,8 +16,7 @@ from pathlib import Path
 import cv2
 
 from opendr.engine.data import Image
-from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset, KittiDataset
-from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
+from opendr.perception.panoptic_segmentation import EfficientPsLearner, CityscapesDataset, KittiDataset
 
 DATA_ROOT = '/home/USER/data/efficientPS'
 CITYSCAPES_ROOT = f'{DATA_ROOT}/converted_datasets/cityscapes'

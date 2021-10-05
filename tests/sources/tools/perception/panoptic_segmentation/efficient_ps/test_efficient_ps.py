@@ -21,8 +21,7 @@ import cv2
 
 from opendr.engine.data import Image
 from opendr.engine.target import Heatmap
-from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
-from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
+from opendr.perception.panoptic_segmentation import EfficientPsLearner, CityscapesDataset
 
 
 def rmfile(path):

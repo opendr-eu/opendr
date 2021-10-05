@@ -39,7 +39,7 @@ Please note that the original repository is heavily based on
 
 **Prepare the downloaded Cityscapes dataset** (see the [datasets' readme](./datasets/README.md) as well)
 ```python
-from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
+from opendr.perception.panoptic_segmentation import CityscapesDataset
 DOWNLOAD_PATH = '~/data/cityscapes_raw'
 DATA_ROOT = '~/data/cityscapes'
 CityscapesDataset.prepare_data(DOWNLOAD_PATH, DATA_ROOT)
@@ -49,7 +49,7 @@ CityscapesDataset.prepare_data(DOWNLOAD_PATH, DATA_ROOT)
 ```python
 import mmcv
 from opendr.engine.data import Image
-from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
+from opendr.perception.panoptic_segmentation import EfficientPsLearner
 DATA_ROOT = '~/data/cityscapes'
 image_filenames = [
     f'{DATA_ROOT}/val/images/lindau_000001_000019.png',
@@ -58,7 +58,7 @@ image_filenames = [
 ]
 images = [Image(mmcv.imread(f)) for f in image_filenames]
 learner = EfficientPsLearner()
-learner.load('model.pth')
+learner.load('model.pth') # alternatively, one can just specify the path to the folder
 predictions = learner.infer(images)
 for image, prediction in zip(images, predictions):
     EfficientPsLearner.visualize(image, prediction)
@@ -66,19 +66,17 @@ for image, prediction in zip(images, predictions):
 
 **Run evaluation**
 ```python
-from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
-from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
+from opendr.perception.panoptic_segmentation import EfficientPsLearner, CityscapesDataset
 DATA_ROOT = '~/data/cityscapes'
 val_dataset = CityscapesDataset(path=f'{DATA_ROOT}/val')
 learner = EfficientPsLearner()
-learner.load('model.pth')
+learner.load('model.pth') # alternatively, one can just specify the path to the folder
 learner.eval(val_dataset, print_results=True)
 ```
 
 **Run training**
 ```python
-from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
-from opendr.perception.panoptic_segmentation.efficient_ps import EfficientPsLearner
+from opendr.perception.panoptic_segmentation import EfficientPsLearner, CityscapesDataset
 DATA_ROOT = '~/data/cityscapes'
 train_dataset = CityscapesDataset(path=f'{DATA_ROOT}/training')
 val_dataset = CityscapesDataset(path=f'{DATA_ROOT}/val')

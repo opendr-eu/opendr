@@ -6,7 +6,7 @@
 2. Extract both files.
 3. Convert the files to the expected folder structure and generate panoptic ground truth data for evaluation
 ```python
-from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset
+from opendr.perception.panoptic_segmentation import CityscapesDataset
 DOWNLOAD_PATH = '~/data/cityscapes_raw'
 DATA_ROOT = '~/data/cityscapes'
 CityscapesDataset.prepare_data(DOWNLOAD_PATH, DATA_ROOT)
@@ -18,7 +18,7 @@ CityscapesDataset.prepare_data(DOWNLOAD_PATH, DATA_ROOT)
 2. Extract the file.
 3. Convert the files to the expected folder structure and generate panoptic ground truth data for evaluation 
 ```python
-from opendr.perception.panoptic_segmentation.datasets import KittiDataset
+from opendr.perception.panoptic_segmentation import KittiDataset
 DOWNLOAD_PATH = '~/data/KITTI-panoptic-segmentation-dataset'
 DATA_ROOT = '~/data/kitti'
 KittiDataset.prepare_data(DOWNLOAD_PATH, DATA_ROOT)
