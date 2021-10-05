@@ -18,6 +18,7 @@ import shutil
 import os
 from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
 
+
 def rmdir(_dir):
     try:
         shutil.rmtree(_dir)
