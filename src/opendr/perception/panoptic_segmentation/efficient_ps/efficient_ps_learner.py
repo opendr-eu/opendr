@@ -46,7 +46,7 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Image
 from opendr.engine.learners import Learner
 from opendr.engine.target import Heatmap
-from opendr.perception.panoptic_segmentation.datasets import CityscapesDataset, KittiDataset
+from opendr.perception.panoptic_segmentation import CityscapesDataset, KittiDataset
 
 
 class EfficientPsLearner(Learner):
@@ -227,7 +227,6 @@ class EfficientPsLearner(Learner):
                 break
 
         return results
-
 
     def eval(self,
              dataset: Union[CityscapesDataset, KittiDataset],
