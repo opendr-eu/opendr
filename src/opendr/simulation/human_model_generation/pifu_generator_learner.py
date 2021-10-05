@@ -7,17 +7,18 @@ import os
 from opendr.simulation.human_model_generation.utilities.studio import Studio
 from opendr.engine.learners import Learner
 from opendr.engine.data import Image
-from opendr.simulation.human_model_generation.utilities.PIFu.lib.model import ResBlkPIFuNet, HGPIFuNet
 from opendr.engine.constants import OPENDR_SERVER_URL
 import torch
 import json
 from urllib.request import urlretrieve
-
+from opendr.simulation.human_model_generation.utilities.PIFu.pifu_funcs import config_vanilla_parameters, config_nets
 
 class PIFuGeneratorLearner(Learner):
-    def __init__(self, device='cpu', checkpoint_dir='utilities/PIFu/checkpoints'):
+    def __init__(self, device='cpu', checkpoint_dir=None):
         super().__init__()
-
+        if checkpoint_dir == None:
+            checkpoint_dir = os.path.join(os.environ['OPENDR_HOME'], 'src', 'opendr', 'simulation',
+                                          'human_model_generation',  'utilities', 'PIFu', 'checkpoints')
         self.opt = BaseOptions().parse()
 
         if not os.path.exists(checkpoint_dir):
@@ -25,18 +26,7 @@ class PIFuGeneratorLearner(Learner):
         self.opt.load_netG_checkpoint_path = os.path.join(checkpoint_dir, 'net_G')
         self.opt.load_netC_checkpoint_path = os.path.join(checkpoint_dir, 'net_C')
         self.download(checkpoint_dir)
-
-        # Network configuration
-        self.opt.batch_size = 1
-        self.opt.mlp_dim = [257, 1024, 512, 256, 128, 1]
-        self.opt.mlp_dim_color = [513, 1024, 512, 256, 128, 3]
-        self.opt.num_stack = 4
-        self.opt.num_hourglass = 2
-        self.opt.resolution = 256
-        self.opt.hg_down = 'ave_pool'
-        self.opt.norm = 'group'
-        self.opt.norm_color = 'group'
-        self.opt.projection_mode = 'orthogonal'
+        self.opt = config_vanilla_parameters(self.opt)
 
         # set cuda
         if device == 'cuda' and torch.cuda.is_available():
@@ -45,12 +35,11 @@ class PIFuGeneratorLearner(Learner):
         else:
             self.cuda = torch.device('cpu')
 
-        self.netG = HGPIFuNet(self.opt, self.opt.projection_mode).to(device=self.cuda)
-        self.netC = ResBlkPIFuNet(self.opt).to(device=self.cuda)
+        [self.netG, self.netC] = config_nets(self.opt, self.cuda)
         self.load(checkpoint_dir)
         self.evaluator = Evaluator(self.opt, self.netG, self.netC, self.cuda)
 
-    def infer(self, imgs_rgb=None, imgs_msk=None, obj_path=None, extract_pose=False):
+    def infer(self, imgs_rgb = None, imgs_msk=None, obj_path=None, extract_pose=False):
         for i in range(len(imgs_rgb)):
             if not isinstance(imgs_rgb[i], Image):
                 imgs_rgb[i] = Image(imgs_rgb[i])
@@ -64,7 +53,7 @@ class PIFuGeneratorLearner(Learner):
         if imgs_rgb[0].size != imgs_msk[0].size:
             raise NotImplementedError('Images must have the same resolution...')
         if (obj_path is not None) and (not os.path.exists(os.path.dirname(obj_path))):
-            raise NotImplementedError('OBJ cannot be saved in the given directory...')
+            os.mkdir(os.path.dirname(obj_path))
         try:
             [imgs_rgb[0], imgs_msk[0]] = process_imgs(imgs_rgb[0], imgs_msk[0])
             [verts, faces, colors] = self.evaluator.eval(self.evaluator.load_image(imgs_rgb[0], imgs_msk[0]), use_octree=True)
@@ -80,7 +69,7 @@ class PIFuGeneratorLearner(Learner):
         except Exception as e:
             raise NotImplementedError('error: ' + e.args)
 
-    def load(self, path):
+    def load(self, path=None):
         with open(os.path.join(path, "PIFu_default.json")) as metadata_file:
             metadata = json.load(metadata_file)
             load_netG_checkpoint_path = os.path.join(path, metadata['model_paths'][1])
@@ -104,7 +93,9 @@ class PIFuGeneratorLearner(Learner):
     def fit(self, **kwargs):
         raise NotImplementedError
 
-    def get_img_views(self, model_3D, rotations, human_pose_3D=None, plot_kps=False):
+    def get_img_views(self, model_3D = None, rotations=None, human_pose_3D=None, plot_kps=False):
+        if rotations is None:
+            raise NotImplementedError('List of rotations is empty...')
         if human_pose_3D is not None:
             visualizer = Visualizer(out_path='./', mesh=model_3D, pose=human_pose_3D, plot_kps=plot_kps)
         else:
