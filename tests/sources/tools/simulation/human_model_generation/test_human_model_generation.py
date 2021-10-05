@@ -42,10 +42,9 @@ class TestPIFuGeneratorLearner(unittest.TestCase):
         print("\n\n**********************************\nTEST PIFu Generator Learner\n"
               "**********************************")
 
-        cls.temp_dir = os.path.join(os.environ['OPENDR_HOME'], "tests", "sources", "tools", "simulation", "human_model_generation",
-                                    "temp")
+        cls.temp_dir = os.path.join(os.environ['OPENDR_HOME'], "tests", "sources", "tools", "simulation",
+                                    "human_model_generation", "temp")
         cls.learner = PIFuGeneratorLearner(device='cuda', checkpoint_dir=cls.temp_dir)
-        
 
 
     @classmethod
@@ -55,8 +54,10 @@ class TestPIFuGeneratorLearner(unittest.TestCase):
 
     def test_infer(self):
 
-        img_rgb = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], "projects", "simulation", "human_model_generation", "demos", "imgs_input", "rgb", "result_0004.jpg"))
-        img_msk = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], "projects", "simulation", "human_model_generation", "demos", "imgs_input", "msk", "result_0004.jpg"))
+        img_rgb = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], "projects", "simulation", "human_model_generation",
+                                          "demos", "imgs_input", "rgb", "result_0004.jpg"))
+        img_msk = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], "projects", "simulation", "human_model_generation",
+                                          "demos", "imgs_input", "msk", "result_0004.jpg"))
         model_3D = self.learner.infer(imgs_rgb=[img_rgb], imgs_msk=[img_msk], extract_pose=False)
 
         # Default pretrained mobilenet model detects 18 keypoints on img with id 785
