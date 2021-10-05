@@ -11,7 +11,7 @@ Code for [PIFu](https://arxiv.org/abs/1905.05172) is taken from [https://github.
 ```
 MIT License
 
-Copyright (c) 2018 Jiankang Deng and Jia Guo
+Copyright (c) 2019 Shunsuke Saito, Zeng Huang, and Ryota Natsume
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,3 +30,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+```
