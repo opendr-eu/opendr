@@ -18,13 +18,6 @@ import shutil
 import os
 from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
 
-def rmfile(path):
-    try:
-        os.remove(path)
-    except OSError as e:
-        print("Error: %s - %s." % (e.filename, e.strerror))
-
-
 def rmdir(_dir):
     try:
         shutil.rmtree(_dir)
