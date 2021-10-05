@@ -46,7 +46,6 @@ class TestPIFuGeneratorLearner(unittest.TestCase):
                                     "human_model_generation", "temp")
         cls.learner = PIFuGeneratorLearner(device='cuda', checkpoint_dir=cls.temp_dir)
 
-
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
