@@ -26,7 +26,6 @@ import torch
 
 import opendr.perception.object_detection_2d.gem.algorithm.util.misc as utils
 from opendr.perception.object_detection_2d.detr.algorithm.datasets.coco_eval import CocoEvaluator
-# from opendr.perception.object_detection_2d.detr.algorithm.datasets.panoptic_eval import PanopticEvaluator
 
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
@@ -51,17 +50,6 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
         m1_samples = m1_samples.to(device)
         m2_samples = m2_samples.to(device)
-
-        # m1_image_list, _masks = m1_samples.decompose()
-        # m1_red_3channel = torch.as_tensor(np.asarray([np.stack((image[2, :, :],)*3, axis=0) for image in m1_image_list]))
-        #
-        # m2_image_list, _ = m2_samples.decompose()
-        # m2_red_3channel = torch.as_tensor(np.asarray([np.stack((image[2, :, :],)*3, axis=0) for image in m2_image_list]))
-        #
-        # m1_red_samples = utils.NestedTensor(m1_red_3channel, _masks).to(device)
-        # m2_red_samples = utils.NestedTensor(m2_red_3channel, _masks).to(device)
-        #
-        # outputs = model([m1_samples, m2_samples, m1_red_samples, m2_red_samples])
 
         outputs = model([m1_samples, m2_samples])
 
@@ -118,12 +106,6 @@ def evaluate(model, criterion, postprocessors, m1_data_loader, m2_data_loader, b
         coco_evaluator = None
 
     panoptic_evaluator = None
-    # if 'panoptic' in postprocessors.keys():
-    #     panoptic_evaluator = PanopticEvaluator(
-    #         data_loader.dataset.ann_file,
-    #         data_loader.dataset.ann_folder,
-    #         output_dir=os.path.join(output_dir, "panoptic_eval"),
-    #     )
 
     print_freq = 10
 
@@ -135,17 +117,6 @@ def evaluate(model, criterion, postprocessors, m1_data_loader, m2_data_loader, b
 
         m1_samples = m1_samples.to(device)
         m2_samples = m2_samples.to(device)
-
-        # m1_image_list, _masks = m1_samples.decompose()
-        # m1_red_3channel = torch.as_tensor(np.asarray([np.stack((image[2, :, :],)*3, axis=0) for image in m1_image_list]))
-        #
-        # m2_image_list, _ = m2_samples.decompose()
-        # m2_red_3channel = torch.as_tensor(np.asarray([np.stack((image[2, :, :],)*3, axis=0) for image in m2_image_list]))
-        #
-        # m1_red_samples = utils.NestedTensor(m1_red_3channel, _masks).to(device)
-        # m2_red_samples = utils.NestedTensor(m2_red_3channel, _masks).to(device)
-        #
-        # outputs = model([m1_samples, m2_samples, m1_red_samples, m2_red_samples])
 
         outputs = model([m1_samples, m2_samples])
 
