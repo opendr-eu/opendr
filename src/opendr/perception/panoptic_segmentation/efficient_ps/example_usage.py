@@ -48,6 +48,7 @@ def train():
     train_stats = learner.fit(train_dataset, val_dataset=val_dataset,
                               logging_path=str(Path(__file__).parent / 'work_dir'))
     learner.save(path=f'{DATA_ROOT}/checkpoints/efficientPS')
+    assert train_stats  # This assert is just a workaround since pyflakes does not support the NOQA comment
 
 
 def evaluate():
@@ -59,6 +60,7 @@ def evaluate():
     )
     learner.load(path=f'{DATA_ROOT}/checkpoints/model_cityscapes.pth')
     eval_stats = learner.eval(val_dataset, print_results=True)
+    assert eval_stats  # This assert is just a workaround since pyflakes does not support the NOQA comment
 
 
 def inference():
