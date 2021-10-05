@@ -739,7 +739,7 @@ def points_in_rbbox(points, rbbox, lidar=True):
     return indices
 
 
-@numba.jit(nopython=False)
+@numba.jit(forceobj=True)
 def corner_to_surfaces_3d(corners):
     """convert 3d box corners from corner function above
     to surfaces that normal vectors all direct to internal.
