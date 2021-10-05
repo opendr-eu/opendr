@@ -16,16 +16,7 @@ import unittest
 import cv2
 import shutil
 import os
-import torch
 from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
-import warnings
-
-
-def rmfile(path):
-    try:
-        os.remove(path)
-    except OSError as e:
-        print("Error: %s - %s." % (e.filename, e.strerror))
 
 
 def rmdir(_dir):
