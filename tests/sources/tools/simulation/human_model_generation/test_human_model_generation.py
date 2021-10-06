@@ -51,7 +51,7 @@ class TestPIFuGeneratorLearner(unittest.TestCase):
         model_3D = self.learner.infer(imgs_rgb=[img_rgb], imgs_msk=[img_msk], extract_pose=False)
 
         # Default pretrained mobilenet model detects 18 keypoints on img with id 785
-        self.assertGreater(model_3D.get_vertices().shape[0], 52260,
+        self.assertGreater(model_3D.get_vertices().shape[0], 62260,
                            msg="The generated 3D must have more than 52260 vertices.")
 
 
