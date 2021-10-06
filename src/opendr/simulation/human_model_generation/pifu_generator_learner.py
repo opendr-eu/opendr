@@ -112,7 +112,7 @@ class PIFuGeneratorLearner(Learner):
         raise NotImplementedError
 
     def get_img_views(self, model_3D=None, rotations=None, human_pose_3D=None, plot_kps=False):
-         if os.getenv('DISPLAY') is None:
+        if os.getenv('DISPLAY') is None:
             raise NotImplementedError('Images can\'t be generated without rendering the model\
             on a display...')
         if rotations is None:
