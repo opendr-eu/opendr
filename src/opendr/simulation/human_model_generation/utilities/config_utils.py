@@ -16,4 +16,4 @@ from opendr.simulation.human_model_generation.utilities.visualizer import Visual
 
 
 def config_visualizer(out_path, mesh, pose=None, plot_kps=False):
-    return visualizer = config_visualizer(out_path=out_path, mesh=mesh, pose=pose, plot_kps=plot_kps)
+    return Visualizer(out_path=out_path, mesh=mesh, pose=pose, plot_kps=plot_kps)
