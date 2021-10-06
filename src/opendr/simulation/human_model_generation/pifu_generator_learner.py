@@ -24,6 +24,8 @@ import torch
 import json
 from urllib.request import urlretrieve
 from opendr.simulation.human_model_generation.utilities.PIFu.pifu_funcs import config_vanilla_parameters, config_nets
+print('aaaaa')
+print(os.environ['DISPLAY'])
 if os.environ['DISPLAY'] is not None:
     from opendr.simulation.human_model_generation.utilities.config_utils import config_visualizer, config_studio
 
