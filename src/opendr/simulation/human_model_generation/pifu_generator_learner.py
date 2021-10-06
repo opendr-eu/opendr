@@ -26,6 +26,9 @@ from urllib.request import urlretrieve
 from opendr.simulation.human_model_generation.utilities.PIFu.pifu_funcs import config_vanilla_parameters, config_nets
 if os.getenv('DISPLAY') is not None:
     from opendr.simulation.human_model_generation.utilities.config_utils import config_visualizer, config_studio
+    display = True
+else:
+    display = False
 
 
 class PIFuGeneratorLearner(Learner):
@@ -55,6 +58,9 @@ class PIFuGeneratorLearner(Learner):
         self.evaluator = Evaluator(self.opt, self.netG, self.netC, self.cuda)
 
     def infer(self, imgs_rgb=None, imgs_msk=None, obj_path=None, extract_pose=False):
+        if display == False and extract_pose == True:
+            raise NotImplementedError('Pose can\'t be extracted without rendering the generated\
+            model on a display...')
         for i in range(len(imgs_rgb)):
             if not isinstance(imgs_rgb[i], Image):
                 imgs_rgb[i] = Image(imgs_rgb[i])
@@ -109,6 +115,9 @@ class PIFuGeneratorLearner(Learner):
         raise NotImplementedError
 
     def get_img_views(self, model_3D=None, rotations=None, human_pose_3D=None, plot_kps=False):
+         if display == False:
+            raise NotImplementedError('Images can\'t be generated without rendering the model\
+            on a display...')
         if rotations is None:
             raise NotImplementedError('List of rotations is empty...')
         if human_pose_3D is not None:
