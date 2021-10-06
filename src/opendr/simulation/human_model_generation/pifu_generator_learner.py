@@ -55,7 +55,7 @@ class PIFuGeneratorLearner(Learner):
         self.evaluator = Evaluator(self.opt, self.netG, self.netC, self.cuda)
 
     def infer(self, imgs_rgb=None, imgs_msk=None, obj_path=None, extract_pose=False):
-        if os.getenv('DISPLAY') is None and extract_pose == True:
+        if os.getenv('DISPLAY') is None and extract_pose is True:
             raise NotImplementedError('Pose can\'t be extracted without rendering the generated\
             model on a display...')
         for i in range(len(imgs_rgb)):
