@@ -13,7 +13,11 @@
 # limitations under the License.
 
 from opendr.simulation.human_model_generation.utilities.visualizer import Visualizer
+from opendr.simulation.human_model_generation.utilities.studio import Studio
 
 
 def config_visualizer(out_path, mesh, pose=None, plot_kps=False):
     return Visualizer(out_path=out_path, mesh=mesh, pose=pose, plot_kps=plot_kps)
+
+def config_studio()
+    return Studio()
