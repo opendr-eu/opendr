@@ -16,7 +16,6 @@ from opendr.simulation.human_model_generation.utilities.PIFu.lib.options import 
 from opendr.simulation.human_model_generation.utilities.PIFu.apps.eval import Evaluator
 from opendr.simulation.human_model_generation.utilities.PIFu.apps.crop_img import process_imgs
 from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
-from opendr.simulation.human_model_generation.utilities.visualizer import Visualizer
 import os
 from opendr.simulation.human_model_generation.utilities.studio import Studio
 from opendr.engine.learners import Learner
@@ -25,7 +24,7 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 import torch
 import json
 from urllib.request import urlretrieve
-from opendr.simulation.human_model_generation.utilities.PIFu.pifu_funcs import config_vanilla_parameters, config_nets
+from opendr.simulation.human_model_generation.utilities.PIFu.pifu_funcs import config_vanilla_parameters, config_nets, config_visualizer
 
 
 class PIFuGeneratorLearner(Learner):
@@ -112,9 +111,9 @@ class PIFuGeneratorLearner(Learner):
         if rotations is None:
             raise NotImplementedError('List of rotations is empty...')
         if human_pose_3D is not None:
-            visualizer = Visualizer(out_path='./', mesh=model_3D, pose=human_pose_3D, plot_kps=plot_kps)
+            visualizer = config_visualizer(out_path='./', mesh=model_3D, pose=human_pose_3D, plot_kps=plot_kps)
         else:
-            visualizer = Visualizer(out_path='./', mesh=model_3D)
+            visualizer = config_visualizer(out_path='./', mesh=model_3D)
         return visualizer.infer(rotations=rotations)
 
     def download(self, path=None,
