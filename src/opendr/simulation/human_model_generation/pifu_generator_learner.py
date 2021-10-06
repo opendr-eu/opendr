@@ -17,7 +17,6 @@ from opendr.simulation.human_model_generation.utilities.PIFu.apps.eval import Ev
 from opendr.simulation.human_model_generation.utilities.PIFu.apps.crop_img import process_imgs
 from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
 import os
-from opendr.simulation.human_model_generation.utilities.studio import Studio
 from opendr.engine.learners import Learner
 from opendr.engine.data import Image
 from opendr.engine.constants import OPENDR_SERVER_URL
@@ -25,7 +24,7 @@ import torch
 import json
 from urllib.request import urlretrieve
 from opendr.simulation.human_model_generation.utilities.PIFu.pifu_funcs import config_vanilla_parameters, config_nets
-from opendr.simulation.human_model_generation.utilities.config_utils import config_visualizer
+from opendr.simulation.human_model_generation.utilities.config_utils import config_visualizer, config_studio
 
 
 class PIFuGeneratorLearner(Learner):
@@ -76,7 +75,7 @@ class PIFuGeneratorLearner(Learner):
             if obj_path is not None:
                 model_3D.save_obj_mesh(obj_path)
             if extract_pose:
-                studio = Studio()
+                studio = config_studio()
                 studio.infer(model_3D=model_3D)
                 human_poses_3D = studio.get_poses()
                 return [model_3D, human_poses_3D]
