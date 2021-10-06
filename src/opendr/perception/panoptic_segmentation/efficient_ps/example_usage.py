@@ -35,8 +35,8 @@ def prepare_dataset():
 
 
 def train():
-    train_dataset = CityscapesDataset(path=f'{CITYSCAPES_ROOT}/training')
-    val_dataset = CityscapesDataset(path=f'{CITYSCAPES_ROOT}/test')
+    train_dataset = CityscapesDataset(path=f'{CITYSCAPES_ROOT}/train')
+    val_dataset = CityscapesDataset(path=f'{CITYSCAPES_ROOT}/val')
 
     learner = EfficientPsLearner(
         iters=2,
@@ -52,7 +52,7 @@ def train():
 
 
 def evaluate():
-    val_dataset = CityscapesDataset(path=f'{CITYSCAPES_ROOT}/test')
+    val_dataset = CityscapesDataset(path=f'{CITYSCAPES_ROOT}/val')
 
     learner = EfficientPsLearner(
         device='cuda:0',
