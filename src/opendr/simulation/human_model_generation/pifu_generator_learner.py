@@ -24,7 +24,8 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 import torch
 import json
 from urllib.request import urlretrieve
-from opendr.simulation.human_model_generation.utilities.PIFu.pifu_funcs import config_vanilla_parameters, config_nets, config_visualizer
+from opendr.simulation.human_model_generation.utilities.PIFu.pifu_funcs import config_vanilla_parameters, config_nets
+from opendr.simulation.human_model_generation.utilities.config_utils import config_visualizer
 
 
 class PIFuGeneratorLearner(Learner):
