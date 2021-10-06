@@ -53,21 +53,21 @@ jobs:
       matrix:
         os: [ubuntu-20.04]
         package:
-          - engine
-          - utils
-          - perception/activity_recognition
-          - perception/compressive_learning
-          - perception/face_recognition
-          - perception/heart_anomaly_detection
-          - perception/multimodal_human_centric
-          - perception/object_tracking_2d
-          - perception/object_detection_3d
-          - perception/pose_estimation
-          - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
-          - perception/semantic_segmentation
-          - control/mobile_manipulation
-          - perception/object_detection_2d
+          #- engine
+          #- utils
+          #- perception/activity_recognition
+          #- perception/compressive_learning
+          #- perception/face_recognition
+          #- perception/heart_anomaly_detection
+          #- perception/multimodal_human_centric
+          #- perception/object_tracking_2d
+          #- perception/object_detection_3d
+          #- perception/pose_estimation
+          #- perception/speech_recognition
+          #- perception/skeleton_based_action_recognition
+          #- perception/semantic_segmentation
+          #- control/mobile_manipulation
+          #- perception/object_detection_2d
           - simulation/human_model_generation
           # - perception/object_tracking_3d
         include:
