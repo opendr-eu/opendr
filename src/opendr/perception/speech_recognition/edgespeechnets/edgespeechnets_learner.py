@@ -1,4 +1,4 @@
-# Copyright 1996-2020 OpenDR European Project
+# Copyright 2020-2021 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from torch.utils.data import DataLoader
 
 from opendr.engine.data import Timeseries
 from opendr.engine.learners import Learner
-from opendr.engine.target import SpeechCommand
+from opendr.engine.target import Category
 from opendr.perception.speech_recognition.edgespeechnets.algorithm.audioutils import get_mfcc
 import opendr.perception.speech_recognition.edgespeechnets.algorithm.models as models
 
@@ -218,7 +218,7 @@ class EdgeSpeechNetsLearner(Learner):
         prediction = output.max(1, keepdim=True)
         batch_predictions = []
         for target, confidence in zip(prediction[1], prediction[0].exp()):
-            batch_predictions.append(SpeechCommand(target.item(), confidence=confidence.item()))
+            batch_predictions.append(Category(target.item(), confidence=confidence.item()))
         return batch_predictions[0] if len(batch_predictions) == 1 else batch_predictions
 
     def save(self, path):

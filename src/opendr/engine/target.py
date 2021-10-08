@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from abc import ABC
 import numpy as np
 
 
-class BaseTarget:
+class BaseTarget(ABC):
     """
-    Root BaseTarget class has been created to allow for setting the hierarchy of different targets.
+    Root BaseTarget abstract class has been created to allow for setting the hierarchy of different targets.
     Classes that inherit from BaseTarget can be used either as outputs of an algorithm or as ground
     truth annotations, but there is no guarantee that this is always possible, i.e. that both options are possible.
 
@@ -41,9 +42,63 @@ class Target(BaseTarget):
 
     def __init__(self):
         super().__init__()
-        self.data = None
-        self.confidence = None
-        self.action = None
+        self._data = None
+        self._confidence = None
+        self._action = None
+
+    @property
+    def data(self):
+        """
+        Getter of data field.
+        This returns the internal representation of the data.
+        :return: the actual data held by the object
+        :rtype: varies according to the actual concrete implementation
+        """
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """
+        Setter for data. This will perform the necessary type checking (if needed).
+        :param: data to be assigned to the object
+        """
+        self._data = data
+
+    @property
+    def confidence(self):
+        """
+        Getter of confidence field.
+        This returns the confidence for the current target.
+        :return: the confidence held by the object
+        :rtype: float
+        """
+        return self._confidence
+
+    @confidence.setter
+    def confidence(self, confidence):
+        """
+        Setter for the confidence field. This can be used to perform the necessary type checking (if needed).
+        :param: confidence to be used for assigning confidence to this object
+        """
+        self._confidence = confidence
+
+    @property
+    def action(self):
+        """
+        Getter of action field.
+        This returns the selected/expected action.
+        :return: the action data held by the object
+        :rtype: Action
+        """
+        return self._action
+
+    @action.setter
+    def action(self, action):
+        """
+        Setter for action. This will perform the necessary type checking (if needed).
+        :param: action to be assigned to the object
+        """
+        self._action = action
 
 
 class Category(Target):
@@ -64,9 +119,61 @@ class Category(Target):
                 One-dimensional array / tensor of class probabilities. Defaults to None.
         """
         super().__init__()
-        self.data = prediction
-        self.confidence = confidence
-        self.description = description
+        self._description = None
+
+        if prediction is not None:
+            self.data = prediction
+
+        if description is not None:
+            self.description = description
+
+        if confidence is not None:
+            self.confidence = confidence
+
+    @property
+    def description(self):
+        """
+        Getter of description field.
+        This returns the description of the corresponding class.
+        :return: the description of the corresponding class
+        :rtype: str
+        """
+        return self._description
+
+    @description.setter
+    def description(self, description):
+        """
+        Setter for description.
+        :param: description to be assigned for the winning class
+        """
+        if isinstance(description, str):
+            self._description = description
+        else:
+            raise ValueError("Description should be a string")
+
+    @property
+    def data(self):
+        """
+        Getter of data.
+
+        :return: the actual category held by the object
+        :rtype: int
+        """
+        if self._data is None:
+            raise ValueError("Category is empty")
+
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """
+        Setter for data. Category expects data of int type.
+        :param: data to be used for creating a Category object
+        """
+        if isinstance(data, int):
+            self._data = data
+        else:
+            raise ValueError("Category expects integers as data")
 
     def __str__(self):
         if self.description is None:
@@ -114,7 +221,53 @@ class Pose(Target):
         super().__init__()
         self.data = keypoints
         self.confidence = confidence
-        self.id = None
+        self._id = None
+
+    @property
+    def id(self):
+        """
+        Getter of human id.
+
+        :return: the actual human id held by the object
+        :rtype: int
+        """
+        return self._id
+
+    @id.setter
+    def id(self, id):
+        """
+        Setter for human id to which the Pose corresponds to. Pose expects id to be of int type.
+        Please note that None is a valid value, since a pose is not always accompanied with an id.
+        :param: human id to which the Pose corresponds to
+        """
+        if isinstance(id, int) or id is None:
+            self._id = id
+        else:
+            raise ValueError("Pose id should be an integer or None")
+
+    @property
+    def data(self):
+        """
+        Getter of data.
+
+        :return: the actual pose data held by the object
+        :rtype: numpy.ndarray
+        """
+        if self._data is None:
+            raise ValueError("Pose object is empty")
+
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """
+        Setter for data. Pose expects a NumPy array or a list
+        :param: data to be used for creating Pose
+        """
+        if isinstance(data, np.ndarray) or isinstance(data, list):
+            self._data = data
+        else:
+            raise ValueError("Pose expects either NumPy arrays or lists as data")
 
     def __str__(self):
         """Matches kpt_names and keypoints x,y to get the best human-readable format for pose."""
@@ -187,11 +340,64 @@ class BoundingBox(Target):
 
         return result
 
+    def coco(self, with_confidence=True):
+        result = {}
+        result['bbox'] = [self.left, self.top, self.width, self.height]
+        result['category_id'] = self.name
+        result['area'] = self.width * self.height
+        return result
+
     def __repr__(self):
         return "BoundingBox " + str(self)
 
     def __str__(self):
         return str(self.mot())
+
+
+class CocoBoundingBox(BoundingBox):
+    """
+    This target is used for 2D Object Detection with COCO format targets.
+    A bounding box is described by the left-top corner and its width and height.
+    Also, a segmentation of the target is returned if available.
+    """
+
+    def __init__(
+        self,
+        name,
+        left,
+        top,
+        width,
+        height,
+        segmentation=[],
+        area=0,
+        iscrowd=0,
+        score=0,
+    ):
+        super().__init__(name=name, left=left, top=top, width=width,
+                         height=height, score=score)
+        self.segmentation = segmentation
+        self.iscrowd = iscrowd
+        self.area = area
+
+    def coco(self, with_confidence=True):
+        result = {}
+        result['bbox'] = [self.left, self.top, self.width, self.height]
+        result['category_id'] = self.name
+        if len(self.segmentation) > 0:
+            result['area'] = self.area
+            result['segmentation'] = self.segmentation
+            result['iscrowd'] = self.iscrowd
+        else:
+            result['area'] = self.width * self.height
+        if with_confidence:
+            result['confidence'] = self.confidence
+        return result
+
+    def __repr__(self):
+        return "BoundingBox " + str(self)
+
+    def __str__(self):
+        return str(self.coco())
 
 
 class BoundingBoxList(Target):
@@ -206,6 +412,36 @@ class BoundingBoxList(Target):
         super().__init__()
         self.data = boxes
         self.confidence = np.mean([box.confidence for box in self.data])
+
+    @staticmethod
+    def from_coco(boxes_coco, image_id=0):
+        count = len(boxes_coco)
+
+        boxes = []
+        for i in range(count):
+            if 'segmentation' in boxes_coco[i]:
+                segmentation = boxes_coco[i]['segmentation']
+            if 'iscrowd' in boxes_coco[i]:
+                iscrowd = boxes_coco[i]['iscrowd']
+            else:
+                iscrowd = 0
+            if 'area' in boxes_coco[i]:
+                area = boxes_coco[i]['area']
+            else:
+                area = boxes_coco[i]['bbox'][2] * boxes_coco[i]['bbox'][3]
+            box = CocoBoundingBox(
+                boxes_coco[i]['category_id'],
+                boxes_coco[i]['bbox'][0],
+                boxes_coco[i]['bbox'][1],
+                boxes_coco[i]['bbox'][2],
+                boxes_coco[i]['bbox'][3],
+                segmentation=segmentation,
+                iscrowd=iscrowd,
+                area=area,
+            )
+            boxes.append(box)
+
+        return BoundingBoxList(boxes, image_id=image_id)
 
     def mot(self, with_confidence=True):
 
@@ -399,6 +635,11 @@ class BoundingBox3D(Target):
         result["location"] = np.array([self.data["location"]])
         result["rotation_y"] = np.array([self.data["rotation_y"]])
         result["score"] = np.array([self.confidence])
+        num_ground_truths = 1
+        num_objects = 1
+        index = list(range(num_objects)) + [-1] * (num_ground_truths - num_objects)
+        result["index"] = np.array(index, dtype=np.int32)
+        result["group_ids"] = np.arange(num_ground_truths, dtype=np.int32)
 
         return result
 
@@ -522,6 +763,12 @@ class BoundingBox3DList(Target):
             result["location"] = np.array(result["location"])
             result["rotation_y"] = np.array(result["rotation_y"])
             result["score"] = np.array(result["score"])
+
+            num_ground_truths = len(result["name"])
+            num_objects = len([x for x in result["name"] if x != "DontCare"])
+            index = list(range(num_objects)) + [-1] * (num_ground_truths - num_objects)
+            result["index"] = np.array(index, dtype=np.int32)
+            result["group_ids"] = np.arange(num_ground_truths, dtype=np.int32)
 
         return result
 
@@ -742,19 +989,28 @@ class TrackingAnnotation3DList(Target):
         return str(self.kitti(True))
 
 
-class SpeechCommand(Target):
+class Heatmap(Target):
     """
-    This target is used for speech command recognition. Contains the predicted class or ground truth
-    and optionally the prediction confidence.
+    This target is used for multi-class segmentation problems.
     """
 
-    def __init__(self, prediction, confidence=None):
+    def __init__(self, data):
         super().__init__()
-        self.data = prediction
-        self.confidence = confidence
+        self.data = data
+
+    def numpy(self):
+        """
+        Returns a NumPy-compatible representation of data.
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        # Since this class stores the data as NumPy arrays, we can directly return the data
+        return self.data
 
     def __str__(self):
-        if self.confidence is not None:
-            return f"Class {self.data} speech command with confidence {self.confidence}"
-        else:
-            return f"Class {self.data} speech command"
+        """
+        Returns a human-friendly string-based representation of the data.
+        :return: a human-friendly string-based representation of the data
+        :rtype: str
+        """
+        return str(self.data)
