@@ -96,6 +96,6 @@ class Joint_extractor:
                 inds_sorted = np.argsort(distances)
                 d = distances[inds_sorted[-1]]
                 first_time = False
-            points_3D.append(p_intersect)
-            dists_3D.append(distances)
+            points_3D = np.asarray(points_3D, dtype=np.float32)
+            dists_3D = np.asarray(dists_3D, dtype=object)
         return points_3D, dists_3D
