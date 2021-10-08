@@ -18,7 +18,7 @@ import numpy as np
 from cv_bridge import CvBridge
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,\
     Detection3DArray, Detection3D, BoundingBox3D
-from geometry_msgs.msg import Pose2D, Pose
+from geometry_msgs.msg import Pose2D, Pose as Pose_msg
 
 
 class ROSBridge:
@@ -102,7 +102,7 @@ class ROSBridge:
             keypoint = Detection3D()
             keypoint.bbox = BoundingBox3D()
             keypoint.results.append(ObjectHypothesisWithPose())
-            keypoint.bbox.center = Pose()
+            keypoint.bbox.center = Pose_msg()
             keypoint.bbox.center.position.x = data[i, 0]
             keypoint.bbox.center.position.y = data[i, 1]
             keypoint.bbox.center.position.z = data[i, 2]
