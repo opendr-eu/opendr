@@ -187,7 +187,7 @@ class Studio(pyglet.window.Window):
             else:
                 self.kps3D_pos, self.kps3D_dists = self.joints_extractor.compute_3D_positions
                 self.pose_3D = Pose(self.kps3D_pos, [1] * 18)
-                self.pose_3D.id = (0)
+                self.pose_3D.id = 0
                 self.box3D_pos = self.compute_3D_box(self.kps3D_pos)
                 self.dict_save_bbox3D = dict([(i, self.box3D_pos[i]) for i in range(len(self.box3D_pos))])
                 self.joints_computed = True
