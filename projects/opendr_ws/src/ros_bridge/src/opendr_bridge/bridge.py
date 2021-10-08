@@ -16,7 +16,8 @@ from opendr.engine.data import Image
 from opendr.engine.target import Pose
 import numpy as np
 from cv_bridge import CvBridge
-from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose, Detection3DArray, Detection3D, BoundingBox3D
+from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,\
+Detection3DArray, Detection3D, BoundingBox3D
 from geometry_msgs.msg import Pose2D, Pose
 
 
@@ -84,16 +85,16 @@ class ROSBridge:
                 keypoint.results[0].score = pose.confidence
             keypoints.detections.append(keypoint)
         return keypoints
-        
+    
     def to_ros_3Dpose(self, pose):
         """
-        Converts an OpenDR pose into a Detection2DArray msg that can carry the same information
-        Each keypoint is represented as a bbox centered at the keypoint with zero width/height. The subject id is also
+        Converts an OpenDR pose into a Detection3DArray msg that can carry the same information
+        Each keypoint is represented as a bbox centered at the keypoint with zero radius. The subject id is also
         embedded on each keypoint (stored in ObjectHypothesisWithPose).
         :param pose: OpenDR pose to be converted
         :type pose: engine.target.Pose
         :return: ROS message with the pose
-        :rtype: vision_msgs.msg.Detection2DArray
+        :rtype: vision_msgs.msg.Detection3DArray
         """
         data = pose.data
         keypoints = Detection3DArray()
@@ -102,9 +103,9 @@ class ROSBridge:
             keypoint.bbox = BoundingBox3D()
             keypoint.results.append(ObjectHypothesisWithPose())
             keypoint.bbox.center = Pose()
-            keypoint.bbox.center.position.x = data[i,0]
-            keypoint.bbox.center.position.y = data[i,1]
-            keypoint.bbox.center.position.z = data[i,2]
+            keypoint.bbox.center.position.x = data[i, 0]
+            keypoint.bbox.center.position.y = data[i, 1]
+            keypoint.bbox.center.position.z = data[i, 2]
             keypoint.bbox.size.x = 0
             keypoint.bbox.size.y = 0
             keypoint.bbox.size.z = 0
@@ -135,7 +136,7 @@ class ROSBridge:
         pose = Pose(data, confidence)
         pose.id = pose_id
         return pose
-        
+    
     def from_ros_3Dpose(self, ros_pose):
         """
         Converts a ROS message with pose payload into an OpenDR pose
