@@ -22,16 +22,18 @@ from std_msgs.msg import Bool
 from simulation.srv import Mesh_vc
 
 if __name__ == '__main__':
-    rgb_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'src/opendr/simulation/human_model_generation/imgs_input/rgb/result_0004.jpg'))
-    msk_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'src/opendr/simulation/human_model_generation/imgs_input/msk/result_0004.jpg'))
+    rgb_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'src/opendr/simulation/\
+                                      human_model_generation/imgs_input/rgb/result_0004.jpg'))
+    msk_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'src/opendr/simulation/\
+                                      human_model_generation/imgs_input/msk/result_0004.jpg'))
     bridge = CvBridge()
     rgb_img_msg = bridge.cv2_to_imgmsg(rgb_img, encoding="bgr8")
     msk_img_msg = bridge.cv2_to_imgmsg(msk_img, encoding="bgr8")
     rospy.wait_for_service('human_model_generation')
     try:
         human_model_gen = rospy.ServiceProxy('human_model_generation', Mesh_vc)
-        extract_pose=Bool()
+        extract_pose = Bool()
         extract_pose.data = True
         mesh_vc = human_model_gen(rgb_img_msg, msk_img_msg, extract_pose)
     except rospy.ServiceException as e:
-       print("Service call failed: %s"%e)
+        print("Service call failed: %s"%e)
