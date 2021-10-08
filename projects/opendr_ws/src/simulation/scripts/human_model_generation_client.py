@@ -36,4 +36,4 @@ if __name__ == '__main__':
         extract_pose.data = True
         mesh_vc = human_model_gen(rgb_img_msg, msk_img_msg, extract_pose)
     except rospy.ServiceException as e:
-        print("Service call failed: %s"%e)
+        print("Service call failed: %s" % e)
