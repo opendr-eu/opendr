@@ -17,7 +17,7 @@ import math
 import pyglet
 import numpy as np
 from PIL import Image
-
+from opendr.engine.target import Pose
 from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
     LightweightOpenPoseLearner
 from opendr.simulation.human_model_generation.utilities.joint_extractor import Joint_extractor
@@ -104,7 +104,7 @@ class Studio(pyglet.window.Window):
         img = Image.frombytes('RGB', (360, 720), img.get_data('RGB', img.width * len('RGB')), 'raw')
         img = np.array(img)[::-1, :, ::-1]
 
-        poses = self.pose_estimator.infer(img)
+        poses = self.pose_estimator.infer(img, track=False, smooth=False)
         if len(poses) > 0:
             self.kpt_names = poses[0].kpt_names
             joints_2D = poses[0].data
@@ -186,7 +186,8 @@ class Studio(pyglet.window.Window):
                 self.cam_dist = self.current_cam_dist.pop(0)
             else:
                 self.kps3D_pos, self.kps3D_dists = self.joints_extractor.compute_3D_positions
-                self.dict_save_j3D = dict([(self.kpt_names[i], self.kps3D_pos[i]) for i in range(len(self.kps3D_pos))])
+                self.pose_3D = Pose(self.kps3D_pos,[1] * 18)
+                self.pose_3D.id = (0)
                 self.box3D_pos = self.compute_3D_box(self.kps3D_pos)
                 self.dict_save_bbox3D = dict([(i, self.box3D_pos[i]) for i in range(len(self.box3D_pos))])
                 self.joints_computed = True
