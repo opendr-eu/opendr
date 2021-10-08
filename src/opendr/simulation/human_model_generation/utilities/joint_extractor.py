@@ -87,7 +87,7 @@ class Joint_extractor:
                 C = np.asarray([cx, cy, cz])
                 p_intersect = np.linalg.inv(np.asarray(S)).dot(C)
                 N = s.shape[0]
-                distances = np.zeros(N)
+                distances = np.zeros(N, dtype=np.float32)
                 for j in range(N):
                     ui = ((p_intersect - s[j, :]).dot(np.transpose(v[j, :]))) / (v[j, :].dot(v[j, :]))
                     distances[j] = np.linalg.norm(p_intersect - s[j, :] - ui * v[j, :])
