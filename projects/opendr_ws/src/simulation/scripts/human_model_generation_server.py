@@ -86,7 +86,7 @@ class PifuNode:
         for i in range(verts.shape[0]):
             point = Point(verts[i, 0], verts[i, 1], verts[i, 2])
             msg_mesh.vertices.append(point)
-        for i in range(faces.shape[0]): 
+        for i in range(faces.shape[0]):
             mesh_triangle = MeshTriangle()
             mesh_triangle.vertex_indices[0] = int(faces[i][0])
             mesh_triangle.vertex_indices[1] = int(faces[i][1])
