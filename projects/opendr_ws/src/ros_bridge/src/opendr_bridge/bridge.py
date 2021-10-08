@@ -17,7 +17,7 @@ from opendr.engine.target import Pose
 import numpy as np
 from cv_bridge import CvBridge
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,\
-Detection3DArray, Detection3D, BoundingBox3D
+    Detection3DArray, Detection3D, BoundingBox3D
 from geometry_msgs.msg import Pose2D, Pose
 
 
@@ -85,7 +85,7 @@ class ROSBridge:
                 keypoint.results[0].score = pose.confidence
             keypoints.detections.append(keypoint)
         return keypoints
-    
+
     def to_ros_3Dpose(self, pose):
         """
         Converts an OpenDR pose into a Detection3DArray msg that can carry the same information
@@ -136,7 +136,7 @@ class ROSBridge:
         pose = Pose(data, confidence)
         pose.id = pose_id
         return pose
-    
+
     def from_ros_3Dpose(self, ros_pose):
         """
         Converts a ROS message with pose payload into an OpenDR pose
