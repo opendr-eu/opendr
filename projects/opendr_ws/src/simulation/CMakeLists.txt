@@ -43,6 +43,6 @@ include_directories(
 #############
 
 catkin_install_python(PROGRAMS
-   scripts/human_model_generation_server.py
+   scripts/human_model_generation_service.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
