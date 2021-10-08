@@ -80,10 +80,10 @@ class PifuNode:
         msg_v_colors = []
         if model.use_vert_color is True:
             vert_colors = model.vert_colors
-            for i in range(vert_colors.shape[0]):   
-                v_color = ColorRGBA(vert_colors[i, 0],vert_colors[i, 1],vert_colors[i, 2], 0)
+            for i in range(vert_colors.shape[0]):
+                v_color = ColorRGBA(vert_colors[i, 0], vert_colors[i, 1], vert_colors[i, 2], 0)
                 msg_v_colors.append(v_color)
-        for i in range(verts.shape[0]):   
+        for i in range(verts.shape[0]):
             point = Point(verts[i, 0], verts[i, 1], verts[i, 2])
             msg_mesh.vertices.append(point)
         for i in range(faces.shape[0]): 
