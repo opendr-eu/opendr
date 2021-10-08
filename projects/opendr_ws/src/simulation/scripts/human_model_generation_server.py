@@ -47,7 +47,7 @@ class PifuNode:
         """
         self.bridge = ROSBridge()
         # Initialize the pose estimation
-        self.model_generator = PIFuGeneratorLearner(device='cuda',checkpoint_dir=".")
+        self.model_generator = PIFuGeneratorLearner(device='cuda', checkpoint_dir=".")
 
     def listen(self):
         """
@@ -64,36 +64,34 @@ class PifuNode:
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
-        #rospy.wait_for_service('human_model_generation')
-        # Convert sensor_msgs.msg.Image into OpenDR Image
         rgb_img = self.bridge.from_ros_image(msg.rgb_img)
         msk_img = self.bridge.from_ros_image(msg.msk_img)
         extract_pose = msg.extract_pose.data
         output = self.model_generator.infer([rgb_img], [msk_img], extract_pose=extract_pose)
         pose = np.zeros([18, 3])
         if extract_pose is True:
-           model = output[0]
-           pose = output[1]
+            model = output[0]
+            pose = output[1]
         else:
-           model = output
+            model = output
         msg_mesh = Mesh()
         verts = model.get_vertices()
         faces = model.get_faces()
         msg_v_colors = []
         if model.use_vert_color is True:
-          vert_colors = model.vert_colors
-          for i in range(vert_colors.shape[0]):   
-           v_color = ColorRGBA(vert_colors[i,0],vert_colors[i,1],vert_colors[i,2],0)
-           msg_v_colors.append(v_color)
+            vert_colors = model.vert_colors
+            for i in range(vert_colors.shape[0]):   
+                v_color = ColorRGBA(vert_colors[i, 0],vert_colors[i, 1],vert_colors[i, 2], 0)
+                msg_v_colors.append(v_color)
         for i in range(verts.shape[0]):   
-           point = Point(verts[i,0], verts[i,1], verts[i,2])
-           msg_mesh.vertices.append(point)
+            point = Point(verts[i, 0], verts[i, 1], verts[i, 2])
+            msg_mesh.vertices.append(point)
         for i in range(faces.shape[0]): 
-           mesh_triangle = MeshTriangle()
-           mesh_triangle.vertex_indices[0] = int(faces[i][0])
-           mesh_triangle.vertex_indices[1] = int(faces[i][1])
-           mesh_triangle.vertex_indices[2] = int(faces[i][2])
-           msg_mesh.triangles.append(mesh_triangle)
+            mesh_triangle = MeshTriangle()
+            mesh_triangle.vertex_indices[0] = int(faces[i][0])
+            mesh_triangle.vertex_indices[1] = int(faces[i][1])
+            mesh_triangle.vertex_indices[2] = int(faces[i][2])
+            msg_mesh.triangles.append(mesh_triangle)
 
         msg_pose = self.bridge.to_ros_3Dpose(pose)
         return msg_mesh, msg_v_colors, msg_pose
