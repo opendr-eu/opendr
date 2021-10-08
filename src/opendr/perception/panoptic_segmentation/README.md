@@ -29,13 +29,14 @@ GitHub repository: https://github.com/DeepSceneSeg/EfficientPS
 **Base repositories**
 
 The OpenDR implementation extends the [EfficientPS repository](https://github.com/DeepSceneSeg/EfficientPS), from [Rohit Mohan](https://rl.uni-freiburg.de/people/mohan) and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada), with the OpenDR interface.
-In order to comply with the OpenDR style references, minor changes have been applied such as formatting and fixing PEP8 issues.
 
 Please note that the original repository is heavily based on
 - [mmdetection](https://github.com/open-mmlab/mmdetection) by the [OpenMMLab](https://openmmlab.com/) project
 - [gen-efficient-net-pytorch](https://github.com/rwightman/gen-efficientnet-pytorch) authored by [Ross Wightman](https://github.com/rwightman)
 
 ## Example Usage
+
+More code snippets can be found in [example_usage.py](../../../../projects/perception/panoptic_segmentation/efficient_ps/example_usage.py) with the corresponding [readme](../../../../projects/perception/panoptic_segmentation/efficient_ps/README.md).
 
 **Prepare the downloaded Cityscapes dataset** (see the [datasets' readme](./datasets/README.md) as well)
 ```python

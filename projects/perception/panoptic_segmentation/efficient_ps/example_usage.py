@@ -42,9 +42,7 @@ def train():
     learner = EfficientPsLearner(
         iters=2,
         batch_size=1,
-        checkpoint_after_iter=2,
-        device='cuda:0',
-        config_file=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
+        checkpoint_after_iter=2
     )
     train_stats = learner.fit(train_dataset, val_dataset=val_dataset,
                               logging_path=str(Path(__file__).parent / 'work_dir'))
@@ -55,10 +53,7 @@ def train():
 def evaluate():
     val_dataset = CityscapesDataset(path=f'{CITYSCAPES_ROOT}/val')
 
-    learner = EfficientPsLearner(
-        device='cuda:0',
-        config_file=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
-    )
+    learner = EfficientPsLearner()
     learner.load(path=f'{DATA_ROOT}/checkpoints/model_cityscapes.pth')
     eval_stats = learner.eval(val_dataset, print_results=True)
     assert eval_stats  # This assert is just a workaround since pyflakes does not support the NOQA comment
@@ -72,10 +67,7 @@ def inference():
     ]
     images = [Image(cv2.imread(f)) for f in image_filenames]
 
-    learner = EfficientPsLearner(
-        device='cuda:0',
-        config_file=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
-    )
+    learner = EfficientPsLearner()
     learner.load(path=f'{DATA_ROOT}/checkpoints/model_cityscapes.pth')
     predictions = learner.infer(images)
     for image, prediction in zip(images, predictions):
