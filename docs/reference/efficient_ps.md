@@ -60,9 +60,9 @@ EfficientPsLearner.fit(dataset, val_dataset, logging_path, silent)
 
 Parameters:
 - **dataset**: *object*  
-  Specifies the dataset used to train the model.
+  Specifies the dataset used to train the model. Supported datasets are CityscapesDataset and KittiDataset (see [readme](../../src/opendr/perception/panoptic_segmentation/datasets/README.md)).
 - **val_dataset**: *object*  
-  If given, this dataset will be used to evaluate the current model after each epoch.
+  If given, this dataset will be used to evaluate the current model after each epoch. Supported datasets are CityscapesDataset and KittiDataset (see [readme](../../src/opendr/perception/panoptic_segmentation/datasets/README.md)).
 - **logging_path**: *str, default='../logging'*  
   Path to store the logging files, e.g., training progress and tensorboard logs.
 - **silent**: *bool, default=False*  
@@ -75,7 +75,7 @@ EfficientPsLearner.eval(dataset, print_results)
 
 Parameters:
 - **dataset**: *object*  
-  Specifies the dataset used to evaluate the model.
+  Specifies the dataset used to evaluate the model. Supported datasets are CityscapesDataset and KittiDataset (see [readme](../../src/opendr/perception/panoptic_segmentation/datasets/README.md)).
 - **print_results**: *bool, default=False*  
   If True, the evaluation results will be formatted and printed to STDOUT.
 
