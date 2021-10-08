@@ -86,13 +86,13 @@ class Visualizer(pyglet.window.Window):
             pyglet.gl.glGetDoublev(pyglet.gl.GL_MODELVIEW_MATRIX, mvmat)
             pyglet.gl.glGetDoublev(pyglet.gl.GL_PROJECTION_MATRIX, pmat)
             pyglet.gl.glGetIntegerv(pyglet.gl.GL_VIEWPORT, view)
-            for kp_3D in self.pose:
+            for i in range(len(self.pose.data)):
                 win_x = pyglet.gl.GLdouble()
                 win_y = pyglet.gl.GLdouble()
                 win_z = pyglet.gl.GLdouble()
-                pyglet.gl.gluProject(self.pose[kp_3D][0], self.pose[kp_3D][1], self.pose[kp_3D][2], mvmat, pmat, view,
+                pyglet.gl.gluProject(self.pose.data[i][0], self.pose.data[i][1], self.pose.data[i][2], mvmat, pmat, view,
                                      win_x, win_y, win_z)
-                kps2D[kp_3D] = np.asarray([win_x.value, self.height - win_y.value, win_z.value]).astype(np.int)
+                kps2D[i] = np.asarray([win_x.value, self.height - win_y.value, win_z.value]).astype(np.int)
             self.kps2D.append(kps2D)
         pyglet.gl.glPopMatrix()
 
