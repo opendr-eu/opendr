@@ -26,9 +26,11 @@ from shape_msgs.msg import Mesh, MeshTriangle
 from std_msgs.msg import ColorRGBA
 from geometry_msgs.msg import Point
 
+
 class PifuNode:
 
-    def __init__(self, input_image_topic="/usb_cam/image_raw", output_human_mopdel_topic="/opendr/simulation/human_model_generation/human_model",
+    def __init__(self, input_image_topic="/usb_cam/image_raw", output_human_mopdel_topic="/opendr/simulation/\
+                 human_model_generation/human_model",
                  output_3Dpose__topic="/opendr/simulation/human_model_generation/", device="cuda"):
         """
         Creates a ROS Node for pose detection
@@ -43,24 +45,9 @@ class PifuNode:
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
-
-        #if output_image_topic is not None:
-        #    self.image_publisher = rospy.Publisher(output_image_topic, ROS_Image, queue_size=10)
-        #else:
-        #    self.image_publisher = None
-
-        #if pose_annotations_topic is not None:
-        #    self.pose_publisher = rospy.Publisher(pose_annotations_topic, Detection2DArray, queue_size=10)
-        #else:
-        #    self.pose_publisher = None
-
-        #rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
-
         self.bridge = ROSBridge()
-
         # Initialize the pose estimation
         self.model_generator = PIFuGeneratorLearner(device='cuda',checkpoint_dir=".")
-
 
     def listen(self):
         """
@@ -83,7 +70,7 @@ class PifuNode:
         msk_img = self.bridge.from_ros_image(msg.msk_img)
         extract_pose = msg.extract_pose.data
         output = self.model_generator.infer([rgb_img], [msk_img], extract_pose=extract_pose)
-        pose = np.zeros([18,3])
+        pose = np.zeros([18, 3])
         if extract_pose is True:
            model = output[0]
            pose = output[1]
@@ -106,33 +93,10 @@ class PifuNode:
            mesh_triangle.vertex_indices[0] = int(faces[i][0])
            mesh_triangle.vertex_indices[1] = int(faces[i][1])
            mesh_triangle.vertex_indices[2] = int(faces[i][2])
-           if mesh_triangle.vertex_indices[0]<0 or mesh_triangle.vertex_indices[1]<0 or mesh_triangle.vertex_indices[2]<0:
-              print(mesh_triangle.vertex_indices)
            msg_mesh.triangles.append(mesh_triangle)
 
         msg_pose = self.bridge.to_ros_3Dpose(pose)
         return msg_mesh, msg_v_colors, msg_pose
-        #msg_mesh. = model.get_faces()
-        
-        '''
-        # Run pose estimation
-        poses = self.pose_estimator.infer(image)
-
-        # Get an OpenCV image back
-        image = np.float32(image.numpy())
-        #  Annotate image and publish results
-        for pose in poses:
-            if self.pose_publisher is not None:
-                ros_pose = self.bridge.to_ros_pose(pose)
-                self.pose_publisher.publish(ros_pose)
-                # We get can the data back using self.bridge.from_ros_pose(ros_pose)
-                # e.g., opendr_pose = self.bridge.from_ros_pose(ros_pose)
-                draw(image, pose)
-
-        if self.image_publisher is not None:
-            message = self.bridge.to_ros_image(np.uint8(image))
-            self.image_publisher.publish(message)
-        '''
 
 if __name__ == '__main__':
     # Select the device for running the
