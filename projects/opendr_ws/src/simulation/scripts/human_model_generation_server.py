@@ -17,9 +17,7 @@
 import rospy
 import torch
 import numpy as np
-from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.pose_estimation.lightweight_open_pose.utilities import draw
 from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
 from simulation.srv import Mesh_vc
 from shape_msgs.msg import Mesh, MeshTriangle
@@ -54,7 +52,7 @@ class PifuNode:
         Start the node and begin processing input data
         """
         rospy.init_node('opendr_human_model_generation', anonymous=True)
-        s = rospy.Service('human_model_generation', Mesh_vc, self.handle_human_model_generation)
+        rospy.Service('human_model_generation', Mesh_vc, self.handle_human_model_generation)
         rospy.loginfo("Human model generation node started!")
         rospy.spin()
 
