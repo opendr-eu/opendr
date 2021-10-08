@@ -13,11 +13,11 @@
 # limitations under the License.
 
 from opendr.engine.data import Image
-from opendr.engine.target import Pose, BoundingBox, BoundingBoxList
+from opendr.engine.target import Pose
 import numpy as np
 from cv_bridge import CvBridge
-from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose
-from geometry_msgs.msg import Pose2D
+from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose, Detection3DArray, Detection3D, BoundingBox3D
+from geometry_msgs.msg import Pose2D, Pose
 
 
 class ROSBridge:
@@ -84,6 +84,34 @@ class ROSBridge:
                 keypoint.results[0].score = pose.confidence
             keypoints.detections.append(keypoint)
         return keypoints
+        
+    def to_ros_3Dpose(self, pose):
+        """
+        Converts an OpenDR pose into a Detection2DArray msg that can carry the same information
+        Each keypoint is represented as a bbox centered at the keypoint with zero width/height. The subject id is also
+        embedded on each keypoint (stored in ObjectHypothesisWithPose).
+        :param pose: OpenDR pose to be converted
+        :type pose: engine.target.Pose
+        :return: ROS message with the pose
+        :rtype: vision_msgs.msg.Detection2DArray
+        """
+        data = pose.data
+        keypoints = Detection3DArray()
+        for i in range(data.shape[0]):
+            keypoint = Detection3D()
+            keypoint.bbox = BoundingBox3D()
+            keypoint.results.append(ObjectHypothesisWithPose())
+            keypoint.bbox.center = Pose()
+            keypoint.bbox.center.position.x = data[i,0]
+            keypoint.bbox.center.position.y = data[i,1]
+            keypoint.bbox.center.position.z = data[i,2]
+            keypoint.bbox.size.x = 0
+            keypoint.bbox.size.y = 0
+            keypoint.bbox.size.z = 0
+            keypoint.results[0].id = int(pose.id)
+            keypoint.results[0].score = 1
+            keypoints.detections.append(keypoint)
+        return keypoints
 
     def from_ros_pose(self, ros_pose):
         """
@@ -107,97 +135,27 @@ class ROSBridge:
         pose = Pose(data, confidence)
         pose.id = pose_id
         return pose
+        
+    def from_ros_3Dpose(self, ros_pose):
+        """
+        Converts a ROS message with pose payload into an OpenDR pose
+        :param ros_pose: the pose to be converted (represented as vision_msgs.msg.Detection3DArray)
+        :type ros_pose: vision_msgs.msg.Detection3DArray
+        :return: an OpenDR pose
+        :rtype: engine.target.Pose
+        """
+        keypoints = ros_pose.detections
+        data = []
+        pose_id, confidence = None, None
 
-    def to_ros_boxes(self, box_list):
-        """
-        Converts an OpenDR BoundingBoxList into a Detection2DArray msg that can carry the same information.
-        Each bounding box is represented by its center coordinates as well as its width/height dimensions.
-        :param box_list: OpenDR bounding boxes to be converted
-        :type box_list: engine.target.BoundingBoxList
-        :return: ROS message with the bounding boxes
-        :rtype: vision_msgs.msg.Detection2DArray
-        """
-        boxes = box_list.data
-        ros_boxes = Detection2DArray()
-        for idx, box in enumerate(boxes):
-            ros_box = Detection2D()
-            ros_box.bbox = BoundingBox2D()
-            ros_box.results.append(ObjectHypothesisWithPose())
-            ros_box.bbox.center = Pose2D()
-            ros_box.bbox.center.x = box.left + box.width / 2.
-            ros_box.bbox.center.y = box.top + box.height / 2.
-            ros_box.bbox.size_x = box.width
-            ros_box.bbox.size_y = box.height
-            ros_box.results[0].id = box.name
-            if box.confidence:
-                ros_box.results[0].score = box.confidence
-            ros_boxes.detections.append(ros_box)
-        return ros_boxes
+        for keypoint in keypoints:
+            data.append(keypoint.bbox.center.x)
+            data.append(keypoint.bbox.center.y)
+            data.append(keypoint.bbox.center.z)
+            confidence = keypoint.results[0].score
+            pose_id = keypoint.results[0].id
+        data = np.asarray(data).reshape((-1, 3))
 
-    def from_ros_boxes(self, ros_detections):
-        """
-        Converts a ROS message with bounding boxes into an OpenDR BoundingBoxList
-        :param ros_detections: the boxes to be converted (represented as vision_msgs.msg.Detection2DArray)
-        :type ros_detections: vision_msgs.msg.Detection2DArray
-        :return: an OpenDR BoundingBoxList
-        :rtype: engine.target.BoundingBoxList
-        """
-        ros_boxes = ros_detections.detections
-        bboxes = BoundingBoxList(boxes=[])
-
-        for idx, box in enumerate(ros_boxes):
-            width = box.bbox.size_x
-            height = box.bbox.size_y
-            left = box.bbox.center.x - width / 2.
-            top = box.bbox.center.y - height / 2.
-            id = box.results[0].id
-            bbox = BoundingBox(top=top, left=left, width=width, height=height, name=id)
-            bboxes.data.append(bbox)
-
-        return bboxes
-
-    def to_ros_bounding_box_list(self, bounding_box_list):
-        """
-        Converts an OpenDR bounding_box_list into a Detection2DArray msg that can carry the same information
-        The object class is also embedded on each bounding box (stored in ObjectHypothesisWithPose).
-        :param bounding_box_list: OpenDR bounding_box_list to be converted
-        :type bounding_box_list: engine.target.BoundingBoxList
-        :return: ROS message with the bounding box list
-        :rtype: vision_msgs.msg.Detection2DArray
-        """
-        detections = Detection2DArray()
-        for bounding_box in bounding_box_list:
-            detection = Detection2D()
-            detection.bbox = BoundingBox2D()
-            detection.results.append(ObjectHypothesisWithPose())
-            detection.bbox.center = Pose2D()
-            detection.bbox.center.x = bounding_box.left + bounding_box.width / 2.0
-            detection.bbox.center.y = bounding_box.top + bounding_box.height / 2.0
-            detection.bbox.size_x = bounding_box.width
-            detection.bbox.size_y = bounding_box.height
-            detection.results[0].id = bounding_box.name
-            detection.results[0].score = bounding_box.confidence
-            detections.detections.append(detection)
-        return detections
-
-    def from_ros_bounding_box_list(self, ros_detection_2d_array):
-        """
-        Converts a ROS message with bounding box list payload into an OpenDR pose
-        :param ros_detection_2d_array: the bounding boxes to be converted (represented as vision_msgs.msg.Detection2DArray)
-        :type ros_detection_2d_array: vision_msgs.msg.Detection2DArray
-        :return: an OpenDR bounding box list
-        :rtype: engine.target.BoundingBoxList
-        """
-        detections = ros_detection_2d_array.detections
-        boxes = []
-
-        for detection in detections:
-            width = detection.bbox.size_x
-            height = detection.bbox.size_y
-            left = detection.bbox.center.x - width / 2.0
-            top = detection.bbox.center.y - height / 2.0
-            name = detection.results[0].id
-            score = detection.results[0].confidence
-            boxes.append(BoundingBox(name, left, top, width, height, score))
-        bounding_box_list = BoundingBoxList(boxes)
-        return bounding_box_list
+        pose = Pose(data, confidence)
+        pose.id = pose_id
+        return pose
