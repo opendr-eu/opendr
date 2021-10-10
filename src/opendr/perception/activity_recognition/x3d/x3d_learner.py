@@ -167,7 +167,7 @@ class X3DLearner(Learner):
 
         # Check for configuration mismatches, loading only matching weights
         new_model_state = self.model.state_dict()
-        loaded_state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
+        loaded_state_dict = torch.load(weights_path, map_location=torch.device(self.device))
         if "model_state" in loaded_state_dict:  # As found in the official pretrained X3D models
             loaded_state_dict = loaded_state_dict["model_state"]
 
@@ -212,7 +212,7 @@ class X3DLearner(Learner):
             head_batchnorm=self.model_hparams["head_batchnorm"],
             fc_std_init=self.model_hparams["fc_std_init"],
             final_batchnorm_zero_init=self.model_hparams["final_batchnorm_zero_init"],
-        )
+        ).to(device=self.device)
         return self.model
 
     def save(self, path: Union[str, Path]):
@@ -307,11 +307,10 @@ class X3DLearner(Learner):
             iters=optimizer_info["iters"],
             batch_size=optimizer_info["batch_size"],
             optimizer=optimizer_info["optimizer"],
-            # device=hparams["device"],
+            device=getattr(self, "device", "cpu"),
             threshold=inference_params["threshold"],
             backbone=inference_params["backbone"],
             network_head=inference_params["network_head"],
-            # temp_path=hparams["temp_path"],
             loss=optimizer_info["loss"],
             checkpoint_after_iter=optimizer_info["checkpoint_after_iter"],
             checkpoint_load_iter=optimizer_info["checkpoint_load_iter"],
