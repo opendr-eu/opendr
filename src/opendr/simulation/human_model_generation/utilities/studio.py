@@ -186,7 +186,7 @@ class Studio(pyglet.window.Window):
                 self.cam_dist = self.current_cam_dist.pop(0)
             else:
                 self.kps3D_pos, self.kps3D_dists = self.joints_extractor.compute_3D_positions
-                self.pose_3D = Pose(self.kps3D_pos, [1] * 18)
+                self.pose_3D = Pose(self.kps3D_pos, np.array([1] * 18))
                 self.pose_3D.id = 0
                 self.box3D_pos = self.compute_3D_box(self.kps3D_pos)
                 self.dict_save_bbox3D = dict([(i, self.box3D_pos[i]) for i in range(len(self.box3D_pos))])
@@ -201,29 +201,3 @@ class Studio(pyglet.window.Window):
     def get_poses(self):
         if self.joints_computed:
             return self.dict_save_j3D
-
-
-def main():
-    obj_path = '/home/administrator/PycharmProjects/visualize_obj/objs/ryota/ryota.obj'
-    studio = Studio()
-    studio.infer(obj_path=obj_path)
-
-    '''
-    obj_path = '/home/administrator/PycharmProjects/visualize_obj/objs/ryota/ryota.obj'
-    studio = Studio(obj_path=obj_path)
-    pyglet.clock.schedule(studio.update)
-    pyglet.app.run()
-
-    for i in range(4, 1000):
-        model_id = str(i).zfill(4)
-        obj_folder = obj_basic_folder + model_id
-        if os.path.isdir(obj_folder):
-            obj_path = obj_folder + '/obj/pifu_inference/result_' + model_id + '.obj'
-            studio = Studio(obj_path=obj_path)
-            pyglet.clock.schedule(studio.update)
-            pyglet.app.run()
-    '''
-
-
-if __name__ == "__main__":
-    main()
