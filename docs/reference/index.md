@@ -35,6 +35,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [multilinear_compressive_learning Module](multilinear_compressive_learning.md)
         - [skeleton_based_action_recognition](skeleton_based_action_recognition.md)
         - [semantic-segmentation Module](semantic-segmentation.md)
+        - [efficient_ps Module](efficient_ps.md)
         - [landmark_based_facial_expression_recognition](landmark-based-facial-expression-recognition.md)
 
     - `control` Module
@@ -42,6 +43,6 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 - [ROSBridge Package](rosbridge.md)
 - [C Inference API](c-api.md)
     - [data.h](c-data-h.md)
-    - [target.h](c-target-h.md) 
+    - [target.h](c-target-h.md)
     - [opendr_utils.h](c-opendr-utils-h.md)
     - [face_recognition.h](c-face-recognition-h.md)
