@@ -51,7 +51,7 @@ class Model_3D:
 
     def get_img_views(self, rotations=None, human_pose_3D=None, plot_kps=False):
         if os.getenv('DISPLAY') is None:
-            raise NotImplementedError('Renderings of the model can\'t be generated without'
+            raise NotImplementedError('Renderings of the model can\'t be generated without '
             'a display...')
         if rotations is None:
             raise NotImplementedError('List of rotations is empty...')
