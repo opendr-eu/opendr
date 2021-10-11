@@ -24,26 +24,22 @@ from simulation.srv import Mesh_vc
 
 class PifuNode:
 
-    def __init__(self, input_image_topic="/usb_cam/image_raw", output_human_mopdel_topic="/opendr/simulation/\
-                 human_model_generation/human_model",
-                 output_3Dpose__topic="/opendr/simulation/human_model_generation/", device="cuda"):
+    def __init__(self, service_name='human_model_generation', device="cuda", checkpoint_dir='.'):
         """
         Creates a ROS Node for pose detection
-        :param input_image_topic: Topic from which we are reading the input image
+        :param 'human_model_generation': The name of the service
         :type input_image_topic: str
-        :param output_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
-        annotated image)
-        :type output_image_topic: str
-        :param pose_annotations_topic: Topic to which we are publishing the annotations (if None, we are not publishing
-        annotated pose annotations)
-        :type pose_annotations_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
+        :param checkpoint_dir: the directory where the PIFu weights will be downloaded/loaded 
+        :type checkpoint_dir: str
         """
-        self.bridge = ROSBridge()
-        # Initialize the pose estimation
-        self.model_generator = PIFuGeneratorLearner(device='cuda', checkpoint_dir=".")
 
+        self.bridge = ROSBridge()
+        self.service_name = service_name
+        # Initialize the pose estimation
+        self.model_generator = PIFuGeneratorLearner(device=device, checkpoint_dir=checkpoint_dir)
+    
     def listen(self):
         """
         Start the node and begin processing input data
