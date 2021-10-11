@@ -111,18 +111,6 @@ class PIFuGeneratorLearner(Learner):
     def fit(self, **kwargs):
         raise NotImplementedError
 
-    def get_img_views(self, model_3D=None, rotations=None, human_pose_3D=None, plot_kps=False):
-        if os.getenv('DISPLAY') is None:
-            raise NotImplementedError('Images can\'t be generated without rendering the model\
-            on a display...')
-        if rotations is None:
-            raise NotImplementedError('List of rotations is empty...')
-        if human_pose_3D is not None:
-            visualizer = config_visualizer(out_path='./', mesh=model_3D, pose=human_pose_3D, plot_kps=plot_kps)
-        else:
-            visualizer = config_visualizer(out_path='./', mesh=model_3D)
-        return visualizer.infer(rotations=rotations)
-
     def download(self, path=None,
                  url=OPENDR_SERVER_URL + "simulation/human_model_generation/checkpoints/"):
         if path is None:
