@@ -47,7 +47,7 @@ class Model_3D:
                 file.write('f %d %d %d\n' % (f_plus[0], f_plus[2], f_plus[1]))
             file.close()
 
-     def get_img_views(self, rotations=None, human_pose_3D=None, plot_kps=False):
+    def get_img_views(self, rotations=None, human_pose_3D=None, plot_kps=False):
         if rotations is None:
             raise NotImplementedError('List of rotations is empty...')
         if human_pose_3D is not None:
