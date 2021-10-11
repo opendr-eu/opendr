@@ -66,18 +66,17 @@ class PifuNode:
         msk_img = self.bridge.from_ros_image(msg.msk_img)
         extract_pose = msg.extract_pose.data
         output = self.model_generator.infer([rgb_img], [msk_img], extract_pose=extract_pose)
-        pose = np.zeros([18,3])
+        pose = np.zeros([18, 3])
         if extract_pose is True:
-           model_3D = output[0]
-           pose = output[1]
+            model_3D = output[0]
+            pose = output[1]
         else:
-           model_3D = output
+            model_3D = output
         verts = model_3D.get_vertices()
         faces = model_3D.get_faces()
         vert_colors = model_3D.vert_colors
         msg_mesh, msg_v_colors = self.bridge.to_ros_mesh(verts, faces, vert_colors)
         msg_pose = self.bridge.to_ros_3Dpose(pose)
-        
         return msg_mesh, msg_v_colors, msg_pose
 
 if __name__ == '__main__':
