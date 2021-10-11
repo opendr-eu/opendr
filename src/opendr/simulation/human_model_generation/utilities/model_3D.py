@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opendr.simulation.human_model_generation.utilities.visualizer import Visualizer
+if os.getenv('DISPLAY') is not None:
+    from opendr.simulation.human_model_generation.utilities.visualizer import Visualizer
 
 
 class Model_3D:
@@ -48,6 +49,9 @@ class Model_3D:
             file.close()
 
     def get_img_views(self, rotations=None, human_pose_3D=None, plot_kps=False):
+        if os.getenv('DISPLAY') is not None:
+            raise NotImplementedError('Renderings of the model can\'t be generated without \
+            a display...')
         if rotations is None:
             raise NotImplementedError('List of rotations is empty...')
         if human_pose_3D is not None:
