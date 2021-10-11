@@ -31,7 +31,7 @@ class PifuNode:
         :type input_image_topic: str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
-        :param checkpoint_dir: the directory where the PIFu weights will be downloaded/loaded 
+        :param checkpoint_dir: the directory where the PIFu weights will be downloaded/loaded
         :type checkpoint_dir: str
         """
 
@@ -39,7 +39,7 @@ class PifuNode:
         self.service_name = service_name
         # Initialize the pose estimation
         self.model_generator = PIFuGeneratorLearner(device=device, checkpoint_dir=checkpoint_dir)
-    
+
     def listen(self):
         """
         Start the node and begin processing input data
