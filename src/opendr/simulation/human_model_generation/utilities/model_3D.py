@@ -44,3 +44,12 @@ class Model_3D:
                 f_plus = f + 1
                 file.write('f %d %d %d\n' % (f_plus[0], f_plus[2], f_plus[1]))
             file.close()
+
+     def get_img_views(self, rotations=None, human_pose_3D=None, plot_kps=False):
+        if rotations is None:
+            raise NotImplementedError('List of rotations is empty...')
+        if human_pose_3D is not None:
+            visualizer = Visualizer(out_path='./', mesh=self, pose=human_pose_3D, plot_kps=plot_kps)
+        else:
+            visualizer = Visualizer(out_path='./', mesh=self)
+        return visualizer.infer(rotations=rotations)
