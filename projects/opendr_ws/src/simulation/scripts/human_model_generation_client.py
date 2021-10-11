@@ -18,8 +18,11 @@ import rospy
 import cv2
 import os
 from cv_bridge import CvBridge
+from opendr_bridge import ROSBridge
 from std_msgs.msg import Bool
 from simulation.srv import Mesh_vc
+from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
+
 
 if __name__ == '__main__':
     rgb_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'src/opendr/simulation/\
