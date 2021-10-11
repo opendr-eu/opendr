@@ -90,6 +90,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/skeleton_based_action_recognition/algorithm',
             'src/opendr/perception/semantic_segmentation/bisenet/algorithm',
             'src/opendr/perception/object_detection_2d/retinaface/algorithm',
+            'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition'
         ]
 
         skippedFilePaths = [
