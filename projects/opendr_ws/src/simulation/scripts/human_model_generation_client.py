@@ -33,9 +33,10 @@ if __name__ == '__main__':
     bridge_ros = ROSBridge()
     rgb_img_msg = bridge_cv.cv2_to_imgmsg(rgb_img, encoding="bgr8")
     msk_img_msg = bridge_cv.cv2_to_imgmsg(msk_img, encoding="bgr8")
-    rospy.wait_for_service('human_model_generation')
+    srv_name = 'human_model_generation'
+    rospy.wait_for_service(srv_name)
     try:
-        human_model_gen = rospy.ServiceProxy('human_model_generation', Mesh_vc)
+        human_model_gen = rospy.ServiceProxy(srv_name, Mesh_vc)
         extract_pose = Bool()
         extract_pose.data = True
         client_msg = human_model_gen(rgb_img_msg, msk_img_msg, extract_pose)
