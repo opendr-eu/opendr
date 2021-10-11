@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opendr.simulation.human_model_generation.utilities.visualizer import Visualizer
+
 
 class Model_3D:
     def __init__(self, verts, faces, vert_colors=None):
