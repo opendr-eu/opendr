@@ -200,4 +200,4 @@ class Studio(pyglet.window.Window):
 
     def get_poses(self):
         if self.joints_computed:
-            return self.dict_save_j3D
+            return self.pose_3D
