@@ -20,9 +20,6 @@ import numpy as np
 from opendr_bridge import ROSBridge
 from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
 from simulation.srv import Mesh_vc
-from shape_msgs.msg import Mesh, MeshTriangle
-from std_msgs.msg import ColorRGBA
-from geometry_msgs.msg import Point
 
 
 class PifuNode:
