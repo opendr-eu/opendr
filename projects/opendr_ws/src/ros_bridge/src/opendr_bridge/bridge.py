@@ -215,7 +215,7 @@ class ROSBridge:
         for i in range(len(mesh_ROS.vertices)):
             vertices[i] = np.array([mesh_ROS.vertices[i].x, mesh_ROS.vertices[i].y, mesh_ROS.vertices[i].z])
         for i in range(len(mesh_ROS.triangles)):
-            faces[i] = np.array([int(mesh_ROS.triangles[i].vertex_indices[0]), int(mesh_ROS.triangles[i].vertex_indices[1]),\
+            faces[i] = np.array([int(mesh_ROS.triangles[i].vertex_indices[0]), int(mesh_ROS.triangles[i].vertex_indices[1]),
                                  int(mesh_ROS.triangles[i].vertex_indices[2])]).astype(int)
         if vertex_colors_ROS is not None:
             for i in range(len(vertex_colors_ROS)):
