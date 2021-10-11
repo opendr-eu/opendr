@@ -167,11 +167,11 @@ class ROSBridge:
     def to_ros_mesh(self, vertices, faces, vertex_colors=None):
         """
         Converts a mesh into a ROS Mesh and and to a list of vertex_colors
-        :param vertices: the vertices of the 3D model 
+        :param vertices: the vertices of the 3D model
         :type vertices: numpy array (Nx3)
-        :param faces: the faces of the 3D model 
+        :param faces: the faces of the 3D model
         :type faces: numpy array (Nx3)
-        :param vertex_colors: the colors of the vertices of the 3D model 
+        :param vertex_colors: the colors of the vertices of the 3D model
         :type vertex_colors: numpy array (Nx3)
         :return mesh_ROS: a ROS mesh
         :rtype mesh_ROS: shape_msgs.msg.Mesh
@@ -202,11 +202,11 @@ class ROSBridge:
         :type mesh_ROS: shape_msgs.msg.Mesh
         :param vertex_colors_ROS: a list of the colors of the vertices
         :type vertex_colors_ROS: std_msgs.msg.ColorRGBA[]
-        :return vertices: the vertices of the 3D model 
+        :return vertices: the vertices of the 3D model
         :rtype vertices: numpy array (Nx3)
-        :return faces: the faces of the 3D model 
+        :return faces: the faces of the 3D model
         :rtype faces: numpy array (Nx3)
-        :return vertex_colors: the colors of the vertices of the 3D model 
+        :return vertex_colors: the colors of the vertices of the 3D model
         :rtype vertex_colors: numpy array (Nx3)
         """
         vertices = np.zeros([len(mesh_ROS.vertices), 3])
