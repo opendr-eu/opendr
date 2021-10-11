@@ -26,14 +26,21 @@ if __name__ == '__main__':
                                       human_model_generation/imgs_input/rgb/result_0004.jpg'))
     msk_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'src/opendr/simulation/\
                                       human_model_generation/imgs_input/msk/result_0004.jpg'))
-    bridge = CvBridge()
-    rgb_img_msg = bridge.cv2_to_imgmsg(rgb_img, encoding="bgr8")
-    msk_img_msg = bridge.cv2_to_imgmsg(msk_img, encoding="bgr8")
+    bridge_cv = CvBridge()
+    bridge_ros = ROSBridge()
+    rgb_img_msg = bridge_cv.cv2_to_imgmsg(rgb_img, encoding="bgr8")
+    msk_img_msg = bridge_cv.cv2_to_imgmsg(msk_img, encoding="bgr8")
     rospy.wait_for_service('human_model_generation')
     try:
         human_model_gen = rospy.ServiceProxy('human_model_generation', Mesh_vc)
         extract_pose = Bool()
         extract_pose.data = True
-        mesh_vc = human_model_gen(rgb_img_msg, msk_img_msg, extract_pose)
+        client_msg = human_model_gen(rgb_img_msg, msk_img_msg, extract_pose)
+        pose = bridge_ros.from_ros_3Dpose(client_msg.pose)
+        vertices, triangles, vertex_colors = bridge_ros.from_ros_mesh(client_msg.mesh, client_msg.vertex_colors)
+        human_model = Model_3D(vertices, triangles, vertex_colors)
+        human_model.save_obj_mesh('./human_model.obj')
+        [out_imgs, human_pose_2D] = human_model.get_img_views(rotations=[30, 120], human_pose_3D=pose, plot_kps=True)
+        cv2.imwrite('./rendering.png', out_imgs[0].numpy())
     except rospy.ServiceException as e:
         print("Service call failed: %s" % e)
