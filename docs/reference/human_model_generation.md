@@ -36,7 +36,7 @@ The locations of the model's joints are also returned as a List, in case were co
 
 Parameters:
 - **imgs_rgb**: *list, default=None*\
-List of images of type engine.data.Image. Those images will be used as input. At the current release, the list's length must be 1. 
+List of images of type *engine.data.Image*. These images will be used as input. At the current release, the list's length must be 1. 
 - **imgs_msk**: *list, default=None*\
 List of images of type engine.data.Image. Those images will be used as masks, depicting the silhouette of the portrayed human. At the current release, the list's length must be 1. 
 - **obj_path**: *str, default=None*\
