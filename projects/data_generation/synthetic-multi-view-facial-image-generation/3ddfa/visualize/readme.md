@@ -2,5 +2,4 @@
 
 `tri.mat` provides the 3D mesh triangle indices.
 
-The rendered result:
 
