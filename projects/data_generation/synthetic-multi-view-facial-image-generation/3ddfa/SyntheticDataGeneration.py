@@ -42,8 +42,8 @@ import cv2
 import os
 import sys
 import path_helper
-import main
-import inference
+import preprocessing_1
+import preprocessing_2
 import test_multipose
 import argparse
 from utils.ddfa import str2bool
