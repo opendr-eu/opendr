@@ -7,7 +7,7 @@ Bases: `engine.learners.Learner`
 
 The *PIFuGeneratorLearner* class is a wrapper of the PIFu [[1]](#pifu-paper) object detection algorithm based on the original
 [PIFu implementation](https://github.com/shunsukesaito/PIFu).
-It can be used to perform human model generation from a single image(inference). In addtion, the *PIFuGeneratorLearner* enables the 3D pose approximation of a generated human model as well as the generation of multi-view renderings of the human model.
+It can be used to perform human model generation from a single image (inference). In addtion, the *PIFuGeneratorLearner* enables the 3D pose approximation of a generated human model as well as the generation of multi-view renderings of the human model.
 
 The [PIFuGeneratorLearner](#src.opendr.simulation.human_model_generation.pifu_generator_learner.py ) class has the
 following public methods:
