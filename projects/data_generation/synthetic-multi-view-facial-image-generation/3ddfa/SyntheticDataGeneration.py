@@ -133,7 +133,7 @@ class MultiviewDataGenerationLearner(Learner):
                     cv2.imwrite(os.path.join(self.key, file), current_image)
             self.args1.files = list_im.copy()
             list_im.clear()
-            main.main(self.args1)
+            preprocessing_1.main(self.args1)
         a.close()
 
         # STAGE No2: Landmarks Output with inference.py execution
@@ -169,7 +169,7 @@ class MultiviewDataGenerationLearner(Learner):
             b.close()
             self.args2.dump_lmk = 'true'
             im_list2.clear()
-            inference.main(self.args2)
+            preprocessing_2.main(self.args2)
             with open(os.path.join(self.args2.save_lmk_dir, 'realign_lmk_')) as f:
                 img_list = [x.strip() for x in f.readlines()]
                 for img_idx, img_fp in enumerate(tqdm(img_list)):
