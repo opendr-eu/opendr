@@ -32,5 +32,9 @@ source devel/setup.bash
 ```
 ## Structure
 
-Currently, apart from tools, opendr_ws contains the following 1 ros node:
-1. [Pose Estimation](src/perception/README.md)
+Currently, apart from tools, opendr_ws contains the following ROS nodes:
+
+### [Perception](src/perception/README.md)
+1. Pose Estimation
+2. 2D Object Detection
+3. Face Detection
