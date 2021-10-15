@@ -68,7 +68,8 @@ class PifuNode:
         verts = model_3D.get_vertices()
         faces = model_3D.get_faces()
         vert_colors = model_3D.vert_colors
-        msg_mesh, msg_v_colors = self.bridge.to_ros_mesh(verts, faces, vert_colors)
+        msg_mesh = self.bridge.to_ros_mesh(verts, faces)
+        msg_v_colors = self.bridge.to_ros_colors(vert_colors)
         msg_pose = self.bridge.to_ros_3Dpose(pose)
         return msg_mesh, msg_v_colors, msg_pose
 
