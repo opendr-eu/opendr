@@ -41,7 +41,8 @@ if __name__ == '__main__':
         extract_pose.data = True
         client_msg = human_model_gen(rgb_img_msg, msk_img_msg, extract_pose)
         pose = bridge_ros.from_ros_3Dpose(client_msg.pose)
-        vertices, triangles, vertex_colors = bridge_ros.from_ros_mesh(client_msg.mesh, client_msg.vertex_colors)
+        vertices, triangles = bridge_ros.from_ros_mesh(client_msg.mesh)
+        vertex_colors = bridge_ros.from_ros_colors(client_msg.vertex_colors)
         human_model = Model_3D(vertices, triangles, vertex_colors)
         human_model.save_obj_mesh('./human_model.obj')
         [out_imgs, human_pose_2D] = human_model.get_img_views(rotations=[30, 120], human_pose_3D=pose, plot_kps=True)
