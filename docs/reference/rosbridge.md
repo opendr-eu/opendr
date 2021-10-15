@@ -96,7 +96,19 @@ ROSBridge.from_ros_boxes(self,
 ```
 Converts a ROS Detection2DArray message with bounding boxes into an OpenDR BoundingBoxList
         
+#### `ROSBridge.to_ros_3Dpose`
 
+```python
+ROSBridge.to_ros_pose(self,
+                      ros_pose)
+```
+Converts an OpenDR pose into a ROS ```geometry_msgs.msg.pose``` msg.
+
+Parameters:
+
+- **ros_pose**: *engine.target.Pose*  
+  OpenDR pose to be converted to ```geometry_msgs.msg.pose``` msg.
+  
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
 2. `ros_bridge.msg.Pose` is used as an equivelant to `engine.target.Pose`
