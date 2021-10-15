@@ -11,7 +11,7 @@ Code for [PIFu](https://arxiv.org/abs/1905.05172) is taken from [https://github.
 Some major changes are referenced below:
 *  The original code is modified in order to be compatible with the OpenDR specifications.
 *  The ```PIFuGeneratorLearner``` supports only inference with pretrained models.
-*  Some extra utilities have added including the 3D pose approximation of human models and the generation of multi-view renderings of the human models.
+*  Some extra utilities have been added including the 3D pose approximation of human models and the generation of multi-view renderings of the human models.
 
 Part of the original code is located in ```utilities/PIFu``` directory and is licensed under the MIT license:
 ```
