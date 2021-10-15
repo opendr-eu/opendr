@@ -9,5 +9,5 @@ More specifically, the ```demo/inference_tutorial.ipynb```  is a step-by-step tu
 3. Get renderings of the 3D model from various views.
 4. Visualize the renderings.
 
-As input, an image from the [Clothing Co-Parsing (CCP)](https://github.com/bearpaw/clothing-co-parsing) dataset is provided in the demo/imgs_input/rgb folder, as well as an image of the silhouette of the depicted human (mask) in the demo/imgs_input/msk folder..
+As input, an image from the [Clothing Co-Parsing (CCP)](https://github.com/bearpaw/clothing-co-parsing) dataset is provided in the ```demo/imgs_input/rgb``` folder, as well as an image of the silhouette of the depicted human (mask) in the ```demo/imgs_input/msk folder```.
 Please use the `--device cpu` flag for the demos if you are running them on a machine without a CUDA-enabled GPU. 
