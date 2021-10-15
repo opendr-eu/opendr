@@ -282,19 +282,19 @@ class ROSBridge:
     def to_ros_colors(self, colors):
         """
         Converts an array of vertex_colors to a list of ROS colors
-        :type vertex_colors: numpy array (Nx3)
-        :return vertex_colors_ROS: a list of the colors of the vertices
-        :rtype vertex_colors_ROS: std_msgs.msg.ColorRGBA[]
+        :type colors: numpy array (Nx3)
+        :return colors: a list of the colors of the vertices
+        :rtype ros_colors: std_msgs.msg.ColorRGBA[]
         """
-        colors_RGBA = []
+        ros_colors = []
         for i in range(colors.shape[0]):
             color = ColorRGBA(colors[i, 0], colors[i, 1], colors[i, 2], 0)
-            colors_RGBA.append(color)
-        return colors_RGBA
+            ros_colors.append(color)
+        return ros_colors
 
     def from_ros_mesh(self, mesh_ROS, vertex_colors_ROS=None):
         """
-        Converts a ROS mesh along with the corresponding colors of the vertices into a mesh
+        Converts a ROS mesh into arrays of vertices and faces of a mesh
         :param mesh_ROS: the ROS mesh to be converted
         :type mesh_ROS: shape_msgs.msg.Mesh
         :param vertex_colors_ROS: a list of the colors of the vertices
@@ -308,13 +308,22 @@ class ROSBridge:
         """
         vertices = np.zeros([len(mesh_ROS.vertices), 3])
         faces = np.zeros([len(mesh_ROS.triangles), 3]).astype(int)
-        vertex_colors = np.zeros([len(vertex_colors_ROS), 3])
         for i in range(len(mesh_ROS.vertices)):
             vertices[i] = np.array([mesh_ROS.vertices[i].x, mesh_ROS.vertices[i].y, mesh_ROS.vertices[i].z])
         for i in range(len(mesh_ROS.triangles)):
             faces[i] = np.array([int(mesh_ROS.triangles[i].vertex_indices[0]), int(mesh_ROS.triangles[i].vertex_indices[1]),
                                  int(mesh_ROS.triangles[i].vertex_indices[2])]).astype(int)
-        if vertex_colors_ROS is not None:
-            for i in range(len(vertex_colors_ROS)):
-                vertex_colors[i] = np.array([vertex_colors_ROS[i].r, vertex_colors_ROS[i].g, vertex_colors_ROS[i].b])
-        return vertices, faces, vertex_colors
+        return vertices, faces
+
+    def from_ros_mesh(self, ros_colors):
+        """
+        Converts a list of ROS colors into a list of colors
+        :param ros_colors: a list of the colors of the vertices
+        :type ros_colors: std_msgs.msg.ColorRGBA[]
+        :return colors: the colors of the vertices of the 3D model
+        :rtype colors: numpy array (Nx3)
+        """
+        colors = np.zeros([len(ros_colors), 3])
+        for i in range(len(ros_colors)):
+            colors[i] = np.array([ros_colors[i].r, ros_colorsi].g, ros_colors[i].b])
+        return colors
