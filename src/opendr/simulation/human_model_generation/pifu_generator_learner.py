@@ -56,7 +56,7 @@ class PIFuGeneratorLearner(Learner):
 
     def infer(self, imgs_rgb=None, imgs_msk=None, obj_path=None, extract_pose=False):
         if os.getenv('DISPLAY') is None and extract_pose is True:
-            raise NotImplementedError('Pose can\'t be extracted without rendering the generated'
+            raise ValueError('Pose can\'t be extracted without rendering the generated'
                                       'model on a display...')
         for i in range(len(imgs_rgb)):
             if not isinstance(imgs_rgb[i], Image):
@@ -67,9 +67,9 @@ class PIFuGeneratorLearner(Learner):
                 imgs_msk[i] = Image(imgs_msk[i])
             imgs_msk[i] = imgs_msk[i].numpy()
         if imgs_msk is None or len(imgs_rgb) != 1 or len(imgs_msk) != 1:
-            raise NotImplementedError('Wrong input...')
+            raise ValueError('Wrong input...')
         if imgs_rgb[0].size != imgs_msk[0].size:
-            raise NotImplementedError('Images must have the same resolution...')
+            raise ValueError('Images must have the same resolution...')
         if (obj_path is not None) and (not os.path.exists(os.path.dirname(obj_path))):
             os.mkdir(os.path.dirname(obj_path))
         try:
@@ -85,7 +85,7 @@ class PIFuGeneratorLearner(Learner):
                 return [model_3D, human_poses_3D]
             return model_3D
         except Exception as e:
-            raise NotImplementedError('error: ' + str(e.args))
+            raise e
 
     def load(self, path=None):
         with open(os.path.join(path, "PIFu_default.json")) as metadata_file:
