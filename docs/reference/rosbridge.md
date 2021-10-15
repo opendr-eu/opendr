@@ -127,14 +127,14 @@ Parameters:
 
 ```python
 ROSBridge.from_ros_pose(self,
-                        message)
+                        ros_pose)
 ```
 
 Converts a ROS pose into an OpenDR pose (used for a 3D pose).
 
 Parameters:
 
-- **message**: *geometry_msgs.msg.Pose*  
+- **ros_pose**: *geometry_msgs.msg.Pose*  
   ROS pose to be converted into an OpenDR pose.
        
 #### `ROSBridge.to_ros_mesh`
@@ -169,23 +169,23 @@ Parameters:
 
 ```python
 ROSBridge.from_ros_mesh(self,
-                      message)
+                      ros_mesh)
 ```
 Converts a ROS mesh into arrays of vertices and faces of a triangle mesh.
 
 Parameters:
-- **message**: *shape_msgs.msg.Mesh* 
+- **ros_mesh**: *shape_msgs.msg.Mesh* 
   
   #### `ROSBridge.from_ros_colors`
 
 ```python
 ROSBridge.from_ros_colors(self,
-                      message)
+                      ros_colors)
 ```
 Converts a list of ROS colors into an array (Nx3).
 
 Parameters:
-- **message**: list of *std_msgs.msg.colorRGBA* 
+- **ros_colors**: list of *std_msgs.msg.colorRGBA* 
 
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
