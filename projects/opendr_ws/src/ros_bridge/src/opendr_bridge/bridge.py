@@ -257,26 +257,17 @@ class ROSBridge:
             keypoints.detections.append(keypoint)
         return keypoints
 
-    def to_ros_mesh(self, vertices, faces, vertex_colors=None):
+    def to_ros_mesh(self, vertices, faces):
         """
-        Converts a mesh into a ROS Mesh and and to a list of vertex_colors
+        Converts a mesh into a ROS Mesh
         :param vertices: the vertices of the 3D model
         :type vertices: numpy array (Nx3)
         :param faces: the faces of the 3D model
         :type faces: numpy array (Nx3)
-        :param vertex_colors: the colors of the vertices of the 3D model
-        :type vertex_colors: numpy array (Nx3)
         :return mesh_ROS: a ROS mesh
         :rtype mesh_ROS: shape_msgs.msg.Mesh
-        :return vertex_colors_ROS: a list of the colors of the vertices
-        :rtype vertex_colors_ROS: std_msgs.msg.ColorRGBA[]
         """
         mesh_ROS = Mesh()
-        vertex_colors_ROS = []
-        if vertex_colors is not None:
-            for i in range(vertex_colors.shape[0]):
-                v_color = ColorRGBA(vertex_colors[i, 0], vertex_colors[i, 1], vertex_colors[i, 2], 0)
-                vertex_colors_ROS.append(v_color)
         for i in range(vertices.shape[0]):
             point = Point(vertices[i, 0], vertices[i, 1], vertices[i, 2])
             mesh_ROS.vertices.append(point)
@@ -286,7 +277,20 @@ class ROSBridge:
             mesh_triangle.vertex_indices[1] = int(faces[i][1])
             mesh_triangle.vertex_indices[2] = int(faces[i][2])
             mesh_ROS.triangles.append(mesh_triangle)
-        return mesh_ROS, vertex_colors_ROS
+        return mesh_ROS
+
+    def to_ros_colors(self, colors):
+        """
+        Converts an array of vertex_colors to a list of ROS colors
+        :type vertex_colors: numpy array (Nx3)
+        :return vertex_colors_ROS: a list of the colors of the vertices
+        :rtype vertex_colors_ROS: std_msgs.msg.ColorRGBA[]
+        """
+        colors_RGBA = []
+        for i in range(colors.shape[0]):
+            color = ColorRGBA(colors[i, 0], colors[i, 1], colors[i, 2], 0)
+            colors_RGBA.append(color)
+        return colors_RGBA
 
     def from_ros_mesh(self, mesh_ROS, vertex_colors_ROS=None):
         """
