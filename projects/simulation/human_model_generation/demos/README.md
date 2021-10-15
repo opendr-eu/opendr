@@ -1,6 +1,6 @@
 # Human Model Generation Demos
 
-This folder contains a jupyter notebook demo that demonstrates various parts of the functionality provided by the Human Model Generation module provided by OpenDR.
+This folder contains a jupyter notebook demo that demonstrates the various functionalities of the Human Model Generation module provided by OpenDR.
 
 More specifically, the ```demo/inference_tutorial.ipynb```  is a step-by-step tutorial on how to:
 
