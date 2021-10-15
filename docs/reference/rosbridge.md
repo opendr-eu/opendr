@@ -114,15 +114,14 @@ Parameters:
 
 ```python
 ROSBridge.to_ros_pose(self,
-                      ros_pose)
+                      opendr_pose)
 ```
 Converts an OpenDR pose into a ROS ```geometry_msgs.msg.Pose``` message.
 
 Parameters:
 
-- **ros_pose**: *engine.target.Pose*  
+- **opendr_pose**: *engine.target.Pose*  
   OpenDR pose to be converted to ```geometry_msgs.msg.Pose``` message.
-  
   
   
 ## ROS message equivalence with OpenDR
