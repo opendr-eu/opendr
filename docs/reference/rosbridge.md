@@ -192,4 +192,4 @@ Parameters:
 2. `ros_bridge.msg.Pose` is used as an equivelant to `engine.target.Pose`
 3. `vision_msgs.msg.Detection2DArray` is used as an equivalent to `engine.target.BoundingBoxList`
 4. `vision_msgs.msg.Detection2D` is used as an equivalent to `engine.target.BoundingBox`
-5. `geometry_msgs.msg.Pose`  is used as an equivelant to `engine.target.Pose` for 3D poses.
+5. `geometry_msgs.msg.Pose`  is used as an equivelant to `engine.target.Pose` for 3D poses conversion only.
