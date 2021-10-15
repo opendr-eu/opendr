@@ -123,6 +123,34 @@ Parameters:
 - **opendr_pose**: *engine.target.Pose*  
   OpenDR pose to be converted to ```geometry_msgs.msg.Pose``` message.
   
+  #### `ROSBridge.from_ros_3Dpose`
+
+```python
+ROSBridge.from_ros_pose(self,
+                        message)
+```
+
+Converts a ROS pose into an OpenDR pose (used for a 3D pose).
+
+Parameters:
+
+- **message**: *geometry_msgs.msg.Pose*  
+  ROS pose to be converted into an OpenDR pose.
+       
+#### `ROSBridge.to_ros_mesh`
+
+```python
+ROSBridge.to_ros_mesh(self,
+                      vertices, faces)
+```
+Converts a triangle mesh consisting of vertices, faces into a ROS ```geometry_msgs.msg.Pose``` message.
+
+Parameters:
+
+- **vertices**: *numpy.ndarray*  
+  Vertices (N) of a triangle mesh.
+- **faces**: *numpy.ndarray*  
+  Faces (Nx3) of a triangle mesh. 
   
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
