@@ -13,21 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cv2
-from typing import Optional
 import argparse
-import rospy
+from typing import Optional
 
-from sensor_msgs.msg import Image as ROS_Image
-
-# Avoid having a matplotlib GUI in a separate thread in the visualize() function
+import cv2
 import matplotlib
-
-matplotlib.use('Agg')
+import rospy
+from sensor_msgs.msg import Image as ROS_Image
 
 from opendr_bridge import ROSBridge
 from opendr.engine.data import Image
 from opendr.perception.panoptic_segmentation import EfficientPsLearner
+
+# Avoid having a matplotlib GUI in a separate thread in the visualize() function
+matplotlib.use('Agg')
 
 
 class EfficientPsNode:
@@ -67,7 +66,7 @@ class EfficientPsNode:
     def _init_learner(self) -> bool:
         """
         Load the weights from the specified checkpoint file.
-        
+
         This has not been done in the __init__() function since logging is available only once the node is registered.
         """
         if self._learner.load(self.checkpoint):

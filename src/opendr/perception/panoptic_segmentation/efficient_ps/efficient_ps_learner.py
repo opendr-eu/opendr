@@ -509,7 +509,8 @@ class EfficientPsLearner(Learner):
         :type figure_filename: str
         :param figure_size: Size of the figure in inches if detailed is set to True. Wrapper of matplotlib figuresize.
         :type figure_size: Tuple of floats
-        :param detailed: If set to True, a combined overview of the input RGB and the semantic, instance, and panoptic segmentation maps is generated.
+        :param detailed: If set to True, a combined overview of the input RGB and the semantic, instance, and panoptic
+        segmentation maps is generated.
         :type detailed: bool
         :return: OpenDR image of the generated visualization
         :rtype: OpenDR image
