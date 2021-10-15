@@ -110,7 +110,7 @@ class ROSBridge:
         pose = Pose(data, confidence)
         pose.id = pose_id
         return pose
-     
+
      def to_ros_boxes(self, box_list):
         """
         Converts an OpenDR BoundingBoxList into a Detection2DArray msg that can carry the same information.
