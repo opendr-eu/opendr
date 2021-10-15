@@ -8,7 +8,7 @@ Assuming that you have already [built your workspace](../../README.md) and start
 
 1. Add OpenDR to `PYTHONPATH` (please make sure you do not overwrite `PYTHONPATH` ), e.g.,
 ```shell
-export PYTHONPATH="/home/user/opendr/src:$PYTHONPATH"
+export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
 ```
 
 2. You can start the human model generation service node. 
