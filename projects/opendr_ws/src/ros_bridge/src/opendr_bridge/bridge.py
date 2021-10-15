@@ -111,7 +111,7 @@ class ROSBridge:
         pose.id = pose_id
         return pose
 
-     def to_ros_boxes(self, box_list):
+    def to_ros_boxes(self, box_list):
         """
         Converts an OpenDR BoundingBoxList into a Detection2DArray msg that can carry the same information.
         Each bounding box is represented by its center coordinates as well as its width/height dimensions.
