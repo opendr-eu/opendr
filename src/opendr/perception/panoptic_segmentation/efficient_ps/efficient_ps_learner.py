@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import cv2
 import json
 import logging
 import os
@@ -48,7 +49,6 @@ from opendr.engine.data import Image
 from opendr.engine.learners import Learner
 from opendr.engine.target import Heatmap
 from opendr.perception.panoptic_segmentation import CityscapesDataset, KittiDataset
-
 
 class EfficientPsLearner(Learner):
     """
@@ -316,8 +316,9 @@ class EfficientPsLearner(Learner):
             single_image_mode = True
         mmdet_batch = []
         for img in batch:
-            mmdet_img = {'filename': None, 'img': img.numpy(), 'img_shape': img.numpy().shape,
-                         'ori_shape': img.numpy().shape}
+            # Convert from OpenDR convention (RGB) to the expected channel order (BGR)
+            img_bgr = cv2.cvtColor(img.numpy(), cv2.COLOR_RGB2BGR)
+            mmdet_img = {'filename': None, 'img': img_bgr, 'img_shape': img_bgr.shape, 'ori_shape': img_bgr.shape}
             mmdet_img = test_pipeline(mmdet_img)
             mmdet_batch.append(scatter(collate([mmdet_img], samples_per_gpu=1), [device])[0])
 
@@ -497,7 +498,7 @@ class EfficientPsLearner(Learner):
         PALETTE.append([0, 0, 0])
         colors = np.array(PALETTE, dtype=np.uint8)
 
-        image_img = PilImage.fromarray(image.data[:, :, ::-1])  # convert BGR (mmcv, cv2) to RGB (PIL)
+        image_img = PilImage.fromarray(image.data)
 
         # Extract class information from semantic segmentation
         semantics = prediction[1].data.copy()
@@ -519,7 +520,7 @@ class EfficientPsLearner(Learner):
         panoptics_img.convert(mode='RGB')
 
         if detailed:
-            plt.figure(figsize=figure_size)
+            fig = plt.figure(figsize=figure_size)
             grid_spec = gridspec.GridSpec(2, 2)
             grid_spec.update(wspace=.05, hspace=.05)
             plt.subplot(grid_spec[0])
@@ -538,17 +539,16 @@ class EfficientPsLearner(Learner):
             plt.imshow(contours_img)
             plt.axis('off')
             plt.title('contours map')
-            if save_figure:
-                plt.savefig(figure_filename, bbox_inches='tight')
-            if show_figure:
-                plt.show()
+            fig.canvas.draw()
+            visualization_img = PilImage.frombytes('RGB', fig.canvas.get_width_height(), fig.canvas.tostring_rgb())
             plt.close()
-
         else:
-            if save_figure:
-                panoptics_img.save(figure_filename)
-            if show_figure:
-                panoptics_img.show()
+            visualization_img = panoptics_img
+
+        if save_figure:
+            visualization_img.save(figure_filename)
+        if show_figure:
+            visualization_img.show()
 
     @property
     def config(self) -> dict:
