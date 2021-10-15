@@ -165,6 +165,28 @@ Parameters:
 - **colors**: *list of list of size 3*  
   List of colors to be converted to a list of ROS colors.
   
+  #### `ROSBridge.from_ros_mesh`
+
+```python
+ROSBridge.from_ros_mesh(self,
+                      message)
+```
+Converts a ROS mesh into arrays of vertices and faces of a triangle mesh.
+
+Parameters:
+- **message**: *shape_msgs.msg.Mesh* 
+  
+  #### `ROSBridge.from_ros_colors`
+
+```python
+ROSBridge.from_ros_colors(self,
+                      message)
+```
+Converts a list of ROS colors into an array (Nx3).
+
+Parameters:
+- **message**: list of *std_msgs.msg.colorRGBA* 
+
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
 2. `ros_bridge.msg.Pose` is used as an equivelant to `engine.target.Pose`
