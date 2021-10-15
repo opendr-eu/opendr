@@ -62,8 +62,6 @@ class Visualizer(pyglet.window.Window):
         else:
             return self.imgs
 
-    # def project_kps3D(self):
-
     def on_resize(self, width, height):
         viewport_width, viewport_height = self.get_framebuffer_size()
         pyglet.gl.glViewport(0, 0, viewport_width, viewport_height)
