@@ -204,7 +204,7 @@ class ROSBridge:
             boxes.append(BoundingBox(name, left, top, width, height, score))
         bounding_box_list = BoundingBoxList(boxes)
         return bounding_box_list
-     
+
     def from_ros_3Dpose(self, ros_pose):
         """
         Converts a ROS message with pose payload into an OpenDR pose
