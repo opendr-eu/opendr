@@ -57,7 +57,7 @@ class PIFuGeneratorLearner(Learner):
     def infer(self, imgs_rgb=None, imgs_msk=None, obj_path=None, extract_pose=False):
         if os.getenv('DISPLAY') is None and extract_pose is True:
             raise ValueError('Pose can\'t be extracted without rendering the generated'
-                                      'model on a display...')
+                             'model on a display...')
         for i in range(len(imgs_rgb)):
             if not isinstance(imgs_rgb[i], Image):
                 imgs_rgb[i] = Image(imgs_rgb[i])
