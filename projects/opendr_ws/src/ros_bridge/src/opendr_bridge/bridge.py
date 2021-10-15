@@ -315,7 +315,7 @@ class ROSBridge:
                                  int(mesh_ROS.triangles[i].vertex_indices[2])]).astype(int)
         return vertices, faces
 
-    def from_ros_mesh(self, ros_colors):
+    def from_ros_colors(self, ros_colors):
         """
         Converts a list of ROS colors into a list of colors
         :param ros_colors: a list of the colors of the vertices
