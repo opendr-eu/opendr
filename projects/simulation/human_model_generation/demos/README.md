@@ -1,4 +1,4 @@
-# Lightweight OpenPose Demos
+# Human Model Generation Demos
 
 This folder contains a jupyter notebook demo that demonstrates various parts of the functionality provided by the Human Model Generation module provided by OpenDR.
 
