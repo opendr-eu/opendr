@@ -102,12 +102,12 @@ Converts a ROS Detection2DArray message with bounding boxes into an OpenDR Bound
 ROSBridge.to_ros_pose(self,
                       ros_pose)
 ```
-Converts an OpenDR pose into a ROS ```geometry_msgs.msg.pose``` message.
+Converts an OpenDR pose into a ROS ```geometry_msgs.msg.Pose``` message.
 
 Parameters:
 
 - **ros_pose**: *engine.target.Pose*  
-  OpenDR pose to be converted to ```geometry_msgs.msg.pose``` message.
+  OpenDR pose to be converted to ```geometry_msgs.msg.Pose``` message.
   
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
