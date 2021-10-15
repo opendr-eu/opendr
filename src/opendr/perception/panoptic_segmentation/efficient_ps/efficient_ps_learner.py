@@ -409,7 +409,7 @@ class EfficientPsLearner(Learner):
                         'Class names are not saved in the checkpoint\'s meta data, use Cityscapes classes by default.')
                     self.model.CLASSES = get_classes('cityscapes')
                 self._is_model_trained = True
-            except RuntimeError:
+            except (RuntimeError, OSError):
                 return False
             return True
         else:  # OpenDR specification
@@ -516,10 +516,10 @@ class EfficientPsLearner(Learner):
         # Combine all of the above
         panoptics_img = PilImage.blend(image_img, semantics_img, .5).convert(mode='RGBA')
         panoptics_img = PilImage.alpha_composite(panoptics_img, contours_img)
-        panoptics_img.convert(mode='RGB')
+        panoptics_img = panoptics_img.convert(mode='RGB')
 
         if detailed:
-            plt.figure(figsize=figure_size)
+            fig = plt.figure(figsize=figure_size)
             grid_spec = gridspec.GridSpec(2, 2)
             grid_spec.update(wspace=.05, hspace=.05)
             plt.subplot(grid_spec[0])
@@ -542,13 +542,17 @@ class EfficientPsLearner(Learner):
                 plt.savefig(figure_filename, bbox_inches='tight')
             if show_figure:
                 plt.show()
+            fig.canvas.draw()
+            return_img = PilImage.frombytes('RGB', fig.canvas.get_width_height(), fig.canvas.tostring_rgb())
             plt.close()
+            return Image(data=np.array(return_img))
 
         else:
             if save_figure:
                 panoptics_img.save(figure_filename)
             if show_figure:
                 panoptics_img.show()
+            return Image(data=np.array(panoptics_img))
 
     @property
     def config(self) -> dict:
