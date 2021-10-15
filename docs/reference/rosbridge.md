@@ -143,7 +143,7 @@ Parameters:
 ROSBridge.to_ros_mesh(self,
                       vertices, faces)
 ```
-Converts a triangle mesh consisting of vertices, faces into a ROS ```geometry_msgs.msg.Pose``` message.
+Converts a triangle mesh consisting of vertices, faces into a ROS ```shape_msgs.msg.Mesh``` message.
 
 Parameters:
 
@@ -151,6 +151,19 @@ Parameters:
   Vertices (N) of a triangle mesh.
 - **faces**: *numpy.ndarray*  
   Faces (Nx3) of a triangle mesh. 
+  
+  #### `ROSBridge.to_ros_colors`
+
+```python
+ROSBridge.to_ros_colors(self,
+                      colors)
+```
+Converts a list of colors into a list of ROS ```std_msgs.msg.colorRGBA``` messages.
+
+Parameters:
+
+- **colors**: *list of list of size 3*  
+  List of colors to be converted to a list of ROS colors.
   
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
