@@ -293,7 +293,7 @@ class EfficientPsLearner(Learner):
         This method performs inference on the batch provided.
 
         :param batch: Object that holds a batch of data to run inference on
-        :type batch: Image class type or list of Image class type
+        :type batch: OpenDR image or list of OpenDR images
         :param return_raw_logits: Whether the output should be transformed into the OpenDR target class.
         :type return_raw_logits: bool
         :return: A list of predicted targets
@@ -491,7 +491,29 @@ class EfficientPsLearner(Learner):
                   save_figure: bool=False,
                   figure_filename: Optional[str]=None,
                   figure_size: Tuple[float, float]=(15, 10),
-                  detailed: bool=False):
+                  detailed: bool=False
+                  ) -> Image:
+        """
+        Create a visualization of the predicted panoptic segmentation. Either just the final panoptic map or a more
+        detailed overview consisting of the input RGB and the map of semantic, instance, and panoptic segmentation.
+
+        :param image: Input OpenDR image
+        :type image: OpenDR image
+        :param prediction: Output of the infer() method
+        :type prediction: Tuple of OpenDR heatmaps
+        :param show_figure: Whether to how the figure in a GUI
+        :type show_figure: bool
+        :param save_figure: Whether to save the figure in a file
+        :type save_figure: bool
+        :param figure_filename: Name of the filename if save_figure is set to True
+        :type figure_filename: str
+        :param figure_size: Size of the figure in inches if detailed is set to True. Wrapper of matplotlib figuresize.
+        :type figure_size: Tuple of floats
+        :param detailed: If set to True, a combined overview of the input RGB and the semantic, instance, and panoptic segmentation maps is generated.
+        :type detailed: bool
+        :return: OpenDR image of the generated visualization
+        :rtype: OpenDR image
+        """
         assert figure_filename is not None if save_figure else True
 
         PALETTE.append([0, 0, 0])
@@ -569,7 +591,7 @@ class EfficientPsLearner(Learner):
         """
         Getter of number of workers used in the data loaders.
 
-        :return: number of workers
+        :return: Number of workers
         :rtype: int
         """
         return self._num_workers
@@ -579,7 +601,7 @@ class EfficientPsLearner(Learner):
         """
         Setter for number of workers used in the data loaders. This will perform the necessary type and value checking.
 
-        :param value: number of workers
+        :param value: Number of workers
         :type value: int
         """
         if not isinstance(value, int):

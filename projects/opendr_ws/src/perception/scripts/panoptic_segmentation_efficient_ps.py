@@ -22,6 +22,7 @@ from sensor_msgs.msg import Image as ROS_Image
 
 # Avoid having a matplotlib GUI in a separate thread in the visualize() function
 import matplotlib
+
 matplotlib.use('Agg')
 
 from opendr_bridge import ROSBridge
@@ -138,12 +139,15 @@ class EfficientPsNode:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--checkpoint', type=str, required=True, help='Load the model weights from the provided path.')
-    parser.add_argument('--image_topic', type=str, required=True, help='Listen to images on this topic.')
-    parser.add_argument('--heatmap_topic', type=str, help='Publish the semantic and instance maps on this topic.')
+    parser.add_argument('--checkpoint', type=str, required=True, help='load the model weights from the provided path')
+    parser.add_argument('--image_topic', type=str, required=True, help='listen to images on this topic')
+    parser.add_argument('--heatmap_topic', type=str, help='publish the semantic and instance maps on this topic')
     parser.add_argument('--visualization_topic', type=str,
-                        help='Publish the panoptic segmentation map as an RGB image on this topic.')
-    parser.add_argument('--detailed_visualization', action='store_true')
+                        help='publish the panoptic segmentation map as an RGB image on this topic or a more detailed \
+                              overview if using the --detailed_visualization flag')
+    parser.add_argument('--detailed_visualization', action='store_true',
+                        help='generate a combined overview of the input RGB and the semantic, instance, and panoptic \
+                              segmentation maps')
     args = parser.parse_args()
 
     efficient_ps_node = EfficientPsNode(args.checkpoint,
