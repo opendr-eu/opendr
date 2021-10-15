@@ -25,9 +25,9 @@ from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
 
 
 if __name__ == '__main__':
-    rgb_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'projects/opendr/simulation/'
+    rgb_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'projects/simulation/'
                                       'human_model_generation/imgs_input/rgb/result_0004.jpg'))
-    msk_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'projects/opendr/simulation/'
+    msk_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'projects/simulation/'
                                       'human_model_generation/imgs_input/msk/result_0004.jpg'))
     bridge_cv = CvBridge()
     bridge_ros = ROSBridge()
