@@ -325,5 +325,5 @@ class ROSBridge:
         """
         colors = np.zeros([len(ros_colors), 3])
         for i in range(len(ros_colors)):
-            colors[i] = np.array([ros_colors[i].r, ros_colorsi].g, ros_colors[i].b])
+            colors[i] = np.array([ros_colors[i].r, ros_colors[i].g, ros_colors[i].b])
         return colors
