@@ -19,6 +19,8 @@ import sys
 import numpy as np
 import cv2
 import random
+from shutil import copyfile
+import zipfile
 
 # Detectron imports
 import detectron2
@@ -41,14 +43,14 @@ from opendr.control.single_demo_grasp.keypoint_detector_2d.training.learner_util
 
 class SingleDemoGraspLearner(Learner):
 
-    def __init__(self, object_name = '', dataset_dir = '', lr = 0.0008, batch_size = 2,
+    def __init__(self, object_name = None, data_directory = None, lr = 0.0008, batch_size = 2,
                     num_workers = 2, num_classes = 1, iters = 1000,
                                             threshold = 0.8,    device = 'cuda'):
         super(SingleDemoGraspLearner, self).__init__(lr = lr, threshold = threshold,
                             batch_size = batch_size, device = device)
 
         self.object_name = object_name
-        self.dataset_dir = dataset_dir
+        self.dataset_dir = os.path.join(data_directory, object_name)
         self.num_workers = num_workers
         self.num_classes = num_classes
         self.batch_size = batch_size
@@ -56,7 +58,9 @@ class SingleDemoGraspLearner(Learner):
         self.device = device
         self.iters = iters
         self.threshold = threshold
-        self.output_dir =  os.getcwd() + "/output/" + object_name + "/"
+        self.output_dir =  os.path.join(self.dataset_dir, "output")
+        self.temp_dir = os.path.join(data_directory, "download_temp")
+
     def init_model(self):
 
 
@@ -89,9 +93,16 @@ class SingleDemoGraspLearner(Learner):
 
     def infer(self, img_data):
 
+        if isinstance(img_data, Image):
+            _img = img.numpy()
+        elif isinstance(img, np.ndarray):
+            _img = img
+        else:
+            raise ValueError("Input should be of type Image or numpy array.")
+
         self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = self.threshold
 
-        if os.path.exists(os.path.join(os.getcwd() + "/output/" + self.object_name, "model_final.pth")):
+        if os.path.exists(os.path.join(self.cfg.OUTPUT_DIR , self.object_name + "/model_final.pth")):
 
             print("Found the model, loading...")
             self.cfg.MODEL.WEIGHTS = os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth")
@@ -135,10 +146,10 @@ class SingleDemoGraspLearner(Learner):
 
     def _prepare_datasets(self, dataset_name):
 
-        bbx_train = np.load(self.dataset_dir + dataset_name + '/annotations/boxes_train.npy', encoding='bytes')
-        bbx_val = np.load(self.dataset_dir + dataset_name + '/annotations/boxes_val.npy', encoding='bytes')
-        kps_train = np.load(self.dataset_dir + dataset_name + '/annotations/kps_train.npy', encoding='bytes')
-        kps_val = np.load(self.dataset_dir + dataset_name + '/annotations/kps_val.npy', encoding='bytes')
+        bbx_train = np.load(self.dataset_dir + dataset_name + '/images/annotations/boxes_train.npy', encoding='bytes')
+        bbx_val = np.load(self.dataset_dir + dataset_name + '/images/annotations/boxes_val.npy', encoding='bytes')
+        kps_train = np.load(self.dataset_dir + dataset_name + '/images/annotations/kps_train.npy', encoding='bytes')
+        kps_val = np.load(self.dataset_dir + dataset_name + '/images/annotations/kps_val.npy', encoding='bytes')
         vars()[object_name+'_metadata'], train_set, val_set = register_datasets(DatasetCatalog, MetadataCatalog,
                     self.dataset_dir, dataset_name, bbx_train, kps_train, bbx_val, kps_val)
 
@@ -164,22 +175,56 @@ class SingleDemoGraspLearner(Learner):
 
 
 
-    def save(self):
+    def save(self, path):
 
+        if os.path.isfile(os.path.join(self.output_dir, "model_final.pth")):
+            print("found the trained model at: " + os.path.join(self.output_dir, "model_final.pth") )
+            if path ! = self.output_dir:
+                print("copying the trained model to your desired directory at: ")
+                print(path)
+                shutil.copyfile(os.path.join(self.output_dir, "model_final.pth"), path)
+            else:
+                print("model is already saved at: " + os.path.join(self.output_dir, "model_final.pth"))
+        else:
+            print("no trained model was found...")
+
+
+
+    def download(self, path=None, verbose=False, object_name=None, url=OPENDR_SERVER_URL +
+                                    "/control/single_demo_grasp/"):
+
+        if path is None:
+            path = self.temp_dir
+        if object_name is None:
+            object_name = "pendulum"
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if verbose==True:
+            print("Downloading pretrained model, training data and samples for: "+ object_name)
+
+        filename = object_name + ".zip"
+        url = os.path.join(url, filename)
+        destination_file = os.path.join(path, filename)
+        urlretrieve(url, destination_file)
+
+        with zipfile.ZipFile(destination_file, 'r') as zip_ref:
+            zip_ref.extractall(path)
+
+        """
+        removing zip file after extracting contents
+        """
+        os.remove(destination_file)
+
+
+    def eval(self):
+        """This method is not used in this implementation."""
         raise NotImplementedError()
 
     def optimize(self):
-
+        """This method is not used in this implementation."""
         raise NotImplementedError()
 
     def reset(self):
-
-        raise NotImplementedError()
-
-    def download(self):
-        # TODO
-        assert NotImplementedError()
-
-    def eval(self):
-
+        """This method is not used in this implementation."""
         raise NotImplementedError()
