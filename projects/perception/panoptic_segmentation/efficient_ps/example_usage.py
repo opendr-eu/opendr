@@ -14,8 +14,6 @@
 
 from pathlib import Path
 
-import cv2
-
 from opendr.engine.data import Image
 from opendr.perception.panoptic_segmentation import EfficientPsLearner, CityscapesDataset, KittiDataset
 
@@ -65,7 +63,7 @@ def inference():
         f'{CITYSCAPES_ROOT}/val/images/lindau_000002_000019.png',
         f'{CITYSCAPES_ROOT}/val/images/lindau_000003_000019.png',
     ]
-    images = [Image(cv2.imread(f)) for f in image_filenames]
+    images = [Image.open(f) for f in image_filenames]
 
     learner = EfficientPsLearner()
     learner.load(path=f'{DATA_ROOT}/checkpoints/model_cityscapes.pth')
