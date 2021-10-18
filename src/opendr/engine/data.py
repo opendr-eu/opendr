@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+import cv2
 from abc import ABC, abstractmethod
 import numpy as np
 import torch
@@ -264,6 +266,23 @@ class Image(Data):
         :rtype: str
         """
         return str(self.data)
+
+    @classmethod
+    def open(cls, filename):
+        """
+        Create an Image from file and return it as RGB.
+        :param cls: reference to the Image class
+        :type cls: Image
+        :param filename: path to the image file
+        :type filename: str
+        :return: image read from the specified file
+        :rtype: Image
+        """
+        if not Path(filename).exists():
+            raise FileNotFoundError('The image file does not exist.')
+        data = cv2.imread(filename)
+        data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+        return cls(data)
 
 
 class Video(Data):
