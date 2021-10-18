@@ -189,7 +189,7 @@ class BisenetLearner(Learner):
             raise UserWarning("No model is loaded, cannot run inference. Load a model first using load().")
         self.model.eval()
         predict = self.model(image).argmax(dim=1).squeeze().cpu()
-        heatmap = Heatmap(predict)
+        heatmap = Heatmap(predict.numpy())
         # optionally save output heatmap as image
         # heatmap_np = heatmap.numpy()
         # colors = np.random.randint(0, 256, (256, 3), dtype=np.uint8)
