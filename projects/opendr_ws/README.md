@@ -22,11 +22,15 @@ cd src
 git clone https://github.com/ros-drivers/usb_cam
 cd ..
 ```
-3. Build the packages inside workspace
+3. Install the following dependencies, required in order to use the OpenDR ROS tools: 
+```shell
+sudo apt-get install ros-noetic-vision-msgs ros-noetic-geometry-msgs ros-noetic-sensor-msgs
+```
+4. Build the packages inside workspace
 ```shell
 catkin_make
 ```
-4. Source the workspace and you are ready to go!
+5. Source the workspace and you are ready to go!
 ```shell
 source devel/setup.bash
 ```
