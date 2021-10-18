@@ -42,7 +42,7 @@ Constructor parameters:
   If it is set to 0, no checkpoints will be loaded.
 - **temp_path**: *str, default='temp'*  
   Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files.
-- **device**: *{'cpu', 'cuda'}, default='cuda'*
+- **device**: *{'cpu', 'cuda'}, default='cuda'*  
   Specifies the device to be used.
 - **threshold**: *float, default=0.7*  
   Specifies the threshold for object detection inference.
