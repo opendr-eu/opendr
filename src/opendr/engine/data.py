@@ -477,7 +477,7 @@ class PointCloud(Data):
 
 class PointCloudWithCalibration(PointCloud):
     """
-    A class used for representing point cloud data with camera-lidar calibration matricies.
+    A class used for representing point cloud data with camera-lidar calibration matrices.
 
     This class provides abstract methods for:
     - returning a NumPy compatible representation of data (numpy())
