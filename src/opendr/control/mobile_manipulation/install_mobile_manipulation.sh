@@ -34,7 +34,8 @@ if [ ! -f ${WS_PATH}/mobile_manipulation_pr2.rosinstall ]; then
   sudo rosdep init
   rosdep update --rosdistro $ROS_DISTRO
   cp ${MODULE_PATH}/mobile_manipulation_pr2.rosinstall .
-  yes | rosinstall src /opt/ros/$ROS_DISTRO mobile_manipulation_pr2.rosinstall
+  vcs import src /opt/ros/$ROS_DISTRO mobile_manipulation_pr2.rosinstall
+  #yes | rosinstall src /opt/ros/$ROS_DISTRO mobile_manipulation_pr2.rosinstall
   rosdep install -y -r --from-paths src --ignore-src --rosdistro $ROS_DISTRO --skip-keys="opencv2 opencv2-nonfree pal_laser_filters speed_limit_node sensor_to_cloud hokuyo_node libdw-dev python-graphitesend-pip python-statsd pal_filters pal_vo_server pal_usb_utils pal_pcl pal_pcl_points_throttle_and_filter pal_karto pal_local_joint_control camera_calibration_files pal_startup_msgs pal-orbbec-openni2 dummy_actuators_manager pal_local_planner gravity_compensation_controller current_limit_controller dynamic_footprint dynamixel_cpp tf_lookup opencv3 tiago_pcl_tutorial"
   echo "update the moveit configs with the global joint"
 fi
