@@ -35,7 +35,8 @@ SpatioTemporalGCNLearner(self, lr, batch_size, optimizer_name, lr_schedule,
                          checkpoint_after_iter, checkpoint_load_iter, temp_path,
                          device, num_workers, epochs, experiment_name,
                          device_ind, val_batch_size, drop_after_epoch,
-                         start_epoch, dataset_name,method_name, 
+                         start_epoch, dataset_name, num_class, num_point,  
+                         num_person, in_channels, method_name, 
                          stbln_symmetric, num_frames, num_subframes)
 ```
 

@@ -76,7 +76,7 @@ class DetrNode:
         """
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
-        image = self.bridge.from_ros_image(data)
+        image = self.bridge.from_ros_image(data, encoding='bgr8')
 
         # Run detection estimation
         boxes = self.detr_learner.infer(image)
@@ -92,7 +92,7 @@ class DetrNode:
 
         if self.image_publisher is not None:
             draw(image, boxes)
-            message = self.bridge.to_ros_image(np.uint8(image))
+            message = self.bridge.to_ros_image(np.uint8(image), encoding='bgr8')
             self.image_publisher.publish(message)
 
 

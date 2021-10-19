@@ -31,6 +31,7 @@ skippedDirectories = [
     '.git',
     'dependencies',
     'lib',
+    'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
 ]
 
 
@@ -143,6 +144,8 @@ class TestCodeFormat(unittest.TestCase):
         self.files = []
         for rootPath, dirNames, fileNames in os.walk(os.environ['OPENDR_HOME']):
             for fileName in fnmatch.filter(fileNames, '*.py'):
+                if '.eggs' in rootPath:
+                    continue
                 shouldContinue = False
                 for directory in skippedDirectories:
                     currentDirectories = rootPath.replace(os.environ['OPENDR_HOME'], '').replace(os.sep, '/')
