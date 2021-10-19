@@ -21,11 +21,11 @@ Constructor parameters:
   Specifies the initial learning rate to be used during training.
 - **iters**: *int, default=-1*  
   Specifies the number if iteration per each training epoch. -1 means full epoch.
-- **batch_size**: *int, default=4*
+- **batch_size**: *int, default=4*  
   Specifies the size of the training batch.
 - **optimizer**: *str {'sgd'}, default=sgd*  
   Specifies the optimizer type that should be used.
-- **checkpoint_after_iter**: *int, default=0*
+- **checkpoint_after_iter**: *int, default=0*  
   Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
 - **checkpoint_load_iter**: *int, default=0*  
   Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
@@ -33,19 +33,19 @@ Constructor parameters:
   Specifies a path where the algorithm saves the onnx optimized model and checkpoints (if needed).
 - **device**: *{'cpu', 'cuda', 'cuda:x'}, default='cuda'*  
   Specifies the device to be used.
-- **max_dist**: *float, default=0.2*
+- **max_dist**: *float, default=0.2*  
   Specifies the max cosine distance between re-id features.
-- **min_confidence**: *float, default=0.3*
+- **min_confidence**: *float, default=0.3*  
   Specifies the minimal detection confidence to consider for tracking.
-- **nms_max_overlap**: *float, default=0.5*
+- **nms_max_overlap**: *float, default=0.5*  
   Specifies the max overlap value for non-max-suppression. Boxes that overlap more than this values are suppressed.
-- **max_iou_distance**: *float, default=0.7*
+- **max_iou_distance**: *float, default=0.7*  
   Specifies the max IoU distance for detection-tracker matching.
-- **max_age**: *int, default=70*
+- **max_age**: *int, default=70*  
   Specifies the max tracker age.
-- **n_init**: *int, default=3*
+- **n_init**: *int, default=3*  
   Specifies the number of consecutive detections before the track is confirmed.
-- **nn_budget**: *int, default=100*
+- **nn_budget**: *int, default=100*  
   Specifies the max samples per class for the nearest neighbor distance metric.
 
 
@@ -56,13 +56,14 @@ self, dataset, val_dataset, val_epochs, logging_path, silent, verbose, train_spl
 ```
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
+
 Parameters:
   - **dataset**: *object*  
     Object that holds the training dataset.
     Can be of type `ExternalDataset` (with type="market1501") or a custom dataset inheriting from `DatasetIterator`.
   - **epochs**: *int*  
     Specifies the number of epochs to train the model
-  - **val_dataset**: *object, default=None*
+  - **val_dataset**: *object, default=None*  
     Object that holds the validation dataset. If None, and the dataset is an `ExternalDataset`, dataset will be used to sample evaluation inputs. Can be of type `ExternalDataset` (with type="mot") or a custom dataset inheriting from `DatasetIterator`.
   - **val_epochs**: *int, default=-1*  
     Defines the number of train epochs passed to start evaluation. -1 means no evaluation. 
@@ -84,6 +85,7 @@ ObjectTracking2DDeepSortLearner.eval(self, dataset, val_split_paths, logging_pat
 
 This method is used to evaluate a trained model on an evaluation dataset.
 Returns a dictionary containing stats regarding evaluation.  
+
 Parameters:
 - **dataset**: *object*  
   Object that holds the evaluation dataset.
@@ -161,9 +163,9 @@ ObjectTracking2DDeepSortLearner.download(model_name, path, server_url)
 Download utility for pretrained models.
 
 Parameters:
-- **model_name**: *str {'deep_sort'}*
+- **model_name**: *str {'deep_sort'}*  
   The name of the model to download.
-- **path**: *str*
+- **path**: *str*  
   Local path to save the downloaded files.
 - **server_url**: *str, default=None*  
   URL of the pretrained models directory on an FTP server. If None, OpenDR FTP URL is used.

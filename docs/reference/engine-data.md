@@ -97,7 +97,7 @@ Bases: `engine.data.Image`
 A class used for representing image data.
 
 The [ImageWithDetections](#class_engine.data.ImageWithDetections) class has the following public methods:
-#### ImageWithDetections( image, boundingBoxList)
+#### ImageWithDetections(image, boundingBoxList)
   Construct a new [ImageWithDetections](#class_engine.data.ImageWithDetections) object based on provided data.
   - *image* is expected to be an [Image](#class_engine.data.Image) or a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
   - *boundingBoxList* is expected to be a [BoundingBoxList](#class_engine.target.BoundingBoxList).
