@@ -99,15 +99,15 @@ Converts a ROS Detection2DArray message with bounding boxes into an OpenDR Bound
 #### `ROSBridge.from_ros_3Dpose`
 
 ```python
-ROSBridge.from_ros_pose(self,
-                        message)
+ROSBridge.from_ros_3Dpose(self,
+                        ros_pose)
 ```
 
 Converts a ROS pose into an OpenDR pose (used for a 3D pose).
 
 Parameters:
 
-- **message**: *geometry_msgs.msg.Pose*  
+- **ros_pose**: *geometry_msgs.msg.Pose*  
   ROS pose to be converted into an OpenDR pose.
        
 #### `ROSBridge.to_ros_3Dpose`
@@ -122,20 +122,6 @@ Parameters:
 
 - **opendr_pose**: *engine.target.Pose*  
   OpenDR pose to be converted to ```geometry_msgs.msg.Pose``` message.
-  
-  #### `ROSBridge.from_ros_3Dpose`
-
-```python
-ROSBridge.from_ros_3Dpose(self,
-                        ros_pose)
-```
-
-Converts a ROS pose into an OpenDR pose (used for a 3D pose).
-
-Parameters:
-
-- **ros_pose**: *geometry_msgs.msg.Pose*  
-  ROS pose to be converted into an OpenDR pose.
        
 #### `ROSBridge.to_ros_mesh`
 
