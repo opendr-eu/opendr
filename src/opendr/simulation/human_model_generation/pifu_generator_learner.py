@@ -67,7 +67,7 @@ class PIFuGeneratorLearner(Learner):
                 imgs_msk[i] = Image(imgs_msk[i])
             imgs_msk[i] = imgs_msk[i].numpy()
         if imgs_msk is None or len(imgs_rgb) != 1 or len(imgs_msk) != 1:
-            raise ValueError('Wrong input...')
+            raise ValueError('At the current stage, both the length of the RGB images and the length of the images used as masks must be of size equal to 1.')
         if imgs_rgb[0].size != imgs_msk[0].size:
             raise ValueError('Images must have the same resolution...')
         if (obj_path is not None) and (not os.path.exists(os.path.dirname(obj_path))):
