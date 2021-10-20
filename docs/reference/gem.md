@@ -20,7 +20,7 @@ GemLearner(self, model_config_path, dataset_config_path, iters, lr, batch_size, 
 Constructor parameters:
 - **model_config_path**: *str, default="OpenDR/src/perception/object_detection_2d/gem/algorithm/config/model_config.yaml"*
   Specifies the path to the config file that contains the additional parameters from the original [DETR implementation](https://github.com/facebookresearch/detr).
--**dataset_config_path**: *str, default="OpenDR/src/perception/object_detection_2d/gem/algorithm/config/dataset_config.yaml"*
+- **dataset_config_path**: *str, default="OpenDR/src/perception/object_detection_2d/gem/algorithm/config/dataset_config.yaml"*
   The dataset folder structure e.g., image folders and annotation files location are defined here.
 - **iters**: *int, default=10*
   Specifies the number of epochs the training should run for.
@@ -127,7 +127,7 @@ Parameters:
     ExternalDataset class object or DatasetIterator class object.
     Object that holds the evaluation dataset.
     If *None*, `ExternalDataset` type is assigned automatically.
-- **m2_edataset** : *object*
+- **m2_edataset** : *object, default=None*
     Same as *m1_edataset*.
 - **m1_images_folder** : *str, default='val2017'*
     Folder name that contains the dataset images.
@@ -181,7 +181,7 @@ Parameters:
 
 #### `GemLearner.load`
 ```python
-GemLearner.load(self, path)
+GemLearner.load(self, path, verbose)
 ```
 This method is used to load a previously saved model from its saved folder.
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
@@ -189,6 +189,8 @@ Loads the model from inside the directory of the path provided, using the metada
 Parameters:
 - **path**: *str*
   Path of the model to be loaded.
+- **verbose**: *bool, default=False*
+  Enables maximum verbosity
 
 #### `GemLearner.download`
 ```python
@@ -197,9 +199,9 @@ GemLearner.download(self, path, mode, verbose)
 Download utility for downloading pretrained models and test data.
 
 Parameters:
-- **path** : *str*
+- **path** : *str, default=None*
   Determines the path to the location where the downloaded files will be stored.
-- **mode** : *str*
+- **mode** : *str, default='pretrained_gem'*
   Determines the files that will be downloaded.
   Valid values are: "weights_detr", "pretrained_detr", "pretrained_gem", "test_data_l515" and "test_data_sample_images".
   In case of "weights_detr", the weigths for single modal DETR with *resnet50* backbone are downloaded.
@@ -207,7 +209,7 @@ Parameters:
   In case of "pretrained_gem", the weights from *'gem_scavg_e294_mAP0983_rn50_l515_7cls.pth'* (backbone: *'resnet50'*, fusion_method: *'scalar averaged'*, trained on *RGB-Infrared l515_dataset* are downloaded.
   In case of "test_data_l515", the *RGB-Infrared l515* dataset is downloaded from the OpenDR server.
   In case of "test_data_sample images", two sample images for testing the *infer* function are downloaded.
-- **verbose** : *bool*
+- **verbose** : *bool, default=False*
   Enables the maximum verbosity.
 
 #### Examples
@@ -238,42 +240,27 @@ learner.save('./saved_models/trained_model')
 
 ```python
 from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
-from PIL import Image
+from opendr.perception.object_detection_2d.gem.algorithm.util.draw import plot_results
+import cv2
 
-from matplotlib import pyplot as plt
-
-# l515_dataset classes
-classes = ['chair', 'cycle', 'bin', 'laptop', 'drill', 'rocker']
-
-# colors for visualization
-colors = [[0.000, 0.447, 0.741], [0.850, 0.325, 0.098], [0.929, 0.694, 0.125],
-          [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
-
-
-# Function for plotting results
-def plot_results(pil_img, boxes):
-    plt.figure(figsize=(16, 10))
-    plt.imshow(pil_img)
-    ax = plt.gca()
-    for box, c in zip(boxes, colors*100):
-        ax.add_patch(plt.Rectangle((box.left, box.top), box.width, box.height,
-                                   fill=False, color=c, linewidth=3))
-        text = f'{classes[box.name-1]}: {box.confidence:0.2f}'
-        ax.text(box.left, box.top, text, fontsize=15, bbox=dict(facecolor='yellow', alpha=0.5))
-    plt.axis('off')
-    plt.show()
-
-
-learner = GemLearner(num_classes=7, device='cpu')
+# First we initialize the learner
+learner = GemLearner(num_classes=7, device=args.device)
 learner.fusion_method = 'sc_avg'
+# Next, we download a pretrained model
 learner.download(mode='pretrained_gem')
+# And some sample images
 learner.download(mode='test_data_sample_images')
-
-m1_img = Image.open('temp/sample_images/rgb/2021_04_22_21_35_47_852516.jpg')
-m2_img = Image.open('temp/sample_images/aligned_infra/2021_04_22_21_35_47_852516.jpg')
-
-bounding_box_list, _, _ = learner.infer(m1_img, m2_img)
-plot_results(m1_img, bounding_box_list)
+# We now read the sample images
+m1_img = cv2.imread('temp/sample_images/rgb/2021_04_22_21_35_47_852516.jpg')
+m2_img = cv2.imread('temp/sample_images/aligned_infra/2021_04_22_21_35_47_852516.jpg')
+# Perform inference
+bounding_box_list, w_sensor1, _ = learner.infer(m1_img, m2_img)
+# Visualize the detections
+# The blue/green bar shows the weights of the two modalities
+# Fully blue means relying purely on the first modality
+# Fully green means relying purely on the second modality
+cv2.imshow('Detections', plot_results(m1_img, bounding_box_list, w_sensor1))
+cv2.waitKey(0)
 ```
 #### References
 <a name="detr-paper" href="https://ai.facebook.com/research/publications/end-to-end-object-detection-with-transformers">[1]</a> End-to-end Object Detection with Transformers,
