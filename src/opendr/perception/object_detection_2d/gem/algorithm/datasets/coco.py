@@ -25,7 +25,7 @@ import torch
 import torch.utils.data
 import torchvision
 from pycocotools import mask as coco_mask
-import opendr.perception.object_detection_2d.gem.algorithm.datasets.transforms as T
+from opendr.perception.object_detection_2d.gem.algorithm.datasets import transforms as T
 from PIL import Image as im
 
 import random

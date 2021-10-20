@@ -1,3 +1,4 @@
+# Copyright 2020-2021 OpenDR European Project
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -60,7 +61,6 @@ class GemLearner(Learner):
                 "algorithm/configs/dataset_config.yaml"
             ),
             iters=10,
-            dataset=None,
             lr=1e-4,
             batch_size=1,
             optimizer="adamw",
@@ -95,11 +95,6 @@ class GemLearner(Learner):
         self.args.device = self.device
         self.args.num_classes = num_classes
         self.args.dataset_file = "coco"
-
-        self.dataset = dataset
-        if self.dataset is not None:
-            print("True")
-            self.deleteme()
 
         if return_segmentations:
             self.args.masks = True
@@ -146,27 +141,15 @@ class GemLearner(Learner):
 
     def save(self, path, verbose=False):
         """
-        Method for saving the current model in the path provided.
-
-        Parameters
-        ----------
-        path : str
-            Folder where the model should be saved. If it does not exist, it
-            will be created.
-        verbose : bool, optional
-            Enables the maximum verbosity. The default is False.
-
-        Raises
-        ------
-        UserWarning
-            If there is no model available, a warning is raised.
-
-        Returns
-        -------
-        bool
-            If True, model was saved was successfully.
-
+        This method is used to save a trained model.
+        Provided with the path, absolute or relative, including a *folder* name, it creates a directory with the name
+        of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
+        :param path: for the model to be saved, including the folder name
+        :type path: str
+        :param verbose: whether to print success message or not, defaults to 'False'
+        :type verbose: bool, optional
         """
+
         if self.model is None and self.ort_session is None:
             raise UserWarning("No model is loaded, cannot save.")
 
@@ -203,25 +186,13 @@ class GemLearner(Learner):
         with open(os.path.join(full_path_to_model_folder, folder_name_no_ext + ".json"), 'w') as outfile:
             json.dump(model_metadata, outfile)
 
-    def load(self, path):
+    def load(self, path, verbose=False):
         """
-        Method for loading a model that was saved earlier.
-
-        Parameters
-        ----------
-        path : str
-            Folder where the model was saved.
-
-        Raises
-        ------
-        UserWarning
-            If the given folder does not exist, a warning is raised.
-
-        Returns
-        -------
-        bool
-            True if loading the model was successful.
-
+        Loads the model from inside the path provided, based on the metadata .json file included.
+        :param path: path of the directory the model was saved
+        :type path: str
+        :param verbose: whether to print success message or not, defaults to 'False'
+        :type verbose: bool, optional
         """
         model_name, _, _ = self.__extract_trailing(path)  # Trailing folder name from the path provided
 
@@ -236,27 +207,15 @@ class GemLearner(Learner):
 
         self.__create_model()
         self.model_without_ddp.load_state_dict(torch.load(model_path)['state_dict'])
-        print("Loaded Pytorch model.")
+        if verbose:
+            print("Loaded Pytorch model.")
         return True
 
     def __load_checkpoint(self, path):
         """
-        Internal method for loading a checkpoint
-
-        Parameters
-        ----------
-        path : str
-            Path to the checkpoint.
-
-        Raises
-        ------
-        e
-            Error when provided path does not exist.
-
-        Returns
-        -------
-        None.
-
+        Internal method for loading a saved checkpoint.
+        :param path: path of the saved model.
+        :type path: str
         """
         try:
             checkpoint = torch.load(path, map_location="cpu")
@@ -271,7 +230,6 @@ class GemLearner(Learner):
             self.torch_optimizer.load_state_dict(checkpoint['optimizer'])
             self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
             self.epoch = self.checkpoint_load_iter = checkpoint['epoch'] + 1
-        print(f'Loaded checkpoint{self.checkpoint_load_iter:04}.pth')
 
     def fit(self, m1_train_edataset=None,
             m2_train_edataset=None,
@@ -282,7 +240,9 @@ class GemLearner(Learner):
             m2_train_images_folder=None,
             out_dir='outputs',
             trial_dir='trial',
-            logging_path='', silent=False, verbose=True,
+            logging_path='',
+            silent=False,
+            verbose=True,
             m1_val_edataset=None,
             m2_val_edataset=None,
             m1_val_annotations_file=None,
@@ -292,42 +252,58 @@ class GemLearner(Learner):
             ):
         """
         This method is used for training the algorithm on a train dataset and validating on a val dataset.
-
-        Parameters
-        ----------
-        dataset : ExternalDataset class object or DatasetIterator class object
-            Object that holds the training dataset.
-        val_dataset : ExternalDataset class object or DatasetIterator class object, optional
-            Object that holds the validation dataset. The default is None.
-        logging_path : str, optional
-            Path to save tensorboard log files. If set to None or '', tensorboard logging is
-            disabled. The default is ''.
-        silent : bool, optional
-            If True, all printing of training progress reports and other information
-            to STDOUT are disabled. The default is False.
-        verbose : bool, optional
-            Enables the maximum verbosity. The default is True.
-        annotations_folder : str,
-            Foldername of the annotations json file. This folder should be contained in the
-            dataset path provided. The default is 'Annotations'.
-        train_images_folder : str, optional
-            Name of the folder that contains the train dataset images. This folder should be contained in
-            the dataset path provided. Note that this is a folder name, not a path. The default is 'train2017'.
-        train_annotations_file : str, optional
-            Filename of the train annotations json file. This file should be contained in the
-            dataset path provided. The default is 'instances_train2017.json'.
-        val_images_folder : str, optional
-            Folder name that contains the validation images. This folder should be contained
-            in the dataset path provided. Note that this is a folder name, not a path. The default is 'val2017'.
-        val_annotations_file : str, optional
-            Filename of the validation annotations json file. This file should be
-            contained in the dataset path provided in the annotations folder provided. The default is 'instances_val2017.json'.
-
-        Returns
-        -------
-        dict
-            Returns stats regarding the last evaluation ran.
-
+        :param m1_train_edataset: Object that holds the training dataset for the first modality, defaults to 'None'
+        :type m1_train_edataset: ExternalDataset class object or DatasetIterator class object, optional
+        :param m2_train_edataset: Object that holds the training dataset for the second modality, defaults to 'None'
+        :type m2_train_edataset: ExternalDataset class object or DatasetIterator class object, optional
+        :param annotations_folder: Folder name of the annotations json file. This folder should be contained in the
+        dataset path provided, defaults to 'None'
+        :type annotations_folder: str, optional
+        :param m1_train_annotations_file: Filename of the train annotations json file for the first modality. This file
+        should be contained in the *annotations_folder*, defaults to 'None'
+        :type m1_train_annotations_file: str, optional
+        :param m2_train_annotations_file: Filename of the train annotations json file for the second modality. This file
+        should be contained in the *annotations_folder*, defaults to 'None'
+        :type m2_train_annotations_file: str, optional
+        :param m1_train_images_folder: Name of the folder that contains the train dataset images for the first modality.
+        This folder should be contained in the dataset path provided. Note that this is a folder name, not a path,
+        defaults to 'None'
+        :type m1_train_images_folder: str, optional
+        :param m2_train_images_folder: Name of the folder that contains the train dataset images for the second
+        modality. This folder should be contained in the dataset path provided. Note that this is a folder name, not a
+        path, defaults to 'None'
+        :type m2_train_images_folder: str, optional
+        :param out_dir: Path to where checkpoints are saved. If the path does not exist, it will be created, defaults to
+        'outputs'
+        :type out_dir: str, optional
+        :param trial_dir: Directory in the *out_dir* where the checkpoints will be saved, defaults to 'trial'
+        :type trial_dir: str, optional
+        :param logging_path: Path to where TensorBoard logs are stored. If path is not '' or None, logging is activated,
+        defaults to ''
+        :type logging_path: str, optional
+        :param silent: If 'True', the printed output is minimal, defaults to 'False'
+        :type silent: bool, optional
+        :param verbose: If 'True', maximum verbosity is enabled, unless *silent* is True, defaults to 'True'
+        :type verbose: bool, optional
+        :param m1_val_edataset: Object that holds the validation dataset for the first modality, defaults to 'None'
+        :type m1_val_edataset: ExternalDataset class object or DatasetIterator class object, optional
+        :param m2_val_edataset: Object that holds the validation dataset for the second modality, defaults to 'None'
+        :type m2_val_edataset: ExternalDataset class object or DatasetIterator class object, optional
+        :param m1_val_annotations_file: Filename of the validation annotations json file for the first modality. This
+        file should be contained in the dataset path provided in the annotations folder provided, defaults to 'None'
+        :type m1_val_annotations_file: str, optional
+        :param m2_val_annotations_file: Filename of the validation annotations json file for the second modality. This
+        file should be contained in the dataset path provided in the annotations folder provided, defaults to 'None'
+        :type m2_val_annotations_file: str, optional
+        :param m1_val_images_folder: Folder name that contains the validation images for the first modality. This folder
+        should be contained in the dataset path provided. Note that this is a folder name, not a path, defaults to
+        'None'
+        :type m1_val_images_folder: str, optional
+        :param m2_val_images_folder: Folder name that contains the validation images for the second modality. This
+        folder should be contained in the dataset path provided. Note that this is a folder name, not a path, defaults
+        to 'None'
+        :return: Returns stats regarding the last evaluation ran.
+        :rtype: dict
         """
         dataset_location = os.path.join(self.datasetargs.dataset_root, self.datasetargs.dataset_name)
         if m1_train_edataset is None:
@@ -574,31 +550,30 @@ class GemLearner(Learner):
              ):
         """
         This method is used to evaluate a trained model on an evaluation dataset.
-
-        Parameters
-        ----------
-        dataset : ExternalDataset class object or DatasetIterator class object
-            Object that holds the evaluation dataset.
-        images_folder : str, optional
-            Folder name that contains the dataset images. This folder should be contained in
-            the dataset path provided. Note that this is a folder name, not a path. The default is 'val2017'.
-        annotations_folder : str, optional
-            Folder name of the annotations json file. This file should be contained in the
-            dataset path provided. The default is 'Annotations'.
-        annotations_file : str, optional
-            Filename of the annotations json file. This file should be contained in the
-            dataset path provided. The default is 'instances_val2017.json'.
-
-        Raises
-        ------
-        UserWarning
-            If there is no model, a warning is raised.
-
-        Returns
-        -------
-        test_stats : dict
-            Returns stats regarding evaluation.
-
+        :param m1_edataset: Object that holds the evaluation dataset for the first modality, defaults to 'None'
+        :type m1_edataset: ExternalDataset class object or DatasetIterator class object, optional
+        :param m2_edataset: Object that holds the evaluation dataset for the second modality, defaults to 'None'
+        :type m2_edataset: ExternalDataset class object or DatasetIterator class object, optional
+        :param m1_images_folder: Folder name that contains the dataset images for the first modality. This folder should
+        be contained in the dataset path provided. Note that this is a folder name, not a path, defaults to 'm1_val2017'
+        :type m1_images_folder: str, optional
+        :param m2_images_folder: Folder name that contains the dataset images for the second modality. This folder
+        should be contained in the dataset path provided. Note that this is a folder name, not a path, defaults to
+        'm2_val2017'
+        :type m2_images_folder: str, optional
+        :param annotations_folder: Folder name of the annotations json file. This file should be contained in the
+        dataset path provided, defaults to 'Annotations'
+        :type annotations_folder: str, optional
+        :param m1_annotations_file: Filename of the annotations json file for the first modality. This file should be
+        contained in the dataset path provided, defaults to 'm1_instances_val2017'
+        :type m1_annotations_file: str, optional
+        :param m2_annotations_file: Filename of the annotations json file for the second modality. This file should be
+        contained in the dataset path provided, defaults to 'm2_instances_val2017
+        :type m2_annotations_file: str, optional
+        :param verbose: If 'True', maximum verbosity is enabled, defaults to 'True'
+        :type verbose: bool, optional
+        :return: Returns stats regarding evaluation.
+        :rtype: dict
         """
         if self.model is None:
             raise UserWarning('A model should be loaded first')
@@ -686,20 +661,13 @@ class GemLearner(Learner):
 
     def infer(self, m1_image, m2_image):
         """
-        This method is used to perform object detection on an image.
-
-        Parameters
-        ----------
-        image : engine.data.Image class object
-            Image to run inference on.
-
-        Returns
-        -------
-        engine.target.BoundingBoxList
-            The engine.target.BoundingBoxList contains bounding boxes that are
-            described by the left-top corner and its width and height, or
-            returns an empty list if no detections were made.
-
+        This method is used to perform object detection on two images with different modalities.
+        :param m1_image: Image from the first modality to run inference on
+        :type m1_image: engine.data.Image class object or numpy.ndarray
+        :param m2_image: Image from the second modality to run inference on
+        :type m2_image: engine.data.Image class object or numpy.ndarray
+        :return: Bounding box list, first modality weight, second modality weight
+        :rtype: engine.target.BoundingBoxList, float, float
         """
         if not (isinstance(m1_image, Image) or isinstance(m2_image, Image)):
             m1_image = Image(m1_image)
@@ -734,41 +702,31 @@ class GemLearner(Learner):
                 boxlist.append(box)
         return BoundingBoxList(boxlist), normed_weight1, normed_weight2
 
-    def optimize(self, do_constant_folding=False):
-        """
-        Method for optimizing the model with onnx. (Not implemented yet for GEM)
-
-        Parameters
-        ----------
-        do_constant_folding : bool, optional
-            If true, constant folding is true in the onnnx model. The default
-            is False.
-
-        Raises
-        ------
-        UserWarning
-            If no model is loaded or if an ort session is already ongoing, a
-            user warning is raised.
-
-        Returns
-        -------
-        bool
-            True if the model was optimized successfully.
-
-        """
+    def optimize(self):
+        """This method is not used in this implementation."""
+        return NotImplementedError
 
     def reset(self):
-        """
-        Method for resetting the state of the model. Since the model does not
-        have a state, this method simply passes.
-
-        Returns
-        -------
-        None.
-
-        """
+        """This method is not used in this implementation."""
+        return NotImplementedError
 
     def download(self, path=None, mode="pretrained_gem", verbose=False):
+        """
+        Download utility.
+        :param path: Path to locally stored (pretrained) models, defaults to 'None'
+        :type path: str, optional
+        :param mode: Determines the files that will be downloaded. Valid values are: "weights_detr", "pretrained_detr",
+        "pretrained_gem", "test_data_l515" and "test_data_sample_images". In case of "weights_detr", the weigths for
+        single modal DETR with resnet50 backbone are downloaded. In case of "pretrained_detr", the weigths for single
+        modal pretrained DETR with resnet50 backbone are downloaded. In case of "pretrained_gem", the weights from
+        'gem_scavg_e294_mAP0983_rn50_l515_7cls.pth' (backbone: 'resnet50', fusion_method: 'scalar averaged', trained on
+        RGB-Infrared l515_dataset are downloaded. In case of "test_data_l515", the RGB-Infrared l515 dataset is
+        downloaded from the OpenDR server. In case of "test_data_sample images", two sample images for testing the infer
+        function are downloaded, defaults to 'pretrained_gem'
+        :type mode: str, optional
+        :param verbose: Enables the maximum verbosity.
+        :type verbose: bool, optional
+        """
         valid_modes = ["weights_detr", "pretrained_detr", "pretrained_gem", "test_data_l515",
                        "test_data_sample_dataset",
                        "test_data_sample_images"]
@@ -809,9 +767,11 @@ class GemLearner(Learner):
             backbone_ir_entries_dict = {k.replace('backbone', 'backbone_ir'): v for k, v in pretrained_dict.items() if
                                         'backbone' in k}
             pretrained_dict.update(backbone_ir_entries_dict)
-            print("Loading detr_{} weights (partially)...".format(self.backbone))
+            if verbose:
+                print("Loading detr_{} weights (partially)...".format(self.backbone))
             self.model_without_ddp.load_state_dict(pretrained_dict, strict=False)
-            print("Weights Loaded.")
+            if verbose:
+                print("Weights Loaded.")
 
         elif mode == 'pretrained_gem':
             self.__create_model()
@@ -834,15 +794,18 @@ class GemLearner(Learner):
                 if not os.path.exists(os.path.join(path, 'pretrained_models')):
                     os.makedirs(os.path.join(path, 'pretrained_models'))
                 # Download pretrained_model from ftp server
-                print("Downloading pretrained model from " + OPENDR_SERVER_URL)
+                if verbose:
+                    print("Downloading pretrained model from " + OPENDR_SERVER_URL)
                 urlretrieve(pretrained_model_url, pretrained_model_local_path)
 
             pretrained_model = torch.load(pretrained_model_local_path, map_location='cpu')
             pretrained_dict = pretrained_model['model']
 
-            print("Loading gem_l515 weights...")
+            if verbose:
+                print("Loading gem_l515 weights...")
             self.model_without_ddp.load_state_dict(pretrained_dict, strict=True)
-            print("Weights Loaded.")
+            if verbose:
+                print("Weights Loaded.")
 
         elif mode == "test_data_l515":
             url = OPENDR_SERVER_URL + "perception/object_detection_2d/gem/l515_dataset.zip"
@@ -890,33 +853,18 @@ class GemLearner(Learner):
     def __create_criterion(self):
         """
         Internal model for creating the criterion.
-
-        Returns
-        -------
-        None.
-
         """
         self.criterion = build_criterion(self.args)
 
     def __create_postprocessors(self):
         """
         Internal model for creating the postprocessors
-
-        Returns
-        -------
-        None.
-
         """
         self.postprocessors = build_postprocessors(self.args)
 
     def __create_optimizer(self):
         """
         Internal model for creating the optimizer.
-
-        Returns
-        -------
-        None.
-
         """
         param_dicts = [
             {"params": [p for n, p in self.model_without_ddp.named_parameters() if
@@ -940,17 +888,14 @@ class GemLearner(Learner):
             self.torch_optimizer = torch.optim.AdamW(param_dicts, lr=self.lr, weight_decay=self.weight_decay)
 
     def __create_scheduler(self):
+        """
+        Internal method for creating the scheduler.
+        """
         self.lr_scheduler = torch.optim.lr_scheduler.StepLR(self.torch_optimizer, self.args.lr_drop)
 
     def __create_model(self):
         """
-        Internal method for creating a model, optimizer and scheduler based
-        on the parameters in the config file.
-
-        Returns
-        -------
-        None.
-
+        Internal method for creating a model, optimizer and scheduler based on the parameters in the config file.
         """
         self.ort_session = None
 
@@ -983,32 +928,22 @@ class GemLearner(Learner):
 
         If the dataset is of the DatasetIterator format, then it's a custom implementation of a dataset and all
         required operations should be handled by the user, so the dataset object is just returned.
-
-        Parameters
-        ----------
-        dataset : ExternalDataset class object or DatasetIterator class object
-            The dataset.
-        image_set : str, optional
-            Specifies whether the dataset is a train or validation dataset, possible values: "train" or "val".
-            The default is "train".
-        images_folder_name : str, optional
-            The name of the folder that contains the image files. The default is "train2017".
-        annotations_folder_name : str, optional
-            The folder that contains the original annotations. The default is "Annotations".
-        annotations_file_name : str, optional
-            The .json file that contains the original annotations. The default is "instances_train2017.json".
-
-        Raises
-        ------
-        UserWarning
-            UserWarnings with appropriate messages are raised for wrong type of dataset, or wrong paths
-            and filenames.
-
-        Returns
-        -------
-        CocoTrainDataset object or custom DatasetIterator implemented by user
-            CocoDetection class object or DatasetIterator instance.
-
+        :param dataset: Dataset
+        :type dataset: ExternalDataset class object or DatasetIterator class object
+        :param image_set: Specifies whether the dataset is a train or validation dataset, possible values: "train" or
+        "val", defaults to 'train'
+        :type image_set: str, optional
+        :param images_folder_name: The name of the folder that contains the image files. The default 'train2017'
+        :type images_folder_name: str, optional
+        :param annotations_folder_name: The folder that contains the original annotations, defaults to 'Annotations'
+        :type annotations_folder_name: str, optional
+        :param annotations_file_name: The .json file that contains the original annotations, defaults to
+        'instances_train2017.json'
+        :type annotations_file_name: str, optional
+        :param seed: Seed that is used for building the dataset, defaults to 'None'
+        :type seed: int, optional
+        :return: Dataset
+        :rtype: ExternalDataset or DatasetIterator
         """
         if not (isinstance(dataset, ExternalDataset) or isinstance(dataset, DatasetIterator)):
             raise UserWarning("dataset must be an ExternalDataset or a DatasetIterator")
@@ -1048,7 +983,6 @@ class GemLearner(Learner):
         """
         Extracts the trailing folder name or filename from a path provided in an OS-generic way, also handling
         cases where the last trailing character is a separator. Returns the folder name and the split head and tail.
-
         :param path: the path to extract the trailing filename or folder name from
         :type path: str
         :return: the folder name, the head and tail of the path

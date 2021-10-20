@@ -1,5 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
+# Modifications Copyright 2021 - present, OpenDR European Project
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -425,40 +427,6 @@ class ToTensor(object):
     def __call__(self, img, target, seed=None):
         return F.to_tensor(img), target
 
-# def patch_brightness(img: Tensor, i: int, j: int, h: int, w: int, f: float, inplace: bool = False) -> Tensor:
-#     """ Change the brightness of the patch from the input Tensor Image with given value.
-#     Args:
-#         img (Tensor Image): Tensor image of size (C, H, W) to be erased
-#         i (int): i in (i,j) i.e coordinates of the upper left corner.
-#         j (int): j in (i,j) i.e coordinates of the upper left corner.
-#         h (int): Height of the changed brightness region.
-#         w (int): Width of the changed brightness region.
-#         inplace(bool, optional): For in-place operations. By default is set False.
-#     Returns:
-#         Tensor Image: Erased image.
-#     """
-#     if not isinstance(img, torch.Tensor):
-#         raise TypeError('img should be Tensor Image. Got {}'.format(type(img)))
-#
-#     if not inplace:
-#         img = img.clone()
-#         img_adjusted = F.adjust_brightness(img, f)
-#
-#     img[..., i:i + h, j:j + w] = img_adjusted[..., i:i + h, j:j + w]
-#     return img
-#
-# def patch_contrast(img: Tensor, i: int, j: int, h: int, w: int, f: float, inplace: bool = False) -> Tensor:
-#
-#     if not isinstance(img, torch.Tensor):
-#         raise TypeError('img should be Tensor Image. Got {}'.format(type(img)))
-#
-#     if not inplace:
-#         img = img.clone()
-#         img_adjusted = F.adjust_contrast(img, f)
-#
-#     img[..., i:i + h, j:j + w] = img_adjusted[..., i:i + h, j:j + w]
-#     return img
-
 
 class RandomErasing(object):
 
@@ -468,121 +436,6 @@ class RandomErasing(object):
     def __call__(self, img, target, seed):
         random.seed(seed)
         return self.eraser(img), target
-
-# class RandomErasing(object):
-#
-#     def __init__(self, *args, **kwargs):
-#         self.eraser = RandomErasing_code(*args, **kwargs)
-#
-#     def __call__(self, img, target):
-#         return self.eraser(img), target
-#
-# class RandomErasing_code(object):
-#     """ Randomly selects a rectangle region in an image and erases its pixels.
-#     'Random Erasing Data Augmentation' by Zhong et al. See https://arxiv.org/pdf/1708.04896.pdf
-#
-#     Args:
-#          p: probability that the random erasing operation will be performed.
-#          scale: range of proportion of erased area against input image.
-#          ratio: range of aspect ratio of erased area.
-#          value: erasing value. Default is 0. If a single int, it is used to
-#             erase all pixels. If a tuple of length 3, it is used to erase
-#             R, G, B channels respectively.
-#             If a str of 'random', erasing each pixel with random values.
-#          inplace: boolean to make this transform inplace. Default set to False.
-#
-#     Returns:
-#         Erased Image.
-#
-#     # Examples:
-#         >>> transform = transforms.Compose([
-#         >>>   transforms.RandomHorizontalFlip(),
-#         >>>   transforms.ToTensor(),
-#         >>>   transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
-#         >>>   transforms.RandomErasing(),
-#         >>> ])
-#     """
-#
-#     def __init__(self, p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), \
-#     brightness=(0.01, 2), contrast=(0.01, 2), bcscale=(0.3, 3.3), value=0, inplace=False):
-#         assert isinstance(value, (numbers.Number, str, tuple, list))
-#         if (scale[0] > scale[1]) or (ratio[0] > ratio[1]):
-#             warnings.warn("range should be of kind (min, max)")
-#         if scale[0] < 0 or scale[1] > 1:
-#             raise ValueError("range of scale should be between 0 and 1")
-#         if p < 0 or p > 1:
-#             raise ValueError("range of random erasing probability should be between 0 and 1")
-#
-#         self.p = p
-#         self.scale = scale
-#         self.bcscale = bcscale
-#         self.ratio = ratio
-#         self.value = value
-#         self.inplace = inplace
-#         self.brightness = brightness
-#         self.contrast = contrast
-#
-#     @staticmethod
-#     def get_params(img, scale, ratio, brightness, contrast, value=0):
-#         """Get parameters for ``erase`` for a random erasing.
-#
-#         Args:
-#             img (Tensor): Tensor image of size (C, H, W) to be erased.
-#             scale: range of proportion of erased area against input image.
-#             ratio: range of aspect ratio of erased area.
-#
-#         Returns:
-#             tuple: params (i, j, h, w, v) to be passed to ``erase`` for random erasing.
-#         """
-#         img_c, img_h, img_w = img.shape
-#         area = img_h * img_w
-#
-#         for _ in range(10):
-#             erase_area = random.uniform(scale[0], scale[1]) * area
-#             aspect_ratio = random.uniform(ratio[0], ratio[1])
-#             brightness_factor = np.random.choice(np.arange(brightness[0], \
-#             brightness[1], 0.45))
-#             contrast_factor = random.uniform(contrast[0], contrast[1])
-#
-#             h = int(round(math.sqrt(erase_area * aspect_ratio)))
-#             w = int(round(math.sqrt(erase_area / aspect_ratio)))
-#
-#             if h < img_h and w < img_w:
-#                 i = random.randint(0, img_h - h)
-#                 j = random.randint(0, img_w - w)
-#                 if isinstance(value, numbers.Number):
-#                     v = value
-#                 elif isinstance(value, torch._six.string_classes):
-#                     v = torch.empty([img_c, h, w], dtype=torch.float32).normal_()
-#                 elif isinstance(value, (list, tuple)):
-#                     v = torch.tensor(value, dtype=torch.float32).view(-1, 1, 1).expand(-1, h, w)
-#                 return i, j, h, w, v, brightness_factor, contrast_factor
-#
-#         # Return original image
-#         return 0, 0, img_h, img_w, img, 1, 1
-#
-#     def __call__(self, img):
-#         """
-#         Args:
-#             img (Tensor): Tensor image of size (C, H, W) to be erased.
-#
-#         Returns:
-#             img (Tensor): Erased Tensor image.
-#         """
-#         # if random.uniform(0, 1) < self.p:
-#         if True:
-#             bx, by, bh, bw, _, bf, _ = self.get_params(img, scale=self.bcscale, ratio=self.ratio, \
-#             brightness=self.brightness, contrast=self.contrast, value=self.value)
-#             ex, ey, eh, ew, ev, _, _ = self.get_params(img, scale=self.scale, ratio=self.ratio, \
-#             brightness=self.brightness, contrast=self.contrast, value=self.value)
-#             img = F.erase(img, ex, ey, eh, ew, ev, self.inplace)
-#             img = patch_brightness(img, bx, by, bh, bw, bf, self.inplace)
-#             if self.contrast != (1, 1):
-#                 cx, cy, ch, cw, _, _, cf = self.get_params(img, scale=self.scale, ratio=self.ratio, \
-#                 brightness=self.brightness, contrast=self.contrast, value=self.value)
-#                 img = patch_contrast(img, cx, cy, ch, cw, cf, self.inplace)
-#             return img
-#         return img
 
 
 class Normalize(object):
