@@ -134,7 +134,7 @@ Converts a triangle mesh consisting of vertices, faces into a ROS ```shape_msgs.
 Parameters:
 
 - **vertices**: *numpy.ndarray*  
-  Vertices (N) of a triangle mesh.
+  Vertices (Nx3) of a triangle mesh.
 - **faces**: *numpy.ndarray*  
   Faces (Nx3) of a triangle mesh. 
   
