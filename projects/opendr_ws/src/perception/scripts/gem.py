@@ -24,41 +24,8 @@ from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
-
-# l515_dataset classes
-classes = ['chair', 'cycle', 'bin', 'laptop', 'drill', 'rocker', 'can']
-
-# colors for visualization
-colors = [[0.000, 0.447, 0.741], [0.850, 0.325, 0.098], [0.929, 0.694, 0.125],
-          [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
-
-
-def plot_results(image, boxes, w_sensor1, fps):
-    """
-    Helper function for creating the annotated images.
-    :param image: Image that is to be annotated
-    :type image: numpy.ndarray
-    :param boxes: List of detected bounding boxes
-    :type boxes: opendr.engine.target.BoundingBoxList
-    :param w_sensor1: Weight of the first modality (color image)
-    :type w_sensor1: float
-    :param fps: Frames per second
-    :type fps: int
-    :return: Image with annotations
-    :rtype: numpy.ndarray
-    """
-    cv2.putText(image, "FPS: {:.1f}".format(fps), (1100, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
-    for box, c in zip(boxes, colors * 100):
-        if box.confidence > 0.7:
-            top_left = [int(box.left), int(box.top)]
-            bottom_right = [int(box.left + box.width), int(box.top + box.height)]
-            cv2.rectangle(image, (top_left[0], top_left[1]), (bottom_right[0], bottom_right[1]), (51, 102, 255), 2)
-            cv2.rectangle(image, (0, 0), (int(image.shape[1] * w_sensor1), 30), (255, 0, 0), -1)
-            cv2.rectangle(image, (int(image.shape[1] * w_sensor1), 0), (image.shape[1], 30), (51, 153, 51), -1)
-
-            text = f'{classes[box.name - 1]}: {box.confidence:0.2f}'
-            cv2.putText(image, text, (top_left[0], top_left[1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-    return image
+from opendr.perception.object_detection_2d.gem.algorithm.util.draw import plot_results
+from opendr.engine.data import Image
 
 
 class GemNode:
@@ -210,11 +177,11 @@ class GemNode:
 
         if self.rgb_publisher is not None:
             plot_rgb = plot_results(image_rgb, boxes, w_sensor1, mean_fps)
-            message = self.bridge.to_ros_image(np.uint8(plot_rgb))
+            message = self.bridge.to_ros_image(Image(np.uint8(plot_rgb)))
             self.rgb_publisher.publish(message)
         if self.ir_publisher is not None:
             plot_ir = plot_results(image_ir, boxes, w_sensor1, mean_fps)
-            message = self.bridge.to_ros_image(np.uint8(plot_ir))
+            message = self.bridge.to_ros_image(Image(np.uint8(plot_ir)))
             self.ir_publisher.publish(message)
 
 
