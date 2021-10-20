@@ -135,6 +135,7 @@ class RawMotDatasetIterator(DatasetIterator):
         ltrb=True,
         mse_loss=False,
         img_size=(1088, 608),
+        scan_labels=True,
     ):
         self.img_files = OrderedDict()
         self.label_files = OrderedDict()
@@ -158,19 +159,22 @@ class RawMotDatasetIterator(DatasetIterator):
                 .replace(".jpg", ".txt")
                 for x in self.img_files[ds]
             ]
-
+        
         for ds, label_paths in self.label_files.items():
             max_index = -1
-            for lp in label_paths:
-                lb = np.loadtxt(lp)
-                if len(lb) < 1:
-                    continue
-                if len(lb.shape) < 2:
-                    img_max = lb[1]
-                else:
-                    img_max = np.max(lb[:, 1])
-                if img_max > max_index:
-                    max_index = img_max
+            if scan_labels:
+                for lp in label_paths:
+                    lb = np.loadtxt(lp)
+                    if len(lb) < 1:
+                        continue
+                    if len(lb.shape) < 2:
+                        img_max = lb[1]
+                    else:
+                        img_max = np.max(lb[:, 1])
+                    if img_max > max_index:
+                        max_index = img_max
+            else:
+                max_index = 500
             self.tid_num[ds] = max_index + 1
 
         last_index = 0
