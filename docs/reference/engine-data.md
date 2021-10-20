@@ -76,6 +76,7 @@ The [Image](#class_engine.data.Image) class has the following public methods:
   Construct a new [Image](#class_engine.data.Image) object based on *data*.
   *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
   *dtype* is expected to be a [NumPy](https://numpy.org) data type.
+  Note that the OpenDR framework assumes an RGB ordering.
 
 #### data()
   Return *data* argument.
@@ -89,6 +90,9 @@ The [Image](#class_engine.data.Image) class has the following public methods:
 #### numpy()
   Return a  [NumPy](https://numpy.org)-compatible representation of data.
   Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+
+#### open(filename)
+  Construct a new [Image](#class-engine.data.Image) object from the given image file.
 
 
 ### class engine.data.ImageWithDetections
