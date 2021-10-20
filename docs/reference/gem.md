@@ -18,43 +18,43 @@ GemLearner(self, model_config_path, dataset_config_path, iters, lr, batch_size, 
 ```
 
 Constructor parameters:
-- **model_config_path**: *str, default="OpenDR/src/perception/object_detection_2d/gem/algorithm/config/model_config.yaml"*
+- **model_config_path**: *str, default="OpenDR/src/perception/object_detection_2d/gem/algorithm/config/model_config.yaml"*  
   Specifies the path to the config file that contains the additional parameters from the original [DETR implementation](https://github.com/facebookresearch/detr).
-- **dataset_config_path**: *str, default="OpenDR/src/perception/object_detection_2d/gem/algorithm/config/dataset_config.yaml"*
+- **dataset_config_path**: *str, default="OpenDR/src/perception/object_detection_2d/gem/algorithm/config/dataset_config.yaml"*  
   The dataset folder structure e.g., image folders and annotation files location are defined here.
-- **iters**: *int, default=10*
+- **iters**: *int, default=10*  
   Specifies the number of epochs the training should run for.
-- **lr**: *float, default=1e-4*
+- **lr**: *float, default=1e-4*  
   Specifies the initial learning rate to be used during training.
-- **batch_size**: *int, default=1*
+- **batch_size**: *int, default=1*  
   Specifies number of images to be bundled up in a batch during training.
   This heavily affects memory usage, adjust according to your system.
-- **optimizer**: *{'sdg', 'adam', 'adamw'}, default='adamw'*
+- **optimizer**: *{'sdg', 'adam', 'adamw'}, default='adamw'*  
   Specifies the type of optimizer that is used during training.
-- **backbone**: *{'resnet50'}, default='resnet50'*
+- **backbone**: *{'resnet50'}, default='resnet50'*  
   Specifies the backbone architecture.
   Currently only supports *'resnet50'*.
-- **checkpoint_after_iter**: *int, default=0*
+- **checkpoint_after_iter**: *int, default=0*  
   Specifies per how many training iterations a checkpoint should be saved.
   If it is set to 0 no checkpoints will be saved.
-- **checkpoint_load_iter**: *int, default=0*
+- **checkpoint_load_iter**: *int, default=0*  
   Specifies which checkpoint should be loaded.
   If it is set to 0, no checkpoints will be loaded.
-- **temp_path**: *str, default='temp'*
+- **temp_path**: *str, default='temp'*  
   Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files.
-- **device**: *{'cpu', 'cuda'}, default='cuda'*
+- **device**: *{'cpu', 'cuda'}, default='cuda'*  
   Specifies the device to be used.
-- **threshold**: *float, default=0.7*
+- **threshold**: *float, default=0.7*  
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
-- **num_classes**: *int, default=91*
+- **num_classes**: *int, default=91*  
   Specifies the number of classes of the model.
   The default is 91, since this is the number of classes in the COCO dataset, but modifying the *num_classes* allows the user to train on its own dataset.
-  It is also possible to use pretrained DETR models with the specified num_classes, since the head of the pretrained model with be modified appropriately.
+  It is also possible to use pretrained DETR models with the specified *num_classes*, since the head of the pretrained model with be modified appropriately.
   An example below demonstrates this.
   In this way, a model that was pretrained on the coco dataset can be finetuned to another dataset.
   Training on other datasets than COCO can be done by defining dataset folder structure details in *dataset_config.yaml* and using corresponding *num_classes*.
-- **return_segmentations**: *bool, default=False*
+- **return_segmentations**: *bool, default=False*  
   Specifies whether the model returns, next to bounding boxes, segmentations of objects.
   Currently this feature is not supported in GEM.
 
@@ -64,55 +64,56 @@ GemLearner.fit(self, m1_train_edataset, m2_train_edataset, annotations_folder, m
 ```
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
 Returns a dictionary containing stats regarding the last evaluation ran.
+
 Parameters:
-- **m1_train_edataset**: *object, default=None*
+- **m1_train_edataset**: *object, default=None*  
     Object that holds the training dataset.
     Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
     If *None*, `ExternalDataset` type is assigned automatically.
-- **m2_train_edataset**: *object, default=None*
+- **m2_train_edataset**: *object, default=None*  
 	Same as *m1_train_edataset*.
-- **annotations_folder** : *str, default=None*
+- **annotations_folder** : *str, default=None*  
     Foldername of the annotations json file.
     This folder may only be provided in the *dataset_config.yaml* file.
-- **m1_train_annotations_file** : *str, default=None*
+- **m1_train_annotations_file** : *str, default=None*  
     Filename of the train annotations json file.
     This file may only be provided in the *dataset_config.yaml* file.
-- **m2_train_annotations_file** : *str, default=None*
+- **m2_train_annotations_file** : *str, default=None*  
     Same as *m1_train_annotations_file*.
-- **m1_train_images_folder** : *str, default=None*
-    Name of the folder that contains the train dataset images.
-    This folder may only be provided in the *dataset_config_yaml* file.
-    Note that this is a folder (or a nested-folder) name, not a path.
-- **m2_train_images_folder** : *str, default=None*
-    Same as *m1_train_images_folder*.
-- **out_dir**: *str, default='outputs'*
-	Output root folder to save the outputs of training sessions initiated by *fit* function.
-- **trial_dir**: *str, default='trial'*
-	Each training session checkpoints are saved in here.
-  If the folder already exists, a new folder is created with current date and time appended to the name of the existing one for the new training trial.
-- **logging_path** : *str, default=''*
-    Path to save Tensorboard log files.
-    If set to None or '', Tensorboard logging is disabled.
-- **silent** : *bool, default=False*
-    If True, all printing of training progress reports and other information to STDOUT are disabled.
-- **verbose** : *bool, default=True*
-    Enables the maximum verbosity.
-- **m1_val_edataset**: *object, default=None*
-    Object that holds the training dataset.
-    Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-    If *None*, `ExternalDataset` type is assigned automatically.
-- **m2_val_edataset**: *object, default=None*
-	Same as *m1_val_edataset*.
-- **m1_val_annotations_file** : *str, default=None*
-    Filename of the train annotations json file.
-    This file may only be provided in the *dataset_config.yaml* file.
-- **m2_val_annotations_file** : *str, default=None*
-    Same as *m1_val_annotations_file*.
-- **m1_val_images_folder** : *str, default=None*
+- **m1_train_images_folder** : *str, default=None*  
     Name of the folder that contains the train dataset images.
     This folder may only be provided in the *dataset_config.yaml* file.
     Note that this is a folder (or a nested-folder) name, not a path.
-- **m2_val_images_folder** : *str, default=None*
+- **m2_train_images_folder** : *str, default=None*  
+    Same as *m1_train_images_folder*.
+- **out_dir**: *str, default='outputs'*  
+	Output root folder to save the outputs of training sessions initiated by *fit* function.
+- **trial_dir**: *str, default='trial'*  
+	Each training session checkpoints are saved in here.
+  If the folder already exists, a new folder is created with current date and time appended to the name of the existing one for the new training trial.
+- **logging_path** : *str, default=''*  
+    Path to save Tensorboard log files.
+    If set to None or '', Tensorboard logging is disabled.
+- **silent** : *bool, default=False*  
+    If True, all printing of training progress reports and other information to STDOUT are disabled.
+- **verbose** : *bool, default=True*  
+    Enables the maximum verbosity.
+- **m1_val_edataset**: *object, default=None*  
+    Object that holds the training dataset.
+    Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+    If *None*, `ExternalDataset` type is assigned automatically.
+- **m2_val_edataset**: *object, default=None*  
+	Same as *m1_val_edataset*.
+- **m1_val_annotations_file** : *str, default=None*  
+    Filename of the train annotations json file.
+    This file may only be provided in the *dataset_config.yaml* file.
+- **m2_val_annotations_file** : *str, default=None*  
+    Same as *m1_val_annotations_file*.
+- **m1_val_images_folder** : *str, default=None*  
+    Name of the folder that contains the train dataset images.
+    This folder may only be provided in the *dataset_config.yaml* file.
+    Note that this is a folder (or a nested-folder) name, not a path.
+- **m2_val_images_folder** : *str, default=None*  
     Same as *m1_val_images_folder*.
 
 #### `GemLearner.eval`
@@ -122,28 +123,29 @@ GemLearner.eval(self, m1_edataset, m2_edataset, m1_images_folder, m2_images_fold
 
 This method is used to evaluate a trained model on an evaluation dataset.
 Returns a dictionary containing stats regarding evaluation.
+
 Parameters:
-- **m1_edataset** : *object, default=None*
+- **m1_edataset** : *object, default=None*  
     ExternalDataset class object or DatasetIterator class object.
     Object that holds the evaluation dataset.
     If *None*, `ExternalDataset` type is assigned automatically.
 - **m2_edataset** : *object, default=None*
     Same as *m1_edataset*.
-- **m1_images_folder** : *str, default='val2017'*
+- **m1_images_folder** : *str, default='m1_val2017'*  
     Folder name that contains the dataset images.
     This folder may only be provided in the *dataset_config.yaml* file.
     Note that this is a folder (or a nested-folder) name, not a path.
-- **m2_images_folder** : *str, default='val2017'*
+- **m2_images_folder** : *str, default='m2_val2017'*  
     Same as *m1_images_folder*.
-- **annotations_folder** : *str, default='Annotations'*
+- **annotations_folder** : *str, default='Annotations'*  
     Folder name of the annotations json file.
     This folder may only be provided in the *dataset_config.yaml* file.
-- **m1_annotations_file** : *str, default='instances_val2017.json'*
+- **m1_annotations_file** : *str, default='m1_instances_val2017.json'*  
     Filename of the annotations json file.
     This file may only be provided in the *dataset_config.yaml* file.
-- **m2_annotations_file** : *str, default='instances_val2017.json'*
+- **m2_annotations_file** : *str, default='m2_instances_val2017.json'*  
     Same as *m1_annotations_file*.
-- **verbose** : *bool, default=True*
+- **verbose** : *bool, default=True*  
     Enables the maximum verbosity.
 
 #### `GemLearner.infer`
@@ -157,10 +159,10 @@ and its width and height, or returns an empty list if no detections were made.
 Also returns the weights of the two modalities.
 
 Parameters:
-- **m1_image** : *object*
+- **m1_image** : *object*  
     Image of type engine.data.Image class or np.array.
     Image to run inference on.
-- **m2_image** : *object*
+- **m2_image** : *object*  
     Same as *m1_image*.
 
 #### `GemLearner.save`
@@ -173,9 +175,9 @@ Inside this folder, the model is saved as *"name.pth"* and the metadata file as 
 If the directory already exists, the *"name.pth"* and *"name".json* files are overwritten.
 
 Parameters:
-- **path**: *str*
+- **path**: *str*  
   Path to save the model, including the filename.
-- **verbose**: *bool, default=False*
+- **verbose**: *bool, default=False*  
   Enables the maximum verbosity.
 
 
@@ -184,10 +186,10 @@ Parameters:
 GemLearner.load(self, path, verbose)
 ```
 This method is used to load a previously saved model from its saved folder.
-Loads the model from inside the directory of the path provided, using the metadata .json file included.
+Loads the model from inside the directory of the path provided, using the metadata.json file included.
 
 Parameters:
-- **path**: *str*
+- **path**: *str*  
   Path of the model to be loaded.
 - **verbose**: *bool, default=False*
   Enables maximum verbosity
@@ -199,9 +201,9 @@ GemLearner.download(self, path, mode, verbose)
 Download utility for downloading pretrained models and test data.
 
 Parameters:
-- **path** : *str, default=None*
+- **path** : *str, default=None*  
   Determines the path to the location where the downloaded files will be stored.
-- **mode** : *str, default='pretrained_gem'*
+- **mode** : *str, default='pretrained_gem'*  
   Determines the files that will be downloaded.
   Valid values are: "weights_detr", "pretrained_detr", "pretrained_gem", "test_data_l515" and "test_data_sample_images".
   In case of "weights_detr", the weigths for single modal DETR with *resnet50* backbone are downloaded.
@@ -209,12 +211,12 @@ Parameters:
   In case of "pretrained_gem", the weights from *'gem_scavg_e294_mAP0983_rn50_l515_7cls.pth'* (backbone: *'resnet50'*, fusion_method: *'scalar averaged'*, trained on *RGB-Infrared l515_dataset* are downloaded.
   In case of "test_data_l515", the *RGB-Infrared l515* dataset is downloaded from the OpenDR server.
   In case of "test_data_sample images", two sample images for testing the *infer* function are downloaded.
-- **verbose** : *bool, default=False*
+- **verbose** : *bool, default=False*  
   Enables the maximum verbosity.
 
 #### Examples
 
-* **Training example:.**
+* **Training example:**  
   The details of multimodal training and evaluation dataset should be described in the *dataset_config.yaml* file.
   The `batch_size` argument should be adjusted according to available memory.
 
