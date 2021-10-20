@@ -143,7 +143,7 @@ Parameters:
 
 #### `ObjectTracking2DDeepSortLearner.optimize`
 ```python
-ObjectTracking2DDeepSortLearner.optimize(self, do_constant_folding)
+ObjectTracking2DDeepSortLearner.optimize(self, do_constant_folding, img_size)
 ```
 
 This method is used to optimize a trained model to ONNX format which can be then used for inference.
@@ -153,6 +153,8 @@ Parameters:
   ONNX format optimization.
   If True, the constant-folding optimization is applied to the model during export.
   Constant-folding optimization will replace some of the operations that have all constant inputs, with pre-computed constant nodes.
+- **img_size**: *(int, int), default=(64, 128)*  
+  Specifies the size of an input image.
 
 #### `ObjectTracking2DDeepSortLearner.download`
 ```python
