@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+import cv2
 from abc import ABC, abstractmethod
 import numpy as np
 import torch
@@ -265,6 +267,23 @@ class Image(Data):
         """
         return str(self.data)
 
+    @classmethod
+    def open(cls, filename):
+        """
+        Create an Image from file and return it as RGB.
+        :param cls: reference to the Image class
+        :type cls: Image
+        :param filename: path to the image file
+        :type filename: str
+        :return: image read from the specified file
+        :rtype: Image
+        """
+        if not Path(filename).exists():
+            raise FileNotFoundError('The image file does not exist.')
+        data = cv2.imread(filename)
+        data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+        return cls(data)
+
 
 class Video(Data):
     """
@@ -407,7 +426,7 @@ class PointCloud(Data):
 
 class PointCloudWithCalibration(PointCloud):
     """
-    A class used for representing point cloud data with camera-lidar calibration matricies.
+    A class used for representing point cloud data with camera-lidar calibration matrices.
 
     This class provides abstract methods for:
     - returning a NumPy compatible representation of data (numpy())
@@ -472,3 +491,69 @@ class PointCloudWithCalibration(PointCloud):
         :rtype: str
         """
         return "Points: " + str(self.data) + "\nCalib:" + str(self.calib)
+
+
+class SkeletonSequence(Data):
+    """
+    A class used for representing a sequence of body skeletons in a video.
+
+    This class provides abstract methods for:
+    - returning a NumPy compatible representation of data (numpy())
+    """
+
+    def __init__(self, data=None):
+        super().__init__(data)
+
+        if data is not None:
+            self.data = data
+
+    @property
+    def data(self):
+        """
+        Getter of data. SkeletonSequence class returns a float32 5-D NumPy array.
+
+        :return: the actual data held by the object
+        :rtype: A float32 5-D NumPy array
+        """
+        if self._data is None:
+            raise ValueError("SkeletonSequence is empty")
+
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """
+        Setter for data.
+
+        :param: data to be used for creating a skeleton sequence
+        """
+        # Convert input data to a NumPy array
+        # Note that will also fail for non-numeric data (which is expected)
+        data = np.asarray(data, dtype=np.float32)
+
+        # Check if the supplied vector is 5D, e.g. (num_samples, channels, frames, joints, persons)
+        if len(data.shape) != 5:
+            raise ValueError(
+                "Only 5-D arrays are supported by SkeletonSequence. Please supply a data object that can be casted "
+                "into a 5-D NumPy array.")
+
+        self._data = data
+
+    def numpy(self):
+        """
+        Returns a NumPy-compatible representation of data.
+
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        # Since this class stores the data as NumPy arrays, we can directly return the data
+        return self.data
+
+    def __str__(self):
+        """
+        Returns a human-friendly string-based representation of the data.
+
+        :return: a human-friendly string-based representation of the data
+        :rtype: str
+        """
+        return str(self.data)

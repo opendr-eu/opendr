@@ -1,0 +1,177 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!--File includes-->
+  <xacro:include filename="$(find pal_wsg_gripper_description)/urdf/deg_to_rad.urdf.xacro" />
+  <xacro:include filename="$(find pal_wsg_gripper_description)/urdf/gripper.transmission.xacro" />
+  <xacro:include filename="$(find pal_wsg_gripper_description)/urdf/gripper.gazebo.xacro" />
+
+  <xacro:property name="lower" value="0.002" />
+  <xacro:property name="upper" value="0.034" />
+  <xacro:property name="gripper_eps" value="0.000" />
+
+  <xacro:macro name="pal_wsg_gripper" params="name parent *origin">
+
+  <!-- Tool Link -->
+    <link name="${name}_tool_link">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <mass value="0.0001" />
+        <inertia ixx="0.00001" ixy="0.0" ixz="0.0"
+                 iyy="0.00001" iyz="0.0"
+                 izz="0.00001" />
+      </inertial>
+    </link>
+
+    <joint name="${name}_tool_joint" type="fixed">
+      <insert_block name="origin"/>
+      <parent link="${parent}" />
+      <child link="${name}_tool_link" />
+       <axis xyz="0 0 0" />
+    </joint>
+
+    <link name="${name}_link">
+      <inertial>
+        <origin xyz="0.00449 -0.00004 -0.04001" rpy="0.00000 0.00000 0.00000"/>
+        <mass value="0.63871"/>
+        <inertia ixx="0.00040306000" ixy="-0.00000348000" ixz="0.00005193000"
+                 iyy="0.00105906000" iyz="-0.00000076000"
+                 izz="0.00076811000"/>
+      </inertial>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://pal_wsg_gripper_description/meshes/gripper_link.stl" scale="1 1 1"/>
+        </geometry>
+        <material name="White" />
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://pal_wsg_gripper_description/meshes/gripper_link_collision.dae" scale="1 1 1"/>
+        </geometry>
+      </collision>
+    </link>
+    <!--
+    <gazebo reference="${name}_link">
+      <material>Gazebo/White</material>
+    </gazebo> -->
+
+    <joint name="${name}_joint" type="fixed">
+      <insert_block name="origin"/>
+      <parent link="${parent}"/>
+      <child link="${name}_link"/>
+      <axis xyz="0 0 0" />
+    </joint>
+       
+    <link name="${name}_left_finger_link">
+      <inertial>
+        <origin xyz="0.03870 -0.00286 -0.10106" rpy="0.00000 0.00000 0.00000"/>
+        <mass value="0.06286"/>
+        <inertia ixx="0.00004502000" ixy="0.00000284000" ixz="-0.00000710000"
+                 iyy="0.00004669000" iyz="-0.00000559000"
+                 izz="0.00001209000"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://pal_wsg_gripper_description/meshes/gripper_finger_link.stl" scale="1 1 1"/>
+        </geometry>
+        <material name="Black"/>
+      </visual>
+      <collision>
+        <!-- <origin xyz="0 0 0" rpy="0 0 0" /> -->        
+        <origin xyz="0.043 0 -0.12" rpy="0 0 0" />
+        <geometry>
+          <!-- <mesh filename="package://pal_wsg_gripper_description/meshes/gripper_finger_link_collision.dae" scale="1 1 1"/> -->
+          <box size="0.022 0.03 0.07"/>
+        </geometry>
+      </collision>
+    </link>
+    <gazebo reference="${name}_left_finger_link">
+      <material>Gazebo/Black</material>
+    </gazebo> -->
+
+    <joint name="${name}_finger_joint" type="prismatic">
+      <parent link="${name}_link"/>
+      <child link="${name}_left_finger_link"/>
+      <origin xyz="-${upper} 0.00000 0.00000" 
+              rpy="${0.00000 * deg_to_rad} ${0.00000 * deg_to_rad} ${0.00000 * deg_to_rad}"/>
+      <axis xyz="1 0 0" />
+      <limit effort="500" lower="${lower}" upper="${upper}" velocity="0.4" />
+      <calibration rising="0.0" />
+      <dynamics damping="80" />
+      <safety_controller k_position="20"
+                         k_velocity="20"
+                         soft_lower_limit="${lower + gripper_eps}"
+                         soft_upper_limit="${upper - gripper_eps}" />
+    </joint>
+
+
+    <link name="${name}_right_finger_link">
+      <inertial>
+        <origin xyz="0.03870 -0.00286 -0.10106" rpy="0.00000 0.00000 0.00000"/>
+        <mass value="0.06286"/>
+        <inertia ixx="0.00004502000" ixy="0.00000284000" ixz="-0.00000710000"
+                 iyy="0.00004669000" iyz="-0.00000559000"
+                 izz="0.00001209000"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://pal_wsg_gripper_description/meshes/gripper_finger_link.stl" scale="-1 -1 1"/>
+        </geometry>
+        <material name="Black"/>
+      </visual>
+      <collision>
+        <!-- <origin xyz="0 0 0" rpy="0 0 0" /> -->
+        <origin xyz="-0.043 0 -0.12" rpy="0 0 0" />
+        <geometry>
+          <!-- <mesh filename="package://pal_wsg_gripper_description/meshes/gripper_finger_link_collision.dae" scale="-1 -1 1"/> -->
+          <box size="0.022 0.03 0.07"/>
+        </geometry>
+      </collision>
+    </link>
+    <gazebo reference="${name}_right_finger_link">
+      <material>Gazebo/Black</material>
+    </gazebo>
+
+
+    <joint name="${name}_right_finger_joint" type="prismatic">
+      <parent link="${name}_link"/>
+      <child link="${name}_right_finger_link"/>
+      <origin xyz="${upper} 0.00000 0.00000" 
+              rpy="${0.00000 * deg_to_rad} ${0.00000 * deg_to_rad} ${0.00000 * deg_to_rad}"/>
+      <axis xyz="-1 0 0" />
+      <limit effort="500" lower="${lower}" upper="${upper}" velocity="0.4" />
+      <mimic joint="${name}_finger_joint" multiplier="${1.0}" offset="0.0"/>
+    </joint>
+
+
+    <!-- Grasping frame -->
+    <joint name="${name}_grasping_frame_joint" type="fixed">
+      <parent link="${name}_link" />
+      <child link="${name}_grasping_frame" />
+      <origin xyz="0 0 -0.12" rpy="-1.5708 1.5708 0" />
+    </joint>
+    <link name="${name}_grasping_frame">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <mass value="0.0001" />
+        <inertia ixx="0.00001" ixy="0.0" ixz="0.0"
+                 iyy="0.00001" iyz="0.0"
+                 izz="0.00001" />
+        </inertial>
+    </link>
+
+
+    <xacro:parallel_fingers_joint joint_name_to_mimic="${name}_finger" virtual_joint_name="${name}_right_finger" />    
+    <xacro:gripper_simple_transmission name="${name}" reduction="2.0"/>
+    
+
+  </xacro:macro>
+</robot>
+

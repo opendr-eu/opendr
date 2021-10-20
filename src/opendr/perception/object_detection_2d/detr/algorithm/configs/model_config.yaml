@@ -1,0 +1,48 @@
+# * Input Image
+input_size: [800, 800]
+image_mean: [0.485, 0.456, 0.406]
+image_std: [0.229, 0.224, 0.225]
+
+# * Model 
+lr_drop: 200
+weight_decay: 0.0001
+lr_backbone: 0.00001
+clip_max_norm: 0.1 # Gradient clipping max norm
+frozen_weights: null # Path to the pretrained model. If set only the mask head will be trained
+dilation: False # If true we replace stride with dilation in the last convolutional block (DC5)
+position_embedding: "sine" # Choices: {sine, learned}. Type of positional embedding to use on top of the image features
+
+# * Transformer
+enc_layers: 6 # Number of encoding layers in the transformer
+dec_layers: 6 # Number of decoding layers in the transformer
+dim_feedforward: 2048 # Intermediate size of the feedforward layers in the transformer blocks
+hidden_dim: 256 # Size of the embeddings (dimension of the transformer)
+dropout: 0.1 # Dropout applied in the transformer
+nheads: 8 # Number of attention heads inside the transformer's attentions
+num_queries: 100 # Number of query slots
+pre_norm: False
+
+# * Loss
+aux_loss: False # Disables auxiliary decoding losses (loss at each layer)
+
+# * Matcher
+set_cost_class: 1 # Class coefficient in the matching cost
+set_cost_bbox: 5 # L1 box coefficient in the matching cost
+set_cost_giou: 2 # giou box coefficient in the matching cost
+
+# * Loss coefficients
+mask_loss_coef: 1
+dice_loss_coef: 1
+bbox_loss_coef: 5
+giou_loss_coef: 2
+eos_coef: 0.1 # Relative classification weight of the no-object class
+
+# * dataset parameters
+remove_difficult: True
+seed: 42
+num_workers: 2
+
+# * distributed training parameters
+world_size: 1 # Number of distributed processes
+dist_url:  "env: //" # Url used to set up distributed training
+gpu: null

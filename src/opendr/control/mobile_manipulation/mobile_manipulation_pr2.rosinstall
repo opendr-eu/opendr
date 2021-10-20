@@ -1,0 +1,1 @@
+- git: {local-name: moveit_pr2,             uri: 'https://github.com/ros-planning/moveit_pr2.git', version: 'melodic-devel'}
