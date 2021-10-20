@@ -113,7 +113,7 @@ Parameters:
 #### `ROSBridge.to_ros_3Dpose`
 
 ```python
-ROSBridge.to_ros_pose(self,
+ROSBridge.to_ros_3Dpose(self,
                       opendr_pose)
 ```
 Converts an OpenDR pose into a ROS ```geometry_msgs.msg.Pose``` message.
@@ -126,7 +126,7 @@ Parameters:
   #### `ROSBridge.from_ros_3Dpose`
 
 ```python
-ROSBridge.from_ros_pose(self,
+ROSBridge.from_ros_3Dpose(self,
                         ros_pose)
 ```
 
