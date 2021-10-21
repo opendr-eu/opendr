@@ -7,11 +7,20 @@ This folder contains an implementation of GEM Multimodal Object Detector in an O
 
 This module currently depends on OpenDR's DETR module which is a wrapper of [facebook/detr](https://github.com/facebookresearch/detr) with modifications to make them compatible with OpenDR specifications. The GEM paper can be found here: [GEM: Glare or Gloom, I Can Still See You -- End-to-End Multimodal Object Detection](https://arxiv.org/abs/2102.12319) by Osama Mazhar, Jens Kober and Robert Babuska.
 
-First we performed modifications in the single modal DETR which are detailed in `opendr.perception.object_detection_2d.detr` package. To support multimodal inputs and allow different fusion methods, we performed additional modifications in this package.
+First we performed modifications in the single modal [DETR module](../detr/README.md). To support multimodal inputs and allow different fusion methods, we performed additional modifications in this package.
 
 The modifications are:
-- (to be updated)
+- In [transforms.py](algorithm/datasets/transforms.py), the following classes are added: *seededRandomCrop* and *RandomShadows*.
+- In [mm_detr.py](algorithm/models/mm_detr.py), the *sc_avg_detr* and *avg_baseline* classes are added in order to allow multimodal inputs.
 
 DETR was originally licensed under the Apache 2.0 [license](https://github.com/facebookresearch/detr/blob/master/LICENSE).
 
-The modifications are also licensed under the Apache 2.0 license by OpenDR European Project.
+Also, the MobileNetV2 backbone implementation in [backbone_mobilenetv2.py](algorithm/models/backbone_mobilenetv2.py) is based on the [implementation by Zhiqiang Wang](https://github.com/zhiqwang/demonet/blob/dd4cec83abf5bd937ebf3ebc767972431223d33e/demonet/models/backbone.py).
+Here, the modifications are:
+- The extra blocks are removed from the *BackboneBase* class
+- The *InvertedResidual* and *VonvBNActivation* classes are removed
+- The *Joiner* class is added
+
+The MobileNetV2 implementation was or originally licensed under the Apache 2.0 [license](https://github.com/zhiqwang/demonet/blob/dd4cec83abf5bd937ebf3ebc767972431223d33e/LICENSE)
+
+All modifications are licensed under the Apache 2.0 [license](../../../../../LICENSE) by OpenDR European Project.
