@@ -20,7 +20,6 @@ from functools import partial
 from pathlib import Path
 from typing import Tuple, Any, Dict, Union, List
 
-import cv2
 import numpy as np
 from PIL import Image as PilImage
 from cityscapesscripts.evaluation.evalPanopticSemanticLabeling import pq_compute_multi_core, average_pq
@@ -214,7 +213,7 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
         :rtype: Tuple of (Image, None)
         """
         image_filename = self._image_filenames[idx]
-        image = Image(cv2.imread(str(image_filename)))
+        image = Image.open(str(image_filename))
 
         return image, None
 

@@ -16,13 +16,11 @@
 import argparse
 from typing import Optional
 
-import cv2
 import matplotlib
 import rospy
 from sensor_msgs.msg import Image as ROS_Image
 
 from opendr_bridge import ROSBridge
-from opendr.engine.data import Image
 from opendr.perception.panoptic_segmentation import EfficientPsLearner
 
 # Avoid having a matplotlib GUI in a separate thread in the visualize() function
@@ -114,9 +112,6 @@ class EfficientPsNode:
         """
         # Convert sensor_msgs.msg.Image to OpenDR Image
         image = self._bridge.from_ros_image(data)
-
-        # ToDo: Adapt this according to Issue #131
-        image = Image(cv2.cvtColor(image.numpy(), cv2.COLOR_RGB2BGR))
 
         try:
             # Retrieve a list of two OpenDR heatmaps: [instance map, semantic map]
