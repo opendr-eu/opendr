@@ -170,13 +170,9 @@ class GemLearner(Learner):
         if not os.path.exists(path):
             os.makedirs(path)
 
-        model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
-                          "inference_params": {'threshold': self.threshold}, "optimized": None, "optimizer_info": {},
-                          "backbone": self.backbone}
-
-        model_metadata["model_paths"] = [folder_name_no_ext + ".pth"]
-        model_metadata["optimized"] = False
-        model_metadata["format"] = "pth"
+        model_metadata = {"model_paths": [folder_name_no_ext + ".pth"], "framework": "pytorch", "format": "pth",
+                          "has_data": False, "inference_params": {'threshold': self.threshold}, "optimized": False,
+                          "optimizer_info": {}, "backbone": self.backbone}
 
         custom_dict = {'state_dict': self.model.state_dict()}
         torch.save(custom_dict, os.path.join(full_path_to_model_folder, model_metadata["model_paths"][0]))
