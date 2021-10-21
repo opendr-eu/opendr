@@ -17,20 +17,11 @@ import os
 from data_generators import camera_image_generator, disk_image_generator, disk_image_with_detections_generator
 import threading
 import time
-from typing import Dict
 import numpy as np
-import torch
-import torchvision
 import cv2
-from imutils import resize
 from flask import Flask, Response, render_template
 from imutils.video import VideoStream
-from pathlib import Path
-import pandas as pd
 from opendr.engine.target import (
-    TrackingAnnotation,
-    TrackingAnnotation3D,
-    TrackingAnnotation3DList,
     TrackingAnnotationList,
 )
 
@@ -41,7 +32,6 @@ from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_l
 from opendr.perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
     ObjectTracking2DDeepSortLearner,
 )
-from opendr.engine.data import ImageWithDetections, Video, Image
 
 TEXT_COLOR = (255, 0, 255)  # B G R
 
@@ -172,7 +162,7 @@ def draw_predictions(frame, predictions: TrackingAnnotationList, is_centered=Fal
     w, h, _ = frame.shape
 
     for prediction in predictions.boxes:
-        prediction: TrackingAnnotation = prediction
+        prediction = prediction
 
         if not hasattr(prediction, "id"):
             prediction.id = 0
@@ -227,7 +217,7 @@ def fair_mot_tracking(model_name, device):
         try:
 
             t = time.time()
-            image: Image = next(image_generator)
+            image = next(image_generator)
             image_time = time.time() - t
 
             t = time.time()
@@ -354,9 +344,9 @@ def generate():
         # yield the output frame in the byte format
         yield (
             b"--frame\r\n"
-            b"Content-Type: image/jpeg\r\n\r\n"
-            + bytearray(encodedImage)
-            + b"\r\n"
+            b"Content-Type: image/jpeg\r\n\r\n" +
+            bytearray(encodedImage) +
+            b"\r\n"
         )
 
 

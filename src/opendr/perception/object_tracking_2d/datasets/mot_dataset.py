@@ -159,7 +159,7 @@ class RawMotDatasetIterator(DatasetIterator):
                 .replace(".jpg", ".txt")
                 for x in self.img_files[ds]
             ]
-        
+
         for ds, label_paths in self.label_files.items():
             max_index = -1
             if scan_labels:
