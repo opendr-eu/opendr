@@ -31,6 +31,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [matchboxnet Module](matchboxnet.md)
         - [voxel-object-detection-3d Module](voxel-object-detection-3d.md)
         - [object_tracking_2d_fair_mot Module](object-tracking-2d-fair-mot.md)
+        - [object_tracking_2d_deep_sort Module](object-tracking-2d-deep-sort.md)
         - [object_tracking_3d_ab3dmot Module](object-tracking-3d-ab3dmot.md)
         - [multilinear_compressive_learning Module](multilinear_compressive_learning.md)
         - [skeleton_based_action_recognition](skeleton_based_action_recognition.md)
