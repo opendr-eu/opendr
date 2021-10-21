@@ -14,7 +14,7 @@
 
 import argparse
 import os
-from data_generators import camera_image_generator, disk_image_generator
+from data_generators import camera_image_generator, disk_image_generator, disk_image_with_detections_generator
 import threading
 import time
 from typing import Dict
@@ -27,11 +27,21 @@ from flask import Flask, Response, render_template
 from imutils.video import VideoStream
 from pathlib import Path
 import pandas as pd
-from opendr.engine.target import TrackingAnnotation, TrackingAnnotation3D, TrackingAnnotation3DList, TrackingAnnotationList
+from opendr.engine.target import (
+    TrackingAnnotation,
+    TrackingAnnotation3D,
+    TrackingAnnotation3DList,
+    TrackingAnnotationList,
+)
 
 # OpenDR imports
-from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import ObjectTracking2DFairMotLearner
-from opendr.engine.data import Video, Image
+from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
+    ObjectTracking2DFairMotLearner,
+)
+from opendr.perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
+    ObjectTracking2DDeepSortLearner,
+)
+from opendr.engine.data import ImageWithDetections, Video, Image
 
 TEXT_COLOR = (255, 0, 255)  # B G R
 
@@ -42,7 +52,65 @@ TEXT_COLOR = (255, 0, 255)  # B G R
 output_frame = None
 image_generator = None
 lock = threading.Lock()
-colors = [(255, 0, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0), (35, 69, 55), (43, 63, 54), (37, 70, 54), (50, 67, 54), (51, 66, 49), (43, 75, 64), (55, 65, 42), (53, 63, 42), (43, 46, 38), (41, 41, 36), (70, 54, 35), (70, 54, 41), (65, 54, 40), (63, 55, 38), (63, 54, 35), (83, 73, 49), (81, 65, 45), (75, 65, 42), (85, 74, 60), (79, 64, 55), (75, 67, 59), (74, 75, 70), (70, 71, 62), (57, 62, 46), (68, 54, 45), (66, 52, 43), (69, 54, 43), (73, 59, 47), (30, 52, 66), (41, 55, 65), (36, 54, 64), (44, 87, 120), (124, 129, 124), (109, 120, 118), (119, 132, 142), (105, 125, 137), (108, 94, 83), (93, 78, 70), (90, 76, 66), (90, 76, 66), (90, 77, 65), (91, 82, 68), (85, 77, 66), (84, 79, 58), (133, 113, 88), (130, 127, 121), (120, 109, 95), (112, 110, 102), (113, 110, 97), (103, 109, 99), (122, 124, 118), (198, 234, 221), (194, 230, 236)]
+colors = [
+    (255, 0, 255),
+    (0, 0, 255),
+    (0, 255, 0),
+    (255, 0, 0),
+    (35, 69, 55),
+    (43, 63, 54),
+    (37, 70, 54),
+    (50, 67, 54),
+    (51, 66, 49),
+    (43, 75, 64),
+    (55, 65, 42),
+    (53, 63, 42),
+    (43, 46, 38),
+    (41, 41, 36),
+    (70, 54, 35),
+    (70, 54, 41),
+    (65, 54, 40),
+    (63, 55, 38),
+    (63, 54, 35),
+    (83, 73, 49),
+    (81, 65, 45),
+    (75, 65, 42),
+    (85, 74, 60),
+    (79, 64, 55),
+    (75, 67, 59),
+    (74, 75, 70),
+    (70, 71, 62),
+    (57, 62, 46),
+    (68, 54, 45),
+    (66, 52, 43),
+    (69, 54, 43),
+    (73, 59, 47),
+    (30, 52, 66),
+    (41, 55, 65),
+    (36, 54, 64),
+    (44, 87, 120),
+    (124, 129, 124),
+    (109, 120, 118),
+    (119, 132, 142),
+    (105, 125, 137),
+    (108, 94, 83),
+    (93, 78, 70),
+    (90, 76, 66),
+    (90, 76, 66),
+    (90, 77, 65),
+    (91, 82, 68),
+    (85, 77, 66),
+    (84, 79, 58),
+    (133, 113, 88),
+    (130, 127, 121),
+    (120, 109, 95),
+    (112, 110, 102),
+    (113, 110, 97),
+    (103, 109, 99),
+    (122, 124, 118),
+    (198, 234, 221),
+    (194, 230, 236),
+]
 
 
 # initialize a flask object
@@ -62,7 +130,7 @@ def runnig_fps(alpha=0.1):
     def wrapped():
         nonlocal t0, alpha, fps_avg
         t1 = time.time()
-        delta = (t1 - t0)
+        delta = t1 - t0
         t0 = t1
         fps_avg = alpha * (1 / delta) + (1 - alpha) * fps_avg
         return fps_avg
@@ -99,17 +167,39 @@ def draw_dict(frame, dict, scale=5):
         i += 1
 
 
-
-def draw_predictions(frame, predictions: TrackingAnnotationList):
+def draw_predictions(frame, predictions: TrackingAnnotationList, is_centered=False, is_flipped_xy=True):
     global colors
-
+    w, h, _ = frame.shape
 
     for prediction in predictions.boxes:
         prediction: TrackingAnnotation = prediction
 
-        color = colors[prediction.id * 7 % len(colors)]
+        if not hasattr(prediction, "id"):
+            prediction.id = 0
 
-        cv2.rectangle(frame, (int(prediction.top), int(prediction.left)), (int(prediction.top + prediction.width), int(prediction.left + prediction.height)), color, 2)
+        color = colors[int(prediction.id) * 7 % len(colors)]
+
+        x = prediction.left
+        y = prediction.top
+
+        if is_flipped_xy:
+            x = prediction.top
+            y = prediction.left
+
+        if is_centered:
+            x -= prediction.width
+            y -= prediction.height
+
+        cv2.rectangle(
+            frame,
+            (int(x), int(y)),
+            (
+                int(x + prediction.width),
+                int(y + prediction.height),
+            ),
+            color,
+            2,
+        )
 
 
 def fair_mot_tracking(model_name, device):
@@ -124,9 +214,7 @@ def fair_mot_tracking(model_name, device):
 
         # Init model
         learner = ObjectTracking2DFairMotLearner(device=device)
-        if not os.path.exists(
-            "./models/" + model_name
-        ):
+        if not os.path.exists("./models/" + model_name):
             learner.download(model_name, "./models")
         learner.load("./models/" + model_name, verbose=True)
 
@@ -149,8 +237,10 @@ def fair_mot_tracking(model_name, device):
             predict_time = time.time() - t
             t = time.time()
 
-            frame = np.ascontiguousarray(np.moveaxis(image.data, [0, 1, 2], [2, 0, 1]).copy())
-            
+            frame = np.ascontiguousarray(
+                np.moveaxis(image.data, [0, 1, 2], [2, 0, 1]).copy()
+            )
+
             if predict:
                 draw_predictions(frame, predictions)
 
@@ -168,9 +258,71 @@ def fair_mot_tracking(model_name, device):
                     "draw": str(int(draw_time * 100 / total_time)) + "%",
                     # "tvec": tvec, "rvec": rvec, "f": [fx, fy],
                 },
-                1
+                1,
             )
 
+            with lock:
+                output_frame = frame.copy()
+        except Exception as e:
+            print(e)
+            raise e
+
+
+def deep_sort_tracking(model_name, device):
+    global vs, output_frame, lock
+
+    # Prep stats
+    fps = runnig_fps()
+
+    predict = model_name is not None and model_name != "None"
+
+    if predict:
+        learner = ObjectTracking2DDeepSortLearner(device=device)
+        if not os.path.exists("./models/" + model_name):
+            learner.download(model_name, "./models")
+        learner.load("./models/" + model_name, verbose=True)
+
+        print("Learner created")
+    else:
+        learner = None
+
+    # Loop over frames from the video stream
+    while True:
+        try:
+
+            t = time.time()
+            image_with_detections = next(image_generator)
+            image_time = time.time() - t
+
+            t = time.time()
+            if predict:
+                predictions = learner.infer(image_with_detections)
+                print("Found", len(predictions), "objects")
+            predict_time = time.time() - t
+            t = time.time()
+
+            frame = np.ascontiguousarray(
+                np.moveaxis(image_with_detections.data, [0, 1, 2], [2, 0, 1]).copy()
+            )
+
+            if predict:
+                draw_predictions(frame, predictions, is_centered=False, is_flipped_xy=False)
+
+            frame = cv2.flip(frame, 1)
+            draw_time = time.time() - t
+
+            total_time = predict_time + image_time + draw_time
+
+            draw_dict(
+                frame,
+                {
+                    "FPS": fps(),
+                    "predict": str(int(predict_time * 100 / total_time)) + "%",
+                    "get data": str(int(image_time * 100 / total_time)) + "%",
+                    "draw": str(int(draw_time * 100 / total_time)) + "%",
+                },
+                1,
+            )
 
             with lock:
                 output_frame = frame.copy()
@@ -202,7 +354,9 @@ def generate():
         # yield the output frame in the byte format
         yield (
             b"--frame\r\n"
-            b"Content-Type: image/jpeg\r\n\r\n" + bytearray(encodedImage) + b"\r\n"
+            b"Content-Type: image/jpeg\r\n\r\n"
+            + bytearray(encodedImage)
+            + b"\r\n"
         )
 
 
@@ -210,7 +364,9 @@ def generate():
 def video_feed():
     # return the response generated along with the specific media
     # type (mime type)
-    return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
+    return Response(
+        generate(), mimetype="multipart/x-mixed-replace; boundary=frame"
+    )
 
 
 # check to see if this is the main thread of execution
@@ -264,7 +420,7 @@ if __name__ == "__main__":
         type=str,
         default="fair_mot",
         help="Which algortihm to run",
-        choices=["fair_mot"],
+        choices=["fair_mot", "deep_sort"],
     )
     ap.add_argument(
         "-dev",
@@ -279,6 +435,9 @@ if __name__ == "__main__":
         "disk": lambda: disk_image_generator(
             args["data_path"], {"mot20": args["data_splits"]}, count=None
         ),
+        "disk_with_detections": lambda: disk_image_with_detections_generator(
+            args["data_path"], {"mot20": args["data_splits"]}, count=None
+        ),
         "camera": lambda: camera_image_generator(
             VideoStream(src=args["video_source"]).start()
         ),
@@ -288,10 +447,13 @@ if __name__ == "__main__":
 
     algorithm = {
         "fair_mot": fair_mot_tracking,
+        "deep_sort": deep_sort_tracking,
     }[args["algorithm"]]
 
     # start a thread that will perform motion detection
-    t = threading.Thread(target=algorithm, args=(args["model_name"], args["device"]))
+    t = threading.Thread(
+        target=algorithm, args=(args["model_name"], args["device"])
+    )
     t.daemon = True
     t.start()
 
@@ -303,4 +465,3 @@ if __name__ == "__main__":
         threaded=True,
         use_reloader=False,
     )
-
