@@ -20,8 +20,6 @@
     The coordinates that are printed can be used to calculate the homography matrix for aligning the modalities.
 """
 
-from argparse import ArgumentParser
-
 import cv2
 import argparse
 

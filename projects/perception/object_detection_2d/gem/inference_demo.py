@@ -18,7 +18,6 @@ import argparse
 from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
 from opendr.perception.object_detection_2d.gem.algorithm.util.draw import plot_results
 import cv2
-from matplotlib import pyplot as plt
 
 
 if __name__ == '__main__':
