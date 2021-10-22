@@ -1,0 +1,7 @@
+sensor_msgs/Image rgb_img
+sensor_msgs/Image msk_img
+std_msgs/Bool extract_pose
+---
+shape_msgs/Mesh mesh
+std_msgs/ColorRGBA[] vertex_colors
+vision_msgs/Detection3DArray pose
