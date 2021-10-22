@@ -117,14 +117,15 @@ class EfficientPsNode:
             # Retrieve a list of two OpenDR heatmaps: [instance map, semantic map]
             prediction = self._learner.infer(image)
 
-            if self._visualization_publisher is not None:
+            # The output topics are only published if there is at least one subscriber
+            if self._visualization_publisher is not None and self._visualization_publisher.get_num_connections() > 0:
                 panoptic_image = EfficientPsLearner.visualize(image, prediction, show_figure=False,
                                                               detailed=self.detailed_visualization)
                 self._visualization_publisher.publish(self._bridge.to_ros_image(panoptic_image))
 
-            if self._instance_heatmap_publisher is not None:
+            if self._instance_heatmap_publisher is not None and self._instance_heatmap_publisher.get_num_connections() > 0:
                 self._instance_heatmap_publisher.publish(self._bridge.to_ros_image(prediction[0]))
-            if self._semantic_heatmap_publisher is not None:
+            if self._semantic_heatmap_publisher is not None and self._semantic_heatmap_publisher.get_num_connections() > 0:
                 self._semantic_heatmap_publisher.publish(self._bridge.to_ros_image(prediction[1]))
 
         except Exception:
@@ -133,15 +134,15 @@ class EfficientPsNode:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--checkpoint', type=str, required=True, help='load the model weights from the provided path')
-    parser.add_argument('--image_topic', type=str, required=True, help='listen to images on this topic')
+    parser.add_argument('checkpoint', type=str, help='load the model weights from the provided path')
+    parser.add_argument('image_topic', type=str, help='listen to images on this topic')
     parser.add_argument('--heatmap_topic', type=str, help='publish the semantic and instance maps on this topic')
     parser.add_argument('--visualization_topic', type=str,
                         help='publish the panoptic segmentation map as an RGB image on this topic or a more detailed \
                               overview if using the --detailed_visualization flag')
     parser.add_argument('--detailed_visualization', action='store_true',
-                        help='generate a combined overview of the input RGB and the semantic, instance, and panoptic \
-                              segmentation maps')
+                        help='generate a combined overview of the input RGB image and the semantic, instance, and \
+                              panoptic segmentation maps')
     args = parser.parse_args()
 
     efficient_ps_node = EfficientPsNode(args.checkpoint,
