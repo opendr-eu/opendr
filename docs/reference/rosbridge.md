@@ -95,10 +95,87 @@ ROSBridge.from_ros_boxes(self,
                          ros_detections)
 ```
 Converts a ROS Detection2DArray message with bounding boxes into an OpenDR BoundingBoxList
-        
+
+#### `ROSBridge.from_ros_3Dpose`
+
+```python
+ROSBridge.from_ros_3Dpose(self,
+                        ros_pose)
+```
+
+Converts a ROS pose into an OpenDR pose (used for a 3D pose).
+
+Parameters:
+
+- **ros_pose**: *geometry_msgs.msg.Pose*  
+  ROS pose to be converted into an OpenDR pose.
+       
+#### `ROSBridge.to_ros_3Dpose`
+
+```python
+ROSBridge.to_ros_3Dpose(self,
+                      opendr_pose)
+```
+Converts an OpenDR pose into a ROS ```geometry_msgs.msg.Pose``` message.
+
+Parameters:
+
+- **opendr_pose**: *engine.target.Pose*  
+  OpenDR pose to be converted to ```geometry_msgs.msg.Pose``` message.
+       
+#### `ROSBridge.to_ros_mesh`
+
+```python
+ROSBridge.to_ros_mesh(self,
+                      vertices, faces)
+```
+Converts a triangle mesh consisting of vertices, faces into a ROS ```shape_msgs.msg.Mesh``` message.
+
+Parameters:
+
+- **vertices**: *numpy.ndarray*  
+  Vertices (Nx3) of a triangle mesh.
+- **faces**: *numpy.ndarray*  
+  Faces (Nx3) of a triangle mesh. 
+  
+  #### `ROSBridge.to_ros_colors`
+
+```python
+ROSBridge.to_ros_colors(self,
+                      colors)
+```
+Converts a list of colors into a list of ROS ```std_msgs.msg.colorRGBA``` messages.
+
+Parameters:
+
+- **colors**: *list of list of size 3*  
+  List of colors to be converted to a list of ROS colors.
+  
+  #### `ROSBridge.from_ros_mesh`
+
+```python
+ROSBridge.from_ros_mesh(self,
+                      ros_mesh)
+```
+Converts a ROS mesh into arrays of vertices and faces of a triangle mesh.
+
+Parameters:
+- **ros_mesh**: *shape_msgs.msg.Mesh* 
+  
+  #### `ROSBridge.from_ros_colors`
+
+```python
+ROSBridge.from_ros_colors(self,
+                      ros_colors)
+```
+Converts a list of ROS colors into an array (Nx3).
+
+Parameters:
+- **ros_colors**: list of *std_msgs.msg.colorRGBA* 
 
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
 2. `ros_bridge.msg.Pose` is used as an equivelant to `engine.target.Pose`
 3. `vision_msgs.msg.Detection2DArray` is used as an equivalent to `engine.target.BoundingBoxList`
 4. `vision_msgs.msg.Detection2D` is used as an equivalent to `engine.target.BoundingBox`
+5. `geometry_msgs.msg.Pose`  is used as an equivelant to `engine.target.Pose` for 3D poses conversion only.

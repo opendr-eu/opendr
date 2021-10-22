@@ -29,6 +29,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [rgbd_hand_gesture_learner Module](rgbd_hand_gesture_learner.md)
         - [gated_recurrent_unit](gated-recurrent-unit-learner.md)
         - [matchboxnet Module](matchboxnet.md)
+        - [object_detection_2d_gem Module](gem.md)
         - [voxel-object-detection-3d Module](voxel-object-detection-3d.md)
         - [object_tracking_2d_fair_mot Module](object-tracking-2d-fair-mot.md)
         - [object_tracking_2d_deep_sort Module](object-tracking-2d-deep-sort.md)
@@ -40,7 +41,9 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [landmark_based_facial_expression_recognition](landmark-based-facial-expression-recognition.md)
 
     - `control` Module
-      - [mobile_manipulation Module](mobile-manipulation.md)
+        - [mobile_manipulation Module](mobile-manipulation.md)
+    - `simulation` Module
+        - [human_model_generation Module](human_model_generation.md)
 - [ROSBridge Package](rosbridge.md)
 - [C Inference API](c-api.md)
     - [data.h](c-data-h.md)

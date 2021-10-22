@@ -29,5 +29,6 @@ include_directories(
 catkin_install_python(PROGRAMS
    scripts/pose_estimation.py
    scripts/detr.py
+   scripts/gem.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
