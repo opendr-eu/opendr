@@ -5,7 +5,7 @@
   </a>
 </div>
 
-Live demo of online human activity recognition using the [OpenDR toolkit](https://opendr.eu).
+Live demo of 2D object tracking using the [OpenDR toolkit](https://opendr.eu).
 It captures the video stream from either a camera or disk, performs frame-by-frame predictions, and presents the results on a web UI.
 
 
