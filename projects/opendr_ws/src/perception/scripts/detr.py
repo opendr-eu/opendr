@@ -89,9 +89,9 @@ class DetrNode:
             self.detection_publisher.publish(ros_detection)
             # We get can the data back using self.bridge.from_ros_bounding_box_list(ros_detection)
             # e.g., opendr_detection = self.bridge.from_ros_bounding_box_list(ros_detection)
-            draw(image, boxes)
 
         if self.image_publisher is not None:
+            draw(image, boxes)
             message = self.bridge.to_ros_image(np.uint8(image), encoding='bgr8')
             self.image_publisher.publish(message)
 
