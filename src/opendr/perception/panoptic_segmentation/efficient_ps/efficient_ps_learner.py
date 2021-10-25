@@ -411,7 +411,7 @@ class EfficientPsLearner(Learner):
                         'Class names are not saved in the checkpoint\'s meta data, use Cityscapes classes by default.')
                     self.model.CLASSES = get_classes('cityscapes')
                 self._is_model_trained = True
-            except RuntimeError:
+            except (RuntimeError, OSError):
                 return False
             return True
         else:  # OpenDR specification
@@ -589,7 +589,7 @@ class EfficientPsLearner(Learner):
         """
         Getter of number of workers used in the data loaders.
 
-        :return: number of workers
+        :return: Number of workers
         :rtype: int
         """
         return self._num_workers
@@ -599,7 +599,7 @@ class EfficientPsLearner(Learner):
         """
         Setter for number of workers used in the data loaders. This will perform the necessary type and value checking.
 
-        :param value: number of workers
+        :param value: Number of workers
         :type value: int
         """
         if not isinstance(value, int):

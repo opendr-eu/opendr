@@ -81,3 +81,18 @@ rosrun perception gem.py
 ```
 
 5. You can examine the annotated image stream using `rqt_image_view` (select one of the topics `/opendr/color_detection_annotated` or `/opendr/infra_detection_annotated`) or `rostopic echo /opendr/detections`
+
+
+## Panoptic Segmentation ROS Node
+A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
+Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
+```shell
+rosrun perception panoptic_segmentation_efficient_ps.py CHECKPOINT IMAGE_TOPIC
+```
+with `CHECKPOINT` pointing to the path to the trained model weights and `IMAGE_TOPIC` specifying the ROS topic, to which the node will subscribe.
+
+Additionally, the following optional arguments are available:
+- `-h, --help`: show a help message and exit
+- `--heamap_topic HEATMAP_TOPIC`: publish the semantic and instance maps on `HEATMAP_TOPIC`
+- `--visualization_topic VISUALIZATION_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag
+- `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps
