@@ -98,7 +98,8 @@ The [Image](#class_engine.data.Image) class has the following public methods:
 ### class engine.data.ImageWithDetections
 Bases: `engine.data.Image`
 
-A class used for representing image data.
+A class used for representing image data with a list of detections.
+This class is used for methods that rely on an external object detector such as DeepSort for 2D object tracking.
 
 The [ImageWithDetections](#class_engine.data.ImageWithDetections) class has the following public methods:
 #### ImageWithDetections(image, boundingBoxList)
