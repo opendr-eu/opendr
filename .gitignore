@@ -62,3 +62,7 @@ Thumbs.db
 .cache/
 logs/
 temp/
+
+# ROS interface
+projects/opendr_ws/.catkin_workspace
+projects/opendr_ws/devel/
