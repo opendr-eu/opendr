@@ -1,9 +1,16 @@
 **Todo:** Update the neck-removing processing pipeline from original BFM model.
 
 The original version with neck:
+<p align="center">
+  <img src="imgs/bfm_noneck.jpg" alt="neck" width="400px">
+</p>
 [bfm.ply](https://155.207.128.10/owncloud/remote.php/webdav/SFTP/CIDL/OpenDR_internal/Rotate_and_Render/Code/3ddfa/BFM_Remove_Neck/bfm.ply)
 
 The refined version without neck:
+<p align="center">
+  <img src="imgs/bfm_refine.jpg" alt="no neck" width="400px">
+</p>
+
 [bfm_refine.ply](https://155.207.128.10/owncloud/remote.php/webdav/SFTP/CIDL/OpenDR_internal/Rotate_and_Render/Code/3ddfa/BFM_Remove_Neck/bfm_refine.ply)
 These two images are rendered by MeshLab.
 
