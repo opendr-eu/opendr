@@ -39,6 +39,7 @@
 from tqdm import tqdm
 from shutil import copyfile
 import cv2
+import torch
 import os
 import sys
 import path_helper
@@ -53,10 +54,19 @@ __all__ = ['sys', 'path_helper', 'path_helper2']
 
 
 class MultiviewDataGenerationLearner(Learner):
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0,3"
+    
 
-    def __init__(self, path_in='blabla', path_3ddfa='blabla', save_path='blabla', val_yaw='10,20', val_pitch=' 30,40'):
-
+    def __init__(self, path_in='blabla', path_3ddfa='blabla', save_path='blabla', val_yaw='10,20', val_pitch=' 30,40', device=gpu):
+        try:
+         if torch.cuda.is_available():
+            print("GPU found.")
+            device = 'cuda'
+         else:
+            print("GPU not found. Using CPU instead.")
+            device = 'cpu'
+        except:
+            device = 'cpu'
+    
         self.path_in = path_in
         self.key = str(path_3ddfa + "/example/Images/")
         self.key1 = str(path_3ddfa + "/example/")
