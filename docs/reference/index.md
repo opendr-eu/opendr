@@ -41,15 +41,11 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [landmark_based_facial_expression_recognition](landmark-based-facial-expression-recognition.md)
 
     - `control` Module
-<<<<<<< HEAD
-      - [mobile_manipulation Module](mobile-manipulation.md)
-    - `utils` Module
-      - [hyperparameter_tuning Module](hyperparameter_tuner.md) 
-=======
         - [mobile_manipulation Module](mobile-manipulation.md)
     - `simulation` Module
         - [human_model_generation Module](human_model_generation.md)
->>>>>>> origin/master
+    - `utils` Module
+        - [Hyperparameter Tuning Module](hyperparameter_tuner.md)
 - [ROSBridge Package](rosbridge.md)
 - [C Inference API](c-api.md)
     - [data.h](c-data-h.md)
