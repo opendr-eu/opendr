@@ -30,7 +30,8 @@ class HyperparameterTuner(object):
     toolkit.
     """
     def __init__(
-            self, learner_class: Union[Type[Learner], Type[LearnerRL], Type[LearnerActive]],
+            self,
+            learner_class: Union[Type[Learner], Type[LearnerRL], Type[LearnerActive]],
             study: Optional[Study] = None,
     ) -> None:
         """Constructor of the HyperparameterTuner.
@@ -96,16 +97,16 @@ class HyperparameterTuner(object):
 
     def optimize(
             self,
-            hyperparameters: Optional[List[Dict[str, Any]]] = None,
-            init_arguments: Optional[Dict[str, Any]] = None,
-            fit_arguments: Optional[Dict[str, Any]] = None,
-            eval_arguments: Optional[Dict[str, Any]] = None,
-            objective_function: Optional[Callable] = None,
-            n_trials: Optional[int] = None,
-            timeout: Optional[float] = None,
-            n_jobs: Optional[int] = 1,
-            show_progress_bar: Optional[bool] = False,
-            verbose: Optional[bool] = False,
+            hyperparameters: Optional[List[Dict[str, Any]]]=None,
+            init_arguments: Optional[Dict[str, Any]]=None,
+            fit_arguments: Optional[Dict[str, Any]]=None,
+            eval_arguments: Optional[Dict[str, Any]]=None,
+            objective_function: Optional[Callable]=None,
+            n_trials: Optional[int]=None,
+            timeout: Optional[float]=None,
+            n_jobs: Optional[int]=1,
+            show_progress_bar: Optional[bool]=False,
+            verbose: Optional[bool]=False,
     ) -> Dict[str, Any]:
         """Hyperparameter tuning using Optuna.
 
