@@ -960,3 +960,19 @@ class DetrLearner(Learner):
         head, tail = ntpath.split(path)
         folder_name = tail or ntpath.basename(head)  # handle both a/b/c and a/b/c/
         return folder_name, head, tail
+
+    @staticmethod
+    def get_hyperparameters():
+        hyperparameters = [
+            {'name': 'optimizer', 'type': 'categorical', 'choices': ['sgd', 'adam', 'adamw']},
+            {'name': 'backbone', 'type': 'categorical', 'choices': ['resnet50', 'resnet101']},
+            {'name': 'lr', 'type': 'float', 'low': 0.00001, 'high': 0.01, 'log': True},
+            {'name': 'iters', 'type': 'int', 'low': 1, 'high': 10},
+        ]
+        return hyperparameters
+
+    @staticmethod
+    def get_objective_function():
+        def objective_function(eval_stats):
+            return eval_stats['loss']
+        return objective_function
