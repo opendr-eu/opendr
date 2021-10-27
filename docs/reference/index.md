@@ -40,6 +40,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 
     - `control` Module
       - [mobile_manipulation Module](mobile-manipulation.md)
+    - `utils` Module
+      - [hyperparameter_tuning Module](hyperparameter_tuner.md) 
 - [ROSBridge Package](rosbridge.md)
 - [C Inference API](c-api.md)
     - [data.h](c-data-h.md)
