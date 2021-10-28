@@ -15,7 +15,7 @@ import logging
 
 import torch
 import torch.nn as nn
-import dcn
+from DCN import DCN
 import torch.utils.model_zoo as model_zoo
 
 BN_MOMENTUM = 0.1
@@ -230,7 +230,7 @@ class PoseResNet(nn.Module):
         kernel, padding, output_padding = self._get_deconv_cfg(num_kernels)
 
         planes = num_filters
-        fc = dcn(
+        fc = DCN(
             self.inplanes,
             planes,
             kernel_size=(3, 3),
@@ -297,7 +297,7 @@ class DeformConv(nn.Module):
         self.actf = nn.Sequential(
             nn.BatchNorm2d(cho, momentum=BN_MOMENTUM), nn.ReLU(inplace=True)
         )
-        self.conv = dcn(
+        self.conv = DCN(
             chi,
             cho,
             kernel_size=(3, 3),

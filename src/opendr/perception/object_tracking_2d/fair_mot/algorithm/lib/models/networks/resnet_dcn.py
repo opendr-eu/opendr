@@ -15,7 +15,7 @@ import logging
 
 import torch
 import torch.nn as nn
-import dcn
+from DCN import DCN
 import torch.utils.model_zoo as model_zoo
 
 BN_MOMENTUM = 0.1
@@ -226,7 +226,7 @@ class PoseResNet(nn.Module):
             kernel, padding, output_padding = self._get_deconv_cfg(num_kernels[i], i)
 
             planes = num_filters[i]
-            fc = dcn(
+            fc = DCN(
                 self.inplanes,
                 planes,
                 kernel_size=(3, 3),
