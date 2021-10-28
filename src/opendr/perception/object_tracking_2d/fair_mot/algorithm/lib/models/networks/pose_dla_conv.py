@@ -13,7 +13,7 @@ from torch import nn
 import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 
-from DCN import DCN
+import dcn
 
 BN_MOMENTUM = 0.1
 logger = logging.getLogger(__name__)
@@ -491,8 +491,8 @@ class DLAUp(nn.Module):
                 "ida_{}".format(i),
                 IDAUp(channels[j], in_channels[j:], scales[j:] // scales[j]),
             )
-            scales[j + 1 :] = scales[j]
-            in_channels[j + 1 :] = [channels[j] for _ in channels[j + 1 :]]
+            scales[j + 1:] = scales[j]
+            in_channels[j + 1:] = [channels[j] for _ in channels[j + 1:]]
 
     def forward(self, layers):
         out = [layers[-1]]  # start with 32
@@ -534,15 +534,15 @@ class DLASeg(nn.Module):
         self.last_level = last_level
         self.base = globals()[base_name](pretrained=pretrained)
         channels = self.base.channels
-        scales = [2 ** i for i in range(len(channels[self.first_level :]))]
-        self.dla_up = DLAUp(self.first_level, channels[self.first_level :], scales)
+        scales = [2 ** i for i in range(len(channels[self.first_level:]))]
+        self.dla_up = DLAUp(self.first_level, channels[self.first_level:], scales)
 
         if out_channel == 0:
             out_channel = channels[self.first_level]
 
         self.ida_up = IDAUp(
             out_channel,
-            channels[self.first_level : self.last_level],
+            channels[self.first_level: self.last_level],
             [2 ** i for i in range(self.last_level - self.first_level)],
         )
 
