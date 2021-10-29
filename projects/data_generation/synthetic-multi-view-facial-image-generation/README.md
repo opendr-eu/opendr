@@ -38,7 +38,7 @@ python3 testSyntheticDataGeneration.py
 
 
 ## License and Citation
-The usage of this software is under [CC-BY-4.0](https://github.com/Hangz-nju-cuhk/Rotate-and-Render/LICENSE).
+The usage of this software is under [CC-BY-4.0](https://github.com/Hangz-nju-cuhk/Rotate-and-Render/blob/master/LICENSE).
 
 
 ## Acknowledgement
