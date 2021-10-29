@@ -9,13 +9,13 @@ The *DetrLearner* class is a wrapper of the DETR [[1]](#detr-paper) object detec
 [DETR implementation](https://github.com/facebookresearch/detr).
 It can be used to perform object detection on images (inference) and train DETR object detection models.
 
-The [DetrLearner](#src.perception.object_detection_2d.detr.detr_learner.py) class has the
+The [DetrLearner](../../src/opendr/perception/object_detection_2d/detr/detr_learner.py) class has the
 following public methods:
 
 #### `DetrLearner` constructor
 ```python
 DetrLearner(self, model_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter,
-temp_path, device, threshold, num_classes, return_segmentations)
+temp_path, device, threshold, num_classes, panoptic_segmentation)
 ```
 
 Constructor parameters:
@@ -59,9 +59,10 @@ Constructor parameters:
   Training on other datasets than COCO can be done by creating a `DatasetIterator` that outputs (`Image`, `BoundingBoxList`)
   tuples.
   Below you can find an example that shows how you can create such a `DatasetIterator`.
-- **return_segmentations**: *bool, default=False*
-  Specifies whether the model returns, next to bounding boxes, segmentations of objects.
-  If *True*, the `download()` method will download COCO panoptic models.
+- **panoptic_segmentations**: *bool, default=False*  
+  Specifies whether panoptic segmentation is performed.
+  If *True*, the `download()` method will download COCO panoptic models and the model returns, next to bounding boxes,
+  segmentations of objects.
 
 #### `DetrLearner.fit`
 ```python
@@ -202,12 +203,30 @@ Parameters:
   Local path to save the files.
 - **mode** : *{'pretrained', 'weights', 'test_data'}, default='pretrained'*
   This *str* determines what file to download.
-  Note that for modes *'weights'* and *'pretrained'* a model is downloaded and loaded according to the value of *self.backbone*.
+  Note that for modes *'weights'* and *'pretrained'* a model is downloaded and loaded according to the value of
+  *self.backbone*.
   Backbones for which pretrained models are available, are: *'resnet50'* and *'resnet101'*.
   Also, a pretrained model with dilation is downloaded in case *self.args.dilation* is *True*.
-  In case *self.return_segmentations* is *True*, a model that was pretrained on the COCO panoptic dataset is downloaded.
+  In case *self.panoptic_segmentation* is *True*, a model that was pretrained on the COCO panoptic dataset is
+  downloaded.
 - **verbose** : *bool, default=True*
   Enables the maximum verbosity.
+
+#### ROS Node
+
+A [ROS node](../../projects/opendr_ws/src/perception/scripts/object_detection_2d_detr.py) is available for performing
+inference on an image stream.
+Documentation on how to use this node can be found [here](../../projects/opendr_ws/src/perception/README.md).
+
+#### Tutorials and Demos
+
+A tutorial on performing inference is available 
+[here](../../projects/perception/object_detection_2d/detr/inference_tutorial.ipynb).
+Furthermore, demos on performing [training](../../projects/perception/object_detection_2d/detr/train_demo.py),
+[evaluation](../../projects/perception/object_detection_2d/detr/eval_demo.py) and
+[inference](../../projects/perception/object_detection_2d/detr/inference_demo.py) are also available.
+
+
 
 #### Examples
 
@@ -304,54 +323,24 @@ Parameters:
   pretrained on the coco dataset.
 
   ```python
-  import matplotlib.pyplot as plt
-  import requests
-  from PIL import Image as im
+  import numpy as np
+  import urllib
+  import cv2
   from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
-
-  # COCO classes
-  classes = [
-      'N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
-      'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A',
-      'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
-      'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack',
-      'umbrella', 'N/A', 'N/A', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
-      'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
-      'skateboard', 'surfboard', 'tennis racket', 'bottle', 'N/A', 'wine glass',
-      'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
-      'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
-      'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table', 'N/A',
-      'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
-      'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
-      'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
-      'toothbrush'
-  ]
-
-  # colors for visualization
-  colors = [[0.000, 0.447, 0.741], [0.850, 0.325, 0.098], [0.929, 0.694, 0.125],
-            [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
-
-  # Function for plotting results
-  def plot_results(pil_img, boxes):
-      plt.figure(figsize=(16,10))
-      plt.imshow(pil_img)
-      ax = plt.gca()
-      for box, c in zip(boxes, colors*100):
-          ax.add_patch(plt.Rectangle((box.left, box.top), box.width, box.height,
-                                     fill=False, color=c, linewidth=3))
-          text = f'{classes[box.name]}: {box.confidence:0.2f}'
-          ax.text(box.left, box.top, text, fontsize=15, bbox=dict(facecolor='yellow', alpha=0.5))
-      plt.axis('off')
-      plt.show()
-
+  from opendr.perception.object_detection_2d.detr.algorithm.util.draw import draw
+  
+  
   # Download an image
   url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
-  img = im.open(requests.get(url, stream=True).raw)
-
-  learner = DetrLearner(threshold=0.7)
+  req = urllib.request.urlopen(url)
+  arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+  img = cv2.imdecode(arr, -1)
+  
+  learner = DetrLearner(threshold=0.7, backbone='resnet101')
   learner.download()
   bounding_box_list = learner.infer(img)
-  plot_results(img, bounding_box_list)
+  cv2.imshow('Detections', draw(img, bounding_box_list))
+  cv2.waitKey(0)
   ```
 
 * **Inference and result drawing example on a test .jpg image with segmentations, similar to [detr_demo colab](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/DETR_panoptic.ipynb#scrollTo=LAjJjP9kAHhA).**
@@ -361,70 +350,24 @@ Parameters:
 
   ```python
   import numpy as np
-  import matplotlib.pyplot as plt
-  from matplotlib.patches import Polygon
-  from matplotlib.collections import PatchCollection
-  import requests
-  from PIL import Image as im
-  import opendr
+  import urllib
+  import cv2
   from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
-
-  # These are the COCO classes
-  CLASSES = [
-      'N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
-      'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A',
-      'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
-      'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack',
-      'umbrella', 'N/A', 'N/A', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
-      'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
-      'skateboard', 'surfboard', 'tennis racket', 'bottle', 'N/A', 'wine glass',
-      'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
-      'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
-      'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table', 'N/A',
-      'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
-      'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
-      'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
-      'toothbrush'
-  ]
-
-  # Function for plotting results
-  def plot_results(pil_img, boxes):
-      plt.figure(figsize=(16,10))
-      plt.imshow(pil_img)
-      ax = plt.gca()
-      ax.set_autoscale_on(False)
-      color = []
-      polygons = []
-      for box in boxes:
-          if box.name >= len(CLASSES):
-              continue
-          c = (np.random.random((1, 3))*0.6+0.4).tolist()[0]
-          ax.add_patch(plt.Rectangle((box.left, box.top), box.width, box.height,
-                                     fill=False, linewidth=3))
-          text = f'{CLASSES[box.name]}: {box.confidence:0.2f}'
-          seg = box.segmentation[0]
-          poly = np.array(seg).reshape((int(len(seg)/2), 2))
-          polygons.append(Polygon(poly))
-          color.append(c)
-
-          ax.text(box.left, box.top, text, fontsize=15, bbox=dict(facecolor='yellow', alpha=0.5))
-      p = PatchCollection(polygons, facecolor=color, linewidths=0, alpha=0.4)
-      ax.add_collection(p)
-      p = PatchCollection(polygons, facecolor='none', edgecolors=color, linewidths=2)
-      ax.add_collection(p)
-      plt.axis('off')
-      plt.show()
-
+  from opendr.perception.object_detection_2d.detr.algorithm.util.draw import draw
+  
   # Download an image
   url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
-  img = im.open(requests.get(url, stream=True).raw)
-
-  # We want to return the segmentations and plot those, so we set return_segmentations to True.
+  req = urllib.request.urlopen(url)
+  arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+  img = cv2.imdecode(arr, -1)
+  
+  # We want to return the segmentations and plot those, so we set panoptic_segmentation to True.
   # Also, we have to modify the number of classes, since the number of panoptic classes in the pretrained detr model is 250.
-  learner = DetrLearner(return_segmentations=True, num_classes=250)
+  learner = DetrLearner(panoptic_segmentation=True, num_classes=250)
   learner.download()
   bounding_box_list = learner.infer(img)
-  plot_results(img, bounding_box_list)
+  cv2.imshow('Detections', draw(img, bounding_box_list))
+  cv2.waitKey(0)
   ```
 
 * **Optimization example for a previously trained model.**
