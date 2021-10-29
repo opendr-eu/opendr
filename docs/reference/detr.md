@@ -19,37 +19,37 @@ temp_path, device, threshold, num_classes, panoptic_segmentation)
 ```
 
 Constructor parameters:
-- **model_config_path**: *str, default="OpenDR/src/perception/object_detection_2d/detr/algorithm/config/model_config.yaml"*
+- **model_config_path**: *str, default="OpenDR/src/perception/object_detection_2d/detr/algorithm/config/model_config.yaml"*  
   Specifies the path to the config file that contains the additional parameters from the original
   [DETR implementation](https://github.com/facebookresearch/detr).
-- **iters**: *int, default=10*
+- **iters**: *int, default=10*  
   Specifies the number of epochs the training should run for.
-- **lr**: *float, default=1e-4*
+- **lr**: *float, default=1e-4*  
   Specifies the initial learning rate to be used during training.
-- **batch_size**: *int, default=1*
+- **batch_size**: *int, default=1*  
   Specifies number of images to be bundled up in a batch during training.
   This heavily affects memory usage, adjust according to your system.
-- **optimizer**: *{'sgd', 'adam', 'adamw'}, default='adamw'*
+- **optimizer**: *{'sgd', 'adam', 'adamw'}, default='adamw'*  
   Specifies the type of optimizer that is used during training.
-- **backbone**: *{'resnet50', 'resnet101'}, default='resnet50'*
+- **backbone**: *{'resnet50', 'resnet101'}, default='resnet50'*  
   Specifies the backbone architecture.
   Other Torchvision backbones are also valid, but have no pretrained DETR models available.
   Therefore other backbone models have to be learned from scratch.
-- **checkpoint_after_iter**: *int, default=0*
+- **checkpoint_after_iter**: *int, default=0*  
   Specifies per how many training iterations a checkpoint should be saved.
   If it is set to 0 no checkpoints will be saved.
-- **checkpoint_load_iter**: *int, default=0*
+- **checkpoint_load_iter**: *int, default=0*  
   Specifies which checkpoint should be loaded.
   If it is set to 0, no checkpoints will be loaded.
-- **temp_path**: *str, default='temp'*
+- **temp_path**: *str, default='temp'*  
   Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging
   files.
-- **device**: *{'cpu', 'cuda'}, default='cuda'*
+- **device**: *{'cpu', 'cuda'}, default='cuda'*  
   Specifies the device to be used.
-- **threshold**: *float, default=0.7*
+- **threshold**: *float, default=0.7*  
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
-- **num_classes**: *int, default=91*
+- **num_classes**: *int, default=91*  
   Specifies the number of classes of the model.
   The default is 91, since this is the number of classes in the COCO dataset, but modifying the *num_classes* allows the user to
   train on its own dataset.
@@ -73,34 +73,34 @@ train_annotations_file, val_images_folder, val_annotations_file)
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
 Returns a dictionary containing stats regarding the last evaluation ran.
 Parameters:
-- **dataset**: *object*
+- **dataset**: *object*  
   Object that holds the training dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-- **val_dataset** : *object, default=None*
+- **val_dataset** : *object, default=None*  
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
   Object that holds the validation dataset.
-- **logging_path** : *str, default=''*
+- **logging_path** : *str, default=''*  
   Path to save TensorBoard log files.
   If set to *None* or *''*, TensorBoard logging is disabled.
-- **silent** : *bool, default=False*
+- **silent** : *bool, default=False*  
   If *True*, all printing of training progress reports and other information to STDOUT are disabled.
-- **verbose** : *bool, default=True*
+- **verbose** : *bool, default=True*  
   Enables the maximum verbosity.
-- **annotations_folder** : *str, default='Annotations'*
+- **annotations_folder** : *str, default='Annotations'*  
   Folder name of the annotations json file.
   This folder should be contained in the dataset path provided.
-- **train_images_folder** : *str, default='train2017'*
+- **train_images_folder** : *str, default='train2017'*  
   Name of the folder that contains the train dataset images.
   This folder should be contained in the dataset path provided.
   Note that this is a folder name, not a path.
-- **train_annotations_file** : *str, default='instances_train2017.json'*
+- **train_annotations_file** : *str, default='instances_train2017.json'*  
   Filename of the train annotations json file.
   This file should be contained in the dataset path provided.
--  **val_images_folder** : *str, default='val2017'*
+-  **val_images_folder** : *str, default='val2017'*  
   Folder name that contains the validation images.
   This folder should be contained in the dataset path provided.
   Note that this is a folder name, not a path.
-- **val_annotations_file** : *str, default='instances_val2017.json'*
+- **val_annotations_file** : *str, default='instances_val2017.json'*  
   Filename of the validation annotations json file.
   This file should be contained in the dataset path provided in the annotations folder provided.
 
@@ -112,20 +112,20 @@ DetrLearner.eval(self, dataset, images_folder, annotations_folder, annotations_f
 This method is used to evaluate a trained model on an evaluation dataset.
 Returns a dictionary containing stats regarding evaluation.
 Parameters:
-- **dataset** : *object*
+- **dataset** : *object*  
   `ExternalDataset` class object or `DatasetIterator` class object.
   Object that holds the evaluation dataset.
-- **images_folder** : *str, default='val2017'*
+- **images_folder** : *str, default='val2017'*  
   Folder name that contains the dataset images.
   This folder should be contained in the dataset path provided.
   Note that this is a folder name, not a path.
-- **annotations_folder** : *str, default='Annotations'*
+- **annotations_folder** : *str, default='Annotations'*  
   Folder name of the annotations json file.
   This file should be contained in the dataset path provided.
-- **annotations_file** : *str, default='instances_val2017.json'*
+- **annotations_file** : *str, default='instances_val2017.json'*  
   Filename of the annotations json file.
   This file should be contained in the dataset path provided.
-- **verbose** : *bool, default=True*
+- **verbose** : *bool, default=True*  
   Enables the maximum verbosity.
 
 #### `DetrLearner.infer`
@@ -138,7 +138,7 @@ Returns an `engine.target.BoundingBoxList` object, which contains bounding boxes
 its width and height, or returns an empty list if no detections were made.
 
 Parameters:
-- **image** : *object*
+- **image** : *object*  
   Image of type `engine.data.Image` class or `np.array`.
   Image to run inference on.
 
@@ -156,9 +156,9 @@ If [`self.optimize`](#DetrLearner.optimize) was run previously, it saves the opt
 *".onnx"* extension, by copying it from the *self.temp_path* it was saved previously during conversion.
 
 Parameters:
-- **path**: *str*
+- **path**: *str*  
   Path to save the model, including the filename.
-- **verbose**: *bool, default=False*
+- **verbose**: *bool, default=False*  
   Enables the maximum verbosity.
 
 #### `DetrLearner.load`
@@ -170,7 +170,7 @@ This method is used to load a previously saved model from its saved folder.
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
 
 Parameters:
-- **path**: *str*
+- **path**: *str*  
   Path of the model to be loaded.
 
 #### `DetrLearner.optimize`
@@ -181,7 +181,7 @@ DetrLearner.optimize(self, do_constant_folding)
 This method is used to optimize a trained model to ONNX format which can be then used for inference.
 
 Parameters:
-- **do_constant_folding**: *bool, default=False*
+- **do_constant_folding**: *bool, default=False*  
   ONNX format optimization.
   If *True*, the constant-folding optimization is applied to the model during export.
   Constant-folding optimization will replace some of the ops that have all constant inputs, with pre-computed constant nodes.
@@ -199,9 +199,9 @@ It supports downloading:
   3. A test dataset with a single COCO image and its annotation.
 
 Parameters:
-- **path** : *str, default=None.*
+- **path** : *str, default=None.*  
   Local path to save the files.
-- **mode** : *{'pretrained', 'weights', 'test_data'}, default='pretrained'*
+- **mode** : *{'pretrained', 'weights', 'test_data'}, default='pretrained'*  
   This *str* determines what file to download.
   Note that for modes *'weights'* and *'pretrained'* a model is downloaded and loaded according to the value of
   *self.backbone*.
@@ -209,7 +209,7 @@ Parameters:
   Also, a pretrained model with dilation is downloaded in case *self.args.dilation* is *True*.
   In case *self.panoptic_segmentation* is *True*, a model that was pretrained on the COCO panoptic dataset is
   downloaded.
-- **verbose** : *bool, default=True*
+- **verbose** : *bool, default=True*  
   Enables the maximum verbosity.
 
 #### ROS Node
