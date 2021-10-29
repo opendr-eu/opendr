@@ -173,7 +173,6 @@ class MultiviewDataGenerationLearner(Learner):
                         if img_fp == str(file):
                             im_list2.append(str(file))
                             b.write(str(file) + os.linesep)
-            print(im_list2)
             self.args2.img_list = './txt_name_batch.txt'
             b.close()
             self.args2.dump_lmk = 'true'
