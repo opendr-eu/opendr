@@ -27,7 +27,7 @@ def draw_text(
         font_thickness=2,
         text_color=(0, 255, 0),
         text_color_bg=(0, 0, 0)
-    ):
+):
     # Copied from https://stackoverflow.com/questions/60674501/how-to-make-black-background-in-cv2-puttext-with-python-opencv
     x, y = pos
     text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
