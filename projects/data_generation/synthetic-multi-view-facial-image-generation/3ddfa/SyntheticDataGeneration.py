@@ -160,7 +160,6 @@ class MultiviewDataGenerationLearner(Learner):
             if not os.path.exists(self.args2.save_lmk_dir):
                 os.mkdir(self.args2.save_lmk_dir)
 
-            print(current_directory_path)
             list_lfw_batch = './file_list.txt'
             dst = os.path.join(self.args2.save_lmk_dir, "file_list.txt")
             copyfile(list_lfw_batch, dst)
