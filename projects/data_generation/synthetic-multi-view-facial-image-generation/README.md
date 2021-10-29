@@ -1,6 +1,6 @@
 # Synthentic Multi-view Facial Image Generation based on Rotate-and-Render: Unsupervised Photorealistic Face Rotation from Single-View Images (CVPR 2020)
 
-[[Paper]](https://arxiv.org/abs/2003.08124)
+Based on: [[Rotate-and-Render: Unsupervised Photorealistic Face Rotation from Single-View Images]](https://arxiv.org/abs/2003.08124)
 
 We utilize with small modifications  (in order to be easily executed) publicly available code, namely an  un-supervised framework that can synthesize 
 photorealistic rotated facial images using as input  a single facial image, or multiple such images (one per person). The key insight of the utilized method is that rotating faces in the 3D space back and forth, 
