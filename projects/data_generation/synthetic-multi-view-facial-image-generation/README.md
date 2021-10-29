@@ -20,7 +20,7 @@ pip3 install -r requirements.txt
 pip3 install neural_renderer_pytorch
 ```
 
-* Download checkpoint and BFM model from [ckpt_and_bfm.zip](https://cicloud.csd.auth.gr/owncloud/remote.php/webdav/OpenDR/FTP%20Server%20Material/simulation/ckpt_and_bfm.zip) put it in ```3ddfa``` and unzip it. The 3D models are borrowed from [3DDFA](https://github.com/cleardusk/3DDFA). 
+* Download checkpoint and BFM model from [ckpt_and_bfm.zip](https://155.207.128.10/owncloud/remote.php/webdav/CIDL/OpenDR_internal/Rotate_and_Render/Code/checkpoints/ckpt_and_bfm.zip) put it in ```3ddfa``` and unzip it. The 3D models are borrowed from [3DDFA](https://github.com/cleardusk/3DDFA). 
 
 
 ## DEMO
