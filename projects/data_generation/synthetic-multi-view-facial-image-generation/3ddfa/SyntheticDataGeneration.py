@@ -56,7 +56,7 @@ __all__ = ['sys', 'path_helper', 'path_helper2']
 class MultiviewDataGenerationLearner(Learner):
     
 
-    def __init__(self, path_in='blabla', path_3ddfa='blabla', save_path='blabla', val_yaw='10,20', val_pitch=' 30,40', device='cuda'):
+    def __init__(self, path_in='/home/user/Pictures/TEST', path_3ddfa='./', save_path='./results', val_yaw='10,20', val_pitch=' 30,40', device='cuda'):
         try:
          if torch.cuda.is_available():
             print("GPU found.")
