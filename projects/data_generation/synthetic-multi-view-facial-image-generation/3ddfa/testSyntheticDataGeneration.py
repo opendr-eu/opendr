@@ -39,7 +39,7 @@ from SyntheticDataGeneration import MultiviewDataGenerationLearner
 __all__ = ['path_helper']
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-path_in', default='/home/user/Pictures/TEST', type=str, help='Give the path of image folder')
+parser.add_argument('-path_in', default='./example/Images', type=str, help='Give the path of image folder')
 parser.add_argument('-path_3ddfa', default='./', type=str, help='Give the path of 3ddfa folder')
 parser.add_argument('-save_path', default='./results', type=str, help='Give the path of results folder')
 parser.add_argument('-val_yaw',  default="10,20", nargs='+', type=str, help='yaw poses list between [-90,90] ')
