@@ -29,6 +29,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [rgbd_hand_gesture_learner Module](rgbd_hand_gesture_learner.md)
         - [gated_recurrent_unit](gated-recurrent-unit-learner.md)
         - [matchboxnet Module](matchboxnet.md)
+        - [object_detection_2d_detr Module](detr.md)
         - [object_detection_2d_gem Module](gem.md)
         - [voxel-object-detection-3d Module](voxel-object-detection-3d.md)
         - [object_tracking_2d_fair_mot Module](object-tracking-2d-fair-mot.md)
