@@ -126,17 +126,12 @@ class MultiviewDataGenerationLearner(Learner):
         print("START")
 
         a = open("file_list.txt", "w")
-        for subdir, dirs, files in os.walk(self.path_in):
-            print(subdir)
-            print(dirs)
+        for subdir, dirs, files in os.walk(self.path_in)
             current_directory_path = os.path.abspath(subdir)
-
-            print(current_directory_path)
             for file in files:
                 name, ext = os.path.splitext(file)
                 if ext == ".jpg":
                     current_image_path = os.path.join(current_directory_path, file)
-                    print(current_image_path)
                     current_image = cv2.imread(current_image_path)
                     list_im.append(current_image_path)
                     a.write(str(file) + os.linesep)
