@@ -214,6 +214,11 @@ Parameters:
 - **verbose** : *bool, default=False*  
   Enables the maximum verbosity.
 
+#### Demo and Tutorial
+
+An inference [demo](../../projects/perception/object_detection_2d/gem/inference_demo.py) and 
+[tutorial](../../projects/perception/object_detection_2d/gem/inference_tutorial.ipynb) are available.
+
 #### Examples
 
 * **Training example:**  
@@ -242,7 +247,7 @@ learner.save('./saved_models/trained_model')
 
 ```python
 from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
-from opendr.perception.object_detection_2d.gem.algorithm.util.draw import plot_results
+from opendr.perception.object_detection_2d.gem.algorithm.util.draw import draw
 import cv2
 
 # First we initialize the learner
@@ -260,7 +265,7 @@ bounding_box_list, w_sensor1, _ = learner.infer(m1_img, m2_img)
 # The blue/green bar shows the weights of the two modalities
 # Fully blue means relying purely on the first modality
 # Fully green means relying purely on the second modality
-cv2.imshow('Detections', plot_results(m1_img, bounding_box_list, w_sensor1))
+cv2.imshow('Detections', draw(m1_img, bounding_box_list, w_sensor1))
 cv2.waitKey(0)
 ```
 #### References
