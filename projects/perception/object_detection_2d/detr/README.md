@@ -1,7 +1,6 @@
 # DETR Demos
 
-This folder contains minimal code usage examples that showcase the basic functionality of the DetrLearner provided by 
-OpenDR. 
+This folder contains minimal code usage examples that showcase the basic functionality of the DetrLearner provided by OpenDR. 
 Specifically the following examples are provided:
 1. **inference_demo.py**:   
    Perform inference on an RGB and an infrared image.
