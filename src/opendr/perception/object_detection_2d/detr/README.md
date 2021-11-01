@@ -20,5 +20,4 @@ The modifications are:
 
   The modifications are also licensed under the Apache 2.0 license by OpenDR European Project.
 
-Also, code from [here](https://stackoverflow.com/questions/60674501/how-to-make-black-background-in-cv2-puttext-with-python-opencv)
-is used in the [drawing utility function](algorithm/util/draw.py).
+Also, code from [here](https://stackoverflow.com/questions/60674501/how-to-make-black-background-in-cv2-puttext-with-python-opencv) is used in the [drawing utility function](algorithm/util/draw.py).
