@@ -16,7 +16,6 @@
 
 import rospy
 import torch
-import cv2
 from vision_msgs.msg import ObjectHypothesis
 from std_msgs.msg import String
 from sensor_msgs.msg import Image as ROS_Image
