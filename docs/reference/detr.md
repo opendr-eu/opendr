@@ -72,6 +72,7 @@ train_annotations_file, val_images_folder, val_annotations_file)
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
 Returns a dictionary containing stats regarding the last evaluation ran.
+
 Parameters:
 - **dataset**: *object*  
   Object that holds the training dataset.
