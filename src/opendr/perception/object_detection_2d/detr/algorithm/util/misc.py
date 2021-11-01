@@ -206,7 +206,7 @@ class MetricLogger(object):
     def add_meter(self, name, meter):
         self.meters[name] = meter
 
-    def log_every(self, iterable, print_freq, header=None, verbose=True, silent=False):
+    def log_every(self, iterable, print_freq, header=None, verbose=True):
         i = 0
         if not header:
             header = ''
