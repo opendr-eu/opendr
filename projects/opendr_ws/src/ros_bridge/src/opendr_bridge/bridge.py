@@ -13,16 +13,16 @@
 # limitations under the License.
 
 from opendr.engine.data import Image
-from opendr.engine.target import Pose, BoundingBox, BoundingBoxList
+from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
 import cv2
 import numpy as np
 from cv_bridge import CvBridge
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,\
-     Detection3DArray, Detection3D, BoundingBox3D
+     Detection3DArray, Detection3D, BoundingBox3D, ObjectHypothesis
 from geometry_msgs.msg import Pose2D, Point, Pose as Pose3D
 from shape_msgs.msg import Mesh, MeshTriangle
-from std_msgs.msg import ColorRGBA
+from std_msgs.msg import ColorRGBA, String
 from sensor_msgs.msg import Image as ImageMsg
 
 
@@ -117,6 +117,43 @@ class ROSBridge:
         pose = Pose(data, confidence)
         pose.id = pose_id
         return pose
+
+    def to_ros_face(self, category):
+        """
+        Converts an OpenDR category into a ObjectHypothesis msg that can carry the Category.data and Category.confidence.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.data and category.confidence
+        :rtype: vision_msgs.msg.ObjectHypothesis
+        """
+        result = ObjectHypothesis()
+        result.id = category.data
+        result.score = category.confidence
+        return result
+
+    def to_ros_face_id(self, category):
+        """
+        Converts an OpenDR category into a string msg that can carry the Category.description.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.description
+        :rtype: std_msgs.msg.String
+        """
+        result = String()
+        result.data = category.description
+        return result
+
+    def from_ros_face(self, ros_hypothesis):
+        """
+        Converts a ROS message with category payload into an OpenDR category
+        :param ros_hypothesis: the objecthypothesis to be converted
+        :type ros_face: vision_msgs.msg.ObjectHypothesis
+        :return: an OpenDR category
+        :rtype: engine.target.Category
+        """
+        category = Category(prediction=ros_hypothesis.id, description=None,
+                            confidence=ros_hypothesis.score)
+        return category
 
     def to_ros_boxes(self, box_list):
         """
