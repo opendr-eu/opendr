@@ -18,8 +18,11 @@ from opendr.engine.target import Pose, BoundingBox, BoundingBoxList
 import cv2
 import numpy as np
 from cv_bridge import CvBridge
-from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose
-from geometry_msgs.msg import Pose2D
+from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,\
+     Detection3DArray, Detection3D, BoundingBox3D
+from geometry_msgs.msg import Pose2D, Point, Pose as Pose3D
+from shape_msgs.msg import Mesh, MeshTriangle
+from std_msgs.msg import ColorRGBA
 from sensor_msgs.msg import Image as ImageMsg
 
 
@@ -208,3 +211,126 @@ class ROSBridge:
             boxes.append(BoundingBox(name, left, top, width, height, score))
         bounding_box_list = BoundingBoxList(boxes)
         return bounding_box_list
+
+    def from_ros_3Dpose(self, ros_pose):
+        """
+        Converts a ROS message with pose payload into an OpenDR pose
+        :param ros_pose: the pose to be converted (represented as vision_msgs.msg.Detection3DArray)
+        :type ros_pose: vision_msgs.msg.Detection3DArray
+        :return: an OpenDR pose
+        :rtype: engine.target.Pose
+        """
+        keypoints = ros_pose.detections
+        data = []
+        pose_id, confidence = None, None
+
+        for keypoint in keypoints:
+            data.append(keypoint.bbox.center.position.x)
+            data.append(keypoint.bbox.center.position.y)
+            data.append(keypoint.bbox.center.position.z)
+            confidence = keypoint.results[0].score
+            pose_id = keypoint.results[0].id
+        data = np.asarray(data).reshape((-1, 3))
+
+        pose = Pose(data, confidence)
+        pose.id = pose_id
+        return pose
+
+    def to_ros_3Dpose(self, pose):
+        """
+        Converts an OpenDR pose into a Detection3DArray msg that can carry the same information
+        Each keypoint is represented as a bbox centered at the keypoint with zero radius. The subject id is also
+        embedded on each keypoint (stored in ObjectHypothesisWithPose).
+        :param pose: OpenDR pose to be converted
+        :type pose: engine.target.Pose
+        :return: ROS message with the pose
+        :rtype: vision_msgs.msg.Detection3DArray
+        """
+        data = pose.data
+        keypoints = Detection3DArray()
+        for i in range(data.shape[0]):
+            keypoint = Detection3D()
+            keypoint.bbox = BoundingBox3D()
+            keypoint.results.append(ObjectHypothesisWithPose())
+            keypoint.bbox.center = Pose3D()
+            keypoint.bbox.center.position.x = data[i, 0]
+            keypoint.bbox.center.position.y = data[i, 1]
+            keypoint.bbox.center.position.z = data[i, 2]
+            keypoint.bbox.size.x = 0
+            keypoint.bbox.size.y = 0
+            keypoint.bbox.size.z = 0
+            keypoint.results[0].id = int(pose.id)
+            keypoint.results[0].score = 1
+            keypoints.detections.append(keypoint)
+        return keypoints
+
+    def to_ros_mesh(self, vertices, faces):
+        """
+        Converts a mesh into a ROS Mesh
+        :param vertices: the vertices of the 3D model
+        :type vertices: numpy array (Nx3)
+        :param faces: the faces of the 3D model
+        :type faces: numpy array (Nx3)
+        :return mesh_ROS: a ROS mesh
+        :rtype mesh_ROS: shape_msgs.msg.Mesh
+        """
+        mesh_ROS = Mesh()
+        for i in range(vertices.shape[0]):
+            point = Point(vertices[i, 0], vertices[i, 1], vertices[i, 2])
+            mesh_ROS.vertices.append(point)
+        for i in range(faces.shape[0]):
+            mesh_triangle = MeshTriangle()
+            mesh_triangle.vertex_indices[0] = int(faces[i][0])
+            mesh_triangle.vertex_indices[1] = int(faces[i][1])
+            mesh_triangle.vertex_indices[2] = int(faces[i][2])
+            mesh_ROS.triangles.append(mesh_triangle)
+        return mesh_ROS
+
+    def to_ros_colors(self, colors):
+        """
+        Converts an array of vertex_colors to a list of ROS colors
+        :type colors: numpy array (Nx3)
+        :return colors: a list of the colors of the vertices
+        :rtype ros_colors: std_msgs.msg.ColorRGBA[]
+        """
+        ros_colors = []
+        for i in range(colors.shape[0]):
+            color = ColorRGBA(colors[i, 0], colors[i, 1], colors[i, 2], 0)
+            ros_colors.append(color)
+        return ros_colors
+
+    def from_ros_mesh(self, mesh_ROS, vertex_colors_ROS=None):
+        """
+        Converts a ROS mesh into arrays of vertices and faces of a mesh
+        :param mesh_ROS: the ROS mesh to be converted
+        :type mesh_ROS: shape_msgs.msg.Mesh
+        :param vertex_colors_ROS: a list of the colors of the vertices
+        :type vertex_colors_ROS: std_msgs.msg.ColorRGBA[]
+        :return vertices: the vertices of the 3D model
+        :rtype vertices: numpy array (Nx3)
+        :return faces: the faces of the 3D model
+        :rtype faces: numpy array (Nx3)
+        :return vertex_colors: the colors of the vertices of the 3D model
+        :rtype vertex_colors: numpy array (Nx3)
+        """
+        vertices = np.zeros([len(mesh_ROS.vertices), 3])
+        faces = np.zeros([len(mesh_ROS.triangles), 3]).astype(int)
+        for i in range(len(mesh_ROS.vertices)):
+            vertices[i] = np.array([mesh_ROS.vertices[i].x, mesh_ROS.vertices[i].y, mesh_ROS.vertices[i].z])
+        for i in range(len(mesh_ROS.triangles)):
+            faces[i] = np.array([int(mesh_ROS.triangles[i].vertex_indices[0]), int(mesh_ROS.triangles[i].vertex_indices[1]),
+                                 int(mesh_ROS.triangles[i].vertex_indices[2])]).astype(int)
+        return vertices, faces
+
+    def from_ros_colors(self, ros_colors):
+        """
+        Converts a list of ROS colors into a list of colors
+        :param ros_colors: a list of the colors of the vertices
+        :type ros_colors: std_msgs.msg.ColorRGBA[]
+        :return colors: the colors of the vertices of the 3D model
+        :rtype colors: numpy array (Nx3)
+        """
+        colors = np.zeros([len(ros_colors), 3])
+        for i in range(len(ros_colors)):
+            colors[i] = np.array([ros_colors[i].r, ros_colors[i].g, ros_colors[i].b])
+        return colors

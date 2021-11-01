@@ -17,8 +17,6 @@ import unittest
 import warnings
 import zipfile
 
-import cv2
-
 from opendr.engine.data import Image
 from opendr.engine.target import Heatmap
 from opendr.perception.panoptic_segmentation import EfficientPsLearner, CityscapesDataset
@@ -82,7 +80,7 @@ class TestEfficientPsLearner(unittest.TestCase):
 
     def test_infer_single_image(self):
         image_filename = os.path.join(self.test_data, 'infer_data', 'lindau_000001_000019.png')
-        image = Image(cv2.imread(image_filename))
+        image = Image.open(image_filename)
         learner = EfficientPsLearner()
         learner.load(self.model_weights)
         prediction = learner.infer(image)
@@ -94,7 +92,7 @@ class TestEfficientPsLearner(unittest.TestCase):
             os.path.join(self.test_data, 'infer_data', 'lindau_000001_000019.png'),
             os.path.join(self.test_data, 'infer_data', 'lindau_000003_000019.png'),
         ]
-        images = [Image(cv2.imread(f)) for f in image_filenames]
+        images = [Image.open(f) for f in image_filenames]
         learner = EfficientPsLearner()
         learner.load(self.model_weights)
         predictions = learner.infer(images)
@@ -126,7 +124,7 @@ class TestEfficientPsLearner(unittest.TestCase):
     def test_save_visualization(self):
         image_filename = os.path.join(self.test_data, 'infer_data', 'lindau_000001_000019.png')
         temp_prediction_path = os.path.join(self.temp_dir, 'prediction.png')
-        image = Image(cv2.imread(image_filename))
+        image = Image.open(image_filename)
         learner = EfficientPsLearner()
         learner.load(self.model_weights)
         prediction = learner.infer(image)

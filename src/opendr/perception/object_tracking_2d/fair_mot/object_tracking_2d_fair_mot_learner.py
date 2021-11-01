@@ -463,7 +463,7 @@ class ObjectTracking2DFairMotLearner(Learner):
     @staticmethod
     def download(model_name, path, server_url=None):
 
-        if server_url is not None and model_name not in [
+        if server_url is None and model_name not in [
             "crowdhuman_dla34",
             "fairmot_dla34",
         ]:
