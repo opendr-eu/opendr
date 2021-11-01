@@ -111,6 +111,7 @@ DetrLearner.eval(self, dataset, images_folder, annotations_folder, annotations_f
 
 This method is used to evaluate a trained model on an evaluation dataset.
 Returns a dictionary containing stats regarding evaluation.
+
 Parameters:
 - **dataset** : *object*  
   `ExternalDataset` class object or `DatasetIterator` class object.
