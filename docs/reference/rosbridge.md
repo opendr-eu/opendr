@@ -86,12 +86,12 @@ ROSBridge.from_ros_face(self,
                         ros_hypothesis)
 ```
 
-Converts a ROS ObjectHypothesis into an OpenDR Category.
+Converts a ROS ObjectHypothesis message into an OpenDR Category.
 
 Parameters:
 
-- **message**: *ros_bridge.msg.Pose*  
-  ROS pose to be converted into an OpenDR pose.
+- **message**: *ros_bridge.msg.ObjectHypothesis*  
+  ROS ObjectHypothesis to be converted into an OpenDR Category.
   
 #### `ROSBridge.to_ros_face`
 
