@@ -37,9 +37,9 @@ python3 testSyntheticDataGeneration.py
 3. Results are multi-view facial images for every person identity in a respective folder called  ```results/rs_model/example/```
 
 
-## License and Citation
-The usage of this software is under [CC-BY-4.0](https://github.com/Hangz-nju-cuhk/Rotate-and-Render/blob/master/LICENSE).
-
+## License 
+The usage of this software code Rotate-and-Render is under [CC-BY-4.0](https://github.com/Hangz-nju-cuhk/Rotate-and-Render/blob/master/LICENSE).
+The usage of this software code SPADE, SyncBN, 3DDFA are under [MIT License](https://github.com/tasostefas/opendr_internal/blob/synthetic-multi-view-facial-generator/projects/data_generation/synthetic-multi-view-facial-image-generation/3ddfa/LICENSE)
 
 ## Acknowledgement
 Large parts of the code are taken from: 
