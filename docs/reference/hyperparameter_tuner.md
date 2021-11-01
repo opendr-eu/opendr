@@ -21,7 +21,7 @@ Constructor parameters:
   OpenDR learner class for which hyperparameters should be tuned.
   Note that this learner should not be initialized, e.g. *learner_class* can be *detr_learner* but not *detr_learner()*.
 - **study**: *optuna.study.study.Study, default=None*  
-  "A study corresponds to an optimization task, i.e., a set of trials." (taken from [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.Study.html#optuna.study.Study.)).
+  "A study corresponds to an optimization task, i.e., a set of trials" (taken from [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.Study.html#optuna.study.Study.)).
   If not provided, a Study object will be created with the default parameters, which can be found [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.create_study.html#optuna.study.create_study).
 
 #### `HyperparameterTuner.optimize`
@@ -59,7 +59,7 @@ Parameters:
   The *init_arguments* argument should be a dictionary, where each key corresponds to an argument name of the learner's
   constructor.
   During optimization, the learner will be constructed with the value that corresponds to the key.
-- If not provided, it will be assumed to be an empty dict.
+  If not provided, it will be assumed to be an empty dict.
 - **fit_arguments**: *Dict[str, Any], default=None*  
   Specifies the arguments that are required for calling the fit method.
   The *fit_arguments* argument should be a dictionary, where each key corresponds to an argument name of the learner's
@@ -82,19 +82,27 @@ Parameters:
 - **n_trials**: *int, default=None*  
   "The number of trials. If this argument is set to None, there is no limitation on the number of trials.
   If timeout is also set to None, the study continues to create trials until it receives a termination signal such as
-  Ctrl+C or SIGTERM." taken from [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.Study.html#optuna.study.Study.optimize).
+  Ctrl+C or SIGTERM", taken from [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.Study.html#optuna.study.Study.optimize).
 - **timeout**: *float, default=None*  
   "Stop study after the given number of second(s).
   If this argument is set to None, the study is executed without time limitation.
   If n_trials is also set to None, the study continues to create trials until it receives a termination signal such as
-  Ctrl+C or SIGTERM." taken from [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.Study.html#optuna.study.Study.optimize).
+  Ctrl+C or SIGTERM", taken from [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.Study.html#optuna.study.Study.optimize).
 - **n_jobs**: *int, default=None*  
-  "The number of parallel jobs. If this argument is set to -1, the number is set to CPU count." taken from [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.Study.html#optuna.study.Study.optimize).
+  "The number of parallel jobs. If this argument is set to -1, the number is set to CPU count", taken from [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.Study.html#optuna.study.Study.optimize).
 - **show_progress_bar**: *bool, default=False*  
   "Flag to show progress bars or not. To disable progress bar, set this False.
-  Currently, progress bar is experimental feature and disabled when n_jobs ≠1." taken from [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.Study.html#optuna.study.Study.optimize).
+  Currently, progress bar is experimental feature and disabled when n_jobs ≠1", taken from [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.Study.html#optuna.study.Study.optimize).
 - **verbose**: *bool, default=False*  
   If *True*, maximum verbosity is enabled.
+
+#### Demos and tutorial
+
+A demo showcasing the usage and functionality of the *HyperparameterTuner* is available
+[here](../../projects/utils/hyperparameter_tuner/hyperparameter_tuner_demo.py).
+Also, a tutorial in the form of a Jupyter Notebook is available
+[here](../../projects/utils/hyperparameter_tuner/hyperparameter_tuning_tutorial.ipynb).
+
 
 #### Examples
 
