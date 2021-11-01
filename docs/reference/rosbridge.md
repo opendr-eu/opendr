@@ -110,7 +110,7 @@ Parameters:
 
 ```python
 ROSBridge.to_ros_face_id(self,
-                      category)
+                         category)
 ```
 Converts an OpenDR Category into a ROS String.
 
