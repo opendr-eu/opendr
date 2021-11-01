@@ -19,7 +19,7 @@ HyperparameterTuner(self, learner_class, study)
 Constructor parameters:
 - **learner_class**: *Union[Type[Learner], Type[LearnerRL], Type[LearnerActive]]*  
   OpenDR learner class for which hyperparameters should be tuned.
-  Note that this learner should not be initialized, e.g. *learner_class* can be *detr_learner* but not *detr_learner()*. 
+  Note that this learner should not be initialized, e.g. *learner_class* can be *detr_learner* but not *detr_learner()*.
 - **study**: *optuna.study.study.Study, default=None*  
   "A study corresponds to an optimization task, i.e., a set of trials." (taken from [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.Study.html#optuna.study.Study.)).
   If not provided, a Study object will be created with the default parameters, which can be found [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.create_study.html#optuna.study.create_study).
@@ -33,9 +33,9 @@ This method allows to perform hyperparameter tuning with Optuna.
 
 Parameters:
 - **hyperparameters**: *List[Dict[str, Any]], default=None*  
-  Specifies which hyperparameters should be tuned that are set during initialization of the learner. 
+  Specifies which hyperparameters should be tuned that are set during initialization of the learner.
   The *hyperparameters* argument should be a list of dictionaries, where each dictionary describes a hyperparameter.
-  Required keys in these dictionaries are *'name'* and *'type'*, where the value for 'name' should correspond to an 
+  Required keys in these dictionaries are *'name'* and *'type'*, where the value for 'name' should correspond to an
   argument name of the learner's constructor.
   Value for *'type'* should be in *['categorial', 'discrete_uniform', 'float', 'int', 'loguniform', 'uniform']*.
   Furthermore, the required  and optional keys for each type are the following:
@@ -48,6 +48,7 @@ Parameters:
     | int                    | low, high    | -            |
     | loguniform             | low, high    | -            |
     | uniform                | low, high    | -            |
+
   More information on these parameters can be found [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.trial.Trial.html#optuna.trial.Trial).
   If not specified, the hyperparameters will be obtained from the *learner_class*.get_hyperparameters() method.
   If this method is not implemented in the *learner_class* and *hyperparameters* are not specified, hyperparameter
@@ -58,7 +59,7 @@ Parameters:
   The *init_arguments* argument should be a dictionary, where each key corresponds to an argument name of the learner's
   constructor.
   During optimization, the learner will be constructed with the value that corresponds to the key.
-- If not provided, it will be assumed to be an empty dict. 
+- If not provided, it will be assumed to be an empty dict.
 - **fit_arguments**: *Dict[str, Any], default=None*  
   Specifies the arguments that are required for calling the fit method.
   The *fit_arguments* argument should be a dictionary, where each key corresponds to an argument name of the learner's
@@ -79,8 +80,8 @@ Parameters:
   If this method is not implemented in the *learner_class* and the *objective_function* is not specified, hyperparameter
   tuning cannot be performed and an error is raised.
 - **n_trials**: *int, default=None*  
-  "The number of trials. If this argument is set to None, there is no limitation on the number of trials. 
-  If timeout is also set to None, the study continues to create trials until it receives a termination signal such as 
+  "The number of trials. If this argument is set to None, there is no limitation on the number of trials.
+  If timeout is also set to None, the study continues to create trials until it receives a termination signal such as
   Ctrl+C or SIGTERM." taken from [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.Study.html#optuna.study.Study.optimize).
 - **timeout**: *float, default=None*  
   "Stop study after the given number of second(s).
@@ -99,7 +100,44 @@ Parameters:
 
 * **Hyperparameter tuning example with the [DetrLearner](detr.md).**
 
-  This example shows how to tune some of the hyperparameters of the *DetrLearner*.
+  This example shows how to tune hyperparameters of the *DetrLearner*.
+
+  ```python
+  from opendr.utils.hyperparameter_tuner.hyperparameter_tuner import HyperparameterTuner
+  from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
+  from opendr.engine.datasets import ExternalDataset
+
+  # Create a coco dataset, containing training and evaluation data
+  dataset = ExternalDataset(path='./my_dataset', dataset_type='COCO')
+
+  # Specify the arguments that are required for the fit method
+  fit_arguments = {'dataset': dataset}
+
+  # Specify the arguments that are required for the eval method
+  eval_arguments = {'dataset': dataset}
+
+  # Specify timeout such that optimization is performed for 4 hours
+  timeout = 14400
+
+  # Initialize the tuner
+  tuner = HyperparameterTuner(DetrLearner)
+
+  # Optimize
+  best_parameters = tuner.optimize(
+    fit_arguments=fit_arguments,
+    eval_arguments=eval_arguments,
+    timeout=timeout,
+  )
+
+  # Initialize learner with the tuned hyperparameters
+  learner = DetrLearner(**best_parameters)
+  ```
+
+
+* **Custom hyperparameter tuning example with the [DetrLearner](detr.md).**
+
+  This example shows how to tune a selection of the hyperparameters of the *DetrLearner* and
+  how to specify an objective function.
 
   ```python
   from opendr.utils.hyperparameter_tuner.hyperparameter_tuner import HyperparameterTuner
