@@ -28,7 +28,6 @@ if __name__ == '__main__':
 
     # First we initialize the learner
     learner = GemLearner(num_classes=7, device=args.device)
-    learner.fusion_method = 'sc_avg'
     # Next, we download a pretrained model
     learner.download(mode='pretrained_gem')
     # And some sample images
