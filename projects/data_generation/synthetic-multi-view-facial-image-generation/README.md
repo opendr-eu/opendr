@@ -52,7 +52,7 @@ with the following modifications to make them compatible with the OpenDR specifi
 ## Minor Modifications
 1. All scripts: PEP8 changes
 2. ```3ddfa/main.py, 3ddfa/inference.py, test_multipose.py``` Modified to work as a callable functions
-3. ```options/base_options.py, options/test_options.py ``` Commented out/change several parameters to easily executed 
+3. ```options/base_options.py, options/test_options.py ``` Commented out/change several parameters to be easily executed 
 4. ```models/networks/render.py``` Minor functional changes
 5. The OPENDR created functions are ```3ddfa/SyntheticDataGeneration.py, 3ddfa/testSyntheticDataGeneration.py, 3ddfa/path_helper.py, 3ddfa/path_helper2.py```
 6. The rest are taken from the aforementioned repositories
