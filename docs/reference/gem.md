@@ -14,7 +14,7 @@ The [GemLearner](#src.perception.object_detection_2d.detr.detr_learner.py) class
 
 #### `GemLearner` constructor
 ```python
-GemLearner(self, model_config_path, dataset_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, num_classes, return_segmentations)
+GemLearner(self, model_config_path, dataset_config_path, iters, lr, batch_size, optimizer, backbone, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, threshold, num_classes, panoptic_segmentation)
 ```
 
 Constructor parameters:
@@ -29,7 +29,7 @@ Constructor parameters:
 - **batch_size**: *int, default=1*  
   Specifies number of images to be bundled up in a batch during training.
   This heavily affects memory usage, adjust according to your system.
-- **optimizer**: *{'sdg', 'adam', 'adamw'}, default='adamw'*  
+- **optimizer**: *{'sgd', 'adam', 'adamw'}, default='adamw'*  
   Specifies the type of optimizer that is used during training.
 - **backbone**: *{'resnet50'}, default='resnet50'*  
   Specifies the backbone architecture.
@@ -54,7 +54,7 @@ Constructor parameters:
   An example below demonstrates this.
   In this way, a model that was pretrained on the coco dataset can be finetuned to another dataset.
   Training on other datasets than COCO can be done by defining dataset folder structure details in *dataset_config.yaml* and using corresponding *num_classes*.
-- **return_segmentations**: *bool, default=False*  
+- **panoptic_segmentation**: *bool, default=False*  
   Specifies whether the model returns, next to bounding boxes, segmentations of objects.
   Currently this feature is not supported in GEM.
 
@@ -246,8 +246,7 @@ from opendr.perception.object_detection_2d.gem.algorithm.util.draw import plot_r
 import cv2
 
 # First we initialize the learner
-learner = GemLearner(num_classes=7, device=args.device)
-learner.fusion_method = 'sc_avg'
+learner = GemLearner(num_classes=7, device='cuda')
 # Next, we download a pretrained model
 learner.download(mode='pretrained_gem')
 # And some sample images
