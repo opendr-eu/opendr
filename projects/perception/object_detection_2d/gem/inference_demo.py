@@ -16,7 +16,7 @@
 import argparse
 
 from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
-from opendr.perception.object_detection_2d.gem.algorithm.util.draw import plot_results
+from opendr.perception.object_detection_2d.gem.algorithm.util.draw import draw
 import cv2
 
 
@@ -28,7 +28,6 @@ if __name__ == '__main__':
 
     # First we initialize the learner
     learner = GemLearner(num_classes=7, device=args.device)
-    learner.fusion_method = 'sc_avg'
     # Next, we download a pretrained model
     learner.download(mode='pretrained_gem')
     # And some sample images
@@ -42,5 +41,5 @@ if __name__ == '__main__':
     # The blue/green bar shows the contributions of the two modalities
     # Fully blue means relying purely on the first modality
     # Fully green means relying purely on the second modality
-    cv2.imshow('Detections', plot_results(m1_img, bounding_box_list, w_sensor1))
+    cv2.imshow('Detections', draw(m1_img, bounding_box_list, w_sensor1))
     cv2.waitKey(0)
