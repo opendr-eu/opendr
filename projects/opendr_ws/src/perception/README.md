@@ -28,7 +28,7 @@ rosrun perception pose_estimation.py
 
 
 ## 2D Object Detection ROS Nodes
-ROS nodes are implemented for the SSD, YOLOv3 and CenterNet generic object detectors. Steps 1, 2 from above must run first.
+ROS nodes are implemented for the SSD, YOLOv3, CenterNet and DETR generic object detectors. Steps 1, 2 from above must run first.
 Then, to initiate the SSD detector node, run:
 
 ```shell
@@ -36,13 +36,17 @@ rosrun perception object_detection_2d_ssd.py
 ```
 The annotated image stream can be viewed using `rqt_image_view`, and the default topic name is
 `/opendr/image_boxes_annotated`. The bounding boxes alone are also published as `/opendr/objects`.
-Similarly, the YOLOv3 and CenterNet detector nodes can be run with:
+Similarly, the YOLOv3, CenterNet and DETR detector nodes can be run with:
 ```shell
 rosrun perception object_detection_2d_yolov3.py
 ```
-and:
+or
 ```shell
 rosrun perception object_detection_2d_centernet.py
+```
+or
+```shell
+rosrun perception object_detection_2d_detr.py
 ```
 respectively.
 
@@ -77,7 +81,7 @@ roslaunch realsense2_camera rs_camera.launch enable_color:=true enable_infra:=tr
 4. You are then ready to start the pose detection node
 
 ```shell
-rosrun perception gem.py
+rosrun perception object_detection_2d_gem.py
 ```
 
 5. You can examine the annotated image stream using `rqt_image_view` (select one of the topics `/opendr/color_detection_annotated` or `/opendr/infra_detection_annotated`) or `rostopic echo /opendr/detections`

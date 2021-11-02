@@ -26,8 +26,8 @@ from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
 
 class DetrNode:
 
-    def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_detection_annotated",
-                 detection_annotations_topic="/opendr/detections", device="cuda"):
+    def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_boxes_annotated",
+                 detection_annotations_topic="/opendr/objects", device="cuda"):
         """
         Creates a ROS Node for object detection with DETR
         :param input_image_topic: Topic from which we are reading the input image
