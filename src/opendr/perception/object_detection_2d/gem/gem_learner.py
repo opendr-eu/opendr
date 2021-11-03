@@ -71,7 +71,7 @@ class GemLearner(Learner):
             device="cuda",
             threshold=0.7,
             num_classes=91,
-            return_segmentations=False,
+            panoptic_segmentation=False,
     ):
 
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
@@ -96,7 +96,7 @@ class GemLearner(Learner):
         self.args.num_classes = num_classes
         self.args.dataset_file = "coco"
 
-        if return_segmentations:
+        if panoptic_segmentation:
             self.args.masks = True
             self.args.dataset_file = "coco_panoptic"
         else:
