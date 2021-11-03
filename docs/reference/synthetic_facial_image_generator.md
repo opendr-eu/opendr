@@ -33,9 +33,9 @@ Definition of the pitch angles (in the interval [−90◦,90◦]) for which the 
 Specifies the device to be used.
 
 
-#### ``MultiviewDataGenerationLearner.eval`
+#### `MultiviewDataGenerationLearner.eval`
 ```python
-`MultiviewDataGenerationLearner.eval()
+MultiviewDataGenerationLearner.eval()
 ```
 
 This function is implementing the main procedure for the creation of the multi-view
