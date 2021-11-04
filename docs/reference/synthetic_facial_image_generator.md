@@ -69,7 +69,7 @@ The corresponding paths for the input, output folders as well as the pitch and y
 produce the facial images can be easily incorporated in the class creation while the method is initialized. 
 The process is executed for the CNN parameters and GPUs specified in the code. Users that wish to modify these parameters shall change the respective code
 A parser is created and the arguments path in, path_3ddfa, save_path, val_yaw, val_pitch which were described above are determined. Subsequently, an object synthetic
-of the class MultiviewDataGenerationLearner is created and the function synthetic.eval() is executed.
+of the class ```MultiviewDataGenerationLearner``` is created and the function ```synthetic.eval()``` is executed.
 
 #### References
 <a name="R-R-paper" href="https://github.com/Hangz-nju-cuhk/Rotate-and-Render">[1]</a>
