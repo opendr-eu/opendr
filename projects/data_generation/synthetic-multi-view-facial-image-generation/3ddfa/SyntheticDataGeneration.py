@@ -57,16 +57,7 @@ class MultiviewDataGenerationLearner(Learner):
     
 
     def __init__(self, path_in='./example/Images', path_3ddfa='./', save_path='./results', val_yaw='10,20', val_pitch=' 30,40', device='cuda'):
-        try:
-         if torch.cuda.is_available():
-            print("GPU found.")
-            device = 'cuda'
-         else:
-            print("GPU not found. Using CPU instead.")
-            device = 'cpu'
-        except:
-            device = 'cpu'
-    
+       
         self.path_in = path_in
         self.key = str(path_3ddfa + "/example/Images/")
         self.key1 = str(path_3ddfa + "/example/")
