@@ -45,6 +45,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [mobile_manipulation Module](mobile-manipulation.md)
     - `simulation` Module
         - [human_model_generation Module](human_model_generation.md)
+    - `data_generation` Module
+        - [synthetic_facial_image_generation Module](synthetic_facial_image_generator.md)
 - [ROSBridge Package](rosbridge.md)
 - [C Inference API](c-api.md)
     - [data.h](c-data-h.md)
