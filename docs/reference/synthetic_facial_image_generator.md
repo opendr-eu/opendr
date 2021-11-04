@@ -46,6 +46,30 @@ the second stage extracts the facial landmarks in order to derive the head pose 
 the images with the 3d head model mesh. Finally, the main functionality of the multiview
 facial image rendering is executed by loading the respective network parameters.
 
+### Usage Example
+
+```python
+import path_helper
+import argparse
+from SyntheticDataGeneration import MultiviewDataGenerationLearner
+__all__ = ['path_helper']
+
+parser=argparse.ArgumentParser()
+parser.add_argument('-path_in', default='/home/user/Pictures/', type=str )
+parser.add_argument('-save_path', default='./results', type=str )
+parser.add_argument('-path_3ddfa', default='/opendr_internal/projects/data_generation/synthetic-multi-view-facial-image-generation/3ddfa', type=str)
+parser.add_argument('-val_yaw',  default='10,20', nargs='+',type=str)
+parser.add_argument('-val_pitch', default='30,40', nargs='+', type=str)
+parser.add_argument('-device', default='cuda', type=str)
+args=parser.parse_args()
+synthetic = MultiviewDataGenerationLearner(path_in=args.path_in, path_3ddfa=args.path_3ddfa, save_path=args.save_path, val_yaw=args.val_yaw, val_pitch=args.val_pitch, device=args.device)
+synthetic.eval()
+```
+The corresponding paths for the input, output folders as well as the pitch and yaw angles for which the user wants to
+produce the facial images can be easily incorporated in the class creation while the method is initialized. 
+The process is executed for the CNN parameters and GPUs specified in the code. Users that wish to modify these parameters shall change the respective code
+A parser is created and the arguments path in, path_3ddfa, save_path, val_yaw, val_pitch which were described above are determined. Subsequently, an object synthetic
+of the class MultiviewDataGenerationLearner is created and the function synthetic.eval() is executed.
 
 #### References
 <a name="R-R-paper" href="https://github.com/Hangz-nju-cuhk/Rotate-and-Render">[1]</a>
