@@ -54,10 +54,10 @@ __all__ = ['sys', 'path_helper', 'path_helper2']
 
 
 class MultiviewDataGenerationLearner(Learner):
-    
 
-    def __init__(self, path_in='./example/Images', path_3ddfa='./', save_path='./results', val_yaw='10,20', val_pitch=' 30,40', device='cuda'):
-       
+    def __init__(self, path_in='./example/Images', path_3ddfa='./', save_path='./results',
+                 val_yaw='10,20', val_pitch=' 30,40', device='cuda'):
+
         self.path_in = path_in
         self.key = str(path_3ddfa + "/example/Images/")
         self.key1 = str(path_3ddfa + "/example/")
@@ -117,7 +117,7 @@ class MultiviewDataGenerationLearner(Learner):
         print("START")
 
         a = open("file_list.txt", "w")
-        for subdir, dirs, files in os.walk(self.path_in)
+        for subdir, dirs, files in os.walk(self.path_in):
             current_directory_path = os.path.abspath(subdir)
             for file in files:
                 name, ext = os.path.splitext(file)
