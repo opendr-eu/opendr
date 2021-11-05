@@ -27,7 +27,6 @@ import argparse
 from cv_bridge import CvBridge, CvBridgeError
 from src.opendr.engine.data import Image
 
-
 class Synthetic_Data_Generation:
 
     def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/synthetic_facial_images",
