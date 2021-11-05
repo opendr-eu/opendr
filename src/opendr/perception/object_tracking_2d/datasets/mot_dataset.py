@@ -28,7 +28,7 @@ from collections import OrderedDict
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 from opendr.engine.constants import OPENDR_SERVER_URL
-from opendr.engine.data import Image
+from opendr.engine.data import Image, ImageWithDetections
 from opendr.engine.target import TrackingAnnotationList
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
 from torchvision.transforms import transforms as T
@@ -135,6 +135,7 @@ class RawMotDatasetIterator(DatasetIterator):
         ltrb=True,
         mse_loss=False,
         img_size=(1088, 608),
+        scan_labels=True,
     ):
         self.img_files = OrderedDict()
         self.label_files = OrderedDict()
@@ -161,16 +162,19 @@ class RawMotDatasetIterator(DatasetIterator):
 
         for ds, label_paths in self.label_files.items():
             max_index = -1
-            for lp in label_paths:
-                lb = np.loadtxt(lp)
-                if len(lb) < 1:
-                    continue
-                if len(lb.shape) < 2:
-                    img_max = lb[1]
-                else:
-                    img_max = np.max(lb[:, 1])
-                if img_max > max_index:
-                    max_index = img_max
+            if scan_labels:
+                for lp in label_paths:
+                    lb = np.loadtxt(lp)
+                    if len(lb) < 1:
+                        continue
+                    if len(lb.shape) < 2:
+                        img_max = lb[1]
+                    else:
+                        img_max = np.max(lb[:, 1])
+                    if img_max > max_index:
+                        max_index = img_max
+            else:
+                max_index = 500
             self.tid_num[ds] = max_index + 1
 
         last_index = 0
@@ -257,6 +261,144 @@ class RawMotDatasetIterator(DatasetIterator):
             labels[:, 3] /= height
             labels[:, 4] /= width
             labels[:, 5] /= height
+
+        img = np.ascontiguousarray(img[:, :, ::-1].transpose(2, 0, 1))  # BGR to RGB
+
+        return img, labels, img_path, (h, w)
+
+    def __len__(self):
+        return self.nF  # number of batches
+
+
+class RawMotWithDetectionsDatasetIterator(DatasetIterator):
+    default_resolution = [1088, 608]
+    mean = None
+    std = None
+    num_classes = 1
+
+    def __init__(
+        self,
+        root,
+        paths,
+        img_size=(1088, 608),
+    ):
+        self.img_files = OrderedDict()
+        self.label_files = OrderedDict()
+        self.tid_num = OrderedDict()
+        self.tid_start_index = OrderedDict()
+        self.num_classes = 1
+
+        for ds, path in paths.items():
+            with open(path, "r") as file:
+                self.img_files[ds] = file.readlines()
+                self.img_files[ds] = [
+                    osp.join(root, x.strip()) for x in self.img_files[ds]
+                ]
+                self.img_files[ds] = list(
+                    filter(lambda x: len(x) > 0, self.img_files[ds])
+                )
+
+            self.label_files[ds] = [
+                x.replace("images", "labels_with_ids")
+                .replace(".png", ".txt")
+                .replace(".jpg", ".txt")
+                for x in self.img_files[ds]
+            ]
+
+        for ds, label_paths in self.label_files.items():
+            max_index = -1
+            for lp in label_paths:
+                lb = np.loadtxt(lp)
+                if len(lb) < 1:
+                    continue
+                if len(lb.shape) < 2:
+                    img_max = lb[1]
+                else:
+                    img_max = np.max(lb[:, 1])
+                if img_max > max_index:
+                    max_index = img_max
+            self.tid_num[ds] = max_index + 1
+
+        last_index = 0
+        for i, (k, v) in enumerate(self.tid_num.items()):
+            self.tid_start_index[k] = last_index
+            last_index += v
+
+        self.nID = int(last_index + 1)
+        self.nds = [len(x) for x in self.img_files.values()]
+        self.cds = [sum(self.nds[:i]) for i in range(len(self.nds))]
+        self.nF = sum(self.nds)
+        self.width = img_size[0]
+        self.height = img_size[1]
+
+    def __getitem__(self, files_index):
+
+        for i, c in enumerate(self.cds):
+            if files_index >= c:
+                ds = list(self.label_files.keys())[i]
+                start_index = c
+
+        img_path = self.img_files[ds][files_index - start_index]
+        label_path = self.label_files[ds][files_index - start_index]
+
+        imgs, labels, img_path, (input_h, input_w) = self.get_data(
+            img_path, label_path
+        )
+
+        for i, _ in enumerate(labels):
+            if labels[i, 1] > -1:
+                labels[i, 1] += self.tid_start_index[ds]
+
+        target = TrackingAnnotationList.from_mot(labels)
+        detections = target.bounding_box_list()
+        data = ImageWithDetections(Image(imgs), detections)
+
+        return (
+            data, target
+        )
+
+    def get_data(self, img_path, label_path):
+        height = self.height
+        width = self.width
+        img = cv2.imread(img_path)  # BGR
+        if img is None:
+            raise ValueError("File corrupt {}".format(img_path))
+
+        h, w, _ = img.shape
+        shape = img.shape[:2]
+        ratio = min(float(height) / shape[0], float(width) / shape[1])
+        new_shape = (
+            round(shape[1] * ratio),
+            round(shape[0] * ratio),
+        )
+        padw = (width - new_shape[0]) / 2  # width padding
+        padh = (height - new_shape[1]) / 2  # height padding
+
+        # Load labels
+        if os.path.isfile(label_path):
+            labels0 = np.loadtxt(label_path, dtype=np.float32).reshape(-1, 6)
+
+            # Normalized xywh to pixel xyxy format
+            labels = labels0.copy()
+            labels[:, 2] = (
+                ratio * w * (labels0[:, 2] - labels0[:, 4] / 2) + padw
+            )
+            labels[:, 3] = (
+                ratio * h * (labels0[:, 3] - labels0[:, 5] / 2) + padh
+            )
+            labels[:, 4] = (
+                ratio * w * (labels0[:, 2] + labels0[:, 4] / 2) + padw
+            )
+            labels[:, 5] = (
+                ratio * h * (labels0[:, 3] + labels0[:, 5] / 2) + padh
+            )
+        else:
+            labels = np.array([])
+
+        nL = len(labels)
+        if nL > 0:
+            # convert xyxy to xywh
+            labels[:, 2:6] = xyxy2xywh(labels[:, 2:6].copy())  # / height
 
         img = np.ascontiguousarray(img[:, :, ::-1].transpose(2, 0, 1))  # BGR to RGB
 

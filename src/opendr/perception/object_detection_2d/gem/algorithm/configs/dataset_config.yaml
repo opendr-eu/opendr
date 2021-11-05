@@ -1,0 +1,12 @@
+# # * L515-dataset - num_classes 7
+dataset_root: "./datasets"
+dataset_name: "l515_dataset"
+annotations_folder: ""
+m1_train_annotations_file: "l515-29Apr2021_12h20-indoor-train-rgb-coco.json"
+m2_train_annotations_file: "l515-29Apr2021_12h20-indoor-train-infra-coco.json"
+m1_train_images_folder: ""
+m2_train_images_folder: ""
+m1_val_annotations_file: "l515-29Apr2021_12h20-indoor-test-rgb-coco.json"
+m2_val_annotations_file: "l515-29Apr2021_12h20-indoor-test-infra-coco.json"
+m1_val_images_folder: ""
+m2_val_images_folder: ""
