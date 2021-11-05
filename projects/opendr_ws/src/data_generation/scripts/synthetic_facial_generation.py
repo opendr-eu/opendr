@@ -52,14 +52,17 @@ class Synthetic_Data_Generation:
 
         # Initialize the SyntheticDataGeneration
         self.parser = argparse.ArgumentParser()
-        self.parser.add_argument('-path_in', default='/home/ekakalet/Pictures/TEST', type=str, help='Give the path of image folder')
+        self.parser.add_argument('-path_in', default='/home/ekakalet/Pictures/TEST', type=str, 
+                                 help='Give the path of image folder')
         self.parser.add_argument('-path_3ddfa', default='./', type=str, help='Give the path of 3ddfa folder')
         self.parser.add_argument('-save_path', default='./results/', type=str, help='Give the path of results folder')
-        self.parser.add_argument('-val_yaw',  default="15,-15", nargs='+', type=str, help='yaw poses list between [-90,90] ')
+        self.parser.add_argument('-val_yaw',  default="15,-15", nargs='+', type=str, 
+                                 help='yaw poses list between [-90,90] ')
         self.parser.add_argument('-val_pitch', default="15,-15", nargs='+', type=str,  help='pitch poses list between [-90,90] ')
         self.args = parser.parse_args()
-        self.synthetic = MultiviewDataGenerationLearner(path_in=self.args.path_in, path_3ddfa=self.args.path_3ddfa, save_path=self.args.save_path,
-                                                   val_yaw=self.args.val_yaw, val_pitch=self.args.val_pitch)
+        self.synthetic = MultiviewDataGenerationLearner(path_in=self.args.path_in, path_3ddfa=self.args.path_3ddfa, 
+                                                        save_path=self.args.save_path,
+                                                        val_yaw=self.args.val_yaw, val_pitch=self.args.val_pitch)
 
     def listen(self):
         """
