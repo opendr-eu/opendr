@@ -48,14 +48,11 @@ try:
         parser.add_argument('-device', default='cpu', type=str, help='choose between cuda or cpu ')
 except:
     parser.add_argument('-device', default='cpu', type=str, help='choose between cuda or cpu ')
-
-
 parser.add_argument('-path_in', default='./example/Images', type=str, help='Give the path of image folder')
 parser.add_argument('-path_3ddfa', default='./', type=str, help='Give the path of 3ddfa folder')
 parser.add_argument('-save_path', default='./results', type=str, help='Give the path of results folder')
 parser.add_argument('-val_yaw',  default="10,20", nargs='+', type=str, help='yaw poses list between [-90,90] ')
 parser.add_argument('-val_pitch', default="30,40", nargs='+', type=str,  help='pitch poses list between [-90,90] ')
-
 args = parser.parse_args()
 synthetic = MultiviewDataGenerationLearner(path_in=args.path_in, path_3ddfa=args.path_3ddfa, save_path=args.save_path,
                                            val_yaw=args.val_yaw, val_pitch=args.val_pitch, device=args.device)
