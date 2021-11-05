@@ -22,15 +22,23 @@ cd src
 git clone https://github.com/ros-drivers/usb_cam
 cd ..
 ```
-3. Build the packages inside workspace
+3. Install the following dependencies, required in order to use the OpenDR ROS tools: 
+```shell
+sudo apt-get install ros-noetic-vision-msgs ros-noetic-geometry-msgs ros-noetic-sensor-msgs
+```
+4. Build the packages inside workspace
 ```shell
 catkin_make
 ```
-4. Source the workspace and you are ready to go!
+5. Source the workspace and you are ready to go!
 ```shell
 source devel/setup.bash
 ```
 ## Structure
 
-Currently, apart from tools, opendr_ws contains the following 1 ros node:
-1. [Pose Estimation](src/perception/README.md)
+Currently, apart from tools, opendr_ws contains the following ROS nodes:
+
+### [Perception](src/perception/README.md)
+1. Pose Estimation
+2. 2D Object Detection
+3. Face Detection

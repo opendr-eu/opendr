@@ -109,7 +109,7 @@ class CoX3DLearner(X3DLearner):
             head_batchnorm=self.model_hparams["head_batchnorm"],
             fc_std_init=self.model_hparams["fc_std_init"],
             final_batchnorm_zero_init=self.model_hparams["final_batchnorm_zero_init"],
-        )
+        ).to(device=self.device)
         return self.model
 
     @property

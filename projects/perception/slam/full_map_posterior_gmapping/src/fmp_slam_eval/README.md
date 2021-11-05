@@ -5,7 +5,7 @@ This module includes helper nodes and scripts, useful for characterizing and eva
 
 ## err_collector
 
-This node collects the transtalional, rotational and total errors computed by another node and stores them in CSV files.
+This node collects the translational, rotational and total errors computed by another node and stores them in CSV files.
 Errors during the full-SLAM (mapping and localization) phase of a run are stored in one file, while (if used) errors
 measured during the Localization-Only phase are stored in a separate file. 
 
