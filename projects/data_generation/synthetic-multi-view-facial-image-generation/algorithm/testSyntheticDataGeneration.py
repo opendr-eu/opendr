@@ -48,6 +48,7 @@ try:
         parser.add_argument('-device', default='cpu', type=str, help='choose between cuda or cpu ')
 except:
     parser.add_argument('-device', default='cpu', type=str, help='choose between cuda or cpu ')
+
 parser.add_argument('-path_in', default='./example/Images', type=str, help='Give the path of image folder')
 parser.add_argument('-path_3ddfa', default='./', type=str, help='Give the path of 3ddfa folder')
 parser.add_argument('-save_path', default='./results', type=str, help='Give the path of results folder')
