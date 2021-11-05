@@ -60,7 +60,7 @@ class Synthetic_Data_Generation:
                                  help='yaw poses list between [-90,90] ')
         self.parser.add_argument('-val_pitch', default="15,-15", nargs='+', type=str,
                                  help='pitch poses list between [-90,90] ')
-        self.args = parser.parse_args()
+        self.args = self.parser.parse_args()
         self.synthetic = MultiviewDataGenerationLearner(path_in=self.args.path_in, path_3ddfa=self.args.path_3ddfa,
                                                         save_path=self.args.save_path,
                                                         val_yaw=self.args.val_yaw, val_pitch=self.args.val_pitch)
