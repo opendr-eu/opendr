@@ -39,7 +39,6 @@
 from tqdm import tqdm
 from shutil import copyfile
 import cv2
-import torch
 import os
 import sys
 import path_helper
