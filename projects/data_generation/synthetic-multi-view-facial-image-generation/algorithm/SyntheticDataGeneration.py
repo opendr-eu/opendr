@@ -173,7 +173,7 @@ class MultiviewDataGenerationLearner(Learner):
         test_multipose.main(self.save_path, self.val_yaw, self.val_pitch)
 
     def fit(self):
-        print("do nothing")
+        raise NotImplementedError()
 
     def infer(self):
         print("do nothing")
