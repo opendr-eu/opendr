@@ -109,7 +109,7 @@ To get the final performance on a dataset, please use the `eval` method of `Atte
 
   - **performance**: *dict*   
     A dictionary that holds the performance curves with the following keys, with corresponding prefixes (`"train_"`, `"val_"`, `"test_"`):  
-        - `"cross_entropy"`: a list that contains cross entropy measured after each training epoch.     
+        - `"cross_entropy"`: a *list* that contains cross entropy measured after each training epoch.     
         - `"acc"`: a *list* that contains accuracy measured after each training epoch.   
         - `"precision"`: a *list* that contains precision measured after each training epoch.    
         - `"recall"`: a *list* that contains recall measured after each training epoch.   
