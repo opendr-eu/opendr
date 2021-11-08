@@ -194,7 +194,7 @@ Note that under the given directory path, `metadata.json` and `model_weights.pt`
 
 #### `AttentionNeuralBagOfFeatureLearner.download`
 ```python
-AttentionNeuralBagOfFeatureLearner.download(path, fold_idx)
+AttentionNeuralBagOfFeatureLearner.download(self, path, fold_idx)
 ```
 
 This method is used to download pretrained models for the AF dataset given different cross validation fold index. 
