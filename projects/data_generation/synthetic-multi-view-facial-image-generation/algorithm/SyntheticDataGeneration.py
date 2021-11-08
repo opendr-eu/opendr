@@ -188,4 +188,4 @@ class MultiviewDataGenerationLearner(Learner):
         print("do nothing")
 
     def save(self):
-        print("do nothing")
+        raise NotImplementedError()
