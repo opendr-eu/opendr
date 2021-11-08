@@ -291,7 +291,8 @@ This dataset has been preprocessed according to [[1]](#anbof) and split into 5-f
   In the above code, we pass the `class_weight` parameter to the `fit` function because the AF dataset is imbalanced. The `fit` function returns `performance`, which is a dictionary that contains the performance measured after each training epoch.   
 
 * **Download and evaluate pretrained model for the AF dataset**.  
-  In this example, we will show how pretrained models for the AF dataset [[2]](#af) can be easily downloaded by a single line of code using the functionality provided in `AttentionNeuralBagOfFeatureLearner` and evaluate the model on the test set. Since the AF dataset is divided into 5 folds, the following code iterates through each data split, downloads the corresponding pretrained model and evaluates on the correposnding validation set.  
+  In this example, we will show how pretrained models for the AF dataset [[2]](#af) can be easily downloaded by a single line of code using the functionality provided in `AttentionNeuralBagOfFeatureLearner` and evaluate the model on the test set.
+  Since the AF dataset is divided into 5 folds, the following code iterates through each data split, downloads the corresponding pretrained model and evaluates on the corresponding validation set.  
 
   ```python
   from opendr.perception.heart_anomaly_detection.attention_neural_bag_of_feature.attention_neural_bag_of_feature_learner import \
