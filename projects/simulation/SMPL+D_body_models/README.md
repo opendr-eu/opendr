@@ -8,6 +8,7 @@ python download_smpld_raw.py
 ```
 
 ## Download the SMPL+D models as FBX (Filmbox) files. <br/>In this case the pose blend shapes are not applied.
+Download SMPL for MAYA from the official website [here](https://smpl.is.tue.mpg.de/)
 ```
 python download_smpld_fbx.py
 ```
