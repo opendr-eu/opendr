@@ -283,7 +283,7 @@ class ANBoF(nn.Module):
 
     def forward(self, x):
         x = self.resnet_block(x)
-        x = self.quantization_block(x).mean(-1)
+        x = self.attention_block(self.quantization_block(x)).mean(-1)
         x = self.classifier(x)
         return x
 
@@ -314,7 +314,7 @@ class ATNBoF(nn.Module):
         self.quantization_block = TNBoF(in_channels, n_codeword)
 
         # attention block
-        self.short_attention_block = Attention(n_codeword, int(series_length / 2), att_type)
+        self.short_attention_block = Attention(n_codeword, series_length - int(series_length / 2), att_type)
         self.long_attention_block = Attention(n_codeword, series_length, att_type)
 
         # classifier
@@ -326,8 +326,8 @@ class ATNBoF(nn.Module):
     def forward(self, x):
         x = self.resnet_block(x)
         x_short, x_long = self.quantization_block(x)
-        x_short = x_short.mean(-1)
-        x_long = x_long.mean(-1)
+        x_short = self.short_attention_block(x_short).mean(-1)
+        x_long = self.long_attention_block(x_long).mean(-1)
         x = torch.cat([x_short, x_long], dim=-1)
         x = self.classifier(x)
         return x
