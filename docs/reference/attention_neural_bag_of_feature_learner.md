@@ -251,7 +251,7 @@ This method is used to download the pre-processed AF dataset [[2]](#af)
 * **Training example using the AF dataset**.  
 In this example, we will train a heart anomaly detector using the AF dataset [[2]](#af), which contains single-lead ECG recordings and the class labels that categorize the samples into 4 classes: normal rhythm, atrial fibrillation, alternative rhythm and noise.
 We start by importing the learner and the function used to download and construct the dataset.
-This dataset has been preprocessed according to [[1]](#gru) and splitted into 5-fold cross validation protocol.  
+This dataset has been preprocessed according to [[1]](#anbof) and split into 5-fold cross validation protocol.  
 
   ```python
   from opendr.perception.heart_anomaly_detection.attention_neural_bag_of_feature.attention_neural_bag_of_feature_learner import \
