@@ -179,7 +179,7 @@ The former keeps the metadata and the latter keeps the model weights.
 
 #### `AttentionNeuralBagOfFeatureLearner.load`
 ```python
-AttentionNeuralBagOfFeatureLearner.load(path, verbose)
+AttentionNeuralBagOfFeatureLearner.load(self, path, verbose)
 ```
 
 This method is used to load a previously saved model (by calling `AttentionNeuralBagOfFeatureLearner.save(path)`) from a given directory. 
