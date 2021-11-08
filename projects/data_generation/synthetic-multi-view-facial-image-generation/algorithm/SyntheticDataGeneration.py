@@ -179,7 +179,7 @@ class MultiviewDataGenerationLearner(Learner):
         raise NotImplementedError()
 
     def load(self):
-        print("do nothing")
+        raise NotImplementedError()
 
     def optimize(self):
         print("do nothing")
