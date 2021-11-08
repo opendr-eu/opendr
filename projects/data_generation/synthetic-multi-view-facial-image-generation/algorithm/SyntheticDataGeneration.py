@@ -176,7 +176,7 @@ class MultiviewDataGenerationLearner(Learner):
         raise NotImplementedError()
 
     def infer(self):
-        print("do nothing")
+        raise NotImplementedError()
 
     def load(self):
         print("do nothing")
