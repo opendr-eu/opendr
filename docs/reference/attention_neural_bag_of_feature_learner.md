@@ -142,7 +142,7 @@ Returns a dictionary containing `"cross_entropy"`, `"acc"`, `"precision"`, `"rec
 
 #### `AttentionNeuralBagOfFeatureLearner.infer`
 ```python
-AttentionNeuralBagOfFeatureLearner.infer(series)   
+AttentionNeuralBagOfFeatureLearner.infer(self, series)   
 ```
 
 This method is used to generate the class prediction given an input series.    
