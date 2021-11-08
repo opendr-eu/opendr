@@ -182,7 +182,7 @@ class MultiviewDataGenerationLearner(Learner):
         raise NotImplementedError()
 
     def optimize(self):
-        print("do nothing")
+        raise NotImplementedError()
 
     def reset(self):
         print("do nothing")
