@@ -324,10 +324,10 @@ class AttentionNeuralBagOfFeatureLearner(Learner):
 
     def infer(self, series):
         """
-        This method is used to generate class prediction given an image
+        This method is used to generate class prediction given a time-series
 
-        :param img: image to generate class prediction
-        :type img: engine.data.Timeseries
+        :param series: the input series to generate class prediction
+        :type series: engine.data.Timeseries
 
         """
 
