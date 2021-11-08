@@ -161,7 +161,7 @@ Returns an instance of `engine.target.Category` representing the prediction.
 
 #### `AttentionNeuralBagOfFeatureLearner.save`
 ```python
-AttentionNeuralBagOfFeatureLearner.save(path, verbose)
+AttentionNeuralBagOfFeatureLearner.save(self, path, verbose)
 ```
 
 This method is used to save the current model instance under a given path. 
