@@ -8,15 +8,21 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.utils import get_paddings_indicator
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.nn import Empty
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.utils import (
+    get_paddings_indicator,
+)
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.nn import (
+    Empty,
+)
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.tools import (
-    change_default_args
+    change_default_args,
 )
 
 
 class PFNLayer(nn.Module):
-    def __init__(self, in_channels, out_channels, use_norm=True, last_layer=False):
+    def __init__(
+        self, in_channels, out_channels, use_norm=True, last_layer=False
+    ):
         """
         Pillar Feature Net Layer.
         The Pillar Feature Net could be composed of a series of these layers, but the PointPillars paper results only
@@ -35,7 +41,9 @@ class PFNLayer(nn.Module):
         self.units = out_channels
 
         if use_norm:
-            BatchNorm1d = change_default_args(eps=1e-3, momentum=0.01)(nn.BatchNorm1d)
+            BatchNorm1d = change_default_args(eps=1e-3, momentum=0.01)(
+                nn.BatchNorm1d
+            )
             Linear = change_default_args(bias=False)(nn.Linear)
         else:
             BatchNorm1d = Empty
@@ -47,7 +55,11 @@ class PFNLayer(nn.Module):
     def forward(self, inputs):
 
         x = self.linear(inputs)
-        x = self.norm(x.permute(0, 2, 1).contiguous()).permute(0, 2, 1).contiguous()
+        x = (
+            self.norm(x.permute(0, 2, 1).contiguous())
+            .permute(0, 2, 1)
+            .contiguous()
+        )
         x = F.relu(x)
 
         x_max = torch.max(x, dim=1, keepdim=True)[0]
@@ -101,7 +113,9 @@ class PillarFeatureNet(nn.Module):
             else:
                 last_layer = True
             pfn_layers.append(
-                PFNLayer(in_filters, out_filters, use_norm, last_layer=last_layer)
+                PFNLayer(
+                    in_filters, out_filters, use_norm, last_layer=last_layer
+                )
             )
         self.pfn_layers = nn.ModuleList(pfn_layers)
 
@@ -114,9 +128,9 @@ class PillarFeatureNet(nn.Module):
     def forward(self, features, num_voxels, coors):
 
         # Find distance of x, y, and z from cluster center
-        points_mean = features[:, :, :3].sum(dim=1, keepdim=True) / num_voxels.type_as(
-            features
-        ).view(-1, 1, 1)
+        points_mean = features[:, :, :3].sum(
+            dim=1, keepdim=True
+        ) / num_voxels.type_as(features).view(-1, 1, 1)
         f_cluster = features[:, :, :3] - points_mean
 
         # Find distance of x, y, and z from pillar center
@@ -197,6 +211,8 @@ class PointPillarsScatter(nn.Module):
         batch_canvas = torch.stack(batch_canvas, 0)
 
         # Undo the column stacking to final 4-dim tensor
-        batch_canvas = batch_canvas.view(batch_size, self.nchannels, self.ny, self.nx)
+        batch_canvas = batch_canvas.view(
+            batch_size, self.nchannels, self.ny, self.nx
+        )
 
         return batch_canvas

@@ -277,7 +277,7 @@ def voxel_object_detection_3d(config_path, model_name=None):
 
             t = time.time()
 
-            point_cloud: PointCloud = next(point_cloud_generator)
+            point_cloud = next(point_cloud_generator)
 
             pc_time = time.time() - t
 
@@ -364,9 +364,9 @@ def generate():
         # yield the output frame in the byte format
         yield (
             b"--frame\r\n"
-            b"Content-Type: image/jpeg\r\n\r\n"
-            + bytearray(encodedImage)
-            + b"\r\n"
+            b"Content-Type: image/jpeg\r\n\r\n" +
+            bytearray(encodedImage) +
+            b"\r\n"
         )
 
 

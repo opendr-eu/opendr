@@ -25,8 +25,8 @@ class Channel:
                 self.__process_packet(packet, packet_header)
 
                 if (
-                    packet_header.IndexOfPacketInChannel
-                    == packet_header.NumberOfPacketsInChannel - 1
+                    packet_header.IndexOfPacketInChannel ==
+                    packet_header.NumberOfPacketsInChannel - 1
                 ):
                     return self.__process_channel()
 
@@ -41,8 +41,8 @@ class Channel:
             length -= ctypes.sizeof(ChannelHeader)
 
         if (
-            packet_header.IndexOfPacketInChannel
-            == packet_header.NumberOfPacketsInChannel - 1
+            packet_header.IndexOfPacketInChannel ==
+            packet_header.NumberOfPacketsInChannel - 1
         ):
             length -= ctypes.sizeof(ChannelEnd)
 
@@ -50,8 +50,8 @@ class Channel:
             raise Exception("Channel buffer is too small")
 
         self.buffer[
-            self.position_in_channel : self.position_in_channel + length
-        ] = packet[start : start + length]
+            self.position_in_channel: self.position_in_channel + length
+        ] = packet[start: start + length]
         self.position_in_channel += length
 
     def __process_channel(self):

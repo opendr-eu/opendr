@@ -127,7 +127,7 @@ def draw_point_cloud_projected_cv(
 ):
 
     cameraMatrix = np.array(
-        [[fx, 0, 1], [0, fy, 1], [0, 0, 1],], dtype=np.float32
+        [[fx, 0, 1], [0, fy, 1], [0, 0, 1]], dtype=np.float32
     )
     distCoef = None
 

@@ -69,4 +69,3 @@ class O3MLidar:
     def stop(self):
         self.running = False
         self.iterate_thread.join()
-
