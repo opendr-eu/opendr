@@ -22,16 +22,26 @@ import time
 from zipfile import ZipFile
 from urllib.request import urlretrieve
 from opendr.engine.constants import OPENDR_SERVER_URL
-from opendr.engine.target import BoundingBox3D, BoundingBox3DList, TrackingAnnotation3D, TrackingAnnotation3DList
+from opendr.engine.target import (
+    BoundingBox3D,
+    BoundingBox3DList,
+    TrackingAnnotation3D,
+    TrackingAnnotation3DList,
+)
+from opendr.engine.data import PointCloudWithCalibration
 from opendr.engine.datasets import DatasetIterator
 import numpy as np
+from skimage import io
 
 from opendr.perception.object_detection_3d.datasets.kitti import parse_calib
 
+
 class KittiTrackingDatasetIterator(DatasetIterator):
     def __init__(
-        self, inputs_path, ground_truths_path,
-        inputs_format="detection"  # detection, tracking
+        self,
+        inputs_path,
+        ground_truths_path,
+        inputs_format="detection",  # detection, tracking
     ):
         super().__init__()
 
@@ -51,16 +61,25 @@ class KittiTrackingDatasetIterator(DatasetIterator):
 
     @staticmethod
     def download(
-        url, download_path, inputs_sub_path=".", ground_truths_sub_path=".",
-        inputs_format="detection", file_format="zip",
-        create_dir=False
+        url,
+        download_path,
+        inputs_sub_path=".",
+        ground_truths_sub_path=".",
+        inputs_format="detection",
+        file_format="zip",
+        create_dir=False,
     ):
 
         if file_format == "zip":
             if create_dir:
                 os.makedirs(download_path, exist_ok=True)
 
-            print("Downloading KITTI Tracking detections + labels dataset zip file from", url, "to", download_path)
+            print(
+                "Downloading KITTI Tracking detections + labels dataset zip file from",
+                url,
+                "to",
+                download_path,
+            )
 
             start_time = 0
             last_print = 0
@@ -79,9 +98,9 @@ class KittiTrackingDatasetIterator(DatasetIterator):
                 if time.time() - last_print >= 1:
                     last_print = time.time()
                     print(
-                        "\r%d MB, %d KB/s, %d seconds passed" %
-                        (progress_size / (1024 * 1024), speed, duration),
-                        end=''
+                        "\r%d MB, %d KB/s, %d seconds passed"
+                        % (progress_size / (1024 * 1024), speed, duration),
+                        end="",
                     )
 
             zip_path = os.path.join(download_path, "dataset.zip")
@@ -89,7 +108,7 @@ class KittiTrackingDatasetIterator(DatasetIterator):
             print()
 
             print("Extracting KITTI Dataset from zip file")
-            with ZipFile(zip_path, 'r') as zip_ref:
+            with ZipFile(zip_path, "r") as zip_ref:
                 zip_ref.extractall(download_path)
 
             os.remove(zip_path)
@@ -97,7 +116,7 @@ class KittiTrackingDatasetIterator(DatasetIterator):
             return KittiTrackingDatasetIterator(
                 os.path.join(download_path, inputs_sub_path),
                 os.path.join(download_path, ground_truths_sub_path),
-                inputs_format
+                inputs_format,
             )
 
         else:
@@ -108,7 +127,12 @@ class KittiTrackingDatasetIterator(DatasetIterator):
         download_path, create_dir=False,
     ):
         return KittiTrackingDatasetIterator.download(
-            os.path.join(OPENDR_SERVER_URL, "perception", "object_tracking_3d", "kitti_tracking_labels.zip"),
+            os.path.join(
+                OPENDR_SERVER_URL,
+                "perception",
+                "object_tracking_3d",
+                "kitti_tracking_labels.zip",
+            ),
             download_path,
             "kitti_tracking_labels",
             "kitti_tracking_labels",
@@ -124,167 +148,21 @@ class KittiTrackingDatasetIterator(DatasetIterator):
 
         data = []
 
-        def load_file(file_path, format, return_format, remove_dontcare=False):
-
-            results = {}
-            max_frame = -1
-
-            with open(file_path) as f:
-                lines = [x.strip() for x in f.readlines()]
-
-            for line in lines:
-                fields = line.split(" ")
-                frame = int(float(fields[0]))
-
-                if format == "tracking":
-                    if return_format == "tracking":
-                        box = TrackingAnnotation3D(
-                            name=fields[2],
-                            truncated=int(float(fields[3])),
-                            occluded=int(float(fields[4])),
-                            alpha=float(fields[5]),
-                            bbox2d=[
-                                float(fields[6]),
-                                float(fields[7]),
-                                float(fields[8]),
-                                float(fields[9]),
-                            ],
-                            dimensions=[
-                                float(fields[10]),
-                                float(fields[11]),
-                                float(fields[12]),
-                            ],
-                            location=[
-                                float(fields[13]),
-                                float(fields[14]),
-                                float(fields[15]),
-                            ],
-                            rotation_y=float(fields[16]),
-                            score=0 if len(fields) <= 17 else fields[17],
-                            frame=int(float(fields[0])),
-                            id=int(float(fields[1])),
-                        )
-                    elif return_format == "detection":
-                        box = BoundingBox3D(
-                            name=fields[2],
-                            truncated=int(float(fields[3])),
-                            occluded=int(float(fields[4])),
-                            alpha=float(fields[5]),
-                            bbox2d=[
-                                float(fields[6]),
-                                float(fields[7]),
-                                float(fields[8]),
-                                float(fields[9]),
-                            ],
-                            dimensions=[
-                                float(fields[10]),
-                                float(fields[11]),
-                                float(fields[12]),
-                            ],
-                            location=[
-                                float(fields[13]),
-                                float(fields[14]),
-                                float(fields[15]),
-                            ],
-                            rotation_y=float(fields[16]),
-                            score=0 if len(fields) <= 17 else fields[17],
-                        )
-                    else:
-                        raise ValueError("return_format should be tracking or detection")
-                elif format == "detection":
-                    if return_format == "tracking":
-                        box = TrackingAnnotation3D(
-                            name=fields[1],
-                            truncated=int(float(fields[2])),
-                            occluded=int(float(fields[3])),
-                            alpha=float(fields[4]),
-                            bbox2d=[
-                                float(fields[5]),
-                                float(fields[6]),
-                                float(fields[7]),
-                                float(fields[8]),
-                            ],
-                            dimensions=[
-                                float(fields[9]),
-                                float(fields[10]),
-                                float(fields[11]),
-                            ],
-                            location=[
-                                float(fields[12]),
-                                float(fields[13]),
-                                float(fields[14]),
-                            ],
-                            rotation_y=float(fields[15]),
-                            score=0 if len(fields) <= 15 else fields[16],
-                            frame=int(float(fields[0])),
-                            id=-1,
-                        )
-                    elif return_format == "detection":
-                        box = BoundingBox3D(
-                            name=fields[1],
-                            truncated=int(float(fields[2])),
-                            occluded=int(float(fields[3])),
-                            alpha=float(fields[4]),
-                            bbox2d=[
-                                float(fields[5]),
-                                float(fields[6]),
-                                float(fields[7]),
-                                float(fields[8]),
-                            ],
-                            dimensions=[
-                                float(fields[9]),
-                                float(fields[10]),
-                                float(fields[11]),
-                            ],
-                            location=[
-                                float(fields[12]),
-                                float(fields[13]),
-                                float(fields[14]),
-                            ],
-                            rotation_y=float(fields[15]),
-                            score=0 if len(fields) <= 15 else fields[16],
-                        )
-                else:
-                    raise ValueError("format should be tracking or detection")
-
-                if frame not in results:
-                    results[frame] = []
-
-                if not (remove_dontcare and box.name == "DontCare"):
-                    results[frame].append(box)
-                    max_frame = max(max_frame, frame)
-
-            if return_format == "tracking":
-
-                result = []
-
-                for frame in range(max_frame):
-                    if frame in results:
-                        result.append(TrackingAnnotation3DList(results[frame]))
-                    else:
-                        result.append(TrackingAnnotation3DList([]))
-
-                return result
-            elif return_format == "detection":
-                result = []
-
-                for frame in range(max_frame):
-                    if frame in results:
-                        result.append(BoundingBox3DList(results[frame]))
-                    else:
-                        result.append(BoundingBox3DList([]))
-
-                return result
-            else:
-                raise ValueError("return_format should be tracking or detection")
-
         for input_file, ground_truth_file in zip(
-            self.inputs_files,
-            self.ground_truths_files
+            self.inputs_files, self.ground_truths_files
         ):
 
-            input = load_file(os.path.join(self.inputs_path, input_file), self.inputs_format, "detection", remove_dontcare=True)
-            ground_truth = load_file(os.path.join(self.ground_truths_path, ground_truth_file), "tracking", "tracking")
+            input = load_tracking_file(
+                os.path.join(self.inputs_path, input_file),
+                self.inputs_format,
+                "detection",
+                remove_dontcare=True,
+            )
+            ground_truth = load_tracking_file(
+                os.path.join(self.ground_truths_path, ground_truth_file),
+                "tracking",
+                "tracking",
+            )
 
             data.append((input, ground_truth))
 
@@ -294,10 +172,15 @@ class KittiTrackingDatasetIterator(DatasetIterator):
         return len(self.data)
 
 
-
 class LabeledTrackingPointCloudsDatasetIterator(DatasetIterator):
     def __init__(
-        self, lidar_path, label_path, calib_path, image_path=None, num_point_features=4
+        self,
+        lidar_path,
+        label_path,
+        calib_path,
+        image_path=None,
+        labels_format="tracking",  # detection, tracking
+        num_point_features=4,
     ):
         super().__init__()
 
@@ -308,16 +191,18 @@ class LabeledTrackingPointCloudsDatasetIterator(DatasetIterator):
         self.num_point_features = num_point_features
 
         self.lidar_files = sorted(os.listdir(self.lidar_path))
-        self.label_files = sorted(os.listdir(self.label_path))
-        self.calib_files = sorted(os.listdir(self.calib_path))
-        self.image_files = sorted(os.listdir(self.image_path)) if self.image_path is not None else None
+        # self.label_files = sorted(os.listdir(self.label_path))
+        # self.calib_files = sorted(os.listdir(self.calib_path))
+        self.image_files = (
+            sorted(os.listdir(self.image_path))
+            if self.image_path is not None
+            else None
+        )
 
-        if len(self.lidar_files) != len(self.label_files) or len(
-            self.lidar_files
-        ) != len(self.calib_files):
-            raise ValueError(
-                "Number of files in lidar, label and calib files is not identical"
-            )
+        self.labels = load_tracking_file(
+            self.label_path, "tracking", labels_format,
+        )
+        self.calib = parse_calib(self.calib_path)
 
     def __getitem__(self, idx):
         points = np.fromfile(
@@ -325,25 +210,186 @@ class LabeledTrackingPointCloudsDatasetIterator(DatasetIterator):
             dtype=np.float32,
             count=-1,
         ).reshape([-1, self.num_point_features])
-        calib = parse_calib(
-            os.path.join(self.calib_path, self.calib_files[idx])
-        )
-        target = BoundingBox3DList.from_kitti(
-            get_label_anno(
-                os.path.join(self.label_path, self.label_files[idx])
+        target = self.labels[idx]
+
+        image_shape = (
+            None
+            if self.image_files is None
+            else (
+                np.array(
+                    io.imread(
+                        os.path.join(self.image_path, self.image_files[idx])
+                    ).shape[:2],
+                    dtype=np.int32,
+                )
             )
         )
 
-        image_shape = None if self.image_files is None else (
-            np.array(io.imread(
-                os.path.join(self.image_path, self.image_files[idx])
-            ).shape[:2], dtype=np.int32)
+        result = (
+            PointCloudWithCalibration(points, self.calib, image_shape),
+            target,
         )
-
-        result = (PointCloudWithCalibration(points, calib, image_shape), target)
 
         return result
 
     def __len__(self):
         return len(self.lidar_files)
 
+
+def load_tracking_file(
+    file_path, format, return_format, remove_dontcare=False
+):
+
+    results = {}
+    max_frame = -1
+
+    with open(file_path) as f:
+        lines = [x.strip() for x in f.readlines()]
+
+    for line in lines:
+        fields = line.split(" ")
+        frame = int(float(fields[0]))
+
+        if format == "tracking":
+            if return_format == "tracking":
+                box = TrackingAnnotation3D(
+                    name=fields[2],
+                    truncated=int(float(fields[3])),
+                    occluded=int(float(fields[4])),
+                    alpha=float(fields[5]),
+                    bbox2d=[
+                        float(fields[6]),
+                        float(fields[7]),
+                        float(fields[8]),
+                        float(fields[9]),
+                    ],
+                    dimensions=[
+                        float(fields[10]),
+                        float(fields[11]),
+                        float(fields[12]),
+                    ],
+                    location=[
+                        float(fields[13]),
+                        float(fields[14]),
+                        float(fields[15]),
+                    ],
+                    rotation_y=float(fields[16]),
+                    score=0 if len(fields) <= 17 else fields[17],
+                    frame=int(float(fields[0])),
+                    id=int(float(fields[1])),
+                )
+            elif return_format == "detection":
+                box = BoundingBox3D(
+                    name=fields[2],
+                    truncated=int(float(fields[3])),
+                    occluded=int(float(fields[4])),
+                    alpha=float(fields[5]),
+                    bbox2d=[
+                        float(fields[6]),
+                        float(fields[7]),
+                        float(fields[8]),
+                        float(fields[9]),
+                    ],
+                    dimensions=[
+                        float(fields[10]),
+                        float(fields[11]),
+                        float(fields[12]),
+                    ],
+                    location=[
+                        float(fields[13]),
+                        float(fields[14]),
+                        float(fields[15]),
+                    ],
+                    rotation_y=float(fields[16]),
+                    score=0 if len(fields) <= 17 else fields[17],
+                )
+            else:
+                raise ValueError(
+                    "return_format should be tracking or detection"
+                )
+        elif format == "detection":
+            if return_format == "tracking":
+                box = TrackingAnnotation3D(
+                    name=fields[1],
+                    truncated=int(float(fields[2])),
+                    occluded=int(float(fields[3])),
+                    alpha=float(fields[4]),
+                    bbox2d=[
+                        float(fields[5]),
+                        float(fields[6]),
+                        float(fields[7]),
+                        float(fields[8]),
+                    ],
+                    dimensions=[
+                        float(fields[9]),
+                        float(fields[10]),
+                        float(fields[11]),
+                    ],
+                    location=[
+                        float(fields[12]),
+                        float(fields[13]),
+                        float(fields[14]),
+                    ],
+                    rotation_y=float(fields[15]),
+                    score=0 if len(fields) <= 15 else fields[16],
+                    frame=int(float(fields[0])),
+                    id=-1,
+                )
+            elif return_format == "detection":
+                box = BoundingBox3D(
+                    name=fields[1],
+                    truncated=int(float(fields[2])),
+                    occluded=int(float(fields[3])),
+                    alpha=float(fields[4]),
+                    bbox2d=[
+                        float(fields[5]),
+                        float(fields[6]),
+                        float(fields[7]),
+                        float(fields[8]),
+                    ],
+                    dimensions=[
+                        float(fields[9]),
+                        float(fields[10]),
+                        float(fields[11]),
+                    ],
+                    location=[
+                        float(fields[12]),
+                        float(fields[13]),
+                        float(fields[14]),
+                    ],
+                    rotation_y=float(fields[15]),
+                    score=0 if len(fields) <= 15 else fields[16],
+                )
+        else:
+            raise ValueError("format should be tracking or detection")
+
+        if frame not in results:
+            results[frame] = []
+
+        if not (remove_dontcare and box.name == "DontCare"):
+            results[frame].append(box)
+            max_frame = max(max_frame, frame)
+
+    if return_format == "tracking":
+
+        result = []
+
+        for frame in range(max_frame):
+            if frame in results:
+                result.append(TrackingAnnotation3DList(results[frame]))
+            else:
+                result.append(TrackingAnnotation3DList([]))
+
+        return result
+    elif return_format == "detection":
+        result = []
+
+        for frame in range(max_frame):
+            if frame in results:
+                result.append(BoundingBox3DList(results[frame]))
+            else:
+                result.append(BoundingBox3DList([]))
+
+        return result
+    else:
+        raise ValueError("return_format should be tracking or detection")

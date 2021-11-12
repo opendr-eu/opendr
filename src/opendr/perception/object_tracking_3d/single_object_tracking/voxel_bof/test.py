@@ -9,6 +9,7 @@ from opendr.perception.object_detection_3d.datasets.kitti import (
 )
 from opendr.perception.object_tracking_3d.datasets.kitti_tracking import (
     KittiTrackingDatasetIterator,
+    LabeledTrackingPointCloudsDatasetIterator,
 )
 
 
@@ -18,7 +19,7 @@ print("Using device:", DEVICE)
 print("Using device:", DEVICE, file=sys.stderr)
 
 dataset_detection_path = "/data/sets/kitti_second"
-dataset_tracking_path = "/data/sets/kitti_tracking/training"
+dataset_tracking_path = "/data/sets/kitti_tracking"
 
 temp_dir = os.path.join(
     "tests",
@@ -64,7 +65,11 @@ car_configs = {
 }
 
 dataset_detection = KittiDataset(dataset_detection_path, subsets_path)
-dataset_tracking = KittiTrackingDatasetIterator(dataset_tracking_path, dataset_tracking_path, "tracking")
+dataset_tracking = LabeledTrackingPointCloudsDatasetIterator(
+    dataset_tracking_path + "/training/velodyne/0000",
+    dataset_tracking_path + "/training/label_02/0000.txt",
+    dataset_tracking_path + "/training/calib/0000.txt",
+)
 name = "pointpillars_car"
 config = all_configs[name]
 model_path = model_paths[name]
@@ -111,12 +116,6 @@ def test_pp_block1():
         model_config_path=config, device=DEVICE
     )
     learner.load(model_path)
-    mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset)
-
-    print(
-        "Ok?",
-        mAPbbox[0][0][0] > 70 and mAPbbox[0][0][0] < 95,
-    )
 
 
 test_pp_infer_tracking()
