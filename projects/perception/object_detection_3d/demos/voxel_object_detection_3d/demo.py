@@ -25,8 +25,6 @@ from flask import Flask, Response, render_template, request
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner,
 )
-from opendr.engine.data import PointCloud
-
 from data_generators import (
     lidar_point_cloud_generator,
     disk_point_cloud_generator,

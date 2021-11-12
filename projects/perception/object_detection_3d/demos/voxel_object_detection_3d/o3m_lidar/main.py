@@ -1,5 +1,4 @@
 from .o3m_lidar import O3MLidar
-import socket
 
 
 ip = "0.0.0.0"

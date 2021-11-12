@@ -1,6 +1,3 @@
-from time import sleep
-import numpy as np
-from opendr.engine.data import PointCloud
 from opendr.engine.datasets import PointCloudsDatasetIterator
 
 

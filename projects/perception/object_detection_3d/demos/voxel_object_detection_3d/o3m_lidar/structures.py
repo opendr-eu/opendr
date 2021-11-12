@@ -1,5 +1,4 @@
 from ctypes import (
-    POINTER,
     c_int32,
     c_uint8,
     c_uint16,
