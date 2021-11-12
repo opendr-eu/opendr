@@ -29,7 +29,7 @@ class Channel:
                     == packet_header.NumberOfPacketsInChannel - 1
                 ):
                     return self.__process_channel()
-        
+
         return None
 
     def __process_packet(self, packet, packet_header):

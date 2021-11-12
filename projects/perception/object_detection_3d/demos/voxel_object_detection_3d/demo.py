@@ -17,24 +17,13 @@ import os
 import argparse
 import threading
 import time
-from typing import Dict
 import numpy as np
-import torch
-import torchvision
 import cv2
-from imutils import resize
 from flask import Flask, Response, render_template, request
-from pathlib import Path
-import pandas as pd
-
-# from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
 
 # OpenDR imports
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner,
-)
-from opendr.perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_learner import (
-    ObjectTracking3DAb3dmotLearner,
 )
 from opendr.engine.data import PointCloud
 
@@ -44,8 +33,7 @@ from data_generators import (
 )
 from draw_point_clouds import (
     draw_point_cloud_bev,
-    draw_point_cloud_projected,
-    draw_point_cloud_projected_2,
+    draw_point_cloud_projected_numpy,
 )
 
 TEXT_COLOR = (255, 112, 255)  # B G R
@@ -60,7 +48,6 @@ point_cloud_generator = None
 keys_pressed = []
 
 lidar_type = "velodyne"
-
 
 # initialize a flask object
 app = Flask(__name__)
@@ -163,7 +150,7 @@ def stack_images(images, mode="horizontal"):
         return cv2.vconcat(images)
 
 
-def voxel_object_detection_3d(config_path, model_name=None): 
+def voxel_object_detection_3d(config_path, model_name=None):
     global point_cloud_generator, output_frame, lock, lidar_type
 
     with lock:
@@ -185,40 +172,10 @@ def voxel_object_detection_3d(config_path, model_name=None):
         ):
             detection_learner.download(model_name, "./models")
         detection_learner.load("./models/" + model_name, verbose=True)
-        tracking_learner = ObjectTracking3DAb3dmotLearner()
         print("Learner created")
-        # from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset
-        # detection_learner.eval(KittiDataset('/media/io/HDDAU657455/FILES/KITTI/second', '/media/io/HDDAU657455/FILES/opendr/opendr_internal/src/opendr/perception/object_detection_3d/datasets/kitti_subsets'))
-    
+
     else:
         detection_learner = None
-        tracking_learner = None
-
-
-    # dataset = KittiDataset("/data/sets/kitti_second")
-
-    # dataset_path = "/data/sets/kitti_second"
-
-    # val_dataset = LabeledPointCloudsDatasetIterator(
-    #     dataset_path + "/training/velodyne",
-    #     dataset_path + "/training/label_2",
-    #     dataset_path + "/training/calib",
-    # )
-
-    # r = learner.eval(val_dataset)
-
-    # tvec = np.array([0, 0, 0], dtype=np.float32)
-    # rvec = np.array([0, 0, 0], dtype=np.float32)
-    # fx = 10
-    # fy = 10
-    # tvec = np.array([-1.25, 4.71, -12], dtype=np.float32)
-    # rvec = np.array([2.4, 15.6, 10.8], dtype=np.float32)
-    # fx = 864
-    # fy = 384
-    # tvec = np.array([-10.8, -16.8, -12], dtype=np.float32)
-    # rvec = np.array([-2.32, 0.6, -1.2], dtype=np.float32)
-    # fx = 384
-    # fy = 384
 
     def process_key(key):
 
@@ -281,7 +238,7 @@ def voxel_object_detection_3d(config_path, model_name=None):
         # image_size_y = 1800
         image_size_x = 1000
         image_size_y = 1000
-        font_scale=4
+        font_scale = 4
         tvec = np.array([10.8, 8.34, 16.8], dtype=np.float32)
         rvec = np.array([-10.67, 26.69, 6.914], dtype=np.float32)
         fx = 864.98
@@ -292,21 +249,19 @@ def voxel_object_detection_3d(config_path, model_name=None):
         scale = 30
         image_size_x = 60
         image_size_y = 6
-        
+
         tvec = np.array([10.8, 8.34, 16.8], dtype=np.float32)
         rvec = np.array([-10.67, 26.69, 6.914], dtype=np.float32)
-        # tvec = np.array([2.4, 22.8, 13.20], dtype=np.float32)
-        # rvec = np.array([-6.28, 15.39, 5.03], dtype=np.float32)
         fx = 864.98
         fy = 864.98
-        font_scale=0.5
+        font_scale = 0.5
     elif lidar_type == "o3mlidar":
         xs = [-8, 8]
         ys = [-8, 8]
         scale = 40
         image_size_x = 600
         image_size_y = 600
-        font_scale=1
+        font_scale = 1
         tvec = np.array([4.8, 2.4, 13.2], dtype=np.float32)
         rvec = np.array([-6.28, 15.39, 5.03], dtype=np.float32)
         fx = 864.98
@@ -315,63 +270,41 @@ def voxel_object_detection_3d(config_path, model_name=None):
         xs = [-20, 90]
         ys = [-50, 50]
         scale = 20
-        # image_size_x = 600
-        # image_size_y = 1800
         image_size_x = 1000
         image_size_y = 3000
-        font_scale=4
+        font_scale = 4
 
-    # Loop over frames from the video stream
     while True:
         try:
-            
+
             t = time.time()
 
             point_cloud: PointCloud = next(point_cloud_generator)
 
             pc_time = time.time() - t
 
-            # point_cloud.data[:, :3] *= 2
-
             if len(point_cloud.data) <= 0:
                 continue
-
-            # print("Point cloud created")
-
 
             t = time.time()
 
             if predict:
                 predictions = detection_learner.infer(point_cloud)
-                tracking_predictions = tracking_learner.infer(predictions)
             else:
                 predictions = []
-                tracking_predictions = []
 
             if len(predictions) > 0:
-                print("found", len(predictions), "objects", "and", len(tracking_predictions), "tracklets")
+                print(
+                    "found", len(predictions), "objects",
+                )
 
             predict_time = time.time() - t
             t = time.time()
 
-            frame_bev = draw_point_cloud_bev(
-                point_cloud.data, tracking_predictions, scale, xs, ys
-            )
             frame_bev_2 = draw_point_cloud_bev(
                 point_cloud.data, predictions, scale, xs, ys
             )
-
-            # frame_proj = draw_point_cloud_projected_2(
-            #     point_cloud.data,
-            #     predictions,
-            #     tvec=tvec0,
-            #     rvec=rvec0,
-            #     image_size_x=image_size_x,
-            #     image_size_y=image_size_y,
-            #     fx=fx,
-            #     fy=fy,
-            # )
-            frame_proj_2 = draw_point_cloud_projected_2(
+            frame_proj_2 = draw_point_cloud_projected_numpy(
                 point_cloud.data,
                 predictions,
                 tvec=tvec,
@@ -382,13 +315,9 @@ def voxel_object_detection_3d(config_path, model_name=None):
                 fy=fy,
             )
             frame = frame_proj_2
-            # frame = stack_images([frame_proj, frame], "vertical")
-            # frame = stack_images([frame, frame_bev], "vertical")
-            # frame = stack_images([frame, frame_bev], "horizontal")
             frame = stack_images([frame, frame_bev_2], "horizontal")
 
             draw_time = time.time() - t
-
 
             total_time = pc_time + predict_time + draw_time
 
@@ -399,12 +328,9 @@ def voxel_object_detection_3d(config_path, model_name=None):
                     "predict": str(int(predict_time * 100 / total_time)) + "%",
                     "get data": str(int(pc_time * 100 / total_time)) + "%",
                     "draw": str(int(draw_time * 100 / total_time)) + "%",
-                    # "tvec": tvec, "rvec": rvec, "f": [fx, fy],
                 },
-                font_scale
+                font_scale,
             )
-
-            # print("frame created")
 
             for key in keys_pressed:
                 process_key(key)
@@ -413,10 +339,8 @@ def voxel_object_detection_3d(config_path, model_name=None):
 
             with lock:
                 output_frame = frame.copy()
-        except Exception as e:
+        except FileExistsError as e:
             print(e)
-            # torch.cuda.empty_cache()
-            # raise e
 
 
 def generate():
@@ -554,10 +478,13 @@ if __name__ == "__main__":
             rplidar(args["rplidar_port"])
         ),
         "o3mlidar": lambda: lidar_point_cloud_generator(
-            o3mlidar(ip=args["o3m_ip"], port=args["o3m_port"], buffer_size=args["o3m_buffer_size"])
+            o3mlidar(
+                ip=args["o3m_ip"],
+                port=args["o3m_port"],
+                buffer_size=args["o3m_buffer_size"],
+            )
         ),
     }[args["source"]]()
-    # time.sleep(2.0)
 
     lidar_type = {
         "disk": "velodyne",
@@ -566,7 +493,7 @@ if __name__ == "__main__":
         "o3mlidar": "o3mlidar",
     }[args["source"]]
 
-    algorithm = {"voxel": voxel_object_detection_3d,}[args["algorithm"]]
+    algorithm = {"voxel": voxel_object_detection_3d}[args["algorithm"]]
 
     # start a thread that will perform detection
     t = threading.Thread(

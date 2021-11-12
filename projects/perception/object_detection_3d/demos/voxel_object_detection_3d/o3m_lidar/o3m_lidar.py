@@ -5,11 +5,12 @@ from opendr.engine.data import PointCloud
 import threading
 import numpy as np
 
+
 def point_cloud_from_channel_8_data(data: Channel8Data):
-    
+
     distance_image = data.distanceImageResult
     positions = np.empty((len(distance_image.X), 4))
-    
+
     positions[:, 0] = distance_image.X
     positions[:, 1] = distance_image.Y
     positions[:, 2] = distance_image.Z
@@ -17,9 +18,19 @@ def point_cloud_from_channel_8_data(data: Channel8Data):
 
     return positions
 
-class O3MLidar():
-    def __init__(self, ip, port, buffer_size=1460, channel_id=8, output_mode="point_cloud") -> None:
-        self.socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+
+class O3MLidar:
+    def __init__(
+        self,
+        ip,
+        port,
+        buffer_size=1460,
+        channel_id=8,
+        output_mode="point_cloud",
+    ) -> None:
+        self.socket = socket.socket(
+            family=socket.AF_INET, type=socket.SOCK_DGRAM
+        )
         self.socket.bind((ip, port))
         print("UDP socket", ip, port)
 
@@ -43,18 +54,19 @@ class O3MLidar():
                     if self.output_mode == "channel_8":
                         self.last_output = result
                     elif self.output_mode == "point_cloud":
-                        self.last_output = point_cloud_from_channel_8_data(result)
+                        self.last_output = point_cloud_from_channel_8_data(
+                            result
+                        )
                     else:
-                        raise Exception("Unknown output_mode:", self.output_mode)
-    
+                        raise Exception(
+                            "Unknown output_mode:", self.output_mode
+                        )
+
     def next(self):
         with self.lock:
             return PointCloud(self.last_output)
-        
+
     def stop(self):
         self.running = False
         self.iterate_thread.join()
 
-
-
-        

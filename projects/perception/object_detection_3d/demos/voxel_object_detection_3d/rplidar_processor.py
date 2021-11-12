@@ -23,9 +23,9 @@ def create_point_cloud(scan, z=0):
     return points
 
 
-class RPLidar():
+class RPLidar:
     def __init__(self, port, baudrate=115200, timeout=1):
-        
+
         lidar = RPLidarAPI(port=port, baudrate=baudrate, timeout=timeout)
 
         self.lidar = lidar
@@ -51,7 +51,7 @@ class RPLidar():
     def __itereate_scans(self):
 
         for scan in self.lidar.iter_scans(min_len=1):
-            
+
             pc = create_point_cloud(scan)
 
             with self.lock:

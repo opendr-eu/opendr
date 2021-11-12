@@ -28,11 +28,6 @@ def draw_point_cloud_bev(
     x_max = MaxMetric()
     y_max = MaxMetric()
 
-    # x_min.update(0)
-    # x_max.update(90)
-    # y_min.update(-40)
-    # y_max.update(40)
-
     x_min.update(xs[0])
     x_max.update(xs[1])
     y_min.update(ys[0])
@@ -107,13 +102,7 @@ def draw_point_cloud_bev(
         half_size_x, half_size_y = (size[:2] * scale / 2).astype(np.int32)
 
         pil_draw.polygon(
-            rotate_rectangle(
-                x_bev,
-                y_bev,
-                half_size_x,
-                half_size_y,
-                rotation
-            ),
+            rotate_rectangle(x_bev, y_bev, half_size_x, half_size_y, rotation),
             fill=(192, 102, 50),
             outline=(255, 0, 255),
         )
@@ -126,7 +115,7 @@ def draw_point_cloud_bev(
     return color_image
 
 
-def draw_point_cloud_projected(
+def draw_point_cloud_projected_cv(
     point_cloud,
     predictions=None,
     image_size_x=600,
@@ -174,7 +163,7 @@ def draw_point_cloud_projected(
     return color_image
 
 
-def draw_point_cloud_projected_2(
+def draw_point_cloud_projected_numpy(
     point_cloud,
     predictions=None,
     image_size_x=600,
@@ -186,7 +175,7 @@ def draw_point_cloud_projected_2(
 ):
 
     cameraMatrix = np.array(
-        [[fx, 0, 1], [0, fy, 1], [0, 0, 1],], dtype=np.float32
+        [[fx, 0, 1], [0, fy, 1], [0, 0, 1]], dtype=np.float32
     )
     distCoef = None
 
@@ -197,8 +186,6 @@ def draw_point_cloud_projected_2(
 
     pc = point_cloud[:, :3].astype(np.float64)
     pc = pc[:, [1, 0, 2]]
-    # pc[:, 2] /= 10
-    # pc /= 100
 
     R = cv2.Rodrigues(rvec)[0]
     t = tvec
@@ -209,7 +196,6 @@ def draw_point_cloud_projected_2(
         nonlocal R, t, K, D
 
         proj_mat = np.dot(K, np.hstack((R, t[:, np.newaxis])))
-        # proj_mat = np.dot(K, np.hstack((R, t)))
         # convert 3D points into homgenous points
         xyz_hom = np.hstack((xyzs, np.ones((xyzs.shape[0], 1))))
 
@@ -218,9 +204,6 @@ def draw_point_cloud_projected_2(
         # get 2d coordinates in image [pixels]
         z = xy_hom[:, -1]
         xy = xy_hom[:, :2] / np.tile(z[:, np.newaxis], (1, 2))
-
-        # undistort - has to be 1xNx2 structure
-        # xy = cv2.undistortPoints(np.expand_dims(xy, axis=0), np.eye(3), D).squeeze()
 
         # drop all points behind camera
         if drop:
