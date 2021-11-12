@@ -72,6 +72,7 @@ jobs:
           - perception/object_detection_2d
           - simulation/human_model_generation
           - perception/facial_expression_recognition/landmark_based_facial_expression_recognition
+          - data_generation/synthetic-multi-view-facial-image-generation
           # - perception/object_tracking_3d
         include:
           - os: ubuntu-20.04

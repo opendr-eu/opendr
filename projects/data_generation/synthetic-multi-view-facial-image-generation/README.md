@@ -20,12 +20,11 @@ pip3 install -r requirements.txt
 pip3 install neural_renderer_pytorch
 ```
 
-* Download checkpoint and BFM model from [ckpt_and_bfm.zip](https://155.207.128.10/owncloud/remote.php/webdav/CIDL/OpenDR_internal/Rotate_and_Render/Code/checkpoints/ckpt_and_bfm.zip) put it in ```3ddfa``` and unzip it. The 3D models are borrowed from [3DDFA](https://github.com/cleardusk/3DDFA). 
-
+* Download checkpoint and BFM model from [ckpt_and_bfm.zip](ftp://opendrdata.csd.auth.gr/data_generation/synthetic_multi-view-facial-generator/checkpoints.zip) put it in ```3ddfa``` and unzip it. The 3D models are borrowed from [3DDFA](https://github.com/cleardusk/3DDFA). 
 
 ## DEMO
 
-1. Download the [checkpoint](https://cicloud.csd.auth.gr/owncloud/remote.php/webdav/OpenDR/FTP%20Server%20Material/simulation/latest_net_G.zip)
+1. Download the [checkpoint](ftp://opendrdata.csd.auth.gr/data_generation/synthetic_multi-view-facial-generator/checkpoints.zip)
 and put it in ```./checkpoints/rs_model```.
 
 2.	Execute the one-step OPENDR function 3ddfa/testSyntheticDataGeneration.py specifying the input images folder, the output folder, the desired degrees (range -90 to 90) for generating the facial images in multiple view angles pitch and yaw as indicated in the command line: 
