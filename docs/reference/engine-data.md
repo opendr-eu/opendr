@@ -76,6 +76,7 @@ The [Image](#class_engine.data.Image) class has the following public methods:
   Construct a new [Image](#class_engine.data.Image) object based on *data*.
   *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
   *dtype* is expected to be a [NumPy](https://numpy.org) data type.
+  Note that the OpenDR framework assumes an RGB ordering.
 
 #### data()
   Return *data* argument.
@@ -90,7 +91,30 @@ The [Image](#class_engine.data.Image) class has the following public methods:
   Return a  [NumPy](https://numpy.org)-compatible representation of data.
   Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
 
+#### open(filename)
+  Construct a new [Image](#class-engine.data.Image) object from the given image file.
 
+
+### class engine.data.ImageWithDetections
+Bases: `engine.data.Image`
+
+A class used for representing image data with a list of detections.
+This class is used for methods that rely on an external object detector such as DeepSort for 2D object tracking.
+
+The [ImageWithDetections](#class_engine.data.ImageWithDetections) class has the following public methods:
+#### ImageWithDetections(image, boundingBoxList)
+  Construct a new [ImageWithDetections](#class_engine.data.ImageWithDetections) object based on provided data.
+  - *image* is expected to be an [Image](#class_engine.data.Image) or a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
+  - *boundingBoxList* is expected to be a [BoundingBoxList](#class_engine.target.BoundingBoxList).
+
+#### data()
+  Return *data* argument.
+  Return type is uint8 [NumPy](https://numpy.org) array.
+
+#### data(data)
+  Set the internal *data* argument.
+  *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array, where the
+  dimensions can be organized as e.g. (channels, width, height).
 ### class engine.data.Video
 Bases: `engine.data.Data`
 
@@ -160,6 +184,43 @@ The [PointCloudWithCalibration](#class_engine.data.PointCloudWithCalibration) cl
   Set the internal *data* argument.
   *data* is expected to be a 2-D array that can be casted into a 2-D [NumPy](https://numpy.org) array, where the
   dimensions can be organized as e.g. (number_of_points, channels).
+
+#### numpy()
+  Return a  [NumPy](https://numpy.org)-compatible representation of data.
+  Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
+
+
+### class engine.data.SkeletonSequence
+Bases: `engine.data.Data`
+
+A class used for representing a sequence of body skeletons in a video.
+
+The [SkeletonSequence](#class_engine.data.SkeletonSequence) class has the following public methods:
+#### SkeletonSequence(data=None)
+  Construct a new [SkeletonSequence](#class_engine.data.SkeletonSequence) object based on *data*.
+  *data* is expected to be a 5-D array that can be casted into a 5-D [NumPy](https://numpy.org) array.
+  The array's dimensions are defined as follows: 
+  
+  `N, C, T, V, M = array.shape()`,
+  
+  - `N` is the number of samples, 
+  - `C` is the number of channels for each of the body joints 
+  - `T` is the number of skeletons in each sequence 
+  - `V` is the number of body joints in each skeleton
+  - `M` is the number of persons (or skeletons) in each frame. 
+  
+  Accordingly, an array of size `[10, 3, 300, 18, 2]` contains `10` samples 
+  each containing a sequence of `300` skeletons while each skeleton has `2` persons each of which has `18` joints
+  and each body joint has `3` channels.  
+
+#### data()
+  Return *data* argument.
+  Return type is float32 5-D [NumPy](https://numpy.org) array.
+
+#### data(data)
+  Set the internal *data* argument.
+  *data* is expected to be a 5-D array that can be casted into a 5-D [NumPy](https://numpy.org) array, where the
+  dimensions can be organized as e.g. (num_samples, channels, frames, joints, persons).
 
 #### numpy()
   Return a  [NumPy](https://numpy.org)-compatible representation of data.

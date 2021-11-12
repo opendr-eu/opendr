@@ -14,6 +14,7 @@
 
 from abc import ABC
 import numpy as np
+from typing import Optional, Dict, Tuple, Any
 
 
 class BaseTarget(ABC):
@@ -340,11 +341,64 @@ class BoundingBox(Target):
 
         return result
 
+    def coco(self, with_confidence=True):
+        result = {}
+        result['bbox'] = [self.left, self.top, self.width, self.height]
+        result['category_id'] = self.name
+        result['area'] = self.width * self.height
+        return result
+
     def __repr__(self):
         return "BoundingBox " + str(self)
 
     def __str__(self):
         return str(self.mot())
+
+
+class CocoBoundingBox(BoundingBox):
+    """
+    This target is used for 2D Object Detection with COCO format targets.
+    A bounding box is described by the left-top corner and its width and height.
+    Also, a segmentation of the target is returned if available.
+    """
+
+    def __init__(
+        self,
+        name,
+        left,
+        top,
+        width,
+        height,
+        segmentation=[],
+        area=0,
+        iscrowd=0,
+        score=0,
+    ):
+        super().__init__(name=name, left=left, top=top, width=width,
+                         height=height, score=score)
+        self.segmentation = segmentation
+        self.iscrowd = iscrowd
+        self.area = area
+
+    def coco(self, with_confidence=True):
+        result = {}
+        result['bbox'] = [self.left, self.top, self.width, self.height]
+        result['category_id'] = self.name
+        if len(self.segmentation) > 0:
+            result['area'] = self.area
+            result['segmentation'] = self.segmentation
+            result['iscrowd'] = self.iscrowd
+        else:
+            result['area'] = self.width * self.height
+        if with_confidence:
+            result['confidence'] = self.confidence
+        return result
+
+    def __repr__(self):
+        return "BoundingBox " + str(self)
+
+    def __str__(self):
+        return str(self.coco())
 
 
 class BoundingBoxList(Target):
@@ -359,6 +413,36 @@ class BoundingBoxList(Target):
         super().__init__()
         self.data = boxes
         self.confidence = np.mean([box.confidence for box in self.data])
+
+    @staticmethod
+    def from_coco(boxes_coco, image_id=0):
+        count = len(boxes_coco)
+
+        boxes = []
+        for i in range(count):
+            if 'segmentation' in boxes_coco[i]:
+                segmentation = boxes_coco[i]['segmentation']
+            if 'iscrowd' in boxes_coco[i]:
+                iscrowd = boxes_coco[i]['iscrowd']
+            else:
+                iscrowd = 0
+            if 'area' in boxes_coco[i]:
+                area = boxes_coco[i]['area']
+            else:
+                area = boxes_coco[i]['bbox'][2] * boxes_coco[i]['bbox'][3]
+            box = CocoBoundingBox(
+                boxes_coco[i]['category_id'],
+                boxes_coco[i]['bbox'][0],
+                boxes_coco[i]['bbox'][1],
+                boxes_coco[i]['bbox'][2],
+                boxes_coco[i]['bbox'][3],
+                segmentation=segmentation,
+                iscrowd=iscrowd,
+                area=area,
+            )
+            boxes.append(box)
+
+        return BoundingBoxList(boxes, image_id=image_id)
 
     def mot(self, with_confidence=True):
 
@@ -414,12 +498,13 @@ class TrackingAnnotation(Target):
     @staticmethod
     def from_mot(data):
         return TrackingAnnotation(
+            0,
             data[2],
             data[3],
             data[4],
             data[5],
             data[1],
-            data[6] if len(data) > 6 else 0,
+            data[6] if len(data) > 6 else 1,
             data[0],
         )
 
@@ -447,8 +532,8 @@ class TrackingAnnotation(Target):
 
         return result
 
-    def boudning_box(self):
-        return BoundingBox(self.left, self.top, self.width, self.height, self.confidence, self.frame)
+    def bounding_box(self):
+        return BoundingBox(self.name, self.left, self.top, self.width, self.height, self.confidence)
 
     def __repr__(self):
         return "TrackingAnnotation " + str(self)
@@ -486,8 +571,8 @@ class TrackingAnnotationList(Target):
 
         return result
 
-    def boudning_box_list(self):
-        return BoundingBoxList([box.boudning_box() for box in self.data])
+    def bounding_box_list(self):
+        return BoundingBoxList([box.bounding_box() for box in self.data])
 
     @property
     def boxes(self):
@@ -904,3 +989,72 @@ class TrackingAnnotation3DList(Target):
 
     def __str__(self):
         return str(self.kitti(True))
+
+
+class Heatmap(Target):
+    """
+    This target is used for multi-class segmentation problems or multi-class problems that require heatmap annotations.
+
+    The data has to be a NumPy array.
+    The attribute 'class_names' can be used to store a mapping from the numerical labels to string representations.
+    """
+
+    def __init__(self,
+                 data: np.ndarray,
+                 class_names: Optional[Dict[Any, str]]=None):
+        super().__init__()
+        self._class_names = None
+
+        self.data = data
+        if class_names is not None:
+            self.class_names = class_names
+
+    @property
+    def data(self) -> np.ndarray:
+        if self._data is None:
+            raise ValueError('Data is empty.')
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        if not isinstance(data, np.ndarray):
+            raise TypeError('Data must be a numpy array.')
+        self._data = data
+
+    @property
+    def class_names(self) -> Dict[Any, str]:
+        return self._class_names
+
+    @class_names.setter
+    def class_names(self, class_names: Dict[Any, str]):
+        if not isinstance(class_names, dict):
+            raise TypeError('Class_names must be a dictionary.')
+        for key, value in class_names.items():
+            if not isinstance(value, str):
+                raise TypeError('Values of class_names must be string.')
+        self._class_names = class_names
+
+    def numpy(self):
+        """
+        Returns a NumPy-compatible representation of data.
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        # Since this class stores the data as NumPy arrays, we can directly return the data.
+        return self.data
+
+    def shape(self) -> Tuple[int, ...]:
+        """
+        Returns the shape of the underlying NumPy array.
+        :return: shape of the data object
+        :rtype: tuple of integers
+        """
+        return self.data.shape
+
+    def __str__(self) -> str:
+        """
+        Returns a human-friendly string-based representation of the data.
+        :return: a human-friendly string-based representation of the data
+        :rtype: str
+        """
+        return str(self.data)
