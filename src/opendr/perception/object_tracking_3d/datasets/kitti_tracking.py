@@ -24,7 +24,9 @@ from urllib.request import urlretrieve
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.target import BoundingBox3D, BoundingBox3DList, TrackingAnnotation3D, TrackingAnnotation3DList
 from opendr.engine.datasets import DatasetIterator
+import numpy as np
 
+from opendr.perception.object_detection_3d.datasets.kitti import parse_calib
 
 class KittiTrackingDatasetIterator(DatasetIterator):
     def __init__(
@@ -290,3 +292,58 @@ class KittiTrackingDatasetIterator(DatasetIterator):
 
     def __len__(self):
         return len(self.data)
+
+
+
+class LabeledTrackingPointCloudsDatasetIterator(DatasetIterator):
+    def __init__(
+        self, lidar_path, label_path, calib_path, image_path=None, num_point_features=4
+    ):
+        super().__init__()
+
+        self.lidar_path = lidar_path
+        self.label_path = label_path
+        self.calib_path = calib_path
+        self.image_path = image_path
+        self.num_point_features = num_point_features
+
+        self.lidar_files = sorted(os.listdir(self.lidar_path))
+        self.label_files = sorted(os.listdir(self.label_path))
+        self.calib_files = sorted(os.listdir(self.calib_path))
+        self.image_files = sorted(os.listdir(self.image_path)) if self.image_path is not None else None
+
+        if len(self.lidar_files) != len(self.label_files) or len(
+            self.lidar_files
+        ) != len(self.calib_files):
+            raise ValueError(
+                "Number of files in lidar, label and calib files is not identical"
+            )
+
+    def __getitem__(self, idx):
+        points = np.fromfile(
+            os.path.join(self.lidar_path, self.lidar_files[idx]),
+            dtype=np.float32,
+            count=-1,
+        ).reshape([-1, self.num_point_features])
+        calib = parse_calib(
+            os.path.join(self.calib_path, self.calib_files[idx])
+        )
+        target = BoundingBox3DList.from_kitti(
+            get_label_anno(
+                os.path.join(self.label_path, self.label_files[idx])
+            )
+        )
+
+        image_shape = None if self.image_files is None else (
+            np.array(io.imread(
+                os.path.join(self.image_path, self.image_files[idx])
+            ).shape[:2], dtype=np.int32)
+        )
+
+        result = (PointCloudWithCalibration(points, calib, image_shape), target)
+
+        return result
+
+    def __len__(self):
+        return len(self.lidar_files)
+
