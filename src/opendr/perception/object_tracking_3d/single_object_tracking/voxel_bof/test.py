@@ -4,14 +4,13 @@ import torch
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.voxel_bof_object_tracking_3d_learner import (
     VoxelBofObjectTracking3DLearner,
 )
-from opendr.perception.object_detection_3d.datasets.kitti import (
-    KittiDataset,
-)
+from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset
 from opendr.perception.object_tracking_3d.datasets.kitti_tracking import (
     KittiTrackingDatasetIterator,
     LabeledTrackingPointCloudsDatasetIterator,
 )
-
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.draw import draw_point_cloud_bev
+from PIL import Image as PilImage
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -86,9 +85,16 @@ def test_eval_detection():
     mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset_detection)
 
     print(
-        "Ok?",
-        mAPbbox[0][0][0] > 70 and mAPbbox[0][0][0] < 95,
+        "Ok?", mAPbbox[0][0][0] > 70 and mAPbbox[0][0][0] < 95,
     )
+
+
+def test_draw_tracking_dataset():
+
+    for i in range(2):
+        point_cloud, label = dataset_tracking[i]
+        image = draw_point_cloud_bev(point_cloud.data)
+        PilImage.fromarray(image).save("./plots/kt_" + str(i) + ".png")
 
 
 def test_pp_infer_tracking():
@@ -99,13 +105,9 @@ def test_pp_infer_tracking():
     )
     learner.load(model_path)
 
-    res = learner.infer(
-        dataset_tracking[0]
-    )
+    res = learner.infer(dataset_tracking[0])
 
-    print(
-        res
-    )
+    print(res)
 
 
 def test_pp_block1():
@@ -118,4 +120,4 @@ def test_pp_block1():
     learner.load(model_path)
 
 
-test_pp_infer_tracking()
+test_draw_tracking_dataset()

@@ -67,4 +67,5 @@ temp/
 projects/opendr_ws/.catkin_workspace
 projects/opendr_ws/devel/
 
-models
+models/*
+plots/*
