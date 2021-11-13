@@ -45,8 +45,8 @@ def draw_point_cloud_bev(
     x_size = x_max.get() - x_min.get()
     y_size = y_max.get() - y_min.get()
 
-    image_size_x = int(x_size * scale + 1)
-    image_size_y = int(y_size * scale + 1)
+    image_size_x = np.int32(x_size * scale + 1)
+    image_size_y = np.int32(y_size * scale + 1)
 
     point_cloud_x = (
         image_size_x - 1 - (point_cloud[:, 0] - x_min.get()) * scale
@@ -92,8 +92,8 @@ def draw_point_cloud_bev(
 
     for box in predictions.boxes:
 
-        x_3d, y_3d = box.location[:2]
-        size = box.dimensions
+        x_3d, y_3d = np.array(box.location[:2])
+        size = np.array(box.dimensions)
         rotation = box.rotation_y
         id = box.id if hasattr(box, "id") else None
         x_bev = (image_size_x - 1 - (x_3d - x_min.get()) * scale).astype(
@@ -131,7 +131,7 @@ def draw_point_cloud_projected(
 ):
 
     cameraMatrix = np.array(
-        [[fx, 0, 1], [0, fy, 1], [0, 0, 1],], dtype=np.float32
+        [[fx, 0, 1], [0, fy, 1], [0, 0, 1]], dtype=np.float32
     )
     distCoef = None
 

@@ -1,6 +1,7 @@
 import sys
 import os
 import torch
+from opendr.engine.target import TrackingAnnotation3DList
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.voxel_bof_object_tracking_3d_learner import (
     VoxelBofObjectTracking3DLearner,
 )
@@ -91,9 +92,11 @@ def test_eval_detection():
 
 def test_draw_tracking_dataset():
 
-    for i in range(2):
+    for i in range(4): #range(len(dataset_tracking)):
+        print(i, "/", len(dataset_tracking))
         point_cloud, label = dataset_tracking[i]
-        image = draw_point_cloud_bev(point_cloud.data)
+        filtered_boxes = TrackingAnnotation3DList([l for l in label if l.name != "DontCare"])
+        image = draw_point_cloud_bev(point_cloud.data, filtered_boxes)
         PilImage.fromarray(image).save("./plots/kt_" + str(i) + ".png")
 
 
