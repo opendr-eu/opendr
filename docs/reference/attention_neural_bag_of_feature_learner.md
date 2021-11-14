@@ -335,6 +335,6 @@ This dataset has been preprocessed according to [[1]](#anbof) and split into 5-f
 
 
 #### References
-<a name="gru" href="https://arxiv.org/abs/2005.12250">[1]</a> Attention-based Neural Bag-of-Feautures Learning for Sequence Data,
+<a name="anbof" href="https://arxiv.org/abs/2005.12250">[1]</a> Attention-based Neural Bag-of-Feautures Learning for Sequence Data,
 [arXiv](https://arxiv.org/abs/2005.12250).  
 <a name="af" href="https://physionet.org/content/challenge-2017/1.0.0/">[2]</a> AF Classification From A Short Single Lead ECG Recording, The PhysioNet Computing in Cardiology Challenge 2017.
