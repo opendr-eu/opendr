@@ -3,12 +3,13 @@ from urllib.request import urlretrieve
 import tarfile
 import os
 import time
+import sys
+
 OPENDR_HOME = os.environ["OPENDR_HOME"]
 
 
-def download_data():
-
-    def reporthook(count, block_size):
+def download_data(raw_data_only):
+    def reporthook(count, block_size, total_size):
         nonlocal start_time
         nonlocal last_print
 
@@ -28,6 +29,20 @@ def download_data():
                 end=''
             )
 
+    human_data_url = OPENDR_SERVER_URL + "simulation/SMPLD_body_models/human_data.tar.gz"
+    downloaded_human_data_path = os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_body_models/human_data.tar.gz')
+    print("Downloading data from", human_data_url, "to", downloaded_human_data_path)
+    start_time = 0
+    last_print = 0
+    urlretrieve(human_data_url, downloaded_human_data_path, reporthook=reporthook)
+    with tarfile.open(downloaded_human_data_path) as tar:
+        tar.extractall(path=os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_body_models'))
+    tar.close()
+    os.remove(downloaded_human_data_path)
+
+    if raw_data_only:
+        return
+
     model_url = OPENDR_SERVER_URL + "simulation/SMPLD_body_models/model.tar.gz"
     downloaded_model_path = os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_body_models/model.tar.gz')
     print("Downloading data from", model_url, "to", downloaded_model_path)
@@ -39,18 +54,8 @@ def download_data():
     tar.close()
     os.remove(downloaded_model_path)
 
-    human_data = OPENDR_SERVER_URL + "simulation/SMPLD_body_models/human_data.tar.gz"
-    downloaded_human_data_path = os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_body_models/human_data.tar.gz')
-    print("Downloading data from", model_url, "to", downloaded_human_data_path)
-    start_time = 0
-    last_print = 0
-    urlretrieve(human_data, downloaded_human_data_path, reporthook=reporthook)
-    with tarfile.open(downloaded_human_data_path) as tar:
-        tar.extractall(path=os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_body_models'))
-    tar.close()
-    os.remove(downloaded_human_data_path)
-
-
-
 if __name__ == "__main__":
-    download_data()
+    raw_data = False
+    if len(sys.argv) > 1 and sys.argv[1] == 'raw':
+        raw_data = True
+    download_data(raw_data)
