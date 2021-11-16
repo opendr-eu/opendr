@@ -21,8 +21,14 @@ SMPL_m_unityDoubleBlends_lbs_10_scale5_207_v1.0.0.fbx
 ```
 - Place these two files in the ```model``` directory.
 
--Generate the human models as FBX files. Export the path to Blender before generating the models.
+- Download and install Blender (tested on 2.93.4 version)
+
+-Set the path to Blender.
 ```
 export BLENDER_PATH=path_to_Blender
+```
+
+- Generate the human models as FBX files. 
+```
 $BLENDER_PATH/blender -P make_fbx.py
 ```
