@@ -23,7 +23,6 @@ from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_po
 from opendr.simulation.human_model_generation.utilities.joint_extractor import Joint_extractor
 
 
-
 class Studio(pyglet.window.Window):
     def __init__(self):
         self.image_width = 360
