@@ -27,6 +27,14 @@ SMPL_m_unityDoubleBlends_lbs_10_scale5_207_v1.0.0.fbx
 ```
 export BLENDER_PATH=path_to_Blender
 ```
+- Install the necessary packages to Blender's Python using pip (example using Blender 2.93 and Python 3.9):
+```
+$BLENDER_PATH/2.93/python/bin/python3.9 -m ensurepip
+$BLENDER_PATH/2.93/python/bin/python3.9 -m pip install numpy
+$BLENDER_PATH/2.93/python/bin/python3.9 -m pip install opencv-python
+$BLENDER_PATH/2.93/python/bin/python3.9 -m pip install opencv-contrib-python
+$BLENDER_PATH/2.93/python/bin/python3.9 -m pip install scipy
+```
 
 - Generate the human models as FBX files. 
 ```
