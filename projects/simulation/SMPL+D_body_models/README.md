@@ -16,5 +16,5 @@ basicModel_m_lbs_10_207_0_v1.0.2.fbx
 Place these two files in the smpl_models directory.
 
 ```
-python download_smpld_fbx.py
+python src/download_data.py
 ```
