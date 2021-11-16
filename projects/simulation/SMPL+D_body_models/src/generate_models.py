@@ -274,7 +274,7 @@ class Fbx_exporter:
                             ids_sorted = np.argsort(dists)
                             factors_all = dists[ids_sorted[0]] + dists[ids_sorted[1]] + dists[ids_sorted[2]]
                             if self.model_params["displacements"][i][j][0] > 0:
-                               displacement_map_smoothed_new[i, j, :] = (1 - dists[ids_sorted[0]] / factors_all) * \
+                                displacement_map_smoothed_new[i, j, :] = (1 - dists[ids_sorted[0]] / factors_all) * \
                                          displacement_map_smoothed[
                                          vts_now[ids_sorted[0], :][0],
                                          vts_now[ids_sorted[0], :][1], :] + \
