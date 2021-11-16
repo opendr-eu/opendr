@@ -907,9 +907,9 @@ class TrackingAnnotation3DList(Target):
                 boxes_kitti["dimensions"][i],
                 boxes_kitti["location"][i],
                 boxes_kitti["rotation_y"][i],
-                ids[count],
+                ids[i],
                 boxes_kitti["score"][i],
-                frames[count],
+                frames[i],
             )
 
             tracking_boxes_3d.append(box3d)
