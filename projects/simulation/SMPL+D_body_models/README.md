@@ -14,9 +14,9 @@ python download_data.py raw
 python src/download_data.py
 ```
 
-- Download SMPL for MAYA from the official website [here](https://smpl.is.tue.mpg.de/). Once you agree on SMPL license terms and have access to downloads, you will have the following two files:
+- Download SMPL for Unity from the official website [here](https://smpl.is.tue.mpg.de/). Once you agree on SMPL license terms and have access to downloads, you will have the following two files:
 ```
-basicModel_f_lbs_10_207_0_v1.0.2.fbx
-basicModel_m_lbs_10_207_0_v1.0.2.fbx
+SMPL_f_unityDoubleBlends_lbs_10_scale5_207_v1.0.0.fbx
+SMPL_m_unityDoubleBlends_lbs_10_scale5_207_v1.0.0.fbx
 ```
 - Place these two files in the ```model``` directory.
