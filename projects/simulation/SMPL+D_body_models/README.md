@@ -30,5 +30,5 @@ export BLENDER_PATH=path_to_Blender
 
 - Generate the human models as FBX files. 
 ```
-$BLENDER_PATH/blender -P make_fbx.py
+$BLENDER_PATH/blender -P generate_fbx_models.py
 ```
