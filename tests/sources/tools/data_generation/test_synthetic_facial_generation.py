@@ -13,13 +13,10 @@
 # limitations under the License.
 
 import unittest
-import sys
+import os
 import torch
 import argparse
-sys.path.append(r'C:\Users\staka\PycharmProjects\OPENDR')
 from opendr_internal.projects.data_generation.SyntheticDataGeneration import MultiviewDataGenerationLearner
-
-
 
 
 class TestMultiviewDataGenerationLearner(unittest.TestCase):
@@ -27,9 +24,6 @@ class TestMultiviewDataGenerationLearner(unittest.TestCase):
     def setUpClass(cls):
         print("\n\n**********************************\nTEST Multiview Data Generation Learner\n"
               "**********************************")
-
-        #cls.temp_dir = os.path.join(os.environ['OPENDR_HOME'], "tests", "sources", "tools", "data_generation",
-        #                            "synthetic-multi-view-facial-image-generation", "temp")
         parser = argparse.ArgumentParser()
         try:
             if torch.cuda.is_available():
@@ -39,13 +33,22 @@ class TestMultiviewDataGenerationLearner(unittest.TestCase):
                 print("GPU not found. Using CPU instead.")
                 parser.add_argument('-device', default='cpu', type=str, help='choose between cuda or cpu ')
         except:
-            parser.add_argument('-device', default='cpu', type=str, help='choose between cuda or cpu ')
-        parser.add_argument('-path_in', default=os.path.join(os.environ['OPENDR_HOME'], "projects", "data_generation", "synthetic-multi-view-facial-image-generation",
-                            "demos", "imgs_input"), type=str, help='Give the path of image folder')
-        parser.add_argument('-path_3ddfa', default=os.path.join(os.environ['OPENDR_HOME'], "projects", "data_generation", "synthetic-multi-view-facial-image-generation",
-                            "algorithm", "3ddfa"), type=str, help='Give the path of 3ddfa folder')
-        parser.add_argument('-save_path', default=os.path.join(os.environ['OPENDR_HOME'], "projects", "data_generation", "synthetic-multi-view-facial-image-generation",
-                            "results"), type=str, help='Give the path of results folder')
+            parser.add_argument("-device", default="cpu", type=str, help="choose between cuda or cpu ")
+        parser.add_argument("-path_in", default=os.path.join(os.environ['OPENDR_HOME'], "projects",
+                                                             "data_generation",
+                                                             "synthetic-multi-view-facial-image-generation",
+                                                             "demos", "imgs_input"),
+                            type=str, help='Give the path of image folder')
+        parser.add_argument('-path_3ddfa', default=os.path.join(os.environ['OPENDR_HOME'], "projects",
+                                                                "data_generation",
+                                                                "synthetic-multi-view-facial-image-generation",
+                                                                "algorithm", "3ddfa"),
+                            type=str, help='Give the path of 3ddfa folder')
+        parser.add_argument('-save_path', default=os.path.join(os.environ['OPENDR_HOME'], "projects",
+                                                               "data_generation",
+                                                               "synthetic-multi-view-facial-image-generation",
+                                                               "results"),
+                            type=str, help='Give the path of results folder')
         parser.add_argument('-val_yaw', default="10,20", nargs='+', type=str, help='yaw poses list between [-90,90] ')
         parser.add_argument('-val_pitch', default="30,40", nargs='+', type=str,
                             help='pitch poses list between [-90,90] ')
@@ -54,17 +57,15 @@ class TestMultiviewDataGenerationLearner(unittest.TestCase):
         cls.learner = MultiviewDataGenerationLearner(path_in=args.path_in, path_3ddfa=args.path_3ddfa, save_path=args.save_path,
                                                      val_yaw=args.val_yaw, val_pitch=args.val_pitch, device=args.device)
 
-
     def test_eval(self):
 
-
         synthetic = self.learner.eval()
-        DIR=os.path.join(os.environ['OPENDR_HOME'], "projects", "data_generation", "synthetic-multi-view-facial-image-generation",
-                         "results")
+        DIR = os.path.join(os.environ['OPENDR_HOME'], "projects", "data_generation",
+                           "synthetic-multi-view-facial-image-generation", "results")
 
         # Default pretrained model extracts 4 rendered images
         self.assertAlmostEqual(len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))]), 4,
-                           msg="The generated facial images must be more than 4 vertices.")
+                               msg="The generated facial images must be more than 4 vertices.")
 
 
 if __name__ == '__main__':

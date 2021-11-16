@@ -41,17 +41,13 @@ from shutil import copyfile
 import cv2
 import os
 import sys
-#import path_helper
-sys.path.append(r'C:\Users\staka\PycharmProjects\OPENDR\opendr_internal\projects\data_generation\synthetic-multi-view-facial-image-generation\algorithm\3ddfa')
 import preprocessing_1
 import preprocessing_2
-sys.path.append(r'C:\Users\staka\PycharmProjects\OPENDR\opendr_internal\projects\data_generation\synthetic-multi-view-facial-image-generation\algorithm\Rotate-and-Render')
 import test_multipose
 import argparse
 from utils.ddfa import str2bool
-#import path_helper2
 from src.opendr.engine.learners import Learner
-__all__ = ['sys']#, 'path_helper', 'path_helper2']
+__all__ = ['sys']
 
 
 class MultiviewDataGenerationLearner(Learner):
