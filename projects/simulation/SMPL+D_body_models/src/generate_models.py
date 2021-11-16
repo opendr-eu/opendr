@@ -274,17 +274,18 @@ class Fbx_exporter:
                             ids_sorted = np.argsort(dists)
                             factors_all = dists[ids_sorted[0]] + dists[ids_sorted[1]] + dists[ids_sorted[2]]
                             if self.model_params["displacements"][i][j][0] > 0:
-                                displacement_map_smoothed_new[i, j, :] = (1 - dists[
-                                    ids_sorted[0]] / factors_all) * displacement_map_smoothed[
-                                                                    vts_now[ids_sorted[0], :][0],
-                                                                    vts_now[ids_sorted[0], :][1], :] + (1 - dists[
-                                    ids_sorted[1]] / factors_all) * displacement_map_smoothed[
-                                                                    vts_now[ids_sorted[1], :][0],
-                                                                    vts_now[ids_sorted[1], :][1], :] + (1 - dists[
-                                    ids_sorted[2]] / factors_all) * displacement_map_smoothed[
-                                                                    vts_now[ids_sorted[2], :][0],
-                                                                    vts_now[ids_sorted[2], :][1],
-                                                                    :]  # 0.7 *displacement_map_smoothed_new[vts[id_new, :][0][0], vts[id_new, :][0][1], :]
+                               displacement_map_smoothed_new[i, j, :] = (1 - dists[ids_sorted[0]] / factors_all) * \
+                                         displacement_map_smoothed[
+                                         vts_now[ids_sorted[0], :][0],
+                                         vts_now[ids_sorted[0], :][1], :] + \
+                                         (1 - dists[ids_sorted[1]] / factors_all) * \
+                                         displacement_map_smoothed[
+                                         vts_now[ids_sorted[1], :][0],
+                                         vts_now[ids_sorted[1], :][1], :] + \
+                                         (1 - dists[ids_sorted[2]] / factors_all) * \
+                                         displacement_map_smoothed[
+                                         vts_now[ids_sorted[2], :][0],
+                                         vts_now[ids_sorted[2], :][1], :]
                                 displacement_map_smoothed_new[i, j, :] = displacement_map_smoothed_new[i, j, :] / 2.0
         displacement_map_smoothed = displacement_map_smoothed_new
 
