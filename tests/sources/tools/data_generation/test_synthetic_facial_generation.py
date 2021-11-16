@@ -16,7 +16,9 @@ import unittest
 import os
 import torch
 import argparse
+import opendr_url
 from opendr_internal.projects.data_generation.SyntheticDataGeneration import MultiviewDataGenerationLearner
+__all__ = ['opendr_url']
 
 
 class TestMultiviewDataGenerationLearner(unittest.TestCase):
@@ -59,7 +61,7 @@ class TestMultiviewDataGenerationLearner(unittest.TestCase):
 
     def test_eval(self):
 
-        synthetic = self.learner.eval()
+        self.learner.eval()
         DIR = os.path.join(os.environ['OPENDR_HOME'], "projects", "data_generation",
                            "synthetic-multi-view-facial-image-generation", "results")
 
