@@ -62,7 +62,7 @@ class TestMultiviewDataGenerationLearner(unittest.TestCase):
         DIR=os.path.join(os.environ['OPENDR_HOME'], "projects", "data_generation", "synthetic-multi-view-facial-image-generation",
                          "results")
 
-        # Default pretrained mobilenet model detects 18 keypoints on img with id 785
+        # Default pretrained model extracts 4 rendered images
         self.assertAlmostEqual(len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))]), 4,
                            msg="The generated facial images must be more than 4 vertices.")
 
