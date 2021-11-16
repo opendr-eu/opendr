@@ -14,7 +14,7 @@
 
 import os
 import numpy as np
-from mathutils import Matrix, Vector, Euler
+from mathutils import Vector, Euler
 import bpy
 import pickle
 import mathutils
@@ -231,7 +231,6 @@ class Fbx_exporter:
                 d_vt_normalized = d_vt / float(dnorm_new)
                 axis = np.cross(nrmls[i], d_vt_normalized)
                 axis = axis / linalg.norm(axis)
-                angle = math.acos(max(min(np.dot(nrmls[i], d_vt_normalized), 1), -1))
                 rot_mat = R.from_matrix(rotation_matrix_from_vectors(nrmls[i], d_vt_normalized))
                 deul_new = rot_mat.as_euler('ZYX', degrees=False)
             for j in range(len(nrml_ids[i])):
