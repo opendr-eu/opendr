@@ -68,3 +68,11 @@ class MappedDetectionDataset(DatasetIterator):
         if isinstance(item, tuple):
             return self.map_function(*item)
         return self.map_function(item)
+
+
+def is_image_type(filename):
+    return filename.lower().endswith(('png', 'jpg', 'jpeg', 'tiff', 'bmp', 'gif'))
+
+
+def remove_extension(filename):
+    return '.'.join(filename.split('.')[:-1])
