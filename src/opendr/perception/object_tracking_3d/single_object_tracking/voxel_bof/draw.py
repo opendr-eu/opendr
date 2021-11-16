@@ -18,6 +18,13 @@ box_draw_indicies = [
     (4,),
 ]
 
+label_to_color = {
+    "Car": (255, 0, 0, 125),
+    "Van": (255, 0, 0, 125),
+    "Pedestrian": (0, 255, 0, 125),
+    "Cyclist": (0, 0, 255, 125),
+}
+
 
 def draw_point_cloud_bev(
     point_cloud, predictions=None, scale=10, xs=[-90, 90], ys=[-90, 90]
@@ -83,18 +90,23 @@ def draw_point_cloud_bev(
 
         return [(y, x) for (x, y) in result]
 
-    pil_image = Image.new(
-        "RGB", (image_size_y + 1, image_size_x + 1), color="black"
-    )
-    pil_draw = ImageDraw.Draw(pil_image)
+    black_image = np.zeros((image_size_y + 1, image_size_x + 1, 3), dtype=np.uint8)
+    black_image[point_cloud_x, point_cloud_y] = colors
 
-    font = ImageFont.truetype("./fonts/arial.ttf", 40)
+    # pil_image = Image.new(
+    #     "RGB", (image_size_y + 1, image_size_x + 1), color="black"
+    # )
+
+    pil_image = Image.fromarray(black_image)
+    pil_draw = ImageDraw.Draw(pil_image, "RGBA")
+    font = ImageFont.truetype("./fonts/arial.ttf", 30)
 
     for box in predictions.boxes:
 
+        name = box.name
         x_3d, y_3d = np.array(box.location[:2])
         size = np.array(box.dimensions)
-        rotation = box.rotation_y
+        rotation = float(box.rotation_y)
         id = box.id if hasattr(box, "id") else None
         x_bev = (image_size_x - 1 - (x_3d - x_min.get()) * scale).astype(
             np.int32
@@ -106,15 +118,15 @@ def draw_point_cloud_bev(
         half_size_x, half_size_y = (size[:2] * scale / 2).astype(np.int32)
 
         pil_draw.polygon(
-            rotate_rectangle(x_bev, y_bev, half_size_x, half_size_y, rotation),
-            fill=(192, 102, 50),
+            rotate_rectangle(x_bev, y_bev, half_size_x, half_size_y, -rotation + np.pi / 2),
+            fill=label_to_color[name],
             outline=(255, 0, 255),
         )
+
         if id is not None:
-            pil_draw.text((y_bev, x_bev), str(id), font=font, align="center")
+            pil_draw.text((y_bev, x_bev), str(id), font=font, align="center", fill=(0, 102, 0))
 
     color_image = np.array(pil_image)
-    color_image[point_cloud_x, point_cloud_y] = colors
 
     return color_image
 

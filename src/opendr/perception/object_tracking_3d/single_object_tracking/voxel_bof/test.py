@@ -1,7 +1,7 @@
 import sys
 import os
 import torch
-from opendr.engine.target import TrackingAnnotation3DList
+from opendr.engine.target import TrackingAnnotation3D, TrackingAnnotation3DList
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.voxel_bof_object_tracking_3d_learner import (
     VoxelBofObjectTracking3DLearner,
 )
@@ -12,6 +12,8 @@ from opendr.perception.object_tracking_3d.datasets.kitti_tracking import (
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.draw import draw_point_cloud_bev
 from PIL import Image as PilImage
+import numpy as np
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.box_np_ops import box_camera_to_lidar, camera_to_lidar
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -75,6 +77,68 @@ config = all_configs[name]
 model_path = model_paths[name]
 
 
+def tracking_boxes_to_lidar(label, calib, classes=["Car", "Van", "Pedestrian", "Cyclist"]):
+
+    label = label.kitti()
+
+    r0_rect = calib["R0_rect"]
+    trv2c = calib["Tr_velo_to_cam"]
+
+    label_to_id = {
+        "Car": 0,
+        "Van": 0,
+        "Pedestrian": 1,
+        "Cyclist": 2,
+    }
+
+    background_id = -1
+
+    class_ids = [
+        (
+            label_to_id[name]
+            if (name in label_to_id and name in classes)
+            else background_id
+        )
+        for name in label["name"]
+    ]
+
+    selected_objects = []
+
+    for i, class_id in enumerate(class_ids):
+        if class_id != background_id:
+            selected_objects.append(i)
+
+    dims = label["dimensions"][selected_objects]
+    locs = label["location"][selected_objects]
+    rots = label["rotation_y"][selected_objects]
+
+    gt_boxes_camera = np.concatenate(
+        [locs, dims, rots[..., np.newaxis]], axis=1
+    )
+    gt_boxes_lidar = box_camera_to_lidar(gt_boxes_camera, r0_rect, trv2c)
+    locs_lidar = gt_boxes_lidar[:, 0:3]
+    dims_lidar = gt_boxes_lidar[:, 3:6]
+    rots_lidar = gt_boxes_lidar[:, 6:7]
+
+    new_label = {
+        "name": label["name"][selected_objects],
+        "truncated": label["truncated"][selected_objects],
+        "occluded": label["occluded"][selected_objects],
+        "alpha": label["alpha"][selected_objects],
+        "bbox": label["bbox"][selected_objects],
+        "dimensions": dims_lidar,
+        "location": locs_lidar,
+        "rotation_y": rots_lidar,
+        "score": label["score"][selected_objects],
+        "id": label["id"][selected_objects],
+        "frame": label["frame"][selected_objects],
+    }
+
+    result = TrackingAnnotation3DList.from_kitti(new_label, new_label["id"], new_label["frame"])
+
+    return result
+
+
 def test_eval_detection():
     print("Eval", name, "start", file=sys.stderr)
     model_path = model_paths[name]
@@ -92,11 +156,14 @@ def test_eval_detection():
 
 def test_draw_tracking_dataset():
 
-    for i in range(4): #range(len(dataset_tracking)):
+    for q in range(4): #range(len(dataset_tracking)):\
+        i = q * 10
         print(i, "/", len(dataset_tracking))
-        point_cloud, label = dataset_tracking[i]
-        filtered_boxes = TrackingAnnotation3DList([l for l in label if l.name != "DontCare"])
-        image = draw_point_cloud_bev(point_cloud.data, filtered_boxes)
+        point_cloud_with_calibration, label = dataset_tracking[i]
+        point_cloud = point_cloud_with_calibration.data
+        calib = point_cloud_with_calibration.calib
+        lidar_boxes = tracking_boxes_to_lidar(label, calib)
+        image = draw_point_cloud_bev(point_cloud, lidar_boxes)
         PilImage.fromarray(image).save("./plots/kt_" + str(i) + ".png")
 
 
