@@ -23,7 +23,7 @@ SMPL_m_unityDoubleBlends_lbs_10_scale5_207_v1.0.0.fbx
 
 - Download and install Blender (tested on 2.93.4 version)
 
--Set the path to Blender.
+- Set the path to Blender.
 ```
 export BLENDER_PATH=path_to_Blender
 ```
