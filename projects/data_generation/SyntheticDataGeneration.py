@@ -34,22 +34,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# !/usr/bin/env python3
+# !/usr/bin/env python3.7
 # coding: utf-8
 from tqdm import tqdm
 from shutil import copyfile
 import cv2
 import os
 import sys
-import path_helper
+#import path_helper
+sys.path.append(r'C:\Users\staka\PycharmProjects\OPENDR\opendr_internal\projects\data_generation\synthetic-multi-view-facial-image-generation\algorithm\3ddfa')
 import preprocessing_1
 import preprocessing_2
+sys.path.append(r'C:\Users\staka\PycharmProjects\OPENDR\opendr_internal\projects\data_generation\synthetic-multi-view-facial-image-generation\algorithm\Rotate-and-Render')
 import test_multipose
 import argparse
 from utils.ddfa import str2bool
-import path_helper2
+#import path_helper2
 from src.opendr.engine.learners import Learner
-__all__ = ['sys', 'path_helper', 'path_helper2']
+__all__ = ['sys']#, 'path_helper', 'path_helper2']
 
 
 class MultiviewDataGenerationLearner(Learner):
