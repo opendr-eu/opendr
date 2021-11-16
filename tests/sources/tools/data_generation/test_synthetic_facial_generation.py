@@ -59,7 +59,7 @@ class TestMultiviewDataGenerationLearner(unittest.TestCase):
 
     def test_eval(self):
 
-        synthetic = self.learner.eval()
+        self.learner.eval()
         DIR = os.path.join(os.environ['OPENDR_HOME'], "projects", "data_generation",
                            "synthetic-multi-view-facial-image-generation", "results")
 
