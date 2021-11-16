@@ -328,20 +328,21 @@ class Fbx_exporter:
         displacement_map_smoothed = displacement_map_smoothed_n
         '''
 
-        clr = []
-        clr.append(np.array(text_img[int(0.37 * text_img.shape[0]), int(0.37 * text_img.shape[1]), :]).astype(int))
-        clr.append(np.array(text_img[int(0.31 * text_img.shape[0]), int(0.31 * text_img.shape[1]), :]).astype(int))
+        clr = [np.array(text_img[int(0.37 * text_img.shape[0]), int(0.37 * text_img.shape[1]), :]).astype(int),
+               np.array(text_img[int(0.31 * text_img.shape[0]), int(0.31 * text_img.shape[1]), :]).astype(int)]
         clr_extra = np.array(text_img[int(0.56 * text_img.shape[0]), int(0.66 * text_img.shape[1]), :]).astype(int)
-        if (clr[0] + clr[1])[0] / 2.0 + 30 > clr_extra[0] and (clr[0] + clr[1])[1] / 2.0 + 30 > clr_extra[1] and \
-                (clr[0] + clr[1])[2] / 2.0 + 30 > clr_extra[2] and ((clr[0] + clr[1])[0] / 2.0 - 30) < clr_extra[
-            0] and ((clr[0] + clr[1])[1] / 2.0 - 30) < clr_extra[1] and ((clr[0] + clr[1])[2] / 2.0 - 30) < clr_extra[
-            2]:
+        use_clr = True
+        for c in range(0, 3):
+            if (clr[0] + clr[1])[c] / 2.0 + 30 < clr_extra[c] or clr_extra[c] < ((clr[0] + clr[1])[c] / 2.0 - 30):
+                use_clr = False
+        if use_clr:
             clr.append(clr_extra)
         clr_extra = np.array(text_img[int(0.62 * text_img.shape[0]), int(0.94 * text_img.shape[1]), :]).astype(int)
-        if (clr[0] + clr[1])[0] / 2.0 + 30 > clr_extra[0] and (clr[0] + clr[1])[1] / 2.0 + 30 > clr_extra[1] and \
-                (clr[0] + clr[1])[2] / 2.0 + 30 > clr_extra[2] and ((clr[0] + clr[1])[0] / 2.0 - 30) < clr_extra[
-            0] and ((clr[0] + clr[1])[1] / 2.0 - 30) < clr_extra[1] and ((clr[0] + clr[1])[2] / 2.0 - 30) < clr_extra[
-            2]:
+        use_clr = True
+        for c in range(0, 3):
+            if (clr[0] + clr[1])[c] / 2.0 + 30 < clr_extra[c] or clr_extra[c] < ((clr[0] + clr[1])[c] / 2.0 - 30):
+                use_clr = False
+        if use_clr:
             clr.append(clr_extra)
         thres = 15
         for i in range(text_img.shape[0]):
