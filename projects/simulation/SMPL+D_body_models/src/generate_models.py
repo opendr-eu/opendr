@@ -22,7 +22,6 @@ from shutil import copyfile
 import bmesh
 import cv2
 from numpy import linalg
-import math
 from scipy.spatial.transform import Rotation as R
 
 
