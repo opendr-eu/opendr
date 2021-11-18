@@ -99,7 +99,7 @@ Parameters:
 ROSBridge.to_ros_face(self,
                       category)
 ```
-Converts an OpenDR Category into a ROS ObjetHypothesis.
+Converts an OpenDR Category used for face recognition into a ROS ObjectHypothesis.
 
 Parameters:
 
