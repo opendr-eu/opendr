@@ -43,6 +43,7 @@ import os
 import 3ddfa_url
 import preprocessing_1
 import preprocessing_2
+import test_multipose_url
 import test_multipose
 import argparse
 from utils.ddfa import str2bool
