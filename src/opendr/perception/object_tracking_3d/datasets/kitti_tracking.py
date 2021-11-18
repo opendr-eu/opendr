@@ -264,9 +264,9 @@ def load_tracking_file(
                         float(fields[9]),
                     ],
                     dimensions=[
+                        float(fields[12]),
                         float(fields[10]),
                         float(fields[11]),
-                        float(fields[12]),
                     ],
                     location=[
                         float(fields[13]),
@@ -291,9 +291,9 @@ def load_tracking_file(
                         float(fields[9]),
                     ],
                     dimensions=[
+                        float(fields[12]),
                         float(fields[10]),
                         float(fields[11]),
-                        float(fields[12]),
                     ],
                     location=[
                         float(fields[13]),
@@ -321,9 +321,9 @@ def load_tracking_file(
                         float(fields[8]),
                     ],
                     dimensions=[
+                        float(fields[11]),
                         float(fields[9]),
                         float(fields[10]),
-                        float(fields[11]),
                     ],
                     location=[
                         float(fields[12]),
@@ -348,9 +348,9 @@ def load_tracking_file(
                         float(fields[8]),
                     ],
                     dimensions=[
+                        float(fields[11]),
                         float(fields[9]),
                         float(fields[10]),
-                        float(fields[11]),
                     ],
                     location=[
                         float(fields[12]),
