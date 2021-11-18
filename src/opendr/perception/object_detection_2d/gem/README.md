@@ -24,3 +24,5 @@ Here, the modifications are:
 The MobileNetV2 implementation was or originally licensed under the Apache 2.0 [license](https://github.com/zhiqwang/demonet/blob/dd4cec83abf5bd937ebf3ebc767972431223d33e/LICENSE)
 
 All modifications are licensed under the Apache 2.0 [license](../../../../../LICENSE) by OpenDR European Project.
+
+Also, code from [here](https://stackoverflow.com/questions/60674501/how-to-make-black-background-in-cv2-puttext-with-python-opencv) is used in the [drawing utility function](algorithm/util/draw.py).
