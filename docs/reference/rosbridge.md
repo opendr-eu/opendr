@@ -104,7 +104,7 @@ Converts an OpenDR Category used for face recognition into a ROS ObjectHypothesi
 Parameters:
 
 - **message**: *engine.target.Category*  
-  OpenDR Category to be converted to ROS ObjetHypothesis.
+  OpenDR Category used for face recognition to be converted to ROS ObjectHypothesis.
   
 #### `ROSBridge.to_ros_face_id`
 
