@@ -40,14 +40,14 @@ from tqdm import tqdm
 from shutil import copyfile
 import cv2
 import os
-import sys
+import 3ddfa_url
 import preprocessing_1
 import preprocessing_2
 import test_multipose
 import argparse
 from utils.ddfa import str2bool
 from src.opendr.engine.learners import Learner
-__all__ = ['sys']
+__all__ = ['3ddfa_url']
 
 
 class MultiviewDataGenerationLearner(Learner):
