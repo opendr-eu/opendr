@@ -40,7 +40,7 @@ from tqdm import tqdm
 from shutil import copyfile
 import cv2
 import os
-import 3ddfa_url
+import help_url
 import preprocessing_1
 import preprocessing_2
 import test_multipose_url
