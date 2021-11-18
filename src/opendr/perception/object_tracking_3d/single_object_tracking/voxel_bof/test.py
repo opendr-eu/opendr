@@ -307,6 +307,25 @@ def test_pp_infer_tracking():
         PilImage.fromarray(image).save("./plots/pp_" + str(i) + ".png")
 
 
+def test_pp_infer_detection():
+    print("Eval", name, "start", file=sys.stderr)
+
+    learner = VoxelBofObjectTracking3DLearner(
+        model_config_path=config, device=DEVICE
+    )
+    learner.load(model_path)
+
+    for q in range(lq):  # range(len(dataset_tracking)):\
+        i = q * pq
+        print(i, "/", len(dataset_tracking))
+        point_cloud_with_calibration, label = dataset_detection[i]
+        predictions = learner.infer(point_cloud_with_calibration)
+        image = draw_point_cloud_bev(
+            point_cloud_with_calibration.data, predictions
+        )
+        PilImage.fromarray(image).save("./plots/dpp_" + str(i) + ".png")
+
+
 def test_tanet_infer_tracking():
     print("Eval", tanet_name, "start", file=sys.stderr)
 
@@ -340,8 +359,14 @@ def test_pp_block1():
     learner.load(model_path)
 
 
-test_draw_tracking_projected()
-test_draw_tracking_dataset()
+# test_tanet_infer_tracking()
+test_pp_infer_tracking()
+test_pp_infer_detection()
+
+# test_eval_detection()
+
+# test_draw_tracking_projected()
+# test_draw_tracking_dataset()
 # test_draw_detection_dataset()
 # test_draw_detection_projected()
-test_draw_tracking_aabb()
+# test_draw_tracking_aabb()
