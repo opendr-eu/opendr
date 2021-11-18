@@ -18,6 +18,8 @@ box_draw_indicies = [
     (4,),
 ]
 
+bev_draw_indicies = [0, 3, 6, 4]
+
 label_to_color = {
     "Car": (255, 0, 0, 125),
     "Van": (255, 0, 0, 125),
@@ -117,8 +119,27 @@ def draw_point_cloud_bev(
 
         half_size_x, half_size_y = (size[:2] * scale / 2).astype(np.int32)
 
+        # pil_draw.polygon(
+        #     rotate_rectangle(x_bev, y_bev, half_size_x, half_size_y, rotation),
+        #     fill=label_to_color[name],
+        #     outline=(255, 0, 255),
+        # )
+
+        origin = [0.5, 0.5, 0]
+        gt_corners = center_to_corner_box3d(
+            box.location.reshape(1, -1), box.dimensions.reshape(1, -1), np.array([rotation]), origin=origin, axis=2,
+        )
+
+        points = gt_corners[0, bev_draw_indicies, :2]
+        points_bev_x = (image_size_x - 1 - (points[:, 0] - x_min.get()) * scale).astype(
+            np.int32
+        )
+        points_bev_y = (image_size_y - 1 - (points[:, 1] - y_min.get()) * scale).astype(
+            np.int32
+        )
+
         pil_draw.polygon(
-            rotate_rectangle(x_bev, y_bev, half_size_x, half_size_y, -rotation + np.pi / 2),
+            [(y, x) for (y, x) in zip(points_bev_y, points_bev_x)],
             fill=label_to_color[name],
             outline=(255, 0, 255),
         )
@@ -134,12 +155,12 @@ def draw_point_cloud_bev(
 def draw_point_cloud_projected(
     point_cloud,
     predictions=None,
-    image_size_x=600,
-    image_size_y=600,
-    rvec=np.array([0, 0, 0], dtype=np.float32),
-    tvec=np.array([0, 0, 0], dtype=np.float32),
-    fx=10,
-    fy=10,
+    image_size_x=1000,
+    image_size_y=1000,
+    rvec=np.array([-10.67, 26.69, 6.914], dtype=np.float32),
+    tvec=np.array([10.8, 8.34, 16.8], dtype=np.float32),
+    fx=864.98,
+    fy=864.98,
 ):
 
     cameraMatrix = np.array(
@@ -182,12 +203,12 @@ def draw_point_cloud_projected(
 def draw_point_cloud_projected_2(
     point_cloud,
     predictions=None,
-    image_size_x=600,
-    image_size_y=600,
-    rvec=np.array([0, 0, 0], dtype=np.float32),
-    tvec=np.array([0, 0, 0], dtype=np.float32),
-    fx=10,
-    fy=10,
+    image_size_x=1000,
+    image_size_y=1000,
+    rvec=np.array([-10.67, 26.69, 6.914], dtype=np.float32),
+    tvec=np.array([10.8, 8.34, 16.8], dtype=np.float32),
+    fx=864.98,
+    fy=864.98,
 ):
 
     cameraMatrix = np.array(
@@ -251,7 +272,7 @@ def draw_point_cloud_projected_2(
             prediction_corners = center_to_corner_box3d(
                 prediction_locations,
                 prediction_dimensions,
-                prediction_rotations,
+                prediction_rotations.reshape(-1),
                 [0.5, 0.5, 0],
                 2,
             )
