@@ -48,7 +48,7 @@ import test_multipose
 import argparse
 from utils.ddfa import str2bool
 from src.opendr.engine.learners import Learner
-__all__ = ['3ddfa_url']
+__all__ = ['help_url', 'test_multipose_url']
 
 
 class MultiviewDataGenerationLearner(Learner):
