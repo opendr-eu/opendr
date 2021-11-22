@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import bisect
+from itertools import accumulate
+
 from opendr.engine.datasets import DatasetIterator
 
 
@@ -57,6 +60,7 @@ class DetectionDataset(DatasetIterator):
 
 class MappedDetectionDataset(DatasetIterator):
     def __init__(self, data, map_function):
+        super(MappedDetectionDataset, self).__init__()
         self.data = data
         self.map_function = map_function
 
@@ -68,6 +72,24 @@ class MappedDetectionDataset(DatasetIterator):
         if isinstance(item, tuple):
             return self.map_function(*item)
         return self.map_function(item)
+
+
+class ConcatDataset(DatasetIterator):
+    def __init__(self, datasets):
+        super(ConcatDataset, self).__init__()
+        self.cumulative_lengths = list(accumulate([len(dataset) for dataset in datasets]))
+        self.datasets = datasets
+
+    def __len__(self):
+        return self.cumulative_lengths[-1]
+
+    def __getitem__(self, item):
+        dataset_idx = bisect.bisect_right(self.cumulative_lengths, item)
+        if dataset_idx == 0:
+            sample_idx = item
+        else:
+            sample_idx = item - self.cumulative_lengths[dataset_idx - 1]
+        return self.datasets[dataset_idx][sample_idx]
 
 
 def is_image_type(filename):

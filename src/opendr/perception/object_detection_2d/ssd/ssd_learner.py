@@ -260,7 +260,7 @@ class SingleShotDetectorLearner(Learner):
         # self._model = model_zoo.get_model(model_name, classes=classes, pretrained_base=True)
         # self._model = model_zoo.get_model(model_name, classes=classes, pretrained=True)
         # self._model.reset_class(classes, reuse_weights=[cname for cname in classes if cname in self._model.classes])
-        if self._model is None or classes != self.classes:
+        if self._model is None or classes != list(self.classes):
             model_name = 'ssd_{}_{}_custom'.format(self.img_size, self.backbone)
             self._model = model_zoo.get_model(model_name, classes=classes, pretrained=False, pretrained_base=True,
                                               root=self.temp_path)
@@ -269,7 +269,9 @@ class SingleShotDetectorLearner(Learner):
                 self._model.initialize()
                 self._model.collect_params().reset_ctx(self.ctx)
             _, _, _ = self._model(mx.nd.zeros((1, 3, self.img_size, self.img_size), self.ctx))
-
+        # TODO: reuse if transfering knowledge
+        # reuse_classes = [x for x in classes if x in self.classes]
+        # print(reuse_classes)
         self._model.reset_class(classes)
         self.classes = classes
 
@@ -454,7 +456,8 @@ class SingleShotDetectorLearner(Learner):
         else:
             return self.lr
 
-    def eval(self, dataset, use_subset=False, subset_size=100, verbose=False):
+    def eval(self, dataset, use_subset=False, subset_size=100, verbose=False, custom_nms=None,
+             metric=None):
         """
         This method performs evaluation on a given dataset and returns a dictionary with the evaluation results.
         :param dataset: dataset object, to perform evaluation on
@@ -466,6 +469,11 @@ class SingleShotDetectorLearner(Learner):
         :type subset_size: int, optional
         :param verbose: if True, additional information is printed on stdout
         :type verbose: bool, optional
+
+        :param custom_nms: if None, default NMS is used
+        :type custom_nms:
+        :param metric: if None, default COCO metric is used
+        :type metric: DetectionDatasetMetric or gluoncv detection metric
         :rtype: dict
         """
         autograd.set_training(False)
@@ -484,9 +492,16 @@ class SingleShotDetectorLearner(Learner):
             self._model.initialize()
             self._model.collect_params().reset_ctx(ctx)
         self._model.hybridize(static_alloc=True, static_shape=True)
-        self._model.set_nms(nms_thresh=0.45, nms_topk=400)
+
+        if custom_nms is not None:
+            # TODO: also check type of custom_nms (maybe add hyperclass CustomNMS ?)
+            self._model.set_nms(nms_thresh=-1)
+        else:
+            self._model.set_nms(nms_thresh=0.45, nms_topk=400)
 
         dataset, eval_metric = self.__prepare_val_dataset(dataset, data_shape=self.img_size)
+        if metric is not None:
+            eval_metric = metric
 
         eval_metric.reset()
 
@@ -520,6 +535,9 @@ class SingleShotDetectorLearner(Learner):
             for x, y in zip(data, label):
                 # get prediction results
                 ids, scores, bboxes = self._model(x)
+                if custom_nms is not None:
+                    # TODO: use CustonNMS here
+                    pass
                 det_ids.append(ids)
                 det_scores.append(scores)
                 # clip to image size
@@ -553,17 +571,20 @@ class SingleShotDetectorLearner(Learner):
         """
         assert self._model is not None, "Model has not been loaded, call load(path) first"
 
-        self._model.set_nms(nms_thresh=0.45, nms_topk=400)
+        # self._model.set_nms(nms_thresh=0.45, nms_topk=400)
 
         if isinstance(img, Image):
             _img = img.numpy()
+            img_mx = mx.image.image.nd.from_numpy(np.float32(_img))
         elif isinstance(img, np.ndarray):
             _img = img
+            img_mx = mx.image.image.nd.from_numpy(np.float32(_img))
+        elif isinstance(img, mx.nd.NDArray):
+            img_mx = img
         else:
             raise ValueError("Input should be of type Image or numpy array.")
 
-        height, width, _ = _img.shape
-        img_mx = mx.image.image.nd.from_numpy(np.float32(_img))
+        height, width, _ = img_mx.shape
 
         if keep_size:
             x, img_mx = transform_test(img_mx)
@@ -588,15 +609,15 @@ class SingleShotDetectorLearner(Learner):
         boxes[:, [0, 2]] *= width
         boxes[:, [1, 3]] *= height
 
-        bounding_boxes = BoundingBoxList([])
+        bounding_boxes = []
         for idx, box in enumerate(boxes):
             bbox = BoundingBox(left=box[0], top=box[1],
                                width=box[2] - box[0],
                                height=box[3] - box[1],
-                               name=class_IDs[idx, :],
-                               score=scores[idx, :])
-            bounding_boxes.data.append(bbox)
-        return bounding_boxes
+                               name=class_IDs[idx, 0],
+                               score=scores[idx, 0])
+            bounding_boxes.append(bbox)
+        return BoundingBoxList(bounding_boxes)
 
     @staticmethod
     def __prepare_dataset(dataset, verbose=True):
