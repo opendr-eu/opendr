@@ -40,10 +40,10 @@ from tqdm import tqdm
 from shutil import copyfile
 import cv2
 import os
-import help_url
+from opendr_internal.projects.data_generation import help_url
 import preprocessing_1
 import preprocessing_2
-import test_multipose_url
+from opendr_internal.projects.data_generation import test_multipose_url
 import test_multipose
 import argparse
 from utils.ddfa import str2bool
