@@ -98,7 +98,7 @@ def draw_point_cloud_bev(
     )
     pil_draw = ImageDraw.Draw(pil_image)
 
-    font = ImageFont.truetype("./fonts/arial.ttf", 40)
+    font = None
 
     for box in predictions.boxes:
 
@@ -121,6 +121,10 @@ def draw_point_cloud_bev(
             outline=(255, 0, 255),
         )
         if id is not None:
+
+            if font is None:
+                font = ImageFont.truetype("./fonts/arial.ttf", 40)
+
             pil_draw.text((y_bev, x_bev), str(id), font=font, align="center")
 
     color_image = np.array(pil_image)
