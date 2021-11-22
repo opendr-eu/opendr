@@ -33,30 +33,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import torch
-import path_helper
-import argparse
-from SyntheticDataGeneration import MultiviewDataGenerationLearner
-__all__ = ['path_helper']
 
-parser = argparse.ArgumentParser()
-try:
-    if torch.cuda.is_available():
-        print("GPU found.")
-        parser.add_argument('-device', default='cuda', type=str, help='choose between cuda or cpu ')
-    else:
-        print("GPU not found. Using CPU instead.")
-        parser.add_argument('-device', default='cpu', type=str, help='choose between cuda or cpu ')
-except:
-    parser.add_argument('-device', default='cpu', type=str, help='choose between cuda or cpu ')
-
-parser.add_argument('-path_in', default='./example/Images', type=str, help='Give the path of image folder')
-parser.add_argument('-path_3ddfa', default='./', type=str, help='Give the path of DDFA folder')
-parser.add_argument('-save_path', default='./results', type=str, help='Give the path of results folder')
-parser.add_argument('-val_yaw',  default="10,20", nargs='+', type=str, help='yaw poses list between [-90,90] ')
-parser.add_argument('-val_pitch', default="30,40", nargs='+', type=str,  help='pitch poses list between [-90,90] ')
-args = parser.parse_args()
-synthetic = MultiviewDataGenerationLearner(path_in=args.path_in, path_3ddfa=args.path_3ddfa, save_path=args.save_path,
-                                           val_yaw=args.val_yaw, val_pitch=args.val_pitch, device=args.device)
-if __name__ == '__main__':
-    synthetic.eval()
+# !/usr/bin/env python3.7
+# coding: utf-8
+import sys
+sys.path.append("./../../")
+sys.path.append("/projects/data_generation/synthetic_multi_view_facial_image_generation/algorithm/Rotate_and_Render/")

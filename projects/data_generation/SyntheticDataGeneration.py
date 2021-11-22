@@ -40,14 +40,12 @@ from tqdm import tqdm
 from shutil import copyfile
 import cv2
 import os
-import sys
-import preprocessing_1
-import preprocessing_2
-import test_multipose
+from .synthetic_multi_view_facial_image_generation.algorithm.DDFA import preprocessing_1
+from .synthetic_multi_view_facial_image_generation.algorithm.DDFA import preprocessing_2
+from .synthetic_multi_view_facial_image_generation.algorithm.Rotate_and_Render import test_multipose
 import argparse
-from utils.ddfa import str2bool
-from src.opendr.engine.learners import Learner
-__all__ = ['sys']
+from .synthetic_multi_view_facial_image_generation.algorithm.DDFA.utils.ddfa import str2bool
+from opendr_internal.src.opendr.engine.learners import Learner
 
 
 class MultiviewDataGenerationLearner(Learner):

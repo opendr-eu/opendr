@@ -91,7 +91,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/simulation/human_model_generation/utilities/PIFu',
             'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
             'src/opendr/perception/skeleton_based_action_recognition/algorithm',
-            'projects/data_generation/synthetic-multi-view-facial-image-generation',
+            'projects/data_generation/synthetic_multi_view_facial_image_generation',
             'src/opendr/perception/semantic_segmentation/bisenet/algorithm',
             'src/opendr/perception/object_detection_2d/retinaface/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
@@ -102,8 +102,8 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
             'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
-            'projects/data_generation/synthetic-multi-view-facial-image-generation/test_frontal.py',
-            'projects/data_generation/synthetic-multi-view-facial-image-generation/train.py',
+            'projects/data_generation/synthetic_multi_view_facial_image_generation/test_frontal.py',
+            'projects/data_generation/synthetic_multi_view_facial_image_generation/train.py',
             'src/opendr/perception/object_detection_2d/retinaface/Makefile'
         ]
 
