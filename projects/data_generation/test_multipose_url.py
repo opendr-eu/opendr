@@ -38,4 +38,4 @@
 # coding: utf-8
 import sys
 sys.path.append("./../../")
-sys.path.append("/projects/data_generation/synthetic-multi-view-facial-image-generation/algorithm/Rotate-and-Render/")
+sys.path.append("/projects/data_generation/synthetic_multi_view_facial_image_generation/algorithm/Rotate-and-Render/")

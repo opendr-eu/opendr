@@ -57,7 +57,7 @@ __all__ = ['path_helper']
 parser=argparse.ArgumentParser()
 parser.add_argument('-path_in', default='/home/user/Pictures/', type=str )
 parser.add_argument('-save_path', default='./results', type=str )
-parser.add_argument('-path_3ddfa', default='/opendr_internal/projects/data_generation/synthetic-multi-view-facial-image-generation/3ddfa', type=str)
+parser.add_argument('-path_3ddfa', default='/opendr_internal/projects/data_generation/synthetic_multi_view_facial_image_generation/3ddfa', type=str)
 parser.add_argument('-val_yaw',  default='10,20', nargs='+',type=str)
 parser.add_argument('-val_pitch', default='30,40', nargs='+', type=str)
 parser.add_argument('-device', default='cuda', type=str)
