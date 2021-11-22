@@ -44,8 +44,8 @@ class TestMultiviewDataGenerationLearner(unittest.TestCase):
         parser.add_argument('-path_3ddfa', default=os.path.join(os.environ['OPENDR_HOME'], "projects",
                                                                 "data_generation",
                                                                 "synthetic_multi_view_facial_image_generation",
-                                                                "algorithm", "3ddfa"),
-                            type=str, help='Give the path of 3ddfa folder')
+                                                                "algorithm", "DDFA"),
+                            type=str, help='Give the path of DDFA folder')
         parser.add_argument('-save_path', default=os.path.join(os.environ['OPENDR_HOME'], "projects",
                                                                "data_generation",
                                                                "synthetic_multi_view_facial_image_generation",

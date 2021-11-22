@@ -3,8 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 import torch.nn.utils.spectral_norm as spectral_norm
-from models.networks.normalization import SPADE
-from util import util
+from .normalization import SPADE
+from ...util import util
 
 
 # ResNet block that uses SPADE.

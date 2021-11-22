@@ -9,7 +9,7 @@ Modified from: https://sourcegraph.com/github.com/YadiraF/PRNet@master/-/blob/ut
 import numpy as np
 import cv2
 
-from utils.inference import calc_hypotenuse
+from .inference import calc_hypotenuse
 
 end_list = np.array([17, 22, 27, 42, 48, 31, 36, 68], dtype=np.int32) - 1
 

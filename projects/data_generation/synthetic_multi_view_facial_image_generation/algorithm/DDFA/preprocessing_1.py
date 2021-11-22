@@ -10,19 +10,19 @@ The pipeline of 3DDFA prediction: given one image, predict the 3d face vertices,
 
 import torch
 import torchvision.transforms as transforms
-import mobilenet_v1
+from . import mobilenet_v1
 import numpy as np
 import cv2
 from os import path
 import face_alignment
-from utils.ddfa import ToTensorGjz, NormalizeGjz
+from .utils.ddfa import ToTensorGjz, NormalizeGjz
 import scipy.io as sio
-from utils.inference import get_suffix, parse_roi_box_from_landmark, crop_img, predict_68pts, dump_to_ply, dump_vertex, \
-    draw_landmarks, predict_dense, parse_roi_box_from_bbox, get_colors, write_obj_with_colors
-from utils.cv_plot import plot_pose_box
-from utils.estimate_pose import parse_pose
-from utils.render import cget_depths_image, cpncc
-from utils.paf import gen_img_paf
+from .utils.inference import get_suffix, parse_roi_box_from_landmark, crop_img, predict_68pts, dump_to_ply, \
+    dump_vertex, draw_landmarks, predict_dense, parse_roi_box_from_bbox, get_colors, write_obj_with_colors
+from .utils.cv_plot import plot_pose_box
+from .utils.estimate_pose import parse_pose
+from .utils.render import cget_depths_image, cpncc
+from .utils.paf import gen_img_paf
 import torch.backends.cudnn as cudnn
 import sys
 __author__ = 'cleardusk'

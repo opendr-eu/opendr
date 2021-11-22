@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from models.networks.architecture import VGG19, VGGFace19
+from .architecture import VGG19, VGGFace19
 
 
 # Defines the GAN loss which uses either LSGAN or the regular GAN.

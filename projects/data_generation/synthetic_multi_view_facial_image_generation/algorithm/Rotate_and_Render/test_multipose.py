@@ -1,19 +1,19 @@
 import torch.multiprocessing as multiprocessing
 import numpy as np
 import os
-from util.iter_counter import IterationCounter
-from options.test_options import TestOptions
-from models.test_model import TestModel
-from util.visualizer import Visualizer
-from util import util
+from .util.iter_counter import IterationCounter
+from .options.test_options import TestOptions
+from .models.test_model import TestModel
+from .util.visualizer import Visualizer
+from .util import util
 from torch.multiprocessing import Queue
-from data.data_utils import init_parallel_jobs
+from .data.data_utils import init_parallel_jobs
 from skimage import transform as trans
 import cv2
 import time
 import torch
 import math
-from models.networks.rotate_render import TestRender
+from .models.networks.rotate_render import TestRender
 multiprocessing.set_start_method('spawn', force=True)
 
 

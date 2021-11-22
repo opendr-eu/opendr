@@ -1,6 +1,6 @@
 import importlib
 import torch.utils.data
-from data.base_dataset import BaseDataset
+from .base_dataset import BaseDataset
 import math
 from torch.utils.data.sampler import Sampler
 

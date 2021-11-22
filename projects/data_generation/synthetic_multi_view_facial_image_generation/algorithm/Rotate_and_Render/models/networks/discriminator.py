@@ -2,10 +2,10 @@ import torch.nn as nn
 import numpy as np
 import torch.nn.utils.spectral_norm as spectral_norm
 import torch.nn.functional as F
-from models.networks.base_network import BaseNetwork
-from models.networks.sync_batchnorm import SynchronizedBatchNorm2d
-from models.networks.normalization import get_nonspade_norm_layer
-import util.util as util
+from .base_network import BaseNetwork
+from .sync_batchnorm import SynchronizedBatchNorm2d
+from .normalization import get_nonspade_norm_layer
+from ...util import util
 import torch
 from torch.utils.checkpoint import checkpoint
 

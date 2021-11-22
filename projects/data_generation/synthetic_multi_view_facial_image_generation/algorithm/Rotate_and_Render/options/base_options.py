@@ -2,10 +2,10 @@ import sys
 import argparse
 import math
 import os
-from util import util
+from ..util import util
 import torch
-import models
-import data
+from .. import models
+from .. import data
 import pickle
 __all__ = ['math']
 

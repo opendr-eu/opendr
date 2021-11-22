@@ -1,7 +1,7 @@
 import torch
 import pickle
 import numpy as np
-from models.networks.render import osp, Render
+from .render import osp, Render
 
 
 def _get_suffix(filename):

@@ -14,4 +14,4 @@
 
 import sys
 sys.path.append("./../../")
-sys.path.append("./projects/data_generation/synthetic_multi_view_facial_image_generation/algorithm/3ddfa/")
+sys.path.append("./projects/data_generation/synthetic_multi_view_facial_image_generation/algorithm/DDFA/")

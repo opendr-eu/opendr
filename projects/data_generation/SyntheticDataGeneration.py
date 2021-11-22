@@ -40,15 +40,12 @@ from tqdm import tqdm
 from shutil import copyfile
 import cv2
 import os
-from opendr_internal.projects.data_generation import help_url
-import preprocessing_1
-import preprocessing_2
-from opendr_internal.projects.data_generation import test_multipose_url
-import test_multipose
+from .synthetic_multi_view_facial_image_generation.algorithm.DDFA import preprocessing_1
+from .synthetic_multi_view_facial_image_generation.algorithm.DDFA import preprocessing_2
+from .synthetic_multi_view_facial_image_generation.algorithm.Rotate_and_Render import test_multipose
 import argparse
-from utils.ddfa import str2bool
-from src.opendr.engine.learners import Learner
-__all__ = ['help_url', 'test_multipose_url']
+from .synthetic_multi_view_facial_image_generation.algorithm.DDFA.utils.ddfa import str2bool
+from opendr_internal.src.opendr.engine.learners import Learner
 
 
 class MultiviewDataGenerationLearner(Learner):

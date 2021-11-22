@@ -16,9 +16,7 @@ import unittest
 import os
 import torch
 import argparse
-#from opendr_internal.tests.sources.tools.data_generation import opendr_url
 from opendr_internal.projects.data_generation.SyntheticDataGeneration import MultiviewDataGenerationLearner
-__all__ = ['opendr_url']
 
 
 class TestMultiviewDataGenerationLearner(unittest.TestCase):
@@ -36,17 +34,17 @@ class TestMultiviewDataGenerationLearner(unittest.TestCase):
                 parser.add_argument('-device', default='cpu', type=str, help='choose between cuda or cpu ')
         except:
             parser.add_argument("-device", default="cpu", type=str, help="choose between cuda or cpu ")
-        parser.add_argument("-path_in", default=os.path.join(os.environ['OPENDR_HOME'], "projects",
+        parser.add_argument("-path_in", default=os.path.join("opendr_internal", "projects",
                                                              "data_generation",
                                                              "synthetic_multi_view_facial_image_generation",
                                                              "demos", "imgs_input"),
                             type=str, help='Give the path of image folder')
-        parser.add_argument('-path_3ddfa', default=os.path.join(os.environ['OPENDR_HOME'], "projects",
+        parser.add_argument('-path_3ddfa', default=os.path.join("opendr_internal", "projects",
                                                                 "data_generation",
                                                                 "synthetic_multi_view_facial_image_generation",
-                                                                "algorithm", "3ddfa"),
-                            type=str, help='Give the path of 3ddfa folder')
-        parser.add_argument('-save_path', default=os.path.join(os.environ['OPENDR_HOME'], "projects",
+                                                                "algorithm", "DDFA"),
+                            type=str, help='Give the path of DDFA folder')
+        parser.add_argument('-save_path', default=os.path.join("opendr_internal", "projects",
                                                                "data_generation",
                                                                "synthetic_multi_view_facial_image_generation",
                                                                "results"),

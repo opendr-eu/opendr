@@ -1,7 +1,7 @@
 import torch
-import models.networks as networks
-import util.util as util
-from data import curve
+from . import networks
+from ..util import util
+from ..data import curve
 import numpy as np
 import os
 

@@ -1,6 +1,6 @@
 import torch
-import models.networks as networks
-from models.rotatespade_model import RotateSPADEModel
+from . import networks
+from .rotatespade_model import RotateSPADEModel
 
 
 class TestModel(RotateSPADEModel):

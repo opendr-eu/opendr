@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import scipy.io as sio
 import pickle
-from data import curve
+from ...data import curve
 import skimage.transform as trans
 from math import cos, sin, atan2, asin
 import neural_renderer as nr

@@ -54,7 +54,7 @@ class Synthetic_Data_Generation:
         self.parser = argparse.ArgumentParser()
         self.parser.add_argument('-path_in', default='/home/ekakalet/Pictures/TEST', type=str,
                                  help='Give the path of image folder')
-        self.parser.add_argument('-path_3ddfa', default='./', type=str, help='Give the path of 3ddfa folder')
+        self.parser.add_argument('-path_3ddfa', default='./', type=str, help='Give the path of DDFA folder')
         self.parser.add_argument('-save_path', default='./results/', type=str, help='Give the path of results folder')
         self.parser.add_argument('-val_yaw',  default="15,-15", nargs='+', type=str,
                                  help='yaw poses list between [-90,90] ')

@@ -1,11 +1,11 @@
 import torch
-from models.networks.base_network import BaseNetwork
-from models.networks.loss import GANLoss, VGGLoss, VGGwithContrastiveLoss, KLDLoss, L2ContrastiveLoss
-from models.networks.discriminator import NLayerDiscriminator, MultiscaleDiscriminator, ImageDiscriminator, \
+from .base_network import BaseNetwork
+from .loss import GANLoss, VGGLoss, VGGwithContrastiveLoss, KLDLoss, L2ContrastiveLoss
+from .discriminator import NLayerDiscriminator, MultiscaleDiscriminator, ImageDiscriminator, \
     ProjectionDiscriminator
-from models.networks.generator import Interpolate, RotateGenerator, RotateSPADEGenerator
-from models.networks.encoder import ConvEncoder
-import util.util as util
+from .generator import Interpolate, RotateGenerator, RotateSPADEGenerator
+from .encoder import ConvEncoder
+from ...util import util
 
 __all__ = ['NLayerDiscriminator', 'MultiscaleDiscriminator', 'ImageDiscriminator', 'ProjectionDiscriminator',
            'GANLoss', 'VGGLoss', 'VGGwithContrastiveLoss', 'KLDLoss', 'L2ContrastiveLoss', 'Interpolate',
