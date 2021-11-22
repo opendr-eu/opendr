@@ -16,9 +16,7 @@ import unittest
 import os
 import torch
 import argparse
-#from opendr_internal.tests.sources.tools.data_generation import opendr_url
 from opendr_internal.projects.data_generation.SyntheticDataGeneration import MultiviewDataGenerationLearner
-__all__ = ['opendr_url']
 
 
 class TestMultiviewDataGenerationLearner(unittest.TestCase):
