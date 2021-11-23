@@ -104,6 +104,4 @@ if __name__ == "__main__":
     if args_dict:
         cmd += " " + " ".join(["{}:=\"{}\"".format(k, v) for k, v in args_dict.items()])
 
-    print(cmd)
-
     subprocess.call(cmd, shell=True, env=env)

@@ -33,7 +33,6 @@ namespace GMapping {
   }
 
   RangeReading::~RangeReading() {
-    //	cerr << __PRETTY_FUNCTION__ << ": CAZZZZZZZZZZZZZZZZZZZZOOOOOOOOOOO" << endl;
   }
 
   unsigned int RangeReading::rawView(double *v, double density) const {
