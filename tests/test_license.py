@@ -87,6 +87,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/object_tracking_2d/fair_mot/algorithm',
             'src/opendr/perception/object_tracking_2d/deep_sort/algorithm',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones',
+            'src/opendr/perception/heart_anomaly_detection/attention_neural_bag_of_feature/algorithm',
             'src/opendr/simulation/human_model_generation/utilities/PIFu',
             'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
             'src/opendr/perception/skeleton_based_action_recognition/algorithm',
