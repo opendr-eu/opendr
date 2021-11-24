@@ -131,7 +131,6 @@ Assuming that the OpenDR catkin workspace has been sourced, the node can be star
 ```shell
 rosrun perception semantic_segmentation_bisenet.py IMAGE_TOPIC
 ```
-with `CHECKPOINT` pointing to the path to the trained model weights and `IMAGE_TOPIC` specifying the ROS topic, to which the node will subscribe.
 
 Additionally, the following optional arguments are available:
 - `-h, --help`: show a help message and exit
