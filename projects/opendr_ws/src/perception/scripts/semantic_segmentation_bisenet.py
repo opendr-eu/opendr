@@ -26,13 +26,13 @@ import cv2
 
 class BisenetNode:
     def __init__(self,
-                 input_image_topic: str = "/image_publisher/raw_image",
-                 output_heatmap_topic: str = None,
+                 input_image_topic,
+                 output_heatmap_topic=None,
                  device="cuda"
                  ):
         """
         Initialize the Bisenet ROS node and create an instance of the respective learner class.
-        :param input_image_topic: ROS topic for the input image stream
+        :param input_image_topic: ROS topic for the input image
         :type input_image_topic: str
         :param output_heatmap_topic: ROS topic for the predicted heatmap
         :type output_heatmap_topic: str
