@@ -6,6 +6,7 @@ This module includes helper nodes and scripts, useful for characterizing and eva
 ## err_collector
 
 This node collects the translational, rotational and total errors computed by another node and stores them in CSV files.
+
 Errors during the full-SLAM (mapping and localization) phase of a run are stored in one file, while (if used) errors
 measured during the Localization-Only phase are stored in a separate file. 
 
@@ -15,14 +16,14 @@ measured during the Localization-Only phase are stored in a separate file.
     When the Localization-Only phase is started and the doLocOnly message is issued, the node switches from saving to the
     mapping error file to the localization error file.
 
-* **tra_err** ***(std_msg/Float64)***__:__<br/>
-* **rot_err** ***(std_msg/Float64)***__:__<br/>
-* **tot_err** ***(std_msg/Float64)***__:__<br/>
-    Translational, rotational and total errors respectively of the SLAM corrected pose with respect to the ground truth pose.
+* **tra_err** ***(std_msg/Float64)***__:__<br/> Translational error of the SLAM corrected pose with respect to the ground truth pose.
+* **rot_err** ***(std_msg/Float64)***__:__<br/> Rotational error of the SLAM corrected pose with respect to the ground truth pose.
+* **tot_err** ***(std_msg/Float64)***__:__<br/> Total (translational + rotational) error of the SLAM corrected pose with respect to the ground truth pose.
 
 ### Parameters
 * **~file_path** ***(str, default:*** __"~/Desktop/Experiments"__***)***__:__<br/>
     Directory where the files with the collected errors will be stored in a CSV format.
+  
     Two files are constructed per run: a Mapping and a Localization-Only phase positional error files.
     The path to the files is constructed as follows:
     ```
@@ -44,12 +45,6 @@ measured during the Localization-Only phase are stored in a separate file.
 * **~localization_suffix** ***(str, default:*** __"\_loc"__***)***__:__<br/>
     Suffix for the Localization-Only Phase error file.
 
- 
-  file_path = rospy.get_param("~file_path", def_file_path)
-         file_prefix = rospy.get_param("~file_prefix", "error_data")
-         mapping_suffix = rospy.get_param("~mapping_suffix", "_map")
-         localization_suffix = rospy.get_param("~localization_suffix", "_loc")
-
 
 
 ## fmp_plot
@@ -60,9 +55,15 @@ either save the plots to a directory, publish them to a topic, or both.
 * **map_model** ***(gmapping/mapModel)***__:__<br/>
     Message specifying whether the SLAM algorithm is using the Reflection or Exponential Decay Rate map model.
     
+    The used measurement likelihood functions and the resulting Map Posterior Distribution will depend on this parameter.
+    
+    The parametric, closed-form map posterior distribution will be either a Beta distribution (Beta(x; α, β)) for a Reflection Model,
+  or a Gamma distribution (Gamma(x; α, β)) for Exponential Decay Rate model.
+    
 * **fmp_alpha** ***(gmapping/doubleMap)***__:__<br/>
+    Map of the alpha parameter of the distribution (either Beta or Gamma according to the map_model setting).
 * **fmp_beta** ***(gmapping/doubleMap)***__:__<br/>
-    Parameters of the Full Map Posterior distribution.
+    Map of the beta parameter of the distribution (either Beta or Gamma according to the map_model setting).
 
 ### Published Topics
 If parameter ***~pub_image*** is set to True, then the node will publish the computed map distribution properties as images under the topics:
@@ -187,13 +188,13 @@ the ***~map_frame*** and the ***~odom_frame*** as the pure-odometry transformati
 ### Parameters
 * **~map_frame** ***(str, default:*** __"map"__***)***__:__<br/>
 * **~odom_frame** ***(str, default:*** __"odom"__***)***__:__<br/>
-Name of the TF Frames for the map and odometry coordinate frames respectively.
+Name of the ROS TF Frames for the map and odometry coordinate frames respectively.
 * **~frame_list** ***(str, default:*** __"[base_link, laser_link]"__***)***__:__<br/>
-Comma-separated list of TF Frames to filter the TF Messages with (along with the ***~odom_frame***), and to republish
+Comma-separated list of ROS TF Frames to filter the TF Messages with (along with the ***~odom_frame***), and to republish
 under the new TF Tree with prefix ***~frame_prefix***.
 
 * **~frame_prefix** ***(str, default:*** __"odo"__***)***__:__<br/>
-Prefix to be added to the TF Frames configured in the ***~frame_list*** (and ***~odom_frame***).
+Prefix to be added to the ROS TF Frames configured in the ***~frame_list*** (and ***~odom_frame***).
 E.g. for an existing frame *base_link* a new one will be created called *odo/base_link* and the noisy, dynamic transforms will be replicated for it.
 
 

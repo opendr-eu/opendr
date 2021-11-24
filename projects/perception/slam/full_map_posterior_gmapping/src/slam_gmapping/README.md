@@ -203,5 +203,13 @@ Enable Full Map Posterior calculations
 Use a beam decay map model.
 
 * **~alpha_0** ***(float, default:*** __1.0__***)***__:__<br/>
-
+Value for the alpha parameter of the map's prior probability distribution.
+  
+  For an uninformed prior distribution, set to 1.0 for either the Reflection or the Decay Map Model.
+  
 * **~beta_0** ***(float, default:*** __1.0__***)***__:__<br/>
+  Value for the beta parameter of the prior map's probability distribution.
+  
+  For an uninformed prior distribution, set to:
+  * 1.0 for the Reflection Map Model
+  * 0.0 for the Decay Map Model
