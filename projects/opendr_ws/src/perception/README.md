@@ -126,7 +126,7 @@ Additionally, the following optional arguments are available:
 
 
 ## Semantic Segmentation ROS Node
-A ROS node for performing semantic segmentation on an input image using the [BiseNet](../../../../src/opendr/perception/semantic_segmentation/README.md) model.
+A ROS node for performing semantic segmentation on an input image using the BiseNet model.
 Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
 ```shell
 rosrun perception semantic_segmentation_bisenet.py IMAGE_TOPIC
