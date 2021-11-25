@@ -120,3 +120,39 @@ class SSDDefaultTrainTransform(object):
         if label.size == 0:
             cls_targets = - mx.ndarray.ones_like(cls_targets)
         return img, cls_targets[0], box_targets[0]
+
+
+class SSDDefaultValTransform(object):
+    """Default SSD validation transform.
+
+    Parameters
+    ----------
+    width : int
+        Image width.
+    height : int
+        Image height.
+    mean : array-like of size 3
+        Mean pixel values to be subtracted from image tensor. Default is [0.485, 0.456, 0.406].
+    std : array-like of size 3
+        Standard deviation to be divided from image. Default is [0.229, 0.224, 0.225].
+
+    """
+    def __init__(self, width, height, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
+        self._width = width
+        self._height = height
+        self._mean = mean
+        self._std = std
+
+    def __call__(self, src, label):
+        """Apply transform to validation image/label."""
+        # resize
+        h, w, _ = src.shape
+        img = timage.imresize(src, self._width, self._height, interp=9)
+        if label.size == 0:
+            bbox = -np.ones((1, 6))
+        else:
+            bbox = tbbox.resize(label, in_size=(w, h), out_size=(self._width, self._height))
+
+        img = mx.nd.image.to_tensor(img)
+        img = mx.nd.image.normalize(img, mean=self._mean, std=self._std)
+        return img, bbox.astype(img.dtype)

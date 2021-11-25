@@ -283,8 +283,9 @@ class DetectionDatasetCOCOEval(DetectionEvalMetric):
                 ann['segmentation'] = []
                 ann['category_id'] = int(cls)
                 ann['iscrowd'] = 0
-                ann['area'] = int((box[2] - box[0]) * (box[3] - box[1]))
-                ann['bbox'] = [int(box[0]), int(box[1]), int(box[2] - box[0]), int(box[3] - box[1])]
+                if np.all(box > 0):
+                    ann['area'] = int((box[2] - box[0]) * (box[3] - box[1]))
+                    ann['bbox'] = [int(box[0]), int(box[1]), int(box[2] - box[0]), int(box[3] - box[1])]
                 self.annotations_gt.append(ann)
 
     def get(self):
@@ -367,7 +368,7 @@ class CustomEvalMetric(DetectionEvalMetric):
         self.results = {"map": 0}
 
     def update(self, det_boxes, det_labels, det_scores, gt_boxes, gt_labels, gt_difficult=None):
-        det_boxes, det_labels, det_scores, gt_boxes, gt_labels, gt_difficult = \
+        det_boxes, det_labels, det_scores, gt_boxes, gt_labels, gt_difficult, gt_mask = \
             self._input_check(det_boxes, det_labels, det_scores, gt_boxes, gt_labels, gt_difficult)
 
         self.det_boxes.extend(det_boxes)

@@ -27,9 +27,9 @@ if __name__ == '__main__':
     #                                                                                                "widerperson"])
     # parser.add_argument("--data-root", help="Dataset root folder", type=str)
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--batch-size", help="Batch size to use for training", type=int, default=2)
+    parser.add_argument("--batch-size", help="Batch size to use for training", type=int, default=6)
     parser.add_argument("--lr", help="Learning rate to use for training", type=float, default=1e-5)
-    parser.add_argument("--val-after", help="Epochs in-between  evaluations", type=int, default=5)
+    parser.add_argument("--val-after", help="Epochs in-between  evaluations", type=int, default=1)
     parser.add_argument("--checkpoint-freq", help="Frequency in-between checkpoint saving", type=int, default=5)
     parser.add_argument("--n-epochs", help="Number of total epochs", type=int, default=50)
     parser.add_argument("--resume-from", help="Epoch to load checkpoint file and resume training from", type=int, default=0)
@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     ssd = SingleShotDetectorLearner(device=args.device, batch_size=args.batch_size, lr=args.lr, val_after=args.val_after,
                                     checkpoint_load_iter=args.resume_from, epochs=args.n_epochs,
-                                    checkpoint_after_iter=args.checkpoint_freq, log_after=1)
+                                    checkpoint_after_iter=args.checkpoint_freq, log_after=50)
 
     ssd.fit(train_dataset, val_dataset)
     ssd.save("./ssd_concat_person_model")

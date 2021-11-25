@@ -45,7 +45,7 @@ from opendr.perception.object_detection_2d.utils.eval_utils import DetectionData
 from opendr.perception.object_detection_2d.datasets import DetectionDataset
 from opendr.perception.object_detection_2d.datasets.transforms import ImageToNDArrayTransform, BoundingBoxListToNumpyArray, \
     transform_test
-from opendr.perception.object_detection_2d.ssd.algorithm.transform import SSDDefaultTrainTransform
+from opendr.perception.object_detection_2d.ssd.algorithm.transform import SSDDefaultTrainTransform, SSDDefaultValTransform
 from opendr.perception.object_detection_2d.ssd.algorithm.multibox import SSDMultiBoxLoss
 
 gutils.random.seed(0)
@@ -516,7 +516,8 @@ class SingleShotDetectorLearner(Learner):
 
         eval_metric.reset()
 
-        val_transform = presets.ssd.SSDDefaultValTransform(self.img_size, self.img_size)
+        # val_transform = presets.ssd.SSDDefaultValTransform(self.img_size, self.img_size)
+        val_transform = SSDDefaultValTransform(self.img_size, self.img_size)
         dataset = dataset.transform(val_transform)
 
         val_batchify_fn = Tuple(Stack(), Pad(pad_val=-1))

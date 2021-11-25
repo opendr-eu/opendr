@@ -38,9 +38,8 @@ if __name__ == '__main__':
                                            images_dir='human', annotations_dir='human_anot', classes=['person'])
     val_dataset = ConcatDataset([val_dataset_human, val_dataset_no_human])
     print(val_dataset.classes)
-    # metric = VOCMApMetric(class_names=val_dataset.classes, iou_thresh=0.45)
-    metric = None
-    # metric = MeanAveragePrecision(classes=val_dataset.classes, n_val_images=len(val_dataset))
+    metric = VOCMApMetric(class_names=val_dataset.classes, iou_thresh=0.45)
+    # metric = None
 
     ssd = SingleShotDetectorLearner(device=args.device)
     ssd.download(".", mode="pretrained")
