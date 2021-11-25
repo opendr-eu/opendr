@@ -89,7 +89,13 @@ def create_augmented_targets_and_searches(centers, target_sizes, search_sizes):
 
 
 def create_target_search_regions(
-    bv_range, voxel_size, pseudo_image_size, annos, rect, Trv2c
+    bv_range,
+    voxel_size,
+    pseudo_image_size,
+    annos=None,
+    rect=None,
+    Trv2c=None,
+    gt_boxes=None,
 ):
 
     bv_min = bv_range[:2]
@@ -98,20 +104,32 @@ def create_target_search_regions(
     batch_targets = []
     batch_searches = []
 
-    for i, anno_original in enumerate(annos):
+    all_gt_boxes_lidar = []
 
-        anno = kitti.remove_dontcare(anno_original)
+    if annos is not None:
+        for i, anno_original in enumerate(annos):
 
-        dims = anno["dimensions"]
-        locs = anno["location"]
-        rots = anno["rotation_y"]
+            anno = kitti.remove_dontcare(anno_original)
 
-        gt_boxes_camera = np.concatenate(
-            [locs, dims, rots[..., np.newaxis]], axis=1
-        )
-        gt_boxes_lidar = box_camera_to_lidar(
-            gt_boxes_camera, rect[i], Trv2c[i]
-        )
+            dims = anno["dimensions"]
+            locs = anno["location"]
+            rots = anno["rotation_y"]
+
+            gt_boxes_camera = np.concatenate(
+                [locs, dims, rots[..., np.newaxis]], axis=1
+            )
+            gt_boxes_lidar = box_camera_to_lidar(
+                gt_boxes_camera, rect[i], Trv2c[i]
+            )
+
+            all_gt_boxes_lidar.append(gt_boxes_lidar)
+    elif gt_boxes is not None:
+        all_gt_boxes_lidar = gt_boxes
+    else:
+        raise Exception()
+
+    for gt_boxes_lidar in all_gt_boxes_lidar:
+
         locs_lidar = gt_boxes_lidar[:, 0:3]
         dims_lidar = gt_boxes_lidar[:, 3:6]
         rots_lidar = gt_boxes_lidar[:, 6:7]
@@ -146,7 +164,7 @@ def create_target_search_regions(
 
 
 def get_sub_image(image, center, size):
-    result = torch.zeros([image.shape[0], *size], dtype=torch.float32)
+    result = torch.zeros([image.shape[0], *size], dtype=torch.float32, device=image.device)
     image_size = image.shape[-2:]
 
     pos_min = center - size // 2
@@ -165,8 +183,8 @@ def get_sub_image(image, center, size):
             local_max[i] -= delta
 
     result[
-        :, local_min[0] : local_max[0] + 1, local_min[1] : local_max[1] + 1
-    ] = image[:, pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1]
+        :, local_min[0]: local_max[0] + 1, local_min[1]: local_max[1] + 1
+    ] = image[:, pos_min[0]: pos_max[0] + 1, pos_min[1]: pos_max[1] + 1]
 
     return result
 
@@ -218,7 +236,9 @@ def create_label_and_weights(target, search, loss="bce"):
     return labels, weights
 
 
-def create_pseudo_images_and_labels(net, example_torch, annos=None, gt_boxes=None):
+def create_pseudo_images_and_labels(
+    net, example_torch, annos=None, gt_boxes=None
+):
     pseudo_image = net.create_pseudo_image(example_torch)
     pseudo_image_size = pseudo_image.shape[-2:]
 
@@ -234,10 +254,7 @@ def create_pseudo_images_and_labels(net, example_torch, annos=None, gt_boxes=Non
         )
     elif gt_boxes is not None:
         batch_targets, batch_searches = create_target_search_regions(
-            net.bv_range,
-            net.voxel_size,
-            pseudo_image_size,
-            gt_boxes=gt_boxes,
+            net.bv_range, net.voxel_size, pseudo_image_size, gt_boxes=gt_boxes,
         )
     else:
         raise Exception()
@@ -360,11 +377,15 @@ def train(
             )
 
             items = create_pseudo_images_and_labels(
-                net,
-                example_torch,
-                gt_boxes=example_torch["gt_boxes_2"]
+                net, example_torch, gt_boxes=example_torch["gt_boxes_2"]
             )
 
+            for target_image, search_image, labels, weights in items:
+                pred, feat_target, feat_search = siamese_model(search_image, target_image)
+
+                print()
+
+            print()
 
         total_step_elapsed += steps
 
@@ -431,7 +452,7 @@ def train(
                         example,
                         gt_annos[
                             i
-                            * eval_input_cfg.batch_size: (i + 1)
+                            * eval_input_cfg.batch_size : (i + 1)
                             * eval_input_cfg.batch_size
                         ],
                     )
