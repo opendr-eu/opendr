@@ -61,6 +61,8 @@ from urllib.request import urlretrieve
 import warnings
 from numba import errors
 
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.siamese import SiameseConvNet
+
 original_warn = warnings.warn
 
 
@@ -371,7 +373,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             )
 
         train(
-            self.model,
+            self.siamese,
             self.input_config,
             self.train_config,
             self.evaluation_input_config,
@@ -428,7 +430,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         )
 
         result = evaluate(
-            self.model,
+            self.siamese,
             self.evaluation_input_config,
             self.model_config,
             self.mixed_optimizer,
@@ -864,6 +866,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         )
 
         self.model = model
+        self.siamese = SiameseConvNet(self.model)
         self.input_config = input_config
         self.train_config = train_config
         self.evaluation_input_config = evaluation_input_config

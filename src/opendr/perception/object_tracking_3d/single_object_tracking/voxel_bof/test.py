@@ -364,7 +364,11 @@ def test_pp_siamese():
         model_config_path=config, device=DEVICE
     )
     learner.load(model_path)
-    learner.eval(kitti_detection, verbose=True)
+    learner.fit(
+        kitti_detection, 
+        model_dir="./temp/0",
+        verbose=True
+    )
 
     print()
 

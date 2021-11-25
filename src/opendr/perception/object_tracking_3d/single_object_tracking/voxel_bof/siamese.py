@@ -2,6 +2,7 @@ import torch
 from torch import nn
 import torch.optim as optim
 from torch.nn import functional
+import numpy as np
 
 torch.manual_seed(2605)
 torch.cuda.manual_seed_all(2605)

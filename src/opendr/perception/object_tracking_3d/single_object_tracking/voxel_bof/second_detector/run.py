@@ -72,16 +72,16 @@ def example_convert_to_torch(
 def create_augmented_targets_and_searches(centers, target_sizes, search_sizes):
 
     delta = search_sizes - target_sizes
-    offsets = np.random.randint(
-        -delta // 2, delta // 2
-    )
+    offsets = np.random.randint(-delta // 2, delta // 2)
 
     search_centers = centers + offsets
 
     targets = []
     searches = []
 
-    for center, search_center, target_size, search_size in zip(centers, search_centers, target_sizes, search_sizes):
+    for center, search_center, target_size, search_size in zip(
+        centers, search_centers, target_sizes, search_sizes
+    ):
         targets.append([center, target_size])
         searches.append([search_center, search_size])
 
@@ -145,24 +145,124 @@ def create_target_search_regions(
     return batch_targets, batch_searches
 
 
-def create_pseudo_image_and_labels(net, example_torch, annos):
+def get_sub_image(image, center, size):
+    result = torch.zeros([image.shape[0], *size], dtype=torch.float32)
+    image_size = image.shape[-2:]
+
+    pos_min = center - size // 2
+    pos_max = center + (size + 1) // 2 - 1
+
+    local_min = np.array([0, 0])
+    local_max = size - 1
+
+    for i in range(2):
+        if pos_min[i] < 0:
+            local_min[i] -= pos_min[i]
+            pos_min[i] -= pos_min[i]
+        if pos_max[i] >= image_size[i]:
+            delta = pos_max[i] - image_size[i] + 1
+            pos_max[i] -= delta
+            local_max[i] -= delta
+
+    result[
+        :, local_min[0] : local_max[0] + 1, local_min[1] : local_max[1] + 1
+    ] = image[:, pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1]
+
+    return result
+
+
+def create_logisticloss_labels(
+    label_size, t, r_pos, r_neg=0, ignore_label=-100, loss="bce"
+):
+    labels = np.zeros(label_size)
+
+    if t[0] is None:
+        return labels
+
+    for r in range(label_size[0]):
+        for c in range(label_size[1]):
+            dist = np.sqrt(
+                ((r - t[0]) - label_size[0] // 2) ** 2
+                + ((c - t[1]) - label_size[1] // 2) ** 2
+            )
+            if dist <= r_pos:
+                labels[r, c] = 1
+            elif dist <= r_neg:
+                labels[r, c] = ignore_label
+            else:
+                if loss == "bce" or loss == "focal":
+                    labels[r, c] = 0
+                else:
+                    labels[r, c] = -1
+    return labels
+
+
+def create_label_and_weights(target, search, loss="bce"):
+
+    label_size = search[1] - target[1] + 1
+    r_pos = np.min(target[1])
+    t = target[0] - search[0]
+
+    labels = create_logisticloss_labels(label_size, t, r_pos, loss=loss)
+    weights = np.zeros_like(labels)
+
+    neg_label = 0 if loss == "bce" or loss == "focal" else -1
+
+    pos_num = np.sum(labels == 1)
+    neg_num = np.sum(labels == neg_label)
+    if pos_num > 0:
+        weights[labels == 1] = 0.5 / pos_num
+    weights[labels == neg_label] = 0.5 / neg_num
+    weights *= pos_num + neg_num
+
+    return labels, weights
+
+
+def create_pseudo_images_and_labels(net, example_torch, annos=None, gt_boxes=None):
     pseudo_image = net.create_pseudo_image(example_torch)
     pseudo_image_size = pseudo_image.shape[-2:]
 
-    batch_targets, batch_searches = create_target_search_regions(
-        net.bv_range,
-        net.voxel_size,
-        pseudo_image_size,
-        annos,
-        example_torch["rect"].cpu().numpy(),
-        example_torch["Trv2c"].cpu().numpy(),
-    )
+    if annos is not None:
 
-    return None
+        batch_targets, batch_searches = create_target_search_regions(
+            net.bv_range,
+            net.voxel_size,
+            pseudo_image_size,
+            annos,
+            example_torch["rect"].cpu().numpy(),
+            example_torch["Trv2c"].cpu().numpy(),
+        )
+    elif gt_boxes is not None:
+        batch_targets, batch_searches = create_target_search_regions(
+            net.bv_range,
+            net.voxel_size,
+            pseudo_image_size,
+            gt_boxes=gt_boxes,
+        )
+    else:
+        raise Exception()
+
+    items = []
+
+    for i, (targets, searches) in enumerate(
+        zip(batch_targets, batch_searches)
+    ):
+        for target, search in zip(targets, searches):
+            target_image = get_sub_image(pseudo_image[i], target[0], target[1])
+            search_image = get_sub_image(pseudo_image[i], search[0], search[1])
+
+            target_image = target_image.reshape(1, *target_image.shape)
+            search_image = search_image.reshape(1, *search_image.shape)
+
+            labels, weights = create_label_and_weights(target, search)
+
+            items.append([target_image, search_image, labels, weights])
+
+    return items
 
 
 def train(
-    net,
+    siamese_model,
     input_cfg,
     train_cfg,
     eval_input_cfg,
@@ -187,6 +287,9 @@ def train(
     image_shape=None,
     evaluate=True,
 ):
+
+    net = siamese_model.branch
+
     ######################
     # PREPARE INPUT
     ######################
@@ -256,116 +359,12 @@ def train(
                 example, float_dtype, device=device
             )
 
-            batch_size = example["anchors"].shape[0]
-
-            ret_dict = net(example_torch, refine_weight)
-
-            cls_preds = ret_dict["cls_preds"]
-            loss = ret_dict["loss"].mean()
-            cls_loss_reduced = ret_dict["cls_loss_reduced"].mean()
-            loc_loss_reduced = ret_dict["loc_loss_reduced"].mean()
-            cls_pos_loss = ret_dict["cls_pos_loss"]
-            cls_neg_loss = ret_dict["cls_neg_loss"]
-            loc_loss = ret_dict["loc_loss"]
-            dir_loss_reduced = ret_dict["dir_loss_reduced"]
-            cared = ret_dict["cared"]
-            labels = example_torch["labels"]
-            if train_cfg.enable_mixed_precision:
-                loss *= loss_scale
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
-            mixed_optimizer.step()
-            mixed_optimizer.zero_grad()
-            net.update_global_step()
-            net_metrics = net.update_metrics(
-                cls_loss_reduced, loc_loss_reduced, cls_preds, labels, cared,
+            items = create_pseudo_images_and_labels(
+                net,
+                example_torch,
+                gt_boxes=example_torch["gt_boxes_2"]
             )
 
-            step_time = time.time() - t
-            t = time.time()
-            metrics = {}
-            num_pos = int((labels > 0)[0].float().sum().cpu().numpy())
-            num_neg = int((labels == 0)[0].float().sum().cpu().numpy())
-            if "anchors_mask" not in example_torch:
-                num_anchors = example_torch["anchors"].shape[1]
-            else:
-                num_anchors = int(example_torch["anchors_mask"][0].sum())
-            global_step = net.get_global_step()
-            if global_step % display_step == 0:
-                loc_loss_elem = [
-                    float(
-                        loc_loss[:, :, i].sum().detach().cpu().numpy()
-                        / batch_size
-                    )
-                    for i in range(loc_loss.shape[-1])
-                ]
-                metrics["step"] = global_step
-                metrics["steptime"] = step_time
-                metrics.update(net_metrics)
-                metrics["loss"] = {}
-                metrics["loss"]["loc_elem"] = loc_loss_elem
-                metrics["loss"]["cls_pos_rt"] = float(
-                    cls_pos_loss.detach().cpu().numpy()
-                )
-                metrics["loss"]["cls_neg_rt"] = float(
-                    cls_neg_loss.detach().cpu().numpy()
-                )
-
-                ########################################
-                if (
-                    model_cfg.rpn.module_class_name == "PSA"
-                    or model_cfg.rpn.module_class_name == "RefineDet"
-                ):
-                    coarse_loss = ret_dict["coarse_loss"]
-                    refine_loss = ret_dict["refine_loss"]
-                    metrics["coarse_loss"] = float(
-                        coarse_loss.detach().cpu().numpy()
-                    )
-                    metrics["refine_loss"] = float(
-                        refine_loss.detach().cpu().numpy()
-                    )
-                ########################################
-                if model_cfg.use_direction_classifier:
-                    metrics["loss"]["dir_rt"] = float(
-                        dir_loss_reduced.detach().cpu().numpy()
-                    )
-                metrics["num_vox"] = int(example_torch["voxels"].shape[0])
-                metrics["num_pos"] = int(num_pos)
-                metrics["num_neg"] = int(num_neg)
-                metrics["num_anchors"] = int(num_anchors)
-                metrics["lr"] = float(mixed_optimizer.param_groups[0]["lr"])
-                metrics["image_idx"] = (
-                    example["image_idx"][0] if "image_idx" in example else 0
-                )
-                metrics_str_list = []
-                for k, v in metrics.items():
-                    if isinstance(v, float):
-                        metrics_str_list.append(f"{k}={v:.3}")
-                    elif isinstance(v, (list, tuple)):
-                        if v and isinstance(v[0], float):
-                            v_str = ", ".join([f"{e:.3}" for e in v])
-                            metrics_str_list.append(f"{k}=[{v_str}]")
-                        else:
-                            metrics_str_list.append(f"{k}={v}")
-                    else:
-                        metrics_str_list.append(f"{k}={v}")
-                log_str = ", ".join(metrics_str_list)
-                log(Logger.LOG_WHEN_NORMAL, log_str)
-
-            if (
-                checkpoint_after_iter > 0
-                and global_step % checkpoint_after_iter == 0
-            ):
-
-                save_path = checkpoints_path / f"checkpoint_{global_step}.pth"
-
-                torch.save(
-                    {
-                        "net": net.state_dict(),
-                        "optimizer": mixed_optimizer.state_dict(),
-                    },
-                    save_path,
-                )
 
         total_step_elapsed += steps
 
@@ -427,12 +426,12 @@ def train(
                         example_numpy, float_dtype, device=device
                     )
 
-                    create_pseudo_image_and_labels(
+                    items = create_pseudo_images_and_labels(
                         net,
                         example,
                         gt_annos[
                             i
-                            * eval_input_cfg.batch_size : (i + 1)
+                            * eval_input_cfg.batch_size: (i + 1)
                             * eval_input_cfg.batch_size
                         ],
                     )
@@ -599,7 +598,7 @@ def evaluate(
                 example_numpy, float_dtype, device=device
             )
 
-            create_pseudo_image_and_labels(
+            items = create_pseudo_images_and_labels(
                 net,
                 example,
                 gt_annos[

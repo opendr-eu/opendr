@@ -32,13 +32,14 @@ def merge_second_batch(batch_list, _unused=False):
             "voxels",
             "num_points",
             "num_gt",
-            "gt_boxes",
             "voxel_labels",
             "match_indices",
         ]:
             ret[key] = np.concatenate(elems, axis=0)
         elif key == "match_indices_num":
             ret[key] = np.concatenate(elems, axis=0)
+        elif key in ["gt_boxes_2", "gt_names_2"]:
+            ret[key] = elems
         elif key == "coordinates":
             coors = []
             for i, coor in enumerate(elems):
@@ -319,6 +320,8 @@ def prep_pointcloud(
                 "labels": targets_dict["labels"],
                 "reg_targets": targets_dict["bbox_targets"],
                 "reg_weights": targets_dict["bbox_outside_weights"],
+                "gt_boxes_2": gt_boxes,
+                "gt_names_2": gt_names,
             }
         )
     return example
