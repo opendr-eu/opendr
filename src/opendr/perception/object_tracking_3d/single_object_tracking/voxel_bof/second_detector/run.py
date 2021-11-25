@@ -69,11 +69,28 @@ def example_convert_to_torch(
     return example_torch
 
 
-def create_augmented_targets_and_searches(targets, searches):
-    pass
+def create_augmented_targets_and_searches(centers, target_sizes, search_sizes):
+
+    delta = search_sizes - target_sizes
+    offsets = np.random.randint(
+        -delta // 2, delta // 2
+    )
+
+    search_centers = centers + offsets
+
+    targets = []
+    searches = []
+
+    for center, search_center, target_size, search_size in zip(centers, search_centers, target_sizes, search_sizes):
+        targets.append([center, target_size])
+        searches.append([search_center, search_size])
+
+    return targets, searches
 
 
-def create_target_search_regions(bv_range, voxel_size, pseudo_image_size, annos, rect, Trv2c):
+def create_target_search_regions(
+    bv_range, voxel_size, pseudo_image_size, annos, rect, Trv2c
+):
 
     bv_min = bv_range[:2]
     voxel_size_bev = voxel_size[:2]
@@ -92,32 +109,40 @@ def create_target_search_regions(bv_range, voxel_size, pseudo_image_size, annos,
         gt_boxes_camera = np.concatenate(
             [locs, dims, rots[..., np.newaxis]], axis=1
         )
-        gt_boxes_lidar = box_camera_to_lidar(gt_boxes_camera, rect[i], Trv2c[i])
+        gt_boxes_lidar = box_camera_to_lidar(
+            gt_boxes_camera, rect[i], Trv2c[i]
+        )
         locs_lidar = gt_boxes_lidar[:, 0:3]
         dims_lidar = gt_boxes_lidar[:, 3:6]
         rots_lidar = gt_boxes_lidar[:, 6:7]
 
         origin = [0.5, 0.5, 0]
         gt_corners = center_to_corner_box3d(
-            locs_lidar, dims_lidar, rots_lidar.reshape(-1), origin=origin, axis=2,
+            locs_lidar,
+            dims_lidar,
+            rots_lidar.reshape(-1),
+            origin=origin,
+            axis=2,
         )
 
         mins = np.min(gt_corners, axis=1)
         maxs = np.max(gt_corners, axis=1)
         centers = (maxs + mins) / 2
         sizes = maxs - mins
-        rotations = np.zeros((centers.shape[0],), dtype=np.float32)
 
-        centers_image = ((centers[:, :2] - bv_min) / voxel_size_bev).astype(np.int32)
+        centers_image = ((centers[:, :2] - bv_min) / voxel_size_bev).astype(
+            np.int32
+        )
         sizes_image = (sizes[:, :2] / voxel_size_bev).astype(np.int32)
         search_sizes = sizes_image * 2 + (sizes_image < 20) * 20
 
-        targets, searches = create_augmented_targets_and_searches(targets, searches)
+        targets, searches = create_augmented_targets_and_searches(
+            centers_image, sizes_image, search_sizes
+        )
         batch_targets.append(targets)
         batch_searches.append(searches)
 
     return batch_targets, batch_searches
-
 
 
 def create_pseudo_image_and_labels(net, example_torch, annos):
@@ -132,6 +157,8 @@ def create_pseudo_image_and_labels(net, example_torch, annos):
         example_torch["rect"].cpu().numpy(),
         example_torch["Trv2c"].cpu().numpy(),
     )
+
+    return None
 
 
 def train(
