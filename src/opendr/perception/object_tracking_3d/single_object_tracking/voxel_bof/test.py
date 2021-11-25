@@ -5,7 +5,10 @@ from opendr.engine.target import TrackingAnnotation3D, TrackingAnnotation3DList
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.voxel_bof_object_tracking_3d_learner import (
     VoxelBofObjectTracking3DLearner,
 )
-from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
+from opendr.perception.object_detection_3d.datasets.kitti import (
+    KittiDataset,
+    LabeledPointCloudsDatasetIterator,
+)
 from opendr.perception.object_tracking_3d.datasets.kitti_tracking import (
     KittiTrackingDatasetIterator,
     LabeledTrackingPointCloudsDatasetIterator,
@@ -73,6 +76,7 @@ car_configs = {
     "pointpillars_car": config_pointpillars_car,
 }
 
+kitti_detection = KittiDataset(dataset_detection_path)
 dataset_detection = LabeledPointCloudsDatasetIterator(
     dataset_detection_path + "/training/velodyne_reduced",
     dataset_detection_path + "/training/label_2",
@@ -141,7 +145,7 @@ def tracking_boxes_to_lidar(
     gt_boxes_lidar = box_camera_to_lidar(gt_boxes_camera, r0_rect, trv2c)
     locs_lidar = gt_boxes_lidar[:, 0:3]
     dims_lidar = gt_boxes_lidar[:, 3:6]
-    rots_lidar = gt_boxes_lidar[:, 6:7] # * (-1) + np.pi / 2
+    rots_lidar = gt_boxes_lidar[:, 6:7]
 
     new_label = {
         "name": label["name"][selected_objects],
@@ -153,8 +157,12 @@ def tracking_boxes_to_lidar(
         "location": locs_lidar,
         "rotation_y": rots_lidar,
         "score": label["score"][selected_objects],
-        "id": label["id"][selected_objects] if "id" in label else np.array(list(range(len(selected_objects)))),
-        "frame": label["frame"][selected_objects] if "frame" in label else np.array([0] * len(selected_objects)),
+        "id": label["id"][selected_objects]
+        if "id" in label
+        else np.array(list(range(len(selected_objects)))),
+        "frame": label["frame"][selected_objects]
+        if "frame" in label
+        else np.array([0] * len(selected_objects)),
     }
 
     result = TrackingAnnotation3DList.from_kitti(
@@ -356,21 +364,16 @@ def test_pp_siamese():
         model_config_path=config, device=DEVICE
     )
     learner.load(model_path)
+    learner.eval(kitti_detection, verbose=True)
 
-    for q in range(lq):  # range(len(dataset_tracking)):\
-        i = q * pq
-        print(i, "/", len(dataset_tracking))
-        point_cloud_with_calibration, label = dataset_tracking[i]
-        predictions = learner.infer(point_cloud_with_calibration)
-        image = draw_point_cloud_bev(
-            point_cloud_with_calibration.data, predictions
-        )
-        PilImage.fromarray(image).save("./plots/pp_" + str(i) + ".png")
+    print()
 
+
+test_pp_siamese()
 
 # test_tanet_infer_tracking()
-test_pp_infer_tracking()
-test_pp_infer_detection()
+# test_pp_infer_tracking()
+# test_pp_infer_detection()
 
 # test_eval_detection()
 

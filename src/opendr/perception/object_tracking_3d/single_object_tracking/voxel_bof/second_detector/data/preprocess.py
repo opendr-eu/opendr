@@ -4,15 +4,20 @@ from collections import defaultdict
 import numpy as np
 
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core import (
-    box_np_ops, )
+    box_np_ops,
+)
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core import (
-    preprocess as prep, )
+    preprocess as prep,
+)
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.geometry import (
-    points_in_convex_polygon_3d_jit, )
+    points_in_convex_polygon_3d_jit,
+)
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.point_cloud.bev_ops import (
-    points_to_bev, )
+    points_to_bev,
+)
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data import (
-    kitti_common as kitti, )
+    kitti_common as kitti,
+)
 
 
 def merge_second_batch(batch_list, _unused=False):
@@ -24,12 +29,12 @@ def merge_second_batch(batch_list, _unused=False):
     example_merged.pop("num_voxels")
     for key, elems in example_merged.items():
         if key in [
-                "voxels",
-                "num_points",
-                "num_gt",
-                "gt_boxes",
-                "voxel_labels",
-                "match_indices",
+            "voxels",
+            "num_points",
+            "num_gt",
+            "gt_boxes",
+            "voxel_labels",
+            "match_indices",
         ]:
             ret[key] = np.concatenate(elems, axis=0)
         elif key == "match_indices_num":
@@ -37,9 +42,9 @@ def merge_second_batch(batch_list, _unused=False):
         elif key == "coordinates":
             coors = []
             for i, coor in enumerate(elems):
-                coor_pad = np.pad(coor, ((0, 0), (1, 0)),
-                                  mode="constant",
-                                  constant_values=i)
+                coor_pad = np.pad(
+                    coor, ((0, 0), (1, 0)), mode="constant", constant_values=i
+                )
                 coors.append(coor_pad)
             ret[key] = np.concatenate(coors, axis=0)
         else:
@@ -114,8 +119,9 @@ def prep_pointcloud(
 
     if remove_outside_points and not lidar_input:
         image_shape = input_dict["image_shape"]
-        points = box_np_ops.remove_outside_points(points, rect, Trv2c, P2,
-                                                  image_shape)
+        points = box_np_ops.remove_outside_points(
+            points, rect, Trv2c, P2, image_shape
+        )
     if remove_environment is True and training:
         selected = kitti.keep_arrays_by_name(gt_names, class_names)
         gt_boxes = gt_boxes[selected]
@@ -146,8 +152,9 @@ def prep_pointcloud(
             difficulty = difficulty[keep_mask]
             if group_ids is not None:
                 group_ids = group_ids[keep_mask]
-        gt_boxes_mask = np.array([n in class_names for n in gt_names],
-                                 dtype=np.bool_)
+        gt_boxes_mask = np.array(
+            [n in class_names for n in gt_names], dtype=np.bool_
+        )
         if db_sampler is not None:
             sampled_dict = db_sampler.sample_all(
                 root_path,
@@ -169,14 +176,16 @@ def prep_pointcloud(
                 gt_names = np.concatenate([gt_names, sampled_gt_names], axis=0)
                 gt_boxes = np.concatenate([gt_boxes, sampled_gt_boxes])
                 gt_boxes_mask = np.concatenate(
-                    [gt_boxes_mask, sampled_gt_masks], axis=0)
+                    [gt_boxes_mask, sampled_gt_masks], axis=0
+                )
                 if group_ids is not None:
                     sampled_group_ids = sampled_dict["group_ids"]
                     group_ids = np.concatenate([group_ids, sampled_group_ids])
 
                 if remove_points_after_sample:
                     points = prep.remove_points_in_boxes(
-                        points, sampled_gt_boxes)
+                        points, sampled_gt_boxes
+                    )
 
                 points = np.concatenate([sampled_points, points], axis=0)
         if without_reflectivity:
@@ -202,19 +211,22 @@ def prep_pointcloud(
         gt_names = gt_names[gt_boxes_mask]
         if group_ids is not None:
             group_ids = group_ids[gt_boxes_mask]
-        gt_classes = np.array([class_names.index(n) + 1 for n in gt_names],
-                              dtype=np.int32)
+        gt_classes = np.array(
+            [class_names.index(n) + 1 for n in gt_names], dtype=np.int32
+        )
 
         gt_boxes, points = prep.random_flip(gt_boxes, points)
-        gt_boxes, points = prep.global_rotation(gt_boxes,
-                                                points,
-                                                rotation=global_rotation_noise)
-        gt_boxes, points = prep.global_scaling_v2(gt_boxes, points,
-                                                  *global_scaling_noise)
+        gt_boxes, points = prep.global_rotation(
+            gt_boxes, points, rotation=global_rotation_noise
+        )
+        gt_boxes, points = prep.global_scaling_v2(
+            gt_boxes, points, *global_scaling_noise
+        )
 
         # Global translation
-        gt_boxes, points = prep.global_translate(gt_boxes, points,
-                                                 global_loc_noise_std)
+        gt_boxes, points = prep.global_translate(
+            gt_boxes, points, global_loc_noise_std
+        )
 
         bv_range = voxel_generator.point_cloud_range[[0, 1, 3, 4]]
         mask = prep.filter_gt_box_outside_range(gt_boxes, bv_range)
@@ -224,9 +236,9 @@ def prep_pointcloud(
             group_ids = group_ids[mask]
 
         # limit rad to [-pi, pi]
-        gt_boxes[:, 6] = box_np_ops.limit_period(gt_boxes[:, 6],
-                                                 offset=0.5,
-                                                 period=2 * np.pi)
+        gt_boxes[:, 6] = box_np_ops.limit_period(
+            gt_boxes[:, 6], offset=0.5, period=2 * np.pi
+        )
 
     if shuffle_points:
         # shuffle is a little slow.
@@ -239,7 +251,8 @@ def prep_pointcloud(
     # [352, 400]
 
     voxels, coordinates, num_points = voxel_generator.generate(
-        points, max_voxels)
+        points, max_voxels
+    )
 
     example = {
         "voxels": voxels,
@@ -249,11 +262,9 @@ def prep_pointcloud(
     }
 
     if (rect is not None) or (Trv2c is not None) or (P2 is not None):
-        example.update({
-            "rect": rect,
-            "Trv2c": Trv2c,
-            "P2": P2,
-        })
+        example.update(
+            {"rect": rect, "Trv2c": Trv2c, "P2": P2,}
+        )
     feature_map_size = grid_size[:2] // out_size_factor
     feature_map_size = [*feature_map_size, 1][::-1]
     if anchor_cache is not None:
@@ -267,26 +278,30 @@ def prep_pointcloud(
         anchors = anchors.reshape([-1, 7])
         matched_thresholds = ret["matched_thresholds"]
         unmatched_thresholds = ret["unmatched_thresholds"]
-        anchors_bv = box_np_ops.rbbox2d_to_near_bbox(anchors[:,
-                                                             [0, 1, 3, 4, 6]])
+        anchors_bv = box_np_ops.rbbox2d_to_near_bbox(
+            anchors[:, [0, 1, 3, 4, 6]]
+        )
     example["anchors"] = anchors
     anchors_mask = None
     if anchor_area_threshold >= 0:
         coors = coordinates
         dense_voxel_map = box_np_ops.sparse_sum_for_anchors_mask(
-            coors, tuple(grid_size[::-1][1:]))
+            coors, tuple(grid_size[::-1][1:])
+        )
         dense_voxel_map = dense_voxel_map.cumsum(0)
         dense_voxel_map = dense_voxel_map.cumsum(1)
         anchors_area = box_np_ops.fused_get_anchors_area(
-            dense_voxel_map, anchors_bv, voxel_size, pc_range, grid_size)
+            dense_voxel_map, anchors_bv, voxel_size, pc_range, grid_size
+        )
         anchors_mask = anchors_area > anchor_area_threshold
         example["anchors_mask"] = anchors_mask
     if generate_bev:
         bev_vxsize = voxel_size.copy()
         bev_vxsize[:2] /= 2
         bev_vxsize[2] *= 2
-        bev_map = points_to_bev(points, bev_vxsize, pc_range,
-                                without_reflectivity)
+        bev_map = points_to_bev(
+            points, bev_vxsize, pc_range, without_reflectivity
+        )
         example["bev_map"] = bev_map
     if not training:
         return example
@@ -299,11 +314,13 @@ def prep_pointcloud(
             matched_thresholds=matched_thresholds,
             unmatched_thresholds=unmatched_thresholds,
         )
-        example.update({
-            "labels": targets_dict["labels"],
-            "reg_targets": targets_dict["bbox_targets"],
-            "reg_weights": targets_dict["bbox_outside_weights"],
-        })
+        example.update(
+            {
+                "labels": targets_dict["labels"],
+                "reg_targets": targets_dict["bbox_targets"],
+                "reg_weights": targets_dict["bbox_outside_weights"],
+            }
+        )
     return example
 
 
@@ -311,11 +328,13 @@ def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
     """read data from KITTI-format infos, then call prep function.
     """
     v_path = pathlib.Path(root_path) / info["velodyne_path"]
-    v_path = v_path.parent.parent / (v_path.parent.stem +
-                                     "_reduced") / v_path.name
+    v_path = (
+        v_path.parent.parent / (v_path.parent.stem + "_reduced") / v_path.name
+    )
 
-    points = np.fromfile(str(v_path), dtype=np.float32,
-                         count=-1).reshape([-1, num_point_features])
+    points = np.fromfile(str(v_path), dtype=np.float32, count=-1).reshape(
+        [-1, num_point_features]
+    )
     image_idx = info["image_idx"]
     rect = info["calib/R0_rect"].astype(np.float32)
     Trv2c = info["calib/Tr_velo_to_cam"].astype(np.float32)
@@ -339,14 +358,17 @@ def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
         dims = annos["dimensions"]
         rots = annos["rotation_y"]
         gt_names = annos["name"]
-        gt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]],
-                                  axis=1).astype(np.float32)
+        gt_boxes = np.concatenate(
+            [loc, dims, rots[..., np.newaxis]], axis=1
+        ).astype(np.float32)
         difficulty = annos["difficulty"]
-        input_dict.update({
-            "gt_boxes": gt_boxes,
-            "gt_names": gt_names,
-            "difficulty": difficulty,
-        })
+        input_dict.update(
+            {
+                "gt_boxes": gt_boxes,
+                "gt_names": gt_names,
+                "difficulty": difficulty,
+            }
+        )
         if "group_ids" in annos:
             input_dict["group_ids"] = annos["group_ids"]
     example = prep_func(input_dict=input_dict)
@@ -376,14 +398,21 @@ def _prep_v9(points, calib, prep_func, annos=None):
         dims = annos["dimensions"]
         rots = annos["rotation_y"]
         gt_names = annos["name"]
-        gt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]],
-                                  axis=1).astype(np.float32)
-        difficulty = annos["difficulty"] if "difficulty" in annos else compute_difficulty(annos)
-        input_dict.update({
-            "gt_boxes": gt_boxes,
-            "gt_names": gt_names,
-            "difficulty": difficulty,
-        })
+        gt_boxes = np.concatenate(
+            [loc, dims, rots[..., np.newaxis]], axis=1
+        ).astype(np.float32)
+        difficulty = (
+            annos["difficulty"]
+            if "difficulty" in annos
+            else compute_difficulty(annos)
+        )
+        input_dict.update(
+            {
+                "gt_boxes": gt_boxes,
+                "gt_names": gt_names,
+                "difficulty": difficulty,
+            }
+        )
         if "group_ids" in annos:
             input_dict["group_ids"] = annos["group_ids"]
     example = prep_func(input_dict=input_dict)
@@ -405,8 +434,11 @@ def _prep_v9_infer(points, prep_func):
 
 
 def compute_difficulty(annos):
-    min_height = [40, 25,
-                  25]  # minimum height for evaluated groundtruth/detections
+    min_height = [
+        40,
+        25,
+        25,
+    ]  # minimum height for evaluated groundtruth/detections
     max_occlusion = [
         0,
         1,
@@ -423,9 +455,9 @@ def compute_difficulty(annos):
     occlusion = annos["occluded"]
     truncation = annos["truncated"]
     diff = []
-    easy_mask = np.ones((len(dims), ), dtype=np.bool)
-    moderate_mask = np.ones((len(dims), ), dtype=np.bool)
-    hard_mask = np.ones((len(dims), ), dtype=np.bool)
+    easy_mask = np.ones((len(dims),), dtype=np.bool)
+    moderate_mask = np.ones((len(dims),), dtype=np.bool)
+    hard_mask = np.ones((len(dims),), dtype=np.bool)
     i = 0
     for h, o, t in zip(height, occlusion, truncation):
         if o > max_occlusion[0] or h <= min_height[0] or t > max_trunc[0]:

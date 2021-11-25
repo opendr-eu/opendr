@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import torch.optim as optim
 from torch.nn import functional
 
 torch.manual_seed(2605)
@@ -47,9 +48,9 @@ class Adjust2d(nn.Module):
         self.bn.bias.data.zero_()
 
 
-class SiameseNet(nn.Module):
+class SiameseBhatNet(nn.Module):
     def __init__(self, branch):
-        super(SiameseNet, self).__init__()
+        super(SiameseBhatNet, self).__init__()
         self.branch = branch
         self.join = BhattacharyyaCoeff(self.branch.output_dim)
         self.norm = Adjust2d()
@@ -61,13 +62,20 @@ class SiameseNet(nn.Module):
         out = self.norm(out)
         return out, x, z
 
-    def get_xyz(self, z, x):
+
+class SiameseConvNet(nn.Module):
+    def __init__(self, branch):
+        super(SiameseConvNet, self).__init__()
+        self.branch = branch
+        self.join = functional.conv2d
+        self.norm = Adjust2d()
+
+    def forward(self, z, x):
         x = self.branch(x)
         z = self.branch(z)
-        y = functional.conv2d(x, z)
-        # y = self.join(z, x)
-        # y = self.norm(y)
-        return x, y, z
+        out = self.join(z, x)
+        out = self.norm(out)
+        return out, x, z
 
 
 class CHNet(nn.Module):
@@ -78,7 +86,7 @@ class CHNet(nn.Module):
         self.device = self.cfg.device
 
         branch = voxelnet
-        self.model = SiameseNet(branch)
+        self.model = SiameseConvNet(branch)
 
         self.model = self.model.cuda()
         self.initialized = False
@@ -88,39 +96,6 @@ class CHNet(nn.Module):
 
     def forward(self, input_z, input_x):
         return self.model(input_z, input_x)
-
-    def initialize(self):
-        # initialization from file
-        if self.cfg.net_path is not None:
-            print("Loading weights from ", self.cfg.net_path)
-            if self.cfg.net_path.endswith(".mat"):
-                load_siamfc_from_matconvnet(self.cfg.net_path, self.model)
-            elif self.cfg.net_path.endswith(".pth"):
-                state_dict = torch.load(
-                    self.cfg.net_path,
-                    map_location=lambda storage, loc: storage,
-                )
-                self.model.load_state_dict(state_dict)
-            elif self.cfg.net_path.endswith(".model"):
-                # state_dict = torch.load(
-                #     self.cfg.net_path, map_location=lambda storage, loc: storage)
-                state_dict = torch.load(
-                    self.cfg.net_path,
-                    map_location=lambda storage, loc: storage,
-                )
-                current_state_dict = self.model.branch.state_dict()
-                new_state_dict = {
-                    k: v
-                    for k, v in state_dict.items()
-                    if k in current_state_dict
-                }
-                current_state_dict.update(new_state_dict)
-                self.model.branch.load_state_dict(current_state_dict)
-            self.initialized = True
-
-        else:
-            print("Net uninitialized")
-            self.initialized = False
 
     def setup_finetuning_params(self):
         self.params = []
@@ -145,28 +120,6 @@ class CHNet(nn.Module):
             weight_decay = self.train_cfg.weight_decay
             if "bof" in name:
                 lr *= 2.0
-                # weight_decay *= 0
-            if ".0" in name:  # conv
-                if "weight" in name:
-                    lr *= self.train_cfg.lr_mult_conv_weight
-                    weight_decay *= 1
-                elif "bias" in name:
-                    lr *= self.train_cfg.lr_mult_conv_bias
-                    weight_decay *= 0
-            elif ".1" in name or "bn" in name:  # bn
-                if "weight" in name:
-                    lr *= self.train_cfg.lr_mult_bn_weight
-                    weight_decay *= 0
-                elif "bias" in name:
-                    lr *= self.train_cfg.lr_mult_bn_bias
-                    weight_decay *= 0
-            elif "linear" in name:
-                if "weight" in name:
-                    lr *= self.train_cfg.lr_mult_linear_weight
-                    weight_decay *= 1
-                elif "bias" in name:
-                    lr *= self.train_cfg.lr_mult_linear_bias
-                    weight_decay *= 0
             self.params.append(
                 {
                     "params": param,

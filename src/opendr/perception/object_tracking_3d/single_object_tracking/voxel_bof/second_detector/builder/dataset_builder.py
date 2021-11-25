@@ -29,7 +29,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     KittiDataset,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.preprocess import (
-    prep_pointcloud,
+    prep_pointcloud
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.builder import (
     dbsampler_builder,
@@ -44,6 +44,7 @@ def create_prep_func(
     voxel_generator,
     target_assigner=None,
     use_sampler=True,
+    model=None,
 ):
 
     generate_bev = model_config.use_bev
@@ -56,13 +57,15 @@ def create_prep_func(
         db_sampler = dbsampler_builder.build(db_sampler_cfg)
     u_db_sampler_cfg = input_reader_config.unlabeled_database_sampler
     u_db_sampler = None
-    if use_sampler and len(u_db_sampler_cfg.sample_groups) > 0:  # enable sample
+    if (
+        use_sampler and len(u_db_sampler_cfg.sample_groups) > 0
+    ):  # enable sample
         u_db_sampler = dbsampler_builder.build(u_db_sampler_cfg)
 
     num_point_features = model_config.num_point_features
     out_size_factor = (
-        model_config.rpn.layer_strides[0] //
-        model_config.rpn.upsample_strides[0]
+        model_config.rpn.layer_strides[0]
+        // model_config.rpn.upsample_strides[0]
     )
 
     prep_func = partial(
@@ -108,6 +111,7 @@ def build(
     training,
     voxel_generator,
     target_assigner=None,
+    model=None,
 ):
     """Builds a tensor dictionary based on the InputReader config.
 
@@ -127,8 +131,8 @@ def build(
         )
     num_point_features = model_config.num_point_features
     out_size_factor = (
-        model_config.rpn.layer_strides[0] //
-        model_config.rpn.upsample_strides[0]
+        model_config.rpn.layer_strides[0]
+        // model_config.rpn.upsample_strides[0]
     )
 
     cfg = input_reader_config
@@ -144,6 +148,7 @@ def build(
         training,
         voxel_generator,
         target_assigner,
+        model=model,
     )
 
     dataset = KittiDataset(

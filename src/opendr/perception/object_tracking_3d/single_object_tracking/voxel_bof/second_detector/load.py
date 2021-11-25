@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import torch
+from torch import nn
+from torch import functional
 
 from google.protobuf import text_format
 
@@ -30,14 +32,36 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     second_builder,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.train import (
-    MixedPrecisionWrapper
+    MixedPrecisionWrapper,
 )
 
 
+class BCEWeightedLoss(nn.Module):
+    def __init__(self, logits=True):
+        super(BCEWeightedLoss, self).__init__()
+        self.logits = logits
+
+    def forward(self, input, target, weight=None):
+        if self.logits:
+            return functional.binary_cross_entropy_with_logits(
+                input, target, weight, size_average=True
+            )
+        else:
+            return functional.binary_cross_entropy(
+                input, target, weight, size_average=True
+            )
+
+
 def create_model(
-    config_path, device, optimizer_name,
-    optimizer_params, lr, lr_schedule_name, lr_schedule_params,
-    log=print, verbose=False
+    config_path,
+    device,
+    optimizer_name,
+    optimizer_params,
+    lr,
+    lr_schedule_name,
+    lr_schedule_params,
+    log=print,
+    verbose=False,
 ):
 
     loss_scale = None
@@ -68,9 +92,14 @@ def create_model(
     # BUILD NET
     ######################
     center_limit_range = model_cfg.post_center_limit_range
-    net = second_builder.build(model_cfg, voxel_generator, target_assigner, device)
+    net = second_builder.build(
+        model_cfg, voxel_generator, target_assigner, device
+    )
     net.to(device)
     net.device = device
+    net.bv_range = bv_range
+    net.voxel_size = model_cfg.voxel_generator.voxel_size
+    net.criterion = BCEWeightedLoss()
 
     if verbose:
         log("num_trainable parameters:", len(list(net.parameters())))
@@ -84,13 +113,17 @@ def create_model(
         net.half()
         net.metrics_to_float()
         net.convert_norm_to_float(net)
-    optimizer = optimizer_builder.build_online(optimizer_name, optimizer_params, lr, net.parameters())
+    optimizer = optimizer_builder.build_online(
+        optimizer_name, optimizer_params, lr, net.parameters()
+    )
     if train_cfg.enable_mixed_precision:
         loss_scale = train_cfg.loss_scale_factor
         mixed_optimizer = MixedPrecisionWrapper(optimizer, loss_scale)
     else:
         mixed_optimizer = optimizer
-    lr_scheduler = lr_scheduler_builder.build_online(lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep)
+    lr_scheduler = lr_scheduler_builder.build_online(
+        lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep
+    )
     if train_cfg.enable_mixed_precision:
         float_dtype = torch.float16
     else:
@@ -113,10 +146,19 @@ def create_model(
     )
 
 
-def load_from_checkpoint(net, mixed_optimizer, path, lr_schedule_name, lr_schedule_params, device=None):
+def load_from_checkpoint(
+    net,
+    mixed_optimizer,
+    path,
+    lr_schedule_name,
+    lr_schedule_params,
+    device=None,
+):
     all_params = torch.load(path, map_location=device)
     net.load_state_dict(all_params["net"])
     mixed_optimizer.load_state_dict(all_params["optimizer"])
     gstep = net.get_global_step() - 1
-    lr_scheduler = lr_scheduler_builder.build_online(lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep)
+    lr_scheduler = lr_scheduler_builder.build_online(
+        lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep
+    )
     return lr_scheduler

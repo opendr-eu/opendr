@@ -8,19 +8,25 @@ from torch import nn
 from torch.nn import functional as F
 
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.nn import (
-    one_hot as tp_one_hot
+    one_hot as tp_one_hot,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet import metrics
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet import (
+    metrics,
+)
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.nn import (
-    Empty, GroupNorm, Sequential
+    Empty,
+    GroupNorm,
+    Sequential,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.ops.array_ops import (
-    scatter_nd
+    scatter_nd,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.tools import (
-    change_default_args
+    change_default_args,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.core import box_torch_ops
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.core import (
+    box_torch_ops,
+)
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.core.losses import (
     WeightedSoftmaxClassificationLoss,
 )
@@ -29,12 +35,15 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     PointPillarsScatter,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.models.tanet import (
-    PillarFeature_TANet, PSA
+    PillarFeature_TANet,
+    PSA,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.models.loss_utils import (
-    create_refine_loss
+    create_refine_loss,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.utils import get_paddings_indicator
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.utils import (
+    get_paddings_indicator,
+)
 
 USING_SCN = False  # default: not use SparseConv
 
@@ -45,9 +54,11 @@ def _get_pos_neg_loss(cls_loss, labels):
     batch_size = cls_loss.shape[0]
     if cls_loss.shape[-1] == 1 or len(cls_loss.shape) == 2:
         cls_pos_loss = (labels > 0).type_as(cls_loss) * cls_loss.view(
-            batch_size, -1)
+            batch_size, -1
+        )
         cls_neg_loss = (labels == 0).type_as(cls_loss) * cls_loss.view(
-            batch_size, -1)
+            batch_size, -1
+        )
         cls_pos_loss = cls_pos_loss.sum() / batch_size
         cls_neg_loss = cls_neg_loss.sum() / batch_size
     else:
@@ -62,8 +73,9 @@ class VFELayer(nn.Module):
         self.name = name
         self.units = int(out_channels / 2)
         if use_norm:
-            BatchNorm1d = change_default_args(eps=1e-3,
-                                              momentum=0.01)(nn.BatchNorm1d)
+            BatchNorm1d = change_default_args(eps=1e-3, momentum=0.01)(
+                nn.BatchNorm1d
+            )
             Linear = change_default_args(bias=False)(nn.Linear)
         else:
             BatchNorm1d = Empty
@@ -75,8 +87,11 @@ class VFELayer(nn.Module):
         # [K, T, 7] tensordot [7, units] = [K, T, units]
         voxel_count = inputs.shape[1]
         x = self.linear(inputs)
-        x = self.norm(x.permute(0, 2, 1).contiguous()).permute(0, 2,
-                                                               1).contiguous()
+        x = (
+            self.norm(x.permute(0, 2, 1).contiguous())
+            .permute(0, 2, 1)
+            .contiguous()
+        )
         pointwise = F.relu(x)
         # [K, T, units]
 
@@ -101,8 +116,9 @@ class VoxelFeatureExtractor(nn.Module):
         super(VoxelFeatureExtractor, self).__init__()
         self.name = name
         if use_norm:
-            BatchNorm1d = change_default_args(eps=1e-3,
-                                              momentum=0.01)(nn.BatchNorm1d)
+            BatchNorm1d = change_default_args(eps=1e-3, momentum=0.01)(
+                nn.BatchNorm1d
+            )
             Linear = change_default_args(bias=False)(nn.Linear)
         else:
             BatchNorm1d = Empty
@@ -121,12 +137,14 @@ class VoxelFeatureExtractor(nn.Module):
         # features: [concated_num_points, num_voxel_size, 3(4)]
         # num_voxels: [concated_num_points]
         points_mean = features[:, :, :3].sum(
-            dim=1, keepdim=True) / num_voxels.type_as(features).view(-1, 1, 1)
+            dim=1, keepdim=True
+        ) / num_voxels.type_as(features).view(-1, 1, 1)
         features_relative = features[:, :, :3] - points_mean
         if self._with_distance:
             points_dist = torch.norm(features[:, :, :3], 2, 2, keepdim=True)
-            features = torch.cat([features, features_relative, points_dist],
-                                 dim=-1)
+            features = torch.cat(
+                [features, features_relative, points_dist], dim=-1
+            )
         else:
             features = torch.cat([features, features_relative], dim=-1)
         voxel_count = features.shape[1]
@@ -137,8 +155,11 @@ class VoxelFeatureExtractor(nn.Module):
         x = self.vfe2(x)
         x *= mask
         x = self.linear(x)
-        x = self.norm(x.permute(0, 2, 1).contiguous()).permute(0, 2,
-                                                               1).contiguous()
+        x = (
+            self.norm(x.permute(0, 2, 1).contiguous())
+            .permute(0, 2, 1)
+            .contiguous()
+        )
         x = F.relu(x)
         x *= mask
         # x: [concated_num_points, num_voxel_size, 128]
@@ -158,8 +179,9 @@ class VoxelFeatureExtractorV2(nn.Module):
         super(VoxelFeatureExtractorV2, self).__init__()
         self.name = name
         if use_norm:
-            BatchNorm1d = change_default_args(eps=1e-3,
-                                              momentum=0.01)(nn.BatchNorm1d)
+            BatchNorm1d = change_default_args(eps=1e-3, momentum=0.01)(
+                nn.BatchNorm1d
+            )
             Linear = change_default_args(bias=False)(nn.Linear)
         else:
             BatchNorm1d = Empty
@@ -171,10 +193,13 @@ class VoxelFeatureExtractorV2(nn.Module):
         self._with_distance = with_distance
 
         num_filters = [num_input_features] + num_filters
-        filters_pairs = [[num_filters[i], num_filters[i + 1]]
-                         for i in range(len(num_filters) - 1)]
+        filters_pairs = [
+            [num_filters[i], num_filters[i + 1]]
+            for i in range(len(num_filters) - 1)
+        ]
         self.vfe_layers = nn.ModuleList(
-            [VFELayer(i, o, use_norm) for i, o in filters_pairs])
+            [VFELayer(i, o, use_norm) for i, o in filters_pairs]
+        )
         self.linear = Linear(num_filters[-1], num_filters[-1])
         self.norm = BatchNorm1d(num_filters[-1])
 
@@ -182,12 +207,14 @@ class VoxelFeatureExtractorV2(nn.Module):
         # features: [concated_num_points, num_voxel_size, 3(4)]
         # num_voxels: [concated_num_points]
         points_mean = features[:, :, :3].sum(
-            dim=1, keepdim=True) / num_voxels.type_as(features).view(-1, 1, 1)
+            dim=1, keepdim=True
+        ) / num_voxels.type_as(features).view(-1, 1, 1)
         features_relative = features[:, :, :3] - points_mean
         if self._with_distance:
             points_dist = torch.norm(features[:, :, :3], 2, 2, keepdim=True)
-            features = torch.cat([features, features_relative, points_dist],
-                                 dim=-1)
+            features = torch.cat(
+                [features, features_relative, points_dist], dim=-1
+            )
         else:
             features = torch.cat([features, features_relative], dim=-1)
         voxel_count = features.shape[1]
@@ -197,8 +224,11 @@ class VoxelFeatureExtractorV2(nn.Module):
             features = vfe(features)
             features *= mask
         features = self.linear(features)
-        features = (self.norm(features.permute(0, 2, 1).contiguous()).permute(
-            0, 2, 1).contiguous())
+        features = (
+            self.norm(features.permute(0, 2, 1).contiguous())
+            .permute(0, 2, 1)
+            .contiguous()
+        )
         features = F.relu(features)
         features *= mask
         # x: [concated_num_points, num_voxel_size, 128]
@@ -228,14 +258,18 @@ class SparseMiddleExtractor(nn.Module):
             middle_layers = []
 
             num_filters = [num_input_features] + num_filters_down1
-            filters_pairs_d1 = [[num_filters[i], num_filters[i + 1]]
-                                for i in range(len(num_filters) - 1)]
+            filters_pairs_d1 = [
+                [num_filters[i], num_filters[i + 1]]
+                for i in range(len(num_filters) - 1)
+            ]
 
             for i, o in filters_pairs_d1:
                 middle_layers.append(
-                    scn.SubmanifoldConvolution(3, i, o, 3, False))
+                    scn.SubmanifoldConvolution(3, i, o, 3, False)
+                )
                 middle_layers.append(
-                    scn.BatchNormReLU(o, eps=1e-3, momentum=0.99))
+                    scn.BatchNormReLU(o, eps=1e-3, momentum=0.99)
+                )
             middle_layers.append(
                 scn.Convolution(
                     3,
@@ -244,20 +278,26 @@ class SparseMiddleExtractor(nn.Module):
                     (3, 1, 1),
                     (2, 1, 1),
                     bias=False,
-                ))
+                )
+            )
             middle_layers.append(
-                scn.BatchNormReLU(num_filters[-1], eps=1e-3, momentum=0.99))
+                scn.BatchNormReLU(num_filters[-1], eps=1e-3, momentum=0.99)
+            )
             if len(num_filters_down1) == 0:
                 num_filters = [num_filters[-1]] + num_filters_down2
             else:
                 num_filters = [num_filters_down1[-1]] + num_filters_down2
-            filters_pairs_d2 = [[num_filters[i], num_filters[i + 1]]
-                                for i in range(len(num_filters) - 1)]
+            filters_pairs_d2 = [
+                [num_filters[i], num_filters[i + 1]]
+                for i in range(len(num_filters) - 1)
+            ]
             for i, o in filters_pairs_d2:
                 middle_layers.append(
-                    scn.SubmanifoldConvolution(3, i, o, 3, False))
+                    scn.SubmanifoldConvolution(3, i, o, 3, False)
+                )
                 middle_layers.append(
-                    scn.BatchNormReLU(o, eps=1e-3, momentum=0.99))
+                    scn.BatchNormReLU(o, eps=1e-3, momentum=0.99)
+                )
             middle_layers.append(
                 scn.Convolution(
                     3,
@@ -266,9 +306,11 @@ class SparseMiddleExtractor(nn.Module):
                     (3, 1, 1),
                     (2, 1, 1),
                     bias=False,
-                ))
+                )
+            )
             middle_layers.append(
-                scn.BatchNormReLU(num_filters[-1], eps=1e-3, momentum=0.99))
+                scn.BatchNormReLU(num_filters[-1], eps=1e-3, momentum=0.99)
+            )
             middle_layers.append(scn.SparseToDense(3, num_filters[-1]))
             self.middle_conv = Sequential(*middle_layers)
 
@@ -299,8 +341,9 @@ class MiddleExtractor(nn.Module):
         super(MiddleExtractor, self).__init__()
         self.name = name
         if use_norm:
-            BatchNorm3d = change_default_args(eps=1e-3,
-                                              momentum=0.01)(nn.BatchNorm3d)
+            BatchNorm3d = change_default_args(eps=1e-3, momentum=0.01)(
+                nn.BatchNorm3d
+            )
             Conv3d = change_default_args(bias=False)(nn.Conv3d)
         else:
             BatchNorm3d = Empty
@@ -364,26 +407,32 @@ class RPN(nn.Module):
         assert len(num_upsample_filters) == len(layer_nums)
         factors = []
         for i in range(len(layer_nums)):
-            assert int(np.prod(
-                layer_strides[:i + 1])) % upsample_strides[i] == 0
+            assert (
+                int(np.prod(layer_strides[: i + 1])) % upsample_strides[i] == 0
+            )
             factors.append(
-                np.prod(layer_strides[:i + 1]) // upsample_strides[i])
+                np.prod(layer_strides[: i + 1]) // upsample_strides[i]
+            )
         assert all([x == factors[0] for x in factors])
         if use_norm:
             if use_groupnorm:
-                BatchNorm2d = change_default_args(num_groups=num_groups,
-                                                  eps=1e-3)(GroupNorm)
+                BatchNorm2d = change_default_args(
+                    num_groups=num_groups, eps=1e-3
+                )(GroupNorm)
             else:
                 BatchNorm2d = change_default_args(eps=1e-3, momentum=0.01)(
-                    nn.BatchNorm2d)
+                    nn.BatchNorm2d
+                )
             Conv2d = change_default_args(bias=False)(nn.Conv2d)
             ConvTranspose2d = change_default_args(bias=False)(
-                nn.ConvTranspose2d)
+                nn.ConvTranspose2d
+            )
         else:
             BatchNorm2d = Empty
             Conv2d = change_default_args(bias=True)(nn.Conv2d)
             ConvTranspose2d = change_default_args(bias=True)(
-                nn.ConvTranspose2d)
+                nn.ConvTranspose2d
+            )
 
         # note that when stride > 1, conv2d with same padding isn't
         # equal to pad-conv2d. we should use pad-conv2d.
@@ -402,16 +451,16 @@ class RPN(nn.Module):
 
         self.block1 = Sequential(
             nn.ZeroPad2d(1),
-            Conv2d(num_input_filters,
-                   num_filters[0],
-                   3,
-                   stride=layer_strides[0]),
+            Conv2d(
+                num_input_filters, num_filters[0], 3, stride=layer_strides[0]
+            ),
             BatchNorm2d(num_filters[0]),
             nn.ReLU(),
         )
         for i in range(layer_nums[0]):
             self.block1.add(
-                Conv2d(num_filters[0], num_filters[0], 3, padding=1))
+                Conv2d(num_filters[0], num_filters[0], 3, padding=1)
+            )
             self.block1.add(BatchNorm2d(num_filters[0]))
             self.block1.add(nn.ReLU())
         self.deconv1 = Sequential(
@@ -437,7 +486,8 @@ class RPN(nn.Module):
         )
         for i in range(layer_nums[1]):
             self.block2.add(
-                Conv2d(num_filters[1], num_filters[1], 3, padding=1))
+                Conv2d(num_filters[1], num_filters[1], 3, padding=1)
+            )
             self.block2.add(BatchNorm2d(num_filters[1]))
             self.block2.add(nn.ReLU())
         self.deconv2 = Sequential(
@@ -458,7 +508,8 @@ class RPN(nn.Module):
         )
         for i in range(layer_nums[2]):
             self.block3.add(
-                Conv2d(num_filters[2], num_filters[2], 3, padding=1))
+                Conv2d(num_filters[2], num_filters[2], 3, padding=1)
+            )
             self.block3.add(BatchNorm2d(num_filters[2]))
             self.block3.add(nn.ReLU())
         self.deconv3 = Sequential(
@@ -476,18 +527,21 @@ class RPN(nn.Module):
         else:
             num_cls = num_anchor_per_loc * (num_class + 1)
         self.conv_cls = nn.Conv2d(sum(num_upsample_filters), num_cls, 1)
-        self.conv_box = nn.Conv2d(sum(num_upsample_filters),
-                                  num_anchor_per_loc * box_code_size, 1)
+        self.conv_box = nn.Conv2d(
+            sum(num_upsample_filters), num_anchor_per_loc * box_code_size, 1
+        )
         if use_direction_classifier:
-            self.conv_dir_cls = nn.Conv2d(sum(num_upsample_filters),
-                                          num_anchor_per_loc * 2, 1)
+            self.conv_dir_cls = nn.Conv2d(
+                sum(num_upsample_filters), num_anchor_per_loc * 2, 1
+            )
 
     def forward(self, x, bev=None):
         x = self.block1(x)
         up1 = self.deconv1(x)
         if self._use_bev:
-            bev[:, -1] = torch.clamp(torch.log(1 + bev[:, -1]) / np.log(16.0),
-                                     max=1.0)
+            bev[:, -1] = torch.clamp(
+                torch.log(1 + bev[:, -1]) / np.log(16.0), max=1.0
+            )
             x = torch.cat([x, self.bev_extractor(bev)], dim=1)
         x = self.block2(x)
         up2 = self.deconv2(x)
@@ -518,50 +572,50 @@ class LossNormType(Enum):
 
 class VoxelNet(nn.Module):
     def __init__(
-            self,
-            output_shape,
-            num_class=2,
-            num_input_features=4,
-            vfe_class_name="VoxelFeatureExtractor",
-            vfe_num_filters=[32, 128],
-            with_distance=False,
-            middle_class_name="SparseMiddleExtractor",
-            middle_num_filters_d1=[64],
-            middle_num_filters_d2=[64, 64],
-            rpn_class_name="RPN",
-            rpn_layer_nums=[3, 5, 5],
-            rpn_layer_strides=[2, 2, 2],
-            rpn_num_filters=[128, 128, 256],
-            rpn_upsample_strides=[1, 2, 4],
-            rpn_num_upsample_filters=[256, 256, 256],
-            use_norm=True,
-            use_groupnorm=False,
-            num_groups=32,
-            use_sparse_rpn=False,
-            use_direction_classifier=True,
-            use_sigmoid_score=False,
-            encode_background_as_zeros=True,
-            use_rotate_nms=True,
-            multiclass_nms=False,
-            nms_score_threshold=0.5,
-            nms_pre_max_size=1000,
-            nms_post_max_size=20,
-            nms_iou_threshold=0.1,
-            target_assigner=None,
-            use_bev=False,
-            lidar_only=False,
-            cls_loss_weight=1.0,
-            loc_loss_weight=1.0,
-            pos_cls_weight=1.0,
-            neg_cls_weight=1.0,
-            direction_loss_weight=1.0,
-            loss_norm_type=LossNormType.NormByNumPositives,
-            encode_rad_error_by_sin=False,
-            loc_loss_ftor=None,
-            cls_loss_ftor=None,
-            voxel_size=(0.2, 0.2, 4),
-            pc_range=(0, -40, -3, 70.4, 40, 1),
-            name="voxelnet",
+        self,
+        output_shape,
+        num_class=2,
+        num_input_features=4,
+        vfe_class_name="VoxelFeatureExtractor",
+        vfe_num_filters=[32, 128],
+        with_distance=False,
+        middle_class_name="SparseMiddleExtractor",
+        middle_num_filters_d1=[64],
+        middle_num_filters_d2=[64, 64],
+        rpn_class_name="RPN",
+        rpn_layer_nums=[3, 5, 5],
+        rpn_layer_strides=[2, 2, 2],
+        rpn_num_filters=[128, 128, 256],
+        rpn_upsample_strides=[1, 2, 4],
+        rpn_num_upsample_filters=[256, 256, 256],
+        use_norm=True,
+        use_groupnorm=False,
+        num_groups=32,
+        use_sparse_rpn=False,
+        use_direction_classifier=True,
+        use_sigmoid_score=False,
+        encode_background_as_zeros=True,
+        use_rotate_nms=True,
+        multiclass_nms=False,
+        nms_score_threshold=0.5,
+        nms_pre_max_size=1000,
+        nms_post_max_size=20,
+        nms_iou_threshold=0.1,
+        target_assigner=None,
+        use_bev=False,
+        lidar_only=False,
+        cls_loss_weight=1.0,
+        loc_loss_weight=1.0,
+        pos_cls_weight=1.0,
+        neg_cls_weight=1.0,
+        direction_loss_weight=1.0,
+        loss_norm_type=LossNormType.NormByNumPositives,
+        encode_rad_error_by_sin=False,
+        loc_loss_ftor=None,
+        cls_loss_ftor=None,
+        voxel_size=(0.2, 0.2, 4),
+        pc_range=(0, -40, -3, 70.4, 40, 1),
+        name="voxelnet",
     ):
         super().__init__()
         self.name = name
@@ -672,7 +726,8 @@ class VoxelNet(nn.Module):
         )
 
         self.rpn_acc = metrics.Accuracy(
-            dim=-1, encode_background_as_zeros=encode_background_as_zeros)
+            dim=-1, encode_background_as_zeros=encode_background_as_zeros
+        )
         self.rpn_precision = metrics.Precision(dim=-1)
         self.rpn_recall = metrics.Recall(dim=-1)
         self.rpn_metrics = metrics.PrecisionRecall(
@@ -693,6 +748,29 @@ class VoxelNet(nn.Module):
     def get_global_step(self):
         return int(self.global_step.cpu().numpy()[0])
 
+    def create_pseudo_image(self, example):
+        voxels = example["voxels"]
+        num_points = example["num_points"]
+        coors = example["coordinates"]
+        batch_anchors = example["anchors"]
+        batch_size_dev = batch_anchors.shape[0]
+        # features: [num_voxels, max_num_points_per_voxel, 7]
+        # num_points: [num_voxels]
+        # coors: [num_voxels, 4]
+        voxel_features = self.voxel_feature_extractor(
+            voxels, num_points, coors
+        )
+
+        if self._use_sparse_rpn:
+            raise Exception()
+
+        spatial_features = self.middle_feature_extractor(
+            voxel_features, coors, batch_size_dev
+        )
+
+        return spatial_features
+
+
     def forward(self, example, refine_weight=2):
         """module's forward should always accept dict and return loss.
         """
@@ -705,13 +783,15 @@ class VoxelNet(nn.Module):
         # features: [num_voxels, max_num_points_per_voxel, 7]
         # num_points: [num_voxels]
         # coors: [num_voxels, 4]
-        voxel_features = self.voxel_feature_extractor(voxels, num_points,
-                                                      coors)
+        voxel_features = self.voxel_feature_extractor(
+            voxels, num_points, coors
+        )
         if self._use_sparse_rpn:
             preds_dict = self.sparse_rpn(voxel_features, coors, batch_size_dev)
         else:
             spatial_features = self.middle_feature_extractor(
-                voxel_features, coors, batch_size_dev)
+                voxel_features, coors, batch_size_dev
+            )
 
             if self.rpn_ort_session is None:
                 if self._use_bev:
@@ -722,18 +802,33 @@ class VoxelNet(nn.Module):
                 if self._use_bev:
                     raise Exception("Can not use bev in ONNX session")
                 else:
-                    preds = self.rpn_ort_session.run(None, {'data': np.array(spatial_features.detach().cpu())})
+                    preds = self.rpn_ort_session.run(
+                        None,
+                        {"data": np.array(spatial_features.detach().cpu())},
+                    )
 
                     preds_dict = {
-                        "box_preds": torch.tensor(preds[0], device=self.device),
-                        "cls_preds": torch.tensor(preds[1], device=self.device),
-                        "dir_cls_preds": torch.tensor(preds[2], device=self.device),
+                        "box_preds": torch.tensor(
+                            preds[0], device=self.device
+                        ),
+                        "cls_preds": torch.tensor(
+                            preds[1], device=self.device
+                        ),
+                        "dir_cls_preds": torch.tensor(
+                            preds[2], device=self.device
+                        ),
                     }
 
                     if self.rpn_class_name in ["PSA", "RefineDet"]:
-                        preds_dict["Refine_loc_preds"] = torch.tensor(preds[3], device=self.device)
-                        preds_dict["Refine_cls_preds"] = torch.tensor(preds[4], device=self.device)
-                        preds_dict["Refine_dir_preds"] = torch.tensor(preds[5], device=self.device)
+                        preds_dict["Refine_loc_preds"] = torch.tensor(
+                            preds[3], device=self.device
+                        )
+                        preds_dict["Refine_cls_preds"] = torch.tensor(
+                            preds[4], device=self.device
+                        )
+                        preds_dict["Refine_dir_preds"] = torch.tensor(
+                            preds[5], device=self.device
+                        )
 
         box_preds = preds_dict["box_preds"]
         cls_preds = preds_dict["cls_preds"]
@@ -777,21 +872,26 @@ class VoxelNet(nn.Module):
             coarse_loss = loc_loss_reduced + cls_loss_reduced
 
             if self._use_direction_classifier:
-                dir_targets = get_direction_target(example["anchors"],
-                                                   reg_targets)
+                dir_targets = get_direction_target(
+                    example["anchors"], reg_targets
+                )
                 dir_logits = preds_dict["dir_cls_preds"].view(
-                    batch_size_dev, -1, 2)
+                    batch_size_dev, -1, 2
+                )
 
                 weights = (labels > 0).type_as(dir_logits)
                 weights /= torch.clamp(weights.sum(-1, keepdim=True), min=1.0)
 
-                coarse_dir_loss = self._dir_loss_ftor(dir_logits,
-                                                      dir_targets,
-                                                      weights=weights)
+                coarse_dir_loss = self._dir_loss_ftor(
+                    dir_logits, dir_targets, weights=weights
+                )
                 dir_loss = coarse_dir_loss.sum() / batch_size_dev
                 coarse_loss += dir_loss * self._direction_loss_weight
 
-            if self.rpn_class_name == "PSA" or self.rpn_class_name == "RefineDet":
+            if (
+                self.rpn_class_name == "PSA"
+                or self.rpn_class_name == "RefineDet"
+            ):
                 refine_box_preds = preds_dict["Refine_loc_preds"]
                 refine_cls_preds = preds_dict["Refine_cls_preds"]
 
@@ -837,30 +937,34 @@ class VoxelNet(nn.Module):
                 refine_loc_loss = refine_weight * refine_loc_loss
                 refine_cls_loss = refine_weight * refine_cls_loss
 
-                refine_loc_loss_reduced = refine_loc_loss.sum(
-                ) / batch_size_dev
-                refine_loc_loss_reduced *= (self._loc_loss_weight
-                                            )
+                refine_loc_loss_reduced = (
+                    refine_loc_loss.sum() / batch_size_dev
+                )
+                refine_loc_loss_reduced *= self._loc_loss_weight
                 refine_cls_pos_loss, refine_cls_neg_loss = _get_pos_neg_loss(
-                    refine_cls_loss, labels)
+                    refine_cls_loss, labels
+                )
                 refine_cls_pos_loss /= self._pos_cls_weight
                 refine_cls_neg_loss /= self._neg_cls_weight
-                refine_cls_loss_reduced = refine_cls_loss.sum(
-                ) / batch_size_dev
+                refine_cls_loss_reduced = (
+                    refine_cls_loss.sum() / batch_size_dev
+                )
                 refine_cls_loss_reduced *= self._cls_loss_weight
 
-                refine_loss = (refine_loc_loss_reduced +
-                               refine_cls_loss_reduced)
+                refine_loss = refine_loc_loss_reduced + refine_cls_loss_reduced
 
                 if self._use_direction_classifier:
                     refine_dir_logits = preds_dict["Refine_dir_preds"].view(
-                        batch_size_dev, -1, 2)
-                    refine_dir_loss = self._dir_loss_ftor(refine_dir_logits,
-                                                          dir_targets,
-                                                          weights=weights)
+                        batch_size_dev, -1, 2
+                    )
+                    refine_dir_loss = self._dir_loss_ftor(
+                        refine_dir_logits, dir_targets, weights=weights
+                    )
                     refine_dir_loss = refine_dir_loss.sum() / batch_size_dev
 
-                    refine_loss += refine_dir_loss * self._direction_loss_weight
+                    refine_loss += (
+                        refine_dir_loss * self._direction_loss_weight
+                    )
 
                 total_loss = coarse_loss + refine_loss
 
@@ -896,9 +1000,16 @@ class VoxelNet(nn.Module):
                     "cared": cared,
                 }
         else:
-            if self.rpn_class_name == "PSA" or self.rpn_class_name == "RefineDet":
-                coarse_output = self.predict_coarse(example, preds_dict, self.device)
-                refine_output = self.predict_refine(example, preds_dict, self.device)
+            if (
+                self.rpn_class_name == "PSA"
+                or self.rpn_class_name == "RefineDet"
+            ):
+                coarse_output = self.predict_coarse(
+                    example, preds_dict, self.device
+                )
+                refine_output = self.predict_refine(
+                    example, preds_dict, self.device
+                )
                 return coarse_output, refine_output
             else:
                 return self.predict_coarse(example, preds_dict, self.device)
@@ -918,23 +1029,23 @@ class VoxelNet(nn.Module):
     ):
         predictions_dicts = []
         for (
-                box_preds,
-                cls_preds,
-                dir_preds,
-                rect,
-                Trv2c,
-                P2,
-                img_idx,
-                a_mask,
+            box_preds,
+            cls_preds,
+            dir_preds,
+            rect,
+            Trv2c,
+            P2,
+            img_idx,
+            a_mask,
         ) in zip(
-                batch_box_preds,
-                batch_cls_preds,
-                batch_dir_preds,
-                batch_rect,
-                batch_Trv2c,
-                batch_P2,
-                batch_imgidx,
-                batch_anchors_mask,
+            batch_box_preds,
+            batch_cls_preds,
+            batch_dir_preds,
+            batch_rect,
+            batch_Trv2c,
+            batch_P2,
+            batch_imgidx,
+            batch_anchors_mask,
         ):
 
             is_calib = Trv2c is not None
@@ -977,7 +1088,8 @@ class VoxelNet(nn.Module):
                         boxes_for_nms[:, 4],
                     )
                     boxes_for_nms = box_torch_ops.corner_to_standup_nd(
-                        box_preds_corners)
+                        box_preds_corners
+                    )
                 boxes_for_mcnms = boxes_for_nms.unsqueeze(1)
                 selected_per_class = box_torch_ops.multiclass_nms(
                     nms_func=nms_func,
@@ -996,7 +1108,8 @@ class VoxelNet(nn.Module):
                         num_dets = selected.shape[0]
                         selected_boxes.append(box_preds[selected])
                         selected_labels.append(
-                            torch.full([num_dets], i, dtype=torch.int64))
+                            torch.full([num_dets], i, dtype=torch.int64)
+                        )
                         if self._use_direction_classifier:
                             selected_dir_labels.append(dir_labels[selected])
                         selected_scores.append(total_scores[selected, i])
@@ -1005,8 +1118,9 @@ class VoxelNet(nn.Module):
                     selected_labels = torch.cat(selected_labels, dim=0)
                     selected_scores = torch.cat(selected_scores, dim=0)
                     if self._use_direction_classifier:
-                        selected_dir_labels = torch.cat(selected_dir_labels,
-                                                        dim=0)
+                        selected_dir_labels = torch.cat(
+                            selected_dir_labels, dim=0
+                        )
                 else:
                     selected_boxes = None
                     selected_labels = None
@@ -1027,8 +1141,8 @@ class VoxelNet(nn.Module):
 
                 if self._nms_score_threshold > 0.0:
                     thresh = torch.tensor(
-                        [self._nms_score_threshold],
-                        device=total_scores.device).type_as(total_scores)
+                        [self._nms_score_threshold], device=total_scores.device
+                    ).type_as(total_scores)
                     top_scores_keep = top_scores >= thresh
                     top_scores = top_scores.masked_select(top_scores_keep)
                 if top_scores.shape[0] != 0:
@@ -1045,7 +1159,8 @@ class VoxelNet(nn.Module):
                             boxes_for_nms[:, 4],
                         )
                         boxes_for_nms = box_torch_ops.corner_to_standup_nd(
-                            box_preds_corners)
+                            box_preds_corners
+                        )
                     # the nms in 3d detection just remove overlap boxes.
                     selected = nms_func(
                         boxes_for_nms,
@@ -1053,7 +1168,7 @@ class VoxelNet(nn.Module):
                         pre_max_size=self._nms_pre_max_size,
                         post_max_size=self._nms_post_max_size,
                         iou_threshold=self._nms_iou_threshold,
-                        device=device
+                        device=device,
                     )
                 else:
                     selected = None
@@ -1071,9 +1186,7 @@ class VoxelNet(nn.Module):
                 label_preds = selected_labels
                 if self._use_direction_classifier:
                     dir_labels = selected_dir_labels
-                    opp_labels = dir_labels.byte() ^ (
-                        box_preds[..., -1] > 0
-                    )
+                    opp_labels = dir_labels.byte() ^ (box_preds[..., -1] > 0)
                     box_preds[..., -1] += torch.where(
                         opp_labels,
                         torch.tensor(np.pi).type_as(box_preds),
@@ -1084,16 +1197,19 @@ class VoxelNet(nn.Module):
 
                 if is_calib:
                     final_box_preds_camera = box_torch_ops.box_lidar_to_camera(
-                        final_box_preds, rect, Trv2c)
+                        final_box_preds, rect, Trv2c
+                    )
                     locs = final_box_preds_camera[:, :3]
                     dims = final_box_preds_camera[:, 3:6]
                     angles = final_box_preds_camera[:, 6]
 
                     camera_box_origin = [0.5, 1.0, 0.5]
                     box_corners = box_torch_ops.center_to_corner_box3d(
-                        locs, dims, angles, camera_box_origin, axis=1)
+                        locs, dims, angles, camera_box_origin, axis=1
+                    )
                     box_corners_in_image = box_torch_ops.project_to_image(
-                        box_corners, P2)
+                        box_corners, P2
+                    )
                     minxy = torch.min(box_corners_in_image, dim=1)[0]
                     maxxy = torch.max(box_corners_in_image, dim=1)[0]
                     box_2d_preds = torch.cat([minxy, maxxy], dim=1)
@@ -1143,22 +1259,29 @@ class VoxelNet(nn.Module):
             batch_anchors_mask = [None] * batch_size
         else:
             batch_anchors_mask = example["anchors_mask"].view(batch_size, -1)
-        batch_imgidx = example["image_idx"] if "image_idx" in example else [None] * batch_size
+        batch_imgidx = (
+            example["image_idx"]
+            if "image_idx" in example
+            else [None] * batch_size
+        )
 
         self._total_forward_time += time.time() - t
         t = time.time()
         batch_box_preds = preds_dict["box_preds"]
         batch_cls_preds = preds_dict["cls_preds"]
-        batch_box_preds = batch_box_preds.view(batch_size, -1,
-                                               self._box_coder.code_size)
+        batch_box_preds = batch_box_preds.view(
+            batch_size, -1, self._box_coder.code_size
+        )
         num_class_with_bg = self._num_class
         if not self._encode_background_as_zeros:
             num_class_with_bg = self._num_class + 1
 
-        batch_cls_preds = batch_cls_preds.view(batch_size, -1,
-                                               num_class_with_bg)
-        batch_box_preds = self._box_coder.decode_torch(batch_box_preds,
-                                                       batch_anchors)
+        batch_cls_preds = batch_cls_preds.view(
+            batch_size, -1, num_class_with_bg
+        )
+        batch_box_preds = self._box_coder.decode_torch(
+            batch_box_preds, batch_anchors
+        )
         if self._use_direction_classifier:
             batch_dir_preds = preds_dict["dir_cls_preds"]
             batch_dir_preds = batch_dir_preds.view(batch_size, -1, 2)
@@ -1175,7 +1298,7 @@ class VoxelNet(nn.Module):
             batch_imgidx,
             batch_anchors_mask,
             num_class_with_bg,
-            device=device
+            device=device,
         )
         self._total_postprocess_time += time.time() - t
         return predictions_dicts
@@ -1202,7 +1325,11 @@ class VoxelNet(nn.Module):
             batch_anchors_mask = [None] * batch_size
         else:
             batch_anchors_mask = example["anchors_mask"].view(batch_size, -1)
-        batch_imgidx = example["image_idx"] if "iamge_idx" in example else [None] * batch_size
+        batch_imgidx = (
+            example["image_idx"]
+            if "iamge_idx" in example
+            else [None] * batch_size
+        )
 
         self._total_forward_time += time.time() - t
         t = time.time()
@@ -1216,21 +1343,26 @@ class VoxelNet(nn.Module):
         refine_box_preds = preds_dict["Refine_loc_preds"]
         refine_cls_preds = preds_dict["Refine_cls_preds"]
 
-        coarse_box_preds = coarse_box_preds.view(batch_size, -1,
-                                                 self._box_coder.code_size)
+        coarse_box_preds = coarse_box_preds.view(
+            batch_size, -1, self._box_coder.code_size
+        )
 
-        refine_box_preds = refine_box_preds.view(batch_size, -1,
-                                                 self._box_coder.code_size)
+        refine_box_preds = refine_box_preds.view(
+            batch_size, -1, self._box_coder.code_size
+        )
 
-        de_coarse_boxes = self._box_coder.decode_torch(coarse_box_preds,
-                                                       batch_anchors)
-        de_refine_boxes = self._box_coder.decode_torch(refine_box_preds,
-                                                       de_coarse_boxes)
+        de_coarse_boxes = self._box_coder.decode_torch(
+            coarse_box_preds, batch_anchors
+        )
+        de_refine_boxes = self._box_coder.decode_torch(
+            refine_box_preds, de_coarse_boxes
+        )
 
         batch_box_preds = de_refine_boxes
         batch_cls_preds = refine_cls_preds
-        batch_cls_preds = batch_cls_preds.view(batch_size, -1,
-                                               num_class_with_bg)
+        batch_cls_preds = batch_cls_preds.view(
+            batch_size, -1, num_class_with_bg
+        )
 
         if self._use_direction_classifier:
             batch_dir_preds = preds_dict["Refine_dir_preds"]
@@ -1248,7 +1380,7 @@ class VoxelNet(nn.Module):
             batch_imgidx,
             batch_anchors_mask,
             num_class_with_bg,
-            device=device
+            device=device,
         )
         self._total_postprocess_time += time.time() - t
         return predictions_dicts
@@ -1259,7 +1391,9 @@ class VoxelNet(nn.Module):
 
     @property
     def avg_postprocess_time(self):
-        return self._total_postprocess_time / max(1, self._total_inference_count)
+        return self._total_postprocess_time / max(
+            1, self._total_inference_count
+        )
 
     def clear_time_metrics(self):
         self._total_forward_time = 0.0
@@ -1321,8 +1455,9 @@ class VoxelNet(nn.Module):
 
 
 def add_sin_difference(boxes1, boxes2):
-    rad_pred_encoding = torch.sin(boxes1[..., -1:]) * torch.cos(boxes2[...,
-                                                                       -1:])
+    rad_pred_encoding = torch.sin(boxes1[..., -1:]) * torch.cos(
+        boxes2[..., -1:]
+    )
     rad_tg_encoding = torch.cos(boxes1[..., -1:]) * torch.sin(boxes2[..., -1:])
     boxes1 = torch.cat([boxes1[..., :-1], rad_pred_encoding], dim=-1)
     boxes2 = torch.cat([boxes2[..., :-1], rad_tg_encoding], dim=-1)
@@ -1351,18 +1486,19 @@ def create_loss(
         cls_preds = cls_preds.view(batch_size, -1, num_class + 1)
     cls_targets = cls_targets.squeeze(-1)
     one_hot_targets = tp_one_hot(
-        cls_targets,
-        depth=num_class + 1,
-        dtype=box_preds.dtype)
+        cls_targets, depth=num_class + 1, dtype=box_preds.dtype
+    )
     if encode_background_as_zeros:
         one_hot_targets = one_hot_targets[..., 1:]
     if encode_rad_error_by_sin:
         # sin(a - b) = sinacosb-cosasinb
         box_preds, reg_targets = add_sin_difference(box_preds, reg_targets)
-    loc_losses = loc_loss_ftor(box_preds, reg_targets,
-                               weights=reg_weights)  # [N, M]
-    cls_losses = cls_loss_ftor(cls_preds, one_hot_targets,
-                               weights=cls_weights)  # [N, M]
+    loc_losses = loc_loss_ftor(
+        box_preds, reg_targets, weights=reg_weights
+    )  # [N, M]
+    cls_losses = cls_loss_ftor(
+        cls_preds, one_hot_targets, weights=cls_weights
+    )  # [N, M]
     return loc_losses, cls_losses
 
 
@@ -1402,14 +1538,14 @@ def prepare_loss_weights(
         cls_weights /= cls_normalizer
     else:
         raise ValueError(
-            f"unknown loss norm type. available: {list(LossNormType)}")
+            f"unknown loss norm type. available: {list(LossNormType)}"
+        )
     return cls_weights, reg_weights, cared
 
 
-def assign_weight_to_each_class(labels,
-                                weight_per_class,
-                                norm_by_num=True,
-                                dtype=torch.float32):
+def assign_weight_to_each_class(
+    labels, weight_per_class, norm_by_num=True, dtype=torch.float32
+):
     weights = torch.zeros(labels.shape, dtype=dtype, device=labels.device)
     for label, weight in weight_per_class:
         positives = (labels == label).type(dtype)
@@ -1428,8 +1564,5 @@ def get_direction_target(anchors, reg_targets, one_hot=True):
     rot_gt = reg_targets[..., -1] + anchors[..., -1]
     dir_cls_targets = (rot_gt > 0).long()
     if one_hot:
-        dir_cls_targets = tp_one_hot(
-            dir_cls_targets,
-            2,
-            dtype=anchors.dtype)
+        dir_cls_targets = tp_one_hot(dir_cls_targets, 2, dtype=anchors.dtype)
     return dir_cls_targets
