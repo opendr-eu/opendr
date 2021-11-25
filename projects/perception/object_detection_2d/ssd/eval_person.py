@@ -18,6 +18,8 @@ from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDete
 from opendr.perception.object_detection_2d.datasets import WiderPersonDataset
 from opendr.perception.object_detection_2d.datasets.xmldataset import XMLBasedDataset
 from gluoncv.utils.metrics.voc_detection import VOCMApMetric
+from opendr.perception.object_detection_2d.utils.eval_utils import MeanAveragePrecision
+from opendr.perception.object_detection_2d.datasets.detection_dataset import ConcatDataset
 
 
 if __name__ == '__main__':
@@ -27,12 +29,18 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    val_dataset = WiderPersonDataset(root='/home/administrator/data/wider_person', splits=['val'])
-    # val_dataset = XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
-    #                               images_dir='human', annotations_dir='human_anot', classes=['person'])
+    # val_dataset = WiderPersonDataset(root='/home/administrator/data/wider_person', splits=['val'])
+    # val_dataset= XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
+    #                              images_dir='human', annotations_dir='human_anot', classes=['person'])
+    val_dataset_no_human = XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
+                                  images_dir='no_human', annotations_dir='no_human_anot', classes=['person'])
+    val_dataset_human = XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
+                                           images_dir='human', annotations_dir='human_anot', classes=['person'])
+    val_dataset = ConcatDataset([val_dataset_human, val_dataset_no_human])
     print(val_dataset.classes)
-    metric = VOCMApMetric(class_names=val_dataset.classes, iou_thresh=0.45)
-    # metric = None
+    # metric = VOCMApMetric(class_names=val_dataset.classes, iou_thresh=0.45)
+    metric = None
+    # metric = MeanAveragePrecision(classes=val_dataset.classes, n_val_images=len(val_dataset))
 
     ssd = SingleShotDetectorLearner(device=args.device)
     ssd.download(".", mode="pretrained")

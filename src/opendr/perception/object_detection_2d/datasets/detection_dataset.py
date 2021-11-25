@@ -63,6 +63,7 @@ class MappedDetectionDataset(DatasetIterator):
         super(MappedDetectionDataset, self).__init__()
         self.data = data
         self.map_function = map_function
+        self.classes = self.data.classes
 
     def __len__(self):
         return len(self.data)
@@ -74,11 +75,31 @@ class MappedDetectionDataset(DatasetIterator):
         return self.map_function(item)
 
 
-class ConcatDataset(DatasetIterator):
+class ConcatDataset(DetectionDataset):
     def __init__(self, datasets):
-        super(ConcatDataset, self).__init__()
+        super(ConcatDataset, self).__init__(classes=datasets[0].classes, dataset_type='concat_dataset',
+                                            root=None)
         self.cumulative_lengths = list(accumulate([len(dataset) for dataset in datasets]))
         self.datasets = datasets
+
+    def set_transform(self, transform):
+        self._transform = transform
+        for dataset in self.datasets:
+            dataset.transform(transform)
+
+    def transform(self, transform):
+        mapped_datasets = [MappedDetectionDataset(dataset, transform) for dataset in self.datasets]
+        return ConcatDataset(mapped_datasets)
+
+    def set_image_transform(self, transform):
+        self._image_transform = transform
+        for dataset in self.datasets:
+            dataset.set_image_transform(transform)
+
+    def set_target_transform(self, transform):
+        self._target_transform = transform
+        for dataset in self.datasets:
+            dataset.set_target_transform(transform)
 
     def __len__(self):
         return self.cumulative_lengths[-1]

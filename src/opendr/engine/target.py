@@ -412,7 +412,10 @@ class BoundingBoxList(Target):
     ):
         super().__init__()
         self.data = boxes
-        self.confidence = np.mean([box.confidence for box in self.data])
+        if len(boxes) > 0:
+            self.confidence = np.mean([box.confidence for box in self.data])
+        else:
+            self.confidence = 0
 
     @staticmethod
     def from_coco(boxes_coco, image_id=0):

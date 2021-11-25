@@ -39,7 +39,16 @@ class BoundingBoxListToNumpyArray:
     Transform object to convert OpenDR BoundingBoxList to numpy array of [[xmin, ymin, xmax, ymax, score, cls_id],...] format.
     """
     def __call__(self, bbox_list):
-        return np.asarray([bbox_to_np(bbox) for bbox in bbox_list.data])
+        bboxes = []
+        for bbox in bbox_list.data:
+            bbox_np = bbox_to_np(bbox)
+            bboxes.append(bbox_np)
+
+        bboxes_np = np.asarray(bboxes)
+        # if bboxes_np.ndim == 1:
+        #     bboxes_np = bboxes_np[:, np.newaxis]
+        # return np.asarray([bbox_to_np(bbox) for bbox in bbox_list.data])
+        return bboxes_np
 
 
 class ImageToNDArrayTransform:

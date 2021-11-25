@@ -29,7 +29,7 @@ from mxnet import gluon
 from mxnet import autograd
 from gluoncv import model_zoo
 from gluoncv import utils as gutils
-from gluoncv.loss import SSDMultiBoxLoss
+# from gluoncv.loss import SSDMultiBoxLoss
 from gluoncv.utils.metrics.voc_detection import VOC07MApMetric
 from gluoncv.utils.metrics.coco_detection import COCODetectionMetric
 
@@ -45,6 +45,8 @@ from opendr.perception.object_detection_2d.utils.eval_utils import DetectionData
 from opendr.perception.object_detection_2d.datasets import DetectionDataset
 from opendr.perception.object_detection_2d.datasets.transforms import ImageToNDArrayTransform, BoundingBoxListToNumpyArray, \
     transform_test
+from opendr.perception.object_detection_2d.ssd.algorithm.transform import SSDDefaultTrainTransform
+from opendr.perception.object_detection_2d.ssd.algorithm.multibox import SSDMultiBoxLoss
 
 gutils.random.seed(0)
 
@@ -61,7 +63,7 @@ class SingleShotDetectorLearner(Learner):
                  img_size=512, lr_schedule='', temp_path='temp',
                  checkpoint_after_iter=5, checkpoint_load_iter=0,
                  val_after=5, log_after=100, num_workers=8,
-                 weight_decay=5e-4, momentum=0.9):
+                 weight_decay=5e-4, momentum=0.9, transfer_knowledge=True):
         super(SingleShotDetectorLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                         checkpoint_after_iter=checkpoint_after_iter,
                                                         checkpoint_load_iter=checkpoint_load_iter,
@@ -72,6 +74,7 @@ class SingleShotDetectorLearner(Learner):
         self.num_workers = num_workers
         self.checkpoint_str_format = "checkpoint_epoch_{}.params"
         self.backbone = backbone.lower()
+        self.transfer = transfer_knowledge
 
         if self.backbone not in self.supported_backbones:
             raise ValueError(self.backbone + " backbone is not supported. Call .info() function for a complete list of "
@@ -262,17 +265,20 @@ class SingleShotDetectorLearner(Learner):
         # self._model.reset_class(classes, reuse_weights=[cname for cname in classes if cname in self._model.classes])
         if self._model is None or classes != list(self.classes):
             model_name = 'ssd_{}_{}_custom'.format(self.img_size, self.backbone)
-            self._model = model_zoo.get_model(model_name, classes=classes, pretrained=False, pretrained_base=True,
+            self._model = model_zoo.get_model(model_name, classes=classes, pretrained=not self.transfer, pretrained_base=True,
                                               root=self.temp_path)
             with warnings.catch_warnings(record=True):
                 warnings.simplefilter("always")
                 self._model.initialize()
                 self._model.collect_params().reset_ctx(self.ctx)
             _, _, _ = self._model(mx.nd.zeros((1, 3, self.img_size, self.img_size), self.ctx))
-        # TODO: reuse if transfering knowledge
-        # reuse_classes = [x for x in classes if x in self.classes]
-        # print(reuse_classes)
-        self._model.reset_class(classes)
+        # TODO: reuse if transferring knowledge
+        if self.transfer:
+            reuse_classes = [x for x in classes if x in self.classes]
+            print(reuse_classes)
+            self._model.reset_class(classes, reuse_weights=reuse_classes)
+        else:
+            self._model.reset_class(classes)
         self.classes = classes
 
     def fit(self, dataset, val_dataset=None, logging_path='', silent=True, verbose=True):
@@ -344,13 +350,18 @@ class SingleShotDetectorLearner(Learner):
         anchors = anchors.as_in_context(mx.cpu())
 
         # transform dataset & get loader
-        train_transform = presets.ssd.SSDDefaultTrainTransform(self.img_size, self.img_size, anchors)
+        # train_transform = presets.ssd.SSDDefaultTrainTransform(self.img_size, self.img_size, anchors)
+        train_transform = SSDDefaultTrainTransform(self.img_size, self.img_size, anchors)
         dataset = dataset.transform(train_transform)
 
         batchify_fn = Tuple(Stack(), Stack(), Stack())
+        # train_loader = gluon.data.DataLoader(
+        #     dataset, self.batch_size, shuffle=True, batchify_fn=batchify_fn,
+        #     last_batch='rollover', num_workers=self.num_workers
+        # )
         train_loader = gluon.data.DataLoader(
             dataset, self.batch_size, shuffle=True, batchify_fn=batchify_fn,
-            last_batch='rollover', num_workers=self.num_workers
+            last_batch='rollover', num_workers=0
         )
 
         trainer = gluon.Trainer(self._model.collect_params(),
@@ -358,7 +369,7 @@ class SingleShotDetectorLearner(Learner):
                                         'wd': self.weight_decay,
                                         'momentum': self.momentum},
                                 update_on_kvstore=None)
-        mbox_loss = SSDMultiBoxLoss()
+        mbox_loss = SSDMultiBoxLoss(min_hard_negatives=3)
         ce_metric = mx.metric.Loss('cross_entropy_loss')
         smoothl1_metric = mx.metric.Loss('smoothl1_loss')
 
