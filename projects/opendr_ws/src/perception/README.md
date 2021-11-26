@@ -123,3 +123,15 @@ Additionally, the following optional arguments are available:
 - `--heamap_topic HEATMAP_TOPIC`: publish the semantic and instance maps on `HEATMAP_TOPIC`
 - `--visualization_topic VISUALIZATION_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag
 - `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps
+
+
+## Semantic Segmentation ROS Node
+A ROS node for performing semantic segmentation on an input image using the BiseNet model.
+Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
+```shell
+rosrun perception semantic_segmentation_bisenet.py IMAGE_TOPIC
+```
+
+Additionally, the following optional arguments are available:
+- `-h, --help`: show a help message and exit
+- `--heamap_topic HEATMAP_TOPIC`: publish the heatmap on `HEATMAP_TOPIC`
