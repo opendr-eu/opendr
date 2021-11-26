@@ -16,9 +16,7 @@ import unittest
 import os
 import torch
 import argparse
-#from opendr_internal.tests.sources.tools.data_generation import opendr_url
 from opendr_internal.projects.data_generation.SyntheticDataGeneration import MultiviewDataGenerationLearner
-__all__ = ['opendr_url']
 
 
 class TestMultiviewDataGenerationLearner(unittest.TestCase):
@@ -36,19 +34,19 @@ class TestMultiviewDataGenerationLearner(unittest.TestCase):
                 parser.add_argument('-device', default='cpu', type=str, help='choose between cuda or cpu ')
         except:
             parser.add_argument("-device", default="cpu", type=str, help="choose between cuda or cpu ")
-        parser.add_argument("-path_in", default=os.path.join(os.environ['OPENDR_HOME'], "projects",
+        parser.add_argument("-path_in", default=os.path.join("opendr_internal", "projects",
                                                              "data_generation",
-                                                             "synthetic_multi_view_facial_image_generation",
+                                                             "",
                                                              "demos", "imgs_input"),
                             type=str, help='Give the path of image folder')
-        parser.add_argument('-path_3ddfa', default=os.path.join(os.environ['OPENDR_HOME'], "projects",
+        parser.add_argument('-path_3ddfa', default=os.path.join("opendr_internal", "projects",
                                                                 "data_generation",
-                                                                "synthetic_multi_view_facial_image_generation",
+                                                                "",
                                                                 "algorithm", "DDFA"),
                             type=str, help='Give the path of DDFA folder')
-        parser.add_argument('-save_path', default=os.path.join(os.environ['OPENDR_HOME'], "projects",
+        parser.add_argument('-save_path', default=os.path.join("opendr_internal", "projects",
                                                                "data_generation",
-                                                               "synthetic_multi_view_facial_image_generation",
+                                                               "",
                                                                "results"),
                             type=str, help='Give the path of results folder')
         parser.add_argument('-val_yaw', default="10,20", nargs='+', type=str, help='yaw poses list between [-90,90] ')
@@ -63,7 +61,7 @@ class TestMultiviewDataGenerationLearner(unittest.TestCase):
 
         self.learner.eval()
         DIR = os.path.join(os.environ['OPENDR_HOME'], "projects", "data_generation",
-                           "synthetic_multi_view_facial_image_generation", "results")
+                           "", "results")
 
         # Default pretrained model extracts 4 rendered images
         self.assertAlmostEqual(len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))]), 4,
