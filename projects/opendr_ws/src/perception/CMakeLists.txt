@@ -30,5 +30,6 @@ catkin_install_python(PROGRAMS
    scripts/pose_estimation.py
    scripts/object_detection_2d_detr.py
    scripts/object_detection_2d_gem.py
+   scripts/semantic_segmentation_bisenet.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
