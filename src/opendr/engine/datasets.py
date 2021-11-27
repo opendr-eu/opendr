@@ -168,7 +168,7 @@ class PointCloudsDatasetIterator(DatasetIterator):
 
         self.path = path
         self.num_point_features = num_point_features
-        self.files = os.listdir(path)
+        self.files = sorted(os.listdir(path))
 
     def __getitem__(self, idx):
         data = np.fromfile(
