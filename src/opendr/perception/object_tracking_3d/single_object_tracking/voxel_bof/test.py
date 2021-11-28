@@ -394,7 +394,7 @@ def test_pp_siamese_eval():
     # count = len(dataset_tracking)
     count = 20
 
-    for i in range(1, ):
+    for i in range(1, count):
         point_cloud_with_calibration, labels = dataset_tracking[0]
         selected_labels = TrackingAnnotation3DList([label for label in labels if label.id == object_id])
         calib = point_cloud_with_calibration.calib
