@@ -63,6 +63,12 @@ class SiameseBhatNet(nn.Module):
         out = self.norm(out)
         return out, x, z
 
+    def process_features(self, z, x):
+        out = self.join(z, x)
+        out = self.norm(out)
+
+        return out
+
 
 class SiameseConvNet(nn.Module):
     def __init__(self, branch):
@@ -77,6 +83,12 @@ class SiameseConvNet(nn.Module):
         out = self.join(z, x)
         out = self.norm(out)
         return out, x, z
+
+    def process_features(self, z, x):
+        out = self.join(z, x)
+        out = self.norm(out)
+
+        return out
 
 
 class CHNet(nn.Module):

@@ -82,7 +82,7 @@ dataset_detection = LabeledPointCloudsDatasetIterator(
     dataset_detection_path + "/training/label_2",
     dataset_detection_path + "/training/calib",
 )
-track_id = "0002"
+track_id = "0000"
 dataset_tracking = LabeledTrackingPointCloudsDatasetIterator(
     dataset_tracking_path + "/training/velodyne/" + track_id,
     dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
@@ -98,8 +98,8 @@ tanet_config = all_configs[tanet_name]
 tanet_model_path = model_paths[tanet_name]
 
 
-pq = 20
-lq = 10
+pq = 1
+lq = 20
 
 
 def tracking_boxes_to_lidar(
@@ -357,23 +357,60 @@ def test_tanet_infer_tracking():
         PilImage.fromarray(image).save("./plots/tanet_" + str(i) + ".png")
 
 
-def test_pp_siamese():
+def test_pp_siamese_fit():
     print("Eval", name, "start", file=sys.stderr)
 
     learner = VoxelBofObjectTracking3DLearner(
-        model_config_path=config, device=DEVICE
+        model_config_path=config, device=DEVICE, lr=0.0001, checkpoint_after_iter=2000,
     )
     learner.load(model_path)
     learner.fit(
-        kitti_detection, 
+        kitti_detection,
         model_dir="./temp/0",
-        verbose=True
+        # verbose=True
     )
 
     print()
 
 
-test_pp_siamese()
+def test_pp_siamese_eval():
+    print("Eval", name, "start", file=sys.stderr)
+
+    object_id = 0
+
+    learner = VoxelBofObjectTracking3DLearner(
+        model_config_path=config, device=DEVICE, lr=0.0001, checkpoint_after_iter=2000,
+    )
+    learner.load(model_path)
+
+    point_cloud_with_calibration, labels = dataset_tracking[0]
+    selected_labels = TrackingAnnotation3DList([label for label in labels if label.id == object_id])
+    calib = point_cloud_with_calibration.calib
+    labels_lidar = label_to_AABB(tracking_boxes_to_lidar(selected_labels, calib))
+    label_lidar = labels_lidar[0]
+
+    learner.init(point_cloud_with_calibration, label_lidar)
+
+    # count = len(dataset_tracking)
+    count = 20
+
+    for i in range(1, ):
+        point_cloud_with_calibration, labels = dataset_tracking[0]
+        selected_labels = TrackingAnnotation3DList([label for label in labels if label.id == object_id])
+        calib = point_cloud_with_calibration.calib
+        labels_lidar = label_to_AABB(tracking_boxes_to_lidar(selected_labels, calib))
+        label_lidar = labels_lidar[0]
+
+        result = learner.infer(point_cloud_with_calibration, id=1)
+
+        all_labels = TrackingAnnotation3DList([result[0], label_lidar])
+        image = draw_point_cloud_bev(point_cloud_with_calibration.data, all_labels)
+        PilImage.fromarray(image).save("./plots/eval_aabb_" + str(i) + ".png")
+
+        print("[", i, "/", count, "]", result)
+
+
+test_pp_siamese_eval()
 
 # test_tanet_infer_tracking()
 # test_pp_infer_tracking()

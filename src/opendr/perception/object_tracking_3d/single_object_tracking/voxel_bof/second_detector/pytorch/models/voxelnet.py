@@ -536,15 +536,15 @@ class RPN(nn.Module):
             )
 
     def forward(self, x, bev=None):
-        x = self.block1(x)
+        x1 = self.block1(x)
         # up1 = self.deconv1(x)
-        x = self.block2(x)
+        x2 = self.block2(x1)
         # up2 = self.deconv2(x)
-        x = self.block3(x)
+        # x = self.block3(x)
         # up3 = self.deconv3(x)
         # x = torch.cat([up1, up2, up3], dim=1)
 
-        return x
+        return x2
 
 
 class LossNormType(Enum):

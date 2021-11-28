@@ -69,12 +69,14 @@ def example_convert_to_torch(
     return example_torch
 
 
-def create_augmented_targets_and_searches(centers, target_sizes, search_sizes):
+def create_targets_and_searches(
+    centers, target_sizes, search_sizes, augment=True
+):
 
     delta = search_sizes - target_sizes
     offsets = np.random.randint(-delta // 2, delta // 2)
 
-    search_centers = centers + offsets
+    search_centers = centers + (offsets if augment else 0)
 
     targets = []
     searches = []
@@ -91,11 +93,11 @@ def create_augmented_targets_and_searches(centers, target_sizes, search_sizes):
 def create_target_search_regions(
     bv_range,
     voxel_size,
-    pseudo_image_size,
     annos=None,
     rect=None,
     Trv2c=None,
-    gt_boxes=None,
+    boxes_lidar=None,
+    augment=True,
 ):
 
     bv_min = bv_range[:2]
@@ -104,7 +106,7 @@ def create_target_search_regions(
     batch_targets = []
     batch_searches = []
 
-    all_gt_boxes_lidar = []
+    all_boxes_lidar = []
 
     if annos is not None:
         for i, anno_original in enumerate(annos):
@@ -118,21 +120,21 @@ def create_target_search_regions(
             gt_boxes_camera = np.concatenate(
                 [locs, dims, rots[..., np.newaxis]], axis=1
             )
-            gt_boxes_lidar = box_camera_to_lidar(
+            boxes_lidar = box_camera_to_lidar(
                 gt_boxes_camera, rect[i], Trv2c[i]
             )
 
-            all_gt_boxes_lidar.append(gt_boxes_lidar)
-    elif gt_boxes is not None:
-        all_gt_boxes_lidar = gt_boxes
+            all_boxes_lidar.append(boxes_lidar)
+    elif boxes_lidar is not None:
+        all_boxes_lidar = boxes_lidar
     else:
         raise Exception()
 
-    for gt_boxes_lidar in all_gt_boxes_lidar:
+    for boxes_lidar in all_boxes_lidar:
 
-        locs_lidar = gt_boxes_lidar[:, 0:3]
-        dims_lidar = gt_boxes_lidar[:, 3:6]
-        rots_lidar = gt_boxes_lidar[:, 6:7]
+        locs_lidar = boxes_lidar[:, 0:3]
+        dims_lidar = boxes_lidar[:, 3:6]
+        rots_lidar = boxes_lidar[:, 6:7]
 
         origin = [0.5, 0.5, 0]
         gt_corners = center_to_corner_box3d(
@@ -154,8 +156,8 @@ def create_target_search_regions(
         sizes_image = (sizes[:, :2] / voxel_size_bev).astype(np.int32)
         search_sizes = sizes_image * 2 + (sizes_image < 20) * 20
 
-        targets, searches = create_augmented_targets_and_searches(
-            centers_image, sizes_image, search_sizes
+        targets, searches = create_targets_and_searches(
+            centers_image, sizes_image, search_sizes, augment=augment
         )
         batch_targets.append(targets)
         batch_searches.append(searches)
@@ -164,7 +166,9 @@ def create_target_search_regions(
 
 
 def get_sub_image(image, center, size):
-    result = torch.zeros([image.shape[0], *size], dtype=torch.float32, device=image.device)
+    result = torch.zeros(
+        [image.shape[0], *size], dtype=torch.float32, device=image.device
+    )
     image_size = image.shape[-2:]
 
     pos_min = center - size // 2
@@ -182,9 +186,10 @@ def get_sub_image(image, center, size):
             pos_max[i] -= delta
             local_max[i] -= delta
 
-    result[
-        :, local_min[0]: local_max[0] + 1, local_min[1]: local_max[1] + 1
-    ] = image[:, pos_min[0]: pos_max[0] + 1, pos_min[1]: pos_max[1] + 1]
+    if np.all(pos_max > pos_min):
+        result[
+            :, local_min[0] : local_max[0] + 1, local_min[1] : local_max[1] + 1
+        ] = image[:, pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1]
 
     return result
 
@@ -215,11 +220,42 @@ def create_logisticloss_labels(
     return labels
 
 
+def create_pseudo_image_features(pseudo_image, target, net):
+
+    image = get_sub_image(pseudo_image, target[0], target[1])
+    features = net(image.reshape(1, *image.shape))
+
+    return features
+
+
+def image_to_feature_coordinates(pos):
+    return ((pos + 1) // 2 + 1) // 2
+
+
+def feature_to_image_coordinates(pos):
+    return pos * 2 * 2
+
+
+def image_to_lidar_coordinates(location, size, voxel_size, bv_range):
+
+    bv_min = bv_range[:2]
+    voxel_size_bev = voxel_size[:2]
+
+    location_lidar = location * voxel_size_bev + bv_min
+    size_lidar = size * voxel_size_bev
+
+    return location_lidar, size_lidar
+
+
 def create_label_and_weights(target, search, loss="bce"):
 
-    label_size = search[1] - target[1] + 1
-    r_pos = np.min(target[1])
-    t = target[0] - search[0]
+    label_size = (
+        image_to_feature_coordinates(search[1])
+        - image_to_feature_coordinates(target[1])
+        + 1
+    )
+    r_pos = np.min(image_to_feature_coordinates(target[1])) // 2
+    t = image_to_feature_coordinates(target[0] - search[0])
 
     labels = create_logisticloss_labels(label_size, t, r_pos, loss=loss)
     weights = np.zeros_like(labels)
@@ -233,6 +269,9 @@ def create_label_and_weights(target, search, loss="bce"):
     weights[labels == neg_label] = 0.5 / neg_num
     weights *= pos_num + neg_num
 
+    labels = labels.reshape(1, 1, *labels.shape)
+    weights = weights.reshape(1, 1, *weights.shape)
+
     return labels, weights
 
 
@@ -240,21 +279,19 @@ def create_pseudo_images_and_labels(
     net, example_torch, annos=None, gt_boxes=None
 ):
     pseudo_image = net.create_pseudo_image(example_torch)
-    pseudo_image_size = pseudo_image.shape[-2:]
 
     if annos is not None:
 
         batch_targets, batch_searches = create_target_search_regions(
             net.bv_range,
             net.voxel_size,
-            pseudo_image_size,
             annos,
             example_torch["rect"].cpu().numpy(),
             example_torch["Trv2c"].cpu().numpy(),
         )
     elif gt_boxes is not None:
         batch_targets, batch_searches = create_target_search_regions(
-            net.bv_range, net.voxel_size, pseudo_image_size, gt_boxes=gt_boxes,
+            net.bv_range, net.voxel_size, boxes_lidar=gt_boxes,
         )
     else:
         raise Exception()
@@ -273,7 +310,12 @@ def create_pseudo_images_and_labels(
 
             labels, weights = create_label_and_weights(target, search)
 
-            items.append([target_image, search_image, labels, weights])
+            labels_torch = torch.tensor(labels, device=target_image.device)
+            weights_torch = torch.tensor(weights, device=target_image.device)
+
+            items.append(
+                [target_image, search_image, labels_torch, weights_torch]
+            )
 
     return items
 
@@ -306,6 +348,7 @@ def train(
 ):
 
     net = siamese_model.branch
+    net.global_step -= net.global_step
 
     ######################
     # PREPARE INPUT
@@ -376,159 +419,49 @@ def train(
                 example, float_dtype, device=device
             )
 
-            items = create_pseudo_images_and_labels(
-                net, example_torch, gt_boxes=example_torch["gt_boxes_2"]
-            )
+            with torch.no_grad():
+                items = create_pseudo_images_and_labels(
+                    net, example_torch, gt_boxes=example_torch["gt_boxes_2"]
+                )
 
             for target_image, search_image, labels, weights in items:
-                pred, feat_target, feat_search = siamese_model(search_image, target_image)
+                pred, feat_target, feat_search = siamese_model(
+                    search_image, target_image
+                )
+                loss = net.criterion(pred, labels, weights)
 
-                print()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
+                mixed_optimizer.step()
+                mixed_optimizer.zero_grad()
+                net.update_global_step()
+                global_step = net.get_global_step()
 
-            print()
+                if global_step % display_step == 0:
+                    print("[", global_step, "]", "loss=" + str(loss))
+
+                if (
+                    checkpoint_after_iter > 0
+                    and global_step % checkpoint_after_iter == 0
+                ):
+
+                    save_path = (
+                        checkpoints_path / f"checkpoint_{global_step}.pth"
+                    )
+
+                    torch.save(
+                        {
+                            "siamese_model": siamese_model.state_dict(),
+                            "optimizer": mixed_optimizer.state_dict(),
+                        },
+                        save_path,
+                    )
 
         total_step_elapsed += steps
 
         if evaluate:
-            net.eval()
-            log(Logger.LOG_WHEN_VERBOSE, "#################################")
-            log(Logger.LOG_WHEN_VERBOSE, "# EVAL")
-            log(Logger.LOG_WHEN_VERBOSE, "#################################")
-            log(Logger.LOG_WHEN_NORMAL, "Generate output labels...")
-            t = time.time()
-            if (
-                model_cfg.rpn.module_class_name == "PSA"
-                or model_cfg.rpn.module_class_name == "RefineDet"
-            ):
-                dt_annos_coarse = []
-                dt_annos_refine = []
-                prog_bar = ProgressBar()
-                prog_bar.start(
-                    len(input_dataset_iterator) // eval_input_cfg.batch_size
-                    + 1
-                )
-                for example in iter(eval_dataloader):
-
-                    if take_gt_annos_from_example:
-                        gt_annos += list(example["annos"])
-
-                    example = example_convert_to_torch(
-                        example, float_dtype, device=device
-                    )
-                    coarse, refine = predict_kitti_to_anno(
-                        net,
-                        example,
-                        class_names,
-                        center_limit_range,
-                        model_cfg.lidar_input,
-                        use_coarse_to_fine=True,
-                        image_shape=image_shape,
-                    )
-                    dt_annos_coarse += coarse
-                    dt_annos_refine += refine
-                    prog_bar.print_bar(
-                        log=lambda *x, **y: log(
-                            Logger.LOG_WHEN_NORMAL, *x, **y
-                        )
-                    )
-            else:
-                dt_annos = []
-                prog_bar = ProgressBar()
-                prog_bar.start(
-                    len(input_dataset_iterator) // eval_input_cfg.batch_size
-                    + 1
-                )
-                for i, example_numpy in enumerate(iter(eval_dataloader)):
-
-                    if take_gt_annos_from_example:
-                        gt_annos += list(example["annos"])
-
-                    example = example_convert_to_torch(
-                        example_numpy, float_dtype, device=device
-                    )
-
-                    items = create_pseudo_images_and_labels(
-                        net,
-                        example,
-                        gt_annos[
-                            i
-                            * eval_input_cfg.batch_size : (i + 1)
-                            * eval_input_cfg.batch_size
-                        ],
-                    )
-
-                    dt_annos += predict_kitti_to_anno(
-                        net,
-                        example,
-                        class_names,
-                        center_limit_range,
-                        model_cfg.lidar_input,
-                        use_coarse_to_fine=False,
-                        image_shape=image_shape,
-                    )
-                    prog_bar.print_bar(
-                        log=lambda *x, **y: log(
-                            Logger.LOG_WHEN_NORMAL, *x, **y
-                        )
-                    )
-
-        sec_per_ex = len(input_dataset_iterator) / (time.time() - t)
-        log(
-            Logger.LOG_WHEN_NORMAL,
-            f"avg forward time per example: {net.avg_forward_time:.3f}",
-        )
-        log(
-            Logger.LOG_WHEN_NORMAL,
-            f"avg postprocess time per example: {net.avg_postprocess_time:.3f}",
-        )
-
-        net.clear_time_metrics()
-        log(
-            Logger.LOG_WHEN_NORMAL,
-            f"generate label finished({sec_per_ex:.2f}/s). start eval:",
-        )
-
-        if evaluate:
-
-            if (
-                model_cfg.rpn.module_class_name == "PSA"
-                or model_cfg.rpn.module_class_name == "RefineDet"
-            ):
-
-                log(Logger.LOG_WHEN_NORMAL, "Before Refine:")
-                (
-                    result,
-                    mAPbbox,
-                    mAPbev,
-                    mAP3d,
-                    mAPaos,
-                ) = get_official_eval_result(
-                    gt_annos, dt_annos_coarse, class_names, return_data=True
-                )
-                log(Logger.LOG_WHEN_NORMAL, result)
-
-                log(Logger.LOG_WHEN_NORMAL, "After Refine:")
-                (
-                    result,
-                    mAPbbox,
-                    mAPbev,
-                    mAP3d,
-                    mAPaos,
-                ) = get_official_eval_result(
-                    gt_annos, dt_annos_refine, class_names, return_data=True
-                )
-                dt_annos = dt_annos_refine
-            else:
-                (
-                    result,
-                    mAPbbox,
-                    mAPbev,
-                    mAP3d,
-                    mAPaos,
-                ) = get_official_eval_result(
-                    gt_annos, dt_annos, class_names, return_data=True
-                )
-            log(Logger.LOG_WHEN_NORMAL, result)
+            pass
+            # net.eval()
 
         net.train()
 

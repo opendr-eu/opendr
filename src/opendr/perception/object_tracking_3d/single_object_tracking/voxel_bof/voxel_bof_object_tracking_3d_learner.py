@@ -14,6 +14,7 @@
 
 import os
 import json
+import numpy as np
 import torch
 import ntpath
 import shutil
@@ -32,8 +33,12 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
     compute_lidar_kitti_output,
+    create_pseudo_image_features,
+    create_target_search_regions,
     evaluate,
     example_convert_to_torch,
+    feature_to_image_coordinates,
+    image_to_lidar_coordinates,
     train,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.builder import (
@@ -55,13 +60,15 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.preprocess import (
     merge_second_batch,
 )
-from opendr.engine.target import BoundingBox3DList
+from opendr.engine.target import BoundingBox3DList, TrackingAnnotation3D, TrackingAnnotation3DList
 from opendr.engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 import warnings
 from numba import errors
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.siamese import SiameseConvNet
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.siamese import (
+    SiameseConvNet,
+)
 
 original_warn = warnings.warn
 
@@ -278,7 +285,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         if len(metadata["model_paths"]) == 1:
             self.__load_from_pth(
-                self.model,
+                self.model.branch,
                 os.path.join(path, metadata["model_paths"][0]),
                 True,
             )
@@ -286,11 +293,11 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 print("Loaded Pytorch model.")
         else:
             self.__load_from_pth(
-                self.model.voxel_feature_extractor,
+                self.model.branch.voxel_feature_extractor,
                 os.path.join(path, metadata["model_paths"][0]),
             )
             self.__load_from_pth(
-                self.model.middle_feature_extractor,
+                self.model.branch.middle_feature_extractor,
                 os.path.join(path, metadata["model_paths"][1]),
             )
             if verbose:
@@ -298,7 +305,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             if not metadata["optimized"]:
                 self.__load_from_pth(
-                    self.model.rpn,
+                    self.model.branch.rpn,
                     os.path.join(path, metadata["model_paths"][2]),
                 )
                 if verbose:
@@ -373,7 +380,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             )
 
         train(
-            self.siamese,
+            self.model,
             self.input_config,
             self.train_config,
             self.evaluation_input_config,
@@ -451,7 +458,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         return result
 
-    def infer(self, point_clouds):
+    def create_pseudo_image(self, point_clouds):
 
         if self.model is None:
             raise ValueError("No model loaded or created")
@@ -479,36 +486,102 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 [self.infer_point_cloud_mapper(point_clouds.data)]
             )
         elif isinstance(point_clouds, list):
+            raise Exception()
             input_data = merge_second_batch(
                 [self.infer_point_cloud_mapper(x.data) for x in point_clouds]
             )
         else:
-            return ValueError(
+            raise ValueError(
                 "point_clouds should be a PointCloud or a list of PointCloud"
             )
 
-        output = self.model(
+        psedo_image = self.model.branch.create_pseudo_image(
             example_convert_to_torch(
                 input_data, self.float_dtype, device=self.device,
             )
         )
 
-        if (
-            self.model_config.rpn.module_class_name == "PSA"
-            or self.model_config.rpn.module_class_name == "RefineDet"
-        ):
-            output = output[-1]
+        return psedo_image
 
-        annotations = compute_lidar_kitti_output(
-            output, self.center_limit_range, self.class_names, None
+    def infer(self, point_cloud, frame=0, id=None):
+
+        net = self.model.branch
+
+        pseudo_images = self.create_pseudo_image(point_cloud)
+        pseudo_image = pseudo_images[0]
+
+        search_features = create_pseudo_image_features(
+            pseudo_image, self.search_region, net
         )
 
-        result = [BoundingBox3DList.from_kitti(anno) for anno in annotations]
+        scores = self.model.process_features(
+            search_features, self.target_features
+        )
 
-        if isinstance(point_clouds, PointCloud):
-            return result[0]
+        max_score = torch.max(scores)
+        max_idx = (scores == max_score).nonzero(as_tuple=False)[0][-2:]
+
+        left_top_score = max_idx.cpu().numpy()
+        left_top_search_features = left_top_score
+        left_top_search_image = feature_to_image_coordinates(left_top_search_features)
+        center_search_image = left_top_search_image + self.target_region[1] / 2
+        center_image = center_search_image + self.search_region[0]
+
+        new_target = [center_image, self.target_region[1]]
+        new_search = [center_image, new_target[1] * 2 + new_target[1] < 20 * 20]
+
+        self.search_region = new_search
+
+        location_lidar, size_lidar = image_to_lidar_coordinates(new_target[0], new_target[1], net.voxel_size, net.bv_range)
+
+        result = TrackingAnnotation3DList([
+            TrackingAnnotation3D(
+                self.init_label.name,
+                0, 0, None, None,
+                location=np.array([*location_lidar, self.init_label.location[-1]]),
+                dimensions=np.array([*size_lidar, self.init_label.dimensions[-1]]),
+                rotation_y=0,
+                id=self.init_label.id if id is None else id,
+                score=1,
+                frame=frame,
+            )
+        ])
 
         return result
+
+    def init(self, point_cloud, label_lidar):
+
+        self.model.eval()
+
+        self.init_label = label_lidar
+
+        label_lidar_kitti = label_lidar.kitti()
+
+        dims = label_lidar_kitti["dimensions"]
+        locs = label_lidar_kitti["location"]
+        rots = label_lidar_kitti["rotation_y"]
+
+        box_lidar = np.concatenate([locs, dims, rots[..., np.newaxis]], axis=1)
+
+        net = self.model.branch
+
+        pseudo_images = self.create_pseudo_image(point_cloud)
+        pseudo_image = pseudo_images[0]
+        batch_targets, batch_searches = create_target_search_regions(
+            net.bv_range,
+            net.voxel_size,
+            boxes_lidar=box_lidar.reshape(1, *box_lidar.shape),
+            augment=False,
+        )
+
+        target = batch_targets[0][0]
+        search = batch_searches[0][0]
+
+        self.target_features = create_pseudo_image_features(
+            pseudo_image, target, net
+        )
+        self.search_region = search
+        self.target_region = target
 
     def optimize(self, do_constant_folding=False):
         """
@@ -866,7 +939,6 @@ class VoxelBofObjectTracking3DLearner(Learner):
         )
 
         self.model = model
-        self.siamese = SiameseConvNet(self.model)
         self.input_config = input_config
         self.train_config = train_config
         self.evaluation_input_config = evaluation_input_config

@@ -14,7 +14,7 @@
 
 import torch
 from torch import nn
-from torch import functional
+from torch.nn import functional
 
 from google.protobuf import text_format
 
@@ -34,6 +34,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.train import (
     MixedPrecisionWrapper,
 )
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.siamese import SiameseConvNet
 
 
 class BCEWeightedLoss(nn.Module):
@@ -95,11 +96,13 @@ def create_model(
     net = second_builder.build(
         model_cfg, voxel_generator, target_assigner, device
     )
-    net.to(device)
     net.device = device
     net.bv_range = bv_range
     net.voxel_size = model_cfg.voxel_generator.voxel_size
     net.criterion = BCEWeightedLoss()
+
+    model = SiameseConvNet(net)
+    model.to(device)
 
     if verbose:
         log("num_trainable parameters:", len(list(net.parameters())))
@@ -114,7 +117,7 @@ def create_model(
         net.metrics_to_float()
         net.convert_norm_to_float(net)
     optimizer = optimizer_builder.build_online(
-        optimizer_name, optimizer_params, lr, net.parameters()
+        optimizer_name, optimizer_params, lr, model.parameters()
     )
     if train_cfg.enable_mixed_precision:
         loss_scale = train_cfg.loss_scale_factor
@@ -130,7 +133,7 @@ def create_model(
         float_dtype = torch.float32
 
     return (
-        net,
+        model,
         input_cfg,
         train_cfg,
         eval_input_cfg,
