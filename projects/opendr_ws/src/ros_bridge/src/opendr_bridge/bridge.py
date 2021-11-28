@@ -19,10 +19,10 @@ import cv2
 import numpy as np
 from cv_bridge import CvBridge
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,\
-     Detection3DArray, Detection3D, BoundingBox3D, ObjectHypothesis
+     Detection3DArray, Detection3D, BoundingBox3D, ObjectHypothesis, Classification2D
 from geometry_msgs.msg import Pose2D, Point, Pose as Pose3D
 from shape_msgs.msg import Mesh, MeshTriangle
-from std_msgs.msg import ColorRGBA, String
+from std_msgs.msg import ColorRGBA, String, Header
 from sensor_msgs.msg import Image as ImageMsg
 
 
@@ -371,3 +371,40 @@ class ROSBridge:
         for i in range(len(ros_colors)):
             colors[i] = np.array([ros_colors[i].r, ros_colors[i].g, ros_colors[i].b])
         return colors
+        
+    def from_ros_image_to_depth(self, message, encoding='mono16'):
+        """
+        Converts a ROS image message into an OpenDR grayscale depth image
+        :param message: ROS image to be converted
+        :type message: sensor_msgs.msg.Image
+        :param encoding: encoding to be used for the conversion 
+        :type encoding: str
+        :return: OpenDR image 
+        :rtype: engine.data.Image
+        """
+        cv_image = self._cv_bridge.imgmsg_to_cv2(message, desired_encoding=encoding)
+        cv_image = np.expand_dims(cv_image, axis=-1)
+        image = Image(np.asarray(cv_image, dtype=np.uint8))
+        return image
+        
+    def from_category_to_rosclass(self, prediction, source_data=None):
+        '''
+        Converts OpenDR Category into Classification2D message with class label, confidence, timestamp and optionally corresponding input
+        :param prediction: classification prediction
+        :type prediction: engine.target.Category
+        :param source_data: corresponding input or None
+        :return classification
+        :rtype: vision_msgs.msg.Classification2D
+        '''
+        classification = Classification2D()
+        classification.header = Header()
+        classification.header.stamp = rospy.get_rostime()
+
+        result = ObjectHypothesis()
+        result.id = prediction.data
+        result.score = prediction.confidence
+        classification.results.append(result)
+        if source_data is not None:
+            classification.source_img = source_data
+        return classification
+            

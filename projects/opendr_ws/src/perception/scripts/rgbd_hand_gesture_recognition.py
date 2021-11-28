@@ -18,10 +18,7 @@
 import rospy
 import torch
 import numpy as np
-from opendr.engine.data import Image
-from vision_msgs.msg import Classification2D, ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
-from std_msgs.msg import Header
 from opendr_bridge import ROSBridge
 import os
 from opendr.perception.multimodal_human_centric.rgbd_hand_gesture_learner.rgbd_hand_gesture_learner import \
@@ -87,14 +84,14 @@ class RgbdHandGestureNode:
         # Convert sensor_msgs.msg.Image into OpenDR Image and preprocess
         image = self.bridge.from_ros_image(image_data, encoding='bgr8')
         depth_data.encoding='mono16'
-        depth_image = from_ros_image_to_depth(depth_data, encoding='mono16')
+        depth_image = self.bridge.from_ros_image_to_depth(depth_data, encoding='mono16')
         img = self.preprocess(image, depth_image)
         
         # Run gesture recognition
         gesture_class = self.gesture_learner.infer(img)
 
         #  Publish results
-        ros_gesture = from_category(gesture_class)
+        ros_gesture = self.bridge.from_category_to_rosclass(gesture_class)
         self.gesture_publisher.publish(ros_gesture)
         
     def preprocess(self, image, depth_img):
@@ -120,36 +117,7 @@ class RgbdHandGestureNode:
         return img
 
 
-def from_category(prediction, source_data=None):
-    '''
-    Helper function that wraps model output to class prediction wrapped into Classification2D message
-    :param prediction: output of gesture learner
-    :param source_data: original image or None
-    '''
-    classification = Classification2D()
-    classification.header = Header()
-    classification.header.stamp = rospy.get_rostime()
-
-    result = ObjectHypothesis()
-    result.id = prediction.data
-    result.score = prediction.confidence
-    classification.results.append(result)
-    if source_data is not None:
-        classification.source_img = source_data
-    return classification
-            
-def from_ros_image_to_depth(message, encoding):
-    """
-    Converts a ROS image message into an OpenDR depth image
-    :param message: ROS image to be converted
-    :type message: sensor_msgs.msg.Image
-    :param encoding: encoding to be used for the conversion
-    :type encoding: str
-    """
-    cv_image = self._cv_bridge.imgmsg_to_cv2(message, desired_encoding=encoding)
-    cv_image = np.expand_dims(cv_image, axis=-1)
-    image = Image(np.asarray(cv_image, dtype=np.uint8))
-    return image            
+      
     
 if __name__ == '__main__':
     # Select the device for running
