@@ -124,7 +124,7 @@ if __name__ == '__main__':
     except:
         device = 'cpu'
 
-    # default topics are according to kinectv2 drivers at https://github.com/OpenKinect/libfreenect2 
+    # default topics are according to kinectv2 drivers at https://github.com/OpenKinect/libfreenect2
     # and https://github.com/code-iai-iai_kinect2
     depth_topic = "/kinect2/qhd/image_depth_rect"
     image_topic = "/kinect2/qhd/image_color_rect"
