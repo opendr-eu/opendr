@@ -14,16 +14,13 @@
 
 import os
 import numpy as np
-from mathutils import Matrix, Vector, Euler
+from mathutils import Vector, Euler
 import bpy
 import pickle
 import mathutils
 from shutil import copyfile
 import bmesh
 import cv2
-from numpy import linalg
-import math
-from scipy.spatial.transform import Rotation as R
 import tqdm
 import io
 from contextlib import redirect_stdout
