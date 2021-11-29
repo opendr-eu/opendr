@@ -150,7 +150,7 @@ def create_model(
 
 
 def load_from_checkpoint(
-    net,
+    model,
     mixed_optimizer,
     path,
     lr_schedule_name,
@@ -158,9 +158,9 @@ def load_from_checkpoint(
     device=None,
 ):
     all_params = torch.load(path, map_location=device)
-    net.load_state_dict(all_params["net"])
+    model.load_state_dict(all_params["siamese_model"])
     mixed_optimizer.load_state_dict(all_params["optimizer"])
-    gstep = net.get_global_step() - 1
+    gstep = model.branch.get_global_step() - 1
     lr_scheduler = lr_scheduler_builder.build_online(
         lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep
     )

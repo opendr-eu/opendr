@@ -70,7 +70,7 @@ def example_convert_to_torch(
 
 
 def create_targets_and_searches(
-    centers, target_sizes, search_sizes, augment=True
+    centers, target_sizes, search_sizes, augment
 ):
 
     delta = search_sizes - target_sizes
@@ -97,7 +97,7 @@ def create_target_search_regions(
     rect=None,
     Trv2c=None,
     boxes_lidar=None,
-    augment=True,
+    augment=False,
 ):
 
     bv_min = bv_range[:2]
@@ -154,7 +154,7 @@ def create_target_search_regions(
             np.int32
         )
         sizes_image = (sizes[:, :2] / voxel_size_bev).astype(np.int32)
-        search_sizes = sizes_image * 2 + (sizes_image < 20) * 20
+        search_sizes = sizes_image * 2 + (sizes_image < 20) * 30
 
         targets, searches = create_targets_and_searches(
             centers_image, sizes_image, search_sizes, augment=augment
@@ -171,8 +171,8 @@ def get_sub_image(image, center, size):
     )
     image_size = image.shape[-2:]
 
-    pos_min = center - size // 2
-    pos_max = center + (size + 1) // 2 - 1
+    pos_min = (center - size // 2).astype(np.int32)
+    pos_max = (center + (size + 1) // 2 - 1).astype(np.int32)
 
     local_min = np.array([0, 0])
     local_max = size - 1
@@ -205,18 +205,21 @@ def create_logisticloss_labels(
     for r in range(label_size[0]):
         for c in range(label_size[1]):
             dist = np.sqrt(
-                ((r - t[0]) - label_size[0] // 2) ** 2
-                + ((c - t[1]) - label_size[1] // 2) ** 2
+                ((r - t[0]) - label_size[0] // 2) ** 2 +
+                ((c - t[1]) - label_size[1] // 2) ** 2,
             )
-            if dist <= r_pos:
+            if dist <= 0:
                 labels[r, c] = 1
-            elif dist <= r_neg:
+            elif np.all(dist <= r_pos):
+                labels[r, c] = 1
+            elif np.all(dist <= r_neg):
                 labels[r, c] = ignore_label
             else:
                 if loss == "bce" or loss == "focal":
                     labels[r, c] = 0
                 else:
                     labels[r, c] = -1
+
     return labels
 
 
@@ -254,11 +257,16 @@ def create_label_and_weights(target, search, loss="bce"):
         - image_to_feature_coordinates(target[1])
         + 1
     )
-    r_pos = np.min(image_to_feature_coordinates(target[1])) // 2
-    t = image_to_feature_coordinates(target[0] - search[0])
+    r_pos = image_to_feature_coordinates(target[1]) / 4
+    t = image_to_feature_coordinates(target[0]) - image_to_feature_coordinates(
+        search[0]
+    )
 
     labels = create_logisticloss_labels(label_size, t, r_pos, loss=loss)
     weights = np.zeros_like(labels)
+
+    # pred_target_position = score_to_image_coordinates(torch.tensor(labels), target[1], search)
+    # p = image_to_feature_coordinates(pred_target_position) - image_to_feature_coordinates(search[0])
 
     neg_label = 0 if loss == "bce" or loss == "focal" else -1
 
@@ -314,10 +322,43 @@ def create_pseudo_images_and_labels(
             weights_torch = torch.tensor(weights, device=target_image.device)
 
             items.append(
-                [target_image, search_image, labels_torch, weights_torch]
+                [
+                    target_image,
+                    search_image,
+                    labels_torch,
+                    weights_torch,
+                    target,
+                    search,
+                ]
             )
 
     return items
+
+
+def hann_window(size, device):
+    hann_1 = torch.hann_window(size[0], device=device)
+    hann_2 = torch.hann_window(size[1], device=device)
+    window = torch.mm(hann_1.view(-1, 1), hann_2.view(1, -1))
+    window = window / window.sum()
+    return window
+
+
+def score_to_image_coordinates(scores, target_region_size, search_region):
+
+    max_score = torch.max(scores)
+    max_idx = (scores == max_score).nonzero(as_tuple=False)[0][-2:]
+
+    left_top_score = max_idx.cpu().numpy()
+    left_top_search_features = left_top_score
+    left_top_search_image = feature_to_image_coordinates(
+        left_top_search_features
+    )
+    center_search_image = left_top_search_image + target_region_size // 2
+    center_image = (
+        center_search_image + search_region[0] - search_region[1] // 2
+    )
+
+    return center_image
 
 
 def train(
@@ -400,6 +441,7 @@ def train(
     if train_cfg.steps % train_cfg.steps_per_eval == 0:
         total_loop -= 1
     mixed_optimizer.zero_grad()
+
     for _ in range(total_loop):
         if total_step_elapsed + train_cfg.steps_per_eval > train_cfg.steps:
             steps = train_cfg.steps % train_cfg.steps_per_eval
@@ -424,11 +466,26 @@ def train(
                     net, example_torch, gt_boxes=example_torch["gt_boxes_2"]
                 )
 
-            for target_image, search_image, labels, weights in items:
+            for (
+                target_image,
+                search_image,
+                labels,
+                weights,
+                target,
+                search,
+            ) in items:
                 pred, feat_target, feat_search = siamese_model(
                     search_image, target_image
                 )
                 loss = net.criterion(pred, labels, weights)
+
+                predicted_target_coordinates = score_to_image_coordinates(
+                    pred, target[1], search
+                )
+                predicted_label_target_coordinates = score_to_image_coordinates(
+                    labels, target[1], search
+                )
+                delta = np.abs(predicted_target_coordinates - target[0])
 
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
@@ -438,7 +495,15 @@ def train(
                 global_step = net.get_global_step()
 
                 if global_step % display_step == 0:
-                    print("[", global_step, "]", "loss=" + str(loss))
+                    print(
+                        "[",
+                        global_step,
+                        "]",
+                        "loss=" + str(loss),
+                        "error_position=",
+                        delta / search[1],
+                        delta,
+                    )
 
                 if (
                     checkpoint_after_iter > 0

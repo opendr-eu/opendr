@@ -38,7 +38,9 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     evaluate,
     example_convert_to_torch,
     feature_to_image_coordinates,
+    hann_window,
     image_to_lidar_coordinates,
+    score_to_image_coordinates,
     train,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.builder import (
@@ -105,6 +107,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             "decay_factor": 0.8,
             "staircase": True,
         },
+        window_influence=0.25,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -130,6 +133,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.model_dir = None
         self.eval_checkpoint_dir = None
         self.infer_point_cloud_mapper = None
+
+        self.window_influence = window_influence
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -266,7 +271,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             json.dump(model_metadata, outfile)
 
     def load(
-        self, path, verbose=False,
+        self, path, verbose=False, backbone=False
     ):
         """
         Loads the model from inside the path provided, based on the metadata .json file included.
@@ -275,6 +280,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
         :param verbose: whether to print success message or not, defaults to 'False'
         :type verbose: bool, optional
         """
+
+        target = self.model.branch if backbone else self.model
+        state_dict_name = "state_dict" if backbone else "siamese_model"
+        use_original = backbone
 
         model_name, _, _ = self.__extract_trailing(
             path
@@ -285,9 +294,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         if len(metadata["model_paths"]) == 1:
             self.__load_from_pth(
-                self.model.branch,
+                target,
                 os.path.join(path, metadata["model_paths"][0]),
-                True,
+                use_original,
+                state_dict_name
             )
             if verbose:
                 print("Loaded Pytorch model.")
@@ -517,18 +527,13 @@ class VoxelBofObjectTracking3DLearner(Learner):
         scores = self.model.process_features(
             search_features, self.target_features
         )
+        penalty = hann_window(scores.shape[-2:], device=scores.device)
+        scores_scaled = (1 - self.window_influence) * scores + self.window_influence * penalty
 
-        max_score = torch.max(scores)
-        max_idx = (scores == max_score).nonzero(as_tuple=False)[0][-2:]
-
-        left_top_score = max_idx.cpu().numpy()
-        left_top_search_features = left_top_score
-        left_top_search_image = feature_to_image_coordinates(left_top_search_features)
-        center_search_image = left_top_search_image + self.target_region[1] / 2
-        center_image = center_search_image + self.search_region[0]
+        center_image = score_to_image_coordinates(scores_scaled, self.target_region[1], self.search_region)
 
         new_target = [center_image, self.target_region[1]]
-        new_search = [center_image, new_target[1] * 2 + new_target[1] < 20 * 20]
+        new_search = [center_image, new_target[1] * 2 + (new_target[1] < 20) * 30]
 
         self.search_region = new_search
 
@@ -721,10 +726,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
         # # Print a human readable representation of the graph
         # onnx.helper.printable_graph(self.model.graph)
 
-    def __load_from_pth(self, model, path, use_original_dict=False):
+    def __load_from_pth(self, model, path, use_original_dict=False, state_dict_name="state_dict"):
         all_params = torch.load(path, map_location=self.device)
         model.load_state_dict(
-            all_params if use_original_dict else all_params["state_dict"]
+            all_params if use_original_dict else all_params[state_dict_name]
         )
 
     def __prepare_datasets(

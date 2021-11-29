@@ -358,16 +358,36 @@ def test_tanet_infer_tracking():
 
 
 def test_pp_siamese_fit():
-    print("Eval", name, "start", file=sys.stderr)
+    print("Fit", name, "start", file=sys.stderr)
 
     learner = VoxelBofObjectTracking3DLearner(
-        model_config_path=config, device=DEVICE, lr=0.0001, checkpoint_after_iter=2000,
+        model_config_path=config, device=DEVICE, lr=0.0001,
+        checkpoint_after_iter=2000,
+        # checkpoint_load_iter=42000,
     )
-    learner.load(model_path)
+    learner.load(model_path, backbone=True, verbose=True)
     learner.fit(
         kitti_detection,
-        model_dir="./temp/0",
+        model_dir="./temp/3-1",
         # verbose=True
+    )
+
+    print()
+
+
+def test_pp_siamese_load_fit():
+    print("Fit", name, "start", file=sys.stderr)
+
+    learner = VoxelBofObjectTracking3DLearner(
+        model_config_path=config, device=DEVICE, lr=0.0001,
+        checkpoint_after_iter=2000,
+        # checkpoint_load_iter=42000,
+    )
+    learner.load("./temp/3-1/checkpoints", backbone=False, verbose=True)
+    learner.fit(
+        kitti_detection,
+        model_dir="./temp/3-1-load-fit",
+        verbose=True
     )
 
     print()
@@ -379,9 +399,10 @@ def test_pp_siamese_eval():
     object_id = 0
 
     learner = VoxelBofObjectTracking3DLearner(
-        model_config_path=config, device=DEVICE, lr=0.0001, checkpoint_after_iter=2000,
+        model_config_path=config, device=DEVICE, lr=0.001, checkpoint_after_iter=2000,
     )
-    learner.load(model_path)
+    # learner.load(model_path)
+    learner.load("./temp/3/checkpoints", backbone=False, verbose=True)
 
     point_cloud_with_calibration, labels = dataset_tracking[0]
     selected_labels = TrackingAnnotation3DList([label for label in labels if label.id == object_id])
@@ -395,7 +416,7 @@ def test_pp_siamese_eval():
     count = 20
 
     for i in range(1, count):
-        point_cloud_with_calibration, labels = dataset_tracking[0]
+        point_cloud_with_calibration, labels = dataset_tracking[i] # i iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
         selected_labels = TrackingAnnotation3DList([label for label in labels if label.id == object_id])
         calib = point_cloud_with_calibration.calib
         labels_lidar = label_to_AABB(tracking_boxes_to_lidar(selected_labels, calib))
@@ -411,6 +432,8 @@ def test_pp_siamese_eval():
 
 
 test_pp_siamese_eval()
+# test_pp_siamese_fit()
+# test_pp_siamese_load_fit()
 
 # test_tanet_infer_tracking()
 # test_pp_infer_tracking()
