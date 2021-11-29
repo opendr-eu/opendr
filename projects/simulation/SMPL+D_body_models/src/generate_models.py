@@ -218,7 +218,6 @@ class Fbx_exporter:
                 bm.free()
 
         object_types = {'MESH', 'ARMATURE'}
-
         bpy.ops.export_scene.fbx(filepath=os.path.join(self.dir_out, self.dir_in.split('/')[-1] + '.fbx'),
                                  add_leaf_bones=False,
                                  global_scale=0.01, use_selection=True, object_types=object_types, bake_anim=False)
