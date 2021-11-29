@@ -85,7 +85,7 @@ class RgbdHandGestureNode:
 
         # Convert sensor_msgs.msg.Image into OpenDR Image and preprocess
         image = self.bridge.from_ros_image(image_data, encoding='bgr8')
-        depth_data.encoding='mono16'
+        depth_data.encoding = 'mono16'
         depth_image = self.bridge.from_ros_image_to_depth(depth_data, encoding='mono16')
         img = self.preprocess(image, depth_image)
 
@@ -124,7 +124,8 @@ if __name__ == '__main__':
     except:
         device = 'cpu'
 
-    # default topics are according to kinectv2 drivers at https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai-iai_kinect2
+    # default topics are according to kinectv2 drivers at https://github.com/OpenKinect/libfreenect2 
+    # and https://github.com/code-iai-iai_kinect2
     depth_topic = "/kinect2/qhd/image_depth_rect"
     image_topic = "/kinect2/qhd/image_color_rect"
     gesture_node = RgbdHandGestureNode(input_image_topic=image_topic, input_depth_image_topic=depth_topic, device=device)

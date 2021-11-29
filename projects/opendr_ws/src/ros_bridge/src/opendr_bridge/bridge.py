@@ -407,4 +407,4 @@ class ROSBridge:
         classification.results.append(result)
         if source_data is not None:
             classification.source_img = source_data
-        return classification  
+        return classification
