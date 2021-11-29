@@ -498,12 +498,13 @@ class TrackingAnnotation(Target):
     @staticmethod
     def from_mot(data):
         return TrackingAnnotation(
+            0,
             data[2],
             data[3],
             data[4],
             data[5],
             data[1],
-            data[6] if len(data) > 6 else 0,
+            data[6] if len(data) > 6 else 1,
             data[0],
         )
 
@@ -531,8 +532,8 @@ class TrackingAnnotation(Target):
 
         return result
 
-    def boudning_box(self):
-        return BoundingBox(self.left, self.top, self.width, self.height, self.confidence, self.frame)
+    def bounding_box(self):
+        return BoundingBox(self.name, self.left, self.top, self.width, self.height, self.confidence)
 
     def __repr__(self):
         return "TrackingAnnotation " + str(self)
@@ -570,8 +571,8 @@ class TrackingAnnotationList(Target):
 
         return result
 
-    def boudning_box_list(self):
-        return BoundingBoxList([box.boudning_box() for box in self.data])
+    def bounding_box_list(self):
+        return BoundingBoxList([box.bounding_box() for box in self.data])
 
     @property
     def boxes(self):
@@ -698,7 +699,7 @@ class BoundingBox3DList(Target):
     ):
         super().__init__()
         self.data = bounding_boxes_3d
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
 
     @staticmethod
     def from_kitti(boxes_kitti):
@@ -884,7 +885,7 @@ class TrackingAnnotation3DList(Target):
     ):
         super().__init__()
         self.data = tracking_bounding_boxes_3d
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
 
     @staticmethod
     def from_kitti(boxes_kitti, ids, frames=None):

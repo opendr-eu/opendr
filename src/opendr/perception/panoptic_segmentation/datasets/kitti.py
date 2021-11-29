@@ -216,7 +216,7 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         :rtype: Tuple of (Image, None)
         """
         image_filename = self._image_filenames[idx]
-        image = Image(cv2.imread(image_filename))
+        image = Image.open(str(image_filename))
 
         return image, None
 

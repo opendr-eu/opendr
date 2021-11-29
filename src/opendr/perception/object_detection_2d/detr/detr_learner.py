@@ -64,7 +64,7 @@ class DetrLearner(Learner):
             device="cuda",
             threshold=0.7,
             num_classes=91,
-            return_segmentations=False,
+            panoptic_segmentation=False,
             ):
 
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
@@ -88,7 +88,7 @@ class DetrLearner(Learner):
         self.args.num_classes = num_classes
         self.args.dataset_file = "coco"
 
-        if return_segmentations:
+        if panoptic_segmentation:
             self.args.masks = True
             self.args.dataset_file = "coco_panoptic"
         else:
@@ -456,12 +456,14 @@ class DetrLearner(Learner):
             if logging:
                 for k, v in train_stats.items():
                     if isinstance(v, list):
-                        v = v[0]
+                        v = np.mean(v)
+                        k = k + '_mean'
                     writer.add_scalar(f'train_{k}', v, self.epoch + 1)
                 if val_dataset is not None:
                     for k, v in test_stats.items():
                         if isinstance(v, list):
-                            v = v[0]
+                            v = np.mean(v)
+                            k = k + '_mean'
                         writer.add_scalar(f'test_{k}', v, self.epoch + 1)
 
         total_time = time.time() - start_time
@@ -624,7 +626,7 @@ class DetrLearner(Learner):
             return False
 
         if self.args.masks:
-            print("Optimization not yet implemented if return_segmentations is True")
+            print("Optimization not yet implemented if panoptic_segmentation is True")
             return False
 
         device = torch.device(self.device)

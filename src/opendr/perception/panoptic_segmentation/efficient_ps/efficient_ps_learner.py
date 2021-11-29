@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import cv2
 import json
 import logging
 import os
@@ -293,7 +294,7 @@ class EfficientPsLearner(Learner):
         This method performs inference on the batch provided.
 
         :param batch: Object that holds a batch of data to run inference on
-        :type batch: Image class type or list of Image class type
+        :type batch: OpenDR image or list of OpenDR images
         :param return_raw_logits: Whether the output should be transformed into the OpenDR target class.
         :type return_raw_logits: bool
         :return: A list of predicted targets
@@ -316,8 +317,9 @@ class EfficientPsLearner(Learner):
             single_image_mode = True
         mmdet_batch = []
         for img in batch:
-            mmdet_img = {'filename': None, 'img': img.numpy(), 'img_shape': img.numpy().shape,
-                         'ori_shape': img.numpy().shape}
+            # Convert from OpenDR convention (RGB) to the expected channel order (BGR)
+            img_bgr = cv2.cvtColor(img.numpy(), cv2.COLOR_RGB2BGR)
+            mmdet_img = {'filename': None, 'img': img_bgr, 'img_shape': img_bgr.shape, 'ori_shape': img_bgr.shape}
             mmdet_img = test_pipeline(mmdet_img)
             mmdet_batch.append(scatter(collate([mmdet_img], samples_per_gpu=1), [device])[0])
 
@@ -409,7 +411,7 @@ class EfficientPsLearner(Learner):
                         'Class names are not saved in the checkpoint\'s meta data, use Cityscapes classes by default.')
                     self.model.CLASSES = get_classes('cityscapes')
                 self._is_model_trained = True
-            except RuntimeError:
+            except (RuntimeError, OSError):
                 return False
             return True
         else:  # OpenDR specification
@@ -491,13 +493,35 @@ class EfficientPsLearner(Learner):
                   save_figure: bool=False,
                   figure_filename: Optional[str]=None,
                   figure_size: Tuple[float, float]=(15, 10),
-                  detailed: bool=False):
+                  detailed: bool=False
+                  ) -> Image:
+        """
+         Create a visualization of the predicted panoptic segmentation. Either just the final panoptic map or a more
+         detailed overview consisting of the input RGB and the map of semantic, instance, and panoptic segmentation.
+         :param image: Input OpenDR image
+         :type image: OpenDR image
+         :param prediction: Output of the infer() method
+         :type prediction: Tuple of OpenDR heatmaps
+         :param show_figure: Whether to how the figure in a GUI
+         :type show_figure: bool
+         :param save_figure: Whether to save the figure in a file
+         :type save_figure: bool
+         :param figure_filename: Name of the filename if save_figure is set to True
+         :type figure_filename: str
+         :param figure_size: Size of the figure in inches if detailed is set to True. Wrapper of matplotlib figuresize.
+         :type figure_size: Tuple of floats
+         :param detailed: If set to True, a combined overview of the input RGB and the semantic, instance, and panoptic
+         segmentation maps is generated.
+         :type detailed: bool
+         :return: OpenDR image of the generated visualization
+         :rtype: OpenDR image
+         """
         assert figure_filename is not None if save_figure else True
 
         PALETTE.append([0, 0, 0])
         colors = np.array(PALETTE, dtype=np.uint8)
 
-        image_img = PilImage.fromarray(image.data[:, :, ::-1])  # convert BGR (mmcv, cv2) to RGB (PIL)
+        image_img = PilImage.fromarray(image.data)
 
         # Extract class information from semantic segmentation
         semantics = prediction[1].data.copy()
@@ -516,10 +540,10 @@ class EfficientPsLearner(Learner):
         # Combine all of the above
         panoptics_img = PilImage.blend(image_img, semantics_img, .5).convert(mode='RGBA')
         panoptics_img = PilImage.alpha_composite(panoptics_img, contours_img)
-        panoptics_img.convert(mode='RGB')
+        panoptics_img = panoptics_img.convert(mode='RGB')
 
         if detailed:
-            plt.figure(figsize=figure_size)
+            fig = plt.figure(figsize=figure_size)
             grid_spec = gridspec.GridSpec(2, 2)
             grid_spec.update(wspace=.05, hspace=.05)
             plt.subplot(grid_spec[0])
@@ -538,17 +562,17 @@ class EfficientPsLearner(Learner):
             plt.imshow(contours_img)
             plt.axis('off')
             plt.title('contours map')
-            if save_figure:
-                plt.savefig(figure_filename, bbox_inches='tight')
-            if show_figure:
-                plt.show()
+            fig.canvas.draw()
+            visualization_img = PilImage.frombytes('RGB', fig.canvas.get_width_height(), fig.canvas.tostring_rgb())
             plt.close()
-
         else:
-            if save_figure:
-                panoptics_img.save(figure_filename)
-            if show_figure:
-                panoptics_img.show()
+            visualization_img = panoptics_img
+
+        if save_figure:
+            visualization_img.save(figure_filename)
+        if show_figure:
+            visualization_img.show()
+        return Image(data=np.array(visualization_img))
 
     @property
     def config(self) -> dict:
@@ -565,7 +589,7 @@ class EfficientPsLearner(Learner):
         """
         Getter of number of workers used in the data loaders.
 
-        :return: number of workers
+        :return: Number of workers
         :rtype: int
         """
         return self._num_workers
@@ -575,7 +599,7 @@ class EfficientPsLearner(Learner):
         """
         Setter for number of workers used in the data loaders. This will perform the necessary type and value checking.
 
-        :param value: number of workers
+        :param value: Number of workers
         :type value: int
         """
         if not isinstance(value, int):

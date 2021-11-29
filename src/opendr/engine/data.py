@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+import cv2
 from abc import ABC, abstractmethod
+from opendr.engine.target import BoundingBoxList
 import numpy as np
 import torch
 from typing import Union
@@ -264,6 +267,92 @@ class Image(Data):
         :rtype: str
         """
         return str(self.data)
+
+    @classmethod
+    def open(cls, filename):
+        """
+        Create an Image from file and return it as RGB.
+        :param cls: reference to the Image class
+        :type cls: Image
+        :param filename: path to the image file
+        :type filename: str
+        :return: image read from the specified file
+        :rtype: Image
+        """
+        if not Path(filename).exists():
+            raise FileNotFoundError('The image file does not exist.')
+        data = cv2.imread(filename)
+        data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+        return cls(data)
+
+
+class ImageWithDetections(Image):
+    """
+    A class used for representing image data with associated 2D object detections.
+
+    This class provides abstract methods for:
+    - returning a NumPy compatible representation of data (numpy())
+    """
+
+    def __init__(self, image, boundingBoxList: BoundingBoxList):
+        super().__init__()
+
+        if isinstance(image, Image):
+            self.data = image.numpy()
+        else:
+            self.data = image
+        self.boundingBoxList = boundingBoxList
+
+    @property
+    def data(self):
+        """
+        Getter of data. Image class returns a float32 NumPy array.
+
+        :return: the actual data held by the object
+        :rtype: A float32 NumPy array
+        """
+        if self._data is None:
+            raise ValueError("Image is empty")
+
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """
+        Setter for data.
+
+        :param: data to be used for creating a vector
+        """
+        # Convert input data to a NumPy array
+        # Note that will also fail for non-numeric data (which is expected)
+        data = np.asarray(data, dtype=np.uint8)
+
+        # Check if the supplied vector is 3D, e.g. (width, height, channels)
+        if len(data.shape) != 3:
+            raise ValueError(
+                "Only 3-D arrays are supported by Image. Please supply a data object that can be casted "
+                "into a 3-D NumPy array.")
+
+        self._data = data
+
+    def numpy(self):
+        """
+        Returns a NumPy-compatible representation of data.
+
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        # Since this class stores the data as NumPy arrays, we can directly return the data
+        return self.data
+
+    def __str__(self):
+        """
+        Returns a human-friendly string-based representation of the data.
+
+        :return: a human-friendly string-based representation of the data
+        :rtype: str
+        """
+        return "ImageWithDetections " + str(self.data) + str(self.boundingBoxList)
 
 
 class Video(Data):
