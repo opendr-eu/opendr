@@ -208,7 +208,6 @@ class Fbx_exporter:
                 bm.from_mesh(me)
                 bm.verts.ensure_lookup_table()
                 for i in range(len(bm.verts)):
-                    #bm.verts[i].co = Vector(verts_original[i]) + disps_final2[i] * 100.0
                     bm.verts[i].co = Vector(verts_original[i]) + disps_final[i] * 100.0
 
                 bm.to_mesh(me)
