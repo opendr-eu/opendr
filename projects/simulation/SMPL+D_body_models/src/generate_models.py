@@ -14,7 +14,7 @@
 
 import os
 import numpy as np
-from mathutils import Vector, Euler
+from mathutils import Matrix, Vector, Euler
 import bpy
 import pickle
 import mathutils
@@ -22,7 +22,17 @@ from shutil import copyfile
 import bmesh
 import cv2
 from numpy import linalg
+import math
 from scipy.spatial.transform import Rotation as R
+import tqdm
+import io
+from contextlib import redirect_stdout
+
+
+def deselect():
+    for o in bpy.data.objects.values():
+        o.select_set(False)
+    bpy.context.view_layer.objects.active = None
 
 
 class Fbx_exporter:
@@ -57,14 +67,15 @@ class Fbx_exporter:
             23: (21, 'R_Hand')
         }
         self.n_bones = 24
+        self.res = (500, 500)
         self.model_params = {"betas": np.load(os.path.join(dir_model, 'betas.npy')),
                              "gender": str(np.load(os.path.join(dir_model, 'gender.npy'))),
                              "displacements": np.load(os.path.join(dir_model, 'displacements.npy')),
                              "texture": os.path.join(dir_model, 'texture.png'),
                              "uv_colored": cv2.imread(os.path.join(self.dir_smpl, 'mask.png'))}
 
-        self.model_params["displacements"] = cv2.resize(self.model_params["displacements"], (256, 256))
-        self.model_params["uv_colored"] = cv2.resize(self.model_params["uv_colored"], (256, 256))
+        self.model_params["displacements"] = cv2.resize(self.model_params["displacements"], self.res)
+        self.model_params["uv_colored"] = cv2.resize(self.model_params["uv_colored"], self.res)
 
         self.obname = f'{str(self.model_params["gender"])[0]}_avg'
         self.shape = self.model_params['betas'][:10] / 5.0
@@ -90,8 +101,7 @@ class Fbx_exporter:
         bpy.ops.import_scene.fbx(
             filepath=os.path.join(self.dir_smpl,
                                   f'SMPL_{str(self.model_params["gender"])[0]}_unityDoubleBlends_lbs_10_scale5_207_v1.0.0.fbx'),
-            axis_forward='Z', axis_up='Y', global_scale=100.0
-        )
+            axis_forward='Z', axis_up='Y', global_scale=100.0)
         self.ob = bpy.data.objects[self.obname]
         self.ob.data.use_auto_smooth = False
 
@@ -111,7 +121,7 @@ class Fbx_exporter:
 
         self.arm_ob.select_set(True)
         bpy.context.view_layer.objects.active = self.arm_ob
-        self.deselect()
+        deselect()
         self.ob.select_set(True)
         bpy.context.view_layer.objects.active = self.ob
         self.apply_shape(self.shape)
@@ -141,11 +151,8 @@ class Fbx_exporter:
 
                 if ob.data.materials:
                     ob.data.materials[0] = m.material
-                else:
-                    ob.data.materials.append(m.material)
 
         disp_norms = self.model_params["displacements"][:, :, 0]
-        # cv2.imwrite(os.path.join(self.dir_out,'text.jpg'),disp_norms*255)
         disp_eul = self.model_params["displacements"][:, :, 1:4]
 
         with open(os.path.join(self.dir_smpl, 'uv_indices.pkl'), 'rb') as f:
@@ -162,7 +169,6 @@ class Fbx_exporter:
                 me = bpy.context.object.data
                 bm = bmesh.new()
                 bm.from_mesh(me)
-                i = 0
                 for face in bpy.context.object.data.polygons:
                     f = np.array([0, 0, 0])
                     cnt = 0
@@ -172,7 +178,6 @@ class Fbx_exporter:
                 for vert in bm.verts:
                     verts_original.append([vert.co.x, vert.co.y, vert.co.z])
                     nrmls.append(np.array([vert.normal.x, vert.normal.y, vert.normal.z]))
-                    i = i + 1
                 bm.to_mesh(me)
                 me.update()
                 bm.free()
@@ -195,231 +200,20 @@ class Fbx_exporter:
                 disp = disp / cnt
             disps_final.append(disp)
 
-        verts_smooth = []
         for obj in scene.objects:
             if obj.type == 'MESH':
                 bpy.context.view_layer.objects.active = obj
-                # bpy.ops.object.mode_set(mode='EDIT')
-                # bpy.ops.mesh.select_all(action='TOGGLE')
-                # bpy.ops.mesh.normals_make_consistent(inside=False)
                 me = bpy.context.object.data
                 bm = bmesh.new()
                 bm.from_mesh(me)
                 bm.verts.ensure_lookup_table()
                 for i in range(len(bm.verts)):
-                    bm.verts[i].co = Vector(verts_original[i]) + disps_final[i]
-                # bpy.ops.object.mode_set(mode='OBJECT')
-                # bmesh.ops.smooth_vert(bm, verts=bm.verts, factor=1.75, use_axis_x=True, use_axis_y=True, use_axis_z=True)
-                bmesh.ops.smooth_laplacian_vert(bm, verts=bm.verts, lambda_factor=0.01, lambda_border=0.01, use_x=True,
-                                                use_y=True, use_z=True, preserve_volume=True)
+                    #bm.verts[i].co = Vector(verts_original[i]) + disps_final2[i] * 100.0
+                    bm.verts[i].co = Vector(verts_original[i]) + disps_final[i] * 100.0
 
-                for vert in bm.verts:
-                    verts_smooth.append([vert.co.x, vert.co.y, vert.co.z])
                 bm.to_mesh(me)
-                me.update()
-                bm.free()
-
-        displacement_map_smoothed = np.zeros([disp_norms.shape[0], disp_norms.shape[1], 4])
-        displacement_map_smoothed[:, :, 0] = disp_norms
-        displacement_map_smoothed[:, :, 1:4] = disp_eul
-
-        for i in range(len(verts_smooth)):
-            d_vt = np.asarray(verts_smooth[i]) - np.asarray(verts_original[i])
-            dnorm_new = linalg.norm(d_vt)
-            if dnorm_new > 0.0:
-                d_vt_normalized = d_vt / float(dnorm_new)
-                axis = np.cross(nrmls[i], d_vt_normalized)
-                axis = axis / linalg.norm(axis)
-                rot_mat = R.from_matrix(rotation_matrix_from_vectors(nrmls[i], d_vt_normalized))
-                deul_new = rot_mat.as_euler('ZYX', degrees=False)
-            for j in range(len(nrml_ids[i])):
-                vt = uv_coords[nrml_ids[i][j]]
-                if dnorm_new > 0 and np.dot(nrmls[i], d_vt_normalized) > 0 and linalg.norm(disps_final[i]) > 0:
-                    an = [0.8, 0.2]
-                    for s1 in range(-1, 2):
-                        for s2 in range(-1, 2):
-                            ii = min(max(0, int((1 - vt[1]) * disp_norms.shape[0]) + s1), disp_norms.shape[0] - 1)
-                            jj = min(max(0, int(vt[0] * disp_norms.shape[1]) + s2), disp_norms.shape[1] - 1)
-                    displacement_map_smoothed[ii, jj, 1:4] = an[0] * deul_new + an[1] * disp_eul[ii, jj]
-                    displacement_map_smoothed[ii, jj, 0] = an[0] * dnorm_new + an[1] * disp_norms[ii, jj]
-        vts = []
-        for i in range(len(ob.data.vertices)):
-            for j in range(len(nrml_ids[i])):
-                vts.append(np.array([int((1 - uv_coords[nrml_ids[i][j]][1]) * disp_norms.shape[0]),
-                                     int(uv_coords[nrml_ids[i][j]][0] * disp_norms.shape[1])]))
-        vts = np.asarray(vts)
-        times = 1
-        displacement_map_smoothed_new = np.zeros(self.model_params["displacements"].shape)
-
-        for t in range(times):
-            for i in range(displacement_map_smoothed.shape[0]):
-                print(str(i) + ' ' + str(displacement_map_smoothed.shape[0]))
-                for j in range(displacement_map_smoothed.shape[1]):
-                    vt_current = np.asarray([i, j])
-                    clr = self.model_params["uv_colored"][i, j, :]
-                    if not np.equal(clr, np.array([0, 0, 0])).all():
-                        vts_now = vts.copy()
-                        inds = np.where(
-                            self.model_params["uv_colored"][vts[:, 0], vts[:, 1], 0] == clr[0]) and np.where(
-                            self.model_params["uv_colored"][vts[:, 0], vts[:, 1], 1] == clr[1]) and np.where(
-                            self.model_params["uv_colored"][vts[:, 0], vts[:, 1], 2] == clr[2])
-
-                        if inds[0].shape[0] > 2:
-                            vts_now = vts_now[inds[0], :]
-                            dists = (vts_now[:, 1] - vt_current[1]) * (vts_now[:, 1] - vt_current[1]) + (
-                                    vts_now[:, 0] - vt_current[0]) * (
-                                            vts_now[:, 0] - vt_current[0])
-                            ids_sorted = np.argsort(dists)
-                            factors_all = dists[ids_sorted[0]] + dists[ids_sorted[1]] + dists[ids_sorted[2]]
-                            if self.model_params["displacements"][i][j][0] > 0:
-                                displacement_map_smoothed_new[i, j, :] = (1 - dists[ids_sorted[0]] / factors_all) * \
-                                         displacement_map_smoothed[
-                                         vts_now[ids_sorted[0], :][0],
-                                         vts_now[ids_sorted[0], :][1], :] + \
-                                         (1 - dists[ids_sorted[1]] / factors_all) * \
-                                         displacement_map_smoothed[
-                                         vts_now[ids_sorted[1], :][0],
-                                         vts_now[ids_sorted[1], :][1], :] + \
-                                         (1 - dists[ids_sorted[2]] / factors_all) * \
-                                         displacement_map_smoothed[
-                                         vts_now[ids_sorted[2], :][0],
-                                         vts_now[ids_sorted[2], :][1], :]
-                                displacement_map_smoothed_new[i, j, :] = displacement_map_smoothed_new[i, j, :] / 2.0
-        displacement_map_smoothed = displacement_map_smoothed_new
-
-        # for i in range(displacement_map_smoothed.shape[0]):
-        #    for j in range(displacement_map_smoothed.shape[0]):
-        #        if np.array_equal(self.model_params["eyes_d"][i, j, :], np.array([255, 255, 255, 255])):
-        #            displacement_map_smoothed[i, j, :] = np.array([0, 0, 0, 0])
-
-        text_img = cv2.imread(self.model_params['texture'], cv2.IMREAD_UNCHANGED)
-        text_img = cv2.resize(text_img, (displacement_map_smoothed.shape[0], displacement_map_smoothed.shape[1]))
-        # cv2.imshow('aa', displacement_map_smoothed)
-        # cv2.imshow('bb', text_img)
-        # cv2.waitKey(0)
-        '''
-        displacement_map_smoothed_n = np.zeros(displacement_map_smoothed.shape)
-        for i in range(text_img.shape[0]):
-            for j in range(text_img.shape[1]):
-                cnt = 0
-                cnt_v = [0, 0, 0, 0]
-                for si in range(-1, 1, 1):
-                    for sj in range(-1, 1, 1):
-                        ii = min(max(0, i + si), text_img.shape[0] - 1)
-                        jj = min(max(0, j + sj), text_img.shape[1] - 1)
-                        if not math.isnan(displacement_map_smoothed[ii, jj, 0]):
-                            cnt_v[0] = cnt_v[0] + float(displacement_map_smoothed[ii, jj, 0])
-                            cnt_v[1] = cnt_v[1] + float(displacement_map_smoothed[ii, jj, 1])
-                            cnt_v[2] = cnt_v[2] + float(displacement_map_smoothed[ii, jj, 2])
-                            cnt_v[3] = cnt_v[3] + float(displacement_map_smoothed[ii, jj, 3])
-                            cnt = cnt + 1
-                if cnt > 0:
-                    displacement_map_smoothed_n[i, j, 0] = cnt_v[0]/cnt
-                    displacement_map_smoothed_n[i, j, 1] = cnt_v[1]/cnt
-                    displacement_map_smoothed_n[i, j, 2] = cnt_v[2]/cnt
-                    displacement_map_smoothed_n[i, j, 3] = cnt_v[3]/cnt
-                else:
-                    displacement_map_smoothed_n[i, j, 0] = 0
-                    displacement_map_smoothed_n[i, j, 1] = 0
-                    displacement_map_smoothed_n[i, j, 2] = 0
-                    displacement_map_smoothed_n[i, j, 3] = 0
-        displacement_map_smoothed = displacement_map_smoothed_n
-        '''
-
-        clr = [np.array(text_img[int(0.37 * text_img.shape[0]), int(0.37 * text_img.shape[1]), :]).astype(int),
-               np.array(text_img[int(0.31 * text_img.shape[0]), int(0.31 * text_img.shape[1]), :]).astype(int)]
-        clr_extra = np.array(text_img[int(0.56 * text_img.shape[0]), int(0.66 * text_img.shape[1]), :]).astype(int)
-        use_clr = True
-        for c in range(0, 3):
-            if (clr[0] + clr[1])[c] / 2.0 + 30 < clr_extra[c] or clr_extra[c] < ((clr[0] + clr[1])[c] / 2.0 - 30):
-                use_clr = False
-        if use_clr:
-            clr.append(clr_extra)
-        clr_extra = np.array(text_img[int(0.62 * text_img.shape[0]), int(0.94 * text_img.shape[1]), :]).astype(int)
-        use_clr = True
-        for c in range(0, 3):
-            if (clr[0] + clr[1])[c] / 2.0 + 30 < clr_extra[c] or clr_extra[c] < ((clr[0] + clr[1])[c] / 2.0 - 30):
-                use_clr = False
-        if use_clr:
-            clr.append(clr_extra)
-        thres = 15
-        for i in range(text_img.shape[0]):
-            for j in range(text_img.shape[1]):
-                if self.model_params["uv_colored"][i, j, 0] == 0:  # or math.isnan(displacement_map_smoothed[i, j, 0]):
-                    displacement_map_smoothed[i, j, 0] = 0
-                    displacement_map_smoothed[i, j, 1] = 0
-                    displacement_map_smoothed[i, j, 2] = 0
-                    displacement_map_smoothed[i, j, 3] = 0
-                else:
-                    for si in range(-1, 2, 1):
-                        for sj in range(-1, 2, 1):
-                            ii = min(max(0, i + si), text_img.shape[0] - 1)
-                            jj = min(max(0, j + sj), text_img.shape[1] - 1)
-                            for c in range(len(clr)):
-                                if text_img[ii, jj, 0] > (clr[c][0] - thres) and text_img[ii, jj, 0] < (
-                                        clr[c][0] + thres) and text_img[ii, jj, 1] > (clr[c][1] - thres) and text_img[
-                                    ii, jj, 1] < (clr[c][1] + thres) and text_img[ii, jj, 2] > (clr[c][2] - thres) and \
-                                        text_img[ii, jj, 2] < (clr[c][2] + thres):
-                                    displacement_map_smoothed[ii, jj, 0] = 0
-                                    displacement_map_smoothed[ii, jj, 1] = 0
-                                    displacement_map_smoothed[ii, jj, 2] = 0
-                                    displacement_map_smoothed[ii, jj, 3] = 0
-
-        '''
-        for i in range(text_img.shape[0]):
-            for j in range(text_img.shape[1]):
-                cnt = 0
-                for si in range(-1, 2, 1):
-                    for sj in range(-1, 2, 1):
-                        ii = min(max(0, i + si), text_img.shape[0] - 1)
-                        jj = min(max(0, j + sj), text_img.shape[1] - 1)
-                        if displacement_map_smoothed[ii, jj, 0] > 0:
-                            cnt = cnt + 1
-                if cnt > 0:
-                    displacement_map_smoothed_n[ii, jj] = 255
-        displacement_map_smoothed = displacement_map_smoothed_n
-        '''
-
-        cv2.imwrite(os.path.join(self.dir_out, self.dir_in.split('/')[-1] + '_c.png'), disp_eul * 255)
-        cv2.imwrite(os.path.join(self.dir_out, self.dir_in.split('/')[-1] + '_d.png'),
-                    displacement_map_smoothed[:, :, 1:4] * 255)
-        cv2.imwrite(os.path.join(self.dir_out, self.dir_in.split('/')[-1] + '_e.png'), disp_norms * 255)
-        cv2.imwrite(os.path.join(self.dir_out, self.dir_in.split('/')[-1] + '_f.png'),
-                    displacement_map_smoothed[:, :, 0] * 255)
-        disps_final2 = []
-        for i in range(len(verts_smooth)):
-            disp = Vector((0, 0, 0))
-            cnt = 0
-            for j in range(len(nrml_ids[i])):
-                vt = uv_coords[nrml_ids[i][j]]
-                dnorm = displacement_map_smoothed[int((1 - vt[1]) * displacement_map_smoothed.shape[0]), int(
-                    vt[0] * displacement_map_smoothed.shape[1])][0]
-                deul = displacement_map_smoothed[int((1 - vt[1]) * displacement_map_smoothed.shape[0]), int(
-                    vt[0] * displacement_map_smoothed.shape[1])][1:4]
-                deul = mathutils.Euler((deul[2], deul[1], deul[0]), 'ZYX')
-                disp_inst = Vector(nrmls[i])
-                disp_inst.rotate(deul)
-                if dnorm > 0:
-                    disp = disp + disp_inst * dnorm
-                    cnt = cnt + 1
-                    # print(disp)
-            if cnt > 0:
-                disp = disp / cnt
-            disps_final2.append(disp)
-
-        for obj in scene.objects:
-            if obj.type == 'MESH':
-                bpy.context.view_layer.objects.active = obj
-                # bpy.ops.object.mode_set(mode='EDIT')
-                # bpy.ops.mesh.select_all(action='TOGGLE')
-                # bpy.ops.mesh.normals_make_consistent(inside=False)
-                me = bpy.context.object.data
-                bm = bmesh.new()
-                bm.from_mesh(me)
-                bm.verts.ensure_lookup_table()
-                for i in range(len(bm.verts)):
-                    bm.verts[i].co = Vector(verts_original[i]) + disps_final2[i] * 100.0
-                bm.to_mesh(me)
+                for material in me.materials:
+                    material.name = 'material'
                 me.update()
                 bm.free()
 
@@ -433,12 +227,10 @@ class Fbx_exporter:
             o.select_set(True)
         objs = bpy.data.objects
         objs.remove(objs['Armature'], do_unlink=True)
+        for o in bpy.context.scene.objects:
+            o.data.materials.pop(index=0)
+            o.data.materials.clear()
         objs.remove(objs[str(self.model_params["gender"])[0] + '_avg'], do_unlink=True)
-
-    def deselect(self):
-        for o in bpy.data.objects.values():
-            o.select_set(False)
-        bpy.context.view_layer.objects.active = None
 
     def get_bname(self, i, obname='f_avg'):
         return obname + '_' + self.kintree[i][1]
@@ -452,11 +244,6 @@ class Fbx_exporter:
 
 
 def rotation_matrix_from_vectors(vec1, vec2):
-    """ Find the rotation matrix that aligns vec1 to vec2
-    :param vec1: A 3d "source" vector
-    :param vec2: A 3d "destination" vector
-    :return mat: A transform matrix (3x3) which when applied to vec1, aligns it with vec2.
-    """
     a, b = (vec1 / np.linalg.norm(vec1)).reshape(3), (vec2 / np.linalg.norm(vec2)).reshape(3)
     v = np.cross(a, b)
     c = np.dot(a, b)
@@ -472,8 +259,10 @@ if __name__ == '__main__':
     dir_out = './fbx_models'
     dir_smpl = './model'
     dir_models_in = [os.path.join(dir_in, x) for x in next(os.walk(dir_in))[1]]
+    pbar = tqdm.tqdm(total=len(dir_models_in))
 
-    for i in range(len(dir_models_in)):
+    for m in range(len(dir_models_in)):
+
         for myCol in bpy.data.collections:
             obs = [o for o in myCol.objects if o.users == 1]
             while obs:
@@ -482,5 +271,10 @@ if __name__ == '__main__':
 
         myCol = bpy.data.collections.new("Collection")
         bpy.context.scene.collection.children.link(myCol)
-        fbx_exporter = Fbx_exporter(dir_smpl, dir_models_in[i], dir_out)
-        fbx_exporter.start()
+        stdout = io.StringIO()
+        with redirect_stdout(stdout):
+            fbx_exporter = Fbx_exporter(dir_smpl, dir_models_in[m], dir_out)
+            fbx_exporter.start()
+
+        pbar.update(1)
+    pbar.close()
