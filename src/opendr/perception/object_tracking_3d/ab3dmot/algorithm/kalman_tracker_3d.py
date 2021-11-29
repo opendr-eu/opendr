@@ -137,7 +137,7 @@ class KalmanTracker3D():
             self.alpha, self.bbox2d,
             self.kalman_filter.x[4:].reshape(-1),
             self.kalman_filter.x[:3].reshape(-1),
-            self.kalman_filter.x[3].reshape(-1),
+            float(self.kalman_filter.x[3]),
             self.id,
             self.confidence,
             frame,

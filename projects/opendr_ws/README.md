@@ -43,3 +43,5 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes:
 2. 2D Object Detection
 3. Face Detection
 4. Panoptic Segmentation
+5. Face Recognition
+6. Semantic Segmentation
