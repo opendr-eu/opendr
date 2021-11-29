@@ -18,14 +18,10 @@ import rospy
 import torch
 import numpy as np
 from opendr.engine.data import Timeseries
-from vision_msgs.msg import Classification2D, ObjectHypothesis
+from vision_msgs.msg import Classification2D
 import argparse
 from std_msgs.msg import Float32MultiArray
-from std_msgs.msg import Header
 from opendr_bridge import ROSBridge
-import os
-import message_filters
-import cv2
 from opendr.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurrent_unit_learner import \
     GatedRecurrentUnitLearner
 from opendr.perception.heart_anomaly_detection.attention_neural_bag_of_feature\
