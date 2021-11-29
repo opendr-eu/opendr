@@ -20,10 +20,7 @@ import numpy as np
 import random
 
 # OpenDR imports
-from opendr.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurrent_unit_learner import (
-    GatedRecurrentUnitLearner,
-    get_AF_dataset
-)
+from opendr.perception.heart_anomaly_detection import (GatedRecurrentUnitLearner, get_AF_dataset)
 from opendr.engine.datasets import DatasetIterator
 from opendr.engine.data import Timeseries
 from opendr.engine.target import Category

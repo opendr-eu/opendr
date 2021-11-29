@@ -17,8 +17,8 @@ import os
 import shutil
 import torch
 import unittest
-from opendr.control.mobile_manipulation.mobileRL.utils import create_env
-from opendr.control.mobile_manipulation.mobile_manipulation_learner import MobileRLLearner
+from opendr.control.mobile_manipulation import create_env
+from opendr.control.mobile_manipulation import MobileRLLearner
 from pathlib import Path
 
 TEST_ITERS = 3

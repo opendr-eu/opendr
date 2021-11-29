@@ -20,11 +20,8 @@ import numpy as np
 import random
 
 # OpenDR imports
-from opendr.perception.compressive_learning.multilinear_compressive_learning.multilinear_compressive_learner import (
-    MultilinearCompressiveLearner,
-    get_builtin_backbones,
-    PRETRAINED_COMPRESSED_SHAPE
-)
+from opendr.perception.compressive_learning import (
+    MultilinearCompressiveLearner, get_builtin_backbones, PRETRAINED_COMPRESSED_SHAPE)
 from opendr.engine.datasets import DatasetIterator
 from opendr.engine.data import Image
 from opendr.engine.target import Category
