@@ -213,6 +213,39 @@ Converts a list of ROS colors into an array (Nx3).
 Parameters:
 - **ros_colors**: list of *std_msgs.msg.colorRGBA* 
 
+
+#### `ROSBridge.from_ros_image_to_depth`
+
+```python
+ROSBridge.from_ros_image_to_depth(self,
+                         message,
+                         encoding)
+```
+
+This method converts a ROS image message into an OpenDR grayscale depth image
+
+Parameters:
+
+- **message**: *sensor_msgs.msg.Img*  
+  ROS image to be converted into an OpenDR image.
+- **encoding**: *str, default='mono16'*  
+  Encoding to be used for the conversion.
+
+#### `ROSBridge.from_category_to_rosclass`
+
+```python
+ROSBridge.from_category_to_rosclass(self,
+                         prediction,
+                         source_data)
+```
+This method converts an OpenDR Category object into Classification2D message with class label, confidence, timestamp and optionally corresponding input.
+
+Parameters:
+- **prediction**: *engine.target.Category*
+  OpenDR Category object
+- **source_data**: *default=None*
+  Corresponding input, default=None
+
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
 2. `ros_bridge.msg.Pose` is used as an equivelant to `engine.target.Pose`
