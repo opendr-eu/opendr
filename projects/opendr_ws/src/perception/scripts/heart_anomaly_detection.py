@@ -26,8 +26,10 @@ from opendr_bridge import ROSBridge
 import os
 import message_filters
 import cv2
-from opendr.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurrent_unit_learner import GatedRecurrentUnitLearner
-from opendr.perception.heart_anomaly_detection.attention_neural_bag_of_feature.attention_neural_bag_of_feature_learner import AttentionNeuralBagOfFeatureLearner
+from opendr.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurrent_unit_learner import \
+    GatedRecurrentUnitLearner
+from opendr.perception.heart_anomaly_detection.attention_neural_bag_of_feature\
+    .attention_neural_bag_of_feature_learner import AttentionNeuralBagOfFeatureLearner
 
 
 class HeartAnomalyNode:
@@ -44,23 +46,25 @@ class HeartAnomalyNode:
         :param model: model to use: anbof or gru
         :type model: str
         """
-        
+
         self.publisher = rospy.Publisher(prediction_topic, Classification2D, queue_size=10)
 
         rospy.Subscriber(input_topic, Float32MultiArray, self.callback)
-        
+
         self.bridge = ROSBridge()
 
         # AF dataset
         self.channels = 1
         self.series_length = 9000
-        
+
         # Initialize the gesture recognition
         if model == 'gru':
-            self.learner = GatedRecurrentUnitLearner(in_channels=self.channels, series_length=self.series_length, n_class=4, device=device, attention_type='temporal')
+            self.learner = GatedRecurrentUnitLearner(in_channels=self.channels, series_length=self.series_length, n_class=4, \
+            device=device, attention_type='temporal')
         elif model == 'anbof':
-            self.learner = AttentionNeuralBagOfFeatureLearner(in_channels=self.channels, series_length=self.series_length, n_class=4, device=device, attention_type='temporal')
-   
+            self.learner = AttentionNeuralBagOfFeatureLearner(in_channels=self.channels, series_length=self.series_length, n_class=4, \
+            device=device, attention_type='temporal')
+
         self.learner.download(path='.', fold_idx=0)
         self.learner.load(path='.')
 
@@ -95,12 +99,11 @@ if __name__ == '__main__':
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
     except:
         device = 'cpu'
-        
-        
+
     parser = argparse.ArgumentParser()
     parser.add_argument('input_topic', type=str, help='listen to input data on this topic')
     parser.add_argument('model', type=str, help='model to be used for prediction: anbof or gru')
     args = parser.parse_args()
-    
+
     gesture_node = HeartAnomalyNode(input_topic=args.input_topic, model=args.model, device=device)
     gesture_node.listen()
