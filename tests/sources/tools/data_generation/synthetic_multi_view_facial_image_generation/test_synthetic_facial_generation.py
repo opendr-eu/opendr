@@ -16,7 +16,7 @@ import unittest
 import os
 import torch
 import argparse
-from not opendr_internal.opendr_internal.projects.data_generation.\
+from opendr_internal.opendr_internal.projects.data_generation.\
         SyntheticDataGeneration import MultiviewDataGenerationLearner
 
 
