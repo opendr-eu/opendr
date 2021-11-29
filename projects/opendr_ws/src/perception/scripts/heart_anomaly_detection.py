@@ -60,10 +60,10 @@ class HeartAnomalyNode:
         # Initialize the gesture recognition
         if model == 'gru':
             self.learner = GatedRecurrentUnitLearner(in_channels=self.channels, series_length=self.series_length,
-                    n_class=4, device=device, attention_type='temporal')
+                                                     n_class=4, device=device, attention_type='temporal')
         elif model == 'anbof':
-            self.learner = AttentionNeuralBagOfFeatureLearner(in_channels=self.channels, series_length=self.series_length, 
-                    n_class=4, device=device, attention_type='temporal')
+            self.learner = AttentionNeuralBagOfFeatureLearner(in_channels=self.channels, series_length=self.series_length,
+                                                              n_class=4, device=device, attention_type='temporal')
 
         self.learner.download(path='.', fold_idx=0)
         self.learner.load(path='.')
