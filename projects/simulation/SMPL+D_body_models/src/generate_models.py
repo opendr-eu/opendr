@@ -273,3 +273,4 @@ if __name__ == '__main__':
 
         pbar.update(1)
     pbar.close()
+    bpy.ops.wm.quit_blender()
