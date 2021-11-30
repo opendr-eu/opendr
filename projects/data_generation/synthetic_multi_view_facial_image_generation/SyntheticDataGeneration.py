@@ -48,10 +48,10 @@ import argparse
 from algorithm.DDFA.utils.ddfa import str2bool
 
 
-class MultiviewDataGenerationLearner(path_in=sys.argv[0], path_3ddfa=sys.argv[1], save_path=sys.argv[2], val_yaw=sys.argv[3], val_pitch=sys.argv[4], device=sys.argv[5]):
+class MultiviewDataGenerationLearner(sys.argv[0], sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]):
 
-    def __init__(self, path_in=path_in, path_3ddfa=path_3ddfa, save_path=save_path,
-                 val_yaw=val_yaw, val_pitch=val_pitch, device='cuda'):
+    def __init__(self, path_in=sys.argv[0], path_3ddfa=sys.argv[1], save_path=sys.argv[2],
+                 val_yaw=sys.argv[3], val_pitch=sys.argv[4], device=sys.argv[5]):
 
         self.path_in = path_in
         self.key = str(path_3ddfa + "/example/Images/")
