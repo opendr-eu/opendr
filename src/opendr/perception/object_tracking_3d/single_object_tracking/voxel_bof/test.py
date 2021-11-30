@@ -368,7 +368,7 @@ def test_pp_siamese_fit():
     learner.load(model_path, backbone=True, verbose=True)
     learner.fit(
         kitti_detection,
-        model_dir="./temp/3-1",
+        model_dir="./temp/c-0",
         # verbose=True
     )
 
@@ -383,10 +383,10 @@ def test_pp_siamese_load_fit():
         checkpoint_after_iter=2000,
         # checkpoint_load_iter=42000,
     )
-    learner.load("./temp/3-1/checkpoints", backbone=False, verbose=True)
+    learner.load("./temp/5-a/checkpoints", backbone=False, verbose=True)
     learner.fit(
         kitti_detection,
-        model_dir="./temp/3-1-load-fit",
+        model_dir="./temp/load-fit",
         verbose=True
     )
 
@@ -402,7 +402,7 @@ def test_pp_siamese_eval():
         model_config_path=config, device=DEVICE, lr=0.001, checkpoint_after_iter=2000,
     )
     # learner.load(model_path)
-    learner.load("./temp/3/checkpoints", backbone=False, verbose=True)
+    learner.load("./temp/c-0/checkpoints", backbone=False, verbose=True)
 
     point_cloud_with_calibration, labels = dataset_tracking[0]
     selected_labels = TrackingAnnotation3DList([label for label in labels if label.id == object_id])
@@ -413,16 +413,16 @@ def test_pp_siamese_eval():
     learner.init(point_cloud_with_calibration, label_lidar)
 
     # count = len(dataset_tracking)
-    count = 20
+    count = 50
 
     for i in range(1, count):
-        point_cloud_with_calibration, labels = dataset_tracking[i] # i iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+        point_cloud_with_calibration, labels = dataset_tracking[0] # i iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
         selected_labels = TrackingAnnotation3DList([label for label in labels if label.id == object_id])
         calib = point_cloud_with_calibration.calib
         labels_lidar = label_to_AABB(tracking_boxes_to_lidar(selected_labels, calib))
         label_lidar = labels_lidar[0]
 
-        result = learner.infer(point_cloud_with_calibration, id=1)
+        result = learner.infer(point_cloud_with_calibration, id=1, frame=i)
 
         all_labels = TrackingAnnotation3DList([result[0], label_lidar])
         image = draw_point_cloud_bev(point_cloud_with_calibration.data, all_labels)

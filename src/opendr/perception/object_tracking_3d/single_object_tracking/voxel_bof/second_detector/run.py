@@ -34,6 +34,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.logger import (
     Logger,
 )
+from PIL import Image as PilImage
 
 
 def example_convert_to_torch(
@@ -67,6 +68,25 @@ def example_convert_to_torch(
         else:
             example_torch[k] = v
     return example_torch
+
+
+def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
+
+    grayscale_pi = (pseudo_image.mean(axis=0) * 255 / pseudo_image.mean(axis=0).max()).detach().cpu().numpy().astype(np.uint8)
+    rgb_pi = np.stack([grayscale_pi] * 3, axis=-1)
+
+    for target, color in zip(targets, colors):
+
+        pos_min = (target[0] - target[1] // 2).astype(np.int32)
+        pos_max = (target[0] + (target[1] + 1) // 2 - 1).astype(np.int32)
+
+        rgb_pi[pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1, :] = color
+
+    PilImage.fromarray(
+        rgb_pi
+    ).save(
+        path
+    )
 
 
 def create_targets_and_searches(
@@ -153,7 +173,7 @@ def create_target_search_regions(
         centers_image = ((centers[:, :2] - bv_min) / voxel_size_bev).astype(
             np.int32
         )
-        sizes_image = (sizes[:, :2] / voxel_size_bev).astype(np.int32)
+        sizes_image = (sizes[:, :2] / voxel_size_bev).astype(np.int32) + 3
         search_sizes = sizes_image * 2 + (sizes_image < 20) * 30
 
         targets, searches = create_targets_and_searches(
@@ -190,6 +210,8 @@ def get_sub_image(image, center, size):
         result[
             :, local_min[0] : local_max[0] + 1, local_min[1] : local_max[1] + 1
         ] = image[:, pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1]
+    else:
+        print("Empty image")
 
     return result
 
@@ -225,10 +247,10 @@ def create_logisticloss_labels(
 
 def create_pseudo_image_features(pseudo_image, target, net):
 
-    image = get_sub_image(pseudo_image, target[0], target[1])
+    image = get_sub_image(pseudo_image, target[0][[1, 0]], target[1][[1, 0]])
     features = net(image.reshape(1, *image.shape))
 
-    return features
+    return features, image
 
 
 def image_to_feature_coordinates(pos):
@@ -310,13 +332,27 @@ def create_pseudo_images_and_labels(
         zip(batch_targets, batch_searches)
     ):
         for target, search in zip(targets, searches):
-            target_image = get_sub_image(pseudo_image[i], target[0], target[1])
-            search_image = get_sub_image(pseudo_image[i], search[0], search[1])
+            # target_image = get_sub_image(pseudo_image[i], target[0], target[1])
+            # search_image = get_sub_image(pseudo_image[i], search[0], search[1])
+
+            target_image_2 = get_sub_image(pseudo_image[i], target[0][[1, 0]], target[1][[1, 0]])
+            search_image_2 = get_sub_image(pseudo_image[i], search[0][[1, 0]], search[1][[1, 0]])
+
+            target_image = target_image_2
+            search_image = search_image_2
+
+            # draw_pseudo_image(target_image, "./plots/pi_target_" + str(0) + ".png")
+            # draw_pseudo_image(search_image, "./plots/pi_search_" + str(0) + ".png")
+            # # draw_pseudo_image(target_image_2, "./plots/pi_target2_" + str(0) + ".png")
+            # # draw_pseudo_image(search_image_2, "./plots/pi_search2_" + str(0) + ".png")
+            # draw_pseudo_image(pseudo_image[i], "./plots/pi_" + str(0) + ".png")
+            # draw_pseudo_image(pseudo_image[i], "./plots/pi_t" + str(0) + ".png", [[target[0][[1, 0]], target[1][[1, 0]]]], [(255, 0, 0)])
+            # # draw_pseudo_image(pseudo_image[i], "./plots/pi_t2" + str(0) + ".png", [[target[0][[1, 0]], target[1][[1, 0]]]], [(255, 0, 0)])
 
             target_image = target_image.reshape(1, *target_image.shape)
             search_image = search_image.reshape(1, *search_image.shape)
 
-            labels, weights = create_label_and_weights(target, search)
+            labels, weights = create_label_and_weights([target[0][[1, 0]], target[1][[1, 0]]], [search[0][[1, 0]], search[1][[1, 0]]])
 
             labels_torch = torch.tensor(labels, device=target_image.device)
             weights_torch = torch.tensor(weights, device=target_image.device)
@@ -359,6 +395,23 @@ def score_to_image_coordinates(scores, target_region_size, search_region):
     )
 
     return center_image
+
+
+def displacement_score_to_image_coordinates(scores, score_upscale):
+
+    max_score = torch.max(scores)
+    max_idx = (scores == max_score).nonzero(as_tuple=False)[0][-2:]
+
+    final_score_size = np.array(scores.shape[-2:])
+
+    half = (final_score_size - 1) / 2
+
+    disp_score = max_idx.cpu().numpy() - half
+    disp_search = feature_to_image_coordinates(disp_score) / score_upscale
+    disp_image = disp_search
+
+    return disp_image
+
 
 
 def train(
@@ -482,9 +535,9 @@ def train(
                 predicted_target_coordinates = score_to_image_coordinates(
                     pred, target[1], search
                 )
-                predicted_label_target_coordinates = score_to_image_coordinates(
-                    labels, target[1], search
-                )
+                # predicted_label_target_coordinates = score_to_image_coordinates(
+                #     labels, target[1], search
+                # )
                 delta = np.abs(predicted_target_coordinates - target[0])
 
                 loss.backward()
