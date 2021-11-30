@@ -23,7 +23,7 @@ from urllib.request import urlretrieve
 import cv2
 
 # OpenDR imports
-from opendr.perception.multimodal_human_centric import (RgbdHandGestureLearner, get_builtin_architectures)
+from opendr.perception.multimodal_human_centric import RgbdHandGestureLearner, get_builtin_architectures
 from opendr.engine.datasets import DatasetIterator
 from opendr.engine.data import Image
 from opendr.engine.target import Category
