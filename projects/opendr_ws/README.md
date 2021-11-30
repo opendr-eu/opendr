@@ -46,3 +46,4 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes:
 5. Face Recognition
 6. Semantic Segmentation
 7. RGBD Hand Gesture Recognition
+8. Heart Anomaly Detection
