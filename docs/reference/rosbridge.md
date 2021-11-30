@@ -241,10 +241,26 @@ ROSBridge.from_category_to_rosclass(self,
 This method converts an OpenDR Category object into Classification2D message with class label, confidence, timestamp and optionally corresponding input.
 
 Parameters:
-- **prediction**: *engine.target.Category*
+- **prediction**: *engine.target.Category*  
   OpenDR Category object
-- **source_data**: *default=None*
+- **source_data**: *default=None*  
   Corresponding input, default=None
+  
+#### `ROSBridge.from_rosarray_to_timeseries`
+
+```python
+ROSBridge.from_rosarray_to_timeseries(self,
+                         ros_array, dim1, dim2)
+```
+This method converts a ROS array into OpenDR Timeseries object
+
+Parameters:
+- **ros_array**: *std_msgs.msg.Float32MultiArray*  
+  ROS array of data
+- **dim1**: *int*  
+  First dimension
+- **dim2**: *int*  
+  Second dimension
 
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`

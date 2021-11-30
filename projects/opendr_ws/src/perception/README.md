@@ -144,3 +144,10 @@ rosrun perception rgbd_hand_gesture_recognition.py
 ```
 The predictied classes are published to the topic `/opendr/gestures`.
 
+## Heart Anomaly Detection ROS Node
+
+A ROS node for performing heart anomaly (atrial fibrillation) detection from ecg data using GRU or ANBOF models trained on AF dataset. Assuming that the OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception heart_anomaly_detection.py ECG_TOPIC MODEL
+```
+with `ECG_TOPIC` specifying the ROS topic to which the node will subscribe, and `MODEL` set to either *gru* or *anbof*. The predictied classes are published to the topic `/opendr/heartanomaly`.
