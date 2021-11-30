@@ -21,26 +21,45 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [engine.datasets Module](engine-datasets.md)
         - [engine.target Module](engine-target.md)
     - `perception` Module
-        - [face_recognition_learner Module](face-recognition.md)
-        - [lightweight-open-pose Module](lightweight-open-pose.md)
-        - [activity_recognition Module](activity-recognition.md)
-        - [edgespeechnets Module](edgespeechnets.md)
-        - [quadraticselfonn Module](quadratic-selfonn.md)
-        - [rgbd_hand_gesture_learner Module](rgbd_hand_gesture_learner.md)
-        - [gated_recurrent_unit Module](gated-recurrent-unit-learner.md)
-        - [attention_neural_bag_of_feature_learner Module](attention_neural_bag_of_feature_learner.md)
-        - [matchboxnet Module](matchboxnet.md)
-        - [object_detection_2d_detr Module](detr.md)
-        - [object_detection_2d_gem Module](gem.md)
-        - [voxel-object-detection-3d Module](voxel-object-detection-3d.md)
-        - [object_tracking_2d_fair_mot Module](object-tracking-2d-fair-mot.md)
-        - [object_tracking_2d_deep_sort Module](object-tracking-2d-deep-sort.md)
-        - [object_tracking_3d_ab3dmot Module](object-tracking-3d-ab3dmot.md)
-        - [multilinear_compressive_learning Module](multilinear_compressive_learning.md)
-        - [skeleton_based_action_recognition](skeleton_based_action_recognition.md)
-        - [semantic-segmentation Module](semantic-segmentation.md)
-        - [efficient_ps Module](efficient_ps.md)
-        - [landmark_based_facial_expression_recognition](landmark-based-facial-expression-recognition.md)
+        - `face recognition`:
+            - [face_recognition_learner Module](face-recognition.md)
+        - `facial expression recognition`:
+            - [landmark_based_facial_expression_recognition](landmark-based-facial-expression-recognition.md)
+        - `pose estimation`:
+            - [lightweight-open-pose Module](lightweight-open-pose.md)
+        - `activity recognition`:
+            - [activity_recognition Module](activity-recognition.md)
+        - `action recognition`:
+            - [skeleton_based_action_recognition](skeleton_based_action_recognition.md)
+        - `speech recognition`:
+            - [matchboxnet Module](matchboxnet.md)
+            - [edgespeechnets Module](edgespeechnets.md)
+            - [quadraticselfonn Module](quadratic-selfonn.md)
+        - `object detection 2d`:
+            - [detr Module](detr.md)
+            - [gem Module](gem.md)
+            - [retinaface Module](face-detection-2d-retinaface.md)
+            - [centernet Module](object-detection-2d-ssd.md)
+            - [ssd Module](object-detection-2d-ssd.md)
+            - [yolov3 Module](object-detection-2d-yolov3.md)
+        - `object detection 3d`:
+            - [voxel Module](voxel-object-detection-3d.md)
+        - `object tracking 2d`:
+            - [fair_mot Module](object-tracking-2d-fair-mot.md)
+            - [deep_sort Module](object-tracking-2d-deep-sort.md)
+        - `object tracking 3d`:
+            - [ab3dmot Module](object-tracking-3d-ab3dmot.md)
+        - `multimodal human centric`:
+            - [rgbd_hand_gesture_learner Module](rgbd_hand_gesture_learner.md)
+        - `compressive learning`:
+            - [multilinear_compressive_learning Module](multilinear_compressive_learning.md)
+        - `semantic segmentation`:
+            - [semantic-segmentation Module](semantic-segmentation.md)
+        - `panoptic segmentation`:
+            - [efficient_ps Module](efficient_ps.md)
+        - `heart anomaly detection`:
+            - [gated_recurrent_unit Module](gated-recurrent-unit-learner.md)
+            - [attention_neural_bag_of_feature_learner Module](attention_neural_bag_of_feature_learner.md)
 
     - `control` Module
         - [mobile_manipulation Module](mobile-manipulation.md)

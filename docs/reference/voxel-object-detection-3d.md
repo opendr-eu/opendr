@@ -18,42 +18,41 @@ VoxelObjectDetection3DLearner(self, model_config_path, lr, iters, batch_size, op
 ```
 
 Constructor parameters:
-- **model_config_path**: *string*
+
+- **model_config_path**: *string*\
   Specifies the path to the [proto](#proto) file describing the model structure and the training procedure.
-- **lr**: *float, default=0.0002*  
+- **lr**: *float, default=0.0002*\
   Specifies the initial learning rate to be used during training.
-- **optimizer**: *str {'rms_prop_optimizer', 'momentum_optimizer', 'adam_optimizer'}, default=adam_optimizer*  
+- **optimizer**: *str {'rms_prop_optimizer', 'momentum_optimizer', 'adam_optimizer'}, default=adam_optimizer*\
   Specifies the optimizer type that should be used.
-- **lr_schedule**: *str {'constant_learning_rate', 'exponential_decay_learning_rate', 'manual_step_learning_rate', 'cosine_decay_learning_rate'}, default='exponential_decay_learning_rate'*  
+- **lr_schedule**: *str {'constant_learning_rate', 'exponential_decay_learning_rate', 'manual_step_learning_rate', 'cosine_decay_learning_rate'}, default='exponential_decay_learning_rate'*\
   Specifies the learning rate scheduler.
-- **checkpoint_after_iter**: *int, default=0*
+- **checkpoint_after_iter**: *int, default=0*\
   Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
-- **checkpoint_load_iter**: *int, default=0*  
+- **checkpoint_load_iter**: *int, default=0*\
   Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
-- **temp_path**: *str, default=''*  
+- **temp_path**: *str, default=''*\
   Specifies a path where the algorithm saves the onnx optimized model (if needed).
-- **device**: *{'cpu', 'cuda', 'cuda:x'}, default='cuda:0'*  
+- **device**: *{'cpu', 'cuda', 'cuda:x'}, default='cuda:0'*\
   Specifies the device to be used.
-- **tanet_config_path**: *str, default=None*  
+- **tanet_config_path**: *str, default=None*\
   Specifies if the configuration file for TANet should be different from the standard one (`None` for standard).
-- **optimizer_params**: *dict, default={
-      "weight_decay": 0.0001,
-  }*  
+- **optimizer_params**: *dict, default={"weight_decay": 0.0001}*\
   Specifies the parameters for the used optimizer.
     - `adam_optimizer` uses "weight_decay" values
     - `momentum_optimizer` uses "momentum_optimizer_value", "weight_decay" values
     - `rms_prop_optimizer` uses "decay", "momentum_optimizer_value", "epsilon", "weight_decay" values
-- **iters**: *int, default=10*  
+- **iters**: *int, default=10*\
   Skipped. The number of training iterations is described in a [proto](#proto) file.
-- **batch_size**: *int, default=64*
+- **batch_size**: *int, default=64*\
   Skipped. The batch size is described in a [proto](#proto) file.
-- **backbone**: *str, default='tanet_16'*  
+- **backbone**: *str, default='tanet_16'*\
   Skipped. The structure of a model is described in a [proto](#proto) file.
-- **network_head**: *str, default='tanet_16'*  
+- **network_head**: *str, default='tanet_16'*\
   Skipped. The structure of a model is described in a [proto](#proto) file.
-- **threshold**: *float, default=0.0*  
+- **threshold**: *float, default=0.0*\
   Skipped. The structure of a model is described in a [proto](#proto) file.
-- **scale**: *float, default=1.0*  
+- **scale**: *float, default=1.0*\
   Skipped. The structure of a model is described in a [proto](#proto) file.
 
 
@@ -63,27 +62,29 @@ VoxelObjectDetection3DLearner.fit(self, dataset, val_dataset, refine_weight, gro
 ```
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
+
 Parameters:
-  - **dataset**: *object*  
+
+  - **dataset**: *object*\
     Object that holds the training dataset.
     Can be of type `ExternalDataset` (with type="kitti") or a custom dataset inheriting from `DatasetIterator`.
-  - **val_dataset**: *object, default=None*
+  - **val_dataset**: *object, default=None*\
     Object that holds the validation dataset. If None, and the dataset is an `ExternalDataset`, dataset will be used to sample evaluation inputs. Can be of type `ExternalDataset` (with type="kitti") or a custom dataset inheriting from `DatasetIterator`.
-  - **refine_weight**: *float, default=2***  
+  - **refine_weight**: *float, default=2***\
     Defines the weight for the refinement part in the loss (for TANet).
-  - **ground_truth_annotations**: *list of BoundingBox3DList, default=None*  
+  - **ground_truth_annotations**: *list of BoundingBox3DList, default=None*\
     Can be used to provide modified ground truth annotations.
-  - **logging_path**: *str, default=None*  
+  - **logging_path**: *str, default=None*\
     Path to save log files. If set to None, only the console will be used for logging.
-  - **silent**: *bool, default=False*  
+  - **silent**: *bool, default=False*\
     If set to True, disables all printing of training progress reports and other information to STDOUT.
-  - **verbose**: *bool, default=False*  
+  - **verbose**: *bool, default=False*\
     If set to True, enables maximum verbosity.
-  - **model_dir**: *str, default=None***  
+  - **model_dir**: *str, default=None***\
     Can be used for storing and loading checkpoints.
-  - **image_shape**: *(int, int), default=(1224, 370)***  
+  - **image_shape**: *(int, int), default=(1224, 370)***\
     Camera image shape for KITTI evaluation.
-  - **evaluate**: *str, default=True*  
+  - **evaluate**: *str, default=True*\
     Should the evaluation be run during training.
 
 #### `VoxelObjectDetection3DLearner.eval`
@@ -92,20 +93,22 @@ VoxelObjectDetection3DLearner.eval(self, dataset, ground_truth_annotations, logg
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
-Returns a dictionary containing stats regarding evaluation.  
+Returns a dictionary containing stats regarding evaluation.
+
 Parameters:
-- **dataset**: *object*  
+
+- **dataset**: *object*\
   Object that holds the evaluation dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-- **ground_truth_annotations**: *list of BoundingBox3DList, default=None*  
+- **ground_truth_annotations**: *list of BoundingBox3DList, default=None*\
   Can be used to provide modified ground truth annotations.
-- **silent**: *bool, default=False*  
+- **silent**: *bool, default=False*\
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
-- **verbose**: *bool, default=False*  
+- **verbose**: *bool, default=False*\
   If set to True, enables the maximum verbosity.
-- **image_shape**: *(int, int), default=(1224, 370)***  
+- **image_shape**: *(int, int), default=(1224, 370)***\
   Camera image shape for KITTI evaluation.
-- **count**: *int, default=None***  
+- **count**: *int, default=None***\
   Specifies the number of frames to be used for evaluation. If None, the full dataset is used.
 
 #### `VoxelObjectDetection3DLearner.infer`
@@ -117,7 +120,8 @@ This method is used to perform 3D object detection on a point cloud.
 Returns a list of [BoundingBox3DList](#class_engine.target.BoundingBox3DList) objects if the list of [PointCloud](#class_engine.data.PointCloud) is given or a single [BoundingBox3DList](#class_engine.target.BoundingBox3DList) if a single [PointCloud](#class_engine.data.PointCloud) is given.
 
 Parameters:
-- **point_clouds**: *engine.data.PointCloud* or *[engine.data.PointCloud]***  
+
+- **point_clouds**: *engine.data.PointCloud* or *[engine.data.PointCloud]***\
   Input data.
 
 #### `VoxelObjectDetection3DLearner.save`
@@ -133,9 +137,10 @@ If the directory already exists, the files are overwritten.
 If [`self.optimize`](#VoxelObjectDetection3DLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the `self.temp_path` it was saved previously during conversion.
 
 Parameters:
-- **path**: *str*  
+
+- **path**: *str*\
   Path to save the model, including the filename.
-- **verbose**: *bool, default=False*  
+- **verbose**: *bool, default=False*\
   If set to True, prints a message on success.
 
 #### `VoxelObjectDetection3DLearner.load`
@@ -147,9 +152,10 @@ This method is used to load a previously saved model from its saved folder.
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
 
 Parameters:
-- **path**: *str*  
+
+- **path**: *str*\
   Path of the model to be loaded.
-- **verbose**: *bool, default=False*  
+- **verbose**: *bool, default=False*\
   If set to True, prints a message on success.
 
 #### `VoxelObjectDetection3DLearner.optimize`
@@ -160,7 +166,8 @@ VoxelObjectDetection3DLearner.optimize(self, do_constant_folding)
 This method is used to optimize a trained model to ONNX format which can be then used for inference.
 
 Parameters:
-- **do_constant_folding**: *bool, default=False*  
+
+- **do_constant_folding**: *bool, default=False*\
   ONNX format optimization.
   If True, the constant-folding optimization is applied to the model during export.
   Constant-folding optimization will replace some of the operations that have all constant inputs, with pre-computed constant nodes.
@@ -174,27 +181,26 @@ VoxelObjectDetection3DLearner.download(model_name, path, server_url)
 Download utility for pretrained models.
 
 Parameters:
-- **model_name**: *str {'pointpillars_car_xyres_16', 'pointpillars_ped_cycle_xyres_16', 'tanet_car_xyres_16', 'tanet_ped_cycle_xyres_16'}*
+
+- **model_name**: *str {'pointpillars_car_xyres_16', 'pointpillars_ped_cycle_xyres_16', 'tanet_car_xyres_16', 'tanet_ped_cycle_xyres_16'}*\
   The name of the model to download.
-- **path**: *str*
+- **path**: *str*\
   Local path to save the downloaded files.
-- **server_url**: *str, default=None*  
+- **server_url**: *str, default=None*\
   URL of the pretrained models directory on an FTP server. If None, OpenDR FTP URL is used.
 
 
 #### Examples
 
-* **Training example using an `ExternalDataset`**.  
+* **Training example using an `ExternalDataset`**.
   Mini and nano KITTI dataset can be downloaded from OpenDR server.
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
   import os
   import torch
-  from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
-    VoxelObjectDetection3DLearner
-  )
-  from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset
+  from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
+  from opendr.perception.object_detection_3d import KittiDataset
 
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "tanet_car"
@@ -229,17 +235,15 @@ Parameters:
   learner.save(model_path)
   ```
 
-* **Training example using a `DatasetIterator`**.  
+* **Training example using a `DatasetIterator`**.
   If the DatasetIterator is given as a dataset, `val_dataset` should be specified.
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
   import os
   import torch
-  from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
-    VoxelObjectDetection3DLearner
-  )
-  from opendr.perception.object_detection_3d.datasets.kitti import LabeledPointCloudsDatasetIterator
+  from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
+  from opendr.perception.object_detection_3d import LabeledPointCloudsDatasetIterator
 
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
   name = "tanet_car"
@@ -289,9 +293,7 @@ Parameters:
   ```python
   import os
   import torch
-  from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
-    VoxelObjectDetection3DLearner
-  )
+  from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
   from opendr.engine.datasets import PointCloudsDatasetIterator
 
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -337,9 +339,7 @@ Parameters:
   ```python
   import os
   import torch
-  from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
-    VoxelObjectDetection3DLearner
-  )
+  from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
   from opendr.engine.datasets import PointCloudsDatasetIterator
 
   DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -495,7 +495,7 @@ Proto files can be found in [voxel_object_detection_3d/second_detector/configs](
 
 #### References
 <a name="#object-detectiond-3d-1" href="https://arxiv.org/pdf/1912.05163.pdf">[1]</a> TANet: Robust 3D Object Detection from Point Clouds with Triple Attention,
-[arXiv](https://arxiv.org/pdf/1912.05163.pdf).  
+[arXiv](https://arxiv.org/pdf/1912.05163.pdf).
 <a name="#object-detectiond-3d-2" href="https://arxiv.org/abs/1812.05784">[2]</a> PointPillars: Fast Encoders for Object Detection from Point Clouds,
-[arXiv](https://arxiv.org/abs/1812.05784).  
+[arXiv](https://arxiv.org/abs/1812.05784).
 <a name="#object-detectiond-3d-3" href="https://github.com/happinesslz/TANet">[3]</a> Github: [TANet](https://github.com/happinesslz/TANet)
