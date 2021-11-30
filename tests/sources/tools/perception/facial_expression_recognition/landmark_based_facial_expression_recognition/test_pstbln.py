@@ -50,13 +50,13 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
         cls.temp_dir = PATH_
         cls.logging_path = LOG_PATH_
         cls.pstbln_facial_expression_classifier = ProgressiveSpatioTemporalBLNLearner(
-            device="cpu", temp_path=cls.temp_dir,
-            batch_size=5, epochs=1,
-            checkpoint_after_iter=1, val_batch_size=5,
-            dataset_name='CASIA', num_class=6, num_point=309, num_person=1,
-            in_channels=2, experiment_name='pstbln_mcdo_casia',
-            blocksize=5, num_blocks=2, num_layers=2, topology=[],
-            layer_threshold=1e-4, block_threshold=1e-4)
+                                                  device="cpu", temp_path=cls.temp_dir,
+                                                  batch_size=5, epochs=1,
+                                                  checkpoint_after_iter=1, val_batch_size=5,
+                                                  dataset_name='CASIA', num_class=6, num_point=309, num_person=1,
+                                                  in_channels=2, experiment_name='pstbln_mcdo_casia',
+                                                  blocksize=5, num_blocks=2, num_layers=2, topology=[],
+                                                  layer_threshold=1e-4, block_threshold=1e-4)
         cls.experiment_name = 'pstbln_mcdo_casia'
         # Download all required files for testing
         cls.Train_DATASET_PATH = cls.pstbln_facial_expression_classifier.download(
