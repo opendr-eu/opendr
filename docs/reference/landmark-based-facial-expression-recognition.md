@@ -397,7 +397,7 @@ Parameters:
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
-  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
+  from opendr.perception.facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
   from opendr.engine.datasets import ExternalDataset
   training_dataset = ExternalDataset(path='./data/AFEW_aug_data', dataset_type='AFEW')
   validation_dataset = ExternalDataset(path='./data/AFEW_aug_data', dataset_type='AFEW')
@@ -423,7 +423,7 @@ Parameters:
 * **Inference on a test landmark sequence**
   ```python
   import numpy
-  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
+  from opendr.perception.facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
   pstbln_learner = ProgressiveSpatioTemporalBLNLearner(temp_path='./parent_dir',
                                                        batch_size=64, epochs=400,
                                                        checkpoint_after_iter=10, val_batch_size=128,
@@ -440,7 +440,7 @@ Parameters:
 * **Optimization example for a previously trained model.**
   Inference can be run with the trained model after running self.optimize.
   ```python
-  from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
+  from opendr.perception.facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
 
   pstbln_learner = ProgressiveSpatioTemporalBLNLearner(temp_path='./parent_dir',
                                                       batch_size=64, epochs=400,

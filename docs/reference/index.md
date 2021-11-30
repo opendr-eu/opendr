@@ -26,7 +26,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - facial expression recognition:
             - [landmark_based_facial_expression_recognition](landmark-based-facial-expression-recognition.md)
         - pose estimation:
-            - [lightweight-open-pose Module](lightweight-open-pose.md)
+            - [lightweight_open_pose Module](lightweight-open-pose.md)
         - activity recognition:
             - [activity_recognition Module](activity-recognition.md)
         - action recognition:
@@ -54,9 +54,9 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - compressive learning:
             - [multilinear_compressive_learning Module](multilinear-compressive-learning.md)
         - semantic segmentation:
-            - [semantic-segmentation Module](semantic-segmentation.md)
+            - [semantic_segmentation Module](semantic-segmentation.md)
         - panoptic segmentation:
-            - [efficient_ps Module](efficient_ps.md)
+            - [efficient_ps Module](efficient-ps.md)
         - heart anomaly detection:
             - [gated_recurrent_unit Module](gated-recurrent-unit-learner.md)
             - [attention_neural_bag_of_feature_learner Module](attention-neural-bag-of-feature-learner.md)

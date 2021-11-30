@@ -385,7 +385,7 @@ Parameters:
   ```python
   import os
   import torch
-  from opendr.perception.object_tracking_2d.fair_mot import ObjectTracking2DFairMotLearner
+  from opendr.perception.object_tracking_2d import ObjectTracking2DFairMotLearner
   from opendr.perception.object_tracking_2d import (
     MotDataset,
     RawMotDatasetIterator,

@@ -379,116 +379,116 @@ Parameters:
 ### <a name="proto">Proto structure</a>
 
 Proto files can be found in [voxel_object_detection_3d/second_detector/configs](#src.opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector_configs)
-- **model**:
+- **model**:\
   Specifies the model architecture under the "second" block.
-  - **voxel_generator**:
+  - **voxel_generator**:\
     Specifies the parameters of the voxel generation.
-      - **point_cloud_range**:
+      - **point_cloud_range**:\
         Specifies the limit range of the points to be used in the [minx, miny, minz, maxx, maxy, maxz] format in meters.
-      - **voxel_size**:
+      - **voxel_size**:\
         Specifies the size of each voxel in the [x, y, z] format in meters.
-      - **max_number_of_points_per_voxel**:
+      - **max_number_of_points_per_voxel**:\
         Specifies the maximum number of points to be used in one voxel.
-  - **num_class**:
+  - **num_class**:\
     Specifies the number of classes to detect.
-  - **voxel_feature_extractor**:
+  - **voxel_feature_extractor**:\
     Specifies the name and parameters of the voxel feature extractor layer that generates voxel-wise features.
-  - **middle_feature_extractor**:
+  - **middle_feature_extractor**:\
     Specifies the name and parameters of the middle feature extractor layer that creates 2D pseudo-image.
-  - **rpn**:
+  - **rpn**:\
     Specifies the name and parameters of the main layer that uses 2D pseudo-image to generate predictions.
-  - **loss**:
+  - **loss**:\
     Specifies the loss function and its parameters.
-  - **use_sigmoid_score**:
+  - **use_sigmoid_score**:\
     Specifies if the sigmoid function should be used for score.
-  - **encode_background_as_zeros**:
+  - **encode_background_as_zeros**:\
     Specifies if the background class should be encoded as zeros or as a separate class.
-  - **encode_rad_error_by_sin**:
+  - **encode_rad_error_by_sin**:\
     Specifies if the sin function should be used for rad error.
-  - **use_direction_classifier**:
+  - **use_direction_classifier**:\
     Specifies if a separate branch should be created to classify direction of the object.
-  - **direction_loss_weight**:
+  - **direction_loss_weight**:\
     Specifies the loss weight for direction classifier.
-  - **pos_class_weight**:
+  - **pos_class_weight**:\
     Specifies the loss weight for positive classes.
-  - **neg_class_weight**:
+  - **neg_class_weight**:\
     Specifies the loss weight for negative classes.
-  - **loss_norm_type**:
+  - **loss_norm_type**:\
     Specifies the loss normalization type.
-  - **post_center_limit_range**:
+  - **post_center_limit_range**:\
     Specifies the limit range of the predicted object centers in [minx, miny, minz, maxx, maxy, maxz] format in meters.
-  - **use_rotate_nms**:
+  - **use_rotate_nms**:\
     Specifies if the rotate_nms function should be used for non-max suppression.
-  - **use_multi_class_nms**:
+  - **use_multi_class_nms**:\
     Specifies if the multi_class_nms function should be used for non-max suppression.
-  - **use_bev**:
+  - **use_bev**:\
     Specifies if the Birds Eye View (BEV) data should be used in RPN.
-  - **box_coder**:
+  - **box_coder**:\
     Specifies the box encoding strategy.
-  - **target_assigner**:
+  - **target_assigner**:\
     Specifies the target generator.
-    - **anchor_generators**:
+    - **anchor_generators**:\
       Specifies the strategy for anchor generation.
-      - **sizes**:
+      - **sizes**:\
         Specifies anchor sizes in [w, l, h] format in meters.
-      - **strides**:
+      - **strides**:\
         Specifies anchor strides in [x, y, z] format in meters.
-      - **offsets**:
+      - **offsets**:\
         Specifies anchor offsets in [x, y, z] format in meters.
-      - **rotations**:
+      - **rotations**:\
         Specifies anchor rotation range in [min, max] format in radiances.
-- **train_input_reader**:
+- **train_input_reader**:\
   Specifies tha data generation process for training.
-  - **record_file_path**:
+  - **record_file_path**:\
     Specifies the relative file path for kitti_train.tfrecord generated during data preprocessing.
-  - **class_names**:
+  - **class_names**:\
     Specifies the class names that should be used in the training of a current model.
-  - **max_num_epochs**:
+  - **max_num_epochs**:\
     Specifies the max number of epochs for training.
-  - **batch_size**:
+  - **batch_size**:\
     Specifies the batch size.
-  - **prefetch_size**:
+  - **prefetch_size**:\
     Specifies the number of prefetched data.
-  - **max_number_of_voxels**:
+  - **max_number_of_voxels**:\
     Specifies the max number of voxels that can be generated for one point cloud.
-  - **shuffle_points**:
+  - **shuffle_points**:\
     Specifies if the points should be shuffled.
-  - **num_workers**:
+  - **num_workers**:\
     Specifies the number of workers for the data loader.
-  - **groundtruth_localization_noise_std**:
+  - **groundtruth_localization_noise_std**:\
     Specifies the noise std for ground truth location.
-  - **groundtruth_rotation_uniform_noise**:
+  - **groundtruth_rotation_uniform_noise**:\
     Specifies the noise range for ground truth rotation.
-  - **global_scaling_uniform_noise**:
+  - **global_scaling_uniform_noise**:\
     Specifies the noise range for ground truth scale.
-  - **groundtruth_points_drop_percentage**:
+  - **groundtruth_points_drop_percentage**:\
     Specifies the percentage of points that can be discarded.
-  - **database_sampler**:
+  - **database_sampler**:\
     Specifies the sapling strategy from the dataset
 
-- **train_config**:
+- **train_config**:\
   Specifies the training procedure parameters.
-  - **steps**:
+  - **steps**:\
     Specifies the number of steps to train the model.
-  - **steps_per_eval**:
+  - **steps_per_eval**:\
     Specifies the number of steps for evaluation.
-- **eval_input_reader**:
+- **eval_input_reader**:\
   Specifies tha data generation process for evaluation.
-  - **record_file_path**:
+  - **record_file_path**:\
     Specifies the relative file path for kitti_val.tfrecord generated during data preprocessing.
-  - **class_names**:
+  - **class_names**:\
     Specifies the class names that should be used in the training of a current model.
-  - **max_num_epochs**:
+  - **max_num_epochs**:\
     Specifies the max number of epochs for training.
-  - **batch_size**:
+  - **batch_size**:\
     Specifies the batch size.
-  - **prefetch_size**:
+  - **prefetch_size**:\
     Specifies the number of prefetched data.
-  - **max_number_of_voxels**:
+  - **max_number_of_voxels**:\
     Specifies the max number of voxels that can be generated for one point cloud.
-  - **shuffle_points**:
+  - **shuffle_points**:\
     Specifies if the points should be shuffled.
-  - **num_workers**:
+  - **num_workers**:\
     Specifies the number of workers for the data loader.
 
 
