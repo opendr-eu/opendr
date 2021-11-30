@@ -135,3 +135,12 @@ rosrun perception semantic_segmentation_bisenet.py IMAGE_TOPIC
 Additionally, the following optional arguments are available:
 - `-h, --help`: show a help message and exit
 - `--heamap_topic HEATMAP_TOPIC`: publish the heatmap on `HEATMAP_TOPIC`
+
+## RGBD Hand Gesture Recognition ROS Node
+
+A ROS node for performing hand gesture recognition using MobileNetv2 model trained on HANDS dataset. The node has been tested with Kinectv2 for depth data acquisition with the following drivers: https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2. Assuming that the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception rgbd_hand_gesture_recognition.py
+```
+The predictied classes are published to the topic `/opendr/gestures`.
+
