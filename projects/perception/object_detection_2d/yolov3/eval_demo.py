@@ -15,7 +15,7 @@
 import argparse
 
 from opendr.engine.datasets import ExternalDataset
-from opendr.perception.object_detection_2d.yolov3.yolov3_learner import YOLOv3DetectorLearner
+from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
 
 
 if __name__ == '__main__':

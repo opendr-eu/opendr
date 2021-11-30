@@ -16,8 +16,8 @@ import argparse
 
 import cv2
 
-from opendr.perception.object_detection_2d.centernet.centernet_learner import CenterNetDetectorLearner
-from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
+from opendr.perception.object_detection_2d import CenterNetDetectorLearner
+from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
 if __name__ == '__main__':

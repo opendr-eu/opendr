@@ -15,7 +15,7 @@
 import argparse
 
 from opendr.engine.datasets import ExternalDataset
-from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
+from opendr.perception.object_detection_2d import SingleShotDetectorLearner
 
 
 if __name__ == '__main__':

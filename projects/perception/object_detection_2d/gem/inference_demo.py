@@ -15,7 +15,7 @@
 
 import argparse
 
-from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
+from opendr.perception.object_detection_2d import GemLearner
 from opendr.perception.object_detection_2d.gem.algorithm.util.draw import draw
 import cv2
 

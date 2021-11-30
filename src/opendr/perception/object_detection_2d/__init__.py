@@ -9,5 +9,8 @@ from opendr.perception.object_detection_2d.datasets.wider_person import WiderPer
 from opendr.perception.object_detection_2d.datasets.wider_face import WiderFaceDataset
 from opendr.perception.object_detection_2d.datasets import transforms
 
+from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
+
 __all__ = ['CenterNetDetectorLearner', 'DetrLearner', 'GemLearner', 'RetinaFaceLearner',
-           'SingleShotDetectorLearner', 'YOLOv3DetectorLearner', 'WiderPersonDataset', 'WiderFaceDataset', 'transforms']
+           'SingleShotDetectorLearner', 'YOLOv3DetectorLearner', 'WiderPersonDataset', 'WiderFaceDataset',
+           'transforms', 'draw_bounding_boxes']

@@ -18,7 +18,7 @@ import argparse
 import numpy as np
 import urllib
 import cv2
-from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
+from opendr.perception.object_detection_2d import DetrLearner
 from opendr.perception.object_detection_2d.detr.algorithm.util.draw import draw
 
 
