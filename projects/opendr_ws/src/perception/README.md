@@ -151,3 +151,12 @@ A ROS node for performing heart anomaly (atrial fibrillation) detection from ecg
 rosrun perception heart_anomaly_detection.py ECG_TOPIC MODEL
 ```
 with `ECG_TOPIC` specifying the ROS topic to which the node will subscribe, and `MODEL` set to either *gru* or *anbof*. The predictied classes are published to the topic `/opendr/heartanomaly`.
+
+## Human Action Recognition ROS Node
+
+A ROS node for performing Human Activity Recognition using either CoX3D or X3D models pretrained on Kinetics400.
+Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception video_activity_recognition.py
+```
+The predictied class id and confidence is published under the topic name `/opendr/human_activity_recognition`, and the human-readable class name under `/opendr/human_activity_recognition_description`.
