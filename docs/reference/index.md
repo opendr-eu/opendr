@@ -30,7 +30,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - activity recognition:
             - [activity_recognition Module](activity-recognition.md)
         - action recognition:
-            - [skeleton_based_action_recognition](skeleton_based_action_recognition.md)
+            - [skeleton_based_action_recognition](skeleton-based-action-recognition.md)
         - speech recognition:
             - [matchboxnet Module](matchboxnet.md)
             - [edgespeechnets Module](edgespeechnets.md)
@@ -50,21 +50,21 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - object tracking 3d:
             - [ab3dmot Module](object-tracking-3d-ab3dmot.md)
         - multimodal human centric:
-            - [rgbd_hand_gesture_learner Module](rgbd_hand_gesture_learner.md)
+            - [rgbd_hand_gesture_learner Module](rgbd-hand-gesture-learner.md)
         - compressive learning:
-            - [multilinear_compressive_learning Module](multilinear_compressive_learning.md)
+            - [multilinear_compressive_learning Module](multilinear-compressive-learning.md)
         - semantic segmentation:
             - [semantic-segmentation Module](semantic-segmentation.md)
         - panoptic segmentation:
             - [efficient_ps Module](efficient_ps.md)
         - heart anomaly detection:
             - [gated_recurrent_unit Module](gated-recurrent-unit-learner.md)
-            - [attention_neural_bag_of_feature_learner Module](attention_neural_bag_of_feature_learner.md)
+            - [attention_neural_bag_of_feature_learner Module](attention-neural-bag-of-feature-learner.md)
 
     - `control` Module
         - [mobile_manipulation Module](mobile-manipulation.md)
     - `simulation` Module
-        - [human_model_generation Module](human_model_generation.md)
+        - [human_model_generation Module](human-model-generation.md)
 - [ROSBridge Package](rosbridge.md)
 - [C Inference API](c-api.md)
     - [data.h](c-data-h.md)
