@@ -79,8 +79,7 @@ class HeartAnomalyNode:
         :type data: std_msgs.msg.Float32MultiArray
         """
         # Convert Float32MultiArray to OpenDR Timeseries
-        data = np.reshape(msg_data.data, (self.channels, self.series_length))
-        data = Timeseries(data)
+        data = self.bridge.from_rosarray_to_timeseries(msg_data, self.channels, self.series_length)
 
         # Run ecg classification
         class_pred = self.learner.infer(data)

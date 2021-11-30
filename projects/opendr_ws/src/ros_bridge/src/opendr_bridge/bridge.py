@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opendr.engine.data import Image
+from opendr.engine.data import Image, Timeseries
 from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
 import cv2
@@ -408,3 +408,18 @@ class ROSBridge:
         if source_data is not None:
             classification.source_img = source_data
         return classification
+
+    def from_rosarray_to_timeseries(self, ros_array, dim1, dim2):
+        '''
+        Converts ROS array into OpenDR Timeseries object
+        : param ros_array: data to be converted
+        : type ros_array: std_msgs.msg.Float32MultiArray
+        : param dim1: 1st dimension
+        :type dim1: int
+        :param dim2: 2nd dimension
+        :type dim2: int
+        :rtype: engine.data.Timeseries
+        '''
+        data = np.reshape(ros_array.data, (dim1, dim2))
+        data = Timeseries(data)
+        return data
