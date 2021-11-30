@@ -396,12 +396,14 @@ def test_pp_siamese_load_fit():
 def test_pp_siamese_eval():
     print("Eval", name, "start", file=sys.stderr)
 
+    import imageio
+
     object_id = 0
 
     learner = VoxelBofObjectTracking3DLearner(
         model_config_path=config, device=DEVICE, lr=0.001, checkpoint_after_iter=2000,
     )
-    # learner.load(model_path)
+    # learner.load(model_path, backbone=True, verbose=True)
     learner.load("./temp/c-0/checkpoints", backbone=False, verbose=True)
 
     point_cloud_with_calibration, labels = dataset_tracking[0]
@@ -415,8 +417,10 @@ def test_pp_siamese_eval():
     # count = len(dataset_tracking)
     count = 50
 
+    images = []
+
     for i in range(1, count):
-        point_cloud_with_calibration, labels = dataset_tracking[0] # i iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+        point_cloud_with_calibration, labels = dataset_tracking[i] # i iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
         selected_labels = TrackingAnnotation3DList([label for label in labels if label.id == object_id])
         calib = point_cloud_with_calibration.calib
         labels_lidar = label_to_AABB(tracking_boxes_to_lidar(selected_labels, calib))
@@ -426,9 +430,14 @@ def test_pp_siamese_eval():
 
         all_labels = TrackingAnnotation3DList([result[0], label_lidar])
         image = draw_point_cloud_bev(point_cloud_with_calibration.data, all_labels)
-        PilImage.fromarray(image).save("./plots/eval_aabb_" + str(i) + ".png")
+        pil_image = PilImage.fromarray(image)
+        pil_image.save("./plots/eval_aabb_" + str(i) + ".png")
+
+        images.append(pil_image)
 
         print("[", i, "/", count, "]", result)
+
+    imageio.mimsave('./plots/video/eval_aabb_trained.gif', images)
 
 
 test_pp_siamese_eval()

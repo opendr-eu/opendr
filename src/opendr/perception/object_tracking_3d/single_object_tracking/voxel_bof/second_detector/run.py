@@ -191,8 +191,8 @@ def get_sub_image(image, center, size):
     )
     image_size = image.shape[-2:]
 
-    pos_min = (center - size // 2).astype(np.int32)
-    pos_max = (center + (size + 1) // 2 - 1).astype(np.int32)
+    pos_min = np.round(center - size // 2).astype(np.int32)
+    pos_max = np.round(center + (size + 1) // 2 - 1).astype(np.int32)
 
     local_min = np.array([0, 0])
     local_max = size - 1

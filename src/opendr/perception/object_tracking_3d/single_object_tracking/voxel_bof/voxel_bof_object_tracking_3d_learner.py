@@ -36,6 +36,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     create_pseudo_image_features,
     create_target_search_regions,
     displacement_score_to_image_coordinates,
+    draw_pseudo_image,
     evaluate,
     example_convert_to_torch,
     feature_to_image_coordinates,
@@ -63,7 +64,11 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.preprocess import (
     merge_second_batch,
 )
-from opendr.engine.target import BoundingBox3DList, TrackingAnnotation3D, TrackingAnnotation3DList
+from opendr.engine.target import (
+    BoundingBox3DList,
+    TrackingAnnotation3D,
+    TrackingAnnotation3DList,
+)
 from opendr.engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 import warnings
@@ -274,9 +279,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         ) as outfile:
             json.dump(model_metadata, outfile)
 
-    def load(
-        self, path, verbose=False, backbone=False
-    ):
+    def load(self, path, verbose=False, backbone=False):
         """
         Loads the model from inside the path provided, based on the metadata .json file included.
         :param path: path of the directory the model was saved
@@ -301,7 +304,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 target,
                 os.path.join(path, metadata["model_paths"][0]),
                 use_original,
-                state_dict_name
+                state_dict_name,
             )
             if verbose:
                 print("Loaded Pytorch model.")
@@ -524,90 +527,114 @@ class VoxelBofObjectTracking3DLearner(Learner):
         pseudo_images = self.create_pseudo_image(point_cloud)
         pseudo_image = pseudo_images[0]
 
-        grayscale_pi = (pseudo_image.mean(axis=0) * 255 / pseudo_image.mean(axis=0).max()).detach().cpu().numpy().astype(np.uint8)
+        grayscale_pi = (
+            (pseudo_image.mean(axis=0) * 255 / pseudo_image.mean(axis=0).max())
+            .detach()
+            .cpu()
+            .numpy()
+            .astype(np.uint8)
+        )
         rgb_pi = np.stack([grayscale_pi] * 3, axis=-1)
 
         search_features, search_image = create_pseudo_image_features(
             pseudo_image, self.search_region, net
         )
 
-        pos_min = (self.search_region[0] - self.search_region[1] // 2).astype(np.int32)
-        pos_max = (self.search_region[0] + (self.search_region[1] + 1) // 2 - 1).astype(np.int32)
+        pos_min = (self.search_region[0] - self.search_region[1] // 2).astype(
+            np.int32
+        )
+        pos_max = (
+            self.search_region[0] + (self.search_region[1] + 1) // 2 - 1
+        ).astype(np.int32)
 
-        rgb_pi[pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1, :] = (255, 0, 0)
-        rgb_pi[pos_min[1] : pos_max[1] + 1, pos_min[0] : pos_max[0] + 1, :] = (0, 255, 0)
-
-        PilImage.fromarray(
-            rgb_pi
-        ).save(
-            "./plots/pseudo_image" + str(frame) + ".png"
+        rgb_pi[pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1, :] = (
+            255,
+            0,
+            0,
+        )
+        rgb_pi[pos_min[1] : pos_max[1] + 1, pos_min[0] : pos_max[0] + 1, :] = (
+            0,
+            255,
+            0,
         )
 
-        PilImage.fromarray(
-            grayscale_pi
-        ).convert('RGB').save(
-            "./plots/pseudo_image" + str(frame) + "_or.png"
+        PilImage.fromarray(rgb_pi).save(
+            "./plots/" + str(frame) + "pi.png"
         )
+
+        PilImage.fromarray(grayscale_pi).convert("RGB").save(
+            "./plots/" + str(frame) + "pi_or.png"
+        )
+
+        draw_pseudo_image(search_image, "./plots/" + str(frame) + "search_.png")
+        draw_pseudo_image(search_features[0], "./plots/" + str(frame) + "search_feat.png")
 
         scores = self.model.process_features(
             search_features, self.target_features
         )
-
-        draw_scores = scores.detach().cpu().numpy().reshape(scores.shape[-2:]) * 10
-        draw_scores[draw_scores < 0] = 0
-
-        PilImage.fromarray(
-            (draw_scores).astype(np.uint8)
-        ).convert('RGB').save(
-            "./plots/scores_" + str(frame) + ".png"
+        scores2 = torch.nn.functional.interpolate(
+            scores, scale_factor=self.score_upscale, mode="bicubic"
         )
-
-        scores2 = torch.nn.functional.interpolate(scores, scale_factor=self.score_upscale, mode='bicubic')
-        draw_scores2 = scores2.detach().cpu().numpy().reshape(scores2.shape[-2:]) * 10
-        draw_scores2[draw_scores2 < 0] = 0
-
-        PilImage.fromarray(
-            (draw_scores2).astype(np.uint8)
-        ).convert('RGB').save(
-            "./plots/scores2_" + str(frame) + ".png"
-        )
-
         penalty = hann_window(scores2.shape[-2:], device=scores2.device)
-        scores2_scaled = (1 - self.window_influence) * scores2 + self.window_influence * penalty
+        scores2_scaled = (
+            1 - self.window_influence
+        ) * scores2 + self.window_influence * penalty
 
-        draw_scores2_scaled = scores2_scaled.detach().cpu().numpy().reshape(scores2_scaled.shape[-2:]) * 10
+        draw_scores2_scaled = (
+            scores2_scaled.detach()
+            .cpu()
+            .numpy()
+            .reshape(scores2_scaled.shape[-2:])
+            * 10
+        )
         draw_scores2_scaled[draw_scores2_scaled < 0] = 0
 
-        PilImage.fromarray(
-            (draw_scores2_scaled).astype(np.uint8)
-        ).convert('RGB').save(
-            "./plots/scores2_scaled_" + str(frame) + ".png"
-        )
+        PilImage.fromarray((draw_scores2_scaled).astype(np.uint8)).convert(
+            "RGB"
+        ).save("./plots/" + str(frame) + "scores2_scaled_.png")
 
         # center_image = score_to_image_coordinates(scores_scaled, self.target_region[1], self.search_region)
-        delta_image = displacement_score_to_image_coordinates(scores2_scaled, self.score_upscale)
+        delta_image = displacement_score_to_image_coordinates(
+            scores2_scaled, self.score_upscale
+        )
+
+        delta_image = delta_image[[1, 0]]
 
         center_image = self.search_region[0] + delta_image
 
         new_target = [center_image, self.target_region[1]]
-        new_search = [center_image, new_target[1] * 2 + (new_target[1] < 20) * 30]
+        new_search = [
+            center_image,
+            new_target[1] * 2 + (new_target[1] < 20) * 30,
+        ]
 
         self.search_region = new_search
 
-        location_lidar, size_lidar = image_to_lidar_coordinates(new_target[0], new_target[1], net.voxel_size, net.bv_range)
+        location_lidar, size_lidar = image_to_lidar_coordinates(
+            new_target[0], new_target[1], net.voxel_size, net.bv_range
+        )
 
-        result = TrackingAnnotation3DList([
-            TrackingAnnotation3D(
-                self.init_label.name,
-                0, 0, None, None,
-                location=np.array([*location_lidar, self.init_label.location[-1]]),
-                dimensions=np.array([*size_lidar, self.init_label.dimensions[-1]]),
-                rotation_y=0,
-                id=self.init_label.id if id is None else id,
-                score=1,
-                frame=frame,
-            )
-        ])
+        result = TrackingAnnotation3DList(
+            [
+                TrackingAnnotation3D(
+                    self.init_label.name,
+                    0,
+                    0,
+                    None,
+                    None,
+                    location=np.array(
+                        [*location_lidar, self.init_label.location[-1]]
+                    ),
+                    dimensions=np.array(
+                        [*size_lidar, self.init_label.dimensions[-1]]
+                    ),
+                    rotation_y=0,
+                    id=self.init_label.id if id is None else id,
+                    score=1,
+                    frame=frame,
+                )
+            ]
+        )
 
         return result
 
@@ -783,7 +810,13 @@ class VoxelBofObjectTracking3DLearner(Learner):
         # # Print a human readable representation of the graph
         # onnx.helper.printable_graph(self.model.graph)
 
-    def __load_from_pth(self, model, path, use_original_dict=False, state_dict_name="state_dict"):
+    def __load_from_pth(
+        self,
+        model,
+        path,
+        use_original_dict=False,
+        state_dict_name="state_dict",
+    ):
         all_params = torch.load(path, map_location=self.device)
         model.load_state_dict(
             all_params if use_original_dict else all_params[state_dict_name]
