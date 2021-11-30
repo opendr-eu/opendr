@@ -16,8 +16,6 @@
 
 import rospy
 import torch
-import numpy as np
-from opendr.engine.data import Timeseries
 from vision_msgs.msg import Classification2D
 import argparse
 from std_msgs.msg import Float32MultiArray
@@ -56,7 +54,7 @@ class HeartAnomalyNode:
         # Initialize the gesture recognition
         if model == 'gru':
             self.learner = GatedRecurrentUnitLearner(in_channels=self.channels, series_length=self.series_length,
-                                                     n_class=4, device=device, attention_type='temporal')
+                                                     n_class=4, device=device)
         elif model == 'anbof':
             self.learner = AttentionNeuralBagOfFeatureLearner(in_channels=self.channels, series_length=self.series_length,
                                                               n_class=4, device=device, attention_type='temporal')
