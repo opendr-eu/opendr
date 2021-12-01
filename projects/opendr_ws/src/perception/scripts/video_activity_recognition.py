@@ -25,9 +25,9 @@ from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 from opendr.engine.data import Video, Image
-from opendr.perception.activity_recognition.datasets.kinetics import CLASSES as KINETICS400_CLASSES
-from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
-from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
+from opendr.perception.activity_recognition import CLASSES as KINETICS400_CLASSES
+from opendr.perception.activity_recognition import CoX3DLearner
+from opendr.perception.activity_recognition import X3DLearner
 
 
 class HumanActivityRecognitionNode:

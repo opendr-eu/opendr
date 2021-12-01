@@ -20,7 +20,7 @@ from vision_msgs.msg import ObjectHypothesis
 from std_msgs.msg import String
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.perception.face_recognition import FaceRecognitionLearner
 
 
 class FaceRecognitionNode:

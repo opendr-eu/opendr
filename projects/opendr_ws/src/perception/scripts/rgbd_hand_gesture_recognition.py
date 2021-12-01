@@ -21,8 +21,7 @@ import numpy as np
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 import os
-from opendr.perception.multimodal_human_centric.rgbd_hand_gesture_learner.rgbd_hand_gesture_learner import \
-    RgbdHandGestureLearner
+from opendr.perception.multimodal_human_centric import RgbdHandGestureLearner
 from opendr.engine.data import Image
 from vision_msgs.msg import Classification2D
 import message_filters
