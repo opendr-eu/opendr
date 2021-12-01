@@ -19,8 +19,7 @@ import numpy as np
 import random
 
 # OpenDR imports
-from opendr.perception.heart_anomaly_detection.attention_neural_bag_of_feature.\
-    attention_neural_bag_of_feature_learner import AttentionNeuralBagOfFeatureLearner
+from opendr.perception.heart_anomaly_detection import AttentionNeuralBagOfFeatureLearner
 from opendr.engine.datasets import DatasetIterator
 from opendr.engine.data import Timeseries
 from opendr.engine.target import Category

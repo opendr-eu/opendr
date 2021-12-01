@@ -26,12 +26,8 @@ from opendr.engine.target import (
 )
 
 # OpenDR imports
-from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
-    ObjectTracking2DFairMotLearner,
-)
-from opendr.perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
-    ObjectTracking2DDeepSortLearner,
-)
+from opendr.perception.object_tracking_2d import ObjectTracking2DFairMotLearner
+from opendr.perception.object_tracking_2d import ObjectTracking2DDeepSortLearner
 
 TEXT_COLOR = (255, 0, 255)  # B G R
 

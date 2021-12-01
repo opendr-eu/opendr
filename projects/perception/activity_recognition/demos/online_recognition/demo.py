@@ -27,8 +27,8 @@ from pathlib import Path
 import pandas as pd
 
 # OpenDR imports
-from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
-from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
+from opendr.perception.activity_recognition import X3DLearner
+from opendr.perception.activity_recognition import CoX3DLearner
 from opendr.engine.data import Video, Image
 
 TEXT_COLOR = (0, 0, 255)  # B G R

@@ -18,8 +18,8 @@ import cv2
 import shutil
 import os
 import numpy as np
-from opendr.perception.object_detection_2d.retinaface.retinaface_learner import RetinaFaceLearner
-from opendr.perception.object_detection_2d.datasets.wider_face import WiderFaceDataset
+from opendr.perception.object_detection_2d import RetinaFaceLearner
+from opendr.perception.object_detection_2d import WiderFaceDataset
 
 
 def rmfile(path):

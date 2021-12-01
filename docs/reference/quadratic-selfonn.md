@@ -34,37 +34,37 @@ QuadraticSelfOnnLearner(self,
 
 Constructor parameters:
 
-- **lr**: *float, default=0.01*  
+- **lr**: *float, default=0.01*\
   Specifies the learning rate to be used during training.
-- **iters**: *int, default=30*  
+- **iters**: *int, default=30*\
   Specifies the number of epochs the training should run for.
-- **batch_size**: *int, default=64*  
-  Specifies number of images to be bundled up in a batch during training.  
+- **batch_size**: *int, default=64*\
+  Specifies number of images to be bundled up in a batch during training.
   This heavily affects memory usage, adjust according to your system.
   Should always be equal to or higher than the number of used CUDA devices.
-- **optimizer**: *{'sgd', 'adam'}, default='sgd'*  
+- **optimizer**: *{'sgd', 'adam'}, default='sgd'*\
   Specifies the optimizer to be used. Currently, only SGD and Adam are supported.
-- **checkpoint_after_iter**: *int, default=0*  
+- **checkpoint_after_iter**: *int, default=0*\
   Specifies per how many training iterations a checkpoint should be saved. If set to 0 no checkpoints will be saved.
   Saves the models to the `temp_path` as "QuadraticSelfOnn-\<epoch\>.pth"
-- **checkpoint_load_iter**: *int, default=0*   
+- **checkpoint_load_iter**: *int, default=0*\
   Specifies a checkpoint to load based on the number of iterations before fitting.
   If set to 0 no checkpoint will be loaded.
-- **temp_path**: *str, default='temp'*  
+- **temp_path**: *str, default='temp'*\
   Specifies the path to the directory where the checkpoints will be saved.
-- **device**: *{'cpu', 'cuda'}, default='cuda'*  
+- **device**: *{'cpu', 'cuda'}, default='cuda'*\
   Specifies the device to be used.
-- **expansion_order**: *int, default='3'*  
+- **expansion_order**: *int, default='3'*\
   Specifies the Taylor series expansion order for the network.
   See the [paper](#qselfonn-arxiv) for further information and visualization.
-- **output_classes_n**: *int, default=20*  
+- **output_classes_n**: *int, default=20*\
   Specifies the number of output classes the samples can be categorized to.
-- **momentum**: *float, default=0.9*  
+- **momentum**: *float, default=0.9*\
   Specifies the momentum for the SGD optimizer if it is selected.
-- **preprocess_to_mfcc**: *bool, default=True*  
+- **preprocess_to_mfcc**: *bool, default=True*\
   Specifies whether the learner should transform the input to a MFCC. If the input is already converted to a 2D signal, turn this off.
   Expects a 1D signal if set to true.
-- **sample_rate**: *int, default=16000*  
+- **sample_rate**: *int, default=16000*\
   Specifies the assumed sampling rate for the input signals used in the MFCC conversion.
   Does nothing if *preprocess_to_mfcc* is set to false.
 
@@ -84,16 +84,16 @@ Returns a dictionary containing stats regarding the last evaluation ran.
 
 Parameters:
 
-- **dataset**: *DatasetIterator*  
+- **dataset**: *DatasetIterator*\
   Object that holds the training dataset. Will be used by a PyTorch `DataLoader`.
   Can be anything that can be passed to `DataLoader` as a dataset, but a safe way is to inherit it from `DatasetIterator`.
-- **val_dataset**: *DatasetIterator, default=None*  
+- **val_dataset**: *DatasetIterator, default=None*\
   Object that holds the validation dataset. Same rules apply as above.
-- **logging_path**: *str, default=''*  
+- **logging_path**: *str, default=''*\
   Path to save log files. If set to None or '', logging is disabled.
-- **silent**: *bool, default=True*  
+- **silent**: *bool, default=True*\
   If set to True, disables all printing of training progress reports and other information to STDOUT.
-- **verbose**: *bool, default=True*  
+- **verbose**: *bool, default=True*\
   If set to True, enables additional log messages regarding model training.
 
 #### `QuadraticSelfOnnLearner.eval`
@@ -103,11 +103,11 @@ QuadraticSelfOnnLearner.eval(self, dataset)
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
-Returns a dictionary containing stats regarding evaluation.  
+Returns a dictionary containing stats regarding evaluation.
 
 Parameters:
 
-- **dataset**: *DatasetIterator*  
+- **dataset**: *DatasetIterator*\
   Object that holds the training dataset.
   Will be used by a PyTorch `DataLoader`.
   Can be anything that can be passed to Dataloader as a dataset, but a safe way is to inherit it from `DatasetIterator`.
@@ -122,7 +122,7 @@ This method is used to classify signals. Can be used to infer a single utterance
 
 Parameters:
 
-- **batch**: *Timeseries* or *List*[*Timeseries*]   
+- **batch**: *Timeseries* or *List*[*Timeseries*]\
   Either a `Timeseries` or a list of `Timeseries`.
 
 #### `QuadraticSelfOnnLearner.save`
@@ -135,7 +135,7 @@ This method saves the model in the directory provided by `path`.
 
 Parameters:
 
-- **path**: *str*  
+- **path**: *str*\
   Path to the directory where the model should be saved.
   Does not need to exist before the function call.
 
@@ -150,7 +150,7 @@ In practice the same path as provided to `save` beforehand.
 
 Parameters:
 
-- **path**: *str*  
+- **path**: *str*\
   Path to the model directory to be loaded.
 
 #### `QuadraticSelfOnnLearner.download_pretrained`
@@ -165,7 +165,7 @@ A new directory will be created to the directory specified by path called "Quadr
 
 Parameters:
 
-- **path**: *str, default="."*   
+- **path**: *str, default="."*
   Path to the parent directory where the model should be downloaded.
 
 #### Examples
@@ -176,12 +176,12 @@ import numpy as np
 import os
 
 from opendr.engine.datasets import DatasetIterator
-from opendr.perception.speech_recognition.quadraticselfonn.quadraticselfonn_learner import QuadraticSelfOnnLearner
+from opendr.perception.speech_recognition import QuadraticSelfOnnLearner
 
 class RandomDataset(DatasetIterator):
     def __init__(self):
         super().__init__()
-        
+
     def __len__(self):
         return 64
 
@@ -205,7 +205,7 @@ import numpy as np
 import os
 
 from opendr.engine.data import Timeseries
-from opendr.perception.speech_recognition.quadraticselfonn.quadraticselfonn_learner import QuadraticSelfOnnLearner
+from opendr.perception.speech_recognition import QuadraticSelfOnnLearner
 
 learner = QuadraticSelfOnnLearner(output_classes_n=10)
 learner.load(os.path.join(".", "example", "directory", "path", "model"))
@@ -223,4 +223,4 @@ print(result)
 <a name="qselfonn-arxiv" href="https://arxiv.org/abs/2011.11436">[1]</a>
 Speech Command Recognition in Computationally Constrained Environments with a Quadratic Self-organized Operational
 Layer,
-[arXiv](https://arxiv.org/abs/2011.11436).  
+[arXiv](https://arxiv.org/abs/2011.11436).

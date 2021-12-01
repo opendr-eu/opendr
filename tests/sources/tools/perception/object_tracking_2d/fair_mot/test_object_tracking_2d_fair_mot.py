@@ -17,14 +17,12 @@ import unittest
 import shutil
 import os
 import torch
-from opendr.perception.object_tracking_2d.datasets.mot_dataset import (
+from opendr.perception.object_tracking_2d import (
     MotDataset,
     MotDatasetIterator,
     RawMotDatasetIterator,
 )
-from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
-    ObjectTracking2DFairMotLearner,
-)
+from opendr.perception.object_tracking_2d import ObjectTracking2DFairMotLearner
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 

@@ -23,7 +23,7 @@ import numpy as np
 import torch as t
 
 from opendr.engine.constants import OPENDR_SERVER_URL
-from opendr.perception.speech_recognition.matchboxnet.matchboxnet_learner import MatchboxNetLearner
+from opendr.perception.speech_recognition import MatchboxNetLearner
 from opendr.engine.data import Timeseries
 from opendr.engine.datasets import DatasetIterator
 from opendr.engine.target import Category

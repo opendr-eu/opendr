@@ -14,7 +14,7 @@
 
 import cv2
 import time
-from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.perception.face_recognition import FaceRecognitionLearner
 import argparse
 from os.path import join
 from tqdm import tqdm
