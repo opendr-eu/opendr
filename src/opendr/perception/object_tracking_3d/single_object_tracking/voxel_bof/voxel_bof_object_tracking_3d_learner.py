@@ -33,7 +33,9 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
     compute_lidar_kitti_output,
+    create_multi_scale_targets,
     create_pseudo_image_features,
+    create_scaled_scores,
     create_target_search_regions,
     displacement_score_to_image_coordinates,
     draw_pseudo_image,
@@ -43,6 +45,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     hann_window,
     image_to_lidar_coordinates,
     score_to_image_coordinates,
+    select_best_scores_and_target,
     train,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.builder import (
@@ -116,6 +119,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         },
         window_influence=0.25,
         score_upscale=10,
+        scale_penalty=0.98,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -144,6 +148,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         self.window_influence = window_influence
         self.score_upscale = score_upscale
+        self.scale_penalty = scale_penalty
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -527,88 +532,73 @@ class VoxelBofObjectTracking3DLearner(Learner):
         pseudo_images = self.create_pseudo_image(point_cloud)
         pseudo_image = pseudo_images[0]
 
-        grayscale_pi = (
-            (pseudo_image.mean(axis=0) * 255 / pseudo_image.mean(axis=0).max())
-            .detach()
-            .cpu()
-            .numpy()
-            .astype(np.uint8)
-        )
-        rgb_pi = np.stack([grayscale_pi] * 3, axis=-1)
-
         search_features, search_image = create_pseudo_image_features(
             pseudo_image, self.search_region, net
         )
 
-        pos_min = (self.search_region[0] - self.search_region[1] // 2).astype(
-            np.int32
-        )
-        pos_max = (
-            self.search_region[0] + (self.search_region[1] + 1) // 2 - 1
-        ).astype(np.int32)
+        multi_scale_targets_and_penalties = create_multi_scale_targets(self.last_target, self.scale_penalty)
 
-        rgb_pi[pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1, :] = (
-            255,
-            0,
-            0,
-        )
-        rgb_pi[pos_min[1] : pos_max[1] + 1, pos_min[0] : pos_max[0] + 1, :] = (
-            0,
-            255,
-            0,
-        )
+        multi_scale_features_and_targets_and_penalties = []
 
-        PilImage.fromarray(rgb_pi).save(
-            "./plots/" + str(frame) + "pi.png"
-        )
+        for target, penalty in multi_scale_targets_and_penalties:
+            features, _ = create_pseudo_image_features(
+                pseudo_image, target, net
+            )
 
-        PilImage.fromarray(grayscale_pi).convert("RGB").save(
-            "./plots/" + str(frame) + "pi_or.png"
-        )
+            multi_scale_features_and_targets_and_penalties.append([features, target, penalty])
+
+        multi_scale_features_and_targets_and_penalties.append([
+            self.init_target_features, self.init_target, 1
+        ])
+
+        multi_scale_scores_targets_penalties_and_features = []
+
+        for features, target, penalty in multi_scale_features_and_targets_and_penalties:
+            scores = create_scaled_scores(features, search_features, self.model, self.score_upscale, self.window_influence)
+            multi_scale_scores_targets_penalties_and_features.append([scores, target, penalty, features])
 
         draw_pseudo_image(search_image, "./plots/" + str(frame) + "search_.png")
         draw_pseudo_image(search_features[0], "./plots/" + str(frame) + "search_feat.png")
 
-        scores = self.model.process_features(
-            search_features, self.target_features
+        top_scores, top_target, top_features = select_best_scores_and_target(
+            multi_scale_scores_targets_penalties_and_features
         )
-        scores2 = torch.nn.functional.interpolate(
-            scores, scale_factor=self.score_upscale, mode="bicubic"
-        )
-        penalty = hann_window(scores2.shape[-2:], device=scores2.device)
-        scores2_scaled = (
-            1 - self.window_influence
-        ) * scores2 + self.window_influence * penalty
 
-        draw_scores2_scaled = (
-            scores2_scaled.detach()
-            .cpu()
-            .numpy()
-            .reshape(scores2_scaled.shape[-2:])
-            * 10
+        delta_image = displacement_score_to_image_coordinates(
+            top_scores, self.score_upscale
         )
-        draw_scores2_scaled[draw_scores2_scaled < 0] = 0
 
-        PilImage.fromarray((draw_scores2_scaled).astype(np.uint8)).convert(
-            "RGB"
-        ).save("./plots/" + str(frame) + "scores2_scaled_.png")
+        # draw_scores2_scaled = (
+        #     scores2_scaled.detach()
+        #     .cpu()
+        #     .numpy()
+        #     .reshape(scores2_scaled.shape[-2:])
+        #     * 10
+        # )
+        # draw_scores2_scaled[draw_scores2_scaled < 0] = 0
+
+        # PilImage.fromarray((draw_scores2_scaled).astype(np.uint8)).convert(
+        #     "RGB"
+        # ).save("./plots/" + str(frame) + "scores2_scaled_.png")
 
         # center_image = score_to_image_coordinates(scores_scaled, self.target_region[1], self.search_region)
-        delta_image = displacement_score_to_image_coordinates(
-            scores2_scaled, self.score_upscale
-        )
 
         delta_image = delta_image[[1, 0]]
-
         center_image = self.search_region[0] + delta_image
 
-        new_target = [center_image, self.target_region[1]]
+        if not np.all(top_target[1] == self.init_target[1]):
+            self.init_target = top_target
+            self.init_target_features = top_features
+            print("New init", torch.max(top_scores).detach().cpu(), self.init_target)
+
+        new_target = [center_image, self.init_target[1]]
         new_search = [
             center_image,
             new_target[1] * 2 + (new_target[1] < 20) * 30,
         ]
 
         self.search_region = new_search
+        self.last_target = new_target
 
         location_lidar, size_lidar = image_to_lidar_coordinates(
             new_target[0], new_target[1], net.voxel_size, net.bv_range
@@ -666,11 +656,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
         target = batch_targets[0][0]
         search = batch_searches[0][0]
 
-        self.target_features, _ = create_pseudo_image_features(
+        self.init_target_features, _ = create_pseudo_image_features(
             pseudo_image, target, net
         )
         self.search_region = search
-        self.target_region = target
+        self.init_target = target
+        self.last_target = target
 
     def optimize(self, do_constant_folding=False):
         """

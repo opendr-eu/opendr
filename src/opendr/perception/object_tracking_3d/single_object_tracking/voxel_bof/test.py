@@ -395,7 +395,7 @@ def test_pp_siamese_load_fit():
 
 def test_pp_siamese_eval():
     print("Eval", name, "start", file=sys.stderr)
-
+    import pygifsicle
     import imageio
 
     object_id = 0
@@ -415,7 +415,7 @@ def test_pp_siamese_eval():
     learner.init(point_cloud_with_calibration, label_lidar)
 
     # count = len(dataset_tracking)
-    count = 50
+    count = 60
 
     images = []
 
@@ -437,7 +437,9 @@ def test_pp_siamese_eval():
 
         print("[", i, "/", count, "]", result)
 
-    imageio.mimsave('./plots/video/eval_aabb_trained.gif', images)
+    filename = './plots/video/eval_aabb_trained_ms_4k.gif'
+    imageio.mimsave(filename, images)
+    pygifsicle.optimize(filename)
 
 
 test_pp_siamese_eval()

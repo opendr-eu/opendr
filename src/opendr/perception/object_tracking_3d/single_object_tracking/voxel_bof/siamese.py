@@ -80,13 +80,16 @@ class SiameseConvNet(nn.Module):
     def forward(self, z, x):
         x = self.branch(x)
         z = self.branch(z)
-        out = self.join(z, x)
-        out = self.norm(out)
+        out = self.process_features(z, x)
+
         return out, x, z
 
     def process_features(self, z, x):
         out = self.join(z, x)
         out = self.norm(out)
+
+        scale = np.sqrt(z.shape[-2] * z.shape[-1])
+        out /= scale
 
         return out
 

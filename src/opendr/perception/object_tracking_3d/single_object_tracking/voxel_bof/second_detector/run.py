@@ -72,7 +72,13 @@ def example_convert_to_torch(
 
 def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
 
-    grayscale_pi = (pseudo_image.mean(axis=0) * 255 / pseudo_image.mean(axis=0).max()).detach().cpu().numpy().astype(np.uint8)
+    grayscale_pi = (
+        (pseudo_image.mean(axis=0) * 255 / pseudo_image.mean(axis=0).max())
+        .detach()
+        .cpu()
+        .numpy()
+        .astype(np.uint8)
+    )
     rgb_pi = np.stack([grayscale_pi] * 3, axis=-1)
 
     for target, color in zip(targets, colors):
@@ -80,18 +86,14 @@ def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
         pos_min = (target[0] - target[1] // 2).astype(np.int32)
         pos_max = (target[0] + (target[1] + 1) // 2 - 1).astype(np.int32)
 
-        rgb_pi[pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1, :] = color
+        rgb_pi[
+            pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1, :
+        ] = color
 
-    PilImage.fromarray(
-        rgb_pi
-    ).save(
-        path
-    )
+    PilImage.fromarray(rgb_pi).save(path)
 
 
-def create_targets_and_searches(
-    centers, target_sizes, search_sizes, augment
-):
+def create_targets_and_searches(centers, target_sizes, search_sizes, augment):
 
     delta = search_sizes - target_sizes
     offsets = np.random.randint(-delta // 2, delta // 2)
@@ -227,8 +229,8 @@ def create_logisticloss_labels(
     for r in range(label_size[0]):
         for c in range(label_size[1]):
             dist = np.sqrt(
-                ((r - t[0]) - label_size[0] // 2) ** 2 +
-                ((c - t[1]) - label_size[1] // 2) ** 2,
+                ((r - t[0]) - label_size[0] // 2) ** 2
+                + ((c - t[1]) - label_size[1] // 2) ** 2,
             )
             if dist <= 0:
                 labels[r, c] = 1
@@ -335,8 +337,12 @@ def create_pseudo_images_and_labels(
             # target_image = get_sub_image(pseudo_image[i], target[0], target[1])
             # search_image = get_sub_image(pseudo_image[i], search[0], search[1])
 
-            target_image_2 = get_sub_image(pseudo_image[i], target[0][[1, 0]], target[1][[1, 0]])
-            search_image_2 = get_sub_image(pseudo_image[i], search[0][[1, 0]], search[1][[1, 0]])
+            target_image_2 = get_sub_image(
+                pseudo_image[i], target[0][[1, 0]], target[1][[1, 0]]
+            )
+            search_image_2 = get_sub_image(
+                pseudo_image[i], search[0][[1, 0]], search[1][[1, 0]]
+            )
 
             target_image = target_image_2
             search_image = search_image_2
@@ -352,7 +358,10 @@ def create_pseudo_images_and_labels(
             target_image = target_image.reshape(1, *target_image.shape)
             search_image = search_image.reshape(1, *search_image.shape)
 
-            labels, weights = create_label_and_weights([target[0][[1, 0]], target[1][[1, 0]]], [search[0][[1, 0]], search[1][[1, 0]]])
+            labels, weights = create_label_and_weights(
+                [target[0][[1, 0]], target[1][[1, 0]]],
+                [search[0][[1, 0]], search[1][[1, 0]]],
+            )
 
             labels_torch = torch.tensor(labels, device=target_image.device)
             weights_torch = torch.tensor(weights, device=target_image.device)
@@ -397,6 +406,36 @@ def score_to_image_coordinates(scores, target_region_size, search_region):
     return center_image
 
 
+def select_best_scores_and_target(
+    multi_scale_scores_targets_penalties_and_features,
+):
+
+    (
+        top_scores,
+        top_target,
+        first_penalty,
+        top_features,
+    ) = multi_scale_scores_targets_penalties_and_features[0]
+    max_top_score = torch.max(top_scores) * first_penalty
+
+    for i in range(1, len(multi_scale_scores_targets_penalties_and_features)):
+        (
+            scores,
+            target,
+            penalty,
+            features,
+        ) = multi_scale_scores_targets_penalties_and_features[i]
+        max_score = torch.max(scores) * penalty
+
+        if max_score > max_top_score:
+            top_scores = scores
+            max_top_score = max_score
+            top_target = target
+            top_features = features
+
+    return top_scores, top_target, top_features
+
+
 def displacement_score_to_image_coordinates(scores, score_upscale):
 
     max_score = torch.max(scores)
@@ -412,6 +451,48 @@ def displacement_score_to_image_coordinates(scores, score_upscale):
 
     return disp_image
 
+
+def create_multi_scale_targets(target, scale_penalty, delta=0.05):
+
+    all_targets_and_penalties = []
+
+    for delta_x in [-1, 0, 1]:
+        for delta_y in [-1, 0, 1]:
+
+            penalty = 1
+
+            if delta_x != 0:
+                penalty *= scale_penalty
+
+            if delta_y != 0:
+                penalty *= scale_penalty
+
+            delta_sign = np.array([delta_x, delta_y])
+            delta_weight = np.round(delta * target[1]).astype(np.int32)
+            delta_weight[delta_weight <= 0] = 1
+
+            to_add = delta_weight * delta_sign
+            new_target = [target[0], target[1] + to_add]
+
+            all_targets_and_penalties.append([new_target, penalty])
+
+    return all_targets_and_penalties
+
+
+def create_scaled_scores(
+    target_features, search_features, model, score_upscale, window_influence
+):
+
+    scores = model.process_features(search_features, target_features)
+    scores2 = torch.nn.functional.interpolate(
+        scores, scale_factor=score_upscale, mode="bicubic"
+    )
+    penalty = hann_window(scores2.shape[-2:], device=scores2.device)
+    scores2_scaled = (
+        1 - window_influence
+    ) * scores2 + window_influence * penalty
+
+    return scores2_scaled
 
 
 def train(
