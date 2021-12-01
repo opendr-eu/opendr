@@ -33,6 +33,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
+      with:
+         submodules: true
     - name: Set up Python 3.8
       if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
       uses: actions/setup-python@v2
@@ -68,6 +70,8 @@ jobs:
           - perception/semantic_segmentation
           - control/mobile_manipulation
           - perception/object_detection_2d
+          - simulation/human_model_generation
+          - perception/facial_expression_recognition/landmark_based_facial_expression_recognition
           # - perception/object_tracking_3d
         include:
           - os: ubuntu-20.04

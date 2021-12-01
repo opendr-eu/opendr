@@ -24,11 +24,11 @@ from imutils import resize
 from flask import Flask, Response, render_template
 from imutils.video import VideoStream
 from pathlib import Path
-import pandas as pd
 
 # OpenDR imports
-from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
-from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
+from opendr.perception.activity_recognition import X3DLearner
+from opendr.perception.activity_recognition import CoX3DLearner
+from opendr.perception.activity_recognition import CLASSES as KINETICS400_CLASSES
 from opendr.engine.data import Video, Image
 
 TEXT_COLOR = (0, 0, 255)  # B G R
@@ -154,11 +154,6 @@ def video_har_preprocessing(image_size: int, window_size: int):
         return vid
 
     return wrapped
-
-
-KINETICS400_CLASSES = pd.read_csv(
-    "activity_recognition/kinetics400_classes.csv", verbose=True, index_col=0
-).to_dict()["name"]
 
 
 def clean_kinetics_preds(preds):

@@ -20,7 +20,7 @@ import unittest
 import numpy as np
 import torch as t
 
-from opendr.perception.speech_recognition.edgespeechnets.edgespeechnets_learner import EdgeSpeechNetsLearner
+from opendr.perception.speech_recognition import EdgeSpeechNetsLearner
 from opendr.engine.data import Timeseries
 from opendr.engine.datasets import DatasetIterator
 from opendr.engine.target import Category

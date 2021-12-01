@@ -48,6 +48,19 @@ from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_dete
 from opendr.engine.target import BoundingBox3DList
 from opendr.engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
+from urllib.error import URLError
+import warnings
+from numba import errors
+
+original_warn = warnings.warn
+
+
+def warn(warning, *args, **kwargs):
+    if not isinstance(warning, errors.NumbaPerformanceWarning):
+        original_warn(warning, *args, **kwargs)
+
+
+warnings.warn = warn
 
 
 class VoxelObjectDetection3DLearner(Learner):
@@ -144,41 +157,44 @@ class VoxelObjectDetection3DLearner(Learner):
 
         if self.model.rpn_ort_session is None:
             model_metadata["model_paths"] = [
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_vfe.pth"),
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_mfe.pth"),
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_rpn.pth")
+                folder_name_no_ext + "_vfe.pth",
+                folder_name_no_ext + "_mfe.pth",
+                folder_name_no_ext + "_rpn.pth"
             ]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pth"
 
             torch.save({
                 'state_dict': self.model.voxel_feature_extractor.state_dict()
-            }, model_metadata["model_paths"][0])
+            }, os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][0]))
             torch.save({
                 'state_dict': self.model.middle_feature_extractor.state_dict()
-            }, model_metadata["model_paths"][1])
+            }, os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][1]))
             torch.save({
                 'state_dict': self.model.rpn.state_dict()
-            }, model_metadata["model_paths"][2])
+            }, os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][2]))
             if verbose:
                 print("Saved Pytorch VFE, MFE and RPN sub-models.")
         else:
             model_metadata["model_paths"] = [
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_vfe.pth"),
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_mfe.pth"),
-                os.path.join(path_no_folder_name, folder_name_no_ext, folder_name_no_ext + "_rpn.onnx")
+                folder_name_no_ext + "_vfe.pth",
+                folder_name_no_ext + "_mfe.pth",
+                folder_name_no_ext + "_rpn.onnx"
             ]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
 
             torch.save({
                 'state_dict': self.model.voxel_feature_extractor.state_dict()
-            }, model_metadata["model_paths"][0])
+            }, os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][0]))
             torch.save({
                 'state_dict': self.model.middle_feature_extractor.state_dict()
-            }, model_metadata["model_paths"][1])
+            }, os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][1]))
             # Copy already optimized model from temp path
-            shutil.copy2(os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"), model_metadata["model_paths"][2])
+            shutil.copy2(
+                os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"),
+                os.path.join(path_no_folder_name, folder_name_no_ext, model_metadata["model_paths"][2])
+            )
             if verbose:
                 print("Saved Pytorch VFE, MFE and ONNX RPN sub-models.")
 
@@ -204,21 +220,21 @@ class VoxelObjectDetection3DLearner(Learner):
             metadata = json.load(metadata_file)
 
         if len(metadata["model_paths"]) == 1:
-            self.__load_from_pth(self.model, metadata["model_paths"][0], True)
+            self.__load_from_pth(self.model, os.path.join(path, metadata["model_paths"][0]), True)
             if verbose:
                 print("Loaded Pytorch model.")
         else:
-            self.__load_from_pth(self.model.voxel_feature_extractor, metadata["model_paths"][0])
-            self.__load_from_pth(self.model.middle_feature_extractor, metadata["model_paths"][1])
+            self.__load_from_pth(self.model.voxel_feature_extractor, os.path.join(path, metadata["model_paths"][0]))
+            self.__load_from_pth(self.model.middle_feature_extractor, os.path.join(path, metadata["model_paths"][1]))
             if verbose:
                 print("Loaded Pytorch VFE and MFE sub-model.")
 
             if not metadata["optimized"]:
-                self.__load_from_pth(self.model.rpn, metadata["model_paths"][2])
+                self.__load_from_pth(self.model.rpn, os.path.join(path, metadata["model_paths"][2]))
                 if verbose:
                     print("Loaded Pytorch RPN sub-model.")
             else:
-                self.__load_rpn_from_onnx(metadata["model_paths"][2])
+                self.__load_rpn_from_onnx(os.path.join(path, metadata["model_paths"][2]))
                 if verbose:
                     print("Loaded ONNX RPN sub-model.")
 
@@ -316,7 +332,7 @@ class VoxelObjectDetection3DLearner(Learner):
         logging_path=None,
         silent=False,
         verbose=False,
-        image_shape=(1224, 370),
+        image_shape=(370, 1224),
         count=None,
     ):
 
@@ -492,7 +508,7 @@ class VoxelObjectDetection3DLearner(Learner):
             ), os.path.join(
                 model_dir, model_name + ".pth"
             ))
-        except Exception:
+        except URLError:
             urlretrieve(os.path.join(
                 url, model_name + ".tckpt"
             ), os.path.join(
@@ -557,16 +573,18 @@ class VoxelObjectDetection3DLearner(Learner):
         require_dataset=True,
     ):
 
-        def create_map_point_cloud_dataset_func(include_annotation_in_example):
+        def create_map_point_cloud_dataset_func(is_training):
 
             prep_func = create_prep_func(
-                input_cfg, model_cfg, True,
+                input_cfg if is_training else eval_input_cfg,
+                model_cfg, is_training,
                 voxel_generator, target_assigner,
                 use_sampler=False,
             )
 
-            def map(data):
-                point_cloud_with_calibration, target = data
+            def map(data_target):
+
+                point_cloud_with_calibration, target = data_target
                 point_cloud = point_cloud_with_calibration.data
                 calib = point_cloud_with_calibration.calib
 
@@ -574,8 +592,11 @@ class VoxelObjectDetection3DLearner(Learner):
 
                 example = _prep_v9(point_cloud, calib, prep_func, annotation)
 
-                if include_annotation_in_example:
+                if not is_training:
                     example["annos"] = annotation
+
+                if point_cloud_with_calibration.image_shape is not None:
+                    example["image_shape"] = point_cloud_with_calibration.image_shape
 
                 return example
 
@@ -612,7 +633,7 @@ class VoxelObjectDetection3DLearner(Learner):
         elif isinstance(dataset, DatasetIterator):
             input_dataset_iterator = MappedDatasetIterator(
                 dataset,
-                create_map_point_cloud_dataset_func(False),
+                create_map_point_cloud_dataset_func(True),
             )
         else:
             if require_dataset or dataset is not None:
@@ -656,7 +677,7 @@ class VoxelObjectDetection3DLearner(Learner):
         elif isinstance(val_dataset, DatasetIterator):
             eval_dataset_iterator = MappedDatasetIterator(
                 val_dataset,
-                create_map_point_cloud_dataset_func(True),
+                create_map_point_cloud_dataset_func(False),
             )
         elif val_dataset is None:
             if isinstance(dataset, ExternalDataset):

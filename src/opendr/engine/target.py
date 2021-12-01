@@ -14,6 +14,7 @@
 
 from abc import ABC
 import numpy as np
+from typing import Optional, Dict, Tuple, Any
 
 
 class BaseTarget(ABC):
@@ -497,12 +498,13 @@ class TrackingAnnotation(Target):
     @staticmethod
     def from_mot(data):
         return TrackingAnnotation(
+            0,
             data[2],
             data[3],
             data[4],
             data[5],
             data[1],
-            data[6] if len(data) > 6 else 0,
+            data[6] if len(data) > 6 else 1,
             data[0],
         )
 
@@ -530,8 +532,8 @@ class TrackingAnnotation(Target):
 
         return result
 
-    def boudning_box(self):
-        return BoundingBox(self.left, self.top, self.width, self.height, self.confidence, self.frame)
+    def bounding_box(self):
+        return BoundingBox(self.name, self.left, self.top, self.width, self.height, self.confidence)
 
     def __repr__(self):
         return "TrackingAnnotation " + str(self)
@@ -569,8 +571,8 @@ class TrackingAnnotationList(Target):
 
         return result
 
-    def boudning_box_list(self):
-        return BoundingBoxList([box.boudning_box() for box in self.data])
+    def bounding_box_list(self):
+        return BoundingBoxList([box.bounding_box() for box in self.data])
 
     @property
     def boxes(self):
@@ -635,6 +637,11 @@ class BoundingBox3D(Target):
         result["location"] = np.array([self.data["location"]])
         result["rotation_y"] = np.array([self.data["rotation_y"]])
         result["score"] = np.array([self.confidence])
+        num_ground_truths = 1
+        num_objects = 1
+        index = list(range(num_objects)) + [-1] * (num_ground_truths - num_objects)
+        result["index"] = np.array(index, dtype=np.int32)
+        result["group_ids"] = np.arange(num_ground_truths, dtype=np.int32)
 
         return result
 
@@ -692,7 +699,7 @@ class BoundingBox3DList(Target):
     ):
         super().__init__()
         self.data = bounding_boxes_3d
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
 
     @staticmethod
     def from_kitti(boxes_kitti):
@@ -758,6 +765,12 @@ class BoundingBox3DList(Target):
             result["location"] = np.array(result["location"])
             result["rotation_y"] = np.array(result["rotation_y"])
             result["score"] = np.array(result["score"])
+
+            num_ground_truths = len(result["name"])
+            num_objects = len([x for x in result["name"] if x != "DontCare"])
+            index = list(range(num_objects)) + [-1] * (num_ground_truths - num_objects)
+            result["index"] = np.array(index, dtype=np.int32)
+            result["group_ids"] = np.arange(num_ground_truths, dtype=np.int32)
 
         return result
 
@@ -872,7 +885,7 @@ class TrackingAnnotation3DList(Target):
     ):
         super().__init__()
         self.data = tracking_bounding_boxes_3d
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
 
     @staticmethod
     def from_kitti(boxes_kitti, ids, frames=None):
@@ -980,12 +993,46 @@ class TrackingAnnotation3DList(Target):
 
 class Heatmap(Target):
     """
-    This target is used for multi-class segmentation problems.
+    This target is used for multi-class segmentation problems or multi-class problems that require heatmap annotations.
+
+    The data has to be a NumPy array.
+    The attribute 'class_names' can be used to store a mapping from the numerical labels to string representations.
     """
 
-    def __init__(self, data):
+    def __init__(self,
+                 data: np.ndarray,
+                 class_names: Optional[Dict[Any, str]]=None):
         super().__init__()
+        self._class_names = None
+
         self.data = data
+        if class_names is not None:
+            self.class_names = class_names
+
+    @property
+    def data(self) -> np.ndarray:
+        if self._data is None:
+            raise ValueError('Data is empty.')
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        if not isinstance(data, np.ndarray):
+            raise TypeError('Data must be a numpy array.')
+        self._data = data
+
+    @property
+    def class_names(self) -> Dict[Any, str]:
+        return self._class_names
+
+    @class_names.setter
+    def class_names(self, class_names: Dict[Any, str]):
+        if not isinstance(class_names, dict):
+            raise TypeError('Class_names must be a dictionary.')
+        for key, value in class_names.items():
+            if not isinstance(value, str):
+                raise TypeError('Values of class_names must be string.')
+        self._class_names = class_names
 
     def numpy(self):
         """
@@ -993,10 +1040,18 @@ class Heatmap(Target):
         :return: a NumPy-compatible representation of data
         :rtype: numpy.ndarray
         """
-        # Since this class stores the data as NumPy arrays, we can directly return the data
+        # Since this class stores the data as NumPy arrays, we can directly return the data.
         return self.data
 
-    def __str__(self):
+    def shape(self) -> Tuple[int, ...]:
+        """
+        Returns the shape of the underlying NumPy array.
+        :return: shape of the data object
+        :rtype: tuple of integers
+        """
+        return self.data.shape
+
+    def __str__(self) -> str:
         """
         Returns a human-friendly string-based representation of the data.
         :return: a human-friendly string-based representation of the data

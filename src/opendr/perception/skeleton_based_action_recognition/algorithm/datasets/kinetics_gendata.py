@@ -5,7 +5,7 @@ Modified based on: https://github.com/open-mmlab/mmskeleton
 import argparse
 import os
 import numpy as np
-from perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_feeder import KineticsFeeder
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_feeder import KineticsFeeder
 import pickle
 from tqdm import tqdm
 

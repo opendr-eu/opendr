@@ -20,14 +20,14 @@ import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.object_detection_2d.detr.algorithm.util.draw import draw
-from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
+from opendr.perception.object_detection_2d import draw
+from opendr.perception.object_detection_2d import DetrLearner
 
 
 class DetrNode:
 
-    def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_detection_annotated",
-                 detection_annotations_topic="/opendr/detections", device="cuda"):
+    def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_boxes_annotated",
+                 detection_annotations_topic="/opendr/objects", device="cuda"):
         """
         Creates a ROS Node for object detection with DETR
         :param input_image_topic: Topic from which we are reading the input image
@@ -76,7 +76,7 @@ class DetrNode:
         """
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
-        image = self.bridge.from_ros_image(data)
+        image = self.bridge.from_ros_image(data, encoding='bgr8')
 
         # Run detection estimation
         boxes = self.detr_learner.infer(image)
@@ -89,10 +89,10 @@ class DetrNode:
             self.detection_publisher.publish(ros_detection)
             # We get can the data back using self.bridge.from_ros_bounding_box_list(ros_detection)
             # e.g., opendr_detection = self.bridge.from_ros_bounding_box_list(ros_detection)
-            draw(image, boxes)
 
         if self.image_publisher is not None:
-            message = self.bridge.to_ros_image(np.uint8(image))
+            draw(image, boxes)
+            message = self.bridge.to_ros_image(np.uint8(image), encoding='bgr8')
             self.image_publisher.publish(message)
 
 

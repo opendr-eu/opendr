@@ -296,7 +296,7 @@ The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class 
   Static method that constructs [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) from the `data` object with MOT annotation.
 #### mot(with_confidence=True)
   Return the annotation in [MOT](https://motchallenge.net/instructions) format.
-#### boudning_box_list()
+#### bounding_box_list()
   Return the [BoundingBoxList](#class_engine.target.BoundingBoxList) object constructed from this object.
 #### boxes()
   Return the list of [TrackingAnnotation](#class_engine.target.TrackingAnnotation) boxes.
@@ -305,11 +305,16 @@ The [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) class 
 ### class engine.target.Heatmap
 Bases: `engine.target.Target`
 
-The Heatmap target is used for multi-class segmentation problems.
+This target is used for multi-class segmentation problems or multi-class problems that require heatmap annotations/outputs.
 
 The [Heatmap](#class_engine.target.Heatmap) class has the following public methods:
-#### Heatmap(data)
-Construct a new [Heatmap](#class_engine.target.Heatmap) object based on the given data.
+#### Heatmap(data, class_names=None)
+  Construct a new [Heatmap](#class_engine.target.Heatmap) object based on the given *data*.
+  - *data* is expected to be a numpy array
+  - *class_names* is expected to be a dictionary and can be used for mapping class IDs (integer) to names (string) [optional]
 #### numpy()
-Return NumPy-compatible representation of data.
-
+  Return a NumPy-compatible representation of *data*.
+#### shape()
+  Return the shape of the underlying *data* object.
+#### str()
+  Return a human-friendly string-based representation of *data*.

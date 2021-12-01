@@ -13,9 +13,8 @@
 # limitations under the License.
 
 import cv2
-from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
-    LightweightOpenPoseLearner
-from opendr.perception.pose_estimation.lightweight_open_pose.utilities import draw
+from opendr.perception.pose_estimation import LightweightOpenPoseLearner
+from opendr.perception.pose_estimation import draw
 import argparse
 from os.path import join
 
