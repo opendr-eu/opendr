@@ -15,6 +15,8 @@
 import argparse
 
 from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
+from opendr.perception.object_detection_2d.yolov3.yolov3_learner import YOLOv3DetectorLearner
+from opendr.perception.object_detection_2d.centernet.centernet_learner import CenterNetDetectorLearner
 from opendr.perception.object_detection_2d.datasets import WiderPersonDataset
 from opendr.perception.object_detection_2d.datasets.xmldataset import XMLBasedDataset
 from gluoncv.utils.metrics.voc_detection import VOCMApMetric
@@ -30,20 +32,22 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # val_dataset = WiderPersonDataset(root='/home/administrator/data/wider_person', splits=['val'])
-    # val_dataset= XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
-    #                              images_dir='human', annotations_dir='human_anot', classes=['person'])
+    val_dataset = XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
+                                           images_dir='human', annotations_dir='human_anot', classes=['person'])
     val_dataset_no_human = XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
                                   images_dir='no_human', annotations_dir='no_human_anot', classes=['person'])
-    val_dataset_human = XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
-                                           images_dir='human', annotations_dir='human_anot', classes=['person'])
-    val_dataset = ConcatDataset([val_dataset_human, val_dataset_no_human])
+    val_dataset = ConcatDataset([val_dataset, val_dataset_no_human])
     print(val_dataset.classes)
-    metric = VOCMApMetric(class_names=val_dataset.classes, iou_thresh=0.45)
-    # metric = None
+    # metric = VOCMApMetric(class_names=val_dataset.classes, iou_thresh=0.45)
+    metric = None
 
-    ssd = SingleShotDetectorLearner(device=args.device)
-    ssd.download(".", mode="pretrained")
-    ssd.load("./ssd_default_person", verbose=True)
-    results = ssd.eval(val_dataset, metric=metric)
+    detector = SingleShotDetectorLearner(device=args.device, backbone='mobilenet1.0')
+    # detector = YOLOv3DetectorLearner(device=args.device)
+    # detector = CenterNetDetectorLearner(device=args.device)
+    # detector.download(".", mode="pretrained")
+    # detector.load("./centernet_default", verbose=True)
+    detector.load_gcv('coco', val_dataset.classes)
+    # detector.save("yolov3_voc_person")
+    results = detector.eval(val_dataset)
     for k, v in results.items():
         print('{}: {}'.format(k, v))

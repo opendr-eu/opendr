@@ -98,7 +98,7 @@ class SingleShotDetectorLearner(Learner):
         self.momentum = momentum
 
         model_name = 'ssd_{}_{}_voc'.format(self.img_size, self.backbone)
-        net = model_zoo.get_model(model_name, pretrained=False, pretrained_base=True, root=self.temp_path)
+        net = model_zoo.get_model(model_name, pretrained=transfer_knowledge, pretrained_base=True, root=self.temp_path)
         self._model = net
         with warnings.catch_warnings(record=True):
             warnings.simplefilter("always")
@@ -254,6 +254,21 @@ class SingleShotDetectorLearner(Learner):
         """This method is not used in this implementation."""
         return NotImplementedError
 
+    def load_gcv(self, dataset='voc', keep_classes=None):
+        model_name = 'ssd_{}_{}_{}'.format(self.img_size, self.backbone, dataset)
+        self._model = model_zoo.get_model(model_name, pretrained=True, pretrained_base=True,
+                                          root=self.temp_path)
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("always")
+            self._model.initialize()
+            self._model.collect_params().reset_ctx(self.ctx)
+        _, _, _ = self._model(mx.nd.zeros((1, 3, self.img_size, self.img_size), self.ctx))
+
+        reuse_classes = [x for x in keep_classes if x in self._model.classes]
+        print(reuse_classes)
+        self._model.reset_class(keep_classes, reuse_weights=reuse_classes)
+        self.classes = self._model.classes
+
     def __create_model(self, classes):
         """
         Base method for detector creation, based on gluoncv implementation.
@@ -264,8 +279,9 @@ class SingleShotDetectorLearner(Learner):
         # self._model = model_zoo.get_model(model_name, classes=classes, pretrained=True)
         # self._model.reset_class(classes, reuse_weights=[cname for cname in classes if cname in self._model.classes])
         if self._model is None or classes != list(self.classes):
+            # TODO: if self.transfer load voc or coco
             model_name = 'ssd_{}_{}_custom'.format(self.img_size, self.backbone)
-            self._model = model_zoo.get_model(model_name, classes=classes, pretrained=not self.transfer, pretrained_base=True,
+            self._model = model_zoo.get_model(model_name, classes=classes, pretrained=False, pretrained_base=True,
                                               root=self.temp_path)
             with warnings.catch_warnings(record=True):
                 warnings.simplefilter("always")
@@ -511,6 +527,8 @@ class SingleShotDetectorLearner(Learner):
             self._model.set_nms(nms_thresh=0.45, nms_topk=400)
 
         dataset, eval_metric = self.__prepare_val_dataset(dataset, data_shape=self.img_size)
+        # set save dir for checkpoint saving
+        self.__create_model(dataset.classes)
         if metric is not None:
             eval_metric = metric
 
@@ -548,7 +566,7 @@ class SingleShotDetectorLearner(Learner):
                 # get prediction results
                 ids, scores, bboxes = self._model(x)
                 if custom_nms is not None:
-                    # TODO: use CustonNMS here
+                    # TODO: use CustomNMS here
                     pass
                 det_ids.append(ids)
                 det_scores.append(scores)
@@ -679,8 +697,7 @@ class SingleShotDetectorLearner(Learner):
         else:
             raise ValueError("Dataset type {} not supported".format(type(dataset)))
 
-    @staticmethod
-    def __prepare_val_dataset(dataset, save_prefix='tmp', data_shape=512, verbose=True):
+    def __prepare_val_dataset(self, dataset, save_prefix='tmp', data_shape=512, verbose=True):
         """
         This internal method prepares the train dataset depending on what type of dataset is provided.
         COCO is prepared according to: https://cv.gluon.ai/build/examples_datasets/mscoco.html

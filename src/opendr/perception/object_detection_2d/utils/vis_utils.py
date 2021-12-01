@@ -44,7 +44,7 @@ def get_dataset_palette(n_classes):
     return palette
 
 
-def draw_bounding_boxes(img, bounding_boxes, class_names=None, show=False, line_thickness=None):
+def draw_bounding_boxes(img, bounding_boxes, class_names=None, show=False, line_thickness=None, palette=None):
     """
     :param img: image on which to draw bounding boxes
     :type img: opendr.engine.data.Image
@@ -68,10 +68,10 @@ def draw_bounding_boxes(img, bounding_boxes, class_names=None, show=False, line_
     boxes = bounding_boxes[:, :4]
     scores = bounding_boxes[:, 4]
     classes = bounding_boxes[:, 5].astype(np.int)
-    return draw_detections(img, boxes, scores, classes, class_names, show, line_thickness)
+    return draw_detections(img, boxes, scores, classes, class_names, show, line_thickness, palette)
 
 
-def draw_detections(img, boxes, scores, classes, class_names=None, show=False, line_thickness=None):
+def draw_detections(img, boxes, scores, classes, class_names=None, show=False, line_thickness=None, palette=None):
     """
     :param img: image on which to draw bounding boxes
     :type img: np.ndarray or opendr.engine.data.Image
@@ -91,7 +91,8 @@ def draw_detections(img, boxes, scores, classes, class_names=None, show=False, l
     # boxes in x1, y1, x2, y2 list format [n, 4]
     # scores and classes in [n] list format
     classes = np.int32(classes)
-    palette = VOC_COLORS
+    if palette is None:
+        palette = VOC_COLORS
     n_classes = len(palette)
 
     for idx, pred_box in enumerate(boxes):

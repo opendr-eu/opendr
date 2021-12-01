@@ -122,7 +122,7 @@ if __name__ == '__main__':
     from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
 
     dataset = XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
-                              images_dir='human', annotations_dir='human_anot')
+                              images_dir='no_human', annotations_dir='no_human_anot')
     print(len(dataset))
 
     all_boxes = [[[] for _ in range(len(dataset))]

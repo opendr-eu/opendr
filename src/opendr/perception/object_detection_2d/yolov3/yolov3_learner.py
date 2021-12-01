@@ -46,6 +46,7 @@ from opendr.perception.object_detection_2d.utils.eval_utils import DetectionData
 from opendr.perception.object_detection_2d.datasets.transforms import ImageToNDArrayTransform, transform_test, \
     BoundingBoxListToNumpyArray
 from opendr.perception.object_detection_2d.datasets import DetectionDataset
+from opendr.perception.object_detection_2d.yolov3.algorithm.transform import YOLO3DefaultValTransform, YOLO3DefaultTrainTransform
 
 gutils.random.seed(0)
 
@@ -106,6 +107,21 @@ class YOLOv3DetectorLearner(Learner):
             warnings.simplefilter("always")
             self._model.initialize()
         self.classes = ['None']
+
+    def load_gcv(self, dataset='voc', keep_classes=None):
+        model_name = 'yolo3_{}_{}'.format(self.backbone, dataset)
+        self._model = model_zoo.get_model(model_name, pretrained=True, pretrained_base=True,
+                                          root=self.temp_path)
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("always")
+            self._model.initialize()
+            self._model.collect_params().reset_ctx(self.ctx)
+        _, _, _ = self._model(mx.nd.zeros((1, 3, self.img_size, self.img_size), self.ctx))
+
+        reuse_classes = [x for x in keep_classes if x in self._model.classes]
+        print(reuse_classes)
+        self._model.reset_class(keep_classes, reuse_weights=reuse_classes)
+        self.classes = self._model.classes
 
     def __create_model(self, classes):
         """
@@ -368,7 +384,7 @@ class YOLOv3DetectorLearner(Learner):
         dataset, eval_metric = self.__prepare_val_dataset(dataset, data_shape=self.img_size)
         eval_metric.reset()
 
-        val_transform = presets.yolo.YOLO3DefaultValTransform(self.img_size, self.img_size)
+        val_transform = YOLO3DefaultValTransform(self.img_size, self.img_size)
         dataset = dataset.transform(val_transform)
 
         val_batchify_fn = Tuple(Stack(), Pad(pad_val=-1))

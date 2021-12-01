@@ -267,6 +267,8 @@ class DetectionDatasetCOCOEval(DetectionEvalMetric):
                 if score < self.score_threshold:
                     continue
                 img_dets.append(np.asarray([image['id'], box[0], box[1], box[2] - box[0], box[3] - box[1], score, cls]))
+            if not img_dets:
+                img_dets = -np.ones((0, 7))
             self.detections.append(np.asarray(img_dets))
 
             for box_idx, box in enumerate(gt_boxes[idx, :, :]):
@@ -283,7 +285,7 @@ class DetectionDatasetCOCOEval(DetectionEvalMetric):
                 ann['segmentation'] = []
                 ann['category_id'] = int(cls)
                 ann['iscrowd'] = 0
-                if np.any(box > 0):
+                if np.all(box >= 0):
                     ann['area'] = int((box[2] - box[0]) * (box[3] - box[1]))
                     ann['bbox'] = [int(box[0]), int(box[1]), int(box[2] - box[0]), int(box[3] - box[1])]
                 self.annotations_gt.append(ann)

@@ -47,6 +47,7 @@ from opendr.perception.object_detection_2d.utils.eval_utils import DetectionData
 from opendr.perception.object_detection_2d.datasets.transforms import ImageToNDArrayTransform, transform_test, \
     BoundingBoxListToNumpyArray
 from opendr.perception.object_detection_2d.datasets import DetectionDataset
+from opendr.perception.object_detection_2d.centernet.algorithm.transform import CenterNetDefaultValTransform, CenterNetDefaultTrainTransform
 
 gutils.random.seed(0)
 
@@ -99,6 +100,20 @@ class CenterNetDetectorLearner(Learner):
                                   pretrained_base=True)
         self._model = net
         self.classes = ['None']
+
+    def load_gcv(self, dataset='voc', keep_classes=None):
+        model_name = 'center_net_{}_{}'.format(self.backbone, dataset)
+        self._model = model_zoo.get_model(model_name, pretrained=True, pretrained_base=True)
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("always")
+            self._model.initialize()
+            self._model.collect_params().reset_ctx(self.ctx)
+        _, _, _ = self._model(mx.nd.zeros((1, 3, self.img_size, self.img_size), self.ctx))
+
+        reuse_classes = [x for x in keep_classes if x in self._model.classes]
+        print(reuse_classes)
+        self._model.reset_class(keep_classes, reuse_weights=reuse_classes)
+        self.classes = self._model.classes
 
     def __create_model(self, classes):
         """
@@ -323,7 +338,7 @@ class CenterNetDetectorLearner(Learner):
 
         eval_metric.reset()
 
-        val_transform = presets.center_net.CenterNetDefaultValTransform(self.img_size, self.img_size)
+        val_transform = CenterNetDefaultValTransform(self.img_size, self.img_size)
         dataset = dataset.transform(val_transform)
 
         val_batchify_fn = Tuple(Stack(), Pad(pad_val=-1))
