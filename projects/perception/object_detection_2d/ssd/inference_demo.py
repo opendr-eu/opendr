@@ -16,8 +16,8 @@ import argparse
 
 import cv2
 
-from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
-from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
+from opendr.perception.object_detection_2d import SingleShotDetectorLearner
+from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
 if __name__ == '__main__':

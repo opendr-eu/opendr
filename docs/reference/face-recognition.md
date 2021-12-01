@@ -16,61 +16,62 @@ FaceRecognitionLearner(self, lr, iters, batch_size, optimizer, device, threshold
 ```
 
 Constructor parameters:
-- **lr**: *float, default=0.1*  
+
+- **lr**: *float, default=0.1*\
   Specifies the initial learning rate to be used during training.
-- **iters**: *int, default=120*  
+- **iters**: *int, default=120*\
   Specifies the number of iterations the training should run for.
-- **batch_size**: *int, default=128*  
+- **batch_size**: *int, default=128*\
   Specifies number of images to be bundled up in a batch during training. This heavily affects memory usage, adjust according to your system.
-- **optimizer**: *{'sgd'}, default='sgd'*  
+- **optimizer**: *{'sgd'}, default='sgd'*\
   Specifies the optimizer to be used during training. Currently supports 'sgd' (stochastic gradient decent).
-- **device**: *{'cpu', 'cuda'}, default='cuda'*  
+- **device**: *{'cpu', 'cuda'}, default='cuda'*\
   Specifies the device to be used.
-- **threshold**: *float, default=0.0*  
+- **threshold**: *float, default=0.0*\
   The backbone's threshold for accepting a positive match during inference. This is set when a pretrained is loaded, but the user can specify a different threshold.
-- **backbone**: *{'resnet_50, 'resnet_101', 'resnet_152', 'ir_50', 'ir_101', 'ir_152', 'ir_se_50', 'ir_se_101', 'ir_se_152', 'mobilefacenet'}, default='ir_50'*  
+- **backbone**: *{'resnet_50, 'resnet_101', 'resnet_152', 'ir_50', 'ir_101', 'ir_152', 'ir_se_50', 'ir_se_101', 'ir_se_152', 'mobilefacenet'}, default='ir_50'*
   Specifies the backbone architecture.
-- **network_head**: *{'arcface, 'cosface', 'sphereface', 'am_softmax', 'classifier'}, default='arcface'*  
+- **network_head**: *{'arcface, 'cosface', 'sphereface', 'am_softmax', 'classifier'}, default='arcface'*\
   Specifies the head architecture.
-- **loss**: *{focal}, default='focal'*  
+- **loss**: *{focal}, default='focal'*\
   Specifies the loss to be used during training.
-- **temp_path**: *str, default='./temp'*  
+- **temp_path**: *str, default='./temp'*\
   Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files.
-- **mode**: *{'backbone_only, 'head_only', 'full'}, default='backbone_only'*  
+- **mode**: *{'backbone_only, 'head_only', 'full'}, default='backbone_only'*\
   The module supports four modes:
-  - 'backbone_only':  
-    Used for inference. Only the backbone architecture is used, and inference is done through retrieval.  
-  - 'head_only':  
+  - 'backbone_only':
+    Used for inference. Only the backbone architecture is used, and inference is done through retrieval.
+  - 'head_only':
     Used for training a classifier head. Only the head architecture will be trained, using a pretrained backbone model.
-  - 'full':  
+  - 'full':
     Used to train a combined model (backbone + head) or to inference with a classifier head.
-  - 'finetune':  
+  - 'finetune':
     Used to finetune a previously trained backbone. It loads a saved backbone model and creates a new head to finetune the backbone model.
-- **checkpoint_after_iter**: *int, default=0*  
-  Specifies after how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved. 
-- **checkpoint_load_iter**: *int, default=0*  
+- **checkpoint_after_iter**: *int, default=0*\
+  Specifies after how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
+- **checkpoint_load_iter**: *int, default=0*\
   Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
-- **val_after**: *int, default=0*  
-  Specifies after how many training iterations a validation should be run.          
-- **input_size**: *list, default=[112, 112]*  
-  Specifies the input size of the images.         
-- **rgb_mean**: *list, default=[0.5, 0.5, 0.5]*  
-  Specifies the mean values with which the input should be normalized.  
-- **rgb_std**: *list, default=[0.5, 0.5, 0.5]*  
-  Specifies the standard deviation values with which the input should be normalized.  
-- **embedding_size**: *int, default=512*  
+- **val_after**: *int, default=0*\
+  Specifies after how many training iterations a validation should be run.
+- **input_size**: *list, default=[112, 112]*\
+  Specifies the input size of the images.
+- **rgb_mean**: *list, default=[0.5, 0.5, 0.5]*\
+  Specifies the mean values with which the input should be normalized.
+- **rgb_std**: *list, default=[0.5, 0.5, 0.5]*\
+  Specifies the standard deviation values with which the input should be normalized.
+- **embedding_size**: *int, default=512*\
   Specifies the size of the backbone's output.
-- **weight_decay**: *float, default=5e-4*  
-  Specifies the rate the weights should be decayed by the optimizer during training. 
-- **momentum**: *float, default=0.9*  
+- **weight_decay**: *float, default=5e-4*\
+  Specifies the rate the weights should be decayed by the optimizer during training.
+- **momentum**: *float, default=0.9*\
   Specifies the momentum used by the optimizer during training.
-- **drop_last**: *bool, default=True*  
+- **drop_last**: *bool, default=True*\
   Specifies whether the last batch should be dropped or not if it is not complete.
-- **stages**: *list, default=[35, 65, 95]*  
+- **stages**: *list, default=[35, 65, 95]*\
   Specifies on which training iterations the learning rate should be adjusted. The learning rate will get divided by 10 on each of those stages.
-- **pin_memory**: *bool, default=True*  
+- **pin_memory**: *bool, default=True*\
   Specifies if pinned memory should be used by the Dataloader.
-- **num_workers**: *int, default=4*  
+- **num_workers**: *int, default=4*\
   Specifies the number of workers to be used by the Dataloader.
 
 
@@ -80,21 +81,21 @@ FaceRecognitionLearner.fit(self, dataset, val_dataset, logging_path, silent, ver
 ```
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
-Returns a dictionary containing stats regarding the last evaluation ran.  
+Returns a dictionary containing stats regarding the last evaluation ran.
 
-Parameters: 
-  
-- **dataset**: *object*  
-  Object that holds the training dataset.  
-- **val_dataset**: *object, default=None*  
-  Object that holds the validation dataset.  
-- **logging_path**: *str, default=''*  
-  Path to save tensorboard log files.  
+Parameters:
+
+- **dataset**: *object*\
+  Object that holds the training dataset.
+- **val_dataset**: *object, default=None*\
+  Object that holds the validation dataset.
+- **logging_path**: *str, default=''*\
+  Path to save tensorboard log files.
   If set to None or ‘’, tensorboard logging is disabled
-- **silent**: *bool, default=False*  
-  If set to True, disables all printing of training progress reports and other information to STDOUT.  
-- **verbose**: *bool, default=True*  
-  If set to True, enables the maximum logging verbosity.  
+- **silent**: *bool, default=False*\
+  If set to True, disables all printing of training progress reports and other information to STDOUT.
+- **verbose**: *bool, default=True*\
+  If set to True, enables the maximum logging verbosity.
 
 
 **Notes**
@@ -116,24 +117,25 @@ FaceRecognitionLearner.eval(self, dataset, num_pairs, silent, verbose)
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
-Returns a dictionary containing stats regarding evaluation.  
+Returns a dictionary containing stats regarding evaluation.
+
 Parameters:
 
-- **dataset**: *object, default=None*  
+- **dataset**: *object, default=None*\
   Object that holds the evaluation dataset.
-  Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.  
-  Supports the following datasets:  
+  Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+  Supports the following datasets:
   - 'lfw' (as provided by [face.evoLVe](https://github.com/ZhaoJ9014/face.evoLVe.PyTorch))
   - 'cfp_ff' (as provided by [face.evoLVe](https://github.com/ZhaoJ9014/face.evoLVe.PyTorch))
   - 'cfp_fp' (as provided by [face.evoLVe](https://github.com/ZhaoJ9014/face.evoLVe.PyTorch))
   - 'agedb_30' (as provided by [face.evoLVe](https://github.com/ZhaoJ9014/face.evoLVe.PyTorch))
   - 'vgg2_fp' (as provided by [face.evoLVe](https://github.com/ZhaoJ9014/face.evoLVe.PyTorch))
   - 'imagefolder' (random positive and negative pairs will be created to perform the evaluation)
-- **num_pairs**: *int, defailt=1000*  
+- **num_pairs**: *int, defailt=1000*\
   When an 'ImageFolder' dataset is used for evaluation, sets the number of random pairs, positive and negative, that will be created.
-- **silent**: *bool, default=False*  
+- **silent**: *bool, default=False*\
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
-- **verbose**: *bool, default=True*  
+- **verbose**: *bool, default=True*\
   If set to True, enables the maximum verbosity.
 
 **Notes**
@@ -156,10 +158,11 @@ FaceRecognitionLearner.fit_reference(self, path, save_path)
 This method is used to create a reference database to be used in inference when mode='backbone_only'.
 It creates a pickle file containing a dictionary of ID - embedding. If more than one image is used for each ID, the average embedding is kept.
 
-Parameters:  
-- **path**: *str, default=None*  
-  Path containing the reference images. If a reference database was already created can be left blank.  
-- **save_path**: *str, default=None*  
+Parameters:
+
+- **path**: *str, default=None*\
+  Path containing the reference images. If a reference database was already created can be left blank.
+- **save_path**: *str, default=None*\
   Path to save (load if already created) the .pkl reference file.
 
 **Notes**
@@ -172,7 +175,7 @@ Reference images should be placed in a defined structure like:
     - ID2
     - ID3
     - ...
-    
+
 When calling infer the method returns the name of the sub-folder, e.g. ID1.
 
 
@@ -182,12 +185,13 @@ FaceRecognitionLearner.infer(self, img)
 ```
 
 This method is used to perform face recognition on an image.
-Returns a `engine.target.Category` object, or returns None if no entry in the reference database was closer than the set threshold (when in backbone_only mode). 
+Returns a `engine.target.Category` object, or returns None if no entry in the reference database was closer than the set threshold (when in backbone_only mode).
 
 Parameters:
-- **img**: *object*  
+
+- **img**: *object*\
   Object of type 'engine.data.Image'.
-  
+
 
 
 #### `FaceRecognitionLearner.align`
@@ -200,13 +204,13 @@ Face recognition algorithms return better results when the images fed for infere
 
 Parameters:
 
-- **data**: *str, default=''*  
-  The folder containing the images to be aligned.  
-- **dest**: *str, default='/aligned' 
+- **data**: *str, default=''*\
+  The folder containing the images to be aligned.
+- **dest**: *str, default='/aligned'*\
   The destination folder to save the aligned images.
-- **crop_size**: *int, default=112*  
+- **crop_size**: *int, default=112*\
   The size of the produced images (crop_size x crop_size).
-- **silent**: *bool, default=False*  
+- **silent**: *bool, default=False*\
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
 
 
@@ -216,15 +220,16 @@ FaceRecognitionLearner.save(self, path)
 ```
 
 This method is used to save a trained model.
-Provided with the path '/my/path/' (absolute or relative), it creates the directory, if it does not already 
-exist.  
-Inside this folder, the model is saved as 'backbone.pth' and the metadata file as "backbone.json".  
+Provided with the path '/my/path/' (absolute or relative), it creates the directory, if it does not already
+exist.
+Inside this folder, the model is saved as 'backbone.pth' and the metadata file as "backbone.json".
 If the directory already exists, the existing .pth and .json files are overwritten.
 
 If [`self.optimize`](#FaceRecognitionLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously during conversion.
 
 Parameters:
-- **path**: *str, default=None*  
+
+- **path**: *str, default=None*\
   Path to save the model.
 
 
@@ -237,7 +242,8 @@ This method is used to load a previously saved model from its saved folder.
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
 
 Parameters:
-- **path**: *str, default=None*  
+
+- **path**: *str, default=None*\
   Path of the model to be loaded.
 
 
@@ -249,11 +255,12 @@ FaceRecognitionLearner.optimize(self, do_constant_folding)
 This method is used to optimize a trained model to ONNX format which can be then used for inference.
 
 Parameters:
-- **do_constant_folding**: *bool, default=False*  
+
+- **do_constant_folding**: *bool, default=False*\
   ONNX format optimization.
-  If True, the constant-folding optimization is applied to the model during export.  
+  If True, the constant-folding optimization is applied to the model during export.
   Constant-folding optimization will replace some of the ops that have all constant inputs, with pre-computed constant nodes.
-  
+
 
 
 #### `FaceRecognitionLearner.download`
@@ -261,25 +268,25 @@ Parameters:
 FaceRecognitionLearner.download(self, path, mode)
 ```
 
-Download utility for various Face Recognition components.  
-Downloads files depending on mode and saves them in the path provided.  
-It supports downloading:  
+Download utility for various Face Recognition components.
+Downloads files depending on mode and saves them in the path provided.
+It supports downloading:
 1. pretrained models (currently supporting mobilefacenet and ir_50)
 2. images to run tests on.
 
 Parameters:
-- **path**: *str, default=None*  
+- **path**: *str, default=None*
   Local path to save the files, defaults to self.temp_path if None.
-- **mode**: *str, default="pretrained"*  
+- **mode**: *str, default="pretrained"*
   Which files to download, can be one of "pretrained", "test_data".
-  
+
 
 #### Examples
 
 * **Training example using an 'ExternalDataset'**.
 
 ```python
-from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.perception.face_recognition import FaceRecognitionLearner
 from opendr.engine.datasets import ExternalDataset
 recognizer = FaceRecognitionLearner(backbone='ir_50', mode='full', network_head='arcface',
                                     epochs=120, lr=0.1, checkpoint_after_iter=10, checkpoint_load_iter=0,
@@ -294,7 +301,7 @@ recognizer.save('./temp/saved_models')
 * **Inference example - backbone_only mode**
 ```python
 import cv2
-from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.perception.face_recognition import FaceRecognitionLearner
 recognizer = FaceRecognitionLearner(backbone='ir_50', mode='backbone_only', device='cuda')
 recognizer.load('./temp/saved_models')
 recognizer.fit_reference(path='./data/imgs', save_path='./temp/demo')
@@ -311,7 +318,7 @@ import cv2
 import os
 import numpy as np
 import time
-from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.perception.face_recognition import FaceRecognitionLearner
 
 recognizer = FaceRecognitionLearner(backbone='ir_50', mode='backbone_only', device='cuda') # Initialize the recognizer
 recognizer.load('./temp/saved_models') # Load the pretrained backbone

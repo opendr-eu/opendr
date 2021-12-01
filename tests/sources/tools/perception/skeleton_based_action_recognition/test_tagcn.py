@@ -17,7 +17,7 @@ import shutil
 import os
 import torch
 import numpy as np
-from opendr.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
+from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGCNLearner
 from opendr.engine.datasets import ExternalDataset
 
 
@@ -33,6 +33,7 @@ def rmdir(_dir):
         shutil.rmtree(_dir)
     except OSError as e:
         print("Error: %s - %s." % (e.filename, e.strerror))
+
 
 PATH_ = './tests/sources/tools/perception/skeleton_based_action_recognition/skeleton_based_action_recognition_temp'
 LOG_PATH_ = ''

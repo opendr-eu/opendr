@@ -16,7 +16,7 @@ import unittest
 import cv2
 import shutil
 import os
-from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
+from opendr.simulation.human_model_generation import PIFuGeneratorLearner
 
 
 def rmdir(_dir):

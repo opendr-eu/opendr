@@ -14,8 +14,8 @@
 
 import argparse
 
-from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
-from opendr.perception.object_detection_2d.datasets import WiderPersonDataset
+from opendr.perception.object_detection_2d import SingleShotDetectorLearner
+from opendr.perception.object_detection_2d import WiderPersonDataset
 
 
 if __name__ == '__main__':
