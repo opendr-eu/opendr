@@ -19,8 +19,8 @@ import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.object_detection_2d.centernet.centernet_learner import CenterNetDetectorLearner
-from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
+from opendr.perception.object_detection_2d import CenterNetDetectorLearner
+from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
 class ObjectDetectionCenterNetNode:

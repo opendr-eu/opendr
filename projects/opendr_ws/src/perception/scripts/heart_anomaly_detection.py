@@ -20,10 +20,7 @@ from vision_msgs.msg import Classification2D
 import argparse
 from std_msgs.msg import Float32MultiArray
 from opendr_bridge import ROSBridge
-from opendr.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurrent_unit_learner import \
-    GatedRecurrentUnitLearner
-from opendr.perception.heart_anomaly_detection.attention_neural_bag_of_feature\
-    .attention_neural_bag_of_feature_learner import AttentionNeuralBagOfFeatureLearner
+from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner, AttentionNeuralBagOfFeatureLearner
 
 
 class HeartAnomalyNode:

@@ -78,6 +78,49 @@ Parameters:
 
 - **message**: *engine.target.Pose*  
   OpenDR pose to be converted to ROS pose.
+
+
+#### `ROSBridge.to_ros_category`
+
+```python
+ROSBridge.to_ros_category(self,
+                          category)
+```
+Converts an OpenDR Category used for category recognition into a ROS ObjectHypothesis.
+
+Parameters:
+
+- **message**: *engine.target.Category*  
+  OpenDR Category used for category recognition to be converted to ROS ObjectHypothesis.
+  
+#### `ROSBridge.to_ros_category_description`
+
+```python
+ROSBridge.to_ros_category_description(self,
+                                      category)
+```
+Converts an OpenDR Category into a ROS String.
+
+Parameters:
+
+- **message**: *engine.target.Category*  
+  OpenDR Category to be converted to ROS String.
+
+
+#### `ROSBridge.from_ros_category`
+
+```python
+ROSBridge.from_ros_category(self,
+                        ros_hypothesis)
+```
+
+Converts a ROS ObjectHypothesis message into an OpenDR Category.
+
+Parameters:
+
+- **message**: *ros_bridge.msg.ObjectHypothesis*  
+  ROS ObjectHypothesis to be converted into an OpenDR Category.
+
  
 #### `ROSBridge.from_ros_face`
 

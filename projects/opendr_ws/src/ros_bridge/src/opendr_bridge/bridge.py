@@ -119,6 +119,43 @@ class ROSBridge:
         pose.id = pose_id
         return pose
 
+    def to_ros_category(self, category):
+        """
+        Converts an OpenDR category into a ObjectHypothesis msg that can carry the Category.data and Category.confidence.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.data and category.confidence
+        :rtype: vision_msgs.msg.ObjectHypothesis
+        """
+        result = ObjectHypothesis()
+        result.id = category.data
+        result.score = category.confidence
+        return result
+
+    def to_ros_category_description(self, category):
+        """
+        Converts an OpenDR category into a string msg that can carry the Category.description.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.description
+        :rtype: std_msgs.msg.String
+        """
+        result = String()
+        result.data = category.description
+        return result
+
+    def from_ros_category(self, ros_hypothesis):
+        """
+        Converts a ROS message with category payload into an OpenDR category
+        :param ros_hypothesis: the objecthypothesis to be converted
+        :type ros_face: vision_msgs.msg.ObjectHypothesis
+        :return: an OpenDR category
+        :rtype: engine.target.Category
+        """
+        category = Category(prediction=ros_hypothesis.id, description=None,
+                            confidence=ros_hypothesis.score)
+        return category
+
     def to_ros_face(self, category):
         """
         Converts an OpenDR category into a ObjectHypothesis msg that can carry the Category.data and Category.confidence.
