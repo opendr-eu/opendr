@@ -16,7 +16,7 @@ import numpy as np
 import os
 import shutil
 import unittest
-from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.perception.face_recognition import FaceRecognitionLearner
 from opendr.engine.datasets import ExternalDataset
 
 

@@ -17,8 +17,8 @@ import torch
 import unittest
 import numpy as np
 
-from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
-from opendr.perception.activity_recognition.datasets.kinetics import KineticsDataset
+from opendr.perception.activity_recognition import CoX3DLearner
+from opendr.perception.activity_recognition import KineticsDataset
 from opendr.engine.data import Image
 from pathlib import Path
 from logging import getLogger

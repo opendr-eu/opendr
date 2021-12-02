@@ -23,8 +23,8 @@ import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
-from opendr.perception.object_detection_2d.gem.algorithm.util.draw import draw
+from opendr.perception.object_detection_2d import GemLearner
+from opendr.perception.object_detection_2d import draw
 from opendr.engine.data import Image
 
 

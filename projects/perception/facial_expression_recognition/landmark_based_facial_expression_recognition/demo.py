@@ -20,8 +20,7 @@ import numpy as np
 import torch
 import pandas
 
-from opendr.perception.facial_expression_recognition.perception.landmark_based_facial_expression_recognition.\
-    progressive_spatio_temporal_bln_learner import ProgressiveSpatioTemporalBLNLearner
+from opendr.perception.facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
 from opendr.perception.facial_expression_recognition.perception.landmark_based_facial_expression_recognition.\
     algorithm.datasets.landmark_extractor import landmark_extractor
 from opendr.perception.facial_expression_recognition.perception.landmark_based_facial_expression_recognition.\

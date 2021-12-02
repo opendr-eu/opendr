@@ -19,7 +19,7 @@ import rospy
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 from opendr.engine.data import Image
-from opendr.perception.semantic_segmentation.bisenet.bisenet_learner import BisenetLearner
+from opendr.perception.semantic_segmentation import BisenetLearner
 import numpy as np
 import cv2
 

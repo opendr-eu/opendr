@@ -17,8 +17,8 @@ import cv2
 import shutil
 import os
 import torch
-from opendr.perception.semantic_segmentation.bisenet.bisenet_learner import BisenetLearner
-from opendr.perception.semantic_segmentation.bisenet.CamVid import CamVidDataset
+from opendr.perception.semantic_segmentation import BisenetLearner
+from opendr.perception.semantic_segmentation import CamVidDataset
 
 
 def rmfile(path):
@@ -88,6 +88,7 @@ class TestBisenetLearner(unittest.TestCase):
         self.assertIsNotNone(self.learner.model, "model is None after loading model.")
         # Cleanup
         rmdir(os.path.join(self.temp_dir, "test_model"))
+
 
 if __name__ == "__main__":
     unittest.main()
