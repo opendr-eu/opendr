@@ -21,7 +21,7 @@ Install `mavros` package into catkin workspace for ROS communication with Ardupi
 The following steps should be executed to have a ROS communication between Gym environment and simulation.
 - Start the Webots and run the world file.
 - Run following script from Ardupilot directory: `./libraries/SITL/examples/Webots/dronePlus.sh`
-- `roslaunch mavros apm.launch`
+- Run `roslaunch mavros apm.launch`
 - Run `children_robot` node
 - Run `take_off` node
 - Run `range_image` node

@@ -1,3 +1,4 @@
+import math
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
@@ -6,9 +7,8 @@ import rospy
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import String
+from nav_msgs.msg import Path
 from webots_ros.msg import BoolStamped
-# import matplotlib.pyplot as plt
-# import tensorflow as tf
 
 
 def euler_from_quaternion(x, y, z, w):
@@ -73,11 +73,10 @@ class AgiEnv(gym.Env):
         rospy.Subscriber("/range_image_raw", Float32MultiArray, self.range_image_callback)
         rospy.Subscriber("/model_name", String, self.model_name_callback)
         self.r.sleep()
-        # print(self.model_name)
         rospy.Subscriber("/" + self.model_name + "/touch_sensor/value", BoolStamped, self.collision_callback)
 
-        self.target_y = -22  # + np.random.randint(-1, 2)
-        self.target_y_list = [-22, -16, -10, -4, 2, 8, 14, 20, 26, 32]  # [-22, -16, -10, -4, 2, 7, 12]
+        self.target_y = -22
+        self.target_y_list = [-22, -16, -10, -4, 2, 7, 12]  # evaluation map:[-22, -16, -10, -4, 2, 8, 14, 20, 26, 32]
         self.target_z = 2.5
         self.start_x = -10
         self.forward_direction = True
@@ -95,15 +94,13 @@ class AgiEnv(gym.Env):
         self.observation = np.zeros((64, 64, 2))
         self.observation[:, :, 0] = np.copy(self.range_image)
         self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
-        # print(self.vector_observation)
         self.r.sleep()
-        # self.reset()
 
         self.image_count = 0
 
     def step(self, discrete_action):
         # take action
-        print("action:", discrete_action)
+        # print("action:", discrete_action)
         action = self.action_dictionary[discrete_action]
         action = (action[0] * self.step_length, action[1] * self.step_length, action[2])
         prev_x = self.current_position.x
@@ -128,7 +125,7 @@ class AgiEnv(gym.Env):
         dx = np.abs(self.current_position.x - prev_x)
         dy = np.abs(self.current_position.y - self.target_position.y)
         dyaw = np.abs(self.current_yaw)
-        print("dx, dy, dyaw", dx, dy, dyaw)
+        # print("dx, dy, dyaw", dx, dy, dyaw)
         reward = 2 * dx - 0.4 * dy - 0.3 * dyaw
         # current_distance = np.linalg.norm(
         #    np.array([vo[0] * np.cos(self.current_yaw * 22.5 / 180 * np.pi) + vo[1] * np.sin(

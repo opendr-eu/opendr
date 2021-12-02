@@ -53,7 +53,7 @@ from urllib.request import urlretrieve
 
 
 class EndToEndPlanningRLLearner(LearnerRL):
-    def __init__(self, env, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear', lr_end: float = 1e-6,
+    def __init__(self, env, n_steps=128, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear', lr_end: float = 1e-6,
                  backbone='MlpPolicy', checkpoint_after_iter=20_000, checkpoint_load_iter=0, temp_path='',
                  device='cuda', seed: int = None, buffer_size: int = 100_000, learning_starts: int = 0,
                  tau: float = 0.001, gamma: float = 0.99, explore_noise: float = 0.5, explore_noise_type='normal',
@@ -75,15 +75,15 @@ class EndToEndPlanningRLLearner(LearnerRL):
         if isinstance(self.env, DummyVecEnv):
             self.env = self.env.envs[0]
         self.env = DummyVecEnv([lambda: self.env])
-        self.agent = PPO2(MultiInputPolicy, self.env, policy_kwargs=policy_kwargs, n_steps=128, verbose=1)
+        self.agent = PPO2(MultiInputPolicy, self.env, policy_kwargs=policy_kwargs, n_steps=n_steps, verbose=1)
 
-    def fit(self, env=None, val_env=None, logging_path='', silent=False, verbose=True):
+    def fit(self, env=None, logging_path='', total_timesteps=int(5e4), silent=False, verbose=True):
         """
         Train the agent on the environment.
 
         :param env: gym.Env, optional, if specified use this env to train
-        :param val_env:  gym.Env, optional, if specified periodically evaluate on this env
         :param logging_path: str, path for logging and checkpointing
+        :param total_timesteps: int, total timesteps to be trained
         :param silent: bool, disable verbosity
         :param verbose: bool, enable verbosity
         :return:
@@ -103,7 +103,7 @@ class EndToEndPlanningRLLearner(LearnerRL):
         self.env = Monitor(self.env, filename=self.logdir)
         self.env = DummyVecEnv([lambda: self.env])
         self.agent.set_env(self.env)
-        self.agent.learn(total_timesteps=int(5e4), callback=self.callback)
+        self.agent.learn(total_timesteps=total_timesteps, callback=self.callback)
 
     def eval(self, env):
         """
@@ -121,7 +121,7 @@ class EndToEndPlanningRLLearner(LearnerRL):
         self.agent.set_env(env)
         obs = env.reset()
         sum_of_rewards = 0
-        for i in range(20):
+        for i in range(50):
             action, _states = self.agent.predict(obs, deterministic=True)
             obs, rewards, dones, info = env.step(action)
             sum_of_rewards += rewards
