@@ -210,7 +210,7 @@ class LabeledTrackingPointCloudsDatasetIterator(DatasetIterator):
             dtype=np.float32,
             count=-1,
         ).reshape([-1, self.num_point_features])
-        target = self.labels[idx]
+        target = self.labels[idx] if len(self.labels) > idx else TrackingAnnotation3DList([])
 
         image_shape = (
             None
