@@ -416,7 +416,7 @@ def select_best_scores_and_target(
         first_penalty,
         top_features,
     ) = multi_scale_scores_targets_penalties_and_features[0]
-    max_top_score = torch.max(top_scores) * first_penalty
+    max_top_score = torch.max(top_scores) * first_penalty / np.sqrt(top_target[1][0] * top_target[1][1])
 
     for i in range(1, len(multi_scale_scores_targets_penalties_and_features)):
         (
@@ -425,7 +425,9 @@ def select_best_scores_and_target(
             penalty,
             features,
         ) = multi_scale_scores_targets_penalties_and_features[i]
-        max_score = torch.max(scores) * penalty
+        max_score = (
+            torch.max(scores) * penalty / np.sqrt(target[1][0] * target[1][1])
+        )
 
         if max_score > max_top_score:
             top_scores = scores

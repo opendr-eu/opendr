@@ -536,7 +536,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             pseudo_image, self.search_region, net
         )
 
-        multi_scale_targets_and_penalties = create_multi_scale_targets(self.last_target, self.scale_penalty)
+        multi_scale_targets_and_penalties = [] # create_multi_scale_targets(self.last_target, self.scale_penalty)
 
         multi_scale_features_and_targets_and_penalties = []
 
@@ -563,6 +563,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
         top_scores, top_target, top_features = select_best_scores_and_target(
             multi_scale_scores_targets_penalties_and_features
         )
+
+        draw_pseudo_image(top_scores.reshape(top_scores.shape[-3:]), "./plots/scores" + str(frame) + "_top.png")
+        draw_pseudo_image(multi_scale_scores_targets_penalties_and_features[-1][0].squeeze(axis=0), "./plots/scores" + str(frame) + "_init.png")
 
         delta_image = displacement_score_to_image_coordinates(
             top_scores, self.score_upscale

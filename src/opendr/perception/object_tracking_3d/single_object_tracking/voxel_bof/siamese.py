@@ -88,9 +88,6 @@ class SiameseConvNet(nn.Module):
         out = self.join(z, x)
         out = self.norm(out)
 
-        scale = np.sqrt(z.shape[-2] * z.shape[-1])
-        out /= scale
-
         return out
 
 
