@@ -160,3 +160,13 @@ Assuming the drivers have been installed and OpenDR catkin workspace has been so
 rosrun perception video_activity_recognition.py
 ```
 The predictied class id and confidence is published under the topic name `/opendr/human_activity_recognition`, and the human-readable class name under `/opendr/human_activity_recognition_description`.
+
+## Skeleton-based Human Action Recognition ROS Node
+
+A ROS node for performing Skeleton-based Human Action Recognition using either ST-GCN or PST-GCN models pretrained on NTU-RGBD-60 dataset. The human body poses of the image are first extracted by the light-weight Openpose method which is implemented in the toolkit, and they are passed to the skeleton-based action recognition method to be categorized.
+Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception skeleton_based_action_recognition.py
+```
+The predictied class id and confidence is published under the topic name `/opendr/skeleton_based_action_recognition`, and the human-readable class name under `/opendr/skeleton_based_action_recognition_description`.
+Besides, the annotated image is published in `/opendr/image_pose_annotated` as well as the corresponding poses in `/opendr/poses`.
