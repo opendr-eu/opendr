@@ -1081,3 +1081,37 @@ def _predict_kitti_to_file(
         result_str = "\n".join(result_lines)
         with open(result_file, "w") as f:
             f.write(result_str)
+
+
+def iou_2d(center1, size1, center2, size2):
+
+    x11, y11 = center1 - size1 / 2
+    x12, y12 = center1 + size1 / 2
+
+    x21, y21 = center2 - size2 / 2
+    x22, y22 = center2 + size2 / 2
+
+    # determine the coordinates of the intersection rectangle
+    x_left = max(x11, x21)
+    y_top = max(y11, y21)
+    x_right = min(x12, x22)
+    y_bottom = min(y12, y22)
+
+    if x_right < x_left or y_bottom < y_top:
+        return 0.0
+
+    # The intersection of two axis-aligned bounding boxes is always an
+    # axis-aligned bounding box
+    intersection_area = (x_right - x_left) * (y_bottom - y_top)
+
+    # compute the area of both AABBs
+    bb1_area = (x12 - x11) * (y12 - y11)
+    bb2_area = (x22 - x21) * (y22 - y21)
+
+    # compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the interesection area
+    iou = intersection_area / float(bb1_area + bb2_area - intersection_area)
+    assert iou >= 0.0
+    assert iou <= 1.0
+    return iou

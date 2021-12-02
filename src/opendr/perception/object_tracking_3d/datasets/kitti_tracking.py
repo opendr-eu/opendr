@@ -152,13 +152,13 @@ class KittiTrackingDatasetIterator(DatasetIterator):
             self.inputs_files, self.ground_truths_files
         ):
 
-            input = load_tracking_file(
+            input, _ = load_tracking_file(
                 os.path.join(self.inputs_path, input_file),
                 self.inputs_format,
                 "detection",
                 remove_dontcare=True,
             )
-            ground_truth = load_tracking_file(
+            ground_truth, _ = load_tracking_file(
                 os.path.join(self.ground_truths_path, ground_truth_file),
                 "tracking",
                 "tracking",
@@ -199,7 +199,7 @@ class LabeledTrackingPointCloudsDatasetIterator(DatasetIterator):
             else None
         )
 
-        self.labels = load_tracking_file(
+        self.labels, self.max_id = load_tracking_file(
             self.label_path, "tracking", labels_format,
         )
         self.calib = parse_calib(self.calib_path)
@@ -242,6 +242,7 @@ def load_tracking_file(
 
     results = {}
     max_frame = -1
+    max_id = 0
 
     with open(file_path) as f:
         lines = [x.strip() for x in f.readlines()]
@@ -369,6 +370,7 @@ def load_tracking_file(
         if not (remove_dontcare and box.name == "DontCare"):
             results[frame].append(box)
             max_frame = max(max_frame, frame)
+            max_id = max(max_id, box.id)
 
     if return_format == "tracking":
 
@@ -380,7 +382,7 @@ def load_tracking_file(
             else:
                 result.append(TrackingAnnotation3DList([]))
 
-        return result
+        return result, max_id
     elif return_format == "detection":
         result = []
 
@@ -390,6 +392,6 @@ def load_tracking_file(
             else:
                 result.append(BoundingBox3DList([]))
 
-        return result
+        return result, max_id
     else:
         raise ValueError("return_format should be tracking or detection")

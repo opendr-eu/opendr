@@ -22,6 +22,7 @@ bev_draw_indicies = [0, 3, 6, 4]
 
 label_to_color = {
     "Car": (255, 0, 0, 125),
+    "Truck": (255, 0, 0, 125),
     "Van": (255, 0, 0, 125),
     "Pedestrian": (0, 255, 0, 125),
     "Cyclist": (0, 0, 255, 125),
