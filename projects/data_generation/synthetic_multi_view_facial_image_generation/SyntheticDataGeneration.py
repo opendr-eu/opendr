@@ -40,26 +40,26 @@ from tqdm import tqdm
 from shutil import copyfile
 import cv2
 import os
-from .algorithm.DDFA import preprocessing_1
-from .algorithm.DDFA import preprocessing_2
-from .algorithm.Rotate_and_Render import test_multipose
+from algorithm.DDFA import preprocessing_1
+from algorithm.DDFA import preprocessing_2
+from algorithm.Rotate_and_Render import test_multipose
 import argparse
-from .algorithm.DDFA.utils.ddfa import str2bool
+from algorithm.DDFA.utils.ddfa import str2bool
 
 
 class MultiviewDataGenerationLearner():
 
-  def __init__(self, path_in='./example/Images', path_3ddfa='./', save_path='./results',
-               val_yaw='10,20', val_pitch=' 30,40', device='cuda'):
+  def __init__(self, args):
 
-    self.path_in = path_in
-    self.key = str(path_3ddfa + "/example/Images/")
-    self.key1 = str(path_3ddfa + "/example/")
-    self.key2 = str(path_3ddfa + "/results/")
-    self.save_path = save_path
-    self.val_yaw = val_yaw
-    self.val_pitch = val_pitch
-
+    self.path_in = args.path_in
+    self.key = str(args.path_3ddfa + "/example/Images/")
+    self.key1 = str(args.path_3ddfa + "/example/")
+    self.key2 = str(args.path_3ddfa + "/results/")
+    self.save_path = args.save_path
+    self.val_yaw = args.val_yaw
+    self.val_pitch = args.val_pitch
+    self.args = args
+    '''
     parser = argparse.ArgumentParser(description='3DDFA inference pipeline')
     parser.add_argument('-f', '--files', nargs='+',
                         help='image files paths fed into network, single or multiple images')
@@ -100,8 +100,8 @@ class MultiviewDataGenerationLearner():
     parser2.add_argument('--resume_idx', default=0, type=int)
 
     self.args2 = parser2.parse_args()
-
-    self.__init__()
+    '''
+    #self.__init__(args)
 
   def eval(self):
 
@@ -121,9 +121,9 @@ class MultiviewDataGenerationLearner():
           list_im.append(current_image_path)
           a.write(str(file) + os.linesep)
           cv2.imwrite(os.path.join(self.key, file), current_image)
-      self.args1.files = list_im.copy()
+      self.args.files = list_im.copy()
       list_im.clear()
-      preprocessing_1.main(self.args1)
+      preprocessing_1.main(self.args)
     a.close()
 
     # STAGE No2: Landmarks Output with inference.py execution
@@ -132,16 +132,16 @@ class MultiviewDataGenerationLearner():
     d = open(os.path.join(self.key1, 'realign_lmk'), "w")
     for subdir, dirs, files in os.walk(self.path_in):
       current_directory_path = os.path.abspath(subdir)
-      self.args2.img_prefix = current_directory_path
-      self.args2.save_dir = os.path.abspath(self.key2)
-      self.args2.save_lmk_dir = os.path.abspath(self.key1)
-      if not os.path.exists(self.args2.save_dir):
-        os.mkdir(self.args2.save_dir)
-      if not os.path.exists(self.args2.save_lmk_dir):
-        os.mkdir(self.args2.save_lmk_dir)
+      self.args.img_prefix = current_directory_path
+      self.args.save_dir = os.path.abspath(self.key2)
+      self.args.save_lmk_dir = os.path.abspath(self.key1)
+      if not os.path.exists(self.args.save_dir):
+        os.mkdir(self.args.save_dir)
+      if not os.path.exists(self.args.save_lmk_dir):
+        os.mkdir(self.args.save_lmk_dir)
 
       list_lfw_batch = './file_list.txt'
-      dst = os.path.join(self.args2.save_lmk_dir, "file_list.txt")
+      dst = os.path.join(self.args.save_lmk_dir, "file_list.txt")
       copyfile(list_lfw_batch, dst)
       b = open("txt_name_batch.txt", "w")
       for file in files:
@@ -153,9 +153,9 @@ class MultiviewDataGenerationLearner():
             if img_fp == str(file):
               im_list2.append(str(file))
               b.write(str(file) + os.linesep)
-      self.args2.img_list = './txt_name_batch.txt'
+      self.args.img_list = './txt_name_batch.txt'
       b.close()
-      self.args2.dump_lmk = 'true'
+      self.args.dump_lmk = 'true'
       im_list2.clear()
       preprocessing_2.main(self.args2)
       with open(os.path.join(self.args2.save_lmk_dir, 'realign_lmk_')) as f:
@@ -180,7 +180,7 @@ class MultiviewDataGenerationLearner():
     raise NotImplementedError()
 
   def reset(self):
-    print("do nothing")
+    raise NotImplementedError()
 
   def save(self):
     raise NotImplementedError()

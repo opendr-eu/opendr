@@ -48,7 +48,7 @@ from .synthetic_multi_view_facial_image_generation.algorithm.DDFA.utils.ddfa imp
 from opendr_internal.src.opendr.engine.learners import Learner
 
 
-class MultiviewDataGenerationLearner(Learner):
+class MultiviewDataGenerationLearner():
 
     def __init__(self, path_in='./example/Images', path_3ddfa='./', save_path='./results',
                  val_yaw='10,20', val_pitch=' 30,40', device='cuda'):
@@ -102,7 +102,7 @@ class MultiviewDataGenerationLearner(Learner):
 
         self.args2 = parser2.parse_args()
 
-        super(Learner, self).__init__()
+       
 
     def eval(self):
 
