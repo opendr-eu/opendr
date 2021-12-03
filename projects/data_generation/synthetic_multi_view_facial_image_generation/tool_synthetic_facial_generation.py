@@ -17,7 +17,7 @@ import sys
 import os
 import torch
 import argparse
-from SyntheticDataGeneration import MultiviewDataGenerationLearner
+from SyntheticDataGeneration import MultiviewDataGeneration
 from algorithm.DDFA.utils.ddfa import str2bool
              
      
@@ -44,13 +44,9 @@ if __name__ == '__main__':
      parser.add_argument('-val_yaw', default="10,20", nargs='+', type=str, help='yaw poses list between [-90,90] ')
      parser.add_argument('-val_pitch', default="30,40", nargs='+', type=str,
                           help='pitch poses list between [-90,90] ')
-     # parser = argparse.ArgumentParser(description='3DDFA inference pipeline')
      parser.add_argument('-f', '--files', nargs='+',
                         help='image files paths fed into network, single or multiple images')
-     #parser.add_argument('-m', '--mode', default='cpu', type=str, help='gpu or cpu mode')
      parser.add_argument('--show_flg', default='false', type=str2bool, help='whether show the visualization result')
-     # parser.add_argument('--bbox_init', default='one', type=str,
-     #                   help='one|two: one-step bbox initialization or two-step')
      parser.add_argument('--dump_res', default='true', type=str2bool,
                         help='whether write out the visualization image')
      parser.add_argument('--dump_vertex', default='false', type=str2bool,
@@ -67,9 +63,6 @@ if __name__ == '__main__':
      parser.add_argument('--dlib_bbox', default='true', type=str2bool, help='whether use dlib to predict bbox')
      parser.add_argument('--dlib_landmark', default='true', type=str2bool,
                         help='whether use dlib landmark to crop image')
-    #self.args1 = parser.parse_args()
-
-    #parser2 = argparse.ArgumentParser(description='3DDFA inference pipeline')
      parser.add_argument('-m', '--mode', default='gpu', type=str, help='gpu or cpu mode')
      parser.add_argument('--bbox_init', default='two', type=str, help='one|two: one-step bbox initialization or two-step')
      parser.add_argument('--dump_2d_img', default='true', type=str2bool, help='whether to save 3d rendered image')
@@ -83,8 +76,8 @@ if __name__ == '__main__':
      parser.add_argument('--world_size', default=1, type=int, help='used when parallel run')
      parser.add_argument('--resume_idx', default=0, type=int)
 
-    #self.args2 = parser2.parse_args()
+    
 
      args = parser.parse_args() 
-     synthetic = MultiviewDataGenerationLearner(args)
+     synthetic = MultiviewDataGeneration(args)
      synthetic.eval()

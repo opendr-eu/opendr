@@ -47,7 +47,7 @@ import argparse
 from algorithm.DDFA.utils.ddfa import str2bool
 
 
-class MultiviewDataGenerationLearner():
+class MultiviewDataGeneration():
 
   def __init__(self, args):
 
@@ -59,50 +59,7 @@ class MultiviewDataGenerationLearner():
     self.val_yaw = args.val_yaw
     self.val_pitch = args.val_pitch
     self.args = args
-    '''
-    parser = argparse.ArgumentParser(description='3DDFA inference pipeline')
-    parser.add_argument('-f', '--files', nargs='+',
-                        help='image files paths fed into network, single or multiple images')
-    parser.add_argument('-m', '--mode', default='cpu', type=str, help='gpu or cpu mode')
-    parser.add_argument('--show_flg', default='false', type=str2bool, help='whether show the visualization result')
-    parser.add_argument('--bbox_init', default='one', type=str,
-                        help='one|two: one-step bbox initialization or two-step')
-    parser.add_argument('--dump_res', default='true', type=str2bool,
-                        help='whether write out the visualization image')
-    parser.add_argument('--dump_vertex', default='false', type=str2bool,
-                        help='whether write out the dense face vertices to mat')
-    parser.add_argument('--dump_ply', default='true', type=str2bool)
-    parser.add_argument('--dump_pts', default='true', type=str2bool)
-    parser.add_argument('--dump_roi_box', default='false', type=str2bool)
-    parser.add_argument('--dump_pose', default='true', type=str2bool)
-    parser.add_argument('--dump_depth', default='true', type=str2bool)
-    parser.add_argument('--dump_pncc', default='true', type=str2bool)
-    parser.add_argument('--dump_paf', default='true', type=str2bool)
-    parser.add_argument('--paf_size', default=3, type=int, help='PAF feature kernel size')
-    parser.add_argument('--dump_obj', default='true', type=str2bool)
-    parser.add_argument('--dlib_bbox', default='true', type=str2bool, help='whether use dlib to predict bbox')
-    parser.add_argument('--dlib_landmark', default='true', type=str2bool,
-                        help='whether use dlib landmark to crop image')
-    self.args1 = parser.parse_args()
-
-    parser2 = argparse.ArgumentParser(description='3DDFA inference pipeline')
-    parser2.add_argument('-m', '--mode', default='gpu', type=str, help='gpu or cpu mode')
-    parser2.add_argument('--bbox_init', default='two', type=str, help='one|two: one-step bbox initialization or two-step')
-    parser2.add_argument('--dump_2d_img', default='true', type=str2bool, help='whether to save 3d rendered image')
-    parser2.add_argument('--dump_param', default='true', type=str2bool, help='whether to save param')
-    parser2.add_argument('--dump_lmk', default='true', type=str2bool, help='whether to save landmarks')
-    parser2.add_argument('--save_dir', default=self.key2, type=str, help='dir to save result')
-    parser2.add_argument('--save_lmk_dir', default='./example', type=str, help='dir to save landmark result')
-    parser2.add_argument('--img_list', default='./txt_name_batch.txt', type=str, help='test image list file')
-
-    parser2.add_argument('--rank', default=0, type=int, help='used when parallel run')
-    parser2.add_argument('--world_size', default=1, type=int, help='used when parallel run')
-    parser2.add_argument('--resume_idx', default=0, type=int)
-
-    self.args2 = parser2.parse_args()
-    '''
-    #self.__init__(args)
-
+    
   def eval(self):
 
     # STAGE No1 : detect faces and fitting to 3d mesh by main.py execution
