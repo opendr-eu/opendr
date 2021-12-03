@@ -43,3 +43,5 @@ $BLENDER_PATH/2.93/python/bin/python3.9 -m pip install numpy opencv-python openc
 ```
 $BLENDER_PATH/blender -P src/generate_fbx_models.py
 ```
+
+### Animate those models in Webots.
