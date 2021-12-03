@@ -121,7 +121,7 @@ def draw_detections(img, boxes, scores, classes, class_names=None, show=False, l
                         [255, 255, 255], thickness=1, lineType=cv2.LINE_AA)
 
     if show:
-        cv2.imshow('detections', img)
+        cv2.imshow('detections', cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
         cv2.waitKey(0)
         cv2.destroyAllWindows()
     return img

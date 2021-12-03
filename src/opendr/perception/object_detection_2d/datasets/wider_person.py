@@ -88,9 +88,7 @@ class WiderPersonDataset(DetectionDataset):
         image_path = self.image_paths[item]
         label = self.bboxes[item]
         # read image, apply transform, return result
-        # img = mx.image.imread(image_path, 1)
-        img_np = cv2.imread(image_path)
-        img = Image(img_np)
+        img = Image.open(image_path)
         # TODO: use Image format?
         if self._image_transform is not None:
             img = self._image_transform(img)
@@ -104,7 +102,7 @@ class WiderPersonDataset(DetectionDataset):
 
     def get_image(self, item):
         image_path = self.image_paths[item]
-        img = cv2.imread(image_path)
+        img = Image.open(image_path)
         if self._image_transform is not None:
             img = self._image_transform(img)
         return img
@@ -131,6 +129,6 @@ if __name__ == '__main__':
 
     for i, (img, targets) in enumerate(dataset):
         img = draw_bounding_boxes(img, targets, class_names=dataset.classes)
-        cv2.imshow('img', img)
+        cv2.imshow('img', cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
         cv2.waitKey(0)
     cv2.destroyAllWindows()
