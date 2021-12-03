@@ -3,8 +3,9 @@
 This folder contains code for downloading a large number of human models in SMPL+D body model format, as well as code for making them able to be transferred to Webots for simulations.
 
 <p float="left">
-  <img src="examples/model_7tex_c.png" width=300 />
-  <img src="examples/model_12tex_c.png" width=300 />
+  <img src="examples/model_1.png" width=300 />
+  <img src="examples/model_2.png" width=300 />
+  <img src="examples/model_4.png" width=300 />
 </p>
 
 ## Download the raw SMPL+D models only.
