@@ -175,7 +175,7 @@ def create_target_search_regions(
         centers_image = ((centers[:, :2] - bv_min) / voxel_size_bev).astype(
             np.int32
         )
-        sizes_image = (sizes[:, :2] / voxel_size_bev).astype(np.int32) + 3
+        sizes_image = (sizes[:, :2] / voxel_size_bev).astype(np.int32) + 5
         search_sizes = sizes_image * 2 + (sizes_image < 20) * 30
 
         targets, searches = create_targets_and_searches(
@@ -256,11 +256,11 @@ def create_pseudo_image_features(pseudo_image, target, net):
 
 
 def image_to_feature_coordinates(pos):
-    return ((pos + 1) // 2 + 1) // 2
+    return (((pos + 1) // 2 + 1) // 2 + 1) // 2
 
 
 def feature_to_image_coordinates(pos):
-    return pos * 2 * 2
+    return pos * 2 * 2 * 2
 
 
 def image_to_lidar_coordinates(location, size, voxel_size, bv_range):
@@ -307,8 +307,48 @@ def create_label_and_weights(target, search, loss="bce"):
     return labels, weights
 
 
+def create_static_label_and_weights(
+    target_size, search_size, loss="bce", radius=16
+):
+
+    t = (0, 0)
+
+    label_size = (
+        image_to_feature_coordinates(search_size)
+        - image_to_feature_coordinates(target_size)
+        + 1
+    )
+
+    r_pos = image_to_feature_coordinates(radius)
+
+    labels = create_logisticloss_labels(label_size, t, r_pos, loss=loss)
+    weights = np.zeros_like(labels)
+
+    # pred_target_position = score_to_image_coordinates(torch.tensor(labels), target[1], search)
+    # p = image_to_feature_coordinates(pred_target_position) - image_to_feature_coordinates(search[0])
+
+    neg_label = 0 if loss == "bce" or loss == "focal" else -1
+
+    pos_num = np.sum(labels == 1)
+    neg_num = np.sum(labels == neg_label)
+    if pos_num > 0:
+        weights[labels == 1] = 0.5 / pos_num
+    weights[labels == neg_label] = 0.5 / neg_num
+    weights *= pos_num + neg_num
+
+    labels = labels.reshape(1, 1, *labels.shape)
+    weights = weights.reshape(1, 1, *weights.shape)
+
+    return labels, weights
+
+
 def create_pseudo_images_and_labels(
-    net, example_torch, annos=None, gt_boxes=None
+    net,
+    example_torch,
+    annos=None,
+    gt_boxes=None,
+    target_size=np.array([127, 127]),
+    search_size=np.array([255, 255]),
 ):
     pseudo_image = net.create_pseudo_image(example_torch)
 
@@ -344,23 +384,30 @@ def create_pseudo_images_and_labels(
                 pseudo_image[i], search[0][[1, 0]], search[1][[1, 0]]
             )
 
-            target_image = target_image_2
-            search_image = search_image_2
+            target_image = torch.nn.functional.interpolate(
+                target_image_2.reshape(1, *target_image_2.shape),
+                size=(target_size[0], target_size[1]),
+                mode="bicubic",
+            )
+            search_image = torch.nn.functional.interpolate(
+                search_image_2.reshape(1, *search_image_2.shape),
+                size=(search_size[0], search_size[1]),
+                mode="bicubic",
+            )
 
-            # draw_pseudo_image(target_image, "./plots/pi_target_" + str(0) + ".png")
-            # draw_pseudo_image(search_image, "./plots/pi_search_" + str(0) + ".png")
-            # # draw_pseudo_image(target_image_2, "./plots/pi_target2_" + str(0) + ".png")
-            # # draw_pseudo_image(search_image_2, "./plots/pi_search2_" + str(0) + ".png")
+            # draw_pseudo_image(target_image.squeeze(axis=0), "./plots/pi_target_" + str(0) + ".png")
+            # draw_pseudo_image(search_image.squeeze(axis=0), "./plots/pi_search_" + str(0) + ".png")
+            # draw_pseudo_image(target_image_2, "./plots/pi_target2_" + str(0) + ".png")
+            # draw_pseudo_image(search_image_2, "./plots/pi_search2_" + str(0) + ".png")
             # draw_pseudo_image(pseudo_image[i], "./plots/pi_" + str(0) + ".png")
             # draw_pseudo_image(pseudo_image[i], "./plots/pi_t" + str(0) + ".png", [[target[0][[1, 0]], target[1][[1, 0]]]], [(255, 0, 0)])
             # # draw_pseudo_image(pseudo_image[i], "./plots/pi_t2" + str(0) + ".png", [[target[0][[1, 0]], target[1][[1, 0]]]], [(255, 0, 0)])
 
-            target_image = target_image.reshape(1, *target_image.shape)
-            search_image = search_image.reshape(1, *search_image.shape)
-
-            labels, weights = create_label_and_weights(
-                [target[0][[1, 0]], target[1][[1, 0]]],
-                [search[0][[1, 0]], search[1][[1, 0]]],
+            labels, weights = create_static_label_and_weights(
+                # [target[0][[1, 0]], target[1][[1, 0]]],
+                # [search[0][[1, 0]], search[1][[1, 0]]],
+                target_size,
+                search_size,
             )
 
             labels_torch = torch.tensor(labels, device=target_image.device)
@@ -416,7 +463,11 @@ def select_best_scores_and_target(
         first_penalty,
         top_features,
     ) = multi_scale_scores_targets_penalties_and_features[0]
-    max_top_score = torch.max(top_scores) * first_penalty / np.sqrt(top_target[1][0] * top_target[1][1])
+    max_top_score = (
+        torch.max(top_scores)
+        * first_penalty
+        / np.sqrt(top_target[1][0] * top_target[1][1])
+    )
 
     for i in range(1, len(multi_scale_scores_targets_penalties_and_features)):
         (
@@ -438,7 +489,12 @@ def select_best_scores_and_target(
     return top_scores, top_target, top_features
 
 
-def displacement_score_to_image_coordinates(scores, score_upscale):
+def displacement_score_to_image_coordinates(
+    scores,
+    score_upscale,
+    search_region_size,
+    search_region_upscale_size=np.array([255, 255]),
+):
 
     max_score = torch.max(scores)
     max_idx = (scores == max_score).nonzero(as_tuple=False)[0][-2:]
@@ -449,7 +505,7 @@ def displacement_score_to_image_coordinates(scores, score_upscale):
 
     disp_score = max_idx.cpu().numpy() - half
     disp_search = feature_to_image_coordinates(disp_score) / score_upscale
-    disp_image = disp_search
+    disp_image = disp_search * search_region_size / search_region_upscale_size
 
     return disp_image
 
@@ -615,13 +671,13 @@ def train(
                 )
                 loss = net.criterion(pred, labels, weights)
 
-                predicted_target_coordinates = score_to_image_coordinates(
-                    pred, target[1], search
+                delta = displacement_score_to_image_coordinates(
+                    pred, 1, search[1]
                 )
                 # predicted_label_target_coordinates = score_to_image_coordinates(
                 #     labels, target[1], search
                 # )
-                delta = np.abs(predicted_target_coordinates - target[0])
+                # delta = np.abs(predicted_target_coordinates - target[0])
 
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)

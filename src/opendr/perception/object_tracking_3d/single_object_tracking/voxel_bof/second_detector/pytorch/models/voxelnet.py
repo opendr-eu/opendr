@@ -540,11 +540,11 @@ class RPN(nn.Module):
         # up1 = self.deconv1(x)
         x2 = self.block2(x1)
         # up2 = self.deconv2(x)
-        # x = self.block3(x)
+        x3 = self.block3(x2)
         # up3 = self.deconv3(x)
         # x = torch.cat([up1, up2, up3], dim=1)
 
-        return x2
+        return x3
 
 
 class LossNormType(Enum):

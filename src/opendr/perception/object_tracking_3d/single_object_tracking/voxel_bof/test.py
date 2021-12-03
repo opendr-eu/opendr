@@ -658,8 +658,8 @@ def test_pp_siamese_eval(draw=False, iou_min=0.5, classes=["Car", "Van", "Truck"
     print("all_tracked =", all_tracked)
 
 
-test_pp_siamese_eval()
-# test_pp_siamese_fit()
+# test_pp_siamese_eval()
+test_pp_siamese_fit()
 # test_pp_siamese_load_fit()
 
 # test_tanet_infer_tracking()
