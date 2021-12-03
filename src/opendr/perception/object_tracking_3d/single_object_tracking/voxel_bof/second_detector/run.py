@@ -627,11 +627,12 @@ def create_multi_scale_searches(search, scale_penalty, delta=0.05):
     return all_searches_and_penalties
 
 
-def create_multi_rotate_searches(search, rotate_penalty, delta=0.003):
+def create_multi_rotate_searches(search, rotate_penalty, delta=0.005):
 
     all_searches_and_penalties = []
 
     for delta_index in [-1, 0, 1]:
+    # for delta_index in [-2, -1, 0, 1, 2]:
         penalty = 1
         if delta_index != 0:
             penalty *= rotate_penalty

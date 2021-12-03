@@ -2,6 +2,7 @@ import sys
 import os
 import torch
 from opendr.engine.target import TrackingAnnotation3D, TrackingAnnotation3DList
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.eval import d3_box_overlap
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
     iou_2d,
 )
@@ -716,12 +717,207 @@ def test_rotated_pp_siamese_infer():
 
         print("[", i, "/", count, "]", result)
 
-    filename = "./plots/video/eval_rotated_scaled_ms_6k.gif"
+    filename = "./plots/video/eval_rotated_scaled_ms_4k.gif"
     imageio.mimsave(filename, images)
     pygifsicle.optimize(filename)
 
 
-test_rotated_pp_siamese_infer()
+def test_rotated_pp_siamese_eval(draw=False, iou_min=0.0, classes=["Car", "Van", "Truck"]):
+    print("Eval", name, "start", file=sys.stderr)
+    import pygifsicle
+    import imageio
+
+    learner = VoxelBofObjectTracking3DLearner(
+        model_config_path=config,
+        device=DEVICE,
+        lr=0.001,
+        checkpoint_after_iter=2000,
+    )
+    # learner.load(model_path, backbone=True, verbose=True)
+    learner.load("./temp/upscaled-rotated-0/checkpoints", backbone=False, verbose=True)
+
+    def test_track(track_id):
+        count = len(dataset_tracking)
+        # count = 120
+        dataset = LabeledTrackingPointCloudsDatasetIterator(
+            dataset_tracking_path + "/training/velodyne/" + track_id,
+            dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
+            dataset_tracking_path + "/training/calib/" + track_id + ".txt",
+        )
+
+        all_mean_ious = []
+        all_tracked = []
+
+        def test_object_id(object_id):
+
+            start_frame = -1
+
+            selected_labels = []
+
+            while len(selected_labels) <= 0:
+                start_frame += 1
+                point_cloud_with_calibration, labels = dataset[start_frame]
+                selected_labels = TrackingAnnotation3DList(
+                    [label for label in labels if (label.id == object_id)]
+                )
+
+            if not selected_labels[0].name in classes:
+                return None, None
+
+            calib = point_cloud_with_calibration.calib
+            labels_lidar = tracking_boxes_to_lidar(selected_labels, calib, classes=classes)
+            label_lidar = labels_lidar[0]
+
+            learner.init(point_cloud_with_calibration, label_lidar)
+
+            images = []
+            ious = []
+            count_tracked = 0
+
+            for i in range(start_frame, count):
+                point_cloud_with_calibration, labels = dataset[i]
+                selected_labels = TrackingAnnotation3DList(
+                    [label for label in labels if label.id == object_id]
+                )
+
+                if len(selected_labels) <= 0:
+                    break
+
+                calib = point_cloud_with_calibration.calib
+                labels_lidar = tracking_boxes_to_lidar(selected_labels, calib)
+                label_lidar = (
+                    labels_lidar[0] if len(labels_lidar) > 0 else None
+                )
+
+                result = learner.infer(
+                    point_cloud_with_calibration, id=-1, frame=i, draw=False,
+                )
+
+                all_labels = (
+                    result
+                    if label_lidar is None
+                    else TrackingAnnotation3DList([result[0], label_lidar])
+                )
+                image = draw_point_cloud_bev(
+                    point_cloud_with_calibration.data, all_labels
+                )
+
+                if draw:
+                    pil_image = PilImage.fromarray(image)
+                    images.append(pil_image)
+
+                # dt_boxes = np.concatenate([result[0].location.reshape(1, 3), result[0].dimensions.reshape(1, 3), result[0].rotation_y.reshape(1, 3)], axis=1)
+                # gt_boxes = np.concatenate([label_lidar.location.reshape(1, 3), label_lidar.dimensions.reshape(1, 3), result[0].rotation_y.reshape(1, 3)], axis=1)
+                # iou = d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64)
+
+                result = label_to_AABB(result)[0]
+                label_lidar = label_to_AABB(TrackingAnnotation3DList([label_lidar]))[0]
+
+                iou = iou_2d(
+                    result.location[:2],
+                    result.dimensions[:2],
+                    label_lidar.location[:2],
+                    label_lidar.dimensions[:2],
+                ) # * min(result[0].rotation_y / label_lidar.rotation_y, label_lidar.rotation_y / result[0].rotation_y)
+
+                iou = max(0, iou)
+
+                if iou > iou_min:
+                    count_tracked += 1
+
+                ious.append(iou)
+
+                print(track_id, "%", object_id, "[", i, "/", count - 1, "] iou =", iou)
+
+                filename = (
+                    "./plots/video/eval_aabb_scaled_track_"
+                    + str(track_id)
+                    + "_obj_"
+                    + str(object_id)
+                    + ".gif"
+                )
+
+            if len(ious) <= 0:
+                mean_iou = None
+                tracked = None
+            else:
+                mean_iou = sum(ious) / len(ious)
+                tracked = count_tracked / len(ious)
+
+            print("mean_iou =", mean_iou)
+            print("tracked =", tracked)
+
+            if draw:
+                imageio.mimsave(filename, images)
+                pygifsicle.optimize(filename)
+
+            return mean_iou, tracked
+
+        for object_id in range(0, min(5, dataset.max_id + 1)):
+            mean_iou, tracked = test_object_id(object_id)
+
+            if mean_iou is not None:
+                all_mean_ious.append(mean_iou)
+                all_tracked.append(tracked)
+
+        if len(all_mean_ious) > 0:
+            track_mean_iou = sum(all_mean_ious) / len(all_mean_ious)
+            track_mean_tracked = sum(all_tracked) / len(all_tracked)
+        else:
+            track_mean_iou = None
+            track_mean_tracked = None
+
+        print("track_mean_iou =", track_mean_iou)
+        print("track_mean_tracked =", track_mean_tracked)
+
+        return track_mean_iou, track_mean_tracked
+
+    tracks = [
+        "0000",
+        "0001",
+        # "0002",
+        "0003",
+        "0004",
+        # "0005",
+        # "0006",
+        # "0007",
+        # "0008",
+        # "0009",
+        # "0010",
+        # "0011",
+        # "0012",
+        # "0013",
+        # "0014",
+        # "0015",
+        # "0016",
+        # "0017",
+        # "0018",
+        # "0019",
+        # "0020",
+    ]
+
+    all_ious = []
+    all_tracked = []
+
+    for track in tracks:
+        track_mean_iou, track_mean_tracked = test_track(track)
+
+        if track_mean_iou is not None:
+            all_ious.append(track_mean_iou)
+            all_tracked.append(track_mean_tracked)
+
+    total_mean_iou = sum(all_ious) / len(all_ious)
+    total_mean_tracked = sum(all_tracked) / len(all_tracked)
+
+    print("total_mean_iou =", total_mean_iou)
+    print("total_mean_tracked =", total_mean_tracked)
+
+    print("all_ious =", all_ious)
+    print("all_tracked =", all_tracked)
+
+
+test_rotated_pp_siamese_eval()
+# test_rotated_pp_siamese_infer()
 # test_pp_siamese_fit()
 
 # test_pp_siamese_infer()

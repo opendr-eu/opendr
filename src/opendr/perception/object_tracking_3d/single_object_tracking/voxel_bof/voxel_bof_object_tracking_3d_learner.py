@@ -14,6 +14,7 @@
 
 import os
 import json
+import time
 import numpy as np
 import torch
 import ntpath
@@ -118,9 +119,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
             "decay_factor": 0.8,
             "staircase": True,
         },
-        window_influence=0.25,
+        window_influence=0.35,
         score_upscale=16,
-        scale_penalty=0.97,
+        scale_penalty=0.98,
         target_size=np.array([127, 127]),
         search_size=np.array([255, 255]),
     ):
@@ -532,131 +533,138 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
     def infer(self, point_cloud, frame=0, id=None, draw=False):
 
-        net = self.model.branch
+        with torch.no_grad():
 
-        pseudo_images = self.create_pseudo_image(point_cloud)
-        pseudo_image = pseudo_images[0]
+            t = time.time()
 
-        multi_rotate_searches_and_penalties = create_multi_rotate_searches(
-            self.search_region, self.scale_penalty
-        )
+            net = self.model.branch
 
-        multi_rotate_features_and_searches_and_penalties = []
+            pseudo_images = self.create_pseudo_image(point_cloud)
+            pseudo_image = pseudo_images[0]
 
-        for i, (search, penalty) in enumerate(multi_rotate_searches_and_penalties):
-            search_features, search_image = create_pseudo_image_features(
-                pseudo_image, search, net, self.search_size
+            multi_rotate_searches_and_penalties = create_multi_rotate_searches(
+                self.search_region, self.scale_penalty
             )
 
-            multi_rotate_features_and_searches_and_penalties.append(
-                [search_features, search, penalty]
-            )
+            multi_rotate_features_and_searches_and_penalties = []
 
-            draw_pseudo_image(search_image, "./plots/si_" + str(i) + ".png")
-
-        multi_rotate_scores_searches_penalties_and_features = []
-
-        for (
-            search_features,
-            target,
-            penalty,
-        ) in multi_rotate_features_and_searches_and_penalties:
-            scores = create_scaled_scores(
-                self.init_target_features,
-                search_features,
-                self.model,
-                self.score_upscale,
-                self.window_influence,
-            )
-            multi_rotate_scores_searches_penalties_and_features.append(
-                [scores, target, penalty, search_features]
-            )
-
-        (
-            top_scores,
-            top_search,
-            top_search_features,
-        ) = select_best_scores_and_search(
-            multi_rotate_scores_searches_penalties_and_features
-        )
-
-        if draw:
-            draw_pseudo_image(
-                top_search, "./plots/" + str(frame) + "search_.png"
-            )
-            draw_pseudo_image(
-                top_search_features[0],
-                "./plots/" + str(frame) + "search_feat.png",
-            )
-
-        if draw:
-            draw_pseudo_image(
-                top_scores.reshape(top_scores.shape[-3:]),
-                "./plots/scores" + str(frame) + "_top.png",
-            )
-            draw_pseudo_image(
-                multi_rotate_scores_searches_penalties_and_features[-1][
-                    0
-                ].squeeze(axis=0),
-                "./plots/scores" + str(frame) + "_init.png",
-            )
-
-        delta_image = displacement_score_to_image_coordinates(
-            top_scores,
-            self.score_upscale,
-            top_search[1],
-            top_search[2],
-            self.search_size,
-        )
-
-        delta_image = delta_image[[1, 0]]
-        center_image = self.search_region[0] + delta_image
-
-        # if not np.all(top_search[1] == self.search_region[1]):
-        #     search_scale = top_search[1] / self.search_region[1]
-        #     new_target_size = self.last_target[1] * search_scale
-        #     self.init_target_features, _ = create_pseudo_image_features(
-        #         pseudo_image, [center_image, new_target_size], net, self.target_size
-        #     )
-        # else:
-        #     new_target_size = self.last_target[1]
-
-        new_target = [center_image, new_target_size]
-        new_search = [
-            center_image,
-            new_target[1] * 2 + (new_target[1] < 20) * 30,
-        ]
-
-        self.search_region = new_search
-        self.last_target = new_target
-
-        location_lidar, size_lidar = image_to_lidar_coordinates(
-            new_target[0], new_target[1], net.voxel_size, net.bv_range
-        )
-
-        result = TrackingAnnotation3DList(
-            [
-                TrackingAnnotation3D(
-                    self.init_label.name,
-                    0,
-                    0,
-                    None,
-                    None,
-                    location=np.array(
-                        [*location_lidar, self.init_label.location[-1]]
-                    ),
-                    dimensions=np.array(
-                        [*size_lidar, self.init_label.dimensions[-1]]
-                    ),
-                    rotation_y=0,
-                    id=self.init_label.id if id is None else id,
-                    score=1,
-                    frame=frame,
+            for i, (search, penalty) in enumerate(multi_rotate_searches_and_penalties):
+                search_features, search_image = create_pseudo_image_features(
+                    pseudo_image, search, net, self.search_size
                 )
-            ]
-        )
 
-        return result
+                multi_rotate_features_and_searches_and_penalties.append(
+                    [search_features, search, penalty]
+                )
+
+            multi_rotate_scores_searches_penalties_and_features = []
+
+            for (
+                search_features,
+                target,
+                penalty,
+            ) in multi_rotate_features_and_searches_and_penalties:
+                scores = create_scaled_scores(
+                    self.init_target_features,
+                    search_features,
+                    self.model,
+                    self.score_upscale,
+                    self.window_influence,
+                )
+                multi_rotate_scores_searches_penalties_and_features.append(
+                    [scores, target, penalty, search_features]
+                )
+
+            (
+                top_scores,
+                top_search,
+                top_search_features,
+            ) = select_best_scores_and_search(
+                multi_rotate_scores_searches_penalties_and_features
+            )
+
+            if draw:
+                draw_pseudo_image(
+                    top_search, "./plots/" + str(frame) + "search_.png"
+                )
+                draw_pseudo_image(
+                    top_search_features[0],
+                    "./plots/" + str(frame) + "search_feat.png",
+                )
+
+            if draw:
+                draw_pseudo_image(
+                    top_scores.reshape(top_scores.shape[-3:]),
+                    "./plots/scores" + str(frame) + "_top.png",
+                )
+                draw_pseudo_image(
+                    multi_rotate_scores_searches_penalties_and_features[-1][
+                        0
+                    ].squeeze(axis=0),
+                    "./plots/scores" + str(frame) + "_init.png",
+                )
+
+            delta_image = displacement_score_to_image_coordinates(
+                top_scores,
+                self.score_upscale,
+                top_search[1],
+                top_search[2],
+                self.search_size,
+            )
+
+            delta_image = delta_image[[1, 0]]
+            center_image = self.search_region[0] + delta_image
+
+            # if not np.all(top_search[1] == self.search_region[1]):
+            #     search_scale = top_search[1] / self.search_region[1]
+            #     new_target_size = self.last_target[1] * search_scale
+            #     self.init_target_features, _ = create_pseudo_image_features(
+            #         pseudo_image, [center_image, new_target_size], net, self.target_size
+            #     )
+            # else:
+            #     new_target_size = self.last_target[1]
+
+            new_target = [center_image, self.init_target[1], top_search[2]]
+            new_search = [
+                center_image,
+                new_target[1] * 2 + (new_target[1] < 20) * 30,
+                top_search[2],
+            ]
+
+            self.search_region = new_search
+            self.last_target = new_target
+
+            location_lidar, size_lidar = image_to_lidar_coordinates(
+                new_target[0], new_target[1], net.voxel_size, net.bv_range
+            )
+
+            result = TrackingAnnotation3DList(
+                [
+                    TrackingAnnotation3D(
+                        self.init_label.name,
+                        0,
+                        0,
+                        None,
+                        None,
+                        location=np.array(
+                            [*location_lidar, self.init_label.location[-1]]
+                        ),
+                        dimensions=self.init_label.dimensions,
+                        # np.array(
+                        #     [*size_lidar, self.init_label.dimensions[-1]]
+                        # ),
+                        rotation_y=new_target[2],
+                        id=self.init_label.id if id is None else id,
+                        score=1,
+                        frame=frame,
+                    )
+                ]
+            )
+
+            fps = 1 / (time.time() - t)
+            print("fps =", fps)
+
+            return result
 
     def init(self, point_cloud, label_lidar):
 
@@ -686,9 +694,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
         target = batch_targets[0][0]
         search = batch_searches[0][0]
 
-        self.init_target_features, _ = create_pseudo_image_features(
+        self.init_target_features, init_image = create_pseudo_image_features(
             pseudo_image, target, net, self.target_size
         )
+
+        # draw_pseudo_image(init_image, "./plots/init_image.png")
+
         self.search_region = search
         self.init_target = target
         self.last_target = target
