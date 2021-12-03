@@ -1,0 +1,5 @@
+from opendr.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
+from opendr.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner \
+    import ProgressiveSpatioTemporalGCNLearner
+
+__all__ = ['SpatioTemporalGCNLearner', 'ProgressiveSpatioTemporalGCNLearner']
