@@ -4,9 +4,9 @@ This folder contains code for downloading a large number of human models in SMPL
 
 <p float="left">
   <img src="./examples/model_1.png" width=150 />
-  <img src="./examples/model_2.png" width=150 />
-  <img src="./examples/model_3.png" width=150 />
   <img src="./examples/model_4.png" width=150 />
+  <img src="./examples/model_3.png" width=150 />
+  <img src="./examples/model_2.png" width=150 />
 </p>
 
 ## Download the raw SMPL+D models only.
