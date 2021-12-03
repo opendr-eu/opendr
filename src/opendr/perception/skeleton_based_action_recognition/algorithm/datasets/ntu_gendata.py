@@ -8,7 +8,7 @@ from tqdm import tqdm
 import numpy as np
 import os
 import math
-
+import pandas
 
 training_subjects = [
     1, 2, 4, 5, 8, 9, 13, 14, 15, 16, 17, 18, 19, 25, 27, 28, 31, 34, 35, 38
@@ -17,6 +17,8 @@ training_cameras = [2, 3]
 max_body = 2
 num_joint = 25
 max_frame = 300
+
+NTU60_ClASSES = pandas.read_csv("./ntu60_labels.csv", verbose=True, index_col=0).to_dict()["name"]
 
 
 def read_skeleton(file):

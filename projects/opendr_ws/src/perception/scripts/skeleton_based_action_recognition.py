@@ -17,7 +17,6 @@
 import rospy
 import torch
 import numpy as np
-import pandas as pd
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from vision_msgs.msg import Detection2DArray
@@ -27,10 +26,6 @@ from opendr.perception.pose_estimation import draw
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGCNLearner
 from opendr.perception.skeleton_based_action_recognition import ProgressiveSpatioTemporalGCNLearner
-
-NTU60_ClASSES = pd.read_csv(
-                "src/opendr/perception/skeleton_based_action_recognition/algorithm/datasets/ntu60_labels.csv",
-                verbose=True, index_col=0).to_dict()["name"]
 
 
 class SkeletonActionRecognitionNode:
@@ -155,8 +150,6 @@ class SkeletonActionRecognitionNode:
 
         # Run action recognition
         category = self.action_classifier.infer(skeleton_seq)
-        category.confidence = category.confidence.max()
-        category.description = NTU60_ClASSES[category.data]
 
         if self.hypothesis_publisher is not None:
             self.hypothesis_publisher.publish(self.bridge.to_ros_category(category))

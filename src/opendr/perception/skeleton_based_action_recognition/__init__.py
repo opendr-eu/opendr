@@ -1,5 +1,7 @@
 from opendr.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
 from opendr.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner \
     import ProgressiveSpatioTemporalGCNLearner
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.ntu_gendata import NTU60_ClASSES
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_gendata import KINETICS400_ClASSES
 
-__all__ = ['SpatioTemporalGCNLearner', 'ProgressiveSpatioTemporalGCNLearner']
+__all__ = ['SpatioTemporalGCNLearner', 'ProgressiveSpatioTemporalGCNLearner', 'NTU60_ClASSES', 'KINETICS400_ClASSES']

@@ -45,7 +45,8 @@ from opendr.perception.skeleton_based_action_recognition.algorithm.models.stgcn 
 from opendr.perception.skeleton_based_action_recognition.algorithm.models.tagcn import TAGCN
 from opendr.perception.skeleton_based_action_recognition.algorithm.models.stbln import STBLN
 from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.feeder import Feeder
-
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.ntu_gendata import NTU60_ClASSES
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_gendata import KINETICS400_ClASSES
 
 class SpatioTemporalGCNLearner(Learner):
     def __init__(self, lr=1e-1, batch_size=128, optimizer_name='sgd', lr_schedule='',
@@ -105,6 +106,11 @@ class SpatioTemporalGCNLearner(Learner):
         if self.device == 'cuda':
             self.output_device = self.device_ind[0] if type(self.device_ind) is list else self.device_ind
         self.__init_seed(1)
+
+        if self.dataset_name in ['nturgbd_cv', 'nturgbd_cs']:
+            self.classes_dict = NTU60_ClASSES
+        elif self.dataset_name == 'kinetics':
+            self.classes_dict = KINETICS400_ClASSES
 
     def fit(self, dataset, val_dataset, logging_path='', silent=False, verbose=True,
             momentum=0.9, nesterov=True, weight_decay=0.0001, train_data_filename='train_joints.npy',
@@ -522,8 +528,10 @@ class SpatioTemporalGCNLearner(Learner):
 
         m = nn.Softmax(dim=0)
         softmax_predictions = m(output.data[0])
+        class_confidence = float(torch.max(softmax_predictions))
         class_ind = int(torch.argmax(softmax_predictions))
-        category = Category(prediction=class_ind, confidence=softmax_predictions)
+        class_description = self.classes_dict(class_ind)
+        category = Category(prediction=class_ind, confidence=class_confidence, description=class_description)
 
         return category
 

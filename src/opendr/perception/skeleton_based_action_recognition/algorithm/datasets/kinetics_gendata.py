@@ -8,6 +8,10 @@ import numpy as np
 from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_feeder import KineticsFeeder
 import pickle
 from tqdm import tqdm
+import pandas
+
+
+KINETICS400_ClASSES = pandas.read_csv("./kinetics400_classes.csv", verbose=True, index_col=0).to_dict()["name"]
 
 
 def gendata(data_path, label_path,
