@@ -379,7 +379,7 @@ def test_pp_siamese_fit():
     learner.load(model_path, backbone=True, verbose=True)
     learner.fit(
         kitti_detection,
-        model_dir="./temp/upscaled-0",
+        model_dir="./temp/upscaled-rotated-0",
         # verbose=True
     )
 
@@ -658,8 +658,74 @@ def test_pp_siamese_eval(draw=True, iou_min=0.5, classes=["Car", "Van", "Truck"]
     print("all_tracked =", all_tracked)
 
 
+def test_rotated_pp_siamese_infer():
+    print("Infer", name, "start", file=sys.stderr)
+    import pygifsicle
+    import imageio
+
+    learner = VoxelBofObjectTracking3DLearner(
+        model_config_path=config,
+        device=DEVICE,
+        lr=0.001,
+        checkpoint_after_iter=2000,
+    )
+    # learner.load(model_path, backbone=True, verbose=True)
+    learner.load("./temp/upscaled-rotated-0/checkpoints", backbone=False, verbose=True)
+
+    # count = len(dataset_tracking)
+    count = 140
+    object_id = 0
+
+    point_cloud_with_calibration, labels = dataset_tracking[0]
+    selected_labels = TrackingAnnotation3DList(
+        [label for label in labels if label.id == object_id]
+    )
+    calib = point_cloud_with_calibration.calib
+    labels_lidar = tracking_boxes_to_lidar(selected_labels, calib)
+    label_lidar = labels_lidar[0]
+
+    learner.init(point_cloud_with_calibration, label_lidar)
+
+    images = []
+
+    for i in range(1, count):
+        point_cloud_with_calibration, labels = dataset_tracking[
+            i
+        ]  # i iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+        selected_labels = TrackingAnnotation3DList(
+            [label for label in labels if label.id == object_id]
+        )
+        calib = point_cloud_with_calibration.calib
+        labels_lidar = tracking_boxes_to_lidar(selected_labels, calib)
+        label_lidar = labels_lidar[0] if len(labels_lidar) > 0 else None
+
+        result = learner.infer(point_cloud_with_calibration, id=1, frame=i)
+
+        all_labels = (
+            result
+            if label_lidar is None
+            else TrackingAnnotation3DList([result[0], label_lidar])
+        )
+        image = draw_point_cloud_bev(
+            point_cloud_with_calibration.data, all_labels
+        )
+        pil_image = PilImage.fromarray(image)
+        pil_image.save("./plots/eval_aabb_" + str(i) + ".png")
+
+        images.append(pil_image)
+
+        print("[", i, "/", count, "]", result)
+
+    filename = "./plots/video/eval_rotated_scaled_ms_6k.gif"
+    imageio.mimsave(filename, images)
+    pygifsicle.optimize(filename)
+
+
+test_rotated_pp_siamese_infer()
+# test_pp_siamese_fit()
+
 # test_pp_siamese_infer()
-test_pp_siamese_eval()
+# test_pp_siamese_eval()
 # test_pp_siamese_fit()
 # test_pp_siamese_load_fit()
 

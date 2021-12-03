@@ -33,6 +33,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
     compute_lidar_kitti_output,
+    create_multi_rotate_searches,
     create_multi_scale_searches,
     create_pseudo_image_features,
     create_scaled_scores,
@@ -536,28 +537,30 @@ class VoxelBofObjectTracking3DLearner(Learner):
         pseudo_images = self.create_pseudo_image(point_cloud)
         pseudo_image = pseudo_images[0]
 
-        multi_scale_searches_and_penalties = create_multi_scale_searches(
+        multi_rotate_searches_and_penalties = create_multi_rotate_searches(
             self.search_region, self.scale_penalty
         )
 
-        multi_scale_features_and_searches_and_penalties = []
+        multi_rotate_features_and_searches_and_penalties = []
 
-        for search, penalty in multi_scale_searches_and_penalties:
+        for i, (search, penalty) in enumerate(multi_rotate_searches_and_penalties):
             search_features, search_image = create_pseudo_image_features(
                 pseudo_image, search, net, self.search_size
             )
 
-            multi_scale_features_and_searches_and_penalties.append(
+            multi_rotate_features_and_searches_and_penalties.append(
                 [search_features, search, penalty]
             )
 
-        multi_scale_scores_searches_penalties_and_features = []
+            draw_pseudo_image(search_image, "./plots/si_" + str(i) + ".png")
+
+        multi_rotate_scores_searches_penalties_and_features = []
 
         for (
             search_features,
             target,
             penalty,
-        ) in multi_scale_features_and_searches_and_penalties:
+        ) in multi_rotate_features_and_searches_and_penalties:
             scores = create_scaled_scores(
                 self.init_target_features,
                 search_features,
@@ -565,7 +568,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 self.score_upscale,
                 self.window_influence,
             )
-            multi_scale_scores_searches_penalties_and_features.append(
+            multi_rotate_scores_searches_penalties_and_features.append(
                 [scores, target, penalty, search_features]
             )
 
@@ -574,7 +577,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             top_search,
             top_search_features,
         ) = select_best_scores_and_search(
-            multi_scale_scores_searches_penalties_and_features
+            multi_rotate_scores_searches_penalties_and_features
         )
 
         if draw:
@@ -592,7 +595,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 "./plots/scores" + str(frame) + "_top.png",
             )
             draw_pseudo_image(
-                multi_scale_scores_searches_penalties_and_features[-1][
+                multi_rotate_scores_searches_penalties_and_features[-1][
                     0
                 ].squeeze(axis=0),
                 "./plots/scores" + str(frame) + "_init.png",
@@ -602,35 +605,21 @@ class VoxelBofObjectTracking3DLearner(Learner):
             top_scores,
             self.score_upscale,
             top_search[1],
+            top_search[2],
             self.search_size,
         )
-
-        # draw_scores2_scaled = (
-        #     scores2_scaled.detach()
-        #     .cpu()
-        #     .numpy()
-        #     .reshape(scores2_scaled.shape[-2:])
-        #     * 10
-        # )
-        # draw_scores2_scaled[draw_scores2_scaled < 0] = 0
-
-        # PilImage.fromarray((draw_scores2_scaled).astype(np.uint8)).convert(
-        #     "RGB"
-        # ).save("./plots/" + str(frame) + "scores2_scaled_.png")
-
-        # center_image = score_to_image_coordinates(scores_scaled, self.target_region[1], self.search_region)
 
         delta_image = delta_image[[1, 0]]
         center_image = self.search_region[0] + delta_image
 
-        if not np.all(top_search[1] == self.search_region[1]):
-            search_scale = top_search[1] / self.search_region[1]
-            new_target_size = self.last_target[1] * search_scale
-            self.init_target_features, _ = create_pseudo_image_features(
-                pseudo_image, [center_image, new_target_size], net, self.target_size
-            )
-        else:
-            new_target_size = self.last_target[1]
+        # if not np.all(top_search[1] == self.search_region[1]):
+        #     search_scale = top_search[1] / self.search_region[1]
+        #     new_target_size = self.last_target[1] * search_scale
+        #     self.init_target_features, _ = create_pseudo_image_features(
+        #         pseudo_image, [center_image, new_target_size], net, self.target_size
+        #     )
+        # else:
+        #     new_target_size = self.last_target[1]
 
         new_target = [center_image, new_target_size]
         new_search = [
@@ -679,7 +668,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         dims = label_lidar_kitti["dimensions"]
         locs = label_lidar_kitti["location"]
-        rots = label_lidar_kitti["rotation_y"]
+        rots = label_lidar_kitti["rotation_y"][0]
 
         box_lidar = np.concatenate([locs, dims, rots[..., np.newaxis]], axis=1)
 
