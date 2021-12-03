@@ -25,6 +25,7 @@ from .utils.render import cget_depths_image, cpncc
 from .utils.paf import gen_img_paf
 import torch.backends.cudnn as cudnn
 import sys
+
 __author__ = 'cleardusk'
 STD_SIZE = 120
 

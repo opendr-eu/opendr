@@ -14,6 +14,7 @@ import time
 import torch
 import math
 from .models.networks.rotate_render import TestRender
+
 multiprocessing.set_start_method('spawn', force=True)
 
 
@@ -84,15 +85,15 @@ def main(save_path, val_yaw, val_pitch):
     opt.pitch_poses = [float(x) for x in val_pitch.split(",")]
     opt.save_path = save_path
     if not opt.isTrain:
-            # change radian to angle
-            if opt.yaw_poses is not None:
-                for pose in opt.yaw_poses:
-                    assert abs(pose) <= 90, "yaw pose must be between [-90, 90]"
-                opt.yaw_poses = [round(x / 180.0 * math.pi, 2) for x in opt.yaw_poses]
-            if opt.pitch_poses is not None:
-                for pose in opt.pitch_poses:
-                    assert abs(pose) <= 90, "pitch pose must be between [-90, 90]"
-                opt.pitch_poses = [round(x / 180.0 * math.pi, 2) for x in opt.pitch_poses]
+        # change radian to angle
+        if opt.yaw_poses is not None:
+            for pose in opt.yaw_poses:
+                assert abs(pose) <= 90, "yaw pose must be between [-90, 90]"
+            opt.yaw_poses = [round(x / 180.0 * math.pi, 2) for x in opt.yaw_poses]
+        if opt.pitch_poses is not None:
+            for pose in opt.pitch_poses:
+                assert abs(pose) <= 90, "pitch pose must be between [-90, 90]"
+            opt.pitch_poses = [round(x / 180.0 * math.pi, 2) for x in opt.pitch_poses]
     datanum = data_info.get_dataset(opt)[0]
     folderlevel = data_info.folder_level[datanum]
     dataloaders = data.create_dataloader_test(opt)
