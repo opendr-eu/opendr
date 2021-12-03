@@ -19,7 +19,7 @@ import os
 import torch
 import warnings
 from opendr.engine.datasets import ExternalDataset
-from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
+from opendr.perception.object_detection_2d import GemLearner
 
 from PIL import Image
 
@@ -124,7 +124,7 @@ class TestGemLearner(unittest.TestCase):
             m2_val_annotations_file='Thermal_26May2021_14h19m_coco.json',
             m1_val_images_folder='val/m1',
             m2_val_images_folder='val/m2',
-            )
+        )
 
         self.assertFalse(torch.equal(m, list(self.learner.model.parameters())[0]),
                          msg="Model parameters did not change after running fit.")
@@ -153,7 +153,7 @@ class TestGemLearner(unittest.TestCase):
             m1_annotations_file='RGB_26May2021_14h19m_coco.json',
             m2_annotations_file='Thermal_26May2021_14h19m_coco.json',
             verbose=False,
-            )
+        )
 
         self.assertGreater(len(result), 0)
 

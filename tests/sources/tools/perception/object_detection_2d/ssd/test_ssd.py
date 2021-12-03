@@ -18,8 +18,8 @@ import cv2
 import shutil
 import os
 import numpy as np
-from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
-from opendr.perception.object_detection_2d.datasets.wider_person import WiderPersonDataset
+from opendr.perception.object_detection_2d import SingleShotDetectorLearner
+from opendr.perception.object_detection_2d import WiderPersonDataset
 
 
 def rmfile(path):

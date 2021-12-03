@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opendr.engine.data import Image
+from opendr.engine.data import Image, Timeseries
 from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
 import cv2
@@ -118,6 +118,43 @@ class ROSBridge:
         pose = Pose(data, confidence)
         pose.id = pose_id
         return pose
+
+    def to_ros_category(self, category):
+        """
+        Converts an OpenDR category into a ObjectHypothesis msg that can carry the Category.data and Category.confidence.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.data and category.confidence
+        :rtype: vision_msgs.msg.ObjectHypothesis
+        """
+        result = ObjectHypothesis()
+        result.id = category.data
+        result.score = category.confidence
+        return result
+
+    def to_ros_category_description(self, category):
+        """
+        Converts an OpenDR category into a string msg that can carry the Category.description.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.description
+        :rtype: std_msgs.msg.String
+        """
+        result = String()
+        result.data = category.description
+        return result
+
+    def from_ros_category(self, ros_hypothesis):
+        """
+        Converts a ROS message with category payload into an OpenDR category
+        :param ros_hypothesis: the objecthypothesis to be converted
+        :type ros_face: vision_msgs.msg.ObjectHypothesis
+        :return: an OpenDR category
+        :rtype: engine.target.Category
+        """
+        category = Category(prediction=ros_hypothesis.id, description=None,
+                            confidence=ros_hypothesis.score)
+        return category
 
     def to_ros_face(self, category):
         """
@@ -408,3 +445,18 @@ class ROSBridge:
         if source_data is not None:
             classification.source_img = source_data
         return classification
+
+    def from_rosarray_to_timeseries(self, ros_array, dim1, dim2):
+        '''
+        Converts ROS array into OpenDR Timeseries object
+        :param ros_array: data to be converted
+        :type ros_array: std_msgs.msg.Float32MultiArray
+        :param dim1: 1st dimension
+        :type dim1: int
+        :param dim2: 2nd dimension
+        :type dim2: int
+        :rtype: engine.data.Timeseries
+        '''
+        data = np.reshape(ros_array.data, (dim1, dim2))
+        data = Timeseries(data)
+        return data

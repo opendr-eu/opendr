@@ -19,8 +19,8 @@ import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.object_detection_2d.retinaface.retinaface_learner import RetinaFaceLearner
-from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
+from opendr.perception.object_detection_2d import RetinaFaceLearner
+from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
 class FaceDetectionNode:
