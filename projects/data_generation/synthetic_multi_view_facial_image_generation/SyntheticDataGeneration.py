@@ -49,95 +49,95 @@ from algorithm.DDFA.utils.ddfa import str2bool
 
 class MultiviewDataGeneration():
 
-  def __init__(self, args):
+    def __init__(self, args):
 
-    self.path_in = args.path_in
-    self.key = str(args.path_3ddfa + "/example/Images/")
-    self.key1 = str(args.path_3ddfa + "/example/")
-    self.key2 = str(args.path_3ddfa + "/results/")
-    self.save_path = args.save_path
-    self.val_yaw = args.val_yaw
-    self.val_pitch = args.val_pitch
-    self.args = args
-    
-  def eval(self):
+        self.path_in = args.path_in
+        self.key = str(args.path_3ddfa + "/example/Images/")
+        self.key1 = str(args.path_3ddfa + "/example/")
+        self.key2 = str(args.path_3ddfa + "/results/")
+        self.save_path = args.save_path
+        self.val_yaw = args.val_yaw
+        self.val_pitch = args.val_pitch
+        self.args = args
 
-    # STAGE No1 : detect faces and fitting to 3d mesh by main.py execution
-    list_im = []
+    def eval(self):
 
-    print("START")
+        # STAGE No1 : detect faces and fitting to 3d mesh by main.py execution
+        list_im = []
 
-    a = open("file_list.txt", "w")
-    for subdir, dirs, files in os.walk(self.path_in):
-      current_directory_path = os.path.abspath(subdir)
-      for file in files:
-        name, ext = os.path.splitext(file)
-        if ext == ".jpg":
-          current_image_path = os.path.join(current_directory_path, file)
-          current_image = cv2.imread(current_image_path)
-          list_im.append(current_image_path)
-          a.write(str(file) + os.linesep)
-          cv2.imwrite(os.path.join(self.key, file), current_image)
-      self.args.files = list_im.copy()
-      list_im.clear()
-      preprocessing_1.main(self.args)
-    a.close()
+        print("START")
 
-    # STAGE No2: Landmarks Output with inference.py execution
+        a = open("file_list.txt", "w")
+        for subdir, dirs, files in os.walk(self.path_in):
+            current_directory_path = os.path.abspath(subdir)
+            for file in files:
+                name, ext = os.path.splitext(file)
+                if ext == ".jpg":
+                    current_image_path = os.path.join(current_directory_path, file)
+                    current_image = cv2.imread(current_image_path)
+                    list_im.append(current_image_path)
+                    a.write(str(file) + os.linesep)
+                    cv2.imwrite(os.path.join(self.key, file), current_image)
+            self.args.files = list_im.copy()
+            list_im.clear()
+            preprocessing_1.main(self.args)
+        a.close()
 
-    im_list2 = []
-    d = open(os.path.join(self.key1, 'realign_lmk'), "w")
-    for subdir, dirs, files in os.walk(self.path_in):
-      current_directory_path = os.path.abspath(subdir)
-      self.args.img_prefix = current_directory_path
-      self.args.save_dir = os.path.abspath(self.key2)
-      self.args.save_lmk_dir = os.path.abspath(self.key1)
-      if not os.path.exists(self.args.save_dir):
-        os.mkdir(self.args.save_dir)
-      if not os.path.exists(self.args.save_lmk_dir):
-        os.mkdir(self.args.save_lmk_dir)
+        # STAGE No2: Landmarks Output with inference.py execution
 
-      list_lfw_batch = './file_list.txt'
-      dst = os.path.join(self.args.save_lmk_dir, "file_list.txt")
-      copyfile(list_lfw_batch, dst)
-      b = open("txt_name_batch.txt", "w")
-      for file in files:
+        im_list2 = []
+        d = open(os.path.join(self.key1, 'realign_lmk'), "w")
+        for subdir, dirs, files in os.walk(self.path_in):
+            current_directory_path = os.path.abspath(subdir)
+            self.args.img_prefix = current_directory_path
+            self.args.save_dir = os.path.abspath(self.key2)
+            self.args.save_lmk_dir = os.path.abspath(self.key1)
+            if not os.path.exists(self.args.save_dir):
+                os.mkdir(self.args.save_dir)
+            if not os.path.exists(self.args.save_lmk_dir):
+                os.mkdir(self.args.save_lmk_dir)
 
-        with open(list_lfw_batch) as f:
-          img_list = [x.strip() for x in f.readlines()]
+            list_lfw_batch = './file_list.txt'
+            dst = os.path.join(self.args.save_lmk_dir, "file_list.txt")
+            copyfile(list_lfw_batch, dst)
+            b = open("txt_name_batch.txt", "w")
+            for file in files:
 
-          for img_idx, img_fp in enumerate(tqdm(img_list)):
-            if img_fp == str(file):
-              im_list2.append(str(file))
-              b.write(str(file) + os.linesep)
-      self.args.img_list = './txt_name_batch.txt'
-      b.close()
-      self.args.dump_lmk = 'true'
-      im_list2.clear()
-      preprocessing_2.main(self.args2)
-      with open(os.path.join(self.args2.save_lmk_dir, 'realign_lmk_')) as f:
-        img_list = [x.strip() for x in f.readlines()]
-        for img_idx, img_fp in enumerate(tqdm(img_list)):
-          d.write(img_fp + os.linesep)
-    d.close()
+                with open(list_lfw_batch) as f:
+                    img_list = [x.strip() for x in f.readlines()]
 
-    # STAGE No3: Generate Facial Images in specific pitch and yaw angles
-    test_multipose.main(self.save_path, self.val_yaw, self.val_pitch)
+                    for img_idx, img_fp in enumerate(tqdm(img_list)):
+                        if img_fp == str(file):
+                            im_list2.append(str(file))
+                            b.write(str(file) + os.linesep)
+            self.args.img_list = './txt_name_batch.txt'
+            b.close()
+            self.args.dump_lmk = 'true'
+            im_list2.clear()
+            preprocessing_2.main(self.args2)
+            with open(os.path.join(self.args2.save_lmk_dir, 'realign_lmk_')) as f:
+                img_list = [x.strip() for x in f.readlines()]
+                for img_idx, img_fp in enumerate(tqdm(img_list)):
+                    d.write(img_fp + os.linesep)
+        d.close()
 
-  def fit(self):
-    raise NotImplementedError()
+        # STAGE No3: Generate Facial Images in specific pitch and yaw angles
+        test_multipose.main(self.save_path, self.val_yaw, self.val_pitch)
 
-  def infer(self):
-    raise NotImplementedError()
+    def fit(self):
+        raise NotImplementedError()
 
-  def load(self):
-    raise NotImplementedError()
+    def infer(self):
+        raise NotImplementedError()
 
-  def optimize(self):
-    raise NotImplementedError()
+    def load(self):
+        raise NotImplementedError()
 
-  def reset(self):
-    raise NotImplementedError()
+    def optimize(self):
+        raise NotImplementedError()
 
-  def save(self):
-    raise NotImplementedError()
+    def reset(self):
+        raise NotImplementedError()
+
+    def save(self):
+        raise NotImplementedError()
