@@ -85,7 +85,7 @@ dataset_detection = LabeledPointCloudsDatasetIterator(
     dataset_detection_path + "/training/label_2",
     dataset_detection_path + "/training/calib",
 )
-track_id = "0004"
+track_id = "0000"
 dataset_tracking = LabeledTrackingPointCloudsDatasetIterator(
     dataset_tracking_path + "/training/velodyne/" + track_id,
     dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
@@ -373,13 +373,13 @@ def test_pp_siamese_fit():
         model_config_path=config,
         device=DEVICE,
         lr=0.0001,
-        checkpoint_after_iter=2000,
+        checkpoint_after_iter=500,
         # checkpoint_load_iter=42000,
     )
     learner.load(model_path, backbone=True, verbose=True)
     learner.fit(
         kitti_detection,
-        model_dir="./temp/c-0",
+        model_dir="./temp/upscaled-0",
         # verbose=True
     )
 
@@ -414,10 +414,10 @@ def test_pp_siamese_infer():
         checkpoint_after_iter=2000,
     )
     # learner.load(model_path, backbone=True, verbose=True)
-    learner.load("./temp/c-0/checkpoints", backbone=False, verbose=True)
+    learner.load("./temp/upscaled-0/checkpoints", backbone=False, verbose=True)
 
     # count = len(dataset_tracking)
-    count = 120
+    count = 140
     object_id = 0
 
     point_cloud_with_calibration, labels = dataset_tracking[0]
@@ -464,12 +464,12 @@ def test_pp_siamese_infer():
 
         print("[", i, "/", count, "]", result)
 
-    filename = "./plots/video/eval_aabb_trained_ms_6k.gif"
+    filename = "./plots/video/eval_aabb_scaled_ms_6k.gif"
     imageio.mimsave(filename, images)
     pygifsicle.optimize(filename)
 
 
-def test_pp_siamese_eval(draw=False, iou_min=0.5, classes=["Car", "Van", "Truck"]):
+def test_pp_siamese_eval(draw=True, iou_min=0.5, classes=["Car", "Van", "Truck"]):
     print("Eval", name, "start", file=sys.stderr)
     import pygifsicle
     import imageio
@@ -481,7 +481,7 @@ def test_pp_siamese_eval(draw=False, iou_min=0.5, classes=["Car", "Van", "Truck"
         checkpoint_after_iter=2000,
     )
     # learner.load(model_path, backbone=True, verbose=True)
-    learner.load("./temp/c-0/checkpoints", backbone=False, verbose=True)
+    learner.load("./temp/upscaled-0/checkpoints", backbone=False, verbose=True)
 
     def test_track(track_id):
         count = len(dataset_tracking)
@@ -572,7 +572,7 @@ def test_pp_siamese_eval(draw=False, iou_min=0.5, classes=["Car", "Van", "Truck"
                 print(track_id, "%", object_id, "[", i, "/", count - 1, "] iou =", iou)
 
                 filename = (
-                    "./plots/video/eval_aabb_track_"
+                    "./plots/video/eval_aabb_scaled_track_"
                     + str(track_id)
                     + "_obj_"
                     + str(object_id)
@@ -595,7 +595,7 @@ def test_pp_siamese_eval(draw=False, iou_min=0.5, classes=["Car", "Van", "Truck"
 
             return mean_iou, tracked
 
-        for object_id in range(0, dataset.max_id + 1):
+        for object_id in range(0, min(5, dataset.max_id + 1)):
             mean_iou, tracked = test_object_id(object_id)
 
             if mean_iou is not None:
@@ -658,8 +658,9 @@ def test_pp_siamese_eval(draw=False, iou_min=0.5, classes=["Car", "Van", "Truck"
     print("all_tracked =", all_tracked)
 
 
-# test_pp_siamese_eval()
-test_pp_siamese_fit()
+# test_pp_siamese_infer()
+test_pp_siamese_eval()
+# test_pp_siamese_fit()
 # test_pp_siamese_load_fit()
 
 # test_tanet_infer_tracking()

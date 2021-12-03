@@ -33,7 +33,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
     compute_lidar_kitti_output,
-    create_multi_scale_targets,
+    create_multi_scale_searches,
     create_pseudo_image_features,
     create_scaled_scores,
     create_target_search_regions,
@@ -45,7 +45,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     hann_window,
     image_to_lidar_coordinates,
     score_to_image_coordinates,
-    select_best_scores_and_target,
+    select_best_scores_and_search,
     train,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.builder import (
@@ -118,8 +118,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
             "staircase": True,
         },
         window_influence=0.25,
-        score_upscale=10,
-        scale_penalty=0.98,
+        score_upscale=16,
+        scale_penalty=0.97,
+        target_size=np.array([127, 127]),
+        search_size=np.array([255, 255]),
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -149,6 +151,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.window_influence = window_influence
         self.score_upscale = score_upscale
         self.scale_penalty = scale_penalty
+        self.target_size = target_size
+        self.search_size = search_size
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -532,45 +536,73 @@ class VoxelBofObjectTracking3DLearner(Learner):
         pseudo_images = self.create_pseudo_image(point_cloud)
         pseudo_image = pseudo_images[0]
 
-        search_features, search_image = create_pseudo_image_features(
-            pseudo_image, self.search_region, net
+        multi_scale_searches_and_penalties = create_multi_scale_searches(
+            self.search_region, self.scale_penalty
         )
 
-        multi_scale_targets_and_penalties = [] # create_multi_scale_targets(self.last_target, self.scale_penalty)
+        multi_scale_features_and_searches_and_penalties = []
 
-        multi_scale_features_and_targets_and_penalties = []
-
-        for target, penalty in multi_scale_targets_and_penalties:
-            features, _ = create_pseudo_image_features(
-                pseudo_image, target, net
+        for search, penalty in multi_scale_searches_and_penalties:
+            search_features, search_image = create_pseudo_image_features(
+                pseudo_image, search, net, self.search_size
             )
 
-            multi_scale_features_and_targets_and_penalties.append([features, target, penalty])
+            multi_scale_features_and_searches_and_penalties.append(
+                [search_features, search, penalty]
+            )
 
-        multi_scale_features_and_targets_and_penalties.append([
-            self.init_target_features, self.init_target, 1
-        ])
+        multi_scale_scores_searches_penalties_and_features = []
 
-        multi_scale_scores_targets_penalties_and_features = []
+        for (
+            search_features,
+            target,
+            penalty,
+        ) in multi_scale_features_and_searches_and_penalties:
+            scores = create_scaled_scores(
+                self.init_target_features,
+                search_features,
+                self.model,
+                self.score_upscale,
+                self.window_influence,
+            )
+            multi_scale_scores_searches_penalties_and_features.append(
+                [scores, target, penalty, search_features]
+            )
 
-        for features, target, penalty in multi_scale_features_and_targets_and_penalties:
-            scores = create_scaled_scores(features, search_features, self.model, self.score_upscale, self.window_influence)
-            multi_scale_scores_targets_penalties_and_features.append([scores, target, penalty, features])
-
-        if draw:
-            draw_pseudo_image(search_image, "./plots/" + str(frame) + "search_.png")
-            draw_pseudo_image(search_features[0], "./plots/" + str(frame) + "search_feat.png")
-
-        top_scores, top_target, top_features = select_best_scores_and_target(
-            multi_scale_scores_targets_penalties_and_features
+        (
+            top_scores,
+            top_search,
+            top_search_features,
+        ) = select_best_scores_and_search(
+            multi_scale_scores_searches_penalties_and_features
         )
 
         if draw:
-            draw_pseudo_image(top_scores.reshape(top_scores.shape[-3:]), "./plots/scores" + str(frame) + "_top.png")
-            draw_pseudo_image(multi_scale_scores_targets_penalties_and_features[-1][0].squeeze(axis=0), "./plots/scores" + str(frame) + "_init.png")
+            draw_pseudo_image(
+                top_search, "./plots/" + str(frame) + "search_.png"
+            )
+            draw_pseudo_image(
+                top_search_features[0],
+                "./plots/" + str(frame) + "search_feat.png",
+            )
+
+        if draw:
+            draw_pseudo_image(
+                top_scores.reshape(top_scores.shape[-3:]),
+                "./plots/scores" + str(frame) + "_top.png",
+            )
+            draw_pseudo_image(
+                multi_scale_scores_searches_penalties_and_features[-1][
+                    0
+                ].squeeze(axis=0),
+                "./plots/scores" + str(frame) + "_init.png",
+            )
 
         delta_image = displacement_score_to_image_coordinates(
-            top_scores, self.score_upscale
+            top_scores,
+            self.score_upscale,
+            top_search[1],
+            self.search_size,
         )
 
         # draw_scores2_scaled = (
@@ -591,12 +623,16 @@ class VoxelBofObjectTracking3DLearner(Learner):
         delta_image = delta_image[[1, 0]]
         center_image = self.search_region[0] + delta_image
 
-        if not np.all(top_target[1] == self.init_target[1]):
-            self.init_target = top_target
-            self.init_target_features = top_features
-            print("New init", torch.max(top_scores).detach().cpu(), self.init_target)
+        if not np.all(top_search[1] == self.search_region[1]):
+            search_scale = top_search[1] / self.search_region[1]
+            new_target_size = self.last_target[1] * search_scale
+            self.init_target_features, _ = create_pseudo_image_features(
+                pseudo_image, [center_image, new_target_size], net, self.target_size
+            )
+        else:
+            new_target_size = self.last_target[1]
 
-        new_target = [center_image, self.init_target[1]]
+        new_target = [center_image, new_target_size]
         new_search = [
             center_image,
             new_target[1] * 2 + (new_target[1] < 20) * 30,
@@ -662,7 +698,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         search = batch_searches[0][0]
 
         self.init_target_features, _ = create_pseudo_image_features(
-            pseudo_image, target, net
+            pseudo_image, target, net, self.target_size
         )
         self.search_region = search
         self.init_target = target

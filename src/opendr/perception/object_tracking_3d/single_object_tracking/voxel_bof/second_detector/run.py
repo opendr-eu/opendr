@@ -189,12 +189,12 @@ def create_target_search_regions(
 
 def get_sub_image(image, center, size):
     result = torch.zeros(
-        [image.shape[0], *size], dtype=torch.float32, device=image.device
+        [image.shape[0], *size.astype(np.int32)], dtype=torch.float32, device=image.device
     )
     image_size = image.shape[-2:]
 
-    pos_min = np.round(center - size // 2).astype(np.int32)
-    pos_max = np.round(center + (size + 1) // 2 - 1).astype(np.int32)
+    pos_min = np.floor(0.5 + center - size // 2).astype(np.int32)
+    pos_max = np.floor(0.5 + center + (size + 1) // 2 - 1).astype(np.int32)
 
     local_min = np.array([0, 0])
     local_max = size - 1
@@ -247,10 +247,20 @@ def create_logisticloss_labels(
     return labels
 
 
-def create_pseudo_image_features(pseudo_image, target, net):
+def create_pseudo_image_features(pseudo_image, target, net, uspcale_size):
 
-    image = get_sub_image(pseudo_image, target[0][[1, 0]], target[1][[1, 0]])
-    features = net(image.reshape(1, *image.shape))
+    image = get_sub_image(pseudo_image, target[0][[1, 0]], target[1][[1, 0]].astype(np.int32))
+
+    if np.any(np.array(image.shape[-2:]) <= 0):
+        image = torch.zeros((image.shape[0], 1, 1), device=image.device)
+
+    image_upscaled = torch.nn.functional.interpolate(
+        image.reshape(1, *image.shape),
+        size=(uspcale_size[0], uspcale_size[1]),
+        mode="bicubic",
+    )
+
+    features = net(image_upscaled)
 
     return features, image
 
@@ -453,40 +463,39 @@ def score_to_image_coordinates(scores, target_region_size, search_region):
     return center_image
 
 
-def select_best_scores_and_target(
-    multi_scale_scores_targets_penalties_and_features,
+def select_best_scores_and_search(
+    multi_scale_scores_searches_penalties_and_features,
 ):
 
     (
         top_scores,
-        top_target,
+        top_search,
         first_penalty,
         top_features,
-    ) = multi_scale_scores_targets_penalties_and_features[0]
+    ) = multi_scale_scores_searches_penalties_and_features[0]
     max_top_score = (
         torch.max(top_scores)
         * first_penalty
-        / np.sqrt(top_target[1][0] * top_target[1][1])
     )
 
-    for i in range(1, len(multi_scale_scores_targets_penalties_and_features)):
+    for i in range(1, len(multi_scale_scores_searches_penalties_and_features)):
         (
             scores,
-            target,
+            search,
             penalty,
             features,
-        ) = multi_scale_scores_targets_penalties_and_features[i]
+        ) = multi_scale_scores_searches_penalties_and_features[i]
         max_score = (
-            torch.max(scores) * penalty / np.sqrt(target[1][0] * target[1][1])
+            torch.max(scores) * penalty
         )
 
         if max_score > max_top_score:
             top_scores = scores
             max_top_score = max_score
-            top_target = target
+            top_search = search
             top_features = features
 
-    return top_scores, top_target, top_features
+    return top_scores, top_search, top_features
 
 
 def displacement_score_to_image_coordinates(
@@ -510,31 +519,28 @@ def displacement_score_to_image_coordinates(
     return disp_image
 
 
-def create_multi_scale_targets(target, scale_penalty, delta=0.05):
+def create_multi_scale_searches(search, scale_penalty, delta=0.05):
 
-    all_targets_and_penalties = []
+    all_searches_and_penalties = []
 
     for delta_x in [-1, 0, 1]:
         for delta_y in [-1, 0, 1]:
 
             penalty = 1
 
-            if delta_x != 0:
-                penalty *= scale_penalty
-
-            if delta_y != 0:
+            if delta_x != 0 or delta_y != 0:
                 penalty *= scale_penalty
 
             delta_sign = np.array([delta_x, delta_y])
-            delta_weight = np.round(delta * target[1]).astype(np.int32)
+            delta_weight = np.round(delta * search[1]).astype(np.int32)
             delta_weight[delta_weight <= 0] = 1
 
             to_add = delta_weight * delta_sign
-            new_target = [target[0], target[1] + to_add]
+            new_target = [search[0], search[1] + to_add]
 
-            all_targets_and_penalties.append([new_target, penalty])
+            all_searches_and_penalties.append([new_target, penalty])
 
-    return all_targets_and_penalties
+    return all_searches_and_penalties
 
 
 def create_scaled_scores(
