@@ -22,16 +22,10 @@ from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition import \
-     ProgressiveSpatioTemporalBLNLearner
-from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.\
-     algorithm.datasets.landmark_extractor import landmark_extractor
-from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.\
-     algorithm.datasets.gen_facial_muscles_data import gen_muscle_data
-
-ClASSES = pd.read_csv(
-    "src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/labels.csv",
-     verbose=True, index_col=0).to_dict()["name"]
+from opendr.perception.facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
+from opendr.perception.facial_expression_recognition import landmark_extractor
+from opendr.perception.facial_expression_recognition import gen_muscle_data
+from opendr.perception.facial_expression_recognition import data_normalization
 
 
 class LandmarkFacialExpressionRecognitionNode:
@@ -117,13 +111,11 @@ class LandmarkFacialExpressionRecognitionNode:
         # 3: sequence numpy data generation from extracted landmarks and normalization:
 
         numpy_data = _landmark2numpy(landmarks)
-        norm_data = _data_normalization(numpy_data)
+        norm_data = data_normalization(numpy_data)
         muscle_data = gen_muscle_data(norm_data, './muscle_data')
 
         # Run expression recognition
         category = self.expression_classifier.infer(muscle_data)
-        category.confidence = category.confidence.max()
-        category.description = ClASSES[category.data]
 
         if self.hypothesis_publisher is not None:
             self.hypothesis_publisher.publish(self.bridge.to_ros_category(category))
@@ -141,21 +133,6 @@ def _landmark2numpy(landmarks):
     for t in range(num_frames):
         numpy_data[0, 0:num_dim, t, :, 0] = landmarks
     return numpy_data
-
-
-def _data_normalization(data):
-    data = torch.from_numpy(data)
-    N, V, C, T, M = data.size()
-    data = data.permute(0, 2, 3, 1, 4).contiguous().view(N, C, T, V, M)
-    # remove the first 17 points
-    data = data[:, :, :, 17:, :]
-    N, C, T, V, M = data.size()
-    # normalization
-    for n in range(N):
-        for t in range(T):
-            for v in range(V):
-                data[n, :, t, v, :] = data[n, :, t, v, :] - data[n, :, t, 16, :]
-    return data.numpy()
 
 
 if __name__ == '__main__':

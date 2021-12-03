@@ -45,6 +45,10 @@ from opendr.perception.facial_expression_recognition.\
     landmark_based_facial_expression_recognition.algorithm.models.pstbln import PSTBLN
 from opendr.perception.facial_expression_recognition.\
     landmark_based_facial_expression_recognition.algorithm.feeders.feeder import Feeder
+from opendr.perception.facial_expression_recognition.\
+    landmark_based_facial_expression_recognition.algorithm.datasets.AFEW_data_gen import AFEW_CLASSES
+from opendr.perception.facial_expression_recognition.\
+    landmark_based_facial_expression_recognition.algorithm.datasets.CASIA_CK_data_gen import CK_CLASSES, CASIA_CLASSES
 
 
 class ProgressiveSpatioTemporalBLNLearner(Learner):
@@ -94,10 +98,17 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
 
         if self.dataset_name is None:
             raise ValueError(self.dataset_name +
-                             "is not a valid dataset name. Supported datasets: nturgbd_cv, nturgbd_cs, kinetics")
+                             "is not a valid dataset name. Supported datasets: casia, ck+, afew")
         if self.device == 'cuda':
             self.output_device = self.device_indices[0] if type(self.device_indices) is list else self.device_indices
         self.__init_seed(1)
+
+        if self.dataset_name.lower() == 'casia':
+            self.classes_dict = CASIA_CLASSES
+        elif self.dataset_name.lower() == 'ck+':
+            self.classes_dict = CK_CLASSES
+        elif self.dataset_name.lower() == 'afew':
+            self.classes_dict = AFEW_CLASSES
 
     def fit(self, dataset, val_dataset, logging_path='', silent=False, verbose=True,
             momentum=0.9, nesterov=True, weight_decay=0.0001, monte_carlo_dropout=True, mcdo_repeats=100,
@@ -576,8 +587,11 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
 
         m = nn.Softmax(dim=0)
         softmax_predictions = m(output.data[0])
+        class_confidence = float(torch.max(softmax_predictions))
         class_ind = int(torch.argmax(softmax_predictions))
-        category = Category(prediction=class_ind, confidence=softmax_predictions)
+        class_description = self.classes_dict(class_ind)
+        category = Category(prediction=class_ind, confidence=class_confidence, description=class_description)
+
         return category
 
     def optimize(self, do_constant_folding=False):

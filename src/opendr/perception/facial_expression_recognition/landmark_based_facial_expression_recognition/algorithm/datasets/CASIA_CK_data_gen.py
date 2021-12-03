@@ -17,6 +17,10 @@ import numpy as np
 import torch
 import pickle
 import argparse
+import pandas
+
+CK_CLASSES = pandas.read_csv('./CK+_labels', verbose=True, index_col=0).to_dict()["name"]
+CASIA_CLASSES = pandas.read_csv('./CASIA_labels', verbose=True, index_col=0).to_dict()["name"]
 
 
 def data_normalization(data):
