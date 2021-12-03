@@ -38,7 +38,7 @@ export BLENDER_PATH=path_to_Blender
 ```
 $BLENDER_PATH/2.93/python/bin/python3.9 -m ensurepip
 $BLENDER_PATH/2.93/python/bin/python3.9 -m pip install numpy opencv-python opencv-contrib-python scipy
-
+```
 - Generate the human models as FBX files. 
 ```
 $BLENDER_PATH/blender -P src/generate_fbx_models.py
