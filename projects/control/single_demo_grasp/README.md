@@ -1,4 +1,4 @@
-# Perception Package
+# Single Demonstration Grasping
 
 This folder contains a catkin workspace to build the simulation package and its dependencies.
 
