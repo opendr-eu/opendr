@@ -1,15 +1,14 @@
-# Single Demonstration Grasp Package
+# Single Demonstration Grasping
 
-Containing tools for augmentation to generate training and test datasets as well as learner class for single demonstration grasp method.
+This folder contains the OpenDR Learner class for Single Demosntration Grasping. 
 
-## Installation 
+## Sources
 
-Single Demo Grasp is based on keypoint_rcnn model which is implemented by [Detectron2](https://github.com/facebookresearch/detectron2).
+The Detection module is based on Keypoint RCNN by detectron2 [1]. A webots simulation package is also included that requires franka_description and panda_moveit_config that are modified versions provided by [2] and [3].
 
-To install detectron2 module:
-``` 
-pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu101/torch1.7/index.html
-``` 
-
+## References
+1. [Detectron2](https://github.com/facebookresearch/detectron2)
+2. [franka_description](https://github.com/erdalpekel/panda_simulation)
+3. [panda_moveit_config](https://github.com/erdalpekel/panda_moveit_config.git)
 
 
