@@ -41,7 +41,7 @@ $BLENDER_PATH/2.93/python/bin/python3.9 -m pip install numpy opencv-python openc
 ```
 - Generate the human models as FBX files. 
 ```
-$BLENDER_PATH/blender -P src/generate_fbx_models.py
+$BLENDER_PATH/blender -P src/generate_models.py
 ```
 
 ### Install a demo Webots project for animating SMPL+D models.
