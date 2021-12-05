@@ -1,0 +1,8 @@
+moveit_pr2/pr2_moveit_plugins
+/home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/.private/pr2_moveit_plugins/cmake.lock /home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/./cmake.lock
+/home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/.private/pr2_moveit_plugins/share/pr2_moveit_plugins/cmake/pr2_moveit_pluginsConfig.cmake /home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/share/pr2_moveit_plugins/cmake/pr2_moveit_pluginsConfig.cmake
+/home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/.private/pr2_moveit_plugins/share/pr2_moveit_plugins/cmake/pr2_moveit_pluginsConfig-version.cmake /home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/share/pr2_moveit_plugins/cmake/pr2_moveit_pluginsConfig-version.cmake
+/home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/.private/pr2_moveit_plugins/lib/libpr2_moveit_controller_manager.so /home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/lib/libpr2_moveit_controller_manager.so
+/home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/.private/pr2_moveit_plugins/lib/libpr2_moveit_sensor_manager.so /home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/lib/libpr2_moveit_sensor_manager.so
+/home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/.private/pr2_moveit_plugins/lib/libpr2_moveit_arm_kinematics.so /home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/lib/libpr2_moveit_arm_kinematics.so
+/home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/.private/pr2_moveit_plugins/lib/pkgconfig/pr2_moveit_plugins.pc /home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/lib/pkgconfig/pr2_moveit_plugins.pc

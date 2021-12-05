@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>pr2_moveit_tests</name>
+  <version>0.7.3</version>
+  <description>The pr2_moveit_tests package</description>
+  <maintainer email="bence.magyar.robotics@gmail.com">Bence Magyar</maintainer>
+  <author email="sachinc@willowgarage.com">Sachin Chitta</author>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>orocos_kdl</build_depend>
+
+  <depend>pluginlib</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_ros_planning</depend>
+
+  <test_depend>rostest</test_depend>
+  <test_depend>rosunit</test_depend>
+</package>

@@ -1,0 +1,1 @@
+/home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/.private/catkin_tools_prebuild/local_setup.zsh

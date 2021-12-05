@@ -1,0 +1,1 @@
+/home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/.private/mobile_manipulation_rl/lib/pkgconfig/mobile_manipulation_rl.pc

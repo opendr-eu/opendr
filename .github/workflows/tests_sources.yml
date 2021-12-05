@@ -69,6 +69,7 @@ jobs:
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
           - control/mobile_manipulation
+          - control/single_demo_grasp
           - perception/object_detection_2d
           - simulation/human_model_generation
           - perception/facial_expression_recognition/landmark_based_facial_expression_recognition

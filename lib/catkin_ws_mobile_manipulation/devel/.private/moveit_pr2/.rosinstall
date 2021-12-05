@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/amir/opendr_internal/lib/catkin_ws_mobile_manipulation/devel/.private/moveit_pr2/setup.sh
