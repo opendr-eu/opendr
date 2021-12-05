@@ -46,5 +46,6 @@ $BLENDER_PATH/blender -P src/generate_fbx_models.py
 
 ### Install a demo Webots project for animating SMPL+D models.
 ```
-- install_project.sh
+-Install the demo project in Webots
+install_project.sh
 ```
