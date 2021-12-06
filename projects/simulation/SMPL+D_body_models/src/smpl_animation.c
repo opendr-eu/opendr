@@ -1,3 +1,6 @@
+/*
+ * Copyright 2020-2021 OpenDR project
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -9,6 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ */
 
 #include <webots/robot.h>
 #include <webots/skin.h>
@@ -46,7 +50,7 @@ int main(int argc, char **argv) {
   SmplSkel smplSkel;
   initialize_skel(&smplSkel);
   int counter;
-  
+
 
   read_smpl_orientation(oriet_path, &smplSkel);
   read_smpl_translation(tr_path, &smplSkel);
@@ -133,10 +137,10 @@ int main(int argc, char **argv) {
     trans[0] = position_offset[0] -smplSkel.translation[cnt][0]*100;
     trans[2] = position_offset[2] -smplSkel.translation[cnt][1]*100;
     trans[1] = position_offset[1] -smplSkel.translation[cnt][2]*100;
-    
+
     for(i=0;i<25;i++){
            if(i==19 || i == 24){
-           orientations[i][0] = 0; 
+           orientations[i][0] = 0;
            orientations[i][1] = 0;
            orientations[i][2] = 0;
            orientations[i][3] = 0;

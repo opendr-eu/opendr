@@ -101,11 +101,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
             'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
-            'src/opendr/perception/object_detection_2d/retinaface/Makefile',
-            'projects/simulation/SMPL+D_body_models/webots/smpl_webots/libraries/smpl_util/src/quaternion.c',
-            'projects/simulation/SMPL+D_body_models/webots/smpl_webots/libraries/smpl_util/src/vector3.c',
-            'projects/simulation/SMPL+D_body_models/webots/smpl_webots/libraries/smpl_util/include/quaternion_private.h',
-            'projects/simulation/SMPL+D_body_models/webots/smpl_webots/libraries/smpl_util/include/vector3_private.h'
+            'src/opendr/perception/object_detection_2d/retinaface/Makefile'
         ]
 
         skippedDirectories = [

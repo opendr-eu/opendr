@@ -1,4 +1,7 @@
-* Licensed under the Apache License, Version 2.0 (the "License");
+/*
+ * Copyright 2020-2021 OpenDR project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -88,12 +91,12 @@ void read_smpl_orientation(const char *filename_orient, SmplSkel *smplSkel){
     fread(b, 1, 1, f);
     if (V == 2) {
       HL_bytes = 4; // 4 bytes if major version is true
-     } 
+     }
     fread(&HEADER_LEN, HL_bytes, 1, f);
     // skip the header
     fread(b, HEADER_LEN, 1, f);
     int counter = 0;
-    const int N = 156; 
+    const int N = 156;
     double *dummy_v = (double *) malloc((N) * sizeof(double ));
     while( fread(dummy_v, N*sizeof(double), 1, f)){
 	counter = counter + 1;
@@ -106,7 +109,7 @@ void read_smpl_orientation(const char *filename_orient, SmplSkel *smplSkel){
     fread(b, 1, 1, f);
     if (V == 2) {
       HL_bytes = 4;
-     } 
+     }
     fread(&HEADER_LEN, HL_bytes, 1, f);
     fread(b, HEADER_LEN, 1, f);
 
@@ -134,12 +137,12 @@ void read_smpl_translation(const char *filename_transl, SmplSkel *smplSkel){
     fread(b, 1, 1, f);
     if (V == 2) {
       HL_bytes = 4; // 4 bytes if major version is true
-     } 
+     }
     fread(&HEADER_LEN, HL_bytes, 1, f);
     // skip the header
     fread(b, HEADER_LEN, 1, f);
     int counter = 0;
-    const int N = 3; 
+    const int N = 3;
     double *dummy_v = (double *) malloc((N) * sizeof(double ));
     while( fread(dummy_v, N*sizeof(double), 1, f)){
 	counter = counter + 1;
@@ -152,7 +155,7 @@ void read_smpl_translation(const char *filename_transl, SmplSkel *smplSkel){
     fread(b, 1, 1, f);
     if (V == 2) {
       HL_bytes = 4;
-     } 
+     }
     fread(&HEADER_LEN, HL_bytes, 1, f);
     fread(b, HEADER_LEN, 1, f);
 
