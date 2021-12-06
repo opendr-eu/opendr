@@ -16,21 +16,21 @@ import os
 import numpy as np
 import sys
 
+
 def getListOfFiles(dirName):
-    # create a list of file and sub directories 
-    # names in the given directory 
+    #create a list of file and sub directories 
+    #names in the given directory 
     listOfFile = os.listdir(dirName)
     allFiles = list()
-    # Iterate over all the entries
+    #Iterate over all the entries
     for entry in listOfFile:
-        # Create full path
+        #Create full path
         fullPath = os.path.join(dirName, entry)
-        # If entry is a directory then get the list of files in this directory 
+        #If entry is a directory then get the list of files in this directory 
         if os.path.isdir(fullPath):
             allFiles = allFiles + getListOfFiles(fullPath)
         else:
             allFiles.append(fullPath)
-                
     return allFiles
 
 if __name__ == "__main__":
@@ -38,7 +38,6 @@ if __name__ == "__main__":
         raise ValueError('Path to database is not provided.')
     dirName = sys.argv[1]
     listOfFiles = getListOfFiles(dirName)
-    
     for elem in listOfFiles:
         if elem.split('.')[-1] == 'npz':
             with np.load(elem) as data:
