@@ -10,6 +10,7 @@ import cython
 from .params import pncc_code
 
 __author__ = 'cleardusk'
+__all__ = ['cython']
 
 
 def is_point_in_tri(point, tri_points):
