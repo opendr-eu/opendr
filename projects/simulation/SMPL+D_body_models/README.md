@@ -14,7 +14,7 @@ This folder contains code for downloading a large number of human models in SMPL
 python download_data.py raw
 ```
 
-### Download the SMPL+D models as FBX (Filmbox) files. <br/>In this case the pose blend shapes are not applied.
+### Download the SMPL+D models and convert them as FBX (Filmbox) files. <br/>In this case the pose blend shapes are not applied.
 
 - Download the data by running:
 ```
@@ -44,7 +44,7 @@ $BLENDER_PATH/2.93/python/bin/python3.9 -m pip install numpy opencv-python openc
 $BLENDER_PATH/blender -P src/generate_models.py
 ```
 
-### Install a demo Webots project for animating SMPL+D models.
+### Install a demo Webots project for animating SMPL+D models. <br/> FBX models must have been previously generated.
 
 -  Download a database from AMASS (https://amass.is.tue.mpg.de/download.php)
 -  Extract the database (e.g., tar -xf ACCAD) 
