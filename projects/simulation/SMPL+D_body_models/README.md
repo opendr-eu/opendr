@@ -46,8 +46,14 @@ $BLENDER_PATH/blender -P src/generate_models.py
 
 ### Install a demo Webots project for animating SMPL+D models.
 
+-  Download a database from AMASS (https://amass.is.tue.mpg.de/download.php)
+-  Extract the database (e.g., tar -xf ACCAD) 
+-  Run:
+```
+python webots/extract_anims.py path_to_database
+```
+-  Assign the directory of the selected animation in the controllerArgs to webots/smpl_webots/worlds/demo_world.wbt
 -  Install the demo project in Webots
-
 ```
 chmod +x install_project.sh
 bash install_project.sh
