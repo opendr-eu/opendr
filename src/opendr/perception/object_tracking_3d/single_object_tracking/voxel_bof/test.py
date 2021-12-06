@@ -674,10 +674,11 @@ def test_rotated_pp_siamese_infer():
     learner.load("./temp/upscaled-rotated-0/checkpoints", backbone=False, verbose=True)
 
     # count = len(dataset_tracking)
-    count = 140
+    start_frame = 0
+    count = 150
     object_id = 0
 
-    point_cloud_with_calibration, labels = dataset_tracking[0]
+    point_cloud_with_calibration, labels = dataset_tracking[start_frame]
     selected_labels = TrackingAnnotation3DList(
         [label for label in labels if label.id == object_id]
     )
@@ -689,7 +690,7 @@ def test_rotated_pp_siamese_infer():
 
     images = []
 
-    for i in range(1, count):
+    for i in range(start_frame, count):
         point_cloud_with_calibration, labels = dataset_tracking[
             i
         ]  # i iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
@@ -916,8 +917,8 @@ def test_rotated_pp_siamese_eval(draw=False, iou_min=0.0, classes=["Car", "Van",
     print("all_tracked =", all_tracked)
 
 
-test_rotated_pp_siamese_eval()
-# test_rotated_pp_siamese_infer()
+# test_rotated_pp_siamese_eval()
+test_rotated_pp_siamese_infer()
 # test_pp_siamese_fit()
 
 # test_pp_siamese_infer()

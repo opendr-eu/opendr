@@ -119,9 +119,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
             "decay_factor": 0.8,
             "staircase": True,
         },
-        window_influence=0.35,
+        window_influence=0.25,
         score_upscale=16,
-        scale_penalty=0.98,
+        rotation_penalty=0.98,
+        rotation_step=0.15,
         target_size=np.array([127, 127]),
         search_size=np.array([255, 255]),
     ):
@@ -152,7 +153,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         self.window_influence = window_influence
         self.score_upscale = score_upscale
-        self.scale_penalty = scale_penalty
+        self.rotation_penalty = rotation_penalty
+        self.rotation_step = rotation_step
         self.target_size = target_size
         self.search_size = search_size
 
@@ -543,7 +545,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             pseudo_image = pseudo_images[0]
 
             multi_rotate_searches_and_penalties = create_multi_rotate_searches(
-                self.search_region, self.scale_penalty
+                self.search_region, self.rotation_penalty, self.rotation_step
             )
 
             multi_rotate_features_and_searches_and_penalties = []
@@ -555,6 +557,16 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
                 multi_rotate_features_and_searches_and_penalties.append(
                     [search_features, search, penalty]
+                )
+
+                draw_pseudo_image(
+                    search_image.squeeze(axis=0),
+                    "./plots/search_" + str(frame) + "_" + str(i) + ".png",
+                )
+
+                draw_pseudo_image(
+                    search_features.squeeze(axis=0),
+                    "./plots/search_feat_" + str(frame) + "_" + str(i) + ".png",
                 )
 
             multi_rotate_scores_searches_penalties_and_features = []
