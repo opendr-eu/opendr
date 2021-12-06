@@ -78,6 +78,49 @@ Parameters:
 
 - **message**: *engine.target.Pose*  
   OpenDR pose to be converted to ROS pose.
+
+
+#### `ROSBridge.to_ros_category`
+
+```python
+ROSBridge.to_ros_category(self,
+                          category)
+```
+Converts an OpenDR Category used for category recognition into a ROS ObjectHypothesis.
+
+Parameters:
+
+- **message**: *engine.target.Category*  
+  OpenDR Category used for category recognition to be converted to ROS ObjectHypothesis.
+  
+#### `ROSBridge.to_ros_category_description`
+
+```python
+ROSBridge.to_ros_category_description(self,
+                                      category)
+```
+Converts an OpenDR Category into a ROS String.
+
+Parameters:
+
+- **message**: *engine.target.Category*  
+  OpenDR Category to be converted to ROS String.
+
+
+#### `ROSBridge.from_ros_category`
+
+```python
+ROSBridge.from_ros_category(self,
+                        ros_hypothesis)
+```
+
+Converts a ROS ObjectHypothesis message into an OpenDR Category.
+
+Parameters:
+
+- **message**: *ros_bridge.msg.ObjectHypothesis*  
+  ROS ObjectHypothesis to be converted into an OpenDR Category.
+
  
 #### `ROSBridge.from_ros_face`
 
@@ -212,6 +255,55 @@ Converts a list of ROS colors into an array (Nx3).
 
 Parameters:
 - **ros_colors**: list of *std_msgs.msg.colorRGBA* 
+
+
+#### `ROSBridge.from_ros_image_to_depth`
+
+```python
+ROSBridge.from_ros_image_to_depth(self,
+                         message,
+                         encoding)
+```
+
+This method converts a ROS image message into an OpenDR grayscale depth image
+
+Parameters:
+
+- **message**: *sensor_msgs.msg.Img*  
+  ROS image to be converted into an OpenDR image.
+- **encoding**: *str, default='mono16'*  
+  Encoding to be used for the conversion.
+
+#### `ROSBridge.from_category_to_rosclass`
+
+```python
+ROSBridge.from_category_to_rosclass(self,
+                         prediction,
+                         source_data)
+```
+This method converts an OpenDR Category object into Classification2D message with class label, confidence, timestamp and optionally corresponding input.
+
+Parameters:
+- **prediction**: *engine.target.Category*  
+  OpenDR Category object
+- **source_data**: *default=None*  
+  Corresponding input, default=None
+  
+#### `ROSBridge.from_rosarray_to_timeseries`
+
+```python
+ROSBridge.from_rosarray_to_timeseries(self,
+                         ros_array, dim1, dim2)
+```
+This method converts a ROS array into OpenDR Timeseries object
+
+Parameters:
+- **ros_array**: *std_msgs.msg.Float32MultiArray*  
+  ROS array of data
+- **dim1**: *int*  
+  First dimension
+- **dim2**: *int*  
+  Second dimension
 
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`

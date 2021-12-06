@@ -22,7 +22,7 @@ from urllib.request import urlretrieve
 import numpy as np
 import torch as t
 
-from opendr.perception.speech_recognition.quadraticselfonn.quadraticselfonn_learner import QuadraticSelfOnnLearner
+from opendr.perception.speech_recognition import QuadraticSelfOnnLearner
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Timeseries
 from opendr.engine.datasets import DatasetIterator

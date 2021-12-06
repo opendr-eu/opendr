@@ -17,9 +17,7 @@ import shutil
 import os
 import torch
 import numpy as np
-from opendr.perception.facial_expression_recognition.\
-    landmark_based_facial_expression_recognition.progressive_spatio_temporal_bln_learner \
-    import ProgressiveSpatioTemporalBLNLearner
+from opendr.perception.facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
 from opendr.engine.datasets import ExternalDataset
 
 

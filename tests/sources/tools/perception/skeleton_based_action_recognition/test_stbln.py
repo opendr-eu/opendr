@@ -17,7 +17,7 @@ import shutil
 import os
 import torch
 import numpy as np
-from opendr.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
+from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGCNLearner
 from opendr.engine.datasets import ExternalDataset
 
 

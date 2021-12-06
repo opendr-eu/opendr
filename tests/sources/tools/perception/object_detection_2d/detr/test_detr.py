@@ -20,7 +20,7 @@ import torch
 import warnings
 from torch.jit import TracerWarning
 from opendr.engine.datasets import ExternalDataset
-from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
+from opendr.perception.object_detection_2d import DetrLearner
 from PIL import Image
 
 
@@ -145,7 +145,7 @@ class TestDetrLearner(unittest.TestCase):
             self.dataset_path,
             "image",
             "000000391895.jpg",
-            )
+        )
 
         image = Image.open(image_path)
 

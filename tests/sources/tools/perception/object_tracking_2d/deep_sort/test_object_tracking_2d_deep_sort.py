@@ -17,14 +17,12 @@ import unittest
 import shutil
 import os
 import torch
-from opendr.perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
-    ObjectTracking2DDeepSortLearner,
-)
-from opendr.perception.object_tracking_2d.datasets.market1501_dataset import (
+from opendr.perception.object_tracking_2d import ObjectTracking2DDeepSortLearner
+from opendr.perception.object_tracking_2d import (
     Market1501Dataset,
     Market1501DatasetIterator,
 )
-from opendr.perception.object_tracking_2d.datasets.mot_dataset import (
+from opendr.perception.object_tracking_2d import (
     MotDataset,
     RawMotWithDetectionsDatasetIterator,
 )

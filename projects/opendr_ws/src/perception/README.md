@@ -135,3 +135,28 @@ rosrun perception semantic_segmentation_bisenet.py IMAGE_TOPIC
 Additionally, the following optional arguments are available:
 - `-h, --help`: show a help message and exit
 - `--heamap_topic HEATMAP_TOPIC`: publish the heatmap on `HEATMAP_TOPIC`
+
+## RGBD Hand Gesture Recognition ROS Node
+
+A ROS node for performing hand gesture recognition using MobileNetv2 model trained on HANDS dataset. The node has been tested with Kinectv2 for depth data acquisition with the following drivers: https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2. Assuming that the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception rgbd_hand_gesture_recognition.py
+```
+The predictied classes are published to the topic `/opendr/gestures`.
+
+## Heart Anomaly Detection ROS Node
+
+A ROS node for performing heart anomaly (atrial fibrillation) detection from ecg data using GRU or ANBOF models trained on AF dataset. Assuming that the OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception heart_anomaly_detection.py ECG_TOPIC MODEL
+```
+with `ECG_TOPIC` specifying the ROS topic to which the node will subscribe, and `MODEL` set to either *gru* or *anbof*. The predictied classes are published to the topic `/opendr/heartanomaly`.
+
+## Human Action Recognition ROS Node
+
+A ROS node for performing Human Activity Recognition using either CoX3D or X3D models pretrained on Kinetics400.
+Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception video_activity_recognition.py
+```
+The predictied class id and confidence is published under the topic name `/opendr/human_activity_recognition`, and the human-readable class name under `/opendr/human_activity_recognition_description`.
