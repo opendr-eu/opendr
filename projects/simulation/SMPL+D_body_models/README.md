@@ -49,5 +49,6 @@ $BLENDER_PATH/blender -P src/generate_models.py
 -  Install the demo project in Webots
 
 ```
+chmod +x install_project.sh
 bash install_project.sh
 ```
