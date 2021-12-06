@@ -94,10 +94,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/semantic_segmentation/bisenet/algorithm',
             'src/opendr/perception/object_detection_2d/retinaface/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
-            'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
-            'projects/simulation/SMPL+D_body_models/webots/smpl_webots/libraries/smpl_util/src/other',
-            'projects/simulation/SMPL+D_body_models/webots/smpl_webots/libraries/smpl_util/include/other'
-
+            'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition'
         ]
 
         skippedFilePaths = [
@@ -105,6 +102,10 @@ class TestLicense(unittest.TestCase):
             'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
             'src/opendr/perception/object_detection_2d/retinaface/Makefile',
+            'projects/simulation/SMPL+D_body_models/webots/smpl_webots/libraries/smpl_util/src/quaternion.c',
+            'projects/simulation/SMPL+D_body_models/webots/smpl_webots/libraries/smpl_util/src/vector3.c',
+            'projects/simulation/SMPL+D_body_models/webots/smpl_webots/libraries/smpl_util/include/quaternion_private.h',
+            'projects/simulation/SMPL+D_body_models/webots/smpl_webots/libraries/smpl_util/include/vector3_private.h'
         ]
 
         skippedDirectories = [
