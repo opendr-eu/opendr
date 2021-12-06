@@ -31,8 +31,7 @@ def getListOfFiles(dirName):
         else:
             allFiles.append(fullPath)
                 
-    return allFiles  
-      
+    return allFiles
 
 if __name__ == "__main__":
     if len(sys.argv)<2:
