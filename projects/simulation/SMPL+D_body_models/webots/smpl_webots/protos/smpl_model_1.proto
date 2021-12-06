@@ -5,8 +5,8 @@ PROTO smpl_model_1 [
   field SFVec3f    translation 0 0 0
   field SFRotation rotation    0 1 0 0
   field SFVec3f    scale       0.01 0.01 0.01
-  field SFString   name        "smpl_model_1"
-  field SFString   model       "smpl_model_1"
+  field SFString   name        "model-204"
+  field SFString   model       "model-204"
   field SFBool     castShadows TRUE
 ]
 {
@@ -27,7 +27,7 @@ PROTO smpl_model_1 [
         }
         texture ImageTexture {
           url [
-            "textures/smpl_model_1/texture.png"
+            "textures/model-204/texture.png"
           ]
         }
         name "material"
