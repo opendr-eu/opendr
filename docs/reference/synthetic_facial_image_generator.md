@@ -1,22 +1,21 @@
 ## synthetic_facial_image_generator module
 
-The *synthetic_facial_image_generator* module contains the *MultiviewDataGenerationLearner* class, which inherits from the abstract class *Learner*.
+The *synthetic_facial_image_generator* module contains the *MultiviewDataGeneration* class, which implements the multi-view facial image rendering operation.
 
-### Class MultiviewDataGenerationLearner
-Bases: `engine.learners.Learner`
+### Class MultiviewDataGeneration
 
-The *MultiviewDataGenerationLearner* class is a wrapper of the Rotate-and-Render [[1]](#R-R-paper) photorealistic multi-view facial image generator based on the original
+The *MultiviewDataGeneration* class is a wrapper of the Rotate-and-Render [[1]](#R-R-paper) photorealistic multi-view facial image generator based on the original
 [Rotate-and-Render implementation](https://github.com/Hangz-nju-cuhk/Rotate-and-Render).
 It can be used to perform multi-view facial image generation from a single view image on the wild (eval). 
-The [MultiviewDataGenerationLearner](#projects.data_generation.synthetic-multi-view-facial-image-generation.3ddfa.SyntheticDataGeneration.py ) class has the
+The [MultiviewDataGeneration](#projects.data_generation.synthetic-multi-view-facial-image-generation.3ddfa.SyntheticDataGeneration.py ) class has the
 following public methods:
 
-#### `MultiviewDataGenerationLearner` constructor
+#### `MultiviewDataGeneration` constructor
 ```python
-MultiviewDataGenerationLearner(self, path_in='./example/Images', path_3ddfa='./', save_path='./results', val_yaw='10,20', val_pitch=' 30,40', device='cuda')
+MultiviewDataGeneration(self, args)
 ```
 
-Constructor parameter explanation:
+Constructor main parameters *args* explanation:
 - **path_in**: *str, default='./example/Images'* \
 An absolute path (path in) which indicates the folder that contains the set of single view facial image snapshots to be processed by the algorithm.
 - **path_3ddfa**: *str, default='./'* \
@@ -33,9 +32,9 @@ Definition of the pitch angles (in the interval [−90◦,90◦]) for which the 
 Specifies the device to be used.
 
 
-#### `MultiviewDataGenerationLearner.eval`
+#### `MultiviewDataGeneration.eval`
 ```python
-MultiviewDataGenerationLearner.eval()
+MultiviewDataGeneration.eval()
 ```
 
 This function is implementing the main procedure for the creation of the multi-view
@@ -51,7 +50,7 @@ facial image rendering is executed by loading the respective network parameters.
 ```python
 import path_helper
 import argparse
-from SyntheticDataGeneration import MultiviewDataGenerationLearner
+from SyntheticDataGeneration import MultiviewDataGeneration
 __all__ = ['path_helper']
 
 parser=argparse.ArgumentParser()
@@ -69,7 +68,7 @@ The corresponding paths for the input, output folders as well as the pitch and y
 produce the facial images can be easily incorporated in the class creation while the method is initialized. 
 The process is executed for the CNN parameters and GPUs specified in the code. Users that wish to modify these parameters shall change the respective code
 A parser is created and the arguments path in, path_3ddfa, save_path, val_yaw, val_pitch which were described above are determined. Subsequently, an object synthetic
-of the class ```MultiviewDataGenerationLearner``` is created and the function ```synthetic.eval()``` is executed.
+of the class ```MultiviewDataGeneration``` is created and the function ```synthetic.eval()``` is executed.
 
 #### References
 <a name="R-R-paper" href="https://github.com/Hangz-nju-cuhk/Rotate-and-Render">[1]</a>
