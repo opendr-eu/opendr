@@ -35,6 +35,7 @@ class VideoReader(object):
 
     def __next__(self):
         was_read, img = self.cap.read()
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if not was_read:
             raise StopIteration
         return img
@@ -82,6 +83,7 @@ if __name__ == '__main__':
             end_time = time.perf_counter()
             fps = 1.0 / (end_time - start_time)
 
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             for pose in poses:
                 draw(img, pose)
 
@@ -92,6 +94,7 @@ if __name__ == '__main__':
             if counter > 5:
                 image = cv2.putText(img, "FPS: %.2f" % (avg_fps,), (50, 50), cv2.FONT_HERSHEY_SIMPLEX,
                                     1, (255, 0, 0), 2, cv2.LINE_AA)
+
 
             cv2.imshow('Result', img)
             cv2.waitKey(1)

@@ -605,6 +605,9 @@ class LightweightOpenPoseLearner(Learner):
             img = Image(img)
         img = img.numpy()
 
+        # Convert to BGR used internally
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
         height, width, _ = img.shape
         scale = self.base_height / height
 
