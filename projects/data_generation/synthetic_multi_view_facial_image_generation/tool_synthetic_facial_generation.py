@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-import sys
 import os
-import torch
 import argparse
 from SyntheticDataGeneration import MultiviewDataGeneration
 from algorithm.DDFA.utils.ddfa import str2bool
