@@ -50,7 +50,7 @@ $BLENDER_PATH/blender -P src/generate_models.py
 -  Extract the database (e.g., tar -xf ACCAD) 
 -  Run:
 ```
-python webots/extract_anims.py *path_to_database*
+python webots/extract_anims.py _path_to_database_
 ```
 -  Assign the directory of the selected animation in the controllerArgs to webots/smpl_webots/worlds/demo_world.wbt
 -  Install the demo project in Webots
