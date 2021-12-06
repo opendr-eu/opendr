@@ -36,13 +36,10 @@ DEF Smpl_model_1 Robot {
   rotation 0 1 0 1.5708
   children [
     smpl_model_1{
-      name "smpl_model_1"
-      model "smpl_model_1"
+      name "model-204"
+      model "model-204"
     }
   ]
   controller "smpl_animation"
-  controllerArgs "smpl_model_1 /home/charsyme/Downloads/ACCAD/Female1Running_c3d/run3"
+  controllerArgs "model-204 /ACCAD/Female1Running_c3d/run3"
 }
-
-
-
