@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import unittest
-import cv2
 import shutil
 import os
 import torch

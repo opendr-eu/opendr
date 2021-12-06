@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cv2
 import time
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.engine.data import Image
