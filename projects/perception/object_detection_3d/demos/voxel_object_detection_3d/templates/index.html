@@ -1,0 +1,103 @@
+<html>
+
+<head>
+  <title>OpenDR voxel object detection 3d demo</title>
+</head>
+
+<body style="background-color:black; text-align:center">
+  <img src="{{ url_for('video_feed') }}" alt="OpenDR activity recognition demo"
+    style="height:98vh; max-width:98%; object-fit: contain;">
+</body>
+
+<script>
+
+  let sendKeyT = (key, url='/keypress') => {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify({
+        key: key
+    }));
+  }
+
+  document.addEventListener('keypress', (event) => {
+    let name = event.key;
+    let code = event.code;
+    
+    let value = -1;
+
+    switch (code) {
+      case "KeyW":
+        value = 0;
+        break;
+      case "KeyA":
+        value = 1;
+        break;
+      case "KeyS":
+        value = 2;
+        break;
+      case "KeyD":
+        value = 3;
+        break;
+
+      case "KeyY":
+        value = 4;
+        break;
+      case "KeyG":
+        value = 5;
+        break;
+      case "KeyH":
+        value = 6;
+        break;
+      case "KeyJ":
+        value = 7;
+        break;
+      case "KeyB":
+        value = 8;
+        break;
+      case "KeyN":
+        value = 9;
+        break;
+
+      case "KeyI":
+        value = 10;
+        break;
+      case "KeyO":
+        value = 11;
+        break;
+      case "KeyK":
+        value = 12;
+        break;
+      case "KeyL":
+        value = 13;
+        break;
+      case "KeyZ":
+        value = 14;
+        break;
+      case "KeyX":
+        value = 15;
+        break;
+
+      case "KeyV":
+        value = 98;
+        break;
+      case "KeyM":
+        value = 99;
+        break;
+      case "Space":
+        value = 100;
+        break;
+    }
+
+    console.log(`Key pressed ${name} \r\n Key code value: ${code}`);
+
+    if (value > -1) {
+      console.log("Key sent");
+      sendKeyT(value);
+    }
+
+  }, false);
+
+</script>
+
+</html>

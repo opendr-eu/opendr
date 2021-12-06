@@ -15,7 +15,7 @@
 import argparse
 
 from opendr.engine.datasets import ExternalDataset
-from opendr.perception.object_detection_2d.centernet.centernet_learner import CenterNetDetectorLearner
+from opendr.perception.object_detection_2d import CenterNetDetectorLearner
 
 
 if __name__ == '__main__':
