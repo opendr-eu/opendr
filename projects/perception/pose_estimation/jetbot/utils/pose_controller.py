@@ -163,7 +163,7 @@ class PoseController:
         # Get a frame and check for detections
         self.last_img = self.robot.get_camera_data()
         self.last_pose = None
-        poses = self.pose_estimator.infer(self._get_infer_image())
+        poses = self.pose_estimator.infer(cv2.cvtColor(self._get_infer_image(), cv2.COLOR_BGR2RGB))
         self.wait()
 
         if self.active:
@@ -190,7 +190,7 @@ class PoseController:
 
                 self.last_img = self.robot.get_camera_data()
 
-                heatmap, poses = self.pose_estimator.infer_active(self.last_img)
+                heatmap, poses = self.pose_estimator.infer_active(cv2.cvtColor(self.last_img, cv2.COLOR_BGR2RGB))
                 self.wait()
 
                 # Get the probability that a pixel is not a joint
@@ -251,7 +251,8 @@ class PoseController:
 
                 self.robot.rotate(self.rotation_interval, visualization_fn)
                 self.last_img = self.robot.get_camera_data()
-                poses = self.pose_estimator.infer(cv2.resize(self.last_img, (600, 800)))
+                img = cv2.resize(self.last_img, (600, 800))
+                poses = self.pose_estimator.infer(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
                 self.wait()
                 if len(poses) > 0:
                     self.last_pose = poses[0]
@@ -291,7 +292,7 @@ class PoseController:
         while no_detection_frames < self.patience:
 
             self.last_img = self.robot.get_camera_data()
-            poses = self.pose_estimator.infer(self._get_infer_image())
+            poses = self.pose_estimator.infer(cv2.cvtColor(self._get_infer_image(), cv2.COLOR_BGR2RGB))
             self.wait()
 
             if len(poses) > 0:
@@ -414,7 +415,7 @@ class PoseController:
         for i in range(self.distance_fall):
             self.safe_translate(2, lambda x: None)
             self.last_img = self.robot.get_camera_data()
-            poses = self.pose_estimator.infer(self._get_infer_image())
+            poses = self.pose_estimator.infer(cv2.cvtColor(self._get_infer_image(), cv2.COLOR_BGR2RGB))
             self.wait()
             if len(poses) > 0:
                 self.last_pose = poses[0]
