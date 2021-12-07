@@ -211,18 +211,22 @@ class Timeseries(Data):
 class Image(Data):
     """
     A class used for representing image data.
-    OpenDR uses NCHW/RGB conventions
+    OpenDR uses CHW/RGB conventions
     This class provides abstract methods for:
     - returning a NumPy compatible representation of data (numpy())
     - loading an input directly into OpenDR compliant format (open())
-    - getting an image into OpenCV- compliant format (opencv()) for visualization purposes
+    - getting an image into OpenCV-compliant format (opencv()) for visualization purposes
     """
 
     def __init__(self, data=None, dtype=np.uint8, guess_format=True):
         """
         Image constructor
-        :param: dtype type of the image data provided
-        :guess_format: try to automatically guess the type of input data and convert them to OpenDR format
+        :param data: Data to be held by the image object
+        :type data: numpy.ndarray
+        :param dtype: type of the image data provided
+        :type data: numpy.dtype
+        :param guess_format: try to automatically guess the type of input data and convert them to OpenDR format
+        :type guess_format: bool
         """
         super().__init__(data)
 
@@ -299,6 +303,7 @@ class Image(Data):
         if not Path(filename).exists():
             raise FileNotFoundError('The image file does not exist.')
         data = cv2.imread(filename)
+        # Change channel order and convert from HWC to CHW
         data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
         data = np.transpose(data, (2, 0, 1))
         return cls(data)
@@ -317,10 +322,13 @@ class Image(Data):
 
     def convert(self, format='channels_first', channel_order='rgb'):
         """
-        Returns the data in channels first/last format using either 'rgb' or 'bgr' ordering
+        Returns the data in channels first/last format using either 'rgb' or 'bgr' ordering.
+        Please note that this function may or may not return a copy of the original data held by the object.
         :param format: either 'channels_first' or 'channels_last'
+        :type format: str
         :param channel_order: either 'rgb' or 'bgr'
-        :return an image with the appropriate format
+        :type channel_order: str
+        :return an image (as NumPy array) with the appropriate format
         :rtype NumPy array
         """
         data = self.data
@@ -414,7 +422,7 @@ class Video(Data):
     - returning a NumPy compatible representation of data (numpy())
     """
 
-    def __init__(self, data: Union[torch.Tensor, np.ndarray]=None):
+    def __init__(self, data: Union[torch.Tensor, np.ndarray] = None):
         """Construct a new Video
 
         Args:

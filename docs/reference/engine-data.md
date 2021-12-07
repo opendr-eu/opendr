@@ -100,8 +100,13 @@ The [Image](#class_engine.data.Image) class has the following public methods:
 #### open(filename)
   Construct a new [Image](#class-engine.data.Image) object from the given image file.
 
-
-
+#### convert(format, channel_order)
+  Returns the data in channels first/last format using either 'rgb' or 'bgr' ordering.
+  Please note that this function may or may not return a copy of the original data held by the object.
+  *format* is expected to be of str type (either 'channels_first' or 'channels_last')
+  *channel_order* is expected to be of str type (either 'rgb' or 'bgr')
+  Returns an image (as [NumPy](https://numpy.org) array) with the appropriate format
+        
 
 ### class engine.data.ImageWithDetections
 Bases: `engine.data.Image`

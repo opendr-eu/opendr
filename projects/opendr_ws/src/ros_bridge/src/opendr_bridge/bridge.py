@@ -61,7 +61,7 @@ class ROSBridge:
         :return: ROS image
         :rtype: sensor_msgs.msg.Image
         """
-        # Convert from the OpenDR standard (NCHW/RGB) to OpenCV standard (NHWC/BGR)
+        # Convert from the OpenDR standard (CHW/RGB) to OpenCV standard (HWC/BGR)
         message = self._cv_bridge.cv2_to_imgmsg(image.opencv(), encoding=encoding)
         return message
 
