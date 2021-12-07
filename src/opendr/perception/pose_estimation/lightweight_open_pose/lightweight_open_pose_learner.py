@@ -604,6 +604,9 @@ class LightweightOpenPoseLearner(Learner):
         if not isinstance(img, Image):
             img = Image(img)
         img = img.numpy()
+        # Bring image into the appropriate format for the implementation
+        img = np.transpose(img, (1, 2, 0))
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
         height, width, _ = img.shape
         scale = self.base_height / height
@@ -1025,6 +1028,10 @@ class LightweightOpenPoseLearner(Learner):
         if not isinstance(img, Image):
             img = Image(img)
         img = img.numpy()
+
+        # Bring image into the appropriate format for the implementation
+        img = np.transpose(img, (1, 2, 0))
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
         img_mean = self.img_mean  # Defaults to (128, 128, 128)
         img_scale = self.img_scale  # Defaults to 1 / 256
