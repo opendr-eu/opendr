@@ -36,12 +36,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    train_dataset_1 = WiderPersonDataset(root='/home/administrator/data/wider_person', splits=['train'])
-    val_dataset = XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
+    train_dataset_1 = WiderPersonDataset(root='/home/manos/data/wider_person', splits=['train'])
+    val_dataset = XMLBasedDataset(root='/home/manos/data/agi_human_data', dataset_type='agi_human',
                                  images_dir='human', annotations_dir='human_anot', classes=['person'])
-    train_dataset_2 = XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
+    train_dataset_2 = XMLBasedDataset(root='/home/manos/data/agi_human_data', dataset_type='agi_human',
                                            images_dir='no_human', annotations_dir='no_human_anot', classes=['person'])
-    # train_dataset_3 = XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
+    # train_dataset_3 = XMLBasedDataset(root='/home/manos/data/agi_human_data', dataset_type='agi_human',
     #                                     images_dir='human', annotations_dir='human_anot', classes=['person'])
     train_dataset = ConcatDataset([train_dataset_1, train_dataset_2])
     # train_dataset = train_dataset_1
@@ -50,5 +50,5 @@ if __name__ == '__main__':
                                     checkpoint_load_iter=args.resume_from, epochs=args.n_epochs,
                                     checkpoint_after_iter=args.checkpoint_freq, log_after=50)
     ssd.load_gcv('coco', keep_classes=['person'])
-    ssd.fit(train_dataset, val_dataset)
+    ssd.fit(train_dataset, val_dataset, 'TensorboadLogs/Trainig_WP_and_agiNoHuman')
     ssd.save("./ssd_concat_person_model")

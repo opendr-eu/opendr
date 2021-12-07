@@ -33,6 +33,9 @@ from gluoncv import utils as gutils
 from gluoncv.utils.metrics.voc_detection import VOC07MApMetric
 from gluoncv.utils.metrics.coco_detection import COCODetectionMetric
 
+# mxboard for logs and visualization
+from mxboard import SummaryWriter
+
 # OpenDR engine imports
 from opendr.engine.learners import Learner
 from opendr.engine.data import Image
@@ -306,7 +309,7 @@ class SingleShotDetectorLearner(Learner):
         :type dataset: DetectionDataset or ExternalDataset
         :param val_dataset: validation dataset object
         :type val_dataset: ExternalDataset or DetectionDataset
-        :param logging_path: ignored
+        :param logging_path: folder that stored log files for Tensorboard visualization. If '' or None tensorboard will not be used.
         :type logging_path: str, optional
         :param silent: ignored
         :type silent: str, optional
@@ -392,6 +395,14 @@ class SingleShotDetectorLearner(Learner):
         self._model.collect_params().reset_ctx(ctx)
         self._model.hybridize(static_alloc=True, static_shape=True)
 
+        # define a summary writer that logs data and flushes to the file every 5 seconds
+        # Tensorboard logging
+        if logging_path != '':
+            self.loggingTensorboard = True
+            self.writer = SummaryWriter(logging_path)
+        else:
+            self.loggingTensorboard = False
+
         # start training
         training_dict = {"cross_entropy_loss": [], "smoothl1_loss": [], "val_map": []}
         n_iters = 0
@@ -437,13 +448,35 @@ class SingleShotDetectorLearner(Learner):
                         epoch, i, name1, loss1, name2, loss2
                     ))
             toc = time.time()
+            
+            # Log the model
+            if self.loggingTensorboard:
+                if epoch == 0:
+                    self.writer.add_graph(self._model)
 
+            # loging training parameters
+            if self.loggingTensorboard:
+                all_params = self._model.collect_params().keys()
+                all_values = self._model.collect_params().values()
+                grads = [i.grad() for i in all_values if i.grad_req != 'null']
+                param_names = [j for i,j in zip(all_values,all_params) if i.grad_req != 'null']
+                assert len(grads) == len(param_names)
+                for i, name in enumerate(param_names):
+                    self.writer.add_histogram(tag=name, values=grads[i], global_step=epoch, bins=1000)
+            
             # perform evaluation during training
             if epoch % self.val_after == self.val_after - 1 and val_dataset is not None:
                 if verbose:
                     print("Model evaluation at epoch {}".format(epoch))
                 eval_dict = self.eval(val_dataset)
                 training_dict["val_map"].append(eval_dict["map"])
+                
+                # Log losses eval
+                if self.loggingTensorboard:
+                    eval_name = eval_dict.keys()
+                    eval_acc = list(eval_dict.values())
+                    for i, name in enumerate(eval_name):
+                        self.writer.add_scalar(tag="eval_epoch_" + name, value=eval_acc[i], global_step=epoch)
 
             # checkpoint saving
             if self.checkpoint_after_iter > 0 and epoch % self.checkpoint_after_iter == self.checkpoint_after_iter - 1:
@@ -461,6 +494,21 @@ class SingleShotDetectorLearner(Learner):
             print('[Epoch {}] Training cost: {:.3f}, {}={:.3f}, {}={:.3f}'.format(
                 epoch, toc - tic, name1, loss1, name2, loss2
             ))
+            
+            # Log losses at epoches
+            if self.loggingTensorboard:
+
+                #train_eval = self.eval(dataset_tr)
+                #name_acc = train_eval.keys()
+                #acc = list(train_eval.values())
+                self.writer.add_scalar(tag="train_epoch_" + name1, value=loss1, global_step=epoch)
+                self.writer.add_scalar(tag="train_epoch_" + name2, value=loss2, global_step=epoch)
+                #for i, name in enumerate(name_acc):
+                #    self.writer.add_scalar(tag="train_epoch_" + name, value=acc[i], global_step=epoch)
+        
+        # Close the loger
+        if self.loggingTensorboard:
+            self.writer.close()
 
         return training_dict
 
