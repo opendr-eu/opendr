@@ -211,15 +211,32 @@ class Timeseries(Data):
 class Image(Data):
     """
     A class used for representing image data.
+    OpenDR uses NCHW/RGB conventions
     This class provides abstract methods for:
     - returning a NumPy compatible representation of data (numpy())
+    - loading an input directly into OpenDR compliant format (open())
+    - getting an image into OpenCV- compliant format (opencv()) for visualization purposes
     """
 
-    def __init__(self, data=None, dtype=np.uint8):
+    def __init__(self, data=None, dtype=np.uint8, guess_format=True):
+        """
+        Image constructor
+        :param: dtype type of the image data provided
+        :guess_format: try to automatically guess the type of input data and convert them to OpenDR format
+        """
         super().__init__(data)
 
         self.dtype = dtype
         if data is not None:
+            # Check if the image is in the correct format
+            data = np.asarray(data)
+            if data.ndim != 3:
+                raise ValueError("3D dimensional images are expected")
+            if guess_format:
+                # If channels are found last, assume OpenCV format
+                if data.shape[2] == 1 or data.shape[2] == 3:
+                    data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+                    data = np.transpose(data, (2, 0, 1))
             self.data = data
 
     @property
@@ -283,7 +300,20 @@ class Image(Data):
             raise FileNotFoundError('The image file does not exist.')
         data = cv2.imread(filename)
         data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+        data = np.transpose(data, (2, 0, 1))
         return cls(data)
+
+    def opencv(self):
+        """
+        Returns the stored image into a format that can be directly used by OpenCV.
+        This function is useful due to the discrepancy between the way images are stored:
+        HWC/BGR (OpenCV) and CWH/RGB (OpenDR/PyTorch)
+        :return: an image into OpenCV compliant-format
+        :rtype: NumPy array
+        """
+        data = np.transpose(self.data, (1, 2, 0))
+        data = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
+        return data
 
 
 class ImageWithDetections(Image):
