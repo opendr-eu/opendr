@@ -315,6 +315,27 @@ class Image(Data):
         data = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
         return data
 
+    def convert(self, format='channels_first', channel_order='rgb'):
+        """
+        Returns the data in channels first/last format using either 'rgb' or 'bgr' ordering
+        :param format: either 'channels_first' or 'channels_last'
+        :param channel_order: either 'rgb' or 'bgr'
+        :return an image with the appropriate format
+        :rtype NumPy array
+        """
+        data = self.data
+        if format == 'channels_last':
+            data = np.transpose(data, (1, 2, 0))
+        elif format not in ('channels_first', 'channels_last'):
+            raise ValueError("format not in ('channels_first', 'channels_last')")
+
+        if format == 'bgr':
+            data = cv2.cvtColor(self.data, cv2.COLOR_RGB2BGR)
+        elif channel_order not in ('rgb', 'bgr'):
+            raise ValueError("channel_order not in ('rgb', 'bgr')")
+
+        return data
+
 
 class ImageWithDetections(Image):
     """
