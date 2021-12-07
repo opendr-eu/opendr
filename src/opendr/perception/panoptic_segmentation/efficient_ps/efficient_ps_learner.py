@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cv2
 import json
 import logging
 import os
@@ -24,6 +23,7 @@ import warnings
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Union, Tuple
 
+import PIL.ImageOps
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -58,20 +58,20 @@ class EfficientPsLearner(Learner):
     """
 
     def __init__(self,
-                 lr: float=.07,
-                 iters: int=160,
-                 batch_size: int=1,
-                 optimizer: str='SGD',
-                 lr_schedule: Optional[Dict[str, Any]]=None,
-                 momentum: float=.9,
-                 weight_decay: float=.0001,
-                 optimizer_config: Optional[Dict[str, Any]]=None,
-                 checkpoint_after_iter: int=1,
-                 temp_path: str=str(Path(__file__).parent / 'eval_tmp_dir'),
-                 device: str="cuda:0",
-                 num_workers: int=1,
-                 seed: Optional[float]=None,
-                 config_file: str=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
+                 lr: float = .07,
+                 iters: int = 160,
+                 batch_size: int = 1,
+                 optimizer: str = 'SGD',
+                 lr_schedule: Optional[Dict[str, Any]] = None,
+                 momentum: float = .9,
+                 weight_decay: float = .0001,
+                 optimizer_config: Optional[Dict[str, Any]] = None,
+                 checkpoint_after_iter: int = 1,
+                 temp_path: str = str(Path(__file__).parent / 'eval_tmp_dir'),
+                 device: str = "cuda:0",
+                 num_workers: int = 1,
+                 seed: Optional[float] = None,
+                 config_file: str = str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
                  ):
         """
         :param lr: learning rate [training]
@@ -137,10 +137,10 @@ class EfficientPsLearner(Learner):
 
     def fit(self,
             dataset: Union[CityscapesDataset, KittiDataset],
-            val_dataset: Optional[Union[CityscapesDataset, KittiDataset]]=None,
-            logging_path: str=str(Path(__file__).parent / 'logging'),
-            silent: bool=False,
-            verbose: Optional[bool]=None
+            val_dataset: Optional[Union[CityscapesDataset, KittiDataset]] = None,
+            logging_path: str = str(Path(__file__).parent / 'logging'),
+            silent: bool = False,
+            verbose: Optional[bool] = None
             ) -> Dict[str, List[Dict[str, Any]]]:
         """
         This method is used for training the algorithm on a train dataset and validating on a separate dataset.
@@ -232,7 +232,7 @@ class EfficientPsLearner(Learner):
 
     def eval(self,
              dataset: Union[CityscapesDataset, KittiDataset],
-             print_results: bool=False
+             print_results: bool = False
              ) -> Dict[str, Any]:
         """
         This method is used to evaluate the algorithm on a dataset and returns the following stats:
@@ -288,7 +288,7 @@ class EfficientPsLearner(Learner):
 
     def infer(self,
               batch: Union[Image, List[Image]],
-              return_raw_logits: bool=False
+              return_raw_logits: bool = False
               ) -> Union[List[Tuple[Heatmap, Heatmap]], Tuple[Heatmap, Heatmap], np.ndarray]:
         """
         This method performs inference on the batch provided.
@@ -317,9 +317,9 @@ class EfficientPsLearner(Learner):
             single_image_mode = True
         mmdet_batch = []
         for img in batch:
-            # Convert from OpenDR convention (RGB) to the expected channel order (BGR)
-            img_bgr = cv2.cvtColor(img.numpy(), cv2.COLOR_RGB2BGR)
-            mmdet_img = {'filename': None, 'img': img_bgr, 'img_shape': img_bgr.shape, 'ori_shape': img_bgr.shape}
+            # Convert from OpenDR convention (CHW/RGB) to the expected format (HWC/BGR)
+            img_ = img.convert('channels_last', 'bgr')
+            mmdet_img = {'filename': None, 'img': img_, 'img_shape': img_.shape, 'ori_shape': img_.shape}
             mmdet_img = test_pipeline(mmdet_img)
             mmdet_batch.append(scatter(collate([mmdet_img], samples_per_gpu=1), [device])[0])
 
@@ -346,8 +346,7 @@ class EfficientPsLearner(Learner):
 
         if single_image_mode:
             return results[0]
-        else:
-            return results
+        return results
 
     def save(self, path: str) -> bool:
         """
@@ -437,7 +436,7 @@ class EfficientPsLearner(Learner):
         raise NotImplementedError
 
     @staticmethod
-    def download(path: str, mode: str='model', trained_on: str='cityscapes') -> str:
+    def download(path: str, mode: str = 'model', trained_on: str = 'cityscapes') -> str:
         """
         Download data from the OpenDR server. Valid modes include pre-trained model weights and data used in the unit tests.
 
@@ -489,11 +488,11 @@ class EfficientPsLearner(Learner):
     @staticmethod
     def visualize(image: Image,
                   prediction: Tuple[Heatmap, Heatmap],
-                  show_figure: bool=True,
-                  save_figure: bool=False,
-                  figure_filename: Optional[str]=None,
-                  figure_size: Tuple[float, float]=(15, 10),
-                  detailed: bool=False
+                  show_figure: bool = True,
+                  save_figure: bool = False,
+                  figure_filename: Optional[str] = None,
+                  figure_size: Tuple[float, float] = (15, 10),
+                  detailed: bool = False
                   ) -> Image:
         """
          Create a visualization of the predicted panoptic segmentation. Either just the final panoptic map or a more
@@ -521,7 +520,7 @@ class EfficientPsLearner(Learner):
         PALETTE.append([0, 0, 0])
         colors = np.array(PALETTE, dtype=np.uint8)
 
-        image_img = PilImage.fromarray(image.data)
+        image_img = PilImage.fromarray(image.convert('channels_last', 'rgb'))
 
         # Extract class information from semantic segmentation
         semantics = prediction[1].data.copy()
@@ -559,7 +558,7 @@ class EfficientPsLearner(Learner):
             plt.axis('off')
             plt.title('semantic map')
             plt.subplot(grid_spec[3])
-            plt.imshow(contours_img)
+            plt.imshow(PIL.ImageOps.invert(contours_img.convert(mode='RGB')))  # Convert white to black contours
             plt.axis('off')
             plt.title('contours map')
             fig.canvas.draw()
@@ -572,7 +571,8 @@ class EfficientPsLearner(Learner):
             visualization_img.save(figure_filename)
         if show_figure:
             visualization_img.show()
-        return Image(data=np.array(visualization_img))
+        # Explicitly convert from HWC/RGB (PIL) to CHW/RGB (OpenDR)
+        return Image(data=np.array(visualization_img).transpose((2, 0, 1)), guess_format=False)
 
     @property
     def config(self) -> dict:
@@ -604,6 +604,6 @@ class EfficientPsLearner(Learner):
         """
         if not isinstance(value, int):
             raise TypeError('num_workers should be an integer.')
-        elif value <= 0:
+        if value <= 0:
             raise ValueError('num_workers should be positive.')
         self._num_workers = value
