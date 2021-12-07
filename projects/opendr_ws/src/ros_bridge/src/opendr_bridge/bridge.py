@@ -15,7 +15,6 @@
 from opendr.engine.data import Image, Timeseries
 from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
-import cv2
 import numpy as np
 from cv_bridge import CvBridge
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,\

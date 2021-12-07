@@ -16,7 +16,6 @@
 
 import rospy
 import torch
-import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
