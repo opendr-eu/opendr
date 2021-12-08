@@ -26,6 +26,7 @@ from opendr.perception.pose_estimation import draw
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGCNLearner
 from opendr.perception.skeleton_based_action_recognition import ProgressiveSpatioTemporalGCNLearner
+from opendr.engine.data import Image
 
 
 class SkeletonActionRecognitionNode:
@@ -80,8 +81,7 @@ class SkeletonActionRecognitionNode:
         else:
             self.pose_publisher = None
 
-        rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
-
+        self.input_image_topic = input_image_topic
         self.bridge = ROSBridge()
 
         # Initialize the pose estimation
@@ -108,6 +108,7 @@ class SkeletonActionRecognitionNode:
         Start the node and begin processing input data
         """
         rospy.init_node('opendr_skeleton_based_action_recognition', anonymous=True)
+        rospy.Subscriber(self.input_image_topic, ROS_Image, self.callback)
         rospy.loginfo("Skeleton-based action recognition node started!")
         rospy.spin()
 
@@ -128,7 +129,7 @@ class SkeletonActionRecognitionNode:
             poses = _select_2_poses(poses)
 
         # Get an OpenCV image back
-        image = np.float32(image.numpy())
+        image = image.opencv()
         #  Annotate image and publish results
         for pose in poses:
             if self.pose_publisher is not None:
@@ -139,7 +140,7 @@ class SkeletonActionRecognitionNode:
                 draw(image, pose)
 
         if self.image_publisher is not None:
-            message = self.bridge.to_ros_image(np.uint8(image), encoding='bgr8')
+            message = self.bridge.to_ros_image(Image(image), encoding='bgr8')
             self.image_publisher.publish(message)
 
         num_frames = 300
