@@ -52,5 +52,5 @@ with the following modifications to make them compatible with the OpenDR specifi
 2. ```3ddfa/preprocessing_1.py, 3ddfa/preprocessing_2.py, test_multipose.py``` Modified to work as a callable functions
 3. ```options/base_options.py, options/test_options.py ``` Commented out/change several parameters to be easily executed 
 4. ```models/networks/render.py``` Minor functional changes
-5. The OPENDR created functions are ```3ddfa/SyntheticDataGeneration.py, 3ddfa/testSyntheticDataGeneration.py```
+5. The OPENDR created functions are ```SyntheticDataGeneration.py, tool_synthetic_facial_generation.py```
 6. The rest are taken from the aforementioned repositories
