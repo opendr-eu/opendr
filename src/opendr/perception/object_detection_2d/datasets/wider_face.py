@@ -89,10 +89,8 @@ class WiderFaceDataset(DetectionDataset):
         label = self.bboxes[item]
 
         img_np = cv2.imread(image_path)
-        img = Image(img_np)
-
         if self._image_transform is not None:
-            img = self._image_transform(img)
+            img = self._image_transform(img_np)
 
         if self._target_transform is not None:
             label = self._target_transform(label)
