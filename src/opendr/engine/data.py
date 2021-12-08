@@ -337,8 +337,8 @@ class Image(Data):
         elif format not in ('channels_first', 'channels_last'):
             raise ValueError("format not in ('channels_first', 'channels_last')")
 
-        if format == 'bgr':
-            data = cv2.cvtColor(self.data, cv2.COLOR_RGB2BGR)
+        if channel_order == 'bgr':
+            data = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
         elif channel_order not in ('rgb', 'bgr'):
             raise ValueError("channel_order not in ('rgb', 'bgr')")
 

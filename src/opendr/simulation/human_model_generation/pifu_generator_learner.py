@@ -61,11 +61,13 @@ class PIFuGeneratorLearner(Learner):
         for i in range(len(imgs_rgb)):
             if not isinstance(imgs_rgb[i], Image):
                 imgs_rgb[i] = Image(imgs_rgb[i])
-            imgs_rgb[i] = imgs_rgb[i].numpy()
+            imgs_rgb[i] = imgs_rgb[i].convert("channels_last", "bgr")
+
         for i in range(len(imgs_msk)):
             if not isinstance(imgs_msk[i], Image):
                 imgs_msk[i] = Image(imgs_msk[i])
-            imgs_msk[i] = imgs_msk[i].numpy()
+            imgs_msk[i] = imgs_msk[i].convert("channels_last", "bgr")
+
         if imgs_msk is None or len(imgs_rgb) != 1 or len(imgs_msk) != 1:
             raise ValueError('At the current stage, both the length of the RGB images and the length of the images used as '
                              'masks must be of size equal to 1.')
