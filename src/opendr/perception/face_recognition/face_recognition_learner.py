@@ -455,7 +455,7 @@ class FaceRecognitionLearner(Learner):
         """
         if not isinstance(img, Image):
             img = Image(img)
-        img = img.numpy()
+        img = img.convert("channels_last", "bgr")
         if self._model is None and self.ort_backbone_session is None:
             raise UserWarning('A model should be loaded first')
         transform = transforms.Compose([
