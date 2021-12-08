@@ -15,7 +15,6 @@
 
 import rospy
 import mxnet as mx
-import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
