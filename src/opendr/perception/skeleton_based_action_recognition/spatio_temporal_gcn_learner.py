@@ -48,6 +48,7 @@ from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.feed
 from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.ntu_gendata import NTU60_ClASSES
 from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_gendata import KINETICS400_ClASSES
 
+
 class SpatioTemporalGCNLearner(Learner):
     def __init__(self, lr=1e-1, batch_size=128, optimizer_name='sgd', lr_schedule='',
                  checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path='temp',
