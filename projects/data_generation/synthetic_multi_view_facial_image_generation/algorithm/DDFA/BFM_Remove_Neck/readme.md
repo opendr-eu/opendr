@@ -4,6 +4,7 @@ The original version with neck:
 <p align="center">
   <img src="imgs/bfm_noneck.jpg" alt="neck" width="400px">
 </p>
+
 [bfm.ply](https://github.com/Hangz-nju-cuhk/Rotate-and-Render/blob/master/3ddfa/BFM_Remove_Neck/bfm.ply)
 
 The refined version without neck:
