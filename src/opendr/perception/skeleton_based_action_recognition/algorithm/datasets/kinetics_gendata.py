@@ -11,7 +11,7 @@ from tqdm import tqdm
 import pandas
 
 
-KINETICS400_ClASSES = pandas.read_csv("./kinetics400_classes.csv", verbose=True, index_col=0).to_dict()["name"]
+KINETICS400_ClASSES = pandas.read_csv('./kinetics400_classes.csv', verbose=True, index_col=0).to_dict()["name"]
 
 
 def gendata(data_path, label_path,
