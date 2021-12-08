@@ -559,23 +559,24 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     [search_features, search, penalty]
                 )
 
-                draw_pseudo_image(
-                    search_image.squeeze(axis=0),
-                    "./plots/search_" + str(frame) + "_" + str(i) + ".png",
-                )
+                if draw:
+                    draw_pseudo_image(
+                        search_image.squeeze(axis=0),
+                        "./plots/search_" + str(frame) + "_" + str(i) + ".png",
+                    )
 
-                draw_pseudo_image(
-                    search_features.squeeze(axis=0),
-                    "./plots/search_feat_" + str(frame) + "_" + str(i) + ".png",
-                )
+                    draw_pseudo_image(
+                        search_features.squeeze(axis=0),
+                        "./plots/search_feat_" + str(frame) + "_" + str(i) + ".png",
+                    )
 
             multi_rotate_scores_searches_penalties_and_features = []
 
-            for (
+            for i, (
                 search_features,
                 target,
                 penalty,
-            ) in multi_rotate_features_and_searches_and_penalties:
+            ) in enumerate(multi_rotate_features_and_searches_and_penalties):
                 scores = create_scaled_scores(
                     self.init_target_features,
                     search_features,
@@ -587,6 +588,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     [scores, target, penalty, search_features]
                 )
 
+                if draw:
+                    draw_pseudo_image(
+                        scores.squeeze(axis=0),
+                        "./plots/scores_" + str(frame) + "_" + str(i) + ".png",
+                    )
+
             (
                 top_scores,
                 top_search,
@@ -596,24 +603,20 @@ class VoxelBofObjectTracking3DLearner(Learner):
             )
 
             if draw:
-                draw_pseudo_image(
-                    top_search, "./plots/" + str(frame) + "search_.png"
-                )
-                draw_pseudo_image(
-                    top_search_features[0],
-                    "./plots/" + str(frame) + "search_feat.png",
-                )
 
-            if draw:
                 draw_pseudo_image(
-                    top_scores.reshape(top_scores.shape[-3:]),
+                    top_scores.squeeze(axis=0),
                     "./plots/scores" + str(frame) + "_top.png",
                 )
+
+                max_score = torch.max(top_scores)
+                max_idx = (top_scores == max_score).nonzero(as_tuple=False)[0][-2:]
+
                 draw_pseudo_image(
-                    multi_rotate_scores_searches_penalties_and_features[-1][
-                        0
-                    ].squeeze(axis=0),
-                    "./plots/scores" + str(frame) + "_init.png",
+                    top_scores.squeeze(axis=0),
+                    "./plots/scores" + str(frame) + "_top_marked.png",
+                    [[max_idx.cpu().numpy(), np.array([2, 2]), 0]],
+                    [(255, 0, 0)]
                 )
 
             delta_image = displacement_score_to_image_coordinates(
@@ -678,7 +681,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             return result
 
-    def init(self, point_cloud, label_lidar):
+    def init(self, point_cloud, label_lidar, draw=False):
 
         self.model.eval()
 
@@ -709,6 +712,16 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.init_target_features, init_image = create_pseudo_image_features(
             pseudo_image, target, net, self.target_size
         )
+
+        if draw:
+            draw_pseudo_image(
+                init_image.squeeze(0),
+                "./plots/init_image.png",
+            )
+            draw_pseudo_image(
+                self.init_target_features.squeeze(0),
+                "./plots/init_target_features.png",
+            )
 
         # draw_pseudo_image(init_image, "./plots/init_image.png")
 
