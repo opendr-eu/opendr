@@ -82,7 +82,7 @@ class TestFaceRecognitionLearner(unittest.TestCase):
         save_path = os.path.join(self.temp_dir, 'reference')
         self.recognizer.load(self.temp_dir)
         self.recognizer.fit_reference(imgs, save_path)
-        img = np.uint8(255*np.random.random((112, 112, 3)))
+        img = np.float32(np.random.random((112, 112, 3)))
         result = self.recognizer.infer(img)
         self.assertIsNotNone(result)
         # Cleanup
