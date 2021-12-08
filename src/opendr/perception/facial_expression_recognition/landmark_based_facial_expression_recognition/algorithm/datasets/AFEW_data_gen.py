@@ -19,7 +19,7 @@ import argparse
 import pickle
 import pandas
 
-AFEW_CLASSES = pandas.read_csv('./AFEW_labels', verbose=True, index_col=0).to_dict()["name"]
+AFEW_CLASSES = pandas.read_csv('./AFEW_labels.csv', verbose=True, index_col=0).to_dict()["name"]
 
 
 def tile(a, dim, n_tile):
