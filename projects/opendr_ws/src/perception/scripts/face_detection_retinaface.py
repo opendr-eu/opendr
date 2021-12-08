@@ -21,7 +21,7 @@ from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 from opendr.perception.object_detection_2d import RetinaFaceLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
-
+from opendr.engine.data import Image
 
 class FaceDetectionNode:
     def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_boxes_annotated",
@@ -78,7 +78,7 @@ class FaceDetectionNode:
         boxes = self.face_detector.infer(image)
 
         # Get an OpenCV image back
-        image = np.float32(image.numpy())
+        image = image.opencv()
 
         # Convert detected boxes to ROS type and publish
         ros_boxes = self.bridge.to_ros_boxes(boxes)
@@ -92,7 +92,7 @@ class FaceDetectionNode:
         odr_boxes = self.bridge.from_ros_boxes(ros_boxes)
         image = draw_bounding_boxes(image, odr_boxes, class_names=self.class_names)
         if self.image_publisher is not None:
-            message = self.bridge.to_ros_image(np.uint8(image), encoding='bgr8')
+            message = self.bridge.to_ros_image(Image(image), encoding='bgr8')
             self.image_publisher.publish(message)
             rospy.loginfo("Published annotated image")
 
@@ -116,6 +116,7 @@ if __name__ == '__main__':
     # get network backbone ("mnet" detects masked faces as well)
     backbone = rospy.get_param("~backbone", "resnet")
     input_image_topic = rospy.get_param("~input_image_topic", "/videofile/image_raw")
+
     rospy.loginfo("Using backbone: {}".format(backbone))
     assert backbone in ["resnet", "mnet"], "backbone should be one of ['resnet', 'mnet']"
 
