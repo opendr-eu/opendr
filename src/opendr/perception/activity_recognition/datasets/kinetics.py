@@ -29,8 +29,13 @@ from opendr.perception.activity_recognition.datasets.utils import decoder
 from opendr.perception.activity_recognition.datasets.utils.transforms import standard_video_transforms
 from opendr.engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
+import pandas as pd
 
 logger = getLogger(__file__)
+
+CLASSES = pd.read_csv(
+    Path(__file__).parent / "kinetics400_classes.csv", verbose=True, index_col=0
+).to_dict()["name"]
 
 
 class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset):

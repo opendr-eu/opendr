@@ -18,8 +18,8 @@ import gc
 import shutil
 import os
 import numpy as np
-from opendr.perception.object_detection_2d.centernet.centernet_learner import CenterNetDetectorLearner
-from opendr.perception.object_detection_2d.datasets.wider_person import WiderPersonDataset
+from opendr.perception.object_detection_2d import CenterNetDetectorLearner
+from opendr.perception.object_detection_2d import WiderPersonDataset
 
 
 def rmfile(path):

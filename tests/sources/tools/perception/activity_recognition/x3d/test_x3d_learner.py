@@ -16,8 +16,8 @@ import shutil
 import torch
 import unittest
 
-from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
-from opendr.perception.activity_recognition.datasets.kinetics import KineticsDataset
+from opendr.perception.activity_recognition import X3DLearner
+from opendr.perception.activity_recognition import KineticsDataset
 from opendr.engine.data import Video
 from pathlib import Path
 from logging import getLogger

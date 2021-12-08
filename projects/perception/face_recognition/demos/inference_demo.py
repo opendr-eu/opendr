@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import cv2
-from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.perception.face_recognition import FaceRecognitionLearner
 import argparse
 from os.path import join
 

@@ -14,8 +14,8 @@
 
 import argparse
 
-from opendr.perception.object_detection_2d.retinaface.retinaface_learner import RetinaFaceLearner
-from opendr.perception.object_detection_2d.datasets import WiderFaceDataset
+from opendr.perception.object_detection_2d import RetinaFaceLearner
+from opendr.perception.object_detection_2d import WiderFaceDataset
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

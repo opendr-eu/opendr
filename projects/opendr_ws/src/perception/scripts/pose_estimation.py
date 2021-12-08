@@ -20,9 +20,8 @@ import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.pose_estimation.lightweight_open_pose.utilities import draw
-from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
-    LightweightOpenPoseLearner
+from opendr.perception.pose_estimation import draw
+from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 
 
 class PoseEstimationNode:
@@ -80,7 +79,7 @@ class PoseEstimationNode:
         """
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
-        image = self.bridge.from_ros_image(data)
+        image = self.bridge.from_ros_image(data, encoding='bgr8')
 
         # Run pose estimation
         poses = self.pose_estimator.infer(image)
@@ -97,7 +96,7 @@ class PoseEstimationNode:
                 draw(image, pose)
 
         if self.image_publisher is not None:
-            message = self.bridge.to_ros_image(np.uint8(image))
+            message = self.bridge.to_ros_image(np.uint8(image), encoding='bgr8')
             self.image_publisher.publish(message)
 
 

@@ -19,8 +19,8 @@ import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.object_detection_2d.yolov3.yolov3_learner import YOLOv3DetectorLearner
-from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
+from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
+from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
 class ObjectDetectionYOLONode:
@@ -72,7 +72,7 @@ class ObjectDetectionYOLONode:
         """
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
-        image = self.bridge.from_ros_image(data)
+        image = self.bridge.from_ros_image(data, encoding='bgr8')
         rospy.loginfo("image info: {}".format(image.numpy().shape))
 
         # Run pose estimation
@@ -93,7 +93,7 @@ class ObjectDetectionYOLONode:
         odr_boxes = self.bridge.from_ros_boxes(ros_boxes)
         image = draw_bounding_boxes(image, odr_boxes, class_names=self.class_names)
         if self.image_publisher is not None:
-            message = self.bridge.to_ros_image(np.uint8(image))
+            message = self.bridge.to_ros_image(np.uint8(image), encoding='bgr8')
             self.image_publisher.publish(message)
             rospy.loginfo("Published annotated image")
 
