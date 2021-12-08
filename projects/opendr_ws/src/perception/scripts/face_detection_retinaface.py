@@ -23,6 +23,7 @@ from opendr.perception.object_detection_2d import RetinaFaceLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 from opendr.engine.data import Image
 
+
 class FaceDetectionNode:
     def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_boxes_annotated",
                  face_detections_topic="/opendr/faces", device="cuda", backbone="resnet"):
