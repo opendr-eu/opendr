@@ -422,7 +422,7 @@ class Video(Data):
     - returning a NumPy compatible representation of data (numpy())
     """
 
-    def __init__(self, data: Union[torch.Tensor, np.ndarray] = None):
+    def __init__(self, data: Union[torch.Tensor, np.ndarray]=None):
         """Construct a new Video
 
         Args:
