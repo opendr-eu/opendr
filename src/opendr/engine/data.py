@@ -225,7 +225,7 @@ class Image(Data):
         :type data: numpy.ndarray
         :param dtype: type of the image data provided
         :type data: numpy.dtype
-        :param guess_format: try to automatically guess the type of input data and convert them to OpenDR format
+        :param guess_format: try to automatically guess the type of input data and convert it to OpenDR format
         :type guess_format: bool
         """
         super().__init__(data)
@@ -283,7 +283,7 @@ class Image(Data):
         :rtype: numpy.ndarray
         """
         # Since this class stores the data as NumPy arrays, we can directly return the data
-        return self.data
+        return self.data.copy()
 
     def __str__(self):
         """
@@ -327,7 +327,6 @@ class Image(Data):
     def convert(self, format='channels_first', channel_order='rgb'):
         """
         Returns the data in channels first/last format using either 'rgb' or 'bgr' ordering.
-        Please note that this function may or may not return a copy of the original data held by the object.
         :param format: either 'channels_first' or 'channels_last'
         :type format: str
         :param channel_order: either 'rgb' or 'bgr'
@@ -335,13 +334,15 @@ class Image(Data):
         :return an image (as NumPy array) with the appropriate format
         :rtype NumPy array
         """
-        data = self.data
         if format == 'channels_last':
-            data = np.transpose(data, (1, 2, 0))
-        elif format not in ('channels_first', 'channels_last'):
+            data = np.transpose(self.data, (1, 2, 0))
+        elif format == 'channels_first':
+            data = self.data.copy()
+        else:
             raise ValueError("format not in ('channels_first', 'channels_last')")
 
         if channel_order == 'bgr':
+            # This causes a second copy operation. Can be potentially further optimized in the future.
             data = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
         elif channel_order not in ('rgb', 'bgr'):
             raise ValueError("channel_order not in ('rgb', 'bgr')")
