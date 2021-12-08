@@ -15,8 +15,6 @@
 import os
 
 import cv2
-
-from opendr.engine.data import Image
 from opendr.engine.target import BoundingBox, BoundingBoxList
 from opendr.perception.object_detection_2d.datasets import DetectionDataset
 
