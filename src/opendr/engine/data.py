@@ -19,7 +19,7 @@ from opendr.engine.target import BoundingBoxList
 import numpy as np
 import torch
 from typing import Union
-
+import warnings
 
 class Data(ABC):
     """
@@ -237,10 +237,17 @@ class Image(Data):
             if data.ndim != 3:
                 raise ValueError("3D dimensional images are expected")
             if guess_format:
-                # If channels are found last, assume OpenCV format
+                # If channels are found last, assume OpenCV format for grayscale and color images
                 if data.shape[2] == 1 or data.shape[2] == 3:
-                    data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+                    if data.shape[2] == 3:
+                        data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
                     data = np.transpose(data, (2, 0, 1))
+
+                # If channels are found last, transpose
+                if data.shape[2] < min(data.shape[0], data.shape[1]):
+                    warnings.warn("Image: guess_format enabled - assuming HWC image supplied.")
+                    data = np.transpose(data, (2, 0, 1))
+
             self.data = data
 
     @property
