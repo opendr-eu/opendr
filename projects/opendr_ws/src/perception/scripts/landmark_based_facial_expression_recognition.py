@@ -64,8 +64,7 @@ class LandmarkFacialExpressionRecognitionNode:
         else:
             self.string_publisher = None
 
-        rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
-
+        self.input_image_topic = input_image_topic
         self.bridge = ROSBridge()
 
         # Initialize the landmark-based facial expression recognition
@@ -92,6 +91,7 @@ class LandmarkFacialExpressionRecognitionNode:
         Start the node and begin processing input data
         """
         rospy.init_node('opendr_landmark_based_facial_expression_recognition', anonymous=True)
+        rospy.Subscriber(self.input_image_topic, ROS_Image, self.callback)
         rospy.loginfo("landmark-based facial expression recognition node started!")
         rospy.spin()
 
@@ -104,7 +104,6 @@ class LandmarkFacialExpressionRecognitionNode:
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8')
-
         landmarks = landmark_extractor(image, './landmarks.npy', self.shape_predictor)
 
         # 3: sequence numpy data generation from extracted landmarks and normalization:
