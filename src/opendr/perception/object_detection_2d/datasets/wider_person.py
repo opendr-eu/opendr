@@ -88,12 +88,9 @@ class WiderPersonDataset(DetectionDataset):
         image_path = self.image_paths[item]
         label = self.bboxes[item]
         # read image, apply transform, return result
-        # img = mx.image.imread(image_path, 1)
         img_np = cv2.imread(image_path)
-        img = Image(img_np)
-        # TODO: use Image format?
         if self._image_transform is not None:
-            img = self._image_transform(img)
+            img = self._image_transform(img_np)
 
         if self._target_transform is not None:
             label = self._target_transform(label)
