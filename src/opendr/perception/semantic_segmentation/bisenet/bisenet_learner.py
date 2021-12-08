@@ -19,7 +19,6 @@ import os
 import json
 import tqdm
 import numpy as np
-import cv2
 from imgaug import augmenters as iaa
 from PIL import Image as PILImage
 from urllib.request import urlretrieve
