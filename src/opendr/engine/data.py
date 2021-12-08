@@ -21,6 +21,7 @@ import torch
 from typing import Union
 import warnings
 
+
 class Data(ABC):
     """
     Data abstract class allows for representing different types of data. This class serves as the basis for
