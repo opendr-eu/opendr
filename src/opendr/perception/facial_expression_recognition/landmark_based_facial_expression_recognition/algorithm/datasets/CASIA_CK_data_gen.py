@@ -18,9 +18,11 @@ import torch
 import pickle
 import argparse
 import pandas
+from pathlib import Path
 
-CK_CLASSES = pandas.read_csv('./CK+_labels.csv', verbose=True, index_col=0).to_dict()["name"]
-CASIA_CLASSES = pandas.read_csv('./CASIA_labels.csv', verbose=True, index_col=0).to_dict()["name"]
+
+CK_CLASSES = pandas.read_csv(Path(__file__).parent / 'CK+_labels.csv', verbose=True, index_col=0).to_dict()["name"]
+CASIA_CLASSES = pandas.read_csv(Path(__file__).parent / 'CASIA_labels.csv', verbose=True, index_col=0).to_dict()["name"]
 
 
 def data_normalization(data):
