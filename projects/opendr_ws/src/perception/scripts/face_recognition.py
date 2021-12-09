@@ -79,7 +79,8 @@ class FaceRecognitionNode:
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data)
-
+        image = image.opencv()
+        
         # Run face recognition
         if image is not None:
             result = self.recognizer.infer(image)
