@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import torch
-import numpy as np
 
 
 class DataWrapper:
@@ -26,5 +25,5 @@ class DataWrapper:
     def __getitem__(self, i):
         x, y = self.dataset.__getitem__(i)
         # change from rows x cols x channels to channels x rows x cols
-        x = np.transpose(x.numpy(), axes=(2, 0, 1))
+        x = x.convert("channels_first", "rgb")
         return torch.from_numpy(x).float(), torch.tensor([y.data, ]).long()

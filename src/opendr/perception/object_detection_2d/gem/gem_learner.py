@@ -669,8 +669,8 @@ class GemLearner(Learner):
             m1_image = Image(m1_image)
             m2_image = Image(m2_image)
 
-        m1_img = im.fromarray(m1_image.numpy())
-        m2_img = im.fromarray(m2_image.numpy())
+        m1_img = im.fromarray(m1_image.convert("channels_last", "rgb"))
+        m2_img = im.fromarray(m2_image.convert("channels_last", "rgb"))
 
         scores, boxes, segmentations, contrib = detect(m1_img, m2_img, self.infer_transform, self.model,
                                                        self.postprocessors, self.device, self.threshold,

@@ -13,12 +13,12 @@
 # limitations under the License.
 
 import unittest
-import cv2
 import shutil
 import os
 import torch
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.engine.datasets import ExternalDataset
+from opendr.engine.data import Image
 import warnings
 
 
@@ -93,7 +93,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         self.pose_estimator.model = None
         self.pose_estimator.load(os.path.join(self.temp_dir, "openpose_default"))
 
-        img = cv2.imread(os.path.join(self.temp_dir, "dataset", "image", "000000000785.jpg"))
+        img = Image.open(os.path.join(self.temp_dir, "dataset", "image", "000000000785.jpg"))
         # Default pretrained mobilenet model detects 18 keypoints on img with id 785
         self.assertGreater(len(self.pose_estimator.infer(img)[0].data), 0,
                            msg="Returned pose must have non-zero number of keypoints.")
