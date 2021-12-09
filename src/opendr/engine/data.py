@@ -252,7 +252,6 @@ class Image(Data):
         else:
             raise ValueError("Image is of type None")
 
-
     @property
     def data(self):
         """
