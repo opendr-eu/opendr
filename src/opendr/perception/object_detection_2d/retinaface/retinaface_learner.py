@@ -631,12 +631,9 @@ class RetinaFaceLearner(Learner):
 
         self.detector.nms_threshold = nms_threshold
 
-        if isinstance(img, Image):
-            _img = img.numpy()
-        elif isinstance(img, np.ndarray):
-            _img = img
-        else:
-            raise ValueError("Input should be of type Image or numpy array.")
+        if not isinstance(img, Image):
+            img = Image(img)
+        _img = img.convert("channels_last", "rgb")
 
         im_shape = _img.shape
         target_size = scales[0]
