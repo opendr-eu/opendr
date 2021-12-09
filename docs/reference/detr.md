@@ -336,7 +336,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
   import urllib
   import cv2
   from opendr.perception.object_detection_2d import DetrLearner
-  from opendr.perception.object_detection_2d import draw
+  from opendr.perception.object_detection_2d.detr.algorithm.util.draw import draw
 
 
   # Download an image
