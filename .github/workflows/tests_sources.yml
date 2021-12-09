@@ -10,7 +10,7 @@ defaults:
 
 jobs:
   cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test dependencies') }}
     runs-on: ubuntu-latest
     steps:
     - uses: rokroskar/workflow-run-cleanup-action@master
