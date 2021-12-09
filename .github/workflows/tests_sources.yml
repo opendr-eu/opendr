@@ -1,4 +1,4 @@
-name: Test Sources
+name: Test Suite
 
 on:
   pull_request:
@@ -48,9 +48,9 @@ jobs:
         export OPENDR_DEVICE=cpu
         pip install -r tests/requirements.txt
         python -m unittest discover -s tests
-  test-dependencies:
+  test-perception:
     needs: cleanup-runs
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test dependencies') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test perception') }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
@@ -58,35 +58,17 @@ jobs:
           - os: ubuntu-20.04
             DEPENDENCIES_INSTALLATION: "sudo sh -c 'echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list' \
             && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -"
-            ROS_DISTRO: "noetic"
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Test Dependencies
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'test dependencies') }}
-      run: |
-        ${{ matrix.DEPENDENCIES_INSTALLATION }}
-        export OPENDR_HOME=$PWD
-        export OPENDR_DEVICE=cpu
-        export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
-        export DISABLE_BCOLZ_AVX2=true
-        export ROS_DISTRO=${{ matrix.ROS_DISTRO }}
-        make install_compilation_dependencies
-        make install_runtime_dependencies
-        pip install -r tests/sources/requirements.txt
-        python -m unittest discover -s tests/sources/tools/engine
-        python -m unittest discover -s tests/sources/tools/utils
-  test-perception:
-    needs: test-dependencies
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test perception') }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04]
+            export OPENDR_DEVICE=cpu
+            export OPENDR_HOME=$PWD
+            export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+            export DISABLE_BCOLZ_AVX2=true
+            export ROS_DISTRO="noetic"
+            make install_compilation_dependencies
+            make install_runtime_dependencies
+            pip install -r tests/sources/requirements.txt
         package:
+          - engine
+          - utils
           - perception/activity_recognition
           - perception/compressive_learning
           - perception/face_recognition
@@ -109,35 +91,69 @@ jobs:
       with:
         python-version: 3.8
     - name: Test Perception Tools
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'test perception') }}
-      run:
+      run: |
+        ${{ matrix.DEPENDENCIES_INSTALLATION }}
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-control:
-    needs: test-dependencies
+    needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test control') }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
+        include:
+          - os: ubuntu-20.04
+            DEPENDENCIES_INSTALLATION: "sudo sh -c 'echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list' \
+            && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -"
+            export OPENDR_DEVICE=cpu
+            export OPENDR_HOME=$PWD
+            export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+            export DISABLE_BCOLZ_AVX2=true
+            export ROS_DISTRO="noetic"
+            make install_compilation_dependencies
+            make install_runtime_dependencies
+            pip install -r tests/sources/requirements.txt
         package:
           - control/mobile_manipulation
     runs-on: ${{ matrix.os }}
     steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
     - name: Test Control Tools
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'test control') }}
-      run:
+      run: |
+        ${{ matrix.DEPENDENCIES_INSTALLATION }}
         source tests/sources/tools/control/mobile_manipulation/run_ros.sh
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-simulation:
-    needs: test-dependencies
+    needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test simulation') }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
+        include:
+          - os: ubuntu-20.04
+            DEPENDENCIES_INSTALLATION: "sudo sh -c 'echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list' \
+            && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -"
+            export OPENDR_DEVICE=cpu
+            export OPENDR_HOME=$PWD
+            export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+            export DISABLE_BCOLZ_AVX2=true
+            export ROS_DISTRO="noetic"
+            make install_compilation_dependencies
+            make install_runtime_dependencies
+            pip install -r tests/sources/requirements.txt
         package:
-        - simulation/human_model_generation
+          - simulation/human_model_generation
     runs-on: ${{ matrix.os }}
     steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
     - name: Test Simulation Tools
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'test simulation') }}
-      run:
+      run: |
+        ${{ matrix.DEPENDENCIES_INSTALLATION }}
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
