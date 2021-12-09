@@ -363,13 +363,9 @@ class ImageWithDetections(Image):
     - returning a NumPy compatible representation of data (numpy())
     """
 
-    def __init__(self, image, boundingBoxList: BoundingBoxList):
-        super().__init__()
+    def __init__(self, image, boundingBoxList: BoundingBoxList, *args, **kwargs):
+        super().__init__(image, *args, **kwargs)
 
-        if isinstance(image, Image):
-            self.data = image.numpy()
-        else:
-            self.data = image
         self.boundingBoxList = boundingBoxList
 
     @property
