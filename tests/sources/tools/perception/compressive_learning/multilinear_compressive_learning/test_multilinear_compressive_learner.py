@@ -39,7 +39,7 @@ class DummyDataset(DatasetIterator):
         return self.n_sample
 
     def __getitem__(self, i):
-        x = np.random.rand(*self.input_shape)
+        x = np.float32(np.random.rand(*self.input_shape))
         y = np.random.randint(low=0, high=self.n_class)
         return Image(x), Category(y)
 
@@ -147,7 +147,7 @@ class TestMultilinearCompressiveLearner(unittest.TestCase):
 
     def test_infer(self):
         learner, input_shape, compressed_shape, n_class, pretrained_backbone, init_backbone = get_random_learner()
-        img = Image(np.random.rand(*input_shape))
+        img = Image(np.float32(np.random.rand(*input_shape)))
         pred = learner.infer(img)
         self.assertTrue(isinstance(pred, Category))
         self.assertTrue(pred.data < learner.n_class,
@@ -157,7 +157,7 @@ class TestMultilinearCompressiveLearner(unittest.TestCase):
 
     def test_infer_from_compressed_measurement(self):
         learner, input_shape, compressed_shape, n_class, pretrained_backbone, init_backbone = get_random_learner()
-        img = Image(np.random.rand(*compressed_shape))
+        img = Image(np.float32(np.random.rand(*compressed_shape)))
         pred = learner.infer_from_compressed_measurement(img)
         self.assertTrue(isinstance(pred, Category))
         self.assertTrue(pred.data < learner.n_class,
@@ -181,7 +181,7 @@ class TestMultilinearCompressiveLearner(unittest.TestCase):
                                                     test_mode=True)
 
         new_learner.load(temp_dir.name, verbose=False)
-        img = Image(np.random.rand(*input_shape))
+        img = Image(np.float32(np.random.rand(*input_shape)))
         old_pred = learner.infer(img).confidence
         new_pred = new_learner.infer(img).confidence
 

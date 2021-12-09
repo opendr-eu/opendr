@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-import cv2
+from opendr.engine.data import Image
 import shutil
 import os
 from opendr.simulation.human_model_generation import PIFuGeneratorLearner
@@ -44,9 +44,9 @@ class TestPIFuGeneratorLearner(unittest.TestCase):
 
     def test_infer(self):
 
-        img_rgb = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], "projects", "simulation", "human_model_generation",
+        img_rgb = Image.open(os.path.join(os.environ['OPENDR_HOME'], "projects", "simulation", "human_model_generation",
                                           "demos", "imgs_input", "rgb", "result_0004.jpg"))
-        img_msk = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], "projects", "simulation", "human_model_generation",
+        img_msk = Image.open(os.path.join(os.environ['OPENDR_HOME'], "projects", "simulation", "human_model_generation",
                                           "demos", "imgs_input", "msk", "result_0004.jpg"))
         model_3D = self.learner.infer(imgs_rgb=[img_rgb], imgs_msk=[img_msk], extract_pose=False)
 
