@@ -103,6 +103,11 @@ jobs:
           # - perception/object_tracking_3d
     runs-on: ${{ matrix.os }}
     steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
     - name: Test Perception Tools
       if: ${{ contains(github.event.pull_request.labels.*.name, 'test perception') }}
       run:
