@@ -87,26 +87,26 @@ jobs:
       matrix:
         os: [ubuntu-20.04]
         package:
-          - activity_recognition
-          - compressive_learning
-          - face_recognition
-          - heart_anomaly_detection
-          - multimodal_human_centric
-          - object_tracking_2d
-          - object_detection_3d
-          - pose_estimation
-          - speech_recognition
-          - skeleton_based_action_recognition
-          - semantic_segmentation
-          - object_detection_2d
-          - facial_expression_recognition/landmark_based_facial_expression_recognition
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/object_tracking_2d
+          - perception/object_detection_3d
+          - perception/pose_estimation
+          - perception/speech_recognition
+          - perception/skeleton_based_action_recognition
+          - perception/semantic_segmentation
+          - perception/object_detection_2d
+          - perception/facial_expression_recognition/landmark_based_facial_expression_recognition
           # - perception/object_tracking_3d
     runs-on: ${{ matrix.os }}
     steps:
     - name: Test Perception Tools
       if: ${{ contains(github.event.pull_request.labels.*.name, 'test perception') }}
       run:
-        python -m unittest discover -s tests/sources/tools/perception/${{ matrix.package }}
+        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-control:
     needs: test-dependencies
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test control') }}
@@ -114,14 +114,14 @@ jobs:
       matrix:
         os: [ubuntu-20.04]
         package:
-          - mobile_manipulation
+          - control/mobile_manipulation
     runs-on: ${{ matrix.os }}
     steps:
     - name: Test Control Tools
       if: ${{ contains(github.event.pull_request.labels.*.name, 'test control') }}
       run:
         source tests/sources/tools/control/mobile_manipulation/run_ros.sh
-        python -m unittest discover -s tests/sources/tools/control/${{ matrix.package }}
+        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-simulation:
     needs: test-dependencies
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test simulation') }}
@@ -129,10 +129,10 @@ jobs:
       matrix:
         os: [ubuntu-20.04]
         package:
-          - human_model_generation
+        - simulation/human_model_generation
     runs-on: ${{ matrix.os }}
     steps:
     - name: Test Simulation Tools
       if: ${{ contains(github.event.pull_request.labels.*.name, 'test simulation') }}
       run:
-        python -m unittest discover -s tests/sources/tools/simulation/${{ matrix.package }}
+        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
