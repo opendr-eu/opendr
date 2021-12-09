@@ -233,7 +233,11 @@ class Image(Data):
         self.dtype = dtype
         if data is not None:
             # Check if the image is in the correct format
-            data = np.asarray(data)
+            try:
+                data = np.asarray(data)
+            except Exception:
+                raise ValueError("Image data not understood (cannot be cast to NumPy array).")
+
             if data.ndim != 3:
                 raise ValueError("3D dimensional images are expected")
             if guess_format:
