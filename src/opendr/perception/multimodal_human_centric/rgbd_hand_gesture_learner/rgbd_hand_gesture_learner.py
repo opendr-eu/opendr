@@ -135,9 +135,9 @@ class RgbdHandGestureLearner(Learner):
                   'Received an instance of type: {}'.format(type(x))
             raise TypeError(msg)
 
-        x = x.numpy()
-        if x.shape[-1] != 4:
-            msg = 'The last dimension of data produced by dataset must be 4\n' +\
+        x = x.convert("channels_first")
+        if x.shape[0] != 4:
+            msg = 'The first dimension of data produced by dataset must be 4\n' +\
                   'Received input of shape: {}'.format(x.shape)
             raise ValueError(msg)
 
@@ -353,8 +353,7 @@ class RgbdHandGestureLearner(Learner):
         self.model.to(torch.device(self.device))
         self.model.eval()
 
-        img = img.numpy()
-        img = np.transpose(img, (2, 0, 1))
+        img = img.convert("channels_first")
         img = np.expand_dims(img, 0)
 
         with torch.no_grad():
