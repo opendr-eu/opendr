@@ -248,7 +248,8 @@ class Image(Data):
                 # If channels are found last and image is not a color one, just perform transpose
                 elif data.shape[2] < min(data.shape[0], data.shape[1]):
                     data = np.transpose(data, (2, 0, 1))
-
+            else:
+                raise ValueError("Image is of type None")
             self.data = data
 
     @property
