@@ -72,7 +72,7 @@ Bases: `engine.data.Data`
 A class used for representing image data.
 
 The [Image](#class_engine.data.Image) class has the following public methods:
-#### Image(data=None, dtype=np.uint8)
+#### Image(data=None, dtype=np.uint8, guess_format=True)
   Construct a new [Image](#class_engine.data.Image) object based on *data*.
   *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
   *dtype* is expected to be a [NumPy](https://numpy.org) data type.

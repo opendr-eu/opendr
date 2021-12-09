@@ -250,8 +250,8 @@ Parameters:
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
-  from OpenDR.perception.pose_estimation import LightweightOpenPoseLearner
-  from OpenDR.engine.datasets import ExternalDataset
+  from opendr.perception.pose_estimation import LightweightOpenPoseLearner
+  from opendr.engine.datasets import ExternalDataset
 
   pose_estimator = LightweightOpenPoseLearner(temp_path='./parent_dir', batch_size=8, device="cuda",
                                               num_refinement_stages=3)
@@ -265,28 +265,30 @@ Parameters:
 * **Inference and result drawing example on a test .jpg image using OpenCV.**
   ```python
   import cv2
-  from OpenDR.perception.pose_estimation import LightweightOpenPoseLearner
-  from OpenDR.perception.pose_estimation import draw, get_bbox
+  from opendr.perception.pose_estimation import LightweightOpenPoseLearner
+  from opendr.perception.pose_estimation import draw, get_bbox
+  from opendr.engine.data import Image
 
   pose_estimator = LightweightOpenPoseLearner(device="cuda", temp_path='./parent_dir')
   pose_estimator.download()  # Download the default pretrained mobilenet model in the temp_path
   pose_estimator.load("./parent_dir/mobilenet_openpose")
   pose_estimator.download(mode="test_data")  # Download a test data taken from COCO2017
 
-  img = cv2.imread('./parent_dir/dataset/image/000000000785.jpg')
-  orig_img = img.copy()  # Keep original image
+  img = Image.open('./parent_dir/dataset/image/000000000785.jpg')
+  orig_img = img.opencv()  # Keep original image
   current_poses = pose_estimator.infer(img)
+  img_opencv = img.opencv()
   for pose in current_poses:
-      draw(img, pose)
-  img = cv2.addWeighted(orig_img, 0.6, img, 0.4, 0)
-  cv2.imshow('Result', img)
+      draw(img_opencv, pose)
+  img_opencv = cv2.addWeighted(orig_img, 0.6, img_opencv, 0.4, 0)
+  cv2.imshow('Result', img_opencv)
   cv2.waitKey(0)
   ```
 
 * **Optimization example for a previously trained model.**
   Inference can be run with the trained model after running self.optimize.
   ```python
-  from OpenDR.perception.pose_estimation import LightweightOpenPoseLearner
+  from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 
   pose_estimator = LightweightOpenPoseLearner(temp_path='./parent_dir')
 

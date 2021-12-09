@@ -248,6 +248,7 @@ learner.save('./saved_models/trained_model')
 ```python
 from opendr.perception.object_detection_2d import GemLearner
 from opendr.perception.object_detection_2d import draw
+from opendr.engine.data import Image
 import cv2
 
 # First we initialize the learner
@@ -257,15 +258,15 @@ learner.download(mode='pretrained_gem')
 # And some sample images
 learner.download(mode='test_data_sample_images')
 # We now read the sample images
-m1_img = cv2.imread('temp/sample_images/rgb/2021_04_22_21_35_47_852516.jpg')
-m2_img = cv2.imread('temp/sample_images/aligned_infra/2021_04_22_21_35_47_852516.jpg')
+m1_img = Image.open('temp/sample_images/rgb/2021_04_22_21_35_47_852516.jpg')
+m2_img = Image.open('temp/sample_images/aligned_infra/2021_04_22_21_35_47_852516.jpg')
 # Perform inference
 bounding_box_list, w_sensor1, _ = learner.infer(m1_img, m2_img)
 # Visualize the detections
 # The blue/green bar shows the weights of the two modalities
 # Fully blue means relying purely on the first modality
 # Fully green means relying purely on the second modality
-cv2.imshow('Detections', draw(m1_img, bounding_box_list, w_sensor1))
+cv2.imshow('Detections', draw(m1_img.opencv(), bounding_box_list, w_sensor1))
 cv2.waitKey(0)
 ```
 #### References
