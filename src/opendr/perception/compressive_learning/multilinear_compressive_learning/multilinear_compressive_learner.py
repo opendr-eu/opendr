@@ -176,7 +176,7 @@ class MultilinearCompressiveLearner(Learner):
                   'Received an instance of type: {}'.format(type(y))
             raise TypeError(msg)
 
-        x = x.numpy()
+        x = x.convert("channels_last", "rgb")
         if not x.shape == tuple(self.input_shape):
             msg = 'Given input_shape does not match dimensions of data produced by dataset\n' +\
                   'input_shape: {}, data shape: {}'.format(tuple(self.input_shape), x.shape)
@@ -352,7 +352,7 @@ class MultilinearCompressiveLearner(Learner):
         self.model.to(torch.device(self.device))
         self.model.eval()
 
-        img = img.numpy()
+        img = img.convert("channels_last", "rgb")
 
         if not tuple(img.shape) == tuple(self.input_shape):
             msg = 'Dimensions of the given input "{}"'.format(img.shape) +\
@@ -405,7 +405,7 @@ class MultilinearCompressiveLearner(Learner):
         self.model.to(torch.device(self.device))
         self.model.eval()
 
-        measurement = measurement.numpy()
+        measurement = measurement.convert("channels_last")
 
         if not tuple(measurement.shape) == tuple(self.compressed_shape):
             msg = 'Dimensions of the given compressed measurement "{}"'.format(measurement.shape) +\
