@@ -501,7 +501,7 @@ class FaceRecognitionLearner(Learner):
                 person = Category(person, self.database[person][0], confidence)
                 return person
             else:
-                person = Category(None, None, None)
+                person = Category(-1, 'Not found', 0.0)
                 return person
 
         elif self.network_head == 'classifier':
