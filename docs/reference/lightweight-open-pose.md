@@ -17,62 +17,63 @@ LightweightOpenPoseLearner(self, lr, epochs, batch_size, device, backbone, lr_sc
 ```
 
 Constructor parameters:
-- **lr**: *float, default=4e-5*  
+
+- **lr**: *float, default=4e-5*\
   Specifies the initial learning rate to be used during training.
-- **epochs**: *int, default=280*  
+- **epochs**: *int, default=280*\
   Specifies the number of epochs the training should run for.
-- **batch_size**: *int, default=80*  
+- **batch_size**: *int, default=80*\
   Specifies number of images to be bundled up in a batch during training. This heavily affects memory usage, adjust according to your system.
-- **device**: *{'cpu', 'cuda'}, default='cuda'*  
+- **device**: *{'cpu', 'cuda'}, default='cuda'*\
   Specifies the device to be used.
-- **backbone**: *{'mobilenet, 'mobilenetv2', 'shufflenet'}, default='mobilenet'*  
+- **backbone**: *{'mobilenet, 'mobilenetv2', 'shufflenet'}, default='mobilenet'*\
     Specifies the backbone architecture.
-- **lr_schedule**: *str, default=' '*  
+- **lr_schedule**: *str, default=' '*\
   Specifies the learning rate scheduler. Please provide a function that expects to receive as a sole argument the used optimizer.
-- **temp_path**: *str, default='temp'*  
+- **temp_path**: *str, default='temp'*\
   Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files. Moreover the JSON file that contains the evaluation detections is saved here.
-- **checkpoint_after_iter**: *int, default=5000*  
+- **checkpoint_after_iter**: *int, default=5000*\
   Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
-- **checkpoint_load_iter**: *int, default=0*  
+- **checkpoint_load_iter**: *int, default=0*\
   Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
-- **val_after**: *int, default=5000*  
+- **val_after**: *int, default=5000*\
   Specifies per how many training iterations a validation should be run.
-- **log_after**: *int, default=100*  
+- **log_after**: *int, default=100*\
   Specifies per how many training iterations the log files will be updated.
-- **mobilenet_use_stride**: *bool, default=True*  
+- **mobilenet_use_stride**: *bool, default=True*\
   Whether to add an additional stride value in the mobilenet model, which reduces accuracy but increases inference speed.
-- **mobilenetv2_width**: *[0.0 - 1.0], default=1.0*  
+- **mobilenetv2_width**: *[0.0 - 1.0], default=1.0*\
   If the mobilenetv2 backbone is used, this parameter specified its size.
-- **shufflenet_groups**: *int, default=3*  
+- **shufflenet_groups**: *int, default=3*\
   If the shufflenet backbone is used, it specifies the number of groups to be used in grouped 1x1 convolutions in each ShuffleUnit.
-- **num_refinement_stages**: *int, default=2*  
+- **num_refinement_stages**: *int, default=2*\
   Specifies the number of pose estimation refinement stages are added on the model's head, including the initial stage.
-- **batches_per_iter**: *int, default=1*  
+- **batches_per_iter**: *int, default=1*\
   Specifies per how many batches a backward optimizer step is performed.
-- **experiment_name**: *str, default='default'*  
+- **experiment_name**: *str, default='default'*\
   String name to attach to checkpoints.
-- **num_workers**: *int, default=8*  
+- **num_workers**: *int, default=8*\
   Specifies the number of workers to be used by the data loader.
-- **weights_only**: *bool, default=True*  
+- **weights_only**: *bool, default=True*\
   If True, only the model weights will be loaded; it won't load optimizer, scheduler, num_iter, current_epoch information.
-- **output_name**: *str, default='detections.json'*  
+- **output_name**: *str, default='detections.json'*\
   The name of the json files where the evaluation detections are stored, inside the temp_path.
-- **multiscale**: *bool, default=False*  
+- **multiscale**: *bool, default=False*\
   Specifies whether evaluation will run in the predefined multiple scales setup or not. It overwrites self.scales to [0.5, 1.0, 1.5, 2.0].
-- **scales**: *list, default=None*  
+- **scales**: *list, default=None*\
   A list of integer scales that define the multiscale evaluation setup. Used to manually set the scales instead of going for the predefined multiscale setup.
-- **visualize**: *bool, default=False*  
+- **visualize**: *bool, default=False*\
   Specifies whether the images along with the poses will be shown, one by one during evaluation.
-- **base_height**: *int, default=256*  
+- **base_height**: *int, default=256*\
   Specifies the height, based on which the images will be resized before performing the forward pass.
-- **img_mean**: *list, default=(128, 128, 128)]*  
+- **img_mean**: *list, default=(128, 128, 128)]*\
   Specifies the mean based on which the images are normalized.
-- **img_scale**: *float, default=1/256*  
+- **img_scale**: *float, default=1/256*\
   Specifies the scale based on which the images are normalized.
-- **pad_value**: *list, default=(0, 0, 0)*  
+- **pad_value**: *list, default=(0, 0, 0)*\
   Specifies the pad value based on which the images' width is padded.
-- **half_precision**: *bool, default=False*  
-  Enables inference using half (fp16) precision instead of single (fp32) precision. Valid only for GPU-based inference.   
+- **half_precision**: *bool, default=False*\
+  Enables inference using half (fp16) precision instead of single (fp32) precision. Valid only for GPU-based inference.
 
 
 #### `LightweightOpenPoseLearner.fit`
@@ -81,40 +82,42 @@ LightweightOpenPoseLearner.fit(self, dataset, val_dataset, logging_path, logging
 ```
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
-Returns a dictionary containing stats regarding the last evaluation ran.  
+Returns a dictionary containing stats regarding the last evaluation ran.
+
 Parameters:
-  - **dataset**: *object*  
+
+  - **dataset**: *object*\
     Object that holds the training dataset.
     Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-  - **val_dataset**: *object, default=None*
+  - **val_dataset**: *object, default=None*\
     Object that holds the validation dataset.
-  - **logging_path**: *str, default=''*  
+  - **logging_path**: *str, default=''*\
     Path to save TensorBoard log files.
     If set to None or '', TensorBoard logging is disabled.
-  - **logging_flush_secs**: *int, default=30*
+  - **logging_flush_secs**: *int, default=30*\
     How often, in seconds, to flush the TensorBoard data to disk.
-  - **silent**: *bool, default=False*  
+  - **silent**: *bool, default=False*\
     If set to True, disables all printing of training progress reports and other information to STDOUT.
-  - **verbose**: *bool, default=True***  
+  - **verbose**: *bool, default=True***\
     If set to True, enables the maximum verbosity.
-  - **epochs**: *int, default=None*  
+  - **epochs**: *int, default=None*\
     Overrides epochs attribute set in constructor.
-  - **use_val_subset**: *bool, default=True***  
+  - **use_val_subset**: *bool, default=True***\
     If set to True, a subset of the validation dataset is created and used in evaluation.
-  - **val_subset_size**: *int, default=250***  
+  - **val_subset_size**: *int, default=250***\
     Controls the size of the validation subset.
-  - **images_folder_name**: *str, default='train2017'*  
+  - **images_folder_name**: *str, default='train2017'*\
     Folder name that contains the dataset images.
     This folder should be contained in the dataset path provided.
     Note that this is a folder name, not a path.
-  - **annotations_filename**: *str, default='person_keypoints_train2017.json'*  
+  - **annotations_filename**: *str, default='person_keypoints_train2017.json'*\
     Filename of the annotations JSON file.
     This file should be contained in the dataset path provided.
-  - **val_images_folder_name**: *str, default='val2017'*  
+  - **val_images_folder_name**: *str, default='val2017'*\
     Folder name that contains the validation images.
     This folder should be contained in the dataset path provided.
     Note that this is a folder name, not a path.
-  - **val_annotations_filename**: *str, default='person_keypoints_val2017.json'*  
+  - **val_annotations_filename**: *str, default='person_keypoints_val2017.json'*\
     Filename of the validation annotations JSON file.
     This file should be contained in the dataset path provided.
 
@@ -124,24 +127,26 @@ LightweightOpenPoseLearner.eval(self, dataset, silent, verbose, use_subset, subs
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
-Returns a dictionary containing stats regarding evaluation.  
+Returns a dictionary containing stats regarding evaluation.
+
 Parameters:
-- **dataset**: *object*  
+
+- **dataset**: *object*\
   Object that holds the evaluation dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-- **silent**: *bool, default=False*  
+- **silent**: *bool, default=False*\
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
-- **verbose**: *bool, default=True*  
+- **verbose**: *bool, default=True*\
   If set to True, enables the maximum verbosity.
-- **val_subset**: *bool, default=True*  
+- **val_subset**: *bool, default=True*\
   If set to True, a subset of the validation dataset is created and used in evaluation.
-- **subset_size**: *int, default=250*  
+- **subset_size**: *int, default=250*\
   Controls the size of the validation subset.
-- **images_folder_name**: *str, default='val2017'*  
+- **images_folder_name**: *str, default='val2017'*\
   Folder name that contains the dataset images.
   This folder should be contained in the dataset path provided.
   Note that this is a folder name, not a path.
-- **annotations_filename**: *str, default='person_keypoints_val2017.json'*  
+- **annotations_filename**: *str, default='person_keypoints_val2017.json'*\
   Filename of the annotations JSON file.
   This file should be contained in the dataset path provided.
 
@@ -151,16 +156,17 @@ LightweightOpenPoseLearner.infer(img, upsample_ratio, track, smooth)
 ```
 
 This method is used to perform pose estimation on an image.
-Returns a list of `engine.target.Pose` objects, where each holds a pose, or returns an empty list if no detection were made.  
+Returns a list of `engine.target.Pose` objects, where each holds a pose, or returns an empty list if no detection were made.
 
 Parameters:
-- **img**: *object***  
+
+- **img**: *object***\
   Object of type engine.data.Image.
-- **upsample_ratio**: *int, default=4*  
+- **upsample_ratio**: *int, default=4*\
   Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing.
-- **track**: *bool, default=True*  
+- **track**: *bool, default=True*\
   If True, infer propagates poses ids from previous frame results to track poses.
-- **smooth**: *bool, default=True*  
+- **smooth**: *bool, default=True*\
   If True, smoothing is performed on pose keypoints between frames.
 
 #### `LightweightOpenPoseLearner.save`
@@ -178,9 +184,10 @@ a similar fashion with an ".onnx" extension, by copying it from the self.temp_pa
 during conversion.
 
 Parameters:
-- **path**: *str*  
+
+- **path**: *str*\
   Path to save the model, including the filename.
-- **verbose**: *bool, default=False*  
+- **verbose**: *bool, default=False*\
   If set to True, prints a message on success.
 
 #### `LightweightOpenPoseLearner.load`
@@ -192,9 +199,10 @@ This method is used to load a previously saved model from its saved folder.
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
 
 Parameters:
-- **path**: *str*  
+
+- **path**: *str*\
   Path of the model to be loaded.
-- **verbose**: *bool, default=False*  
+- **verbose**: *bool, default=False*\
   If set to True, prints a message on success.
 
 #### `LightweightOpenPoseLearner.optimize`
@@ -205,7 +213,7 @@ LightweightOpenPoseLearner.optimize(self, do_constant_folding)
 This method is used to optimize a trained model to ONNX format which can be then used for inference.
 
 Parameters:
-- **do_constant_folding**: *bool, default=False*  
+- **do_constant_folding**: *bool, default=False*
   ONNX format optimization.
   If True, the constant-folding optimization is applied to the model during export. Constant-folding optimization will replace some of the ops that have all constant inputs, with pre-computed constant nodes.
 
@@ -218,22 +226,23 @@ Download utility for various Lightweight Open Pose components. Downloads files d
 saves them in the path provided. It supports downloading:
 1. the default mobilenet pretrained model
 2. mobilenet, mobilenetv2 and shufflenet weights needed for training
-3. a test dataset with a single COCO image and its annotation  
+3. a test dataset with a single COCO image and its annotation
 
 Parameters:
-- **path**: *str, default=None*  
+
+- **path**: *str, default=None*\
   Local path to save the files, defaults to self.temp_path if None.
-- **mode**: *str, default="pretrained"*  
+- **mode**: *str, default="pretrained"*\
   What file to download, can be one of "pretrained", "weights", "test_data"
-- **verbose**: *bool, default=False*  
+- **verbose**: *bool, default=False*\
   Whether to print messages in the console.
-- **url**: *str, default=OpenDR FTP URL*  
+- **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
 
 
 #### Examples
 
-* **Training example using an `ExternalDataset`**.  
+* **Training example using an `ExternalDataset`**.
   To train properly, the backbone weights are downloaded automatically in the `temp_path`. Default backbone is
   'mobilenet'.
   The training and evaluation dataset should be present in the path provided, along with the JSON annotation files.
@@ -241,8 +250,7 @@ Parameters:
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
-  from OpenDR.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
-    LightweightOpenPoseLearner
+  from OpenDR.perception.pose_estimation import LightweightOpenPoseLearner
   from OpenDR.engine.datasets import ExternalDataset
 
   pose_estimator = LightweightOpenPoseLearner(temp_path='./parent_dir', batch_size=8, device="cuda",
@@ -257,9 +265,8 @@ Parameters:
 * **Inference and result drawing example on a test .jpg image using OpenCV.**
   ```python
   import cv2
-  from OpenDR.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
-      LightweightOpenPoseLearner
-  from OpenDR.perception.pose_estimation.lightweight_open_pose.utilities import draw, get_bbox
+  from OpenDR.perception.pose_estimation import LightweightOpenPoseLearner
+  from OpenDR.perception.pose_estimation import draw, get_bbox
 
   pose_estimator = LightweightOpenPoseLearner(device="cuda", temp_path='./parent_dir')
   pose_estimator.download()  # Download the default pretrained mobilenet model in the temp_path
@@ -279,8 +286,7 @@ Parameters:
 * **Optimization example for a previously trained model.**
   Inference can be run with the trained model after running self.optimize.
   ```python
-  from OpenDR.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
-      LightweightOpenPoseLearner
+  from OpenDR.perception.pose_estimation import LightweightOpenPoseLearner
 
   pose_estimator = LightweightOpenPoseLearner(temp_path='./parent_dir')
 
@@ -324,6 +330,6 @@ Pose keypoints ids are matched as:
 
 #### References
 <a name="open-pose-1" href="https://arxiv.org/abs/1812.08008">[1]</a> OpenPose: Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields,
-[arXiv](https://arxiv.org/abs/1812.08008).  
+[arXiv](https://arxiv.org/abs/1812.08008).
 <a name="open-pose-2" href="https://arxiv.org/abs/1811.12004">[2]</a> Real-time 2D Multi-Person Pose Estimation on CPU: Lightweight OpenPose,
 [arXiv](https://arxiv.org/abs/1811.12004).
