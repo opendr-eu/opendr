@@ -99,7 +99,7 @@ The [Image](#class_engine.data.Image) class has the following public methods:
 #### open(filename)
   Construct a new [Image](#class-engine.data.Image) object from the given image file.
 
-#### convert(format, channel_order)
+#### convert(format='channels_first', channel_order='rgb')
   Return the data in channels first/last format using either 'rgb' or 'bgr' ordering.
   *format* is expected to be of str type (either 'channels_first' or 'channels_last')
   *channel_order* is expected to be of str type (either 'rgb' or 'bgr')
