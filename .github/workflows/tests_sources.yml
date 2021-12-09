@@ -10,7 +10,7 @@ defaults:
 
 jobs:
   cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') || contains(github.event.pull_request.labels.*.name, 'test dependencies')}}
     runs-on: ubuntu-latest
     steps:
     - uses: rokroskar/workflow-run-cleanup-action@master
@@ -78,36 +78,61 @@ jobs:
         make install_compilation_dependencies
         make install_runtime_dependencies
         pip install -r tests/sources/requirements.txt
-  test-tools:
+        python -m unittest discover -s tests/sources/tools/engine
+        python -m unittest discover -s tests/sources/tools/utils
+  test-perception:
     needs: test-dependencies
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test perception') }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
         package:
-          - engine
-          - utils
-          - perception/activity_recognition
-          - perception/compressive_learning
-          - perception/face_recognition
-          - perception/heart_anomaly_detection
-          - perception/multimodal_human_centric
-          - perception/object_tracking_2d
-          - perception/object_detection_3d
-          - perception/pose_estimation
-          - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
-          - perception/semantic_segmentation
-          - control/mobile_manipulation
-          - perception/object_detection_2d
-          - simulation/human_model_generation
-          - perception/facial_expression_recognition/landmark_based_facial_expression_recognition
+          - activity_recognition
+          - compressive_learning
+          - face_recognition
+          - heart_anomaly_detection
+          - multimodal_human_centric
+          - object_tracking_2d
+          - object_detection_3d
+          - pose_estimation
+          - speech_recognition
+          - skeleton_based_action_recognition
+          - semantic_segmentation
+          - object_detection_2d
+          - facial_expression_recognition/landmark_based_facial_expression_recognition
           # - perception/object_tracking_3d
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Test Tools
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
-      run: |
+    - name: Test Perception Tools
+      if: ${{ contains(github.event.pull_request.labels.*.name, 'test perception') }}
+      run:
+        python -m unittest discover -s tests/sources/tools/perception/${{ matrix.package }}
+  test-control:
+    needs: test-dependencies
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test control') }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        package:
+          - mobile_manipulation
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Test Control Tools
+      if: ${{ contains(github.event.pull_request.labels.*.name, 'test control') }}
+      run:
         source tests/sources/tools/control/mobile_manipulation/run_ros.sh
-        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
-
+        python -m unittest discover -s tests/sources/tools/control/${{ matrix.package }}
+  test-simulation:
+    needs: test-dependencies
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test simulation') }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        package:
+          - human_model_generation
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Test Simulation Tools
+      if: ${{ contains(github.event.pull_request.labels.*.name, 'test simulation') }}
+      run:
+        python -m unittest discover -s tests/sources/tools/simulation/${{ matrix.package }}
