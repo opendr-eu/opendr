@@ -247,7 +247,7 @@ learner.save('./saved_models/trained_model')
 
 ```python
 from opendr.perception.object_detection_2d import GemLearner
-from opendr.perception.object_detection_2d import draw
+from opendr.perception.object_detection_2d.gem.algorithm.util.draw import draw
 from opendr.engine.data import Image
 import cv2
 
