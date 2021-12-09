@@ -15,6 +15,7 @@
 import cv2
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.pose_estimation import draw
+from opendr.engine.data import Image
 import argparse
 from os.path import join
 
@@ -44,13 +45,14 @@ if __name__ == '__main__':
     # Download one sample image
     pose_estimator.download(path=".", mode="test_data")
     image_path = join("temp", "dataset", "image", "000000000785.jpg")
-    img = cv2.imread(image_path)
+    img = Image.open(image_path)
 
     if onnx:
         pose_estimator.optimize()
 
     poses = pose_estimator.infer(img)
+    img_cv = img.opencv()
     for pose in poses:
-        draw(img, pose)
-    cv2.imshow('Results', img)
+        draw(img_cv, pose)
+    cv2.imshow('Results', img_cv)
     cv2.waitKey(0)

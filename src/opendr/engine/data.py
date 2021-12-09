@@ -211,16 +211,46 @@ class Timeseries(Data):
 class Image(Data):
     """
     A class used for representing image data.
+    OpenDR uses CHW/RGB conventions
     This class provides abstract methods for:
     - returning a NumPy compatible representation of data (numpy())
+    - loading an input directly into OpenDR compliant format (open())
+    - getting an image into OpenCV-compliant format (opencv()) for visualization purposes
     """
 
-    def __init__(self, data=None, dtype=np.uint8):
+    def __init__(self, data=None, dtype=np.uint8, guess_format=True):
+        """
+        Image constructor
+        :param data: Data to be held by the image object
+        :type data: numpy.ndarray
+        :param dtype: type of the image data provided
+        :type data: numpy.dtype
+        :param guess_format: try to automatically guess the type of input data and convert it to OpenDR format
+        :type guess_format: bool
+        """
         super().__init__(data)
 
         self.dtype = dtype
         if data is not None:
+            # Check if the image is in the correct format
+            try:
+                data = np.asarray(data)
+            except Exception:
+                raise ValueError("Image data not understood (cannot be cast to NumPy array).")
+
+            if data.ndim != 3:
+                raise ValueError("3D dimensional images are expected")
+            if guess_format:
+                # If channels are found last and image is a color one, assume OpenCV format
+                if data.shape[2] == 3:
+                    data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+                    data = np.transpose(data, (2, 0, 1))
+                # If channels are found last and image is not a color one, just perform transpose
+                elif data.shape[2] < min(data.shape[0], data.shape[1]):
+                    data = np.transpose(data, (2, 0, 1))
             self.data = data
+        else:
+            raise ValueError("Image is of type None")
 
     @property
     def data(self):
@@ -258,7 +288,7 @@ class Image(Data):
         :rtype: numpy.ndarray
         """
         # Since this class stores the data as NumPy arrays, we can directly return the data
-        return self.data
+        return self.data.copy()
 
     def __str__(self):
         """
@@ -282,8 +312,47 @@ class Image(Data):
         if not Path(filename).exists():
             raise FileNotFoundError('The image file does not exist.')
         data = cv2.imread(filename)
+        # Change channel order and convert from HWC to CHW
         data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+        data = np.transpose(data, (2, 0, 1))
         return cls(data)
+
+    def opencv(self):
+        """
+        Returns the stored image into a format that can be directly used by OpenCV.
+        This function is useful due to the discrepancy between the way images are stored:
+        HWC/BGR (OpenCV) and CWH/RGB (OpenDR/PyTorch)
+        :return: an image into OpenCV compliant-format
+        :rtype: NumPy array
+        """
+        data = np.transpose(self.data, (1, 2, 0))
+        data = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
+        return data
+
+    def convert(self, format='channels_first', channel_order='rgb'):
+        """
+        Returns the data in channels first/last format using either 'rgb' or 'bgr' ordering.
+        :param format: either 'channels_first' or 'channels_last'
+        :type format: str
+        :param channel_order: either 'rgb' or 'bgr'
+        :type channel_order: str
+        :return an image (as NumPy array) with the appropriate format
+        :rtype NumPy array
+        """
+        if format == 'channels_last':
+            data = np.transpose(self.data, (1, 2, 0))
+        elif format == 'channels_first':
+            data = self.data.copy()
+        else:
+            raise ValueError("format not in ('channels_first', 'channels_last')")
+
+        if channel_order == 'bgr':
+            # This causes a second copy operation. Can be potentially further optimized in the future.
+            data = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
+        elif channel_order not in ('rgb', 'bgr'):
+            raise ValueError("channel_order not in ('rgb', 'bgr')")
+
+        return data
 
 
 class ImageWithDetections(Image):
@@ -294,13 +363,9 @@ class ImageWithDetections(Image):
     - returning a NumPy compatible representation of data (numpy())
     """
 
-    def __init__(self, image, boundingBoxList: BoundingBoxList):
-        super().__init__()
+    def __init__(self, image, boundingBoxList: BoundingBoxList, *args, **kwargs):
+        super().__init__(image, *args, **kwargs)
 
-        if isinstance(image, Image):
-            self.data = image.numpy()
-        else:
-            self.data = image
         self.boundingBoxList = boundingBoxList
 
     @property

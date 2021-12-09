@@ -19,7 +19,6 @@ import os
 import json
 import tqdm
 import numpy as np
-import cv2
 from imgaug import augmenters as iaa
 from PIL import Image as PILImage
 from urllib.request import urlretrieve
@@ -176,8 +175,7 @@ class BisenetLearner(Learner):
 
         if not isinstance(img, Image):
             img = Image(img)
-        img = img.numpy()
-        image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        image = img.convert("channels_last", "rgb")
         resize = iaa.Scale({'height': self.crop_height, 'width': self.crop_width})
         resize_det = resize.to_deterministic()
         image = resize_det.augment_image(image)

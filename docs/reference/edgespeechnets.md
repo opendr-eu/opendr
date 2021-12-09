@@ -158,8 +158,8 @@ Parameters:
   import numpy as np
   import os
 
-  from OpenDR.engine.datasets import DatasetIterator
-  from OpenDR.perception.speech_recognition from EdgeSpeechNetsLearner
+  from opendr.engine.datasets import DatasetIterator
+  from opendr.perception.speech_recognition from EdgeSpeechNetsLearner
 
   class RandomDataset(DatasetIterator):
       def __init__(self):
@@ -186,8 +186,8 @@ Parameters:
   import librosa
   import numpy as np
 
-  from OpenDR.engine.data import Timeseries
-  from OpenDR.perception.speech_recognition from EdgeSpeechNetsLearner
+  from opendr.engine.data import Timeseries
+  from opendr.perception.speech_recognition import EdgeSpeechNetsLearner
 
   learner = EdgeSpeechNetsLearner(output_clases_n=10, architecture="A")
   learner.load(os.path.join(".", "example", "directory", "path", "model"))

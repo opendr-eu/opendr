@@ -103,8 +103,8 @@ class RgbdHandGestureNode:
         :param depth_data: input depth image
         :type depth_data: engine.data.Image
         '''
-        image = image.numpy() / (2**8 - 1)
-        depth_img = depth_img.numpy() / (2**16 - 1)
+        image = image.convert(format='channels_last') / (2**8 - 1)
+        depth_img = depth_img.convert(format='channels_last') / (2**16 - 1)
 
         # resize the images to 224x224
         image = cv2.resize(image, (224, 224))

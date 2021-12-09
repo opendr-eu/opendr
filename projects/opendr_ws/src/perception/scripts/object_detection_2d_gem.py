@@ -152,8 +152,8 @@ class GemNode:
         :type msg_ir: sensor_msgs.msg.Image
         """
         # Convert images to OpenDR standard
-        image_rgb = self.bridge.from_ros_image(msg_rgb).numpy()
-        image_ir_raw = self.bridge.from_ros_image(msg_ir).numpy()
+        image_rgb = self.bridge.from_ros_image(msg_rgb).opencv()
+        image_ir_raw = self.bridge.from_ros_image(msg_ir, 'bgr8').opencv()
         image_ir = cv2.warpPerspective(image_ir_raw, self.h, (image_rgb.shape[1], image_rgb.shape[0]))
 
         # Perform inference on images
