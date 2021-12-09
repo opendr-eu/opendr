@@ -76,8 +76,7 @@ The [Image](#class_engine.data.Image) class has the following public methods:
   Construct a new [Image](#class_engine.data.Image) object based on *data*.
   *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
   *dtype* is expected to be a [NumPy](https://numpy.org) data type.
-  *guess_format* if set to True, then tries to automatically infer whether an [OpenCV](https://opencv.org) 
-  image was supplied and then automatically converts it into OpenDR format.
+  *guess_format* if set to True, then tries to automatically infer whether an [OpenCV](https://opencv.org) image was supplied and then automatically converts it into OpenDR format.
   Note that the OpenDR framework assumes an NCHW/RGB ordering.
 
 #### data()
