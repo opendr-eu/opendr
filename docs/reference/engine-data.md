@@ -89,7 +89,7 @@ The [Image](#class_engine.data.Image) class has the following public methods:
   dimensions can be organized as e.g. (channels, width, height).
 
 #### numpy()
-  Return a  [NumPy](https://numpy.org)-compatible representation of data.
+  Return a [NumPy](https://numpy.org)-compatible representation of data.
   Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
 
 #### opencv()
