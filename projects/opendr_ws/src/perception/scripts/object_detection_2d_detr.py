@@ -19,8 +19,9 @@ import torch
 import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
+from opendr.engine.data import Image
 from opendr_bridge import ROSBridge
-from opendr.perception.object_detection_2d import draw
+from opendr.perception.object_detection_2d.detr.algorithm.util.draw import draw
 from opendr.perception.object_detection_2d import DetrLearner
 
 
@@ -82,7 +83,8 @@ class DetrNode:
         boxes = self.detr_learner.infer(image)
 
         # Get an OpenCV image back
-        image = np.float32(image.numpy())
+        image = np.float32(image.opencv())
+
         #  Annotate image and publish results:
         if self.detection_publisher is not None:
             ros_detection = self.bridge.to_ros_bounding_box_list(boxes)
@@ -91,8 +93,8 @@ class DetrNode:
             # e.g., opendr_detection = self.bridge.from_ros_bounding_box_list(ros_detection)
 
         if self.image_publisher is not None:
-            draw(image, boxes)
-            message = self.bridge.to_ros_image(np.uint8(image), encoding='bgr8')
+            image = draw(image, boxes)
+            message = self.bridge.to_ros_image(Image(image), encoding='bgr8')
             self.image_publisher.publish(message)
 
 

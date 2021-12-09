@@ -14,8 +14,7 @@
 
 import argparse
 
-import cv2
-
+from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import RetinaFaceLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
@@ -31,7 +30,7 @@ if __name__ == '__main__':
     learner.load("./retinaface_{}".format(args.backbone))
 
     learner.download(".", mode="images")
-    img = cv2.imread("./cov4.jpg")
+    img = Image.open("./cov4.jpg")
     bounding_boxes = learner.infer(img)
 
-    img = draw_bounding_boxes(img, bounding_boxes, learner.classes, show=True)
+    img = draw_bounding_boxes(img.opencv(), bounding_boxes, learner.classes, show=True)

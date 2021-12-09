@@ -77,6 +77,7 @@ if __name__ == '__main__':
         for img in image_provider:
 
             start_time = time.perf_counter()
+
             # Perform inference
             poses = pose_estimator.infer(img)
             end_time = time.perf_counter()
