@@ -21,7 +21,7 @@ from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr.engine.data import Image
 from opendr_bridge import ROSBridge
-from opendr.perception.object_detection_2d import draw_bounding_boxes
+from opendr.perception.object_detection_2d.detr.algorithm.util.draw import draw
 from opendr.perception.object_detection_2d import DetrLearner
 
 
