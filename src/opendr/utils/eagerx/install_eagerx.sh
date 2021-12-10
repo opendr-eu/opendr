@@ -19,11 +19,11 @@ sudo apt-get update && sudo apt-get install -y \
   python3-rosdep || exit;
 source /opt/ros/${ROS_DISTRO}/setup.bash
 
-## EAGERx
-# Check if EAGERx repo is already cloned
+# Check if EAGERx submodule is initialized
 if [ ! -d ${MODULE_PATH}/eagerx ]; then
-  cd ${MODULE_PATH}}
-  git clone -b opendr git@github.com:eager-dev/eagerx.git
+  STR=$'EAGERx not initialized\nPlease run:\ngit submodule init\ngit submodule update'
+  echo "$STR"
+  exit 1
 fi
 
 ## packages to install from source

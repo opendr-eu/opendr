@@ -1,3 +1,6 @@
 [submodule "src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS"]
 	path = src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS
 	url = https://github.com/DeepSceneSeg/EfficientPS.git
+[submodule "src/opendr/utils/eagerx/eagerx"]
+	path = src/opendr/utils/eagerx/eagerx
+	url = https://github.com/eager-dev/eagerx.git
