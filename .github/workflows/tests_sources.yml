@@ -10,7 +10,7 @@ defaults:
 
 jobs:
   cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test dependencies') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') }}
     runs-on: ubuntu-latest
     steps:
     - uses: rokroskar/workflow-run-cleanup-action@master
@@ -50,10 +50,11 @@ jobs:
         python -m unittest discover -s tests
   test-tools:
     needs: cleanup-runs
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test dependencies') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
+        max-parallel: 10
         engine-package:
           - engine
           - utils
@@ -87,7 +88,8 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
-    - name: Test dependencies
+    - name: Test Tools
+      if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
       run: |
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
         export OPENDR_HOME=$PWD
@@ -98,17 +100,17 @@ jobs:
         make install_compilation_dependencies
         make install_runtime_dependencies
         pip install -r tests/sources/requirements.txt
-        python -m unittest discover -s tests/sources/tools/${{ matrix.engine-package }}
-    - name: Test perception tools
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'test perception') }}
-      run: |
-        python -m unittest discover -s tests/sources/tools/${{ matrix.perception-package }}
-    - name: Test control tools
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'test control') }}
-      run: |
-        source tests/sources/tools/control/mobile_manipulation/run_ros.sh
-        python -m unittest discover -s tests/sources/tools/${{ matrix.control-package }}
-    - name: Test simulation tools
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'test simulation') }}
-      run: |
-        python -m unittest discover -s tests/sources/tools/${{ matrix.simulation-package }}
+
+        if [ ${{ contains(github.event.pull_request.labels.*.name, 'test perception') }} ]; then
+          python -m unittest discover -s tests/sources/tools/${{ matrix.perception-package }}
+        fi
+
+        if [ ${{ contains(github.event.pull_request.labels.*.name, 'test control') }} ]; then
+          source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+          python -m unittest discover -s tests/sources/tools/${{ matrix.control-package }}
+        fi
+
+        if [ ${{ contains(github.event.pull_request.labels.*.name, 'test simulation') }} ]; then
+          python -m unittest discover -s tests/sources/tools/${{ matrix.simulation-package }}
+        fi
+
