@@ -24,8 +24,7 @@ from typing import Dict
 
 
 # opendr imports
-from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
-    LightweightOpenPoseLearner
+from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.pose_estimation.lightweight_open_pose.utilities import draw
 import argparse
 from opendr.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import \

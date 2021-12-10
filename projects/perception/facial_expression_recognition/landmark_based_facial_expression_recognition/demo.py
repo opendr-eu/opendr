@@ -21,9 +21,9 @@ import torch
 import pandas
 
 from opendr.perception.facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
-from opendr.perception.facial_expression_recognition.perception.landmark_based_facial_expression_recognition.\
+from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.\
     algorithm.datasets.landmark_extractor import landmark_extractor
-from opendr.perception.facial_expression_recognition.perception.landmark_based_facial_expression_recognition.\
+from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.\
     algorithm.datasets.gen_facial_muscles_data import gen_muscle_data
 
 
