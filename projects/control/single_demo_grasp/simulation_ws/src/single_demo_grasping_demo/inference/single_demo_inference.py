@@ -37,7 +37,7 @@ class SingleDemoInference(object):
 
     def __init__(self, model_filepath, thresh):
     
-        self.learner = SingleDemoGraspLearner(object_name = 'pendulum', data_directory = dir_temp)
+        self.learner = SingleDemoGraspLearner(object_name = 'pendulum', data_directory = dir_temp, device='cpu')
         self.learner.download(path = dir_temp, verbose = True, object_name = "pendulum")
         self.learner.load(model_filepath)
 

@@ -73,7 +73,7 @@ class TestSingleDemoGraspLearner(unittest.TestCase):
 
         cls.learner = SingleDemoGraspLearner(object_name = 'pendulum', data_directory = dir_temp, lr = 0.0008, batch_size = 1,
                         num_workers = 2, num_classes = 1, iters = 10,
-                                                threshold = 0.8,    device = 'cuda')
+                                                threshold = 0.8,    device = 'cpu')
                                                 
 
         # Download all required files for testing
