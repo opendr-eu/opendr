@@ -106,13 +106,13 @@ def select_2_poses(poses):
     return selected_poses
 
 
-NTU60_ClASSES = pd.read_csv("./ntu60_labels.csv", verbose=True, index_col=0).to_dict()["name"]
+NTU60_CLASSES = pd.read_csv("./ntu60_labels.csv", verbose=True, index_col=0).to_dict()["name"]
 
 
 def preds2label(confidence):
     k = 3
     class_scores, class_inds = torch.topk(confidence, k=k)
-    labels = {NTU60_ClASSES[int(class_inds[j])]: float(class_scores[j].item())for j in range(k)}
+    labels = {NTU60_CLASSES[int(class_inds[j])]: float(class_scores[j].item())for j in range(k)}
     return labels
 
 

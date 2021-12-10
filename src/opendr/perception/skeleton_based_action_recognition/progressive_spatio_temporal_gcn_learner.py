@@ -43,8 +43,8 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 # OpenDR skeleton_based_action_recognition imports
 from opendr.perception.skeleton_based_action_recognition.algorithm.models.pstgcn import PSTGCN
 from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.feeder import Feeder
-from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.ntu_gendata import NTU60_ClASSES
-from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_gendata import KINETICS400_ClASSES
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.ntu_gendata import NTU60_CLASSES
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_gendata import KINETICS400_CLASSES
 
 
 class ProgressiveSpatioTemporalGCNLearner(Learner):
@@ -104,9 +104,9 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         self.__init_seed(1)
 
         if self.dataset_name in ['nturgbd_cv', 'nturgbd_cs']:
-            self.classes_dict = NTU60_ClASSES
+            self.classes_dict = NTU60_CLASSES
         elif self.dataset_name == 'kinetics':
-            self.classes_dict = KINETICS400_ClASSES
+            self.classes_dict = KINETICS400_CLASSES
 
     def fit(self, dataset, val_dataset, logging_path='', silent=False, verbose=True,
             momentum=0.9, nesterov=True, weight_decay=0.0001, train_data_filename='train_joints.npy',
@@ -274,7 +274,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                 checkpoints_folder = os.path.join(self.parent_dir,
                                                   '{}_checkpoints'.format(self.experiment_name))
                 checkpoint_name = self.experiment_name + '-' + str(
-                                len(self.topology)) + '-' + str(self.topology[-1])
+                    len(self.topology)) + '-' + str(self.topology[-1])
                 self.ort_session = None
                 self.save(path=checkpoints_folder, model_name=checkpoint_name)
             eval_results = self.eval(val_dataset, val_loader=val_loader, epoch=epoch,
@@ -493,10 +493,10 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                 if layer_iter > 0 or block_iter > 0:
                     if block_iter == 0:
                         checkpoint_name = self.experiment_name + '-' + str(
-                                        len(self.topology) - 1) + '-' + str(self.topology[-2])
+                            len(self.topology) - 1) + '-' + str(self.topology[-2])
                     else:
                         checkpoint_name = self.experiment_name + '-' + str(
-                                        len(self.topology)) + '-' + str(self.topology[-1] - 1)
+                            len(self.topology)) + '-' + str(self.topology[-1] - 1)
 
                     checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
                     self.ort_session = None
