@@ -65,7 +65,8 @@ read_ini('dependencies.ini')
 # Loop through tools and extract dependencies
 if not global_dependencies:
     opendr_home = os.environ.get('OPENDR_HOME')
-    for subdir, dirs, files in os.walk(os.path.join(opendr_home, 'src')):
-        for filename in files:
-            if filename == 'dependencies.ini':
-                read_ini(os.path.join(subdir, filename))
+    for dir_to_walk in ['src', 'projects']:
+        for subdir, dirs, files in os.walk(os.path.join(opendr_home, dir_to_walk)):
+            for filename in files:
+                if filename == 'dependencies.ini':
+                    read_ini(os.path.join(subdir, filename))
