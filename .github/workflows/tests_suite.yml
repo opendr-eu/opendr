@@ -52,7 +52,7 @@ jobs:
     needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
     strategy:
-      max-parallel: 12
+      max-parallel: 10
       matrix:
         os: [ubuntu-20.04]
         package:
