@@ -9,8 +9,7 @@ This demo employs lightweight OpenPose method provided by OpenDR toolkit to extr
   ```python
 python skeleton_extraction.py --videos_path path_to_dataset --out_folder path_to_save_skeleton_data --device cuda --num_channels 2  
 ```  
-  `--num_channels` specifies the number of dimensions for each body keypoint. The lightweight OpenPose extracts 2 dimensional keypoints, denoting the keypoint coordinates, and it also provides the confidence score 
-  for each keypoint which can be used as the third dimension. 
+  `--num_channels` specifies the number of dimensions for each body keypoint. The lightweight OpenPose extracts 2 dimensional keypoints, denoting the keypoint coordinates, and it also provides the confidence score for each keypoint which can be used as the third dimension. 
   
 After generating the 2d or 3d skeleton data, you need to train a model on this dataset using the implemented learners, 
 `spatio_temporal_gcn_learner` or `progressive_spatio_temporal_gcn_learner` and use the pre-trained models for running the demo. 
