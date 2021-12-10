@@ -125,6 +125,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         rotation_step=0.15,
         target_size=np.array([127, 127]),
         search_size=np.array([255, 255]),
+        context_amount=0.5,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -157,6 +158,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.rotation_step = rotation_step
         self.target_size = target_size
         self.search_size = search_size
+        self.context_amount = context_amount
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -552,7 +554,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             for i, (search, penalty) in enumerate(multi_rotate_searches_and_penalties):
                 search_features, search_image = create_pseudo_image_features(
-                    pseudo_image, search, net, self.search_size
+                    pseudo_image, search, net, self.search_size, self.context_amount
                 )
 
                 multi_rotate_features_and_searches_and_penalties.append(
@@ -562,12 +564,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 if draw:
                     draw_pseudo_image(
                         search_image.squeeze(axis=0),
-                        "./plots/search_" + str(frame) + "_" + str(i) + ".png",
+                        "./plots/search/" + str(frame) + "_" + str(i) + ".png",
                     )
 
                     draw_pseudo_image(
                         search_features.squeeze(axis=0),
-                        "./plots/search_feat_" + str(frame) + "_" + str(i) + ".png",
+                        "./plots/search_feat/" + str(frame) + "_" + str(i) + ".png",
                     )
 
             multi_rotate_scores_searches_penalties_and_features = []
@@ -591,7 +593,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 if draw:
                     draw_pseudo_image(
                         scores.squeeze(axis=0),
-                        "./plots/scores_" + str(frame) + "_" + str(i) + ".png",
+                        "./plots/scores/" + str(frame) + "_" + str(i) + ".png",
                     )
 
             (
@@ -606,7 +608,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
                 draw_pseudo_image(
                     top_scores.squeeze(axis=0),
-                    "./plots/scores" + str(frame) + "_top.png",
+                    "./plots/scores/" + str(frame) + "_top.png",
                 )
 
                 max_score = torch.max(top_scores)
@@ -614,7 +616,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
                 draw_pseudo_image(
                     top_scores.squeeze(axis=0),
-                    "./plots/scores" + str(frame) + "_top_marked.png",
+                    "./plots/scores/" + str(frame) + "_top_marked.png",
                     [[max_idx.cpu().numpy(), np.array([2, 2]), 0]],
                     [(255, 0, 0)]
                 )
@@ -629,15 +631,6 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             delta_image = delta_image[[1, 0]]
             center_image = self.search_region[0] + delta_image
-
-            # if not np.all(top_search[1] == self.search_region[1]):
-            #     search_scale = top_search[1] / self.search_region[1]
-            #     new_target_size = self.last_target[1] * search_scale
-            #     self.init_target_features, _ = create_pseudo_image_features(
-            #         pseudo_image, [center_image, new_target_size], net, self.target_size
-            #     )
-            # else:
-            #     new_target_size = self.last_target[1]
 
             new_target = [center_image, self.init_target[1], top_search[2]]
             new_search = [
@@ -710,17 +703,17 @@ class VoxelBofObjectTracking3DLearner(Learner):
         search = batch_searches[0][0]
 
         self.init_target_features, init_image = create_pseudo_image_features(
-            pseudo_image, target, net, self.target_size
+            pseudo_image, target, net, self.target_size, self.context_amount
         )
 
         if draw:
             draw_pseudo_image(
                 init_image.squeeze(0),
-                "./plots/init_image.png",
+                "./plots/init/image.png",
             )
             draw_pseudo_image(
                 self.init_target_features.squeeze(0),
-                "./plots/init_target_features.png",
+                "./plots/init/target_features.png",
             )
 
         # draw_pseudo_image(init_image, "./plots/init_image.png")

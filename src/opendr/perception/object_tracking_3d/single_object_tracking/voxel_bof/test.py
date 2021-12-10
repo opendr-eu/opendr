@@ -1,6 +1,7 @@
 import sys
 import os
 import torch
+import fire
 from opendr.engine.target import TrackingAnnotation3D, TrackingAnnotation3DList
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.eval import (
     d3_box_overlap,
@@ -417,7 +418,7 @@ def test_tanet_infer_tracking():
         PilImage.fromarray(image).save("./plots/tanet_" + str(i) + ".png")
 
 
-def test_pp_siamese_fit():
+def test_pp_siamese_fit(model_name):
     print("Fit", name, "start", file=sys.stderr)
 
     learner = VoxelBofObjectTracking3DLearner(
@@ -430,7 +431,7 @@ def test_pp_siamese_fit():
     learner.load(model_path, backbone=True, verbose=True)
     learner.fit(
         kitti_detection,
-        model_dir="./temp/upscaled-rotated-0",
+        model_dir="./temp/" + model_name,
         # verbose=True
     )
 
@@ -723,7 +724,7 @@ def test_pp_siamese_eval(
     print("all_tracked =", all_tracked)
 
 
-def test_rotated_pp_siamese_infer():
+def test_rotated_pp_siamese_infer(model_name, classes=["Car", "Van", "Truck"], draw=True, iou_min=0.5):
     print("Infer", name, "start", file=sys.stderr)
     import pygifsicle
     import imageio
@@ -736,57 +737,154 @@ def test_rotated_pp_siamese_infer():
     )
     # learner.load(model_path, backbone=True, verbose=True)
     learner.load(
-        "./temp/upscaled-rotated-0/checkpoints", backbone=False, verbose=True
+        "./temp/" + model_name + "/checkpoints", backbone=False, verbose=True
     )
 
-    # count = len(dataset_tracking)
+    count = len(dataset_tracking)
+    object_ids = [0] # [0, 3]
+    count = 160
     start_frame = 10
-    count = 50
-    object_id = 3
-
-    point_cloud_with_calibration, labels = dataset_tracking[start_frame]
-    selected_labels = TrackingAnnotation3DList(
-        [label for label in labels if label.id == object_id]
+    dataset = LabeledTrackingPointCloudsDatasetIterator(
+        dataset_tracking_path + "/training/velodyne/" + track_id,
+        dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
+        dataset_tracking_path + "/training/calib/" + track_id + ".txt",
     )
-    calib = point_cloud_with_calibration.calib
-    labels_lidar = tracking_boxes_to_lidar(selected_labels, calib)
-    label_lidar = labels_lidar[0]
 
-    learner.init(point_cloud_with_calibration, label_lidar, draw=True)
+    def test_object_id(object_id, start_frame=-1):
 
-    images = []
+        selected_labels = []
 
-    for i in range(start_frame, count):
-        point_cloud_with_calibration, labels = dataset_tracking[
-            i
-        ]  # i iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
-        selected_labels = TrackingAnnotation3DList(
-            [label for label in labels if label.id == object_id]
-        )
+        while len(selected_labels) <= 0:
+            start_frame += 1
+            point_cloud_with_calibration, labels = dataset[start_frame]
+            selected_labels = TrackingAnnotation3DList(
+                [label for label in labels if (label.id == object_id)]
+            )
+
+        if not selected_labels[0].name in classes:
+            return None, None
+
         calib = point_cloud_with_calibration.calib
-        labels_lidar = tracking_boxes_to_lidar(selected_labels, calib)
-        label_lidar = labels_lidar[0] if len(labels_lidar) > 0 else None
-
-        result = learner.infer(point_cloud_with_calibration, id=1, frame=i, draw=True)
-
-        all_labels = (
-            result
-            if label_lidar is None
-            else TrackingAnnotation3DList([result[0], label_lidar])
+        labels_lidar = tracking_boxes_to_lidar(
+            selected_labels, calib, classes=classes
         )
-        image = draw_point_cloud_bev(
-            point_cloud_with_calibration.data, all_labels
-        )
-        pil_image = PilImage.fromarray(image)
-        pil_image.save("./plots/eval_aabb_" + str(i) + ".png")
+        label_lidar = labels_lidar[0]
 
-        images.append(pil_image)
+        learner.init(point_cloud_with_calibration, label_lidar, draw=draw)
 
-        print("[", i, "/", count, "]", result)
+        images = []
+        ious = []
+        count_tracked = 0
 
-    filename = "./plots/video/eval_rotated_scaled_ms_4k.gif"
-    imageio.mimsave(filename, images)
-    pygifsicle.optimize(filename)
+        for i in range(start_frame, count):
+            point_cloud_with_calibration, labels = dataset[i]
+            selected_labels = TrackingAnnotation3DList(
+                [label for label in labels if label.id == object_id]
+            )
+
+            if len(selected_labels) <= 0:
+                break
+
+            calib = point_cloud_with_calibration.calib
+            labels_lidar = tracking_boxes_to_lidar(selected_labels, calib)
+            label_lidar = (
+                labels_lidar[0] if len(labels_lidar) > 0 else None
+            )
+
+            result = learner.infer(
+                point_cloud_with_calibration, id=-1, frame=i, draw=draw,
+            )
+
+            label_lidar.data["name"] = "Target"
+
+            all_labels = (
+                result
+                if label_lidar is None
+                else TrackingAnnotation3DList([result[0], label_lidar])
+            )
+            image = draw_point_cloud_bev(
+                point_cloud_with_calibration.data, all_labels
+            )
+
+            if draw:
+                pil_image = PilImage.fromarray(image)
+                images.append(pil_image)
+
+            result = tracking_boxes_to_camera(result, calib)[0]
+            label_lidar = tracking_boxes_to_camera(
+                TrackingAnnotation3DList([label_lidar]), calib
+            )[0]
+
+            dt_boxes = np.concatenate(
+                [
+                    result.location.reshape(1, 3),
+                    result.dimensions.reshape(1, 3),
+                    result.rotation_y.reshape(1, 1),
+                ],
+                axis=1,
+            )
+            gt_boxes = np.concatenate(
+                [
+                    label_lidar.location.reshape(1, 3),
+                    label_lidar.dimensions.reshape(1, 3),
+                    label_lidar.rotation_y.reshape(1, 1),
+                ],
+                axis=1,
+            )
+            iou = float(d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64))
+
+            # iou = iou_2d(
+            #     result.location[:2],
+            #     result.dimensions[:2],
+            #     label_lidar.location[:2],
+            #     label_lidar.dimensions[:2],
+            # ) # * min(result[0].rotation_y / label_lidar.rotation_y, label_lidar.rotation_y / result[0].rotation_y)
+
+            # iou = max(0, iou)
+
+            if iou > iou_min:
+                count_tracked += 1
+
+            ious.append(iou)
+
+            print(
+                track_id,
+                "%",
+                object_id,
+                "[",
+                i,
+                "/",
+                count - 1,
+                "] iou =",
+                iou,
+            )
+
+            filename = (
+                "./plots/video/infer_context_nb_rotated_track_"
+                + str(track_id)
+                + "_obj_"
+                + str(object_id)
+                + ".gif"
+            )
+
+        if len(ious) <= 0:
+            mean_iou = None
+            tracked = None
+        else:
+            mean_iou = sum(ious) / len(ious)
+            tracked = count_tracked / len(ious)
+
+        print("mean_iou =", mean_iou)
+        print("tracked =", tracked)
+
+        if draw:
+            imageio.mimsave(filename, images)
+            pygifsicle.optimize(filename)
+
+        return mean_iou, tracked
+
+    for object_id in object_ids:
+        test_object_id(object_id, start_frame)
 
 
 def test_rotated_pp_siamese_eval(
@@ -804,7 +902,7 @@ def test_rotated_pp_siamese_eval(
     )
     # learner.load(model_path, backbone=True, verbose=True)
     learner.load(
-        "./temp/upscaled-rotated-0/checkpoints", backbone=False, verbose=True
+        "./temp/no-db-sample-upscaled-rotated-0/checkpoints", backbone=False, verbose=True
     )
 
     def test_track(track_id):
@@ -1017,23 +1115,4 @@ def test_rotated_pp_siamese_eval(
 
 if __name__ == '__main__':
 
-    # test_rotated_pp_siamese_eval()
-    # test_rotated_pp_siamese_infer()
-    test_pp_siamese_fit()
-
-    # test_pp_siamese_infer()
-    # test_pp_siamese_eval()
-    # test_pp_siamese_fit()
-    # test_pp_siamese_load_fit()
-
-    # test_tanet_infer_tracking()
-    # test_pp_infer_tracking()
-    # test_pp_infer_detection()
-
-    # test_eval_detection()
-
-    # test_draw_tracking_projected()
-    # test_draw_tracking_dataset()
-    # test_draw_detection_dataset()
-    # test_draw_detection_projected()
-    # test_draw_tracking_aabb()
+    fire.Fire()

@@ -92,6 +92,7 @@ def prep_pointcloud(
     bev_only=False,
     use_group_id=False,
     out_dtype=np.float32,
+    sample_db=False,
 ):
     """convert point cloud to voxels, create targets if ground truths
     exists.
@@ -156,7 +157,7 @@ def prep_pointcloud(
         gt_boxes_mask = np.array(
             [n in class_names for n in gt_names], dtype=np.bool_
         )
-        if db_sampler is not None:
+        if db_sampler is not None and sample_db:
             sampled_dict = db_sampler.sample_all(
                 root_path,
                 gt_boxes,

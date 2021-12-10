@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import torch
 import numpy as np
 import time
 import math
-import cv2
 import torchgeometry as tgm
+from pathlib import Path
 import torch.nn.functional as F
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.box_np_ops import (
     box_camera_to_lidar,
@@ -76,6 +77,8 @@ def example_convert_to_torch(
 
 def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
 
+    pi = pseudo_image.mean(axis=0).detach().cpu().numpy()
+
     grayscale_pi = (
         (pseudo_image.mean(axis=0) * 255 / pseudo_image.mean(axis=0).max())
         .detach()
@@ -84,6 +87,7 @@ def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
         .astype(np.uint8)
     )
     rgb_pi = np.stack([grayscale_pi] * 3, axis=-1)
+    rgb_pi[pi < 0] = (0, 90, 0)
 
     for target, color in zip(targets, colors):
 
@@ -94,6 +98,7 @@ def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
             pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1, :
         ] = color
 
+    os.makedirs(str(Path(path).parent), exist_ok=True)
     PilImage.fromarray(rgb_pi).save(path)
 
 
@@ -198,17 +203,17 @@ def create_target_search_regions(
 
 def get_sub_image(image, center, size):
     result = torch.zeros(
-        [image.shape[0], *size.astype(np.int32)],
+        [image.shape[0], *np.floor(size + 0.5).astype(np.int32)],
         dtype=torch.float32,
         device=image.device,
     )
     image_size = image.shape[-2:]
 
     pos_min = np.floor(0.5 + center - size // 2).astype(np.int32)
-    pos_max = np.floor(0.5 + center + (size + 1) // 2 - 1).astype(np.int32)
+    pos_max = np.floor(pos_min + size + 0.5).astype(np.int32) - 1
 
-    local_min = np.array([0, 0])
-    local_max = size - 1
+    local_min = np.array([0, 0], dtype=np.int32)
+    local_max = np.floor(size + 0.5).astype(np.int32) - 1
 
     for i in range(2):
         if pos_min[i] < 0:
@@ -221,8 +226,8 @@ def get_sub_image(image, center, size):
 
     if np.all(pos_max > pos_min):
         result[
-            :, local_min[0] : local_max[0] + 1, local_min[1] : local_max[1] + 1
-        ] = image[:, pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1]
+            :, local_min[0]: local_max[0] + 1, local_min[1]: local_max[1] + 1
+        ] = image[:, pos_min[0]: pos_max[0] + 1, pos_min[1]: pos_max[1] + 1]
     else:
         print("Empty image")
 
@@ -312,23 +317,29 @@ def get_rotated_sub_image(pseudo_image, center, size, angle):
     return image
 
 
-def create_pseudo_image_features(pseudo_image, target, net, uspcale_size):
+def create_pseudo_image_features(pseudo_image, target, net, uspcale_size, context_amount):
 
-    image = get_rotated_sub_image(
+    # image = get_rotated_sub_image(
+    #     pseudo_image,
+    #     target[0][[1, 0]],
+    #     target[1][[1, 0]].astype(np.int32),
+    #     target[2],
+    # )
+    # image_upscaled = torch.nn.functional.interpolate(
+    #     image.reshape(1, *image.shape),
+    #     size=(uspcale_size[0], uspcale_size[1]),
+    #     mode="bicubic",
+    # )
+
+    image_upscaled, image = sub_image_with_context(
         pseudo_image,
-        target[0][[1, 0]],
-        target[1][[1, 0]].astype(np.int32),
-        target[2],
+        target,
+        (uspcale_size[0], uspcale_size[1]),
+        context_amount,
     )
 
-    if np.any(np.array(image.shape[-2:]) <= 0):
-        image = torch.zeros((image.shape[0], 1, 1), device=image.device)
-
-    image_upscaled = torch.nn.functional.interpolate(
-        image.reshape(1, *image.shape),
-        size=(uspcale_size[0], uspcale_size[1]),
-        mode="bicubic",
-    )
+    # if np.any(np.array(image.shape[-2:]) <= 0):
+    #     image = torch.zeros((image.shape[0], 1, 1), device=image.device)
 
     features = net(image_upscaled)
 
@@ -422,6 +433,31 @@ def create_static_label_and_weights(
     return labels, weights
 
 
+def sub_image_with_context(
+    pseudo_image, target, interoplation_size, context_amount
+):
+
+    target_size = target[1]
+    mean_size = context_amount * (np.sum(target_size))
+    sub_image_size_side = np.sqrt(
+        (target_size[0] + mean_size) * (target_size[1] + mean_size)
+    )
+    sub_image_size = np.array([sub_image_size_side, sub_image_size_side])
+
+    sub_image = get_rotated_sub_image(
+        pseudo_image, target[0][[1, 0]], sub_image_size, target[2],
+    )
+    # draw_pseudo_image(sub_image, "./plots/train/sub_image" + str(0) + ".png")
+
+    interpolated_image = torch.nn.functional.interpolate(
+        sub_image.reshape(1, *sub_image.shape),
+        size=interoplation_size,
+        mode="bicubic",
+    )
+    # draw_pseudo_image(interpolated_image.squeeze(axis=0), "./plots/train/interpolated_image" + str(0) + ".png")
+    return interpolated_image, sub_image
+
+
 def create_pseudo_images_and_labels(
     net,
     example_torch,
@@ -429,6 +465,7 @@ def create_pseudo_images_and_labels(
     gt_boxes=None,
     target_size=np.array([127, 127]),
     search_size=np.array([255, 255]),
+    context_amount=0.5,
 ):
     pseudo_image = net.create_pseudo_image(example_torch)
 
@@ -457,31 +494,18 @@ def create_pseudo_images_and_labels(
             # target_image = get_sub_image(pseudo_image[i], target[0], target[1])
             # search_image = get_sub_image(pseudo_image[i], search[0], search[1])
 
-            target_image_2 = get_rotated_sub_image(
+            target_image, _ = sub_image_with_context(
                 pseudo_image[i],
-                target[0][[1, 0]],
-                target[1][[1, 0]],
-                target[2],
-            )
-            search_image_2 = get_rotated_sub_image(
-                pseudo_image[i],
-                search[0][[1, 0]],
-                search[1][[1, 0]],
-                search[2],
+                target,
+                (target_size[0], target_size[1]),
+                context_amount,
             )
 
-            # draw_pseudo_image(target_image_2, "./plots/pi_target2_" + str(0) + ".png")
-            # draw_pseudo_image(search_image_2, "./plots/pi_search2_" + str(0) + ".png")
-
-            target_image = torch.nn.functional.interpolate(
-                target_image_2.reshape(1, *target_image_2.shape),
-                size=(target_size[0], target_size[1]),
-                mode="bicubic",
-            )
-            search_image = torch.nn.functional.interpolate(
-                search_image_2.reshape(1, *search_image_2.shape),
-                size=(search_size[0], search_size[1]),
-                mode="bicubic",
+            search_image, _ = sub_image_with_context(
+                pseudo_image[i],
+                search,
+                (search_size[0], search_size[1]),
+                context_amount,
             )
 
             # draw_pseudo_image(target_image.squeeze(axis=0), "./plots/pi_target_" + str(0) + ".png")
@@ -593,8 +617,14 @@ def displacement_score_to_image_coordinates(
 
     rot = np.array(
         [
-            [math.cos(search_region_rotation), -math.sin(search_region_rotation)],
-            [math.sin(search_region_rotation), math.cos(search_region_rotation)],
+            [
+                math.cos(search_region_rotation),
+                -math.sin(search_region_rotation),
+            ],
+            [
+                math.sin(search_region_rotation),
+                math.cos(search_region_rotation),
+            ],
         ]
     )
 
@@ -632,7 +662,7 @@ def create_multi_rotate_searches(search, rotate_penalty, delta):
     all_searches_and_penalties = []
 
     for delta_index in [-1, 0, 1]:
-    # for delta_index in [-2, -1, 0, 1, 2]:
+        # for delta_index in [-2, -1, 0, 1, 2]:
         penalty = 1
         if delta_index != 0:
             penalty *= rotate_penalty
@@ -779,7 +809,7 @@ def train(
                 loss = net.criterion(pred, labels, weights)
 
                 delta = displacement_score_to_image_coordinates(
-                    pred, 1, search[1]
+                    pred, 1, search[1], 0
                 )
                 # predicted_label_target_coordinates = score_to_image_coordinates(
                 #     labels, target[1], search
