@@ -576,7 +576,7 @@ class DetrLearner(Learner):
         """
         if not isinstance(image, Image):
             image = Image(image)
-        img = im.fromarray(image.numpy())
+        img = im.fromarray(image.convert("channels_last", "rgb"))
 
         scores, boxes, segmentations = detect(img, self.infer_transform, self.model,
                                               self.postprocessors, self.device,
