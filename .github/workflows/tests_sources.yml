@@ -89,7 +89,7 @@ jobs:
       with:
         python-version: 3.8
     - name: Test Tools
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test dependencies') || contains(github.event.pull_request.labels.*.name, 'test perception') || contains(github.event.pull_request.labels.*.name, 'test control') || contains(github.event.pull_request.labels.*.name, 'test simulation') }}
+      if: ${{ contains(github.event.pull_request.labels.*.name, 'test dependencies') || contains(github.event.pull_request.labels.*.name, 'test perception') || contains(github.event.pull_request.labels.*.name, 'test control') || contains(github.event.pull_request.labels.*.name, 'test simulation') }}
       run: |
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
         export OPENDR_HOME=$PWD
