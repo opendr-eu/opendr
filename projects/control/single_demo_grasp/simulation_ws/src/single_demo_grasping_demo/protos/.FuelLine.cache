@@ -1,0 +1,11 @@
+Webots Proto Cache File version 1.5
+protoFileHash: 87126817d17659a690ae790f8feadff5
+needsRobotAncestor: 0
+baseType: Solid
+slotType: 
+parameters: translation,rotation,scale,name
+tags: 
+license:  Creative Commons Attribution 4.0 International License.
+licenseUrl:  https://creativecommons.org/licenses/by/4.0/legalcode
+documentationUrl: 
+info: #VRML_SIM\sR2021a\sutf8
