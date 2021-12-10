@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cv2
+from opendr.engine.data import Image
 from opendr.perception.face_recognition import FaceRecognitionLearner
 import argparse
 from os.path import join
@@ -33,8 +33,8 @@ if __name__ == '__main__':
 
     recognizer.download(path=".", mode="test_data")
     recognizer.fit_reference(path=join(".", "test_data", "images"), save_path=".")
-    image_path = join(".", "test_data", "images", "Mr. Bean", "1.jpg")
-    img = cv2.imread(image_path)
+    image_path = join(".", "test_data", "images", "1", "1.jpg")
+    img = Image.open(image_path)
 
     if onnx:
         recognizer.optimize()

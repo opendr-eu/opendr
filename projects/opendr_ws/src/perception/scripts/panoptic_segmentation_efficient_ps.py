@@ -68,7 +68,7 @@ class EfficientPsNode:
         This has not been done in the __init__() function since logging is available only once the node is registered.
         """
         if self._learner.load(self.checkpoint):
-            rospy.loginfo('Succesfully loaded the checkpoint.')
+            rospy.loginfo('Successfully loaded the checkpoint.')
             return True
         else:
             rospy.logerr('Failed to load the checkpoint.')
