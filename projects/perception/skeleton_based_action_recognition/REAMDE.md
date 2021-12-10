@@ -1,6 +1,6 @@
 # Skeleton-based Human Action Recognition Demo
 
-This folder contains an implemented demo of skeleton_based human action recognition method provided by [OpenDR toolkit](https://opendr.eu).
+This folder contains an implemented demo of skeleton_based human action recognition method provided by the [OpenDR toolkit](https://opendr.eu).
 This demo employs lightweight OpenPose method provided by OpenDR toolkit to extract the human body skeletons from the videos, 
 and it can be performed by either loading an action video file as input or capturing the video stream from a webcam. 
 
