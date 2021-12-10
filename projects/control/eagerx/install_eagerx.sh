@@ -10,7 +10,7 @@ if [[ -z "$ROS_DISTRO" ]]; then
        exit 1
 fi
 
-MODULE_PATH=${OPENDR_HOME}/src/opendr/utils/eagerx
+MODULE_PATH=${OPENDR_HOME}/projects/control/eagerx
 WS_PATH=${OPENDR_HOME}/lib/catkin_ws_eagerx
 
 ## ROS
@@ -20,8 +20,8 @@ sudo apt-get update && sudo apt-get install -y \
 source /opt/ros/${ROS_DISTRO}/setup.bash
 
 # Check if EAGERx submodule is initialized
-if [ ! -d ${MODULE_PATH}/eagerx ]; then
-  STR=$'EAGERx not initialized\nPlease run:\ngit submodule init\ngit submodule update'
+if [ ! -d ${MODULE_PATH}/eagerx/eagerx_core ]; then
+  STR=$'EAGERx submodule not initialized\nPlease run:\ngit submodule init\ngit submodule update'
   echo "$STR"
   exit 1
 fi

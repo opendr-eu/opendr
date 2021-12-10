@@ -38,7 +38,7 @@ install_compilation_dependencies:
 	@+cd dependencies; ./install.sh compilation
 	@+cd dependencies; ./install_onnx.sh
 	@+make --silent -C src/opendr/control/mobile_manipulation $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
-	@+make --silent -C src/opendr/utils/eagerx $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
+	@+make --silent -C projects/control/eagerx $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
 
 styletest:
 	@+echo "Testing file licences and code-style"
