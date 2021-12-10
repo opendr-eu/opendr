@@ -50,7 +50,7 @@ jobs:
         python -m unittest discover -s tests
   test-tools:
     needs: cleanup-runs
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test dependencies') || contains(github.event.pull_request.labels.*.name, 'test perception' || contains(github.event.pull_request.labels.*.name, 'test control' || contains(github.event.pull_request.labels.*.name, 'test simulation')}}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test dependencies') || contains(github.event.pull_request.labels.*.name, 'test perception') || contains(github.event.pull_request.labels.*.name, 'test control') || contains(github.event.pull_request.labels.*.name, 'test simulation') }}
     strategy:
       max-parallel: 10
       matrix:
