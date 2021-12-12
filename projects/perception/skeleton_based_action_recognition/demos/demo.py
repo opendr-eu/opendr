@@ -125,12 +125,12 @@ def draw_preds(frame, preds: Dict):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--onnx", help="Use ONNX", default=False, action="store_true")
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cpu")
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
     parser.add_argument('--video', default=0,
                         help='path to video file or camera id')
-    parser.add_argument('--method', type=str, default='pstgcn',
+    parser.add_argument('--method', type=str, default='stgcn',
                         help='action detection method')
     parser.add_argument('--action_checkpoint_name', type=str, default='stgcn_ntu_cv_lw_openpose',
                         help='action detector model name')
