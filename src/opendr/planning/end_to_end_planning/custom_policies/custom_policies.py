@@ -154,5 +154,5 @@ class MultiInputPolicy(FeedForwardPolicy):
 
     def __init__(self, sess, ob_space, ac_space, n_env, n_steps, n_batch, extractor, reuse=False, **_kwargs):
         super(MultiInputPolicy, self).__init__(sess, ob_space, ac_space, n_env, n_steps, n_batch, reuse,
-                                                 extractor=extractor,
-                                                 feature_extraction="mlp", **_kwargs)
+                                               extractor=extractor,
+                                               feature_extraction="mlp", **_kwargs)
