@@ -68,7 +68,7 @@ class Fbx_exporter:
         self.model_params = {"betas": np.load(os.path.join(dir_model, 'betas.npy')),
                              "gender": str(np.load(os.path.join(dir_model, 'gender.npy'))),
                              "displacements": np.load(os.path.join(dir_model, 'displacements.npy')),
-                             "texture": os.path.join(dir_model, 'texture.png'),
+                             "texture": os.path.join(dir_model, 'texture.jpg'),
                              "uv_colored": cv2.imread(os.path.join(self.dir_smpl, 'mask.png'))}
 
         self.model_params["displacements"] = cv2.resize(self.model_params["displacements"], self.res)
@@ -253,8 +253,8 @@ if __name__ == '__main__':
     dir_in = './human_data'
     dir_out = './fbx_models'
     dir_smpl = './model'
-    dir_models_in_m = [os.path.join(dir_in, 'male', x) for x in next(os.walk(dir_in))[1]]
-    dir_models_in_f = [os.path.join(dir_in, 'female', x) for x in next(os.walk(dir_in))[1]]
+    dir_models_in_m = [os.path.join(dir_in, 'male', x) for x in next(os.walk(os.path.join(dir_in, 'male')))[1]]
+    dir_models_in_f = [os.path.join(dir_in, 'female', x) for x in next(os.walk(os.path.join(dir_in, 'female')))[1]]
     dir_models_in = dir_models_in_f + dir_models_in_m
     pbar = tqdm.tqdm(total=len(dir_models_in))
 
