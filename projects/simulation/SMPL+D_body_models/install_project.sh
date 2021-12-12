@@ -6,6 +6,6 @@ make
 cd $WEBOTS_HOME/projects/smpl_webots/controllers/smpl_animation
 make
 mkdir $WEBOTS_HOME/projects/smpl_webots/skins/model-204
-cp $OPENDR_HOME/projects/simulation/SMPL+D_body_models/fbx_models/female/model-204/model-204.fbx $WEBOTS_HOME/projects/smpl_webots/skins/model-204/model-204.fbx
+cp $OPENDR_HOME/projects/simulation/SMPL+D_body_models/fbx_models/female/204-0/204-0.fbx $WEBOTS_HOME/projects/smpl_webots/skins/model-204/model-204.fbx
 mkdir $WEBOTS_HOME/projects/smpl_webots/protos/textures/model-204
-cp $OPENDR_HOME/projects/simulation/SMPL+D_body_models/fbx_models/female/model-204/texture.png $WEBOTS_HOME/projects/smpl_webots/protos/textures/model-204/texture.png
+cp $OPENDR_HOME/projects/simulation/SMPL+D_body_models/fbx_models/female/204-0/texture.png $WEBOTS_HOME/projects/smpl_webots/protos/textures/model-204/texture.png
