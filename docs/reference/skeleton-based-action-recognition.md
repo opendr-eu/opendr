@@ -7,8 +7,8 @@ The *skeleton_based_action_recognition* module contains the *SpatioTemporalGCNLe
   Then run the following function to preprocess the NTU-RGB+D and Kinetics skeleton data for ST-GCN methods: 
   
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.algorithm.datasets import ntu_gendata
-  from OpenDR.perception.skeleton_based_action_recognition.algorithm.datasets import kinetics_gendata
+  from opendr.perception.skeleton_based_action_recognition.algorithm.datasets import ntu_gendata
+  from opendr.perception.skeleton_based_action_recognition.algorithm.datasets import kinetics_gendata
   python ntu_gendata.py --data_path ./data/nturgbd_raw_skeletons --ignored_sample_path ./algorithm/datasets/ntu_samples_with_missing_skeletons.txt --out_folder ./data/preprocessed_nturgbd
   python kinetics_gendata.py --data_path ./data/kinetics_raw_skeletons --out_folder ./data/preprocessed_kinetics_skeletons
   ```
@@ -310,8 +310,8 @@ Parameters:
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
-  from OpenDR.engine.datasets import ExternalDataset
+  from opendr.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
+  from opendr.engine.datasets import ExternalDataset
   
   training_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
   validation_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
@@ -371,7 +371,7 @@ Parameters:
 
 * **Inference on a test skeleton sequence**
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
+  from opendr.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
   import numpy
   stgcn_learner = SpatioTemporalGCNLearner(temp_path='./parent_dir',
                                             batch_size=64, epochs=50,
@@ -393,7 +393,7 @@ Parameters:
 * **Optimization example for a previously trained model.**
   Inference can be run with the trained model after running self.optimize.
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
+  from opendr.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
 
 
   stgcn_learner = SpatioTemporalGCNLearner(temp_path='./parent_dir',
@@ -744,8 +744,8 @@ Parameters:
   The `batch_size` argument should be adjusted according to available memory.
 
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import ProgressiveSpatioTemporalGCNLearner
-  from OpenDR.engine.datasets import ExternalDataset
+  from opendr.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import ProgressiveSpatioTemporalGCNLearner
+  from opendr.engine.datasets import ExternalDataset
   training_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
   validation_dataset = ExternalDataset(path='./data/preprocessed_nturgbd/xview', dataset_type='NTURGBD')
   
@@ -769,7 +769,7 @@ Parameters:
 * **Inference on a test skeleton sequence**
   ```python
   import numpy
-  from OpenDR.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import ProgressiveSpatioTemporalGCNLearner
+  from opendr.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import ProgressiveSpatioTemporalGCNLearner
   pstgcn_learner = ProgressiveSpatioTemporalGCNLearner(temp_path='./parent_dir',
                                                        batch_size=64, epochs=65,
                                                        checkpoint_after_iter=10, val_batch_size=128,
@@ -791,7 +791,7 @@ Parameters:
 * **Optimization example for a previously trained model.**
   Inference can be run with the trained model after running self.optimize.
   ```python
-  from OpenDR.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import ProgressiveSpatioTemporalGCNLearner
+  from opendr.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import ProgressiveSpatioTemporalGCNLearner
 
   pstgcn_learner = ProgressiveSpatioTemporalGCNLearner(temp_path='./parent_dir',
                                                       batch_size=64, epochs=65,
