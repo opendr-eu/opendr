@@ -253,8 +253,8 @@ if __name__ == '__main__':
     dir_in = './human_data'
     dir_out = './fbx_models'
     dir_smpl = './model'
-    dir_models_in_m = [os.path.join(dir_in, male, x) for x in next(os.walk(dir_in))[1]]
-    dir_models_in_f = [os.path.join(dir_in, female, x) for x in next(os.walk(dir_in))[1]]
+    dir_models_in_m = [os.path.join(dir_in, 'male', x) for x in next(os.walk(dir_in))[1]]
+    dir_models_in_f = [os.path.join(dir_in, 'female', x) for x in next(os.walk(dir_in))[1]]
     dir_models_in = dir_models_in_f + dir_models_in_m
     pbar = tqdm.tqdm(total=len(dir_models_in))
 
