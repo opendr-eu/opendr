@@ -160,3 +160,12 @@ Assuming the drivers have been installed and OpenDR catkin workspace has been so
 rosrun perception video_activity_recognition.py
 ```
 The predictied class id and confidence is published under the topic name `/opendr/human_activity_recognition`, and the human-readable class name under `/opendr/human_activity_recognition_description`.
+
+## Landmark-based Facial Expression Recognition ROS Node
+
+A ROS node for performing Landmark-based Facial Expression Recognition using the pretrained model PST-BLN on AFEW, CK+ or Oulu-CASIA datasets.
+Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception landmark_based_facial_expression_recognition.py
+```
+The predictied class id and confidence is published under the topic name `/opendr/landmark_based_expression_recognition`, and the human-readable class name under `/opendr/landmark_based_expression_recognition_description`.

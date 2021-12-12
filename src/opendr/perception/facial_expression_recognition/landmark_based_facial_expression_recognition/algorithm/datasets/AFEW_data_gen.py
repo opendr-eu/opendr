@@ -17,6 +17,10 @@ import numpy as np
 import torch
 import argparse
 import pickle
+import pandas
+from pathlib import Path
+
+AFEW_CLASSES = pandas.read_csv(Path(__file__).parent / 'AFEW_labels.csv', verbose=True, index_col=0).to_dict()["name"]
 
 
 def tile(a, dim, n_tile):
