@@ -63,6 +63,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 
     - `control` Module
         - [mobile_manipulation Module](mobile-manipulation.md)
+        - [single_demo_grasp Module](single-demonstration-grasping.md)        
+        
     - `simulation` Module
         - [human_model_generation Module](human-model-generation.md)
 - [ROSBridge Package](rosbridge.md)
