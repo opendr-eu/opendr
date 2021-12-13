@@ -27,9 +27,8 @@ from typing import Dict
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.pose_estimation.lightweight_open_pose.utilities import draw
 import argparse
-from opendr.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import \
-    ProgressiveSpatioTemporalGCNLearner
-from opendr.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
+from opendr.perception.skeleton_based_action_recognition import ProgressiveSpatioTemporalGCNLearner
+from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGCNLearner
 
 
 class VideoReader(object):
@@ -162,9 +161,13 @@ if __name__ == '__main__':
     # Action classifier
     if args.method == 'pstgcn':
         action_classifier = ProgressiveSpatioTemporalGCNLearner(device=device, dataset_name='nturgbd_cv',
-                                                                topology=[5, 4, 5, 2, 3, 4, 3, 4])
+                                                                topology=[5, 4, 5, 2, 3, 4, 3, 4], in_channels=2,
+                                                                num_point=18, graph_type='openpose')
     else:
-        action_classifier = SpatioTemporalGCNLearner(device=device, dataset_name='nturgbd_cv', method_name=args.method)
+        action_classifier = SpatioTemporalGCNLearner(device=device, dataset_name='nturgbd_cv', method_name=args.method,
+                                                     in_channels=2, num_point=18, graph_type='openpose')
+
+    print('print_numpoints', action_classifier.num_point)
 
     model_saved_path = action_classifier.download(path=os.path.join("./pretrained_models", args.method),
                                                   method_name=args.method, mode="pretrained",
