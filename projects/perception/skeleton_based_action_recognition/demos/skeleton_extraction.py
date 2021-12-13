@@ -21,8 +21,7 @@ import pickle
 from tqdm import tqdm
 
 # opendr imports
-from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
-    LightweightOpenPoseLearner
+from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.engine.data import Image
 from opendr.engine.target import Pose
 import argparse
