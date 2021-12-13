@@ -36,6 +36,7 @@ def load_old_weights():
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml")
+    cfg.MODEL.DEVICE = 'cpu'
     model = build_model(cfg)
 
     return list(model.parameters())[0].clone()
@@ -45,6 +46,7 @@ def load_weights_from_file(path_to_model):
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
     cfg.MODEL.WEIGHTS = path_to_model  # check if it's necessary
+    cfg.MODEL.DEVICE = 'cpu'
     model = build_model(cfg)
     DetectionCheckpointer(model).load(path_to_model)
 
@@ -103,7 +105,7 @@ class TestSingleDemoGraspLearner(unittest.TestCase):
         sample_image = Image.open(os.path.join(dir_temp, "pendulum", "images", "val", "0.jpg"))
         self.learner.load(os.path.join(self.learner.output_dir, "pretrained.pth"))
 
-        flag, bounding_box_pred, keypoints_pred = self.learner.infer(sample_image)
+        flag, _, _ = self.learner.infer(sample_image)
         self.assertTrue(flag == 1, msg="predictions are available with confidence more than threshold")
 
     def test_save_load(self):

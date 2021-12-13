@@ -51,12 +51,12 @@ class SingleDemoGraspLearner(Learner):
         self.cfg.DATALOADER.NUM_WORKERS = self.num_workers
         self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
             "COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml")
-        self.cfg.MODEL.DEVICE = self.device
+        self.cfg.MODEL.DEVICE = device
         self.cfg.SOLVER.IMS_PER_BATCH = img_per_step
-        self.cfg.SOLVER.BASE_LR = self.lr
-        self.cfg.SOLVER.MAX_ITER = self.iters
+        self.cfg.SOLVER.BASE_LR = lr
+        self.cfg.SOLVER.MAX_ITER = iters
         self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
-        self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = self.batch_size
+        self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.NUM_KEYPOINTS = 12
         self.cfg.OUTPUT_DIR = self.output_dir
         os.makedirs(self.cfg.OUTPUT_DIR, exist_ok=True)
