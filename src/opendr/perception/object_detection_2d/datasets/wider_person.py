@@ -15,8 +15,6 @@
 import os
 
 import cv2
-
-from opendr.engine.data import Image
 from opendr.engine.target import BoundingBox, BoundingBoxList
 from opendr.perception.object_detection_2d.datasets import DetectionDataset
 
@@ -88,10 +86,7 @@ class WiderPersonDataset(DetectionDataset):
         image_path = self.image_paths[item]
         label = self.bboxes[item]
         # read image, apply transform, return result
-        # img = mx.image.imread(image_path, 1)
-        img_np = cv2.imread(image_path)
-        img = Image(img_np)
-        # TODO: use Image format?
+        img = cv2.imread(image_path)
         if self._image_transform is not None:
             img = self._image_transform(img)
 

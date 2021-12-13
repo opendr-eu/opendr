@@ -16,8 +16,6 @@ import os
 
 import numpy as np
 import cv2
-
-from opendr.engine.data import Image
 from opendr.engine.target import BoundingBox, BoundingBoxList
 from opendr.perception.object_detection_2d.datasets.detection_dataset import DetectionDataset
 
@@ -88,9 +86,7 @@ class WiderFaceDataset(DetectionDataset):
         image_path = self.image_paths[item]
         label = self.bboxes[item]
 
-        img_np = cv2.imread(image_path)
-        img = Image(img_np)
-
+        img = cv2.imread(image_path)
         if self._image_transform is not None:
             img = self._image_transform(img)
 
