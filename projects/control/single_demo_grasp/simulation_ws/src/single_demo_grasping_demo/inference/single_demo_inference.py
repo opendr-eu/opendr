@@ -38,8 +38,9 @@ class SingleDemoInference(object):
         flag, bounding_box, keypoints_pred = self.learner.infer(data)
 
         if flag == 1:
-            return 1, np.array(bounding_box),
-            correct_orientation_ref(get_angle(keypoints_pred, 1)), get_kps_center(keypoints_pred)
+            orient_ref = correct_orientation_ref(get_angle(keypoints_pred, 1))
+            kps_center = get_kps_center(keypoints_pred)
+            return 1, np.array(bounding_box), orient_ref, kps_center
 
         else:
             print("No detection")

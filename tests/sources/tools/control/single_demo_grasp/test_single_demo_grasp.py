@@ -126,12 +126,6 @@ class TestSingleDemoGraspLearner(unittest.TestCase):
 
         print("Finished tesing save/load functions.")
 
-        # Remove temporary files
-        try:
-            print("")
-            shutil.rmtree(dir_temp)
-        except OSError as e:
-            print(f"Exception when trying to remove temp directory: {e.strerror}")
 
 
 if __name__ == "__main__":
