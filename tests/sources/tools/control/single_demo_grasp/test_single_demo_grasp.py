@@ -29,8 +29,8 @@ from opendr.control.single_demo_grasp.training.single_demo_grasp_learner import 
 from opendr.engine.data import Image
 
 # variable definitions here
-dir_temp = os.path.join(".", "tests", "sources", "tools", "control",
-                                    "single_demo_grasp", "sdg_temp")
+dir_temp = os.path.join(".", "tests", "sources", "tools", "control", "single_demo_grasp", "sdg_temp")
+
 
 def load_old_weights():
     cfg = get_cfg()
@@ -40,14 +40,16 @@ def load_old_weights():
 
     return list(model.parameters())[0].clone()
 
+
 def load_weights_from_file(path_to_model):
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
-    cfg.MODEL.WEIGHTS = path_to_model # check if it's necessary
+    cfg.MODEL.WEIGHTS = path_to_model  # check if it's necessary
     model = build_model(cfg)
     DetectionCheckpointer(model).load(path_to_model)
 
     return list(model.parameters())[0].clone()
+
 
 def rmfile(path):
     try:
@@ -70,21 +72,20 @@ class TestSingleDemoGraspLearner(unittest.TestCase):
     def setUpClass(cls):
         print("\n\n**********************************\nTEST SingleDemoGrasp Learner\n"
               "**********************************")
-
-        cls.learner = SingleDemoGraspLearner(object_name = 'pendulum', data_directory = dir_temp, lr = 0.0008, batch_size = 1,
-        num_workers = 2, num_classes = 1, iters = 10, threshold = 0.8,    device = 'cpu', img_per_step = 2)
-                                                
+        cls.learner = SingleDemoGraspLearner(object_name='pendulum', data_directory=dir_temp, lr=0.0008, batch_size=1,
+                                             num_workers=2, num_classes=1, iters=10, threshold=0.8, device='cpu',
+                                             img_per_step=2)
 
         # Download all required files for testing
-        cls.learner.download(path = dir_temp, object_name = "pendulum")
-        shutil.copy(os.path.join(cls.learner.output_dir, "model_final.pth"),os.path.join(cls.learner.output_dir, "pretrained.pth"))
-
+        cls.learner.download(path=dir_temp, object_name="pendulum")
+        shutil.copy(os.path.join(cls.learner.output_dir, "model_final.pth"), os.path.join(cls.learner.output_dir,
+                                                                                          "pretrained.pth"))
 
     @classmethod
     def tearDownClass(cls):
         print('Removing temporary directories for SingleDemoGrasp...')
         # Clean up downloaded files
-        #rmdir(dir_temp)
+        rmdir(dir_temp)
         del cls.learner
 
     def test_fit(self):
@@ -97,13 +98,13 @@ class TestSingleDemoGraspLearner(unittest.TestCase):
                          msg="Fit method did not alter model weights")
 
     def test_infer(self):
+
         print('Starting inference test for SingleDemoGrasp...')
-        sample_image = Image.open(os.path.join(dir_temp,"pendulum","images","val", "0.jpg"))
+        sample_image = Image.open(os.path.join(dir_temp, "pendulum", "images", "val", "0.jpg"))
         self.learner.load(os.path.join(self.learner.output_dir, "pretrained.pth"))
 
         flag, bounding_box_pred, keypoints_pred = self.learner.infer(sample_image)
-        self.assertTrue(flag==1, msg="predictions are available with confidence more than threshold")
-
+        self.assertTrue(flag == 1, msg="predictions are available with confidence more than threshold")
 
     def test_save_load(self):
 
@@ -112,7 +113,7 @@ class TestSingleDemoGraspLearner(unittest.TestCase):
          so we check whether the saved and loaded files after running these functions
          to make sure the files are correctly updated in the directory
         """
-        
+
         print('Starting save_load test for SingleDemoGrasp...')
         self.learner.save(dir_temp)
         self.learner.load(os.path.join(dir_temp, self.learner.object_name, "output", "model_final.pth"))
@@ -121,9 +122,9 @@ class TestSingleDemoGraspLearner(unittest.TestCase):
         new_weights = load_weights_from_file(os.path.join(dir_temp, "model_final.pth"))
 
         self.assertFalse(torch.equal(old_weights, new_weights),
-                        msg="load method did not alter model weights")
+                         msg="load method did not alter model weights")
 
-        print ("Finished tesing save/load functions.")
+        print("Finished tesing save/load functions.")
 
         # Remove temporary files
         try:

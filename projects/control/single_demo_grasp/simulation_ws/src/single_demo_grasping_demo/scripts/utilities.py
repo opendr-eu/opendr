@@ -12,6 +12,7 @@ class ToArmCoord:
 		"""
 		return [worldCoord[0], -worldCoord[2], worldCoord[1]]
 
+
 class Func:
 	@staticmethod
 	def getValue(positionSensorList):

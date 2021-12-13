@@ -19,7 +19,7 @@
 import argparse
 import rospy
 
-from controller import Robot, Motor
+from controller import Robot
 from joint_state_publisher import JointStatePublisher
 from gripper_command import GripperCommander
 from trajectory_follower import TrajectoryFollower
@@ -50,12 +50,12 @@ class ROSController():
 
         init_pos = {
             'panda_joint1': 0.000,
-            'panda_joint2' :-0.785,
-            'panda_joint3' : 0.0,
-            'panda_joint4' : -1.570,
-            'panda_joint5' : 0.0,
-            'panda_joint6' : 1.047,
-            'panda_joint7' :0.0
+            'panda_joint2': -0.785,
+            'panda_joint3': 0.0,
+            'panda_joint4': -1.570,
+            'panda_joint5': 0.0,
+            'panda_joint6': 1.047,
+            'panda_joint7': 0.0
         }
 
         for jt in init_pos:
@@ -68,11 +68,9 @@ class ROSController():
             rospy.logwarn('use_sim_time is not set!')
         print("Clock publisher created")
 
-
     def run(self):
         timestep = int(self.robot.getBasicTimeStep())
         print("Entered thread")
-        #timestep = 32
         while self.robot.step(timestep) != -1 and not rospy.is_shutdown():
             self.jointStatePublisher.publish()
             self.cameraPublisher.publish()
@@ -85,6 +83,7 @@ class ROSController():
             # round prevents precision issues that can cause problems with ROS timers
             msg.clock.nsecs = int(round(1000 * (time - msg.clock.secs)) * 1.0e+6)
             self.clockPublisher.publish(msg)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

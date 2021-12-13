@@ -11,10 +11,21 @@ $ make install_compilation_dependencies
 $ make install_runtime_dependencies
 ```
 
+Also install webots and webots-ros:
+
+```
+wget -qO- https://cyberbotics.com/Cyberbotics.asc | sudo apt-key add -
+sudo apt-add-repository 'deb https://cyberbotics.com/debian/ binary-amd64/'
+sudo apt-get update
+sudo apt-get install webots
+sudo apt-get install ros-${ROS_DISTRO}-webots-ros
+```
+
+
 after installing dependencies, the user must source the workspace in the shell in order to detect the packages:
 
 ```
-$ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash 
+$ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
 ```
 
 also, the user need to set the environment variable below to find webots directory:
@@ -31,25 +42,25 @@ three different nodes must be launched consecutively in order to properly run th
 ```
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
-3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash 
+3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
 4. $ export WEBOTS_HOME=/usr/local/webots
-5. $ roslaunch single_demo_grasping_demo panda_sim.launch 
+5. $ roslaunch single_demo_grasping_demo panda_sim.launch
 ```
 
 2. secondly, open a second terminal and run camera stream node that runs inference on images from camera:
 ```
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
-3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash 
-4. $ roslaunch single_demo_grasping_demo camera_stream_inference.launch.launch 
+3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
+4. $ roslaunch single_demo_grasping_demo camera_stream_inference.launch.launch
 ```
 
 3. finally, open a third terminal and run commander node to control the robot step by step:
 ```
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
-3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash 
-4. $ roslaunch single_demo_grasping_demo panda_sim_control.launch 
+3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
+4. $ roslaunch single_demo_grasping_demo panda_sim_control.launch
 ```
 
 ## Examples
@@ -62,7 +73,6 @@ simply run:
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
 3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
-4. $ cd projects/control/single_demo_grasp/simulation_ws/src/single_demo_grasping_demo/inference/ 
+4. $ cd projects/control/single_demo_grasp/simulation_ws/src/single_demo_grasping_demo/inference/
 5. $ ./single_demo_inference.py
 ```
-
