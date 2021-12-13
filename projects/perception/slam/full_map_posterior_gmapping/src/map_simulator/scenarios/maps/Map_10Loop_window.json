@@ -1,0 +1,15 @@
+{
+  "obstacles" : [
+    {"type": "polygon", "vertices": [[-0.20, -0.20], [ 0.00, -0.20], [ 0.00,  4.00], [-0.20,  4.00]], "desc": "Outer West South Wall"},
+    {"type": "polygon", "vertices": [[-0.20,  4.00], [ 0.00,  4.00], [ 0.00,  6.00], [-0.20,  6.00]], "opacity": 0.60, "desc":  "Outer West Floor-to-Ceiling Window"},
+    {"type": "polygon", "vertices": [[-0.20,  6.00], [ 0.00,  6.00], [ 0.00, 10.20], [-0.20, 10.20]], "desc":  "Outer West North Wall"},
+    {"type": "polygon", "vertices": [[-0.20, 10.00], [10.20, 10.00], [10.20, 10.20], [-0.20, 10.20]], "desc": "Outer North Wall"},
+    {"type": "polygon", "vertices": [[-0.20,  0.00], [10.20,  0.00], [10.20, -0.20], [-0.20, -0.20]], "desc": "Outer South Wall"},
+    {"type": "polygon", "vertices": [[10.20, -0.20], [10.00, -0.20], [10.00, 10.20], [10.20, 10.20]], "desc": "Outer East Wall"},
+
+    {"type": "polygon", "vertices": [[ 2.00,  1.00], [ 9.00,  2.00], [ 8.00,  9.00], [ 1.00,  7.00]], "desc": "Inner Wall"},
+
+    {"type": "polygon", "vertices": [[-0.60,  4.38], [-1.41,  4.02], [-2.00,  4.67], [-1.56,  5.44], [-0.69,  5.25]], "opacity": 0.90, "desc": "Pentagonal-looking bush"},
+    {"type": "polygon", "vertices": [[-1.50,  4.90], [-1.40,  4.90], [-1.30,  4.80], [-1.30,  4.70], [-1.40,  4.60], [-1.50,  4.60], [-1.60,  4.70], [-1.60,  4.80]], "desc": "Octagonal-looking bush trunk"}
+  ]
+}

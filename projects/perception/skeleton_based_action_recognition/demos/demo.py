@@ -24,13 +24,11 @@ from typing import Dict
 
 
 # opendr imports
-from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
-    LightweightOpenPoseLearner
+from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.pose_estimation.lightweight_open_pose.utilities import draw
 import argparse
-from opendr.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import \
-    ProgressiveSpatioTemporalGCNLearner
-from opendr.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import SpatioTemporalGCNLearner
+from opendr.perception.skeleton_based_action_recognition import ProgressiveSpatioTemporalGCNLearner
+from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGCNLearner
 
 
 class VideoReader(object):
@@ -106,13 +104,13 @@ def select_2_poses(poses):
     return selected_poses
 
 
-NTU60_ClASSES = pd.read_csv("./ntu60_labels.csv", verbose=True, index_col=0).to_dict()["name"]
+NTU60_CLASSES = pd.read_csv("./ntu60_labels.csv", verbose=True, index_col=0).to_dict()["name"]
 
 
 def preds2label(confidence):
     k = 3
     class_scores, class_inds = torch.topk(confidence, k=k)
-    labels = {NTU60_ClASSES[int(class_inds[j])]: float(class_scores[j].item())for j in range(k)}
+    labels = {NTU60_CLASSES[int(class_inds[j])]: float(class_scores[j].item())for j in range(k)}
     return labels
 
 
@@ -163,9 +161,13 @@ if __name__ == '__main__':
     # Action classifier
     if args.method == 'pstgcn':
         action_classifier = ProgressiveSpatioTemporalGCNLearner(device=device, dataset_name='nturgbd_cv',
-                                                                topology=[5, 4, 5, 2, 3, 4, 3, 4])
+                                                                topology=[5, 4, 5, 2, 3, 4, 3, 4], in_channels=2,
+                                                                num_point=18, graph_type='openpose')
     else:
-        action_classifier = SpatioTemporalGCNLearner(device=device, dataset_name='nturgbd_cv', method_name=args.method)
+        action_classifier = SpatioTemporalGCNLearner(device=device, dataset_name='nturgbd_cv', method_name=args.method,
+                                                     in_channels=2, num_point=18, graph_type='openpose')
+
+    print('print_numpoints', action_classifier.num_point)
 
     model_saved_path = action_classifier.download(path=os.path.join("./pretrained_models", args.method),
                                                   method_name=args.method, mode="pretrained",

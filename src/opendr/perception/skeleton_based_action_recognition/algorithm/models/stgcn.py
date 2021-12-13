@@ -109,9 +109,9 @@ class STGCN(nn.Module):
     def __init__(self, num_class, num_point, num_person, in_channels, graph_type, cuda_=False):
         super(STGCN, self).__init__()
 
-        if graph_type == 'ntu':
+        if graph_type == 'ntu' or num_point == 25:
             self.graph = NTUGraph()
-        elif graph_type == 'openpose':
+        elif graph_type == 'openpose' or num_point == 18:
             self.graph = KineticsGraph()
 
         A = self.graph.A
@@ -119,7 +119,7 @@ class STGCN(nn.Module):
         weights_init(self.data_bn, bs=1)
 
         self.layers = nn.ModuleDict(
-            {'layer1': ST_GCN_block(3, 64, A, cuda_, residual=False),
+            {'layer1': ST_GCN_block(in_channels, 64, A, cuda_, residual=False),
              'layer2': ST_GCN_block(64, 64, A, cuda_),
              'layer3': ST_GCN_block(64, 64, A, cuda_),
              'layer4': ST_GCN_block(64, 64, A, cuda_),
