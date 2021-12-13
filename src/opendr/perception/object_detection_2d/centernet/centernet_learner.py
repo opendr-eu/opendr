@@ -395,16 +395,9 @@ class CenterNetDetectorLearner(Learner):
 
         self._model.set_nms(nms_thresh=0.45, nms_topk=400)
 
-        if isinstance(img, Image):
-            _img = img.numpy()
-        elif isinstance(img, np.ndarray):
-            _img = img
-        else:
-            if img is not None:
-                error_msg = "Input should be of type Image or numpy array."
-            else:
-                error_msg = "Input image is of type None."
-            raise ValueError(error_msg)
+        if not isinstance(img, Image):
+            img = Image(img)
+        _img = img.convert("channels_last", "rgb")
 
         height, width, _ = _img.shape
         img_mx = mx.image.image.nd.from_numpy(np.float32(_img))

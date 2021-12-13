@@ -45,8 +45,8 @@ from opendr.perception.skeleton_based_action_recognition.algorithm.models.stgcn 
 from opendr.perception.skeleton_based_action_recognition.algorithm.models.tagcn import TAGCN
 from opendr.perception.skeleton_based_action_recognition.algorithm.models.stbln import STBLN
 from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.feeder import Feeder
-from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.ntu_gendata import NTU60_ClASSES
-from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_gendata import KINETICS400_ClASSES
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.ntu_gendata import NTU60_CLASSES
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_gendata import KINETICS400_CLASSES
 
 
 class SpatioTemporalGCNLearner(Learner):
@@ -109,9 +109,9 @@ class SpatioTemporalGCNLearner(Learner):
         self.__init_seed(1)
 
         if self.dataset_name in ['nturgbd_cv', 'nturgbd_cs']:
-            self.classes_dict = NTU60_ClASSES
+            self.classes_dict = NTU60_CLASSES
         elif self.dataset_name == 'kinetics':
-            self.classes_dict = KINETICS400_ClASSES
+            self.classes_dict = KINETICS400_CLASSES
 
     def fit(self, dataset, val_dataset, logging_path='', silent=False, verbose=True,
             momentum=0.9, nesterov=True, weight_decay=0.0001, train_data_filename='train_joints.npy',

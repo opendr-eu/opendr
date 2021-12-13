@@ -20,7 +20,7 @@ max_body = 2
 num_joint = 25
 max_frame = 300
 
-NTU60_ClASSES = pandas.read_csv(Path(__file__).parent / 'ntu60_labels.csv', verbose=True, index_col=0).to_dict()["name"]
+NTU60_CLASSES = pandas.read_csv(Path(__file__).parent / 'ntu60_labels.csv', verbose=True, index_col=0).to_dict()["name"]
 
 
 def read_skeleton(file):
