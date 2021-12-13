@@ -94,10 +94,14 @@ class SkeletonActionRecognitionNode:
         # Initialize the skeleton_based action recognition
         if model == 'stgcn':
             self.action_classifier = SpatioTemporalGCNLearner(device=device, dataset_name='nturgbd_cv',
-                                                              method_name=model)
+                                                              method_name=model, in_channels=2, num_point=18,
+                                                              graph_type='openpose')
         elif model == 'pstgcn':
             self.action_classifier = ProgressiveSpatioTemporalGCNLearner(device=device, dataset_name='nturgbd_cv',
-                                                                         topology=[5, 4, 5, 2, 3, 4, 3, 4])
+                                                                         topology=[5, 4, 5, 2, 3, 4, 3, 4],
+                                                                         in_channels=2, num_point=18,
+                                                                         graph_type='openpose')
+
         model_saved_path = self.action_classifier.download(path="./pretrained_models/"+model,
                                                            method_name=model, mode="pretrained",
                                                            file_name=model+'_ntu_cv_lw_openpose')
