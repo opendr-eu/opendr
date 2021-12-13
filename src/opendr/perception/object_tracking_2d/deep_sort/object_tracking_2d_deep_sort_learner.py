@@ -418,7 +418,8 @@ class ObjectTracking2DDeepSortLearner(Learner):
         def map_dataset(dataset):
 
             def image_to_pil(image: Image):
-                return PilImage.fromarray(image.numpy())
+
+                return PilImage.fromarray(image.convert('channels_last'))
 
             return MappedDatasetIterator(dataset, lambda data: (image_to_pil(data[0]), data[1].data))
 

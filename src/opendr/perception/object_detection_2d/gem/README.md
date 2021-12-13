@@ -5,7 +5,7 @@ This folder contains an implementation of GEM Multimodal Object Detector in an O
 
 ## Sources
 
-This module currently depends on OpenDR's DETR module which is a wrapper of [facebook/detr](https://github.com/facebookresearch/detr) with modifications to make them compatible with OpenDR specifications. The GEM paper can be found here: [GEM: Glare or Gloom, I Can Still See You -- End-to-End Multimodal Object Detection](https://arxiv.org/abs/2102.12319) by Osama Mazhar, Jens Kober and Robert Babuska.
+This module currently depends on OpenDR's DETR module which is a wrapper of [facebook/detr](https://github.com/facebookresearch/detr) with modifications to make them compatible with OpenDR specifications. The GEM paper can be found here: [GEM: Glare or Gloom, I Can Still See You -- End-to-End Multimodal Object Detection](https://ieeexplore.ieee.org/document/9468959) by Osama Mazhar, Jens Kober and Robert Babuska.
 
 First we performed modifications in the single modal [DETR module](../detr/README.md). To support multimodal inputs and allow different fusion methods, we performed additional modifications in this package.
 
@@ -24,3 +24,5 @@ Here, the modifications are:
 The MobileNetV2 implementation was or originally licensed under the Apache 2.0 [license](https://github.com/zhiqwang/demonet/blob/dd4cec83abf5bd937ebf3ebc767972431223d33e/LICENSE)
 
 All modifications are licensed under the Apache 2.0 [license](../../../../../LICENSE) by OpenDR European Project.
+
+Also, code from [here](https://stackoverflow.com/questions/60674501/how-to-make-black-background-in-cv2-puttext-with-python-opencv) is used in the [drawing utility function](algorithm/util/draw.py).

@@ -16,7 +16,7 @@ import numpy as np
 import os
 import shutil
 import unittest
-from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.perception.face_recognition import FaceRecognitionLearner
 from opendr.engine.datasets import ExternalDataset
 
 
@@ -82,7 +82,7 @@ class TestFaceRecognitionLearner(unittest.TestCase):
         save_path = os.path.join(self.temp_dir, 'reference')
         self.recognizer.load(self.temp_dir)
         self.recognizer.fit_reference(imgs, save_path)
-        img = np.random.random((112, 112, 3))
+        img = np.float32(np.random.random((112, 112, 3)))
         result = self.recognizer.infer(img)
         self.assertIsNotNone(result)
         # Cleanup

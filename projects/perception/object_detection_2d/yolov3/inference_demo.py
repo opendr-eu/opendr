@@ -14,10 +14,9 @@
 
 import argparse
 
-import cv2
-
-from opendr.perception.object_detection_2d.yolov3.yolov3_learner import YOLOv3DetectorLearner
-from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
+from opendr.engine.data import Image
+from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
+from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
 if __name__ == '__main__':
@@ -31,7 +30,7 @@ if __name__ == '__main__':
     yolo.load("./yolo_default", verbose=True)
 
     yolo.download(".", mode="images", verbose=True)
-    img = cv2.imread("./cat.jpg")
+    img = Image.open("./cat.jpg")
 
     boxes = yolo.infer(img)
-    draw_bounding_boxes(img, boxes, class_names=yolo.classes, show=True)
+    draw_bounding_boxes(img.opencv(), boxes, class_names=yolo.classes, show=True)

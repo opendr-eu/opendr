@@ -71,7 +71,7 @@ class GemLearner(Learner):
             device="cuda",
             threshold=0.7,
             num_classes=91,
-            return_segmentations=False,
+            panoptic_segmentation=False,
     ):
 
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
@@ -96,7 +96,7 @@ class GemLearner(Learner):
         self.args.num_classes = num_classes
         self.args.dataset_file = "coco"
 
-        if return_segmentations:
+        if panoptic_segmentation:
             self.args.masks = True
             self.args.dataset_file = "coco_panoptic"
         else:
@@ -669,8 +669,8 @@ class GemLearner(Learner):
             m1_image = Image(m1_image)
             m2_image = Image(m2_image)
 
-        m1_img = im.fromarray(m1_image.numpy())
-        m2_img = im.fromarray(m2_image.numpy())
+        m1_img = im.fromarray(m1_image.convert("channels_last", "rgb"))
+        m2_img = im.fromarray(m2_image.convert("channels_last", "rgb"))
 
         scores, boxes, segmentations, contrib = detect(m1_img, m2_img, self.infer_transform, self.model,
                                                        self.postprocessors, self.device, self.threshold,

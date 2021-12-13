@@ -14,9 +14,8 @@
 
 import cv2
 import time
-from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
-    LightweightOpenPoseLearner
-from opendr.perception.pose_estimation.lightweight_open_pose.utilities import draw
+from opendr.perception.pose_estimation import LightweightOpenPoseLearner
+from opendr.perception.pose_estimation import draw
 import argparse
 
 
@@ -78,6 +77,7 @@ if __name__ == '__main__':
         for img in image_provider:
 
             start_time = time.perf_counter()
+
             # Perform inference
             poses = pose_estimator.infer(img)
             end_time = time.perf_counter()

@@ -14,10 +14,9 @@
 
 import argparse
 
-import cv2
-
-from opendr.perception.object_detection_2d.centernet.centernet_learner import CenterNetDetectorLearner
-from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
+from opendr.engine.data import Image
+from opendr.perception.object_detection_2d import CenterNetDetectorLearner
+from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
 if __name__ == '__main__':
@@ -31,7 +30,7 @@ if __name__ == '__main__':
     centernet.load("./centernet_default", verbose=True)
 
     centernet.download(".", mode="images")
-    img = cv2.imread("./bicycles.jpg")
+    img = Image.open("./bicycles.jpg")
 
     boxes = centernet.infer(img)
-    draw_bounding_boxes(img, boxes, class_names=centernet.classes, show=True)
+    draw_bounding_boxes(img.opencv(), boxes, class_names=centernet.classes, show=True)

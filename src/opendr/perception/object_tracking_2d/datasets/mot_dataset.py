@@ -351,7 +351,7 @@ class RawMotWithDetectionsDatasetIterator(DatasetIterator):
 
         target = TrackingAnnotationList.from_mot(labels)
         detections = target.bounding_box_list()
-        data = ImageWithDetections(Image(imgs), detections)
+        data = ImageWithDetections(imgs, detections)
 
         return (
             data, target

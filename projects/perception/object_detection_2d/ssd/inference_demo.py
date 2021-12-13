@@ -14,10 +14,9 @@
 
 import argparse
 
-import cv2
-
-from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
-from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
+from opendr.engine.data import Image
+from opendr.perception.object_detection_2d import SingleShotDetectorLearner
+from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
 if __name__ == '__main__':
@@ -31,7 +30,7 @@ if __name__ == '__main__':
     ssd.load("./ssd_default_person", verbose=True)
 
     ssd.download(".", mode="images")
-    img = cv2.imread("./people.jpg")
+    img = Image.open("./people.jpg")
 
     boxes = ssd.infer(img)
-    draw_bounding_boxes(img, boxes, class_names=ssd.classes, show=True)
+    draw_bounding_boxes(img.opencv(), boxes, class_names=ssd.classes, show=True)

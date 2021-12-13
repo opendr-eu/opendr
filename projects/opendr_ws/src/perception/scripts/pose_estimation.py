@@ -16,13 +16,12 @@
 
 import rospy
 import torch
-import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.pose_estimation.lightweight_open_pose.utilities import draw
-from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
-    LightweightOpenPoseLearner
+from opendr.perception.pose_estimation import draw
+from opendr.perception.pose_estimation import LightweightOpenPoseLearner
+from opendr.engine.data import Image
 
 
 class PoseEstimationNode:
@@ -42,7 +41,6 @@ class PoseEstimationNode:
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
-
         if output_image_topic is not None:
             self.image_publisher = rospy.Publisher(output_image_topic, ROS_Image, queue_size=10)
         else:
@@ -53,7 +51,7 @@ class PoseEstimationNode:
         else:
             self.pose_publisher = None
 
-        rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
+        self.input_image_topic = input_image_topic
 
         self.bridge = ROSBridge()
 
@@ -69,6 +67,7 @@ class PoseEstimationNode:
         Start the node and begin processing input data
         """
         rospy.init_node('opendr_pose_estimation', anonymous=True)
+        rospy.Subscriber(self.input_image_topic, ROS_Image, self.callback)
         rospy.loginfo("Pose estimation node started!")
         rospy.spin()
 
@@ -86,7 +85,7 @@ class PoseEstimationNode:
         poses = self.pose_estimator.infer(image)
 
         # Get an OpenCV image back
-        image = np.float32(image.numpy())
+        image = image.opencv()
         #  Annotate image and publish results
         for pose in poses:
             if self.pose_publisher is not None:
@@ -97,7 +96,7 @@ class PoseEstimationNode:
                 draw(image, pose)
 
         if self.image_publisher is not None:
-            message = self.bridge.to_ros_image(np.uint8(image), encoding='bgr8')
+            message = self.bridge.to_ros_image(Image(image), encoding='bgr8')
             self.image_publisher.publish(message)
 
 

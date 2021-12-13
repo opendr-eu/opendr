@@ -23,8 +23,8 @@ import numpy as np
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
-from opendr.perception.object_detection_2d.gem.algorithm.util.draw import plot_results
+from opendr.perception.object_detection_2d import GemLearner
+from opendr.perception.object_detection_2d import draw
 from opendr.engine.data import Image
 
 
@@ -152,8 +152,8 @@ class GemNode:
         :type msg_ir: sensor_msgs.msg.Image
         """
         # Convert images to OpenDR standard
-        image_rgb = self.bridge.from_ros_image(msg_rgb).numpy()
-        image_ir_raw = self.bridge.from_ros_image(msg_ir).numpy()
+        image_rgb = self.bridge.from_ros_image(msg_rgb).opencv()
+        image_ir_raw = self.bridge.from_ros_image(msg_ir, 'bgr8').opencv()
         image_ir = cv2.warpPerspective(image_ir_raw, self.h, (image_rgb.shape[1], image_rgb.shape[0]))
 
         # Perform inference on images
@@ -176,11 +176,11 @@ class GemNode:
             # e.g., opendr_detection = self.bridge.from_ros_bounding_box_list(ros_detection)
 
         if self.rgb_publisher is not None:
-            plot_rgb = plot_results(image_rgb, boxes, w_sensor1, mean_fps)
+            plot_rgb = draw(image_rgb, boxes, w_sensor1, mean_fps)
             message = self.bridge.to_ros_image(Image(np.uint8(plot_rgb)))
             self.rgb_publisher.publish(message)
         if self.ir_publisher is not None:
-            plot_ir = plot_results(image_ir, boxes, w_sensor1, mean_fps)
+            plot_ir = draw(image_ir, boxes, w_sensor1, mean_fps)
             message = self.bridge.to_ros_image(Image(np.uint8(plot_ir)))
             self.ir_publisher.publish(message)
 

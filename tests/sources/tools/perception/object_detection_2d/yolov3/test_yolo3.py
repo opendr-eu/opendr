@@ -18,8 +18,8 @@ import cv2
 import shutil
 import os
 import numpy as np
-from opendr.perception.object_detection_2d.yolov3.yolov3_learner import YOLOv3DetectorLearner
-from opendr.perception.object_detection_2d.datasets.wider_person import WiderPersonDataset
+from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
+from opendr.perception.object_detection_2d import WiderPersonDataset
 
 
 def rmfile(path):

@@ -17,9 +17,29 @@ Misc functions, for drawing results.
 """
 
 import cv2
+from copy import deepcopy
 
 
-def plot_results(image, boxes, w_sensor1, fps=None, classes=None, colors=None):
+def draw_text(
+        img,
+        text,
+        font=cv2.FONT_HERSHEY_PLAIN,
+        pos=(0, 0),
+        font_scale=3,
+        font_thickness=2,
+        text_color=(0, 255, 0),
+        text_color_bg=(0, 0, 0)
+):
+    # Copied from https://stackoverflow.com/questions/60674501/how-to-make-black-background-in-cv2-puttext-with-python-opencv
+    x, y = pos
+    text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
+    text_w, text_h = text_size
+    cv2.rectangle(img, pos, (x + text_w, y + text_h), text_color_bg, -1)
+    cv2.putText(img, text, (x, y + text_h + font_scale - 1), font, font_scale, text_color, font_thickness)
+    return text_size
+
+
+def draw(image, boxes, w_sensor1, fps=None, classes=None, colors=None, make_copy=False):
     """
     Helper function for creating the annotated images.
     :param image: Image that is to be annotated
@@ -34,9 +54,13 @@ def plot_results(image, boxes, w_sensor1, fps=None, classes=None, colors=None):
     :type classes: list
     :param colors: Colors for visualization, defaults to None
     :type colors: list
+    :param make_copy: If True, a deepcopy is made of the image.
+    :type make_copy: bool
     :return: Image with annotations
     :rtype: numpy.ndarray
     """
+    if make_copy:
+        image = deepcopy(image)
     # l515_dataset classes
     if classes is None:
         classes = ['chair', 'cycle', 'bin', 'laptop', 'drill', 'rocker', 'can']
@@ -47,7 +71,9 @@ def plot_results(image, boxes, w_sensor1, fps=None, classes=None, colors=None):
                   [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
 
     if fps is not None:
-        cv2.putText(image, "FPS: {:.1f}".format(fps), (1100, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+        draw_text(
+            image, "FPS: {:.1f}".format(fps), pos=(1100, 80), text_color=(0, 0, 255), font_thickness=3, font_scale=2
+        )
     for box, c in zip(boxes, colors * 100):
         if box.confidence > 0.7:
             top_left = [int(box.left), int(box.top)]
@@ -57,5 +83,7 @@ def plot_results(image, boxes, w_sensor1, fps=None, classes=None, colors=None):
             cv2.rectangle(image, (int(image.shape[1] * w_sensor1), 0), (image.shape[1], 30), (51, 153, 51), -1)
 
             text = f'{classes[box.name - 1]}: {box.confidence:0.2f}'
-            cv2.putText(image, text, (top_left[0], top_left[1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+            draw_text(
+                image, text, pos=(top_left[0], top_left[1]), font_thickness=3, font_scale=2
+            )
     return image

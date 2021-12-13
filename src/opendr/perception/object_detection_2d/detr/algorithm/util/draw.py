@@ -13,9 +13,33 @@
 # limitations under the License.
 
 import cv2
+from opendr.engine.target import CocoBoundingBox
+import numpy as np
+from copy import deepcopy
 
 
-def draw(img, boxes, classes=None):
+def draw_text(
+        img,
+        text,
+        font=cv2.FONT_HERSHEY_PLAIN,
+        pos=(0, 0),
+        font_scale=3,
+        font_thickness=2,
+        text_color=(0, 255, 0),
+        text_color_bg=(0, 0, 0)
+):
+    # Copied from https://stackoverflow.com/questions/60674501/how-to-make-black-background-in-cv2-puttext-with-python-opencv
+    x, y = pos
+    text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
+    text_w, text_h = text_size
+    cv2.rectangle(img, pos, (x + text_w, y + text_h), text_color_bg, -1)
+    cv2.putText(img, text, (x, y + text_h + font_scale - 1), font, font_scale, text_color, font_thickness)
+    return text_size
+
+
+def draw(img, boxes, make_copy=False, classes=None):
+    if make_copy:
+        img = deepcopy(img)
     # colors for visualization
     if classes is None:
         classes = [
@@ -35,11 +59,25 @@ def draw(img, boxes, classes=None):
             'toothbrush']
     colors = [(0, 44, 74), (85, 32, 9), (92, 69, 12),
               (49, 18, 55), (46, 67, 18), (30, 74, 93)]
-
+    text_list = []
+    position_list = []
     for box, c in zip(boxes, colors):
+        if box.name >= len(classes):
+            continue
         start_point = (int(box.left), int(box.top))
+        position_list.append(start_point)
         w, h = int(box.width), int(box.height)
         end_point = (int(box.left) + w, int(box.top) + h)
-        cv2.rectangle(img, start_point, end_point, c, 3)
-        cv2.putText(img, f'{classes[box.name]}: {box.confidence:0.2f}', start_point, cv2.FONT_HERSHEY_SIMPLEX, 1.5,
-                    cv2.LINE_AA)
+        text_list.append(f'{classes[box.name]}: {box.confidence:0.2f}')
+        if type(box) == CocoBoundingBox and len(box.segmentation) > 4:
+            poly = np.array(box.segmentation, dtype=np.int32).reshape((int(len(box.segmentation) / 2), 2))
+            blk = np.zeros(img.shape, np.uint8)
+            cv2.polylines(img, [poly], True, c, 5)
+            cv2.fillPoly(blk, [poly], c)
+            img = cv2.addWeighted(img, 1.0, blk, 2.0, 1)
+        else:
+            cv2.rectangle(img, start_point, end_point, c, 3)
+    for idx, text in enumerate(text_list):
+        pos = position_list[idx]
+        draw_text(img, text, pos=pos, font_thickness=3, font_scale=2)
+    return img

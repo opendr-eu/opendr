@@ -111,8 +111,8 @@ Also, a tutorial in the form of a Jupyter Notebook is available
   This example shows how to tune hyperparameters of the *DetrLearner*.
 
   ```python
-  from opendr.utils.hyperparameter_tuner.hyperparameter_tuner import HyperparameterTuner
-  from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
+  from opendr.utils.hyperparameter_tuner import HyperparameterTuner
+  from opendr.perception.object_detection_2d import DetrLearner
   from opendr.engine.datasets import ExternalDataset
 
   # Create a coco dataset, containing training and evaluation data
@@ -148,8 +148,8 @@ Also, a tutorial in the form of a Jupyter Notebook is available
   how to specify an objective function.
 
   ```python
-  from opendr.utils.hyperparameter_tuner.hyperparameter_tuner import HyperparameterTuner
-  from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
+  from opendr.utils.hyperparameter_tuner import HyperparameterTuner
+  from opendr.perception.object_detection_2d import DetrLearner
   from opendr.engine.datasets import ExternalDataset
 
   # Create a coco dataset, containing training and evaluation data
@@ -176,6 +176,60 @@ Also, a tutorial in the form of a Jupyter Notebook is available
 
   # Initialize the tuner
   tuner = HyperparameterTuner(DetrLearner)
+
+  # Optimize
+  best_parameters = tuner.optimize(
+    hyperparameters=hyperparameters,
+    fit_arguments=fit_arguments,
+    eval_arguments=eval_arguments,
+    objective_function=objective_function,
+    timeout=timeout,
+  )
+
+  # Initialize learner with the tuned hyperparameters
+  learner = DetrLearner(**best_parameters)
+  ```
+  
+* **Hyperparameter tuning example with the [DetrLearner](detr.md) with a custom study.**
+
+  This example shows how to tune a selection of the hyperparameters of the *DetrLearner* and
+  how to specify an objective function.
+
+  ```python
+  from opendr.utils.hyperparameter_tuner import HyperparameterTuner
+  from opendr.perception.object_detection_2d import DetrLearner
+  from opendr.engine.datasets import ExternalDataset
+  
+  import optuna
+
+  # Create a coco dataset, containing training and evaluation data
+  dataset = ExternalDataset(path='./my_dataset', dataset_type='COCO')
+
+  # Specify the hyperparameters that we want to tune
+  hyperparameters = [
+    {'name': 'optimizer', 'type': 'categorical', 'choices': ['sgd', 'adam']},
+    {'name': 'lr', 'type': 'float', 'low': 0.00001, 'high': 0.01, 'log': True},
+  ]
+
+  # Specify the arguments that are required for the fit method
+  fit_arguments = {'dataset': dataset}
+
+  # Specify the arguments that are required for the eval method
+  eval_arguments = {'dataset': dataset}
+
+  # Define an objective function that we wish to minimize
+  def objective_function(eval_stats):
+    return eval_stats['loss']
+
+  # Specify timeout such that optimization is performed for 4 hours
+  timeout = 14400
+  
+  # Create custom Study
+  sampler = optuna.samplers.CmaEsSampler()
+  study = optuna.create_study(study_name='detr_cma', sampler=sampler)
+
+  # Initialize the tuner
+  tuner = HyperparameterTuner(DetrLearner, study=study)
 
   # Optimize
   best_parameters = tuner.optimize(

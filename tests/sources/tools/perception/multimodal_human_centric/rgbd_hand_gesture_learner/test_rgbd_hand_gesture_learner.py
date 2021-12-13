@@ -23,10 +23,7 @@ from urllib.request import urlretrieve
 import cv2
 
 # OpenDR imports
-from opendr.perception.multimodal_human_centric.rgbd_hand_gesture_learner.rgbd_hand_gesture_learner import (
-    RgbdHandGestureLearner,
-    get_builtin_architectures,
-)
+from opendr.perception.multimodal_human_centric import RgbdHandGestureLearner, get_builtin_architectures
 from opendr.engine.datasets import DatasetIterator
 from opendr.engine.data import Image
 from opendr.engine.target import Category
@@ -43,7 +40,7 @@ class DummyDataset(DatasetIterator):
         return self.n_sample
 
     def __getitem__(self, i):
-        x = np.random.rand(224, 224, 4)
+        x = np.float32(np.random.rand(224, 224, 4))
         y = np.random.randint(low=0, high=self.n_class)
         return Image(x), Category(y)
 

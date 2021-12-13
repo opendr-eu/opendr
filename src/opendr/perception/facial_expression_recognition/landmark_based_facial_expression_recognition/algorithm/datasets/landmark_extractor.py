@@ -14,10 +14,10 @@
 
 
 import os
+import imutils
 from imutils import face_utils
 import numpy as np
 import argparse
-import imutils
 import dlib
 import cv2
 
@@ -42,6 +42,7 @@ def landmark_extractor(input_path, output_path, predictor_path):
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
         for (x, y) in shape:
             cv2.circle(image, (x, y), 3, (0, 0, 255), -1)
+    return shape
 
 
 if __name__ == '__main__':

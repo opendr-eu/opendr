@@ -14,8 +14,8 @@
 import os
 import argparse
 from optuna.trial import TrialState
-from opendr.utils.hyperparameter_tuner.hyperparameter_tuner import HyperparameterTuner
-from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
+from opendr.utils.hyperparameter_tuner import HyperparameterTuner
+from opendr.perception.object_detection_2d import DetrLearner
 from opendr.engine.datasets import ExternalDataset
 
 
