@@ -48,7 +48,6 @@ CityscapesDataset.prepare_data(DOWNLOAD_PATH, DATA_ROOT)
 
 **Run inference and visualize result**
 ```python
-import mmcv
 from opendr.engine.data import Image
 from opendr.perception.panoptic_segmentation import EfficientPsLearner
 DATA_ROOT = '~/data/cityscapes'
@@ -57,7 +56,7 @@ image_filenames = [
     f'{DATA_ROOT}/val/images/lindau_000002_000019.png',
     f'{DATA_ROOT}/val/images/lindau_000003_000019.png',
 ]
-images = [Image(mmcv.imread(f)) for f in image_filenames]
+images = [Image.open(f) for f in image_filenames]
 learner = EfficientPsLearner()
 learner.load('model.pth') # alternatively, one can just specify the path to the folder
 predictions = learner.infer(images)
