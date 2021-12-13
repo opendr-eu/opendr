@@ -15,7 +15,10 @@ This folder contains code for downloading a large number of human models in SMPL
 python download_data.py raw
 ```
 
-### Download the SMPL+D models and convert them as FBX (Filmbox) files. <br/>In this case the pose blend shapes are not applied.
+### Download the SMPL+D models and convert them to FBX (Filmbox)
+
+**Note:** in this case the pose blend shapes are not applied.
+
 
 - Download the data by running:
 ```
