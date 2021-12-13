@@ -25,7 +25,7 @@ from detectron2.config import get_cfg
 from detectron2 import model_zoo
 
 # OpenDR dependencies
-from opendr.control.single_demo_grasp.training.single_demo_grasp_learner import SingleDemoGraspLearner
+from opendr.control.single_demo_grasp import SingleDemoGraspLearner
 from opendr.engine.data import Image
 
 # variable definitions here
