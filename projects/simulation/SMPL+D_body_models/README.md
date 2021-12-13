@@ -59,4 +59,4 @@ chmod +x webots/install_project.sh
 bash webots/install_project.sh
 ```
 
- _ Part of this work was conducted by Dimitrios Taskoudis for his Master Degree Thesis. _
+ <em> Part of this work was conducted by Dimitrios Taskoudis for his Master Degree Thesis. </em>
