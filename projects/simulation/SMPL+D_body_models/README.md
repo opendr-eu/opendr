@@ -48,7 +48,9 @@ $BLENDER_PATH/2.93/python/bin/python3.9 -m pip install numpy opencv-python openc
 $BLENDER_PATH/blender -P src/generate_models.py
 ```
 
-### Install a demo Webots project for animating SMPL+D models. <br/> FBX models must have been previously generated.
+### Install a demo Webots project for animating SMPL+D models
+
+**Note:** FBX models must have been previously generated
 
 -  Download a database from AMASS (https://amass.is.tue.mpg.de/download.php)
 -  Extract the database (e.g., tar -xf ACCAD) 
