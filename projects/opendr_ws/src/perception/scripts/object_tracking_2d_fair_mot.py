@@ -73,7 +73,7 @@ class ObjectTracking2DFairMotNode:
 
         if output_image_topic is not None:
             self.output_image_publisher = rospy.Publisher(
-                output_image_topic, Int32MultiArray, queue_size=10
+                output_image_topic, ROS_Image, queue_size=10
             )
 
         rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
@@ -97,7 +97,7 @@ class ObjectTracking2DFairMotNode:
             )
             draw_predictions(frame, tracking_boxes)
             message = self.bridge.to_ros_image(
-                np.uint8(image), encoding="bgr8"
+                np.uint8(frame), encoding="bgr8"
             )
             self.output_image_publisher.publish(message)
             rospy.loginfo("Published annotated image")
