@@ -75,3 +75,6 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
     - [target.h](c-target-h.md)
     - [opendr_utils.h](c-opendr-utils-h.md)
     - [face_recognition.h](c-face-recognition-h.md)
+- Projects
+    - `perception` Module
+        - [full_map_posterior_slam Module](fmp_gmapping.md)
