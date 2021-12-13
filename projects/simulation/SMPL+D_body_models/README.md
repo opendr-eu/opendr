@@ -58,3 +58,5 @@ python webots/extract_anims.py path_to_database
 chmod +x webots/install_project.sh
 bash webots/install_project.sh
 ```
+
+** Part of this work was conducted by Dimitrios Taskoudis for his Master Degree Thesis. **
