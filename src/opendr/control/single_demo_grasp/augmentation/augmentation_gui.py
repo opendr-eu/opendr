@@ -12,78 +12,70 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# -*- coding: utf-8 -*-
-
-
-#%% Loading Images
-import os
-import os.path as path
+# Loading Images
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 import cv2
-import math
 from augmentation_utils import *
+import sys
+from math import randint
 
 
-#%% generate Data randomly from imgaug library
+# generate Data randomly from imgaug library
 
 # when test == 1, only one example of augmentation is made for verification only
-#when test == 0, the augmentation is done based on the value of train_scale and val_scale
+# when test == 0, the augmentation is done based on the value of train_scale and val_scale
 test = 0
 object_name = "pendulum"
-img_path="image.png"
-imge = cv2.imread(img_path, 1)
-imge = cv2.resize(imge, (640,480), interpolation = cv2.INTER_AREA)
+img_path = "image.png"
+img = cv2.imread(img_path, 1)
+img = cv2.resize(img, (640, 480), interpolation=cv2.INTER_AREA)
 
-x = np.array(imge)
+x = np.array(img)
 new_img = np.expand_dims(x, axis=0)
 
 if test == 1:
-
     train_scale = 1
-    val_scale=1
+    val_scale = 1
     rot_scale = 1
 
 else:
-
     train_scale = 1500
     val_scale = 200
     rot_scale = 5000
 
 
 # annotate object
-bbx_points, grasp_line = annotate(imge)
-img_aug_train, boxes_train, kps_train = Augment_train_straight_box_n_kps(object_name,
-    new_img, train_scale, bbx_points, grasp_line, "train", test)
+bbx_points, grasp_line = annotate(img)
+img_aug_train, boxes_train, kps_train = Augment_train_straight_box_n_kps(
+    object_name, new_img, train_scale, bbx_points, grasp_line, "train", test)
 
 _, boxes_val, kps_val = Augment_train_straight_box_n_kps(object_name, new_img, val_scale,
-    bbx_points, grasp_line, "val", test)
+                                                         bbx_points, grasp_line, "val", test)
 
-np.save('datasets/' + object_name + '/annotations/boxes_train.npy',boxes_train)
-np.save('datasets/' + object_name + '/annotations/boxes_val.npy',boxes_val)
-np.save('datasets/' + object_name + '/annotations/kps_train.npy',kps_train)
-np.save('datasets/' + object_name + '/annotations/kps_val.npy',kps_val)
-i=randint(0,train_scale-1)
-test_box=boxes_train[i]
-test_kps=kps_train[i]
+np.save('datasets/' + object_name + '/annotations/boxes_train.npy', boxes_train)
+np.save('datasets/' + object_name + '/annotations/boxes_val.npy', boxes_val)
+np.save('datasets/' + object_name + '/annotations/kps_train.npy', kps_train)
+np.save('datasets/' + object_name + '/annotations/kps_val.npy', kps_val)
+i = randint(0, train_scale - 1)
+test_box = boxes_train[i]
+test_kps = kps_train[i]
 
 bbs = BoundingBoxesOnImage([BoundingBox(x1=int(test_box[0]), y1=int(test_box[1]), x2=int(test_box[2]), y2=int(test_box[3]))],
-                            shape=imge.shape)
+                           shape=img.shape)
 image_after = bbs.draw_on_image(img_aug_train[i][0], size=2, color=[0, 255, 255])
 
 a = test_kps[0]
 b = test_kps[1]
 
 kypt = KeypointsOnImage(
-    list(Keypoint(x=x_in, y=y_in) for (x_in,y_in) in zip(a,b)),
-    shape=imge.shape)
+    list(Keypoint(x=x_in, y=y_in) for (x_in, y_in) in zip(a, b)),
+    shape=img.shape)
 
 image_after = kypt.draw_on_image(image_after, size=7, color=[0, 0, 255])
 
 ia.imshow(image_after)
 
-print ("press enter to close the augmentation program")
+print("press enter to close the augmentation program")
 input()
 cv2.destroyAllWindows()
 sys.exit()

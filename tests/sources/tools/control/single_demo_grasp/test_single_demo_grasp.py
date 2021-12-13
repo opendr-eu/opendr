@@ -107,7 +107,6 @@ class TestSingleDemoGraspLearner(unittest.TestCase):
         self.assertTrue(flag == 1, msg="predictions are available with confidence more than threshold")
 
     def test_save_load(self):
-
         """
          learner load function only sets path to where you store the weights
          so we check whether the saved and loaded files after running these functions
@@ -125,7 +124,6 @@ class TestSingleDemoGraspLearner(unittest.TestCase):
                          msg="load method did not alter model weights")
 
         print("Finished tesing save/load functions.")
-
 
 
 if __name__ == "__main__":

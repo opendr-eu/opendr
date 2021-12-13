@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import os
 import numpy as np
 import zipfile
@@ -29,12 +30,11 @@ from opendr.engine.learners import Learner
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Image
 
-# single demo grasp modul imports
+# single demo grasp module imports
 from opendr.control.single_demo_grasp.training.learner_utils import *
 
 
 class SingleDemoGraspLearner(Learner):
-
     def __init__(self, object_name=None, data_directory=None, lr=0.0008, batch_size=512, img_per_step=2, num_workers=2,
                  num_classes=1, iters=1000, threshold=0.8, device='cuda'):
         super(SingleDemoGraspLearner, self).__init__(lr=lr, threshold=threshold, batch_size=batch_size, device=device,
@@ -47,10 +47,10 @@ class SingleDemoGraspLearner(Learner):
         self.temp_dir = os.path.join(self.dataset_dir, "download_temp")
         self.cfg = get_cfg()
         self.cfg.merge_from_file(model_zoo.get_config_file(
-                            "COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
+            "COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
         self.cfg.DATALOADER.NUM_WORKERS = self.num_workers
         self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
-                            "COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml")
+            "COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml")
         self.cfg.MODEL.DEVICE = self.device
         self.cfg.SOLVER.IMS_PER_BATCH = img_per_step
         self.cfg.SOLVER.BASE_LR = self.lr
@@ -71,7 +71,6 @@ class SingleDemoGraspLearner(Learner):
         self.trainer.train()
 
     def infer(self, img_data):
-
         if not isinstance(img_data, Image):
             img_data = Image(img_data)
         img_data = img_data.convert(format='channels_last', channel_order='rgb')
@@ -89,7 +88,6 @@ class SingleDemoGraspLearner(Learner):
             return 0, None, None
 
     def _prepare_datasets(self):
-
         bbx_train = np.load(os.path.join(self.dataset_dir, self.object_name, 'images/annotations/boxes_train.npy'),
                             encoding='bytes')
         bbx_val = np.load(os.path.join(self.dataset_dir, self.object_name, 'images/annotations/boxes_val.npy'),
@@ -98,19 +96,18 @@ class SingleDemoGraspLearner(Learner):
                             encoding='bytes')
         kps_val = np.load(os.path.join(self.dataset_dir, self.object_name, 'images/annotations/kps_val.npy'),
                           encoding='bytes')
-        vars()[self.object_name+'_metadata'], train_set, val_set = register_datasets(DatasetCatalog, MetadataCatalog,
-                                                                                     self.dataset_dir, self.object_name,
-                                                                                     bbx_train, kps_train, bbx_val, kps_val)
+        vars()[self.object_name + '_metadata'], train_set, val_set = register_datasets(DatasetCatalog, MetadataCatalog,
+                                                                                       self.dataset_dir, self.object_name,
+                                                                                       bbx_train, kps_train, bbx_val, kps_val)
 
         self.num_train = len(bbx_train)
         self.num_val = len(bbx_val)
         self.num_kps = len(kps_train[0][0])
         self.train_set = train_set
         self.val_set = val_set
-        return vars()[self.object_name+'_metadata']
+        return vars()[self.object_name + '_metadata']
 
     def load(self, path_to_model):
-
         if os.path.isfile(path_to_model):
             self.cfg.MODEL.WEIGHTS = path_to_model
             self.predictor = DefaultPredictor(self.cfg)
@@ -119,7 +116,6 @@ class SingleDemoGraspLearner(Learner):
             assert os.path.isfile(path_to_model), "Checkpoint {} not found!".format(path_to_model)
 
     def save(self, path):
-
         if os.path.isfile(os.path.join(self.output_dir, "model_final.pth")):
             print("found the trained model at: " + os.path.join(self.output_dir, "model_final.pth"))
             if path != self.output_dir:
@@ -132,7 +128,6 @@ class SingleDemoGraspLearner(Learner):
             print("no trained model was found...")
 
     def download(self, path=None, object_name=None):
-
         if path is None:
             path = self.temp_dir
         if object_name is None:
@@ -143,7 +138,7 @@ class SingleDemoGraspLearner(Learner):
         print("Downloading pretrained model, training data and samples for: " + object_name)
 
         filename = object_name + ".zip"
-        url = os.path.join(OPENDR_SERVER_URL, "control/single_demo_grasp/",  filename)
+        url = os.path.join(OPENDR_SERVER_URL, "control/single_demo_grasp/", filename)
         destination_file = os.path.join(path, filename)
         urlretrieve(url, destination_file)
 
@@ -151,8 +146,8 @@ class SingleDemoGraspLearner(Learner):
             zip_ref.extractall(path)
 
         """
-        removing zip file after extracting contents
-        """
+            removing zip file after extracting contents
+            """
         os.remove(destination_file)
 
     def eval(self):
