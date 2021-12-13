@@ -19,7 +19,7 @@ import sys
 import numpy as np
 import cv2
 from inference_utils import *
-from opendr.control.single_demo_grasp.training.single_demo_grasp_learner import SingleDemoGraspLearner
+from opendr.control.single_demo_grasp import SingleDemoGraspLearner
 from opendr.engine.data import Image
 
 # variable definitions here

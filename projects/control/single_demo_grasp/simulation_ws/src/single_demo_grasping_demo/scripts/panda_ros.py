@@ -34,8 +34,6 @@ class ROSController():
             self.robot = Robot()
         else:
             self.robot = robot
-        # nodeName = arguments.nodeName + '/' if arguments.nodeName != 'ur_driver' else ''
-        # nodeName = arguments.nodeName + '/'
 
         jointPrefix = rospy.get_param('prefix', '')
         if jointPrefix:

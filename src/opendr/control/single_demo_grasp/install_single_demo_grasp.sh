@@ -15,14 +15,11 @@ WS_PATH=${OPENDR_HOME}/projects/control/single_demo_grasp/simulation_ws
 BRIDGE_PATH=${OPENDR_HOME}/projects/opendr_ws/src/ros_bridge
 
 
-
 ## Moveit
 sudo apt install ros-${ROS_DISTRO}-moveit
 
-
 ## franka_ros libfranka
 sudo apt install ros-${ROS_DISTRO}-libfranka
-
 
 ## build the catkin workspace
 cd ${WS_PATH} || exit

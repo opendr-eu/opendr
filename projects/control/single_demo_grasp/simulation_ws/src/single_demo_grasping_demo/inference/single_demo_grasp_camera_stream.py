@@ -25,8 +25,6 @@ from single_demo_inference import *
 from opendr_bridge import ROSBridge
 from opendr.engine.data import Image
 
-CUDA_LAUNCH_BLOCKING = 1
-
 
 class SingleDemoGraspCameraStream(object):
 
