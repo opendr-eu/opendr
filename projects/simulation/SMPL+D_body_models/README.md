@@ -55,6 +55,6 @@ python webots/extract_anims.py path_to_database
 -  Assign the directory of the selected animation in the controllerArgs to webots/smpl_webots/worlds/demo_world.wbt
 -  Install the demo project in Webots
 ```
-chmod +x install_project.sh
-bash install_project.sh
+chmod +x webots/install_project.sh
+bash webots/install_project.sh
 ```
