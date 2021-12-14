@@ -36,7 +36,17 @@ pip3 install setuptools
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' \
             && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
 
+# Build OpenDR
 make install_compilation_dependencies
 make install_runtime_dependencies
 make libopendr
+
+# Prepare requirements.txt for wheel distributions
+pip3 freeze > requirements.txt
+python setup.py bdist
+
+# Install OpenDR
+
+
 deactivate
+

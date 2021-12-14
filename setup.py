@@ -1,15 +1,10 @@
 from setuptools import setup
 from setuptools import find_packages
-try:
-    from pip._internal.req import parse_requirements
-    from pip._internal.download import PipSession
-except ImportError:
-    from pip.req import parse_requirements
-    from pip.download import PipSession
 
 packages = find_packages(where="./src")
-install_reqs = parse_requirements('requirements.txt', session=PipSession())
-reqs = [str(ir.req) for ir in install_reqs]
+
+with open('requirements.txt') as fp:
+    install_requires = fp.read()
 
 setup(
     name='OpenDR',
@@ -42,5 +37,5 @@ setup(
     url='https://github.com/opendr-eu/opendr',
     license='LICENSE',
     package_dir={"": "src"},
-    install_requires=reqs
+    install_requires=install_requires
 )
