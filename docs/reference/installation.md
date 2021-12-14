@@ -42,6 +42,18 @@ source ./bin/activate.sh
 ```
 Then, you are ready to use the toolkit!
 
+
+If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 10.2](https://developer.nvidia.com/cuda-10.2-download-archive).
+To do so, you can follow these steps:
+```bash
+sudo apt install gcc-8 g++-8 gcc-9 g++-9
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 9 --slave /usr/bin/g++ g++ /usr/bin/g++-9
+echo "Please switch to GCC 8"
+sudo update-alternatives --config gcc
+```
+Then, you can install CUDA, along CuDNN.
+
 # Installing using *pip*
 You can directly install OpenDR toolkit for CPU-only inference using pip:
 ```bash
