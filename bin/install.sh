@@ -43,10 +43,10 @@ make libopendr
 
 # Prepare requirements.txt for wheel distributions
 pip3 freeze > requirements.txt
-python setup.py bdist
+python setup.py sdist bdist_wheel
 
 # Install OpenDR
-pip3 install dist/*.whl
+pip3 install OpenDR-1.0-py3-none-any.whl
 
 deactivate
 
