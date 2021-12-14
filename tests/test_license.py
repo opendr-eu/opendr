@@ -95,7 +95,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/object_detection_2d/retinaface/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
-            'projects/opendr/control/eagerx/eagerx',
+            'projects/control/eagerx/eagerx',
         ]
 
         skippedFilePaths = [
