@@ -14,7 +14,7 @@ This folder contains code for:
 
 ### Download the raw SMPL+D models only (≈12.5Gb)
 
-SMPL, which is a parametric statistical body shape model. SMPL+D is an extension of SMPL, which is able to encode shape deformations from clothes and hair as vertex displacements. For each human model in our dataset, we provide its:
+SMPL, which is a parametric statistical body shape model. SMPL+D is an extension of SMPL, which is able to encode shape deformations from clothes and hair as vertex displacements. For each human model in our dataset, we provide its corresponding:
 
 - Gender
 - Shape Parameters (betas)
