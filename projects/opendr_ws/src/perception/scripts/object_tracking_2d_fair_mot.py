@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import cv2
 import torch
-from projects.perception.object_tracking_2d.demos.fair_mot_deep_sort.demo import (
-    draw_predictions,
-)
+import os
+import time
+from opendr.engine.target import TrackingAnnotation, TrackingAnnotationList
 import rospy
 import numpy as np
 from vision_msgs.msg import Detection2DArray, Detection2D
@@ -26,6 +27,7 @@ from opendr_bridge import ROSBridge
 from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
     ObjectTracking2DFairMotLearner,
 )
+from opendr.engine.data import Image
 
 
 class ObjectTracking2DFairMotNode:
@@ -55,11 +57,14 @@ class ObjectTracking2DFairMotNode:
         :type backbone: str
         """
 
-        # Initialize the face detector
+        # # Initialize the face detector
         self.learner = ObjectTracking2DFairMotLearner(
             device=device, temp_path=temp_dir,
         )
-        ObjectTracking2DFairMotLearner.download(model_name, temp_dir)
+        if not os.path.exists(os.path.join(temp_dir, model_name)):
+            ObjectTracking2DFairMotLearner.download(model_name, temp_dir)
+
+        self.learner.load(os.path.join(temp_dir, model_name), verbose=True)
 
         # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
@@ -87,17 +92,13 @@ class ObjectTracking2DFairMotNode:
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding="bgr8")
-
-        # Run pose estimation
         tracking_boxes = self.learner.infer(image)
 
         if self.output_image_publisher is not None:
-            frame = np.ascontiguousarray(
-                np.moveaxis(image.data, [0, 1, 2], [2, 0, 1]).copy()
-            )
+            frame = image.opencv()
             draw_predictions(frame, tracking_boxes)
             message = self.bridge.to_ros_image(
-                np.uint8(frame), encoding="bgr8"
+                Image(frame), encoding="bgr8"
             )
             self.output_image_publisher.publish(message)
             rospy.loginfo("Published annotated image")
@@ -116,7 +117,52 @@ class ObjectTracking2DFairMotNode:
 
         if self.tracking_id_publisher is not None:
             self.tracking_id_publisher.publish(ros_ids)
-            rospy.loginfo("Published ids")
+            rospy.loginfo("Published tracking ids")
+
+
+colors = [
+    (255, 0, 255),
+    (0, 0, 255),
+    (0, 255, 0),
+    (255, 0, 0),
+    (35, 69, 55),
+    (43, 63, 54),
+]
+
+def draw_predictions(frame, predictions: TrackingAnnotation, is_centered=False, is_flipped_xy=True):
+    global colors
+    w, h, _ = frame.shape
+
+    for prediction in predictions.boxes:
+        prediction = prediction
+
+        if not hasattr(prediction, "id"):
+            prediction.id = 0
+
+        color = colors[int(prediction.id) * 7 % len(colors)]
+
+        x = prediction.left
+        y = prediction.top
+
+        if is_flipped_xy:
+            x = prediction.top
+            y = prediction.left
+
+        if is_centered:
+            x -= prediction.width
+            y -= prediction.height
+
+        cv2.rectangle(
+            frame,
+            (int(x), int(y)),
+            (
+                int(x + prediction.width),
+                int(y + prediction.height),
+            ),
+            color,
+            2,
+        )
+
 
 
 if __name__ == "__main__":
@@ -131,7 +177,8 @@ if __name__ == "__main__":
     model_name = rospy.get_param("~model_name", "fairmot_dla34")
     temp_dir = rospy.get_param("~temp_dir", "temp")
     input_image_topic = rospy.get_param(
-        "~input_image_topic", "/usb_cam/image_raw"
+        "~input_image_topic", "/opendr/dataset_image"
+        # "~input_image_topic", "/usb_cam/image_raw"
     )
     rospy.loginfo("Using model_name: {}".format(model_name))
 
