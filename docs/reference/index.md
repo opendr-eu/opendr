@@ -76,3 +76,5 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 - Projects
     - `perception` Module
         - [full_map_posterior_slam Module](fmp_gmapping.md)
+    - `simulation` Module
+         -[SMPL+D Human Models Dataset](smpld_models.md)
