@@ -171,12 +171,10 @@ if __name__ == "__main__":
     rospy.init_node("opendr_fair_mot", anonymous=True)
     rospy.loginfo("FairMOT node started")
 
-    # get network backbone ("mnet" detects masked faces as well)
     model_name = rospy.get_param("~model_name", "fairmot_dla34")
     temp_dir = rospy.get_param("~temp_dir", "temp")
     input_image_topic = rospy.get_param(
         "~input_image_topic", "/opendr/dataset_image"
-        # "~input_image_topic", "/usb_cam/image_raw"
     )
     rospy.loginfo("Using model_name: {}".format(model_name))
 
