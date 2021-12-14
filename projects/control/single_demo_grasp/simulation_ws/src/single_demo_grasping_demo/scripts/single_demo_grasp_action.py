@@ -60,7 +60,7 @@ class SingleDemoGraspAction(object):
         display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                        moveit_msgs.msg.DisplayTrajectory,
                                                        queue_size=20)
-        XY_command_sub = rospy.Subscriber("/commands", Float32MultiArray, self.callback_cmd)
+        rospy.Subscriber("/commands", Float32MultiArray, self.callback_cmd)
         request_publisher = rospy.Publisher('/request_detection', Int16, queue_size=10)
 
         planning_frame = group.get_planning_frame()
@@ -171,6 +171,7 @@ class SingleDemoGraspAction(object):
     def go_to_pose_goal(self, target):
 
         group = self.group
+        group.get_current_pose().pose
         pose_goal = geometry_msgs.msg.Pose()
         pose_goal.orientation.x = target.pose.orientation.x
         pose_goal.orientation.y = target.pose.orientation.y
@@ -181,6 +182,7 @@ class SingleDemoGraspAction(object):
         pose_goal.position.z = target.pose.position.z
         print(pose_goal)
         group.set_pose_target(pose_goal)
+        group.go(wait=True)
         group.stop()
         group.clear_pose_targets()
         current_pose = self.group.get_current_pose().pose
