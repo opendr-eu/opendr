@@ -1,4 +1,4 @@
-# SMPL+D body models
+# SMPL+D human models
 
 This folder contains code for:
 - generating a large number of human models in SMPL+D body model format as FBX files
