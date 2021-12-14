@@ -1,0 +1,10 @@
+{
+    "obstacles" : [
+      {"type": "polygon", "vertices": [[-0.20, -0.20], [ 0.00, -0.20], [ 0.00, 10.20], [-0.20, 10.20]], "desc": "Outer West Wall"},
+      {"type": "polygon", "vertices": [[-0.20, 10.00], [10.20, 10.00], [10.20, 10.20], [-0.20, 10.20]], "desc": "Outer North Wall"},
+      {"type": "polygon", "vertices": [[-0.20,  0.00], [10.20,  0.00], [10.20, -0.20], [-0.20, -0.20]], "desc": "Outer South Wall"},
+      {"type": "polygon", "vertices": [[10.20, -0.20], [10.00, -0.20], [10.00, 10.20], [10.20, 10.20]], "desc": "Outer East Wall"},
+
+      {"type": "polygon", "vertices": [[ 2.00,  1.00], [ 9.00,  2.00], [ 8.00,  9.00], [ 1.00,  7.00]], "desc": "Inner Wall"}
+    ]
+}

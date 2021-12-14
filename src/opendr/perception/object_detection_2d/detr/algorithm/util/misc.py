@@ -206,7 +206,7 @@ class MetricLogger(object):
     def add_meter(self, name, meter):
         self.meters[name] = meter
 
-    def log_every(self, iterable, print_freq, header=None, verbose=True, silent=False):
+    def log_every(self, iterable, print_freq, header=None, verbose=True):
         i = 0
         if not header:
             header = ''
@@ -255,7 +255,7 @@ class MetricLogger(object):
                         time=str(iter_time), data=str(data_time)))
             i += 1
             end = time.time()
-        if not silent:
+        if verbose:
             total_time = time.time() - start_time
             total_time_str = str(datetime.timedelta(seconds=int(total_time)))
             total_time_msg = '{} Total time: {} ({:.4f} s / it)'.format(

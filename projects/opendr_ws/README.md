@@ -49,4 +49,5 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes:
 8. Heart Anomaly Detection
 9. Video Human Activity Recognition
 10. Landmark-based Facial Expression Recognition
-11. Speech Command Recognition
+11. Skeleton-based Human Action Recognition
+12. Speech Command Recognition

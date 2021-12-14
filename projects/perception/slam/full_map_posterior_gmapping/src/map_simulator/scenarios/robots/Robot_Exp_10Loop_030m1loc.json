@@ -1,0 +1,10 @@
+{
+  "include": [
+    "Common.json",
+    "Map_10Loop.json",
+    "CMD_10Loop_1l030m.json",
+    "CMD_10Loop_1l100m_LocOnly.json",
+    "CMD_EOS.json",
+    "Sensor_180Ray_3_2pi.json"
+  ]
+}
