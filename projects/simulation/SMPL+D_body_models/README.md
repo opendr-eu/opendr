@@ -12,6 +12,8 @@ This folder contains code for:
   <img src="./examples/model_2.png" width=150 />
 </p>
 
+### Download the raw SMPL+D models only (≈12.5Gb)
+
 SMPL, which is a parametric statistical body shape model. SMPL+D is an extension of SMPL, which is able to encode shape deformations from clothes and hair as vertex displacements. For each human model in our dataset, we provide its:
 
 - Gender
@@ -21,19 +23,14 @@ SMPL, which is a parametric statistical body shape model. SMPL+D is an extension
 
 All those data can be used directly for research purposes, such as for training methods for shape and texture reconstruction. 
 
-### Download the raw SMPL+D models only (≈12.5Gb)
-
 ```
 python download_data.py raw
 ```
-
-In addition, we provide code converting those human models in the FBX format, which is supported by a wide range of simulation engines, including Webots. However, the human models in the FBX format do not provide any pose-dependent deformations. To convert those models to the FBX format, the original SMPL body model must be downloaded from the authors webpage.
-
-
 ### Download the SMPL+D models and convert them to FBX (Filmbox) (≈12.5Gb)
 
-**Note:** in this case the pose blend shapes are not applied.
+**Note:** in this case the pose-dependant deformations are not applied.
 
+In addition, we provide code for converting those human models in the FBX format, which is supported by a wide range of simulation engines, including Webots. However, pose-dependent deformations are not applied to the human models. To convert those models to the FBX format, the original SMPL body model must be downloaded from the authors webpage.
 
 - Download the data by running:
 ```
@@ -66,6 +63,8 @@ $BLENDER_PATH/blender -P src/generate_models.py
 ### Install a demo Webots project for animating SMPL+D models
 
 **Note:** FBX models must have been previously generated
+
+Finally, instructions for setting a demo project in Webots are provided. In the project, one the SMPL+D models in FBX format can perform an animation from  [AMASS](https://smpl.is.tue.mpg.de/).
 
 -  Download ACCAD database from AMASS (https://amass.is.tue.mpg.de/download.php)
 
