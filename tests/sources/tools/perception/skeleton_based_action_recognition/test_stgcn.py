@@ -48,8 +48,8 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         cls.temp_dir = PATH_
         cls.logging_path = LOG_PATH_
         cls.stgcn_action_classifier = SpatioTemporalGCNLearner(device="cpu", temp_path=cls.temp_dir,
-                                                               batch_size=5, epochs=1,
-                                                               checkpoint_after_iter=1, val_batch_size=5,
+                                                               batch_size=10, epochs=1,
+                                                               checkpoint_after_iter=1, val_batch_size=10,
                                                                dataset_name='nturgbd_cv',
                                                                num_class=60, num_point=25, num_person=2, in_channels=3,
                                                                graph_type='ntu',
@@ -133,22 +133,23 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertIsNotNone(self.stgcn_action_classifier.model, "model is None after loading pt model.")
         # Cleanup
 
-    def test_save_load_onnx(self):
-        print(
-            "\n\n**********************************\nTest STGCN saveload ONNX function \n*"
-            "*********************************")
-        self.stgcn_action_classifier.model = None
-        self.stgcn_action_classifier.ort_session = None
-        self.stgcn_action_classifier.init_model()
-        self.stgcn_action_classifier.optimize()
-        self.stgcn_action_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
-                                          model_name='onnx_model_temp')
-        self.stgcn_action_classifier.model = None
-        self.stgcn_action_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
-                                          model_name='onnx_model_temp')
-        self.assertIsNotNone(self.stgcn_action_classifier.ort_session, "ort_session is None after loading onnx model.")
-        # Cleanup
-        self.stgcn_action_classifier.ort_session = None
+    # Redundant test: Same code is executed internally in `test_optimize`
+    #def test_save_load_onnx(self):
+    #    print(
+    #        "\n\n**********************************\nTest STGCN saveload ONNX function \n*"
+    #        "*********************************")
+    #    self.stgcn_action_classifier.model = None
+    #    self.stgcn_action_classifier.ort_session = None
+    #    self.stgcn_action_classifier.init_model()
+    #    self.stgcn_action_classifier.optimize()
+    #    self.stgcn_action_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
+    #                                      model_name='onnx_model_temp')
+    #    self.stgcn_action_classifier.model = None
+    #    self.stgcn_action_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
+    #                                      model_name='onnx_model_temp')
+    #    self.assertIsNotNone(self.stgcn_action_classifier.ort_session, "ort_session is None after loading onnx model.")
+    #    # Cleanup
+    #    self.stgcn_action_classifier.ort_session = None
 
     def test_optimize(self):
         print(
