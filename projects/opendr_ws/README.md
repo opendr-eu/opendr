@@ -24,7 +24,7 @@ cd ..
 ```
 3. Install the following dependencies, required in order to use the OpenDR ROS tools:
 ```shell
-sudo apt-get install ros-noetic-vision-msgs ros-noetic-geometry-msgs ros-noetic-sensor-msgs
+sudo apt-get install ros-noetic-vision-msgs ros-noetic-geometry-msgs ros-noetic-sensor-msgs ros-noetic-audio-common-msgs
 ```
 4. Build the packages inside workspace
 ```shell
@@ -49,3 +49,4 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes:
 8. Heart Anomaly Detection
 9. Video Human Activity Recognition
 10. Landmark-based Facial Expression Recognition
+11. Speech Command Recognition
