@@ -12,7 +12,7 @@ setup(
     name='OpenDR',
     version=__version__,
     description='Open Deep Learning Toolkit for Robotics',
-    long_description="""The aim of OpenDR is to develop a modular, open and non-proprietary toolkit for core 
+    long_description="""The aim of OpenDR is to develop a modular, open and non-proprietary toolkit for core
                      robotic functionalities by harnessing deep learning to provide advanced perception and
                      cognition capabilities, meeting in this way the general requirements of robotics
                      applications in the applications areas of healthcare, agri-food and agile production.
