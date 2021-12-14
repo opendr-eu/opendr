@@ -52,10 +52,7 @@ class ImageDatasetNode:
 
             image: Image = self.dataset[i % len(self.dataset)][0]  # Dataset should have an (Image, Target) pair as elements
 
-            print(image.data.shape)
-            # image = Image(np.ones([500, 30, 3], dtype=np.uint8) * (i % 22) * 10)
-
-            rospy.loginfo('Publishing image [' + str(i) + ']')
+            rospy.loginfo("Publishing image [" + str(i) + "]")
             message = self.bridge.to_ros_image(
                 image, encoding="rgb8"
             )
