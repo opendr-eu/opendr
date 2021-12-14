@@ -57,15 +57,22 @@ $(BUILD_DIR)/test_face_recognition:
 	@+echo "Building face recognition test..."
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/test_face_recognition sources/c_api/test_face_recognition.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
-tests: $(BUILD_DIR)/test_opendr_utils $(BUILD_DIR)/test_face_recognition
+FMP_INC = -I$(OPENDR_HOME)/projects/perception/slam/full_map_posterior_gmapping/src/openslam_gmapping/include
+$(BUILD_DIR)/test_fmp_gmapping:
+	@+echo "Building Full-Map-Posterior GMapping test..."
+	$(CPP)  $(CFLAGS) -o $(BUILD_DIR)/test_fmp_gmapping sources/c_api/test_fmp_gmapping.cpp -lboost_unit_test_framework $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD) $(FMP_INC)
+
+tests: $(BUILD_DIR)/test_opendr_utils $(BUILD_DIR)/test_face_recognition $(BUILD_DIR)/test_fmp_gmapping
 
 runtests: download tests
 	@+$(LD_RUN) $(BUILD_DIR)/test_opendr_utils 2>/dev/null
 	@+$(LD_RUN) $(BUILD_DIR)/test_face_recognition 2>/dev/null
+	@+$(LD_RUN) $(BUILD_DIR)/test_fmp_gmapping
 
 clean:
 	@+echo "Cleaning C tests binaries and temporary files..."
 	@+$(RM) $(BUILD_DIR)/test_opendr_utils
 	@+$(RM) $(BUILD_DIR)/test_face_recognition
+	@+$(RM) $(BUILD_DIR)/test_fmp_gmapping
 	@+$(RM) -rf $(DATA_DIR)
 	@+echo "Done!"
