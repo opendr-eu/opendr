@@ -2,35 +2,31 @@
 
 This folder contains a catkin workspace to build the simulation package and its dependencies.
 
-## Setup
+## Workspace Setup
 
-The workspace will be setup by installing compilation and runtime dependencies when setting up the OpenDR toolkit:
+In order to run the demo, [Webots](https://cyberbotics.com/#download) simulator is required.
+- download Webots 2021b for your platform from [here](https://github.com/cyberbotics/webots/releases/tag/R2021b) and install it
+- install webots-ros, where ROS_DISTRO must be either `melodic` or `noetic`
+```
+$ sudo apt-get install ros-ROS_DISTRO-webots-ros
+```
+- set the environment variable below, by pointing to the location where Webots was installed.
+In ubuntu you can do so by executing the following command in a terminal:
+```
+$ export WEBOTS_HOME=/usr/local/webots
+```
+
+The workspace will be setup by installing compilation and runtime dependencies when setting up the OpenDR toolkit. From the OpenDR folder, run:
 
 ```
 $ make install_compilation_dependencies
 $ make install_runtime_dependencies
 ```
 
-Also install webots and webots-ros:
-
-```
-wget -qO- https://cyberbotics.com/Cyberbotics.asc | sudo apt-key add -
-sudo apt-add-repository 'deb https://cyberbotics.com/debian/ binary-amd64/'
-sudo apt-get update
-sudo apt-get install webots
-sudo apt-get install ros-${ROS_DISTRO}-webots-ros
-```
-
-
-after installing dependencies, the user must source the workspace in the shell in order to detect the packages:
+After installing dependencies, the user must source the workspace in the shell in order to detect the packages:
 
 ```
 $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
-```
-
-also, the user need to set the environment variable below to find webots directory:
-```
-$ export WEBOTS_HOME=/usr/local/webots
 ```
 
 ## Demos
@@ -52,7 +48,7 @@ three different nodes must be launched consecutively in order to properly run th
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
 3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
-4. $ roslaunch single_demo_grasping_demo camera_stream_inference.launch.launch
+4. $ roslaunch single_demo_grasping_demo camera_stream_inference.launch
 ```
 
 3. finally, open a third terminal and run commander node to control the robot step by step:

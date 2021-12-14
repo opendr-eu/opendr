@@ -5,7 +5,7 @@ The *single_demo_grasp* module contains the *SingleDemoGraspLearner* class, whic
 ### Class SingleDemoGraspLearner
 Bases: `engine.learners.LearnerRL`
 
-The *SingleDemoGraspLearner* class is a wrapper class based on [Detectron2](https://github.com/facebookresearch/detectron2) implementation of Keypoint-rcnn keypoint architecture. This module is used to train a keypoint detection module which its predictions are utilized to extract planar grasp poses that are translated to 6D grasp pose. A demonstration is then provided as an example in projects directory.
+The *SingleDemoGraspLearner* class is a wrapper class based on [Detectron2](https://github.com/facebookresearch/detectron2) implementation of Keypoint-rcnn keypoint architecture. This module is used to train a keypoint detection module which its predictions are utilized to extract planar grasp poses that are translated to 6D grasp pose. A demonstration is then provided as an example in the projects directory.
 
 The [SingleDemoGraspLearner](#src.opendr.control.single_demo_grasp.training.single_demo_grasp_learner.py) class has the following public methods:
 
@@ -30,11 +30,11 @@ Constructor parameters:
   Name of the object to be used. It should be specified correctly as it is used to find the path to the augmented dataset.
 - **num_classes**: *int, default=1*\
   Number of classes depending on how many objects are used for training.
-- **num_workers**: *int, default=1*\
+- **num_workers**: *int, default=2*\
   number of data loading workers
 - **threshold**: *float, default=8e-1*\
   Specifies the threshold to filter out outputs of inference based on prediction score.
-  
+
 #### `SingleDemoGraspLearner.fit`
 ```python
 SingleDemoGraspLearner.fit(self)
@@ -73,12 +73,12 @@ Loads a model from the path provided.
 
 Parameters:
 
-- **path**: *str*\
+- **path_to_model**: *str*\
   Path of the model to be loaded.
 
 #### `SingleDemoGraspLearner.download`
 ```python
-SingleDemoGraspLearner.download(self, path = None, verbose = False, object_name = None)
+SingleDemoGraspLearner.download(self, path, verbose, object_name)
 ```
 Loads a model from the path provided.
 
@@ -88,9 +88,22 @@ Parameters:
   Path for downloading content.
 - **object_name**: *str, default=None*\
   Name of the object to download its corresponding pretrained model and data.
-  
-#### workspace Setup
-The workspace will be setup by installing compilation and runtime dependencies when setting up the OpenDR toolkit:
+
+## Workspace Setup
+
+In order to run the demo, [Webots](https://cyberbotics.com/#download) simulator is required.
+- download Webots 2021b for your platform from [here](https://github.com/cyberbotics/webots/releases/tag/R2021b) and install it
+- install webots-ros, where ROS_DISTRO must be either `melodic` or `noetic`
+```
+$ sudo apt-get install ros-ROS_DISTRO-webots-ros
+```
+- set the environment variable below, by pointing to the location where Webots was installed.
+In ubuntu you can do so by executing the following command in a terminal:
+```
+$ export WEBOTS_HOME=/usr/local/webots
+```
+
+From the OpenDR folder, the workspace can be setup by installing the compilation and runtime dependencies:
 
 ```
 $ make install_compilation_dependencies
@@ -100,45 +113,41 @@ $ make install_runtime_dependencies
 after installing dependencies, the user must source the workspace in the shell in order to detect the packages:
 
 ```
-$ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash 
+$ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
 ```
 
-also, the user need to set the environment variable below to find webots directory:
-```
-$ export WEBOTS_HOME=/usr/local/webots
-```
+## Demos
 
-#### Demos
-
-three different nodes must be launched consecutively in order to properly run the grasping pipeline:
+Three different nodes must be launched consecutively in order to properly run the grasping pipeline:
 
 1. first, the simulation environment must be loaded. open a new terminal and run the following commands:
 
 ```
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
-3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash 
+3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
 4. $ export WEBOTS_HOME=/usr/local/webots
-5. $ roslaunch single_demo_grasping_demo panda_sim.launch 
+5. $ roslaunch single_demo_grasping_demo panda_sim.launch
 ```
 
 2. secondly, open a second terminal and run camera stream node that runs inference on images from camera:
 ```
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
-3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash 
-4. $ roslaunch single_demo_grasping_demo camera_stream_inference.launch.launch 
+3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
+4. $ roslaunch single_demo_grasping_demo camera_stream_inference.launch
 ```
 
 3. finally, open a third terminal and run commander node to control the robot step by step:
 ```
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
-3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash 
-4. $ roslaunch single_demo_grasping_demo panda_sim_control.launch 
+3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
+4. $ roslaunch single_demo_grasping_demo panda_sim_control.launch
 ```
 
-#### Examples
+## Example
+
 You can find an example on how to use the learner class to run inference and see the result in the following directory:
 ```
 $ cd projects/control/single_demo_grasp/simulation_ws/src/single_demo_grasping_demo/inference/
@@ -148,7 +157,7 @@ simply run:
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
 3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
-4. $ cd projects/control/single_demo_grasp/simulation_ws/src/single_demo_grasping_demo/inference/ 
+4. $ cd projects/control/single_demo_grasp/simulation_ws/src/single_demo_grasping_demo/inference/
 5. $ ./single_demo_inference.py
 ```
 
