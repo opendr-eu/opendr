@@ -375,7 +375,7 @@ class ObjectTracking2DFairMotLearner(Learner):
 
         for image, frame_id in zip(batch, frame_ids):
 
-            img0 = image.numpy().transpose(1, 2, 0)[..., ::-1]  # BGR
+            img0 = image.convert("channels_first").transpose(1, 2, 0)[..., ::-1]  # BGR
             img, _, _, _ = letterbox(img0, height=img_size[1], width=img_size[0])
 
             # Normalize RGB
