@@ -259,7 +259,6 @@ if __name__ == '__main__':
     pbar = tqdm.tqdm(total=len(dir_models_in))
 
     for m in range(len(dir_models_in)):
-
         for myCol in bpy.data.collections:
             obs = [o for o in myCol.objects if o.users == 1]
             while obs:
