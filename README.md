@@ -24,7 +24,6 @@ OpenDR is built to support [Webots Open Source Robot Simulator](https://cyberbot
 You can find detailed documentation in OpenDR [wiki](?), as well as in the [tools index](?).
 
 ## Roadmap
-
 OpenDR has the following roadmap:
 - v1.0 (2021): Baseline deep learning tools for core robotic functionalities
 - v2.0 (2022): Optimized lightweight and high-resolution deep learning tools for robotics

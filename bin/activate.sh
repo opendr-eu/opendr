@@ -10,6 +10,3 @@ if [[ -z "${OPENDR_DEVICE}" ]]; then
 fi
 
 source venv/bin/activate
-
-
-

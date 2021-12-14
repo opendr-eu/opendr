@@ -17,7 +17,6 @@ WORKDIR "/opendr_internal"
 RUN git checkout install_scripts
 RUN ./bin/install.sh
 
-
 # Create script for starting Jupyter Notebook
 RUN pip3 install jupyter
 RUN echo "#!/bin/bash\n source ./bin/activate.sh\njupyter notebook --port=8888 --no-browser --ip 0.0.0.0 --allow-root" > start.sh

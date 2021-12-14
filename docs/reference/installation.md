@@ -62,5 +62,3 @@ You can run this docker and map this port in you localhost as:
 sudo docker run -p 8888:8888 opendr/ubuntu
 ```
 
-
-
