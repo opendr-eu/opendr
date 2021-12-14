@@ -21,7 +21,7 @@ You can find detailed installation instruction in the [documentation](docs/refer
 ## Using OpenDR toolkit
 OpenDR provides an intuitive and easy to use [Python interface](src/opendr), a [C API](src/c_api) for performance critical application, a wealth of [usage examples and supporting tools](projects), as well as ready-to-use [ROS nodes](projects/opendr_ws).
 OpenDR is built to support [Webots Open Source Robot Simulator](https://cyberbotics.com/), while it also extensively follows industry standards, such as [ONNX model format](https://onnx.ai/) and [OpenAI Gym Interface](https://gym.openai.com/). 
-You can find detailed documentation in OpenDR [wiki](wiki), as well as in the [tools index](docs/reference/index.md).
+You can find detailed documentation in OpenDR [wiki](https://github.com/tasostefas/opendr_internal/wiki), as well as in the [tools index](docs/reference/index.md).
 
 ## Roadmap
 OpenDR has the following roadmap:
@@ -30,7 +30,7 @@ OpenDR has the following roadmap:
 - v3.0 (2023): Active perception-enabled deep learning tools for improved robotic perception
 
 ## How to contribute
-Please follow the instructions provided in the [wiki](wiki). 
+Please follow the instructions provided in the [wiki](https://github.com/tasostefas/opendr_internal/wiki). 
 
 
 ## Acknowledgments
