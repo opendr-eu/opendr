@@ -42,8 +42,25 @@ source ./bin/activate.sh
 ```
 Then, you are ready to use the toolkit!
 
-# Installing using pip
+# Installing using *pip*
 You can directly install OpenDR toolkit for CPU-only inference using pip:
 ```bash
 pip3 install opendr-eu
 ```
+Please note that only the Python API is exposed when you install OpenDR toolkit using *pip*.
+*Note: This mode of installation is not yet available, since wheel is not yet published in PyPI.*
+
+
+# Installing using *docker*
+After installing [docker](?), you can build our docker contrainer (based on Ubuntu 20.04):
+```bash
+sudo docker build -t opendr/ubuntu .
+```
+This docker automatically runs a Jupyter notebook server that listens at port 8888.
+You can run this docker and map this port in you localhost as:
+```bash
+sudo docker run -p 8888:8888 opendr/ubuntu
+```
+
+
+
