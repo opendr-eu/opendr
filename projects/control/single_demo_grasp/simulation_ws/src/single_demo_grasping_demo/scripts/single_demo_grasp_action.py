@@ -27,7 +27,7 @@ import geometry_msgs.msg
 import random
 from math import pi
 from moveit_commander.conversions import pose_to_list
-from std_msgs.msg import Int16
+from std_msgs.msg import Int16, Float32MultiArray
 from geometry_msgs.msg import PoseStamped
 
 
@@ -60,7 +60,7 @@ class SingleDemoGraspAction(object):
         display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                        moveit_msgs.msg.DisplayTrajectory,
                                                        queue_size=20)
-
+        XY_command_sub = rospy.Subscriber("/commands", Float32MultiArray, self.callback_cmd)
         request_publisher = rospy.Publisher('/request_detection', Int16, queue_size=10)
 
         planning_frame = group.get_planning_frame()
