@@ -250,7 +250,7 @@ def rotation_matrix_from_vectors(vec1, vec2):
 
 if __name__ == '__main__':
 
-    dir_in = './human_data'
+    dir_in = './human_models'
     dir_out = './fbx_models'
     dir_smpl = './model'
     dir_models_in_m = [os.path.join(dir_in, 'male', x) for x in next(os.walk(os.path.join(dir_in, 'male')))[1]]
