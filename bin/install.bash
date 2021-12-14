@@ -10,7 +10,7 @@ if [[ -z "${OPENDR_DEVICE}" ]]; then
 fi
 
 # Install base ubuntu deps
-sudo apt-get install --yes libfreetype6-dev lsb-release git python python3-pip
+sudo apt-get install --yes libfreetype6-dev lsb-release git python python3-pip curl wget
 
 # Get all submodules
 git submodule init
