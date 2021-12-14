@@ -41,7 +41,7 @@ if __name__ == '__main__':
     parser.add_argument('--att_type', type=str, help='Attention type for ANBOF model.', default='temporal')
 
     args = parser.parse_args()
-   
+
     # create a learner
     if args.model == 'gru':
         learner = GatedRecurrentUnitLearner(in_channels=args.channels, series_length=args.series_length,
