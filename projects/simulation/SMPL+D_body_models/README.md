@@ -1,6 +1,9 @@
 # SMPL+D body models
 
-This folder contains code for downloading a large number of human models in SMPL+D body model format, as well as code for making them able to be transferred to Webots for simulations.
+This folder contains code for:
+- generating a large number of human models in SMPL+D body model format as FBX files
+- importing and animating the human models in Webots for simulations.
+<br> 
 
 <p float="left">
   <img src="./examples/model_1.png" width=150 />
@@ -9,11 +12,23 @@ This folder contains code for downloading a large number of human models in SMPL
   <img src="./examples/model_2.png" width=150 />
 </p>
 
+SMPL, which is a parametric statistical body shape model. SMPL+D is an extension of SMPL, which is able to encode shape deformations from clothes and hair as vertex displacements. For each human model in our dataset, we provide its:
+
+- Gender
+- Shape Parameters (betas)
+- Texture Map
+- Displacement Map
+
+All those data can be used directly for research purposes, such as for training methods for shape and texture reconstruction. 
+
 ### Download the raw SMPL+D models only (≈12.5Gb)
 
 ```
 python download_data.py raw
 ```
+
+In addition, we provide code converting those human models in the FBX format, which is supported by a wide range of simulation engines, including Webots. However, the human models in the FBX format do not provide any pose-dependent deformations. To convert those models to the FBX format, the original SMPL body model must be downloaded from the authors webpage.
+
 
 ### Download the SMPL+D models and convert them to FBX (Filmbox) (≈12.5Gb)
 
