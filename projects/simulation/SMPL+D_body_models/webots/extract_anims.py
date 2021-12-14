@@ -47,6 +47,7 @@ if __name__ == "__main__":
                 np.save(os.path.join(elem.split('.')[0], 'gender.npy'), data['gender'])
                 np.save(os.path.join(elem.split('.')[0], 'poses.npy'), data['poses'])
                 np.save(os.path.join(elem.split('.')[0], 'trans.npy'), data['trans'])
-                np.save(os.path.join(elem.split('.')[0], 'mocap_framerate.npy'), data['mocap_framerate'])
+                if 'mocap_framerate' in data:
+                    np.save(os.path.join(elem.split('.')[0], 'mocap_framerate.npy'), data['mocap_framerate'])
                 np.save(os.path.join(elem.split('.')[0], 'dmpls.npy'), data['dmpls'])
             os.remove(elem)
