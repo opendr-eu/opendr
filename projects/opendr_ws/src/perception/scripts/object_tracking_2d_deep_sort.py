@@ -27,7 +27,6 @@ from opendr.engine.learners import Learner
 from opendr.perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
     ObjectTracking2DDeepSortLearner,
 )
-import message_filters
 from opendr.engine.data import Image, ImageWithDetections
 
 
