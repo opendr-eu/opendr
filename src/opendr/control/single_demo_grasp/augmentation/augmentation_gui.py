@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# -*- coding: utf-8 -*-
-
-# Loading Images
 import sys
-from pathlib import Path
 import os
 import numpy as np
+from math import random
 import cv2
-from augmentation_utils import *
-import imgaug as ia
+from augmentation_utils import \
+    annotate, Augment_train_straight_box_n_kps, BoundingBoxesOnImage, BoundingBox, KeypointsOnImage, Keypoint
 
 '''
 generate Data randomly from imgaug library
@@ -79,7 +76,7 @@ np.save(os.path.join(directory_save, 'annotations', 'boxes_val.npy'), boxes_val)
 np.save(os.path.join(directory_save, 'annotations', 'kps_train.npy'), kps_train)
 np.save(os.path.join(directory_save, 'annotations', 'kps_val.npy'), kps_val)
 
-i = random.randint(0, train_scale-1)
+i = random.randint(0, train_scale - 1)
 test_box = boxes_train[i]
 test_kps = kps_train[i]
 
