@@ -6,9 +6,9 @@ This folder contain a simple data augmentor for single demonstration grasping tr
 
 To generate data, put the reference image in augmentation folder, then:
 
-'''
+```
 python augmentation_gui.py
-'''
+```
 
 and follow the instructions in terminal to select bounding box and two keypoint as illustrated in the figure.
 
