@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 export OPENDR_HOME=$PWD
 export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
 export PYTHON=python3
@@ -38,5 +38,5 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main
 
 make install_compilation_dependencies
 make install_runtime_dependencies
-make install libopendrl
+make libopendrl
 deactivate
