@@ -69,8 +69,8 @@ if __name__ == '__main__':
     # image preprocessing
     rgb_image = np.asarray(rgb_image) / (2**8 - 1)
     depth_image = np.asarray(depth_image) / (2**16 - 1)
-    rgb_image = cv2.resize(rgb_image, (224,224))
-    depth_image = cv2.resize(depth_image, (224,224))
+    rgb_image = cv2.resize(rgb_image, (224, 224))
+    depth_image = cv2.resize(depth_image, (224, 224))
     img = np.concatenate([rgb_image, np.expand_dims(depth_image, axis=-1)], axis=-1)
     img = (img - MEAN)/STD
     img = Image(img, dtype=np.float32)
