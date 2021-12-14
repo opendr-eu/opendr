@@ -39,9 +39,7 @@ def click_event(event, x, y, flags, params):
 
             cv2.circle(img, center_coordinates, radius, color, thickness)
             font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(img, str(x) + ',' +
-                        str(y), (x, y), font,
-                        1, (255, 255, 255), 2)
+            cv2.putText(img, str(x) + ',' + str(y), (x, y), font, 1, (255, 255, 255), 2)
             cv2.imshow('image', img)
             print("please select the opposite corner of the bounding box on the image")
 
@@ -55,9 +53,7 @@ def click_event(event, x, y, flags, params):
 
             cv2.circle(img, center_coordinates, radius, color, thickness)
             font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(img, str(x) + ',' +
-                        str(y), (x, y), font,
-                        1, (255, 255, 255), 2)
+            cv2.putText(img, str(x) + ',' + str(y), (x, y), font, 1, (255, 255, 255), 2)
 
             start_point = bbx[0]
             end_point = bbx[1]
@@ -79,9 +75,7 @@ def click_event(event, x, y, flags, params):
 
             cv2.circle(img, center_coordinates, radius, color, thickness)
             font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(img, str(x) + ',' +
-                        str(y), (x, y), font,
-                        1, (255, 255, 255), 2)
+            cv2.putText(img, str(x) + ',' + str(y), (x, y), font, 1, (255, 255, 255), 2)
             cv2.imshow('image', img)
             print("please select the second keypoint on the image")
 
@@ -95,9 +89,7 @@ def click_event(event, x, y, flags, params):
 
             cv2.circle(img, center_coordinates, radius, color, thickness)
             font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(img, str(x) + ',' +
-                        str(y), (x, y), font,
-                        1, (255, 255, 255), 2)
+            cv2.putText(img, str(x) + ',' + str(y), (x, y), font, 1, (255, 255, 255), 2)
 
             start_point = kps[0]
             end_point = kps[1]
@@ -142,7 +134,8 @@ def Augment_train_straight_box_n_kps(object_name, images, scale, bbx_in, grasp_l
     kps_y_in = np.linspace(grasp_line[1], grasp_line[3], num_new_points + 2)
 
     for batch_idx in range(scale):
-        bbs = BoundingBoxesOnImage([BoundingBox(x1=bbx_in[0], y1=bbx_in[1], x2=bbx_in[2], y2=bbx_in[3])], shape=images[0].shape)
+        bbs = BoundingBoxesOnImage([
+            BoundingBox(x1=bbx_in[0], y1=bbx_in[1], x2=bbx_in[2], y2=bbx_in[3])], shape=images[0].shape)
 
         kps = KeypointsOnImage(list(Keypoint(x=x_in, y=y_in) for (x_in, y_in) in
                                zip(kps_x_in, kps_y_in)), shape=images[0].shape)
