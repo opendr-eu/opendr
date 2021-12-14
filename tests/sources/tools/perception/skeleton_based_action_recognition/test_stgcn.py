@@ -134,7 +134,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         # Cleanup
 
     # Redundant test: Same code is executed internally in `test_optimize`
-    #def test_save_load_onnx(self):
+    # def test_save_load_onnx(self):
     #    print(
     #        "\n\n**********************************\nTest STGCN saveload ONNX function \n*"
     #        "*********************************")
