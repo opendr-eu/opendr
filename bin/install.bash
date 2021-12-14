@@ -46,7 +46,7 @@ pip3 freeze > requirements.txt
 python setup.py bdist
 
 # Install OpenDR
-
+pip3 install dist/*.whl
 
 deactivate
 
