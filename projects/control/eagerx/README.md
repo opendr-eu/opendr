@@ -3,14 +3,7 @@
 # EAGERx
 
 Engine Agnostic Gym Environment with Reactive extension (EAGERx) is a toolkit that will allow users to apply (deep) reinforcement learning for both simulated and real robots as well as combinations thereof.
-The source code of EAGERx is available [here](https://github.com/eager-dev/eagerx)
-
-
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
-# EAGERx
-
-Engine Agnostic Gym Environment with Reactive extension (EAGERx) is a toolkit that will allow users to apply (deep) reinforcement learning for both simulated and real robots as well as combinations thereof.
+Documentation is available [here](../../../docs/reference/eagerx.md).
 The source code of EAGERx is available [here](https://github.com/eager-dev/eagerx)
 
 ### Installation
