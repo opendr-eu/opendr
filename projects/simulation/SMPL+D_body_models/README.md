@@ -14,7 +14,7 @@ This folder contains code for:
 
 ### Download the raw SMPL+D models only (≈12.5Gb)
 
-SMPL, which is a parametric statistical body shape model. SMPL+D is an extension of SMPL, which is able to encode shape deformations from clothes and hair as vertex displacements. For each human model in our dataset, we provide its corresponding:
+[SMPL](https://files.is.tue.mpg.de/black/papers/SMPL2015.pdf) is a parametric statistical body shape model. SMPL+D is an extension of SMPL, which can encode shape deformations from clothes and hair as vertex displacements. For each human model in our dataset, we provide its corresponding:
 
 - Gender
 - Shape Parameters (betas)
@@ -26,11 +26,12 @@ All those data can be used directly for research purposes, such as for training 
 ```
 python download_data.py raw
 ```
+
 ### Download the SMPL+D models and convert them to FBX (Filmbox) (≈12.5Gb)
 
 **Note:** in this case the pose-dependant deformations are not applied.
 
-In addition, we provide code for converting those human models in the FBX format, which is supported by a wide range of simulation engines, including Webots. However, pose-dependent deformations are not applied to the human models. To convert those models to the FBX format, the original SMPL body model must be downloaded from the authors website.
+In addition, we provide code for converting those human models in the FBX format. This format is supported by a wide range of simulation engines, including Webots. However, pose-dependent deformations are not applied to the human models. To convert those models to the FBX format, the original SMPL body model must be downloaded from the authors website.
 
 - Download the data by running:
 ```
