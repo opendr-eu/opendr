@@ -16,7 +16,7 @@ OpenDR can be installed in the following ways:
 2. Using *pip* (CPU only)
 3. Using *docker* (CPU only)
 
-You can find detailed installation instruction in the [documentation](?).
+You can find detailed installation instruction in the [documentation](docs/reference/installation.md).
 
 ## Using OpenDR toolkit
 OpenDR provides an intuitive and easy to use [Python interface](?), a [C API](?) for performance critical application, a wealth of [usage examples and supporting tools](?), as well as ready-to-use [ROS nodes](?).
