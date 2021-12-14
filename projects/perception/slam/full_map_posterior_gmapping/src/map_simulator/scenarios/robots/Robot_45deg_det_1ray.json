@@ -1,0 +1,12 @@
+{
+  "include": [
+    "Common.json",
+    "Map_45deg.json",
+    "CMD_45deg.json",
+    "CMD_EOS.json",
+    "Sensor_1Ray.json"
+  ],
+
+  "deterministic": true,
+  "start_pose": [[0.0, 0.0], [0.0]]
+}
