@@ -25,12 +25,13 @@ import argparse
 from opendr.engine.data import Timeseries
 from opendr.perception.speech_recognition import MatchboxNetLearner, QuadraticSelfOnnLearner
 
+
 class SpeechRecognitionNode:
 
     def __init__(self, input_topic='/audio/audio', prediction_topic="/opendr/speech_recognition",
                  buffer_size=1.5, model='matchboxnet', device='cuda'):
         """
-        Creates a ROS Node for speech command recognition 
+        Creates a ROS Node for speech command recognition
         :param input_topic: Topic from which the audio data is received
         :type input_topic: str
         :param prediction_topic: Topic to which the predictions are published
@@ -41,29 +42,29 @@ class SpeechRecognitionNode:
         :type model: str
         :param device: device for inference ('cpu' or 'cuda')
         :type device: str
-        
+
         """
 
         self.publisher = rospy.Publisher(prediction_topic, Classification2D, queue_size=10)
 
         rospy.Subscriber(input_topic, AudioData, self.callback)
-        
+
         self.bridge = ROSBridge()
-        
+
         # Initialize the internal audio buffer
-        
+
         self.buffer_size = buffer_size
-        self.data_buffer = np.zeros((1,1))        
+        self.data_buffer = np.zeros((1, 1))
 
         # Initialize the recognition model
-        if model=="matchboxnet":
-            self.learner = MatchboxNetLearner(output_classes_n=20,device=device)
+        if model == "matchboxnet":
+            self.learner = MatchboxNetLearner(output_classes_n=20, device=device)
             load_path = './MatchboxNet'
-        elif model=="quad_selfonn":
-            self.learner = QuadraticSelfOnnLearner(output_classes_n=20,device=device)
+        elif model == "quad_selfonn":
+            self.learner = QuadraticSelfOnnLearner(output_classes_n=20, device=device)
             load_path = './QuadraticSelfOnn'
-        
-        # Download the recognition model    
+
+        # Download the recognition model
         self.learner.download_pretrained(path='.')
         self.learner.load(load_path)
 
@@ -84,18 +85,19 @@ class SpeechRecognitionNode:
         # Accumulate data until the buffer is full
         data = np.reshape(np.frombuffer(msg_data.data, dtype=np.int16)/32768.0, (1, -1))
         self.data_buffer = np.append(self.data_buffer, data, axis=1)
-        if self.data_buffer.shape[1]>16000*self.buffer_size:
-            
+        if self.data_buffer.shape[1] > 16000*self.buffer_size:
+
             # Convert sample to OpenDR Timeseries and perform classification
             input_sample = Timeseries(self.data_buffer)
             class_pred = self.learner.infer(input_sample)
-    
+
             # Publish output
             ros_class = self.bridge.from_category_to_rosclass(class_pred)
             self.publisher.publish(ros_class)
-            
+
             # Reset the audio buffer
-            self.data_buffer = np.zeros((1,1))
+            self.data_buffer = np.zeros((1, 1))
+
 
 if __name__ == '__main__':
     # Select the device for running
@@ -107,7 +109,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('input_topic', type=str, help='listen to input data on this topic')
     parser.add_argument('--buffer_size', type=float, default=1.5, help='size of the audio buffer in seconds')
-    parser.add_argument('--model', choices=["matchboxnet", "quad_selfonn"], default="matchboxnet", help='model to be used for prediction: anbof or gru')
+    parser.add_argument('--model', choices=["matchboxnet", "quad_selfonn"], default="matchboxnet",
+                        help='model to be used for prediction: matchboxnet or quad_selfonn')
     args = parser.parse_args()
 
     speech_node = SpeechRecognitionNode(input_topic=args.input_topic, buffer_size=args.buffer_size,
