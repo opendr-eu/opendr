@@ -27,13 +27,12 @@ import geometry_msgs.msg
 import random
 from math import pi
 from moveit_commander.conversions import pose_to_list
-from std_msgs.msg import Float32MultiArray, Int16
+from std_msgs.msg import Int16
 from geometry_msgs.msg import PoseStamped
 
 
 def all_close(goal, actual, tolerance):
 
-    all_equal = True
     if type(goal) is list:
         for index in range(len(goal)):
             if abs(actual[index] - goal[index]) > tolerance:
@@ -62,7 +61,6 @@ class SingleDemoGraspAction(object):
                                                        moveit_msgs.msg.DisplayTrajectory,
                                                        queue_size=20)
 
-        XY_command_sub = rospy.Subscriber("/commands", Float32MultiArray, self.callback_cmd)
         request_publisher = rospy.Publisher('/request_detection', Int16, queue_size=10)
 
         planning_frame = group.get_planning_frame()
@@ -173,7 +171,6 @@ class SingleDemoGraspAction(object):
     def go_to_pose_goal(self, target):
 
         group = self.group
-        current = group.get_current_pose().pose
         pose_goal = geometry_msgs.msg.Pose()
         pose_goal.orientation.x = target.pose.orientation.x
         pose_goal.orientation.y = target.pose.orientation.y
@@ -184,7 +181,6 @@ class SingleDemoGraspAction(object):
         pose_goal.position.z = target.pose.position.z
         print(pose_goal)
         group.set_pose_target(pose_goal)
-        plan = group.go(wait=True)
         group.stop()
         group.clear_pose_targets()
         current_pose = self.group.get_current_pose().pose
@@ -334,7 +330,7 @@ class SingleDemoGraspAction(object):
         ps = listener_tf.transformPose("/panda_link0", my_point)
 
         (trans, rot) = listener_tf.lookupTransform('/panda_link0', '/camera_optical_frame', rospy.Time(0))
-        data = (ps.pose.position.x-trans[0], ps.pose.position.y-trans[1])
+        data = (ps.pose.position.x - trans[0], ps.pose.position.y - trans[1])
 
         cartesian_plan, fraction = self.plan_linear_x(data[0])
         self.execute_plan(cartesian_plan)
@@ -358,7 +354,7 @@ class SingleDemoGraspAction(object):
         ps = listener_tf.transformPose("/panda_link0", my_point)
 
         (trans, rot) = listener_tf.lookupTransform('/panda_link0', '/camera_optical_frame', rospy.Time(0))
-        data = (ps.pose.position.x-trans[0], ps.pose.position.y-trans[1], ps.pose.position.z-trans[2])
+        data = (ps.pose.position.x - trans[0], ps.pose.position.y - trans[1], ps.pose.position.z - trans[2])
         cartesian_plan, fraction = self.plan_linear_x(data[0])
         self.execute_plan(cartesian_plan)
         cartesian_plan, fraction = self.plan_linear_y(data[1])
@@ -384,7 +380,7 @@ class SingleDemoGraspAction(object):
         print("waiting for detection to be received:")
         start_time = time.time()
 
-        while (time.time()-start_time < 10):
+        while (time.time() - start_time < 10):
 
             print("wait for the message")
             time.sleep(1)

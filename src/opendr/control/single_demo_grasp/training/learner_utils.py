@@ -21,7 +21,7 @@ def get_train_dicts(img_dir, bbx_train, kps_train, num_train):
     for idx in range(0, num_train):
         record = {}
 
-        filename = img_dir+"/"+str(idx)+".jpg"
+        filename = img_dir + "/" + str(idx) + ".jpg"
         height = 480
         width = 640
 
@@ -54,7 +54,7 @@ def get_val_dicts(img_dir, bbx_val, kps_val, num_val):
     for idx in range(0, num_val):
         record = {}
 
-        filename = img_dir+"/"+str(idx)+".jpg"
+        filename = img_dir + "/" + str(idx) + ".jpg"
         height = 480
         width = 640
 
@@ -91,7 +91,7 @@ def register_datasets(DatasetCatalog, MetadataCatalog, image_dir, object_name,
     kps_names = []
 
     for i in range(num_kps):
-        kps_names.append("p"+str(i+1))
+        kps_names.append("p" + str(i + 1))
 
     for d in ["train"]:
 

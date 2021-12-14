@@ -21,9 +21,8 @@ import numpy as np
 from std_msgs.msg import Int16
 from sensor_msgs.msg import Image as ROS_Image
 from std_msgs.msg import Float32MultiArray
-from single_demo_inference import *
+from single_demo_inference import SingleDemoInference
 from opendr_bridge import ROSBridge
-from opendr.engine.data import Image
 
 
 class SingleDemoGraspCameraStream(object):
@@ -54,11 +53,11 @@ class SingleDemoGraspCameraStream(object):
 
         if (flag > 0):
             print(bbx)
-            ctr_X = int((bbx[0]+bbx[2])/2)
-            ctr_Y = int((bbx[1]+bbx[3])/2)
+            ctr_X = int((bbx[0] + bbx[2]) / 2)
+            ctr_Y = int((bbx[1] + bbx[3]) / 2)
             angle = pred_angle
-            ref_x = 640/2
-            ref_y = 480/2
+            ref_x = 640 / 2
+            ref_y = 480 / 2
 
             # distance to the center of bounding box representing the center of object
             dist = [ctr_X - ref_x, ref_y - ctr_Y]

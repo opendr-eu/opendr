@@ -46,13 +46,13 @@ def get_angle(input_kps, mode):
     y = (df["Y"] - df["Y"][0])
 
     if mode == 1:
-        list_xy = (np.arctan2(y, x)*180/math.pi).astype(int)
+        list_xy = (np.arctan2(y, x) * 180 / math.pi).astype(int)
         occurence_count = Counter(list_xy)
         return occurence_count.most_common(1)[0][0]
     else:
         x = np.mean(x)
         y = np.mean(y)
-        return np.arctan2(y, x)*180/math.pi
+        return np.arctan2(y, x) * 180 / math.pi
 
 
 def get_kps_center(input_kps):

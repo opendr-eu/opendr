@@ -18,7 +18,7 @@ import os
 import sys
 import numpy as np
 import cv2
-from inference_utils import *
+from inference_utils import correct_orientation_ref, get_angle, get_kps_center
 from opendr.control.single_demo_grasp import SingleDemoGraspLearner
 from opendr.engine.data import Image
 

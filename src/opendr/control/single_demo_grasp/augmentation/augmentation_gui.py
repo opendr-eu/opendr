@@ -15,7 +15,8 @@
 # Loading Images
 import numpy as np
 import cv2
-from augmentation_utils import *
+from augmentation_utils import \
+    annotate, Augment_train_straight_box_n_kps, BoundingBoxesOnImage, BoundingBox, KeypointsOnImage, Keypoint, ia
 import sys
 from math import randint
 

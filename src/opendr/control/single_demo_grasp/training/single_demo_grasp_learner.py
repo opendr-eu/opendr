@@ -31,7 +31,7 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.data import Image
 
 # single demo grasp module imports
-from opendr.control.single_demo_grasp.training.learner_utils import *
+from opendr.control.single_demo_grasp.training.learner_utils import register_datasets
 
 
 class SingleDemoGraspLearner(Learner):
