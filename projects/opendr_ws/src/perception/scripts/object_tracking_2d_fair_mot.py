@@ -16,11 +16,9 @@
 import cv2
 import torch
 import os
-import time
-from opendr.engine.target import TrackingAnnotation, TrackingAnnotationList
+from opendr.engine.target import TrackingAnnotation
 import rospy
-import numpy as np
-from vision_msgs.msg import Detection2DArray, Detection2D
+from vision_msgs.msg import Detection2DArray
 from std_msgs.msg import Int32MultiArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
@@ -129,6 +127,7 @@ colors = [
     (43, 63, 54),
 ]
 
+
 def draw_predictions(frame, predictions: TrackingAnnotation, is_centered=False, is_flipped_xy=True):
     global colors
     w, h, _ = frame.shape
@@ -162,7 +161,6 @@ def draw_predictions(frame, predictions: TrackingAnnotation, is_centered=False, 
             color,
             2,
         )
-
 
 
 if __name__ == "__main__":

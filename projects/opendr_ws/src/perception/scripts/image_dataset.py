@@ -13,15 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch
+import os
 import rospy
 import time
-import numpy as np
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 from opendr.engine.datasets import DatasetIterator
-from opendr.engine.data import Image
-from opendr.perception.object_tracking_2d.datasets.mot_dataset import RawMotDatasetIterator
+from opendr.perception.object_tracking_2d.datasets.mot_dataset import MotDataset, RawMotDatasetIterator
+
 
 class ImageDatasetNode:
     def __init__(
@@ -50,7 +49,7 @@ class ImageDatasetNode:
 
         while not rospy.is_shutdown():
 
-            image: Image = self.dataset[i % len(self.dataset)][0]  # Dataset should have an (Image, Target) pair as elements
+            image = self.dataset[i % len(self.dataset)][0]  # Dataset should have an (Image, Target) pair as elements
 
             rospy.loginfo("Publishing image [" + str(i) + "]")
             message = self.bridge.to_ros_image(
@@ -64,15 +63,22 @@ class ImageDatasetNode:
 
 
 if __name__ == "__main__":
-    
+
     rospy.init_node('opendr_image_dataset')
+
+    dataset_path = MotDataset.download_nano_mot20(
+        "MOT", True
+    ).path
+
     dataset = RawMotDatasetIterator(
-        "/mnt/e/FILES/MOT/MOT2020",
+        dataset_path,
         {
-            "nano_mot20": "/home/io/opendr_internal/src/opendr/perception/object_tracking_2d/datasets/splits/mot20.train"
+            "mot20": os.path.join(
+                "..", "..", "src", "opendr", "perception", "object_tracking_2d",
+                "datasets", "splits", "nano_mot20.train"
+            )
         },
         scan_labels=False
     )
     dataset_node = ImageDatasetNode(dataset)
     dataset_node.start()
-
