@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opendr.engine.data import Image, Timeseries
+from opendr.engine.data import Image, Timeseries, PointCloud
 from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
 import numpy as np
@@ -22,9 +22,10 @@ from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, Object
 from geometry_msgs.msg import Pose2D, Point, Pose as Pose3D
 from shape_msgs.msg import Mesh, MeshTriangle
 from std_msgs.msg import ColorRGBA, String, Header
-from sensor_msgs.msg import Image as ImageMsg
+from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg
 import rospy
-
+from std_msgs.msg import Header
+from geometry_msgs.msg import Point32 as Point32Msg
 
 class ROSBridge:
     """
@@ -456,3 +457,65 @@ class ROSBridge:
         data = np.reshape(ros_array.data, (dim1, dim2))
         data = Timeseries(data)
         return data
+    
+    def from_ros_point_cloud(self, point_cloud: PointCloudMsg):
+        """
+        Converts a ROS PointCloud message into an OpenDR PointCloud
+        :param message: ROS PointCloud to be converted
+        :type message: sensor_msgs.msg.PointCloud
+        :return: OpenDR PointCloud
+        :rtype: engine.data.PointCloud
+        """
+
+        points = np.empty([len(point_cloud.points), 3 + len(point_cloud.channels)], dtype=np.float32)
+
+        for i in range(point_cloud.points):
+            x, y, z = point_cloud.points[i]
+
+            points[i, 0] = x
+            points[i, 1] = y
+            points[i, 2] = z
+
+            for q in range(point_cloud.channels):
+                points[i, 3 + q] = point_cloud.channels[q][i]
+
+        points[:, :3] = point_cloud.points
+        points[:, 3:] = point_cloud.channels
+        
+        result = PointCloud(points)
+
+        return result
+
+    def to_ros_point_cloud(self, point_cloud: PointCloud):
+        """
+        Converts an OpenDR PointCloud message into a ROS PointCloud
+        :param: OpenDR PointCloud
+        :type: engine.data.PointCloud
+        :return message: ROS PointCloud
+        :rtype message: sensor_msgs.msg.PointCloud
+        """
+
+        ros_point_cloud = PointCloudMsg()
+
+        header = Header()
+        header.stamp = rospy.Time.now()
+        ros_point_cloud.header = header
+
+        channels_count = point_cloud.data.shape[-1] - 3
+
+        channels = [ChannelFloat32Msg("channel_" + str(i), []) for i in range(channels_count)]
+        points = []
+
+        for point in point_cloud.data:
+            point_msg = Point32Msg()
+            point_msg.x = point[0]
+            point_msg.y = point[1]
+            point_msg.z = point[2]
+            points.append(point_msg)
+            for i in range(channels_count):
+                channels[i].values.append(point[3 + i])
+        
+        ros_point_cloud.points = points
+        ros_point_cloud.channels = channels
+
+        return ros_point_cloud
