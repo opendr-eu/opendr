@@ -18,7 +18,8 @@ import os
 import numpy as np
 import torch
 import argparse
-from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner, AttentionNeuralBagOfFeatureLearner, get_AF_dataset
+from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner, \
+ AttentionNeuralBagOfFeatureLearner, get_AF_dataset
 from opendr.engine.data import Timeseries
 
 
@@ -30,32 +31,31 @@ if __name__ == '__main__':
         device = 'cpu'
 
     parser = argparse.ArgumentParser()
-    
+
     parser.add_argument('-model', type=str, help='model to be used for prediction: anbof or gru', required=True)
     parser.add_argument('--input_data', type=str, help="Path to input data or 'AF'", default='AF')
     parser.add_argument('--channels', type=int, help='Number of input channels. Default is 1.', default=1)
     parser.add_argument('--series_length', type=int, help='Length of input sequence. Default is 9000.', default=9000)
     parser.add_argument('--checkpoint', type=str, help='Model checkpoint', default='./checkpoint')
     parser.add_argument('--n_class', type=int, help='Number of classes', default=4)
-    parser.add_argument('--att_type', type=str, help='Attention type for ANBOF model. Pretrained model is available for temporal attention.', default='temporal')
+    parser.add_argument('--att_type', type=str, help='Attention type for ANBOF model.', default='temporal')
 
-    
     args = parser.parse_args()
-       
-    #create a learner
+   
+    # create a learner
     if args.model == 'gru':
         learner = GatedRecurrentUnitLearner(in_channels=args.channels, series_length=args.series_length,
-                                                 n_class=args.n_class, device=device)
+                                            n_class=args.n_class, device=device)
     elif args.model == 'anbof':
         learner = AttentionNeuralBagOfFeatureLearner(in_channels=args.channels, series_length=args.series_length,
-                                                              n_class=args.n_class, device=device, attention_type=args.att_type)
-    #load the checkpoint
+                                                     n_class=args.n_class, device=device, attention_type=args.att_type)
+    # load the checkpoint
     if not os.path.exists(args.checkpoint):
         learner.download(path=args.checkpoint, fold_idx=0)
     else:
         learner.load(path=args.checkpoint)
-       
-    #load data and predict   
+
+    # load data and predict
     if args.input_data == 'AF':
         train_set, val_set, series_length, class_weight = get_AF_dataset(data_file='AF.dat', fold_idx=0, sample_length=30)
         learner.eval(val_set)
@@ -63,5 +63,3 @@ if __name__ == '__main__':
         data = Timeseries(np.load(args.input_data))
         prediction = learner.infer(data)
         print(prediction)
-        
-        
