@@ -1,7 +1,10 @@
 from setuptools import setup
 from setuptools import find_packages
+from pip.req import parse_requirements
 
 packages = find_packages(where="./src")
+install_reqs = parse_requirements('requirements.txt')
+reqs = [str(ir.req) for ir in install_reqs]
 
 setup(
     name='OpenDR',
@@ -34,4 +37,5 @@ setup(
     url='https://github.com/opendr-eu/opendr',
     license='LICENSE',
     package_dir={"": "src"},
+    install_requires=reqs
 )
