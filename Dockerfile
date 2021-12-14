@@ -18,8 +18,8 @@ RUN git checkout install_scripts
 RUN ./bin/install.sh
 
 # Create script for starting Jupyter Notebook
-RUN pip3 install jupyter
-RUN echo "#!/bin/bash\n source ./bin/activate.sh\njupyter notebook --port=8888 --no-browser --ip 0.0.0.0 --allow-root" > start.sh
+RUN /bin/bash -c "source ./bin/activate.sh; pip3 install jupyter"
+RUN echo "#!/bin/bash\n source ./bin/activate.sh\n ./venv/bin/jupyter notebook --port=8888 --no-browser --ip 0.0.0.0 --allow-root" > start.sh
 RUN chmod +x start.sh
 
 # Start Jupyter Notebook inside OpenDR
