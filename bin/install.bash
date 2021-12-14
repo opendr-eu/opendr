@@ -38,5 +38,5 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main
 
 make install_compilation_dependencies
 make install_runtime_dependencies
-make libopendrl
+make libopendr
 deactivate
