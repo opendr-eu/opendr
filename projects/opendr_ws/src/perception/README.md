@@ -190,4 +190,5 @@ rosrun perception speech_command_recognition.py INPUT_AUDIO_TOPIC
 The following optional arguments are available:
 - `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds, default value **1.5**
 - `--model MODEL`: choose the model to use, either `matchboxnet` (default value) or `quad_selfonn`
+
 The predictions (class id and confidence) are published to the topic `/opendr/speech_recognition`.
