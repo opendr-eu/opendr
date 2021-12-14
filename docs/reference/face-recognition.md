@@ -300,12 +300,11 @@ recognizer.save('./temp/saved_models')
 
 * **Inference example - backbone_only mode**
 ```python
-import cv2
 from opendr.perception.face_recognition import FaceRecognitionLearner
 recognizer = FaceRecognitionLearner(backbone='ir_50', mode='backbone_only', device='cuda')
 recognizer.load('./temp/saved_models')
 recognizer.fit_reference(path='./data/imgs', save_path='./temp/demo')
-img = cv2.imread('test.jpg')
+img = Image.open('test.jpg')
 result = recognizer.infer(img)
 print(result)
 ```

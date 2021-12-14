@@ -435,6 +435,28 @@ class BaseLearner(ABC):
         else:
             self._scale = value
 
+    @staticmethod
+    def get_hyperparameters():
+        """
+        Static method for obtaining the names of hyperparameters that can be tuned, their type and their possible
+        values. This method allows to easily perform hyperparameter tuning.
+
+        :return: Description of hyperparameters.
+        :rtype: list[dict[str, any]]
+        """
+        return None
+
+    @staticmethod
+    def get_objective_function():
+        """
+        Static method for obtaining a mapping from the output of the eval method to a scalar objective that is to be
+        minimized during hyperparameter tuning. This method allows to easily perform hyperparameter tuning.
+
+        :return: Objective function that maps the output from the eval_method to an objective scalar value.
+        :rtype: callable[any]
+        """
+        return None
+
 
 class Learner(BaseLearner):
     """

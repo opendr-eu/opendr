@@ -233,7 +233,11 @@ class Image(Data):
         self.dtype = dtype
         if data is not None:
             # Check if the image is in the correct format
-            data = np.asarray(data)
+            try:
+                data = np.asarray(data)
+            except Exception:
+                raise ValueError("Image data not understood (cannot be cast to NumPy array).")
+
             if data.ndim != 3:
                 raise ValueError("3D dimensional images are expected")
             if guess_format:
@@ -244,8 +248,9 @@ class Image(Data):
                 # If channels are found last and image is not a color one, just perform transpose
                 elif data.shape[2] < min(data.shape[0], data.shape[1]):
                     data = np.transpose(data, (2, 0, 1))
-
             self.data = data
+        else:
+            raise ValueError("Image is of type None")
 
     @property
     def data(self):
@@ -358,13 +363,9 @@ class ImageWithDetections(Image):
     - returning a NumPy compatible representation of data (numpy())
     """
 
-    def __init__(self, image, boundingBoxList: BoundingBoxList):
-        super().__init__()
+    def __init__(self, image, boundingBoxList: BoundingBoxList, *args, **kwargs):
+        super().__init__(image, *args, **kwargs)
 
-        if isinstance(image, Image):
-            self.data = image.numpy()
-        else:
-            self.data = image
         self.boundingBoxList = boundingBoxList
 
     @property

@@ -72,12 +72,11 @@ Bases: `engine.data.Data`
 A class used for representing image data.
 
 The [Image](#class_engine.data.Image) class has the following public methods:
-#### Image(data=None, dtype=np.uint8)
+#### Image(data=None, dtype=np.uint8, guess_format=True)
   Construct a new [Image](#class_engine.data.Image) object based on *data*.
   *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
   *dtype* is expected to be a [NumPy](https://numpy.org) data type.
-  *guess_format* if set to True, then tries to automatically infer whether an [OpenCV](https://opencv.org) image was 
-  supplied and then automatically converts it into OpenDR format.
+  *guess_format* if set to True, then tries to automatically infer whether an [OpenCV](https://opencv.org) image was supplied and then automatically converts it into OpenDR format.
   Note that the OpenDR framework assumes an NCHW/RGB ordering.
 
 #### data()
@@ -90,7 +89,7 @@ The [Image](#class_engine.data.Image) class has the following public methods:
   dimensions can be organized as e.g. (channels, width, height).
 
 #### numpy()
-  Return a  [NumPy](https://numpy.org)-compatible representation of data.
+  Return a [NumPy](https://numpy.org)-compatible representation of data.
   Given that *data* argument is already internally stored in [NumPy](https://numpy.org)-compatible format, this method is equivalent to `data()`.
 
 #### opencv()
@@ -100,9 +99,8 @@ The [Image](#class_engine.data.Image) class has the following public methods:
 #### open(filename)
   Construct a new [Image](#class-engine.data.Image) object from the given image file.
 
-#### convert(format, channel_order)
-  Returns the data in channels first/last format using either 'rgb' or 'bgr' ordering.
-  Please note that this function may or may not return a copy of the original data held by the object.
+#### convert(format='channels_first', channel_order='rgb')
+  Return the data in channels first/last format using either 'rgb' or 'bgr' ordering.
   *format* is expected to be of str type (either 'channels_first' or 'channels_last')
   *channel_order* is expected to be of str type (either 'rgb' or 'bgr')
   Returns an image (as [NumPy](https://numpy.org) array) with the appropriate format
