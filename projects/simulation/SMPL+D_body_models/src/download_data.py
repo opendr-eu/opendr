@@ -44,7 +44,7 @@ def download_data(raw_data_only):
             )
 
     human_data_url = OPENDR_SERVER_URL + "simulation/SMPLD_body_models/human_models.tar.gz"
-    downloaded_human_data_path = os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_body_models/human_data.tar.gz')
+    downloaded_human_data_path = os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_body_models/human_models.tar.gz')
     print("Downloading data from", human_data_url, "to", downloaded_human_data_path)
     start_time = 0
     last_print = 0
