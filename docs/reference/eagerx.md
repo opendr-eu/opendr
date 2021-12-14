@@ -46,7 +46,7 @@ roscore
 Then, in a separate terminal you should source the EAGERx catkin workspace:
 
 ```bash
-source $OPENDR_HOME/lib/catkin_ws_eagerx/devel/setup.bash
+source $OPENDR_HOME/projects/control/eagerx/eagerx_ws/devel/setup.bash
 ```
 
 Now you can run one of the demos:

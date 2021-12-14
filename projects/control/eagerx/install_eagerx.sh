@@ -11,7 +11,7 @@ if [[ -z "$ROS_DISTRO" ]]; then
 fi
 
 MODULE_PATH=${OPENDR_HOME}/projects/control/eagerx
-WS_PATH=${OPENDR_HOME}/lib/catkin_ws_eagerx
+WS_PATH=${MODULE_PATH}/eagerx_ws
 
 ## ROS
 sudo apt-get update && sudo apt-get install -y \
