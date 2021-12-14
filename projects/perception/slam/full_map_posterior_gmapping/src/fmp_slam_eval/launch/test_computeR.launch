@@ -1,0 +1,183 @@
+<launch>
+    <param name="use_sim_time" value="true"/>
+
+    <!-- Package Path -->
+    <arg name="path_pk" value="$(find map_simulator)"/>
+    <arg name="path_data" value="$(find slam_datasets)"/>
+
+    <!-- Configuration Files Path -->
+    <arg name="path_cfg" value="$(arg path_pk)/cfg"/>
+    <arg name="path_cfg_rviz" value="$(arg path_cfg)/rviz"/>
+    <arg name="cfg_rviz_file" default="$(arg path_cfg_rviz)/experiment.rviz"
+         doc="(string)[Default: $(find map_simulator)/cfg/rviz/experiment.rviz] Path to an RVIZ configuration file."/>
+
+    <arg name="bag_file" default="$(arg path_data)/Simulations/Robot_CellTest_det_8ray.bag" />
+
+    <group ns="SLAM">
+        <node pkg="gmapping" type="slam_gmapping" name="slam" output="log">
+            <!--
+            =========================================================================================================
+                Topic Remaps
+            =========================================================================================================
+            -->
+            <!-- Subscription Remaps -->
+            <remap from="/SLAM/scan" to="base_scan"/>
+            <!-- Publication  Remaps -->
+            <remap from="/SLAM/map" to= "map"/>
+            <remap from="/SLAM/fmp_alpha" to="fmp_alpha" />
+            <remap from="/SLAM/fmp_beta"  to="fmp_beta" />
+            <remap from="/SLAM/map_model" to="map_model" />
+
+            <!--
+            =========================================================================================================
+                Parameters
+            =========================================================================================================
+            -->
+            <param name="outputLog" value=""/>
+            <param name="redirectOutputPath" value="" />
+            <!-- ___________________________________________________________
+                TF Frames
+            ____________________________________________________________ -->
+            <!-- The frame attached to the map. (string, default "map") -->
+            <param name="map_frame" value="map"/>
+            <!-- The frame attached to the odometry system. (string, default "odom") -->
+            <param name="odom_frame" value="odom"/>
+            <!-- The frame attached to the mobile base. (string, default "base_link") -->
+            <param name="base_frame" value="base_link"/>
+
+            <!-- ____________________________________________________________
+                 Map Parameters
+                 ____________________________________________________________ -->
+            <!-- Initial map size (in metres) -->
+            <param name="xmin" value="-3.0"/> <!-- (float, default -100.0) -->
+            <param name="ymin" value="-3.0"/> <!-- (float, default -100.0) -->
+            <param name="xmax" value="3.0"/>  <!-- (float, default  100.0) -->
+            <param name="ymax" value="3.0"/>  <!-- (float, default  100.0) -->
+            <!-- Resolution of the map (in metres per occupancy grid block) (float, default 0.05) -->
+            <param name="delta" value="1.0"/>
+
+            <!-- Threshold for determining the occupancy value of each cell -->
+            <param name="occ_thresh" value="1.25"/>
+
+            <!-- ____________________________________________________________
+                 Measurement Model Parameters
+            ____________________________________________________________ -->
+            <!-- The maximum range of the sensor. If regions with no obstacles within the range of the sensor should appear
+                 as free space in the map, set maxUrange < maximum range of the real sensor <= maxRange. (float) -->
+            <param name="maxRange" value="90.0"/>
+            <!-- The maximum usable range of the laser. A beam is cropped to this value. (float, default 80.0) -->
+            <param name="maxUrange" value="80.0"/>
+
+            <!-- ____________________________________________________________
+                 Odometry Model Parameters
+                 ____________________________________________________________ -->
+            <!-- Odometry error in translation as a function of translation (rho/rho) (float, default 0.1) -->
+            <param name="srr" value="0.1"/>
+            <!-- Odometry error in translation as a function of rotation (rho/theta) (float, default 0.2) -->
+            <param name="srt" value="0.2"/>
+            <!-- Odometry error in rotation as a function of translation (theta/rho) (float, default 0.1) -->
+            <param name="str" value="0.1"/>
+            <!-- Odometry error in rotation as a function of rotation (theta/theta) (float, default 0.2) -->
+            <param name="stt" value="0.2"/>
+
+            <!-- ____________________________________________________________
+                 Scan Matcher Parameters
+                 ____________________________________________________________ -->
+            <!-- The sigma used by the greedy endpoint matching (float, default 0.05) -->
+            <param name="sigma" value="0.05"/>
+            <!-- The kernel in which to look for a correspondence (int, default 1) -->
+            <param name="kernelSize" value="1"/>
+
+            <!-- The optimization step in translation (float, default 0.05) -->
+            <param name="lstep" value="0.05"/>
+            <!-- The optimization step in rotation (float, default 0.05) -->
+            <param name="astep" value="0.05"/>
+
+            <!-- The number of iterations of the scanmatcher (int, default 5) -->
+            <param name="iterations" value="5"/>
+            <!-- The sigma of a beam used for likelihood computation (float, default 0.075) -->
+            <param name="lsigma" value="0.075"/>
+
+            <!-- Gain to be used while evaluating the likelihood, for smoothing the resampling
+            effects (float, default 3.0) -->
+            <param name="ogain" value="3.0"/>
+            <!-- Number of beams to skip in each scan. Take only every (n+1)th laser ray for computing a match
+            (0 = take all rays) (int, default 0) -->
+            <param name="lskip" value="2"/>
+            <!-- Minimum score for considering the outcome of the scan matching good. Can avoid jumping pose estimates in
+            large open spaces when using laser scanners with limited range (e.g. 5m). Scores go up to 600+, try 50 for example
+            when experiencing jumping estimate issues. (float, default 0.0) -->
+            <param name="minimumScore" value="20.0"/>
+
+            <!-- ____________________________________________________________
+                 Update Parameters
+                 ____________________________________________________________ -->
+            <!-- Process a scan each time the robot translates this far (float, default 1.0) -->
+            <param name="linearUpdate" value="0.25" />
+            <!-- Process a scan each time the robot rotates this far (float, default 0.5) -->
+            <param name="angularUpdate" value="0.02"/>
+            <!-- Process a scan if the last scan processed is older than the update time in seconds. A value less than zero
+            will turn time based updates off. (float, default: -1.0) -->
+            <param name="temporalUpdate" value="0.1"/>
+
+            <!-- How long (in seconds) between updates to the map. Lowering this number updates the occupancy grid more
+                 often, at the expense of greater computational load. (float, default 5.0) -->
+            <param name="map_update_interval" value="3.0" /> <!-- 0.25"/> -->
+
+            <!-- How long (in seconds) between transform publications. To disable broadcasting transforms, set to 0.
+            (float, default 0.05) -->
+            <param name="transform_publish_period" value="0.05"/>
+            <!-- Threshold on gmapping's occupancy values. Cells with greater occupancy are considered occupied (i.e., set to
+            100 in the resulting sensor_msgs/LaserScan). New in 1.1.0.  (float, default 0.25) -->
+
+
+            <!-- ____________________________________________________________
+                 Particle Filter Parameters
+                 ____________________________________________________________ -->
+            <!-- Number of particles in the filter (int, default 30) -->
+            <param name="particles" value="30"/>
+            <!-- The Neff based resampling threshold (float, default 0.5) -->
+            <param name="resampleThreshold" value="0.5"/>
+
+            <!-- Translational sampling range for the likelihood (float, default 0.01) -->
+            <param name="llsamplerange" value="0.01"/>
+            <!-- Translational sampling step for the likelihood (float, default 0.01) -->
+            <param name="llsamplestep" value="0.01"/>
+            <!-- Angular sampling range for the likelihood (float, default 0.005) -->
+            <param name="lasamplerange" value="0.005"/>
+            <!-- Angular sampling step for the likelihood (float, default 0.005) -->
+            <param name="lasamplestep" value="0.005"/>
+
+            <!-- ____________________________________________________________
+                 Full Map Posterior Parameters
+            ____________________________________________________________ -->
+
+            <param name="mapModel" value="ExpDecayModel"/>
+
+            <param name="partWeighting" value="MeasurementLikelihood"/>
+
+            <param name="doPoseImprove" value="false" />
+
+            <param name="autoShutdown" value="true" />
+            <param name="publishFullPosterior" value="false" />
+
+            <param name="alpha0" value="1"/>
+            <param name="beta0" value="0"/>
+
+        </node>
+    </group>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg cfg_rviz_file)"/>
+
+    <node name="sim" pkg="rosbag" type="play" output="screen" args="--clock $(arg bag_file) --pause">
+        <!--
+        =========================================================================================================
+            Topic Remaps
+        =========================================================================================================
+        -->
+        <!-- Subscription Remaps -->
+        <!-- Publication  Remaps -->
+        <remap from="base_scan" to="/SLAM/base_scan" />
+
+    </node>
+</launch>

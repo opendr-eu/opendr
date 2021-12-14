@@ -1,0 +1,36 @@
+<package>
+  <name>gmapping</name>
+  <version>1.4.1</version>
+  <description>This package contains a ROS wrapper for OpenSlam's Gmapping. 
+  The gmapping package provides laser-based SLAM (Simultaneous Localization and Mapping), 
+  as a ROS node called slam_gmapping. Using slam_gmapping, you can create a 2-D occupancy
+  grid map (like a building floorplan) from laser and pose data collected by a mobile robot.
+  </description>
+  <author>Brian Gerkey</author>
+  <maintainer email="ros-orphaned-packages@googlegroups.com">ROS Orphaned Package Maintainers</maintainer>
+  <license>BSD</license>
+  <license>Apache 2.0</license>
+
+  <url>http://ros.org/wiki/gmapping</url>
+
+  <buildtool_depend version_gte="0.5.68">catkin</buildtool_depend>
+
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>openslam_gmapping</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rostest</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>nodelet</build_depend>
+  <build_depend>message_generation</build_depend>
+
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>openslam_gmapping</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>nodelet</run_depend>
+  <run_depend>message_runtime</run_depend>
+  
+  <export>
+    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
+  </export>
+</package>
