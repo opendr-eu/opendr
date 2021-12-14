@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from opendr.engine.data import Image, Timeseries
-from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
+from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category, TrackingAnnotation, TrackingAnnotationList
 
 import numpy as np
 from cv_bridge import CvBridge
@@ -236,6 +236,36 @@ class ROSBridge:
             bboxes.data.append(bbox)
 
         return bboxes
+
+    def from_ros_tracking_annotation(self, ros_detections, ros_tracking_ids, frame=-1):
+        """
+        Converts a ROS message with bounding boxes into an OpenDR BoundingBoxList
+        :param ros_detections: the boxes to be converted (represented as vision_msgs.msg.Detection2DArray)
+        :type ros_detections: vision_msgs.msg.Detection2DArray
+        :return: an OpenDR BoundingBoxList
+        :rtype: engine.target.BoundingBoxList
+        """
+        ros_boxes = ros_detections.detections
+        boxes = []
+
+        for idx, (box, tracking_id) in enumerate(zip(ros_boxes, ros_tracking_ids)):
+            width = box.bbox.size_x
+            height = box.bbox.size_y
+            left = box.bbox.center.x - width / 2.
+            top = box.bbox.center.y - height / 2.
+            id = box.results[0].id
+            bbox = TrackingAnnotation(
+                name=id,
+                left=left,
+                top=top,
+                width=width,
+                height=height,
+                id=tracking_id,
+                frame=frame
+            )
+            boxes.append(bbox)
+
+        return TrackingAnnotationList(boxes)
 
     def to_ros_bounding_box_list(self, bounding_box_list):
         """
