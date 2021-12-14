@@ -30,7 +30,7 @@ python download_data.py raw
 
 **Note:** in this case the pose-dependant deformations are not applied.
 
-In addition, we provide code for converting those human models in the FBX format, which is supported by a wide range of simulation engines, including Webots. However, pose-dependent deformations are not applied to the human models. To convert those models to the FBX format, the original SMPL body model must be downloaded from the authors [website](https://smpl.is.tue.mpg.de/).
+In addition, we provide code for converting those human models in the FBX format, which is supported by a wide range of simulation engines, including Webots. However, pose-dependent deformations are not applied to the human models. To convert those models to the FBX format, the original SMPL body model must be downloaded from the authors website.
 
 - Download the data by running:
 ```
