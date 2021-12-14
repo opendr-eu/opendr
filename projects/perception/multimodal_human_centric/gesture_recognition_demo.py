@@ -51,17 +51,17 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-input_rgb', type=str, help='path to RGB image', required=True)   
-    parser.add_argument('-input_depth', type=str, help='path to Depth image', required=True) 
+    parser.add_argument('-input_rgb', type=str, help='path to RGB image', required=True)
+    parser.add_argument('-input_depth', type=str, help='path to Depth image', required=True)
 
-    args = parser.parse_args()  
+    args = parser.parse_args()
 
     # create learner and load checkpoint
     gesture_learner = RgbdHandGestureLearner(n_class=16, architecture='mobilenet_v2', device=device)
     model_path = './mobilenet_v2'
     if not os.path.exists(model_path):
         gesture_learner.download(path=model_path)
-    gesture_learner.load(path=model_path)  
+    gesture_learner.load(path=model_path)
 
     rgb_image = imageio.imread(args.input_rgb)
     depth_image = imageio.imread(args.input_depth)
