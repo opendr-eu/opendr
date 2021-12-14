@@ -68,6 +68,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
     - `data_generation` Module
         - [synthetic_facial_image_generation Module](synthetic_facial_image_generator.md)
         - [human_model_generation Module](human-model-generation.md)
+    - `utils` Module
+        - [Hyperparameter Tuning Module](hyperparameter_tuner.md)
 
 - [ROSBridge Package](rosbridge.md)
 - [C Inference API](c-api.md)
