@@ -43,9 +43,8 @@ rosrun eagerx_example_opendr [demo_name]
 
 where possible values for [demo_name] are:
 - demo_1_full_state
-- demo_2_image
+- demo_2_pid
 - demo_3_classifier
-- demo_4_pid
 
 ## Citing EAGERx
 
