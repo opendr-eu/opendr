@@ -52,7 +52,8 @@ $BLENDER_PATH/blender -P src/generate_models.py
 
 **Note:** FBX models must have been previously generated
 
--  Download a database from AMASS (https://amass.is.tue.mpg.de/download.php)
+-  Download ACCAD database from AMASS (https://amass.is.tue.mpg.de/download.php)
+
 -  Extract the database (e.g., tar -xf ACCAD) 
 -  Run:
 ```
