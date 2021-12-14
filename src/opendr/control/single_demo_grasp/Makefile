@@ -25,7 +25,7 @@ install_runtime_dependencies:
 
 install_compilation_dependencies:
 	@+echo "#"; echo "# * Install Compilation Dependencies for single demonstration grasping *"; echo "#"
-	@+python -m pip install detectron2==0.4 -f \https://dl.fbaipublicfiles.com/detectron2/wheels/cu110/torch1.7/index.html
+	@+python -m pip install detectron2==0.4 -f \https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.7/index.html
 	@./install_single_demo_grasp.sh
 
 help:
