@@ -44,13 +44,13 @@ def download_data(raw_data_only):
             )
 
     human_data_url = OPENDR_SERVER_URL + "simulation/SMPLD_body_models/human_models.tar.gz"
-    downloaded_human_data_path = os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_body_models/human_models.tar.gz')
+    downloaded_human_data_path = os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_human_models/human_models.tar.gz')
     print("Downloading data from", human_data_url, "to", downloaded_human_data_path)
     start_time = 0
     last_print = 0
     urlretrieve(human_data_url, downloaded_human_data_path, reporthook=reporthook)
     with tarfile.open(downloaded_human_data_path) as tar:
-        tar.extractall(path=os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_body_models'))
+        tar.extractall(path=os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_human_models'))
     tar.close()
     os.remove(downloaded_human_data_path)
 
@@ -58,13 +58,13 @@ def download_data(raw_data_only):
         return
 
     model_url = OPENDR_SERVER_URL + "simulation/SMPLD_body_models/model.tar.gz"
-    downloaded_model_path = os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_body_models/model.tar.gz')
+    downloaded_model_path = os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_human_models/model.tar.gz')
     print("Downloading data from", model_url, "to", downloaded_model_path)
     start_time = 0
     last_print = 0
     urlretrieve(model_url, downloaded_model_path, reporthook=reporthook)
     with tarfile.open(downloaded_model_path) as tar:
-        tar.extractall(path=os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_body_models'))
+        tar.extractall(path=os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_human_models'))
     tar.close()
     os.remove(downloaded_model_path)
 
