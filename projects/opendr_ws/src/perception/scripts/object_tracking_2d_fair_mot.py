@@ -22,7 +22,7 @@ from vision_msgs.msg import Detection2DArray
 from std_msgs.msg import Int32MultiArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
+from opendr.perception.object_tracking_2d import (
     ObjectTracking2DFairMotLearner,
 )
 from opendr.engine.data import Image

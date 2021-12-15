@@ -19,7 +19,7 @@ import time
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 from opendr.engine.datasets import DatasetIterator
-from opendr.perception.object_tracking_2d.datasets.mot_dataset import MotDataset, RawMotDatasetIterator
+from opendr.perception.object_tracking_2d import MotDataset, RawMotDatasetIterator
 
 
 class ImageDatasetNode:

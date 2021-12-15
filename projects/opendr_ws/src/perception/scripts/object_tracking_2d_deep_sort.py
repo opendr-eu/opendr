@@ -17,15 +17,15 @@ import cv2
 import torch
 import os
 from opendr.engine.target import TrackingAnnotation
-from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import ObjectTracking2DFairMotLearner
 import rospy
 from vision_msgs.msg import Detection2DArray
 from std_msgs.msg import Int32MultiArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 from opendr.engine.learners import Learner
-from opendr.perception.object_tracking_2d.deep_sort.object_tracking_2d_deep_sort_learner import (
+from opendr.perception.object_tracking_2d import (
     ObjectTracking2DDeepSortLearner,
+    ObjectTracking2DFairMotLearner
 )
 from opendr.engine.data import Image, ImageWithDetections
 
