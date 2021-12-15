@@ -9,7 +9,7 @@ Dataset nodes take a `DatasetIterator` object that shoud returns a `(Data, Targe
 If the type of the `Data` object is correct, the node will transform it into a corresponding ROS message object and publish it to a desired topic.
 
 ### Point Cloud Dataset ROS Node
-To get an image from a dataset on the disk, you can start an `point_cloud_dataset.py` node as:
+To get an image from a dataset on the disk, you can start a `point_cloud_dataset.py` node as:
 ```shell
 rosrun perception point_cloud_dataset.py
 ```
@@ -205,7 +205,7 @@ Besides, the annotated image is published in `/opendr/image_pose_annotated` as w
 A ROS node for recognizing speech commands from an audio stream using MatchboxNet or Quadratic SelfONN models, pretrained on the Google Speech Commands dataset.
 Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
 ```shell
-rosrun perception speech_command_recognition.py INPUT_AUDIO_TOPIC 
+rosrun perception speech_command_recognition.py INPUT_AUDIO_TOPIC
 ```
 The following optional arguments are available:
 - `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds, default value **1.5**
@@ -255,9 +255,9 @@ rosrun perception object_tracking_2d_fair_mot.py
 To get images from usb_camera, you can start the camera node as:
 ```shell
 rosrun usb_cam usb_cam_node
-``` 
+```
 The corresponding `input_image_topic` should be `/usb_cam/image_raw`.
-If you want to use a dataset from the disk, you can start an `image_dataset.py` node as:
+If you want to use a dataset from the disk, you can start a `image_dataset.py` node as:
 ```shell
 rosrun perception image_dataset.py
 ```
@@ -273,7 +273,7 @@ rosrun perception object_tracking_2d_deep_sort.py
 To get images from usb_camera, you can start the camera node as:
 ```shell
 rosrun usb_cam usb_cam_node
-``` 
+```
 The corresponding `input_image_topic` should be `/usb_cam/image_raw`.
 If you want to use a dataset from the disk, you can start an `image_dataset.py` node as:
 ```shell
