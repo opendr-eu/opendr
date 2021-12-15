@@ -180,6 +180,19 @@ rosrun perception skeleton_based_action_recognition.py
 The predictied class id and confidence is published under the topic name `/opendr/skeleton_based_action_recognition`, and the human-readable class name under `/opendr/skeleton_based_action_recognition_description`.
 Besides, the annotated image is published in `/opendr/image_pose_annotated` as well as the corresponding poses in `/opendr/poses`.
 
+## Speech Command Recognition ROS Node
+
+A ROS node for recognizing speech commands from an audio stream using MatchboxNet or Quadratic SelfONN models, pretrained on the Google Speech Commands dataset.
+Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
+```shell
+rosrun perception speech_command_recognition.py INPUT_AUDIO_TOPIC 
+```
+The following optional arguments are available:
+- `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds, default value **1.5**
+- `--model MODEL`: choose the model to use, either `matchboxnet` (default value) or `quad_selfonn`
+
+The predictions (class id and confidence) are published to the topic `/opendr/speech_recognition`.
+
 ## Voxel Object Detection 3D ROS Node
 
 A ROS node for performing Object Detection 3D using PointPillars or TANet methods with either pretrained models on KITTI dataset, or custom trained models. The predicted detection annotations are pushed to `output_detection3d_topic` (default `output_detection3d_topic="/opendr/detection3d"`).
@@ -193,7 +206,6 @@ rosrun perception point_cloud_dataset.py
 ```
 This will pulbish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
 
-
 ## AB3DMOT Object Tracking 3D ROS Node
 
 A ROS node for performing Object Tracking 3D using AB3DMOT stateless method. This is a detection-based method, and therefore the 3D object detector is needed to provide detections, which then will be used to make associations and generate tracking ids. The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection3d"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking3d_id"`).
@@ -206,3 +218,4 @@ To get a point cloud from a dataset on the disk, you can start a `point_cloud_da
 rosrun perception point_cloud_dataset.py
 ```
 This will pulbish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
+
