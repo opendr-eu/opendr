@@ -1,5 +1,6 @@
 from setuptools import setup
 from setuptools import find_packages
+from Cython.Build import cythonize
 
 packages = find_packages(where="./src")
 
@@ -47,5 +48,6 @@ setup(
     url='https://github.com/opendr-eu/opendr',
     license='LICENSE',
     package_dir={"": "src"},
-    install_requires=install_requires
+    install_requires=install_requires,
+    ext_modules=cythonize(["src/opendr/perception/object_detection_2d/retinaface/algorithm/cython/*.pyx"])
 )
