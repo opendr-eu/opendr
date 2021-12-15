@@ -13,7 +13,10 @@
 # limitations under the License.
 
 from opendr.engine.data import Image, Timeseries, PointCloud
-from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category, BoundingBox3D, BoundingBox3DList, TrackingAnnotation, TrackingAnnotationList
+from opendr.engine.target import (
+    Pose, BoundingBox, BoundingBoxList, Category, BoundingBox3D,
+    BoundingBox3DList, TrackingAnnotation, TrackingAnnotationList
+)
 
 import numpy as np
 from cv_bridge import CvBridge
