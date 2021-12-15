@@ -19,7 +19,7 @@ import time
 from sensor_msgs.msg import PointCloud as ROS_PointCloud
 from opendr_bridge import ROSBridge
 from opendr.engine.datasets import DatasetIterator
-from opendr.perception.object_detection_3d.datasets.kitti import KittiDataset, LabeledPointCloudsDatasetIterator
+from opendr.perception.object_detection_3d import KittiDataset, LabeledPointCloudsDatasetIterator
 
 
 class PointCloudDatasetNode:

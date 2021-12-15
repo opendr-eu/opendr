@@ -19,9 +19,7 @@ import rospy
 from vision_msgs.msg import Detection3DArray
 from sensor_msgs.msg import PointCloud as ROS_PointCloud
 from opendr_bridge import ROSBridge
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
-    VoxelObjectDetection3DLearner
-)
+from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
 
 
 class ObjectDetection3DVoxelNode:

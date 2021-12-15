@@ -24,9 +24,7 @@ from opendr_bridge import ROSBridge
 from opendr.perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_learner import (
     ObjectTracking3DAb3dmotLearner
 )
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
-    VoxelObjectDetection3DLearner
-)
+from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
 
 
 class ObjectTracking3DAb3dmotNode:
