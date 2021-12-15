@@ -520,11 +520,13 @@ class ROSBridge:
 
     def from_ros_boxes_3d(self, ros_boxes_3d: Detection3DArray, classes):
         """
-        Converts a ROS message with pose payload into an OpenDR pose
-        :param ros_pose: the pose to be converted (represented as vision_msgs.msg.Detection3DArray)
-        :type ros_pose: vision_msgs.msg.Detection3DArray
-        :return: an OpenDR pose
-        :rtype: engine.target.Pose
+        Converts a ROS Detection3DArray message into an OpenDR BoundingBox3D object.
+        :param ros_boxes_3d: The ROS boxes to be converted.
+        :type ros_boxes_3d: vision_msgs.msg.Detection3DArray
+        :param classes: The array of classes to transform an index into a string name.
+        :type classes: [str]
+        :return: An OpenDR BoundingBox3DList object.
+        :rtype: engine.target.BoundingBox3DList
         """
         boxes = []
 
@@ -555,12 +557,12 @@ class ROSBridge:
 
     def to_ros_boxes_3d(self, boxes_3d: BoundingBox3DList, classes):
         """
-        Converts an OpenDR pose into a Detection3DArray msg that can carry the same information
-        Each keypoint is represented as a bbox centered at the keypoint with zero radius. The subject id is also
-        embedded on each keypoint (stored in ObjectHypothesisWithPose).
-        :param pose: OpenDR pose to be converted
-        :type pose: engine.target.Pose
-        :return: ROS message with the pose
+        Converts an OpenDR BoundingBox3DList object into a ROS Detection3DArray message.
+        :param boxes_3d: The OpenDR boxes to be converted.
+        :type boxes_3d: engine.target.BoundingBox3DList
+        :param classes: The array of classes to transform from string name into an index.
+        :type classes: [str]
+        :return: ROS message with the boxes
         :rtype: vision_msgs.msg.Detection3DArray
         """
         ros_boxes_3d = Detection3DArray()
