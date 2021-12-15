@@ -60,7 +60,7 @@ You can directly install OpenDR toolkit for CPU-only inference using pip:
 python3 -m venv venv
 source venv/bin/activate
 pip install Cython torch==1.7.1
-pip3 install opendr-eu
+pip install opendr-eu
 ```
 Please note that only the Python API is exposed when you install OpenDR toolkit using *pip*.
 *Note: This mode of installation is not yet available, since wheel is not yet published in PyPI.*
