@@ -27,7 +27,7 @@ PROTO smpl_model_1 [
         }
         texture ImageTexture {
           url [
-            "textures/model-204/texture.png"
+            "textures/model-204/texture.jpg"
           ]
         }
         name "material"
