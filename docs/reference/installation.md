@@ -57,6 +57,8 @@ Then, you can install CUDA, along CuDNN.
 # Installing using *pip*
 You can directly install OpenDR toolkit for CPU-only inference using pip:
 ```bash
+python3 -m venv venv
+source venv/bin/activate
 pip3 install opendr-eu
 ```
 Please note that only the Python API is exposed when you install OpenDR toolkit using *pip*.
