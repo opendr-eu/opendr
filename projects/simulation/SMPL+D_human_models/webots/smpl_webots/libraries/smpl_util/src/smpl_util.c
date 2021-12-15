@@ -15,8 +15,8 @@
  */
 
 #include "smpl_util.h"
-#include "other/quaternion_private.h"
-#include "other/vector3_private.h"
+#include "quaternion_private.h"
+#include "vector3_private.h"
 
 #include <assert.h>
 #include <stdio.h>
