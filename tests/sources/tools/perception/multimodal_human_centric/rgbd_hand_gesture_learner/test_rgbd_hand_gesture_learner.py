@@ -40,7 +40,7 @@ class DummyDataset(DatasetIterator):
         return self.n_sample
 
     def __getitem__(self, i):
-        x = np.random.rand(224, 224, 4)
+        x = np.float32(np.random.rand(224, 224, 4))
         y = np.random.randint(low=0, high=self.n_class)
         return Image(x), Category(y)
 

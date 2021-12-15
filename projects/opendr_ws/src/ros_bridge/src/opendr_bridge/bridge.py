@@ -15,7 +15,6 @@
 from opendr.engine.data import Image, Timeseries
 from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
-import cv2
 import numpy as np
 from cv_bridge import CvBridge
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,\
@@ -49,24 +48,21 @@ class ROSBridge:
         :rtype: engine.data.Image
         """
         cv_image = self._cv_bridge.imgmsg_to_cv2(message, desired_encoding=encoding)
-        # Convert from OpenCV standard (BGR) to OpenDR standard (RGB)
-        cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
         image = Image(np.asarray(cv_image, dtype=np.uint8))
         return image
 
     def to_ros_image(self, image: Image, encoding: str='passthrough') -> ImageMsg:
         """
         Converts an OpenDR image into a ROS image message
-        :param image: OpenDR image (RGB) to be converted
+        :param image: OpenDR image to be converted
         :type image: engine.data.Image
         :param encoding: encoding to be used for the conversion (inherited from CvBridge)
         :type encoding: str
         :return: ROS image
         :rtype: sensor_msgs.msg.Image
         """
-        # Convert from the OpenDR standard (RGB) to OpenCV standard (BGR)
-        bgr_image = cv2.cvtColor(image.numpy(), cv2.COLOR_RGB2BGR)
-        message = self._cv_bridge.cv2_to_imgmsg(bgr_image, encoding=encoding)
+        # Convert from the OpenDR standard (CHW/RGB) to OpenCV standard (HWC/BGR)
+        message = self._cv_bridge.cv2_to_imgmsg(image.opencv(), encoding=encoding)
         return message
 
     def to_ros_pose(self, pose):
