@@ -1,20 +1,17 @@
 import torch
-from .base_network import BaseNetwork
-from .loss import GANLoss, VGGLoss, VGGwithContrastiveLoss, KLDLoss, L2ContrastiveLoss
-from .discriminator import NLayerDiscriminator, MultiscaleDiscriminator, ImageDiscriminator, \
-    ProjectionDiscriminator
-from .generator import Interpolate, RotateGenerator, RotateSPADEGenerator
-from .encoder import ConvEncoder
-from ...util import util
-
-__all__ = ['NLayerDiscriminator', 'MultiscaleDiscriminator', 'ImageDiscriminator', 'ProjectionDiscriminator',
-           'GANLoss', 'VGGLoss', 'VGGwithContrastiveLoss', 'KLDLoss', 'L2ContrastiveLoss', 'Interpolate',
-           'RotateGenerator', 'RotateSPADEGenerator', 'ConvEncoder']
+from algorithm.Rotate_and_Render.models.networks.base_network import BaseNetwork
+from algorithm.Rotate_and_Render.models.networks import loss
+from algorithm.Rotate_and_Render.models.networks import discriminator
+from algorithm.Rotate_and_Render.models.networks import generator
+from algorithm.Rotate_and_Render.models.networks import encoder
+from algorithm.Rotate_and_Render.models.networks.render import Render
+import algorithm.Rotate_and_Render.util.util as util
+__all__ = ['loss', 'discriminator', 'generator', 'encoder', 'Render']
 
 
 def find_network_using_name(target_network_name, filename):
     target_class_name = target_network_name + filename
-    module_name = 'models.networks.' + filename
+    module_name = 'algorithm.Rotate_and_Render.models.networks.' + filename
     network = util.find_class_in_module(target_class_name, module_name)
 
     assert issubclass(network, BaseNetwork), \
@@ -25,6 +22,7 @@ def find_network_using_name(target_network_name, filename):
 
 def modify_commandline_options(parser, is_train):
     opt, _ = parser.parse_known_args()
+
     netG_cls = find_network_using_name(opt.netG, 'generator')
     parser = netG_cls.modify_commandline_options(parser, is_train)
     if is_train:
@@ -40,7 +38,7 @@ def create_network(cls, opt):
     net = cls(opt)
     net.print_network()
     if len(opt.gpu_ids) > 0:
-        assert (torch.cuda.is_available())
+        assert(torch.cuda.is_available())
         net.cuda()
     net.init_weights(opt.init_type, opt.init_variance)
     return net

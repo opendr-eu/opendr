@@ -4,8 +4,8 @@ import numpy as np
 import skimage.transform as trans
 import cv2
 import torch
-from data import dataset_info
-from data.base_dataset import BaseDataset
+from algorithm.Rotate_and_Render.data import dataset_info
+from algorithm.Rotate_and_Render.data.base_dataset import BaseDataset
 
 dataset_info = dataset_info()
 

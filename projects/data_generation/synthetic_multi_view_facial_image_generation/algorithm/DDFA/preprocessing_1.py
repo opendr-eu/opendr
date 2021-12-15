@@ -32,7 +32,7 @@ STD_SIZE = 120
 
 def main(args):
     # 1. load pre-tained model
-    checkpoint_fp = './algorithm/DDFA/models/phase1_wpdc_vdc.pth.tar'
+    checkpoint_fp = 'algorithm/DDFA/models/phase1_wpdc_vdc.pth.tar'
     arch = 'mobilenet_1'
 
     checkpoint = torch.load(checkpoint_fp, map_location=lambda storage, loc: storage)['state_dict']
@@ -60,7 +60,7 @@ def main(args):
     # face_detector = face_regressor.face_detector
 
     # 3. forward
-    tri = sio.loadmat('./algorithm/DDFA/visualize/tri.mat')['tri']
+    tri = sio.loadmat('algorithm/DDFA/visualize/tri.mat')['tri']
     transform = transforms.Compose([ToTensorGjz(), NormalizeGjz(mean=127.5, std=128)])
     # print(args.files)
     for img_fp in args.files:

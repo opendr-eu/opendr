@@ -112,8 +112,8 @@ class MultiviewDataGeneration():
             b.close()
             self.args.dump_lmk = 'true'
             im_list2.clear()
-            preprocessing_2.main(self.args2)
-            with open(os.path.join(self.args2.save_lmk_dir, 'realign_lmk_')) as f:
+            preprocessing_2.main(self.args)
+            with open(os.path.join(self.args.save_lmk_dir, 'realign_lmk_')) as f:
                 img_list = [x.strip() for x in f.readlines()]
                 for img_idx, img_fp in enumerate(tqdm(img_list)):
                     d.write(img_fp + os.linesep)

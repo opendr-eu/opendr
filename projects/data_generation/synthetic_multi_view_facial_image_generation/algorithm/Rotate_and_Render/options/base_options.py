@@ -4,8 +4,8 @@ import math
 import os
 from ..util import util
 import torch
-from .. import models
-from .. import data
+from algorithm.Rotate_and_Render import models
+from algorithm.Rotate_and_Render import data
 import pickle
 __all__ = ['math']
 
@@ -20,9 +20,9 @@ class BaseOptions():
         parser.add_argument('--name', type=str, default='rs_model',
                             help='name of the experiment. It decides where to store samples and models')
 
-        parser.add_argument('--gpu_ids', type=str, default='0', nargs='+', help='useless')
+        parser.add_argument('--gpu_ids', type=str, default='1', nargs='+', help='useless')
         parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
-        parser.add_argument('--model', type=str, default='rotatespade', help='which model to use, rotate|rotatespade')
+        parser.add_argument('--model', type=str, default='rotate', help='which model to use, rotate|rotatespade')
         parser.add_argument('--trainer', type=str, default='rotate', help='which trainer to use, rotate|rotatespade')
         parser.add_argument('--norm_G', type=str, default='spectralsyncbatch',
                             help='instance normalization or batch normalization')
@@ -60,7 +60,7 @@ class BaseOptions():
         parser.add_argument('--use_BG', action='store_true', help='')
         parser.add_argument('--use_vae', action='store_true', help='')
         # for setting inputs
-        parser.add_argument('--dataset', type=str, default='example', help='dataset')
+        parser.add_argument('--dataset', type=str, default='allface', help='dataset')
         parser.add_argument('--dataset_mode', type=str, default='allface')
         parser.add_argument('--landmark_align', action='store_true', help='wether there is landmark_align')
         parser.add_argument('--serial_batches', action='store_true',
@@ -101,6 +101,25 @@ class BaseOptions():
         parser.add_argument('--heatmap_size', type=float, default=1,
                             help='the size of the heatmap, used in rotatespade model')
         parser.add_argument('--erode_kernel', type=int, default=21, help='erode kernel size, used in renderer')
+        parser.add_argument("-device", default="cuda", type=str, help="choose between cuda or cpu ")
+        parser.add_argument("-path_in", default=os.path.join("opendr_internal", "projects",
+                                                             "data_generation",
+                                                             "",
+                                                             "demos", "imgs_input"),
+                            type=str, help='Give the path of image folder')
+        parser.add_argument('-path_3ddfa', default=os.path.join("opendr_internal", "projects",
+                                                                "data_generation",
+                                                                "",
+                                                                "algorithm", "DDFA"),
+                            type=str, help='Give the path of DDFA folder')
+        parser.add_argument('-save_path', default=os.path.join("opendr_internal", "projects",
+                                                               "data_generation",
+                                                               "",
+                                                               "results"),
+                            type=str, help='Give the path of results folder')
+        parser.add_argument('-val_yaw', default="10 20", nargs='+', type=str, help='yaw poses list between [-90,90] ')
+        parser.add_argument('-val_pitch', default="30 40", nargs='+', type=str,
+                            help='pitch poses list between [-90,90] ')
 
         self.initialized = True
         return parser

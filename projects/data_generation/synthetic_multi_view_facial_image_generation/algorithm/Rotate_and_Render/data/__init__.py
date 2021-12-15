@@ -39,7 +39,7 @@ def find_dataset_using_name(dataset_name):
     # Given the option --dataset [datasetname],
     # the file "datasets/datasetname_dataset.py"
     # will be imported.
-    dataset_filename = "data." + dataset_name + "_dataset"
+    dataset_filename = "algorithm.Rotate_and_Render.data." + dataset_name + "_dataset"
     datasetlib = importlib.import_module(dataset_filename)
 
     # In the file, the class called DatasetNameDataset() will

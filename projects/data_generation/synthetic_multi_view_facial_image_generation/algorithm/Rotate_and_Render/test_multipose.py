@@ -14,8 +14,9 @@ import time
 import torch
 import math
 from .models.networks.rotate_render import TestRender
-
+from algorithm.Rotate_and_Render.data import dataset_info
 multiprocessing.set_start_method('spawn', force=True)
+__all__ = ['dataset_info']
 
 
 def create_path(a_path, b_path):
@@ -81,8 +82,8 @@ def main(save_path, val_yaw, val_pitch):
     import data
     opt = TestOptions().parse()
     data_info = data.dataset_info()
-    opt.yaw_poses = [float(x) for x in val_yaw.split(",")]
-    opt.pitch_poses = [float(x) for x in val_pitch.split(",")]
+    opt.yaw_poses = [float(x) for x in val_yaw.split(" ")]
+    opt.pitch_poses = [float(x) for x in val_pitch.split(" ")]
     opt.save_path = save_path
     if not opt.isTrain:
         # change radian to angle

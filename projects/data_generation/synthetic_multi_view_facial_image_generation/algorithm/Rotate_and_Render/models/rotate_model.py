@@ -1,6 +1,6 @@
 import torch
-import models.networks as networks
-import util.util as util
+import algorithm.Rotate_and_Render.models.networks as networks
+import algorithm.Rotate_and_Render.util.util as util
 import os
 
 

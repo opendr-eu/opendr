@@ -17,7 +17,6 @@ import argparse
 from SyntheticDataGeneration import MultiviewDataGeneration
 from algorithm.DDFA.utils.ddfa import str2bool
 
-
 if __name__ == '__main__':
     print("\n\n**********************************\nTEST Multiview Data Generation Learner\n"
           "**********************************")
@@ -38,8 +37,8 @@ if __name__ == '__main__':
                                                            "",
                                                            "results"),
                         type=str, help='Give the path of results folder')
-    parser.add_argument('-val_yaw', default="10,20", nargs='+', type=str, help='yaw poses list between [-90,90] ')
-    parser.add_argument('-val_pitch', default="30,40", nargs='+', type=str,
+    parser.add_argument('-val_yaw', default="10 20", nargs='+', type=str, help='yaw poses list between [-90,90] ')
+    parser.add_argument('-val_pitch', default="30 40", nargs='+', type=str,
                         help='pitch poses list between [-90,90] ')
     parser.add_argument('-f', '--files', nargs='+',
                         help='image files paths fed into network, single or multiple images')
