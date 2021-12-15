@@ -39,7 +39,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [detr Module](detr.md)
             - [gem Module](gem.md)
             - [retinaface Module](face-detection-2d-retinaface.md)
-            - [centernet Module](object-detection-2d-ssd.md)
+            - [centernet Module](object-detection-2d-centernet.md)
             - [ssd Module](object-detection-2d-ssd.md)
             - [yolov3 Module](object-detection-2d-yolov3.md)
         - object detection 3d:
@@ -64,10 +64,13 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
     - `control` Module
         - [mobile_manipulation Module](mobile-manipulation.md)
     - `simulation` Module
-        - [human_model_generation Module](human_model_generation.md)
+        - [human_model_generation Module](human-model-generation.md)
     - `utils` Module
         - [Hyperparameter Tuning Module](hyperparameter_tuner.md)
+    
+
 - [ROSBridge Package](rosbridge.md)
+    - [opendr_ws](/projects/opendr_ws/README.md)
 - [C Inference API](c-api.md)
     - [data.h](c-data-h.md)
     - [target.h](c-target-h.md)
