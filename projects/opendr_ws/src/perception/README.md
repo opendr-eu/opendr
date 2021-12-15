@@ -2,6 +2,17 @@
 
 This package contains ROS nodes related to perception package of OpenDR.
 
+## Dataset ROS Nodes
+
+Assuming that you have already [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can start a dataset node to publish data from the disk, which is useful to test the functionality without the use of a sensor. Dataset nodes take a `DatasetIterator` object that shoud returns a `(Data, Target)` pair elements. If the type of the `Data` object is correct, the node will transform it into a corresponding ROS message object and publish it to a desired topic.
+
+### Point Cloud Dataset ROS Node
+To get a point cloud from a dataset on the disk, you can start a `point_cloud_dataset.py` node as:
+```shell
+rosrun perception point_cloud_dataset.py
+```
+By default, it downloads a `nano_KITTI` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements.
+
 ## Pose Estimation ROS Node
 Assuming that you have already [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
 
