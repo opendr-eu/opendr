@@ -6,7 +6,7 @@ packages = find_packages(where="./src")
 with open('requirements.txt') as fp:
     install_requires = fp.read()
 
-__version__ = exec(open('src/opendr/_version.py').read())
+exec(open('src/opendr/_version.py').read())
 
 setup(
     name='OpenDR',
