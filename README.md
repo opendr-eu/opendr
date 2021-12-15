@@ -6,12 +6,12 @@
 ______________________________________________________________________
 
 <p align="center">
-  <a href="https:/opendr.eu">Website</a> •
+  <a href="https:/www.opendr.eu">Website</a> •
   <a href="#about">About</a> •
   <a href="docs/reference/installation.md">Installation</a> •  
   <a href="#using-opendr-toolkit">Using OpenDR toolkit</a> •
   <a href="projects">Examples</a> •
-  <a href="roadmap">Roadmap</a> •  
+  <a href="#roadmap">Roadmap</a> •  
   <a href="LICENSE">License</a>
 </p>
 
