@@ -305,6 +305,24 @@ Parameters:
 - **dim2**: *int*  
   Second dimension
 
+#### `ROSBridge.from_ros_tracking_annotation`
+
+```python
+ROSBridge.from_ros_tracking_annotation(self, ros_detections, ros_tracking_ids, frame=-1)
+```
+
+Converts a pair of ROS messages with bounding boxes and tracking ids into an OpenDR TrackingAnnotationList
+
+Parameters:
+
+- **ros_detections**: *sensor_msgs.msg.Detection2DArray*  
+  The boxes to be converted.
+- **ros_tracking_ids**: *std_msgs.msg.Int32MultiArray*  
+  The tracking ids corresponding to the boxes.
+- **frame**: *int, default=-1*  
+  The frame index to assign to the tracking boxes.
+
+
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
 2. `ros_bridge.msg.Pose` is used as an equivelant to `engine.target.Pose`

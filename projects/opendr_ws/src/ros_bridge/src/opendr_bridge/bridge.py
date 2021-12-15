@@ -239,11 +239,15 @@ class ROSBridge:
 
     def from_ros_tracking_annotation(self, ros_detections, ros_tracking_ids, frame=-1):
         """
-        Converts a ROS message with bounding boxes into an OpenDR BoundingBoxList
-        :param ros_detections: the boxes to be converted (represented as vision_msgs.msg.Detection2DArray)
+        Converts a pair of ROS messages with bounding boxes and tracking ids into an OpenDR TrackingAnnotationList
+        :param ros_detections: The boxes to be converted.
         :type ros_detections: vision_msgs.msg.Detection2DArray
-        :return: an OpenDR BoundingBoxList
-        :rtype: engine.target.BoundingBoxList
+        :param ros_tracking_ids: The tracking ids corresponding to the boxes.
+        :type ros_tracking_ids: std_msgs.msg.Int32MultiArray
+        :param frame: The frame index to assign to the tracking boxes.
+        :type frame: int
+        :return: An OpenDR TrackingAnnotationList
+        :rtype: engine.target.TrackingAnnotationList
         """
         ros_boxes = ros_detections.detections
         boxes = []
