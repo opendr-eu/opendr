@@ -8,6 +8,11 @@ with open('requirements.txt') as fp:
 
 exec(open('src/opendr/_version.py').read())
 
+try:
+    __version__
+except NameError:
+    __version__ = '0.0'
+
 setup(
     name='OpenDR',
     version=__version__,
