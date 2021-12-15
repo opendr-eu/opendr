@@ -22,10 +22,10 @@ release: install_compilation_dependencies
 
 install_runtime_dependencies:
 	@+echo "#"; echo "# * Install Runtime Dependencies *"; echo "#"
+	@./install_eagerx.sh
 
 install_compilation_dependencies:
 	@+echo "#"; echo "# * Install Compilation Dependencies for Mobile Manipulation *"; echo "#"
-	@./install_eagerx.sh
 
 help:
 	@+echo
