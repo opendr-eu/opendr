@@ -133,23 +133,22 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertIsNotNone(self.stgcn_action_classifier.model, "model is None after loading pt model.")
         # Cleanup
 
-    # Redundant test: Same code is executed internally in `test_optimize`
-    # def test_save_load_onnx(self):
-    #    print(
-    #        "\n\n**********************************\nTest STGCN saveload ONNX function \n*"
-    #        "*********************************")
-    #    self.stgcn_action_classifier.model = None
-    #    self.stgcn_action_classifier.ort_session = None
-    #    self.stgcn_action_classifier.init_model()
-    #    self.stgcn_action_classifier.optimize()
-    #    self.stgcn_action_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
-    #                                      model_name='onnx_model_temp')
-    #    self.stgcn_action_classifier.model = None
-    #    self.stgcn_action_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
-    #                                      model_name='onnx_model_temp')
-    #    self.assertIsNotNone(self.stgcn_action_classifier.ort_session, "ort_session is None after loading onnx model.")
-    #    # Cleanup
-    #    self.stgcn_action_classifier.ort_session = None
+    def test_save_load_onnx(self):
+        print(
+            "\n\n**********************************\nTest STGCN saveload ONNX function \n*"
+            "*********************************")
+        self.stgcn_action_classifier.model = None
+        self.stgcn_action_classifier.ort_session = None
+        self.stgcn_action_classifier.init_model()
+        self.stgcn_action_classifier.optimize()
+        self.stgcn_action_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
+                                          model_name='onnx_model_temp')
+        self.stgcn_action_classifier.model = None
+        self.stgcn_action_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
+                                          model_name='onnx_model_temp')
+        self.assertIsNotNone(self.stgcn_action_classifier.ort_session, "ort_session is None after loading onnx model.")
+        # Cleanup
+        self.stgcn_action_classifier.ort_session = None
 
     def test_optimize(self):
         print(

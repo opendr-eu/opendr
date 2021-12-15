@@ -102,33 +102,30 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
                                                          skeleton_data_type='joint')
         self.assertNotEqual(len(eval_results["score"]), 0, msg="Eval results contains empty list.")
 
-    # Redundant test: Same code is executed internally in `test_eval`
-    # def test_multi_stream_eval(self):
-    #    model_saved_path_joint = self.Pretrained_MODEL_PATH_J
-    #    model_saved_path_bone = self.Pretrained_MODEL_PATH_B
-    #    model_name_joint = 'stbln_nturgbd_cv_joint-49-29400'
-    #    model_name_bone = 'stbln_nturgbd_cv_bone-49-29400'
-    #    validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
-    #
-    #    self.stbln_action_classifier.load(model_saved_path_joint, model_name_joint)
-    #    eval_results_joint = self.stbln_action_classifier.eval(validation_dataset, verbose=False,
-    #                                                           val_data_filename='val_joints.npy',
-    #                                                           val_labels_filename='val_labels.pkl',
-    #                                                           skeleton_data_type='joint')
-    #
-    #    self.stbln_action_classifier.load(model_saved_path_bone, model_name_bone)
-    #    eval_results_bone = self.stbln_action_classifier.eval(validation_dataset, verbose=False,
-    #                                                          val_data_filename='val_joints.npy',
-    #                                                          val_labels_filename='val_labels.pkl',
-    #                                                          skeleton_data_type='bone')
-    #    score_joints = eval_results_joint["score"]
-    #    score_bones = eval_results_bone["score"]
-    #    scores = [score_joints, score_bones]
-    #    total_score = self.stbln_action_classifier.multi_stream_eval(validation_dataset, scores,
-    #                                                                 data_filename='val_joints.npy',
-    #                                                                 labels_filename='val_labels.pkl'
-    #                                                                 )
-    #    self.assertNotEqual(len(total_score), 0, msg="results of multi-stream-eval contains empty list.")
+    def test_multi_stream_eval(self):
+        model_saved_path_joint = self.Pretrained_MODEL_PATH_J
+        model_saved_path_bone = self.Pretrained_MODEL_PATH_B
+        model_name_joint = 'stbln_nturgbd_cv_joint-49-29400'
+        model_name_bone = 'stbln_nturgbd_cv_bone-49-29400'
+        validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
+        self.stbln_action_classifier.load(model_saved_path_joint, model_name_joint)
+        eval_results_joint = self.stbln_action_classifier.eval(validation_dataset, verbose=False,
+                                                               val_data_filename='val_joints.npy',
+                                                               val_labels_filename='val_labels.pkl',
+                                                               skeleton_data_type='joint')
+        self.stbln_action_classifier.load(model_saved_path_bone, model_name_bone)
+        eval_results_bone = self.stbln_action_classifier.eval(validation_dataset, verbose=False,
+                                                              val_data_filename='val_joints.npy',
+                                                              val_labels_filename='val_labels.pkl',
+                                                              skeleton_data_type='bone')
+        score_joints = eval_results_joint["score"]
+        score_bones = eval_results_bone["score"]
+        scores = [score_joints, score_bones]
+        total_score = self.stbln_action_classifier.multi_stream_eval(validation_dataset, scores,
+                                                                     data_filename='val_joints.npy',
+                                                                     labels_filename='val_labels.pkl'
+                                                                     )
+        self.assertNotEqual(len(total_score), 0, msg="results of multi-stream-eval contains empty list.")
 
     def test_infer(self):
         test_data = np.load(self.Test_DATASET_PATH)[0:1]
@@ -151,20 +148,19 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         self.assertIsNotNone(self.stbln_action_classifier.model, "model is None after loading pt model.")
         # Cleanup
 
-    # Redundant test: Same code is executed internally in `test_optimize`
-    # def test_save_load_onnx(self):
-    #    self.stbln_action_classifier.model = None
-    #    self.stbln_action_classifier.ort_session = None
-    #    self.stbln_action_classifier.init_model()
-    #    self.stbln_action_classifier.optimize()
-    #    self.stbln_action_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
-    #                                      model_name='onnx_model_temp')
-    #    self.stbln_action_classifier.model = None
-    #    self.stbln_action_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
-    #                                      model_name='onnx_model_temp')
-    #    self.assertIsNotNone(self.stbln_action_classifier.ort_session, "ort_session is None after loading onnx model.")
-    #    # Cleanup
-    #    self.stbln_action_classifier.ort_session = None
+    def test_save_load_onnx(self):
+        self.stbln_action_classifier.model = None
+        self.stbln_action_classifier.ort_session = None
+        self.stbln_action_classifier.init_model()
+        self.stbln_action_classifier.optimize()
+        self.stbln_action_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
+                                          model_name='onnx_model_temp')
+        self.stbln_action_classifier.model = None
+        self.stbln_action_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
+                                          model_name='onnx_model_temp')
+        self.assertIsNotNone(self.stbln_action_classifier.ort_session, "ort_session is None after loading onnx model.")
+        # Cleanup
+        self.stbln_action_classifier.ort_session = None
 
     def test_optimize(self):
         model_saved_path = self.Pretrained_MODEL_PATH_J
