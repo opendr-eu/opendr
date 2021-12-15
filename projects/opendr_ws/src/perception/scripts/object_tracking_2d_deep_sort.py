@@ -43,19 +43,24 @@ class ObjectTracking2DDeepSortNode:
         temp_dir="temp",
     ):
         """
-        Creates a ROS Node for face detection
+        Creates a ROS Node for 2D object tracking
+        :param detector: Learner to generate object detections
+        :type detector: Learner
         :param input_image_topic: Topic from which we are reading the input image
         :type input_image_topic: str
         :param output_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
         annotated image)
         :type output_image_topic: str
-        :param face_detections_topic: Topic to which we are publishing the annotations (if None, we are not publishing
-        annotated pose annotations)
-        :type face_detections_topic:  str
+        :param output_detection_topic: Topic to which we are publishing the detections
+        :type output_detection_topic:  str
+        :param output_tracking_id_topic: Topic to which we are publishing the tracking ids
+        :type output_tracking_id_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
-        :param backbone: retinaface backbone, options are ('mnet' and 'resnet'), where 'mnet' detects masked faces as well
-        :type backbone: str
+        :param model_name: the pretrained model to download or a saved model in temp_dir folder to use
+        :type model_name: str
+        :param temp_dir: the folder to download models
+        :type temp_dir: str
         """
 
         # # Initialize the face detector
