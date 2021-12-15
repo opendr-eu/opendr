@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   vision_msgs
   std_msgs
+  audio_common_msgs
 )
 
 ###################################

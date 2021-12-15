@@ -1,0 +1,45 @@
+#VRML_SIM R2021b utf8
+WorldInfo {
+  info [
+    "SMPL Simulation"
+  ]
+  title "SMPL Simulation"
+  ERP 0.6
+  basicTimeStep 10
+  coordinateSystem "NUE"
+  lineScale 1
+  contactProperties [
+    ContactProperties {
+      softCFM 0.0003
+    }
+  ]
+}
+Viewpoint {
+  orientation -0.056791464063295376 0.9659535410765772 0.25240540028131153 2.3968598
+  position 11.910063 7.2731442 -10.132491
+  near 1
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+CircleArena {
+  radius 10
+  floorAppearance Parquetry {
+  }
+  floorTileSize 2 2
+  wallThickness 0.1
+  wallHeight 1
+}
+DEF Smpl_model_1 Robot {
+  translation -0.5 0.13 2.0
+  rotation 0 1 0 1.5708
+  children [
+    smpl_model_1{
+      name "model-204"
+      model "model-204"
+    }
+  ]
+  controller "smpl_animation"
+  controllerArgs "model-204 /ACCAD/Female1Running_c3d/run3"
+}

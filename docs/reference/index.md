@@ -63,6 +63,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 
     - `control` Module
         - [mobile_manipulation Module](mobile-manipulation.md)
+        - [single_demo_grasp Module](single-demonstration-grasping.md)        
+        
     - `simulation` Module
         - [human_model_generation Module](human_model_generation.md)
     - `data_generation` Module
@@ -80,3 +82,5 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 - Projects
     - `perception` Module
         - [full_map_posterior_slam Module](fmp_gmapping.md)
+    - `simulation` Module
+        - [SMPL+D Human Models Dataset](smpld_models.md)

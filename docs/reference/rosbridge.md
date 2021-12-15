@@ -305,9 +305,66 @@ Parameters:
 - **dim2**: *int*  
   Second dimension
 
+#### `ROSBridge.from_ros_point_cloud`
+
+```python
+ROSBridge.from_ros_point_cloud(self, point_cloud)
+```
+
+Converts a ROS PointCloud message into an OpenDR PointCloud.
+
+Parameters:
+
+- **point_cloud**: *sensor_msgs.msg.PointCloud*  
+  ROS PointCloud to be converted.
+
+#### `ROSBridge.to_ros_point_cloud`
+
+```python
+ROSBridge.to_ros_point_cloud(self, point_cloud)
+```
+Converts an OpenDR PointCloud message into a ROS PointCloud.
+
+Parameters:
+
+- **point_cloud**: *engine.data.PointCloud*  
+  OpenDR PointCloud to be converted.
+
+#### `ROSBridge.from_ros_boxes_3d`
+
+```python
+ROSBridge.from_ros_boxes_3d(self, ros_boxes_3d, classes)
+```
+
+Converts a ROS Detection3DArray message into an OpenDR BoundingBox3D object.
+
+Parameters:
+
+- **ros_boxes_3d**: *vision_msgs.msg.Detection3DArray*  
+  The ROS boxes to be converted.
+
+- **classes**: *[str]*  
+  The array of classes to transform an index into a string name.
+
+#### `ROSBridge.to_ros_boxes_3d`
+
+```python
+ROSBridge.to_ros_boxes_3d(self, boxes_3d, classes)
+```
+ Converts an OpenDR BoundingBox3DList object into a ROS Detection3DArray message.
+
+Parameters:
+
+- **boxes_3d**: *engine.target.BoundingBox3DList*  
+  The ROS boxes to be converted.
+
+- **classes**: *[str]*  
+  The array of classes to transform from string name into an index.
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
 2. `ros_bridge.msg.Pose` is used as an equivelant to `engine.target.Pose`
 3. `vision_msgs.msg.Detection2DArray` is used as an equivalent to `engine.target.BoundingBoxList`
 4. `vision_msgs.msg.Detection2D` is used as an equivalent to `engine.target.BoundingBox`
 5. `geometry_msgs.msg.Pose`  is used as an equivelant to `engine.target.Pose` for 3D poses conversion only.
+6. `vision_msgs.msg.Detection3DArray`  is used as an equivelant to `engine.target.BoundingBox3DList`.
+7. `sensor_msgs.msg.PointCloud`  is used as an equivelant to `engine.data.PointCloud`.
