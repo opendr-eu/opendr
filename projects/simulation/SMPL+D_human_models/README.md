@@ -24,7 +24,7 @@ This folder contains code for:
 All those data can be used directly for research purposes, such as for training methods for shape and texture reconstruction. 
 
 ```
-python download_data.py raw
+python src/download_data.py raw
 ```
 
 ### Download the SMPL+D models and convert them to FBX (Filmbox) (≈12.5Gb)
