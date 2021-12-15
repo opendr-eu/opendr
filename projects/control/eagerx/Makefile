@@ -21,11 +21,11 @@ endif
 release: install_compilation_dependencies
 
 install_runtime_dependencies:
-	@+echo "#"; echo "# * Install Runtime Dependencies *"; echo "#"
+	@+echo "#"; echo "# * Install Runtime Dependencies EAGERx *"; echo "#"
 	@./install_eagerx.sh
 
 install_compilation_dependencies:
-	@+echo "#"; echo "# * Install Compilation Dependencies for Mobile Manipulation *"; echo "#"
+	@+echo "#"; echo "# * Install Compilation Dependencies *"; echo "#"
 
 help:
 	@+echo
