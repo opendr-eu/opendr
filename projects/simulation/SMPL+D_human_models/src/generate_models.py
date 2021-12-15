@@ -140,7 +140,7 @@ class Fbx_exporter:
                 m.material.use_nodes = True
                 bsdf = m.material.node_tree.nodes["Principled BSDF"]
                 texImage = m.material.node_tree.nodes.new('ShaderNodeTexImage')
-                tex_filename = os.path.join(self.dir_out, 'texture.png')
+                tex_filename = os.path.join(self.dir_out, 'texture.jpg')
                 copyfile(self.model_params["texture"], tex_filename)
                 texImage.image = bpy.data.images.load(filepath=tex_filename)
                 m.material.node_tree.links.new(bsdf.inputs['Base Color'], texImage.outputs['Color'])
