@@ -18,14 +18,14 @@ from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category, B
 import numpy as np
 from cv_bridge import CvBridge
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,\
-     Detection3DArray, Detection3D, BoundingBox3D, ObjectHypothesis, Classification2D
+     Detection3DArray, Detection3D, BoundingBox3D as BoundingBox3DMsg, ObjectHypothesis, Classification2D
 from geometry_msgs.msg import Pose2D, Point, Pose as Pose3D
 from shape_msgs.msg import Mesh, MeshTriangle
 from std_msgs.msg import ColorRGBA, String, Header
 from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg
 import rospy
-from std_msgs.msg import Header
 from geometry_msgs.msg import Point32 as Point32Msg, Quaternion as QuaternionMsg
+
 
 class ROSBridge:
     """
@@ -322,7 +322,7 @@ class ROSBridge:
         keypoints = Detection3DArray()
         for i in range(data.shape[0]):
             keypoint = Detection3D()
-            keypoint.bbox = BoundingBox3D()
+            keypoint.bbox = BoundingBox3DMsg()
             keypoint.results.append(ObjectHypothesisWithPose())
             keypoint.bbox.center = Pose3D()
             keypoint.bbox.center.position.x = data[i, 0]
@@ -457,7 +457,7 @@ class ROSBridge:
         data = np.reshape(ros_array.data, (dim1, dim2))
         data = Timeseries(data)
         return data
-    
+
     def from_ros_point_cloud(self, point_cloud: PointCloudMsg):
         """
         Converts a ROS PointCloud message into an OpenDR PointCloud
@@ -512,7 +512,7 @@ class ROSBridge:
             points.append(point_msg)
             for i in range(channels_count):
                 channels[i].values.append(point[3 + i])
-        
+
         ros_point_cloud.points = points
         ros_point_cloud.channels = channels
 
@@ -566,7 +566,7 @@ class ROSBridge:
         ros_boxes_3d = Detection3DArray()
         for i in range(len(boxes_3d)):
             box = Detection3D()
-            box.bbox = BoundingBox3D()
+            box.bbox = BoundingBox3DMsg()
             box.results.append(ObjectHypothesisWithPose())
             box.bbox.center = Pose3D()
             box.bbox.center.position.x = boxes_3d[i].location[0]

@@ -29,7 +29,7 @@ class PointCloudDatasetNode:
         output_point_cloud_topic="/opendr/dataset_point_cloud",
     ):
         """
-        Creates a ROS Node for publishing dataset images
+        Creates a ROS Node for publishing dataset point clouds
         """
 
         # Initialize the face detector

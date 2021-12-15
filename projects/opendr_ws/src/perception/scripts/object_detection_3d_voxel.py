@@ -22,7 +22,6 @@ from opendr_bridge import ROSBridge
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner
 )
-from opendr.engine.data import Image
 
 
 class ObjectDetection3DVoxelNode:
@@ -47,7 +46,7 @@ class ObjectDetection3DVoxelNode:
         :type output_detection3d_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
-        :param model_name: the pretrained model to download or a trained model in temp_dir 
+        :param model_name: the pretrained model to download or a trained model in temp_dir
         :type model_name: str
         :param temp_dir: where to store models
         :type temp_dir: str

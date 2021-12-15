@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import os
-import cv2
 import torch
 from opendr.engine.learners import Learner
 import rospy
@@ -28,7 +27,6 @@ from opendr.perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_lea
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
     VoxelObjectDetection3DLearner
 )
-from opendr.engine.data import Image
 
 
 class ObjectTracking3DAb3dmotNode:
@@ -89,7 +87,7 @@ class ObjectTracking3DAb3dmotNode:
         if self.detection_publisher is not None:
             self.detection_publisher.publish(ros_boxes)
             rospy.loginfo("Published detection boxes")
-        
+
         ros_ids = Int32MultiArray()
         ros_ids.data = ids
 
