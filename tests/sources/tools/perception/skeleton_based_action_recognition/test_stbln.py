@@ -108,11 +108,13 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         model_name_joint = 'stbln_nturgbd_cv_joint-49-29400'
         model_name_bone = 'stbln_nturgbd_cv_bone-49-29400'
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD")
+
         self.stbln_action_classifier.load(model_saved_path_joint, model_name_joint)
         eval_results_joint = self.stbln_action_classifier.eval(validation_dataset, verbose=False,
                                                                val_data_filename='val_joints.npy',
                                                                val_labels_filename='val_labels.pkl',
                                                                skeleton_data_type='joint')
+
         self.stbln_action_classifier.load(model_saved_path_bone, model_name_bone)
         eval_results_bone = self.stbln_action_classifier.eval(validation_dataset, verbose=False,
                                                               val_data_filename='val_joints.npy',
