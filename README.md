@@ -6,7 +6,7 @@
 ______________________________________________________________________
 
 <p align="center">
-  <a href="https:/www.opendr.eu">Website</a> •
+  <a href="https://www.opendr.eu/">Website</a> •
   <a href="#about">About</a> •
   <a href="docs/reference/installation.md">Installation</a> •  
   <a href="#using-opendr-toolkit">Using OpenDR toolkit</a> •
@@ -15,6 +15,9 @@ ______________________________________________________________________
   <a href="LICENSE">License</a>
 </p>
 
+  **TODO Badges** 
+  [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+  
 </div>
 
 ## About
