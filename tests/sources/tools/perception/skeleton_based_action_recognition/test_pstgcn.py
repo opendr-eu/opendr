@@ -49,8 +49,8 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         cls.logging_path = LOG_PATH_
         cls.pstgcn_action_classifier = ProgressiveSpatioTemporalGCNLearner(
                                        device="cpu", temp_path=cls.temp_dir,
-                                       batch_size=5, epochs=1,
-                                       checkpoint_after_iter=1, val_batch_size=5,
+                                       batch_size=2, epochs=1,
+                                       checkpoint_after_iter=1, val_batch_size=2,
                                        dataset_name='nturgbd_cv',
                                        num_class=60, num_point=25, num_person=2, in_channels=3,
                                        graph_type='ntu',
