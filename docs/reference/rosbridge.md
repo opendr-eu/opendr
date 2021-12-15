@@ -333,23 +333,7 @@ Parameters:
 #### `ROSBridge.from_ros_boxes_3d`
 
 ```python
-ROSBridge.from_ros_boxes_3d(self, ros_boxes_3d)
-```
-
-Converts a ROS Detection3DArray message into an OpenDR BoundingBox3D object.
-        :
-Parameters:
-
-- **ros_boxes_3d**: *vision_msgs.msg.Detection3DArray*  
-  The ROS boxes to be converted.
-
-- **classes**: * [str]*  
-  The array of classes to transform from string name to an index.
-
-#### `ROSBridge.from_ros_boxes_3d`
-
-```python
-ROSBridge.from_ros_boxes_3d(self, ros_boxes_3d)
+ROSBridge.from_ros_boxes_3d(self, ros_boxes_3d, classes)
 ```
 
 Converts a ROS Detection3DArray message into an OpenDR BoundingBox3D object.
@@ -365,7 +349,7 @@ Parameters:
 #### `ROSBridge.to_ros_boxes_3d`
 
 ```python
-ROSBridge.to_ros_boxes_3d(self, boxes_3d)
+ROSBridge.to_ros_boxes_3d(self, boxes_3d, classes)
 ```
  Converts an OpenDR BoundingBox3DList object into a ROS Detection3DArray message.
 

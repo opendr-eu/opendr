@@ -21,9 +21,7 @@ from vision_msgs.msg import Detection3DArray
 from std_msgs.msg import Int32MultiArray
 from sensor_msgs.msg import PointCloud as ROS_PointCloud
 from opendr_bridge import ROSBridge
-from opendr.perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_learner import (
-    ObjectTracking3DAb3dmotLearner
-)
+from opendr.perception.object_tracking_3d import ObjectTracking3DAb3dmotLearner
 from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
 
 
