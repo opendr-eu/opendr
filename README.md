@@ -1,6 +1,23 @@
-# OpenDR Toolkit
-Open Deep Learning Toolkit for Robotics
+<div align="center">
 
+<img src="docs/reference/images/opendr_logo.png" width="400px">
+
+**A modular, open and non-proprietary toolkit for core robotic functionalities by harnessing deep learning**
+______________________________________________________________________
+
+<p align="center">
+  <a href="https:/opendr.eu">Website</a> •
+  <a href="#about">About</a> •
+  <a href="docs/reference/installation.md">Installation</a> •  
+  <a href="#using-opendr-toolkit">Using OpenDR toolkit</a> •
+  <a href="projects">Examples</a> •
+  <a href="roadmap">Roadmap</a> •  
+  <a href="LICENSE">License</a>
+</p>
+
+</div>
+
+## About
 
 The aim of [OpenDR Project](https://opendr.eu) is to develop a modular, open and non-proprietary toolkit for core robotic functionalities by harnessing deep learning to provide advanced perception and cognition capabilities, meeting in this way the general requirements of robotics applications in the applications areas of healthcare, agri-food and agile production. 
 The term toolkit in OpenDR refers to a set of deep learning software functions, packages and utilities used to help roboticists to develop and test a robotic application that incorporates deep learning.
