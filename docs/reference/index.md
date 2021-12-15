@@ -15,7 +15,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 
 ## Table of Contents
 
-- [Inference and Training API](inference-and-training-api.md)
+- Inference and Training API
     - `engine` Module
         - [engine.data Module](engine-data.md)
         - [engine.datasets Module](engine-datasets.md)
