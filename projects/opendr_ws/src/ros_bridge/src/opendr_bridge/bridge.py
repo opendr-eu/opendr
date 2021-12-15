@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from opendr.engine.data import Image, Timeseries, PointCloud
-from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
+from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category, BoundingBox3D, BoundingBox3DList
 
 import numpy as np
 from cv_bridge import CvBridge
@@ -25,7 +25,7 @@ from std_msgs.msg import ColorRGBA, String, Header
 from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg
 import rospy
 from std_msgs.msg import Header
-from geometry_msgs.msg import Point32 as Point32Msg
+from geometry_msgs.msg import Point32 as Point32Msg, Quaternion as QuaternionMsg
 
 class ROSBridge:
     """
@@ -469,19 +469,17 @@ class ROSBridge:
 
         points = np.empty([len(point_cloud.points), 3 + len(point_cloud.channels)], dtype=np.float32)
 
-        for i in range(point_cloud.points):
-            x, y, z = point_cloud.points[i]
+        for i in range(len(point_cloud.points)):
+            point = point_cloud.points[i]
+            x, y, z = point.x, point.y, point.z
 
             points[i, 0] = x
             points[i, 1] = y
             points[i, 2] = z
 
-            for q in range(point_cloud.channels):
-                points[i, 3 + q] = point_cloud.channels[q][i]
+            for q in range(len(point_cloud.channels)):
+                points[i, 3 + q] = point_cloud.channels[q].values[i]
 
-        points[:, :3] = point_cloud.points
-        points[:, 3:] = point_cloud.channels
-        
         result = PointCloud(points)
 
         return result
@@ -519,3 +517,66 @@ class ROSBridge:
         ros_point_cloud.channels = channels
 
         return ros_point_cloud
+
+    def from_ros_boxes_3d(self, ros_boxes_3d: Detection3DArray, classes):
+        """
+        Converts a ROS message with pose payload into an OpenDR pose
+        :param ros_pose: the pose to be converted (represented as vision_msgs.msg.Detection3DArray)
+        :type ros_pose: vision_msgs.msg.Detection3DArray
+        :return: an OpenDR pose
+        :rtype: engine.target.Pose
+        """
+        boxes = []
+
+        for ros_box in ros_boxes_3d:
+
+            box = BoundingBox3D(
+                name=classes[ros_box.results[0].id],
+                truncated=0,
+                occluded=0,
+                bbox2d=None,
+                dimensions=np.array([
+                    ros_box.bbox.size.position.x,
+                    ros_box.bbox.size.position.y,
+                    ros_box.bbox.size.position.z,
+                ]),
+                location=np.array([
+                    ros_box.bbox.center.position.x,
+                    ros_box.bbox.center.position.y,
+                    ros_box.bbox.center.position.z,
+                ]),
+                rotation_y=ros_box.bbox.center.rotation.y,
+                score=ros_box.results[0].score,
+            )
+            boxes.append(box)
+
+        result = BoundingBox3DList(boxes)
+        return result
+
+    def to_ros_boxes_3d(self, boxes_3d: BoundingBox3DList, classes):
+        """
+        Converts an OpenDR pose into a Detection3DArray msg that can carry the same information
+        Each keypoint is represented as a bbox centered at the keypoint with zero radius. The subject id is also
+        embedded on each keypoint (stored in ObjectHypothesisWithPose).
+        :param pose: OpenDR pose to be converted
+        :type pose: engine.target.Pose
+        :return: ROS message with the pose
+        :rtype: vision_msgs.msg.Detection3DArray
+        """
+        ros_boxes_3d = Detection3DArray()
+        for i in range(len(boxes_3d)):
+            box = Detection3D()
+            box.bbox = BoundingBox3D()
+            box.results.append(ObjectHypothesisWithPose())
+            box.bbox.center = Pose3D()
+            box.bbox.center.position.x = boxes_3d[i].location[0]
+            box.bbox.center.position.y = boxes_3d[i].location[1]
+            box.bbox.center.position.z = boxes_3d[i].location[2]
+            box.bbox.center.orientation = QuaternionMsg(x=0, y=float(boxes_3d[i].rotation_y), z=0, w=0)
+            box.bbox.size.x = boxes_3d[i].dimensions[0]
+            box.bbox.size.y = boxes_3d[i].dimensions[1]
+            box.bbox.size.z = boxes_3d[i].dimensions[2]
+            box.results[0].id = int(classes.index(boxes_3d[i].name))
+            box.results[0].score = boxes_3d[i].confidence
+            ros_boxes_3d.detections.append(box)
+        return ros_boxes_3d
