@@ -180,6 +180,19 @@ rosrun perception skeleton_based_action_recognition.py
 The predictied class id and confidence is published under the topic name `/opendr/skeleton_based_action_recognition`, and the human-readable class name under `/opendr/skeleton_based_action_recognition_description`.
 Besides, the annotated image is published in `/opendr/image_pose_annotated` as well as the corresponding poses in `/opendr/poses`.
 
+## Speech Command Recognition ROS Node
+
+A ROS node for recognizing speech commands from an audio stream using MatchboxNet or Quadratic SelfONN models, pretrained on the Google Speech Commands dataset.
+Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
+```shell
+rosrun perception speech_command_recognition.py INPUT_AUDIO_TOPIC 
+```
+The following optional arguments are available:
+- `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds, default value **1.5**
+- `--model MODEL`: choose the model to use, either `matchboxnet` (default value) or `quad_selfonn`
+
+The predictions (class id and confidence) are published to the topic `/opendr/speech_recognition`.
+
 ## FairMOT Object Tracking 2D ROS Node
 
 A ROS node for performing Object Tracking 2D using FairMOT with either pretrained models on MOT dataset, or custom trained models. The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`). Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
@@ -198,7 +211,6 @@ rosrun perception image_dataset.py
 ```
 This will pulbish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
 
-
 ## Deep Sort Object Tracking 2D ROS Node
 
 A ROS node for performing Object Tracking 2D using Deep Sort using either pretrained models on Market1501 dataset, or custom trained models. This is a detection-based method, and therefore the 2D object detector is needed to provide detections, which then will be used to make associations and generate tracking ids. The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`). Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
@@ -216,3 +228,4 @@ If you want to use a dataset from the disk, you can start an `image_dataset.py` 
 rosrun perception image_dataset.py
 ```
 This will pulbish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
+
