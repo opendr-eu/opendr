@@ -9,11 +9,18 @@ Dataset nodes take a `DatasetIterator` object that shoud returns a `(Data, Targe
 If the type of the `Data` object is correct, the node will transform it into a corresponding ROS message object and publish it to a desired topic.
 
 ### Point Cloud Dataset ROS Node
-To get a point cloud from a dataset on the disk, you can start a `point_cloud_dataset.py` node as:
+To get an image from a dataset on the disk, you can start an `point_cloud_dataset.py` node as:
 ```shell
 rosrun perception point_cloud_dataset.py
 ```
 By default, it downloads a `nano_KITTI` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements.
+
+### Image Dataset ROS Node
+To get a point cloud from a dataset on the disk, you can start a `image_dataset.py` node as:
+```shell
+rosrun perception image_dataset.py
+```
+By default, it downloads a `nano_MOT20` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(Image, Target)` as elements.
 
 ## Pose Estimation ROS Node
 Assuming that you have already [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
