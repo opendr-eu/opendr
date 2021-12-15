@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opendr.semantic_segmentation.bisenet.bisenet_learner import BisenetLearner
-from opendr.perception.semantic_segmentation.bisenet.CamVid import CamVidDataset
+import os
+from opendr.perception.semantic_segmentation import BisenetLearner
+from opendr.perception.semantic_segmentation import CamVidDataset
 
 
 if __name__ == '__main__':
     learner = BisenetLearner()
     # Download CamVid dataset
-    dd = CamVidDataset.download_data('./datasets/')
+    if not os.path.exists('./datasets/'):
+        CamVidDataset.download_data('./datasets/')
     datatest = CamVidDataset('./datasets/CamVid/', mode='test')
     # Dowload the pretrained model
     learner.download('./bisenet_camvid', mode='pretrained')

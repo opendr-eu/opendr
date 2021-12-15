@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import cv2
-from opendr.semantic_segmentation.bisenet.bisenet_learner import BisenetLearner
+from opendr.perception.semantic_segmentation import BisenetLearner
 
 
 if __name__ == '__main__':
