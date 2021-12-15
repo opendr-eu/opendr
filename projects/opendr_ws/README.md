@@ -51,3 +51,5 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes:
 10. Landmark-based Facial Expression Recognition
 11. Skeleton-based Human Action Recognition
 12. Speech Command Recognition
+13. Voxel Object Detection 3D
+14. AB3DMOT Object Tracking 3D
