@@ -17,7 +17,7 @@
 #include <webots/robot.h>
 #include <webots/skin.h>
 #include <webots/supervisor.h>
-#include <webots/smpl_util.h>
+#include <smpl_util.h>
 #include <quaternion_private.h>
 #include <vector3_private.h>
 #include <math.h>
