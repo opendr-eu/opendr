@@ -33,7 +33,7 @@ The installation script automatically install all the required dependecies.
 Note that you can set the inference device using the `OPENDR_DEVICE` variable.
 The toolkit defaults to using CPU. If you want to use GPU, please set this variable accordingly:
 ```bash
-export export OPENDR_DEVICE=cpu
+export OPENDR_DEVICE=gpu
 ```
 The installation script creates a *virtualenv*, where the toolkit is installed.
 To activate OpenDR environment you can just source the `activate.sh`:
@@ -57,6 +57,8 @@ Then, you can install CUDA, along CuDNN.
 # Installing using *pip*
 You can directly install OpenDR toolkit for CPU-only inference using pip:
 ```bash
+python3 -m venv venv
+source venv/bin/activate
 pip3 install opendr-eu
 ```
 Please note that only the Python API is exposed when you install OpenDR toolkit using *pip*.
