@@ -15,7 +15,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 
 ## Table of Contents
 
-- [Inference and Training API](inference-and-training-api.md)
+- Inference and Training API
     - `engine` Module
         - [engine.data Module](engine-data.md)
         - [engine.datasets Module](engine-datasets.md)
@@ -39,7 +39,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [detr Module](detr.md)
             - [gem Module](gem.md)
             - [retinaface Module](face-detection-2d-retinaface.md)
-            - [centernet Module](object-detection-2d-ssd.md)
+            - [centernet Module](object-detection-2d-centernet.md)
             - [ssd Module](object-detection-2d-ssd.md)
             - [yolov3 Module](object-detection-2d-yolov3.md)
         - object detection 3d:
