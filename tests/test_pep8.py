@@ -32,7 +32,7 @@ skippedDirectories = [
     'dependencies',
     'lib',
     'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
-    'projects/control/eagerx/eagerx',
+    'projects/control/eagerx/eagerx'
 ]
 
 
