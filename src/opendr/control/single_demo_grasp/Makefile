@@ -16,6 +16,12 @@ ifeq ($(MAKECMDGOALS),)
 MAKECMDGOALS = release
 endif
 
+ifeq ($(OPENDR_DEVICE),gpu)
+DETECTRON_WHEEL=https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.7/index.html
+else
+DETECTRON_WHEEL=https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.7/index.html
+endif
+
 .PHONY: release install_compilation_dependencies install_runtime_dependencies
 
 release: install_compilation_dependencies
@@ -25,7 +31,7 @@ install_runtime_dependencies:
 
 install_compilation_dependencies:
 	@+echo "#"; echo "# * Install Compilation Dependencies for single demonstration grasping *"; echo "#"
-	@+python -m pip install detectron2==0.5 -f \https://dl.fbaipublicfiles.com/detectron2/wheels/cu110/torch1.7/index.html
+	@+python -m pip install detectron2==0.5 -f \$(DETECTRON_WHEEL)
 	@./install_single_demo_grasp.sh
 
 help:
