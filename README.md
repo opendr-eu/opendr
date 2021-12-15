@@ -57,5 +57,6 @@ Please follow the instructions provided in the [wiki](https://github.com/tasoste
 
 ## Acknowledgments
 *OpenDR project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871449.*
-
+<div align="center">
 <img src="https://user-images.githubusercontent.com/16520105/123549590-6a9f4b00-d772-11eb-998a-ed4c70133617.png" height="70"> <img src="https://user-images.githubusercontent.com/16520105/123549536-31ff7180-d772-11eb-9c81-6cc98b7d2e1e.png" height="70">
+</div>
