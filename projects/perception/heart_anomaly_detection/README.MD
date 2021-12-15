@@ -1,6 +1,7 @@
 # Heart Anomaly Detection
 
-This folder contains a sample application for heart anomaly detection. It can be used for both evaluation on AF dataset, as well as inference on a single ECG timeseries provided as .npy array.
+This folder contains a sample application for heart anomaly detection.
+It can be used for both evaluation on AF dataset, as well as inference on a single ECG timeseries provided as .npy array.
 Demo for evaluation on AF dataset can be run as follows:
 
 ```python
