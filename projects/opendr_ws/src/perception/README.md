@@ -179,3 +179,30 @@ rosrun perception skeleton_based_action_recognition.py
 ```
 The predictied class id and confidence is published under the topic name `/opendr/skeleton_based_action_recognition`, and the human-readable class name under `/opendr/skeleton_based_action_recognition_description`.
 Besides, the annotated image is published in `/opendr/image_pose_annotated` as well as the corresponding poses in `/opendr/poses`.
+
+## Voxel Object Detection 3D ROS Node
+
+A ROS node for performing Object Detection 3D using PointPillars or TANet methods with either pretrained models on KITTI dataset, or custom trained models. The predicted detection annotations are pushed to `output_detection3d_topic` (default `output_detection3d_topic="/opendr/detection3d"`).
+Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception object_detection_3d_voxel.py
+```
+To get a point cloud from a dataset on the disk, you can start a `point_cloud_dataset.py` node as:
+```shell
+rosrun perception point_cloud_dataset.py
+```
+This will pulbish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
+
+
+## AB3DMOT Object Tracking 3D ROS Node
+
+A ROS node for performing Object Tracking 3D using AB3DMOT stateless method. This is a detection-based method, and therefore the 3D object detector is needed to provide detections, which then will be used to make associations and generate tracking ids. The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection3d"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking3d_id"`).
+Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception object_tracking_3d_ab3dmot.py
+```
+To get a point cloud from a dataset on the disk, you can start a `point_cloud_dataset.py` node as:
+```shell
+rosrun perception point_cloud_dataset.py
+```
+This will pulbish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
