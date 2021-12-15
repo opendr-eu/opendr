@@ -33,7 +33,7 @@ The installation script automatically install all the required dependecies.
 Note that you can set the inference device using the `OPENDR_DEVICE` variable.
 The toolkit defaults to using CPU. If you want to use GPU, please set this variable accordingly:
 ```bash
-export export OPENDR_DEVICE=cpu
+export export OPENDR_DEVICE=gpu
 ```
 The installation script creates a *virtualenv*, where the toolkit is installed.
 To activate OpenDR environment you can just source the `activate.sh`:
