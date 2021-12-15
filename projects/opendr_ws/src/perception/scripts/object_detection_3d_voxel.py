@@ -13,13 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cv2
 import torch
 import os
-from opendr.engine.target import TrackingAnnotation
 import rospy
 from vision_msgs.msg import Detection3DArray
-from std_msgs.msg import Int32MultiArray
 from sensor_msgs.msg import PointCloud as ROS_PointCloud
 from opendr_bridge import ROSBridge
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner import (
@@ -43,19 +40,17 @@ class ObjectDetection3DVoxelNode:
         temp_dir="temp",
     ):
         """
-        Creates a ROS Node for face detection
-        :param input_image_topic: Topic from which we are reading the input image
+        Creates a ROS Node for 3D object detection
+        :param input_point_cloud_topic: Topic from which we are reading the input point cloud
         :type input_image_topic: str
-        :param output_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
-        annotated image)
-        :type output_image_topic: str
-        :param face_detections_topic: Topic to which we are publishing the annotations (if None, we are not publishing
-        annotated pose annotations)
-        :type face_detections_topic:  str
+        :param output_detection3d_topic: Topic to which we are publishing the annotations
+        :type output_detection3d_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
-        :param backbone: retinaface backbone, options are ('mnet' and 'resnet'), where 'mnet' detects masked faces as well
-        :type backbone: str
+        :param model_name: the pretrained model to download or a trained model in temp_dir 
+        :type model_name: str
+        :param temp_dir: where to store models
+        :type temp_dir: str
         """
 
         self.learner = VoxelObjectDetection3DLearner(
