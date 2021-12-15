@@ -1,6 +1,7 @@
 # Gesture Recognition from RGBD
 
-This folder contains a sample application for gesture recognition from provided rgb and depth images using Mobilenetv2 trained on HANDS dataset. Demo can be run as follows:
+This folder contains a sample application for gesture recognition from provided rgb and depth images using Mobilenetv2 trained on HANDS dataset.
+Demo can be run as follows:
 
 ```python
 python gesture_recognition_demo.py -input_rgb /path/to/rgb/image.png -input_depth /path/to/depth/image.png
