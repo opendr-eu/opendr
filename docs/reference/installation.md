@@ -22,7 +22,7 @@ sudo apt install git
 ```
 Then, clone the toolkit:
 ```bash
-git clone https://github.com/tasostefas/opendr_internal
+git clone https://github.com/opendr-eu/opendr
 ```
 You are then ready to install the toolkit:
 ```bash
