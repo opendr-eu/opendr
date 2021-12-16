@@ -1,8 +1,9 @@
 # OpenDR Toolkit Reference Manual
 
-Release 0.1
-
-![OpenDR](images/opendr_logo.png)
+*Release 1.0*
+<div align="center">
+  <img src="images/opendr_logo.png" />
+</div>
 
 Copyright &copy; 2020-2021 OpenDR Project.
 OpenDR is funded from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871449.
