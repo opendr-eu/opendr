@@ -73,7 +73,10 @@ class RetinaFaceLearner(Learner):
                                                 device=device)
         self.device = device
         if device == 'cuda':
-            self.gpu_id = 0
+            if mx.context.num_gpus() > 0:
+                self.gpu_id = 0
+            else:
+                self.gpu_id = -1
         else:
             # use cpu
             self.gpu_id = -1

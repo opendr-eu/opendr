@@ -170,6 +170,61 @@ Parameters:
   If True, enables maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
+  
+#### Examples
+
+* **Training example using an `ExternalDataset`**.
+  To train properly, the backbone weights are downloaded automatically in the `temp_path`. Default backbone is
+  'resnet50_v1b'.
+  The VOC and COCO datasets are supported as ExternalDataset types. This example assumes the data has been downloaded and placed in the directory referenced by `data_root`.
+
+  ```python
+  from opendr.perception.object_detection_2d import CenterNetDetectorLearner
+  from opendr.engine.datasets import ExternalDataset
+
+  centernet = CenterNetDetectorLearner(device=device, batch_size=batch_size,
+                                       lr=lr, val_after=val_after,
+                                       epochs=n_epochs, backbone=backbone)
+
+  dataset = ExternalDataset(data_root, 'voc')
+  val_dataset = ExternalDataset(data_root, 'voc')
+  centernet.fit(dataset, val_dataset)
+  centernet.save('./trained_models/centernet_model')
+  ```
+  
+  Training with `DetetionDataset` types is also supported. Example using the `WiderPersonDataset` (assuming data has been downloaded in `data_root` folder):
+  ```python
+  from opendr.perception.object_detection_2d import CenterNetDetectorLearner
+  from opendr.perception.object_detection_2d.datasets import WiderPersonDataset
+
+  centernet = CenterNetDetectorLearner(device=device, batch_size=batch_size,
+                                       lr=lr, val_after=val_after,
+                                       epochs=n_epochs, backbone=backbone)
+
+  dataset = WiderPersonDataset(root=data_root, splits=['train'])
+  val_dataset = WiderPersonDataset(root=data_root, splits=['val'])
+  centernet.fit(dataset, val_dataset)
+  centernet.save('./trained_models/centernet_model')
+  ```
+  
+  Custom datasets are supported by inheriting the `DetectionDataset` class.
+
+* **Inference and result drawing example on a test .jpg image using OpenCV.**
+  ```python
+  from opendr.engine.data import Image
+  from opendr.perception.object_detection_2d import CenterNetDetectorLearner
+  from opendr.perception.object_detection_2d import draw_bounding_boxes
+
+  centernet = CenterNetDetectorLearner(device=device)
+  centernet.download(".", mode="pretrained")
+  centernet.load("./centernet_default", verbose=True)
+
+  centernet.download(".", mode="images")
+  img = Image.open("./bicycles.jpg")
+
+  boxes = centernet.infer(img)
+  draw_bounding_boxes(img.opencv(), boxes, class_names=centernet.classes, show=True)
+  ```
 
 #### References
 <a name="centernet-1" href="https://arxiv.org/abs/1904.08189">[1]</a> CenterNet: Keypoint Triplets for Object Detection,
