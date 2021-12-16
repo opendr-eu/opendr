@@ -9,7 +9,7 @@ The *SingleShotDetectorLearner* class is a wrapper of the SSD detector[[1]](#ssd
 [GluonCV implementation](https://github.com/dmlc/gluon-cv/blob/master/gluoncv/model_zoo/ssd/ssd.py).
 It can be used to perform object detection on images (inference) as well as train new object detection models.
 
-The [SingleShotDetectorLearner](#src.opendr.perception.object_detection_2d.ssd.ssd_learner.py) class has the following
+The [SingleShotDetectorLearner](/src/opendr/perception/object_detection_2d/ssd/ssd_learner.py) class has the following
 public methods:
 
 #### `SingleShotDetectorLearner` constructor
