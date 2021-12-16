@@ -9,4 +9,3 @@ matplotlib>=2.2.2
 opencv-python>=3.4.3.18
 tensorboard>=1.14.0
 face-alignment==1.0.0
-neural_renderer_pytorch

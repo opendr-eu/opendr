@@ -79,7 +79,8 @@ def save_img(img, save_path):
 
 
 def main(save_path, val_yaw, val_pitch):
-    import data
+    import algorithm.Rotate_and_Render.data as data
+
     opt = TestOptions().parse()
     data_info = data.dataset_info()
     opt.yaw_poses = [float(x) for x in val_yaw.split(" ")]

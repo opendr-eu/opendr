@@ -2,13 +2,15 @@
 
 Based on: [[Rotate-and-Render: Unsupervised Photorealistic Face Rotation from Single-View Images]](https://arxiv.org/abs/2003.08124)
 
-We utilize with small modifications, in order to be easily executed, publicly available code, namely an un-supervised framework that can synthesize photorealistic rotated facial images using as input  a single facial image, or multiple such images (one per person).
-The key insight of the utilized method is that rotating faces in the 3D space back and forth, and re-rendering them to the 2D plane can serve as a strong self-supervision.
+We utilize, with small modifications in order to be easily executed, publicly available code, namely an un-supervised framework that can synthesize photorealistic rotated facial images using as input  a single facial image, or multiple such images (one per person).
+The implemented method allows for rotating faces in the 3D space back and forth, and then re-rendering them to the 2D plane.
+The generated multi-view facial images can be used for different learning tasks, such as in self-supervised learning tasks.
 
-# Sources:
+## Sources:
 * Face Alignment in Full Pose Range: A 3D Total Solution (IEEE TPAMI 2017)
 * Neural 3D Mesh Renderer (CVPR 2018)
 * Rotate-and-Render: Unsupervised Photorealistic Face Rotation from Single-View Images (CVPR 2020)
+
 ## Requirements
 * Python 3.6 is used. Basic requirements are listed in the 'requirements.txt'.
 
@@ -17,22 +19,35 @@ pip3 install -r requirements.txt
 ```
 * Install the [Neural_Renderer](https://github.com/daniilidis-group/neural_renderer) following the instructions.
 ```
-pip3 install neural_renderer_pytorch
+pip install git+https://github.com/cidl-auth/neural_renderer
 ```
 
-* Download checkpoint and BFM model from [ckpt_and_bfm.zip](ftp://opendrdata.csd.auth.gr/data_generation/synthetic_multi-view-facial-generator/checkpoints.zip) put it in ```3ddfa``` and unzip it. The 3D models are borrowed from [3DDFA](https://github.com/cleardusk/3DDFA). 
+* Download checkpoint and BFM model from [checkpoint.zip](ftp://opendrdata.csd.auth.gr/data_generation/synthetic_multi-view-facial-generator/ckpt_and_bfm.zip) put it in ```3ddfa``` and unzip it:
+```bash
+wget ftp://opendrdata.csd.auth.gr/data_generation/synthetic_multi-view-facial-generator/checkpoints.zip
+unzip checkpoints.zip
+unzip checkpoints/ckpt_and_bfm.zip -d 3ddfa
+```
+The 3D models are borrowed from [3DDFA](https://github.com/cleardusk/3DDFA).
 
-## DEMO
+* Compile cython code and download remaining models:
+```bash
+cd algorithm/DDFA/utils/cython/
+python3 setup.py build_ext -i
+cd ../../../..
+mkdir algorithm/DDFA/models
+mkdir algorithm/DDFA/example
+wget https://github.com/cleardusk/3DDFA/blob/master/models/phase1_wpdc_vdc.pth.tar?raw=true -O algorithm/DDFA/models/phase1_wpdc_vdc.pth.tar
+```
 
-1. Download the [checkpoint](ftp://opendrdata.csd.auth.gr/data_generation/synthetic_multi-view-facial-generator/checkpoints.zip)
-and put it in ```./checkpoints/rs_model```.
+## Usage Example
 
-2.	Execute the one-step OPENDR function ```tool_synthetic_facial_generation.py``` specifying the input images folder, the output folder, the desired degrees (range -90 to 90) for generating the facial images in multiple view angles pitch and yaw as indicated in the command line: 
+1.	Execute the one-step OPENDR function ```tool_synthetic_facial_generation.py``` specifying the input images folder, the output folder, the desired degrees (range -90 to 90) for generating the facial images in multiple view angles pitch and yaw as indicated in the command line: 
 ```sh
 python3 tool_synthetic_facial_generation.py -path_in ./demos/imgs_input/ -path_3ddfa ./algorithm/DDFA/ -save_path ./results -val_yaw 10, 40 -val_pitch 10, 30 -device cuda
-
 ```
-3. Results are multi-view facial images for every person identity in a respective folder called  ```results/rs_model/example/```
+
+3. The results can be found in ```results/rs_model/example/```, where multi-view facial images are generated for every person in a respective folder.
 
 
 ## License 
