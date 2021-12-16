@@ -26,7 +26,7 @@ git clone https://github.com/opendr-eu/opendr
 ```
 You are then ready to install the toolkit:
 ```bash
-cd opendr_internal
+cd opendr
 ./bin/install.sh
 ```
 The installation script automatically install all the required dependecies.
