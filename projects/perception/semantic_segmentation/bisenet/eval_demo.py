@@ -19,11 +19,15 @@ from opendr.perception.semantic_segmentation import CamVidDataset
 
 if __name__ == '__main__':
     learner = BisenetLearner()
+
     # Download CamVid dataset
     if not os.path.exists('./datasets/'):
         CamVidDataset.download_data('./datasets/')
     datatest = CamVidDataset('./datasets/CamVid/', mode='test')
-    # Dowload the pretrained model
+
+    # Download the pretrained model
     learner.download('./bisenet_camvid', mode='pretrained')
     learner.load('./bisenet_camvid')
-    learner.eval(dataset=datatest)
+    results = learner.eval(dataset=datatest)
+
+    print("Evaluation results = ", results)
