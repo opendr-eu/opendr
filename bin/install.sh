@@ -43,7 +43,10 @@ make libopendr
 
 # Prepare requirements.txt for wheel distributions
 pip3 freeze > requirements.txt
-python setup.py sdist bdist_wheel
+
+# Remove detectron, since it was installed from git repo
+sed -i '/detectron2/d' requirements.txt
+python setup.py bdist_wheel
 
 # Install OpenDR
 pip3 install dist/*.whl
