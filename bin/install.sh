@@ -48,8 +48,5 @@ pip3 freeze > requirements.txt
 sed -i '/detectron2/d' requirements.txt
 python setup.py bdist_wheel
 
-# Install OpenDR
-pip3 install dist/*.whl
-
 deactivate
 
