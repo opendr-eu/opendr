@@ -64,7 +64,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
     - `control` Module
         - [mobile_manipulation Module](mobile-manipulation.md)
         - [single_demo_grasp Module](single-demonstration-grasping.md)        
-        
+
     - `simulation` Module
         - [human_model_generation Module](human_model_generation.md)
     - `data_generation` Module
@@ -72,6 +72,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [human_model_generation Module](human-model-generation.md)
     - `utils` Module
         - [Hyperparameter Tuning Module](hyperparameter_tuner.md)
+    - `Stand-alone Utility Frameworks`
+        - [Engine Agnostic Gym Environment with Reactive extension (EAGERx)](eagerx.md)
 
 - [ROSBridge Package](rosbridge.md)
 - [C Inference API](c-api.md)
