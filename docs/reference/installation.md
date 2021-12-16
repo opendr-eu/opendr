@@ -65,6 +65,8 @@ pip install opendr-eu
 Please note that only the Python API is exposed when you install OpenDR toolkit using *pip*.
 *Note: This mode of installation is not yet available, since wheel is not yet published in PyPI.*
 
+*pip* wheels only install code that is available under the *src/opendr* folder of the toolkit.
+Tools provided in *projects* are not installed by *pip*.
 
 # Installing using *docker*
 After installing [docker](?), you can build our docker contrainer (based on Ubuntu 20.04):
