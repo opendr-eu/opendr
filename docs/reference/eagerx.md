@@ -32,13 +32,7 @@ First source the workspace:
 source $OPENDR_HOME/projects/control/eagerx/eagerx_ws/devel/setup.bash
 ```
 
-and start ROS core:
-
-```bash
-roscore
-```
-
-Then in a separate terminal, after sourcing again, you can run one of the demos:
+Now you can run one of the demos in the terminal where you sourced the workspace:
 
 ```bash
 source $OPENDR_HOME/projects/control/eagerx/eagerx_ws/devel/setup.bash
