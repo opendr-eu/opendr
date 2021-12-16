@@ -9,7 +9,7 @@ The *CenterNetDetectorLearner* class is a wrapper of the SSD detector[[1]](#cent
 [GluonCV implementation](https://github.com/dmlc/gluon-cv/blob/master/gluoncv/model_zoo/center_net/center_net.py).
 It can be used to perform object detection on images (inference) as well as train new object detection models.
 
-The [CenterNetDetectorLearner](#src.opendr.perception.object_detection_2d.centernet.centernet_learner.py) class has the following
+The [CenterNetDetectorLearner](/src/opendr/perception/object_detection_2d/centernet/centernet_learner.py) class has the following
 public methods:
 
 #### `CenterNetDetectorLearner` constructor
