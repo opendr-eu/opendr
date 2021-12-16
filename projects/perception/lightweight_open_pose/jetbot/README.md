@@ -17,7 +17,7 @@ Using the `--local` flag provides an OpenCV window for monitoring the input to t
 To run the evaluation on jetbot you can simply use the `jetbot.sh`. 
 Note that collision avoidance is not supported on JetBot due to the limited computational resources. 
 Furthermore, you should make sure that the camera is facing upwards. 
-Based on the actual configuration and calibration of you robot, you might need to finetune the default parameters set in [pose_controller.py](https://github.com/cidl-auth/fall_detection_demo/blob/main/utils/pose_controller.py#L87). 
+Based on the actual configuration and calibration of you robot, you might need to finetune the default parameters set in [pose_controller.py](utils/pose_controller.py#L87). 
 The demo controller attempts to stop the JetBot motors if an exception is raised.
 However, if this fails, then you can use the `jetbot_kill.sh` for convenience. 
 Note that the response time of the script might be high, if the JetBot is loaded.
