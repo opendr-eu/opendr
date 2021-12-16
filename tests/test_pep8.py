@@ -32,7 +32,8 @@ skippedDirectories = [
     'dependencies',
     'lib',
     'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
-    'venv'
+    'venv',
+    'build'
 ]
 
 
