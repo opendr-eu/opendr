@@ -55,7 +55,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [multilinear_compressive_learning Module](multilinear-compressive-learning.md)
         - semantic segmentation:
             - [semantic_segmentation Module](semantic-segmentation.md)
-        - panoptic segmentation:s
+        - panoptic segmentation:
             - [efficient_ps Module](efficient-ps.md)
         - heart anomaly detection:
             - [gated_recurrent_unit Module](gated-recurrent-unit-learner.md)
