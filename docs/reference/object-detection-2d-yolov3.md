@@ -193,7 +193,7 @@ Parameters:
   Training with `DetetionDataset` types is also supported. Example using the `WiderPersonDataset` (assuming data has been downloaded in `data_root` folder):
   ```python
   from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
-  from opendr.perception.object_detection_2d.datasets import WiderPersonDataset
+  from opendr.perception.object_detection_2d import WiderPersonDataset
   
   dataset = WiderPersonDataset(root=data_root, splits=['train'])
   val_dataset = WiderPersonDataset(root=data_root, splits=['val'])
