@@ -24,9 +24,9 @@ ______________________________________________________________________
 The aim of [OpenDR Project](https://opendr.eu) is to develop a **modular, open** and **non-proprietary toolkit** for core **robotic functionalities** by harnessing **deep learning** to provide advanced perception and cognition capabilities, meeting in this way the general requirements of robotics applications in the applications areas of healthcare, agri-food and agile production. 
 OpenDR provides the means to link the **robotics applications to software libraries** (deep learning frameworks, e.g., [PyTorch](https://pytorch.org/) and [Tensorflow](https://www.tensorflow.org/)) to the **operating environment ([ROS](https://www.ros.org/))**. 
 OpenDR focuses on the **AI and Cognition core technology** in order to provide tools that make robotic systems cognitive, giving them the ability to:
-- a) interact with people and environments by developing deep learning methods for **human centric and environment active perception and cognition**,
-- b) **learn and categorise** by developing deep learning **tools for training and inference in common robotics settings**, and 
-- c) **make decisions and derive knowledge** by developing deep learning tools for cognitive robot action and decision making.
+1. interact with people and environments by developing deep learning methods for **human centric and environment active perception and cognition**,
+2. **learn and categorise** by developing deep learning **tools for training and inference in common robotics settings**, and 
+3. **make decisions and derive knowledge** by developing deep learning tools for cognitive robot action and decision making.
 
 As a result, the developed OpenDR toolkit will also enable cooperative human-robot interaction as well as the development of cognitive mechatronics where sensing and actuation are closely coupled with cognitive systems thus contributing to another two core technologies beyond AI and Cognition. 
 OpenDR aims to develop, train, deploy and evaluate deep learning models that improve the technical capabilities of the core technologies beyond the current state of the art. 
