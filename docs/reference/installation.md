@@ -56,6 +56,7 @@ sudo update-alternatives --config gcc
 Then, you can install CUDA, along CuDNN.
 
 # Installing using *pip*
+
 You can directly install OpenDR toolkit for CPU-only inference using pip:
 ```bash
 sudo apt install python3.8-venv
