@@ -5,7 +5,7 @@ OpenDR can be installed in the following ways:
 2. Using *pip* (CPU only)
 3. Using *docker* (CPU only)
 
-The following table summarizes the installation option based on your system architecture and OS:
+The following table summarizes the installation options based on your system architecture and OS:
 
 | Installation Method | CPU/GPU  | OS                    |
 |---------------------|----------|-----------------------|
