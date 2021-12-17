@@ -146,7 +146,84 @@ Parameters:
   Local path to save the files.
 
 
+#### Examples
 
+* **Training example on CamVid train set.**
+  ```python
+  import os
+  from opendr.perception.semantic_segmentation import BisenetLearner
+  from opendr.perception.semantic_segmentation import CamVidDataset
+
+
+  if __name__ == '__main__':
+      learner = BisenetLearner()
+      # Download CamVid dataset
+      if not os.path.exists('./datasets/'):
+          CamVidDataset.download_data('./datasets/')
+      datatrain = CamVidDataset('./datasets/CamVid/', mode='train')
+      learner.fit(dataset=datatrain)
+      learner.save("./bisenet_saved_model")
+  ```
+
+* **Evaluation example on CamVid test set.**
+  ```python
+  import os
+  from opendr.perception.semantic_segmentation import BisenetLearner
+  from opendr.perception.semantic_segmentation import CamVidDataset
+
+
+  if __name__ == '__main__':
+      learner = BisenetLearner()
+
+      # Download CamVid dataset
+      if not os.path.exists('./datasets/'):
+          CamVidDataset.download_data('./datasets/')
+      datatest = CamVidDataset('./datasets/CamVid/', mode='test')
+
+      # Download the pretrained model
+      learner.download('./bisenet_camvid', mode='pretrained')
+      learner.load('./bisenet_camvid')
+      results = learner.eval(dataset=datatest)
+
+      print("Evaluation results = ", results)
+  ```
+
+* **Inference example on a single test image using a pretrained model.**
+  ```python
+  import cv2
+  from opendr.perception.semantic_segmentation import BisenetLearner
+  from opendr.engine.data import Image
+  from matplotlib import cm
+  import numpy as np
+
+  if __name__ == '__main__':
+      learner = BisenetLearner()
+
+      # Dowload the pretrained model
+      learner.download('./bisenet_camvid', mode='pretrained')
+      learner.load('./bisenet_camvid')
+
+      # Download testing image
+      learner.download('./', mode='testingImage')
+      img = Image.open("./test1.png")
+
+      # Perform inference
+      heatmap = learner.infer(img)
+
+      # Create a color map and translate colors
+      segmentation_mask = heatmap.data
+
+      colormap = cm.get_cmap('viridis', 12).colors
+      segmentation_img = np.uint8(255*colormap[segmentation_mask][:, :, :3])
+
+      # Blend original image and the segmentation mask
+      blended_img = np.uint8(0.4*img.opencv() + 0.6*segmentation_img)
+
+      cv2.imshow('Heatmap', blended_img)
+      cv2.waitKey(-1)
+  ```
+  
+  
 #### References
 <a name="bisenetp" href="https://arxiv.org/abs/1808.00897">[1]</a> BiSeNet: Bilateral Segmentation Network for Real-time Semantic Segmentation,
 [arXiv](https://arxiv.org/abs/1808.00897).
