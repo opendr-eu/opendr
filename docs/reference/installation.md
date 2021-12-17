@@ -22,7 +22,7 @@ sudo apt install git
 ```
 Then, clone the toolkit:
 ```bash
-git clone --branch master --single-branch https://github.com/opendr-eu/opendr
+git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
 ```
 You are then ready to install the toolkit:
 ```bash
@@ -73,7 +73,7 @@ Tools provided in *projects* are not installed by *pip*.
 
 # Installing using *docker*
 
-After installing [docker](?), you can build our docker contrainer (based on Ubuntu 20.04):
+After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can build our docker contrainer (based on Ubuntu 20.04):
 ```bash
 sudo docker build -t opendr/ubuntu .
 ```
