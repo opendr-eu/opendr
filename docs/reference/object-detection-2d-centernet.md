@@ -195,7 +195,7 @@ Parameters:
   Training with `DetetionDataset` types is also supported. Example using the `WiderPersonDataset` (assuming data has been downloaded in `data_root` folder):
   ```python
   from opendr.perception.object_detection_2d import CenterNetDetectorLearner
-  from opendr.perception.object_detection_2d.datasets import WiderPersonDataset
+  from opendr.perception.object_detection_2d import WiderPersonDataset
 
   centernet = CenterNetDetectorLearner(device=device, batch_size=batch_size,
                                        lr=lr, val_after=val_after,
