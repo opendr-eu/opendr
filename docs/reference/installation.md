@@ -72,6 +72,7 @@ Please note that only the Python API is exposed when you install OpenDR toolkit 
 Tools provided in *projects* are not installed by *pip*.
 
 # Installing using *docker*
+
 After installing [docker](?), you can build our docker contrainer (based on Ubuntu 20.04):
 ```bash
 sudo docker build -t opendr/ubuntu .
