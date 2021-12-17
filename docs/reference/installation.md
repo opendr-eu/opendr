@@ -31,7 +31,8 @@ cd opendr
 ```
 The installation script automatically installs all the required dependencies.
 Note that you can set the inference device using the `OPENDR_DEVICE` variable.
-The toolkit defaults to using CPU. If you want to use GPU, please set this variable accordingly:
+The toolkit defaults to using CPU.
+If you want to use GPU, please set this variable accordingly:
 ```bash
 export OPENDR_DEVICE=gpu
 ```
