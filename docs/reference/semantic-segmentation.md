@@ -149,7 +149,6 @@ Parameters:
 #### Examples
 
 * **Training example on CamVid train set.**
-
   ```python
   import os
   from opendr.perception.semantic_segmentation import BisenetLearner
@@ -190,7 +189,6 @@ Parameters:
   ```
 
 * **Inference example on a single test image using a pretrained model.**
-  Inference can be run with the trained model after running self.optimize.
   ```python
   import cv2
   from opendr.perception.semantic_segmentation import BisenetLearner
