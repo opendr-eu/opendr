@@ -53,3 +53,5 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes:
 12. Speech Command Recognition
 13. Voxel Object Detection 3D
 14. AB3DMOT Object Tracking 3D
+15. FairMOT Object Tracking 2D
+16. Deep Sort Object Tracking 2D

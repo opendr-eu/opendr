@@ -15,6 +15,13 @@ rosrun perception point_cloud_dataset.py
 ```
 By default, it downloads a `nano_KITTI` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements.
 
+### Image Dataset ROS Node
+To get an image from a dataset on the disk, you can start a `image_dataset.py` node as:
+```shell
+rosrun perception image_dataset.py
+```
+By default, it downloads a `nano_MOT20` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(Image, Target)` as elements.
+
 ## Pose Estimation ROS Node
 Assuming that you have already [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
 
@@ -198,7 +205,7 @@ Besides, the annotated image is published in `/opendr/image_pose_annotated` as w
 A ROS node for recognizing speech commands from an audio stream using MatchboxNet or Quadratic SelfONN models, pretrained on the Google Speech Commands dataset.
 Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
 ```shell
-rosrun perception speech_command_recognition.py INPUT_AUDIO_TOPIC 
+rosrun perception speech_command_recognition.py INPUT_AUDIO_TOPIC
 ```
 The following optional arguments are available:
 - `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds, default value **1.5**
@@ -236,4 +243,41 @@ To get a point cloud from a dataset on the disk, you can start a `point_cloud_da
 rosrun perception point_cloud_dataset.py
 ```
 This will pulbish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
+
+
+## FairMOT Object Tracking 2D ROS Node
+
+A ROS node for performing Object Tracking 2D using FairMOT with either pretrained models on MOT dataset, or custom trained models. The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`). Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
+Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception object_tracking_2d_fair_mot.py
+```
+To get images from usb_camera, you can start the camera node as:
+```shell
+rosrun usb_cam usb_cam_node
+```
+The corresponding `input_image_topic` should be `/usb_cam/image_raw`.
+If you want to use a dataset from the disk, you can start a `image_dataset.py` node as:
+```shell
+rosrun perception image_dataset.py
+```
+This will pulbish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
+
+## Deep Sort Object Tracking 2D ROS Node
+
+A ROS node for performing Object Tracking 2D using Deep Sort using either pretrained models on Market1501 dataset, or custom trained models. This is a detection-based method, and therefore the 2D object detector is needed to provide detections, which then will be used to make associations and generate tracking ids. The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`). Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
+Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception object_tracking_2d_deep_sort.py
+```
+To get images from usb_camera, you can start the camera node as:
+```shell
+rosrun usb_cam usb_cam_node
+```
+The corresponding `input_image_topic` should be `/usb_cam/image_raw`.
+If you want to use a dataset from the disk, you can start an `image_dataset.py` node as:
+```shell
+rosrun perception image_dataset.py
+```
+This will pulbish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
 
