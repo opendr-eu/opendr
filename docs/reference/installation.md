@@ -62,7 +62,7 @@ You can directly install OpenDR toolkit for CPU-only inference using pip:
 sudo apt install python3.8-venv libfreetype6-dev git
 python3 -m venv venv
 source venv/bin/activate
-pip install Cython torch==1.7.1
+pip install Cython torch==1.7.1 wheel
 pip install opendr-eu
 ```
 Please note that only the Python API is exposed when you install OpenDR toolkit using *pip*.
