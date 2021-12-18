@@ -59,12 +59,14 @@ Then, you can install CUDA, along CuDNN.
 
 You can directly install OpenDR toolkit for CPU-only inference using pip:
 ```bash
+export DISABLE_BCOLZ_AVX2=true
 sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev
 python3 -m venv venv
 source venv/bin/activate
 pip install Cython torch==1.7.1 wheel
 pip install opendr-eu
 ```
+For some systems it is necessary to disable AVX2 during `bcolz` dependency installation (`export DISABLE_BCOLZ_AVX2=true`).
 Please note that only the Python API is exposed when you install OpenDR toolkit using *pip*.
 *Note: This mode of installation is not yet available, since wheel is not yet published in PyPI.*
 
