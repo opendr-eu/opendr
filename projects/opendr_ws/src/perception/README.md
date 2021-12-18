@@ -202,16 +202,18 @@ Besides, the annotated image is published in `/opendr/image_pose_annotated` as w
 
 ## Speech Command Recognition ROS Node
 
-A ROS node for recognizing speech commands from an audio stream using MatchboxNet or Quadratic SelfONN models, pretrained on the Google Speech Commands dataset.
+A ROS node for recognizing speech commands from an audio stream using MatchboxNet, EdgeSpeechNets or Quadratic SelfONN models, pretrained on the Google Speech Commands dataset.
 Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
 ```shell
 rosrun perception speech_command_recognition.py INPUT_AUDIO_TOPIC
 ```
 The following optional arguments are available:
 - `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds, default value **1.5**
-- `--model MODEL`: choose the model to use, either `matchboxnet` (default value) or `quad_selfonn`
+- `--model MODEL`: choose the model to use: `matchboxnet` (default value), `edgespeechnets` or `quad_selfonn`
+- `--model_path MODEL_PATH`: if given, the pretrained model will be loaded from the specified local path, otherwise it will be downloaded from an OpenDR FTP server
 
 The predictions (class id and confidence) are published to the topic `/opendr/speech_recognition`.
+**Note:** EdgeSpeechNets currently does not have a pretrained model available for download, only local files may be used.
 
 ## Voxel Object Detection 3D ROS Node
 
