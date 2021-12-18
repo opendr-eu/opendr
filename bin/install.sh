@@ -10,7 +10,7 @@ if [[ -z "${OPENDR_DEVICE}" ]]; then
 fi
 
 # Install base ubuntu deps
-sudo apt-get install --yes libfreetype6-dev lsb-release git python python3-pip curl wget
+sudo apt-get install --yes libfreetype6-dev lsb-release git python python3-pip curl wget python3.8-venv
 
 # Get all submodules
 git submodule init
@@ -26,8 +26,7 @@ case $(lsb_release -r |cut -f2) in
 esac
 
 # Create a virtual environment and update
-pip3 install virtualenv
-virtualenv -p python3 venv
+python3 -m venv venv
 source venv/bin/activate
 python3 -m pip install -U pip
 pip3 install setuptools configparser
