@@ -23,13 +23,13 @@ from vision_msgs.msg import Classification2D
 import argparse
 
 from opendr.engine.data import Timeseries
-from opendr.perception.speech_recognition import MatchboxNetLearner, QuadraticSelfOnnLearner
+from opendr.perception.speech_recognition import MatchboxNetLearner, EdgeSpeechNetsLearner, QuadraticSelfOnnLearner
 
 
 class SpeechRecognitionNode:
 
     def __init__(self, input_topic='/audio/audio', prediction_topic="/opendr/speech_recognition",
-                 buffer_size=1.5, model='matchboxnet', device='cuda'):
+                 buffer_size=1.5, model='matchboxnet', model_path=None, device='cuda'):
         """
         Creates a ROS Node for speech command recognition
         :param input_topic: Topic from which the audio data is received
@@ -60,13 +60,19 @@ class SpeechRecognitionNode:
         if model == "matchboxnet":
             self.learner = MatchboxNetLearner(output_classes_n=20, device=device)
             load_path = './MatchboxNet'
+        elif model == "edgespeechnets":
+            self.learner = EdgeSpeechNetsLearner(output_classes_n=20, device=device)
+            assert model_path is not None, "No pretrained EdgeSpeechNets model available for download"
         elif model == "quad_selfonn":
             self.learner = QuadraticSelfOnnLearner(output_classes_n=20, device=device)
             load_path = './QuadraticSelfOnn'
 
         # Download the recognition model
-        self.learner.download_pretrained(path='.')
-        self.learner.load(load_path)
+        if model_path is None:
+            self.learner.download_pretrained(path='.')
+            self.learner.load(load_path)
+        else:
+            self.learner.load(model_path)
 
     def listen(self):
         """
@@ -109,10 +115,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('input_topic', type=str, help='listen to input data on this topic')
     parser.add_argument('--buffer_size', type=float, default=1.5, help='size of the audio buffer in seconds')
-    parser.add_argument('--model', choices=["matchboxnet", "quad_selfonn"], default="matchboxnet",
+    parser.add_argument('--model', choices=["matchboxnet", "edgespeechnets", "quad_selfonn"], default="matchboxnet",
                         help='model to be used for prediction: matchboxnet or quad_selfonn')
+    parser.add_argument('--model_path', type=str,
+                        help='path to the model files, if not given, the pretrained model will be downloaded')
     args = parser.parse_args()
 
     speech_node = SpeechRecognitionNode(input_topic=args.input_topic, buffer_size=args.buffer_size,
-                                        model=args.model, device=device)
+                                        model=args.model, model_path=args.model_path, device=device)
     speech_node.listen()
