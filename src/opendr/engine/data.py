@@ -239,7 +239,7 @@ class Image(Data):
                 raise ValueError("Image data not understood (cannot be cast to NumPy array).")
 
             if data.ndim != 3:
-                raise ValueError("3D dimensional images are expected")
+                raise ValueError("3-dimensional images are expected")
             if guess_format:
                 # If channels are found last and image is a color one, assume OpenCV format
                 if data.shape[2] == 3:
