@@ -12,9 +12,8 @@ RUN chmod +x /tini
 ENTRYPOINT ["/tini", "--"]
 
 # Clone the repo and install the toolkit
-RUN git clone https://github.com/tasostefas/opendr_internal
-WORKDIR "/opendr_internal"
-RUN git checkout install_scripts
+RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr -b install_scripts
+WORKDIR "/opendr"
 RUN ./bin/install.sh
 
 # Create script for starting Jupyter Notebook
