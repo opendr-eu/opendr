@@ -85,3 +85,11 @@ You can run this docker and map this port in you localhost as:
 sudo docker run -p 8888:8888 opendr/ubuntu
 ```
 
+If you want to use a CUDA-enable container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) and then use the supplied dockerfile:
+```bash
+sudo docker build -t opendr/ubuntu -f Dockerfile-cuda .
+```
+As before, you can run this docker:
+```bash
+sudo docker run --gpus all -p 8888:8888 opendr/ubuntu
+```
