@@ -74,7 +74,7 @@ Please note that only the Python API is exposed when you install OpenDR toolkit 
 Tools provided in *projects* are not installed by *pip*.
 
 # Installing using *docker*
-
+## CPU docker
 After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can build our docker contrainer (based on Ubuntu 20.04):
 ```bash
 sudo docker build -t opendr/ubuntu .
@@ -85,7 +85,25 @@ You can run this docker and map this port in you localhost as:
 sudo docker run -p 8888:8888 opendr/ubuntu
 ```
 
-If you want to use a CUDA-enable container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) and then use the supplied dockerfile:
+## GPU docker
+If you want to use a CUDA-enable container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
+Then, edit `/etc/docker/daemon.json` in order to set the default docker runtime:
+```
+{
+    "runtimes": {
+        "nvidia": {
+            "path": "nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    },
+    "default-runtime": "nvidia"
+}
+```
+Restart docker afterwards:
+```
+sudo systemctl restart docker.service
+```
+Then you can build the supplied dockerfile:
 ```bash
 sudo docker build -t opendr/ubuntu -f Dockerfile-cuda .
 ```
