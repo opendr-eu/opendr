@@ -3,7 +3,7 @@
 OpenDR can be installed in the following ways:
 1. By cloning this repository (CPU/GPU support)
 2. Using *pip* (CPU only)
-3. Using *docker* (CPU only)
+3. Using *docker* (CPU/GPU support)
 
 The following table summarizes the installation options based on your system architecture and OS:
 
@@ -11,7 +11,7 @@ The following table summarizes the installation options based on your system arc
 |---------------------|----------|-----------------------|
 | Clone & Install     | Both     | Ubuntu 20.04 (x86-64) |
 | pip                 | CPU-only | Ubuntu 20.04 (x86-64) |
-| docker              | CPU-only | Linux                 |
+| docker              | Both     | Linux                 |
 
 # Installing by cloning OpenDR repository (Ubuntu 20.04, x86, architecture)
 
