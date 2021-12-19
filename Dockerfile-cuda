@@ -1,0 +1,52 @@
+FROM nvidia/cuda:11.0-base
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get --yes install git sudo apt-utils
+RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
+
+# Install CUDA 10.2
+RUN apt-get --yes install gcc-8 g++-8 gcc-9 g++-9 wget
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 9 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 8 --slave /usr/bin/g++ g++ /usr/bin/g++-9
+RUN apt-get --yes install zlib1g-dev libbz2-dev libreadline-dev libssl-dev libsqlite3-dev libffi-dev
+RUN wget https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run
+RUN wget http://people.cs.uchicago.edu/~kauffman/nvidia/cudnn/cudnn-10.2-linux-x64-v8.2.0.53.tgz
+
+RUN sudo apt-get --yes install libxml2
+RUN sh cuda_10.2.89_440.33.01_linux.run --silent --toolkit --override  --librarypath=/usr/local/cuda-10.2
+RUN ln -s /usr/local/cuda-10.2/ /usr/local/cuda
+
+RUN tar -xzvf cudnn-10.2-linux-x64-v8.2.0.53.tgz
+RUN cp cuda/include/cudnn.h /usr/local/cuda/include
+RUN cp cuda/lib64/libcudnn* /usr/local/cuda/lib64
+RUN chmod a+r /usr/local/cuda/include/cudnn.h /usr/local/cuda/lib64/libcudnn*
+RUN bash -c 'echo "/usr/local/cuda-10.2/lib64" > /etc/ld.so.conf.d/nvidia.conf'
+RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_adv_train.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_adv_train.so.8
+RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_ops_infer.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_ops_infer.so.8
+RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_cnn_train.so.8.0.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_cnn_train.so.8
+RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_adv_infer.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_adv_infer.so.8
+RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_ops_train.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_ops_train.so.8
+RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_cnn_infer.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_cnn_infer.so.8
+RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn.so.8
+RUN ldconfig
+
+# Add Tini
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+ENTRYPOINT ["/tini", "--"]
+
+# Clone the repo and install the toolkit
+ENV OPENDR_DEVICE gpu
+RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr -b install_scripts
+WORKDIR "/opendr"
+RUN ./bin/install.sh
+
+# Create script for starting Jupyter Notebook
+RUN /bin/bash -c "source ./bin/activate.sh; pip3 install jupyter"
+RUN echo "#!/bin/bash\n source ./bin/activate.sh\n ./venv/bin/jupyter notebook --port=8888 --no-browser --ip 0.0.0.0 --allow-root" > start.sh
+RUN chmod +x start.sh
+
+# Start Jupyter Notebook inside OpenDR
+CMD ["./start.sh"]
