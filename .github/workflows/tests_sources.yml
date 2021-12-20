@@ -52,7 +52,6 @@ jobs:
     needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
     strategy:
-      max-parallel: 10
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -73,6 +72,7 @@ jobs:
           - perception/object_detection_2d
           - simulation/human_model_generation
           - perception/facial_expression_recognition/landmark_based_facial_expression_recognition
+          - control/single_demo_grasp
           # - perception/object_tracking_3d
         include:
           - os: ubuntu-20.04
@@ -81,6 +81,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
+      with:
+         submodules: true
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
