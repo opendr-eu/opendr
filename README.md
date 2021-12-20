@@ -36,7 +36,7 @@ OpenDR aims to develop, train, deploy and evaluate deep learning models that imp
 OpenDR can be installed in the following ways:
 1. By *cloning* this repository (CPU/GPU support)
 2. Using *pip* (CPU only)
-3. Using *docker* (CPU only)
+3. Using *docker* (CPU/GPU support)
 
 You can find detailed installation instruction in the [documentation](docs/reference/installation.md).
 
