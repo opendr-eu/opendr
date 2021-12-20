@@ -93,11 +93,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 OPENDR_HOME = os.environ["OPENDR_HOME"]
 
-#Load images
+# We load a full-body image of a human as well as an image depicting its corresponding silhouette. 
 rgb_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_generation/demos', 'imgs_input/rgb/result_0004.jpg'))
 msk_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_generation/demos', 'imgs_input/msk/result_0004.jpg'))
 
-#Initialize learner and call the infer method
+# We initialize learner and, using the ```infer``` method, we generated human 3D model. 
 model_generator = PIFuGeneratorLearner(device='cuda', checkpoint_dir='./temp')
 model_3D = model_generator.infer(imgs_rgb=[rgb_img], imgs_msk=[msk_img], extract_pose=False)
 ```
