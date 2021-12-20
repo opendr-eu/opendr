@@ -59,6 +59,7 @@ class TestClangFormat(unittest.TestCase):
         ]
         skippedPaths = [
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
+            'src/opendr/planning/end_to_end_planning/ardupilot',
         ]
         skippedFiles = [
             'src/opendr/perception/object_detection_2d/retinaface/algorithm/cython/gpu_nms.cpp',

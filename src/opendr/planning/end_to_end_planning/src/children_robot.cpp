@@ -23,15 +23,13 @@
 #include <webots_ros/robot_get_device_list.h>
 #include <webots_ros/save_image.h>
 
-
 #include <geometry_msgs/WrenchStamped.h>
 #include <webots_ros/BoolStamped.h>
 #include <webots_ros/Float64Stamped.h>
-#include <webots_ros/get_int.h>
-#include <webots_ros/get_float_array.h>
 #include <webots_ros/StringStamped.h>
+#include <webots_ros/get_float_array.h>
+#include <webots_ros/get_int.h>
 #include <webots_ros/set_string.h>
-
 
 #define TIME_STEP 32;
 using namespace std;
@@ -41,9 +39,6 @@ static std::vector<std::string> controllerList;
 static std::vector<float> imageRangeFinder;
 static double touchSensorValues[3] = {0, 0, 0};
 static bool callbackCalled = false;
-
-
-
 
 ros::ServiceClient time_step_client;
 webots_ros::set_int time_step_srv;
@@ -63,7 +58,7 @@ void rangeFinderCallback(const sensor_msgs::Image::ConstPtr &image) {
   for (int i = 0; i < size; ++i)
     imageRangeFinder[i] = depth_data[i];
 }
-//touch sensor
+// touch sensor
 void touchSensorCallback(const webots_ros::Float64Stamped::ConstPtr &value) {
   ROS_INFO("Touch sensor sent value %f (time: %d:%d).", value->data, value->header.stamp.sec, value->header.stamp.nsec);
   callbackCalled = true;
@@ -84,7 +79,6 @@ void touchSensor3DCallback(const geometry_msgs::WrenchStamped::ConstPtr &values)
   callbackCalled = true;
 }
 
-
 void quit(int sig) {
   time_step_srv.request.value = 0;
   time_step_client.call(time_step_srv);
@@ -95,13 +89,13 @@ void quit(int sig) {
 
 int main(int argc, char **argv) {
   std::string controllerName;
-    std::vector<std::string> deviceList;
-    std::string rangeFinderName;
-    std::string touchSensorName;
+  std::vector<std::string> deviceList;
+  std::string rangeFinderName;
+  std::string touchSensorName;
 
   int width, height;
   float i, step;
-  
+
   // create a node named 'range' on ROS network
   ros::init(argc, argv, "range", ros::init_options::AnonymousName);
   ros::NodeHandle n;
@@ -133,7 +127,7 @@ int main(int argc, char **argv) {
   }
   // leave topic once it's not necessary anymore
   nameSub.shutdown();
-// call device_list service to get the list of the devices available on the controller and print it the device_list_srv object
+  // call device_list service to get the list of the devices available on the controller and print it the device_list_srv object
   // contains 2 members request and response. Their fields are described in the corresponding .srv file
   ros::ServiceClient deviceListClient =
     n.serviceClient<webots_ros::robot_get_device_list>(controllerName + "/robot/get_device_list");
@@ -144,7 +138,7 @@ int main(int argc, char **argv) {
   else
     ROS_ERROR("Failed to call service device_list.");
   rangeFinderName = deviceList[1];
-  touchSensorName =deviceList[0];
+  touchSensorName = deviceList[0];
   ros::ServiceClient rangeFinderGetInfoClient =
     n.serviceClient<webots_ros::range_finder_get_info>(controllerName + '/' + rangeFinderName + "/get_info");
   webots_ros::range_finder_get_info rangeFinderGetInfoSrv;
@@ -176,7 +170,7 @@ int main(int argc, char **argv) {
   time_step_client = n.serviceClient<webots_ros::set_int>(controllerName + "/robot/time_step");
   time_step_srv.request.value = TIME_STEP;
 
-///////////////////////////////
+  ///////////////////////////////
   // TOUCH SENSOR //
   ///////////////////////////////
 
@@ -187,7 +181,8 @@ int main(int argc, char **argv) {
 
   ros::ServiceClient sampling_period_touch_sensor_client;
   webots_ros::get_int sampling_period_touch_sensor_srv;
-  sampling_period_touch_sensor_client = n.serviceClient<webots_ros::get_int>(controllerName + "/touch_sensor/get_sampling_period");
+  sampling_period_touch_sensor_client =
+    n.serviceClient<webots_ros::get_int>(controllerName + "/touch_sensor/get_sampling_period");
 
   ros::ServiceClient touch_sensor_get_type_client;
   webots_ros::get_int touch_sensor_get_type_srv;
@@ -231,10 +226,6 @@ int main(int argc, char **argv) {
   sampling_period_touch_sensor_client.call(sampling_period_touch_sensor_srv);
   sampling_period_touch_sensor_client.shutdown();
   time_step_client.call(time_step_srv);
-
-
-
-
 
   // main loop
   while (ros::ok()) {
