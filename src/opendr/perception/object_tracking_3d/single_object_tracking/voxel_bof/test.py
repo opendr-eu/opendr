@@ -418,7 +418,7 @@ def test_tanet_infer_tracking():
         PilImage.fromarray(image).save("./plots/tanet_" + str(i) + ".png")
 
 
-def test_pp_siamese_fit(model_name):
+def test_pp_siamese_fit(model_name, load=0, debug=False):
     print("Fit", name, "start", file=sys.stderr)
 
     learner = VoxelBofObjectTracking3DLearner(
@@ -426,12 +426,13 @@ def test_pp_siamese_fit(model_name):
         device=DEVICE,
         lr=0.0001,
         checkpoint_after_iter=500,
-        # checkpoint_load_iter=42000,
+        checkpoint_load_iter=load,
     )
     learner.load(model_path, backbone=True, verbose=True)
     learner.fit(
         kitti_detection,
         model_dir="./temp/" + model_name,
+        debug=debug,
         # verbose=True
     )
 
@@ -724,7 +725,7 @@ def test_pp_siamese_eval(
     print("all_tracked =", all_tracked)
 
 
-def test_rotated_pp_siamese_infer(model_name, classes=["Car", "Van", "Truck"], draw=True, iou_min=0.5):
+def test_rotated_pp_siamese_infer(model_name, load=0, classes=["Car", "Van", "Truck"], draw=True, iou_min=0.5):
     print("Infer", name, "start", file=sys.stderr)
     import pygifsicle
     import imageio
@@ -735,10 +736,15 @@ def test_rotated_pp_siamese_infer(model_name, classes=["Car", "Van", "Truck"], d
         lr=0.001,
         checkpoint_after_iter=2000,
     )
-    # learner.load(model_path, backbone=True, verbose=True)
-    learner.load(
-        "./temp/" + model_name + "/checkpoints", backbone=False, verbose=True
-    )
+
+    checkpoints_path = "./temp/" + model_name + "/checkpoints"
+
+    if load == 0:
+        learner.load(
+            checkpoints_path, backbone=False, verbose=True
+        )
+    else:
+        learner.load_from_checkpoint(checkpoints_path, load)
 
     count = len(dataset_tracking)
     object_ids = [0] # [0, 3]
@@ -859,14 +865,6 @@ def test_rotated_pp_siamese_infer(model_name, classes=["Car", "Van", "Truck"], d
                 iou,
             )
 
-            filename = (
-                "./plots/video/infer_context_nb_rotated_track_"
-                + str(track_id)
-                + "_obj_"
-                + str(object_id)
-                + ".gif"
-            )
-
         if len(ious) <= 0:
             mean_iou = None
             tracked = None
@@ -877,9 +875,23 @@ def test_rotated_pp_siamese_infer(model_name, classes=["Car", "Van", "Truck"], d
         print("mean_iou =", mean_iou)
         print("tracked =", tracked)
 
+        filename = lambda x: (
+            "./plots/video/" + x + "_" + model_name + "_track_"
+            + str(track_id)
+            + "_obj_"
+            + str(object_id)
+            + ".gif"
+        )
+
         if draw:
-            imageio.mimsave(filename, images)
-            pygifsicle.optimize(filename)
+            imageio.mimsave(filename("infer"), images)
+            pygifsicle.optimize(filename("infer"))
+            print("Saving", "infer", "video")
+
+            for group, images in learner._images.items():
+                print("Saving", group, "video")
+                imageio.mimsave(filename(group), images)
+                pygifsicle.optimize(filename(group))
 
         return mean_iou, tracked
 

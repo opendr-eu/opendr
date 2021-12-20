@@ -61,6 +61,7 @@ def create_model(
     lr,
     lr_schedule_name,
     lr_schedule_params,
+    feature_blocks,
     log=print,
     verbose=False,
 ):
@@ -100,6 +101,7 @@ def create_model(
     net.bv_range = bv_range
     net.voxel_size = model_cfg.voxel_generator.voxel_size
     net.criterion = BCEWeightedLoss()
+    net.feature_blocks = feature_blocks
 
     model = SiameseConvNet(net)
     model.to(device)

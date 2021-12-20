@@ -87,7 +87,7 @@ def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
         .astype(np.uint8)
     )
     rgb_pi = np.stack([grayscale_pi] * 3, axis=-1)
-    rgb_pi[pi < 0] = (0, 90, 0)
+    rgb_pi[pi < 0, 0] = 0
 
     for target, color in zip(targets, colors):
 
@@ -99,7 +99,10 @@ def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
         ] = color
 
     os.makedirs(str(Path(path).parent), exist_ok=True)
-    PilImage.fromarray(rgb_pi).save(path)
+    image = PilImage.fromarray(rgb_pi)
+    image.save(path)
+
+    return image
 
 
 def create_targets_and_searches(
@@ -130,7 +133,7 @@ def create_target_search_regions(
     rect=None,
     Trv2c=None,
     boxes_lidar=None,
-    augment=False,
+    augment=True,
 ):
 
     bv_min = bv_range[:2]
@@ -226,8 +229,8 @@ def get_sub_image(image, center, size):
 
     if np.all(pos_max > pos_min):
         result[
-            :, local_min[0]: local_max[0] + 1, local_min[1]: local_max[1] + 1
-        ] = image[:, pos_min[0]: pos_max[0] + 1, pos_min[1]: pos_max[1] + 1]
+            :, local_min[0] : local_max[0] + 1, local_min[1] : local_max[1] + 1
+        ] = image[:, pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1]
     else:
         print("Empty image")
 
@@ -251,7 +254,7 @@ def create_logisticloss_labels(
             if dist <= 0:
                 labels[r, c] = 1
             elif np.all(dist <= r_pos):
-                labels[r, c] = 1
+                labels[r, c] = 0.7
             elif np.all(dist <= r_neg):
                 labels[r, c] = ignore_label
             else:
@@ -317,7 +320,9 @@ def get_rotated_sub_image(pseudo_image, center, size, angle):
     return image
 
 
-def create_pseudo_image_features(pseudo_image, target, net, uspcale_size, context_amount):
+def create_pseudo_image_features(
+    pseudo_image, target, net, uspcale_size, context_amount
+):
 
     # image = get_rotated_sub_image(
     #     pseudo_image,
@@ -346,12 +351,18 @@ def create_pseudo_image_features(pseudo_image, target, net, uspcale_size, contex
     return features, image
 
 
-def image_to_feature_coordinates(pos):
-    return (((pos + 1) // 2 + 1) // 2 + 1) // 2
+def image_to_feature_coordinates(pos, feature_blocks):
+
+    result = pos
+
+    for _ in range(feature_blocks):
+        result = (result + 1) // 2
+
+    return result
 
 
-def feature_to_image_coordinates(pos):
-    return pos * 2 * 2 * 2
+def feature_to_image_coordinates(pos, feature_blocks):
+    return pos * (2 ** feature_blocks)
 
 
 def image_to_lidar_coordinates(location, size, voxel_size, bv_range):
@@ -365,52 +376,27 @@ def image_to_lidar_coordinates(location, size, voxel_size, bv_range):
     return location_lidar, size_lidar
 
 
-def create_label_and_weights(target, search, loss="bce"):
-
-    label_size = (
-        image_to_feature_coordinates(search[1])
-        - image_to_feature_coordinates(target[1])
-        + 1
-    )
-    r_pos = image_to_feature_coordinates(target[1]) / 4
-    t = image_to_feature_coordinates(target[0]) - image_to_feature_coordinates(
-        search[0]
-    )
-
-    labels = create_logisticloss_labels(label_size, t, r_pos, loss=loss)
-    weights = np.zeros_like(labels)
-
-    # pred_target_position = score_to_image_coordinates(torch.tensor(labels), target[1], search)
-    # p = image_to_feature_coordinates(pred_target_position) - image_to_feature_coordinates(search[0])
-
-    neg_label = 0 if loss == "bce" or loss == "focal" else -1
-
-    pos_num = np.sum(labels == 1)
-    neg_num = np.sum(labels == neg_label)
-    if pos_num > 0:
-        weights[labels == 1] = 0.5 / pos_num
-    weights[labels == neg_label] = 0.5 / neg_num
-    weights *= pos_num + neg_num
-
-    labels = labels.reshape(1, 1, *labels.shape)
-    weights = weights.reshape(1, 1, *weights.shape)
-
-    return labels, weights
-
-
 def create_static_label_and_weights(
-    target_size, search_size, loss="bce", radius=16
+    target, search, target_size, search_size, search_size_with_context, feature_blocks, loss="bce", radius=8
 ):
 
-    t = (0, 0)
-
     label_size = (
-        image_to_feature_coordinates(search_size)
-        - image_to_feature_coordinates(target_size)
+        image_to_feature_coordinates(search_size, feature_blocks)
+        - image_to_feature_coordinates(target_size, feature_blocks)
         + 1
     )
 
-    r_pos = image_to_feature_coordinates(radius)
+    delta_position_original = target[0] - search[0]
+    rotated_delta_position_original = rotate_vector(delta_position_original, search[2])
+
+    delta_position_label_space = (
+        rotated_delta_position_original / search_size_with_context * label_size
+    ).astype(np.int32)
+
+    t = delta_position_label_space[[1, 0]]
+    # t = (0, 0)
+
+    r_pos = image_to_feature_coordinates(radius, feature_blocks)
 
     labels = create_logisticloss_labels(label_size, t, r_pos, loss=loss)
     weights = np.zeros_like(labels)
@@ -433,16 +419,21 @@ def create_static_label_and_weights(
     return labels, weights
 
 
-def sub_image_with_context(
-    pseudo_image, target, interoplation_size, context_amount
-):
-
-    target_size = target[1]
+def size_with_context(target_size, context_amount):
     mean_size = context_amount * (np.sum(target_size))
     sub_image_size_side = np.sqrt(
         (target_size[0] + mean_size) * (target_size[1] + mean_size)
     )
     sub_image_size = np.array([sub_image_size_side, sub_image_size_side])
+
+    return sub_image_size
+
+
+def sub_image_with_context(
+    pseudo_image, target, interoplation_size, context_amount
+):
+    target_size = target[1]
+    sub_image_size = size_with_context(target_size, context_amount)
 
     sub_image = get_rotated_sub_image(
         pseudo_image, target[0][[1, 0]], sub_image_size, target[2],
@@ -468,6 +459,7 @@ def create_pseudo_images_and_labels(
     context_amount=0.5,
 ):
     pseudo_image = net.create_pseudo_image(example_torch)
+    feature_blocks = net.feature_blocks
 
     if annos is not None:
 
@@ -491,8 +483,8 @@ def create_pseudo_images_and_labels(
         zip(batch_targets, batch_searches)
     ):
         for target, search in zip(targets, searches):
-            # target_image = get_sub_image(pseudo_image[i], target[0], target[1])
-            # search_image = get_sub_image(pseudo_image[i], search[0], search[1])
+
+            search_size_with_context = size_with_context(search[1], context_amount)
 
             target_image, _ = sub_image_with_context(
                 pseudo_image[i],
@@ -517,8 +509,12 @@ def create_pseudo_images_and_labels(
             labels, weights = create_static_label_and_weights(
                 # [target[0][[1, 0]], target[1][[1, 0]]],
                 # [search[0][[1, 0]], search[1][[1, 0]]],
+                target,
+                search,
                 target_size,
                 search_size,
+                search_size_with_context,
+                feature_blocks,
             )
 
             labels_torch = torch.tensor(labels, device=target_image.device)
@@ -532,6 +528,8 @@ def create_pseudo_images_and_labels(
                     weights_torch,
                     target,
                     search,
+                    search_size_with_context,
+                    pseudo_image[i],
                 ]
             )
 
@@ -599,6 +597,7 @@ def displacement_score_to_image_coordinates(
     score_upscale,
     search_region_size,
     search_region_rotation,
+    feature_blocks,
     search_region_upscale_size=np.array([255, 255]),
 ):
 
@@ -610,7 +609,7 @@ def displacement_score_to_image_coordinates(
     half = (final_score_size - 1) / 2
 
     disp_score = max_idx.cpu().numpy() - half
-    disp_search = feature_to_image_coordinates(disp_score) / score_upscale
+    disp_search = feature_to_image_coordinates(disp_score, feature_blocks) / score_upscale
     disp_image_rotated = (
         disp_search * search_region_size / search_region_upscale_size
     )
@@ -687,7 +686,21 @@ def create_scaled_scores(
         1 - window_influence
     ) * scores2 + window_influence * penalty
 
-    return scores2_scaled
+    return scores2_scaled, scores, scores2
+
+
+def rotate_vector(vector, angle):
+
+    rot = np.array(
+        [
+            [math.cos(angle), -math.sin(angle),],
+            [math.sin(angle), math.cos(angle),],
+        ]
+    )
+
+    result = np.dot(rot, vector)
+
+    return result
 
 
 def train(
@@ -715,10 +728,13 @@ def train(
     auto_save=False,
     image_shape=None,
     evaluate=True,
+    context_amount=0.5,
+    debug=False,
 ):
 
     net = siamese_model.branch
     net.global_step -= net.global_step
+    feature_blocks = net.feature_blocks
 
     ######################
     # PREPARE INPUT
@@ -771,6 +787,9 @@ def train(
         total_loop -= 1
     mixed_optimizer.zero_grad()
 
+    average_loss = 0
+    average_delta_error = 0
+
     for _ in range(total_loop):
         if total_step_elapsed + train_cfg.steps_per_eval > train_cfg.steps:
             steps = train_cfg.steps % train_cfg.steps_per_eval
@@ -790,10 +809,18 @@ def train(
                 example, float_dtype, device=device
             )
 
-            with torch.no_grad():
+            if debug:
                 items = create_pseudo_images_and_labels(
-                    net, example_torch, gt_boxes=example_torch["gt_boxes_2"]
+                    net, example_torch, gt_boxes=example_torch["gt_boxes_2"],
+                    context_amount=context_amount,
                 )
+            else:
+                with torch.no_grad():
+                    items = create_pseudo_images_and_labels(
+                        net,
+                        example_torch,
+                        gt_boxes=example_torch["gt_boxes_2"],
+                    )
 
             for (
                 target_image,
@@ -802,6 +829,8 @@ def train(
                 weights,
                 target,
                 search,
+                search_size_with_context,
+                pseudo_image,
             ) in items:
                 pred, feat_target, feat_search = siamese_model(
                     search_image, target_image
@@ -809,30 +838,162 @@ def train(
                 loss = net.criterion(pred, labels, weights)
 
                 delta = displacement_score_to_image_coordinates(
-                    pred, 1, search[1], 0
+                    pred, 1, search[1], 0, feature_blocks
+                )
+                true_delta = displacement_score_to_image_coordinates(
+                    labels, 1, search[1], 0, feature_blocks
                 )
                 # predicted_label_target_coordinates = score_to_image_coordinates(
                 #     labels, target[1], search
                 # )
                 # delta = np.abs(predicted_target_coordinates - target[0])
 
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
-                mixed_optimizer.step()
-                mixed_optimizer.zero_grad()
+                if debug:
+                    feat_search.register_hook(
+                        lambda grad: (
+                            None,
+                            draw_pseudo_image(
+                                grad[0], "./plots/grad/feat_search.png"
+                            ),
+                        )[0]
+                    )
+                    feat_target.register_hook(
+                        lambda grad: (
+                            None,
+                            draw_pseudo_image(
+                                grad[0], "./plots/grad/feat_target.png"
+                            ),
+                        )[0]
+                    )
+                    search_image.register_hook(
+                        lambda grad: (
+                            None,
+                            draw_pseudo_image(
+                                grad[0], "./plots/grad/search_image.png"
+                            ),
+                        )[0]
+                    )
+                    target_image.register_hook(
+                        lambda grad: (
+                            None,
+                            draw_pseudo_image(
+                                grad[0], "./plots/grad/target_image.png"
+                            ),
+                        )[0]
+                    )
+                    draw_pseudo_image(pred[0], "./plots/train/pred.png")
+                    draw_pseudo_image(labels[0], "./plots/train/labels.png")
+                    draw_pseudo_image(
+                        feat_search[0], "./plots/train/feat_search.png"
+                    )
+                    draw_pseudo_image(
+                        feat_target[0], "./plots/train/feat_target.png"
+                    )
+
+                    vector = target[0] - search[0]
+                    rot1 = rotate_vector(vector, search[2])
+                    rot2 = rotate_vector(vector, -search[2])
+                    rot3 = rotate_vector(vector, search[2] + np.pi)
+                    rot4 = rotate_vector(vector, -search[2] + np.pi)
+
+                    draw_pseudo_image(
+                        search_image[0],
+                        "./plots/train/search_image.png",
+                        [
+                            [
+                                np.array(search_image.shape[-2:]) / 2,
+                                np.array([5, 5]),
+                                0,
+                            ],
+                            # [
+                            #     (rot1 / search[1])[[1, 0]]
+                            #     * np.array(search_image.shape[-2:])
+                            #     + np.array(search_image.shape[-2:]) / 2,
+                            #     np.array([5, 5]),
+                            #     0,
+                            # ],
+                            [
+                                (rot1 / search_size_with_context)[[1, 0]]
+                                * np.array(search_image.shape[-2:])
+                                + np.array(search_image.shape[-2:]) / 2,
+                                np.array([5, 5]),
+                                0,
+                            ],
+                        ],
+                        [
+                            (255, 0, 0),
+                            # (0, 255, 0),
+                            (0, 0, 255),
+                            # (0, 255, 125),
+                            # (255, 255, 125),
+                            # (125, 40, 215),
+                            # (25, 40, 215),
+                            # (225, 40, 215),
+                            # (125, 0, 0),
+                            # (0, 125, 0),
+                            # (0, 0, 125),
+                        ],
+                    )
+
+                    draw_pseudo_image(
+                        target_image[0],
+                        "./plots/train/target_image.png",
+                        [
+                            [
+                                np.array(target_image.shape[-2:]) / 2,
+                                np.array([5, 5]),
+                                0,
+                            ]
+                        ],
+                        [(255, 0, 0)],
+                    )
+                    draw_pseudo_image(
+                        pseudo_image,
+                        "./plots/train/pseudo_image.png",
+                        [
+                            [search[0][[1, 0]], np.array([5, 5]), 0],
+                            [target[0][[1, 0]], np.array([4, 4]), 0],
+                            [(rot1 + search[0])[[1, 0]], np.array([3, 3]), 0],
+                            [(rot2 + search[0])[[1, 0]], np.array([3, 3]), 0],
+                            [(rot3 + search[0])[[1, 0]], np.array([3, 3]), 0],
+                            [(rot4 + search[0])[[1, 0]], np.array([3, 3]), 0],
+                        ],
+                        [
+                            (255, 0, 0),
+                            (0, 255, 255),
+                            (0, 0, 255),
+                            (0, 255, 0),
+                            (125, 0, 255),
+                            (125, 255, 0),
+                        ],
+                    )
+                    print()
+                else:
+                    loss.backward()
+                    # torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
+                    mixed_optimizer.step()
+                    mixed_optimizer.zero_grad()
                 net.update_global_step()
                 global_step = net.get_global_step()
 
+                average_loss += loss
+                average_delta_error += np.abs(delta - true_delta)
+
                 if global_step % display_step == 0:
+                    average_loss /= display_step
+                    average_delta_error /= display_step
+
                     print(
                         "[",
                         global_step,
                         "]",
-                        "loss=" + str(loss),
+                        "loss=" + str(float(average_loss.detach().cpu())),
                         "error_position=",
-                        delta / search[1],
-                        delta,
+                        average_delta_error,
                     )
+
+                    average_loss = 0
+                    average_delta_error = 0
 
                 if (
                     checkpoint_after_iter > 0

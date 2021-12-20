@@ -92,7 +92,7 @@ def prep_pointcloud(
     bev_only=False,
     use_group_id=False,
     out_dtype=np.float32,
-    sample_db=False,
+    sample_db=True,
 ):
     """convert point cloud to voxels, create targets if ground truths
     exists.

@@ -99,7 +99,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
     def __init__(
         self,
         model_config_path,
-        lr=0.0002,
+        lr=0.0001,
         iters=10,
         batch_size=64,
         optimizer="adam_optimizer",
@@ -119,7 +119,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
             "decay_factor": 0.8,
             "staircase": True,
         },
-        window_influence=0.25,
+        feature_blocks=2,  # 3,
+        window_influence=0.25,  # 0.25,
         score_upscale=16,
         rotation_penalty=0.98,
         rotation_step=0.15,
@@ -159,11 +160,13 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.target_size = target_size
         self.search_size = search_size
         self.context_amount = context_amount
+        self.feature_blocks = feature_blocks
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
 
         self.__create_model()
+        self._images = {}
 
         self.model.rpn_ort_session = None  # ONNX runtime inference session
 
@@ -364,6 +367,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         model_dir=None,
         image_shape=(1224, 370),
         evaluate=True,
+        debug=False,
     ):
 
         logger = Logger(silent, verbose, logging_path)
@@ -401,15 +405,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             checkpoints_path.mkdir(exist_ok=True)
 
         if self.checkpoint_load_iter != 0:
-            self.lr_scheduler = load_from_checkpoint(
-                self.model,
-                self.mixed_optimizer,
-                checkpoints_path
-                / f"checkpoint_{self.checkpoint_load_iter}.pth",
-                self.lr_schedule,
-                self.lr_schedule_params,
-                self.device,
-            )
+            self.load_from_checkpoint(checkpoints_path, self.checkpoint_load_iter)
 
         train(
             self.model,
@@ -435,6 +431,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
             device=self.device,
             image_shape=image_shape,
             evaluate=evaluate,
+            context_amount=self.context_amount,
+            debug=debug,
         )
 
         logger.close()
@@ -535,6 +533,22 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         return psedo_image
 
+    def __add_image(self, image, group):
+        if group not in self._images:
+            self._images[group] = []
+
+        self._images[group].append(image)
+
+    def load_from_checkpoint(self, checkpoints_path, step):
+        self.lr_scheduler = load_from_checkpoint(
+            self.model,
+            self.mixed_optimizer,
+            checkpoints_path + f"/checkpoint_{step}.pth",
+            self.lr_schedule,
+            self.lr_schedule_params,
+            self.device,
+        )
+
     def infer(self, point_cloud, frame=0, id=None, draw=False):
 
         with torch.no_grad():
@@ -552,9 +566,15 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             multi_rotate_features_and_searches_and_penalties = []
 
-            for i, (search, penalty) in enumerate(multi_rotate_searches_and_penalties):
+            for i, (search, penalty) in enumerate(
+                multi_rotate_searches_and_penalties
+            ):
                 search_features, search_image = create_pseudo_image_features(
-                    pseudo_image, search, net, self.search_size, self.context_amount
+                    pseudo_image,
+                    search,
+                    net,
+                    self.search_size,
+                    self.context_amount,
                 )
 
                 multi_rotate_features_and_searches_and_penalties.append(
@@ -562,24 +582,29 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 )
 
                 if draw:
-                    draw_pseudo_image(
+                    draw_search = draw_pseudo_image(
                         search_image.squeeze(axis=0),
                         "./plots/search/" + str(frame) + "_" + str(i) + ".png",
                     )
 
-                    draw_pseudo_image(
+                    draw_search_feat = draw_pseudo_image(
                         search_features.squeeze(axis=0),
-                        "./plots/search_feat/" + str(frame) + "_" + str(i) + ".png",
+                        "./plots/search_feat/"
+                        + str(frame)
+                        + "_"
+                        + str(i)
+                        + ".png",
                     )
+
+                    self.__add_image(draw_search, "search")
+                    self.__add_image(draw_search_feat, "search_feat")
 
             multi_rotate_scores_searches_penalties_and_features = []
 
-            for i, (
-                search_features,
-                target,
-                penalty,
-            ) in enumerate(multi_rotate_features_and_searches_and_penalties):
-                scores = create_scaled_scores(
+            for i, (search_features, target, penalty,) in enumerate(
+                multi_rotate_features_and_searches_and_penalties
+            ):
+                scores, original_scores, scaled_scores = create_scaled_scores(
                     self.init_target_features,
                     search_features,
                     self.model,
@@ -591,10 +616,29 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 )
 
                 if draw:
-                    draw_pseudo_image(
+                    draw_scores = draw_pseudo_image(
                         scores.squeeze(axis=0),
                         "./plots/scores/" + str(frame) + "_" + str(i) + ".png",
                     )
+                    draw_scores_original = draw_pseudo_image(
+                        original_scores.squeeze(axis=0),
+                        "./plots/scores_original/"
+                        + str(frame)
+                        + "_"
+                        + str(i)
+                        + ".png",
+                    )
+                    draw_scaled_scores = draw_pseudo_image(
+                        scaled_scores.squeeze(axis=0),
+                        "./plots/scores_scaled_scores/"
+                        + str(frame)
+                        + "_"
+                        + str(i)
+                        + ".png",
+                    )
+                    self.__add_image(draw_scores, "scores")
+                    self.__add_image(draw_scores_original, "scores_original")
+                    self.__add_image(draw_scaled_scores, "scaled_scores")
 
             (
                 top_scores,
@@ -612,13 +656,15 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 )
 
                 max_score = torch.max(top_scores)
-                max_idx = (top_scores == max_score).nonzero(as_tuple=False)[0][-2:]
+                max_idx = (top_scores == max_score).nonzero(as_tuple=False)[0][
+                    -2:
+                ]
 
                 draw_pseudo_image(
                     top_scores.squeeze(axis=0),
                     "./plots/scores/" + str(frame) + "_top_marked.png",
                     [[max_idx.cpu().numpy(), np.array([2, 2]), 0]],
-                    [(255, 0, 0)]
+                    [(255, 0, 0)],
                 )
 
             delta_image = displacement_score_to_image_coordinates(
@@ -708,8 +754,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         if draw:
             draw_pseudo_image(
-                init_image.squeeze(0),
-                "./plots/init/image.png",
+                init_image.squeeze(0), "./plots/init/image.png",
             )
             draw_pseudo_image(
                 self.init_target_features.squeeze(0),
@@ -1079,6 +1124,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             optimizer_name=self.optimizer,
             optimizer_params=self.optimizer_params,
             lr=self.lr,
+            feature_blocks=self.feature_blocks,
             lr_schedule_name=self.lr_schedule,
             lr_schedule_params=self.lr_schedule_params,
         )

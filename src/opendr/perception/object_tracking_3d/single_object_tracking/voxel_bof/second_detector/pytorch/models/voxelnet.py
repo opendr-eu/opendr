@@ -535,16 +535,20 @@ class RPN(nn.Module):
                 sum(num_upsample_filters), num_anchor_per_loc * 2, 1
             )
 
-    def forward(self, x, bev=None):
-        x1 = self.block1(x)
+    def forward(self, x, bev=None, feature_blocks=3):
+
+        if feature_blocks >= 1:
+            x = self.block1(x)
         # up1 = self.deconv1(x)
-        x2 = self.block2(x1)
+        if feature_blocks >= 2:
+            x = self.block2(x)
         # up2 = self.deconv2(x)
-        x3 = self.block3(x2)
+        if feature_blocks >= 3:
+            x = self.block3(x)
         # up3 = self.deconv3(x)
         # x = torch.cat([up1, up2, up3], dim=1)
 
-        return x3
+        return x
 
 
 class LossNormType(Enum):
@@ -755,7 +759,7 @@ class VoxelNet(nn.Module):
 
     def forward(self, spatial_features, refine_weight=2):
 
-        preds_dict = self.rpn(spatial_features)
+        preds_dict = self.rpn(spatial_features, feature_blocks=self.feature_blocks)
 
         return preds_dict
 
