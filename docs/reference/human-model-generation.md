@@ -83,25 +83,25 @@ A demo in the form of a Jupyter Notebook is available
 
 * **Generation of a 3D human model from a single image using the PIFuGeneratorLearner.**
 
-This example shows how to perform inference on an RGB image, using along an image of the silhouette of the depicted human, and generate a 3D human model.
+  This example shows how to perform inference on an RGB image, using along an image of the silhouette of the depicted human, and generate a 3D human model.
 
-```python
-import sys
-import os
-from opendr.engine.data import Image
-from opendr.simulation.human_model_generation import PIFuGeneratorLearner
-import matplotlib.pyplot as plt
-import numpy as np
-OPENDR_HOME = os.environ["OPENDR_HOME"]
+  ```python
+  import sys
+  import os
+  from opendr.engine.data import Image
+  from opendr.simulation.human_model_generation import PIFuGeneratorLearner
+  import matplotlib.pyplot as plt
+  import numpy as np
+  OPENDR_HOME = os.environ["OPENDR_HOME"]
 
-# We load a full-body image of a human as well as an image depicting its corresponding silhouette. 
-rgb_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_generation/demos', 'imgs_input/rgb/result_0004.jpg'))
-msk_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_generation/demos', 'imgs_input/msk/result_0004.jpg'))
+  # We load a full-body image of a human as well as an image depicting its corresponding silhouette. 
+  rgb_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_generation/demos', 'imgs_input/rgb/result_0004.jpg'))
+  msk_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_generation/demos', 'imgs_input/msk/result_0004.jpg'))
 
-# We initialize learner and, using the ```infer``` method, we generated human 3D model. 
-model_generator = PIFuGeneratorLearner(device='cuda', checkpoint_dir='./temp')
-model_3D = model_generator.infer(imgs_rgb=[rgb_img], imgs_msk=[msk_img], extract_pose=False)
-```
+  # We initialize learner and, using the ```infer``` method, we generated human 3D model. 
+  model_generator = PIFuGeneratorLearner(device='cuda', checkpoint_dir='./temp')
+  model_3D = model_generator.infer(imgs_rgb=[rgb_img], imgs_msk=[msk_img], extract_pose=False)
+  ```
 
 
 #### References
