@@ -1,7 +1,5 @@
-import math
 import gym
-from gym import error, spaces, utils
-from gym.utils import seeding
+from gym import spaces
 import numpy as np
 import rospy
 from geometry_msgs.msg import PoseStamped
@@ -18,15 +16,6 @@ def euler_from_quaternion(x, y, z, w):
     pitch is rotation around y in radians (counterclockwise)
     yaw is rotation around z in radians (counterclockwise)
     """
-    # t0 = +2.0 * (w * x + y * z)
-    # t1 = +1.0 - 2.0 * (x * x + y * y)
-    # roll_x = np.atan2(t0, t1)
-
-    # t2 = +2.0 * (w * y - z * x)
-    # t2 = +1.0 if t2 > +1.0 else t2
-    # t2 = -1.0 if t2 < -1.0 else t2
-    # pitch_y = np.asin(t2)
-
     t3 = +2.0 * (w * z + x * y)
     t4 = +1.0 - 2.0 * (y * y + z * z)
     yaw_z = np.atan2(t3, t4)
@@ -99,12 +88,9 @@ class AgiEnv(gym.Env):
         self.image_count = 0
 
     def step(self, discrete_action):
-        # take action
-        # print("action:", discrete_action)
         action = self.action_dictionary[discrete_action]
         action = (action[0] * self.step_length, action[1] * self.step_length, action[2])
         prev_x = self.current_position.x
-        prev_yaw = self.current_yaw
         if self.forward_direction:
             self.go_position(
                 self.current_position.x + action[0] * np.cos(self.current_yaw * 22.5 / 180 * np.pi) - action[

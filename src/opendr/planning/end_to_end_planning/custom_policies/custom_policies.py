@@ -45,8 +45,6 @@ def create_dual_extractor(num_direct_features,
         other_features = other_features[:, :num_direct_features]
         tf.print(other_features, [other_features])
         images = input[..., :-1]
-        with tf.Session() as sess:
-            print([other_features])
 
         # Find CNN features
         img_output = cnn_custom_extractor(images, **kwargs)

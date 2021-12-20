@@ -36,21 +36,18 @@
 import numpy as np
 
 import rospy
-
+import gym
 from pathlib import Path
 
 from stable_baselines import PPO2
 from stable_baselines.bench import Monitor
 from stable_baselines.common.vec_env import DummyVecEnv
-from stable_baselines.common.callbacks import CheckpointCallback
 from stable_baselines.results_plotter import load_results, ts2xy
 
 from opendr.engine.learners import LearnerRL
 from opendr.planning.end_to_end_planning.custom_policies.custom_policies import MultiInputPolicy, create_dual_extractor
-import opendr
-# from engine.constants import OPENDR_SERVER_URL
-from urllib.request import urlretrieve
 
+__all__ = ["rospy",]
 
 class EndToEndPlanningRLLearner(LearnerRL):
     def __init__(self, env, n_steps=128, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear', lr_end: float = 1e-6,

@@ -2,7 +2,6 @@ import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import String
-from geometry_msgs.msg import PoseStamped
 from cv_bridge import CvBridge
 
 
