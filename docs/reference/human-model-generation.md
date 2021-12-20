@@ -67,7 +67,14 @@ Parameters:
 Specifies the folder where data will be downloaded.
 - **url**: *str, default=OpenDR FTP URL*\
 URL of the FTP server.
-  
+
+#### Demos and tutorial
+
+
+A demo in the form of a Jupyter Notebook is available
+[here](https://github.com/opendr-eu/opendr/blob/master/projects/simulation/human_model_generation/demos/model_generation.ipynb).
+
+
 #### References
 <a name="pifu-paper" href="https://shunsukesaito.github.io/PIFu/">[1]</a>
 PIFu: Pixel-Aligned Implicit Function for High-Resolution Clothed Human Digitization,
