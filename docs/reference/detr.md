@@ -223,9 +223,9 @@ Parameters:
 
 #### ROS Node
 
-A [ROS node](../../projects/opendr_ws/src/perception/scripts/object_detection_2d_detr.py) is available for performing
+A [ROS client node](../../projects/opendr_ws/src/scripts/scripts/human_model_generation_client.py) and a [ROS service node](../../projects/opendr_ws/src/scripts/scripts/human_model_generation_service.py) are available for performing
 inference on an image stream.
-Documentation on how to use this node can be found [here](../../projects/opendr_ws/src/perception/README.md).
+Documentation on how to use this node can be found [here](../../projects/opendr_ws/src/simulation/README.md).
 
 #### Tutorials and Demos
 
