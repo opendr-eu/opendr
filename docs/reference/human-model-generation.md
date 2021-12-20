@@ -81,8 +81,9 @@ A demo in the form of a Jupyter Notebook is available
 
 #### Example 
 
-* **Generation of a human model from a single image using the PIFuGeneratorLearner.**
+* **Generation of a 3D human model from a single image using the PIFuGeneratorLearner.**
 
+This example shows how to perform inference on an RGB image, using along an image of the silhouette of the depicted human, and generate a 3D human model.
 
 ```python
 import sys
@@ -101,8 +102,6 @@ msk_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_
 model_generator = PIFuGeneratorLearner(device='cuda', checkpoint_dir='./temp')
 model_3D = model_generator.infer(imgs_rgb=[rgb_img], imgs_msk=[msk_img], extract_pose=False)
 ```
-
-
 
 
 #### References
