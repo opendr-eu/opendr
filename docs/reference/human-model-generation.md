@@ -98,7 +98,7 @@ A demo in the form of a Jupyter Notebook is available
   rgb_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_generation/demos', 'imgs_input/rgb/result_0004.jpg'))
   msk_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_generation/demos', 'imgs_input/msk/result_0004.jpg'))
 
-  # We initialize learner and, using the ```infer``` method, we generated human 3D model. 
+  # We initialize learner. Using the ```infer``` method, we generate human 3D model. 
   model_generator = PIFuGeneratorLearner(device='cuda', checkpoint_dir='./temp')
   model_3D = model_generator.infer(imgs_rgb=[rgb_img], imgs_msk=[msk_img], extract_pose=False)
   ```
