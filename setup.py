@@ -5,7 +5,7 @@ from Cython.Build import cythonize
 packages = find_packages(where="./src")
 
 with open('requirements.txt') as fp:
-    install_requires = fp.read().splitlines() 
+    install_requires = fp.read().splitlines()
 
 exec(open('src/opendr/_version.py').read())
 
