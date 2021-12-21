@@ -67,7 +67,43 @@ Parameters:
 Specifies the folder where data will be downloaded.
 - **url**: *str, default=OpenDR FTP URL*\
 URL of the FTP server.
-  
+
+#### ROS Node
+
+A [ROS client node](../../projects/opendr_ws/src/simulation/scripts/human_model_generation_client.py) and a [ROS service node](../../projects/opendr_ws/src/simulation/scripts/human_model_generation_service.py) are available for performing
+inference on an image stream.
+Documentation on how to use this node can be found [here](../../projects/opendr_ws/src/perception/README.md).
+
+#### Tutorials and Demos
+
+A demo in the form of a Jupyter Notebook is available
+[here](../../projects/simulation/human_model_generation/demos/model_generation.ipynb).
+
+#### Example 
+
+* **Generation of a 3D human model from a single image using the PIFuGeneratorLearner.**
+
+  This example shows how to perform inference on an RGB image, using along an image of the silhouette of the depicted human, and generate a 3D human model.
+
+  ```python
+  import sys
+  import os
+  from opendr.engine.data import Image
+  from opendr.simulation.human_model_generation import PIFuGeneratorLearner
+  import matplotlib.pyplot as plt
+  import numpy as np
+  OPENDR_HOME = os.environ["OPENDR_HOME"]
+
+  # We load a full-body image of a human as well as an image depicting its corresponding silhouette. 
+  rgb_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_generation/demos', 'imgs_input/rgb/result_0004.jpg'))
+  msk_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_generation/demos', 'imgs_input/msk/result_0004.jpg'))
+
+  # We initialize learner. Using the infer method, we generate human 3D model. 
+  model_generator = PIFuGeneratorLearner(device='cuda', checkpoint_dir='./temp')
+  model_3D = model_generator.infer(imgs_rgb=[rgb_img], imgs_msk=[msk_img], extract_pose=False)
+  ```
+
+
 #### References
 <a name="pifu-paper" href="https://shunsukesaito.github.io/PIFu/">[1]</a>
 PIFu: Pixel-Aligned Implicit Function for High-Resolution Clothed Human Digitization,
