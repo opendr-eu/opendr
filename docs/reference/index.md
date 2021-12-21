@@ -79,7 +79,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
     - [opendr_utils.h](c-opendr-utils-h.md)
     - [face_recognition.h](c-face-recognition-h.md)
 - Projects
-    - `c API` Module
+    - `C API` Module
         - [face recognition Demo](/projects/c_api)
     - `control` Module
         - [mobile_manipulation Demo](/projects/control/mobile_manipulation)
