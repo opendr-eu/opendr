@@ -10,7 +10,7 @@ The *QuadraticSelfOnnLearner* class is a wrapper of a Quadratic Self-ONN[[1]](#q
 It is designed for limited-vocabulary speech command recognition tasks.
 
 
-The [QuadraticSelfOnnLearner](#src.perception.speech_recognition.quadraticselfonn_learner.py) class has the following public methods:
+The [QuadraticSelfOnnLearner](/src/opendr/perception/speech_recognition/quadraticselfonn/quadraticselfonn_learner.py) class has the following public methods:
 
 #### `QuadraticSelfOnnLearner` constructor
 
