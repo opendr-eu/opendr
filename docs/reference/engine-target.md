@@ -126,7 +126,7 @@ observation angle of an object (alpha).
 
 The [BoundingBox3DList](/src/opendr/engine/target.py#L404) class has the following public methods:
 #### BoundingBox3DList(bounding_boxes_3d)
-  Construct a new BoundingBox3DList* object based on the *bounding_boxes_3d*.
+  Construct a new *BoundingBox3DList* object based on the *bounding_boxes_3d*.
   *bounding_boxes_3d* is expected to be a list of *BoundingBox3D*.
 #### kitti()
   Return the annotation in KITTI format.
