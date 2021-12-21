@@ -30,11 +30,13 @@ You are then ready to install the toolkit:
 cd opendr
 ./bin/install.sh
 ```
+The installation script automatically installs all the required dependencies.
 Note that this might take a while (~0.1-1h depending on your machine), while the script also makes system-wide changes.
 Using dockerfiles is strongly advised (please see below), unless you know what you are doing.
-Please also make sure that you have enough RAM available for installation.
-The installation script automatically installs all the required dependencies.
-Note that you can set the inference/training device using the `OPENDR_DEVICE` variable.
+Please also make sure that you have enough RAM available for the installation.
+
+
+You can set the inference/training device using the `OPENDR_DEVICE` variable.
 The toolkit defaults to using CPU.
 If you want to use GPU, please set this variable accordingly:
 ```bash
