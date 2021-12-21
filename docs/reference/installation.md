@@ -90,12 +90,16 @@ Tools provided in *projects* are not installed by *pip*.
 # Installing using *docker*
 ## CPU docker
 After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can directly run OpenDR image as:
-````bash
+```bash
 sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_latest
-````
+```
 This docker automatically runs a Jupyter notebook server that listens at port 8888.
 Then, you can access the Jupyter notebook at your [localhost:8888](http://127.0.0.1:8888).
 
+If you do not wish to use Jupyter, you can also experiment by starting an interactive session,
+```bash
+sudo docker run -it opendr/opendr-toolkit:cpu_latest /bin/bash
+```
 
 _(Optionally)_ If you wish, you can build our docker container (based on Ubuntu 20.04) using the [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile) provided in the root folder of the toolkit:
 ```bash
