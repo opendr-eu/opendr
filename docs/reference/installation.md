@@ -124,7 +124,7 @@ First, edit `/etc/docker/daemon.json` in order to set the default docker runtime
             "runtimeArgs": []
         }
     },
-    "default-runtime": "nvidia-container-runtime"
+    "default-runtime": "nvidia"
 }
 ```
 Restart docker afterwards:
