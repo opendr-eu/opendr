@@ -13,6 +13,7 @@ The following table summarizes the installation options based on your system arc
 | pip                 | CPU-only | Ubuntu 20.04 (x86-64) |
 | docker              | Both     | Linux                 |
 
+
 # Installing by cloning OpenDR repository (Ubuntu 20.04, x86, architecture)
 
 This is the recommended way of installing the toolkit, since it allows for fully exploiting all the provided functionalities.
@@ -53,7 +54,9 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 9 --slave /us
 echo "Please switch to GCC 8"
 sudo update-alternatives --config gcc
 ```
-Then, you can install CUDA, along CuDNN.
+Then, you can install CUDA, along CuDNN. 
+You can also refer to this [Dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda) for installation instructions.
+Note that NVIDIA 30xx GPUs may not be fully supported, due to CUDA limitations.
 
 # Installing using *pip*
 
