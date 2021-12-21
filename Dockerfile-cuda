@@ -9,6 +9,7 @@ RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
 RUN apt-get --yes install gcc-8 g++-8 gcc-9 g++-9 wget
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 9 --slave /usr/bin/g++ g++ /usr/bin/g++-8
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 8 --slave /usr/bin/g++ g++ /usr/bin/g++-9
+RUN update-alternatives --auto gcc 
 RUN apt-get --yes install zlib1g-dev libbz2-dev libreadline-dev libssl-dev libsqlite3-dev libffi-dev
 RUN wget https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run
 RUN wget http://people.cs.uchicago.edu/~kauffman/nvidia/cudnn/cudnn-10.2-linux-x64-v8.2.0.53.tgz
