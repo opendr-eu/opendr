@@ -5,7 +5,7 @@ from Cython.Build import cythonize
 packages = find_packages(where="./src")
 
 with open('requirements.txt') as fp:
-    install_requires = fp.read()
+    install_requires = fp.read().splitlines() 
 
 exec(open('src/opendr/_version.py').read())
 
@@ -15,7 +15,7 @@ except NameError:
     __version__ = '0.0'
 
 setup(
-    name='OpenDR',
+    name='opendr-toolkit',
     version=__version__,
     description='Open Deep Learning Toolkit for Robotics',
     long_description="""The aim of OpenDR is to develop a modular, open and non-proprietary toolkit for core
