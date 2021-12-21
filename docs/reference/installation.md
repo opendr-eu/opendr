@@ -60,7 +60,7 @@ echo "Please switch to GCC 8"
 sudo update-alternatives --config gcc
 ```
 Then, you can install CUDA, along CuDNN. 
-You can also refer to this [Dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda) for installation instructions.
+You can also refer to this [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda) for installation instructions.
 Note that NVIDIA 30xx GPUs may not be fully supported, due to CUDA limitations.
 
 # Installing using *pip*
@@ -98,7 +98,7 @@ You can run this docker and map this port in your localhost as:
 ```bash
 sudo docker run -p 8888:8888 opendr/ubuntu
 ```
-You can build our docker container (based on Ubuntu 20.04) using the dockerfile provided in the root folder of the toolkit:
+You can build our docker container (based on Ubuntu 20.04) using the [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile) provided in the root folder of the toolkit:
 ```bash
 cd opendr
 sudo docker build -t opendr/ubuntu .
@@ -111,7 +111,7 @@ Then, you can directly use opendr-gpu as:
 TODO
 sudo docker run -p 8888:8888 opendr/ubuntu
 ```
-You can also build the image by yourself using the supplied dockerfile. 
+You can also build the image by yourself using the supplied [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda). 
 First, edit `/etc/docker/daemon.json` in order to set the default docker runtime:
 ```
 {
