@@ -19,7 +19,7 @@ The following table summarizes the installation options based on your system arc
 This is the recommended way of installing the toolkit, since it allows for fully exploiting all the provided functionalities.
 To install the toolkit, please first make sure that you have `git` available on your system.
 ```bash
-sudo apt install git 
+sudo apt install git
 ```
 Then, clone the toolkit:
 ```bash
@@ -59,7 +59,7 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 9 --slave /us
 echo "Please switch to GCC 8"
 sudo update-alternatives --config gcc
 ```
-Then, you can install CUDA, along CuDNN. 
+Then, you can install CUDA, along CuDNN.
 You can also refer to this [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda) for installation instructions.
 Note that NVIDIA 30xx GPUs may not be fully supported, due to CUDA limitations.
 
@@ -94,14 +94,14 @@ After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you c
 sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_latest
 ```
 This docker automatically runs a Jupyter notebook server that listens at port 8888.
-Then, you can access the Jupyter notebook at your [localhost:8888](http://127.0.0.1:8888).
+Then, you can access the Jupyter notebook by following the link provided in the console, it should be similar to [http://127.0.0.1:8888/?token=TOKEN](http://127.0.0.1:8888/?token=TOKEN).
 
 If you do not wish to use Jupyter, you can also experiment by starting an interactive session,
 ```bash
 sudo docker run -it opendr/opendr-toolkit:cpu_latest /bin/bash
 ```
 
-_(Optionally)_ If you wish, you can build our docker container (based on Ubuntu 20.04) using the [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile) provided in the root folder of the toolkit:
+_(Optionally)_ If you wish, you can build our docker container (based on Ubuntu 20.04) using the [dockerfile](/Dockerfile) provided in the root folder of the toolkit:
 ```bash
 cd opendr
 sudo docker build -t opendr/opendr-toolkit:cpu .
@@ -114,7 +114,7 @@ Then, you can directly use opendr-gpu as:
 sudo docker run -p 8888:8888 opendr/opendr-toolkit:cuda_latest
 ```
 
-_(Optionally)_ If you wish, you can also build the image by yourself using the supplied [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda). 
+_(Optionally)_ If you wish, you can also build the image by yourself using the supplied [dockerfile](/Dockerfile-cuda).
 First, edit `/etc/docker/daemon.json` in order to set the default docker runtime:
 ```
 {
