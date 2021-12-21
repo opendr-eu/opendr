@@ -17,7 +17,7 @@ Bases: `engine.learners.Learner`
 
 The *EfficientPsLearner* class is a wrapper around the EfficientPS implementation of the original author's repository adding the OpenDR interface.
 
-The [EfficientPsLearner](#src.opendr.perception.panoptic_segmentation.efficient_ps.efficient_ps_learner.py) class the following public methods:
+The [EfficientPsLearner](/src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) class the following public methods:
 #### `EfficientPsLearner` constructor
 ```python
 EfficientPsLearner(lr, iters, batch_size, optimizer, lr_schedule, momentum, weight_decay, optimizer_config, checkpoint_after_iter, temp_path, device, num_workers, seed, config_file)

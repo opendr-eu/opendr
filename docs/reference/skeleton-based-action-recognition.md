@@ -26,7 +26,7 @@ https://github.com/open-mmlab/mmskeleton/tree/b4c076baa9e02e69b5876c49fa7c509866
 It can be used to perform the baseline method ST-GCN and the proposed methods TA-GCN [[2]](#2) and ST-BLN [[3]](#3) for skeleton-based action recognition. 
 The TA-GCN and ST-BLN methods are proposed on top of ST-GCN and make it more efficient in terms of number of model parameters and floating point operations. 
 
-The [SpatioTemporalGCNLearner](#src.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner.py) class has the
+The [SpatioTemporalGCNLearner](/src/opendr/perception/skeleton_based_action_recognition/spatio_temporal_gcn_learner.py) class has the
 following public methods:
 
 #### `SpatioTemporalGCNLearner` constructor
@@ -205,7 +205,7 @@ Provided with the path "/my/path" (absolute or relative), it creates the "path" 
 exist. Inside this folder, the model is saved as "model_name.pt" and the metadata file as "model_name.json". If the directory
 already exists, the "model_name.pt" and "model_name.json" files are overwritten.
 
-If [`self.optimize`](#SpatioTemporalGCNLearner.optimize) was run previously, it saves the optimized ONNX model in 
+If [`self.optimize`](/src/opendr/perception/skeleton_based_action_recognition/spatio_temporal_gcn_learner.py#L539) was run previously, it saves the optimized ONNX model in 
 a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously 
 during conversion.
 
@@ -418,7 +418,7 @@ Bases: `engine.learners.Learner`
 The *ProgressiveSpatioTemporalGCNLearner* class is an implementation of the proposed method PST-GCN [[4]](#4) for Skeleton-based Human 
 Action Recognition.
 It finds an optimized and data dependant spatio-temporal graph convolutional network topology for skeleton-based action recognition. 
-The [ProgressiveSpatioTemporalGCNLearner](#src.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner.py) class has the
+The [ProgressiveSpatioTemporalGCNLearner](/src/opendr/perception/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_learner.py) class has the
 following public methods:
 
 
@@ -640,7 +640,7 @@ Provided with the path "/my/path" (absolute or relative), it creates the "path" 
 exist. Inside this folder, the model is saved as "model_name.pt" and the metadata file as "model_name.json". If the directory
 already exists, the "model_name.pt" and "model_name.json" files are overwritten.
 
-If [`self.optimize`](#SpatioTemporalGCNLearner.optimize) was run previously, it saves the optimized ONNX model in 
+If [`self.optimize`](/src/opendr/perception/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_learner.py#L576) was run previously, it saves the optimized ONNX model in 
 a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously 
 during conversion.
 

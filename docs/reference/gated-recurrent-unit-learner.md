@@ -9,7 +9,7 @@ Bases: `engine.learners.Learner`
 The *GatedRecurrentUnitLearner* class provides the implementation of the Gated Recurrent Unit network for heart anomaly detection [[1]](#gru).
 It can also be used to train a time-series classifier.
 
-The [GatedRecurrentUnitLearner](#src.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurrent_unit_learner.py) class has the following public methods:
+The [GatedRecurrentUnitLearner](/src/opendr/perception/heart_anomaly_detection/gated_recurrent_unit/gated_recurrent_unit_learner.py) class has the following public methods:
 
 #### `GatedRecurrentUnitLearner` constructor
 ```python

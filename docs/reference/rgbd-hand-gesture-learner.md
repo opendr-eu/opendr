@@ -9,7 +9,7 @@ The *RgbdHandGestureLearner* class provides an implementation of the common base
 Hand gesture recognition is conducted via learning a convolution neural network (CNN) classifier that operates on the input RGBD data.  
 Common CNN architectures are implemented with an option to load their pretrained weights on the ImageNet dataset.   
 
-The [RgbdHandGestureLearner](#opendr.perception.multimodal_human_centric.rgbd_hand_gesture_learner.rgbd_hand_gesture_learner.py) class has the following public methods:
+The [RgbdHandGestureLearner](/src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/rgbd_hand_gesture_learner.py) class has the following public methods:
 
 #### `RgbdHandGestureLearner` constructor
 ```python
