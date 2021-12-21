@@ -77,7 +77,7 @@ Documentation on how to use this node can be found [here](../../projects/opendr_
 #### Tutorials and Demos
 
 A demo in the form of a Jupyter Notebook is available
-[here](https://github.com/opendr-eu/opendr/blob/master/projects/simulation/human_model_generation/demos/model_generation.ipynb).
+[here](../../projects/simulation/human_model_generation/demos/model_generation.ipynb).
 
 #### Example 
 
