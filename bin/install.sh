@@ -10,7 +10,7 @@ if [[ -z "${OPENDR_DEVICE}" ]]; then
 fi
 
 # Install base ubuntu deps
-sudo apt-get install --yes libfreetype6-dev lsb-release git python python3-pip curl wget python3.8-venv
+sudo apt-get install --yes libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv
 
 # Get all submodules
 git submodule init
@@ -46,7 +46,7 @@ pip3 freeze > requirements.txt
 # Remove detectron, since it was installed from git repo
 sed -i '/detectron2/d' requirements.txt
 sed -i '/git/d' requirements.txt
-python setup.py bdist_wheel
+python3 setup.py bdist_wheel
 
 deactivate
 

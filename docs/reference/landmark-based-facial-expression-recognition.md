@@ -327,7 +327,7 @@ Parameters:
 
   ```python
   from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import frame_extractor
-  python frame_extractor.py --video_folder ./data/AFEW_videos/ --frames_folder ./data/AFEW/
+  python3 frame_extractor.py --video_folder ./data/AFEW_videos/ --frames_folder ./data/AFEW/
   ```
   You need to specify the path of the videos as `--video_folder` and the path of the extracted frames data as `--frames_folder`.
 
@@ -335,7 +335,7 @@ Parameters:
 
   ```python
   from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import landmark_extractor
-  python landmark_extractor.py --dataset_name AFEW --shape_predictor ./data/shape_predictor_68_face_landmarks.dat --frames_folder ./data/AFEW/ --landmark_folder ./data/AFEW_landmarks/
+  python3 landmark_extractor.py --dataset_name AFEW --shape_predictor ./data/shape_predictor_68_face_landmarks.dat --frames_folder ./data/AFEW/ --landmark_folder ./data/AFEW_landmarks/
   ```
   You need to specify the path of the landmark extractor as `--shape_predictor` and the path of the extracted frames and extracted landmarks as `--frames_folder` and `--landmark_folder`.
 
@@ -344,14 +344,14 @@ Parameters:
   ```python
   from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import AFEW_data_gen
   from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import data_augmentation
-  python AFEW_data_gen.py --landmark_folder  ./data/AFEW_landmarks/ --data_folder ./data/AFEW_data/
-  python data_aumentation.py --data_folder ./data/AFEW_data/ --aug_data_folder ./data/AFEW_aug_data/
+  python3 AFEW_data_gen.py --landmark_folder  ./data/AFEW_landmarks/ --data_folder ./data/AFEW_data/
+  python3 data_aumentation.py --data_folder ./data/AFEW_data/ --aug_data_folder ./data/AFEW_aug_data/
   ```
   The preprocessed augmented data will be saved in the `--aug_data_folder` path.
   After generating the preprocessed facial landmark data, generate the facial graph edges data as follows:
   ```python
   from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import gen_facial_muscles_data
-  python gen_facial_muscles_data.py --dataset_name AFEW --landmark_data_folder ./data/AFEW_aug_data/ --muscle_data_folder ./data/muscle_data/
+  python3 gen_facial_muscles_data.py --dataset_name AFEW --landmark_data_folder ./data/AFEW_aug_data/ --muscle_data_folder ./data/muscle_data/
   ```
 
 
@@ -365,13 +365,13 @@ Parameters:
   ```python
   from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import CASIA_CK+_data_gen
   from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import landmark_extractor
-  python landmark_extractor.py --dataset_name CK+ --shape_predictor ./data/shape_predictor_68_face_landmarks.dat --frames_folder ./data/CK+/ --landmark_folder ./data/CK+_landmarks/
-  python CASIA_CK+_data_gen.py --dataset_name CK+ --landmark_folder  ./data/CK+_landmarks/ --output_folder ./data/CK+_10fold/
+  python3 landmark_extractor.py --dataset_name CK+ --shape_predictor ./data/shape_predictor_68_face_landmarks.dat --frames_folder ./data/CK+/ --landmark_folder ./data/CK+_landmarks/
+  python3 CASIA_CK+_data_gen.py --dataset_name CK+ --landmark_folder  ./data/CK+_landmarks/ --output_folder ./data/CK+_10fold/
   ```
   - After generating the preprocessed facial landmark data, generate the facial muscle data as follows:
   ```python
   from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import gen_facial_muscles_data
-  python gen_facial_muscles_data.py --dataset_name CK+ --landmark_data_folder ./data/CK+_10fold/ --muscle_data_folder ./data/muscle_data/
+  python3 gen_facial_muscles_data.py --dataset_name CK+ --landmark_data_folder ./data/CK+_10fold/ --muscle_data_folder ./data/muscle_data/
   ```
 
 ##### Oulu-CASIA data preparation:
@@ -381,13 +381,13 @@ Parameters:
   ```python
   from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import CASIA_CK+_data_gen
   from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import landmark_extractor
-  python landmark_extractor.py --dataset_name CASIA --shape_predictor ./data/shape_predictor_68_face_landmarks.dat --frames_folder ./data/CASIA/ --landmark_folder ./data/CASIA_landmarks/
-  python CASIA_CK+_data_gen.py --dataset_name CASIA --landmark_folder  ./data/CASIA_landmarks/ --output_folder ./data/CASIA_10fold/
+  python3 landmark_extractor.py --dataset_name CASIA --shape_predictor ./data/shape_predictor_68_face_landmarks.dat --frames_folder ./data/CASIA/ --landmark_folder ./data/CASIA_landmarks/
+  python3 CASIA_CK+_data_gen.py --dataset_name CASIA --landmark_folder  ./data/CASIA_landmarks/ --output_folder ./data/CASIA_10fold/
   ```
   - After generating the preprocessed facial landmark data, generate the facial muscle data as follows:
   ```python
   from opendr.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.algorithm.datasets import gen_facial_muscles_data
-  python gen_facial_muscles_data.py --dataset_name CASIA --landmark_data_folder ./data/CASIA_10fold/ --muscle_data_folder ./data/muscle_data/
+  python3 gen_facial_muscles_data.py --dataset_name CASIA --landmark_data_folder ./data/CASIA_10fold/ --muscle_data_folder ./data/muscle_data/
   ```
 
 #### Examples

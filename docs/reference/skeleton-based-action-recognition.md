@@ -9,8 +9,8 @@ The *skeleton_based_action_recognition* module contains the *SpatioTemporalGCNLe
   ```python
   from opendr.perception.skeleton_based_action_recognition.algorithm.datasets import ntu_gendata
   from opendr.perception.skeleton_based_action_recognition.algorithm.datasets import kinetics_gendata
-  python ntu_gendata.py --data_path ./data/nturgbd_raw_skeletons --ignored_sample_path ./algorithm/datasets/ntu_samples_with_missing_skeletons.txt --out_folder ./data/preprocessed_nturgbd
-  python kinetics_gendata.py --data_path ./data/kinetics_raw_skeletons --out_folder ./data/preprocessed_kinetics_skeletons
+  python3 ntu_gendata.py --data_path ./data/nturgbd_raw_skeletons --ignored_sample_path ./algorithm/datasets/ntu_samples_with_missing_skeletons.txt --out_folder ./data/preprocessed_nturgbd
+  python3 kinetics_gendata.py --data_path ./data/kinetics_raw_skeletons --out_folder ./data/preprocessed_kinetics_skeletons
   ```
   You need to specify the path of the downloaded data as `--data_path` and the path of the processed data as `--out_folder`. 
   ntu_samples_with_missing_skeletons.txt provides the NTU-RGB+D sample indices which don't contain any skeleton. 

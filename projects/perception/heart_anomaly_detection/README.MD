@@ -5,7 +5,7 @@ It can be used for both evaluation on AF dataset, as well as inference on a sing
 Demo for evaluation on AF dataset can be run as follows:
 
 ```python
-python demo.py -model [anbof|gru] 
+python3 demo.py -model [anbof|gru] 
 ```
 By setting ` --input_data /path/to/data.npy` inference can be performed from a single ECG sequence. 
 
