@@ -89,22 +89,18 @@ Tools provided in *projects* are not installed by *pip*.
 
 # Installing using *docker*
 ## CPU docker
-After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can directly pull opendr CPU image as:
+After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can directly run OpenDR image as:
 ````bash
-TODO
+sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_latest
 ````
 This docker automatically runs a Jupyter notebook server that listens at port 8888.
-You can run this docker and map this port in your localhost as:
-```bash
-sudo docker run -p 8888:8888 opendr/ubuntu
-```
 Then, you can access the Jupyter notebook at your [localhost:8888](http://127.0.0.1:8888).
 
 
 You can build our docker container (based on Ubuntu 20.04) using the [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile) provided in the root folder of the toolkit:
 ```bash
 cd opendr
-sudo docker build -t opendr/ubuntu .
+sudo docker build -t opendr/opendr-toolkit:cpu .
 ```
 
 ## GPU docker
@@ -112,7 +108,7 @@ If you want to use a CUDA-enabled container please install [nvidia-docker](https
 Then, you can directly use opendr-gpu as:
 ```bash
 TODO
-sudo docker run -p 8888:8888 opendr/ubuntu
+sudo docker run -p 8888:8888 opendr/opendr-toolkit:cuda_latest
 ```
 You can also build the image by yourself using the supplied [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda). 
 First, edit `/etc/docker/daemon.json` in order to set the default docker runtime:
@@ -134,9 +130,9 @@ sudo systemctl restart docker.service
 Then you can build the supplied dockerfile:
 ```bash
 cd opendr
-sudo docker build -t opendr/ubuntu -f Dockerfile-cuda .
+sudo docker build -t opendr/opendr-toolkit:cuda -f Dockerfile-cuda .
 ```
 As before, you can run this docker:
 ```bash
-sudo docker run --gpus all -p 8888:8888 opendr/ubuntu
+sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda
 ```
