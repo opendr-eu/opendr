@@ -30,6 +30,9 @@ You are then ready to install the toolkit:
 cd opendr
 ./bin/install.sh
 ```
+Note that this might take a while (~0.1-1h depending on your machine), while the script also makes system-wide changes.
+Using dockerfiles is strongly advised (please see below), unless you know what you are doing.
+Please also make sure that you have enough RAM available for installation.
 The installation script automatically installs all the required dependencies.
 Note that you can set the inference device using the `OPENDR_DEVICE` variable.
 The toolkit defaults to using CPU.
@@ -78,26 +81,36 @@ pip install opendr-toolkit
 ```
 For some systems it is necessary to disable AVX2 during `bcolz` dependency installation (`export DISABLE_BCOLZ_AVX2=true`).
 Please note that only the Python API is exposed when you install OpenDR toolkit using *pip*.
-*Note: This mode of installation is not yet available, since wheel is not yet published in PyPI.*
 
 *pip* wheels only install code that is available under the *src/opendr* folder of the toolkit.
 Tools provided in *projects* are not installed by *pip*.
 
 # Installing using *docker*
 ## CPU docker
-After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can build our docker container (based on Ubuntu 20.04):
-```bash
-sudo docker build -t opendr/ubuntu .
-```
+After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can directly pull opendr CPU image as:
+````bash
+TODO
+````
 This docker automatically runs a Jupyter notebook server that listens at port 8888.
 You can run this docker and map this port in you localhost as:
 ```bash
 sudo docker run -p 8888:8888 opendr/ubuntu
 ```
+You can build our docker container (based on Ubuntu 20.04) using the dockerfile provided in the root folder of the toolkit:
+```bash
+cd opendr
+sudo docker build -t opendr/ubuntu .
+```
 
 ## GPU docker
 If you want to use a CUDA-enable container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
-Then, edit `/etc/docker/daemon.json` in order to set the default docker runtime:
+Then, you can directly use opendr-gpu as:
+```bash
+TODO
+sudo docker run -p 8888:8888 opendr/ubuntu
+```
+You can also build the image by yourself using the supplied dockerfile. 
+First, edit `/etc/docker/daemon.json` in order to set the default docker runtime:
 ```
 {
     "runtimes": {
@@ -115,6 +128,7 @@ sudo systemctl restart docker.service
 ```
 Then you can build the supplied dockerfile:
 ```bash
+cd opendr
 sudo docker build -t opendr/ubuntu -f Dockerfile-cuda .
 ```
 As before, you can run this docker:
