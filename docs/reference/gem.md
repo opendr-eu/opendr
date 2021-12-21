@@ -10,7 +10,7 @@ The *GemLearner* class is a multimodal wrapper inspired by DETR [[1]](#detr-pape
 The fusion methodologies employed in *GemLearner* are explained in GEM article [[2]](#gem-paper).
 It can be used to perform object detection on images (inference) and train GEM object detection models.
 
-The [GemLearner](#src.perception.object_detection_2d.detr.detr_learner.py) class has the following public methods:
+The [GemLearner](/src/opendr/perception/object_detection_2d/detr/detr_learner.py) class has the following public methods:
 
 #### `GemLearner` constructor
 ```python

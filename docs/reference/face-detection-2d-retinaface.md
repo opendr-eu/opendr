@@ -9,7 +9,7 @@ The *RetinaFaceLearner* class is a wrapper of the RetinaFace detector[[1]](#reti
 [deepinsight implementation](https://www.github.com/deepinsight/insightface).
 It can be used to perform face detection on images (inference) as well as train new face detection models.
 
-The [RetinaFaceLearner](#src.opendr.perception.object_detection_2d.retinaface.retinaface_learner.py) class has the following
+The [RetinaFaceLearner](/src/opendr/perception/object_detection_2d/retinaface/retinaface_learner.py) class has the following
 public methods:
 
 #### `RetinaFaceLearner` constructor

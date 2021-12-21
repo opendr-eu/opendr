@@ -8,7 +8,7 @@ Bases: `engine.learners.Learner`
 The *ObjectTracking2DFairMotLearner* class is a wrapper of the FairMOT[[1]](#object-tracking-2d-1) implementation found on [ifzhang/FairMOT](https://github.com/ifzhang/FairMOT)[[2]](#object-tracking-2d-2).
 It can be used to perform 2D object tracking on images and train new models.
 
-The [ObjectTracking2DFairMotLearner](#src.opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner.py) class has the
+The [ObjectTracking2DFairMotLearner](/src/opendr/perception/object_tracking_2d/fair_mot/object_tracking_2d_fair_mot_learner.py) class has the
 following public methods:
 
 #### `ObjectTracking2DFairMotLearner` constructor
@@ -181,7 +181,7 @@ Provided with the path "/my/path/name" (absolute or relative), it creates the "n
 Inside this folder, the model is saved as "name.pth" or "name.onnx" and the metadata file as "name.json".
 If the directory already exists, the files are overwritten.
 
-If [`self.optimize`](#ObjectTracking2DFairMotLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the `self.temp_path` it was saved previously during conversion.
+If [`self.optimize`](/src/opendr/perception/object_tracking_2d/fair_mot/object_tracking_2d_fair_mot_learner.py#L425) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the `self.temp_path` it was saved previously during conversion.
 
 Parameters:
 

@@ -8,7 +8,7 @@ Bases: `engine.learners.Learner`
 The *ObjectTracking2DDeepSortLearner* class is a wrapper of the Deep SORT[[1]](#object-tracking-2d-1) implementation found on [ZQPei/deep_sort_pytorch](https://github.com/ZQPei/deep_sort_pytorch)[[2]](#object-tracking-2d-2).
 It can be used to perform 2d object tracking on images and train new models.
 
-The [ObjectTracking2DDeepSortLearner](#src.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner.py) class has the
+The [ObjectTracking2DDeepSortLearner](/src/opendr/perception/object_tracking_2d/fair_mot/object_tracking_2d_fair_mot_learner.py) class has the
 following public methods:
 
 #### `ObjectTracking2DDeepSortLearner` constructor
@@ -101,7 +101,7 @@ ObjectTracking2DDeepSortLearner.infer(self, batch, frame_ids)
 ```
 
 This method is used to 2d object tracking on an image.
-Returns a list of [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) objects if the list of [ImageWithDetections](#class_engine.data.ImageWithDetections) is given or a single [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) if a single [ImageWithDetections](#class_engine.data.ImageWithDetections) is given.
+Returns a list of [TrackingAnnotationList](/src/opendr/engine/target.py#L545) objects if the list of [ImageWithDetections](/src/opendr/engine/data.py#L358) is given or a single [TrackingAnnotationList](/src/opendr/engine/target.py#L545) if a single [ImageWithDetections](/src/opendr/engine/data.py#L358) is given.
 
 Parameters:
 - **batch**: *engine.data.ImageWithDetections* or a *list of engine.data.ImageWithDetections*  
@@ -119,7 +119,7 @@ Provided with the path "/my/path/name" (absolute or relative), it creates the "n
 Inside this folder, the model is saved as "name.pth" or "name.onnx" and the metadata file as "name.json".
 If the directory already exists, the files are overwritten.
 
-If [`self.optimize`](#ObjectTracking2DDeepSortLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the `self.temp_path` it was saved previously during conversion.
+If [`self.optimize`](/src/opendr/perception/object_tracking_2d/fair_mot/object_tracking_2d_fair_mot_learner.py#L425) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the `self.temp_path` it was saved previously during conversion.
 
 Parameters:
 - **path**: *str*  

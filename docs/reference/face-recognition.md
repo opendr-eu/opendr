@@ -7,7 +7,7 @@ Bases: `engine.learners.Learner`
 
 FaceRecognition class is OpenDR's implementation for training and using a model on the face recognition task.
 
-The [FaceRecognition](#src.opendr.perception.face_recognition.face_recognition_learner.py) class has the
+The [FaceRecognition](/src/opendr/perception/face_recognition/face_recognition_learner.py) class has the
 following public methods:
 
 #### `FaceRecognitionLearner` constructor
@@ -225,7 +225,7 @@ exist.
 Inside this folder, the model is saved as 'backbone.pth' and the metadata file as "backbone.json".
 If the directory already exists, the existing .pth and .json files are overwritten.
 
-If [`self.optimize`](#FaceRecognitionLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously during conversion.
+If [`self.optimize`](/src/opendr/perception/face_recognition/face_recognition_learner.py#L859) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously during conversion.
 
 Parameters:
 

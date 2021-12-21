@@ -7,7 +7,7 @@ Bases: `engine.learners.Learner`
 
 The *ProgressiveSpatioTemporalBLNLearner* class is an implementation of the proposed method PST-BLN [[6]](#6) for landmark-based facial expression recognition.
 It finds an optimized and data dependant spatio-temporal bilinear network topology for landmark-based facial expression recognition.
-The [ProgressiveSpatioTemporalBLNLearner](#src.perception.facial_expression_recognition.landmark_based_facial_expression_recognition.progressive_spatio_temporal_bln_learner.py) class has the
+The [ProgressiveSpatioTemporalBLNLearner](/src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/progressive_spatio_temporal_bln_learner.py) class has the
 following public methods:
 
 

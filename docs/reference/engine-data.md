@@ -5,13 +5,13 @@ The *engine.data* module contains classes representing different types of data.
 ### Class engine.data.Data
 Bases: `abc.ABC`
 
-Data abstract class allows for representing different types of data.
+[Data](/src/opendr/engine/data.py#L24) abstract class allows for representing different types of data.
 This class serves as the basis for more complicated data types.
 For data classes, conversion from (using the constructor) and to [NumPy](https://numpy.org) arrays (using the `numpy()` method) will be supported to make the library compliant with the standard pipelines used by the computer vision and robotics communities.
 
 This class provides abstract methods for returning a [NumPy](https://numpy.org) compatible representation of data `numpy()`.
 
-The [Data](#class-engine.data.data) class has the following public methods:
+The *Data* class has the following public methods:
 #### data()
   Return the data argument.
   This method returns the internal representation of the data, which might not be a [NumPy](https://numpy.org) array.
@@ -25,9 +25,9 @@ Bases: `engine.data.Data`
 
 A class used for representing multidimensional timeseries data.
 
-The [Timeseries](#class_engine.data.Timeseries) class has the following public methods:
+The [Timeseries](/src/opendr/engine/data.py#L145) class has the following public methods:
 #### Timeseries(data=None)
-  Construct a new [Timeseries](#class_engine.data.Timeseries) object based from *data*.
+  Construct a new *Timeseries* object based from *data*.
   *data* is expected to be a 2-D array that can be casted into a 2-D [NumPy](https://numpy.org) array, where the first dimension corresponds to time and the second to the features.
 
 #### data()
@@ -48,9 +48,9 @@ Bases: `engine.data.Data`
 
 A class used for representing multidimensional vector data.
 
-The [Vector](#class_engine.data.Vector) class has the following public methods:
+The [Vector](/src/opendr/engine/data.py#L79) class has the following public methods:
 #### Vector(data=None)
-  Construct a new [Vector](#class_engine.data.Vector) object based from *data*.
+  Construct a new *Vector* object based from *data*.
   *data* is expected to be a 1-D array that can be casted into a 1-D  [NumPy](https://numpy.org) array.
 
 #### data()
@@ -71,9 +71,9 @@ Bases: `engine.data.Data`
 
 A class used for representing image data.
 
-The [Image](#class_engine.data.Image) class has the following public methods:
+The [Image](/src/opendr/engine/data.py#L211) class has the following public methods:
 #### Image(data=None, dtype=np.uint8, guess_format=True)
-  Construct a new [Image](#class_engine.data.Image) object based on *data*.
+  Construct a new *Image* object based on *data*.
   *data* is expected to be a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
   *dtype* is expected to be a [NumPy](https://numpy.org) data type.
   *guess_format* if set to True, then tries to automatically infer whether an [OpenCV](https://opencv.org) image was supplied and then automatically converts it into OpenDR format.
@@ -97,7 +97,7 @@ The [Image](#class_engine.data.Image) class has the following public methods:
   This method transforms the internal CHW/RGB representation into HWC/BGR used by OpenCV.
 
 #### open(filename)
-  Construct a new [Image](#class-engine.data.Image) object from the given image file.
+  Construct a new *Image* object from the given image file.
 
 #### convert(format='channels_first', channel_order='rgb')
   Return the data in channels first/last format using either 'rgb' or 'bgr' ordering.
@@ -112,11 +112,11 @@ Bases: `engine.data.Image`
 A class used for representing image data with a list of detections.
 This class is used for methods that rely on an external object detector such as DeepSort for 2D object tracking.
 
-The [ImageWithDetections](#class_engine.data.ImageWithDetections) class has the following public methods:
+The [ImageWithDetections](/src/opendr/engine/data.py#L358) class has the following public methods:
 #### ImageWithDetections(image, boundingBoxList)
-  Construct a new [ImageWithDetections](#class_engine.data.ImageWithDetections) object based on provided data.
-  - *image* is expected to be an [Image](#class_engine.data.Image) or a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
-  - *boundingBoxList* is expected to be a [BoundingBoxList](#class_engine.target.BoundingBoxList).
+  Construct a new *ImageWithDetections* object based on provided data.
+  - *image* is expected to be an *Image* or a 3-D array that can be casted into a 3-D [NumPy](https://numpy.org) array.
+  - *boundingBoxList* is expected to be a [BoundingBoxList](/src/opendr/engine/target.py#L404).
 
 #### data()
   Return *data* argument.
@@ -131,9 +131,9 @@ Bases: `engine.data.Data`
 
 A class used for representing video data.
 
-The [Video](#class_engine.data.Video) class has the following public methods:
+The [Video](/src/opendr/engine/data.py#L423) class has the following public methods:
 #### Video(data=None)
-  Construct a new [Video](#class_engine.data.Video) object based on *data*.
+  Construct a new *Video* object based on *data*.
   *data* is expected to be a 4-D array of shape (channels, time_steps, height, width).
 
 #### data()
@@ -154,9 +154,9 @@ Bases: `engine.data.Data`
 
 A class used for representing point cloud data.
 
-The [PointCloud](#class_engine.data.PointCloud) class has the following public methods:
+The [PointCloud](/src/opendr/engine/data.py#L496) class has the following public methods:
 #### PointCloud(data=None)
-  Construct a new [PointCloud](#class_engine.data.PointCloud) object based on *data*.
+  Construct a new *PointCloud* object based on *data*.
   *data* is expected to be a 2-D array that can be casted into a 2-D [NumPy](https://numpy.org) array.
 
 #### data()
@@ -177,9 +177,9 @@ Bases: `engine.data.PointCloud`
 
 A class used for representing point cloud data with a corresponding lidar-camera callibration data.
 
-The [PointCloudWithCalibration](#class_engine.data.PointCloudWithCalibration) class has the following public methods:
+The [PointCloudWithCalibration](/src/opendr/engine/data.py#L562) class has the following public methods:
 #### PointCloudWithCalibration(data=None, calib=None)
-  Construct a new [PointCloudWithCalibration](#class_engine.data.PointCloud) object based on *data*.
+  Construct a new *PointCloudWithCalibration* object based on *data*.
   *data* is expected to be a 2-D array that can be casted into a 2-D [NumPy](https://numpy.org) array.
   *calib* is expected to be a dictionary with `P`, `R0_rect`, `Tr_velo_to_cam` and `Tr_imu_to_velo` matrices in [NumPy](https://numpy.org)-compatible format.
   - `P[x]` matrices project a point in the rectified referenced camera coordinate to the `camera[x]` image.
@@ -206,9 +206,9 @@ Bases: `engine.data.Data`
 
 A class used for representing a sequence of body skeletons in a video.
 
-The [SkeletonSequence](#class_engine.data.SkeletonSequence) class has the following public methods:
+The [SkeletonSequence](/src/opendr/engine/data.py#L631) class has the following public methods:
 #### SkeletonSequence(data=None)
-  Construct a new [SkeletonSequence](#class_engine.data.SkeletonSequence) object based on *data*.
+  Construct a new *SkeletonSequence* object based on *data*.
   *data* is expected to be a 5-D array that can be casted into a 5-D [NumPy](https://numpy.org) array.
   The array's dimensions are defined as follows: 
   
