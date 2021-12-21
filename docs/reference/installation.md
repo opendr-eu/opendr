@@ -97,7 +97,7 @@ This docker automatically runs a Jupyter notebook server that listens at port 88
 Then, you can access the Jupyter notebook at your [localhost:8888](http://127.0.0.1:8888).
 
 
-You can build our docker container (based on Ubuntu 20.04) using the [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile) provided in the root folder of the toolkit:
+_(Optionally)_ If you wish, you can build our docker container (based on Ubuntu 20.04) using the [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile) provided in the root folder of the toolkit:
 ```bash
 cd opendr
 sudo docker build -t opendr/opendr-toolkit:cpu .
@@ -107,10 +107,10 @@ sudo docker build -t opendr/opendr-toolkit:cpu .
 If you want to use a CUDA-enabled container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
 Then, you can directly use opendr-gpu as:
 ```bash
-TODO
 sudo docker run -p 8888:8888 opendr/opendr-toolkit:cuda_latest
 ```
-You can also build the image by yourself using the supplied [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda). 
+
+_(Optionally)_ If you wish, you can also build the image by yourself using the supplied [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda). 
 First, edit `/etc/docker/daemon.json` in order to set the default docker runtime:
 ```
 {
