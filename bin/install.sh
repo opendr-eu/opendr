@@ -45,6 +45,7 @@ pip3 freeze > requirements.txt
 
 # Remove detectron, since it was installed from git repo
 sed -i '/detectron2/d' requirements.txt
+sed -i '/git/d' requirements.txt
 python setup.py bdist_wheel
 
 deactivate

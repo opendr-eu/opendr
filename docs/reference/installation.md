@@ -60,14 +60,18 @@ Note that NVIDIA 30xx GPUs may not be fully supported, due to CUDA limitations.
 
 # Installing using *pip*
 
-You can directly install OpenDR toolkit for CPU-only inference using pip:
+You can directly install OpenDR toolkit for CPU-only inference using pip.
+First, install the required dependencies:
 ```bash
 export DISABLE_BCOLZ_AVX2=true
 sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev
 python3 -m venv venv
 source venv/bin/activate
 pip install Cython torch==1.7.1 wheel
-pip install opendr-eu
+```
+Then, you can install the Python API of the toolkit using pip:
+```bash
+pip install opendr-toolkit
 ```
 For some systems it is necessary to disable AVX2 during `bcolz` dependency installation (`export DISABLE_BCOLZ_AVX2=true`).
 Please note that only the Python API is exposed when you install OpenDR toolkit using *pip*.
@@ -78,7 +82,7 @@ Tools provided in *projects* are not installed by *pip*.
 
 # Installing using *docker*
 ## CPU docker
-After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can build our docker contrainer (based on Ubuntu 20.04):
+After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can build our docker container (based on Ubuntu 20.04):
 ```bash
 sudo docker build -t opendr/ubuntu .
 ```
