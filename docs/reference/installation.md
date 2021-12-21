@@ -92,7 +92,7 @@ After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you c
 TODO
 ````
 This docker automatically runs a Jupyter notebook server that listens at port 8888.
-You can run this docker and map this port in you localhost as:
+You can run this docker and map this port in your localhost as:
 ```bash
 sudo docker run -p 8888:8888 opendr/ubuntu
 ```
