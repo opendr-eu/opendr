@@ -98,6 +98,9 @@ You can run this docker and map this port in your localhost as:
 ```bash
 sudo docker run -p 8888:8888 opendr/ubuntu
 ```
+Then, you can access the Jupyter notebook at your [localhost:8888](http://127.0.0.1:8888).
+
+
 You can build our docker container (based on Ubuntu 20.04) using the [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile) provided in the root folder of the toolkit:
 ```bash
 cd opendr
