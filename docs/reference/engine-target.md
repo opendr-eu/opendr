@@ -53,7 +53,7 @@ keypoints on the image.
 
 The [Keypoint](/src/opendr/engine/target.py#L192) class has the following public methods:
 #### Keypoint(keypoint, confidence=None)
-  Construct a new Keypoint* object based from *keypoint*.
+  Construct a new *Keypoint* object based from *keypoint*.
   *keypoint* is expected to be a list with two coordinates [x, y].
 
 
