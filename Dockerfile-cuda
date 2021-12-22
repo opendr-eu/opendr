@@ -6,31 +6,29 @@ RUN apt-get update && \
 RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
 
 # Install CUDA 10.2
-RUN apt-get --yes install gcc-8 g++-8 wget
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8
-#RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 8 --slave /usr/bin/g++ g++ /usr/bin/g++-9
-RUN update-alternatives --auto gcc 
-RUN apt-get --yes install zlib1g-dev libbz2-dev libreadline-dev libssl-dev libsqlite3-dev libffi-dev
-RUN wget https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run
-RUN wget http://people.cs.uchicago.edu/~kauffman/nvidia/cudnn/cudnn-10.2-linux-x64-v8.2.0.53.tgz
+RUN apt-get --yes install gcc-8 g++-8 wget  && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8  && \
+    update-alternatives --auto gcc && \
+    apt-get --yes install zlib1g-dev libbz2-dev libreadline-dev libssl-dev libsqlite3-dev libffi-dev && \
+    wget https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run && \
+    wget http://people.cs.uchicago.edu/~kauffman/nvidia/cudnn/cudnn-10.2-linux-x64-v8.2.0.53.tgz
 
-RUN sudo apt-get --yes install libxml2
-RUN sh cuda_10.2.89_440.33.01_linux.run --silent --toolkit --override  --librarypath=/usr/local/cuda-10.2
-RUN ln -s /usr/local/cuda-10.2/ /usr/local/cuda
-
-RUN tar -xzvf cudnn-10.2-linux-x64-v8.2.0.53.tgz
-RUN cp cuda/include/cudnn.h /usr/local/cuda/include
-RUN cp cuda/lib64/libcudnn* /usr/local/cuda/lib64
-RUN chmod a+r /usr/local/cuda/include/cudnn.h /usr/local/cuda/lib64/libcudnn*
-RUN bash -c 'echo "/usr/local/cuda-10.2/lib64" > /etc/ld.so.conf.d/nvidia.conf'
-RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_adv_train.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_adv_train.so.8
-RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_ops_infer.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_ops_infer.so.8
-RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_cnn_train.so.8.0.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_cnn_train.so.8
-RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_adv_infer.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_adv_infer.so.8
-RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_ops_train.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_ops_train.so.8
-RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_cnn_infer.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_cnn_infer.so.8
-RUN ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn.so.8
-RUN ldconfig
+RUN sudo apt-get --yes install libxml2 && \
+    sh cuda_10.2.89_440.33.01_linux.run --silent --toolkit --override  --librarypath=/usr/local/cuda-10.2 && \
+    ln -s /usr/local/cuda-10.2/ /usr/local/cuda && \
+    tar -xzvf cudnn-10.2-linux-x64-v8.2.0.53.tgz && \
+    cp cuda/include/cudnn.h /usr/local/cuda/include && \
+    cp cuda/lib64/libcudnn* /usr/local/cuda/lib64 && \
+    chmod a+r /usr/local/cuda/include/cudnn.h /usr/local/cuda/lib64/libcudnn* && \
+    bash -c 'echo "/usr/local/cuda-10.2/lib64" > /etc/ld.so.conf.d/nvidia.conf' && \
+    ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_adv_train.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_adv_train.so.8 && \
+    ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_ops_infer.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_ops_infer.so.8 && \
+    ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_cnn_train.so.8.0.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_cnn_train.so.8 && \
+    ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_adv_infer.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_adv_infer.so.8 && \
+    ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_ops_train.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_ops_train.so.8 && \
+    ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_cnn_infer.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn_cnn_infer.so.8 && \
+    ln -sf /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn.so.8.2.0 /usr/local/cuda-10.2/targets/x86_64-linux/lib/libcudnn.so.8 && \
+    ldconfig
 
 # Add Tini
 ENV TINI_VERSION v0.19.0
