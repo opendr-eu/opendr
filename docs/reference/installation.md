@@ -69,13 +69,12 @@ You can directly install OpenDR toolkit for CPU-only inference using pip.
 First, install the required dependencies:
 ```bash
 export DISABLE_BCOLZ_AVX2=true
-sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev
+sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget
 python3 -m venv venv
 source venv/bin/activate
-pip install Cython torch==1.7.1 wheel
-pip install git+https://github.com/cidl-auth/cocoapi@03ee5a19844e253b8365dbbf35c1e5d8ca2e7281#subdirectory=PythonAPI
-pip install git+https://github.com/cocodataset/panopticapi.git@7bb4655548f98f3fedc07bf37e9040a992b054b0
-pip install git+https://github.com/MatthewHowe/DCNv2@194f5733c667cf13e5bd478a8c5bf27573ffa98c
+pip install Cython
+wget https://raw.githubusercontent.com/opendr-eu/opendr/install_scripts/dependencies/pip_requirements.txt
+cat pip_requirements.txt | xargs -n 1 -L 1 pip install
 ```
 Then, you can install the Python API of the toolkit using pip:
 ```bash
