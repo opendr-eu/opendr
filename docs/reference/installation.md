@@ -94,7 +94,7 @@ After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you c
 sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_latest
 ```
 Both dockers automatically run a Jupyter notebook server that listens at port 8888.
-Then, you can access the Jupyter notebook by following the link provided in the console, it should be similar to [http://127.0.0.1:8888/?token=TOKEN](http://127.0.0.1:8888/?token=TOKEN).
+Then, you can access the Jupyter notebook by following the link provided in the console, it should be similar to [http://127.0.0.1:8888/?token=TOKEN](http://127.0.0.1:8888/?token=TOKEN). In order to stop the container, please quit the Jupyter notebook.
 
 If you do not wish to use Jupyter, you can also experiment by starting an interactive session by running
 ```bash
