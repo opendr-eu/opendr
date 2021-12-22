@@ -93,12 +93,20 @@ After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you c
 ```bash
 sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_latest
 ```
-This docker automatically runs a Jupyter notebook server that listens at port 8888.
+or
+```bash
+sudo docker run --gpus all -p 8888:8888 --opendr/opendr-toolkit:cuda_latest
+```
+to use the cuda-enabled version.
+Both dockers automatically run a Jupyter notebook server that listens at port 8888.
 Then, you can access the Jupyter notebook by following the link provided in the console, it should be similar to [http://127.0.0.1:8888/?token=TOKEN](http://127.0.0.1:8888/?token=TOKEN).
 
-If you do not wish to use Jupyter, you can also experiment by starting an interactive session,
+If you do not wish to use Jupyter, you can also experiment by starting an interactive session by running
 ```bash
 sudo docker run -it opendr/opendr-toolkit:cpu_latest /bin/bash
+```
+```bash
+sudo docker run --gpus all -it opendr/opendr-toolkit:cpu_latest /bin/bash
 ```
 
 _(Optionally)_ If you wish, you can build our docker container (based on Ubuntu 20.04) using the [dockerfile](/Dockerfile) provided in the root folder of the toolkit:
