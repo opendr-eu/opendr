@@ -543,7 +543,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.lr_scheduler = load_from_checkpoint(
             self.model,
             self.mixed_optimizer,
-            checkpoints_path + f"/checkpoint_{step}.pth",
+            str(checkpoints_path) + f"/checkpoint_{step}.pth",
             self.lr_schedule,
             self.lr_schedule_params,
             self.device,

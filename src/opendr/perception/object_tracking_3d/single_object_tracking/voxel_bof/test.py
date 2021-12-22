@@ -880,6 +880,8 @@ def test_rotated_pp_siamese_infer(model_name, load=0, classes=["Car", "Van", "Tr
             + str(track_id)
             + "_obj_"
             + str(object_id)
+            + "_steps_"
+            + str(load)
             + ".gif"
         )
 

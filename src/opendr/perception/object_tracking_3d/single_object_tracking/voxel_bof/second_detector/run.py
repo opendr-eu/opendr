@@ -40,6 +40,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.logge
     Logger,
 )
 from PIL import Image as PilImage
+from tensorboardX import SummaryWriter
 
 
 def example_convert_to_torch(
@@ -595,7 +596,7 @@ def select_best_scores_and_search(
 def displacement_score_to_image_coordinates(
     scores,
     score_upscale,
-    search_region_size,
+    search_region_size_with_context,
     search_region_rotation,
     feature_blocks,
     search_region_upscale_size=np.array([255, 255]),
@@ -609,9 +610,11 @@ def displacement_score_to_image_coordinates(
     half = (final_score_size - 1) / 2
 
     disp_score = max_idx.cpu().numpy() - half
-    disp_search = feature_to_image_coordinates(disp_score, feature_blocks) / score_upscale
+    # disp_search = feature_to_image_coordinates(disp_score, feature_blocks) / score_upscale
     disp_image_rotated = (
-        disp_search * search_region_size / search_region_upscale_size
+        # disp_search * search_region_size / search_region_upscale_size
+        # disp_search * search_region_size / feature_to_image_coordinates(final_score_size, feature_blocks) # search_region_upscale_size
+        (disp_score / final_score_size) * search_region_size_with_context  # search_region_upscale_size
     )
 
     rot = np.array(
@@ -736,6 +739,8 @@ def train(
     net.global_step -= net.global_step
     feature_blocks = net.feature_blocks
 
+    writer = SummaryWriter(str(model_dir))
+
     ######################
     # PREPARE INPUT
     ######################
@@ -838,15 +843,17 @@ def train(
                 loss = net.criterion(pred, labels, weights)
 
                 delta = displacement_score_to_image_coordinates(
-                    pred, 1, search[1], 0, feature_blocks
+                    pred, 1, search_size_with_context, 0, feature_blocks
                 )
                 true_delta = displacement_score_to_image_coordinates(
-                    labels, 1, search[1], 0, feature_blocks
+                    labels, 1, search_size_with_context, 0, feature_blocks
                 )
-                # predicted_label_target_coordinates = score_to_image_coordinates(
-                #     labels, target[1], search
-                # )
-                # delta = np.abs(predicted_target_coordinates - target[0])
+
+                delta = delta[[1, 0]]
+                true_delta = true_delta[[1, 0]]
+
+                predicted_center_image = search[0] + delta
+                true_center_image = search[0] + true_delta
 
                 if debug:
                     feat_search.register_hook(
@@ -892,9 +899,6 @@ def train(
 
                     vector = target[0] - search[0]
                     rot1 = rotate_vector(vector, search[2])
-                    rot2 = rotate_vector(vector, -search[2])
-                    rot3 = rotate_vector(vector, search[2] + np.pi)
-                    rot4 = rotate_vector(vector, -search[2] + np.pi)
 
                     draw_pseudo_image(
                         search_image[0],
@@ -905,13 +909,6 @@ def train(
                                 np.array([5, 5]),
                                 0,
                             ],
-                            # [
-                            #     (rot1 / search[1])[[1, 0]]
-                            #     * np.array(search_image.shape[-2:])
-                            #     + np.array(search_image.shape[-2:]) / 2,
-                            #     np.array([5, 5]),
-                            #     0,
-                            # ],
                             [
                                 (rot1 / search_size_with_context)[[1, 0]]
                                 * np.array(search_image.shape[-2:])
@@ -919,19 +916,28 @@ def train(
                                 np.array([5, 5]),
                                 0,
                             ],
+                            [
+                                (delta / search_size_with_context)[[1, 0]]
+                                * np.array(search_image.shape[-2:])
+                                + np.array(search_image.shape[-2:]) / 2,
+                                np.array([4, 4]),
+                                0,
+                            ],
+                            [
+                                (true_delta / search_size_with_context)[[1, 0]]
+                                * np.array(search_image.shape[-2:])
+                                + np.array(search_image.shape[-2:]) / 2,
+                                np.array([3, 3]),
+                                0,
+                            ],
                         ],
                         [
                             (255, 0, 0),
-                            # (0, 255, 0),
+                            (0, 255, 0),
                             (0, 0, 255),
-                            # (0, 255, 125),
-                            # (255, 255, 125),
-                            # (125, 40, 215),
-                            # (25, 40, 215),
-                            # (225, 40, 215),
-                            # (125, 0, 0),
-                            # (0, 125, 0),
-                            # (0, 0, 125),
+                            (255, 255, 0),
+                            (0, 255, 255),
+                            (255, 0, 255),
                         ],
                     )
 
@@ -953,10 +959,8 @@ def train(
                         [
                             [search[0][[1, 0]], np.array([5, 5]), 0],
                             [target[0][[1, 0]], np.array([4, 4]), 0],
-                            [(rot1 + search[0])[[1, 0]], np.array([3, 3]), 0],
-                            [(rot2 + search[0])[[1, 0]], np.array([3, 3]), 0],
-                            [(rot3 + search[0])[[1, 0]], np.array([3, 3]), 0],
-                            [(rot4 + search[0])[[1, 0]], np.array([3, 3]), 0],
+                            [predicted_center_image[[1, 0]], np.array([3, 3]), 0],
+                            [true_center_image[[1, 0]], np.array([3, 3]), 0],
                         ],
                         [
                             (255, 0, 0),
@@ -991,6 +995,10 @@ def train(
                         "error_position=",
                         average_delta_error,
                     )
+
+                    writer.add_scalar("loss", float(average_loss.detach().cpu()), global_step)
+                    writer.add_scalar("error_position_x", float(average_delta_error[0]), global_step)
+                    writer.add_scalar("error_position_y", float(average_delta_error[1]), global_step)
 
                     average_loss = 0
                     average_delta_error = 0
