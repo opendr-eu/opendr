@@ -36,6 +36,11 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 ENTRYPOINT ["/tini", "--"]
 
+# Avoid switching back to gcc9 when install build-essential
+RUN sudo apt-get --yes install build-essential && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8  && \
+    update-alternatives --auto gcc
+
 # Clone the repo and install the toolkit
 ENV OPENDR_DEVICE gpu
 RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr -b install_scripts
