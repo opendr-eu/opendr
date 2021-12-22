@@ -72,7 +72,6 @@ export DISABLE_BCOLZ_AVX2=true
 sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget
 python3 -m venv venv
 source venv/bin/activate
-pip install Cython
 wget https://raw.githubusercontent.com/opendr-eu/opendr/install_scripts/dependencies/pip_requirements.txt
 cat pip_requirements.txt | xargs -n 1 -L 1 pip install
 ```
