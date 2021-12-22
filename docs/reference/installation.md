@@ -92,38 +92,46 @@ Tools provided in *projects* are not installed by *pip*.
 
 # Installing using *docker*
 ## CPU docker
-After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can directly run OpenDR image as:
+After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can directly run the OpenDR image as:
 ```bash
 sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_latest
 ```
-Both dockers automatically run a Jupyter notebook server that listens at port 8888.
-Then, you can access the Jupyter notebook by following the link provided in the console, it should be similar to [http://127.0.0.1:8888/?token=TOKEN](http://127.0.0.1:8888/?token=TOKEN). In order to stop the container, please quit the Jupyter notebook.
+The docker automatically runs a Jupyter notebook server that listens at port 8888.
+When launched, you can access the Jupyter notebook by following the link provided in the console, it should be similar to [http://127.0.0.1:8888/?token=TOKEN](http://127.0.0.1:8888/?token=TOKEN). In order to stop the container, please quit the Jupyter notebook.
 
-If you do not wish to use Jupyter, you can also experiment by starting an interactive session by running
+If you do not wish to use Jupyter, you can also experiment by starting an interactive session by running:
 ```bash
 sudo docker run -it opendr/opendr-toolkit:cpu_latest /bin/bash
 ```
-
-_(Optionally)_ If you wish, you can build our docker container (based on Ubuntu 20.04) using the [dockerfile](/Dockerfile) provided in the root folder of the toolkit:
+In this case, do not forget to enable the virtual environment with:
 ```bash
-cd opendr
-sudo docker build -t opendr/opendr-toolkit:cpu .
+source bin/activate.sh
 ```
-
 ## GPU docker
 If you want to use a CUDA-enabled container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
 Then, you can directly run the latest image with the command:
 ```bash
 sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_latest
 ```
-or
+or, for an interactive session:
 ```bash
 sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_latest /bin/bash
 ```
-for an interactive session.
+In this case, do not forget to enable the virtual environment with:
+```bash
+source bin/activate.sh
+```
+## Build the docker images yourself _(optional)_
+Alternatively you can also build the docker images locally using the [Dockerfile](/Dockerfile) ([Dockerfile-cuda](/Dockerfile-cuda) for cuda) provided in the root folder of the toolkit.
 
-_(Optionally)_ If you wish, you can also build the image by yourself using the supplied [dockerfile](/Dockerfile-cuda).
-First, edit `/etc/docker/daemon.json` in order to set the default docker runtime:
+For the CPU image, execute the following commands:
+```bash
+git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
+cd opendr
+sudo docker build -t opendr/opendr-toolkit:cpu .
+```
+
+For the cuda-enabled image, first edit `/etc/docker/daemon.json` in order to set the default docker runtime:
 ```
 {
     "runtimes": {
@@ -135,16 +143,23 @@ First, edit `/etc/docker/daemon.json` in order to set the default docker runtime
     "default-runtime": "nvidia"
 }
 ```
+
 Restart docker afterwards:
 ```
 sudo systemctl restart docker.service
 ```
 Then you can build the supplied dockerfile:
 ```bash
+git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
 cd opendr
 sudo docker build -t opendr/opendr-toolkit:cuda -f Dockerfile-cuda .
 ```
-As before, you can run this docker:
+
+In order to run them, the commands are respectively:
 ```bash
+sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cpu
+```
+and
+```
 sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda
 ```
