@@ -33,7 +33,7 @@ cd opendr
 The installation script automatically installs all the required dependencies.
 Note that this might take a while (~0.1-1h depending on your machine), while the script also makes system-wide changes.
 Using dockerfiles is strongly advised (please see below), unless you know what you are doing.
-Please also make sure that you have enough RAM available for the installation.
+Please also make sure that you have enough RAM available for the installation (about 4GB of free RAM is needed for the full installation/compilation).
 
 
 You can set the inference/training device using the `OPENDR_DEVICE` variable.
@@ -49,6 +49,11 @@ source ./bin/activate.sh
 ```
 Then, you are ready to use the toolkit!
 
+You can also verify the installation by using the supplied Python and C unit tests:
+```bash
+make unittest
+make ctests
+```
 
 If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 10.2](https://developer.nvidia.com/cuda-10.2-download-archive).
 To do so, you can follow these steps:
