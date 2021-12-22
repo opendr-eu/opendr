@@ -105,8 +105,9 @@ If you do not wish to use Jupyter, you can also experiment by starting an intera
 ```bash
 sudo docker run -it opendr/opendr-toolkit:cpu_latest /bin/bash
 ```
+or
 ```bash
-sudo docker run --gpus all -it opendr/opendr-toolkit:cpu_latest /bin/bash
+sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_latest /bin/bash
 ```
 
 _(Optionally)_ If you wish, you can build our docker container (based on Ubuntu 20.04) using the [dockerfile](/Dockerfile) provided in the root folder of the toolkit:
