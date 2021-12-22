@@ -109,7 +109,7 @@ sudo docker build -t opendr/opendr-toolkit:cpu .
 
 ## GPU docker
 If you want to use a CUDA-enabled container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
-Then, you can directly use opendr-gpu as:
+Then, you can directly run the latest image with the command:
 ```bash
 sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_latest
 ```
