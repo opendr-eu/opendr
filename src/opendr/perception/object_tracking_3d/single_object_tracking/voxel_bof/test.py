@@ -902,7 +902,7 @@ def test_rotated_pp_siamese_infer(model_name, load=0, classes=["Car", "Van", "Tr
 
 
 def test_rotated_pp_siamese_eval(
-    draw=False, iou_min=0.0, classes=["Car", "Van", "Truck"]
+    model_name, load=0, draw=False, iou_min=0.0, classes=["Car", "Van", "Truck"]
 ):
     print("Eval", name, "start", file=sys.stderr)
     import pygifsicle
@@ -914,10 +914,16 @@ def test_rotated_pp_siamese_eval(
         lr=0.001,
         checkpoint_after_iter=2000,
     )
-    # learner.load(model_path, backbone=True, verbose=True)
-    learner.load(
-        "./temp/no-db-sample-upscaled-rotated-0/checkpoints", backbone=False, verbose=True
-    )
+
+    checkpoints_path = "./temp/" + model_name + "/checkpoints"
+    results_path = "./temp/" + model_name
+
+    if load == 0:
+        learner.load(
+            checkpoints_path, backbone=False, verbose=True
+        )
+    else:
+        learner.load_from_checkpoint(checkpoints_path, load)
 
     def test_track(track_id):
         count = len(dataset_tracking)
@@ -1125,6 +1131,13 @@ def test_rotated_pp_siamese_eval(
 
     print("all_ious =", all_ious)
     print("all_tracked =", all_tracked)
+
+    with open(results_path + "/results_" + load + ".txt", "w") as f:
+        print("total_mean_iou =", total_mean_iou, file=f)
+        print("total_mean_tracked =", total_mean_tracked, file=f)
+
+        print("all_ious =", all_ious, file=f)
+        print("all_tracked =", all_tracked, file=f)
 
 
 if __name__ == '__main__':

@@ -421,11 +421,15 @@ def create_static_label_and_weights(
 
 
 def size_with_context(target_size, context_amount):
-    mean_size = context_amount * (np.sum(target_size))
-    sub_image_size_side = np.sqrt(
-        (target_size[0] + mean_size) * (target_size[1] + mean_size)
-    )
-    sub_image_size = np.array([sub_image_size_side, sub_image_size_side])
+
+    if context_amount > 0:
+        mean_size = context_amount * (np.sum(target_size))
+        sub_image_size_side = np.sqrt(
+            (target_size[0] + mean_size) * (target_size[1] + mean_size)
+        )
+        sub_image_size = np.array([sub_image_size_side, sub_image_size_side])
+    else:
+        sub_image_size = target_size * (1 - context_amount)
 
     return sub_image_size
 
@@ -453,11 +457,11 @@ def sub_image_with_context(
 def create_pseudo_images_and_labels(
     net,
     example_torch,
+    target_size,
+    search_size,
+    context_amount,
     annos=None,
     gt_boxes=None,
-    target_size=np.array([127, 127]),
-    search_size=np.array([255, 255]),
-    context_amount=0.5,
 ):
     pseudo_image = net.create_pseudo_image(example_torch)
     feature_blocks = net.feature_blocks
@@ -659,15 +663,19 @@ def create_multi_scale_searches(search, scale_penalty, delta=0.05):
     return all_searches_and_penalties
 
 
-def create_multi_rotate_searches(search, rotate_penalty, delta):
+def create_multi_rotate_searches(search, rotate_penalty, delta, count):
 
     all_searches_and_penalties = []
 
-    for delta_index in [-1, 0, 1]:
-        # for delta_index in [-2, -1, 0, 1, 2]:
+    if count % 2 == 0:
+        count += 1
+
+    indices = [i - (count // 2) for i in range(count)]
+
+    for delta_index in indices:
         penalty = 1
         if delta_index != 0:
-            penalty *= rotate_penalty
+            penalty = rotate_penalty
 
         delta_angle = delta_index * delta
         new_search = [search[0], search[1], search[2] + delta_angle]
@@ -726,6 +734,8 @@ def train(
     device,
     checkpoint_after_iter,
     checkpoints_path,
+    target_size,
+    search_size,
     display_step=50,
     log=print,
     auto_save=False,
@@ -825,6 +835,9 @@ def train(
                         net,
                         example_torch,
                         gt_boxes=example_torch["gt_boxes_2"],
+                        target_size=target_size,
+                        search_size=search_size,
+                        context_amount=context_amount,
                     )
 
             for (
@@ -994,11 +1007,14 @@ def train(
                         "loss=" + str(float(average_loss.detach().cpu())),
                         "error_position=",
                         average_delta_error,
+                        "lr=",
+                        float(mixed_optimizer.param_groups[0]["lr"]),
                     )
 
                     writer.add_scalar("loss", float(average_loss.detach().cpu()), global_step)
                     writer.add_scalar("error_position_x", float(average_delta_error[0]), global_step)
                     writer.add_scalar("error_position_y", float(average_delta_error[1]), global_step)
+                    writer.add_scalar("learning_rate", float(mixed_optimizer.param_groups[0]["lr"]))
 
                     average_loss = 0
                     average_delta_error = 0

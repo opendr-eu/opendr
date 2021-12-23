@@ -104,7 +104,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         batch_size=64,
         optimizer="adam_optimizer",
         lr_schedule="exponential_decay_learning_rate",
-        backbone="tanet_16",
+        backbone="pointpillars_16",
         network_head="",
         checkpoint_after_iter=0,
         checkpoint_load_iter=0,
@@ -113,20 +113,21 @@ class VoxelBofObjectTracking3DLearner(Learner):
         threshold=0.0,
         scale=1.0,
         tanet_config_path=None,
-        optimizer_params={"weight_decay": 0.0001,},
+        optimizer_params={"weight_decay": 0.0001},
         lr_schedule_params={
-            "decay_steps": 27840,
+            "decay_steps": 2000,
             "decay_factor": 0.8,
             "staircase": True,
         },
-        feature_blocks=2,  # 3,
+        feature_blocks=3,  # 3,
         window_influence=0.25,  # 0.25,
         score_upscale=16,
         rotation_penalty=0.98,
-        rotation_step=0.15,
+        rotation_step=0.15 / 2,
+        rotations_count=5,
         target_size=np.array([127, 127]),
         search_size=np.array([255, 255]),
-        context_amount=0.5,
+        context_amount=0.2 # -0.2  # 0.5,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -161,6 +162,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.search_size = search_size
         self.context_amount = context_amount
         self.feature_blocks = feature_blocks
+        self.rotations_count = rotations_count
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -432,6 +434,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
             image_shape=image_shape,
             evaluate=evaluate,
             context_amount=self.context_amount,
+            target_size=self.target_size,
+            search_size=self.search_size,
             debug=debug,
         )
 
@@ -561,7 +565,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             pseudo_image = pseudo_images[0]
 
             multi_rotate_searches_and_penalties = create_multi_rotate_searches(
-                self.search_region, self.rotation_penalty, self.rotation_step
+                self.search_region, self.rotation_penalty, self.rotation_step, self.rotations_count
             )
 
             multi_rotate_features_and_searches_and_penalties = []
