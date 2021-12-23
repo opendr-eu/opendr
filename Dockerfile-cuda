@@ -43,7 +43,7 @@ RUN sudo apt-get --yes install build-essential && \
 
 # Clone the repo and install the toolkit
 ENV OPENDR_DEVICE gpu
-RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr -b install_scripts
+RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
 WORKDIR "/opendr"
 RUN ./bin/install.sh
 
