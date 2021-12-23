@@ -21,6 +21,6 @@
 # SOFTWARE.
 
 all:
-	cd algorithm/cython/; python setup.py build_ext --inplace; rm -rf build; cd ../../
+	cd algorithm/cython/; python3 setup.py build_ext --inplace; rm -rf build; cd ../../
 clean:
 	cd algorithm/cython/; rm *.so *.c *.cpp; cd ../../

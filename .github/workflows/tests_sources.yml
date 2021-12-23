@@ -105,4 +105,3 @@ jobs:
             source tests/sources/tools/control/mobile_manipulation/run_ros.sh
             python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
-

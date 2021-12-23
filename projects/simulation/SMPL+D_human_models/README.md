@@ -24,7 +24,7 @@ This folder contains code for:
 All those data can be used directly for research purposes, such as for training methods for shape and texture reconstruction. 
 
 ```
-python src/download_data.py raw
+python3 src/download_data.py raw
 ```
 
 ### Download the SMPL+D models and convert them to FBX (Filmbox) (≈12.5Gb)
@@ -35,7 +35,7 @@ In addition, we provide code for converting those human models in the FBX format
 
 - Download the data by running:
 ```
-python src/download_data.py
+python3 src/download_data.py
 ```
 
 - Download SMPL for Unity from the official website [here](https://smpl.is.tue.mpg.de/). Once you agree on SMPL license terms and have access to downloads, you will have the following two files:
@@ -72,7 +72,7 @@ Finally, instructions for setting a demo project in Webots are provided. In the 
 -  Extract the database (e.g., tar -xf ACCAD) 
 -  Run:
 ```
-python webots/extract_anims.py path_to_database
+python3 webots/extract_anims.py path_to_database
 ```
 -  Assign the directory of the selected animation in the controllerArgs to webots/smpl_webots/worlds/demo_world.wbt
 -  Install the demo project in Webots

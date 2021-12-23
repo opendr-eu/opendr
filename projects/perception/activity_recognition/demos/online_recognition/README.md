@@ -19,12 +19,12 @@ pip install -e .
 ## Running the example
 Human Activity Recognition using [X3D](https://openaccess.thecvf.com/content_CVPR_2020/papers/Feichtenhofer_X3D_Expanding_Architectures_for_Efficient_Video_Recognition_CVPR_2020_paper.pdf)
 ```bash
-python demo.py --ip 0.0.0.0 --port 8000 --algorithm x3d --model xs
+python3 demo.py --ip 0.0.0.0 --port 8000 --algorithm x3d --model xs
 ```
 
 Human Activity Recognition using CoX3D
 ```bash
-python demo.py --ip 0.0.0.0 --port 8000 --algorithm cox3d --model s
+python3 demo.py --ip 0.0.0.0 --port 8000 --algorithm cox3d --model s
 ```
 
 If you navigate your piano and http://0.0.0.0:8000 and pick up a ukulele, you might see something like this:
@@ -37,7 +37,7 @@ For other options, see `python demo.py --help`
 ## Troubleshooting
 If no video is displayed, you may try to select another video source using the `--video_source` flag:
 ```bash
-python demo.py --ip 0.0.0.0 --port 8000 --algorithm cox3d --model s --video_source 1
+python3 demo.py --ip 0.0.0.0 --port 8000 --algorithm cox3d --model s --video_source 1
 ```
 
 ## Acknowledgement
