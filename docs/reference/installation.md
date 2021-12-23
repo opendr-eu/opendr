@@ -107,6 +107,11 @@ In this case, do not forget to enable the virtual environment with:
 ```bash
 source bin/activate.sh
 ```
+If you want to display GTK-based applications from the Docker container (e.g., visualize results using OpenCV `imshow()`), then you should mount the X server socket inside the container, e.g.,
+```bash
+sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_latest /bin/bash
+```
+
 ## GPU docker
 If you want to use a CUDA-enabled container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
 Then, you can directly run the latest image with the command:
