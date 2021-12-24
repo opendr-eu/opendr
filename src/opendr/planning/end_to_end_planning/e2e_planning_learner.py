@@ -85,7 +85,6 @@ class EndToEndPlanningRLLearner(LearnerRL):
             urlretrieve(url=url, filename=file_destination)
         return file_destination
 
-
     def fit(self, env=None, logging_path='', total_timesteps=int(5e4), silent=False, verbose=True):
         """
         Train the agent on the environment.
