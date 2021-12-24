@@ -84,10 +84,10 @@ jobs:
     - uses: actions/checkout@v2
       with:
          submodules: true
-    - name: Set up Python 3.6
+    - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
-        python-version: 3.6
+        python-version: 3.8
     - name: Test Tools
       if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
       run: |
