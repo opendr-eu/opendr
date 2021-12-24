@@ -68,7 +68,7 @@ class PillarFeatureNet(nn.Module):
         num_filters=(64,),
         with_distance=False,
         voxel_size=(0.2, 0.2, 4),
-        pc_range=(0, -40, -3, 70.4, 40, 1),
+        pc_range=None # (0, -40, -3, 70.4, 40, 1),
     ):
         """
         Pillar Feature Net.
@@ -108,10 +108,13 @@ class PillarFeatureNet(nn.Module):
         # Need pillar (voxel) size and x/y offset in order to calculate pillar offset
         self.vx = voxel_size[0]
         self.vy = voxel_size[1]
-        self.x_offset = self.vx / 2 + pc_range[0]
-        self.y_offset = self.vy / 2 + pc_range[1]
+        # self.x_offset = self.vx / 2 + pc_range[0]
+        # self.y_offset = self.vy / 2 + pc_range[1]
 
-    def forward(self, features, num_voxels, coors):
+    def forward(self, features, num_voxels, coors, pc_range):
+
+        x_offset = self.vx / 2 + pc_range[0]
+        y_offset = self.vy / 2 + pc_range[1]
 
         # Find distance of x, y, and z from cluster center
         points_mean = features[:, :, :3].sum(dim=1, keepdim=True) / num_voxels.type_as(
@@ -122,10 +125,10 @@ class PillarFeatureNet(nn.Module):
         # Find distance of x, y, and z from pillar center
         f_center = torch.zeros_like(features[:, :, :2])
         f_center[:, :, 0] = features[:, :, 0] - (
-            coors[:, 3].float().unsqueeze(1) * self.vx + self.x_offset
+            coors[:, 3].float().unsqueeze(1) * self.vx + x_offset
         )
         f_center[:, :, 1] = features[:, :, 1] - (
-            coors[:, 2].float().unsqueeze(1) * self.vy + self.y_offset
+            coors[:, 2].float().unsqueeze(1) * self.vy + y_offset
         )
 
         # Combine together feature decorations
@@ -146,7 +149,7 @@ class PillarFeatureNet(nn.Module):
         for pfn in self.pfn_layers:
             features = pfn(features)
 
-        return features.squeeze()
+        return features.squeeze(axis=1)
 
 
 class PointPillarsScatter(nn.Module):
@@ -161,12 +164,14 @@ class PointPillarsScatter(nn.Module):
 
         super().__init__()
         self.name = "PointPillarsScatter"
-        self.output_shape = output_shape
-        self.ny = output_shape[2]
-        self.nx = output_shape[3]
+        # self.output_shape = output_shape
+        # self.ny = output_shape[2]
+        # self.nx = output_shape[3]
         self.nchannels = num_input_features
 
-    def forward(self, voxel_features, coords, batch_size):
+    def forward(self, voxel_features, coords, batch_size, output_shape):
+        ny = output_shape[2]
+        nx = output_shape[3]
 
         # batch_canvas will be the final output.
         batch_canvas = []
@@ -174,7 +179,7 @@ class PointPillarsScatter(nn.Module):
             # Create the canvas for this sample
             canvas = torch.zeros(
                 self.nchannels,
-                self.nx * self.ny,
+                nx * ny,
                 dtype=voxel_features.dtype,
                 device=voxel_features.device,
             )
@@ -182,7 +187,7 @@ class PointPillarsScatter(nn.Module):
             # Only include non-empty pillars
             batch_mask = coords[:, 0] == batch_itt
             this_coords = coords[batch_mask, :]
-            indices = this_coords[:, 2] * self.nx + this_coords[:, 3]
+            indices = this_coords[:, 2] * nx + this_coords[:, 3]
             indices = indices.type(torch.long)
             voxels = voxel_features[batch_mask, :]
             voxels = voxels.t()
@@ -197,6 +202,6 @@ class PointPillarsScatter(nn.Module):
         batch_canvas = torch.stack(batch_canvas, 0)
 
         # Undo the column stacking to final 4-dim tensor
-        batch_canvas = batch_canvas.view(batch_size, self.nchannels, self.ny, self.nx)
+        batch_canvas = batch_canvas.view(batch_size, self.nchannels, ny, nx)
 
         return batch_canvas

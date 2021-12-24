@@ -735,7 +735,7 @@ class VoxelNet(nn.Module):
     def get_global_step(self):
         return int(self.global_step.cpu().numpy()[0])
 
-    def create_pseudo_image(self, example):
+    def create_pseudo_image(self, example, pc_range):
         voxels = example["voxels"]
         num_points = example["num_points"]
         coors = example["coordinates"]
@@ -744,22 +744,51 @@ class VoxelNet(nn.Module):
         # features: [num_voxels, max_num_points_per_voxel, 7]
         # num_points: [num_voxels]
         # coors: [num_voxels, 4]
+
+        if len(voxels) == 0:
+            return torch.zeros(
+                [
+                    1,
+                    64,
+                    int(
+                        np.round(
+                            (pc_range[4] - pc_range[1]) / self.voxel_size[1]
+                        )
+                    ),
+                    int(
+                        np.round(
+                            (pc_range[3] - pc_range[0]) / self.voxel_size[0]
+                        )
+                    ),
+                ], device=voxels.device
+            )
+
         voxel_features = self.voxel_feature_extractor(
-            voxels, num_points, coors
+            voxels, num_points, coors, pc_range
         )
 
         if self._use_sparse_rpn:
             raise Exception()
 
+        output_shape = [
+            1,
+            1,
+            int(np.round((pc_range[4] - pc_range[1]) / self.voxel_size[1])),
+            int(np.round((pc_range[3] - pc_range[0]) / self.voxel_size[0])),
+            -1,
+        ]
+
         spatial_features = self.middle_feature_extractor(
-            voxel_features, coors, batch_size_dev
+            voxel_features, coors, batch_size_dev, output_shape=output_shape
         )
 
         return spatial_features
 
     def forward(self, spatial_features, refine_weight=2):
 
-        preds_dict = self.rpn(spatial_features, feature_blocks=self.feature_blocks)
+        preds_dict = self.rpn(
+            spatial_features, feature_blocks=self.feature_blocks
+        )
 
         return preds_dict
 

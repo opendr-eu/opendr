@@ -58,6 +58,7 @@ def prep_pointcloud(
     root_path,
     voxel_generator,
     target_assigner,
+    pc_range=None,
     db_sampler=None,
     max_voxels=20000,
     class_names=["Car"],
@@ -248,9 +249,18 @@ def prep_pointcloud(
 
     # [0, -40, -3, 70.4, 40, 1]
     voxel_size = voxel_generator.voxel_size
-    pc_range = voxel_generator.point_cloud_range
-    grid_size = voxel_generator.grid_size
-    # [352, 400]
+
+    if pc_range is None:
+        pc_range = voxel_generator.point_cloud_range
+        grid_size = voxel_generator.grid_size
+    else:
+        voxel_generator.point_cloud_range = pc_range
+        grid_size = np.array([
+            int(np.round((pc_range[3] - pc_range[0]) / voxel_size[0])),
+            int(np.round((pc_range[4] - pc_range[1]) / voxel_size[1])),
+            1
+        ])
+        voxel_generator.grid_size = grid_size
 
     voxels, coordinates, num_points = voxel_generator.generate(
         points, max_voxels
@@ -425,13 +435,13 @@ def _prep_v9(points, calib, prep_func, annos=None):
     return example
 
 
-def _prep_v9_infer(points, prep_func):
+def _prep_v9_infer(points, prep_func, pc_range):
 
     input_dict = {
         "points": points,
     }
 
-    example = prep_func(input_dict=input_dict)
+    example = prep_func(input_dict=input_dict, pc_range=pc_range)
     if "anchors_mask" in example:
         example["anchors_mask"] = example["anchors_mask"].astype(np.uint8)
     return example

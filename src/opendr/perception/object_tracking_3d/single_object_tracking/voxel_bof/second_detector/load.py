@@ -99,6 +99,7 @@ def create_model(
     )
     net.device = device
     net.bv_range = bv_range
+    net.point_cloud_range =voxel_generator. point_cloud_range
     net.voxel_size = model_cfg.voxel_generator.voxel_size
     net.criterion = BCEWeightedLoss()
     net.feature_blocks = feature_blocks

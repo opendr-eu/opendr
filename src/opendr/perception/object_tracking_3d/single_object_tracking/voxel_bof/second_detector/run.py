@@ -279,6 +279,8 @@ def get_rotated_sub_image(pseudo_image, center, size, angle):
         torch.tensor(1).reshape(1),
     ).to(pi.device)
     img_warped = tgm.warp_affine(pi, M, dsize=(pi.shape[2], pi.shape[3]))
+    # draw_pseudo_image(pi[0], "./plots/pi.png")
+    # draw_pseudo_image(pi[0], "./plots/pi1.png", [[size / 2, np.array([2, 2])], [center, np.array([1, 1])]], [(255, 0, 0), (255, 255, 0)])
     # draw_pseudo_image(img_warped[0], "./plots/rpi.png")
     # draw_pseudo_image(
     #     img_warped[0], "./plots/rpi_c.png", [[center, size]], [(255, 0, 0)]
@@ -312,8 +314,8 @@ def get_rotated_sub_image(pseudo_image, center, size, angle):
     # )
     # draw_pseudo_image(output[0], "./plots/rpi.png")
 
-    x = int(center[1] - size[1] / 2)
-    y = int(center[0] - size[0] / 2)
+    # x = int(center[1] - size[1] / 2)
+    # y = int(center[0] - size[0] / 2)
 
     image = get_sub_image(img_warped[0], center, size)
 
@@ -322,7 +324,7 @@ def get_rotated_sub_image(pseudo_image, center, size, angle):
 
 
 def create_pseudo_image_features(
-    pseudo_image, target, net, uspcale_size, context_amount
+    pseudo_image, target, net, uspcale_size, context_amount, offset
 ):
 
     # image = get_rotated_sub_image(
@@ -342,6 +344,7 @@ def create_pseudo_image_features(
         target,
         (uspcale_size[0], uspcale_size[1]),
         context_amount,
+        offset,
     )
 
     # if np.any(np.array(image.shape[-2:]) <= 0):
@@ -435,13 +438,18 @@ def size_with_context(target_size, context_amount):
 
 
 def sub_image_with_context(
-    pseudo_image, target, interoplation_size, context_amount
+    pseudo_image, target, interoplation_size, context_amount, offset
 ):
     target_size = target[1]
     sub_image_size = size_with_context(target_size, context_amount)
 
+    center = target[0].astype(np.float32)
+
+    if offset is not None:
+        center -= offset - np.array(pseudo_image.shape[-2:], dtype=np.float32) / 2
+
     sub_image = get_rotated_sub_image(
-        pseudo_image, target[0][[1, 0]], sub_image_size, target[2],
+        pseudo_image, center[[1, 0]], sub_image_size, target[2],
     )
     # draw_pseudo_image(sub_image, "./plots/train/sub_image" + str(0) + ".png")
 
@@ -463,7 +471,7 @@ def create_pseudo_images_and_labels(
     annos=None,
     gt_boxes=None,
 ):
-    pseudo_image = net.create_pseudo_image(example_torch)
+    pseudo_image = net.create_pseudo_image(example_torch, net.point_cloud_range)
     feature_blocks = net.feature_blocks
 
     if annos is not None:
@@ -496,6 +504,7 @@ def create_pseudo_images_and_labels(
                 target,
                 (target_size[0], target_size[1]),
                 context_amount,
+                offset=None,
             )
 
             search_image, _ = sub_image_with_context(
@@ -503,6 +512,7 @@ def create_pseudo_images_and_labels(
                 search,
                 (search_size[0], search_size[1]),
                 context_amount,
+                offset=None,
             )
 
             # draw_pseudo_image(target_image.squeeze(axis=0), "./plots/pi_target_" + str(0) + ".png")
@@ -712,6 +722,36 @@ def rotate_vector(vector, angle):
     result = np.dot(rot, vector)
 
     return result
+
+
+def create_lidar_aabb_from_target(target, voxel_size, bv_range, z_range):
+
+    location_lidar, size_lidar = image_to_lidar_coordinates(
+        target[0], target[1], voxel_size, bv_range
+    )
+    location_3d = np.array([*location_lidar, np.mean(z_range)])
+    size_3d = np.array([*size_lidar, z_range[1] - z_range[0]])
+
+    origin = [0.5, 0.5, 0.5]
+    box_corners = center_to_corner_box3d(
+        location_3d.reshape(1, -1), size_3d.reshape(1, -1), np.array([target[2]]), origin=origin, axis=2,
+    )[0]
+
+    mins = box_corners.min(axis=0)
+    maxs = box_corners.max(axis=0)
+    center = (maxs + mins) / 2
+    size = maxs - mins
+    rotation = 0
+
+    size_in_voxels = np.ceil((size / voxel_size)).astype(np.int32)
+    full_size = size_in_voxels * voxel_size
+
+    return (center, full_size, rotation)
+
+
+def pc_range_by_lidar_aabb(lidar_aabb):
+    pc_range = [*(lidar_aabb[0] - lidar_aabb[1] / 2), *(lidar_aabb[0] + lidar_aabb[1] / 2)]
+    return pc_range
 
 
 def train(

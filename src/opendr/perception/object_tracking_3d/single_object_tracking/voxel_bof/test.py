@@ -418,7 +418,7 @@ def test_tanet_infer_tracking():
         PilImage.fromarray(image).save("./plots/tanet_" + str(i) + ".png")
 
 
-def test_pp_siamese_fit(model_name, load=0, debug=False):
+def test_pp_siamese_fit(model_name, load=0, debug=False, **kwargs):
     print("Fit", name, "start", file=sys.stderr)
 
     learner = VoxelBofObjectTracking3DLearner(
@@ -427,6 +427,7 @@ def test_pp_siamese_fit(model_name, load=0, debug=False):
         lr=0.0001,
         checkpoint_after_iter=500,
         checkpoint_load_iter=load,
+        **kwargs,
     )
     learner.load(model_path, backbone=True, verbose=True)
     learner.fit(
@@ -725,7 +726,7 @@ def test_pp_siamese_eval(
     print("all_tracked =", all_tracked)
 
 
-def test_rotated_pp_siamese_infer(model_name, load=0, classes=["Car", "Van", "Truck"], draw=True, iou_min=0.5):
+def test_rotated_pp_siamese_infer(model_name, load=0, classes=["Car", "Van", "Truck"], draw=True, iou_min=0.5, **kwargs):
     print("Infer", name, "start", file=sys.stderr)
     import pygifsicle
     import imageio
@@ -735,6 +736,7 @@ def test_rotated_pp_siamese_infer(model_name, load=0, classes=["Car", "Van", "Tr
         device=DEVICE,
         lr=0.001,
         checkpoint_after_iter=2000,
+        **kwargs,
     )
 
     checkpoints_path = "./temp/" + model_name + "/checkpoints"
@@ -902,7 +904,7 @@ def test_rotated_pp_siamese_infer(model_name, load=0, classes=["Car", "Van", "Tr
 
 
 def test_rotated_pp_siamese_eval(
-    model_name, load=0, draw=False, iou_min=0.0, classes=["Car", "Van", "Truck"]
+    model_name, load=0, draw=False, iou_min=0.0, classes=["Car", "Van", "Truck"], **kwargs,
 ):
     print("Eval", name, "start", file=sys.stderr)
     import pygifsicle
@@ -913,6 +915,7 @@ def test_rotated_pp_siamese_eval(
         device=DEVICE,
         lr=0.001,
         checkpoint_after_iter=2000,
+        **kwargs,
     )
 
     checkpoints_path = "./temp/" + model_name + "/checkpoints"
@@ -934,7 +937,8 @@ def test_rotated_pp_siamese_eval(
             dataset_tracking_path + "/training/calib/" + track_id + ".txt",
         )
 
-        all_mean_ious = []
+        all_mean_iou3ds = []
+        all_mean_iouAabbs = []
         all_tracked = []
 
         def test_object_id(object_id):
@@ -951,12 +955,10 @@ def test_rotated_pp_siamese_eval(
                 )
 
             if not selected_labels[0].name in classes:
-                return None, None
+                return None, None, None
 
             calib = point_cloud_with_calibration.calib
-            labels_lidar = tracking_boxes_to_lidar(
-                selected_labels, calib, classes=classes
-            )
+            labels_lidar = tracking_boxes_to_lidar(selected_labels, calib, classes=classes)
             label_lidar = labels_lidar[0]
 
             learner.init(point_cloud_with_calibration, label_lidar)
@@ -997,6 +999,13 @@ def test_rotated_pp_siamese_eval(
                     pil_image = PilImage.fromarray(image)
                     images.append(pil_image)
 
+                iouAabb = iou_2d(
+                    result[0].location[:2],
+                    result[0].dimensions[:2],
+                    label_lidar.location[:2],
+                    label_lidar.dimensions[:2],
+                )
+
                 result = tracking_boxes_to_camera(result, calib)[0]
                 label_lidar = tracking_boxes_to_camera(
                     TrackingAnnotation3DList([label_lidar]), calib
@@ -1004,9 +1013,9 @@ def test_rotated_pp_siamese_eval(
 
                 dt_boxes = np.concatenate(
                     [
-                        result[0].location.reshape(1, 3),
-                        result[0].dimensions.reshape(1, 3),
-                        result[0].rotation_y.reshape(1, 3),
+                        result.location.reshape(1, 3),
+                        result.dimensions.reshape(1, 3),
+                        result.rotation_y.reshape(1, 1),
                     ],
                     axis=1,
                 )
@@ -1014,40 +1023,21 @@ def test_rotated_pp_siamese_eval(
                     [
                         label_lidar.location.reshape(1, 3),
                         label_lidar.dimensions.reshape(1, 3),
-                        label_lidar.rotation_y.reshape(1, 3),
+                        label_lidar.rotation_y.reshape(1, 1),
                     ],
                     axis=1,
                 )
-                iou = d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64)
+                iou3d = float(d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64))
 
-                # iou = iou_2d(
-                #     result.location[:2],
-                #     result.dimensions[:2],
-                #     label_lidar.location[:2],
-                #     label_lidar.dimensions[:2],
-                # ) # * min(result[0].rotation_y / label_lidar.rotation_y, label_lidar.rotation_y / result[0].rotation_y)
-
-                # iou = max(0, iou)
-
-                if iou > iou_min:
+                if iou3d > iou_min:
                     count_tracked += 1
 
-                ious.append(iou)
+                ious.append((iou3d, iouAabb))
 
-                print(
-                    track_id,
-                    "%",
-                    object_id,
-                    "[",
-                    i,
-                    "/",
-                    count - 1,
-                    "] iou =",
-                    iou,
-                )
+                print(track_id, "%", object_id, "[", i, "/", count - 1, "] iou3d =", iou3d, "iouAabb =", iouAabb)
 
                 filename = (
-                    "./plots/video/eval_aabb_scaled_track_"
+                    "./plots/video/eval_aabb_rotated_track_"
                     + str(track_id)
                     + "_obj_"
                     + str(object_id)
@@ -1055,44 +1045,51 @@ def test_rotated_pp_siamese_eval(
                 )
 
             if len(ious) <= 0:
-                mean_iou = None
+                mean_iou3d = None
+                mean_iouAabb = None
                 tracked = None
             else:
-                mean_iou = sum(ious) / len(ious)
+                mean_iou3d = sum([iou3d for iou3d, iouAabb in ious]) / len(ious)
+                mean_iouAabb = sum([iouAabb for iou3d, iouAabb in ious]) / len(ious)
                 tracked = count_tracked / len(ious)
 
-            print("mean_iou =", mean_iou)
+            print("mean_iou3d =", mean_iou3d)
+            print("mean_iouAabb =", mean_iouAabb)
             print("tracked =", tracked)
 
             if draw:
                 imageio.mimsave(filename, images)
                 pygifsicle.optimize(filename)
 
-            return mean_iou, tracked
+            return mean_iou3d, mean_iouAabb, tracked
 
         for object_id in range(0, min(5, dataset.max_id + 1)):
-            mean_iou, tracked = test_object_id(object_id)
+            mean_iou3d, mean_iouAabb, tracked = test_object_id(object_id)
 
-            if mean_iou is not None:
-                all_mean_ious.append(mean_iou)
+            if mean_iou3d is not None:
+                all_mean_iou3ds.append(mean_iou3d)
+                all_mean_iouAabbs.append(mean_iouAabb)
                 all_tracked.append(tracked)
 
-        if len(all_mean_ious) > 0:
-            track_mean_iou = sum(all_mean_ious) / len(all_mean_ious)
+        if len(all_mean_iou3ds) > 0:
+            track_mean_iou3d = sum(all_mean_iou3ds) / len(all_mean_iou3ds)
+            track_mean_iouAabb = sum(all_mean_iouAabbs) / len(all_mean_iouAabbs)
             track_mean_tracked = sum(all_tracked) / len(all_tracked)
         else:
-            track_mean_iou = None
+            track_mean_iou3d = None
+            track_mean_iouAabb = None
             track_mean_tracked = None
 
-        print("track_mean_iou =", track_mean_iou)
+        print("track_mean_iou3d =", track_mean_iou3d)
+        print("track_mean_iouAabb =", track_mean_iouAabb)
         print("track_mean_tracked =", track_mean_tracked)
 
-        return track_mean_iou, track_mean_tracked
+        return track_mean_iou3d, track_mean_iouAabb, track_mean_tracked
 
     tracks = [
         "0000",
         "0001",
-        # "0002",
+        "0002",
         "0003",
         "0004",
         # "0005",
@@ -1113,31 +1110,39 @@ def test_rotated_pp_siamese_eval(
         # "0020",
     ]
 
-    all_ious = []
+    all_iou3ds = []
+    all_iouAabbs = []
     all_tracked = []
 
     for track in tracks:
-        track_mean_iou, track_mean_tracked = test_track(track)
+        track_mean_iou3d, track_mean_iouAabb, track_mean_tracked = test_track(track)
 
-        if track_mean_iou is not None:
-            all_ious.append(track_mean_iou)
+        if track_mean_iou3d is not None:
+            all_iou3ds.append(track_mean_iou3d)
+            all_iouAabbs.append(track_mean_iouAabb)
             all_tracked.append(track_mean_tracked)
 
-    total_mean_iou = sum(all_ious) / len(all_ious)
+    total_mean_iou3d = sum(all_iou3ds) / len(all_iou3ds)
+    total_mean_iouAabb = sum(all_iouAabbs) / len(all_iouAabbs)
     total_mean_tracked = sum(all_tracked) / len(all_tracked)
 
-    print("total_mean_iou =", total_mean_iou)
+    print("total_mean_iou3d =", total_mean_iou3d)
+    print("total_mean_iouAabb =", total_mean_iouAabb)
     print("total_mean_tracked =", total_mean_tracked)
 
-    print("all_ious =", all_ious)
+    print("all_iou3ds =", all_iou3ds)
+    print("all_iouAabbs =", all_iouAabbs)
     print("all_tracked =", all_tracked)
 
-    with open(results_path + "/results_" + load + ".txt", "w") as f:
-        print("total_mean_iou =", total_mean_iou, file=f)
+    with open(results_path + "/results_" + str(load) + ".txt", "w") as f:
+        print("total_mean_iou3d =", total_mean_iou3d, file=f)
+        print("total_mean_iouAabb =", total_mean_iouAabb, file=f)
         print("total_mean_tracked =", total_mean_tracked, file=f)
 
-        print("all_ious =", all_ious, file=f)
+        print("all_iou3ds =", all_iou3ds, file=f)
+        print("all_iouAabbs =", all_iouAabbs, file=f)
         print("all_tracked =", all_tracked, file=f)
+        print("tracks =", tracks, file=f)
 
 
 if __name__ == '__main__':

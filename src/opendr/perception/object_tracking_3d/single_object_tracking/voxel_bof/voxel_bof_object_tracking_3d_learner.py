@@ -34,6 +34,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
     compute_lidar_kitti_output,
+    create_lidar_aabb_from_target,
     create_multi_rotate_searches,
     create_multi_scale_searches,
     create_pseudo_image_features,
@@ -46,8 +47,10 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     feature_to_image_coordinates,
     hann_window,
     image_to_lidar_coordinates,
+    pc_range_by_lidar_aabb,
     score_to_image_coordinates,
     select_best_scores_and_search,
+    size_with_context,
     train,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.builder import (
@@ -492,7 +495,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         return result
 
-    def create_pseudo_image(self, point_clouds):
+    def create_pseudo_image(self, point_clouds, pc_range):
 
         if self.model is None:
             raise ValueError("No model loaded or created")
@@ -507,8 +510,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 use_sampler=False,
             )
 
-            def infer_point_cloud_mapper(x):
-                return _prep_v9_infer(x, prep_func)
+            def infer_point_cloud_mapper(x, pc_range):
+                return _prep_v9_infer(x, prep_func, pc_range)
 
             self.infer_point_cloud_mapper = infer_point_cloud_mapper
             self.model.eval()
@@ -517,7 +520,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         if isinstance(point_clouds, PointCloud):
             input_data = merge_second_batch(
-                [self.infer_point_cloud_mapper(point_clouds.data)]
+                [self.infer_point_cloud_mapper(point_clouds.data, pc_range)]
             )
         elif isinstance(point_clouds, list):
             raise Exception()
@@ -529,13 +532,13 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 "point_clouds should be a PointCloud or a list of PointCloud"
             )
 
-        psedo_image = self.model.branch.create_pseudo_image(
+        pseudo_image = self.model.branch.create_pseudo_image(
             example_convert_to_torch(
-                input_data, self.float_dtype, device=self.device,
-            )
+                input_data, self.float_dtype, device=self.device
+            ), pc_range
         )
 
-        return psedo_image
+        return pseudo_image
 
     def __add_image(self, image, group):
         if group not in self._images:
@@ -561,8 +564,16 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             net = self.model.branch
 
-            pseudo_images = self.create_pseudo_image(point_cloud)
+            pc_range = pc_range_by_lidar_aabb(self.search_lidar_aabb)
+            pseudo_images = self.create_pseudo_image(point_cloud, pc_range)
             pseudo_image = pseudo_images[0]
+
+            if draw:
+                draw_pi = draw_pseudo_image(
+                    pseudo_image.squeeze(axis=0),
+                    "./plots/small_pi/" + str(frame) + ".png",
+                )
+                self.__add_image(draw_pi, "small_pi")
 
             multi_rotate_searches_and_penalties = create_multi_rotate_searches(
                 self.search_region, self.rotation_penalty, self.rotation_step, self.rotations_count
@@ -579,6 +590,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     net,
                     self.search_size,
                     self.context_amount,
+                    offset=self.search_region[0],
                 )
 
                 multi_rotate_features_and_searches_and_penalties.append(
@@ -696,6 +708,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 new_target[0], new_target[1], net.voxel_size, net.bv_range
             )
 
+            search_size_with_context = size_with_context(self.search_region[1], self.context_amount)
+
+            self.search_lidar_aabb = create_lidar_aabb_from_target(
+                [self.search_region[0], search_size_with_context, target[2]], net.voxel_size, net.bv_range, net.point_cloud_range[[2, 5]]
+            )
+
             result = TrackingAnnotation3DList(
                 [
                     TrackingAnnotation3D(
@@ -740,8 +758,6 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         net = self.model.branch
 
-        pseudo_images = self.create_pseudo_image(point_cloud)
-        pseudo_image = pseudo_images[0]
         batch_targets, batch_searches = create_target_search_regions(
             net.bv_range,
             net.voxel_size,
@@ -752,8 +768,19 @@ class VoxelBofObjectTracking3DLearner(Learner):
         target = batch_targets[0][0]
         search = batch_searches[0][0]
 
+        init_size_with_context = size_with_context(target[1], self.context_amount)
+
+        init_lidar_aabb = create_lidar_aabb_from_target(
+            [target[0], init_size_with_context, target[2]], net.voxel_size, net.bv_range, net.point_cloud_range[[2, 5]]
+        )
+
+        pc_range = pc_range_by_lidar_aabb(init_lidar_aabb)
+        pseudo_images = self.create_pseudo_image(point_cloud, pc_range)
+        pseudo_image = pseudo_images[0]
+
         self.init_target_features, init_image = create_pseudo_image_features(
-            pseudo_image, target, net, self.target_size, self.context_amount
+            pseudo_image, target, net, self.target_size, self.context_amount,
+            offset=target[0]
         )
 
         if draw:
@@ -770,6 +797,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.search_region = search
         self.init_target = target
         self.last_target = target
+
+        search_size_with_context = size_with_context(self.search_region[1], self.context_amount)
+
+        self.search_lidar_aabb = create_lidar_aabb_from_target(
+            [self.search_region[0], search_size_with_context, target[2]], net.voxel_size, net.bv_range, net.point_cloud_range[[2, 5]]
+        )
 
     def optimize(self, do_constant_folding=False):
         """

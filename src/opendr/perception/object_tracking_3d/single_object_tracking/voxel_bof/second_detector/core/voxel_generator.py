@@ -13,16 +13,16 @@ class VoxelGenerator:
         grid_size = np.round(grid_size).astype(np.int64)
 
         self._voxel_size = voxel_size
-        self._point_cloud_range = point_cloud_range
+        self.point_cloud_range = point_cloud_range
         self._max_num_points = max_num_points
         self._max_voxels = max_voxels
-        self._grid_size = grid_size
+        self.grid_size = grid_size
 
     def generate(self, points, max_voxels):
         return points_to_voxel(
             points,
             self._voxel_size,
-            self._point_cloud_range,
+            self.point_cloud_range,
             self._max_num_points,
             True,
             max_voxels,
@@ -35,11 +35,3 @@ class VoxelGenerator:
     @property
     def max_num_points_per_voxel(self):
         return self._max_num_points
-
-    @property
-    def point_cloud_range(self):
-        return self._point_cloud_range
-
-    @property
-    def grid_size(self):
-        return self._grid_size
