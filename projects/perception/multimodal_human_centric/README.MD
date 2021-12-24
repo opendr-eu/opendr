@@ -4,5 +4,5 @@ This folder contains a sample application for gesture recognition from provided 
 Demo can be run as follows:
 
 ```python
-python gesture_recognition_demo.py -input_rgb input_rgb.png -input_depth input_depth.png
+python3 gesture_recognition_demo.py -input_rgb input_rgb.png -input_depth input_depth.png
 ```

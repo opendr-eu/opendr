@@ -10,7 +10,7 @@ The *AttentionNeuralBagOfFeatureLearner* class provides the implementation of th
 It can also be used to train a time-series classifier. 
 
 
-The [AttentionNeuralBagOfFeatureLearner](#opendr.perception.heart_anomaly_detection.attention_neural_bag_of_feature.attention_neural_bag_of_feature_learner.py) class has the following public methods:
+The [AttentionNeuralBagOfFeatureLearner](/src/opendr/perception/heart_anomaly_detection/attention_neural_bag_of_feature/attention_neural_bag_of_feature_learner.py) class has the following public methods:
 
 #### `AttentionNeuralBagOfFeatureLearner` constructor
 ```python

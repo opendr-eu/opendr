@@ -19,30 +19,30 @@ pip install -e .
 ## Running the example
 Human 2D Object Tracking using [FairMOT](https://arxiv.org/abs/2004.01888) from camera
 ```bash
-python demo.py --ip=0.0.0.0 --port=2605 --algorithm=fair_mot --model_name=fairmot_dla34 --source=camera
+python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=fair_mot --model_name=fairmot_dla34 --source=camera
 ```
 
 Human 2D Object Tracking using [FairMOT](https://arxiv.org/abs/2004.01888) from [MOT](https://motchallenge.net/)-like dataset on disk (data and splits pathes should be changed to your dataset folders)
 ```bash
-python demo.py --ip=0.0.0.0 --port=2605 --algorithm=fair_mot --model_name=fairmot_dla34 --source=disk --data_path=/data/sets/MOT/MOT2020/ --data_splits=/data/sets/MOT/splits/mot20.train
+python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=fair_mot --model_name=fairmot_dla34 --source=disk --data_path=/data/sets/MOT/MOT2020/ --data_splits=/data/sets/MOT/splits/mot20.train
 ```
 
 Human 2D Object Tracking using [DeepSort](https://arxiv.org/abs/1703.07402) from [MOT](https://motchallenge.net/)-like dataset on disk (data and splits pathes should be changed to your dataset folders)
 ```bash
-python demo.py --ip=0.0.0.0 --port=2605 --algorithm=deep_sort --model_name=deep_sort --source=disk --data_path=/data/sets/MOT/MOT2020/ --data_splits=/data/sets/MOT/splits/mot20.train
+python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=deep_sort --model_name=deep_sort --source=disk --data_path=/data/sets/MOT/MOT2020/ --data_splits=/data/sets/MOT/splits/mot20.train
 ```
 
 If you run camera demo and navigate to http://0.0.0.0:2605, you might see something like this:
 
 <img src="media/video.gif">
 
-For other options, see `python demo.py --help`
+For other options, see `python3 demo.py --help`
 
 
 ## Troubleshooting
 If no video is displayed, you may try to select another video source using the `--video_source` flag:
 ```bash
-python demo.py --ip=0.0.0.0 --port=2605 --algorithm=fair_mot --model_name=fairmot_dla34 --source=camera --video_source 1
+python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=fair_mot --model_name=fairmot_dla34 --source=camera --video_source 1
 ```
 
 ## Acknowledgement

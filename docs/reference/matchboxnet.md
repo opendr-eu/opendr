@@ -9,7 +9,7 @@ Bases: `engine.learners.Learner`
 The *MatchboxNetLearner* class is a wrapper of the MatchboxNet[[1]](#matchboxnet-arxiv) implementation.
 It is designed for limited-vocabulary speech command recognition tasks.
 
-The [MatchboxNetLearner](#src.perception.speech_recognition.matchboxnet_learner.py) class has the following public methods:
+The [MatchboxNetLearner](/src/opendr/perception/speech_recognition/matchboxnet_learner.py) class has the following public methods:
 
 #### `MatchboxNetLearner` constructor
 

@@ -9,7 +9,7 @@ The *MultilinearCompressiveLearner* class provides the implementation of the Mul
 The Multilinear Compressive Learning Framework optimizes the sensing operators of the compressive sensing device in conjuction with the learning model, which is usually deployed in a remote server.
 The implementation is used to train and evaluate a multilinear compressive classification system for 3D tensor data, e.g. images.
 
-The [MultilinearCompressiveLearner](#opendr.perception.compressive_learning.multilinear_compressive_learning.multilinear_compressive_learner.py) class has the following public methods:
+The [MultilinearCompressiveLearner](/src/opendr/perception/compressive_learning/multilinear_compressive_learning/multilinear_compressive_learner.py) class has the following public methods:
 
 #### `MultilinearCompressiveLearner` constructor
 ```python
