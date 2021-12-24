@@ -34,10 +34,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import numpy as np
-
 import rospy
 import gym
+import os
 from pathlib import Path
+from urllib.request import urlretrieve
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
@@ -65,8 +66,6 @@ class EndToEndPlanningRLLearner(LearnerRL):
                                                         checkpoint_after_iter=checkpoint_after_iter,
                                                         checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
                                                         device=device, threshold=0.0, scale=1.0)
-        net_sizes = [64, 64]
-        num_natural_feat = 3
         self.env = env
         if isinstance(self.env, DummyVecEnv):
             self.env = self.env.envs[0]
@@ -77,11 +76,11 @@ class EndToEndPlanningRLLearner(LearnerRL):
                  url=OPENDR_SERVER_URL + "planning/end_to_end_planning"):
         if path is None:
             path = "./end_to_end_planning_tmp/"
-        filename = f"ardupilot.zip"
+        filename = "ardupilot.zip"
         file_destination = Path(path) / filename
         if not file_destination.exists():
             file_destination.parent.mkdir(parents=True, exist_ok=True)
-            url = os.path.join(url, robot_name, filename)
+            url = os.path.join(url, filename)
             urlretrieve(url=url, filename=file_destination)
         return file_destination
 

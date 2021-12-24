@@ -18,7 +18,6 @@ from pathlib import Path
 
 from opendr.planning.end_to_end_planning.e2e_planning_learner import EndToEndPlanningRLLearner
 from opendr.planning.end_to_end_planning.envs.agi_env import AgiEnv
-import opendr
 
 TEST_ITERS = 3
 TEMP_SAVE_DIR = Path(__file__).parent / "end_to_end_planning_tmp/"
