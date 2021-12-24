@@ -66,7 +66,10 @@ class AgiEnv(gym.Env):
 
         # Gym elements
         self.action_space = gym.spaces.Discrete(7)
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(64, 64, 2), dtype=np.float64)
+        self.observation_space = spaces.Dict(
+            {'depth_cam': spaces.Box(low=-np.inf, high=np.inf, shape=(64, 64), dtype=np.float64),
+             'moving_target': spaces.Box(low=-np.inf, high=np.inf, shape=(3,), dtype=np.float64)})
+
         self.action_dictionary = {0: (np.cos(22.5 / 180 * np.pi), np.sin(22.5 / 180 * np.pi), 1),
                                   1: (np.cos(22.5 / 180 * np.pi), np.sin(22.5 / 180 * np.pi), 0),
                                   2: (1, 0, 1),
@@ -115,9 +118,10 @@ class AgiEnv(gym.Env):
                                             vo[0] * np.sin(self.current_yaw * 22.5 / 180 * np.pi) + vo[1] * np.cos(
                                                 self.current_yaw * 22.5 / 180 * np.pi),
                                             vo[2]])
-        self.observation = np.zeros((64, 64, 2))
-        self.observation[:, :, 0] = np.copy(self.range_image)
-        self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
+        # self.observation = np.zeros((64, 64, 2))
+        # self.observation[:, :, 0] = np.copy(self.range_image)
+        # self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
+        self.observation = {'depth_cam': np.copy(self.range_image), 'moving_target': np.copy(self.vector_observation)}
         self.r.sleep()
 
         self.image_count = 0
@@ -167,8 +171,10 @@ class AgiEnv(gym.Env):
                                                 -vo[0] * np.sin(self.current_yaw * 22.5 / 180 * np.pi) + vo[1] * np.cos(
                                                     self.current_yaw * 22.5 / 180 * np.pi),
                                                 vo[2]])
-            self.observation[:, :, 0] = np.copy(self.range_image)
-            self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
+            # self.observation[:, :, 0] = np.copy(self.range_image)
+            # self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
+            self.observation = {'depth_cam': np.copy(self.range_image),
+                                'moving_target': np.copy(self.vector_observation)}
             finish_passed = (self.current_position.x > self.parkour_length + self.start_x)
         else:
             # set new observation
@@ -179,8 +185,10 @@ class AgiEnv(gym.Env):
                                                 -vo[0] * np.sin(self.current_yaw * 22.5 / 180 * np.pi) + vo[1] * np.cos(
                                                     self.current_yaw * 22.5 / 180 * np.pi),
                                                 vo[2]])
-            self.observation[:, :, 0] = np.copy(self.range_image)
-            self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
+            # self.observation[:, :, 0] = np.copy(self.range_image)
+            # self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
+            self.observation = {'depth_cam': np.copy(self.range_image),
+                                'moving_target': np.copy(self.vector_observation)}
             finish_passed = (self.current_position.x < self.start_x - self.parkour_length)
 
         # check done
@@ -234,8 +242,9 @@ class AgiEnv(gym.Env):
             self.vector_observation = self.difference_between_points(self.target_position, self.current_position)
         else:
             self.vector_observation = self.difference_between_points(self.current_position, self.target_position)
-        self.observation[:, :, 0] = np.copy(self.range_image)
-        self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
+        # self.observation[:, :, 0] = np.copy(self.range_image)
+        # self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
+        self.observation = {'depth_cam': np.copy(self.range_image), 'moving_target': np.copy(self.vector_observation)}
         return self.observation
 
     def set_target(self):

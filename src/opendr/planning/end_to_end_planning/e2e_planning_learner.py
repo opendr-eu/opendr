@@ -39,13 +39,13 @@ import rospy
 import gym
 from pathlib import Path
 
-from stable_baselines import PPO2
-from stable_baselines.bench import Monitor
-from stable_baselines.common.vec_env import DummyVecEnv
-from stable_baselines.results_plotter import load_results, ts2xy
+from stable_baselines3 import PPO
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.results_plotter import load_results, ts2xy
 
 from opendr.engine.learners import LearnerRL
-from opendr.planning.end_to_end_planning.custom_policies.custom_policies import MultiInputPolicy, create_dual_extractor
+from opendr.engine.constants import OPENDR_SERVER_URL
 
 __all__ = ["rospy", ]
 
@@ -67,13 +67,24 @@ class EndToEndPlanningRLLearner(LearnerRL):
                                                         device=device, threshold=0.0, scale=1.0)
         net_sizes = [64, 64]
         num_natural_feat = 3
-        policy_kwargs = dict(extractor=create_dual_extractor(num_natural_feat),
-                             net_arch=[dict(vf=net_sizes, pi=net_sizes)])
         self.env = env
         if isinstance(self.env, DummyVecEnv):
             self.env = self.env.envs[0]
         self.env = DummyVecEnv([lambda: self.env])
-        self.agent = PPO2(MultiInputPolicy, self.env, policy_kwargs=policy_kwargs, n_steps=n_steps, verbose=1)
+        self.agent = PPO("MultiInputPolicy", self.env, n_steps=n_steps, verbose=1)
+
+    def download(self, path=None,
+                 url=OPENDR_SERVER_URL + "planning/end_to_end_planning"):
+        if path is None:
+            path = "./end_to_end_planning_tmp/"
+        filename = f"ardupilot.zip"
+        file_destination = Path(path) / filename
+        if not file_destination.exists():
+            file_destination.parent.mkdir(parents=True, exist_ok=True)
+            url = os.path.join(url, robot_name, filename)
+            urlretrieve(url=url, filename=file_destination)
+        return file_destination
+
 
     def fit(self, env=None, logging_path='', total_timesteps=int(5e4), silent=False, verbose=True):
         """
@@ -147,8 +158,8 @@ class EndToEndPlanningRLLearner(LearnerRL):
         :return: Whether load succeeded or not
         :rtype: bool
         """
-        self.agent = PPO2.load(path)
-        self.agent.policy = MultiInputPolicy
+        self.agent = PPO.load(path)
+        # self.agent.policy = MultiInputPolicy
         self.agent.set_env(self.env)
 
     def infer(self, batch, deterministic: bool = True):
