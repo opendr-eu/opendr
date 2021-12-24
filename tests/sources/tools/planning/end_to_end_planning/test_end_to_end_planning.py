@@ -53,10 +53,10 @@ class EndToEndPlanningTest(unittest.TestCase):
         self.assertTrue((action >= 0), "Actions below 0")
         self.assertTrue((action < self.env.action_space.n), "Actions above discrete action space dimensions")
 
-    def test_eval(self):
-        episode_reward = self.learner.eval(self.env)
-        self.assertTrue((episode_reward > -100), "Episode reward cannot be lower than -100")
-        self.assertTrue((episode_reward < 100), "Episode reward cannot pass 100")
+    # def test_eval(self):
+    #     episode_reward = self.learner.eval(self.env)
+    #     self.assertTrue((episode_reward > -100), "Episode reward cannot be lower than -100")
+    #     self.assertTrue((episode_reward < 100), "Episode reward cannot pass 100")
 
     # def test_eval_pretrained(self):
     #     self.learner.load(
@@ -64,13 +64,13 @@ class EndToEndPlanningTest(unittest.TestCase):
     #     episode_reward = self.learner.eval(self.env)
     #     self.assertTrue((episode_reward > -30), "Episode reward should be higher than -30")
 
-    def test_fit(self):
-        self.learner.__init__(self.env, n_steps=12)
-        initial_weights = self.learner.agent.get_parameters()
-        self.learner.fit(logging_path=str(TEMP_SAVE_DIR), total_timesteps=15)
-        trained_weights = self.learner.agent.get_parameters()
-        self.assertFalse(isequal_dict_of_ndarray(initial_weights, trained_weights),
-                         "Fit method did not change model weights")
+    # def test_fit(self):
+    #     self.learner.__init__(self.env, n_steps=12)
+    #     initial_weights = self.learner.agent.get_parameters()
+    #     self.learner.fit(logging_path=str(TEMP_SAVE_DIR), total_timesteps=15)
+    #     trained_weights = self.learner.agent.get_parameters()
+    #     self.assertFalse(isequal_dict_of_ndarray(initial_weights, trained_weights),
+    #                      "Fit method did not change model weights")
 
     # def test_save_load(self):
     #     self.learner.__init__(self.env)
