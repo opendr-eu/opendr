@@ -18,6 +18,8 @@ from pathlib import Path
 
 from opendr.planning.end_to_end_planning.e2e_planning_learner import EndToEndPlanningRLLearner
 from opendr.planning.end_to_end_planning.envs.agi_env import AgiEnv
+import opendr
+import torch
 
 TEST_ITERS = 3
 TEMP_SAVE_DIR = Path(__file__).parent / "end_to_end_planning_tmp/"
@@ -53,36 +55,32 @@ class EndToEndPlanningTest(unittest.TestCase):
         self.assertTrue((action >= 0), "Actions below 0")
         self.assertTrue((action < self.env.action_space.n), "Actions above discrete action space dimensions")
 
-    # def test_eval(self):
-    #     episode_reward = self.learner.eval(self.env)
-    #     self.assertTrue((episode_reward > -100), "Episode reward cannot be lower than -100")
-    #     self.assertTrue((episode_reward < 100), "Episode reward cannot pass 100")
+    def test_eval(self):
+        episode_reward = self.learner.eval(self.env)
+        self.assertTrue((episode_reward > -100), "Episode reward cannot be lower than -100")
+        self.assertTrue((episode_reward < 100), "Episode reward cannot pass 100")
 
-    # def test_eval_pretrained(self):
-    #     self.learner.load(
-    #         path=Path(opendr.__file__).parent / "planning/end_to_end_planning/pretrained_model/saved_model.pkl")
-    #     episode_reward = self.learner.eval(self.env)
-    #     self.assertTrue((episode_reward > -30), "Episode reward should be higher than -30")
+    def test_fit(self):
+        self.learner.__init__(self.env, n_steps=12)
+        initial_weights = self.learner.agent.get_parameters()
+        self.learner.fit(logging_path=str(TEMP_SAVE_DIR), total_timesteps=15)
+        trained_weights = self.learner.agent.get_parameters()
+        self.assertFalse(isequal_dict_of_ndarray(initial_weights, trained_weights),
+                         "Fit method did not change model weights")
 
-    # def test_fit(self):
-    #     self.learner.__init__(self.env, n_steps=12)
-    #     initial_weights = self.learner.agent.get_parameters()
-    #     self.learner.fit(logging_path=str(TEMP_SAVE_DIR), total_timesteps=15)
-    #     trained_weights = self.learner.agent.get_parameters()
-    #     self.assertFalse(isequal_dict_of_ndarray(initial_weights, trained_weights),
-    #                      "Fit method did not change model weights")
-
-    # def test_save_load(self):
-    #     self.learner.__init__(self.env)
-    #     initial_weights = self.learner.agent.get_parameters()
-    #     self.learner.save(str(TEMP_SAVE_DIR) + "/init_weights.pkl")
-    #     self.learner.load(
-    #         path=Path(opendr.__file__).parent / "planning/end_to_end_planning/pretrained_model/saved_model.pkl")
-    #     self.assertFalse(isequal_dict_of_ndarray(initial_weights, self.learner.agent.get_parameters()),
-    #                      "Load method did not change model weights")
-    #     self.learner.load(str(TEMP_SAVE_DIR) + "/init_weights.pkl")
-    #     self.assertTrue(isequal_dict_of_ndarray(initial_weights, self.learner.agent.get_parameters()),
-    #                     "Load method did not load the same model weights")
+    def test_save_load(self):
+        self.learner.__init__(self.env)
+        initial_weights = list(self.learner.agent.get_parameters()['policy'].values())[0].clone()
+        self.learner.save(str(TEMP_SAVE_DIR) + "/init_weights")
+        self.learner.load(
+            path=Path(opendr.__file__).parent / "planning/end_to_end_planning/pretrained_model/saved_model")
+        self.assertFalse(
+            torch.equal(initial_weights, list(self.learner.agent.get_parameters()['policy'].values())[0].clone()),
+            "Load method did not change model weights")
+        self.learner.load(str(TEMP_SAVE_DIR) + "/init_weights")
+        self.assertTrue(
+            torch.equal(initial_weights, list(self.learner.agent.get_parameters()['policy'].values())[0].clone()),
+            "Load method did not load the same model weights")
 
 
 if __name__ == "__main__":

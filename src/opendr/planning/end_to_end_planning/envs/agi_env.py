@@ -127,6 +127,9 @@ class AgiEnv(gym.Env):
         self.image_count = 0
 
     def step(self, discrete_action):
+        if self.current_position == PoseStamped().pose.position:
+            rospy.loginfo("Gym environment is not reading mavros position")
+            return self.observation_space.sample(), np.random.random(1), False, {}
         action = self.action_dictionary[discrete_action]
         action = (action[0] * self.step_length, action[1] * self.step_length, action[2])
         prev_x = self.current_position.x
@@ -146,24 +149,13 @@ class AgiEnv(gym.Env):
                 check_collision=True)
         self.update_trajectory()
 
-        # prev_distance = np.linalg.norm(self.vector_observation * np.array([1, 4, 1]))
         dx = np.abs(self.current_position.x - prev_x)
         dy = np.abs(self.current_position.y - self.target_position.y)
         dyaw = np.abs(self.current_yaw)
-        # print("dx, dy, dyaw", dx, dy, dyaw)
         reward = 2 * dx - 0.4 * dy - 0.3 * dyaw
-        # current_distance = np.linalg.norm(
-        #    np.array([vo[0] * np.cos(self.current_yaw * 22.5 / 180 * np.pi) + vo[1] * np.sin(
-        #        self.current_yaw * 22.5 / 180 * np.pi),
-        #              -vo[0] * np.sin(self.current_yaw * 22.5 / 180 * np.pi) + vo[1] * np.cos(
-        #                  self.current_yaw * 22.5 / 180 * np.pi),
-        #              vo[2]]) * np.array([1, 4, 1]))
-        # delta_distance = prev_distance - current_distance
-        # print(prev_distance, current_distance)
-        # reward = delta_distance
 
+        # set new observation
         if self.forward_direction:
-            # set new observation
             self.set_target()
             vo = self.difference_between_points(self.target_position, self.current_position)
             self.vector_observation = np.array([vo[0] * np.cos(self.current_yaw * 22.5 / 180 * np.pi) + vo[1] * np.sin(
@@ -171,13 +163,10 @@ class AgiEnv(gym.Env):
                                                 -vo[0] * np.sin(self.current_yaw * 22.5 / 180 * np.pi) + vo[1] * np.cos(
                                                     self.current_yaw * 22.5 / 180 * np.pi),
                                                 vo[2]])
-            # self.observation[:, :, 0] = np.copy(self.range_image)
-            # self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
             self.observation = {'depth_cam': np.copy(self.range_image),
                                 'moving_target': np.copy(self.vector_observation)}
             finish_passed = (self.current_position.x > self.parkour_length + self.start_x)
         else:
-            # set new observation
             self.set_target()
             vo = self.difference_between_points(self.current_position, self.target_position)
             self.vector_observation = np.array([vo[0] * np.cos(self.current_yaw * 22.5 / 180 * np.pi) + vo[1] * np.sin(
@@ -185,14 +174,11 @@ class AgiEnv(gym.Env):
                                                 -vo[0] * np.sin(self.current_yaw * 22.5 / 180 * np.pi) + vo[1] * np.cos(
                                                     self.current_yaw * 22.5 / 180 * np.pi),
                                                 vo[2]])
-            # self.observation[:, :, 0] = np.copy(self.range_image)
-            # self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
             self.observation = {'depth_cam': np.copy(self.range_image),
                                 'moving_target': np.copy(self.vector_observation)}
             finish_passed = (self.current_position.x < self.start_x - self.parkour_length)
 
         # check done
-        # reward -= np.abs(self.current_yaw)*.5
         if finish_passed:
             reward = 20
             done = True
@@ -206,44 +192,26 @@ class AgiEnv(gym.Env):
             done = False
 
         info = {"current_position": self.current_position, "finish_passed": finish_passed}
-        # np.save("depth_data/im"+str(self.image_count), self.range_image)
-        # self.image_count += 1
-        # print("reward:", reward, self.observation[0, 0:3, 1])
         return self.observation, reward, done, info
 
     def reset(self):
+        if self.current_position == PoseStamped().pose.position:
+            rospy.loginfo("Gym environment is not reading mavros position")
+            return self.observation_space.sample()
         self.target_y = np.random.choice(self.target_y_list)
-        # if not self.episode_counter%2:
-        #     self.start_x = -10
-        #     self. forward_direction = True
-        # else:
-        #     self.start_x = 20
-        #     self.forward_direction = False
-        # self.episode_counter += 1
-        # if self.current_position.y < -30:
         self.go_position(self.current_position.x, self.current_position.y, 8)
         self.go_position(self.start_x, self.current_position.y, 8)
-        # self.go_position(0, -29+np.random.randint(-2,3), 5)
-        # else:
-        # self.go_position(self.current_position.x, self.current_position.y, 5)
-        # self.go_position(0, self.current_position.y, 5)
-        # self.go_position(0, -29+np.random.randint(-2,3), 5)
         self.go_position(self.start_x, self.target_y, self.target_z)
-        # self.uav_trajectory = Path()
         self.uav_trajectory.header.frame_id = "map"
         self.update_trajectory()
         self.publish_global_trajectory()
 
-        # self.go_position(0, -29, 5)
         self.collision_flag = False
-        # self.target_y = -29 # + np.random.randint(-1, 2)
         self.set_target()
         if self.forward_direction:
             self.vector_observation = self.difference_between_points(self.target_position, self.current_position)
         else:
             self.vector_observation = self.difference_between_points(self.current_position, self.target_position)
-        # self.observation[:, :, 0] = np.copy(self.range_image)
-        # self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
         self.observation = {'depth_cam': np.copy(self.range_image), 'moving_target': np.copy(self.vector_observation)}
         return self.observation
 
