@@ -1037,7 +1037,7 @@ def test_rotated_pp_siamese_eval(
                 print(track_id, "%", object_id, "[", i, "/", count - 1, "] iou3d =", iou3d, "iouAabb =", iouAabb)
 
                 filename = (
-                    "./plots/video/eval_aabb_rotated_track_"
+                    "./plots/video/eval_rotated_track_"
                     + str(track_id)
                     + "_obj_"
                     + str(object_id)

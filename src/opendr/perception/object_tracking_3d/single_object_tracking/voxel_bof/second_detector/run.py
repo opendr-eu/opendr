@@ -866,7 +866,11 @@ def train(
 
             if debug:
                 items = create_pseudo_images_and_labels(
-                    net, example_torch, gt_boxes=example_torch["gt_boxes_2"],
+                    net,
+                    example_torch,
+                    gt_boxes=example_torch["gt_boxes_2"],
+                    target_size=target_size,
+                    search_size=search_size,
                     context_amount=context_amount,
                 )
             else:
