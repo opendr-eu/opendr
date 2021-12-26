@@ -40,7 +40,7 @@ def long_description():
 
 
 setup(
-    name="object_tracking_2d_demo",
+    name="object_detection_3d_demo",
     version="0.1.0",
     description="Example of in-browser video streaming and processing using the OpenDR toolkit.",
     long_description=long_description(),
@@ -49,5 +49,5 @@ setup(
     author_email="{io, lhm}@ece.au.dk",
     install_requires=from_file("requirements.txt"),
     packages=find_packages(exclude=["test"]),
-    keywords=["deep learning", "pytorch", "AI", "OpenDR", "video", "webcam"],
+    keywords=["deep learning", "pytorch", "AI", "OpenDR", "lidar"],
 )
