@@ -12,7 +12,7 @@ In order to build the library you should:
 1. Build the OpenDR C API library
 
 ```sh
-make liboperdr
+make libopendr
 ```
 
 After building the API you will find the library (`libopendr.so`) under the `lib` folder.
