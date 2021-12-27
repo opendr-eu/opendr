@@ -67,7 +67,7 @@ class AgiEnv(gym.Env):
         # Gym elements
         self.action_space = gym.spaces.Discrete(7)
         self.observation_space = spaces.Dict(
-            {'depth_cam': spaces.Box(low=-np.inf, high=np.inf, shape=(64, 64), dtype=np.float64),
+            {'depth_cam': spaces.Box(low=0, high=255, shape=(64, 64, 1), dtype=np.uint8),
              'moving_target': spaces.Box(low=-np.inf, high=np.inf, shape=(3,), dtype=np.float64)})
 
         self.action_dictionary = {0: (np.cos(22.5 / 180 * np.pi), np.sin(22.5 / 180 * np.pi), 1),
@@ -118,9 +118,6 @@ class AgiEnv(gym.Env):
                                             vo[0] * np.sin(self.current_yaw * 22.5 / 180 * np.pi) + vo[1] * np.cos(
                                                 self.current_yaw * 22.5 / 180 * np.pi),
                                             vo[2]])
-        # self.observation = np.zeros((64, 64, 2))
-        # self.observation[:, :, 0] = np.copy(self.range_image)
-        # self.observation[0, 0:3, 1] = np.copy(self.vector_observation)
         self.observation = {'depth_cam': np.copy(self.range_image), 'moving_target': np.copy(self.vector_observation)}
         self.r.sleep()
 
@@ -232,7 +229,7 @@ class AgiEnv(gym.Env):
         self.current_position = data.pose.position
 
     def range_image_callback(self, data):
-        self.range_image = np.clip(np.array(data.data).reshape((64, 64)), 0, 15) / 15.
+        self.range_image = ((np.clip(np.array(data.data).reshape((64, 64, 1)), 0, 15) / 15.)*255).astype(np.uint8)
 
     def model_name_callback(self, data):
         if data.data[:5] == "robot":

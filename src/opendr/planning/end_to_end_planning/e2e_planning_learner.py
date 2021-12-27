@@ -52,11 +52,9 @@ __all__ = ["rospy", ]
 
 
 class EndToEndPlanningRLLearner(LearnerRL):
-    def __init__(self, env, n_steps=128, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear', lr_end: float = 1e-6,
-                 backbone='MlpPolicy', checkpoint_after_iter=20_000, checkpoint_load_iter=0, temp_path='',
-                 device='cuda', seed: int = None, buffer_size: int = 100_000, learning_starts: int = 0,
-                 tau: float = 0.001, gamma: float = 0.99, explore_noise: float = 0.5, explore_noise_type='normal',
-                 ent_coef='auto', nr_evaluations: int = 50, evaluation_frequency: int = 20_000):
+    def __init__(self, env, n_steps=128, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',
+                 lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=20_000, checkpoint_load_iter=0,
+                 temp_path='', device='cuda'):
         """
         Specifies a proximal policy optimization (PPO) agent that can be trained for end to end planning for obstacle avoidance.
         Internally uses Stable-Baselines (https://github.com/hill-a/stable-baselines).
@@ -190,7 +188,7 @@ class EndToEndPlanningRLLearner(LearnerRL):
         if x[-1] - self.last_checkpoint_time_step > 20:
             self.last_checkpoint_time_step = x[-1]
             check_point_path = Path(self.logdir,
-                                    'checkpoint_save' + str(x[-1]) + 'with_mean_rew' + str(mean_reward) + '.pkl')
+                                    'checkpoint_save' + str(x[-1]) + 'with_mean_rew' + str(mean_reward))
             self.save(str(check_point_path))
 
         return True

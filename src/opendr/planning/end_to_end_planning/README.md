@@ -1,14 +1,14 @@
-# OpenDR End-to-end Local Planning
+# End-to-end Planning
 
 This folder contains the OpenDR Learner class for end-to-end planning tasks. 
-This method uses reinforcement learning to train an agent that is able to plan 
+This method uses reinforcement learning to train an agent that is able to generate local motion plans for a quadrotor UAV equipped with a depth camera. 
 
 ## Simulation RL environment setup
 
 The environment includes an Ardupilot controlled quadrotor in Webots simulation. 
 Installation of Ardupilot software follows this link: `https://github.com/ArduPilot/ardupilot`
 
-The files under `end_to_end_planning/ardupilot` should be replaced under the installation of Ardupilot.
+The files under `ardupilot.zip` should be replaced under the installation of Ardupilot, can be downloaded by running `download_ardupilot_files.py` script.
 In order to run the Ardupilot in Webots 2021a controller codes should be replaced. 
 For older versions of Webots, these files can be skipped.
 The world file for the environment is provided 
