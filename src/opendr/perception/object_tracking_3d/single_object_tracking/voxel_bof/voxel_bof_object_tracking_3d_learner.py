@@ -128,9 +128,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
         rotation_penalty=0.98,
         rotation_step=0.15 / 2,
         rotations_count=5,
-        target_size=np.array([127, 127]),
-        search_size=np.array([255, 255]),
-        context_amount=0.2 # -0.2  # 0.5,
+        target_size=[127, 127],
+        search_size=[255, 255],
+        context_amount=0.2  # -0.2  # 0.5,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -161,8 +161,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.score_upscale = score_upscale
         self.rotation_penalty = rotation_penalty
         self.rotation_step = rotation_step
-        self.target_size = target_size
-        self.search_size = search_size
+        self.target_size = np.array(target_size, dtype=np.int32)
+        self.search_size = np.array(search_size, dtype=np.int32)
         self.context_amount = context_amount
         self.feature_blocks = feature_blocks
         self.rotations_count = rotations_count
@@ -363,6 +363,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
     def fit(
         self,
         dataset,
+        steps=0,
         val_dataset=None,
         refine_weight=2,
         ground_truth_annotations=None,
@@ -440,6 +441,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             target_size=self.target_size,
             search_size=self.search_size,
             debug=debug,
+            train_steps=steps,
         )
 
         logger.close()

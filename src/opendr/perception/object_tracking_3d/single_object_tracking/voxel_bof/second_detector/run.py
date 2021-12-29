@@ -239,7 +239,7 @@ def get_sub_image(image, center, size):
 
 
 def create_logisticloss_labels(
-    label_size, t, r_pos, r_neg=0, ignore_label=-100, loss="bce"
+    label_size, t, r_pos, r_neg=0, ignore_label=-100, loss="bce", max_pos=1, min_pos=0.5
 ):
     labels = np.zeros(label_size)
 
@@ -252,10 +252,10 @@ def create_logisticloss_labels(
                 ((r - t[0]) - label_size[0] // 2) ** 2
                 + ((c - t[1]) - label_size[1] // 2) ** 2,
             )
-            if dist <= 0:
-                labels[r, c] = 1
-            elif np.all(dist <= r_pos):
-                labels[r, c] = 0.7
+            # if dist <= 0:
+            #     labels[r, c] = 1
+            if np.all(dist <= r_pos + 1):
+                labels[r, c] = min_pos * dist/r_pos + max_pos * (1 - dist/r_pos)
             elif np.all(dist <= r_neg):
                 labels[r, c] = ignore_label
             else:
@@ -381,21 +381,25 @@ def image_to_lidar_coordinates(location, size, voxel_size, bv_range):
 
 
 def create_static_label_and_weights(
-    target, search, target_size, search_size, search_size_with_context, feature_blocks, loss="bce", radius=8
+    target, search, target_size, search_size, target_size_with_context, search_size_with_context, feature_blocks, loss="bce", radius=8
 ):
+    if target_size[0] <= 0:
+        target_size = target_size_with_context
+    if search_size[0] <= 0:
+        search_size = search_size_with_context
 
     label_size = (
         image_to_feature_coordinates(search_size, feature_blocks)
         - image_to_feature_coordinates(target_size, feature_blocks)
         + 1
-    )
+    ).astype(np.int32)
 
     delta_position_original = target[0] - search[0]
     rotated_delta_position_original = rotate_vector(delta_position_original, search[2])
 
     delta_position_label_space = (
         rotated_delta_position_original / search_size_with_context * label_size
-    ).astype(np.int32)
+    )#.astype(np.int32)
 
     t = delta_position_label_space[[1, 0]]
     # t = (0, 0)
@@ -453,11 +457,14 @@ def sub_image_with_context(
     )
     # draw_pseudo_image(sub_image, "./plots/train/sub_image" + str(0) + ".png")
 
-    interpolated_image = torch.nn.functional.interpolate(
-        sub_image.reshape(1, *sub_image.shape),
-        size=interoplation_size,
-        mode="bicubic",
-    )
+    if interoplation_size[0] > 0:
+        interpolated_image = torch.nn.functional.interpolate(
+            sub_image.reshape(1, *sub_image.shape),
+            size=interoplation_size,
+            mode="bicubic",
+        )
+    else:
+        interpolated_image = sub_image.unsqueeze(axis=0)
     # draw_pseudo_image(interpolated_image.squeeze(axis=0), "./plots/train/interpolated_image" + str(0) + ".png")
     return interpolated_image, sub_image
 
@@ -497,6 +504,7 @@ def create_pseudo_images_and_labels(
     ):
         for target, search in zip(targets, searches):
 
+            target_size_with_context = size_with_context(target[1], context_amount)
             search_size_with_context = size_with_context(search[1], context_amount)
 
             target_image, _ = sub_image_with_context(
@@ -528,7 +536,8 @@ def create_pseudo_images_and_labels(
                 search,
                 target_size,
                 search_size,
-                search_size_with_context,
+                np.array(target_image.shape[-2:], dtype=np.int32),
+                np.array(search_image.shape[-2:], dtype=np.int32),
                 feature_blocks,
             )
 
@@ -783,6 +792,7 @@ def train(
     evaluate=True,
     context_amount=0.5,
     debug=False,
+    train_steps=0,
 ):
 
     net = siamese_model.branch
@@ -1079,6 +1089,9 @@ def train(
                         },
                         save_path,
                     )
+
+                if global_step > train_steps:
+                    return
 
         total_step_elapsed += steps
 
