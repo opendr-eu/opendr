@@ -1090,7 +1090,7 @@ def train(
                         save_path,
                     )
 
-                if global_step > train_steps:
+                if global_step > train_steps and train_steps > 0:
                     return
 
         total_step_elapsed += steps

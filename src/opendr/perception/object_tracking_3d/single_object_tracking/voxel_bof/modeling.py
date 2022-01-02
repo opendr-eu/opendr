@@ -251,7 +251,7 @@ def collect_results():
                 result = [model + "_" + file, float(values["total_mean_iou3d"])]
                 results.append(result)
 
-    results = sorted(results, key=lambda x: -x[1])
+    results = sorted(results, key=lambda x: x[1])
     for k, v in results:
         print(k, v)
 
