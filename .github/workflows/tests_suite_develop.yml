@@ -74,6 +74,7 @@ jobs:
           - simulation/human_model_generation
           - perception/facial_expression_recognition/landmark_based_facial_expression_recognition
           - control/single_demo_grasp
+          - planning/end_to_end_planning
           # - perception/object_tracking_3d
         include:
           - os: ubuntu-20.04
@@ -101,6 +102,16 @@ jobs:
         make install_compilation_dependencies
         make install_runtime_dependencies
         pip install -r tests/sources/requirements.txt
+
+        if [ ${{ matrix.package }} == "planning/end_to_end_planning" ]; then
+          echo 'installing Webots'
+          sudo apt -y install wget xvfb
+          wget https://github.com/cyberbotics/webots/releases/download/R2021a/webots-R2021a-x86-64.tar.bz2
+          tar xjf webots-R2021a-x86-64.tar.bz2
+          export WEBOTS_HOME=$PWD/webots
+          xvfb-run ./webots/webots --stdout --stderr --version
+        fi
+
         if [ ${{ matrix.package }} = "ctests" ]; then
             make ctests
         else
