@@ -16,7 +16,7 @@ ______________________________________________________________________
 </p>
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Test Suite](https://github.com/opendr-eu/opendr/actions/workflows/tests_suite.yml/badge.svg)](https://github.com/opendr-eu/opendr/actions/workflows/tests_suite.yml)
+[![Test Suite (master)](https://github.com/opendr-eu/opendr/actions/workflows/tests_suite.yml/badge.svg)](https://github.com/opendr-eu/opendr/actions/workflows/tests_suite.yml)
 </div>
 
 ## About
