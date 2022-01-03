@@ -34,11 +34,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
-      with:
-        ref: develop
       if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
       with:
-         submodules: true
+        submodules: true
+        ref: develop
     - name: Set up Python 3.8
       if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
       uses: actions/setup-python@v2
