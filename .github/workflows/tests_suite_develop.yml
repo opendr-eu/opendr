@@ -1,8 +1,6 @@
 name: Test Suite (develop)
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
   schedule:
     - cron:  '0 23 * * *'
 
