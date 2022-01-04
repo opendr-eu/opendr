@@ -767,6 +767,8 @@ def test_rotated_pp_siamese_infer(
 
     if load == 0:
         learner.load(checkpoints_path, backbone=False, verbose=True)
+    elif load == "pretrained":
+        learner.load(model_path, backbone=True, verbose=True)
     else:
         learner.load_from_checkpoint(checkpoints_path, load)
 
@@ -956,6 +958,8 @@ def test_rotated_pp_siamese_eval(
 
     if load == 0:
         learner.load(checkpoints_path, backbone=False, verbose=True)
+    elif load == "pretrained":
+        learner.load(model_path, backbone=True, verbose=True)
     else:
         learner.load_from_checkpoint(checkpoints_path, load)
 

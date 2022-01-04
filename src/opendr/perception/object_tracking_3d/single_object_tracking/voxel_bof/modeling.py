@@ -345,6 +345,92 @@ def run_selected(device_id=0, total_devices=4):
         print(result)
 
 
+def run_best(device_id=0, total_devices=4):
+    def create_eval_kwargs():
+        params = {
+            "window_influence": [0.15, 0.25, 0.35],
+            "score_upscale": [16],
+            "rotation_penalty": [0.98, 0.96],
+            "rotation_step": [0.15, 0.1, 0.075],
+            "rotations_count": [3, 5],
+            "target_feature_merge_scale": [0, 0.1, 0.3, 0.5, 0.7],
+        }
+
+        results = {}
+
+        for window_influence in params["window_influence"]:
+            for score_upscale in params["score_upscale"]:
+                for rotation_penalty in params["rotation_penalty"]:
+                    for rotation_step in params["rotation_step"]:
+                        for rotations_count in params["rotations_count"]:
+                            name = (
+                                str(rotations_count).replace(".", "")
+                                + "r"
+                                + str(rotation_step).replace(".", "")
+                                + "-rp"
+                                + str(rotation_penalty).replace(".", "")
+                                + "su"
+                                + str(score_upscale).replace(".", "")
+                            )
+
+                            results[name] = {
+                                "window_influence": window_influence,
+                                "score_upscale": score_upscale,
+                                "rotation_penalty": rotation_penalty,
+                                "rotation_step": rotation_step,
+                                "rotations_count": rotations_count,
+                            }
+        return results
+
+    eval_kwargs = create_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1]:
+            for size in [-1]:
+                for context_amount in [0.5, 0.7]:
+
+                    target_size = [127, 127] if size == 1 else [-1, -1]
+                    search_size = [255, 255] if size == 1 else [-1, -1]
+
+                    name = (
+                        "2r-b"
+                        + str(feature_blocks)
+                        + ("-us" if size == 1 else "-os")
+                        + "-c"
+                        + str(context_amount).replace(".", "")
+                    )
+                    result.append(
+                        (
+                            Model(
+                                name,
+                                feature_blocks=feature_blocks,
+                                target_size=target_size,
+                                search_size=search_size,
+                                context_amount=context_amount,
+                                train_steps=8000,
+                                save_step=200,
+                                loads=[200, 600, 1200, 2000, 4000, 8000]
+                            ),
+                            eval_kwargs,
+                        )
+                    )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
 
 if __name__ == "__main__":
 

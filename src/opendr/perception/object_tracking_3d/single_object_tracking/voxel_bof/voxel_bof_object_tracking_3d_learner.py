@@ -130,7 +130,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
         rotations_count=5,
         target_size=[127, 127],
         search_size=[255, 255],
-        context_amount=0.2  # -0.2  # 0.5,
+        context_amount=0.2,  # -0.2  # 0.5,
+        target_feature_merge_scale=0,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -166,6 +167,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.context_amount = context_amount
         self.feature_blocks = feature_blocks
         self.rotations_count = rotations_count
+        self.target_feature_merge_scale = target_feature_merge_scale
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -411,7 +413,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
             checkpoints_path.mkdir(exist_ok=True)
 
         if self.checkpoint_load_iter != 0:
-            self.load_from_checkpoint(checkpoints_path, self.checkpoint_load_iter)
+            self.load_from_checkpoint(
+                checkpoints_path, self.checkpoint_load_iter
+            )
 
         train(
             self.model,
@@ -537,7 +541,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
         pseudo_image = self.model.branch.create_pseudo_image(
             example_convert_to_torch(
                 input_data, self.float_dtype, device=self.device
-            ), pc_range
+            ),
+            pc_range,
         )
 
         return pseudo_image
@@ -578,7 +583,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 self.__add_image(draw_pi, "small_pi")
 
             multi_rotate_searches_and_penalties = create_multi_rotate_searches(
-                self.search_region, self.rotation_penalty, self.rotation_step, self.rotations_count
+                self.search_region,
+                self.rotation_penalty,
+                self.rotation_step,
+                self.rotations_count,
             )
 
             multi_rotate_features_and_searches_and_penalties = []
@@ -706,14 +714,46 @@ class VoxelBofObjectTracking3DLearner(Learner):
             self.search_region = new_search
             self.last_target = new_target
 
+            if self.target_feature_merge_scale > 0:
+                target_features, target_image = create_pseudo_image_features(
+                    pseudo_image,
+                    new_target,
+                    net,
+                    self.target_size,
+                    self.context_amount,
+                    offset=target[0],
+                )
+
+                self.init_target_features = (
+                    self.init_target_features
+                    * (1 - self.target_feature_merge_scale)
+                    + target_features * self.target_feature_merge_scale
+                )
+
+                draw_target_feat_full = draw_pseudo_image(
+                    self.init_target_features.squeeze(axis=0),
+                    "./plots/target_feat/" + str(frame) + "_target_feat_full.png",
+                )
+                draw_target_feat_current_frame = draw_pseudo_image(
+                    target_image.squeeze(axis=0),
+                    "./plots/scores/" + str(frame) + "_target_feat_current_frame.png",
+                )
+                self.__add_image(draw_target_feat_full, "target_feat_full")
+                self.__add_image(draw_target_feat_current_frame, "target_feat_current_frame")
+
             location_lidar, size_lidar = image_to_lidar_coordinates(
                 new_target[0], new_target[1], net.voxel_size, net.bv_range
             )
 
-            search_size_with_context = size_with_context(self.search_region[1], self.context_amount)
+            search_size_with_context = size_with_context(
+                self.search_region[1], self.context_amount
+            )
 
             self.search_lidar_aabb = create_lidar_aabb_from_target(
-                [self.search_region[0], search_size_with_context, target[2]], net.voxel_size, net.bv_range, net.point_cloud_range[[2, 5]]
+                [self.search_region[0], search_size_with_context, target[2]],
+                net.voxel_size,
+                net.bv_range,
+                net.point_cloud_range[[2, 5]],
             )
 
             result = TrackingAnnotation3DList(
@@ -770,10 +810,15 @@ class VoxelBofObjectTracking3DLearner(Learner):
         target = batch_targets[0][0]
         search = batch_searches[0][0]
 
-        init_size_with_context = size_with_context(target[1], self.context_amount)
+        init_size_with_context = size_with_context(
+            target[1], self.context_amount
+        )
 
         init_lidar_aabb = create_lidar_aabb_from_target(
-            [target[0], init_size_with_context, target[2]], net.voxel_size, net.bv_range, net.point_cloud_range[[2, 5]]
+            [target[0], init_size_with_context, target[2]],
+            net.voxel_size,
+            net.bv_range,
+            net.point_cloud_range[[2, 5]],
         )
 
         pc_range = pc_range_by_lidar_aabb(init_lidar_aabb)
@@ -781,8 +826,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
         pseudo_image = pseudo_images[0]
 
         self.init_target_features, init_image = create_pseudo_image_features(
-            pseudo_image, target, net, self.target_size, self.context_amount,
-            offset=target[0]
+            pseudo_image,
+            target,
+            net,
+            self.target_size,
+            self.context_amount,
+            offset=target[0],
         )
 
         if draw:
@@ -800,10 +849,15 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.init_target = target
         self.last_target = target
 
-        search_size_with_context = size_with_context(self.search_region[1], self.context_amount)
+        search_size_with_context = size_with_context(
+            self.search_region[1], self.context_amount
+        )
 
         self.search_lidar_aabb = create_lidar_aabb_from_target(
-            [self.search_region[0], search_size_with_context, target[2]], net.voxel_size, net.bv_range, net.point_cloud_range[[2, 5]]
+            [self.search_region[0], search_size_with_context, target[2]],
+            net.voxel_size,
+            net.bv_range,
+            net.point_cloud_range[[2, 5]],
         )
 
     def optimize(self, do_constant_folding=False):
