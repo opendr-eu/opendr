@@ -12,7 +12,7 @@ defaults:
 
 jobs:
   cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     steps:
     - uses: rokroskar/workflow-run-cleanup-action@master
@@ -20,7 +20,7 @@ jobs:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
   test-sources:
     needs: cleanup-runs
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || github.event_name == 'schedule' }}
     strategy:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04, macos-10.15]
@@ -52,7 +52,7 @@ jobs:
         python -m unittest discover -s tests
   test-tools:
     needs: cleanup-runs
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
@@ -73,7 +73,7 @@ jobs:
           - control/mobile_manipulation
           - perception/object_detection_2d
           - simulation/human_model_generation
-          - perception/facial_expression_recognition/landmark_based_facial_expression_recognition
+          - perception/facial_expression_recognition
           - control/single_demo_grasp
           - planning/end_to_end_planning
           # - perception/object_tracking_3d
@@ -91,7 +91,6 @@ jobs:
       with:
         python-version: 3.8
     - name: Test Tools
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
       run: |
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
         export OPENDR_HOME=$PWD
