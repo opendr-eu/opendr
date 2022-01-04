@@ -6,6 +6,7 @@ from opendr.engine.target import TrackingAnnotation3D, TrackingAnnotation3DList
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.eval import (
     d3_box_overlap,
 )
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.metrics import Precision, Success
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
     iou_2d,
 )
@@ -105,6 +106,14 @@ tanet_model_path = model_paths[tanet_name]
 
 pq = 1
 lq = 20
+
+
+def estimate_accuracy(box_a, box_b, dim=3):
+    if dim == 3:
+        return np.linalg.norm(box_a.location - box_b.location, ord=2)
+    elif dim == 2:
+        return np.linalg.norm(
+            box_a.location[[0, 1]] - box_b.location[[0, 1]], ord=2)
 
 
 def tracking_boxes_to_lidar(
@@ -950,6 +959,9 @@ def test_rotated_pp_siamese_eval(
     else:
         learner.load_from_checkpoint(checkpoints_path, load)
 
+    total_success = Success()
+    total_precision = Precision()
+
     def test_track(track_id):
         count = len(dataset_tracking)
         # count = 120
@@ -962,12 +974,17 @@ def test_rotated_pp_siamese_eval(
         all_mean_iou3ds = []
         all_mean_iouAabbs = []
         all_tracked = []
+        all_precision = []
+        all_success = []
 
         def test_object_id(object_id):
 
             start_frame = -1
 
             selected_labels = []
+
+            object_success = Success()
+            object_precision = Precision()
 
             while len(selected_labels) <= 0:
                 start_frame += 1
@@ -977,7 +994,7 @@ def test_rotated_pp_siamese_eval(
                 )
 
             if not selected_labels[0].name in classes:
-                return None, None, None
+                return None, None, None, None, None
 
             calib = point_cloud_with_calibration.calib
             labels_lidar = tracking_boxes_to_lidar(
@@ -1060,6 +1077,13 @@ def test_rotated_pp_siamese_eval(
 
                 ious.append((iou3d, iouAabb))
 
+                accuracy = estimate_accuracy(result, label_lidar)
+
+                object_precision.add_accuracy(accuracy)
+                object_success.add_overlap(iou3d)
+                total_precision.add_accuracy(accuracy)
+                total_success.add_overlap(iou3d)
+
                 print(
                     track_id,
                     "%",
@@ -1072,6 +1096,8 @@ def test_rotated_pp_siamese_eval(
                     iou3d,
                     "iouAabb =",
                     iouAabb,
+                    "accuracy(error) =",
+                    accuracy,
                 )
 
                 filename = (
@@ -1085,6 +1111,8 @@ def test_rotated_pp_siamese_eval(
             if len(ious) <= 0:
                 mean_iou3d = None
                 mean_iouAabb = None
+                mean_precision = None
+                mean_success = None
                 tracked = None
             else:
                 mean_iou3d = sum([iou3d for iou3d, iouAabb in ious]) / len(
@@ -1094,24 +1122,30 @@ def test_rotated_pp_siamese_eval(
                     ious
                 )
                 tracked = count_tracked / len(ious)
+                mean_precision = object_precision.average
+                mean_success = object_success.average
 
             print("mean_iou3d =", mean_iou3d)
             print("mean_iouAabb =", mean_iouAabb)
             print("tracked =", tracked)
+            print("mean_precision =", mean_precision)
+            print("mean_success =", mean_success)
 
             if draw:
                 imageio.mimsave(filename, images)
                 pygifsicle.optimize(filename)
 
-            return mean_iou3d, mean_iouAabb, tracked
+            return mean_iou3d, mean_iouAabb, tracked, mean_precision, mean_success
 
         for object_id in range(0, min(5, dataset.max_id + 1)):
-            mean_iou3d, mean_iouAabb, tracked = test_object_id(object_id)
+            mean_iou3d, mean_iouAabb, tracked, mean_precision, mean_success = test_object_id(object_id)
 
             if mean_iou3d is not None:
                 all_mean_iou3ds.append(mean_iou3d)
                 all_mean_iouAabbs.append(mean_iouAabb)
                 all_tracked.append(tracked)
+                all_precision.append(mean_precision)
+                all_success.append(mean_success)
 
         if len(all_mean_iou3ds) > 0:
             track_mean_iou3d = sum(all_mean_iou3ds) / len(all_mean_iou3ds)
@@ -1119,16 +1153,22 @@ def test_rotated_pp_siamese_eval(
                 all_mean_iouAabbs
             )
             track_mean_tracked = sum(all_tracked) / len(all_tracked)
+            track_mean_precision = sum(all_precision) / len(all_precision)
+            track_mean_success = sum(all_success) / len(all_success)
         else:
             track_mean_iou3d = None
             track_mean_iouAabb = None
             track_mean_tracked = None
+            track_mean_precision = None
+            track_mean_success = None
 
         print("track_mean_iou3d =", track_mean_iou3d)
         print("track_mean_iouAabb =", track_mean_iouAabb)
         print("track_mean_tracked =", track_mean_tracked)
+        print("track_mean_precision =", track_mean_precision)
+        print("track_mean_success =", track_mean_success)
 
-        return track_mean_iou3d, track_mean_iouAabb, track_mean_tracked
+        return track_mean_iou3d, track_mean_iouAabb, track_mean_tracked, track_mean_precision, track_mean_success
 
     if tracks is None:
         tracks = [
@@ -1158,9 +1198,11 @@ def test_rotated_pp_siamese_eval(
     all_iou3ds = []
     all_iouAabbs = []
     all_tracked = []
+    all_precision = []
+    all_success = []
 
     for track in tracks:
-        track_mean_iou3d, track_mean_iouAabb, track_mean_tracked = test_track(
+        track_mean_iou3d, track_mean_iouAabb, track_mean_tracked, track_mean_precision, track_mean_success = test_track(
             track
         )
 
@@ -1168,33 +1210,47 @@ def test_rotated_pp_siamese_eval(
             all_iou3ds.append(track_mean_iou3d)
             all_iouAabbs.append(track_mean_iouAabb)
             all_tracked.append(track_mean_tracked)
+            all_precision.append(track_mean_precision)
+            all_success.append(track_mean_success)
 
     total_mean_iou3d = sum(all_iou3ds) / len(all_iou3ds)
     total_mean_iouAabb = sum(all_iouAabbs) / len(all_iouAabbs)
     total_mean_tracked = sum(all_tracked) / len(all_tracked)
+    total_mean_precision = sum(all_precision) / len(all_precision)
+    total_mean_success = sum(all_success) / len(all_success)
 
     result = {
         "total_mean_iou3d": total_mean_iou3d,
         "total_mean_iouAabb": total_mean_iouAabb,
         "total_mean_tracked": total_mean_tracked,
+        "total_mean_precision": total_mean_precision,
+        "total_mean_success": total_mean_success,
     }
 
     print("total_mean_iou3d =", total_mean_iou3d)
     print("total_mean_iouAabb =", total_mean_iouAabb)
     print("total_mean_tracked =", total_mean_tracked)
+    print("total_mean_precision =", total_mean_precision)
+    print("total_mean_success =", total_mean_success)
 
     print("all_iou3ds =", all_iou3ds)
     print("all_iouAabbs =", all_iouAabbs)
     print("all_tracked =", all_tracked)
+    print("all_precision =", all_precision)
+    print("all_success =", all_success)
 
     with open(results_path + "/results_" + str(load) + "_" + str(eval_id) + ".txt", "w") as f:
         print("total_mean_iou3d =", total_mean_iou3d, file=f)
         print("total_mean_iouAabb =", total_mean_iouAabb, file=f)
         print("total_mean_tracked =", total_mean_tracked, file=f)
+        print("total_mean_precision =", total_mean_precision, file=f)
+        print("total_mean_success =", total_mean_success, file=f)
 
         print("all_iou3ds =", all_iou3ds, file=f)
         print("all_iouAabbs =", all_iouAabbs, file=f)
         print("all_tracked =", all_tracked, file=f)
+        print("all_precision =", all_precision, file=f)
+        print("all_success =", all_success, file=f)
         print("tracks =", tracks, file=f)
 
     return result

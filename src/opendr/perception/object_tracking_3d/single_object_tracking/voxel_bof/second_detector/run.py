@@ -107,24 +107,43 @@ def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
 
 
 def create_targets_and_searches(
-    centers, target_sizes, search_sizes, rotations, augment
+    centers, target_sizes, search_sizes, rotations, augment, type="rotated"
 ):
 
-    delta = search_sizes - target_sizes
-    offsets = np.random.randint(-delta // 2, delta // 2)
+    if type == "default":
 
-    search_centers = centers + (offsets if augment else 0)
+        delta = search_sizes - target_sizes
+        offsets = np.random.randint(-delta // 2, delta // 2)
 
-    targets = []
-    searches = []
+        search_centers = centers + (offsets if augment else 0)
 
-    for center, search_center, target_size, search_size, rotation in zip(
-        centers, search_centers, target_sizes, search_sizes, rotations
-    ):
-        targets.append([center, target_size, rotation[0]])
-        searches.append([search_center, search_size, rotation[0]])
+        targets = []
+        searches = []
 
-    return targets, searches
+        for center, search_center, target_size, search_size, rotation in zip(
+            centers, search_centers, target_sizes, search_sizes, rotations
+        ):
+            targets.append([center, target_size, rotation[0]])
+            searches.append([search_center, search_size, rotation[0]])
+
+        return targets, searches
+    elif type == "rotated":
+        targets = []
+        searches = []
+
+        for center, target_size, search_size, rotation in zip(
+            centers, target_sizes, search_sizes, rotations
+        ):
+            delta = search_size - target_size
+            offset = np.random.randint(-delta // 2, delta // 2)
+            rotated_offset = rotate_vector(offset, rotation[0])
+
+            search_center = center + (rotated_offset if augment else 0)
+
+            targets.append([center, target_size, rotation[0]])
+            searches.append([search_center, search_size, rotation[0]])
+
+        return targets, searches
 
 
 def create_target_search_regions(

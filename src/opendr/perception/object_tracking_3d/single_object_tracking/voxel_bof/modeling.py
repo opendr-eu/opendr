@@ -144,7 +144,7 @@ class Model:
         )
 
 
-def run(device_id=0, total_devices=4):
+def run_all(device_id=0, total_devices=4):
     def create_eval_kwargs():
         params = {
             "window_influence": [0.15, 0.25, 0.05],
@@ -248,12 +248,101 @@ def collect_results():
                     key, value = s.split(" = ")
                     values[key] = value
 
-                result = [model + "_" + file, float(values["total_mean_iou3d"])]
+                result = [
+                    model + "_" + file,
+                    float(values["total_mean_iou3d"]),
+                    float(values["total_mean_precision"] if "total_mean_precision" in values else -1),
+                    float(values["total_mean_success"] if "total_mean_success" in values else -1),
+                ]
                 results.append(result)
 
-    results = sorted(results, key=lambda x: x[1])
-    for k, v in results:
-        print(k, v)
+    results = sorted(results, key=lambda x: x[2])
+    for name, iou3d, precision, success in results:
+        print(name, "precision", precision, "success", success, "iou3d", iou3d)
+
+
+def run_selected(device_id=0, total_devices=4):
+    def create_eval_kwargs():
+        params = {
+            "window_influence": [0.15, 0.25, 0.05],
+            "score_upscale": [16],
+            "rotation_penalty": [0.98, 0.96],
+            "rotation_step": [0.15, 0.1, 0.075],
+            "rotations_count": [3, 5],
+        }
+
+        results = {}
+
+        for window_influence in params["window_influence"]:
+            for score_upscale in params["score_upscale"]:
+                for rotation_penalty in params["rotation_penalty"]:
+                    for rotation_step in params["rotation_step"]:
+                        for rotations_count in params["rotations_count"]:
+                            name = (
+                                str(rotations_count).replace(".", "")
+                                + "r"
+                                + str(rotation_step).replace(".", "")
+                                + "-rp"
+                                + str(rotation_penalty).replace(".", "")
+                                + "su"
+                                + str(score_upscale).replace(".", "")
+                            )
+
+                            results[name] = {
+                                "window_influence": window_influence,
+                                "score_upscale": score_upscale,
+                                "rotation_penalty": rotation_penalty,
+                                "rotation_step": rotation_step,
+                                "rotations_count": rotations_count,
+                            }
+        return results
+
+    eval_kwargs = create_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [3, 2]:
+            for size in [1, -1]:
+                for context_amount in [0.1, -0.1, -0.2, 0.2, 0]:
+
+                    target_size = [127, 127] if size == 1 else [-1, -1]
+                    search_size = [255, 255] if size == 1 else [-1, -1]
+
+                    name = (
+                        "1r-b"
+                        + str(feature_blocks)
+                        + ("-us" if size == 1 else "-os")
+                        + "-c"
+                        + str(context_amount).replace(".", "")
+                    )
+                    result.append(
+                        (
+                            Model(
+                                name,
+                                feature_blocks=feature_blocks,
+                                target_size=target_size,
+                                search_size=search_size,
+                                context_amount=context_amount,
+                                train_steps=20000,
+                            ),
+                            eval_kwargs,
+                        )
+                    )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
 
 
 
