@@ -260,6 +260,10 @@ def collect_results():
     for name, iou3d, precision, success in results:
         print(name, "precision", precision, "success", success, "iou3d", iou3d)
 
+    with open("modeling.txt", "w") as f:
+        for name, iou3d, precision, success in results:
+            print(name, "precision", precision, "success", success, "iou3d", iou3d, file=f)
+
 
 def run_selected(device_id=0, total_devices=4):
     def create_eval_kwargs():
