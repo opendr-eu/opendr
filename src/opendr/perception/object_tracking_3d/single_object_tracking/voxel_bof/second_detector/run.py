@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from multiprocessing import Value
 import os
 import torch
 import numpy as np
@@ -260,7 +261,7 @@ def get_sub_image(image, center, size):
 def create_logisticloss_labels(
     label_size, t, r_pos, r_neg=0, ignore_label=-100, loss="bce", max_pos=1, min_pos=0.5
 ):
-    labels = np.zeros(label_size)
+    labels = np.zeros(label_size, dtype=np.float32)
 
     if t[0] is None:
         return labels
@@ -273,15 +274,22 @@ def create_logisticloss_labels(
             )
             # if dist <= 0:
             #     labels[r, c] = 1
-            if np.all(dist <= r_pos + 1):
-                labels[r, c] = min_pos * dist/r_pos + max_pos * (1 - dist/r_pos)
-            elif np.all(dist <= r_neg):
-                labels[r, c] = ignore_label
-            else:
-                if loss == "bce" or loss == "focal":
-                    labels[r, c] = 0
+            if loss == "bce":
+                if np.all(dist <= r_pos + 1):
+                    labels[r, c] = min_pos * dist/r_pos + max_pos * (1 - dist/r_pos)
+                elif np.all(dist <= r_neg):
+                    labels[r, c] = ignore_label
                 else:
-                    labels[r, c] = -1
+                    labels[r, c] = 0
+            elif loss == "focal":
+                if np.all(dist <= r_pos):
+                    labels[r, c] = 1
+                elif np.all(dist <= r_neg):
+                    labels[r, c] = ignore_label
+                else:
+                    labels[r, c] = 0
+            else:
+                raise ValueError()
 
     return labels
 
@@ -496,6 +504,7 @@ def create_pseudo_images_and_labels(
     context_amount,
     annos=None,
     gt_boxes=None,
+    loss="bce",
 ):
     pseudo_image = net.create_pseudo_image(example_torch, net.point_cloud_range)
     feature_blocks = net.feature_blocks
@@ -558,6 +567,7 @@ def create_pseudo_images_and_labels(
                 np.array(target_image.shape[-2:], dtype=np.int32),
                 np.array(search_image.shape[-2:], dtype=np.int32),
                 feature_blocks,
+                loss=loss,
             )
 
             labels_torch = torch.tensor(labels, device=target_image.device)
@@ -812,6 +822,7 @@ def train(
     context_amount=0.5,
     debug=False,
     train_steps=0,
+    loss_function="bce",
 ):
 
     net = siamese_model.branch
@@ -901,6 +912,7 @@ def train(
                     target_size=target_size,
                     search_size=search_size,
                     context_amount=context_amount,
+                    loss=loss_function,
                 )
             else:
                 with torch.no_grad():
@@ -911,6 +923,7 @@ def train(
                         target_size=target_size,
                         search_size=search_size,
                         context_amount=context_amount,
+                        loss=loss_function,
                     )
 
             for (

@@ -431,6 +431,7 @@ def test_pp_siamese_fit(
     debug=False,
     device=DEVICE,
     checkpoint_after_iter=1000,
+    lr=0.0001,
     **kwargs,
 ):
     print("Fit", name, "start", file=sys.stderr)
@@ -439,7 +440,7 @@ def test_pp_siamese_fit(
     learner = VoxelBofObjectTracking3DLearner(
         model_config_path=config,
         device=device,
-        lr=0.0001,
+        lr=lr,
         checkpoint_after_iter=checkpoint_after_iter,
         checkpoint_load_iter=load,
         **kwargs,
@@ -938,6 +939,7 @@ def test_rotated_pp_siamese_eval(
     tracks=None,
     device=DEVICE,
     eval_id="default",
+    near_distance=30,
     **kwargs,
 ):
     print("Eval", name, "start", file=sys.stderr)
@@ -948,7 +950,6 @@ def test_rotated_pp_siamese_eval(
     learner = VoxelBofObjectTracking3DLearner(
         model_config_path=config,
         device=device,
-        lr=0.001,
         checkpoint_after_iter=2000,
         **kwargs,
     )
@@ -965,6 +966,10 @@ def test_rotated_pp_siamese_eval(
 
     total_success = Success()
     total_precision = Precision()
+    total_success_near = Success()
+    total_precision_near = Precision()
+    total_success_far = Success()
+    total_precision_far = Precision()
 
     def test_track(track_id):
         count = len(dataset_tracking)
@@ -1088,6 +1093,15 @@ def test_rotated_pp_siamese_eval(
                 total_precision.add_accuracy(accuracy)
                 total_success.add_overlap(iou3d)
 
+                distance = np.linalg.norm(label_lidar.location, ord=2)
+
+                if distance < near_distance:
+                    total_precision_near.add_accuracy(accuracy)
+                    total_success_near.add_overlap(iou3d)
+                else:
+                    total_precision_far.add_accuracy(accuracy)
+                    total_success_far.add_overlap(iou3d)
+
                 print(
                     track_id,
                     "%",
@@ -1102,6 +1116,8 @@ def test_rotated_pp_siamese_eval(
                     iouAabb,
                     "accuracy(error) =",
                     accuracy,
+                    "distance =",
+                    distance,
                 )
 
                 filename = (
@@ -1229,13 +1245,16 @@ def test_rotated_pp_siamese_eval(
         "total_mean_tracked": total_mean_tracked,
         "total_mean_precision": total_mean_precision,
         "total_mean_success": total_mean_success,
+        "total_precision": total_precision.average,
+        "total_success": total_success.average,
+        "total_precision_near": total_precision_near.average,
+        "total_success_near": total_success_near.average,
+        "total_precision_far": total_precision_far.average,
+        "total_success_far": total_success_far.average,
     }
 
-    print("total_mean_iou3d =", total_mean_iou3d)
-    print("total_mean_iouAabb =", total_mean_iouAabb)
-    print("total_mean_tracked =", total_mean_tracked)
-    print("total_mean_precision =", total_mean_precision)
-    print("total_mean_success =", total_mean_success)
+    for k, v in result.items():
+        print(k, "=", v)
 
     print("all_iou3ds =", all_iou3ds)
     print("all_iouAabbs =", all_iouAabbs)
@@ -1244,11 +1263,9 @@ def test_rotated_pp_siamese_eval(
     print("all_success =", all_success)
 
     with open(results_path + "/results_" + str(load) + "_" + str(eval_id) + ".txt", "w") as f:
-        print("total_mean_iou3d =", total_mean_iou3d, file=f)
-        print("total_mean_iouAabb =", total_mean_iouAabb, file=f)
-        print("total_mean_tracked =", total_mean_tracked, file=f)
-        print("total_mean_precision =", total_mean_precision, file=f)
-        print("total_mean_success =", total_mean_success, file=f)
+
+        for k, v in result.items():
+            print(k, "=", v, file=f)
 
         print("all_iou3ds =", all_iou3ds, file=f)
         print("all_iouAabbs =", all_iouAabbs, file=f)

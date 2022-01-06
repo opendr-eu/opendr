@@ -53,6 +53,39 @@ class BCEWeightedLoss(nn.Module):
             )
 
 
+class SoftMarginLoss(nn.Module):
+    def __init__(self):
+        super(SoftMarginLoss, self).__init__()
+
+    def forward(self, input, target, weight=None):
+        return functional.soft_margin_loss(input, target, reduction='elementwise_mean')
+
+
+class FocalLoss(nn.Module):
+    def __init__(self, alpha=0.25, gamma=2, logits=True):
+        super(FocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.logits = logits
+
+    def forward(self, inputs, targets, weights=None):
+        if self.logits:
+            inputs = torch.sigmoid(inputs)
+        pt = torch.ones_like(inputs)
+        pt[targets == 0] = (1 - inputs[targets == 0])
+        pt[targets == 1] = inputs[targets == 1]
+        if self.alpha:
+            at = torch.ones_like(inputs)
+            at[targets == 0] = (1 - self.alpha)
+            at[targets == 1] = self.alpha
+
+        loss = functional.binary_cross_entropy(inputs, targets, weight=weights, reduce=False)
+        loss *= (1 - pt) ** self.gamma
+        if self.alpha:
+            loss *= at
+        return loss.mean()
+
+
 def create_model(
     config_path,
     device,
@@ -62,6 +95,7 @@ def create_model(
     lr_schedule_name,
     lr_schedule_params,
     feature_blocks,
+    loss_function,
     log=print,
     verbose=False,
 ):
@@ -101,7 +135,13 @@ def create_model(
     net.bv_range = bv_range
     net.point_cloud_range =voxel_generator. point_cloud_range
     net.voxel_size = model_cfg.voxel_generator.voxel_size
-    net.criterion = BCEWeightedLoss()
+
+    if loss_function == "bce":
+        net.criterion = BCEWeightedLoss()
+    elif loss_function == "focal":
+        net.criterion = FocalLoss(alpha=0, gamma=1)  # .to(self.device)
+    elif loss_function == "softmargin":
+        net.criterion = SoftMarginLoss()
     net.feature_blocks = feature_blocks
 
     model = SiameseConvNet(net)

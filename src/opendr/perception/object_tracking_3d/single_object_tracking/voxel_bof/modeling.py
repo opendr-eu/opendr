@@ -363,23 +363,27 @@ def run_best(device_id=0, total_devices=4):
                 for rotation_penalty in params["rotation_penalty"]:
                     for rotation_step in params["rotation_step"]:
                         for rotations_count in params["rotations_count"]:
-                            name = (
-                                str(rotations_count).replace(".", "")
-                                + "r"
-                                + str(rotation_step).replace(".", "")
-                                + "-rp"
-                                + str(rotation_penalty).replace(".", "")
-                                + "su"
-                                + str(score_upscale).replace(".", "")
-                            )
+                            for target_feature_merge_scale in params["target_feature_merge_scale"]:
+                                name = (
+                                    str(rotations_count).replace(".", "")
+                                    + "r"
+                                    + str(rotation_step).replace(".", "")
+                                    + "-rp"
+                                    + str(rotation_penalty).replace(".", "")
+                                    + "su"
+                                    + str(score_upscale).replace(".", "")
+                                    + "tfms"
+                                    + str(target_feature_merge_scale).replace(".", "")
+                                )
 
-                            results[name] = {
-                                "window_influence": window_influence,
-                                "score_upscale": score_upscale,
-                                "rotation_penalty": rotation_penalty,
-                                "rotation_step": rotation_step,
-                                "rotations_count": rotations_count,
-                            }
+                                results[name] = {
+                                    "window_influence": window_influence,
+                                    "score_upscale": score_upscale,
+                                    "rotation_penalty": rotation_penalty,
+                                    "rotation_step": rotation_step,
+                                    "rotations_count": rotations_count,
+                                    "target_feature_merge_scale": target_feature_merge_scale,
+                                }
         return results
 
     eval_kwargs = create_eval_kwargs()
@@ -415,6 +419,192 @@ def run_best(device_id=0, total_devices=4):
                             eval_kwargs,
                         )
                     )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def run_best_small_lr(device_id=0, total_devices=4):
+    def create_eval_kwargs():
+        params = {
+            "window_influence": [0.15, 0.25, 0.35],
+            "score_upscale": [16],
+            "rotation_penalty": [0.98, 0.96],
+            "rotation_step": [0.15, 0.1, 0.075],
+            "rotations_count": [3, 5],
+            "target_feature_merge_scale": [0, 0.1, 0.3, 0.5, 0.7],
+        }
+
+        results = {}
+
+        for window_influence in params["window_influence"]:
+            for score_upscale in params["score_upscale"]:
+                for rotation_penalty in params["rotation_penalty"]:
+                    for rotation_step in params["rotation_step"]:
+                        for rotations_count in params["rotations_count"]:
+                            for target_feature_merge_scale in params["target_feature_merge_scale"]:
+                                name = (
+                                    str(rotations_count).replace(".", "")
+                                    + "r"
+                                    + str(rotation_step).replace(".", "")
+                                    + "-rp"
+                                    + str(rotation_penalty).replace(".", "")
+                                    + "su"
+                                    + str(score_upscale).replace(".", "")
+                                    + "tfms"
+                                    + str(target_feature_merge_scale).replace(".", "")
+                                )
+
+                                results[name] = {
+                                    "window_influence": window_influence,
+                                    "score_upscale": score_upscale,
+                                    "rotation_penalty": rotation_penalty,
+                                    "rotation_step": rotation_step,
+                                    "rotations_count": rotations_count,
+                                    "target_feature_merge_scale": target_feature_merge_scale,
+                                }
+        return results
+
+    eval_kwargs = create_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1]:
+            for size in [-1]:
+                for context_amount in [0.2, 0.5]:
+                    for lr in [0.00001, 0.000005]:
+
+                        target_size = [127, 127] if size == 1 else [-1, -1]
+                        search_size = [255, 255] if size == 1 else [-1, -1]
+
+                        name = (
+                            "3rlr-b"
+                            + str(feature_blocks)
+                            + ("-us" if size == 1 else "-os")
+                            + "-c"
+                            + str(context_amount).replace(".", "")
+                        )
+                        result.append(
+                            (
+                                Model(
+                                    name,
+                                    feature_blocks=feature_blocks,
+                                    target_size=target_size,
+                                    search_size=search_size,
+                                    context_amount=context_amount,
+                                    train_steps=50000,
+                                    save_step=1000,
+                                    loads=[1000, 2000, 4000, 8000, 16000, 32000, 50000],
+                                    lr=lr,
+                                ),
+                                eval_kwargs,
+                            )
+                        )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def run_focall_loss(device_id=0, total_devices=4):
+    def create_eval_kwargs():
+        params = {
+            "window_influence": [0.15, 0.25, 0.35],
+            "score_upscale": [16],
+            "rotation_penalty": [0.98, 0.96],
+            "rotation_step": [0.15, 0.1, 0.075],
+            "rotations_count": [3, 5],
+            "target_feature_merge_scale": [0, 0.1, 0.3, 0.5, 0.7],
+        }
+
+        results = {}
+
+        for window_influence in params["window_influence"]:
+            for score_upscale in params["score_upscale"]:
+                for rotation_penalty in params["rotation_penalty"]:
+                    for rotation_step in params["rotation_step"]:
+                        for rotations_count in params["rotations_count"]:
+                            for target_feature_merge_scale in params["target_feature_merge_scale"]:
+                                name = (
+                                    str(rotations_count).replace(".", "")
+                                    + "r"
+                                    + str(rotation_step).replace(".", "")
+                                    + "-rp"
+                                    + str(rotation_penalty).replace(".", "")
+                                    + "su"
+                                    + str(score_upscale).replace(".", "")
+                                )
+
+                                results[name] = {
+                                    "window_influence": window_influence,
+                                    "score_upscale": score_upscale,
+                                    "rotation_penalty": rotation_penalty,
+                                    "rotation_step": rotation_step,
+                                    "rotations_count": rotations_count,
+                                    "target_feature_merge_scale": target_feature_merge_scale,
+                                }
+        return results
+
+    eval_kwargs = create_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [3, 1, 2]:
+            for size in [-1]:
+                for context_amount in [0.2, 0.5]:
+                    for loss_function in ["focal"]:
+
+                        target_size = [127, 127] if size == 1 else [-1, -1]
+                        search_size = [255, 255] if size == 1 else [-1, -1]
+
+                        name = (
+                            "4fl-b"
+                            + str(feature_blocks)
+                            + ("-us" if size == 1 else "-os")
+                            + "-c"
+                            + str(context_amount).replace(".", "")
+                            + "-lf"
+                            + str(loss_function).replace(".", "")
+                        )
+                        result.append(
+                            (
+                                Model(
+                                    name,
+                                    feature_blocks=feature_blocks,
+                                    target_size=target_size,
+                                    search_size=search_size,
+                                    context_amount=context_amount,
+                                    train_steps=50000,
+                                    save_step=1000,
+                                    loads=[1000, 2000, 4000, 8000, 16000, 32000, 50000],
+                                    loss_function=loss_function,
+                                ),
+                                eval_kwargs,
+                            )
+                        )
 
         return result
 
