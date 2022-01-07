@@ -133,6 +133,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         context_amount=0.2,  # -0.2  # 0.5,
         target_feature_merge_scale=0,
         loss_function="bce",  # focal, bce
+        r_pos=16,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -170,6 +171,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.rotations_count = rotations_count
         self.target_feature_merge_scale = target_feature_merge_scale
         self.loss_function = loss_function
+        self.r_pos = r_pos
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -449,6 +451,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             debug=debug,
             train_steps=steps,
             loss_function=self.loss_function,
+            r_pos=self.r_pos,
         )
 
         logger.close()

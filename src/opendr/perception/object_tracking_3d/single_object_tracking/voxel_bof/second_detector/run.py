@@ -408,7 +408,7 @@ def image_to_lidar_coordinates(location, size, voxel_size, bv_range):
 
 
 def create_static_label_and_weights(
-    target, search, target_size, search_size, target_size_with_context, search_size_with_context, feature_blocks, loss="bce", radius=8
+    target, search, target_size, search_size, target_size_with_context, search_size_with_context, feature_blocks, loss="bce", radius=8,
 ):
     if target_size[0] <= 0:
         target_size = target_size_with_context
@@ -505,6 +505,7 @@ def create_pseudo_images_and_labels(
     annos=None,
     gt_boxes=None,
     loss="bce",
+    r_pos=16,
 ):
     pseudo_image = net.create_pseudo_image(example_torch, net.point_cloud_range)
     feature_blocks = net.feature_blocks
@@ -568,6 +569,7 @@ def create_pseudo_images_and_labels(
                 np.array(search_image.shape[-2:], dtype=np.int32),
                 feature_blocks,
                 loss=loss,
+                radius=r_pos,
             )
 
             labels_torch = torch.tensor(labels, device=target_image.device)
@@ -823,6 +825,7 @@ def train(
     debug=False,
     train_steps=0,
     loss_function="bce",
+    r_pos=16,
 ):
 
     net = siamese_model.branch
@@ -913,6 +916,7 @@ def train(
                     search_size=search_size,
                     context_amount=context_amount,
                     loss=loss_function,
+                    r_pos=r_pos,
                 )
             else:
                 with torch.no_grad():
@@ -924,6 +928,7 @@ def train(
                         search_size=search_size,
                         context_amount=context_amount,
                         loss=loss_function,
+                        r_pos=r_pos,
                     )
 
             for (
