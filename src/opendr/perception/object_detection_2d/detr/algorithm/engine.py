@@ -25,7 +25,7 @@ from typing import Iterable
 
 import torch
 
-import opendr.perception.object_detection_2d.detr.algorithm.util.misc as utils
+from opendr.perception.object_detection_2d.detr.algorithm.util import misc as utils
 from opendr.perception.object_detection_2d.detr.algorithm.datasets.coco_eval import CocoEvaluator
 from opendr.perception.object_detection_2d.detr.algorithm.datasets.panoptic_eval import PanopticEvaluator
 

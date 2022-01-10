@@ -30,11 +30,12 @@ You are then ready to install the toolkit:
 cd opendr
 ./bin/install.sh
 ```
+
+
 The installation script automatically installs all the required dependencies.
 Note that this might take a while (~10-20min depending on your machine and network connection), while the script also makes system-wide changes.
 Using dockerfiles is strongly advised (please see below), unless you know what you are doing.
 Please also make sure that you have enough RAM available for the installation (about 4GB of free RAM is needed for the full installation/compilation).
-
 
 You can set the inference/training device using the `OPENDR_DEVICE` variable.
 The toolkit defaults to using CPU.
@@ -67,6 +68,21 @@ sudo update-alternatives --config gcc
 Then, you can install CUDA, along CuDNN.
 You can also refer to this [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda) for installation instructions.
 Note that NVIDIA 30xx GPUs may not be fully supported, due to CUDA limitations.
+
+# Installing by cloning OpenDR repository on a Nvidia-TX2
+If you are installing the toolkit on a Nvidia-TX2:
+```bash
+cd opendr
+./bin/install_tx2.sh
+```
+Note that this might take a while (~4-5h), while the script also makes system-wide changes and might prompt for password input.
+
+In order to use the toolkit, you should export some system variables by running `activate_tx2.sh`, (Note that this should be run before every toolkit use):
+```bash
+./bin/activate_tx2.sh
+```
+Then, you are ready to use the toolkit!
+
 
 # Installing using *pip*
 

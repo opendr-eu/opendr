@@ -24,7 +24,7 @@ from typing import Iterable
 
 import torch
 
-import opendr.perception.object_detection_2d.gem.algorithm.util.misc as utils
+from opendr.perception.object_detection_2d.gem.algorithm.util import misc as utils
 from opendr.perception.object_detection_2d.detr.algorithm.datasets.coco_eval import CocoEvaluator
 
 
