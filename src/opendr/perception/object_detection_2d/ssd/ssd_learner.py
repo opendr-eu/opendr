@@ -45,7 +45,7 @@ from opendr.perception.object_detection_2d.utils.eval_utils import DetectionData
 from opendr.perception.object_detection_2d.datasets import DetectionDataset
 from opendr.perception.object_detection_2d.datasets.transforms import ImageToNDArrayTransform, BoundingBoxListToNumpyArray, \
     transform_test
-
+import torch
 gutils.random.seed(0)
 
 
@@ -553,7 +553,8 @@ class SingleShotDetectorLearner(Learner):
         """
         assert self._model is not None, "Model has not been loaded, call load(path) first"
 
-        self._model.set_nms(nms_thresh=0.45, nms_topk=400)
+        #self._model.set_nms(nms_thresh=0.45, nms_topk=400)
+        self._model.set_nms(nms_thresh=0.0, nms_topk=1200)
 
         if not isinstance(img, Image):
             img = Image(img)
@@ -585,14 +586,16 @@ class SingleShotDetectorLearner(Learner):
         boxes[:, [0, 2]] *= width
         boxes[:, [1, 3]] *= height
 
-        bounding_boxes = BoundingBoxList([])
-        for idx, box in enumerate(boxes):
-            bbox = BoundingBox(left=box[0], top=box[1],
-                               width=box[2] - box[0],
-                               height=box[3] - box[1],
-                               name=class_IDs[idx, :],
-                               score=scores[idx, :])
-            bounding_boxes.data.append(bbox)
+        # bounding_boxes = BoundingBoxList([])
+        # for idx, box in enumerate(boxes):
+        #    bbox = BoundingBox(left=box[0], top=box[1],
+        #                       width=box[2] - box[0],
+        #                       height=box[3] - box[1],
+        #                       name=class_IDs[idx, :],
+        #                       score=scores[idx, :])
+        #    bounding_boxes.data.append(bbox)
+        bounding_boxes = np.concatenate([boxes, scores], axis=1)
+        bounding_boxes = [torch.tensor(bounding_boxes, device=self.device)]  # List based on class index
         return bounding_boxes
 
     @staticmethod
