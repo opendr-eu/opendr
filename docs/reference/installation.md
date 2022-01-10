@@ -75,7 +75,7 @@ If you are installing the toolkit on a Nvidia-TX2:
 cd opendr
 ./bin/install_tx2.sh
 ```
-Note that this might take a while (~4-5h), while the script also makes system-wide changes and might prompt for password input.
+Note that TX2 should be flashed with Jetpack 4.6 and that this might take a while (~4-5h), while the script also makes system-wide changes and might prompt for password input.
 
 In order to use the toolkit, you should export some system variables by running `activate_tx2.sh`, (Note that this should be run before every toolkit use):
 ```bash
