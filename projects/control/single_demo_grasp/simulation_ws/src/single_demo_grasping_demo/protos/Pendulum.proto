@@ -1,0 +1,49 @@
+# #VRML_SIM R2021a utf8
+# license: Creative Commons Attribution 4.0 International License.
+# license url: https://creativecommons.org/licenses/by/4.0/legalcode
+
+
+PROTO Pendulum [
+field SFVec3f    translation        0.309941 0.013096 0.0299711
+field SFRotation rotation 	        -0.5787667464732912 0.5759097003262763 0.5773708255937596 2.0986544577205546
+field SFVec3f    scale       	      1 1 1
+field SFString   name              "Pendulum"
+field SFColor    color	           0.8 0.67 0.28
+field SFFloat    mass            0.01         # Defines the mass of the ball.
+field MFVec3f    centerOfMass    [0 0 0]  # Defines the center of mass of the ball.
+field SFFloat    linearDamping   0.17           # Defines the linear damping of the ball.
+field SFFloat    angularDamping  0.33           # Defines the angular damping of the ball.
+]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  scale IS scale
+  children [
+        DEF SHAPE Shape {
+          appearance PBRAppearance {
+            baseColor IS color
+            roughness 1
+            metalness 0
+            name "DefaultMaterial"
+          }
+          geometry Mesh {
+		# set to the path of the object in objects directory  
+              url ["../objects/cran_feld_pendulum.stl"]
+              }
+        }
+]
+      name ""
+      contactMaterial "default"
+      boundingObject USE SHAPE
+      physics Physics {
+        density 74.6268656716
+        mass IS mass
+        centerOfMass IS centerOfMass
+        #inertiaMatrix [ 0 0 0, 0 0 0 ]
+      }
+
+  name IS name
+  model "ball"
+}
+}

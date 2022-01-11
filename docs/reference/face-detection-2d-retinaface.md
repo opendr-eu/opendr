@@ -9,7 +9,7 @@ The *RetinaFaceLearner* class is a wrapper of the RetinaFace detector[[1]](#reti
 [deepinsight implementation](https://www.github.com/deepinsight/insightface).
 It can be used to perform face detection on images (inference) as well as train new face detection models.
 
-The [RetinaFaceLearner](#src.opendr.perception.object_detection_2d.retinaface.retinaface_learner.py) class has the following
+The [RetinaFaceLearner](/src/opendr/perception/object_detection_2d/retinaface/retinaface_learner.py) class has the following
 public methods:
 
 #### `RetinaFaceLearner` constructor
@@ -167,7 +167,48 @@ Parameters:
   If True, maximum verbosity if enabled.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
+  
+#### Examples
 
+* **Training example**.
+  To train properly, the backbone weights are downloaded automatically in the `temp_path`. 
+  The WIDER Face detection dataset is supported for training, implemented as a `DetectionDataset` subclass. This example assumes the data has been downloaded and placed in the directory referenced by `data_root`.
+
+  ```python
+  from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
+  from opendr.engine.datasets import ExternalDataset
+  
+  dataset = WiderFaceDataset(root=data_root, splits=['train'])
+
+  face_learner = RetinaFaceLearner(backbone='resnet', prefix='retinaface_resnet50',
+                                     epochs=n_epochs, log_after=10, flip=False, shuffle=False,
+                                     lr=lr, lr_steps='55,68,80', weight_decay=5e-4,
+                                     batch_size=4, val_after=val_after,
+                                     temp_path='temp_retinaface', checkpoint_after_iter=1)
+
+  face_learner.fit(dataset, val_dataset=dataset, verbose=True)
+  face_learner.save('./trained_models/retinaface_resnet50')
+  ```
+  
+  Custom datasets are supported by inheriting the `DetectionDataset` class.
+
+* **Inference and result drawing example on a test .jpg image using OpenCV.**
+  ```python
+  from opendr.engine.data import Image
+  from opendr.perception.object_detection_2d import RetinaFaceLearner
+  from opendr.perception.object_detection_2d import draw_bounding_boxes
+
+  learner = RetinaFaceLearner(backbone=backbone, device=device)
+  learner.download('.', mode='pretrained')
+  learner.load('./retinaface_{}'.format(backbone))
+
+  learner.download('.', mode='images')
+  img = Image.open('./cov4.jpg')
+  bounding_boxes = learner.infer(img)
+
+  img = draw_bounding_boxes(img.opencv(), bounding_boxes, learner.classes, show=True)
+  ```
+  
 #### References
 <a name="retinaface-1" href="https://arxiv.org/abs/1905.00641">[1]</a> RetinaFace: Single-stage Dense Face Localisation in the Wild,
 [arXiv](https://arxiv.org/abs/1905.00641).

@@ -1,8 +1,9 @@
 # OpenDR Toolkit Reference Manual
 
-Release 0.1
-
-![OpenDR](images/opendr_logo.png)
+*Release 1.0*
+<div align="center">
+  <img src="images/opendr_logo.png" />
+</div>
 
 Copyright &copy; 2020-2021 OpenDR Project.
 OpenDR is funded from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871449.
@@ -15,7 +16,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 
 ## Table of Contents
 
-- [Inference and Training API](inference-and-training-api.md)
+- Inference and Training API
     - `engine` Module
         - [engine.data Module](engine-data.md)
         - [engine.datasets Module](engine-datasets.md)
@@ -39,7 +40,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [detr Module](detr.md)
             - [gem Module](gem.md)
             - [retinaface Module](face-detection-2d-retinaface.md)
-            - [centernet Module](object-detection-2d-ssd.md)
+            - [centernet Module](object-detection-2d-centernet.md)
             - [ssd Module](object-detection-2d-ssd.md)
             - [yolov3 Module](object-detection-2d-yolov3.md)
         - object detection 3d:
@@ -63,11 +64,62 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 
     - `control` Module
         - [mobile_manipulation Module](mobile-manipulation.md)
+        - [single_demo_grasp Module](single-demonstration-grasping.md)        
+
     - `simulation` Module
         - [human_model_generation Module](human-model-generation.md)
+    - `utils` Module
+        - [Hyperparameter Tuning Module](hyperparameter_tuner.md)
+- `Stand-alone Utility Frameworks`
+    - [Engine Agnostic Gym Environment with Reactive extension (EAGERx)](eagerx.md)
 - [ROSBridge Package](rosbridge.md)
 - [C Inference API](c-api.md)
     - [data.h](c-data-h.md)
     - [target.h](c-target-h.md)
     - [opendr_utils.h](c-opendr-utils-h.md)
     - [face_recognition.h](c-face-recognition-h.md)
+- Projects
+    - `C API` Module
+        - [face recognition Demo](/projects/c_api)
+    - `control` Module
+        - [mobile_manipulation Demo](/projects/control/mobile_manipulation)
+        - [single_demo_grasp Demo](/projects/control/single_demo_grasp)
+    - `opendr workspace` Module
+        - [opendr_ws](/projects/opendr_ws)
+    - `perception` Module
+        - activity recognition:
+            - [activity_recognition Demo](/projects/perception/activity_recognition/demos/online_recognition)
+        - face recognition:
+            - [face_recognition_Demo](/projects/perception/face_recognition)
+        - facial expression recognition:
+            - [landmark_based_facial_expression_recognition Demo](/projects/perception/facial_expression_recognition/landmark_based_facial_expression_recognition)
+        - heart anomaly detection:
+            - [heart anomaly detection Demo](/projects/perception/heart_anomaly_detection)
+        - pose estimation:
+            - [lightweight_open_pose Demo](/projects/perception/lightweight_open_pose)
+        - multimodal human centric:
+            - [rgbd_hand_gesture_learner Demo](/projects/perception/multimodal_human_centric)
+        - object detection 2d:
+            - [detr Demo](/projects/perception/object_detection_2d/detr)
+            - [gem Demo](/projects/perception/object_detection_2d/gem)
+            - [retinaface Demo](/projects/perception/object_detection_2d/retinaface)
+            - [centernet Demo](/projects/perception/object_detection_2d/centernet)
+            - [ssd Demo](/projects/perception/object_detection_2d/ssd)
+            - [yolov3 Demo](/projects/perception/object_detection_2d/yolov3)
+        - object detection 3d:
+            - [voxel Demo](/projects/perception/object_detection_3d/demos/voxel_object_detection_3d)
+        - object tracking 2d:
+            - [fair_mot Demo](/projects/perception/object_tracking_2d/demos/fair_mot_deep_sort)
+        - panoptic segmentation:
+            - [efficient_ps Demo](/projects/perception/panoptic_segmentation/efficient_ps)
+        - semantic segmentation:
+            - [bisnet Demo](/projects/perception/semantic_segmentation/bisenet)
+        - action recognition:
+            - [skeleton_based_action_recognition Demo](/projects/perception/skeleton_based_action_recognition)
+        - [full_map_posterior_slam Module](/projects/perception/slam/full_map_posterior_gmapping)
+    - `simulation` Module
+        - [SMPL+D Human Models Dataset](/projects/simulation/SMPL%2BD_human_models)
+        - [Human-Data-Generation-Framework](/projects/simulation/human_dataset_generation)
+        - [Human Model Generation Demos](/projects/simulation/human_dataset_generation)
+    - `utils` Module
+        - [Hyperparameter Tuning Module](/projects/utils/hyperparameter_tuner)

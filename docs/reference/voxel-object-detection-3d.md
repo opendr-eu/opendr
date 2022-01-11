@@ -9,7 +9,7 @@ The *VoxelObjectDetection3DLearner* class is a wrapper of the TANet[[1]](#object
 https://github.com/happinesslz/TANet)[[3]](#object-detectiond-3d-3).
 It can be used to perform voxel-based 3d object detection on point clouds and train new models.
 
-The [VoxelObjectDetection3DLearner](#src.opendr.perception.object_detection_3d.voxel_object_detection_3d.voxel_object_detection_3d_learner.py) class has the
+The [VoxelObjectDetection3DLearner](/src/opendr/perception/object_detection_3d/voxel_object_detection_3d/voxel_object_detection_3d_learner.py) class has the
 following public methods:
 
 #### `VoxelObjectDetection3DLearner` constructor
@@ -117,7 +117,7 @@ VoxelObjectDetection3DLearner.infer(self, point_clouds)
 ```
 
 This method is used to perform 3D object detection on a point cloud.
-Returns a list of [BoundingBox3DList](#class_engine.target.BoundingBox3DList) objects if the list of [PointCloud](#class_engine.data.PointCloud) is given or a single [BoundingBox3DList](#class_engine.target.BoundingBox3DList) if a single [PointCloud](#class_engine.data.PointCloud) is given.
+Returns a list of [BoundingBox3DList](/src/opendr/engine/target.py#L687) objects if the list of [PointCloud](/src/opendr/engine/data.py#L496) is given or a single [BoundingBox3DList](/src/opendr/engine/target.py#L687) if a single [PointCloud](/src/opendr/engine/data.py#L496) is given.
 
 Parameters:
 
@@ -134,7 +134,7 @@ Provided with the path "/my/path/name" (absolute or relative), it creates the "n
 Inside this folder, the model is saved as "name_vfe.pth", "name_mfe.pth", and "name_rpn.pth" or "name_rpn.onnx" and the metadata file as "name.json".
 If the directory already exists, the files are overwritten.
 
-If [`self.optimize`](#VoxelObjectDetection3DLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the `self.temp_path` it was saved previously during conversion.
+If [`self.optimize`](/src/opendr/perception/object_detection_3d/voxel_object_detection_3d/voxel_object_detection_3d_learner.py#L437) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the `self.temp_path` it was saved previously during conversion.
 
 Parameters:
 
@@ -378,7 +378,7 @@ Parameters:
 
 ### <a name="proto">Proto structure</a>
 
-Proto files can be found in [voxel_object_detection_3d/second_detector/configs](#src.opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector_configs)
+Proto files can be found in [voxel_object_detection_3d/second_detector/configs](/src/opendr/perception/object_detection_3d/voxel_object_detection_3d/second_detector/configs)
 - **model**:\
   Specifies the model architecture under the "second" block.
   - **voxel_generator**:\

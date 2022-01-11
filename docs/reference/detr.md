@@ -157,7 +157,7 @@ Provided with the path, it creates the "name" directory, if it does not already 
 Inside this folder, the model is saved as *"detr_[backbone_model].pth"* and the metadata file as *"detr_[backbone].json"*.
 If the directory already exists, the *"detr_[backbone_model].pth"* and *"detr_[backbone].json"* files are overwritten.
 
-If [`self.optimize`](#DetrLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an
+If [`self.optimize`](/src/opendr/perception/object_detection_2d/detr/detr_learner.py#L599) was run previously, it saves the optimized ONNX model in a similar fashion with an
 *".onnx"* extension, by copying it from the *self.temp_path* it was saved previously during conversion.
 
 Parameters:

@@ -9,7 +9,7 @@ The *YOLOv3DetectorLearner* class is a wrapper of the SSD detector[[1]](#yolo-1)
 [GluonCV implementation](https://github.com/dmlc/gluon-cv/blob/master/gluoncv/model_zoo/yolo/yolo3.py).
 It can be used to perform object detection on images (inference) as well as train new object detection models.
 
-The [YOLOv3DetectorLearner](#src.opendr.perception.object_detection_2d.yolov3.yolov3_learner.py) class has the following
+The [YOLOv3DetectorLearner](/src/opendr/perception/object_detection_2d/yolov3/yolov3_learner.py) class has the following
 public methods:
 
 #### `YOLOv3DetectorLearner` constructor
@@ -168,7 +168,63 @@ Parameters:
   If True, enables maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
+  
+#### Examples
 
+* **Training example using an `ExternalDataset`**.
+  To train properly, the backbone weights are downloaded automatically in the `temp_path`. Default backbone is 'darknet53'.
+  The VOC and COCO datasets are supported as ExternalDataset types. This example assumes the data has been downloaded and placed in the directory referenced by `data_root`.
+
+  ```python
+  from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
+  from opendr.engine.datasets import ExternalDataset
+  
+  dataset = ExternalDataset(data_root, 'voc')
+  val_dataset = ExternalDataset(data_root, 'voc')
+
+  yolo = YOLOv3DetectorLearner(device=device, batch_size=batch_size, lr=lr,
+                               val_after=val_after,
+                               epochs=n_epochs, backbone=backbone)
+
+  yolo.fit(dataset, val_dataset)
+  yolo.save('./trained_models/yolo_saved_model')
+  ```
+  
+  Training with `DetetionDataset` types is also supported. Example using the `WiderPersonDataset` (assuming data has been downloaded in `data_root` folder):
+  ```python
+  from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
+  from opendr.perception.object_detection_2d import WiderPersonDataset
+  
+  dataset = WiderPersonDataset(root=data_root, splits=['train'])
+  val_dataset = WiderPersonDataset(root=data_root, splits=['val'])
+
+  yolo = YOLOv3DetectorLearner(device=device, batch_size=batch_size, lr=lr,
+                               val_after=val_after,
+                               epochs=n_epochs, backbone=backbone)
+
+  yolo.fit(dataset, val_dataset)
+  yolo.save('./trained_models/yolo_saved_model')
+  ```
+  
+  Custom datasets are supported by inheriting the `DetectionDataset` class.
+
+* **Inference and result drawing example on a test .jpg image using OpenCV.**
+  ```python
+  from opendr.engine.data import Image
+  from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
+  from opendr.perception.object_detection_2d import draw_bounding_boxes
+
+  yolo = YOLOv3DetectorLearner(device=device)
+  yolo.download('.', mode="pretrained")
+  yolo.load('./yolo_default', verbose=True)
+
+  yolo.download('.', mode='images', verbose=True)
+  img = Image.open('./cat.jpg')
+
+  boxes = yolo.infer(img)
+  draw_bounding_boxes(img.opencv(), boxes, class_names=yolo.classes, show=True)
+  ```
+  
 #### References
 <a name="yolo-1" href="https://arxiv.org/abs/1804.02767">[1]</a> YOLOv3: An Incremental Improvement,
 [arXiv](https://arxiv.org/abs/1804.02767).

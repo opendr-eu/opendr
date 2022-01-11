@@ -22,7 +22,7 @@ On [Kinetics-400](https://deepmind.com/research/open-source/kinetics), they achi
 | X3D-L  | 65.93    |
 
 
-The [X3DLearner](#src.opendr.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py) class has the
+The [X3DLearner](/src/opendr/perception/activity_recognition/x3d/x3d_learner.py) class has the
 following public methods:
 
 #### `X3DLearner` constructor
@@ -125,7 +125,7 @@ Provided with the path "/my/path/name" (absolute or relative), it creates the "n
 exist. Inside this folder, the model is saved as "model_name.pth" and the metadata file as "name.json".
 If the files already exist, their names are versioned with a suffix.
 
-If [`self.optimize`](#X3DLearner.optimize) was run previously, it saves the optimized ONNX model in
+If [`self.optimize`](/src/opendr/perception/activity_recognition/x3d/x3d_learner.py#L492) was run previously, it saves the optimized ONNX model in
 a similar fashion with an ".onnx" extension.
 
 Parameters:
@@ -243,7 +243,7 @@ On [Kinetics-400](https://deepmind.com/research/open-source/kinetics) using exte
 | X3D-L_64  | 71.61    |
 
 
-The [CoX3DLearner](#src.perception.activity_recognition.cox3d.modules.cox3d.cox3d_learner.py) class has the
+The [CoX3DLearner](/src/opendr/perception/activity_recognition/cox3d/cox3d_learner.py) class has the
 following public methods:
 
 
@@ -298,11 +298,11 @@ Constructor parameters:
 
 
 #### `CoX3DLearner.fit`
-Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](/src/opendr/perception/activity_recognition/x3d/x3d_learner.py)
 
 
 #### `CoX3DLearner.eval`
-Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](/src/opendr/perception/activity_recognition/x3d/x3d_learner.py)
 
 
 #### `CoX3DLearner.infer`
@@ -321,19 +321,19 @@ Parameters:
 
 
 #### `CoX3DLearner.save`
-Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](/src/opendr/perception/activity_recognition/x3d/x3d_learner.py)
 
 
 #### `CoX3DLearner.load`
-Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](/src/opendr/perception/activity_recognition/x3d/x3d_learner.py)
 
 
 #### `CoX3DLearner.optimize`
-Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](/src/opendr/perception/activity_recognition/x3d/x3d_learner.py)
 
 
 #### `CoX3DLearner.download`
-Inherited from [X3DLearner](#src.perception.activity_recognition.x3d.modules.x3d.x3d_learner.py)
+Inherited from [X3DLearner](/src/opendr/perception/activity_recognition/x3d/x3d_learner.py)
 
 
 #### Examples
