@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2020-2021 Cyberbotics Ltd.
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,10 +19,14 @@
 import unittest
 import os
 import fnmatch
+import datetime
 
 from io import open
 
-APACHE2_LICENSE_C = """* Licensed under the Apache License, Version 2.0 (the "License");
+APACHE2_LICENSE_C = """/*
+ * Copyright 2020-20XX OpenDR European Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -33,9 +37,11 @@ APACHE2_LICENSE_C = """* Licensed under the Apache License, Version 2.0 (the "Li
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */"""
+ */""".replace('20XX', str(datetime.datetime.now().year))
 
-APACHE2_LICENSE_CPP = """// Licensed under the Apache License, Version 2.0 (the "License");
+APACHE2_LICENSE_CPP = """// Copyright 2020-20XX OpenDR European Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -45,9 +51,10 @@ APACHE2_LICENSE_CPP = """// Licensed under the Apache License, Version 2.0 (the 
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License."""
+// limitations under the License.""".replace('20XX', str(datetime.datetime.now().year))
 
-APACHE2_LICENSE_PYTHON = """
+APACHE2_LICENSE_PYTHON = """# Copyright 2020-20XX OpenDR European Project
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -58,7 +65,7 @@ APACHE2_LICENSE_PYTHON = """
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License."""
+# limitations under the License.""".replace('20XX', str(datetime.datetime.now().year))
 
 PYTHON_OPTIONAL_HEADERS = [
     '#!/usr/bin/env python2',
@@ -93,6 +100,10 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/skeleton_based_action_recognition/algorithm',
             'src/opendr/perception/semantic_segmentation/bisenet/algorithm',
             'src/opendr/perception/object_detection_2d/retinaface/algorithm',
+            'src/opendr/perception/object_detection_2d/gem/algorithm',
+            'src/opendr/perception/object_detection_2d/detr/algorithm',
+            'src/opendr/perception/speech_recognition/edgespeechnets/algorithm',
+            'src/opendr/perception/speech_recognition/matchboxnet/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
             'projects/control/eagerx/eagerx',
@@ -102,7 +113,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
             'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
-            'src/opendr/perception/object_detection_2d/retinaface/Makefile'
+            'src/opendr/perception/object_detection_2d/retinaface/Makefile',
         ]
 
         skippedDirectories = [
