@@ -12,6 +12,7 @@ ______________________________________________________________________
   <a href="#using-opendr-toolkit">Using OpenDR toolkit</a> •
   <a href="projects">Examples</a> •
   <a href="#roadmap">Roadmap</a> •
+  <a href="CHANGELOG.md">Changelog</a> •
   <a href="LICENSE">License</a>
 </p>
 
