@@ -52,6 +52,10 @@ temp_dir = os.path.join(
 config_tanet_car = "src/opendr/perception/object_tracking_3d/single_object_tracking/voxel_bof/second_detector/configs/tanet/car/xyres_16.proto"
 config_tanet_ped_cycle = "src/opendr/perception/object_tracking_3d/single_object_tracking/voxel_bof/second_detector/configs/tanet/ped_cycle/xyres_16.proto"
 config_pointpillars_car = "src/opendr/perception/object_tracking_3d/single_object_tracking/voxel_bof/second_detector/configs/pointpillars/car/xyres_16.proto"
+config_pointpillars_car_tracking = "src/opendr/perception/object_tracking_3d/single_object_tracking/voxel_bof/second_detector/configs/pointpillars/car/xyres_16_tracking.proto"
+config_pointpillars_car_tracking_s = "src/opendr/perception/object_tracking_3d/single_object_tracking/voxel_bof/second_detector/configs/pointpillars/car/xyres_16_tracking_s.proto"
+config_tanet_car_tracking = "src/opendr/perception/object_tracking_3d/single_object_tracking/voxel_bof/second_detector/configs/tanet/car/xyres_16_tracking.proto"
+config_tanet_car_tracking_s = "src/opendr/perception/object_tracking_3d/single_object_tracking/voxel_bof/second_detector/configs/tanet/car/xyres_16_tracking_s.proto"
 config_pointpillars_ped_cycle = "src/opendr/perception/object_tracking_3d/single_object_tracking/voxel_bof/second_detector/configs/pointpillars/ped_cycle/xyres_16.proto"
 
 subsets_path = os.path.join(
@@ -102,6 +106,23 @@ model_path = model_paths[name]
 tanet_name = "tanet_car"
 tanet_config = all_configs[tanet_name]
 tanet_model_path = model_paths[tanet_name]
+
+backbone_configs = {
+    "pp": config_pointpillars_car,
+    "spp": config_pointpillars_car_tracking,
+    "spps": config_pointpillars_car_tracking_s,
+    "tanet": config_tanet_car,
+    "stanet": config_tanet_car_tracking,
+    "stanets": config_tanet_car_tracking_s,
+}
+backbone_model_paths = {
+    "pp": "models/pointpillars_car_xyres_16",
+    "spp": "models/pointpillars_tracking",
+    "spps": "models/pointpillars_tracking_s",
+    "tanet": "models/tanet_car_xyres_16",
+    "stanet": "models/tanet_tracking",
+    "stanets": "models/tanet_tracking_s",
+}
 
 
 pq = 1
@@ -432,20 +453,22 @@ def test_pp_siamese_fit(
     device=DEVICE,
     checkpoint_after_iter=1000,
     lr=0.0001,
+    backbone="pp",
     **kwargs,
 ):
     print("Fit", name, "start", file=sys.stderr)
     print("Using device:", device)
 
     learner = VoxelBofObjectTracking3DLearner(
-        model_config_path=config,
+        model_config_path=backbone_configs[backbone],
         device=device,
         lr=lr,
         checkpoint_after_iter=checkpoint_after_iter,
         checkpoint_load_iter=load,
+        backbone=backbone,
         **kwargs,
     )
-    learner.load(model_path, backbone=True, verbose=True)
+    learner.load(backbone_model_paths[backbone], backbone=True, verbose=True)
     learner.fit(
         kitti_detection,
         model_dir="./temp/" + model_name,
@@ -457,292 +480,6 @@ def test_pp_siamese_fit(
     print()
 
 
-def test_pp_siamese_load_fit():
-    print("Fit", name, "start", file=sys.stderr)
-
-    learner = VoxelBofObjectTracking3DLearner(
-        model_config_path=config,
-        device=DEVICE,
-        lr=0.0001,
-        checkpoint_after_iter=2000,
-        # checkpoint_load_iter=42000,
-    )
-    learner.load("./temp/5-a/checkpoints", backbone=False, verbose=True)
-    learner.fit(kitti_detection, model_dir="./temp/load-fit", verbose=True)
-
-    print()
-
-
-def test_pp_siamese_infer():
-    print("Infer", name, "start", file=sys.stderr)
-    import pygifsicle
-    import imageio
-
-    learner = VoxelBofObjectTracking3DLearner(
-        model_config_path=config,
-        device=DEVICE,
-        lr=0.001,
-        checkpoint_after_iter=2000,
-    )
-    # learner.load(model_path, backbone=True, verbose=True)
-    learner.load("./temp/upscaled-0/checkpoints", backbone=False, verbose=True)
-
-    # count = len(dataset_tracking)
-    count = 140
-    object_id = 0
-
-    point_cloud_with_calibration, labels = dataset_tracking[0]
-    selected_labels = TrackingAnnotation3DList(
-        [label for label in labels if label.id == object_id]
-    )
-    calib = point_cloud_with_calibration.calib
-    labels_lidar = label_to_AABB(
-        tracking_boxes_to_lidar(selected_labels, calib)
-    )
-    label_lidar = labels_lidar[0]
-
-    learner.init(point_cloud_with_calibration, label_lidar)
-
-    images = []
-
-    for i in range(1, count):
-        point_cloud_with_calibration, labels = dataset_tracking[
-            i
-        ]  # i iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
-        selected_labels = TrackingAnnotation3DList(
-            [label for label in labels if label.id == object_id]
-        )
-        calib = point_cloud_with_calibration.calib
-        labels_lidar = label_to_AABB(
-            tracking_boxes_to_lidar(selected_labels, calib)
-        )
-        label_lidar = labels_lidar[0] if len(labels_lidar) > 0 else None
-
-        result = learner.infer(point_cloud_with_calibration, id=1, frame=i)
-
-        all_labels = (
-            result
-            if label_lidar is None
-            else TrackingAnnotation3DList([result[0], label_lidar])
-        )
-        image = draw_point_cloud_bev(
-            point_cloud_with_calibration.data, all_labels
-        )
-        pil_image = PilImage.fromarray(image)
-        pil_image.save("./plots/eval_aabb_" + str(i) + ".png")
-
-        images.append(pil_image)
-
-        print("[", i, "/", count, "]", result)
-
-    filename = "./plots/video/eval_aabb_scaled_ms_6k.gif"
-    imageio.mimsave(filename, images)
-    pygifsicle.optimize(filename)
-
-
-def test_pp_siamese_eval(
-    draw=True, iou_min=0.5, classes=["Car", "Van", "Truck"]
-):
-    print("Eval", name, "start", file=sys.stderr)
-    import pygifsicle
-    import imageio
-
-    learner = VoxelBofObjectTracking3DLearner(
-        model_config_path=config,
-        device=DEVICE,
-        lr=0.001,
-        checkpoint_after_iter=2000,
-    )
-    # learner.load(model_path, backbone=True, verbose=True)
-    learner.load("./temp/upscaled-0/checkpoints", backbone=False, verbose=True)
-
-    def test_track(track_id):
-        count = len(dataset_tracking)
-        # count = 120
-        dataset = LabeledTrackingPointCloudsDatasetIterator(
-            dataset_tracking_path + "/training/velodyne/" + track_id,
-            dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
-            dataset_tracking_path + "/training/calib/" + track_id + ".txt",
-        )
-
-        all_mean_ious = []
-        all_tracked = []
-
-        def test_object_id(object_id):
-
-            start_frame = -1
-
-            selected_labels = []
-
-            while len(selected_labels) <= 0:
-                start_frame += 1
-                point_cloud_with_calibration, labels = dataset[start_frame]
-                selected_labels = TrackingAnnotation3DList(
-                    [label for label in labels if (label.id == object_id)]
-                )
-
-            if not selected_labels[0].name in classes:
-                return None, None
-
-            calib = point_cloud_with_calibration.calib
-            labels_lidar = label_to_AABB(
-                tracking_boxes_to_lidar(
-                    selected_labels, calib, classes=classes
-                )
-            )
-            label_lidar = labels_lidar[0]
-
-            learner.init(point_cloud_with_calibration, label_lidar)
-
-            images = []
-            ious = []
-            count_tracked = 0
-
-            for i in range(start_frame, count):
-                point_cloud_with_calibration, labels = dataset[i]
-                selected_labels = TrackingAnnotation3DList(
-                    [label for label in labels if label.id == object_id]
-                )
-
-                if len(selected_labels) <= 0:
-                    break
-
-                calib = point_cloud_with_calibration.calib
-                labels_lidar = label_to_AABB(
-                    tracking_boxes_to_lidar(selected_labels, calib)
-                )
-                label_lidar = (
-                    labels_lidar[0] if len(labels_lidar) > 0 else None
-                )
-
-                result = learner.infer(
-                    point_cloud_with_calibration, id=-1, frame=i, draw=False,
-                )
-
-                all_labels = (
-                    result
-                    if label_lidar is None
-                    else TrackingAnnotation3DList([result[0], label_lidar])
-                )
-                image = draw_point_cloud_bev(
-                    point_cloud_with_calibration.data, all_labels
-                )
-
-                if draw:
-                    pil_image = PilImage.fromarray(image)
-                    images.append(pil_image)
-
-                iou = iou_2d(
-                    result[0].location[:2],
-                    result[0].dimensions[:2],
-                    label_lidar.location[:2],
-                    label_lidar.dimensions[:2],
-                )
-
-                if iou > iou_min:
-                    count_tracked += 1
-
-                ious.append(iou)
-
-                print(
-                    track_id,
-                    "%",
-                    object_id,
-                    "[",
-                    i,
-                    "/",
-                    count - 1,
-                    "] iou =",
-                    iou,
-                )
-
-                filename = (
-                    "./plots/video/eval_aabb_scaled_track_"
-                    + str(track_id)
-                    + "_obj_"
-                    + str(object_id)
-                    + ".gif"
-                )
-
-            if len(ious) <= 0:
-                mean_iou = None
-                tracked = None
-            else:
-                mean_iou = sum(ious) / len(ious)
-                tracked = count_tracked / len(ious)
-
-            print("mean_iou =", mean_iou)
-            print("tracked =", tracked)
-
-            if draw:
-                imageio.mimsave(filename, images)
-                pygifsicle.optimize(filename)
-
-            return mean_iou, tracked
-
-        for object_id in range(0, min(5, dataset.max_id + 1)):
-            mean_iou, tracked = test_object_id(object_id)
-
-            if mean_iou is not None:
-                all_mean_ious.append(mean_iou)
-                all_tracked.append(tracked)
-
-        if len(all_mean_ious) > 0:
-            track_mean_iou = sum(all_mean_ious) / len(all_mean_ious)
-            track_mean_tracked = sum(all_tracked) / len(all_tracked)
-        else:
-            track_mean_iou = None
-            track_mean_tracked = None
-
-        print("track_mean_iou =", track_mean_iou)
-        print("track_mean_tracked =", track_mean_tracked)
-
-        return track_mean_iou, track_mean_tracked
-
-    tracks = [
-        "0000",
-        "0001",
-        "0002",
-        "0003",
-        "0004",
-        "0005",
-        "0006",
-        "0007",
-        "0008",
-        "0009",
-        "0010",
-        "0011",
-        "0012",
-        "0013",
-        "0014",
-        "0015",
-        "0016",
-        "0017",
-        "0018",
-        "0019",
-        "0020",
-    ]
-
-    all_ious = []
-    all_tracked = []
-
-    for track in tracks:
-        track_mean_iou, track_mean_tracked = test_track(track)
-
-        if track_mean_iou is not None:
-            all_ious.append(track_mean_iou)
-            all_tracked.append(track_mean_tracked)
-
-    total_mean_iou = sum(all_ious) / len(all_ious)
-    total_mean_tracked = sum(all_tracked) / len(all_tracked)
-
-    print("total_mean_iou =", total_mean_iou)
-    print("total_mean_tracked =", total_mean_tracked)
-
-    print("all_ious =", all_ious)
-    print("all_tracked =", all_tracked)
-
-
 def test_rotated_pp_siamese_infer(
     model_name,
     load=0,
@@ -750,6 +487,7 @@ def test_rotated_pp_siamese_infer(
     draw=True,
     iou_min=0.5,
     device=DEVICE,
+    backbone="pp",
     **kwargs,
 ):
     print("Infer", name, "start", file=sys.stderr)
@@ -757,8 +495,9 @@ def test_rotated_pp_siamese_infer(
     import imageio
 
     learner = VoxelBofObjectTracking3DLearner(
-        model_config_path=config,
+        model_config_path=backbone_configs[backbone],
         device=device,
+        backbone=backbone,
         lr=0.001,
         checkpoint_after_iter=2000,
         **kwargs,
@@ -769,7 +508,7 @@ def test_rotated_pp_siamese_infer(
     if load == 0:
         learner.load(checkpoints_path, backbone=False, verbose=True)
     elif load == "pretrained":
-        learner.load(model_path, backbone=True, verbose=True)
+        learner.load(backbone_model_paths[backbone], backbone=True, verbose=True)
     else:
         learner.load_from_checkpoint(checkpoints_path, load)
 
@@ -940,6 +679,8 @@ def test_rotated_pp_siamese_eval(
     device=DEVICE,
     eval_id="default",
     near_distance=30,
+    backbone="pp",
+    raise_on_infer_error=False,
     **kwargs,
 ):
     print("Eval", name, "start", file=sys.stderr)
@@ -948,8 +689,9 @@ def test_rotated_pp_siamese_eval(
     import imageio
 
     learner = VoxelBofObjectTracking3DLearner(
-        model_config_path=config,
+        model_config_path=backbone_configs[backbone],
         device=device,
+        backbone=backbone,
         checkpoint_after_iter=2000,
         **kwargs,
     )
@@ -960,7 +702,7 @@ def test_rotated_pp_siamese_eval(
     if load == 0:
         learner.load(checkpoints_path, backbone=False, verbose=True)
     elif load == "pretrained":
-        learner.load(model_path, backbone=True, verbose=True)
+        learner.load(backbone_model_paths[backbone], backbone=True, verbose=True)
     else:
         learner.load_from_checkpoint(checkpoints_path, load)
 
@@ -1032,68 +774,75 @@ def test_rotated_pp_siamese_eval(
                     labels_lidar[0] if len(labels_lidar) > 0 else None
                 )
 
-                result = learner.infer(
-                    point_cloud_with_calibration, id=-1, frame=i, draw=False,
-                )
+                try:
 
-                all_labels = (
-                    result
-                    if label_lidar is None
-                    else TrackingAnnotation3DList([result[0], label_lidar])
-                )
-                image = draw_point_cloud_bev(
-                    point_cloud_with_calibration.data, all_labels
-                )
+                    result = learner.infer(
+                        point_cloud_with_calibration, id=-1, frame=i, draw=False,
+                    )
 
-                if draw:
-                    pil_image = PilImage.fromarray(image)
-                    images.append(pil_image)
+                    all_labels = (
+                        result
+                        if label_lidar is None
+                        else TrackingAnnotation3DList([result[0], label_lidar])
+                    )
+                    image = draw_point_cloud_bev(
+                        point_cloud_with_calibration.data, all_labels
+                    )
 
-                iouAabb = iou_2d(
-                    result[0].location[:2],
-                    result[0].dimensions[:2],
-                    label_lidar.location[:2],
-                    label_lidar.dimensions[:2],
-                )
+                    if draw:
+                        pil_image = PilImage.fromarray(image)
+                        images.append(pil_image)
 
-                result = tracking_boxes_to_camera(result, calib)[0]
-                label_lidar = tracking_boxes_to_camera(
-                    TrackingAnnotation3DList([label_lidar]), calib
-                )[0]
+                    iouAabb = iou_2d(
+                        result[0].location[:2],
+                        result[0].dimensions[:2],
+                        label_lidar.location[:2],
+                        label_lidar.dimensions[:2],
+                    )
 
-                dt_boxes = np.concatenate(
-                    [
-                        result.location.reshape(1, 3),
-                        result.dimensions.reshape(1, 3),
-                        result.rotation_y.reshape(1, 1),
-                    ],
-                    axis=1,
-                )
-                gt_boxes = np.concatenate(
-                    [
-                        label_lidar.location.reshape(1, 3),
-                        label_lidar.dimensions.reshape(1, 3),
-                        label_lidar.rotation_y.reshape(1, 1),
-                    ],
-                    axis=1,
-                )
-                iou3d = float(
-                    d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64)
-                )
+                    result = tracking_boxes_to_camera(result, calib)[0]
+                    label_lidar = tracking_boxes_to_camera(
+                        TrackingAnnotation3DList([label_lidar]), calib
+                    )[0]
 
-                if iou3d > iou_min:
-                    count_tracked += 1
+                    dt_boxes = np.concatenate(
+                        [
+                            result.location.reshape(1, 3),
+                            result.dimensions.reshape(1, 3),
+                            result.rotation_y.reshape(1, 1),
+                        ],
+                        axis=1,
+                    )
+                    gt_boxes = np.concatenate(
+                        [
+                            label_lidar.location.reshape(1, 3),
+                            label_lidar.dimensions.reshape(1, 3),
+                            label_lidar.rotation_y.reshape(1, 1),
+                        ],
+                        axis=1,
+                    )
+                    iou3d = float(
+                        d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64)
+                    )
 
+                    if iou3d > iou_min:
+                        count_tracked += 1
+
+                    accuracy = estimate_accuracy(result, label_lidar)
+                except Exception as e:
+                    if raise_on_infer_error:
+                        raise e
+                    else:
+                        print(e)
+                        iou3d = 0
+                        iouAabb = 0
+
+                distance = np.linalg.norm(label_lidar.location, ord=2)
                 ious.append((iou3d, iouAabb))
-
-                accuracy = estimate_accuracy(result, label_lidar)
-
                 object_precision.add_accuracy(accuracy)
                 object_success.add_overlap(iou3d)
                 total_precision.add_accuracy(accuracy)
                 total_success.add_overlap(iou3d)
-
-                distance = np.linalg.norm(label_lidar.location, ord=2)
 
                 if distance < near_distance:
                     total_precision_near.add_accuracy(accuracy)

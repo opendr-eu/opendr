@@ -233,10 +233,13 @@ class PillarFeature_TANet(nn.Module):
         # Need pillar (voxel) size and x/y offset in order to calculate pillar offset
         self.vx = voxel_size[0]
         self.vy = voxel_size[1]
-        self.x_offset = self.vx / 2 + pc_range[0]
-        self.y_offset = self.vy / 2 + pc_range[1]
+        # self.x_offset = self.vx / 2 + pc_range[0]
+        # self.y_offset = self.vy / 2 + pc_range[1]
 
-    def forward(self, features, num_voxels, coors):
+    def forward(self, features, num_voxels, coors, pc_range):
+
+        x_offset = self.vx / 2 + pc_range[0]
+        y_offset = self.vy / 2 + pc_range[1]
 
         # Find distance of x, y, and z from cluster center
         points_mean = features[:, :, :3].sum(
@@ -246,9 +249,9 @@ class PillarFeature_TANet(nn.Module):
         # Find distance of x, y, and z from pillar center
         f_center = torch.zeros_like(features[:, :, :2])
         f_center[:, :, 0] = features[:, :, 0] - (
-            coors[:, 3].float().unsqueeze(1) * self.vx + self.x_offset)
+            coors[:, 3].float().unsqueeze(1) * self.vx + x_offset)
         f_center[:, :, 1] = features[:, :, 1] - (
-            coors[:, 2].float().unsqueeze(1) * self.vy + self.y_offset)
+            coors[:, 2].float().unsqueeze(1) * self.vy + y_offset)
 
         # Combine together feature decorations
         features_ls = [features, f_cluster, f_center]
@@ -568,80 +571,18 @@ class PSA(nn.Module):
             self.refine_dir = nn.Conv2d(sum(num_upsample_filters),
                                         num_anchor_per_loc * 2, 1)
 
-    def forward(self, x, bev=None):
-        x1 = self.block1(x)
-        up1 = self.deconv1(x1)
+    def forward(self, x, bev=None, feature_blocks=3):
 
-        x2 = self.block2(x1)
-        up2 = self.deconv2(x2)
-        x3 = self.block3(x2)
-        up3 = self.deconv3(x3)
-        coarse_feat = torch.cat([up1, up2, up3], dim=1)
-        box_preds = self.conv_box(coarse_feat)
-        cls_preds = self.conv_cls(coarse_feat)
+        if feature_blocks >= 1:
+            x = self.block1(x)
+        # up1 = self.deconv1(x)
+        if feature_blocks >= 2:
+            x = self.block2(x)
+        # up2 = self.deconv2(x)
+        if feature_blocks >= 3:
+            x = self.block3(x)
+        # up3 = self.deconv3(x)
+        # x = torch.cat([up1, up2, up3], dim=1)
 
-        # [N, C, y(H), x(W)]
-        box_preds = box_preds.permute(0, 2, 3, 1).contiguous()
-        cls_preds = cls_preds.permute(0, 2, 3, 1).contiguous()
-        ret_dict = {
-            "box_preds": box_preds,
-            "cls_preds": cls_preds,
-        }
-        if self._use_direction_classifier:
-            dir_cls_preds = self.conv_dir_cls(coarse_feat)
-            dir_cls_preds = dir_cls_preds.permute(0, 2, 3, 1).contiguous()
-            ret_dict["dir_cls_preds"] = dir_cls_preds
+        return x
 
-        blottle_conv = self.bottle_conv(coarse_feat)
-
-        x1_dec2x = self.block1_dec2x(x1)
-        x1_dec4x = self.block1_dec4x(x1)
-
-        x2_dec2x = self.block2_dec2x(x2)
-        x2_inc2x = self.block2_inc2x(x2)
-
-        x3_inc2x = self.block3_inc2x(x3)
-        x3_inc4x = self.block3_inc4x(x3)
-
-        concat_block1 = torch.cat([x1, x2_inc2x, x3_inc4x], dim=1)
-        fusion_block1 = self.fusion_block1(concat_block1)
-
-        concat_block2 = torch.cat([x1_dec2x, x2, x3_inc2x], dim=1)
-        fusion_block2 = self.fusion_block2(concat_block2)
-
-        concat_block3 = torch.cat([x1_dec4x, x2_dec2x, x3], dim=1)
-        fusion_block3 = self.fusion_block3(concat_block3)
-
-        refine_up1 = self.RF3(fusion_block1)
-        refine_up1 = self.refine_up1(refine_up1)
-        refine_up2 = self.RF2(fusion_block2)
-        refine_up2 = self.refine_up2(refine_up2)
-        refine_up3 = self.RF1(fusion_block3)
-        refine_up3 = self.refine_up3(refine_up3)
-
-        branch1_sum_wise = refine_up1 + blottle_conv
-        branch2_sum_wise = refine_up2 + blottle_conv
-        branch3_sum_wise = refine_up3 + blottle_conv
-
-        concat_conv1 = self.concat_conv1(branch1_sum_wise)
-        concat_conv2 = self.concat_conv2(branch2_sum_wise)
-        concat_conv3 = self.concat_conv3(branch3_sum_wise)
-
-        PSA_output = torch.cat([concat_conv1, concat_conv2, concat_conv3],
-                               dim=1)
-
-        refine_cls_preds = self.refine_cls(PSA_output)
-        refine_loc_preds = self.refine_loc(PSA_output)
-
-        refine_loc_preds = refine_loc_preds.permute(0, 2, 3, 1).contiguous()
-        refine_cls_preds = refine_cls_preds.permute(0, 2, 3, 1).contiguous()
-        ret_dict["Refine_loc_preds"] = refine_loc_preds
-        ret_dict["Refine_cls_preds"] = refine_cls_preds
-
-        if self._use_direction_classifier:
-            refine_dir_preds = self.refine_dir(PSA_output)
-            refine_dir_preds = refine_dir_preds.permute(0, 2, 3,
-                                                        1).contiguous()
-            ret_dict["Refine_dir_preds"] = refine_dir_preds
-
-        return ret_dict

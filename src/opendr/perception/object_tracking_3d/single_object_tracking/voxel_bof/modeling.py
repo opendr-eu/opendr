@@ -45,7 +45,7 @@ class Model:
         track_ids=default_track_ids,
         decay_steps=2000,
         iou_min=0.5,
-        **kwargs
+        **kwargs,
     ) -> None:
         self.model_name = model_name
         self.train_steps = train_steps
@@ -70,7 +70,12 @@ class Model:
 
         print("Sending on", device)
 
-        last_checkpoint_path = "./temp/" + self.model_name + "/checkpoints" + f"/checkpoint_{steps}.pth"
+        last_checkpoint_path = (
+            "./temp/"
+            + self.model_name
+            + "/checkpoints"
+            + f"/checkpoint_{steps}.pth"
+        )
 
         if os.path.exists(last_checkpoint_path):
             print("The model is already trained")
@@ -82,7 +87,7 @@ class Model:
                 False,
                 checkpoint_after_iter=self.save_step,
                 device=device,
-                **self.kwargs
+                **self.kwargs,
             )
 
         if eval_after:
@@ -132,7 +137,7 @@ class Model:
                     device=device,
                     eval_id=id,
                     **self.kwargs,
-                    **kwargs
+                    **kwargs,
                 )
                 results[str(load) + "_" + str(id)] = result
 
@@ -236,7 +241,11 @@ def collect_results():
     results = []
 
     for model in models:
-        files = [f for f in os.listdir(models_path + "/" + model) if "results_" in f]
+        files = [
+            f
+            for f in os.listdir(models_path + "/" + model)
+            if "results_" in f
+        ]
 
         for file in files:
             with open(models_path + "/" + model + "/" + file, "r") as f:
@@ -251,18 +260,37 @@ def collect_results():
                 result = [
                     model + "_" + file,
                     float(values["total_mean_iou3d"]),
-                    float(values["total_mean_precision"] if "total_mean_precision" in values else -1),
-                    float(values["total_mean_success"] if "total_mean_success" in values else -1),
+                    float(
+                        values["total_mean_precision"]
+                        if "total_mean_precision" in values
+                        else -1
+                    ),
+                    float(
+                        values["total_mean_success"]
+                        if "total_mean_success" in values
+                        else -1
+                    ),
                 ]
                 results.append(result)
 
     results = sorted(results, key=lambda x: x[2])
     for name, iou3d, precision, success in results:
-        print(name, "precision", precision, "success", success, "iou3d", iou3d)
+        print(
+            name, "precision", precision, "success", success, "iou3d", iou3d
+        )
 
     with open("modeling.txt", "w") as f:
         for name, iou3d, precision, success in results:
-            print(name, "precision", precision, "success", success, "iou3d", iou3d, file=f)
+            print(
+                name,
+                "precision",
+                precision,
+                "success",
+                success,
+                "iou3d",
+                iou3d,
+                file=f,
+            )
 
 
 def run_selected(device_id=0, total_devices=4):
@@ -367,7 +395,9 @@ def run_best(device_id=0, total_devices=4):
                 for rotation_penalty in params["rotation_penalty"]:
                     for rotation_step in params["rotation_step"]:
                         for rotations_count in params["rotations_count"]:
-                            for target_feature_merge_scale in params["target_feature_merge_scale"]:
+                            for target_feature_merge_scale in params[
+                                "target_feature_merge_scale"
+                            ]:
                                 name = (
                                     str(rotations_count).replace(".", "")
                                     + "r"
@@ -377,7 +407,9 @@ def run_best(device_id=0, total_devices=4):
                                     + "su"
                                     + str(score_upscale).replace(".", "")
                                     + "tfms"
-                                    + str(target_feature_merge_scale).replace(".", "")
+                                    + str(target_feature_merge_scale).replace(
+                                        ".", ""
+                                    )
                                 )
 
                                 results[name] = {
@@ -418,7 +450,7 @@ def run_best(device_id=0, total_devices=4):
                                 context_amount=context_amount,
                                 train_steps=8000,
                                 save_step=200,
-                                loads=[200, 600, 1200, 2000, 4000, 8000]
+                                loads=[200, 600, 1200, 2000, 4000, 8000],
                             ),
                             eval_kwargs,
                         )
@@ -458,7 +490,9 @@ def run_best_small_lr(device_id=0, total_devices=4):
                 for rotation_penalty in params["rotation_penalty"]:
                     for rotation_step in params["rotation_step"]:
                         for rotations_count in params["rotations_count"]:
-                            for target_feature_merge_scale in params["target_feature_merge_scale"]:
+                            for target_feature_merge_scale in params[
+                                "target_feature_merge_scale"
+                            ]:
                                 name = (
                                     str(rotations_count).replace(".", "")
                                     + "r"
@@ -468,7 +502,9 @@ def run_best_small_lr(device_id=0, total_devices=4):
                                     + "su"
                                     + str(score_upscale).replace(".", "")
                                     + "tfms"
-                                    + str(target_feature_merge_scale).replace(".", "")
+                                    + str(target_feature_merge_scale).replace(
+                                        ".", ""
+                                    )
                                 )
 
                                 results[name] = {
@@ -510,7 +546,15 @@ def run_best_small_lr(device_id=0, total_devices=4):
                                     context_amount=context_amount,
                                     train_steps=50000,
                                     save_step=1000,
-                                    loads=[1000, 2000, 4000, 8000, 16000, 32000, 50000],
+                                    loads=[
+                                        1000,
+                                        2000,
+                                        4000,
+                                        8000,
+                                        16000,
+                                        32000,
+                                        50000,
+                                    ],
                                     lr=lr,
                                 ),
                                 eval_kwargs,
@@ -551,7 +595,9 @@ def run_best_small_lr_small_rpos(device_id=0, total_devices=4):
                 for rotation_penalty in params["rotation_penalty"]:
                     for rotation_step in params["rotation_step"]:
                         for rotations_count in params["rotations_count"]:
-                            for target_feature_merge_scale in params["target_feature_merge_scale"]:
+                            for target_feature_merge_scale in params[
+                                "target_feature_merge_scale"
+                            ]:
                                 name = (
                                     str(rotations_count).replace(".", "")
                                     + "r"
@@ -561,7 +607,9 @@ def run_best_small_lr_small_rpos(device_id=0, total_devices=4):
                                     + "su"
                                     + str(score_upscale).replace(".", "")
                                     + "tfms"
-                                    + str(target_feature_merge_scale).replace(".", "")
+                                    + str(target_feature_merge_scale).replace(
+                                        ".", ""
+                                    )
                                 )
 
                                 results[name] = {
@@ -583,8 +631,12 @@ def run_best_small_lr_small_rpos(device_id=0, total_devices=4):
                 for context_amount in [0.2, 0.5]:
                     for lr in [0.00001, 0.000002]:
                         for r_pos in [4, 2, 1]:
-                            target_size = [127, 127] if size == 1 else [-1, -1]
-                            search_size = [255, 255] if size == 1 else [-1, -1]
+                            target_size = (
+                                [127, 127] if size == 1 else [-1, -1]
+                            )
+                            search_size = (
+                                [255, 255] if size == 1 else [-1, -1]
+                            )
 
                             name = (
                                 "6rlr-b"
@@ -607,7 +659,82 @@ def run_best_small_lr_small_rpos(device_id=0, total_devices=4):
                                         context_amount=context_amount,
                                         train_steps=64000,
                                         save_step=2000,
-                                        loads=[2000, 8000, 16000, 32000, 64000],
+                                        loads=[
+                                            2000,
+                                            8000,
+                                            16000,
+                                            32000,
+                                            64000,
+                                        ],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def run_best_small_lr_small_rpos_2(device_id=0, total_devices=4):
+
+    eval_kwargs = create_selected_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1]:
+            for size in [-1]:
+                for context_amount in [0.2, 0.5]:
+                    for lr in [0.000002, 0.00001]:
+                        for r_pos in [4, 1]:
+                            target_size = (
+                                [127, 127] if size == 1 else [-1, -1]
+                            )
+                            search_size = (
+                                [255, 255] if size == 1 else [-1, -1]
+                            )
+
+                            name = (
+                                "6rlr2-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=256000,
+                                        save_step=2000,
+                                        loads=[
+                                            2000,
+                                            32000,
+                                            64000,
+                                            128000,
+                                            256000,
+                                        ],
                                         lr=lr,
                                         r_pos=r_pos,
                                     ),
@@ -649,7 +776,9 @@ def run_focall_loss(device_id=0, total_devices=4):
                 for rotation_penalty in params["rotation_penalty"]:
                     for rotation_step in params["rotation_step"]:
                         for rotations_count in params["rotations_count"]:
-                            for target_feature_merge_scale in params["target_feature_merge_scale"]:
+                            for target_feature_merge_scale in params[
+                                "target_feature_merge_scale"
+                            ]:
                                 name = (
                                     str(rotations_count).replace(".", "")
                                     + "r"
@@ -701,12 +830,205 @@ def run_focall_loss(device_id=0, total_devices=4):
                                     context_amount=context_amount,
                                     train_steps=50000,
                                     save_step=1000,
-                                    loads=[1000, 2000, 4000, 8000, 16000, 32000, 50000],
+                                    loads=[
+                                        1000,
+                                        2000,
+                                        4000,
+                                        8000,
+                                        16000,
+                                        32000,
+                                        50000,
+                                    ],
                                     loss_function=loss_function,
                                 ),
                                 eval_kwargs,
                             )
                         )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def create_selected_eval_kwargs():
+    params = {
+        "window_influence": [0.35],
+        "score_upscale": [16],
+        "rotation_penalty": [0.98],
+        "rotation_step": [0.15, 0.1],
+        "rotations_count": [3],
+        "target_feature_merge_scale": [0, 0.1],
+    }
+
+    results = {}
+
+    for window_influence in params["window_influence"]:
+        for score_upscale in params["score_upscale"]:
+            for rotation_penalty in params["rotation_penalty"]:
+                for rotation_step in params["rotation_step"]:
+                    for rotations_count in params["rotations_count"]:
+                        for target_feature_merge_scale in params[
+                            "target_feature_merge_scale"
+                        ]:
+                            name = (
+                                str(rotations_count).replace(".", "")
+                                + "r"
+                                + str(rotation_step).replace(".", "")
+                                + "-rp"
+                                + str(rotation_penalty).replace(".", "")
+                                + "su"
+                                + str(score_upscale).replace(".", "")
+                                + "tfms"
+                                + str(target_feature_merge_scale).replace(
+                                    ".", ""
+                                )
+                            )
+
+                            results[name] = {
+                                "window_influence": window_influence,
+                                "score_upscale": score_upscale,
+                                "rotation_penalty": rotation_penalty,
+                                "rotation_step": rotation_step,
+                                "rotations_count": rotations_count,
+                                "target_feature_merge_scale": target_feature_merge_scale,
+                            }
+    return results
+
+
+def run_new(device_id=0, total_devices=4):
+
+    eval_kwargs = create_selected_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks, backbone in [
+            (1, "pp"),
+            (1, "tanet"),
+            (3, "spp"),
+        ]:  # , (3, "stanet")
+            for size in [-1]:
+                for context_amount in [0.2, 0.5]:
+                    for lr in [0.00001, 0.000002]:
+                        for r_pos in [4, 2, 1]:
+                            target_size = (
+                                [127, 127] if size == 1 else [-1, -1]
+                            )
+                            search_size = (
+                                [255, 255] if size == 1 else [-1, -1]
+                            )
+
+                            name = (
+                                "n0-b"
+                                + str(feature_blocks)
+                                + "-"
+                                + str(backbone).replace(".", "")
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        backbone=backbone,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=64000,
+                                        save_step=2000,
+                                        loads=[2000, 8000, 32000, 64000],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def run_new_smaller(device_id=0, total_devices=4):
+
+    eval_kwargs = create_selected_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks, backbone in [
+            (3, "spp"),
+            (3, "spps"),
+            (3, "stanets"),
+        ]:  # , (3, "stanet")
+            for size in [-1]:
+                for context_amount in [0.2, 0.5]:
+                    for lr in [0.00001, 0.000002]:
+                        for r_pos in [4, 2, 1]:
+                            target_size = (
+                                [127, 127] if size == 1 else [-1, -1]
+                            )
+                            search_size = (
+                                [255, 255] if size == 1 else [-1, -1]
+                            )
+
+                            name = (
+                                "n1-b"
+                                + str(feature_blocks)
+                                + "-"
+                                + str(backbone).replace(".", "")
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        backbone=backbone,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=64000,
+                                        save_step=2000,
+                                        loads=[2000, 8000, 32000, 64000],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
 
         return result
 

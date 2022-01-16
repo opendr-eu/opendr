@@ -107,7 +107,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         batch_size=64,
         optimizer="adam_optimizer",
         lr_schedule="exponential_decay_learning_rate",
-        backbone="pointpillars_16",
+        backbone="pp",
         network_head="",
         checkpoint_after_iter=0,
         checkpoint_load_iter=0,
@@ -128,6 +128,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         rotation_penalty=0.98,
         rotation_step=0.15 / 2,
         rotations_count=5,
+        rotation_interpolation=1,
         target_size=[127, 127],
         search_size=[255, 255],
         context_amount=0.2,  # -0.2  # 0.5,
@@ -164,11 +165,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.score_upscale = score_upscale
         self.rotation_penalty = rotation_penalty
         self.rotation_step = rotation_step
+        self.rotations_count = rotations_count
+        self.rotation_interpolation = rotation_interpolation
         self.target_size = np.array(target_size, dtype=np.int32)
         self.search_size = np.array(search_size, dtype=np.int32)
         self.context_amount = context_amount
         self.feature_blocks = feature_blocks
-        self.rotations_count = rotations_count
         self.target_feature_merge_scale = target_feature_merge_scale
         self.loss_function = loss_function
         self.r_pos = r_pos
@@ -710,11 +712,16 @@ class VoxelBofObjectTracking3DLearner(Learner):
             delta_image = delta_image[[1, 0]]
             center_image = self.search_region[0] + delta_image
 
-            new_target = [center_image, self.init_target[1], top_search[2]]
+            new_angle = (
+                top_search[2] * self.rotation_interpolation
+                + self.search_region[2] * (1 - self.rotation_interpolation)
+            )
+
+            new_target = [center_image, self.init_target[1], new_angle]
             new_search = [
                 center_image,
                 new_target[1] * 2 + (new_target[1] < 20) * 30,
-                top_search[2],
+                new_angle,
             ]
 
             self.search_region = new_search
@@ -738,14 +745,20 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
                 draw_target_feat_full = draw_pseudo_image(
                     self.init_target_features.squeeze(axis=0),
-                    "./plots/target_feat/" + str(frame) + "_target_feat_full.png",
+                    "./plots/target_feat/"
+                    + str(frame)
+                    + "_target_feat_full.png",
                 )
                 draw_target_feat_current_frame = draw_pseudo_image(
                     target_image.squeeze(axis=0),
-                    "./plots/scores/" + str(frame) + "_target_feat_current_frame.png",
+                    "./plots/scores/"
+                    + str(frame)
+                    + "_target_feat_current_frame.png",
                 )
                 self.__add_image(draw_target_feat_full, "target_feat_full")
-                self.__add_image(draw_target_feat_current_frame, "target_feat_current_frame")
+                self.__add_image(
+                    draw_target_feat_current_frame, "target_feat_current_frame"
+                )
 
             location_lidar, size_lidar = image_to_lidar_coordinates(
                 new_target[0], new_target[1], net.voxel_size, net.bv_range
