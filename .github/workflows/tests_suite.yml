@@ -145,8 +145,8 @@ jobs:
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget
         python3 -m venv venv
         source venv/bin/activate
-        pip3 install --upgrade setuptools pip
         wget https://raw.githubusercontent.com/opendr-eu/opendr/master/dependencies/pip_requirements.txt
         cat pip_requirements.txt | xargs -n 1 -L 1 pip install
+        pip uninstall pkg-resources==0.0.0
         pip install opendr-toolkit
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
