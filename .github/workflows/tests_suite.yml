@@ -12,7 +12,7 @@ defaults:
 
 jobs:
   cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') || contains(github.event.pull_request.labels.*.name, 'test install') || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     steps:
     - uses: rokroskar/workflow-run-cleanup-action@master
@@ -128,9 +128,9 @@ jobs:
           - perception/semantic_segmentation
           - perception/object_detection_2d
           - perception/facial_expression_recognition
-          #- control/mobile_manipulation
-          #- simulation/human_model_generation
-          #- control/single_demo_grasp
+          # - control/mobile_manipulation
+          # - simulation/human_model_generation
+          # - control/single_demo_grasp
           # - perception/object_tracking_3d
     runs-on: ${{ matrix.os }}
     steps:
