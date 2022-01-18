@@ -102,8 +102,6 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/object_detection_2d/retinaface/algorithm',
             'src/opendr/perception/object_detection_2d/gem/algorithm',
             'src/opendr/perception/object_detection_2d/detr/algorithm',
-            'src/opendr/perception/speech_recognition/edgespeechnets/algorithm',
-            'src/opendr/perception/speech_recognition/matchboxnet/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
             'projects/control/eagerx/eagerx',
