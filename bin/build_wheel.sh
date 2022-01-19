@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Build all OpenDR dependecies
-#./bin/install.sh
+./bin/install.sh
 
 # Activate OpenDR
 source ./bin/activate.sh
