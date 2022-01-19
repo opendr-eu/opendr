@@ -148,5 +148,8 @@ jobs:
         wget https://raw.githubusercontent.com/opendr-eu/opendr/master/dependencies/pip_requirements.txt
         cat pip_requirements.txt | xargs -n 1 -L 1 pip install
         pip uninstall pkg-resources==0.0.0
-        pip install opendr-toolkit
+        # Test new package
+        wget https://raw.githubusercontent.com/passalis/test_repo/main/opendr_toolkit-1.0-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_24_x86_64.whl
+        pip install opendr_toolkit-1.0-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_24_x86_64.whl
+        #pip install opendr-toolkit
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
