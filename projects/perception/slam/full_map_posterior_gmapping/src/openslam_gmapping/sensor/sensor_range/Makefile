@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
 
 -include ../../global.mk
 
-CPPFLAGS+= -I../ 
+CPPFLAGS+= -I../
 LDFLAGS+= -lsensor_base
 
-OBJS= rangesensor.o rangereading.o 
+OBJS= rangesensor.o rangereading.o
 
 -include ../../build_tools/Makefile.generic-shared-object
