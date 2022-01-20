@@ -16,6 +16,4 @@ sed -i '/pkg_resources/d' requirements.txt
 sed -i '/auditwheel/d' requirements.txt
 
 # Build binary wheel and repair it
-python3 setup.py bdist_wheel
-pip3 install auditwheel
-auditwheel repair dist/*.whl -w dist/ --plat manylinux_2_24_x86_64
+python3 setup.py sdist
