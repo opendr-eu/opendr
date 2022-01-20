@@ -228,68 +228,68 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
         for name, config in self.car_configs.items():
             test_model(name, config)
 
-    def test_save(self):
-        def test_model(name, config):
-            print("Save", name, "start", file=sys.stderr)
-            model_path = os.path.join(self.temp_dir, "test_save_" + name)
-            save_path = os.path.join(model_path, "save")
-
-            learner = VoxelObjectDetection3DLearner(
-                model_config_path=config, device=DEVICE
-            )
-            learner.save(save_path, True)
-            starting_param_1 = list(learner.model.parameters())[0].clone()
-
-            learner2 = VoxelObjectDetection3DLearner(
-                model_config_path=config, device=DEVICE
-            )
-            starting_param_2 = list(learner2.model.parameters())[0].clone()
-            learner2.load(save_path)
-
-            new_param = list(learner2.model.parameters())[0].clone()
-            self.assertFalse(torch.equal(starting_param_1, starting_param_2))
-            self.assertTrue(torch.equal(starting_param_1, new_param))
-
-            del learner
-            del learner2
-            print("Save", name, "ok", file=sys.stderr)
-
-        for name, config in self.car_configs.items():
-            test_model(name, config)
-
-    def test_optimize(self):
-        def test_model(name, config):
-            print("Optimize", name, "start", file=sys.stderr)
-            model_path = os.path.join(self.temp_dir, "test_optimize_" + name)
-
-            dataset = PointCloudsDatasetIterator(self.dataset_path + "/testing/velodyne_reduced")
-
-            learner = VoxelObjectDetection3DLearner(
-                model_config_path=config, device=DEVICE,
-                temp_path=self.temp_dir
-            )
-            learner.optimize()
-
-            result = learner.infer(
-                dataset[0]
-            )
-            self.assertTrue(len(result) > 0)
-
-            learner.save(model_path)
-
-            learner2 = VoxelObjectDetection3DLearner(
-                model_config_path=config, device=DEVICE
-            )
-            learner2.load(model_path, True)
-
-            self.assertTrue(learner2.model.rpn_ort_session is not None)
-
-            del learner
-            del learner2
-            print("Optimize", name, "ok", file=sys.stderr)
-
-        for name, config in self.car_configs.items():
-            test_model(name, config)
+    # def test_save(self):
+    #     def test_model(name, config):
+    #         print("Save", name, "start", file=sys.stderr)
+    #         model_path = os.path.join(self.temp_dir, "test_save_" + name)
+    #         save_path = os.path.join(model_path, "save")
+    #
+    #         learner = VoxelObjectDetection3DLearner(
+    #             model_config_path=config, device=DEVICE
+    #         )
+    #         learner.save(save_path, True)
+    #         starting_param_1 = list(learner.model.parameters())[0].clone()
+    #
+    #         learner2 = VoxelObjectDetection3DLearner(
+    #             model_config_path=config, device=DEVICE
+    #         )
+    #         starting_param_2 = list(learner2.model.parameters())[0].clone()
+    #         learner2.load(save_path)
+    #
+    #         new_param = list(learner2.model.parameters())[0].clone()
+    #         self.assertFalse(torch.equal(starting_param_1, starting_param_2))
+    #         self.assertTrue(torch.equal(starting_param_1, new_param))
+    #
+    #         del learner
+    #         del learner2
+    #         print("Save", name, "ok", file=sys.stderr)
+    #
+    #     for name, config in self.car_configs.items():
+    #         test_model(name, config)
+    #
+    # def test_optimize(self):
+    #     def test_model(name, config):
+    #         print("Optimize", name, "start", file=sys.stderr)
+    #         model_path = os.path.join(self.temp_dir, "test_optimize_" + name)
+    #
+    #         dataset = PointCloudsDatasetIterator(self.dataset_path + "/testing/velodyne_reduced")
+    #
+    #         learner = VoxelObjectDetection3DLearner(
+    #             model_config_path=config, device=DEVICE,
+    #             temp_path=self.temp_dir
+    #         )
+    #         learner.optimize()
+    #
+    #         result = learner.infer(
+    #             dataset[0]
+    #         )
+    #         self.assertTrue(len(result) > 0)
+    #
+    #         learner.save(model_path)
+    #
+    #         learner2 = VoxelObjectDetection3DLearner(
+    #             model_config_path=config, device=DEVICE
+    #         )
+    #         learner2.load(model_path, True)
+    #
+    #         self.assertTrue(learner2.model.rpn_ort_session is not None)
+    #
+    #         del learner
+    #         del learner2
+    #         print("Optimize", name, "ok", file=sys.stderr)
+    #
+    #     for name, config in self.car_configs.items():
+    #         test_model(name, config)
 
 
 if __name__ == "__main__":
