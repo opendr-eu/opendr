@@ -6,3 +6,6 @@
 	url = https://github.com/eager-dev/eagerx.git
 	branch = opendr_v1.0
 	
+[submodule "src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS"]
+	path = src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS
+	url = https://github.com/robot-learning-freiburg/EfficientLPS
