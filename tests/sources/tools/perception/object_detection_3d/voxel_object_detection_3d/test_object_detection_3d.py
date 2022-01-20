@@ -14,7 +14,7 @@
 
 import sys
 import unittest
-import shutilge
+import shutil
 import os
 import torch
 # from opendr.engine.datasets import PointCloudsDatasetIterator
