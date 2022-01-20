@@ -31,7 +31,7 @@ from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_dete
 # )
 # from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.tanet import (
 #     set_tanet_config
-)
+# )
 
 # from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.builder import (
 #     input_reader_builder, )
