@@ -74,7 +74,7 @@ You can directly install OpenDR toolkit for CPU-only inference using pip.
 First, install the required dependencies:
 ```bash
 export DISABLE_BCOLZ_AVX2=true
-sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1
+sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev
 python3 -m venv venv
 source venv/bin/activate
 wget https://raw.githubusercontent.com/opendr-eu/opendr/master/dependencies/pip_requirements.txt
