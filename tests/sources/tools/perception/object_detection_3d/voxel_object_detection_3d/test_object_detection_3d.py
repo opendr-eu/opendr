@@ -22,10 +22,11 @@ import torch
 # from opendr.perception.object_detection_3d import KittiDataset, LabeledPointCloudsDatasetIterator
 
 import onnxruntime as ort
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.load import (
-    create_model as second_create_model,
-    load_from_checkpoint,
-)
+
+# from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.load import (
+#     create_model as second_create_model,
+#     load_from_checkpoint,
+# )
 # from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.run import (
 #     compute_lidar_kitti_output, evaluate, example_convert_to_torch, train
 # )
