@@ -3,6 +3,8 @@ from os.path import join
 from setuptools import setup
 from setuptools import find_packages
 from Cython.Build import cythonize
+import numpy
+
 
 packages = find_packages(where="./src")
 
@@ -62,5 +64,6 @@ setup(
     package_dir={"": "src"},
     install_requires=install_requires,
     package_data={'': data_files},
-    ext_modules=cythonize(["src/opendr/perception/object_detection_2d/retinaface/algorithm/cython/*.pyx"])
+    ext_modules=cythonize(["src/opendr/perception/object_detection_2d/retinaface/algorithm/cython/*.pyx"]),
+    include_dirs=[numpy.get_include()]
 )
