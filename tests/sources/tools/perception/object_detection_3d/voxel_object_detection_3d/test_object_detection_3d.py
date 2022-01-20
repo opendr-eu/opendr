@@ -145,60 +145,60 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
         for name, config in self.car_configs.items():
             test_model(name, config)
 
-    def test_fit_iterator(self):
-        def test_model(name, config):
-            print("Fit iterator", name, "start", file=sys.stderr)
-            model_path = os.path.join(self.temp_dir, "test_fit_iterator_" + name)
-            dataset = LabeledPointCloudsDatasetIterator(
-                self.dataset_path + "/training/velodyne_reduced",
-                self.dataset_path + "/training/label_2",
-                self.dataset_path + "/training/calib",
-            )
+    # def test_fit_iterator(self):
+    #     def test_model(name, config):
+    #         print("Fit iterator", name, "start", file=sys.stderr)
+    #         model_path = os.path.join(self.temp_dir, "test_fit_iterator_" + name)
+    #         dataset = LabeledPointCloudsDatasetIterator(
+    #             self.dataset_path + "/training/velodyne_reduced",
+    #             self.dataset_path + "/training/label_2",
+    #             self.dataset_path + "/training/calib",
+    #         )
+    #
+    #         val_dataset = LabeledPointCloudsDatasetIterator(
+    #             self.dataset_path + "/training/velodyne_reduced",
+    #             self.dataset_path + "/training/label_2",
+    #             self.dataset_path + "/training/calib",
+    #         )
+    #
+    #         learner = VoxelObjectDetection3DLearner(
+    #             model_config_path=config, device=DEVICE,
+    #             checkpoint_after_iter=90,
+    #         )
+    #
+    #         starting_param = list(learner.model.parameters())[0].clone()
+    #         learner.fit(
+    #             dataset,
+    #             val_dataset=val_dataset,
+    #             model_dir=model_path,
+    #             evaluate=False,
+    #         )
+    #         new_param = list(learner.model.parameters())[0].clone()
+    #         self.assertFalse(torch.equal(starting_param, new_param))
+    #
+    #         del learner
+    #         print("Fit iterator", name, "ok", file=sys.stderr)
+    #
+    #     for name, config in self.car_configs.items():
+    #         test_model(name, config)
 
-            val_dataset = LabeledPointCloudsDatasetIterator(
-                self.dataset_path + "/training/velodyne_reduced",
-                self.dataset_path + "/training/label_2",
-                self.dataset_path + "/training/calib",
-            )
-
-            learner = VoxelObjectDetection3DLearner(
-                model_config_path=config, device=DEVICE,
-                checkpoint_after_iter=90,
-            )
-
-            starting_param = list(learner.model.parameters())[0].clone()
-            learner.fit(
-                dataset,
-                val_dataset=val_dataset,
-                model_dir=model_path,
-                evaluate=False,
-            )
-            new_param = list(learner.model.parameters())[0].clone()
-            self.assertFalse(torch.equal(starting_param, new_param))
-
-            del learner
-            print("Fit iterator", name, "ok", file=sys.stderr)
-
-        for name, config in self.car_configs.items():
-            test_model(name, config)
-
-    def test_eval(self):
-        def test_model(name, config):
-            print("Eval", name, "start", file=sys.stderr)
-            model_path = os.path.join(self.temp_dir, self.download_model_names[name])
-            dataset = KittiDataset(self.dataset_path, self.subsets_path)
-
-            learner = VoxelObjectDetection3DLearner(model_config_path=config, device=DEVICE)
-            learner.load(model_path)
-            mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset, count=2)
-
-            self.assertTrue(mAPbbox[0][0][0] > 1 and mAPbbox[0][0][0] < 95, msg=mAPbbox[0][0][0])
-
-            del learner
-            print("Eval", name, "ok", file=sys.stderr)
-
-        for name, config in self.car_configs.items():
-            test_model(name, config)
+    # def test_eval(self):
+    #     def test_model(name, config):
+    #         print("Eval", name, "start", file=sys.stderr)
+    #         model_path = os.path.join(self.temp_dir, self.download_model_names[name])
+    #         dataset = KittiDataset(self.dataset_path, self.subsets_path)
+    #
+    #         learner = VoxelObjectDetection3DLearner(model_config_path=config, device=DEVICE)
+    #         learner.load(model_path)
+    #         mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset, count=2)
+    #
+    #         self.assertTrue(mAPbbox[0][0][0] > 1 and mAPbbox[0][0][0] < 95, msg=mAPbbox[0][0][0])
+    #
+    #         del learner
+    #         print("Eval", name, "ok", file=sys.stderr)
+    #
+    #     for name, config in self.car_configs.items():
+    #         test_model(name, config)
 
     # def test_infer(self):
     #     def test_model(name, config):
