@@ -102,11 +102,9 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
         ).path
 
         print("Dataset downloaded", file=sys.stderr)
-
-        for model_name in cls.download_model_names.values():
-            VoxelObjectDetection3DLearner.download(
-                model_name, cls.temp_dir
-            )
+        # learner = VoxelObjectDetection3DLearner()
+        # for model_name in cls.download_model_names.values():
+        #     learner.download(model_name, cls.temp_dir)
 
         print("Models downloaded", file=sys.stderr)
 
