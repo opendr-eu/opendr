@@ -43,8 +43,7 @@ jobs:
         TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
       run : |
-        ls -la dist/
-        # twine upload --repository testpypi dist/*
+        twine upload --repository testpypi dist/*
   publish-docker-cpu:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp') }}
     runs-on: ubuntu-20.04
