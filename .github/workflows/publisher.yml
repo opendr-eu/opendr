@@ -65,7 +65,7 @@ jobs:
         docker images
         docker ps
         # docker push ${{ secrets.DOCKER_USERNAME }}/opendr-toolkit:cpu_latest
-  publish-docker-gpu:
+  publish-docker-cuda:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp') }}
     runs-on: ubuntu-20.04
     steps:
