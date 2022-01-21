@@ -7,8 +7,9 @@ from ...data import curve
 import skimage.transform as trans
 from math import cos, sin, atan2, asin
 import neural_renderer as nr
-
-
+#from neural_renderer.neural_renderer import renderer
+#import algorithm.neural_renderer.neural_renderer as nr
+ 
 def _get_suffix(filename):
     """a.jpg -> jpg"""
     pos = filename.rfind('.')
@@ -108,7 +109,8 @@ class Render(object):
     def __init__(self, opt):
         self.opt = opt
         self.render_size = opt.crop_size
-        self.d = './train.configs'
+        print(self.render_size , opt.crop_size)
+        self.d = './algorithm/DDFA/train.configs'
         w_shp = _load(osp.join(self.d, 'w_shp_sim.npy'))
         w_exp = _load(osp.join(self.d, 'w_exp_sim.npy'))  # simplified version
         u_shp = _load(osp.join(self.d, 'u_shp.npy'))
@@ -117,7 +119,7 @@ class Render(object):
         self.pose_noise = getattr(opt, 'pose_noise', False)
         self.large_pose = getattr(opt, 'large_pose', False)
         u = u_shp + u_exp
-        tri = sio.loadmat('./visualize/tri.mat')['tri']  # 3 * 53215
+        tri = sio.loadmat('./algorithm/DDFA/visualize/tri.mat')['tri']  # 3 * 53215
         faces_np = np.expand_dims(tri.T, axis=0).astype(np.int32) - 1
 
         self.std_size = 120
@@ -126,7 +128,7 @@ class Render(object):
 
         self.current_gpu = opt.gpu_ids
         with torch.cuda.device(self.current_gpu):
-            self.faces = torch.from_numpy(faces_np).cuda()
+            self.faces = torch.from_numpy(faces_np).cuda() 
             self.renderer = nr.Renderer(camera_mode='look', image_size=self.render_size, perspective=False,
                                         light_intensity_directional=0, light_intensity_ambient=1)
             self.u_cuda = torch.from_numpy(u.astype(np.float32)).cuda()

@@ -8,21 +8,21 @@ from torch.utils.data.sampler import Sampler
 class dataset_info():
     def __init__(self):
         self.prefix = [
-            './example/Images',
+            './algorithm/DDFA/example/Images',
             'PREFIX-TO-YOUR-DATASET'
         ]
         self.file_list = [
-            './example/file_list.txt',
+            './algorithm/DDFA/example/file_list.txt',
             'YOUE-FILE-LIST.txt'
         ]
 
         self.land_mark_list = [
-            './example/realign_lmk',
+            './algorithm/DDFA/example/realign_lmk',
             'LANDMARKS-OF-FACES-IN-YOUR-DATASET'
         ]
 
         self.params_dir = [
-            './results',
+            './algorithm/DDFA/results',
             '3DFITTING-RESULTS-HOME-DIR'
         ]
         self.dataset_names = {'example': 0, 'YOUR-DATASET': 1}

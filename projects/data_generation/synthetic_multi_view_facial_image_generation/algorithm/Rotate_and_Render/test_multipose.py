@@ -83,8 +83,9 @@ def main(save_path, val_yaw, val_pitch):
 
     opt = TestOptions().parse()
     data_info = data.dataset_info()
-    opt.yaw_poses = [float(x) for x in val_yaw.split(" ")]
-    opt.pitch_poses = [float(x) for x in val_pitch.split(" ")]
+    print(val_yaw)
+    opt.yaw_poses = [float(x) for x in val_yaw]
+    opt.pitch_poses = [float(x) for x in val_pitch]
     opt.save_path = save_path
     if not opt.isTrain:
         # change radian to angle

@@ -17,10 +17,10 @@ class BaseOptions():
 
     def initialize(self, parser):
         # experiment specifics
-        parser.add_argument('--name', type=str, default='rs_model',
+        parser.add_argument('--name', type=str, default='mesh2face',
                             help='name of the experiment. It decides where to store samples and models')
 
-        parser.add_argument('--gpu_ids', type=str, default='0', nargs='+', help='useless')
+        parser.add_argument('--gpu_ids', type=str, default='0,1', nargs='+', help='useless')
         parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
         parser.add_argument('--model', type=str, default='rotate', help='which model to use, rotate|rotatespade')
         parser.add_argument('--trainer', type=str, default='rotate', help='which trainer to use, rotate|rotatespade')
@@ -31,7 +31,7 @@ class BaseOptions():
         parser.add_argument('--norm_E', type=str, default='spectralinstance',
                             help='instance normalization or batch normalization')
         parser.add_argument('--phase', type=str, default='test', help='train, val, test, etc')
-        parser.add_argument('--device_count', type=int, default=1, help='the total number of gpus to use')  # 2
+        parser.add_argument('--device_count', type=int, default=2, help='the total number of gpus to use')  # 2
         parser.add_argument('--render_thread', type=int, default=1, help='number of gpus used for rendering')  # 1
         parser.add_argument('--chunk_size', default=1, type=int, nargs='+',
                             help='specify the batch size on each training gpu. Training gpu # = device_count - render_thread')
@@ -60,7 +60,7 @@ class BaseOptions():
         parser.add_argument('--use_BG', action='store_true', help='')
         parser.add_argument('--use_vae', action='store_true', help='')
         # for setting inputs
-        parser.add_argument('--dataset', type=str, default='allface', help='dataset')
+        parser.add_argument('--dataset', type=str, default='example', help='dataset')
         parser.add_argument('--dataset_mode', type=str, default='allface')
         parser.add_argument('--landmark_align', action='store_true', help='wether there is landmark_align')
         parser.add_argument('--serial_batches', action='store_true',
@@ -95,9 +95,9 @@ class BaseOptions():
                             help='if specified, do *not* add instance map as input')
         parser.add_argument('--nef', type=int, default=16, help='# of encoder filters in the first conv layer')
 
-        parser.add_argument('--no_gaussian_landmark', action='store_true',
+        parser.add_argument('--no_gaussian_landmark', action='store_false',
                             help='whether to use no_gaussian_landmark (1.0 landmark) for rotatespade model')
-        parser.add_argument('--label_mask', action='store_true', help='whether to use face mask')
+        parser.add_argument('--label_mask', action='store_false', help='whether to use face mask')
         parser.add_argument('--heatmap_size', type=float, default=1,
                             help='the size of the heatmap, used in rotatespade model')
         parser.add_argument('--erode_kernel', type=int, default=21, help='erode kernel size, used in renderer')
@@ -117,8 +117,8 @@ class BaseOptions():
                                                                "",
                                                                "results"),
                             type=str, help='Give the path of results folder')
-        parser.add_argument('-val_yaw', default="10 20", nargs='+', type=str, help='yaw poses list between [-90,90] ')
-        parser.add_argument('-val_pitch', default="30 40", nargs='+', type=str,
+        parser.add_argument('-val_yaw', default="10 20", nargs='+', type=float, help='yaw poses list between [-90,90] ')
+        parser.add_argument('-val_pitch', default="30 40", nargs='+', type=float,
                             help='pitch poses list between [-90,90] ')
 
         self.initialized = True
