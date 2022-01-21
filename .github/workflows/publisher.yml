@@ -8,6 +8,8 @@ name: Wheel and Docker Publisher
 
 # trigger on file change
 on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled, unlabeled]
   push:
     paths:
       - '_version.py'
@@ -19,6 +21,7 @@ defaults:
 
 jobs:
   publish-wheel:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp')
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
@@ -42,6 +45,7 @@ jobs:
       run : |
         # twine upload --repository testpypi dist/*
   publish-docker:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp')
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
