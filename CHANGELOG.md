@@ -8,7 +8,7 @@ Released on XX, XXth, 2022.
   - Enhancements:
     - None.
   - Bug Fixes:
-    - Updated wheel building pipeline to include missing files and removed unnecessary dependencies. 
+    - Updated wheel building pipeline to include missing files and removed unnecessary dependencies ([#200](https://github.com/opendr-eu/opendr/pull/200)).
   - Dependency Updates:
     - `heart anomaly detection`: upgraded scikit-learn runtime dependency from 0.21.3 to 0.22 ([#198](https://github.com/opendr-eu/opendr/pull/198)).
 
