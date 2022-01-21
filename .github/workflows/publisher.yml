@@ -43,6 +43,7 @@ jobs:
         TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
       run : |
+        ls -la dist/
         # twine upload --repository testpypi dist/*
   publish-docker:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp') }}
@@ -61,4 +62,6 @@ jobs:
     - name: Publish Image
       run: |
         docker tag opendr-toolkit:cpu_latest ${{ secrets.DOCKER_USERNAME }}/opendr-toolkit:cpu_latest
+        docker images
+        docker ps
         # docker push ${{ secrets.DOCKER_USERNAME }}/opendr-toolkit:cpu_latest
