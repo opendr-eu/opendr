@@ -13,11 +13,13 @@
 # limitations under the License.
 import torch
 import matplotlib
-matplotlib.use('Agg')
 import os
 import argparse
 from SyntheticDataGeneration import MultiviewDataGeneration
 from algorithm.DDFA.utils.ddfa import str2bool
+
+matplotlib.use('Agg')
+__all__ = ['torch']
 
 if __name__ == '__main__':
     print("\n\n**********************************\nTEST Multiview Data Generation Learner\n"

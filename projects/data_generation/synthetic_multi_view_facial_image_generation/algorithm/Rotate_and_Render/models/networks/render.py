@@ -7,9 +7,8 @@ from ...data import curve
 import skimage.transform as trans
 from math import cos, sin, atan2, asin
 import neural_renderer as nr
-#from neural_renderer.neural_renderer import renderer
-#import algorithm.neural_renderer.neural_renderer as nr
- 
+
+
 def _get_suffix(filename):
     """a.jpg -> jpg"""
     pos = filename.rfind('.')
@@ -109,7 +108,7 @@ class Render(object):
     def __init__(self, opt):
         self.opt = opt
         self.render_size = opt.crop_size
-        print(self.render_size , opt.crop_size)
+        print(self.render_size, opt.crop_size)
         self.d = './algorithm/DDFA/train.configs'
         w_shp = _load(osp.join(self.d, 'w_shp_sim.npy'))
         w_exp = _load(osp.join(self.d, 'w_exp_sim.npy'))  # simplified version
@@ -128,7 +127,7 @@ class Render(object):
 
         self.current_gpu = opt.gpu_ids
         with torch.cuda.device(self.current_gpu):
-            self.faces = torch.from_numpy(faces_np).cuda() 
+            self.faces = torch.from_numpy(faces_np).cuda()
             self.renderer = nr.Renderer(camera_mode='look', image_size=self.render_size, perspective=False,
                                         light_intensity_directional=0, light_intensity_ambient=1)
             self.u_cuda = torch.from_numpy(u.astype(np.float32)).cuda()
