@@ -88,7 +88,7 @@ jobs:
           - perception/object_detection_2d
           - perception/facial_expression_recognition
           - perception/object_detection_3d
-          #- control/mobile_manipulation
+          - control/mobile_manipulation
           - simulation/human_model_generation
           - control/single_demo_grasp
           #- perception/object_tracking_3d
