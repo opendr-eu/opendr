@@ -62,9 +62,7 @@ jobs:
         wget https://raw.githubusercontent.com/opendr-eu/opendr/master/dependencies/pip_requirements.txt
         cat pip_requirements.txt | xargs -n 1 -L 1 pip install
         # Test new package
-        wget https://raw.githubusercontent.com/passalis/test_repo/main/opendr-toolkit-1.0.tar.gz
-        pip install opendr-toolkit-1.0.tar.gz
-        # pip install opendr-toolkit
+        pip install opendr-toolkit
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
     needs: cleanup-runs
