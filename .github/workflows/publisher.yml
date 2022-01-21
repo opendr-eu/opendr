@@ -61,10 +61,10 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     - name: Publish Image
       run: |
-        docker tag opendr-toolkit:cpu_latest ${{ secrets.DOCKER_USERNAME }}/opendr-toolkit:cpu_latest
+        docker tag opendr-toolkit:cpu_latest ${{ secrets.DOCKERHUB_USERNAME }}/opendr-toolkit:cpu_latest
         docker images
         docker ps
-        # docker push ${{ secrets.DOCKER_USERNAME }}/opendr-toolkit:cpu_latest
+        # docker push ${{ secrets.DOCKERHUB_USERNAME }}/opendr-toolkit:cpu_latest
   publish-docker-cuda:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp') }}
     runs-on: ubuntu-20.04
@@ -81,7 +81,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     - name: Publish Image
       run: |
-        docker tag opendr-toolkit:cuda_latest ${{ secrets.DOCKER_USERNAME }}/opendr-toolkit:cuda_latest
+        docker tag opendr-toolkit:cuda_latest ${{ secrets.DOCKERHUB_USERNAME }}/opendr-toolkit:cuda_latest
         docker images
         docker ps
-        # docker push ${{ secrets.DOCKER_USERNAME }}/opendr-toolkit:cuda_latest
+        # docker push ${{ secrets.DOCKERHUB_USERNAME }}/opendr-toolkit:cuda_latest
