@@ -20,7 +20,7 @@ class BaseOptions():
         parser.add_argument('--name', type=str, default='mesh2face',
                             help='name of the experiment. It decides where to store samples and models')
 
-        parser.add_argument('--gpu_ids', type=str, default='0,1', nargs='+', help='useless')
+        parser.add_argument('--gpu_ids', type=str, default='0', nargs='+', help='useless')
         parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
         parser.add_argument('--model', type=str, default='rotate', help='which model to use, rotate|rotatespade')
         parser.add_argument('--trainer', type=str, default='rotate', help='which trainer to use, rotate|rotatespade')
