@@ -21,7 +21,7 @@ defaults:
 
 jobs:
   publish-wheel:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp')
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp') }}
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
@@ -45,7 +45,7 @@ jobs:
       run : |
         # twine upload --repository testpypi dist/*
   publish-docker:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp')
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp') }}
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
