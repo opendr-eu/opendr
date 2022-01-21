@@ -10,9 +10,9 @@ name: Publisher
 on:
   pull_request:
     types: [opened, reopened, synchronize, labeled, unlabeled]
-  push:
-    paths:
-      - '_version.py'
+#  push:
+#    paths:
+#      - '_version.py'
 
 
 defaults:
@@ -60,10 +60,8 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     - name: Publish Image
       run: |
-        docker tag opendr-toolkit:cpu_latest ${{ secrets.DOCKERHUB_USERNAME }}/opendr-toolkit:cpu_latest
-        docker images
-        docker ps
-        # docker push ${{ secrets.DOCKERHUB_USERNAME }}/opendr-toolkit:cpu_latest
+        docker tag opendr-toolkit:cpu_latest opendr/opendr-toolkit:cpu_latest
+        #docker push opendr/opendr-toolkit:cpu_latest
   publish-docker-cuda:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp') }}
     runs-on: ubuntu-20.04
@@ -80,7 +78,5 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     - name: Publish Image
       run: |
-        docker tag opendr-toolkit:cuda_latest ${{ secrets.DOCKERHUB_USERNAME }}/opendr-toolkit:cuda_latest
-        docker images
-        docker ps
-        # docker push ${{ secrets.DOCKERHUB_USERNAME }}/opendr-toolkit:cuda_latest
+        docker tag opendr-toolkit:cuda_latest opendr/opendr-toolkit:cuda_latest
+        #docker push opendr/opendr-toolkit:cuda_latest
