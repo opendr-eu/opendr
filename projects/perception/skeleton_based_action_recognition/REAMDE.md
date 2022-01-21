@@ -7,7 +7,7 @@ This demo employs lightweight OpenPose method provided by OpenDR toolkit to extr
   Download the NTU-RGB+D video data from [here](https://rose1.ntu.edu.sg/dataset/actionRecognition/), 
   then run the following function to extract the skeleton data using the lightweight OpenPose method: 
   ```python
-python skeleton_extraction.py --videos_path path_to_dataset --out_folder path_to_save_skeleton_data --device cuda --num_channels 2  
+python3 skeleton_extraction.py --videos_path path_to_dataset --out_folder path_to_save_skeleton_data --device cuda --num_channels 2  
 ```  
   `--num_channels` specifies the number of dimensions for each body keypoint. The lightweight OpenPose extracts 2 dimensional keypoints, denoting the keypoint coordinates, and it also provides the confidence score for each keypoint which can be used as the third dimension. 
   
@@ -17,13 +17,13 @@ After generating the 2d or 3d skeleton data, you need to train a model on this d
 We provided the pre-trained models of ST-GCN and PST-GCN methods and the demo can be run as follows: 
 
 ```python
-python demo.py --device cuda --video 0 --method stgcn --action_checkpoint_name stgcn_ntu_cv_lw_openpose
+python3 demo.py --device cuda --video 0 --method stgcn --action_checkpoint_name stgcn_ntu_cv_lw_openpose
 ```  
 
 Please use the `--device cpu` flag if you are running them on a machine without a CUDA-enabled GPU. 
 
 ```python
-python demo.py --device cpu --video 0 --method pstgcn --action_checkpoint_name pstgcn_ntu_cv_lw_openpose
+python3 demo.py --device cpu --video 0 --method pstgcn --action_checkpoint_name pstgcn_ntu_cv_lw_openpose
 ```  
 
 

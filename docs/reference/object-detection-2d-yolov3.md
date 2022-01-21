@@ -9,7 +9,7 @@ The *YOLOv3DetectorLearner* class is a wrapper of the SSD detector[[1]](#yolo-1)
 [GluonCV implementation](https://github.com/dmlc/gluon-cv/blob/master/gluoncv/model_zoo/yolo/yolo3.py).
 It can be used to perform object detection on images (inference) as well as train new object detection models.
 
-The [YOLOv3DetectorLearner](#src.opendr.perception.object_detection_2d.yolov3.yolov3_learner.py) class has the following
+The [YOLOv3DetectorLearner](/src/opendr/perception/object_detection_2d/yolov3/yolov3_learner.py) class has the following
 public methods:
 
 #### `YOLOv3DetectorLearner` constructor

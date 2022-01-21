@@ -15,12 +15,13 @@ For running a minimal working example you can follow the instructions below:
    ```source /opt/ros/noetic/setup.bash```
 
 1. Make sure you are inside opendr_ws
-2. If you are planning to use a usb camera for the demos, install the corresponding package:
+2. If you are planning to use a usb camera for the demos, install the corresponding package and its dependencies:
 
 ```shell
 cd src
 git clone https://github.com/ros-drivers/usb_cam
 cd ..
+rosdep install --from-paths src/ --ignore-src
 ```
 3. Install the following dependencies, required in order to use the OpenDR ROS tools:
 ```shell

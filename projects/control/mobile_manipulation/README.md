@@ -9,12 +9,12 @@ Live demo of mobile manipulation using the [OpenDR toolkit](https://opendr.eu).
 
 
 ## Set-up
-Follow the ROS-setup described for the [mobile_manipulation tool](docs/reference/mobile-manipulation.md). 
+Follow the ROS-setup described for the [mobile_manipulation tool](/docs/reference/mobile-manipulation.md). 
 
 ## Running the example
 Mobile manipulation tasks in the analytical environment can be run as follows:
 ```bash
-python mobile_manipulation_demo.py --env pr2
+python3 mobile_manipulation_demo.py --env pr2
 ```
 
 Available tasks include `RndStartRndGoals`, `RestrictedWs`, `PickNPlace`, `Door`, `Drawer`. Specific tasks can be specified by adding the `--eval_tasks` flag. By default it will evaluate all tasks sequentially.

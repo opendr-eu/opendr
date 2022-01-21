@@ -9,7 +9,7 @@ The *ObjectTracking3DAb3dmotLearner* class is an implementation of the AB3DMOT[[
 Evaluation code is based on the KITTI evaluation development kit[[2]](#object-tracking-3d-2).
 It can be used to perform 3D object tracking based on provided detections.
 
-The [ObjectTracking3DAb3dmotLearner](#src.opendr.perception.object_tracking_3d.object_tracking_3d_ab3dmot.object_tracking_3d_ab3dmot_learner.py) class has the following public methods:
+The [ObjectTracking3DAb3dmotLearner](/src/opendr/perception/object_tracking_3d/ab3dmot/object_tracking_3d_ab3dmot_learner.py) class has the following public methods:
 
 #### `ObjectTracking3DAb3dmotLearner` constructor
 ```python
@@ -69,10 +69,10 @@ ObjectTracking3DAb3dmotLearner.infer(self, bounding_boxes_3d_list)
 ```
 
 This method is used to perform 3D object tracking on a list of 3D bounding boxes predictions.
-Returns a list of [TrackingAnnotation3DList](#class_engine.target.TrackingAnnotation3DList) objects if the list of [BoundingBox3DList](#class_engine.target.BoundingBox3DList) is given or a single [TrackingAnnotation3DList](#class_engine.target.TrackingAnnotation3DList) if a single [BoundingBox3DList](#class_engine.target.BoundingBox3DList) is given.
+Returns a list of [TrackingAnnotation3DList](/src/opendr/engine/target.py#L873) objects if the list of [BoundingBox3DList](/src/opendr/engine/target.py#L979) is given or a single [TrackingAnnotation3DList](/src/opendr/engine/target.py#L873) if a single [BoundingBox3DList](/src/opendr/engine/target.py#L979) is given.
 
 Parameters:
-- **bounding_boxes_3d_list**: *[BoundingBox3DList](#class_engine.target.BoundingBox3DList)* or a list of *[BoundingBox3DList](#class_engine.target.BoundingBox3DList)***
+- **bounding_boxes_3d_list**: *[BoundingBox3DList](/src/opendr/engine/target.py#L979)* or a list of *[BoundingBox3DList](/src/opendr/engine/target.py#L979)*
   Input data.
 
 

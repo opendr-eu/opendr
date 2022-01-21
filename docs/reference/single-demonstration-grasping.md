@@ -7,7 +7,7 @@ Bases: `engine.learners.LearnerRL`
 
 The *SingleDemoGraspLearner* class is a wrapper class based on [Detectron2](https://github.com/facebookresearch/detectron2) implementation of Keypoint-rcnn keypoint architecture. This module is used to train a keypoint detection module which its predictions are utilized to extract planar grasp poses that are translated to 6D grasp pose. A demonstration is then provided as an example in the projects directory.
 
-The [SingleDemoGraspLearner](#src.opendr.control.single_demo_grasp.training.single_demo_grasp_learner.py) class has the following public methods:
+The [SingleDemoGraspLearner](/src/opendr/control/single_demo_grasp/training/single_demo_grasp_learner.py) class has the following public methods:
 
 #### `SingleDemoGraspLearner` constructor
 

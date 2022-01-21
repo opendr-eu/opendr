@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ install_runtime_dependencies:
 
 install_compilation_dependencies:
 	@+echo "#"; echo "# * Install Compilation Dependencies for single demonstration grasping *"; echo "#"
-	@+python -m pip install detectron2==0.5 -f \$(DETECTRON_WHEEL)
+	@+python3 -m pip install detectron2==0.5 -f \$(DETECTRON_WHEEL)
 	@./install_single_demo_grasp.sh
 
 help:

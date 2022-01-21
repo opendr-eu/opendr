@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,13 +40,13 @@ def long_description():
 
 
 setup(
-    name="online_activity_recognition",
+    name="object_tracking_2d_demo",
     version="0.1.0",
     description="Example of in-browser video streaming and processing using the OpenDR toolkit.",
     long_description=long_description(),
     long_description_content_type="text/markdown",
-    author="Lukas Hedegaard",
-    author_email="lhm@ece.au.dk",
+    author="Illia Oleksiienko, Lukas Hedegaard",
+    author_email="{io, lhm}@ece.au.dk",
     install_requires=from_file("requirements.txt"),
     packages=find_packages(exclude=["test"]),
     keywords=["deep learning", "pytorch", "AI", "OpenDR", "video", "webcam"],
