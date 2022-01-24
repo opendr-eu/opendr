@@ -2,8 +2,6 @@ name: Publisher
 
 # trigger on file change
 on:
-  pull_request:
-    types: [opened, reopened, synchronize, labeled, unlabeled]
   release:
     types: [published]
 
@@ -56,7 +54,7 @@ jobs:
     - name: Publish Image
       run: |
         docker tag opendr-toolkit:cpu_$OPENDR_VERSION opendr/opendr-toolkit:cpu_$OPENDR_VERSION
-        #docker push opendr/opendr-toolkit:cpu_$OPENDR_VERSION
+        docker push opendr/opendr-toolkit:cpu_$OPENDR_VERSION
   publish-docker-cuda:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp') }}
     runs-on: ubuntu-20.04
@@ -74,4 +72,4 @@ jobs:
     - name: Publish Image
       run: |
         docker tag opendr-toolkit:cuda_$OPENDR_VERSION opendr/opendr-toolkit:cuda_$OPENDR_VERSION
-        #docker push opendr/opendr-toolkit:cuda_$OPENDR_VERSION
+        docker push opendr/opendr-toolkit:cuda_$OPENDR_VERSION
