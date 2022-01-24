@@ -4,8 +4,6 @@ name: Publisher
 on:
   pull_request:
     types: [opened, reopened, synchronize, labeled, unlabeled]
-
-on:
   release:
     types: [published]
 
