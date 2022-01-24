@@ -1,15 +1,9 @@
 name: Publisher
 
-# trigger on new tag
-#on:
-#  push:
-#    tags:
-#      - v*.*.* # triggers on tags such as v1.0.1
-
 # trigger on file change
-#on:
-#  pull_request:
-#    types: [opened, reopened, synchronize, labeled, unlabeled]
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled, unlabeled]
 
 on:
   release:
