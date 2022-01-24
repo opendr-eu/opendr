@@ -40,13 +40,5 @@ make install_compilation_dependencies
 make install_runtime_dependencies
 make libopendr
 
-# Prepare requirements.txt for wheel distributions
-pip3 freeze > requirements.txt
-
-# Remove detectron, since it was installed from git repo
-sed -i '/detectron2/d' requirements.txt
-sed -i '/git/d' requirements.txt
-python3 setup.py bdist_wheel
-
 deactivate
 
