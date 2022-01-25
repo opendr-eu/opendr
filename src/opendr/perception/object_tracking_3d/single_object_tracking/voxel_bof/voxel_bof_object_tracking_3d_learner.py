@@ -47,6 +47,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     feature_to_image_coordinates,
     hann_window,
     image_to_lidar_coordinates,
+    original_search_size_by_target_size,
     pc_range_by_lidar_aabb,
     score_to_image_coordinates,
     select_best_scores_and_search,
@@ -181,6 +182,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.__create_model()
         self._images = {}
         self.fpses = []
+        self.times = {}
 
         self.model.rpn_ort_session = None  # ONNX runtime inference session
 
@@ -515,6 +517,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
         if self.model is None:
             raise ValueError("No model loaded or created")
 
+        t = time.time()
+
         if self.infer_point_cloud_mapper is None:
             prep_func = create_prep_func(
                 self.input_config,
@@ -523,6 +527,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 self.voxel_generator,
                 self.target_assigner,
                 use_sampler=False,
+                max_number_of_voxels=2000,
             )
 
             def infer_point_cloud_mapper(x, pc_range):
@@ -531,12 +536,23 @@ class VoxelBofObjectTracking3DLearner(Learner):
             self.infer_point_cloud_mapper = infer_point_cloud_mapper
             self.model.eval()
 
+        t1 = time.time()
+        self.times["pseudo_image/create_prep_func"].append(t1 - t)
+
         input_data = None
 
         if isinstance(point_clouds, PointCloud):
+
+            pc_mapped = self.infer_point_cloud_mapper(point_clouds.data, pc_range)
+
+            t2 = time.time()
+            self.times["pseudo_image/infer_point_cloud_mapper"].append(t2 - t1)
+
             input_data = merge_second_batch(
-                [self.infer_point_cloud_mapper(point_clouds.data, pc_range)]
+                [pc_mapped]
             )
+            t21 = time.time()
+            self.times["pseudo_image/merge_second_batch"].append(t21 - t2)
         elif isinstance(point_clouds, list):
             raise Exception()
             input_data = merge_second_batch(
@@ -553,6 +569,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
             ),
             pc_range,
         )
+
+        t3 = time.time()
+        self.times["pseudo_image/branch.create_pseudo_image"].append(t3 - t21)
 
         return pseudo_image
 
@@ -584,6 +603,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
             pseudo_images = self.create_pseudo_image(point_cloud, pc_range)
             pseudo_image = pseudo_images[0]
 
+            t1 = time.time()
+            self.times["pseudo_image"].append(t1 - t)
+
             if draw:
                 draw_pi = draw_pseudo_image(
                     pseudo_image.squeeze(axis=0),
@@ -591,12 +613,17 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 )
                 self.__add_image(draw_pi, "small_pi")
 
+            t1 = time.time()
+
             multi_rotate_searches_and_penalties = create_multi_rotate_searches(
                 self.search_region,
                 self.rotation_penalty,
                 self.rotation_step,
                 self.rotations_count,
             )
+
+            t2 = time.time()
+            self.times["create_multi_rotate_searches"].append(t2 - t1)
 
             multi_rotate_features_and_searches_and_penalties = []
 
@@ -633,6 +660,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
                     self.__add_image(draw_search, "search")
                     self.__add_image(draw_search_feat, "search_feat")
+
+            t3 = time.time()
+            self.times["create_pseudo_image_features"].append(t3 - t2)
 
             multi_rotate_scores_searches_penalties_and_features = []
 
@@ -675,6 +705,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     self.__add_image(draw_scores_original, "scores_original")
                     self.__add_image(draw_scaled_scores, "scaled_scores")
 
+            t4 = time.time()
+            self.times["create_scaled_scores"].append(t4 - t3)
+
             (
                 top_scores,
                 top_search,
@@ -682,6 +715,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
             ) = select_best_scores_and_search(
                 multi_rotate_scores_searches_penalties_and_features
             )
+
+            t5 = time.time()
+            self.times["select_best_scores_and_search"].append(t5 - t4)
 
             if draw:
 
@@ -702,6 +738,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     [(255, 0, 0)],
                 )
 
+            t5 = time.time()
+
             delta_image = displacement_score_to_image_coordinates(
                 top_scores,
                 self.score_upscale,
@@ -721,12 +759,15 @@ class VoxelBofObjectTracking3DLearner(Learner):
             new_target = [center_image, self.init_target[1], new_angle]
             new_search = [
                 center_image,
-                new_target[1] * 2 + (new_target[1] < 20) * 30,
+                original_search_size_by_target_size(new_target[1]),
                 new_angle,
             ]
 
             self.search_region = new_search
             self.last_target = new_target
+
+            t6 = time.time()
+            self.times["displacement_score_to_image_coordinates"].append(t6 - t5)
 
             if self.target_feature_merge_scale > 0:
                 target_features, target_image = create_pseudo_image_features(
@@ -760,6 +801,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 self.__add_image(
                     draw_target_feat_current_frame, "target_feat_current_frame"
                 )
+
+            t7 = time.time()
+            self.times["target_feature_merge"].append(t7 - t6)
 
             location_lidar, size_lidar = image_to_lidar_coordinates(
                 new_target[0], new_target[1], net.voxel_size, net.bv_range
@@ -799,7 +843,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 ]
             )
 
-            fps = 1 / (time.time() - t)
+            t8 = time.time()
+            self.times["final_result"].append(t7 - t6)
+
+            fps = 1 / (t8 - t)
             print("fps =", fps)
 
             self.fpses.append(fps)
@@ -809,6 +856,20 @@ class VoxelBofObjectTracking3DLearner(Learner):
     def init(self, point_cloud, label_lidar, draw=False):
 
         self.fpses = []
+        self.times = {
+            "pseudo_image": [],
+            "pseudo_image/create_prep_func": [],
+            "pseudo_image/infer_point_cloud_mapper": [],
+            "pseudo_image/merge_second_batch": [],
+            "pseudo_image/branch.create_pseudo_image": [],
+            "create_multi_rotate_searches": [],
+            "create_pseudo_image_features": [],
+            "create_scaled_scores": [],
+            "select_best_scores_and_search": [],
+            "displacement_score_to_image_coordinates": [],
+            "target_feature_merge": [],
+            "final_result": [],
+        }
 
         self.model.eval()
 

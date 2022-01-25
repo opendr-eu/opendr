@@ -1,5 +1,6 @@
 import pathlib
 from collections import defaultdict
+import time
 
 import numpy as np
 
@@ -94,10 +95,14 @@ def prep_pointcloud(
     use_group_id=False,
     out_dtype=np.float32,
     sample_db=True,
+    generate_anchors=False,
 ):
     """convert point cloud to voxels, create targets if ground truths
     exists.
     """
+
+    t1 = time.time()
+
     points = input_dict["points"]
     if training:
         gt_boxes = input_dict["gt_boxes"]
@@ -243,9 +248,14 @@ def prep_pointcloud(
             gt_boxes[:, 6], offset=0.5, period=2 * np.pi
         )
 
+    t2 = time.time()
+    print("fps_prep_pointcloud_1 =", 1 / (t2 - t1))
     if shuffle_points:
         # shuffle is a little slow.
         np.random.shuffle(points)
+
+    t3 = time.time()
+    print("fps_prep_pointcloud_shuffle =", 1 / (t3 - t2))
 
     # [0, -40, -3, 70.4, 40, 1]
     voxel_size = voxel_generator.voxel_size
@@ -266,6 +276,10 @@ def prep_pointcloud(
         points, max_voxels
     )
 
+    print("voxels.shape =", voxels.shape)
+
+    t4 = time.time()
+    print("fps_prep_pointcloud_voxel_generator =", 1 / (t4 - t3))
     example = {
         "voxels": voxels,
         "num_points": num_points,
@@ -284,7 +298,7 @@ def prep_pointcloud(
         anchors_bv = anchor_cache["anchors_bv"]
         matched_thresholds = anchor_cache["matched_thresholds"]
         unmatched_thresholds = anchor_cache["unmatched_thresholds"]
-    else:
+    elif generate_anchors:
         ret = target_assigner.generate_anchors(feature_map_size)
         anchors = ret["anchors"]
         anchors = anchors.reshape([-1, 7])
@@ -293,9 +307,11 @@ def prep_pointcloud(
         anchors_bv = box_np_ops.rbbox2d_to_near_bbox(
             anchors[:, [0, 1, 3, 4, 6]]
         )
+    else:
+        anchors = np.array([0])
     example["anchors"] = anchors
     anchors_mask = None
-    if anchor_area_threshold >= 0:
+    if anchor_area_threshold >= 0 and generate_anchors:
         coors = coordinates
         dense_voxel_map = box_np_ops.sparse_sum_for_anchors_mask(
             coors, tuple(grid_size[::-1][1:])
@@ -315,6 +331,10 @@ def prep_pointcloud(
             points, bev_vxsize, pc_range, without_reflectivity
         )
         example["bev_map"] = bev_map
+
+    t5 = time.time()
+    print("fps_prep_pointcloud_target_assigner =", 1 / (t5 - t4))
+
     if not training:
         return example
     if create_targets:
@@ -441,7 +461,13 @@ def _prep_v9_infer(points, prep_func, pc_range):
         "points": points,
     }
 
+    # t = time.time()
+
     example = prep_func(input_dict=input_dict, pc_range=pc_range)
+
+    # fps_prep = 1 / (time.time() - t)
+    # print("fps_prep =", fps_prep)
+
     if "anchors_mask" in example:
         example["anchors_mask"] = example["anchors_mask"].astype(np.uint8)
     return example

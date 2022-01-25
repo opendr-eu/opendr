@@ -990,6 +990,7 @@ def run_new_smaller(device_id=0, total_devices=4):
     def create_models(eval_kwargs):
         result = []
         for feature_blocks, backbone in [
+            (1, "pp"),
             (3, "spps"),
             # (3, "stanets"), worse results
             (3, "spp"),

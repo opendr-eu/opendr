@@ -107,6 +107,14 @@ def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
     return image
 
 
+def original_target_size_by_object_size(object_size):
+    return object_size + 5
+
+
+def original_search_size_by_target_size(target_size):
+    return target_size + target_size // 2
+
+
 def create_targets_and_searches(
     centers, target_sizes, search_sizes, rotations, augment, type="rotated"
 ):
@@ -209,8 +217,11 @@ def create_target_search_regions(
         centers_image = ((centers[:, :2] - bv_min) / voxel_size_bev).astype(
             np.int32
         )
-        sizes_image = (sizes[:, :2] / voxel_size_bev).astype(np.int32) + 5
-        search_sizes = sizes_image * 2 + (sizes_image < 20) * 30
+
+        object_size = (sizes[:, :2] / voxel_size_bev).astype(np.int32)
+
+        sizes_image = original_target_size_by_object_size(object_size)
+        search_sizes = original_search_size_by_target_size(sizes_image)
 
         targets, searches = create_targets_and_searches(
             centers_image,

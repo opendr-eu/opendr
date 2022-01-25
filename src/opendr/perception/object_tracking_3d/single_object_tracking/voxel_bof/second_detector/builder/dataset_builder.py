@@ -29,7 +29,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     KittiDataset,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.preprocess import (
-    prep_pointcloud
+    prep_pointcloud,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.builder import (
     dbsampler_builder,
@@ -45,6 +45,7 @@ def create_prep_func(
     target_assigner=None,
     use_sampler=True,
     model=None,
+    max_number_of_voxels=None,
 ):
 
     generate_bev = model_config.use_bev
@@ -57,15 +58,12 @@ def create_prep_func(
         db_sampler = dbsampler_builder.build(db_sampler_cfg)
     u_db_sampler_cfg = input_reader_config.unlabeled_database_sampler
     u_db_sampler = None
-    if (
-        use_sampler and len(u_db_sampler_cfg.sample_groups) > 0
-    ):  # enable sample
+    if use_sampler and len(u_db_sampler_cfg.sample_groups) > 0:  # enable sample
         u_db_sampler = dbsampler_builder.build(u_db_sampler_cfg)
 
     num_point_features = model_config.num_point_features
     out_size_factor = (
-        model_config.rpn.layer_strides[0]
-        // model_config.rpn.upsample_strides[0]
+        model_config.rpn.layer_strides[0] // model_config.rpn.upsample_strides[0]
     )
 
     prep_func = partial(
@@ -75,19 +73,17 @@ def create_prep_func(
         voxel_generator=voxel_generator,
         target_assigner=target_assigner,
         training=training,
-        max_voxels=cfg.max_number_of_voxels,
+        max_voxels=cfg.max_number_of_voxels if max_number_of_voxels is None else max_number_of_voxels,
         remove_outside_points=False,
         remove_unknown=cfg.remove_unknown_examples,
         create_targets=training,
-        shuffle_points=cfg.shuffle_points,
+        shuffle_points=False,  # cfg.shuffle_points if training else False,
         gt_rotation_noise=list(cfg.groundtruth_rotation_uniform_noise),
         gt_loc_noise_std=list(cfg.groundtruth_localization_noise_std),
         global_rotation_noise=list(cfg.global_rotation_uniform_noise),
         global_scaling_noise=list(cfg.global_scaling_uniform_noise),
         global_loc_noise_std=(0.2, 0.2, 0.2),
-        global_random_rot_range=list(
-            cfg.global_random_rotation_range_per_object
-        ),
+        global_random_rot_range=list(cfg.global_random_rotation_range_per_object),
         db_sampler=db_sampler,
         unlabeled_db_sampler=u_db_sampler,
         generate_bev=generate_bev,
@@ -131,8 +127,7 @@ def build(
         )
     num_point_features = model_config.num_point_features
     out_size_factor = (
-        model_config.rpn.layer_strides[0]
-        // model_config.rpn.upsample_strides[0]
+        model_config.rpn.layer_strides[0] // model_config.rpn.upsample_strides[0]
     )
 
     cfg = input_reader_config

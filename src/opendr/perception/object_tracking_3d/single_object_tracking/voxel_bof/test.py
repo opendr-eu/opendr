@@ -670,6 +670,10 @@ def test_rotated_pp_siamese_infer(
 
     print("fps:", learner.fps())
 
+    for key, values in learner.times.items():
+        t = sum(values) / len(values)
+        print(key, "time =", t * 1000, "ms, fps =", 1 / t)
+
 
 def test_rotated_pp_siamese_eval(
     model_name,
