@@ -32,8 +32,8 @@ jobs:
         ./bin/build_wheel.sh
     - name: Upload Wheel
       env:
-        TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run : |
         twine upload dist/*
   publish-docker-cpu:
