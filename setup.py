@@ -1,18 +1,32 @@
+import os
+from os.path import join
 from setuptools import setup
 from setuptools import find_packages
 from Cython.Build import cythonize
+import numpy
+
 
 packages = find_packages(where="./src")
 
+# Get the requirements
 with open('requirements.txt') as fp:
     install_requires = fp.read().splitlines()
 
+# Retrieve version
 exec(open('src/opendr/_version.py').read())
-
 try:
     __version__
 except NameError:
     __version__ = '0.0'
+
+# Gather all files
+data_files = []
+for root, dirs, files in os.walk("src/opendr"):
+    for file in files:
+        file_extension = file.split(".")[-1]
+        # Add all files except from shared libraries
+        if file_extension != "so" and file_extension != "py":
+            data_files.append(join(root.replace("src/opendr/", ""), file))
 
 setup(
     name='opendr-toolkit',
@@ -49,5 +63,7 @@ setup(
     license='LICENSE',
     package_dir={"": "src"},
     install_requires=install_requires,
-    ext_modules=cythonize(["src/opendr/perception/object_detection_2d/retinaface/algorithm/cython/*.pyx"])
+    package_data={'': data_files},
+    ext_modules=cythonize(["src/opendr/perception/object_detection_2d/retinaface/algorithm/cython/*.pyx"]),
+    include_dirs=[numpy.get_include()]
 )
