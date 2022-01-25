@@ -14,7 +14,6 @@ defaults:
 
 jobs:
   publish-wheel:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp') }}
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
@@ -38,7 +37,6 @@ jobs:
       run : |
         twine upload --repository testpypi dist/*
   publish-docker-cpu:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp') }}
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
@@ -56,7 +54,6 @@ jobs:
         docker tag opendr-toolkit:cpu_$OPENDR_VERSION opendr/opendr-toolkit:cpu_$OPENDR_VERSION
         docker push opendr/opendr-toolkit:cpu_$OPENDR_VERSION
   publish-docker-cuda:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'tmp') }}
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
