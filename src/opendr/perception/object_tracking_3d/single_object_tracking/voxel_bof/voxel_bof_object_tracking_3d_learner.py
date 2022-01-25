@@ -180,6 +180,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         self.__create_model()
         self._images = {}
+        self.fpses = []
 
         self.model.rpn_ort_session = None  # ONNX runtime inference session
 
@@ -801,9 +802,13 @@ class VoxelBofObjectTracking3DLearner(Learner):
             fps = 1 / (time.time() - t)
             print("fps =", fps)
 
+            self.fpses.append(fps)
+
             return result
 
     def init(self, point_cloud, label_lidar, draw=False):
+
+        self.fpses = []
 
         self.model.eval()
 
@@ -968,6 +973,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
         print("Downloaded model", model_name, "to", model_dir)
 
         return model_dir
+
+    def fps(self):
+        return sum(self.fpses) / len(self.fpses)
 
     def __convert_rpn_to_onnx(
         self,

@@ -668,6 +668,8 @@ def test_rotated_pp_siamese_infer(
     for object_id in object_ids:
         test_object_id(object_id, start_frame)
 
+    print("fps:", learner.fps())
+
 
 def test_rotated_pp_siamese_eval(
     model_name,
@@ -836,6 +838,7 @@ def test_rotated_pp_siamese_eval(
                         print(e)
                         iou3d = 0
                         iouAabb = 0
+                        accuracy = 0
 
                 distance = np.linalg.norm(label_lidar.location, ord=2)
                 ious.append((iou3d, iouAabb))
@@ -1000,6 +1003,7 @@ def test_rotated_pp_siamese_eval(
         "total_success_near": total_success_near.average,
         "total_precision_far": total_precision_far.average,
         "total_success_far": total_success_far.average,
+        "fps": learner.fps(),
     }
 
     for k, v in result.items():
