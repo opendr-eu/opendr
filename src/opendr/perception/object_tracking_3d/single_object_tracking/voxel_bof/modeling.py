@@ -270,17 +270,22 @@ def collect_results():
                         if "total_mean_success" in values
                         else -1
                     ),
+                    float(
+                        values["fps"]
+                        if "fps" in values
+                        else -1
+                    ),
                 ]
                 results.append(result)
 
     results = sorted(results, key=lambda x: x[2])
-    for name, iou3d, precision, success in results:
+    for name, iou3d, precision, success, fps in results:
         print(
-            name, "precision", precision, "success", success, "iou3d", iou3d
+            name, "precision", precision, "success", success, "iou3d", iou3d, "fps", fps
         )
 
     with open("modeling.txt", "w") as f:
-        for name, iou3d, precision, success in results:
+        for name, iou3d, precision, success, fps in results:
             print(
                 name,
                 "precision",
@@ -289,6 +294,8 @@ def collect_results():
                 success,
                 "iou3d",
                 iou3d,
+                "fps",
+                fps,
                 file=f,
             )
 
@@ -983,13 +990,14 @@ def run_new_smaller(device_id=0, total_devices=4):
     def create_models(eval_kwargs):
         result = []
         for feature_blocks, backbone in [
-            (3, "spp"),
             (3, "spps"),
-            (3, "stanets"),
-        ]:  # , (3, "stanet")
+            # (3, "stanets"), worse results
+            (3, "spp"),
+            # (3, "stanet"), worse results
+        ]:
             for size in [-1]:
-                for context_amount in [0.2, 0.5]:
-                    for lr in [0.00001, 0.000002]:
+                for context_amount in [0.2, -0.2]:
+                    for lr in [0.0001, 0.000002]:
                         for r_pos in [4, 2, 1]:
                             target_size = (
                                 [127, 127] if size == 1 else [-1, -1]
@@ -999,7 +1007,7 @@ def run_new_smaller(device_id=0, total_devices=4):
                             )
 
                             name = (
-                                "n1-b"
+                                "n3-b"
                                 + str(feature_blocks)
                                 + "-"
                                 + str(backbone).replace(".", "")
@@ -1020,9 +1028,9 @@ def run_new_smaller(device_id=0, total_devices=4):
                                         target_size=target_size,
                                         search_size=search_size,
                                         context_amount=context_amount,
-                                        train_steps=64000,
+                                        train_steps=128000,
                                         save_step=2000,
-                                        loads=[2000, 8000, 32000, 64000],
+                                        loads=[2000, 32000, 64000, 128000],
                                         lr=lr,
                                         r_pos=r_pos,
                                     ),
