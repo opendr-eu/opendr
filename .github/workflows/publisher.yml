@@ -1,6 +1,6 @@
 name: Publisher
 
-# trigger on file change
+# Trigger on new github release, a tag with format vX.Y.Z is expected (used to tag the docker)
 on:
   release:
     types: [published]
@@ -18,7 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: feature-automatic-publish # to remove before merge
+        submodules: true
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -35,13 +35,13 @@ jobs:
         TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
       run : |
-        twine upload --repository testpypi dist/*
+        twine upload dist/*
   publish-docker-cpu:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: feature-automatic-publish # to remove before merge
+        submodules: true
     - name: Build Docker Image
       run: docker build --tag opendr-toolkit:cpu_$OPENDR_VERSION --file Dockerfile .
     - name: Login to Docker Hub
@@ -58,7 +58,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: feature-automatic-publish # to remove before merge
+        submodules: true
     - name: Build Docker Image
       run: docker build --tag opendr-toolkit:cuda_$OPENDR_VERSION --file Dockerfile-cuda .
     - name: Login to Docker Hub
