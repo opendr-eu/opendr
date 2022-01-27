@@ -12,7 +12,7 @@ defaults:
 
 jobs:
   cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') || contains(github.event.pull_request.labels.*.name, 'test install') || github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') || contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     steps:
     - uses: rokroskar/workflow-run-cleanup-action@master
@@ -108,7 +108,7 @@ jobs:
         fi
   build-wheel:
     needs: cleanup-runs
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test install') || github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
@@ -132,7 +132,7 @@ jobs:
           dist/*.tar.gz
   test-install:
     needs: build-wheel
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test install') || github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
