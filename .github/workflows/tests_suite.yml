@@ -126,7 +126,7 @@ jobs:
       run:
         ./bin/build_wheel.sh
     - name: Upload wheel as artifact
-    - uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v2
       with:
         path:
           dist/*.tar.gz
