@@ -177,9 +177,5 @@ jobs:
         source venv/bin/activate
         wget https://raw.githubusercontent.com/opendr-eu/opendr/master/dependencies/pip_requirements.txt
         cat pip_requirements.txt | xargs -n 1 -L 1 pip install
-
-        sudo apt install -y tree
-        tree
-
-        pip install ./artifact/artifact/dist/*.tar.gz
+        pip install ./artifact/artifact/*.tar.gz
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
