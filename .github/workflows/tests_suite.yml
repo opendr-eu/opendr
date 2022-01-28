@@ -18,9 +18,12 @@ jobs:
     - uses: rokroskar/workflow-run-cleanup-action@master
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-    - name: Tmp
+    - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v5.1
+    - name: tmp
       run: |
-        echo "branch name: ${{ github.base_ref }}"
+        echo "name: ${{ steps.branch-name.outputs.current_branch }}"
   test-sources:
     needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || github.event_name == 'schedule' }}
