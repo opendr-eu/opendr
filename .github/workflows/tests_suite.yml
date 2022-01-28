@@ -138,7 +138,6 @@ jobs:
     - uses: actions/checkout@v2
       with:
          submodules: true
-    - name: Set up Python 3.8
     - name: Build image
       run: |
         docker build --tag opendr/opendr-toolkit:cpu_test --file Dockerfile .
