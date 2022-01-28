@@ -19,9 +19,9 @@ jobs:
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     - name: Get branch name
-        id: branch-name
-        uses: tj-actions/branch-names@v5.1
-    - name: tmp
+      id: branch-name
+      uses: tj-actions/branch-names@v5.1
+    - name: Tmp
       run: |
         echo "name: ${{ steps.branch-name.outputs.current_branch }}"
   test-sources:
