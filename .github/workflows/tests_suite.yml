@@ -141,7 +141,7 @@ jobs:
     - name: Set up Python 3.8
     - name: Build image
       run: |
-        docker build --tag opendr-toolkit:cpu_test --file Dockerfile .
+        docker build --tag opendr/opendr-toolkit:cpu_test --file Dockerfile .
         docker save opendr/opendr-toolkit:cpu_test > cpu_test.zip
     - name: Upload image artifact
       uses: actions/upload-artifact@v2
@@ -225,16 +225,13 @@ jobs:
           # - perception/object_tracking_3d
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
-      with:
-         submodules: true
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
     - name: Download artifact
       uses: actions/download-artifact@v2
       with:
         path: artifact
     - name: Test docker
       run: |
+        docker load < artifact/cpu_test.zip
+        docker run --name toolkit -i opendr/opendr-toolkit:cpu_test bash
+        docker start toolkit
+        docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
