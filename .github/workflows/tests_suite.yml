@@ -130,7 +130,25 @@ jobs:
       with:
         path:
           dist/*.tar.gz
-  test-install:
+  build-docker:
+    needs: cleanup-runs
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+         submodules: true
+    - name: Set up Python 3.8
+    - name: Build image
+      run: |
+        docker build --tag opendr-toolkit:cpu_test --file Dockerfile .
+        docker save opendr/opendr-toolkit:cpu_test > cpu_test.zip
+    - name: Upload image artifact
+      uses: actions/upload-artifact@v2
+      with:
+        path:
+          cpu_test.zip
+  test-wheel:
     needs: build-wheel
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
@@ -179,3 +197,44 @@ jobs:
         cat pip_requirements.txt | xargs -n 1 -L 1 pip install
         pip install ./artifact/artifact/*.tar.gz
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+  test-docker:
+    needs: build-docker
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        package:
+          - engine
+          - utils
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/object_tracking_2d
+          - perception/pose_estimation
+          - perception/speech_recognition
+          - perception/skeleton_based_action_recognition
+          - perception/semantic_segmentation
+          - perception/object_detection_2d
+          - perception/facial_expression_recognition
+          - perception/object_detection_3d
+          - control/mobile_manipulation
+          - simulation/human_model_generation
+          - control/single_demo_grasp
+          # - perception/object_tracking_3d
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+         submodules: true
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        path: artifact
+    - name: Test docker
+      run: |
