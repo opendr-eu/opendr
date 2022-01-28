@@ -20,7 +20,7 @@ jobs:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     - name: Tmp
       run: |
-        echo "branch name: ${GITHUB_REF##*/}"
+        echo "branch name: ${{ github.base_ref }}"
   test-sources:
     needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || github.event_name == 'schedule' }}
