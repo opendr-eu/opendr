@@ -230,7 +230,7 @@ jobs:
         path: artifact
     - name: Test docker
       run: |
-        docker load < artifact/cpu_test.zip
+        docker load < ./artifact/artifact/cpu_test.zip
         docker run --name toolkit -i opendr/opendr-toolkit:cpu_test bash
         docker start toolkit
         docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
