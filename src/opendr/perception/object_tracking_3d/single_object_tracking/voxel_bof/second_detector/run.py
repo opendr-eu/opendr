@@ -112,7 +112,7 @@ def original_target_size_by_object_size(object_size):
 
 
 def original_search_size_by_target_size(target_size):
-    return target_size + target_size // 2
+    return target_size * 2 + (target_size < 20) * 30 # target_size + target_size // 2
 
 
 def create_targets_and_searches(

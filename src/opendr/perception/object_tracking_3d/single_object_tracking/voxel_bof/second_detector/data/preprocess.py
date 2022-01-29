@@ -101,7 +101,7 @@ def prep_pointcloud(
     exists.
     """
 
-    t1 = time.time()
+    # t1 = time.time()
 
     points = input_dict["points"]
     if training:
@@ -248,14 +248,14 @@ def prep_pointcloud(
             gt_boxes[:, 6], offset=0.5, period=2 * np.pi
         )
 
-    t2 = time.time()
-    print("fps_prep_pointcloud_1 =", 1 / (t2 - t1))
+    # t2 = time.time()
+    # print("fps_prep_pointcloud_1 =", 1 / (t2 - t1))
     if shuffle_points:
         # shuffle is a little slow.
         np.random.shuffle(points)
 
-    t3 = time.time()
-    print("fps_prep_pointcloud_shuffle =", 1 / (t3 - t2))
+    # t3 = time.time()
+    # print("fps_prep_pointcloud_shuffle =", 1 / (t3 - t2))
 
     # [0, -40, -3, 70.4, 40, 1]
     voxel_size = voxel_generator.voxel_size
@@ -276,10 +276,10 @@ def prep_pointcloud(
         points, max_voxels
     )
 
-    print("voxels.shape =", voxels.shape)
+    # print("voxels.shape =", voxels.shape)
 
-    t4 = time.time()
-    print("fps_prep_pointcloud_voxel_generator =", 1 / (t4 - t3))
+    # t4 = time.time()
+    # print("fps_prep_pointcloud_voxel_generator =", 1 / (t4 - t3))
     example = {
         "voxels": voxels,
         "num_points": num_points,
@@ -332,8 +332,8 @@ def prep_pointcloud(
         )
         example["bev_map"] = bev_map
 
-    t5 = time.time()
-    print("fps_prep_pointcloud_target_assigner =", 1 / (t5 - t4))
+    # t5 = time.time()
+    # print("fps_prep_pointcloud_target_assigner =", 1 / (t5 - t4))
 
     if not training:
         return example
