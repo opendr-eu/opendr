@@ -49,7 +49,6 @@ python3 tool_synthetic_facial_generation.py -path_in ./demos/imgs_input/ -path_3
 
 3. The results can be found in ```results/rs_model/example/```, where multi-view facial images are generated for every person in a respective folder.
 
-
 ## License 
 Rotate-and-Render is provided under [CC-BY-4.0](https://github.com/Hangz-nju-cuhk/Rotate-and-Render/blob/master/LICENSE) license.
 SPADE, SyncBN, 3DDFA are under [MIT License](https://github.com/tasostefas/opendr_internal/blob/synthetic-multi-view-facial-generator/projects/data_generation/synthetic-multi-view-facial-image-generation/3ddfa/LICENSE)
