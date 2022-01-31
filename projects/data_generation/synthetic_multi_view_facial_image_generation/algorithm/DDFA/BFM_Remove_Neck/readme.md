@@ -1,5 +1,3 @@
-**Todo:** Update the neck-removing processing pipeline from original BFM model.
-
 The original version with neck:
 <p align="center">
   <img src="imgs/bfm_noneck.jpg" alt="neck" width="400px">
