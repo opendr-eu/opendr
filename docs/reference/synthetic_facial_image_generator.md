@@ -49,7 +49,8 @@ python3 tool_synthetic_facial_generation.py -path_in ./demos/imgs_input/ -path_3
 ```
 The corresponding paths for the input, output folders as well as the pitch and yaw angles for which the user wants to
 produce the facial images can be easily incorporated in the class creation while the method is initialized. 
-The process is executed for the CNN parameters and GPUs specified in the arguments of the aforementioned command. Users that wish to modify these parameters shall change the respective input arguments which derived from a parser including the arguments path in, path_3ddfa, save_path, val_yaw, val_pitch etc. 
+The process is executed for the CNN parameters and GPUs specified in the arguments of the aforementioned command.
+Users that wish to modify these parameters shall change the respective input arguments which derived from a parser including the arguments path in, path_3ddfa, save_path, val_yaw, val_pitch etc. 
 
 #### References
 <a name="R-R-paper" href="https://github.com/Hangz-nju-cuhk/Rotate-and-Render">[1]</a>
