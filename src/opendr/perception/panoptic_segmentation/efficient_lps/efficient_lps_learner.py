@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 from pathlib import Path
 import shutil
@@ -28,13 +29,13 @@ from opendr.engine.data import PointCloud
 
 from opendr.perception.panoptic_segmentation.datasets import SemanticKittiDataset, NuscenesDataset
 
-from .algorithm.EfficientLPS.mmdet.apis import single_gpu_test
-from .algorithm.EfficientLPS.mmdet.apis.train import batch_processor
-from .algorithm.EfficientLPS.mmdet.core import get_classes, build_optimizer, EvalHook
-from .algorithm.EfficientLPS.mmdet.datasets import build_dataloader
-from .algorithm.EfficientLPS.mmdet.datasets.pipelines import Compose
-from .algorithm.EfficientLPS.mmdet.models import build_detector
-from .algorithm.EfficientLPS.mmdet.utils import collect_env, get_root_logger
+from mmdet.apis import single_gpu_test
+from mmdet.apis.train import batch_processor
+from mmdet.core import get_classes, build_optimizer, EvalHook
+from mmdet.datasets import build_dataloader
+from mmdet.datasets.pipelines import Compose
+from mmdet.models import build_detector
+from mmdet.utils import collect_env, get_root_logger
 
 
 class EfficientLpsLearner(Learner):

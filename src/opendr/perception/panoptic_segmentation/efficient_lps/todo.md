@@ -3,17 +3,21 @@ ___
 ## Coding
 - -[X] Add EfficientLPS submodule
 - -[ ] Create Learner class in `src/opendr/perception/panoptic_segmentation/efficient_lps`
+    - -[ ] Implement & test fit() method
     
+### CONFLICTS:
+- -[ ] Check installation and dependency conflicts between MMDet and EfficientNet in EfficientLPS and EfficientPS.
 ### ROS
 - -[ ] Create ROS Node in `projects/opendr_ws/perception/scripts`
 
 ### Demo 
-- -[ ] Create Demo script in `projects/perception/panoptic_segmentation/efficient_lps`
+- -[ ] Create Demo script in `projects/perception/panoptic_segmentation/efficient_lps` (Use elps_test.py from here)
     
 ### Datasets
 - -[ ] Create Dataset Classes:
     - -[ ] NuScenes in `src/opendr/perception/panoptic_segmentation/nuscenes.py`
     - -[ ] Kitti in `src/opendr/perception/panoptic_segmentation/semantic_kitti.py`
+      - -[ ] Test data for training (fit()).
 
     
 ### Tests
