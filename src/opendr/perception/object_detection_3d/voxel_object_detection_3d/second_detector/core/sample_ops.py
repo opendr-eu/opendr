@@ -199,7 +199,7 @@ class DataBaseSamplerV2:
                 "difficulty": np.array([s["difficulty"] for s in sampled]),
                 "gt_boxes": sampled_gt_boxes,
                 "points": np.concatenate(s_points_list, axis=0),
-                "gt_masks": np.ones((num_sampled, ), dtype=np.bool_),
+                "gt_masks": np.ones((num_sampled, ), dtype=bool),
             }
             if self._use_group_sampling:
                 ret["group_ids"] = np.array([s["group_id"] for s in sampled])
@@ -240,10 +240,10 @@ class DataBaseSamplerV2:
 
         sp_boxes = np.stack([i["box3d_lidar"] for i in sampled], axis=0)
 
-        valid_mask = np.zeros([gt_boxes.shape[0]], dtype=np.bool_)
+        valid_mask = np.zeros([gt_boxes.shape[0]], dtype=bool)
         valid_mask = np.concatenate(
             [valid_mask,
-             np.ones([sp_boxes.shape[0]], dtype=np.bool_)], axis=0)
+             np.ones([sp_boxes.shape[0]], dtype=bool)], axis=0)
         boxes = np.concatenate([gt_boxes, sp_boxes], axis=0).copy()
         if self._enable_global_rot:
             # place samples to any place in a circle.
@@ -299,10 +299,10 @@ class DataBaseSamplerV2:
 
         sp_boxes = np.stack([i["box3d_lidar"] for i in sampled], axis=0)
         sp_group_ids = np.stack([i["group_id"] for i in sampled], axis=0)
-        valid_mask = np.zeros([gt_boxes.shape[0]], dtype=np.bool_)
+        valid_mask = np.zeros([gt_boxes.shape[0]], dtype=bool)
         valid_mask = np.concatenate(
             [valid_mask,
-             np.ones([sp_boxes.shape[0]], dtype=np.bool_)], axis=0)
+             np.ones([sp_boxes.shape[0]], dtype=bool)], axis=0)
         boxes = np.concatenate([gt_boxes, sp_boxes], axis=0).copy()
         group_ids = np.concatenate([gt_group_ids, sp_group_ids], axis=0)
         if self._enable_global_rot:

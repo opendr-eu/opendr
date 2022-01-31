@@ -158,8 +158,8 @@ def filter_gt_box_outside_range_by_center(gt_boxes, limit_range):
 
 
 def filter_gt_low_points(gt_boxes, points, num_gt_points, point_num_threshold=2):
-    points_mask = np.ones([points.shape[0]], np.bool)
-    gt_boxes_mask = np.ones([gt_boxes.shape[0]], np.bool)
+    points_mask = np.ones([points.shape[0]], bool)
+    gt_boxes_mask = np.ones([gt_boxes.shape[0]], bool)
     for i, num in enumerate(num_gt_points):
         if num <= point_num_threshold:
             masks = box_np_ops.points_in_rbbox(points, gt_boxes[i: i + 1])
@@ -614,7 +614,7 @@ def noise_per_object_v3_(
     if not isinstance(center_noise_std, (list, tuple, np.ndarray)):
         center_noise_std = [center_noise_std, center_noise_std, center_noise_std]
     if valid_mask is None:
-        valid_mask = np.ones((num_boxes,), dtype=np.bool_)
+        valid_mask = np.ones((num_boxes,), dtype=bool)
     center_noise_std = np.array(center_noise_std, dtype=gt_boxes.dtype)
     loc_noises = np.random.normal(scale=center_noise_std, size=[num_boxes, num_try, 3])
     rot_noises = np.random.uniform(
@@ -734,7 +734,7 @@ def noise_per_object_v2_(
     if not isinstance(center_noise_std, (list, tuple, np.ndarray)):
         center_noise_std = [center_noise_std, center_noise_std, center_noise_std]
     if valid_mask is None:
-        valid_mask = np.ones((num_boxes,), dtype=np.bool_)
+        valid_mask = np.ones((num_boxes,), dtype=bool)
     center_noise_std = np.array(center_noise_std, dtype=gt_boxes.dtype)
     loc_noises = np.random.normal(scale=center_noise_std, size=[num_boxes, num_try, 3])
     rot_noises = np.random.uniform(
@@ -839,7 +839,7 @@ def global_rotation_v2(gt_boxes, points, min_rad=-np.pi / 4, max_rad=np.pi / 4):
 def box_collision_test(boxes, qboxes, clockwise=True):
     N = boxes.shape[0]
     K = qboxes.shape[0]
-    ret = np.zeros((N, K), dtype=np.bool_)
+    ret = np.zeros((N, K), dtype=bool)
     slices = np.array([1, 2, 3, 0])
     lines_boxes = np.stack(
         (boxes, boxes[:, slices, :]), axis=2

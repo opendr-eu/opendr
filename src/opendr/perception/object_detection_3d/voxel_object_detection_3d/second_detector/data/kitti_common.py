@@ -257,7 +257,7 @@ def get_classes():
 
 
 def filter_gt_boxes(gt_boxes, gt_labels, used_classes):
-    mask = np.array([l in used_classes for l in gt_labels], dtype=np.bool)
+    mask = np.array([l in used_classes for l in gt_labels], dtype=bool)
     return mask
 
 
@@ -519,9 +519,9 @@ def add_difficulty_to_annos(info):
     occlusion = annos["occluded"]
     truncation = annos["truncated"]
     diff = []
-    easy_mask = np.ones((len(dims), ), dtype=np.bool)
-    moderate_mask = np.ones((len(dims), ), dtype=np.bool)
-    hard_mask = np.ones((len(dims), ), dtype=np.bool)
+    easy_mask = np.ones((len(dims), ), dtype=bool)
+    moderate_mask = np.ones((len(dims), ), dtype=bool)
+    hard_mask = np.ones((len(dims), ), dtype=bool)
     i = 0
     for h, o, t in zip(height, occlusion, truncation):
         if o > max_occlusion[0] or h <= min_height[0] or t > max_trunc[0]:

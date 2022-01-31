@@ -15,7 +15,7 @@ def is_line_segment_intersection_jit(lines1, lines2):
     # Return true if line segments AB and CD intersect
     N = lines1.shape[0]
     M = lines2.shape[0]
-    ret = np.zeros((N, M), dtype=np.bool_)
+    ret = np.zeros((N, M), dtype=bool)
     for i in range(N):
         for j in range(M):
             A = lines1[i, 0]
@@ -115,7 +115,7 @@ def points_in_convex_polygon_3d_jit(points,
     normal_vec, d = surface_equ_3d_jit(polygon_surfaces[:, :, :3, :])
     # normal_vec: [num_polygon, max_num_surfaces, 3]
     # d: [num_polygon, max_num_surfaces]
-    ret = np.ones((num_points, num_polygons), dtype=np.bool_)
+    ret = np.ones((num_points, num_polygons), dtype=bool)
     sign = 0.0
     for i in range(num_points):
         for j in range(num_polygons):
@@ -152,7 +152,7 @@ def points_in_convex_polygon_jit(points, polygon, clockwise=True):
         vec1 = (polygon[:, [num_points_of_polygon - 1] +
                         list(range(num_points_of_polygon - 1)), :, ] - polygon)
     # vec1: [num_polygon, num_points_of_polygon, 2]
-    ret = np.zeros((num_points, num_polygons), dtype=np.bool_)
+    ret = np.zeros((num_points, num_polygons), dtype=bool)
     success = True
     cross = 0.0
     for i in range(num_points):

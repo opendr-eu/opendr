@@ -147,7 +147,7 @@ def prep_pointcloud(
             if group_ids is not None:
                 group_ids = group_ids[keep_mask]
         gt_boxes_mask = np.array([n in class_names for n in gt_names],
-                                 dtype=np.bool_)
+                                 dtype=bool)
         if db_sampler is not None:
             sampled_dict = db_sampler.sample_all(
                 root_path,
@@ -423,9 +423,9 @@ def compute_difficulty(annos):
     occlusion = annos["occluded"]
     truncation = annos["truncated"]
     diff = []
-    easy_mask = np.ones((len(dims), ), dtype=np.bool)
-    moderate_mask = np.ones((len(dims), ), dtype=np.bool)
-    hard_mask = np.ones((len(dims), ), dtype=np.bool)
+    easy_mask = np.ones((len(dims), ), dtype=bool)
+    moderate_mask = np.ones((len(dims), ), dtype=bool)
+    hard_mask = np.ones((len(dims), ), dtype=bool)
     i = 0
     for h, o, t in zip(height, occlusion, truncation):
         if o > max_occlusion[0] or h <= min_height[0] or t > max_trunc[0]:
