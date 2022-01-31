@@ -139,7 +139,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             new_param = list(learner.model.parameters())[0].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
 
-            del learner
+            # del learner # free pointer error
             print("Fit", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
@@ -176,7 +176,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             new_param = list(learner.model.parameters())[0].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
 
-            del learner
+            # del learner # free pointer error
             print("Fit iterator", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
@@ -194,7 +194,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
             self.assertTrue(mAPbbox[0][0][0] > 1 and mAPbbox[0][0][0] < 95, msg=mAPbbox[0][0][0])
 
-            del learner
+            # del learner # free pointer error
             print("Eval", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
@@ -222,7 +222,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             self.assertTrue(len(result) == 3)
             self.assertTrue(len(result[0]) > 0)
 
-            del learner
+            # del learner # free pointer error
             print("Infer", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
@@ -250,8 +250,8 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             self.assertFalse(torch.equal(starting_param_1, starting_param_2))
             self.assertTrue(torch.equal(starting_param_1, new_param))
 
-            del learner
-            del learner2
+            # del learner # free pointer error
+            # del learner2 # free pointer error
             print("Save", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
@@ -284,8 +284,8 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
             self.assertTrue(learner2.model.rpn_ort_session is not None)
 
-            del learner
-            del learner2
+            # del learner # free pointer error
+            # del learner2 # free pointer error
             print("Optimize", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
