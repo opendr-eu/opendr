@@ -37,13 +37,10 @@ Specifies the device to be used.
 MultiviewDataGeneration.eval()
 ```
 
-This function is implementing the main procedure for the creation of the multi-view
-facial images, which consists of three different stages. Instead of initializing the main
-parameters of the 3DDFA network in the intializer , the first stage includes detection of the
-candidate faces in the input images and 3D-head mesh fitting using 3DDFA. Moreover,
-the second stage extracts the facial landmarks in order to derive the head pose and align
-the images with the 3d head model mesh. Finally, the main functionality of the multiview
-facial image rendering is executed by loading the respective network parameters.
+This function is implementing the main procedure for the creation of the multi-view facial images, which consists of three different stages.
+Instead of initializing the main parameters of the 3DDFA network in the intializer, the first stage includes detection of the candidate faces in the input images and 3D-head mesh fitting using 3DDFA.
+Moreover, the second stage extracts the facial landmarks in order to derive the head pose and align the images with the 3d head model mesh.
+Finally, the main functionality of the multiview facial image rendering is executed by loading the respective network parameters.
 
 ### Usage Example
 
