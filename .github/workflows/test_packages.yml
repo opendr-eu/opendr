@@ -45,7 +45,7 @@ jobs:
           # - control/mobile_manipulation
           # - simulation/human_model_generation
           # - control/single_demo_grasp
-          # - perception/object_tracking_3d
+          - perception/object_tracking_3d
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
