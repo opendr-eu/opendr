@@ -130,6 +130,7 @@ jobs:
       with:
         path:
           dist/*.tar.gz
+        retention-days: 1
   build-docker:
     needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
@@ -147,6 +148,7 @@ jobs:
       with:
         path:
           cpu_test.zip
+        retention-days: 1
   test-wheel:
     needs: build-wheel
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
