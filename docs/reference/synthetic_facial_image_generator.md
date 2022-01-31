@@ -27,7 +27,7 @@ The output images are stored in the folder indicated by save path which is also 
 - **val_yaw**: *str, default='10,20'* \
 Definition of the yaw angles (in the interval [−90°,90°]) for which the rendered images will be produced.
 - **val_pitch**: *str, default=' 30,40'* \
-Definition of the pitch angles (in the interval [−90◦,90◦]) for which the rendered images will be produced.
+Definition of the pitch angles (in the interval [−90°,90°]) for which the rendered images will be produced.
 - **device**: *{'cuda', 'cpu'}, default='cpu'* \
 Specifies the device to be used.
 
