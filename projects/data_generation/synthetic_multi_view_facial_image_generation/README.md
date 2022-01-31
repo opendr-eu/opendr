@@ -51,7 +51,7 @@ python3 tool_synthetic_facial_generation.py -path_in ./demos/imgs_input/ -path_3
 
 
 ## License 
-The usage of this software code Rotate-and-Render is under [CC-BY-4.0](https://github.com/Hangz-nju-cuhk/Rotate-and-Render/blob/master/LICENSE).
+Rotate-and-Render is provided under [CC-BY-4.0](https://github.com/Hangz-nju-cuhk/Rotate-and-Render/blob/master/LICENSE) license.
 The usage of this software code SPADE, SyncBN, 3DDFA are under [MIT License](https://github.com/tasostefas/opendr_internal/blob/synthetic-multi-view-facial-generator/projects/data_generation/synthetic-multi-view-facial-image-generation/3ddfa/LICENSE)
 
 ## Acknowledgement
