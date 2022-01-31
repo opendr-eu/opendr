@@ -112,8 +112,8 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
             'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
-            'projects/data_generation/synthetic_multi_view_facial_image_generation/test_frontal.py',
-            'projects/data_generation/synthetic_multi_view_facial_image_generation/train.py',
+            'projects/data_generation/synthetic_multi_view_facial_image_generation/algorithm/Rotate_and_Render/test_frontal.py',
+            'projects/data_generation/synthetic_multi_view_facial_image_generation/algorithm/Rotate_and_Render/train.py',
             'src/opendr/perception/object_detection_2d/retinaface/Makefile'
         ]
 
