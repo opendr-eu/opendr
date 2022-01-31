@@ -20,8 +20,7 @@ Constructor main parameters *args* explanation:
 - **path_in**: *str, default='./example/Images'* \
 An absolute path (path in) which indicates the folder that contains the set of single view facial image snapshots to be processed by the algorithm.
 - **path_3ddfa**: *str, default='./'* \
-An absolute path (path 3ddfa) which indicates the 3ddfa module folder of the software structure as presented in the repository. This path is necessary in order 
-for the software to create the folders for the intermediate / temporary storage of files generated during the pre-processing such as 3d face models, facial landmarks etc 
+An absolute path (path 3ddfa) which indicates the 3ddfa module folder of the software structure as presented in the repository. This path is necessary in order for the software to create the folders for the intermediate / temporary storage of files generated during the pre-processing such as 3d face models, facial landmarks etc.
 in the folder results of this path.
 - **save_path**: *str, default='./results'* \
 The output images are stored in the folder indicated by save path which is also a class input parameter.
