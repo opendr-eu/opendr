@@ -1033,6 +1033,7 @@ def test_rotated_pp_siamese_eval(
 
     return result
 
+<<<<<<< Updated upstream
 
 def create_extended_eval_kwargs():
     params = {
@@ -1127,6 +1128,8 @@ def eval_all_extended(
     return results
 
 
+=======
+>>>>>>> Stashed changes
 if __name__ == "__main__":
 
     fire.Fire()
