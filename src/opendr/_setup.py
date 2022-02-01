@@ -50,14 +50,15 @@ def get_packages(module=None):
         name = "opendr-toolkit-" + module_short_name.replace("_", "-")
     else:
         name = "opendr-toolkit"
-    # TODO: Do we need this? -probably not
-    packages.append('opendr.utils')
-    packages.append('opendr.perception')
-    packages.append('opendr.engine')
-    packages.append('opendr.control')
-    packages.append('opendr.planning')
-    packages.append('opendr.simulation')
-    packages.append('opendr')
+
+    if module == 'engine':
+        packages.append('opendr.utils')
+        packages.append('opendr.perception')
+        packages.append('opendr.engine')
+        packages.append('opendr.control')
+        packages.append('opendr.planning')
+        packages.append('opendr.simulation')
+        packages.append('opendr')
 
     return name, packages
 
@@ -78,6 +79,7 @@ def generate_manifest(module=None):
         f.write("include README.md \n")
         f.write("include src/opendr/_version.py \n")
         f.write("include src/opendr/_setup.py \n")
+
 
 def get_description(module=None):
     if module:
@@ -106,7 +108,7 @@ def get_dependencies(current_module):
             cur_deps = []
         # Add dependencies found (filter git-based ones and local ones)
         for x in cur_deps:
-            if 'git' in x or '$' in x:
+            if 'git' in x or '${OPENDR_HOME}' in x:
                 skipped_dependencies.append(x)
             else:
                 dependencies.append(x)
@@ -114,10 +116,13 @@ def get_dependencies(current_module):
     if current_module == 'perception/heart_anomaly_detection':
         dependencies.append('opendr-toolkit-compressive-learning')
 
+    if current_module == 'perception/object_tracking_3d':
+        dependencies.append('object_detection_3d')
+
     dependencies = list(set(dependencies))
-    print("deps = ", dependencies)
     skipped_dependencies = list(set(skipped_dependencies))
     return dependencies, skipped_dependencies
+
 
 def get_data_files(module):
     data_files = []
@@ -129,8 +134,8 @@ def get_data_files(module):
                 data_files.append(join(root.replace("src/opendr/", ""), file))
     return data_files
 
-def build_package(module):
 
+def build_package(module):
     if module == 'perception/object_detection_2d':
         from Cython.Build import cythonize
         import numpy
@@ -155,10 +160,9 @@ def build_package(module):
             for package in skipped_dependencies:
                 if 'git' in package:
                     subprocess.call([sys.executable, '-m', 'pip', 'install', package])
+                if '${OPENDR_HOME}' in package:
+                    subprocess.call([sys.executable, '-m', 'pip', 'install', package.replace('${OPENDR_HOME}', '.')])
 
-    print("-------")
-    print(packages, dependencies)
-    print("-------")
     setup(
         name=name,
         version=__version__,
@@ -173,13 +177,8 @@ def build_package(module):
         install_requires=dependencies,
         cmdclass={
             'develop': PostInstallScripts,
-           'install': PostInstallScripts,
+            'install': PostInstallScripts,
         },
         package_data={'': get_data_files(module)},
         **extra_params
     )
-    print("----")
-    print(skipped_dependencies)
-    print("----")
-
-
