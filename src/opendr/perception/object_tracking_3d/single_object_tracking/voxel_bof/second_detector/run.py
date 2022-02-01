@@ -270,7 +270,7 @@ def get_sub_image(image, center, size):
 
 
 def create_logisticloss_labels(
-    label_size, t, r_pos, r_neg=0, ignore_label=-100, loss="bce", max_pos=1, min_pos=0.5
+    label_size, t, r_pos, r_neg=0, ignore_label=-100, loss="bce", max_pos=1, min_pos=0.5, r_additional=1
 ):
     labels = np.zeros(label_size, dtype=np.float32)
 
@@ -286,7 +286,7 @@ def create_logisticloss_labels(
             # if dist <= 0:
             #     labels[r, c] = 1
             if loss == "bce":
-                if np.all(dist <= r_pos + 1):
+                if np.all(dist <= r_pos + r_additional):
                     labels[r, c] = min_pos * dist/r_pos + max_pos * (1 - dist/r_pos)
                 elif np.all(dist <= r_neg):
                     labels[r, c] = ignore_label
@@ -1021,28 +1021,28 @@ def train(
                         [
                             [
                                 np.array(search_image.shape[-2:]) / 2,
-                                np.array([5, 5]),
+                                np.array([2, 2]),
                                 0,
                             ],
                             [
                                 (rot1 / search_size_with_context)[[1, 0]]
                                 * np.array(search_image.shape[-2:])
                                 + np.array(search_image.shape[-2:]) / 2,
-                                np.array([5, 5]),
+                                np.array([1, 1]),
                                 0,
                             ],
                             [
                                 (delta / search_size_with_context)[[1, 0]]
                                 * np.array(search_image.shape[-2:])
                                 + np.array(search_image.shape[-2:]) / 2,
-                                np.array([4, 4]),
+                                np.array([1, 1]),
                                 0,
                             ],
                             [
                                 (true_delta / search_size_with_context)[[1, 0]]
                                 * np.array(search_image.shape[-2:])
                                 + np.array(search_image.shape[-2:]) / 2,
-                                np.array([3, 3]),
+                                np.array([1, 1]),
                                 0,
                             ],
                         ],
@@ -1062,11 +1062,11 @@ def train(
                         [
                             [
                                 np.array(target_image.shape[-2:]) / 2,
-                                np.array([5, 5]),
+                                np.array([1, 1]),
                                 0,
                             ]
                         ],
-                        [(255, 0, 0)],
+                        [(0, 255, 0)],
                     )
                     draw_pseudo_image(
                         pseudo_image,
