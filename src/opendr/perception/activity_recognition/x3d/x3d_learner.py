@@ -19,7 +19,7 @@ import yaml
 import os
 from pathlib import Path
 from opendr.engine.learners import Learner
-from opendr.utils.io import bump_version
+from opendr.engine.helper.io  import bump_version
 from torch import onnx
 import onnxruntime as ort
 
