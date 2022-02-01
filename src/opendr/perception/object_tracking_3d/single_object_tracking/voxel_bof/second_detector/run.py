@@ -1011,6 +1011,12 @@ def train(
                     draw_pseudo_image(
                         feat_target[0], "./plots/train/feat_target.png"
                     )
+                    draw_pseudo_image(
+                        feat_search[0][0:1, :, :], "./plots/train/feat_search_0.png"
+                    )
+                    draw_pseudo_image(
+                        feat_target[0][0:1, :, :], "./plots/train/feat_target_0.png"
+                    )
 
                     vector = target[0] - search[0]
                     rot1 = rotate_vector(vector, search[2])

@@ -6,6 +6,7 @@ import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.models.bof import BoFConfig, LBoF
 
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.nn import (
     one_hot as tp_one_hot,
@@ -395,6 +396,7 @@ class RPN(nn.Module):
         use_bev=False,
         box_code_size=7,
         name="rpn",
+        bof_mode="none",
     ):
         super(RPN, self).__init__()
         self._num_anchor_per_loc = num_anchor_per_loc
@@ -535,6 +537,22 @@ class RPN(nn.Module):
                 sum(num_upsample_filters), num_anchor_per_loc * 2, 1
             )
 
+        self.bof_mid = None
+        self.bof_end = None
+
+        if bof_mode != "none":
+            mode = bof_mode[0]
+            input_dims = [num_filters[x - 1] for x in bof_mode[1]]
+            configs = [BoFConfig() for _ in bof_mode[1]]
+
+            for c, i in zip(configs, input_dims):
+                c.input_dim = i
+
+            if mode == "end":
+                self.bof_end = LBoF(configs[0])
+            else:
+                raise ValueError()
+
     def forward(self, x, bev=None, feature_blocks=3):
 
         if feature_blocks >= 1:
@@ -547,6 +565,8 @@ class RPN(nn.Module):
             x = self.block3(x)
         # up3 = self.deconv3(x)
         # x = torch.cat([up1, up2, up3], dim=1)
+
+        x = self.bof_end(x)
 
         return x
 
@@ -603,6 +623,7 @@ class VoxelNet(nn.Module):
         voxel_size=(0.2, 0.2, 4),
         pc_range=(0, -40, -3, 70.4, 40, 1),
         name="voxelnet",
+        bof_mode="none",
     ):
         super().__init__()
         self.name = name
@@ -710,6 +731,7 @@ class VoxelNet(nn.Module):
             use_groupnorm=use_groupnorm,
             num_groups=num_groups,
             box_code_size=target_assigner.box_coder.code_size,
+            bof_mode=bof_mode,
         )
 
         self.rpn_acc = metrics.Accuracy(

@@ -136,6 +136,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         target_feature_merge_scale=0,
         loss_function="bce",  # focal, bce
         r_pos=16,
+        bof_mode="none",
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -175,6 +176,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.target_feature_merge_scale = target_feature_merge_scale
         self.loss_function = loss_function
         self.r_pos = r_pos
+        self.bof_mode = bof_mode
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -1095,7 +1097,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
     ):
         all_params = torch.load(path, map_location=self.device)
         model.load_state_dict(
-            all_params if use_original_dict else all_params[state_dict_name]
+            all_params if use_original_dict else all_params[state_dict_name],
+            strict=self.bof_mode == "none",
         )
 
     def __prepare_datasets(
@@ -1309,6 +1312,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             lr_schedule_name=self.lr_schedule,
             lr_schedule_params=self.lr_schedule_params,
             loss_function=self.loss_function,
+            bof_mode=self.bof_mode,
         )
 
         self.model = model

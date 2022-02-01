@@ -98,6 +98,7 @@ def create_model(
     loss_function,
     log=print,
     verbose=False,
+    bof_mode="none",
 ):
 
     loss_scale = None
@@ -129,7 +130,7 @@ def create_model(
     ######################
     center_limit_range = model_cfg.post_center_limit_range
     net = second_builder.build(
-        model_cfg, voxel_generator, target_assigner, device
+        model_cfg, voxel_generator, target_assigner, device, bof_mode
     )
     net.device = device
     net.bv_range = bv_range
