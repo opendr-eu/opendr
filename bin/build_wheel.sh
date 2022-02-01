@@ -1,20 +1,22 @@
 #!/bin/bash
 
 # Activate OpenDR
-source ./bin/activate.sh
-export OPENDR_HOME=$(pwd)
+source venv/bin/activate
 
+# Clean existing packages
 rm dist/*
 rm src/*egg-info -rf
 
 # Build OpenDR packages
 while read p; do
-  echo "Build wheel for $p"
-  cd src/opendr/$p
-  python3 setup.py sdist --dist-dir=$OPENDR_HOME/dist
-  cd $OPENDR_HOME
+  echo "Building wheel for $p"
+  echo "exec(open('src/opendr/_setup.py').read())" > setup.py
+  echo "build_package('$p')" >> setup.py
+  python3 setup.py sdist
 done < packages.txt
 
+rm setup.py
+rm MANIFEST.in
 
 # Install the built packages
 #pip install dist/opendr-toolkit-engine-1.0.tar.gz
@@ -31,3 +33,5 @@ done < packages.txt
 #pip install dist/opendr-toolkit-skeleton-based-action-recognition-1.0.tar.gz
 #pip install dist/opendr-toolkit-activity-recognition-1.0.tar.gz
 #pip install dist/opendr-toolkit-object-detection-2d-1.0.tar.gz
+
+
