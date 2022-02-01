@@ -18,3 +18,4 @@ perception/object_tracking_3d
 perception/panoptic_segmentation
 control/mobile_manipulation
 control/single_demo_grasp
+opendr
