@@ -4,4 +4,11 @@ perception/semantic_segmentation
 perception/face_recognition
 perception/pose_estimation
 perception/compressive_learning
+perception/facial_expression_recognition
 utils/hyperparameter_tuner
+perception/heart_anomaly_detection
+simulation/human_model_generation
+perception/multimodal_human_centric
+perception/skeleton_based_action_recognition
+perception/activity_recognition
+perception/object_detection_2d

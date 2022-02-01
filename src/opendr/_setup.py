@@ -18,12 +18,8 @@ from configparser import ConfigParser
 from setuptools import find_packages
 from setuptools.command.install import install
 
-
-
-
-
 base = os.environ['OPENDR_HOME']
-os.environ['DISABLE_BCOLZ_AVX2']='true'
+os.environ['DISABLE_BCOLZ_AVX2'] = 'true'
 
 # Retrieve version
 exec(open(join(base, 'src/opendr/_version.py')).read())
@@ -44,6 +40,7 @@ with open(join(base, "description.txt")) as f:
 
 def build_package(module):
     if module == 'perception/object_detection_2d':
+        from Cython.Build import cythonize
         import numpy
         extra_params = {
             'ext_modules':
@@ -52,17 +49,21 @@ def build_package(module):
     else:
         extra_params = {}
 
-
-    class PostInstallCommand(install):
-        """Post-installation for installation mode."""
-
+    name, packages = get_packages(module)
+    dependencies, skipped_dependencies = get_dependencies(module)
+    generate_manifest(module)
+    print(packages)
+    # Define class for post installation scripts
+    class PostInstallScripts(install):
         def run(self):
             install.run(self)
-            # PUT YOUR POST-INSTALL SCRIPT HERE or CALL A FUNCTION
+            import subprocess
+            # Install potential git repos during post installation
+            for dep in skipped_dependencies:
+                if 'git' in dep:
+                    print("Installing git package from ", dep)
+                    subprocess.run(['pip', 'install', dep])
 
-    generate_manifest(module)
-    dependencies, skipped_dependencies = get_dependencies(module)
-    name, packages = get_packages(module)
     setup(
         name=name,
         version=__version__,
@@ -76,8 +77,8 @@ def build_package(module):
         package_dir={"": join(base, "src")},
         install_requires=dependencies,
         cmdclass={
-            'develop': PostInstallCommand,
-            'install': PostInstallCommand,
+            'develop': PostInstallScripts,
+            'install': PostInstallScripts,
         },
         **extra_params
     )
@@ -111,8 +112,10 @@ def generate_manifest(module=None):
             f.write("recursive-include " + join(base, "src/opendr", module) + " *\n")
             f.write("include " + join(base, "src/opendr", module.split("/")[0]) + " *\n")
         f.write("include " + join(base, "description.txt") + "\n")
+        f.write("include " + join(base, "README.md") + "\n")
         f.write("include " + join(base, "src/opendr/_version.py") + "\n")
         f.write("include " + join(base, "src/opendr/_setup.py") + "\n")
+
 
 
 def clean_manifest():
