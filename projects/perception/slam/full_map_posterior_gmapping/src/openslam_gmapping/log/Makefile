@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 OBJS= configuration.o carmenconfiguration.o sensorlog.o sensorstream.o
 APPS= log_test log_plot scanstudio2carmen rdk2carmen
 
-LDFLAGS+=  -lsensor_range -lsensor_odometry -lsensor_base 
-CPPFLAGS+= -I../sensor 
+LDFLAGS+=  -lsensor_range -lsensor_odometry -lsensor_base
+CPPFLAGS+= -I../sensor
 
 -include ../global.mk
 -include ../build_tools/Makefile.generic-shared-object

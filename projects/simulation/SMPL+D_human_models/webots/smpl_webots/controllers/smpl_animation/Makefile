@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,6 @@ ifndef WEBOTS_SKIN_ANIMATION_PATH
 WEBOTS_SKIN_ANIMATION_PATH = ../../libraries
 endif
 INCLUDE = -I"$(WEBOTS_SKIN_ANIMATION_PATH)/smpl_util/include"
-LIBRARIES = -L"$(WEBOTS_SKIN_ANIMATION_PATH)/smpl_util" -lsmpl_util 
+LIBRARIES = -L"$(WEBOTS_SKIN_ANIMATION_PATH)/smpl_util" -lsmpl_util
 # Do not modify the following: this includes Webots global Makefile.include
 include $(WEBOTS_HOME_PATH)/resources/Makefile.include

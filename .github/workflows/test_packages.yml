@@ -1,0 +1,103 @@
+name: Test Packages
+# This workflow tests the latest (third-party hosted) available builds
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+  schedule:
+    - cron:  '0 23 * * *'
+
+defaults:
+  run:
+    shell: bash
+
+
+jobs:
+  cleanup-runs:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') || github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: rokroskar/workflow-run-cleanup-action@master
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+  test-wheel:
+    needs: cleanup-runs
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') || github.event_name == 'schedule' }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        package:
+          - engine
+          - utils
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/object_tracking_2d
+          - perception/pose_estimation
+          - perception/speech_recognition
+          - perception/skeleton_based_action_recognition
+          - perception/semantic_segmentation
+          - perception/object_detection_2d
+          - perception/facial_expression_recognition
+          # - perception/object_detection_3d
+          # - control/mobile_manipulation
+          # - simulation/human_model_generation
+          # - control/single_demo_grasp
+          # - perception/object_tracking_3d
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Test Wheel
+      run: |
+        export DISABLE_BCOLZ_AVX2=true
+        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev python3-dev
+        python3 -m venv venv
+        source venv/bin/activate
+        wget https://raw.githubusercontent.com/opendr-eu/opendr/master/dependencies/pip_requirements.txt
+        cat pip_requirements.txt | xargs -n 1 -L 1 pip install
+        # Test new package
+        pip install opendr-toolkit
+        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+  test-docker:
+    needs: cleanup-runs
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') || github.event_name == 'schedule' }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        package:
+          - engine
+          - utils
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/object_tracking_2d
+          - perception/pose_estimation
+          - perception/speech_recognition
+          - perception/skeleton_based_action_recognition
+          - perception/semantic_segmentation
+          - perception/object_detection_2d
+          - perception/facial_expression_recognition
+          - perception/object_detection_3d
+          - control/mobile_manipulation
+          - simulation/human_model_generation
+          - control/single_demo_grasp
+          #- perception/object_tracking_3d
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Test Docker
+      run: |
+        docker run --name toolkit -i opendr/opendr-toolkit:cpu_latest bash
+        docker start toolkit
+        docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
