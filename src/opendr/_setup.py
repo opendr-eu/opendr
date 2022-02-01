@@ -50,6 +50,7 @@ def get_packages(module=None):
         name = "opendr-toolkit-" + module_short_name.replace("_", "-")
     else:
         name = "opendr-toolkit"
+    # TODO: Do we need this? -probably not
     packages.append('opendr.utils')
     packages.append('opendr.perception')
     packages.append('opendr.engine')
@@ -110,11 +111,23 @@ def get_dependencies(current_module):
             else:
                 dependencies.append(x)
 
+    if current_module == 'perception/heart_anomaly_detection':
+        dependencies.append('opendr-toolkit-compressive-learning')
+
     dependencies = list(set(dependencies))
     print("deps = ", dependencies)
     skipped_dependencies = list(set(skipped_dependencies))
     return dependencies, skipped_dependencies
 
+def get_data_files(module):
+    data_files = []
+    for root, dirs, files in os.walk(join("src", "opendr", module)):
+        for file in files:
+            file_extension = file.split(".")[-1]
+            # Add all files except from shared libraries
+            if file_extension != "so" and file_extension != "py":
+                data_files.append(join(root.replace("src/opendr/", ""), file))
+    return data_files
 
 def build_package(module):
 
@@ -162,6 +175,7 @@ def build_package(module):
             'develop': PostInstallScripts,
            'install': PostInstallScripts,
         },
+        package_data={'': get_data_files(module)},
         **extra_params
     )
     print("----")
