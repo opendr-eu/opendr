@@ -16,8 +16,14 @@ import os
 from os.path import join
 from configparser import ConfigParser
 from setuptools import find_packages
+from setuptools.command.install import install
+
+
+
+
 
 base = os.environ['OPENDR_HOME']
+os.environ['DISABLE_BCOLZ_AVX2']='true'
 
 # Retrieve version
 exec(open(join(base, 'src/opendr/_version.py')).read())
@@ -37,13 +43,22 @@ with open(join(base, "description.txt")) as f:
 
 
 def build_package(module):
-    if current_module == 'perception/object_detection_2d':
+    if module == 'perception/object_detection_2d':
+        import numpy
         extra_params = {
             'ext_modules':
                 cythonize([join(base, "src/opendr/perception/object_detection_2d/retinaface/algorithm/cython/*.pyx")]),
             'include_dirs': [numpy.get_include()]}
     else:
         extra_params = {}
+
+
+    class PostInstallCommand(install):
+        """Post-installation for installation mode."""
+
+        def run(self):
+            install.run(self)
+            # PUT YOUR POST-INSTALL SCRIPT HERE or CALL A FUNCTION
 
     generate_manifest(module)
     dependencies, skipped_dependencies = get_dependencies(module)
@@ -60,9 +75,16 @@ def build_package(module):
         license=license,
         package_dir={"": join(base, "src")},
         install_requires=dependencies,
+        cmdclass={
+            'develop': PostInstallCommand,
+            'install': PostInstallCommand,
+        },
         **extra_params
     )
     clean_manifest()
+    print("----")
+    print(skipped_dependencies)
+    print("----")
 
 
 def get_packages(module=None):

@@ -1,2 +1,7 @@
 engine
 perception/speech_recognition
+perception/semantic_segmentation
+perception/face_recognition
+perception/pose_estimation
+perception/compressive_learning
+utils/hyperparameter_tuner
