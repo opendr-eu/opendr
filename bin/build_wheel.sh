@@ -19,6 +19,7 @@ rm src/*egg-info -rf
 while read p; do
   echo "Build wheel for $p"
   cd src/opendr/$p
+  python3 setup.py sdist --dist-dir=$OPENDR_HOME/dist
   cd $OPENDR_HOME
 done < packages.txt
 
