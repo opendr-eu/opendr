@@ -42,21 +42,22 @@ def get_packages(module=None):
     packages = find_packages(where="./src")
     if module:
         module_short_name = module
-        if module != 'engine':
+        if module == 'engine':
+            packages = [x for x in packages if 'engine' in x]
+        else:
             module_short_name = module.split("/")[1]
-        packages = [x for x in packages if module_short_name in x]
+            packages = [x for x in packages if module_short_name in x]
         name = "opendr-toolkit-" + module_short_name.replace("_", "-")
     else:
         name = "opendr-toolkit"
-
-    if module == 'engine':
-        packages.append('opendr.utils')
+    packages.append('opendr.utils')
     packages.append('opendr.perception')
     packages.append('opendr.engine')
     packages.append('opendr.control')
     packages.append('opendr.planning')
     packages.append('opendr.simulation')
     packages.append('opendr')
+
     return name, packages
 
 
@@ -69,9 +70,9 @@ def generate_manifest(module=None):
         else:
             f.write("recursive-include " + join("src/opendr", module) + " *\n")
             f.write("include " + join("src/opendr", module.split("/")[0]) + " *\n")
-            f.write("exclude " + join("src/opendr", module.split("/")[0]) + "/__init__.py \n")
 
         f.write("exclude src/opendr/__init__.py \n")
+        f.write("exclude src/opendr/utils/__init__.py \n")
         f.write("include description.txt \n")
         f.write("include README.md \n")
         f.write("include src/opendr/_version.py \n")
