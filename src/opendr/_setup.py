@@ -39,8 +39,9 @@ os.environ['DISABLE_BCOLZ_AVX2'] = 'true'
 
 
 def get_packages(module=None):
-    packages = find_packages(where="./src")
+    packages = []
     if module:
+        packages = find_packages(where="./src")
         module_short_name = module
         if module == 'engine':
             packages = [x for x in packages if 'engine' in x]
@@ -69,13 +70,14 @@ def generate_manifest(module=None):
             f.write("recursive-include src/opendr/engine *\n")
             f.write("include src/opendr/engine *\n")
             f.write("include src/opendr/utils *\n")
-        else:
+        elif module:
             f.write("recursive-include " + join("src/opendr", module) + " *\n")
             f.write("include " + join("src/opendr", module.split("/")[0]) + " *\n")
 
         f.write("exclude src/opendr/__init__.py \n")
         f.write("exclude src/opendr/utils/__init__.py \n")
         f.write("include description.txt \n")
+        f.write("include packages.txt \n")
         f.write("include README.md \n")
         f.write("include src/opendr/_version.py \n")
         f.write("include src/opendr/_setup.py \n")
@@ -89,53 +91,67 @@ def get_description(module=None):
 
 
 def get_dependencies(current_module):
-    # Read all the dependencies.ini for each tool category
     dependencies = []
     skipped_dependencies = []
-    # Get all subfolders
-    paths = ['.']
+    # Read all the dependencies.ini for each tool category
+    if current_module:
+        # Get all subfolders
+        paths = ['.']
 
-    for file in os.listdir(join("src/opendr", current_module)):
-        if os.path.isdir(join("src/opendr", current_module, file)):
-            paths.append(file)
+        for file in os.listdir(join("src/opendr", current_module)):
+            if os.path.isdir(join("src/opendr", current_module, file)):
+                paths.append(file)
 
-    parser = ConfigParser()
-    for path in paths:
-        try:
-            parser.read(join("src/opendr", current_module, path, 'dependencies.ini'))
-            cur_deps = parser.get("runtime", "python").split('\n')
-        except Exception:
-            cur_deps = []
-        # Add dependencies found (filter git-based ones and local ones)
-        for x in cur_deps:
-            if 'git' in x or '${OPENDR_HOME}' in x:
-                skipped_dependencies.append(x)
-            else:
-                dependencies.append(x)
+        parser = ConfigParser()
+        for path in paths:
+            try:
+                parser.read(join("src/opendr", current_module, path, 'dependencies.ini'))
+                cur_deps = parser.get("runtime", "python").split('\n')
+            except Exception:
+                cur_deps = []
+            # Add dependencies found (filter git-based ones and local ones)
+            for x in cur_deps:
+                if 'git' in x or '${OPENDR_HOME}' in x:
+                    skipped_dependencies.append(x)
+                else:
+                    dependencies.append(x)
 
-    if current_module == 'perception/heart_anomaly_detection':
-        dependencies.append('opendr-toolkit-compressive-learning')
+        if current_module == 'perception/heart_anomaly_detection':
+            dependencies.append('opendr-toolkit-compressive-learning')
 
-    if current_module == 'perception/object_tracking_3d':
-        dependencies.append('object_detection_3d')
+        if current_module == 'perception/object_tracking_3d':
+            dependencies.append('object_detection_3d')
 
-    dependencies = list(set(dependencies))
-    skipped_dependencies = list(set(skipped_dependencies))
+        dependencies = list(set(dependencies))
+        skipped_dependencies = list(set(skipped_dependencies))
+    else:
+        with open("packages.txt", "r") as f:
+            packages = [x.strip() for x in f.readlines()]
+        for package in packages:
+            if '/' in package:
+                dependencies.append('opendr-toolkit-' + package.split('/')[1].replace('_', '-'))
+            elif package != 'opendr':
+                dependencies.append('opendr-toolkit-' + package.replace('_', '-'))
     return dependencies, skipped_dependencies
 
 
 def get_data_files(module):
     data_files = []
-    for root, dirs, files in os.walk(join("src", "opendr", module)):
-        for file in files:
-            file_extension = file.split(".")[-1]
-            # Add all files except from shared libraries
-            if file_extension != "so" and file_extension != "py":
-                data_files.append(join(root.replace("src/opendr/", ""), file))
+    if module:
+        for root, dirs, files in os.walk(join("src", "opendr", module)):
+            for file in files:
+                file_extension = file.split(".")[-1]
+                # Add all files except from shared libraries
+                if file_extension != "so" and file_extension != "py":
+                    data_files.append(join(root.replace("src/opendr/", ""), file))
     return data_files
 
 
 def build_package(module):
+    if module == "opendr":
+        # Flag to enable building opendr-metapackage
+        module = None
+
     if module == 'perception/object_detection_2d':
         from Cython.Build import cythonize
         import numpy
