@@ -53,8 +53,7 @@ def get_packages(module=None):
     else:
         name = "opendr-toolkit"
 
-    if module == 'engine':
-        packages.append('opendr.utils')
+    packages.append('opendr.utils')
     packages.append('opendr.perception')
     packages.append('opendr.engine')
     packages.append('opendr.control')
