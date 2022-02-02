@@ -74,7 +74,7 @@ jobs:
           - perception/object_detection_2d
           - simulation/human_model_generation
           - perception/facial_expression_recognition
-          # - control/single_demo_grasp
+          - control/single_demo_grasp
           # - perception/object_tracking_3d
         include:
           - os: ubuntu-20.04
