@@ -55,12 +55,12 @@ def get_packages(module=None):
 
     if module == 'engine':
         packages.append('opendr.utils')
-        packages.append('opendr.perception')
-        packages.append('opendr.engine')
-        packages.append('opendr.control')
-        packages.append('opendr.planning')
-        packages.append('opendr.simulation')
-        packages.append('opendr')
+    packages.append('opendr.perception')
+    packages.append('opendr.engine')
+    packages.append('opendr.control')
+    packages.append('opendr.planning')
+    packages.append('opendr.simulation')
+    packages.append('opendr')
 
     return name, packages
 
