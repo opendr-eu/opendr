@@ -35,6 +35,7 @@ except NameError:
 with open("description.txt") as f:
     long_description = f.read()
 
+# Disable AVX2 for BCOLZ to ensure wider compatibility
 os.environ['DISABLE_BCOLZ_AVX2'] = 'true'
 
 
@@ -75,7 +76,6 @@ def generate_manifest(module=None):
             f.write("include " + join("src/opendr", module.split("/")[0]) + " *\n")
 
         f.write("exclude src/opendr/__init__.py \n")
-        f.write("exclude src/opendr/utils/__init__.py \n")
         f.write("include description.txt \n")
         f.write("include packages.txt \n")
         f.write("include README.md \n")
@@ -93,6 +93,7 @@ def get_description(module=None):
 def get_dependencies(current_module):
     dependencies = []
     skipped_dependencies = []
+    post_install = []
     # Read all the dependencies.ini for each tool category
     if current_module:
         # Get all subfolders
@@ -102,28 +103,42 @@ def get_dependencies(current_module):
             if os.path.isdir(join("src/opendr", current_module, file)):
                 paths.append(file)
 
-        parser = ConfigParser()
+
         for path in paths:
             try:
+                parser = ConfigParser()
                 parser.read(join("src/opendr", current_module, path, 'dependencies.ini'))
-                cur_deps = parser.get("runtime", "python").split('\n')
+                try:
+                    cur_deps = parser.get("runtime", "python").split('\n')
+                except Exception:
+                    cur_deps = []
+                try:
+                    opendr_deps = parser.get("runtime", "opendr").split('\n')
+                except Exception:
+                    opendr_deps = []
+                try:
+                    scripts = parser.get("runtime", "post-install").split('\n')
+                    for x in scripts:
+                        post_install.append(x)
+                except Exception:
+                    pass
+
             except Exception:
-                cur_deps = []
+                pass
+
             # Add dependencies found (filter git-based ones and local ones)
             for x in cur_deps:
                 if 'git' in x or '${OPENDR_HOME}' in x:
                     skipped_dependencies.append(x)
                 else:
                     dependencies.append(x)
+            for x in opendr_deps:
+                dependencies.append(x)
 
-        if current_module == 'perception/heart_anomaly_detection':
-            dependencies.append('opendr-toolkit-compressive-learning')
-
-        if current_module == 'perception/object_tracking_3d':
-            dependencies.append('object_detection_3d')
 
         dependencies = list(set(dependencies))
         skipped_dependencies = list(set(skipped_dependencies))
+        post_install = list(set(post_install))
     else:
         with open("packages.txt", "r") as f:
             packages = [x.strip() for x in f.readlines()]
@@ -132,7 +147,8 @@ def get_dependencies(current_module):
                 dependencies.append('opendr-toolkit-' + package.split('/')[1].replace('_', '-'))
             elif package != 'opendr':
                 dependencies.append('opendr-toolkit-' + package.replace('_', '-'))
-    return dependencies, skipped_dependencies
+
+    return dependencies, skipped_dependencies, post_install
 
 
 def get_data_files(module):
@@ -163,7 +179,7 @@ def build_package(module):
         extra_params = {}
 
     name, packages = get_packages(module)
-    dependencies, skipped_dependencies = get_dependencies(module)
+    dependencies, skipped_dependencies, post_install = get_dependencies(module)
     generate_manifest(module)
 
     # Define class for post installation scripts
@@ -172,12 +188,17 @@ def build_package(module):
             install.run(self)
             import subprocess
 
-            # Install potential git repos during post installation
+            # Install potential git and local repos during post installation
             for package in skipped_dependencies:
                 if 'git' in package:
                     subprocess.call([sys.executable, '-m', 'pip', 'install', package])
                 if '${OPENDR_HOME}' in package:
                     subprocess.call([sys.executable, '-m', 'pip', 'install', package.replace('${OPENDR_HOME}', '.')])
+
+            if post_install:
+                for cmd in post_install:
+                    print("Running ", cmd)
+                    subprocess.call(cmd.split(' '))
 
     setup(
         name=name,
@@ -198,3 +219,4 @@ def build_package(module):
         package_data={'': get_data_files(module)},
         **extra_params
     )
+#
