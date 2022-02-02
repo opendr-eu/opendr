@@ -103,7 +103,6 @@ def get_dependencies(current_module):
             if os.path.isdir(join("src/opendr", current_module, file)):
                 paths.append(file)
 
-
         for path in paths:
             try:
                 parser = ConfigParser()
@@ -134,7 +133,6 @@ def get_dependencies(current_module):
                     dependencies.append(x)
             for x in opendr_deps:
                 dependencies.append(x)
-
 
         dependencies = list(set(dependencies))
         skipped_dependencies = list(set(skipped_dependencies))
@@ -219,4 +217,3 @@ def build_package(module):
         package_data={'': get_data_files(module)},
         **extra_params
     )
-#
