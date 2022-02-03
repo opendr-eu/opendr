@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from pathlib import Path
-from typing import List, Union
+from typing import Any, Dict, List, Union
 
 from mmdet.datasets import CityscapesDataset as MmdetCityscapesDataset
 from mmdet.datasets import build_dataset
@@ -25,7 +25,7 @@ from opendr.engine.datasets import ExternalDataset, DatasetIterator
 class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 	"""
 	TODO
-	:param split: Type of the data split. Valid values: "train", "valid"
+	:param split: Type of the data split. Valid values: "train", "valid", "test"
 	:type split: str|None
 	"""
 	def __init__(self, path: str,
@@ -72,7 +72,7 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 		if value is None:
 			self._split = "train"
 
-		valid_values = ["train", "valid"]
+		valid_values = ["train", "valid", "test"]
 
 		value = value.lower()
 
@@ -82,7 +82,13 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 		self._split = value
 
 	def evaluate(self,
-				 ):
+				 prediction_path: Union[Path, str],
+				 prediction_json_folder: Union[Path, str]
+				 ) -> Dict[str, Any]:
+		"""
+		TODO:
+
+		"""
 		raise NotImplementedError
 
 	def __getitem__(self, idx):
