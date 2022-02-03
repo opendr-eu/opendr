@@ -566,7 +566,8 @@ class RPN(nn.Module):
         # up3 = self.deconv3(x)
         # x = torch.cat([up1, up2, up3], dim=1)
 
-        x = self.bof_end(x)
+        if self.bof_end is not None:
+            x = self.bof_end(x)
 
         return x
 
