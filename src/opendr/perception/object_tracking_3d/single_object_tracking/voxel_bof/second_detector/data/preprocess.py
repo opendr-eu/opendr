@@ -94,7 +94,7 @@ def prep_pointcloud(
     bev_only=False,
     use_group_id=False,
     out_dtype=np.float32,
-    sample_db=True,
+    sample_db=False,  # True,
     generate_anchors=False,
 ):
     """convert point cloud to voxels, create targets if ground truths
@@ -127,9 +127,7 @@ def prep_pointcloud(
 
     if remove_outside_points and not lidar_input:
         image_shape = input_dict["image_shape"]
-        points = box_np_ops.remove_outside_points(
-            points, rect, Trv2c, P2, image_shape
-        )
+        points = box_np_ops.remove_outside_points(points, rect, Trv2c, P2, image_shape)
     if remove_environment is True and training:
         selected = kitti.keep_arrays_by_name(gt_names, class_names)
         gt_boxes = gt_boxes[selected]
@@ -160,9 +158,7 @@ def prep_pointcloud(
             difficulty = difficulty[keep_mask]
             if group_ids is not None:
                 group_ids = group_ids[keep_mask]
-        gt_boxes_mask = np.array(
-            [n in class_names for n in gt_names], dtype=np.bool_
-        )
+        gt_boxes_mask = np.array([n in class_names for n in gt_names], dtype=np.bool_)
         if db_sampler is not None and sample_db:
             sampled_dict = db_sampler.sample_all(
                 root_path,
@@ -191,9 +187,7 @@ def prep_pointcloud(
                     group_ids = np.concatenate([group_ids, sampled_group_ids])
 
                 if remove_points_after_sample:
-                    points = prep.remove_points_in_boxes(
-                        points, sampled_gt_boxes
-                    )
+                    points = prep.remove_points_in_boxes(points, sampled_gt_boxes)
 
                 points = np.concatenate([sampled_points, points], axis=0)
         if without_reflectivity:
@@ -232,9 +226,7 @@ def prep_pointcloud(
         )
 
         # Global translation
-        gt_boxes, points = prep.global_translate(
-            gt_boxes, points, global_loc_noise_std
-        )
+        gt_boxes, points = prep.global_translate(gt_boxes, points, global_loc_noise_std)
 
         bv_range = voxel_generator.point_cloud_range[[0, 1, 3, 4]]
         mask = prep.filter_gt_box_outside_range(gt_boxes, bv_range)
@@ -265,16 +257,16 @@ def prep_pointcloud(
         grid_size = voxel_generator.grid_size
     else:
         voxel_generator.point_cloud_range = pc_range
-        grid_size = np.array([
-            int(np.round((pc_range[3] - pc_range[0]) / voxel_size[0])),
-            int(np.round((pc_range[4] - pc_range[1]) / voxel_size[1])),
-            1
-        ])
+        grid_size = np.array(
+            [
+                int(np.round((pc_range[3] - pc_range[0]) / voxel_size[0])),
+                int(np.round((pc_range[4] - pc_range[1]) / voxel_size[1])),
+                1,
+            ]
+        )
         voxel_generator.grid_size = grid_size
 
-    voxels, coordinates, num_points = voxel_generator.generate(
-        points, max_voxels
-    )
+    voxels, coordinates, num_points = voxel_generator.generate(points, max_voxels)
 
     # print("voxels.shape =", voxels.shape)
 
@@ -304,9 +296,7 @@ def prep_pointcloud(
         anchors = anchors.reshape([-1, 7])
         matched_thresholds = ret["matched_thresholds"]
         unmatched_thresholds = ret["unmatched_thresholds"]
-        anchors_bv = box_np_ops.rbbox2d_to_near_bbox(
-            anchors[:, [0, 1, 3, 4, 6]]
-        )
+        anchors_bv = box_np_ops.rbbox2d_to_near_bbox(anchors[:, [0, 1, 3, 4, 6]])
     else:
         anchors = np.array([0])
     example["anchors"] = anchors
@@ -327,9 +317,7 @@ def prep_pointcloud(
         bev_vxsize = voxel_size.copy()
         bev_vxsize[:2] /= 2
         bev_vxsize[2] *= 2
-        bev_map = points_to_bev(
-            points, bev_vxsize, pc_range, without_reflectivity
-        )
+        bev_map = points_to_bev(points, bev_vxsize, pc_range, without_reflectivity)
         example["bev_map"] = bev_map
 
     # t5 = time.time()
@@ -362,9 +350,7 @@ def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
     """read data from KITTI-format infos, then call prep function.
     """
     v_path = pathlib.Path(root_path) / info["velodyne_path"]
-    v_path = (
-        v_path.parent.parent / (v_path.parent.stem + "_reduced") / v_path.name
-    )
+    v_path = v_path.parent.parent / (v_path.parent.stem + "_reduced") / v_path.name
 
     points = np.fromfile(str(v_path), dtype=np.float32, count=-1).reshape(
         [-1, num_point_features]
@@ -392,16 +378,12 @@ def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
         dims = annos["dimensions"]
         rots = annos["rotation_y"]
         gt_names = annos["name"]
-        gt_boxes = np.concatenate(
-            [loc, dims, rots[..., np.newaxis]], axis=1
-        ).astype(np.float32)
+        gt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]], axis=1).astype(
+            np.float32
+        )
         difficulty = annos["difficulty"]
         input_dict.update(
-            {
-                "gt_boxes": gt_boxes,
-                "gt_names": gt_names,
-                "difficulty": difficulty,
-            }
+            {"gt_boxes": gt_boxes, "gt_names": gt_names, "difficulty": difficulty,}
         )
         if "group_ids" in annos:
             input_dict["group_ids"] = annos["group_ids"]
@@ -432,20 +414,14 @@ def _prep_v9(points, calib, prep_func, annos=None):
         dims = annos["dimensions"]
         rots = annos["rotation_y"]
         gt_names = annos["name"]
-        gt_boxes = np.concatenate(
-            [loc, dims, rots[..., np.newaxis]], axis=1
-        ).astype(np.float32)
+        gt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]], axis=1).astype(
+            np.float32
+        )
         difficulty = (
-            annos["difficulty"]
-            if "difficulty" in annos
-            else compute_difficulty(annos)
+            annos["difficulty"] if "difficulty" in annos else compute_difficulty(annos)
         )
         input_dict.update(
-            {
-                "gt_boxes": gt_boxes,
-                "gt_names": gt_names,
-                "difficulty": difficulty,
-            }
+            {"gt_boxes": gt_boxes, "gt_names": gt_names, "difficulty": difficulty,}
         )
         if "group_ids" in annos:
             input_dict["group_ids"] = annos["group_ids"]
