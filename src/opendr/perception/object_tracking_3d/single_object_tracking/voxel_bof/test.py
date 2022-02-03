@@ -1080,6 +1080,52 @@ def create_extended_eval_kwargs():
     return results
 
 
+def create_small_eval_kwargs():
+    params = {
+        "window_influence": [0.35],
+        "score_upscale": [16],
+        "rotation_penalty": [0.98],
+        "rotation_step": [0.15, 0.1],
+        "rotations_count": [3],
+        "target_feature_merge_scale": [0, 0.005],
+    }
+    results = {}
+
+    for window_influence in params["window_influence"]:
+        for score_upscale in params["score_upscale"]:
+            for rotation_penalty in params["rotation_penalty"]:
+                for rotation_step in params["rotation_step"]:
+                    for rotations_count in params["rotations_count"]:
+                        for target_feature_merge_scale in params[
+                            "target_feature_merge_scale"
+                        ]:
+                            name = (
+                                str(rotations_count).replace(".", "")
+                                + "r"
+                                + str(rotation_step).replace(".", "")
+                                + "-rp"
+                                + str(rotation_penalty).replace(".", "")
+                                + "su"
+                                + str(score_upscale).replace(".", "")
+                                + "wi"
+                                + str(window_influence).replace(".", "")
+                                + "tfms"
+                                + str(target_feature_merge_scale).replace(
+                                    ".", ""
+                                )
+                            )
+
+                            results[name] = {
+                                "window_influence": window_influence,
+                                "score_upscale": score_upscale,
+                                "rotation_penalty": rotation_penalty,
+                                "rotation_step": rotation_step,
+                                "rotations_count": rotations_count,
+                                "target_feature_merge_scale": target_feature_merge_scale,
+                            }
+    return results
+
+
 def eval_all_extended(
     model_name,
     iou_min=0.0,
@@ -1088,10 +1134,14 @@ def eval_all_extended(
     save_step=2000,
     tracks=None,
     device="cuda:0",
+    eval_kwargs_name="extended",
     **kwargs,
 ):
 
-    eval_kwargs = create_extended_eval_kwargs()
+    eval_kwargs = {
+        "extended": create_extended_eval_kwargs,
+        "small": create_small_eval_kwargs,
+    }[eval_kwargs_name]()
 
     results = {}
 
