@@ -805,6 +805,30 @@ def pc_range_by_lidar_aabb(lidar_aabb):
     return pc_range
 
 
+def freeze_non_bof(net):
+
+    has_bof = False
+
+    for name, param in net.named_parameters():
+        if ".bof" in name:
+            has_bof = True
+
+    if has_bof:
+        for name, param in net.named_parameters():
+            if ".bof" not in name:
+                param.requires_grad = False
+
+        print("Non BoF layers are frozen")
+
+
+def unfreeze_non_bof(net):
+    for name, param in net.named_parameters():
+        if ".bof" not in name:
+            param.requires_grad = True
+
+    print("Non BoF layers are unfrozen")
+
+
 def train(
     siamese_model,
     input_cfg,
@@ -837,6 +861,7 @@ def train(
     train_steps=0,
     loss_function="bce",
     r_pos=16,
+    bof_training_steps=10000,
 ):
 
     net = siamese_model.branch
@@ -898,6 +923,9 @@ def train(
 
     average_loss = 0
     average_delta_error = 0
+
+    if bof_training_steps > 0:
+        freeze_non_bof(net)
 
     for _ in range(total_loop):
         if total_step_elapsed + train_cfg.steps_per_eval > train_cfg.steps:
@@ -1103,6 +1131,10 @@ def train(
 
                 average_loss += loss
                 average_delta_error += np.abs(delta - true_delta)
+
+                if bof_training_steps > 0 and global_step >= bof_training_steps:
+                    unfreeze_non_bof(net)
+                    bof_training_steps = 0
 
                 if global_step % display_step == 0:
                     average_loss /= display_step
