@@ -83,7 +83,7 @@ model = dict(
 		ignore_label=255,
 		loss_weight=1.0,
 		ohem=0.25,
-		norm_cfg=dict(type='InPlaceABNSync', activation='leaky_relu', activation_param=0.01, requires_grad=True),
+		norm_cfg=dict(type='InPlaceABN', activation='leaky_relu', activation_param=0.01, requires_grad=True),
 		act_cfg=None))
 
 # model training and testing settings
