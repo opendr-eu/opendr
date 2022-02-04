@@ -61,7 +61,6 @@ jobs:
         source venv/bin/activate
         wget https://raw.githubusercontent.com/opendr-eu/opendr/master/dependencies/pip_requirements.txt
         cat pip_requirements.txt | xargs -n 1 -L 1 pip install
-        # Test new package
         pip install opendr-toolkit
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
@@ -89,7 +88,7 @@ jobs:
           - control/mobile_manipulation
           - simulation/human_model_generation
           - control/single_demo_grasp
-          #- perception/object_tracking_3d
+          # - perception/object_tracking_3d
     runs-on: ${{ matrix.os }}
     steps:
     - name: Set up Python 3.8
