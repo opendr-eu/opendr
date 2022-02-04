@@ -18,24 +18,22 @@ from pathlib import Path
 
 import numpy as np
 
-from opendr.engine.data import PointCloud, Image
+from opendr.engine.data import PointCloud
 from opendr.perception.panoptic_segmentation import EfficientLpsLearner, SemanticKittiDataset, EfficientPsLearner
 
 
-def download_models(**kwargs):
+def download_models(*, cp_dir, **_):
 	"""
-
-	:param kwargs:
+	TODO:
+	:param cp_dir:
 	:return:
 	"""
-
-	cp_dir = kwargs["cp_dir"]
 
 	EfficientLpsLearner.download(cp_dir, trained_on='nuscenes')
 	EfficientLpsLearner.download(cp_dir, trained_on='kitti')
 
 
-def train(**kwargs):
+def train(*, kitti_dir, cp_dir, log_dir, **_):
 	"""
 	TODO:
 
@@ -46,17 +44,13 @@ def train(**kwargs):
 	:return:
 	"""
 
-	kitti_dir = kwargs["kitti_dir"]
-	cp_dir = kwargs["cp_dir"]
-	log_dir = kwargs["log_dir"]
-
 	train_data = SemanticKittiDataset(kitti_dir, split="train")
 	val_data = SemanticKittiDataset(kitti_dir, split="valid")
 
 	learner = EfficientLpsLearner(
-		iters=1, # TODO: 2
+		iters=2,
 		batch_size=1,
-		checkpoint_after_iter=1 # TODO: 2
+		checkpoint_after_iter=2
 	)
 
 	train_stats = learner.fit(train_data, val_dataset=val_data,
@@ -67,9 +61,13 @@ def train(**kwargs):
 	assert train_stats  # This assert is just a workaround since pyflakes does not support the NOQA comment
 
 
-def evaluate(**kwargs):
-	kitti_dir = kwargs["kitti_dir"]
-	cp_dir = kwargs["cp_dir"]
+def evaluate(*, kitti_dir, cp_dir, **_):
+	"""
+	TODO:
+	:param kitti_dir:
+	:param cp_dir:
+	:return:
+	"""
 
 	val_dataset = SemanticKittiDataset(path=kitti_dir, split="valid")
 
@@ -79,19 +77,19 @@ def evaluate(**kwargs):
 	assert eval_stats  # This assert is just a workaround since pyflakes does not support the NOQA comment
 
 
-def inference(**kwargs):
+def inference(*, kitti_dir, cp_dir, projected=False,
+			  save_figure=False, display_figure=False,
+			  detailed=False, **_):
 	"""
 	TODO
 	:param kitti_dir:
+	:param cp_dir:
+	:param projected:
+	:param save_figure:
+	:param display_figure:
+	:param detailed:
 	:return:
 	"""
-
-	kitti_dir = kwargs["kitti_dir"]
-	cp_dir = kwargs["cp_dir"]
-	projected = kwargs.get("projected", False)
-	save_figure = kwargs.get("save_figure", False)
-	show_figure = kwargs.get("display_figure", False)
-	detailed = kwargs.get("detailed", False)
 
 	pointcloud_filenames = [
 		f'{kitti_dir}/sequences/00/velodyne/002250.bin',
@@ -112,23 +110,14 @@ def inference(**kwargs):
 		semantics[semantics > 18] = 19
 		if projected:
 			EfficientPsLearner.visualize(prediction[-1], prediction[:2],
-										 show_figure=show_figure,
+										 show_figure=display_figure,
 										 save_figure=save_figure, figure_filename=filename,
 										 detailed=detailed)
 		else:
 			EfficientLpsLearner.visualize(cloud, prediction[:2],
-										  show_figure=show_figure,
+										  show_figure=display_figure,
 										  save_figure=save_figure, figure_filename=filename,
 										  detailed=detailed)
-
-
-def _resolve_path(path: str) -> str:
-	"""
-	TODO
-	:param path:
-	:return:
-	"""
-	return str(Path(path).expanduser().resolve())
 
 
 def parse_args() -> dict:
@@ -137,9 +126,18 @@ def parse_args() -> dict:
 	:return:
 	"""
 
+	# Default values
 	dft_kitti_dir = "~/dat/kitti/dataset/"
 	dft_cp_dir = "~/dat/cp/efficient_lps/"
 	dft_log_dir = "~/dat/log/"
+
+	def _resolve_path(path: str) -> str:
+		"""
+		TODO
+		:param path:
+		:return:
+		"""
+		return str(Path(path).expanduser().resolve())
 
 	parser = ArgumentParser()
 

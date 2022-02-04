@@ -41,6 +41,7 @@ from mmdet.apis import single_gpu_test
 from mmdet.apis.train import batch_processor
 from mmdet.core import get_classes, build_optimizer, EvalHook
 from mmdet.datasets import build_dataloader
+from mmdet.datasets.semantic_kitti import STUFF_START_ID
 from mmdet.datasets.cityscapes import PALETTE
 from mmdet.datasets.pipelines import Compose
 from mmdet.datasets.laserscan_unfolding import LaserScan
@@ -296,7 +297,7 @@ class EfficientLpsLearner(Learner):
 
 		return results
 
-	def pcl_to_mmet(self, point_cloud: PointCloud, file_count: int = 0) -> dict:
+	def pcl_to_mmdet(self, point_cloud: PointCloud, file_count: int = 0) -> dict:
 		"""
 		TODO
 		:param point_cloud:
@@ -380,7 +381,7 @@ class EfficientLpsLearner(Learner):
 			"sensor_img_means": sensor_img_means,
 			"sensor_img_stds": sensor_img_stds,
 
-			"stuff_id":  0  # TODO: Check if this doesn't break anything!!!!
+			"stuff_id":  STUFF_START_ID
 		}
 
 		return results
@@ -416,7 +417,7 @@ class EfficientLpsLearner(Learner):
 
 		mmdet_batch = []
 		for i, point_cloud in enumerate(batch):
-			mmdet_img = self.pcl_to_mmet(point_cloud, file_count=i)
+			mmdet_img = self.pcl_to_mmdet(point_cloud, file_count=i)
 			mmdet_img = test_pipeline(mmdet_img)
 			mmdet_batch.append(scatter(collate([mmdet_img], samples_per_gpu=1), [device])[0])
 
