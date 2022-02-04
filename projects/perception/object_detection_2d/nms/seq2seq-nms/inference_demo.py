@@ -15,7 +15,7 @@ ssd.load("./ssd_default_person", verbose=True)
 img = Image.open(OPENDR_HOME + '/projects/perception/object_detection_2d/nms/seq2seq-nms/img_temp/frame_0000.jpg')
 if not isinstance(img, Image):
     img = Image(img)
-boxes = ssd.infer(img, threshold=0)
+boxes = ssd.infer(img, threshold=0, custom_nms=seq2SeqNMSLearner)
 seq2SeqNMSLearner.fMoD.extract_maps(img=img, augm=False)
 boxes = seq2SeqNMSLearner.infer(classes=ssd.classes, dets=boxes, boxes_sorted=False, max_dt_boxes=1200, img_res=img.opencv().shape[::-1][1:])
 draw_bounding_boxes(img.opencv(), boxes, class_names=ssd.classes, show=True)
