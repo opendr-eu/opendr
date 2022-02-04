@@ -98,6 +98,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/simulation/human_model_generation/utilities/PIFu',
             'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
             'src/opendr/perception/skeleton_based_action_recognition/algorithm',
+            'projects/data_generation/synthetic_multi_view_facial_image_generation/algorithm',
             'src/opendr/perception/semantic_segmentation/bisenet/algorithm',
             'src/opendr/perception/object_detection_2d/retinaface/algorithm',
             'src/opendr/perception/object_detection_2d/gem/algorithm',
