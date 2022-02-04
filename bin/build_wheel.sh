@@ -3,9 +3,6 @@
 # Fetch any submodules missing
 git submodule update --init --recursive
 
-# Activate OpenDR
-source venv/bin/activate
-
 # Clean existing packages
 rm dist/*
 rm src/*egg-info -rf
