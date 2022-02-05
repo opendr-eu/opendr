@@ -94,6 +94,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/semantic_segmentation/bisenet/algorithm',
             'src/opendr/perception/object_detection_2d/retinaface/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
+            'src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS',
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
             'projects/control/eagerx/eagerx',
         ]
