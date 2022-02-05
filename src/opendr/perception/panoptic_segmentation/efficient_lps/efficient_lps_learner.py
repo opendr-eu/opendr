@@ -142,7 +142,12 @@ class EfficientLpsLearner(Learner):
 		self._cfg.seed = seed
 
 		# Create Model
+		# Redirect stdout to /dev/null for less verbosity
+		prev_stdout = sys.stdout
+		sys.stdout = open(os.devnull, 'w')
 		self.model = build_detector(self._cfg.model, train_cfg=self._cfg.train_cfg, test_cfg=self._cfg.test_cfg)
+		sys.stdout.close()
+		sys.stdout = prev_stdout
 		self.model.to(self.device)
 		self._is_model_trained = False
 
@@ -271,27 +276,28 @@ class EfficientLpsLearner(Learner):
 		self.model = MMDataParallel(self.model, device_ids=range(self._cfg.gpus)).cuda()
 
 		# Run evaluation
+		print("Running inference on dataset...")
 		single_gpu_test(self.model, dataloader, show=False, eval=['panoptic'])
-		std_temp_path = Path('tmpDir').absolute()  # This is hard-coded in the base code
-		if self.temp_path != std_temp_path:
-			shutil.copytree(std_temp_path, self.temp_path, dirs_exist_ok=True)
-			shutil.rmtree(std_temp_path)
 
-		prev_stdout = sys.stdout
-		sys.stdout = open(os.devnull, 'w')  # Block prints to STDOUT
-		results = dataset.evaluate(os.path.join(self.temp_path, 'tmp'), os.path.join(self.temp_path, 'tmp_json'))
-		sys.stdout.close()
-		sys.stdout = prev_stdout
+		# Move produced output files to a configurable location, since it is hard-coded in the base code.
+		std_temp_path = str(Path('tmpDir').absolute())
+		if self.temp_path != std_temp_path:
+			Path(self.temp_path).parent.mkdir(parents=True, exist_ok=True)
+			shutil.move(std_temp_path, self.temp_path)
+
+		print("Evaluating predictions...")
+		results = dataset.evaluate(self.temp_path)
 
 		if print_results:
-			msg = f"\n{'Category':<14s}| {'PQ':>5s} {'SQ':>5s} {'RQ':>5s} {'N':>5s}\n"
+			msg = f"\n{'Category':<14s}| {'PQ':>5s} {'SQ':>5s} {'RQ':>5s} {'IoU':>5s}\n"
 			msg += "-" * 41 + "\n"
-			for x in ['All', 'Things', 'Stuff']:
-				msg += f"{x:<14s}| {results[x]['pq'] * 100:>5.1f} {results[x]['sq'] * 100:>5.1f} "
-				msg += f"{results[x]['rq'] * 100:>5.1f} {results[x]['n']:>5d}\n"
+			for x in ["all", "things", "stuff"]:
+				msg += f"{x:<14s}| {results[x]['PQ'] * 100:>5.1f} {results[x]['SQ'] * 100:>5.1f} "
+				msg += f"{results[x]['RQ'] * 100:>5.1f} {results[x]['IoU']:>5.1f}\n"
 			msg += "-" * 41 + "\n"
 			for cat, value in results['per_class'].items():
-				msg += f"{cat:<14s}| {value['pq'] * 100:>5.1f} {value['sq'] * 100:>5.1f} {value['rq'] * 100:>5.1f}\n"
+				msg += f"{cat:<14s}| {value['PQ'] * 100:>5.1f} {value['SQ'] * 100:>5.1f} "
+				msg += f"{value['RQ'] * 100:>5.1f} {value['IoU']:>5.1f}\n"
 			msg = msg[:-1]
 			print(msg)
 
@@ -485,7 +491,8 @@ class EfficientLpsLearner(Learner):
 			"has_data": False,
 			"inference_params": {},
 			"optimized": self._is_model_trained,
-			"optimizer_info": {}
+			"optimizer_info": {},
+			"classes": self.model.CLASSES,
 		}
 	
 		with open(meta_path, "w") as f:
@@ -656,6 +663,7 @@ class EfficientLpsLearner(Learner):
 		plt.close()
 
 		if save_figure:
+			Path(figure_filename).parent.mkdir(parents=True, exist_ok=True)
 			visualization_img.save(figure_filename)
 		if show_figure:
 			visualization_img.show()

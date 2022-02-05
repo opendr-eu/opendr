@@ -41,6 +41,7 @@ def train(*,
 		  kitti_dir: str,
 		  cp_dir: str,
 		  log_dir: str,
+		  tmp_dir: str,
 		  **_) -> None:
 	"""
 	Trains an EfficientLPS model on the KITTI dataset for 2 iterations, logs the output and saves a checkpoint.
@@ -52,6 +53,8 @@ def train(*,
 	:type cp_dir: str
 	:param log_dir: Path to where the training logs will be saved.
 	:type log_dir: str
+	:param tmp_dir: Path to where temporary output will be saved.
+	:type tmp_dir: str
 	:return: None
 	"""
 
@@ -59,6 +62,7 @@ def train(*,
 	val_data = SemanticKittiDataset(kitti_dir, split="valid")
 
 	learner = EfficientLpsLearner(
+		temp_path=tmp_dir,
 		iters=2,
 		batch_size=1,
 		checkpoint_after_iter=2
@@ -75,6 +79,8 @@ def train(*,
 def evaluate(*,
 			 kitti_dir: str,
 			 cp_dir: str,
+			 tmp_dir: str,
+			 print_eval_results: bool = True,
 			 **_) -> None:
 	"""
 	Evaluates a pre-trained model on the KITTI dataset evaluation data split.
@@ -84,6 +90,10 @@ def evaluate(*,
 	:param cp_dir: Path to where the pre-trained model checkpoint file is located.
 		The checkpoint file itself must be called model.pth.
 	:type cp_dir: str
+	:param tmp_dir: Path to where temporary output will be saved.
+	:type tmp_dir: str
+	:param print_eval_results: Prints the computed evaluation metrics.
+	:type print_eval_results: bool
 	:return: None
 	"""
 
@@ -91,13 +101,14 @@ def evaluate(*,
 
 	learner = EfficientLpsLearner()
 	learner.load(path=f'{cp_dir}/model.pth')
-	eval_stats = learner.eval(val_dataset, print_results=True)
+	eval_stats = learner.eval(val_dataset, print_results=print_eval_results)
 	assert eval_stats  # This assert is just a workaround since pyflakes does not support the NOQA comment
 
 
 def inference(*,
 			  kitti_dir: str,
 			  cp_dir: str,
+			  tmp_dir: str,
 			  projected: bool = False,
 			  save_figure: bool = False,
 			  display_figure: bool = False,
@@ -112,6 +123,8 @@ def inference(*,
 	:param cp_dir: Path to where the pre-trained model checkpoint file is located.
 		The checkpoint file itself must be called model.pth.
 	:type cp_dir: str
+	:param tmp_dir: Path to where temporary output will be saved.
+	:type tmp_dir: str
 	:param projected: Determines whether the output will be displayed as a 2D image of the spherical projection if True,
 		or as a 3D point cloud.
 	:type projected: bool
@@ -133,11 +146,11 @@ def inference(*,
 	]
 	clouds = [PointCloud(np.fromfile(f, dtype=np.float32).reshape(-1, 4)) for f in pointcloud_filenames]
 
-	learner = EfficientLpsLearner()
+	learner = EfficientLpsLearner(temp_path=tmp_dir)
 	learner.load(path=f'{cp_dir}/model.pth')
 	predictions = learner.infer(clouds, projected=projected)
 	for cloud, prediction, f in zip(clouds, predictions, pointcloud_filenames):
-		filename = Path(f).with_suffix(".png").name
+		filename = Path(tmp_dir) / Path(f).with_suffix(".png").name
 		# Clip values since the Cityscapes palette only has 19 colors, plus black added in the visualize method
 		semantics = prediction[1]
 		if projected:
@@ -167,6 +180,7 @@ def parse_args() -> dict:
 	dft_kitti_dir = "~/dat/kitti/dataset/"
 	dft_cp_dir = "~/dat/cp/efficient_lps/"
 	dft_log_dir = "~/dat/log/"
+	dft_tmp_dir = "~/tmp/"
 
 	def _resolve_path(path: str) -> str:
 		"""
@@ -189,6 +203,8 @@ def parse_args() -> dict:
 						help="Directory where the model checkpoints are to be saved.")
 	parser.add_argument("--log_dir", "-l", type=_resolve_path, default=dft_log_dir,
 						help="Directory where the logs are to be saved.")
+	parser.add_argument("--tmp_dir", "-t", type=_resolve_path, default=dft_tmp_dir,
+						help="Directory where temporary output will be saved.")
 
 	parser.add_argument("--skip_download", action="store_true",
 						help="Skip the Download test.")
@@ -207,6 +223,9 @@ def parse_args() -> dict:
 						help="Inferred data is returned as spherical projection.")
 	parser.add_argument("--detailed", "-d", action="store_true",
 						help="Inferred image is shown in detail (Image, Panoptic, Semantic, Contours).")
+
+	parser.add_argument("--print_eval_results", action="store_true",
+						help="Print evaluation metrics.")
 
 	kwargs = vars(parser.parse_args())
 
@@ -232,7 +251,7 @@ def main() -> None:
 		print("Evaluation succeeded\n" + "-" * 40 + "\n")
 
 	if not kwargs["skip_infer"]:
-		print("-" * 40 + "\n===> Inference with Pre-trained")
+		print("-" * 40 + "\n===> Inference with Pre-trained Model:")
 		inference(**kwargs)
 		print("Inference succeeded\n" + "-" * 40 + "\n")
 
