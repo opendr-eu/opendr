@@ -44,9 +44,7 @@ from PIL import Image as PilImage
 from tensorboardX import SummaryWriter
 
 
-def example_convert_to_torch(
-    example, dtype=torch.float32, device=None
-) -> dict:
+def example_convert_to_torch(example, dtype=torch.float32, device=None) -> dict:
     device = device or torch.device("cuda:0")
     example_torch = {}
     float_names = [
@@ -65,13 +63,9 @@ def example_convert_to_torch(
         if k in float_names:
             example_torch[k] = torch.as_tensor(v, dtype=dtype, device=device)
         elif k in ["coordinates", "labels", "num_points"]:
-            example_torch[k] = torch.as_tensor(
-                v, dtype=torch.int32, device=device
-            )
+            example_torch[k] = torch.as_tensor(v, dtype=torch.int32, device=device)
         elif k in ["anchors_mask"]:
-            example_torch[k] = torch.as_tensor(
-                v, dtype=torch.uint8, device=device
-            )
+            example_torch[k] = torch.as_tensor(v, dtype=torch.uint8, device=device)
         else:
             example_torch[k] = v
     return example_torch
@@ -96,9 +90,7 @@ def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
         pos_min = (target[0] - target[1] // 2).astype(np.int32)
         pos_max = (target[0] + (target[1] + 1) // 2 - 1).astype(np.int32)
 
-        rgb_pi[
-            pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1, :
-        ] = color
+        rgb_pi[pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1, :] = color
 
     os.makedirs(str(Path(path).parent), exist_ok=True)
     image = PilImage.fromarray(rgb_pi)
@@ -112,11 +104,18 @@ def original_target_size_by_object_size(object_size):
 
 
 def original_search_size_by_target_size(target_size):
-    return target_size * 2 + (target_size < 20) * 30 # target_size + target_size // 2
+    return target_size * 2 + (target_size < 20) * 30  # target_size + target_size // 2
 
 
 def create_targets_and_searches(
-    centers, target_sizes, search_sizes, rotations, augment, type="rotated"
+    centers,
+    target_sizes,
+    search_sizes,
+    rotations,
+    augment,
+    augment_rotation=True,
+    augment_rotation_delta=[-0.2, -0.1, 0, 0, 0.1, 0.2],
+    type="rotated",
 ):
 
     if type == "default":
@@ -132,8 +131,14 @@ def create_targets_and_searches(
         for center, search_center, target_size, search_size, rotation in zip(
             centers, search_centers, target_sizes, search_sizes, rotations
         ):
+
+            search_rotation = rotation[0]
+
+            if augment and augment_rotation:
+                search_rotation += augment_rotation_delta[np.random.randint(0, len(augment_rotation_delta))]
+
             targets.append([center, target_size, rotation[0]])
-            searches.append([search_center, search_size, rotation[0]])
+            searches.append([search_center, search_size, search_rotation])
 
         return targets, searches
     elif type == "rotated":
@@ -149,8 +154,13 @@ def create_targets_and_searches(
 
             search_center = center + (rotated_offset if augment else 0)
 
+            search_rotation = rotation[0]
+
+            if augment and augment_rotation:
+                search_rotation += augment_rotation_delta[np.random.randint(0, len(augment_rotation_delta))]
+
             targets.append([center, target_size, rotation[0]])
-            searches.append([search_center, search_size, rotation[0]])
+            searches.append([search_center, search_size, search_rotation])
 
         return targets, searches
 
@@ -185,9 +195,7 @@ def create_target_search_regions(
             gt_boxes_camera = np.concatenate(
                 [locs, dims, rots[..., np.newaxis]], axis=1
             )
-            boxes_lidar = box_camera_to_lidar(
-                gt_boxes_camera, rect[i], Trv2c[i]
-            )
+            boxes_lidar = box_camera_to_lidar(gt_boxes_camera, rect[i], Trv2c[i])
 
             all_boxes_lidar.append(boxes_lidar)
     elif boxes_lidar is not None:
@@ -214,9 +222,7 @@ def create_target_search_regions(
         sizes = dims_lidar
         rotations = rots_lidar
 
-        centers_image = ((centers[:, :2] - bv_min) / voxel_size_bev).astype(
-            np.int32
-        )
+        centers_image = ((centers[:, :2] - bv_min) / voxel_size_bev).astype(np.int32)
 
         object_size = (sizes[:, :2] / voxel_size_bev).astype(np.int32)
 
@@ -224,11 +230,7 @@ def create_target_search_regions(
         search_sizes = original_search_size_by_target_size(sizes_image)
 
         targets, searches = create_targets_and_searches(
-            centers_image,
-            sizes_image,
-            search_sizes,
-            rotations,
-            augment=augment,
+            centers_image, sizes_image, search_sizes, rotations, augment=augment,
         )
         batch_targets.append(targets)
         batch_searches.append(searches)
@@ -270,7 +272,15 @@ def get_sub_image(image, center, size):
 
 
 def create_logisticloss_labels(
-    label_size, t, r_pos, r_neg=0, ignore_label=-100, loss="bce", max_pos=1, min_pos=0.5, r_additional=1
+    label_size,
+    t,
+    r_pos,
+    r_neg=0,
+    ignore_label=-100,
+    loss="bce",
+    max_pos=1,
+    min_pos=0.5,
+    r_additional=1,
 ):
     labels = np.zeros(label_size, dtype=np.float32)
 
@@ -287,7 +297,7 @@ def create_logisticloss_labels(
             #     labels[r, c] = 1
             if loss == "bce":
                 if np.all(dist <= r_pos + r_additional):
-                    labels[r, c] = min_pos * dist/r_pos + max_pos * (1 - dist/r_pos)
+                    labels[r, c] = min_pos * dist / r_pos + max_pos * (1 - dist / r_pos)
                 elif np.all(dist <= r_neg):
                     labels[r, c] = ignore_label
                 else:
@@ -310,9 +320,7 @@ def get_rotated_sub_image(pseudo_image, center, size, angle):
     pi = pseudo_image.unsqueeze(0)
 
     M = tgm.get_rotation_matrix2d(
-        torch.tensor([center[1], center[0]], dtype=torch.float32).reshape(
-            1, 2
-        ),
+        torch.tensor([center[1], center[0]], dtype=torch.float32).reshape(1, 2),
         torch.tensor(-angle / np.pi * 180).reshape(1),
         torch.tensor(1).reshape(1),
     ).to(pi.device)
@@ -419,7 +427,15 @@ def image_to_lidar_coordinates(location, size, voxel_size, bv_range):
 
 
 def create_static_label_and_weights(
-    target, search, target_size, search_size, target_size_with_context, search_size_with_context, feature_blocks, loss="bce", radius=8,
+    target,
+    search,
+    target_size,
+    search_size,
+    target_size_with_context,
+    search_size_with_context,
+    feature_blocks,
+    loss="bce",
+    radius=8,
 ):
     if target_size[0] <= 0:
         target_size = target_size_with_context
@@ -437,7 +453,7 @@ def create_static_label_and_weights(
 
     delta_position_label_space = (
         rotated_delta_position_original / search_size_with_context * label_size
-    )#.astype(np.int32)
+    )  # .astype(np.int32)
 
     t = delta_position_label_space[[1, 0]]
     # t = (0, 0)
@@ -539,9 +555,7 @@ def create_pseudo_images_and_labels(
 
     items = []
 
-    for i, (targets, searches) in enumerate(
-        zip(batch_targets, batch_searches)
-    ):
+    for i, (targets, searches) in enumerate(zip(batch_targets, batch_searches)):
         for target, search in zip(targets, searches):
 
             target_size_with_context = size_with_context(target[1], context_amount)
@@ -617,20 +631,14 @@ def score_to_image_coordinates(scores, target_region_size, search_region):
 
     left_top_score = max_idx.cpu().numpy()
     left_top_search_features = left_top_score
-    left_top_search_image = feature_to_image_coordinates(
-        left_top_search_features
-    )
+    left_top_search_image = feature_to_image_coordinates(left_top_search_features)
     center_search_image = left_top_search_image + target_region_size // 2
-    center_image = (
-        center_search_image + search_region[0] - search_region[1] // 2
-    )
+    center_image = center_search_image + search_region[0] - search_region[1] // 2
 
     return center_image
 
 
-def select_best_scores_and_search(
-    multi_scale_scores_searches_penalties_and_features,
-):
+def select_best_scores_and_search(multi_scale_scores_searches_penalties_and_features,):
 
     (
         top_scores,
@@ -679,19 +687,14 @@ def displacement_score_to_image_coordinates(
     disp_image_rotated = (
         # disp_search * search_region_size / search_region_upscale_size
         # disp_search * search_region_size / feature_to_image_coordinates(final_score_size, feature_blocks) # search_region_upscale_size
-        (disp_score / final_score_size) * search_region_size_with_context  # search_region_upscale_size
+        (disp_score / final_score_size)
+        * search_region_size_with_context  # search_region_upscale_size
     )
 
     rot = np.array(
         [
-            [
-                math.cos(search_region_rotation),
-                -math.sin(search_region_rotation),
-            ],
-            [
-                math.sin(search_region_rotation),
-                math.cos(search_region_rotation),
-            ],
+            [math.cos(search_region_rotation), -math.sin(search_region_rotation),],
+            [math.sin(search_region_rotation), math.cos(search_region_rotation),],
         ]
     )
 
@@ -754,9 +757,7 @@ def create_scaled_scores(
         scores, scale_factor=score_upscale, mode="bicubic"
     )
     penalty = hann_window(scores2.shape[-2:], device=scores2.device)
-    scores2_scaled = (
-        1 - window_influence
-    ) * scores2 + window_influence * penalty
+    scores2_scaled = (1 - window_influence) * scores2 + window_influence * penalty
 
     return scores2_scaled, scores, scores2
 
@@ -764,10 +765,7 @@ def create_scaled_scores(
 def rotate_vector(vector, angle):
 
     rot = np.array(
-        [
-            [math.cos(angle), -math.sin(angle),],
-            [math.sin(angle), math.cos(angle),],
-        ]
+        [[math.cos(angle), -math.sin(angle),], [math.sin(angle), math.cos(angle),],]
     )
 
     result = np.dot(rot, vector)
@@ -785,7 +783,11 @@ def create_lidar_aabb_from_target(target, voxel_size, bv_range, z_range):
 
     origin = [0.5, 0.5, 0.5]
     box_corners = center_to_corner_box3d(
-        location_3d.reshape(1, -1), size_3d.reshape(1, -1), np.array([target[2]]), origin=origin, axis=2,
+        location_3d.reshape(1, -1),
+        size_3d.reshape(1, -1),
+        np.array([target[2]]),
+        origin=origin,
+        axis=2,
     )[0]
 
     mins = box_corners.min(axis=0)
@@ -801,7 +803,10 @@ def create_lidar_aabb_from_target(target, voxel_size, bv_range, z_range):
 
 
 def pc_range_by_lidar_aabb(lidar_aabb):
-    pc_range = [*(lidar_aabb[0] - lidar_aabb[1] / 2), *(lidar_aabb[0] + lidar_aabb[1] / 2)]
+    pc_range = [
+        *(lidar_aabb[0] - lidar_aabb[1] / 2),
+        *(lidar_aabb[0] + lidar_aabb[1] / 2),
+    ]
     return pc_range
 
 
@@ -1002,43 +1007,31 @@ def train(
                     feat_search.register_hook(
                         lambda grad: (
                             None,
-                            draw_pseudo_image(
-                                grad[0], "./plots/grad/feat_search.png"
-                            ),
+                            draw_pseudo_image(grad[0], "./plots/grad/feat_search.png"),
                         )[0]
                     )
                     feat_target.register_hook(
                         lambda grad: (
                             None,
-                            draw_pseudo_image(
-                                grad[0], "./plots/grad/feat_target.png"
-                            ),
+                            draw_pseudo_image(grad[0], "./plots/grad/feat_target.png"),
                         )[0]
                     )
                     search_image.register_hook(
                         lambda grad: (
                             None,
-                            draw_pseudo_image(
-                                grad[0], "./plots/grad/search_image.png"
-                            ),
+                            draw_pseudo_image(grad[0], "./plots/grad/search_image.png"),
                         )[0]
                     )
                     target_image.register_hook(
                         lambda grad: (
                             None,
-                            draw_pseudo_image(
-                                grad[0], "./plots/grad/target_image.png"
-                            ),
+                            draw_pseudo_image(grad[0], "./plots/grad/target_image.png"),
                         )[0]
                     )
                     draw_pseudo_image(pred[0], "./plots/train/pred.png")
                     draw_pseudo_image(labels[0], "./plots/train/labels.png")
-                    draw_pseudo_image(
-                        feat_search[0], "./plots/train/feat_search.png"
-                    )
-                    draw_pseudo_image(
-                        feat_target[0], "./plots/train/feat_target.png"
-                    )
+                    draw_pseudo_image(feat_search[0], "./plots/train/feat_search.png")
+                    draw_pseudo_image(feat_target[0], "./plots/train/feat_target.png")
                     draw_pseudo_image(
                         feat_search[0][0:1, :, :], "./plots/train/feat_search_0.png"
                     )
@@ -1093,13 +1086,7 @@ def train(
                     draw_pseudo_image(
                         target_image[0],
                         "./plots/train/target_image.png",
-                        [
-                            [
-                                np.array(target_image.shape[-2:]) / 2,
-                                np.array([1, 1]),
-                                0,
-                            ]
-                        ],
+                        [[np.array(target_image.shape[-2:]) / 2, np.array([1, 1]), 0,]],
                         [(0, 255, 0)],
                     )
                     draw_pseudo_image(
@@ -1151,10 +1138,18 @@ def train(
                         float(mixed_optimizer.param_groups[0]["lr"]),
                     )
 
-                    writer.add_scalar("loss", float(average_loss.detach().cpu()), global_step)
-                    writer.add_scalar("error_position_x", float(average_delta_error[0]), global_step)
-                    writer.add_scalar("error_position_y", float(average_delta_error[1]), global_step)
-                    writer.add_scalar("learning_rate", float(mixed_optimizer.param_groups[0]["lr"]))
+                    writer.add_scalar(
+                        "loss", float(average_loss.detach().cpu()), global_step
+                    )
+                    writer.add_scalar(
+                        "error_position_x", float(average_delta_error[0]), global_step
+                    )
+                    writer.add_scalar(
+                        "error_position_y", float(average_delta_error[1]), global_step
+                    )
+                    writer.add_scalar(
+                        "learning_rate", float(mixed_optimizer.param_groups[0]["lr"])
+                    )
 
                     average_loss = 0
                     average_delta_error = 0
@@ -1164,9 +1159,7 @@ def train(
                     and global_step % checkpoint_after_iter == 0
                 ):
 
-                    save_path = (
-                        checkpoints_path / f"checkpoint_{global_step}.pth"
-                    )
+                    save_path = checkpoints_path / f"checkpoint_{global_step}.pth"
 
                     torch.save(
                         {
@@ -1238,9 +1231,7 @@ def evaluate(
             if take_gt_annos_from_example:
                 gt_annos += list(example["annos"])
 
-            example = example_convert_to_torch(
-                example, float_dtype, device=device
-            )
+            example = example_convert_to_torch(example, float_dtype, device=device)
             coarse, refine = predict_kitti_to_anno(
                 net,
                 example,
@@ -1257,9 +1248,7 @@ def evaluate(
             if count is not None and len(dt_annos_refine) >= count:
                 break
 
-            bar.print_bar(
-                log=lambda *x, **y: log(Logger.LOG_WHEN_NORMAL, *x, **y)
-            )
+            bar.print_bar(log=lambda *x, **y: log(Logger.LOG_WHEN_NORMAL, *x, **y))
     else:
         dt_annos = []
         log(Logger.LOG_WHEN_NORMAL, "Generate output labels...")
@@ -1278,9 +1267,7 @@ def evaluate(
                 net,
                 example,
                 gt_annos[
-                    i
-                    * eval_input_cfg.batch_size : (i + 1)
-                    * eval_input_cfg.batch_size
+                    i * eval_input_cfg.batch_size : (i + 1) * eval_input_cfg.batch_size
                 ],
             )
 
@@ -1298,9 +1285,7 @@ def evaluate(
             if count is not None and len(dt_annos) >= count:
                 break
 
-            bar.print_bar(
-                log=lambda *x, **y: log(Logger.LOG_WHEN_NORMAL, *x, **y)
-            )
+            bar.print_bar(log=lambda *x, **y: log(Logger.LOG_WHEN_NORMAL, *x, **y))
 
     if count is not None:
         if (
@@ -1338,13 +1323,7 @@ def evaluate(
             log(Logger.LOG_WHEN_NORMAL, result_coarse)
 
             log(Logger.LOG_WHEN_NORMAL, "After Refine:")
-            (
-                result_refine,
-                mAPbbox,
-                mAPbev,
-                mAP3d,
-                mAPaos,
-            ) = get_official_eval_result(
+            (result_refine, mAPbbox, mAPbev, mAP3d, mAPaos,) = get_official_eval_result(
                 gt_annos, dt_annos_refine, class_names, return_data=True
             )
             log(Logger.LOG_WHEN_NORMAL, result_refine)
@@ -1368,14 +1347,8 @@ def comput_kitti_output(
 ):
     annos = []
     for i, preds_dict in enumerate(predictions_dicts):
-        image_shape = (
-            batch_image_shape[i] if batch_image_shape is not None else None
-        )
-        img_idx = (
-            preds_dict["image_idx"]
-            if preds_dict["image_idx"] is not None
-            else 0
-        )
+        image_shape = batch_image_shape[i] if batch_image_shape is not None else None
+        img_idx = preds_dict["image_idx"] if preds_dict["image_idx"] is not None else 0
         if preds_dict["bbox"] is not None:
             box_2d_preds = preds_dict["bbox"].detach().cpu().numpy()
             box_preds = preds_dict["box3d_camera"].detach().cpu().numpy()
@@ -1404,9 +1377,7 @@ def comput_kitti_output(
                 anno["name"].append(class_names[int(label)])
                 anno["truncated"].append(0.0)
                 anno["occluded"].append(0)
-                anno["alpha"].append(
-                    -np.arctan2(-box_lidar[1], box_lidar[0]) + box[6]
-                )
+                anno["alpha"].append(-np.arctan2(-box_lidar[1], box_lidar[0]) + box[6])
                 anno["bbox"].append(bbox)
                 anno["dimensions"].append(box[3:6])
                 anno["location"].append(box[:3])
@@ -1429,9 +1400,7 @@ def comput_kitti_output(
         else:
             annos.append(kitti.empty_result_anno())
         num_example = annos[-1]["name"].shape[0]
-        annos[-1]["image_idx"] = np.array(
-            [img_idx] * num_example, dtype=np.int64
-        )
+        annos[-1]["image_idx"] = np.array([img_idx] * num_example, dtype=np.int64)
 
     return annos
 
@@ -1447,9 +1416,7 @@ def compute_lidar_kitti_output(
             label_preds = preds_dict["label_preds"].detach().cpu().numpy()
             anno = kitti.get_start_result_anno()
             num_example = 0
-            for box_lidar, score, label in zip(
-                box_preds_lidar, scores, label_preds
-            ):
+            for box_lidar, score, label in zip(box_preds_lidar, scores, label_preds):
                 if center_limit_range is not None:
                     limit_range = np.array(center_limit_range)
                     if np.any(box_lidar[:3] < limit_range[:3]) or np.any(
@@ -1596,9 +1563,7 @@ def _predict_kitti_to_file(
                 result_lines.append(result_line)
         else:
             result_lines = []
-        result_file = (
-            f"{result_save_path}/{kitti.get_image_index_str(img_idx)}.txt"
-        )
+        result_file = f"{result_save_path}/{kitti.get_image_index_str(img_idx)}.txt"
         result_str = "\n".join(result_lines)
         with open(result_file, "w") as f:
             f.write(result_str)

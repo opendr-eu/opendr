@@ -995,6 +995,17 @@ def test_rotated_pp_siamese_eval(
     total_mean_precision = sum(all_precision) / len(all_precision)
     total_mean_success = sum(all_success) / len(all_success)
 
+    params = {
+        "backbone": backbone,
+        "load": load,
+        **kwargs,
+    }
+
+    params_str = ""
+
+    for key, value in params.items():
+        params_str += "--" + key + "=" + str(value) + " "
+
     result = {
         "total_mean_iou3d": total_mean_iou3d,
         "total_mean_iouAabb": total_mean_iouAabb,
@@ -1008,6 +1019,7 @@ def test_rotated_pp_siamese_eval(
         "total_precision_far": total_precision_far.average,
         "total_success_far": total_success_far.average,
         "fps": learner.fps(),
+        "params": params_str,
     }
 
     for k, v in result.items():

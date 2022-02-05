@@ -875,7 +875,7 @@ def create_selected_eval_kwargs():
         "rotation_penalty": [0.98],
         "rotation_step": [0.15, 0.1],
         "rotations_count": [3],
-        "target_feature_merge_scale": [0, 0.1],
+        "target_feature_merge_scale": [0, 0.01],
     }
 
     results = {}
@@ -1172,6 +1172,76 @@ def run_best_again(device_id=0, total_devices=4):
             device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
         )
         print(result)
+
+
+def run_best_ar(device_id=0, total_devices=4):
+
+    eval_kwargs = create_extended_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1]:
+            for size in [-1]:
+                for context_amount in [0.2]:
+                    for lr in [0.00001, 0.000002]:
+                        for r_pos in [4, 1]:
+                            target_size = (
+                                [127, 127] if size == 1 else [-1, -1]
+                            )
+                            search_size = (
+                                [255, 255] if size == 1 else [-1, -1]
+                            )
+
+                            name = (
+                                "ar0-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=32000,
+                                        save_step=1000,
+                                        loads=[
+                                            1000,
+                                            2000,
+                                            8000,
+                                            16000,
+                                            32000,
+                                        ],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
 
 
 def run_new_smaller_b1(device_id=0, total_devices=4):
