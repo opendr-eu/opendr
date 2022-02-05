@@ -146,9 +146,6 @@ test_cfg = dict(
 		min_stuff_area=4096)
 )
 
-# dataset settings
-# dataset_type = 'SemanticKITTIDataset'  # TODO: Remove these two lines? (As per diff ÷ efficientps/algorithm/config and efficientps/config in Niclas' code)
-# data_root = '/home/mohan/mot_challenge/lidar_track/epsnet/scripts/kalman/'  # TODO: Set correct path
 train_pipeline = [
 	dict(type='LoadLidarFromFile', project=True, H=64, W=2048, fov_up=3.0, fov_down=-25.0, gt=True, max_points=150000,
 		 sensor_img_means=[12.12, 10.88, 0.23, -1.04, 0.21], sensor_img_stds=[12.32, 11.47, 6.91, 0.86, 0.16]),
@@ -164,57 +161,3 @@ test_pipeline = [
 	dict(type='DefaultFormatBundle'),
 	dict(type='Collect', keys=['img']),
 ]
-
-# data = dict(  # TODO: Remove this whole block ? (As per diff ÷ efficientps/algorithm/config and efficientps/config in Niclas' code)
-# 	imgs_per_gpu=3,  # TODO: Check value (as per diff ÷ efficientlps/alg/config/singlegpu and multigpu)
-# 	workers_per_gpu=1,  # TODO: Chech value
-# 	train=dict(
-# 		type=dataset_type,
-# 		ann_file=data_root+'sequences',
-# 		config='configs/semantic-kitti.yaml',
-# 		split='train',
-# 		pipeline=train_pipeline),
-# 	val=dict(
-# 		type=dataset_type,
-# 		ann_file=data_root+'sequences',
-# 		config='configs/semantic-kitti.yaml',
-# 		split='valid',
-# 		pipeline=test_pipeline),
-# 	test=dict(
-# 		type=dataset_type,
-# 		ann_file=data_root+'sequences',
-# 		config='configs/semantic-kitti.yaml',
-# 		split='valid',
-# 		pipeline=test_pipeline)
-# )
-#
-# evaluation = dict(interval=1, metric=['panoptic'])
-#
-# # optimizer
-# optimizer = dict(type='SGD', lr=0.07, momentum=0.9, weight_decay=0.0001)
-# optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
-#
-# # learning policy
-# lr_config = dict(
-# 	policy='step',
-# 	warmup='linear',
-# 	warmup_iters=500,
-# 	warmup_ratio=1.0 / 3,
-# 	step=[120, 144])
-# checkpoint_config = dict(interval=1)
-# # yapf:disable
-# log_config = dict(
-# 	interval=1,
-# 	hooks=[
-# 		dict(type='TextLoggerHook'),
-# 		dict(type='TensorboardLoggerHook')
-# 	])
-# # yapf:enable
-# # runtime settings
-# total_epochs = 160
-# dist_params = dict(backend='nccl')
-# log_level = 'INFO'
-# work_dir = None
-# load_from = None
-# resume_from = None
-# workflow = [('train', 1)]
