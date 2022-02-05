@@ -104,7 +104,7 @@ def inference(*,
 			  detailed: bool = False,
 			  **_) -> None:
 	"""
-	Using a pretrained model, it makes panopptic label inferences on a predefined set of KITTI data and displays/saves
+	Using a pretrained model, it makes panoptic label inferences on a predefined set of KITTI data and displays/saves
 	the output as plots.
 
 	:param kitti_dir: Path to where the KITTI dataset is located. Must be the parent of the sequences/ directory.
