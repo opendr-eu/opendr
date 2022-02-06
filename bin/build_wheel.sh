@@ -7,6 +7,8 @@ git submodule update --init --recursive
 rm dist/*
 rm src/*egg-info -rf
 
+pip install cython
+
 # Build OpenDR packages
 while read p; do
   echo "Building wheel for $p"
