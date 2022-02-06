@@ -80,7 +80,7 @@ def evaluate(*,
 			 kitti_dir: str,
 			 cp_dir: str,
 			 tmp_dir: str,
-			 print_eval_results: bool = True,
+			 skip_eval_results: bool = False,
 			 **_) -> None:
 	"""
 	Evaluates a pre-trained model on the KITTI dataset evaluation data split.
@@ -92,22 +92,23 @@ def evaluate(*,
 	:type cp_dir: str
 	:param tmp_dir: Path to where temporary output will be saved.
 	:type tmp_dir: str
-	:param print_eval_results: Prints the computed evaluation metrics.
-	:type print_eval_results: bool
+	:param skip_eval_results: Prints the computed evaluation metrics if set to False.
+	:type skip_eval_results: bool
 	:return: None
 	"""
 
 	val_dataset = SemanticKittiDataset(path=kitti_dir, split="valid")
 
-	learner = EfficientLpsLearner()
+	learner = EfficientLpsLearner(temp_path=tmp_dir)
 	learner.load(path=f'{cp_dir}/model.pth')
-	eval_stats = learner.eval(val_dataset, print_results=print_eval_results)
+	eval_stats = learner.eval(val_dataset, print_results=not skip_eval_results)
 	assert eval_stats  # This assert is just a workaround since pyflakes does not support the NOQA comment
 
 
 def inference(*,
 			  kitti_dir: str,
 			  cp_dir: str,
+			  log_dir: str,
 			  tmp_dir: str,
 			  projected: bool = False,
 			  save_figure: bool = False,
@@ -123,6 +124,8 @@ def inference(*,
 	:param cp_dir: Path to where the pre-trained model checkpoint file is located.
 		The checkpoint file itself must be called model.pth.
 	:type cp_dir: str
+	:param log_dir: Path to where the training logs will be saved.
+	:type log_dir: str
 	:param tmp_dir: Path to where temporary output will be saved.
 	:type tmp_dir: str
 	:param projected: Determines whether the output will be displayed as a 2D image of the spherical projection if True,
@@ -150,7 +153,7 @@ def inference(*,
 	learner.load(path=f'{cp_dir}/model.pth')
 	predictions = learner.infer(clouds, projected=projected)
 	for cloud, prediction, f in zip(clouds, predictions, pointcloud_filenames):
-		filename = Path(tmp_dir) / Path(f).with_suffix(".png").name
+		filename = str(Path(log_dir) / Path(f).with_suffix(".png").name)
 		# Clip values since the Cityscapes palette only has 19 colors, plus black added in the visualize method
 		semantics = prediction[1]
 		if projected:
@@ -164,8 +167,7 @@ def inference(*,
 		else:
 			EfficientLpsLearner.visualize(cloud, prediction[:2],
 										  show_figure=display_figure,
-										  save_figure=save_figure, figure_filename=filename,
-										  detailed=detailed)
+										  save_figure=save_figure, figure_filename=filename)
 
 
 def parse_args() -> dict:
@@ -224,8 +226,8 @@ def parse_args() -> dict:
 	parser.add_argument("--detailed", "-d", action="store_true",
 						help="Inferred image is shown in detail (Image, Panoptic, Semantic, Contours).")
 
-	parser.add_argument("--print_eval_results", action="store_true",
-						help="Print evaluation metrics.")
+	parser.add_argument("--skip_eval_results", action="store_true",
+						help="Don't print evaluation metrics.")
 
 	kwargs = vars(parser.parse_args())
 

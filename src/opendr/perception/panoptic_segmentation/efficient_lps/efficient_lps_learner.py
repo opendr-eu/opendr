@@ -74,23 +74,36 @@ class EfficientLpsLearner(Learner):
 				 config_file: str = str(Path(__file__).parent / "configs" / "singlegpu_sample.py")
 				 ):
 		"""
-		TODO DOC
+		Constructor
 
-		:param lr:
-		:type lr:
-		:param iters:
-		:param batch_size:
-		:param optimizer:
-		:param lr_schedule:
-		:param momentum:
-		:param weight_decay:
-		:param optimizer_config:
-		:param checkpoint_after_iter:
-		:param temp_path:
-		:param device:
-		:param num_workers:
-		:param seed:
-		:param config_file:
+		:param lr: Learning Rate [Training]
+		:type lr: float
+		:param iters: Number of iterations [Training]
+		:type iters: int
+		:param batch_size: Size of batches [Training | Evaluation]
+		:type batch_size: int
+		:param optimizer: Type of the used optimizer [Training]
+		:type optimizer: str
+		:param lr_schedule: Further settings for the Learning Rate [Training]
+		:type lr_schedule: dict
+		:param momentum: Momentum used by the optimizer [Training]
+		:type momentum: float
+		:param weight_decay: Weight decay used by the optimizer [Training]
+		:type weight_decay: float
+		:param optimizer_config: Further settings for the Optimizer [Training]
+		:type optimizer_config: dict
+		:param checkpoint_after_iter: Interval in epochs after which to save model checkpoints [Training]
+		:type checkpoint_after_iter: int
+		:param temp_path: Path to a temporary folder that will be created to evaluate the model [Training | Evaluation]
+		:type temp_path: str
+		:param device: Hardware device to deploy the model to
+		:type device: str
+		:param num_workers: Number of workers used by the data loaders [Training | Evaluation]
+		:type num_workers: int
+		:param seed: Random seed to shuffle the data during training [Training]
+		:type seed: float (Optional)
+		:param config_file: Path to a python configuration file that contains the model and data loading pipelines.
+		:type config_file: str
 		"""
 
 		super().__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer, temp_path=temp_path,
@@ -153,8 +166,7 @@ class EfficientLpsLearner(Learner):
 
 	def __del__(self):
 		"""
-		TODO DOC
-		:return:
+		Destructor. Deletes the temporary directory.
 		"""
 		shutil.rmtree(self.temp_path, ignore_errors=True)
 
@@ -166,14 +178,22 @@ class EfficientLpsLearner(Learner):
 			verbose: Optional[bool] = True
 			) -> Dict[str, List[Dict[str, Any]]]:
 		"""
-		TODO DOC
+		Method used for training the model on a train dataset and validating on a separate dataset.
 
-		:param dataset:
-		:param val_dataset:
-		:param logging_path:
-		:param silent:
-		:param verbose:
-		:return:
+		:param dataset: Object that holds the Training Dataset
+		:type dataset: OpenDR Dataset class type
+		:param val_dataset: Object that holds the Validation Dataset
+		:type val_dataset: OpenDR Dataset class type
+		:param logging_path: Path to store the log files, e.g., training progress and tensorboard logs
+		:type logging_path: str
+		:param silent: If True, printing the training progress to STDOUT is disabled. Evaluation will still be shown.
+		:type silent: bool
+		:param verbose: Unused.
+		:type verbose: bool (Optional)
+
+		:return: Dictionary with "train" and "val" keys containing the training progress (e.g. losses) and,
+			if a val_dataset is provided, the evaluation results.
+		:rtype: dict
 		"""
 
 		if verbose is not None:
@@ -254,13 +274,19 @@ class EfficientLpsLearner(Learner):
 			 print_results: bool = False
 			 ) -> Dict[str, Any]:
 		"""
-		TODO:
+		Method for evaluating the model on a dataset and returning the following stats:
+			- Panoptic Quality (PQ)
+			- Segmentation Quality (SQ)
+			- Recognition Quality (RQ)
+			- Intersection over Union (IoU)
 
-		:param dataset:
-		:type dataset:
-		:param print_results:
-		:type print_results:
-		:return:
+		:param dataset: Object that holds the evaluation dataset
+		:type dataset: OpenDR Dataset class type
+		:param print_results: Computed metrics will be output to STDOUT if set to True.
+		:type print_results: bool
+
+		:return: Dictionary containing the stats regarding the evaluation
+		:rtype: dict
 		"""
 
 		dataset.pipeline = self._cfg.test_pipeline
@@ -303,13 +329,21 @@ class EfficientLpsLearner(Learner):
 
 		return results
 
-	def pcl_to_mmdet(self, point_cloud: PointCloud, file_count: int = 0) -> dict:
+	def pcl_to_mmdet(self,
+					 point_cloud: PointCloud,
+					 frame_id: int = 0
+					 ) -> dict:
 		"""
-		TODO
-		:param point_cloud:
-		:param file_count:
-		:return:
-		:rtype
+		Method for converting an OpenDR PointCloud object to an MMDetector compatible one.
+		To be used when the Loading portion of the model's data pipeline is not being used.
+
+		:param point_cloud: Pointcloud to be converted
+		:type point_cloud: OpenDR PointCloud
+		:param frame_id: Number of the scan frame to be used as its filename. Inferences will use the same filename.
+		: type frame_id: int
+
+		:return: An MMDetector compatible dictionary containing the PointCloud data and some additional metadata.
+		:rtype: dict
 		"""
 
 		loader_pipeline_cfg = self._cfg.test_pipeline[0]
@@ -365,12 +399,12 @@ class EfficientLpsLearner(Learner):
 				) / sensor_img_stds
 		proj = proj * proj_mask.float()
 
-		results = {
-			# TODO: Awful Hack!
+		mmdet_pcl = {
+			# TODO: Improve Awful Hack!
 			# Prediction will be saved in $PWD/tmpDir/inference/predictions/pcl_<file_count>.label
 			#                                         |||||||||             \\\\\\\\\\\\\\\\\
 			#                                         VVVVVVVVV              VVVVVVVVVVVVVVVVV
-			"filename": f"expected_path_for_something/inference/__dont_care__/pcl_{file_count:06d}.bin",
+			"filename": f"expected_path_for_something/inference/__dont_care__/pcl_{frame_id:06d}.bin",
 			"img": proj,
 			"img_shape": proj.shape,
 			"ori_shape": proj.shape,
@@ -390,7 +424,7 @@ class EfficientLpsLearner(Learner):
 			"stuff_id":  STUFF_START_ID
 		}
 
-		return results
+		return mmdet_pcl
 
 	def infer(self,
 			  batch: Union[PointCloud, List[PointCloud]],
@@ -398,11 +432,18 @@ class EfficientLpsLearner(Learner):
 			  projected: bool = False
 			  ) -> List[Tuple[np.ndarray, np.ndarray, Optional[Image]]]:
 		"""
-		TODO
-		:param batch:
-		:param return_raw_logits:
-		:param projected:
-		:return:
+		Method to perform inference on a provided batch of data.
+
+		:param batch: Object that holds a batch of data to run inference on.
+		:type batch: Single instance or a list of OpenDR PointCloud objects.
+		:param return_raw_logits: Whether the output should be transformed into the OpenDR target class.
+        :type return_raw_logits: bool
+		:param projected: If True, output will be returned as 2D heatmaps of the spherical projections of the semantic
+			and instance labels, as well as the spherical projection of the scan's range.
+			Otherwise, the semantic and instance labels will be returned as Numpy arrays.
+
+		:return: A list of predicted targets.
+        :rtype: list of tuples of Heatmap class type or list of Numpy arrays
 		"""
 
 		if self.model is None:
@@ -423,7 +464,7 @@ class EfficientLpsLearner(Learner):
 
 		mmdet_batch = []
 		for i, point_cloud in enumerate(batch):
-			mmdet_img = self.pcl_to_mmdet(point_cloud, file_count=i)
+			mmdet_img = self.pcl_to_mmdet(point_cloud, frame_id=i)
 			mmdet_img = test_pipeline(mmdet_img)
 			mmdet_batch.append(scatter(collate([mmdet_img], samples_per_gpu=1), [device])[0])
 
@@ -463,15 +504,19 @@ class EfficientLpsLearner(Learner):
 			return results[0]
 		return results
 
-	def save(self, path):
+	def save(self,
+			 path: str
+			 ) -> bool:
 		"""
         Saves the model in the path provided.
 
         :param path: Path to save directory
         :type path: str
+
         :return: Whether save succeeded or not
         :rtype: bool
         """
+
 		if not self._is_model_trained:
 			warnings.warn("The current model has not been trained.")
 	
@@ -507,15 +552,19 @@ class EfficientLpsLearner(Learner):
 			return False
 		return True
 
-	def load(self, path):
+	def load(self,
+			 path: str
+			 ) -> bool:
 		"""
-        Loads a model from the path provided.
+        Loads a model from the provided path.
 
         :param path: Path to saved model
         :type path: str
+
         :return: Whether load succeeded or not
         :rtype: bool
         """
+
 		if ".pth" in path:  # Read the actual model
 			try:
 				checkpoint = load_checkpoint(self.model, path)
@@ -543,21 +592,25 @@ class EfficientLpsLearner(Learner):
 				return False
 			return self.load(str(model_path))
 
-	def optimize(self, target_device):
+	def optimize(self, target_device: str) -> bool:
 		# Not needed for this learner.
 		raise NotImplementedError("EfficientLPS does not need an optimize() method.")
 
-	def reset(self):
+	def reset(self) -> None:
 		# Not needed for this learner since it is stateless.
 		raise NotImplementedError("EfficientLPS is stateless, no reset() needed.")
 
 	@staticmethod
-	def download(path: str, mode: str = "model", trained_on: str = "kitti") -> str:
+	def download(path: str,
+				 mode: str = "model",
+				 trained_on: str = "kitti"
+				 ) -> str:
 		"""
-		TODO
-		Download data from the OpenDR server. Valid modes include pre-trained model weights and data used in the unit tests.
+		Download data from the OpenDR server.
+		Valid modes include pre-trained model weights and data used in the unit tests.
 	
 		Currently, the following pre-trained models are available:
+			TODO: Verify
 			- KITTI panoptic segmentation dataset
 			- NuScenes
 	
@@ -567,9 +620,11 @@ class EfficientLpsLearner(Learner):
 		:type mode: str
 		:param trained_on: Dataset on which the model has been trained [applicable only to mode == "model"]
 		:type trained_on: str
+
 		:return: Path to the downloaded file
 		:rtype: str
 		"""
+
 		if mode == "model":
 			models = {
 				# TODO: Check URLs after uploading models
@@ -611,28 +666,35 @@ class EfficientLpsLearner(Learner):
 				  save_figure: bool = False,
 				  figure_filename: Optional[str] = None,
 				  figure_size: Tuple[float, float] = (15, 10),
-				  detailed: bool = False,
 				  max_inst: int = 20,
 				  min_alpha: float = 0.25,
 				  dpi: int = 600,
 				  ) -> Image:
 		"""
-		TODO:
+		Create a visualization of the predicted panoptic segmentation as a colored 3D Scatter Plot.
 
-		:param pointcloud:
-		:param predictions:
-		:param show_figure:
-		:param save_figure:
-		:param figure_filename:
-		:param figure_size:
-		:param detailed:
-		:param max_inst:
-		:param min_alpha:
-		:param dpi:
-		:return:
+		:param pointcloud: Pointcloud object containing the coordinates of the scan
+		:type pointcloud: OpenDR PointCloud object
+		:param predictions: Tuple of semantic and instance labels
+		:type predictions: tuple of Numpy arrays
+		:param show_figure: Displays the resulting plot in a GUI if True
+		:type show_figure: bool
+		:param save_figure: Saves the resulting plot to a *.png file if True
+		:type save_figure: bool
+		:param figure_filename: Name of the image to be saved. Required if save_figure is set to True
+		:type figure_filename: str
+		:param figure_size: Size of the figure in inches. Wrapper of matplotlib figuresize.
+        :type figure_size: Tuple of floats
+		:param max_inst: Maximum value that the instance ID can take. Used for computing the alpha value of a point.
+		:type max_inst: int
+		:param min_alpha: Minimum value that a point's alpha value can take, so that it is never fully transparent.
+		:type min_alpha: float
+		:param dpi: Resolution of the resulting image, in Dots per Inch.
+		:type dpi: int
+
+		:return: OpenDR Image of the generated visualization
+		:rtype: OpenDR Image
 		"""
-
-		del detailed  # Unused parameter, kept so that signature is like that of EfficientPsLearner.visualize()
 
 		if save_figure and figure_filename is None:
 			raise ValueError("Argument figure_filename must be specified if save_figure is True.")
