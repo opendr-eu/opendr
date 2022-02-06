@@ -197,7 +197,7 @@ jobs:
         pip install wheel
         while read f; do
             package=${f/_/-}
-            arr=(${f//// })
+            arr=(${package//// })
             if [ ! -z ${arr[1]} ]; then
                 package=${arr[1]}
             fi
