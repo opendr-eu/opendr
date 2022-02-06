@@ -197,13 +197,17 @@ jobs:
         source venv/bin/activate
         pip install wheel
         while read f; do
-            package=${f/_/-}
-            arr=(${package//// })
-            if [ ! -z ${arr[1]} ]; then
-                package=${arr[1]}
-            fi
-            echo "Installing $package package"
-            pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz    
+          package=$(sed "s/_/-/g" <<< $f)
+          arr=(${package//// })
+          if [ ! -z ${arr[1]} ]; then
+              package=${arr[1]}
+          fi
+          echo "Installing $package package"
+          if [ "$package" == "opendr" ]; then
+            pip install ./artifact/artifact/opendr-toolkit-*.tar.gz    
+          else
+            pip install /artifact/artifact/opendr-toolkit-$package-*.tar.gz  
+          fi
         done < packages.txt
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
