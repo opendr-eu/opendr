@@ -196,6 +196,7 @@ jobs:
         python3 -m venv venv
         source venv/bin/activate
         pip install wheel
+        ls ./artifact/artifact/
         while read f; do
           package=$(sed "s/_/-/g" <<< $f)
           arr=(${package//// })
