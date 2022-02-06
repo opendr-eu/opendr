@@ -206,7 +206,7 @@ jobs:
           if [ "$package" == "opendr" ]; then
             pip install ./artifact/artifact/opendr-toolkit-*.tar.gz    
           else
-            pip install /artifact/artifact/opendr-toolkit-$package-*.tar.gz  
+            pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz  
           fi
         done < packages.txt
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
