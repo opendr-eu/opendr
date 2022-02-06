@@ -196,7 +196,7 @@ jobs:
         source venv/bin/activate
         pip install wheel
         while read f; do
-            package=$f
+            package=${f/_/-}
             arr=(${f//// })
             if [ ! -z ${arr[1]} ]; then
                 package=${arr[1]}
