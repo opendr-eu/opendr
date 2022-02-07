@@ -276,6 +276,8 @@ jobs:
         # Utils are contained in engine package
         if [ "$package" != "utils" ]; then
               pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz  
+        else
+              pip install ./artifact/artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz  
         fi
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
