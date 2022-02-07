@@ -1,22 +1,56 @@
 #!/bin/bash
 
-sudo apt-get update
-sudo apt-get install --yes libfreetype6-dev lsb-release git python3-pip curl wget
-
-pip3 install --upgrade pip
-
-git submodule init
-git submodule update
-
-pip3 install numpy==1.19.4
-pip3 install setuptools configparser
-pip3 install --upgrade setuptools
-
 # export OpenDR related paths
 export OPENDR_HOME=$PWD
 export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
 export PYTHON=python3
 export LD_LIBRARY_PATH=$OPENDR_HOME/src:$LD_LIBRARY_PATH
+
+# Install mxnet
+
+cd $OPENDR_HOME
+
+sudo apt-get install -y gfortran build-essential git python3-pip python-numpy libopencv-dev graphviz libopenblas-dev libopenblas-base libatlas-base-dev python-numpy
+
+sudo pip3 install --upgrade pip setuptools
+
+sudo pip3 install numpy==1.19.4
+
+git clone --recursive -b v1.8.x https://github.com/apache/incubator-mxnet.git mxnet
+
+export PATH=/usr/local/cuda/bin:$PATH
+export MXNET_HOME=$OPENDR_HOME/mxnet/
+export PYTHONPATH=$MXNET_HOME/python:$PYTHONPATH
+
+sudo rm /usr/local/cuda
+sudo ln -s /usr/local/cuda-10.2 /usr/local/cuda
+
+cd $MXNET_HOME
+cp $MXNET_HOME/make/config_jetson.mk config.mk
+sed -i 's/USE_CUDA = 0/USE_CUDA = 1/' config.mk
+sed -i 's/USE_CUDA_PATH = NONE/USE_CUDA_PATH = \/usr\/local\/cuda/' config.mk
+# CUDA_ARCH setting
+sed -i 's/CUDA_ARCH = -gencode arch=compute_53,code=sm_53 -gencode arch=compute_62,code=sm_62 -gencode arch=compute_72,code=sm_72/ /' config.mk
+sed -i 's/USE_CUDNN = 0/USE_CUDNN = 1/' config.mk
+sed -i '/USE_CUDNN/a CUDA_ARCH := -gencode arch=compute_62,code=sm_62' config.mk
+
+make -j $(nproc) NVCC=/usr/local/cuda/bin/nvcc
+
+cd $MXNET_HOME/python
+sudo pip3 install -e .
+
+cd $OPENDR_HOME
+chmod a+rwx ./mxnet
+
+
+sudo apt-get update
+sudo apt-get install --yes libfreetype6-dev lsb-release git curl wget
+
+git submodule init
+git submodule update
+
+pip3 install setuptools configparser
+pip3 install --upgrade setuptools
 
 # Install Torch
 sudo apt-get install --yes libopenblas-dev cmake ninja-build
@@ -102,7 +136,7 @@ pip3 install imageio==2.6.0
 pip3 install imantics==0.1.12
 pip3 install imgaug==0.4.0
 pip3 install importlib-metadata==4.8.2
-pip3 install importlib-resources==5.4.0	
+pip3 install importlib-resources==5.4.0
 pip3 install imutils==0.5.4
 pip3 install incremental==21.3.0
 pip3 install iniconfig==1.1.1
@@ -111,7 +145,7 @@ pip3 install kiwisolver==1.3.1
 pip3 install lap==0.4.0
 
 sudo apt-get install --yes llvm-10*
-sudo ln -s /usr/bin/llvm-config10 /usr/bin/llvm-config
+sudo ln -s /usr/bin/llvm-config-10 /usr/bin/llvm-config
 pip3 install llvmlite==0.36.0
 sudo mv /usr/include/tbb/tbb.h /usr/include/tbb/tbb.h.bak
 pip3 install numba==0.53.1
@@ -173,9 +207,6 @@ pip3 install rosdistro==0.8.3
 pip3 install roslibpy==1.2.1
 pip3 install rospkg==1.3.0
 pip3 install rsa==4.8
-
-sudo apt-get install -y build-essential gfortran libatlas-base-dev
-
 pip3 install scikit-image==0.16.2
 pip3 install scikit-learn==0.21.3
 pip3 install setuptools-rust==1.1.2
@@ -209,104 +240,6 @@ pip3 install yarl==1.7.2
 pip3 install zipp==3.6.0
 pip3 install zope.interface==5.4.0
 
-# Install mxnet
-
-cd $OPENDR_HOME
-
-sudo apt-get install --yes libopencv-dev python-numpy
-sudo apt-get install -y libopencv-dev graphviz libopenblas-dev libopenblas-base
-
-git clone --recursive -b v1.8.x https://github.com/apache/incubator-mxnet.git mxnet
-
-export PATH=/usr/local/cuda/bin:$PATH
-export MXNET_HOME=$OPENDR_HOME/mxnet/
-export PYTHONPATH=$MXNET_HOME/python:$PYTHONPATH
-
-sudo rm /usr/local/cuda
-sudo ln -s /usr/local/cuda-10.2 /usr/local/cuda
-
-cd $MXNET_HOME
-cp $MXNET_HOME/make/config.mk .
-sed -i 's/USE_CUDA = 0/USE_CUDA = 1/' config.mk
-sed -i 's/USE_CUDA_PATH = NONE/USE_CUDA_PATH = \/usr\/local\/cuda/' config.mk
-sed -i 's/USE_CUDNN = 0/USE_CUDNN = 1/' config.mk
-sed -i '/USE_CUDNN/a CUDA_ARCH := -gencode arch=compute_62,code=sm_62' config.mk
-
-make -j $(nproc)
-
-cd $MXNET_HOME/python
-pip3 install -e .
-
-cd $OPENDR_HOME
-chmod a+rwx ./mxnet
-
 cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
 make
 cd $OPENDR_HOME
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
