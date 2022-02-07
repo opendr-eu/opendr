@@ -267,8 +267,10 @@ jobs:
         # Install specific package for testing
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
         arr=(${package//// })
+        if [ ! -z ${arr[1]} ]; then
+            package=${arr[1]}
+        fi
         echo "Installing $package package"
-        package=${arr[1]}
         pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz  
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
