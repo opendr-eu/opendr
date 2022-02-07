@@ -263,7 +263,7 @@ jobs:
         pip install ./artifact/artifact/opendr-toolkit-engine-*.tar.gz   
         # The following two are dependecies for some other packages and pip cannot automatically install them if they are not on a repo
         pip install ./artifact/artifact/opendr-toolkit-compressive-learning-*.tar.gz   
-        pip install ./artifact/artifact/opendr-toolkit-object-detection_2d-*.tar.gz   
+        pip install ./artifact/artifact/opendr-toolkit-object-detection-2d-*.tar.gz   
         # Install specific package for testing
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
         arr=(${package//// })
