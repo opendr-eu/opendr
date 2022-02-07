@@ -199,9 +199,15 @@ jobs:
         while read f; do
           package=$(sed "s/_/-/g" <<< $f)
           arr=(${package//// })
+          # Get the tool name (if there is a base path before)
           if [ ! -z ${arr[1]} ]; then
               package=${arr[1]}
           fi
+          # Utils are contained in engine package
+          if [ "$package" == "utils" ]; then
+              package="engine"
+          fi
+          
           echo "Installing $package package"
           if [ "$package" == "opendr" ]; then
             pip install ./artifact/artifact/opendr-toolkit-*.tar.gz    
