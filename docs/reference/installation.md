@@ -82,12 +82,14 @@ pip install wheel
 ```
 Then, you  install the Python API of the toolkit using pip:
 ```bash
+export DISABLE_BCOLZ_AVX2=true
 pip install opendr-toolkit-engine
 pip install opendr-toolkit
 ```
-
 *pip* wheels only install code that is available under the *src/opendr* folder of the toolkit.
 Tools provided in *projects* are not installed by *pip*.
+If you have a CPU that does not support AVX2, the please also `export DISABLE_BCOLZ_AVX2=true` before installing the toolkit.
+This is not needed for newer CPUs.
 
 ## Enabling GPU-acceleration
 The same OpenDR package is used for both CPU and GPU systems. 
