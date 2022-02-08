@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.0-base
+FROM nvidia/cuda:11.0-devel
 
 # Install dependencies
 RUN apt-get update && \
@@ -12,13 +12,11 @@ RUN chmod +x /tini
 ENTRYPOINT ["/tini", "--"]
 
 # Avoid switching back to gcc9 when install build-essential
-RUN sudo apt-get --yes install build-essential && \
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8  && \
-    update-alternatives --auto gcc
+RUN sudo apt-get --yes install build-essential
 
 # Clone the repo and install the toolkit
 ENV OPENDR_DEVICE gpu
-RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
+RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr -b cuda_upgrade
 WORKDIR "/opendr"
 RUN ./bin/install.sh
 
