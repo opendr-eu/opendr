@@ -17,7 +17,7 @@ MAKECMDGOALS = release
 endif
 
 ifeq ($(OPENDR_DEVICE),gpu)
-DETECTRON_WHEEL=https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.7/index.html
+DETECTRON_WHEEL=https://dl.fbaipublicfiles.com/detectron2/wheels/cu110/torch1.7/index.html
 else
 DETECTRON_WHEEL=https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.7/index.html
 endif

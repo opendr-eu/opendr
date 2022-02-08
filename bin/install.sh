@@ -38,7 +38,12 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main
 # Build OpenDR
 make install_compilation_dependencies
 make install_runtime_dependencies
+
+# Install GPU dependencies separately
+if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
+  pip install mxnet-cu110
+fi
+
 make libopendr
 
 deactivate
-
