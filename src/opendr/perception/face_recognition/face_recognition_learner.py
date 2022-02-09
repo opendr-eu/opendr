@@ -588,7 +588,7 @@ class FaceRecognitionLearner(Learner):
                 transforms.Normalize(mean=self.rgb_mean, std=self.rgb_std)]
             )
 
-            dataset_eval = datasets.ImageFolder(os.path.join(dataset.path, dataset.dataset_type), eval_transform)
+            dataset_eval = datasets.ImageFolder(dataset.path, eval_transform)
             eval_loader = torch.utils.data.DataLoader(
                 dataset_eval, batch_size=self.batch_size, pin_memory=self.pin_memory,
                 num_workers=self.num_workers, drop_last=self.drop_last

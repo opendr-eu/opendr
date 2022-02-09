@@ -28,11 +28,23 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     onnx, device, backbone = args.onnx, args.device, args.backbone
-
+    nvml = False
+    try:
+        if 'cuda' in device:
+            from pynvml import nvmlInit, nvmlDeviceGetMemoryInfo, nvmlDeviceGetHandleByIndex
+            nvmlInit()
+            nvml = True
+    except ImportError:
+        pass
+    if nvml:
+        info_before = nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(0))
+        info_before = info_before.used / 1024 ** 2
     recognizer = FaceRecognitionLearner(device=device, backbone=backbone, mode='backbone_only')
     recognizer.download(path=".")
     recognizer.load(path=".")
-
+    if nvml:
+        info_after = nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(0))
+        info_after = info_after.used / 1024 ** 2
     # Download one sample image
     recognizer.download(path=".", mode="test_data")
     recognizer.fit_reference("./test_data", ".")
@@ -43,22 +55,14 @@ if __name__ == '__main__':
         recognizer.optimize()
 
     fps_list = []
+
     print("Benchmarking...")
-    for i in tqdm(range(50)):
+    for i in tqdm(range(100)):
         start_time = time.perf_counter()
         # Perform inference
         result = recognizer.infer(img)
         end_time = time.perf_counter()
         fps_list.append(1.0 / (end_time - start_time))
     print("Average FPS: %.2f" % (np.mean(fps_list)))
-
-    # If pynvml is available, try to get memory stats for cuda
-    try:
-        if 'cuda' in device:
-            from pynvml import nvmlInit, nvmlDeviceGetMemoryInfo, nvmlDeviceGetHandleByIndex
-
-            nvmlInit()
-            info = nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(0))
-            print("Memory allocated: %.2f MB " % (info.used / 1024 ** 2))
-    except ImportError:
-        pass
+    if nvml:
+        print("Memory allocated: %.2f MB " % (info_after - info_before))
