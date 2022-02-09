@@ -51,7 +51,7 @@ class FaceRecognitionNode:
         self.recognizer = FaceRecognitionLearner(device=device, mode='backbone_only', backbone=backbone)
         self.recognizer.download(path=".")
         self.recognizer.load(".")
-        self.recognizer.fit_reference(database_path, save_path=".")
+        self.recognizer.fit_reference(database_path, save_path=".", create_new=True)
 
         # Initialize the face detector
         self.face_detector = RetinaFaceLearner(backbone='mnet', device=device)

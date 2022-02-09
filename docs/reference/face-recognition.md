@@ -152,7 +152,7 @@ When 'ExternalDataset' is of type 'ImageFolder', images should be placed in a de
 
 #### `FaceRecognitionLearner.fit_reference`
 ```python
-FaceRecognitionLearner.fit_reference(self, path, save_path)
+FaceRecognitionLearner.fit_reference(self, path, save_path, create_new)
 ```
 
 This method is used to create a reference database to be used in inference when mode='backbone_only'.
@@ -164,6 +164,8 @@ Parameters:
   Path containing the reference images. If a reference database was already created can be left blank.
 - **save_path**: *str, default=None*\
   Path to save (load if already created) the .pkl reference file.
+- **create_new**: *bool, default=Trye*\
+  Whether to create a new or load an existing .pkl reference file.
 
 **Notes**
 

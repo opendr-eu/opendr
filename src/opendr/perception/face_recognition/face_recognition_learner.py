@@ -385,7 +385,7 @@ class FaceRecognitionLearner(Learner):
 
         return {'Training_statistics': results, 'Evaluation_statistics': eval_results}
 
-    def fit_reference(self, path=None, save_path=None):
+    def fit_reference(self, path=None, save_path=None, create_new=True):
         """
         Implementation to create reference database. Provided with a path with reference images and a save_path,
         it creates a .pkl file containing the features of the reference images, and saves it
@@ -394,10 +394,13 @@ class FaceRecognitionLearner(Learner):
         :type path: str
         :param save_path: path to save the .pkl file
         :type save_path: str
+        :param create_new: create new reference.pkl file. If false it will attempt to load an existing reference.pkl
+         file from save_path.
+        :type create_new: bool, default=True
         """
         if self._model is None and self.ort_backbone_session is None:
             raise UserWarning('A model should be loaded first')
-        if os.path.exists(os.path.join(save_path, 'reference.pkl')):
+        if os.path.exists(os.path.join(save_path, 'reference.pkl')) and not create_new:
             print('Loading Reference')
             self.database = pickle.load(open(os.path.join(save_path, 'reference.pkl'), "rb"))
         else:

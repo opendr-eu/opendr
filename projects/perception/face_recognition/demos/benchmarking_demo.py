@@ -25,6 +25,7 @@ if __name__ == '__main__':
     parser.add_argument("--onnx", help="Use ONNX", default=False, action="store_true")
     parser.add_argument("--backbone", help="Backbone to use (mobilefacenet, ir_50)", type=str, default='mobilefacenet')
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
+    parser.add_argument("--create_new", help="Whether to create or load a database", type=bool, default=True)
     args = parser.parse_args()
 
     onnx, device, backbone = args.onnx, args.device, args.backbone
@@ -47,7 +48,7 @@ if __name__ == '__main__':
         info_after = info_after.used / 1024 ** 2
     # Download one sample image
     recognizer.download(path=".", mode="test_data")
-    recognizer.fit_reference("./test_data", ".")
+    recognizer.fit_reference("./test_data", ".", create_new=True)
     image_path = join(".", "test_data", "images", "1", "1.jpg")
     img = cv2.imread(image_path)
 
