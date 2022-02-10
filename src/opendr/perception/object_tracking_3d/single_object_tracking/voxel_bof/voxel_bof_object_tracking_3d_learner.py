@@ -28,6 +28,7 @@ from opendr.engine.datasets import (
     MappedDatasetIterator,
 )
 from opendr.engine.data import PointCloud
+from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import SiameseTrackingDatasetIterator
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.load import (
     create_model as second_create_model,
     load_from_checkpoint,
@@ -47,11 +48,13 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     feature_to_image_coordinates,
     hann_window,
     image_to_lidar_coordinates,
+    infer_create_pseudo_image,
     original_search_size_by_target_size,
     pc_range_by_lidar_aabb,
     score_to_image_coordinates,
     select_best_scores_and_search,
     size_with_context,
+    tracking_boxes_to_lidar,
     train,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.builder import (
@@ -185,6 +188,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self._images = {}
         self.fpses = []
         self.times = {}
+        self.training_method = "detection"
 
         self.model.rpn_ort_session = None  # ONNX runtime inference session
 
@@ -459,6 +463,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
             train_steps=steps,
             loss_function=self.loss_function,
             r_pos=self.r_pos,
+            infer_point_cloud_mapper=self.infer_point_cloud_mapper,
+            training_method=self.training_method,
         )
 
         logger.close()
@@ -518,6 +524,13 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         if self.model is None:
             raise ValueError("No model loaded or created")
+
+        result = infer_create_pseudo_image(
+            self.model.branch, point_clouds, pc_range, self.infer_point_cloud_mapper, self.float_dtype,
+            times=self.times
+        )
+
+        return result
 
         t = time.time()
 
@@ -857,6 +870,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
     def init(self, point_cloud, label_lidar, draw=False):
 
+        self.model.eval()
+
         self.fpses = []
         self.times = {
             "pseudo_image": [],
@@ -1146,6 +1161,39 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             return map
 
+        def create_map_siamese_dataset_func(is_training):
+
+            # prep_func = create_prep_func(
+            #     input_cfg if is_training else eval_input_cfg,
+            #     model_cfg,
+            #     is_training,
+            #     voxel_generator,
+            #     target_assigner,
+            #     use_sampler=False,
+            # )
+
+            def map(data_target):
+
+                target_point_cloud_calib, search_point_cloud_calib, target_label, search_label = data_target
+                target_point_cloud = target_point_cloud_calib.data
+                search_point_cloud = search_point_cloud_calib.data
+                calib = target_point_cloud_calib.calib
+
+                target_label_lidar = tracking_boxes_to_lidar(target_label, calib)
+                search_label_lidar = tracking_boxes_to_lidar(search_label, calib)
+
+                target_label_lidar_kitti = target_label_lidar.kitti()
+                search_label_lidar_kitti = search_label_lidar.kitti()
+
+                del target_label_lidar_kitti["name"]
+                del search_label_lidar_kitti["name"]
+
+                return (
+                    target_point_cloud, search_point_cloud, target_label_lidar_kitti, search_label_lidar_kitti,
+                )
+
+            return map
+
         input_dataset_iterator = None
         eval_dataset_iterator = None
 
@@ -1182,9 +1230,14 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 target_assigner=target_assigner,
                 model=self.model,
             )
+        elif isinstance(dataset, SiameseTrackingDatasetIterator):
+            input_dataset_iterator = MappedDatasetIterator(
+                dataset, create_map_siamese_dataset_func(True),
+            )
+            self.training_method = "siamese"
         elif isinstance(dataset, DatasetIterator):
             input_dataset_iterator = MappedDatasetIterator(
-                dataset, create_map_point_cloud_dataset_func(True),
+                dataset, create_map_siamese_dataset_func(True),
             )
         else:
             if require_dataset or dataset is not None:
@@ -1236,6 +1289,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
             eval_dataset_iterator = MappedDatasetIterator(
                 val_dataset, create_map_point_cloud_dataset_func(False),
             )
+        elif isinstance(val_dataset, SiameseTrackingDatasetIterator):
+            eval_dataset_iterator = MappedDatasetIterator(
+                val_dataset, create_map_siamese_dataset_func(True),
+            )
         elif val_dataset is None:
             if isinstance(dataset, ExternalDataset):
                 dataset_path = dataset.path
@@ -1275,6 +1332,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
                         info["annos"]
                         for info in eval_dataset_iterator.dataset.kitti_infos
                     ]
+            elif isinstance(dataset, DatasetIterator):
+                eval_dataset_iterator = MappedDatasetIterator(
+                    dataset, create_map_siamese_dataset_func(True),
+                )
             else:
                 raise ValueError(
                     "val_dataset is None and can't be derived from"
@@ -1330,6 +1391,21 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.loss_scale = loss_scale
         self.class_names = class_names
         self.center_limit_range = center_limit_range
+
+        prep_func = create_prep_func(
+            self.input_config,
+            self.model_config,
+            False,
+            self.voxel_generator,
+            self.target_assigner,
+            use_sampler=False,
+            max_number_of_voxels=2000,
+        )
+
+        def infer_point_cloud_mapper(x, pc_range):
+            return _prep_v9_infer(x, prep_func, pc_range)
+
+        self.infer_point_cloud_mapper = infer_point_cloud_mapper
 
     @staticmethod
     def __extract_trailing(path):

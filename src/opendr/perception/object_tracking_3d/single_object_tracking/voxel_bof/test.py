@@ -6,9 +6,11 @@ from opendr.engine.target import TrackingAnnotation3D, TrackingAnnotation3DList
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.eval import (
     d3_box_overlap,
 )
+from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import SiameseTrackingDatasetIterator
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.metrics import Precision, Success
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
     iou_2d,
+    tracking_boxes_to_lidar,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.voxel_bof_object_tracking_3d_learner import (
     VoxelBofObjectTracking3DLearner,
@@ -137,82 +139,6 @@ def estimate_accuracy(box_a, box_b, dim=3):
             box_a.location[[0, 1]] - box_b.location[[0, 1]], ord=2)
 
 
-def tracking_boxes_to_lidar(
-    label_original,
-    calib,
-    classes=["Car", "Van", "Pedestrian", "Cyclist", "Truck"],
-):
-
-    label = label_original.kitti()
-
-    if len(label["name"]) <= 0:
-        return label_original
-
-    r0_rect = calib["R0_rect"]
-    trv2c = calib["Tr_velo_to_cam"]
-
-    label_to_id = {
-        "Car": 0,
-        "Van": 0,
-        "Truck": 0,
-        "Pedestrian": 1,
-        "Cyclist": 2,
-    }
-
-    background_id = -1
-
-    class_ids = [
-        (
-            label_to_id[name]
-            if (name in label_to_id and name in classes)
-            else background_id
-        )
-        for name in label["name"]
-    ]
-
-    selected_objects = []
-
-    for i, class_id in enumerate(class_ids):
-        if class_id != background_id:
-            selected_objects.append(i)
-
-    dims = label["dimensions"][selected_objects]
-    locs = label["location"][selected_objects]
-    rots = label["rotation_y"][selected_objects]
-
-    gt_boxes_camera = np.concatenate(
-        [locs, dims, rots[..., np.newaxis]], axis=1
-    )
-    gt_boxes_lidar = box_camera_to_lidar(gt_boxes_camera, r0_rect, trv2c)
-    locs_lidar = gt_boxes_lidar[:, 0:3]
-    dims_lidar = gt_boxes_lidar[:, 3:6]
-    rots_lidar = gt_boxes_lidar[:, 6:7]
-
-    new_label = {
-        "name": label["name"][selected_objects],
-        "truncated": label["truncated"][selected_objects],
-        "occluded": label["occluded"][selected_objects],
-        "alpha": label["alpha"][selected_objects],
-        "bbox": label["bbox"][selected_objects],
-        "dimensions": dims_lidar,
-        "location": locs_lidar,
-        "rotation_y": rots_lidar,
-        "score": label["score"][selected_objects],
-        "id": label["id"][selected_objects]
-        if "id" in label
-        else np.array(list(range(len(selected_objects)))),
-        "frame": label["frame"][selected_objects]
-        if "frame" in label
-        else np.array([0] * len(selected_objects)),
-    }
-
-    result = TrackingAnnotation3DList.from_kitti(
-        new_label, new_label["id"], new_label["frame"]
-    )
-
-    return result
-
-
 def tracking_boxes_to_camera(
     label_original, calib,
 ):
@@ -329,6 +255,32 @@ def test_draw_tracking_dataset():
         lidar_boxes = tracking_boxes_to_lidar(label, calib)
         image = draw_point_cloud_bev(point_cloud, lidar_boxes)
         PilImage.fromarray(image).save("./plots/kt_" + str(i) + ".png")
+
+
+def test_draw_siamese_tracking_dataset():
+
+    track_ids = ["0000", "0002", "0003"]
+
+    dataset_siamese_tracking = SiameseTrackingDatasetIterator(
+        [dataset_tracking_path + "/training/velodyne/" + track_id for track_id in track_ids],
+        [dataset_tracking_path + "/training/label_02/" + track_id + ".txt" for track_id in track_ids],
+        [dataset_tracking_path + "/training/calib/" + track_id + ".txt" for track_id in track_ids],
+    )
+
+    for q in range(lq):  # range(len(dataset_siamese_tracking)):
+        i = q * pq
+        print(i, "/", len(dataset_tracking))
+        target_point_cloud_calib, search_point_cloud_calib, target_label, search_label = dataset_siamese_tracking[i]
+        target_point_cloud = target_point_cloud_calib.data
+        search_point_cloud = search_point_cloud_calib.data
+        calib = target_point_cloud_calib.calib
+        target_lidar_boxes = tracking_boxes_to_lidar(target_label, calib)
+        search_lidar_boxes = tracking_boxes_to_lidar(search_label, calib)
+        image_target = draw_point_cloud_bev(target_point_cloud, target_lidar_boxes)
+        image_search = draw_point_cloud_bev(search_point_cloud, search_lidar_boxes)
+        PilImage.fromarray(image_target).save("./plots/std_target_" + str(i) + ".png")
+        PilImage.fromarray(image_search).save("./plots/std_search_" + str(i) + ".png")
+        print()
 
 
 def test_draw_detection_dataset():
@@ -471,6 +423,49 @@ def test_pp_siamese_fit(
     learner.load(backbone_model_paths[backbone], backbone=True, verbose=True)
     learner.fit(
         kitti_detection,
+        model_dir="./temp/" + model_name,
+        debug=debug,
+        steps=steps,
+        # verbose=True
+    )
+
+    print()
+
+
+def test_pp_siamese_fit_siamese_training(
+    model_name,
+    load=0,
+    steps=0,
+    debug=False,
+    device=DEVICE,
+    checkpoint_after_iter=1000,
+    lr=0.0001,
+    backbone="pp",
+    **kwargs,
+):
+    print("Fit", name, "start", file=sys.stderr)
+    print("Using device:", device)
+
+    track_ids = ["0005", "0006", "0007", "0008", "0009", "0010"]
+
+    dataset_siamese_tracking = SiameseTrackingDatasetIterator(
+        [dataset_tracking_path + "/training/velodyne/" + track_id for track_id in track_ids],
+        [dataset_tracking_path + "/training/label_02/" + track_id + ".txt" for track_id in track_ids],
+        [dataset_tracking_path + "/training/calib/" + track_id + ".txt" for track_id in track_ids],
+    )
+
+    learner = VoxelBofObjectTracking3DLearner(
+        model_config_path=backbone_configs[backbone],
+        device=device,
+        lr=lr,
+        checkpoint_after_iter=checkpoint_after_iter,
+        checkpoint_load_iter=load,
+        backbone=backbone,
+        **kwargs,
+    )
+    learner.load(backbone_model_paths[backbone], backbone=True, verbose=True)
+    learner.fit(
+        dataset_siamese_tracking,
         model_dir="./temp/" + model_name,
         debug=debug,
         steps=steps,

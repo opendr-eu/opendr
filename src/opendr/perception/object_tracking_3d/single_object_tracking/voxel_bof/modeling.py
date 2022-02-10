@@ -6,6 +6,7 @@ from multiprocessing import Process, set_start_method, get_context
 
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.test import (
     test_pp_siamese_fit,
+    test_pp_siamese_fit_siamese_training,
     test_rotated_pp_siamese_eval,
     test_rotated_pp_siamese_infer,
 )
@@ -45,6 +46,7 @@ class Model:
         track_ids=default_track_ids,
         decay_steps=2000,
         iou_min=0.5,
+        training_method="siamese",
         **kwargs,
     ) -> None:
         self.model_name = model_name
@@ -54,6 +56,7 @@ class Model:
         self.track_ids = track_ids
         self.iou_min = iou_min
         self.kwargs = kwargs
+        self.training_method = training_method
         self.kwargs["lr_schedule_params"] = {
             "decay_steps": decay_steps,
             "decay_factor": 0.8,
@@ -80,15 +83,28 @@ class Model:
         if os.path.exists(last_checkpoint_path):
             print("The model is already trained")
         else:
-            test_pp_siamese_fit(
-                self.model_name,
-                0,
-                steps,
-                False,
-                checkpoint_after_iter=self.save_step,
-                device=device,
-                **self.kwargs,
-            )
+            if self.training_method == "detection":
+                test_pp_siamese_fit(
+                    self.model_name,
+                    0,
+                    steps,
+                    False,
+                    checkpoint_after_iter=self.save_step,
+                    device=device,
+                    **self.kwargs,
+                )
+            elif self.training_method == "siamese":
+                test_pp_siamese_fit_siamese_training(
+                    self.model_name,
+                    0,
+                    steps,
+                    False,
+                    checkpoint_after_iter=self.save_step,
+                    device=device,
+                    **self.kwargs,
+                )
+            else:
+                raise ValueError()
 
         if eval_after:
             return self.eval(
@@ -261,13 +277,13 @@ def collect_results():
                     model + "_" + file,
                     float(values["total_mean_iou3d"]),
                     float(
-                        values["total_mean_precision"]
-                        if "total_mean_precision" in values
+                        values["total_precision"]
+                        if "total_precision" in values
                         else -1
                     ),
                     float(
-                        values["total_mean_success"]
-                        if "total_mean_success" in values
+                        values["total_success"]
+                        if "total_success" in values
                         else -1
                     ),
                     float(
@@ -278,7 +294,7 @@ def collect_results():
                 ]
                 results.append(result)
 
-    results = sorted(results, key=lambda x: x[2])
+    results = sorted(results, key=lambda x: x[3])
     for name, iou3d, precision, success, fps in results:
         print(
             name, "precision", precision, "success", success, "iou3d", iou3d, "fps", fps
@@ -1120,7 +1136,7 @@ def run_best_again(device_id=0, total_devices=4):
                             )
 
                             name = (
-                                "6arlr-b"
+                                "s0-b"
                                 + str(feature_blocks)
                                 + ("-us" if size == 1 else "-os")
                                 + "-c"
