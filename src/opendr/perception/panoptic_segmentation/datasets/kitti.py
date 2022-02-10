@@ -277,13 +277,6 @@ class KittiDataset(ExternalDataset, DatasetIterator):
             if label.trainId != 255 and label.trainId != -1 and label.hasInstances:
                 coco_categories.append({"id": label.trainId, "name": label.name})
 
-        coco_out = {
-            "info": {"version": "1.0"},
-            "images": [],
-            "categories": coco_categories,
-            "annotations": []
-        }
-
         # Process splits
         for split, (split_img_subdir, split_mask_subdir) in splits.items():
             img_split_dir = output_path / split / 'images'
@@ -303,6 +296,13 @@ class KittiDataset(ExternalDataset, DatasetIterator):
 
             images = []
             annotations = []
+
+            coco_out = {
+                "info": {"version": "1.0"},
+                "images": [],
+                "categories": coco_categories,
+                "annotations": []
+            }
 
             # Convert to COCO detection format
             with tqdm(total=len(img_list), desc=f'Converting {split}') as pbar:
@@ -408,7 +408,11 @@ def _process_data(img_id: str, image_input_dir: Path, mask_input_dir: Path, imag
 
     # Write output
     PilImage.fromarray(lbl_out).save(mask_output_dir / f'{img_id}.png')
-    shutil.copy(image_input_dir / f'{img_id}.png', image_output_dir / f'{img_id}.png')
+    # Resize input to match the size of the ground truth annotations
+    with PilImage.open(image_input_dir / f'{img_id}.png') as img:
+        img = cv2.resize(np.array(img), (1280, 384), interpolation=cv2.INTER_NEAREST)
+        PilImage.fromarray(img).save(image_output_dir / f'{img_id}.png')
+
     if eval_output_dir is not None:
         PilImage.fromarray(lbl).save(eval_output_dir / f'{img_id}.png')
 
