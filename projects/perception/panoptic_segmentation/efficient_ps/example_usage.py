@@ -56,7 +56,7 @@ def evaluate():
     val_dataset = CityscapesDataset(path=f'{CITYSCAPES_ROOT}/val')
     config_file = Path(sys.modules[EfficientPsLearner.__module__].__file__).parent / 'configs' / 'singlegpu_cityscapes.py'
     learner = EfficientPsLearner(str(config_file))
-    learner.load(path=f'{DATA_ROOT}/checkpoints/model_kitti.pth')
+    learner.load(path=f'{DATA_ROOT}/checkpoints/model_cityscapes.pth')
     eval_stats = learner.eval(val_dataset, print_results=True)
     assert eval_stats  # This assert is just a workaround since pyflakes does not support the NOQA comment
 
