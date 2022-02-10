@@ -78,7 +78,7 @@ void preprocess_face_recognition(cv::Mat *image, std::vector<float> &data, int r
  * Very simple helper function to parse OpenDR model files for face recognition
  * In the future this can be done at library level using a JSON-parser
  */
-std::string json_get_key_string(std::string json, const std::string & key) {
+std::string json_get_key_string(std::string json, const std::string &key) {
   std::size_t start_idx = json.find(key);
   std::string value = json.substr(start_idx);
   value = value.substr(value.find(":") + 1);
