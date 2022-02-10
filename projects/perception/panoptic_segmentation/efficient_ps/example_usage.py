@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 from pathlib import Path
 
 from opendr.engine.data import Image
@@ -37,7 +38,10 @@ def train():
     train_dataset = CityscapesDataset(path=f'{CITYSCAPES_ROOT}/train')
     val_dataset = CityscapesDataset(path=f'{CITYSCAPES_ROOT}/val')
 
+    config_file = Path(sys.modules[
+                           EfficientPsLearner.__module__].__file__).parent / 'configs' / 'singlegpu_cityscapes.py'
     learner = EfficientPsLearner(
+        str(config_file),
         iters=2,
         batch_size=1,
         checkpoint_after_iter=2
@@ -50,9 +54,16 @@ def train():
 
 def evaluate():
     val_dataset = CityscapesDataset(path=f'{CITYSCAPES_ROOT}/val')
+    config_file = Path(sys.modules[EfficientPsLearner.__module__].__file__).parent / 'configs' / 'singlegpu_cityscapes.py'
+    learner = EfficientPsLearner(str(config_file))
+    learner.load(path=f'{DATA_ROOT}/checkpoints/model_kitti.pth')
+    eval_stats = learner.eval(val_dataset, print_results=True)
+    assert eval_stats  # This assert is just a workaround since pyflakes does not support the NOQA comment
 
-    learner = EfficientPsLearner()
-    learner.load(path=f'{DATA_ROOT}/checkpoints/model_cityscapes.pth')
+    val_dataset = KittiDataset(path=f'{KITTI_ROOT}/val')
+    config_file = Path(sys.modules[EfficientPsLearner.__module__].__file__).parent / 'configs' / 'singlegpu_kitti.py'
+    learner = EfficientPsLearner(str(config_file))
+    learner.load(path=f'{DATA_ROOT}/checkpoints/model_kitti.pth')
     eval_stats = learner.eval(val_dataset, print_results=True)
     assert eval_stats  # This assert is just a workaround since pyflakes does not support the NOQA comment
 
@@ -65,7 +76,8 @@ def inference():
     ]
     images = [Image.open(f) for f in image_filenames]
 
-    learner = EfficientPsLearner()
+    config_file = Path(sys.modules[EfficientPsLearner.__module__].__file__).parent / 'configs' / 'singlegpu_cityscapes.py'
+    learner = EfficientPsLearner(str(config_file))
     learner.load(path=f'{DATA_ROOT}/checkpoints/model_cityscapes.pth')
     predictions = learner.infer(images)
     for image, prediction in zip(images, predictions):

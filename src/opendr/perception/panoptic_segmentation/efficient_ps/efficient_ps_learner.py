@@ -58,6 +58,7 @@ class EfficientPsLearner(Learner):
     """
 
     def __init__(self,
+                 config_file: str,
                  lr: float=.07,
                  iters: int=160,
                  batch_size: int=1,
@@ -71,9 +72,10 @@ class EfficientPsLearner(Learner):
                  device: str="cuda:0",
                  num_workers: int=1,
                  seed: Optional[float]=None,
-                 config_file: str=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
                  ):
         """
+        :param config_file: path to a config file that contains the model and the data loading pipelines
+        :type config_file: str
         :param lr: learning rate [training]
         :type lr: float
         :param iters: number of iterations [training]
@@ -100,8 +102,6 @@ class EfficientPsLearner(Learner):
         :type num_workers: int
         :param seed: random seed to shuffle the data during training [training]
         :type seed: float, optional
-        :param config_file: path to a config file that contains the model and the data loading pipelines
-        :type config_file: str
         """
         super().__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer, temp_path=temp_path,
                          device=device)
