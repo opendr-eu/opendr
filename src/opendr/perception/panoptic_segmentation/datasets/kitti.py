@@ -43,7 +43,7 @@ class KittiDataset(ExternalDataset, DatasetIterator):
 
     The KITTI panoptic segmentation dataset can be found on the EfficientPS website: http://panoptic.cs.uni-freiburg.de
 
-    Use the static method prepare_data() to convert the raw Cityscapes dataset to the structure below.
+    Use the static method prepare_data() to convert the raw KITTI panoptic segmentation dataset to the structure below.
 
     The folder structure should look like this:
     path
