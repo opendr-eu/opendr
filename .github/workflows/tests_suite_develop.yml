@@ -10,7 +10,7 @@ defaults:
 
 jobs:
   cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') || contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     steps:
     - uses: rokroskar/workflow-run-cleanup-action@master
@@ -83,8 +83,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-         submodules: true
-         ref: develop
+        submodules: true
+        ref: develop
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -113,8 +113,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-         submodules: true
-         ref: develop
+        submodules: true
+        ref: develop
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -138,8 +138,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-         submodules: true
-         ref: develop
+        submodules: true
+        ref: develop
     - name: Build image
       run: |
         docker build --tag opendr/opendr-toolkit:cpu_test --file Dockerfile .
@@ -179,8 +179,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-         submodules: true
-         ref: develop
+        submodules: true
+        ref: develop
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -205,12 +205,12 @@ jobs:
           # Get the tool name (if there is a base path before)
           if [ ! -z ${arr[1]} ]; then
               package=${arr[1]}
-          fi          
+          fi
           echo "Installing $package package"
           if [ "$package" == "opendr" ]; then
-            pip install ./artifact/artifact/opendr-toolkit-*.tar.gz    
+            pip install ./artifact/artifact/opendr-toolkit-*.tar.gz
           else
-            pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz  
+            pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz
           fi
         done < packages.txt
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
@@ -244,8 +244,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-         submodules: true
-         ref: develop
+        submodules: true
+        ref: develop
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -260,16 +260,16 @@ jobs:
     - name: Test Wheel
       run: |
         export DISABLE_BCOLZ_AVX2=true
-        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev 
+        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
         python3 -m venv venv
         source venv/bin/activate
         pip install wheel
         # Install engine and requirements for other packages
-        pip install ./artifact/artifact/opendr-toolkit-engine-*.tar.gz   
+        pip install ./artifact/artifact/opendr-toolkit-engine-*.tar.gz
         # The following two are dependecies for some other packages and pip cannot automatically install them if they are not on a repo
-        pip install ./artifact/artifact/opendr-toolkit-compressive-learning-*.tar.gz   
-        pip install ./artifact/artifact/opendr-toolkit-object-detection-2d-*.tar.gz   
-                
+        pip install ./artifact/artifact/opendr-toolkit-compressive-learning-*.tar.gz
+        pip install ./artifact/artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+
         # Install specific package for testing
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
         arr=(${package//// })
@@ -279,10 +279,10 @@ jobs:
         echo "Installing $package package"
         # Utils contains hyperparameter tuning
         if [ "$package" == "utils" ]; then
-              pip install ./artifact/artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz  
-              
+              pip install ./artifact/artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
+
         else
-              pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz  
+              pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz
         fi
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
