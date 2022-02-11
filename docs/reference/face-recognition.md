@@ -164,7 +164,7 @@ Parameters:
   Path containing the reference images. If a reference database was already created can be left blank.
 - **save_path**: *str, default=None*\
   Path to save (load if already created) the .pkl reference file.
-- **create_new**: *bool, default=Trye*\
+- **create_new**: *bool, default=True*\
   Whether to create a new or load an existing .pkl reference file.
 
 **Notes**
