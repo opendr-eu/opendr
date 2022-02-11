@@ -36,6 +36,7 @@ if __name__ == '__main__':
             nvmlInit()
             nvml = True
     except ImportError:
+        print('You can install pynvml to also monitor the allocated GPU memory')
         pass
     if nvml:
         info_before = nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(0))
