@@ -48,7 +48,7 @@ if __name__ == '__main__':
         info_after = info_after.used / 1024 ** 2
     # Download one sample image
     recognizer.download(path=".", mode="test_data")
-    recognizer.fit_reference("./test_data", ".", create_new=True)
+    recognizer.fit_reference("./test_data", ".", create_new=args.create_new)
     image_path = join(".", "test_data", "images", "1", "1.jpg")
     img = cv2.imread(image_path)
 
