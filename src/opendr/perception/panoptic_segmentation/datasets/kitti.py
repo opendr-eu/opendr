@@ -15,7 +15,6 @@
 import json
 import multiprocessing as mp
 import os
-import shutil
 import warnings
 from functools import partial
 from pathlib import Path
