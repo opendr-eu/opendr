@@ -89,8 +89,10 @@ The script works also on Nvidia Xavier NX and AGX. You should change line 37 in 
 ```
 to:
 ```
--gencode arch=compute_72,code=sm_72 for Xavier NX and AGX Xavier.
+-gencode arch=compute_72,code=sm_72 
 ```
+for Xavier NX and AGX Xavier.
+
 # Installing using *pip*
 
 You can directly install OpenDR toolkit for CPU-only inference using pip.
