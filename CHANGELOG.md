@@ -17,4 +17,4 @@ Released on XX, XXth, 2022.
 
 
 ## Version 1.0
-Released on December 31th, 2021.
+Released on December 31st, 2021.
