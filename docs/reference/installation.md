@@ -83,7 +83,14 @@ In order to use the toolkit, you should export some system variables by running 
 ```
 Then, you are ready to use the toolkit!
 
-
+The script works also on Nvidia Xavier NX and AGX. You should change line 37 in install_tx2.sh from:
+```
+-gencode arch=compute_62,code=sm_62
+```
+to:
+```
+-gencode arch=compute_72,code=sm_72 for Xavier NX and AGX Xavier.
+```
 # Installing using *pip*
 
 You can directly install OpenDR toolkit for CPU-only inference using pip.
