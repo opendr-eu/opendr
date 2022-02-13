@@ -1,4 +1,9 @@
 from torch import nn
+import torch
+import warnings
+
+warnings.simplefilter("ignore", UserWarning)
+torch.set_flush_denormal(True)
 
 
 def _make_divisible(v, divisor, min_value=None):
