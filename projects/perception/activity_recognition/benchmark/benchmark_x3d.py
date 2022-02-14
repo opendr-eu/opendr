@@ -41,12 +41,21 @@ def benchmark_x3d():
         "l": (3, 16, 312, 312),
     }
 
-    batch_size = { # RTX2080Ti max power of 2
+    # Max power of 2
+    # batch_size = { # RTX2080Ti 
+    #     "xs": 32,
+    #     "s": 16,
+    #     "m": 8,
+    #     "l": 2,
+    # }
+    batch_size = { # Xavier
         "xs": 32,
         "s": 16,
         "m": 8,
         "l": 2,
     }
+    
+
     for backbone in ["xs", "s", "m", "l"]:
         logger.info(f"==== Benchmarking X3DLearner ({backbone}) ====")
 

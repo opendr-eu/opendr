@@ -42,7 +42,15 @@ def benchmark_cox3d():
         "l": (3, 312, 312),
     }
 
-    batch_size = { # RTX2080Ti max power of 2
+    # Max power of 2
+    # batch_size = { # RTX2080Ti 
+    #     "xs": 128,
+    #     "s": 128,
+    #     "m": 64,
+    #     "l": 8,
+    # }
+
+    batch_size = { # Xavier
         "xs": 128,
         "s": 128,
         "m": 64,
@@ -50,7 +58,7 @@ def benchmark_cox3d():
     }
 
     for backbone in ["xs", "s", "m", "l"]:
-        logger.info(f"==== Benchmarking CoX3DLearner ({backbone}) ====")
+        print(f"==== Benchmarking CoX3DLearner ({backbone}) ====")
 
         learner = CoX3DLearner(
             device="cuda" if torch.cuda.is_available() else "cpu",
@@ -88,7 +96,7 @@ def benchmark_cox3d():
                 for s in sample
             ]
 
-        logger.info("== Benchmarking learner.infer ==")
+        print("== Benchmarking learner.infer ==")
         results1 = benchmark(
             model=learner.infer,
             sample=image_samples,
@@ -97,12 +105,13 @@ def benchmark_cox3d():
             get_device_fn=get_device_fn,
             transfer_to_device_fn=transfer_to_device_fn,
             batch_size=batch_size[backbone],
+            print_fn=print,
         )
-        logger.info(yaml.dump({"learner.infer": results1}))
+        print(yaml.dump({"learner.infer": results1}))
 
-        logger.info("== Benchmarking model directly ==")
-        results2 = benchmark(learner.model, sample, num_runs=num_runs)
-        logger.info(yaml.dump({"learner.model.forward": results2}))
+        print("== Benchmarking model directly ==")
+        results2 = benchmark(learner.model, sample, num_runs=num_runs, print_fn=print)
+        print(yaml.dump({"learner.model.forward": results2}))
 
 
 if __name__ == "__main__":
