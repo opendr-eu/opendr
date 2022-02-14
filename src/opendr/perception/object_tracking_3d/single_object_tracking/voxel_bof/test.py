@@ -245,16 +245,29 @@ def test_eval_detection():
 
 
 def test_draw_tracking_dataset():
+    import pygifsicle
+    import imageio
 
-    for q in range(lq):  # range(len(dataset_tracking)):\
-        i = q * pq
-        print(i, "/", len(dataset_tracking))
-        point_cloud_with_calibration, label = dataset_tracking[i]
-        point_cloud = point_cloud_with_calibration.data
-        calib = point_cloud_with_calibration.calib
-        lidar_boxes = tracking_boxes_to_lidar(label, calib)
-        image = draw_point_cloud_bev(point_cloud, lidar_boxes)
-        PilImage.fromarray(image).save("./plots/kt_" + str(i) + ".png")
+    for track_id in ["0017", "0018", "0019", "0020"]:
+        dataset_tracking = LabeledTrackingPointCloudsDatasetIterator(
+            dataset_tracking_path + "/training/velodyne/" + track_id,
+            dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
+            dataset_tracking_path + "/training/calib/" + track_id + ".txt",
+        )
+        images = []
+        filename = "./plots/video/dataset_" + track_id + ".gif"
+
+        for i in range(len(dataset_tracking)):
+            print("track_id", track_id, i, "/", len(dataset_tracking))
+            point_cloud_with_calibration, label = dataset_tracking[i]
+            point_cloud = point_cloud_with_calibration.data
+            calib = point_cloud_with_calibration.calib
+            lidar_boxes = tracking_boxes_to_lidar(label, calib)
+            image = draw_point_cloud_bev(point_cloud, lidar_boxes)
+            images.append(image)
+
+        imageio.mimsave(filename, images)
+        pygifsicle.optimize(filename)
 
 
 def test_draw_siamese_tracking_dataset():
@@ -684,6 +697,7 @@ def test_rotated_pp_siamese_eval(
     near_distance=30,
     backbone="pp",
     raise_on_infer_error=False,
+    limit_object_ids=False,
     **kwargs,
 ):
     print("Eval", name, "start", file=sys.stderr)
@@ -742,6 +756,10 @@ def test_rotated_pp_siamese_eval(
 
             while len(selected_labels) <= 0:
                 start_frame += 1
+
+                if start_frame >= len(dataset):
+                    return None, None, None, None, None
+
                 point_cloud_with_calibration, labels = dataset[start_frame]
                 selected_labels = TrackingAnnotation3DList(
                     [label for label in labels if (label.id == object_id)]
@@ -910,7 +928,7 @@ def test_rotated_pp_siamese_eval(
 
             return mean_iou3d, mean_iouAabb, tracked, mean_precision, mean_success
 
-        for object_id in range(0, min(5, dataset.max_id + 1)):
+        for object_id in range(0, min(5, dataset.max_id + 1)) if limit_object_ids else range(0, dataset.max_id + 1):
             mean_iou3d, mean_iouAabb, tracked, mean_precision, mean_success = test_object_id(object_id)
 
             if mean_iou3d is not None:
@@ -1152,6 +1170,7 @@ def eval_all_extended(
     eval_kwargs = {
         "extended": create_extended_eval_kwargs,
         "small": create_small_eval_kwargs,
+        "small_val": create_small_val_eval_kwargs,
     }[eval_kwargs_name]()
 
     results = {}
@@ -1188,6 +1207,53 @@ def eval_all_extended(
     return results
 
 
+def create_small_val_eval_kwargs():
+    params = {
+        "window_influence": [0.35],
+        "score_upscale": [8, 16],
+        "rotation_penalty": [0.98],
+        "rotation_step": [0.15, 0.1],
+        "rotations_count": [3],
+        "target_feature_merge_scale": [0.005, 0],
+    }
+    results = {}
+
+    for window_influence in params["window_influence"]:
+        for score_upscale in params["score_upscale"]:
+            for rotation_penalty in params["rotation_penalty"]:
+                for rotation_step in params["rotation_step"]:
+                    for rotations_count in params["rotations_count"]:
+                        for target_feature_merge_scale in params[
+                            "target_feature_merge_scale"
+                        ]:
+                            name = (
+                                str(rotations_count).replace(".", "")
+                                + "r"
+                                + str(rotation_step).replace(".", "")
+                                + "-rp"
+                                + str(rotation_penalty).replace(".", "")
+                                + "su"
+                                + str(score_upscale).replace(".", "")
+                                + "wi"
+                                + str(window_influence).replace(".", "")
+                                + "tfms"
+                                + str(target_feature_merge_scale).replace(
+                                    ".", ""
+                                )
+                            )
+
+                            results[name] = {
+                                "window_influence": window_influence,
+                                "score_upscale": score_upscale,
+                                "rotation_penalty": rotation_penalty,
+                                "rotation_step": rotation_step,
+                                "rotations_count": rotations_count,
+                                "target_feature_merge_scale": target_feature_merge_scale,
+                            }
+    return results
+
+
+
 def eval_all_extended_val_set(
     model_name,
     iou_min=0.0,
@@ -1209,6 +1275,31 @@ def eval_all_extended_val_set(
         device,
         eval_kwargs_name,
         eval_id_prefix="val_set_",
+        **kwargs,
+    )
+
+
+def eval_all_extended_another_val_set(
+    model_name,
+    iou_min=0.0,
+    loads=[2000, 4000, 8000, 16000, 32000],
+    train_steps=64000,
+    save_step=2000,
+    device="cuda:0",
+    eval_kwargs_name="small",
+    **kwargs,
+):
+    tracks = ["0017", "0018"]
+    return eval_all_extended(
+        model_name,
+        iou_min,
+        loads,
+        train_steps,
+        save_step,
+        tracks,
+        device,
+        eval_kwargs_name,
+        eval_id_prefix="another_val_set_",
         **kwargs,
     )
 

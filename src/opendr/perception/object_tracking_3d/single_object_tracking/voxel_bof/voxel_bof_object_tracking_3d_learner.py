@@ -187,7 +187,20 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.__create_model()
         self._images = {}
         self.fpses = []
-        self.times = {}
+        self.times = {
+            "pseudo_image": [],
+            "pseudo_image/create_prep_func": [],
+            "pseudo_image/infer_point_cloud_mapper": [],
+            "pseudo_image/merge_second_batch": [],
+            "pseudo_image/branch.create_pseudo_image": [],
+            "create_multi_rotate_searches": [],
+            "create_pseudo_image_features": [],
+            "create_scaled_scores": [],
+            "select_best_scores_and_search": [],
+            "displacement_score_to_image_coordinates": [],
+            "target_feature_merge": [],
+            "final_result": [],
+        }
         self.training_method = "detection"
 
         self.model.rpn_ort_session = None  # ONNX runtime inference session
@@ -868,25 +881,27 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             return result
 
-    def init(self, point_cloud, label_lidar, draw=False):
+    def init(self, point_cloud, label_lidar, draw=False, clear_metrics=False):
 
         self.model.eval()
 
-        self.fpses = []
-        self.times = {
-            "pseudo_image": [],
-            "pseudo_image/create_prep_func": [],
-            "pseudo_image/infer_point_cloud_mapper": [],
-            "pseudo_image/merge_second_batch": [],
-            "pseudo_image/branch.create_pseudo_image": [],
-            "create_multi_rotate_searches": [],
-            "create_pseudo_image_features": [],
-            "create_scaled_scores": [],
-            "select_best_scores_and_search": [],
-            "displacement_score_to_image_coordinates": [],
-            "target_feature_merge": [],
-            "final_result": [],
-        }
+        if clear_metrics:
+            self.fpses = []
+
+            self.times = {
+                "pseudo_image": [],
+                "pseudo_image/create_prep_func": [],
+                "pseudo_image/infer_point_cloud_mapper": [],
+                "pseudo_image/merge_second_batch": [],
+                "pseudo_image/branch.create_pseudo_image": [],
+                "create_multi_rotate_searches": [],
+                "create_pseudo_image_features": [],
+                "create_scaled_scores": [],
+                "select_best_scores_and_search": [],
+                "displacement_score_to_image_coordinates": [],
+                "target_feature_merge": [],
+                "final_result": [],
+            }
 
         self.model.eval()
 
