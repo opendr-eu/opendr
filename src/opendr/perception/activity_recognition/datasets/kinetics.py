@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import av
 import csv
 import json
 import random
@@ -145,7 +144,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         for _ in range(self.num_retries):
             try:
                 video_container = _get_video_container(
-                    self.file_paths[idx], multi_thread_decode=False, backend="pyav",
+                    self.file_paths[idx], multi_thread_decode=False, backend="torchvision",
                 )
             except Exception as e:
                 logger.info(
@@ -172,7 +171,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
                 num_clips=1,
                 video_meta=self.video_meta[idx],
                 target_fps=self.target_fps,
-                backend="pyav",
+                backend="torchvision",
             )
 
             # If decoding failed (wrong format, video is too short, and etc),
@@ -386,6 +385,8 @@ def _get_video_container(path_to_vid, multi_thread_decode=False, backend="pyav")
             container = fp.read()
         return container
     elif backend == "pyav":
+        import av
+        
         container = av.open(path_to_vid)
         if multi_thread_decode:
             # Enable multiple threads for decoding.
