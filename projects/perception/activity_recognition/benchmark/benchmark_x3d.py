@@ -42,19 +42,19 @@ def benchmark_x3d():
     }
 
     # Max power of 2
-    # batch_size = { # RTX2080Ti
+    # batch_size = {  # RTX2080Ti
     #     "xs": 32,
     #     "s": 16,
     #     "m": 8,
     #     "l": 2,
     # }
-    # batch_size = { # Xavier
+    # batch_size = {  # Xavier
     #     "xs": 32,
     #     "s": 16,
     #     "m": 8,
     #     "l": 2,
     # }
-    batch_size = { # CPU - larger batch sizes don't help
+    batch_size = {  # CPU - larger batch sizes don't help
         "xs": 1,
         "s": 1,
         "m": 1,
