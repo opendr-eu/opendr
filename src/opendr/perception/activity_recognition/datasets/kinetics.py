@@ -30,6 +30,14 @@ from opendr.perception.activity_recognition.datasets.utils.transforms import sta
 from opendr.engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 
+try:
+    import av
+except ImportError:
+    try:
+        import torchvision
+    except ImportError:
+        raise ImportError("Either pyav (`pip install av`) or torchvision must be installed for the Kinetics loader to work")
+
 logger = getLogger(__file__)
 
 with open(Path(__file__).parent / "kinetics400_classes.csv", "r") as file:
@@ -58,7 +66,8 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         temporal_downsampling=1,
         split="train",
         video_transform=None,
-        use_caching=False
+        use_caching=False,
+        decoder_backend="pyav"
     ):
         """
         Kinetics dataset
@@ -76,7 +85,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
             video_transform (callable, optional): A function/transform that takes in a TxHxWxC video
                 and returns a transformed version. If None, a standard video transform will be applied. Defaults to None.
             use_caching (bool): Cache long-running operations. Defaults to False.
-
+            decoder_backend (str): Name of library to use for video decoding (Options are ["pyav", "torchvision"]). Defaults to "pyav".
         """
         ExternalDataset.__init__(self, path=str(path), dataset_type="kinetics")
         DatasetIterator.__init__(self)
@@ -98,6 +107,8 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         self.step_between_clips = step_between_clips
         self.target_fps = 30
         self.temporal_downsampling = temporal_downsampling
+        assert decoder_backend in {"pyav", "torchvision"}
+        self.decoder_backend = decoder_backend
 
         if video_transform:
             self.video_transform = video_transform
@@ -144,7 +155,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         for _ in range(self.num_retries):
             try:
                 video_container = _get_video_container(
-                    self.file_paths[idx], multi_thread_decode=False, backend="torchvision",
+                    self.file_paths[idx], multi_thread_decode=False, backend=self.decoder_backend,
                 )
             except Exception as e:
                 logger.info(
@@ -171,7 +182,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
                 num_clips=1,
                 video_meta=self.video_meta[idx],
                 target_fps=self.target_fps,
-                backend="torchvision",
+                backend=self.decoder_backend,
             )
 
             # If decoding failed (wrong format, video is too short, and etc),
@@ -385,8 +396,6 @@ def _get_video_container(path_to_vid, multi_thread_decode=False, backend="pyav")
             container = fp.read()
         return container
     elif backend == "pyav":
-        import av
-        
         container = av.open(path_to_vid)
         if multi_thread_decode:
             # Enable multiple threads for decoding.
