@@ -1,12 +1,12 @@
 #!/bin/bash
 
-conda create --name opendr python=3.8
+conda create --name opendr python=3.8 -y
 conda activate opendr
 conda env config vars set OPENDR_HOME=$PWD
 conda env config vars set PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
 
 # Reactivate env to let env vars take effect
-conda deactivate opendr
+conda deactivate
 conda activate opendr
 
 pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 -f https://download.pytorch.org/whl/torch_stable.html
