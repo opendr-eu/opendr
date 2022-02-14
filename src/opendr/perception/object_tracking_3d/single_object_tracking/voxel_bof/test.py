@@ -441,12 +441,12 @@ def test_pp_siamese_fit_siamese_training(
     checkpoint_after_iter=1000,
     lr=0.0001,
     backbone="pp",
+    track_ids=["0005", "0006", "0007", "0008", "0009", "0010"],
     **kwargs,
 ):
     print("Fit", name, "start", file=sys.stderr)
     print("Using device:", device)
 
-    track_ids = ["0005", "0006", "0007", "0008", "0009", "0010"]
 
     dataset_siamese_tracking = SiameseTrackingDatasetIterator(
         [dataset_tracking_path + "/training/velodyne/" + track_id for track_id in track_ids],
@@ -508,9 +508,11 @@ def test_rotated_pp_siamese_infer(
         learner.load_from_checkpoint(checkpoints_path, load)
 
     count = len(dataset_tracking)
-    object_ids = [0]  # [0, 3]
+    object_ids = [4
+    ]  # [0, 3]
     count = 160
     start_frame = 10
+    track_id = "0004"
     dataset = LabeledTrackingPointCloudsDatasetIterator(
         dataset_tracking_path + "/training/velodyne/" + track_id,
         dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
@@ -872,7 +874,7 @@ def test_rotated_pp_siamese_eval(
                 )
 
                 filename = (
-                    "./plots/video/eval_rotated_track_"
+                    "./plots/video/eval_" + model_name + "_track_"
                     + str(track_id)
                     + "_obj_"
                     + str(object_id)
@@ -1090,11 +1092,11 @@ def create_extended_eval_kwargs():
 def create_small_eval_kwargs():
     params = {
         "window_influence": [0.35],
-        "score_upscale": [16],
+        "score_upscale": [8, 16],
         "rotation_penalty": [0.98],
         "rotation_step": [0.15, 0.1],
         "rotations_count": [3],
-        "target_feature_merge_scale": [0, 0.005],
+        "target_feature_merge_scale": [0.005, 0],
     }
     results = {}
 
@@ -1142,6 +1144,8 @@ def eval_all_extended(
     tracks=None,
     device="cuda:0",
     eval_kwargs_name="extended",
+    eval_id_prefix="",
+    draw=False,
     **kwargs,
 ):
 
@@ -1171,17 +1175,67 @@ def eval_all_extended(
             result = test_rotated_pp_siamese_eval(
                 model_name,
                 load,
-                False,
+                draw,
                 iou_min,
                 tracks=tracks,
                 device=device,
-                eval_id=id,
+                eval_id=eval_id_prefix + id,
                 **kwargs,
                 **e_kwargs,
             )
             results[str(load) + "_" + str(id)] = result
 
     return results
+
+
+def eval_all_extended_val_set(
+    model_name,
+    iou_min=0.0,
+    loads=[2000, 4000, 8000, 16000, 32000],
+    train_steps=64000,
+    save_step=2000,
+    device="cuda:0",
+    eval_kwargs_name="small",
+    **kwargs,
+):
+    tracks = None
+    return eval_all_extended(
+        model_name,
+        iou_min,
+        loads,
+        train_steps,
+        save_step,
+        tracks,
+        device,
+        eval_kwargs_name,
+        eval_id_prefix="val_set_",
+        **kwargs,
+    )
+
+
+def eval_all_extended_test_set(
+    model_name,
+    iou_min=0.0,
+    loads=[2000, 4000, 8000, 16000, 32000],
+    train_steps=64000,
+    save_step=2000,
+    device="cuda:0",
+    eval_kwargs_name="small",
+    **kwargs,
+):
+    tracks = ["0019", "0020"]
+    return eval_all_extended(
+        model_name,
+        iou_min,
+        loads,
+        train_steps,
+        save_step,
+        tracks,
+        device,
+        eval_kwargs_name,
+        eval_id_prefix="test_set_",
+        **kwargs,
+    )
 
 
 if __name__ == "__main__":

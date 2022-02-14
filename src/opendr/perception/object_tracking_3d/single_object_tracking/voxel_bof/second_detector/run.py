@@ -1029,6 +1029,7 @@ def create_siamese_pseudo_images_and_labels(
         labels_torch,
         weights_torch,
         target,
+        search_target,
         search,
         search_size_with_context,
         target_pseudo_image,
@@ -1285,6 +1286,7 @@ def train_siamese(
                 labels,
                 weights,
                 target,
+                search_target,
                 search,
                 search_size_with_context,
                 target_pseudo_image,
@@ -1344,7 +1346,7 @@ def train_siamese(
                         feat_target[0][0:1, :, :], "./plots/train/feat_target_0.png"
                     )
 
-                    vector = target[0] - search[0]
+                    vector = search_target[0] - search[0]
                     rot1 = rotate_vector(vector, search[2])
 
                     draw_pseudo_image(
@@ -2285,7 +2287,7 @@ def infer_create_pseudo_image(
         t21 = time.time()
         if times:
             times["pseudo_image/merge_second_batch"].append(t21 - t2)
-    if isinstance(point_clouds, torch.Tensor):
+    elif isinstance(point_clouds, torch.Tensor):
 
         data = point_clouds.detach().cpu().numpy()[0]
 

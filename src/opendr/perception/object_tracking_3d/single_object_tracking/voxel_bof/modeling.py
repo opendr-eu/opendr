@@ -74,10 +74,7 @@ class Model:
         print("Sending on", device)
 
         last_checkpoint_path = (
-            "./temp/"
-            + self.model_name
-            + "/checkpoints"
-            + f"/checkpoint_{steps}.pth"
+            "./temp/" + self.model_name + "/checkpoints" + f"/checkpoint_{steps}.pth"
         )
 
         if os.path.exists(last_checkpoint_path):
@@ -108,11 +105,7 @@ class Model:
 
         if eval_after:
             return self.eval(
-                steps,
-                self.loads,
-                device,
-                self.track_ids,
-                eval_kwargs=eval_kwargs,
+                steps, self.loads, device, self.track_ids, eval_kwargs=eval_kwargs,
             )
 
         return {}
@@ -160,9 +153,7 @@ class Model:
         return results
 
     def eval_and_train(self, device, eval_kwargs={"default": {}}):
-        return self.train(
-            self.train_steps, device, True, eval_kwargs=eval_kwargs
-        )
+        return self.train(self.train_steps, device, True, eval_kwargs=eval_kwargs)
 
 
 def run_all(device_id=0, total_devices=4):
@@ -257,11 +248,7 @@ def collect_results():
     results = []
 
     for model in models:
-        files = [
-            f
-            for f in os.listdir(models_path + "/" + model)
-            if "results_" in f
-        ]
+        files = [f for f in os.listdir(models_path + "/" + model) if "results_" in f]
 
         for file in files:
             with open(models_path + "/" + model + "/" + file, "r") as f:
@@ -277,20 +264,10 @@ def collect_results():
                     model + "_" + file,
                     float(values["total_mean_iou3d"]),
                     float(
-                        values["total_precision"]
-                        if "total_precision" in values
-                        else -1
+                        values["total_precision"] if "total_precision" in values else -1
                     ),
-                    float(
-                        values["total_success"]
-                        if "total_success" in values
-                        else -1
-                    ),
-                    float(
-                        values["fps"]
-                        if "fps" in values
-                        else -1
-                    ),
+                    float(values["total_success"] if "total_success" in values else -1),
+                    float(values["fps"] if "fps" in values else -1),
                 ]
                 results.append(result)
 
@@ -430,9 +407,7 @@ def run_best(device_id=0, total_devices=4):
                                     + "su"
                                     + str(score_upscale).replace(".", "")
                                     + "tfms"
-                                    + str(target_feature_merge_scale).replace(
-                                        ".", ""
-                                    )
+                                    + str(target_feature_merge_scale).replace(".", "")
                                 )
 
                                 results[name] = {
@@ -525,9 +500,7 @@ def run_best_small_lr(device_id=0, total_devices=4):
                                     + "su"
                                     + str(score_upscale).replace(".", "")
                                     + "tfms"
-                                    + str(target_feature_merge_scale).replace(
-                                        ".", ""
-                                    )
+                                    + str(target_feature_merge_scale).replace(".", "")
                                 )
 
                                 results[name] = {
@@ -630,9 +603,7 @@ def run_best_small_lr_small_rpos(device_id=0, total_devices=4):
                                     + "su"
                                     + str(score_upscale).replace(".", "")
                                     + "tfms"
-                                    + str(target_feature_merge_scale).replace(
-                                        ".", ""
-                                    )
+                                    + str(target_feature_merge_scale).replace(".", "")
                                 )
 
                                 results[name] = {
@@ -654,12 +625,8 @@ def run_best_small_lr_small_rpos(device_id=0, total_devices=4):
                 for context_amount in [0.2, 0.5]:
                     for lr in [0.00001, 0.000002]:
                         for r_pos in [4, 2, 1]:
-                            target_size = (
-                                [127, 127] if size == 1 else [-1, -1]
-                            )
-                            search_size = (
-                                [255, 255] if size == 1 else [-1, -1]
-                            )
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
                                 "6rlr-b"
@@ -682,13 +649,7 @@ def run_best_small_lr_small_rpos(device_id=0, total_devices=4):
                                         context_amount=context_amount,
                                         train_steps=64000,
                                         save_step=2000,
-                                        loads=[
-                                            2000,
-                                            8000,
-                                            16000,
-                                            32000,
-                                            64000,
-                                        ],
+                                        loads=[2000, 8000, 16000, 32000, 64000,],
                                         lr=lr,
                                         r_pos=r_pos,
                                     ),
@@ -723,12 +684,8 @@ def run_best_small_lr_small_rpos_2(device_id=0, total_devices=4):
                 for context_amount in [0.2, 0.5]:
                     for lr in [0.000002, 0.00001]:
                         for r_pos in [4, 1]:
-                            target_size = (
-                                [127, 127] if size == 1 else [-1, -1]
-                            )
-                            search_size = (
-                                [255, 255] if size == 1 else [-1, -1]
-                            )
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
                                 "6rlr2-b"
@@ -751,13 +708,7 @@ def run_best_small_lr_small_rpos_2(device_id=0, total_devices=4):
                                         context_amount=context_amount,
                                         train_steps=256000,
                                         save_step=2000,
-                                        loads=[
-                                            2000,
-                                            32000,
-                                            64000,
-                                            128000,
-                                            256000,
-                                        ],
+                                        loads=[2000, 32000, 64000, 128000, 256000,],
                                         lr=lr,
                                         r_pos=r_pos,
                                     ),
@@ -913,9 +864,7 @@ def create_selected_eval_kwargs():
                                 + "su"
                                 + str(score_upscale).replace(".", "")
                                 + "tfms"
-                                + str(target_feature_merge_scale).replace(
-                                    ".", ""
-                                )
+                                + str(target_feature_merge_scale).replace(".", "")
                             )
 
                             results[name] = {
@@ -959,9 +908,7 @@ def create_extended_eval_kwargs():
                                 + "wi"
                                 + str(window_influence).replace(".", "")
                                 + "tfms"
-                                + str(target_feature_merge_scale).replace(
-                                    ".", ""
-                                )
+                                + str(target_feature_merge_scale).replace(".", "")
                             )
 
                             results[name] = {
@@ -990,12 +937,8 @@ def run_new(device_id=0, total_devices=4):
                 for context_amount in [0.2, 0.5]:
                     for lr in [0.00001, 0.000002]:
                         for r_pos in [4, 2, 1]:
-                            target_size = (
-                                [127, 127] if size == 1 else [-1, -1]
-                            )
-                            search_size = (
-                                [255, 255] if size == 1 else [-1, -1]
-                            )
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
                                 "n0-b"
@@ -1062,12 +1005,8 @@ def run_new_smaller(device_id=0, total_devices=4):
                 for context_amount in [0.2, -0.2]:
                     for lr in [0.0001, 0.000002]:
                         for r_pos in [4, 2, 1]:
-                            target_size = (
-                                [127, 127] if size == 1 else [-1, -1]
-                            )
-                            search_size = (
-                                [255, 255] if size == 1 else [-1, -1]
-                            )
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
                                 "n3-b"
@@ -1128,12 +1067,8 @@ def run_best_again(device_id=0, total_devices=4):
                 for context_amount in [0.1, 0.3]:
                     for lr in [0.00001, 0.000002]:
                         for r_pos in [4, 1]:
-                            target_size = (
-                                [127, 127] if size == 1 else [-1, -1]
-                            )
-                            search_size = (
-                                [255, 255] if size == 1 else [-1, -1]
-                            )
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
                                 "s0-b"
@@ -1198,18 +1133,14 @@ def run_best_ar(device_id=0, total_devices=4):
         result = []
         for feature_blocks in [1]:
             for size in [-1]:
-                for context_amount in [0.2]:
+                for context_amount in [0.3, 0.2]:
                     for lr in [0.00001, 0.000002]:
                         for r_pos in [4, 1]:
-                            target_size = (
-                                [127, 127] if size == 1 else [-1, -1]
-                            )
-                            search_size = (
-                                [255, 255] if size == 1 else [-1, -1]
-                            )
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
-                                "ar0-b"
+                                "ar1-b"
                                 + str(feature_blocks)
                                 + ("-us" if size == 1 else "-os")
                                 + "-c"
@@ -1229,13 +1160,7 @@ def run_best_ar(device_id=0, total_devices=4):
                                         context_amount=context_amount,
                                         train_steps=32000,
                                         save_step=1000,
-                                        loads=[
-                                            1000,
-                                            2000,
-                                            8000,
-                                            16000,
-                                            32000,
-                                        ],
+                                        loads=[1000, 2000, 8000, 16000, 32000],
                                         lr=lr,
                                         r_pos=r_pos,
                                     ),
@@ -1259,6 +1184,391 @@ def run_best_ar(device_id=0, total_devices=4):
         print(result)
 
 
+def run_best_ar_x(device_id=0, total_devices=4):
+
+    eval_kwargs = create_extended_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1]:
+            for size in [-1]:
+                for context_amount in [0.3, 0.2]:
+                    for lr in [0.00001, 0.000002]:
+                        for r_pos in [6, 8]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "ar1-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=32000,
+                                        save_step=1000,
+                                        loads=[1000, 2000, 8000, 16000, 32000,],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def run_best_sr(device_id=0, total_devices=4):
+
+    eval_kwargs = create_extended_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1]:
+            for size in [-1]:
+                for context_amount in [0.2]:
+                    for lr in [0.00001, 0.000002]:
+                        for r_pos in [4, 1]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "sr1-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=32000,
+                                        save_step=1000,
+                                        loads=[1000, 2000, 8000, 16000, 32000,],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def run_best_sr_mt(device_id=0, total_devices=4):
+
+    eval_kwargs = create_selected_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1, 3]:
+            for size in [-1]:
+                for context_amount in [0.2, 0.5]:
+                    for lr in [0.00001, 0.000002]:
+                        for r_pos in [4, 1]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "srmt1-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=128000,
+                                        save_step=1000,
+                                        loads=[128000, 64000, 8000, 16000, 32000],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                        track_ids=[
+                                            "0005",
+                                            "0006",
+                                            "0007",
+                                            "0008",
+                                            "0009",
+                                            "0010",
+                                            "0011",
+                                            "0012",
+                                            "0013",
+                                            "0014",
+                                            "0015",
+                                            "0016",
+                                            "0017",
+                                            "0018",
+                                        ],
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def run_best_sr_mt1(device_id=0, total_devices=4):
+
+    eval_kwargs = create_selected_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1, 3]:
+            for size in [-1]:
+                for context_amount in [0.2, 0.5]:
+                    for lr in [0.0001]:
+                        for r_pos in [16, 8]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "srmt1-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=128000,
+                                        save_step=1000,
+                                        loads=[128000, 64000, 8000, 16000, 32000],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                        track_ids=[
+                                            "0005",
+                                            "0006",
+                                            "0007",
+                                            "0008",
+                                            "0009",
+                                            "0010",
+                                            "0011",
+                                            "0012",
+                                            "0013",
+                                            "0014",
+                                            "0015",
+                                            "0016",
+                                            "0017",
+                                            "0018",
+                                        ],
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def run_best_sr_b3(device_id=0, total_devices=4):
+
+    eval_kwargs = create_extended_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [3]:
+            for size in [-1]:
+                for context_amount in [0.2]:
+                    for lr in [0.00001, 0.000002]:
+                        for r_pos in [8, 4]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "sr1-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=32000,
+                                        save_step=1000,
+                                        loads=[1000, 2000, 8000, 16000, 32000,],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def run_best_sr_b3(device_id=0, total_devices=4):
+
+    eval_kwargs = create_extended_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [3]:
+            for size in [-1]:
+                for context_amount in [0.2]:
+                    for lr in [0.00001, 0.000002]:
+                        for r_pos in [8, 4]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "sr1-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=32000,
+                                        save_step=1000,
+                                        loads=[1000, 2000, 8000, 16000, 32000,],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_devices
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
 
 def run_new_smaller_b1(device_id=0, total_devices=4):
 
@@ -1274,12 +1584,8 @@ def run_new_smaller_b1(device_id=0, total_devices=4):
                 for context_amount in [0.2, 0.1]:
                     for lr in [0.0001, 0.000002]:
                         for r_pos in [4, 2, 1]:
-                            target_size = (
-                                [127, 127] if size == 1 else [-1, -1]
-                            )
-                            search_size = (
-                                [255, 255] if size == 1 else [-1, -1]
-                            )
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
                                 "n4-b"
@@ -1327,7 +1633,6 @@ def run_new_smaller_b1(device_id=0, total_devices=4):
             device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
         )
         print(result)
-
 
 
 if __name__ == "__main__":
