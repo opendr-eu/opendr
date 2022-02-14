@@ -42,6 +42,13 @@ def benchmark_cox3d():
         "l": (3, 312, 312),
     }
 
+    batch_size = { # RTX2080Ti max power of 2
+        "xs": 128,
+        "s": 128,
+        "m": 64,
+        "l": 8,
+    }
+
     for backbone in ["xs", "s", "m", "l"]:
         logger.info(f"==== Benchmarking CoX3DLearner ({backbone}) ====")
 
@@ -51,7 +58,7 @@ def benchmark_cox3d():
             backbone=backbone,
         )
 
-        sample = torch.randn(batch_size, *input_shape[backbone])  # (B, C, T, H, W)
+        sample = torch.randn(batch_size[backbone], *input_shape[backbone])  # (B, C, T, H, W)
         image_samples = [Image(v) for v in sample]
         image_sample = [Image(sample[0])]
 
@@ -89,7 +96,7 @@ def benchmark_cox3d():
             num_runs=num_runs,
             get_device_fn=get_device_fn,
             transfer_to_device_fn=transfer_to_device_fn,
-            batch_size=batch_size,
+            batch_size=batch_size[backbone],
         )
         logger.info(yaml.dump({"learner.infer": results1}))
 

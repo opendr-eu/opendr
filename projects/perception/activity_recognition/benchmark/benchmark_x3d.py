@@ -31,7 +31,6 @@ logger.setLevel("DEBUG")
 def benchmark_x3d():
     temp_dir = "./projects/perception/activity_recognition/benchmark/tmp"
 
-    batch_size = 8
     num_runs = 100
 
     # As found in src/opendr/perception/activity_recognition/x3d/hparams
@@ -42,6 +41,12 @@ def benchmark_x3d():
         "l": (3, 16, 312, 312),
     }
 
+    batch_size = { # RTX2080Ti max power of 2
+        "xs": 32,
+        "s": 16,
+        "m": 8,
+        "l": 2,
+    }
     for backbone in ["xs", "s", "m", "l"]:
         logger.info(f"==== Benchmarking X3DLearner ({backbone}) ====")
 
@@ -50,8 +55,9 @@ def benchmark_x3d():
             temp_path=temp_dir,
             backbone=backbone,
         )
+        learner.model.eval()
 
-        sample = torch.randn(batch_size, *input_shape[backbone])  # (B, C, T, H, W)
+        sample = torch.randn(batch_size[backbone], *input_shape[backbone])  # (B, C, T, H, W)
         video_samples = [Video(v) for v in sample]
         video_sample = [Video(sample[0])]
 
@@ -89,7 +95,7 @@ def benchmark_x3d():
             num_runs=num_runs,
             get_device_fn=get_device_fn,
             transfer_to_device_fn=transfer_to_device_fn,
-            batch_size=batch_size,
+            batch_size=batch_size[backbone],
         )
         logger.info(yaml.dump({"learner.infer": results1}))
 
