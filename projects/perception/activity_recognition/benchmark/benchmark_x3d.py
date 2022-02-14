@@ -42,22 +42,27 @@ def benchmark_x3d():
     }
 
     # Max power of 2
-    # batch_size = { # RTX2080Ti 
+    # batch_size = { # RTX2080Ti
     #     "xs": 32,
     #     "s": 16,
     #     "m": 8,
     #     "l": 2,
     # }
-    batch_size = { # Xavier
-        "xs": 32,
-        "s": 16,
-        "m": 8,
-        "l": 2,
+    # batch_size = { # Xavier
+    #     "xs": 32,
+    #     "s": 16,
+    #     "m": 8,
+    #     "l": 2,
+    # }
+    batch_size = { # CPU - larger batch sizes don't help
+        "xs": 1,
+        "s": 1,
+        "m": 1,
+        "l": 1,
     }
-    
 
     for backbone in ["xs", "s", "m", "l"]:
-        logger.info(f"==== Benchmarking X3DLearner ({backbone}) ====")
+        print(f"==== Benchmarking X3DLearner ({backbone}) ====")
 
         learner = X3DLearner(
             device="cuda" if torch.cuda.is_available() else "cpu",
@@ -96,7 +101,7 @@ def benchmark_x3d():
                 for s in sample
             ]
 
-        logger.info("== Benchmarking learner.infer ==")
+        print("== Benchmarking learner.infer ==")
         results1 = benchmark(
             model=learner.infer,
             sample=video_samples,
@@ -106,11 +111,11 @@ def benchmark_x3d():
             transfer_to_device_fn=transfer_to_device_fn,
             batch_size=batch_size[backbone],
         )
-        logger.info(yaml.dump({"learner.infer": results1}))
+        print(yaml.dump({"learner.infer": results1}))
 
-        logger.info("== Benchmarking model directly ==")
+        print("== Benchmarking model directly ==")
         results2 = benchmark(learner.model, sample, num_runs=num_runs)
-        logger.info(yaml.dump({"learner.model.forward": results2}))
+        print(yaml.dump({"learner.model.forward": results2}))
 
 
 if __name__ == "__main__":

@@ -43,18 +43,23 @@ def benchmark_cox3d():
     }
 
     # Max power of 2
-    # batch_size = { # RTX2080Ti 
+    # batch_size = { # RTX2080Ti
     #     "xs": 128,
     #     "s": 128,
     #     "m": 64,
     #     "l": 8,
     # }
-
-    batch_size = { # Xavier
-        "xs": 128,
-        "s": 128,
-        "m": 64,
-        "l": 8,
+    # batch_size = { # Xavier
+    #     "xs": 128,
+    #     "s": 128,
+    #     "m": 64,
+    #     "l": 8,
+    # }
+    batch_size = { # CPU - larger batch sizes don't help
+        "xs": 1,
+        "s": 1,
+        "m": 1,
+        "l": 1,
     }
 
     for backbone in ["xs", "s", "m", "l"]:
