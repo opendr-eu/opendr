@@ -10,4 +10,4 @@ conda deactivate
 conda activate opendr
 
 pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 -f https://download.pytorch.org/whl/torch_stable.html
-pip install pytorch_lightning==1.2.3 onnxruntime==1.3.0 opencv-python==4.5.1.48 joblib>=1.0.1 pytorch_benchmark
+pip install pytorch_lightning==1.2.3 onnxruntime==1.3.0 joblib>=1.0.1 pytorch_benchmark
