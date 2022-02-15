@@ -239,7 +239,7 @@ def run_all(device_id=0, total_devices=4):
         print(result)
 
 
-def collect_results():
+def collect_results(template="", tracks=None):
 
     models_path = "./temp/"
 
@@ -248,6 +248,10 @@ def collect_results():
     results = []
 
     for model in models:
+
+        if template not in model:
+            continue
+
         files = [f for f in os.listdir(models_path + "/" + model) if "results_" in f]
 
         for file in files:
@@ -259,6 +263,16 @@ def collect_results():
                 for s in str_values:
                     key, value = s.split(" = ")
                     values[key] = value
+
+                good_tracks = True
+
+                if tracks is not None:
+                    for track_id in tracks:
+                        if track_id not in values["tracks"]:
+                            good_tracks = False
+                
+                if not good_tracks:
+                    continue
 
                 result = [
                     model + "_" + file,
@@ -863,6 +877,8 @@ def create_selected_eval_kwargs():
                                 + str(rotation_penalty).replace(".", "")
                                 + "su"
                                 + str(score_upscale).replace(".", "")
+                                + "wi"
+                                + str(window_influence).replace(".", "")
                                 + "tfms"
                                 + str(target_feature_merge_scale).replace(".", "")
                             )
