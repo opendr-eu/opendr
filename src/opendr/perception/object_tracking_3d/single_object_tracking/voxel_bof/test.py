@@ -891,13 +891,15 @@ def test_rotated_pp_siamese_eval(
                     distance,
                 )
 
-                filename = (
-                    "./plots/video/eval_" + model_name + "_track_"
-                    + str(track_id)
-                    + "_obj_"
-                    + str(object_id)
-                    + ".gif"
-                )
+            filename = (
+                "./plots/video/eval_" + model_name + "_track_"
+                + str(track_id)
+                + "_obj_"
+                + str(object_id)
+                + "_"
+                + str(load) + "_" + str(eval_id)
+                + ".gif"
+            )
 
             if len(ious) <= 0:
                 mean_iou3d = None
@@ -922,7 +924,7 @@ def test_rotated_pp_siamese_eval(
             print("mean_precision =", mean_precision)
             print("mean_success =", mean_success)
 
-            if draw:
+            if draw and len(images) > 0:
                 imageio.mimsave(filename, images)
                 pygifsicle.optimize(filename)
 
@@ -1209,7 +1211,7 @@ def eval_all_extended(
 
 def create_small_val_eval_kwargs():
     params = {
-        "window_influence": [0.35],
+        "window_influence": [0.35, 0.75, 0.85, 0.95],
         "score_upscale": [8, 16],
         "rotation_penalty": [0.98],
         "rotation_step": [0.15, 0.1],
@@ -1253,7 +1255,6 @@ def create_small_val_eval_kwargs():
     return results
 
 
-
 def eval_all_extended_val_set(
     model_name,
     iou_min=0.0,
@@ -1286,7 +1287,7 @@ def eval_all_extended_another_val_set(
     train_steps=64000,
     save_step=2000,
     device="cuda:0",
-    eval_kwargs_name="small",
+    eval_kwargs_name="small_val",
     **kwargs,
 ):
     tracks = ["0017", "0018"]
