@@ -45,7 +45,7 @@ def benchmark_cox3d():
     # Max power of 2
     # batch_size = {  # RTX2080Ti
     #     "xs": 128,
-    #     "s": 128,
+    #     "s": 64,
     #     "m": 64,
     #     "l": 8,
     # }
@@ -55,7 +55,7 @@ def benchmark_cox3d():
     #     "m": 64,
     #     "l": 8,
     # }
-    batch_size = {  # CPU - larger batch sizes don't help
+    batch_size = {  # CPU - larger batch sizes don't increase throughput
         "xs": 1,
         "s": 1,
         "m": 1,
@@ -71,7 +71,9 @@ def benchmark_cox3d():
             backbone=backbone,
         )
 
-        sample = torch.randn(batch_size[backbone], *input_shape[backbone])  # (B, C, T, H, W)
+        sample = torch.randn(
+            batch_size[backbone], *input_shape[backbone]
+        )  # (B, C, T, H, W)
         image_samples = [Image(v) for v in sample]
         image_sample = [Image(sample[0])]
 
@@ -94,10 +96,7 @@ def benchmark_cox3d():
 
             assert isinstance(sample[0], Category)
             return [
-                Category(
-                    prediction=s.data,
-                    confidence=s.confidence.to(device=device),
-                )
+                Category(prediction=s.data, confidence=s.confidence.to(device=device),)
                 for s in sample
             ]
 

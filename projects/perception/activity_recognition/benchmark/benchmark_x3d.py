@@ -54,7 +54,7 @@ def benchmark_x3d():
     #     "m": 8,
     #     "l": 2,
     # }
-    batch_size = {  # CPU - larger batch sizes don't help
+    batch_size = {  # CPU - larger batch sizes don't increase throughput
         "xs": 1,
         "s": 1,
         "m": 1,
@@ -71,7 +71,9 @@ def benchmark_x3d():
         )
         learner.model.eval()
 
-        sample = torch.randn(batch_size[backbone], *input_shape[backbone])  # (B, C, T, H, W)
+        sample = torch.randn(
+            batch_size[backbone], *input_shape[backbone]
+        )  # (B, C, T, H, W)
         video_samples = [Video(v) for v in sample]
         video_sample = [Video(sample[0])]
 
@@ -94,10 +96,7 @@ def benchmark_x3d():
 
             assert isinstance(sample[0], Category)
             return [
-                Category(
-                    prediction=s.data,
-                    confidence=s.confidence.to(device=device),
-                )
+                Category(prediction=s.data, confidence=s.confidence.to(device=device),)
                 for s in sample
             ]
 
