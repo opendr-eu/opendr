@@ -112,22 +112,3 @@ class XMLBasedDataset(DetectionDataset):
         if self._target_transform is not None:
             boxes = self._target_transform(boxes)
         return boxes
-
-
-if __name__ == '__main__':
-    # TODO: remove these after testing
-    from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
-
-    dataset = XMLBasedDataset(root='/home/administrator/data/agi_human_data', dataset_type='agi_human',
-                              images_dir='no_human', annotations_dir='no_human_anot')
-    print(len(dataset))
-
-    all_boxes = [[[] for _ in range(len(dataset))]
-                 for _ in range(dataset.num_classes)]
-
-    for i, (img, targets) in enumerate(dataset):
-        img = draw_bounding_boxes(img.opencv(), targets, class_names=dataset.classes)
-        img = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
-        cv2.imshow('img', img)
-        cv2.waitKey(0)
-    cv2.destroyAllWindows()

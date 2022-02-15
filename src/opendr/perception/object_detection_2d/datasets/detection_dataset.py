@@ -74,6 +74,11 @@ class MappedDetectionDataset(DatasetIterator):
 
 
 class ConcatDataset(DetectionDataset):
+    """
+    Basic dataset concatenation class. The datasets are assumed to have the same classes.
+
+    :param datasets: list of DetectionDataset type or subclass
+    """
     def __init__(self, datasets):
         super(ConcatDataset, self).__init__(classes=datasets[0].classes, dataset_type='concat_dataset',
                                             root=None)
