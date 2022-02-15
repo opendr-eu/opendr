@@ -454,12 +454,11 @@ def test_pp_siamese_fit_siamese_training(
     checkpoint_after_iter=1000,
     lr=0.0001,
     backbone="pp",
-    track_ids=["0005", "0006", "0007", "0008", "0009", "0010"],
+    track_ids=["0005", "0006", "0007", "0008", "0009", "0010", "0011", "0012", "0013", "0014", "0015", "0016"],
     **kwargs,
 ):
     print("Fit", name, "start", file=sys.stderr)
     print("Using device:", device)
-
 
     dataset_siamese_tracking = SiameseTrackingDatasetIterator(
         [dataset_tracking_path + "/training/velodyne/" + track_id for track_id in track_ids],
@@ -891,13 +890,15 @@ def test_rotated_pp_siamese_eval(
                     distance,
                 )
 
-                filename = (
-                    "./plots/video/eval_" + model_name + "_track_"
-                    + str(track_id)
-                    + "_obj_"
-                    + str(object_id)
-                    + ".gif"
-                )
+            filename = (
+                "./plots/video/eval_" + model_name + "_track_"
+                + str(track_id)
+                + "_obj_"
+                + str(object_id)
+                + "_"
+                + str(load) + "_" + str(eval_id)
+                + ".gif"
+            )
 
             if len(ious) <= 0:
                 mean_iou3d = None
@@ -922,7 +923,7 @@ def test_rotated_pp_siamese_eval(
             print("mean_precision =", mean_precision)
             print("mean_success =", mean_success)
 
-            if draw:
+            if draw and len(images) > 0:
                 imageio.mimsave(filename, images)
                 pygifsicle.optimize(filename)
 
@@ -1209,12 +1210,12 @@ def eval_all_extended(
 
 def create_small_val_eval_kwargs():
     params = {
-        "window_influence": [0.35],
+        "window_influence": [0.35, 0.75, 0.85, 0.95],
         "score_upscale": [8, 16],
         "rotation_penalty": [0.98],
         "rotation_step": [0.15, 0.1],
         "rotations_count": [3],
-        "target_feature_merge_scale": [0.005, 0],
+        "target_feature_merge_scale": [0.3, 0.1, 0.005, 0],
     }
     results = {}
 
@@ -1286,7 +1287,7 @@ def eval_all_extended_another_val_set(
     train_steps=64000,
     save_step=2000,
     device="cuda:0",
-    eval_kwargs_name="small",
+    eval_kwargs_name="small_val",
     **kwargs,
 ):
     tracks = ["0017", "0018"]
