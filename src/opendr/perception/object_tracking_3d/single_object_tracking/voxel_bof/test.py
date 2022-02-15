@@ -454,12 +454,11 @@ def test_pp_siamese_fit_siamese_training(
     checkpoint_after_iter=1000,
     lr=0.0001,
     backbone="pp",
-    track_ids=["0005", "0006", "0007", "0008", "0009", "0010"],
+    track_ids=["0005", "0006", "0007", "0008", "0009", "0010", "0011", "0012", "0013", "0014", "0015", "0016"],
     **kwargs,
 ):
     print("Fit", name, "start", file=sys.stderr)
     print("Using device:", device)
-
 
     dataset_siamese_tracking = SiameseTrackingDatasetIterator(
         [dataset_tracking_path + "/training/velodyne/" + track_id for track_id in track_ids],
@@ -1216,7 +1215,7 @@ def create_small_val_eval_kwargs():
         "rotation_penalty": [0.98],
         "rotation_step": [0.15, 0.1],
         "rotations_count": [3],
-        "target_feature_merge_scale": [0.005, 0],
+        "target_feature_merge_scale": [0.3, 0.1, 0.005, 0],
     }
     results = {}
 
