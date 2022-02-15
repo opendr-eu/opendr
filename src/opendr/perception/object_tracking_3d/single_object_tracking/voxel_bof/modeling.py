@@ -270,12 +270,12 @@ def collect_results(template="", tracks=None):
                     for track_id in tracks:
                         if track_id not in values["tracks"]:
                             good_tracks = False
-                
+
                 if not good_tracks:
                     continue
 
                 result = [
-                    model + "_" + file,
+                    models_path + model + "/" + file,
                     float(values["total_mean_iou3d"]),
                     float(
                         values["total_precision"] if "total_precision" in values else -1
