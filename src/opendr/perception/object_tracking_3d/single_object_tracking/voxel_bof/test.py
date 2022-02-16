@@ -248,7 +248,7 @@ def test_draw_tracking_dataset():
     import pygifsicle
     import imageio
 
-    for track_id in ["0017", "0018", "0019", "0020"]:
+    for track_id in ["0005", "0006", "0007", "0008", "0009", "0004", "0003", "0002", "0001", "0000"]:
         dataset_tracking = LabeledTrackingPointCloudsDatasetIterator(
             dataset_tracking_path + "/training/velodyne/" + track_id,
             dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
@@ -454,7 +454,7 @@ def test_pp_siamese_fit_siamese_training(
     checkpoint_after_iter=1000,
     lr=0.0001,
     backbone="pp",
-    track_ids=["0005", "0006", "0007", "0008", "0009", "0010", "0011", "0012", "0013", "0014", "0015", "0016"],
+    track_ids=["0000", "0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008", "0009", "0012", "0013", "0014", "0015", "0016"],
     **kwargs,
 ):
     print("Fit", name, "start", file=sys.stderr)
