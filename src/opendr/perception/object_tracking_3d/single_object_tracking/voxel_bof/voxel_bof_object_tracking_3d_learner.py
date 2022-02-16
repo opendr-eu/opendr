@@ -140,6 +140,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         loss_function="bce",  # focal, bce
         r_pos=16,
         search_type="normal",
+        target_type="normal",
         bof_mode="none",
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
@@ -181,6 +182,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.loss_function = loss_function
         self.r_pos = r_pos
         self.search_type = search_type
+        self.target_type = target_type
         self.bof_mode = bof_mode
 
         if tanet_config_path is not None:
@@ -480,6 +482,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             r_pos=self.r_pos,
             infer_point_cloud_mapper=self.infer_point_cloud_mapper,
             search_type=self.search_type,
+            target_type=self.target_type,
             training_method=self.training_method,
         )
 
@@ -925,7 +928,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
             net.voxel_size,
             boxes_lidar=box_lidar.reshape(1, *box_lidar.shape),
             augment=False,
-            search_type=self.search_type
+            search_type=self.search_type,
+            target_type=self.target_type,
         )
 
         target = batch_targets[0][0]

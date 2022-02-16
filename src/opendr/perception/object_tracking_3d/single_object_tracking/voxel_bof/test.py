@@ -1215,7 +1215,7 @@ def create_small_val_eval_kwargs():
         "rotation_penalty": [0.98],
         "rotation_step": [0.15, 0.1],
         "rotations_count": [3],
-        "target_feature_merge_scale": [0.3, 0.1, 0.005, 0],
+        "target_feature_merge_scale": [0.05, 0.005, 0],
     }
     results = {}
 
@@ -1287,9 +1287,10 @@ def eval_all_extended_another_val_set(
     save_step=2000,
     device="cuda:0",
     eval_kwargs_name="small_val",
+    tracks=["0010", "0011"],
     **kwargs,
 ):
-    tracks = ["0017", "0018"]
+
     return eval_all_extended(
         model_name,
         iou_min,
