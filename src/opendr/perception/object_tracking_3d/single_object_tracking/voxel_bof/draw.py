@@ -317,6 +317,41 @@ def draw_point_cloud_projected_2(
     return color_image
 
 
+def stack_images(images, mode="horizontal"):
+
+    images = [np.array(image) for image in images]
+
+    max_width, max_height = 0, 0
+
+    for image in images:
+        width, height, _ = image.shape
+        max_width = max(max_width, width)
+        max_height = max(max_height, height)
+
+    if mode == "horizontal":
+        for i in range(len(images)):
+            width, _, _ = images[i].shape
+
+            delta = max_width - width
+            pad = delta // 2
+
+            images[i] = np.pad(
+                images[i], [(pad, pad + delta % 2), (0, 0), (0, 0)]
+            )
+
+        return cv2.hconcat(images)
+    elif mode == "vertical":
+        for i in range(len(images)):
+            _, height, _ = images[i].shape
+
+            delta = max_height - height
+            pad = delta // 2
+
+            images[i] = np.pad(
+                images[i], [(0, 0), (pad, pad + delta % 2), (0, 0)]
+            )
+
+        return cv2.vconcat(images)
 
 class Metric:
     def __init__(self, value=None) -> None:

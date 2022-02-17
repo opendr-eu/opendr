@@ -1654,7 +1654,7 @@ def run_search_small(device_id=0, total_devices=4):
                             search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
-                                "z0-b"
+                                "z1-b"
                                 + str(feature_blocks)
                                 + ("-us" if size == 1 else "-os")
                                 + "-c"
@@ -1672,17 +1672,19 @@ def run_search_small(device_id=0, total_devices=4):
                                         target_size=target_size,
                                         search_size=search_size,
                                         context_amount=context_amount,
-                                        train_steps=32000,
+                                        train_steps=64000,
                                         save_step=2000,
                                         loads=[
                                             2000,
                                             8000,
                                             16000,
                                             32000,
+                                            64000,
                                         ],
                                         lr=lr,
                                         r_pos=r_pos,
-                                        search_type="small"
+                                        search_type="a+4",
+                                        target_type="original",
                                     ),
                                     eval_kwargs,
                                 )
@@ -1719,7 +1721,7 @@ def run_search_small_1(device_id=0, total_devices=4):
                             search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
-                                "z0-b"
+                                "z1-b"
                                 + str(feature_blocks)
                                 + ("-us" if size == 1 else "-os")
                                 + "-c"
@@ -1737,17 +1739,19 @@ def run_search_small_1(device_id=0, total_devices=4):
                                         target_size=target_size,
                                         search_size=search_size,
                                         context_amount=context_amount,
-                                        train_steps=32000,
+                                        train_steps=64000,
                                         save_step=2000,
                                         loads=[
                                             2000,
                                             8000,
                                             16000,
                                             32000,
+                                            64000,
                                         ],
                                         lr=lr,
                                         r_pos=r_pos,
-                                        search_type="small"
+                                        search_type="a+4",
+                                        target_type="original",
                                     ),
                                     eval_kwargs,
                                 )
@@ -1784,7 +1788,7 @@ def run_search_small_2(device_id=0, total_devices=4):
                             search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
-                                "z0-b"
+                                "z1-b"
                                 + str(feature_blocks)
                                 + ("-us" if size == 1 else "-os")
                                 + "-c"
@@ -1802,17 +1806,19 @@ def run_search_small_2(device_id=0, total_devices=4):
                                         target_size=target_size,
                                         search_size=search_size,
                                         context_amount=context_amount,
-                                        train_steps=32000,
+                                        train_steps=64000,
                                         save_step=2000,
                                         loads=[
                                             2000,
                                             8000,
                                             16000,
                                             32000,
+                                            64000,
                                         ],
                                         lr=lr,
                                         r_pos=r_pos,
-                                        search_type="small"
+                                        search_type="a+4",
+                                        target_type="original",
                                     ),
                                     eval_kwargs,
                                 )
@@ -1849,7 +1855,7 @@ def run_search_small_3(device_id=0, total_devices=4):
                             search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
-                                "z0-b"
+                                "z1-b"
                                 + str(feature_blocks)
                                 + ("-us" if size == 1 else "-os")
                                 + "-c"
@@ -1867,17 +1873,19 @@ def run_search_small_3(device_id=0, total_devices=4):
                                         target_size=target_size,
                                         search_size=search_size,
                                         context_amount=context_amount,
-                                        train_steps=32000,
+                                        train_steps=64000,
                                         save_step=2000,
                                         loads=[
                                             2000,
                                             8000,
                                             16000,
                                             32000,
+                                            64000,
                                         ],
                                         lr=lr,
                                         r_pos=r_pos,
-                                        search_type="small"
+                                        search_type="a+4",
+                                        target_type="original",
                                     ),
                                     eval_kwargs,
                                 )

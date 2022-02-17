@@ -173,8 +173,13 @@ def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
     return image
 
 
-def original_target_size_by_object_size(object_size):
-    return object_size + 5
+def original_target_size_by_object_size(object_size, target_type="normal"):
+    if target_type == "normal":
+        return object_size + 5
+    elif target_type == "original":
+        return object_size
+    elif target_type == "a+1":
+        return object_size + 1
 
 
 def original_search_size_by_target_size(target_size, search_type="normal"):
@@ -183,8 +188,8 @@ def original_search_size_by_target_size(target_size, search_type="normal"):
         return target_size * 2 + (target_size < 20) * 30
     elif search_type == "small":
         return target_size + target_size // 2
-    elif search_type == "+10":
-        return target_size + 10
+    elif search_type == "a+4":
+        return target_size + 4
     else:
         raise ValueError()
 
@@ -259,7 +264,8 @@ def create_target_search_regions(
     Trv2c=None,
     boxes_lidar=None,
     augment=True,
-    search_type="normal"
+    search_type="normal",
+    target_type="normal",
 ):
 
     bv_min = bv_range[:2]
@@ -313,7 +319,7 @@ def create_target_search_regions(
 
         object_size = (sizes[:, :2] / voxel_size_bev).astype(np.int32)
 
-        sizes_image = original_target_size_by_object_size(object_size)
+        sizes_image = original_target_size_by_object_size(object_size, target_type=target_type)
         search_sizes = original_search_size_by_target_size(sizes_image, search_type)
 
         targets, searches = create_targets_and_searches(
@@ -621,6 +627,7 @@ def create_pseudo_images_and_labels(
     loss="bce",
     r_pos=16,
     search_type="normal",
+    target_type="normal",
 ):
     pseudo_image = net.create_pseudo_image(example_torch, net.point_cloud_range)
     feature_blocks = net.feature_blocks
@@ -634,11 +641,13 @@ def create_pseudo_images_and_labels(
             example_torch["rect"].cpu().numpy(),
             example_torch["Trv2c"].cpu().numpy(),
             search_type=search_type,
+            target_type=target_type,
         )
     elif gt_boxes is not None:
         batch_targets, batch_searches = create_target_search_regions(
             net.bv_range, net.voxel_size, boxes_lidar=gt_boxes,
             search_type=search_type,
+            target_type=target_type,
         )
     else:
         raise Exception()
@@ -938,6 +947,7 @@ def create_siamese_pseudo_images_and_labels(
     loss="bce",
     r_pos=16,
     search_type="normal",
+    target_type="normal",
 ):
 
     dims = target_label_lidar_kitti["dimensions"][0]
@@ -958,6 +968,7 @@ def create_siamese_pseudo_images_and_labels(
         boxes_lidar=target_box_lidar.reshape(1, *target_box_lidar.shape),
         augment=False,
         search_type=search_type,
+        target_type=target_type,
     )
 
     batch_search_targets, batch_searches = create_target_search_regions(
@@ -965,6 +976,7 @@ def create_siamese_pseudo_images_and_labels(
         net.voxel_size,
         boxes_lidar=search_box_lidar.reshape(1, *search_box_lidar.shape),
         search_type=search_type,
+        target_type=target_type,
     )
 
     target = batch_targets[0][0]
@@ -1089,6 +1101,7 @@ def train(
     bof_training_steps=10000,
     infer_point_cloud_mapper=None,
     search_type="normal",
+    target_type="normal",
     training_method="detection",
 ):
     if training_method == "detection":
@@ -1204,6 +1217,7 @@ def train_siamese(
     bof_training_steps=10000,
     infer_point_cloud_mapper=None,
     search_type="normal",
+    target_type="normal",
 ):
 
     net = siamese_model.branch
@@ -1298,6 +1312,7 @@ def train_siamese(
                 r_pos=r_pos,
                 float_dtype=float_dtype,
                 search_type=search_type,
+                target_type=target_type,
             )
 
             for (
@@ -1543,6 +1558,7 @@ def train_detection(
     bof_training_steps=10000,
     infer_point_cloud_mapper=None,
     search_type="normal",
+    target_type="normal",
 ):
 
     net = siamese_model.branch
@@ -1638,6 +1654,7 @@ def train_detection(
                     loss=loss_function,
                     r_pos=r_pos,
                     search_type=search_type,
+                    target_type=target_type,
                 )
             else:
                 with torch.no_grad():
@@ -1651,6 +1668,7 @@ def train_detection(
                         loss=loss_function,
                         r_pos=r_pos,
                         search_type=search_type,
+                        target_type=target_type,
                     )
 
             for (
@@ -1785,7 +1803,7 @@ def train_detection(
                             (125, 255, 0),
                         ],
                     )
-                    print()
+                    print("%", end="")
                 else:
                     loss.backward()
                     # torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
@@ -1948,6 +1966,7 @@ def evaluate(
                     i * eval_input_cfg.batch_size : (i + 1) * eval_input_cfg.batch_size
                 ],
                 search_type=search_type,
+                target_type=target_type,
             )
 
             dt_annos += predict_kitti_to_anno(
