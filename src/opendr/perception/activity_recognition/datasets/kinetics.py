@@ -32,11 +32,11 @@ from urllib.request import urlretrieve
 
 try:
     import av
-except ImportError:
+except ModuleNotFoundError:
     try:
         import torchvision
-    except ImportError:
-        raise ImportError("Either pyav (`pip install av`) or torchvision must be installed for the Kinetics loader to work")
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError("Either pyav (`pip install av`) or torchvision must be installed for the Kinetics loader to work")
 
 logger = getLogger(__file__)
 
