@@ -1803,7 +1803,7 @@ def train_detection(
                             (125, 255, 0),
                         ],
                     )
-                    print()
+                    print("%", end="")
                 else:
                     loss.backward()
                     # torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)

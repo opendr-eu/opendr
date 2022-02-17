@@ -29,6 +29,7 @@ from opendr.engine.datasets import (
 )
 from opendr.engine.data import PointCloud
 from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import SiameseTrackingDatasetIterator
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.draw import stack_images
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.load import (
     create_model as second_create_model,
     load_from_checkpoint,
@@ -127,11 +128,11 @@ class VoxelBofObjectTracking3DLearner(Learner):
             "staircase": True,
         },
         feature_blocks=3,  # 3,
-        window_influence=0.25,  # 0.25,
-        score_upscale=16,
+        window_influence=0.35,  # 0.25,
+        score_upscale=8,
         rotation_penalty=0.98,
-        rotation_step=0.15 / 2,
-        rotations_count=5,
+        rotation_step=0.15,
+        rotations_count=3,
         rotation_interpolation=1,
         target_size=[127, 127],
         search_size=[255, 255],
@@ -831,10 +832,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     + str(frame)
                     + "_target_feat_current_frame.png",
                 )
-                self.__add_image(draw_target_feat_full, "target_feat_full")
-                self.__add_image(
-                    draw_target_feat_current_frame, "target_feat_current_frame"
-                )
+
+                if draw:
+                    self.__add_image(draw_target_feat_full, "target_feat_full")
+                    self.__add_image(
+                        draw_target_feat_current_frame, "target_feat_current_frame"
+                    )
 
             t7 = time.time()
             self.times["target_feature_merge"].append(t7 - t6)
@@ -885,11 +888,29 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             self.fpses.append(fps)
 
+            if draw:
+                image = self._images["search"][-1]
+                image = stack_images([image, self._images["scores_original"][-1]], "horizontal")
+
+                images_feat = [self._images["search_feat"][-1]]
+                if "target_feat_current_frame" in self._images:
+                    images_feat.append(self._images["target_feat_current_frame"][-1])
+                    images_feat.append(self._images["target_feat_full"][-1])
+
+                image = stack_images([
+                    image, stack_images(images_feat, "horizontal")
+                ], "vertical")
+                image = stack_images([
+                    image, self._images["small_pi"][-1]
+                ], "vertical")
+                self.__add_image(image, "summary")
+
             return result
 
     def init(self, point_cloud, label_lidar, draw=False, clear_metrics=False):
 
         self.model.eval()
+        self._images = {}
 
         if clear_metrics:
             self.fpses = []

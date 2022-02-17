@@ -6,8 +6,13 @@ from opendr.engine.target import TrackingAnnotation3D, TrackingAnnotation3DList
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.eval import (
     d3_box_overlap,
 )
-from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import SiameseTrackingDatasetIterator
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.metrics import Precision, Success
+from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import (
+    SiameseTrackingDatasetIterator,
+)
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.metrics import (
+    Precision,
+    Success,
+)
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
     iou_2d,
     tracking_boxes_to_lidar,
@@ -26,6 +31,7 @@ from opendr.perception.object_tracking_3d.datasets.kitti_tracking import (
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.draw import (
     draw_point_cloud_bev,
     draw_point_cloud_projected_2,
+    stack_images,
 )
 from PIL import Image as PilImage
 import numpy as np
@@ -35,6 +41,8 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     camera_to_lidar,
     center_to_corner_box3d,
 )
+import cv2
+
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -135,8 +143,7 @@ def estimate_accuracy(box_a, box_b, dim=3):
     if dim == 3:
         return np.linalg.norm(box_a.location - box_b.location, ord=2)
     elif dim == 2:
-        return np.linalg.norm(
-            box_a.location[[0, 1]] - box_b.location[[0, 1]], ord=2)
+        return np.linalg.norm(box_a.location[[0, 1]] - box_b.location[[0, 1]], ord=2)
 
 
 def tracking_boxes_to_camera(
@@ -233,9 +240,7 @@ def test_eval_detection():
     print("Eval", name, "start", file=sys.stderr)
     model_path = model_paths[name]
 
-    learner = VoxelBofObjectTracking3DLearner(
-        model_config_path=config, device=DEVICE
-    )
+    learner = VoxelBofObjectTracking3DLearner(model_config_path=config, device=DEVICE)
     learner.load(model_path)
     mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset_detection)
 
@@ -248,7 +253,18 @@ def test_draw_tracking_dataset():
     import pygifsicle
     import imageio
 
-    for track_id in ["0005", "0006", "0007", "0008", "0009", "0004", "0003", "0002", "0001", "0000"]:
+    for track_id in [
+        "0005",
+        "0006",
+        "0007",
+        "0008",
+        "0009",
+        "0004",
+        "0003",
+        "0002",
+        "0001",
+        "0000",
+    ]:
         dataset_tracking = LabeledTrackingPointCloudsDatasetIterator(
             dataset_tracking_path + "/training/velodyne/" + track_id,
             dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
@@ -275,15 +291,29 @@ def test_draw_siamese_tracking_dataset():
     track_ids = ["0000", "0002", "0003"]
 
     dataset_siamese_tracking = SiameseTrackingDatasetIterator(
-        [dataset_tracking_path + "/training/velodyne/" + track_id for track_id in track_ids],
-        [dataset_tracking_path + "/training/label_02/" + track_id + ".txt" for track_id in track_ids],
-        [dataset_tracking_path + "/training/calib/" + track_id + ".txt" for track_id in track_ids],
+        [
+            dataset_tracking_path + "/training/velodyne/" + track_id
+            for track_id in track_ids
+        ],
+        [
+            dataset_tracking_path + "/training/label_02/" + track_id + ".txt"
+            for track_id in track_ids
+        ],
+        [
+            dataset_tracking_path + "/training/calib/" + track_id + ".txt"
+            for track_id in track_ids
+        ],
     )
 
     for q in range(lq):  # range(len(dataset_siamese_tracking)):
         i = q * pq
         print(i, "/", len(dataset_tracking))
-        target_point_cloud_calib, search_point_cloud_calib, target_label, search_label = dataset_siamese_tracking[i]
+        (
+            target_point_cloud_calib,
+            search_point_cloud_calib,
+            target_label,
+            search_label,
+        ) = dataset_siamese_tracking[i]
         target_point_cloud = target_point_cloud_calib.data
         search_point_cloud = search_point_cloud_calib.data
         calib = target_point_cloud_calib.calib
@@ -352,9 +382,7 @@ def test_draw_tracking_aabb():
 def test_pp_infer_tracking():
     print("Eval", name, "start", file=sys.stderr)
 
-    learner = VoxelBofObjectTracking3DLearner(
-        model_config_path=config, device=DEVICE
-    )
+    learner = VoxelBofObjectTracking3DLearner(model_config_path=config, device=DEVICE)
     learner.load(model_path)
 
     for q in range(lq):  # range(len(dataset_tracking)):\
@@ -362,18 +390,14 @@ def test_pp_infer_tracking():
         print(i, "/", len(dataset_tracking))
         point_cloud_with_calibration, label = dataset_tracking[i]
         predictions = learner.infer(point_cloud_with_calibration)
-        image = draw_point_cloud_bev(
-            point_cloud_with_calibration.data, predictions
-        )
+        image = draw_point_cloud_bev(point_cloud_with_calibration.data, predictions)
         PilImage.fromarray(image).save("./plots/pp_" + str(i) + ".png")
 
 
 def test_pp_infer_detection():
     print("Eval", name, "start", file=sys.stderr)
 
-    learner = VoxelBofObjectTracking3DLearner(
-        model_config_path=config, device=DEVICE
-    )
+    learner = VoxelBofObjectTracking3DLearner(model_config_path=config, device=DEVICE)
     learner.load(model_path)
 
     for q in range(lq):  # range(len(dataset_tracking)):\
@@ -381,9 +405,7 @@ def test_pp_infer_detection():
         print(i, "/", len(dataset_tracking))
         point_cloud_with_calibration, label = dataset_detection[i]
         predictions = learner.infer(point_cloud_with_calibration)
-        image = draw_point_cloud_bev(
-            point_cloud_with_calibration.data, predictions
-        )
+        image = draw_point_cloud_bev(point_cloud_with_calibration.data, predictions)
         PilImage.fromarray(image).save("./plots/dpp_" + str(i) + ".png")
 
 
@@ -404,9 +426,7 @@ def test_tanet_infer_tracking():
         print(i, "/", len(dataset_tracking))
         point_cloud_with_calibration, label = dataset_tracking[i]
         predictions = learner.infer(point_cloud_with_calibration)
-        image = draw_point_cloud_bev(
-            point_cloud_with_calibration.data, predictions
-        )
+        image = draw_point_cloud_bev(point_cloud_with_calibration.data, predictions)
         PilImage.fromarray(image).save("./plots/tanet_" + str(i) + ".png")
 
 
@@ -454,16 +474,41 @@ def test_pp_siamese_fit_siamese_training(
     checkpoint_after_iter=1000,
     lr=0.0001,
     backbone="pp",
-    track_ids=["0000", "0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008", "0009", "0012", "0013", "0014", "0015", "0016"],
+    track_ids=[
+        "0000",
+        "0001",
+        "0002",
+        "0003",
+        "0004",
+        "0005",
+        "0006",
+        "0007",
+        "0008",
+        "0009",
+        "0012",
+        "0013",
+        "0014",
+        "0015",
+        "0016",
+    ],
     **kwargs,
 ):
     print("Fit", name, "start", file=sys.stderr)
     print("Using device:", device)
 
     dataset_siamese_tracking = SiameseTrackingDatasetIterator(
-        [dataset_tracking_path + "/training/velodyne/" + track_id for track_id in track_ids],
-        [dataset_tracking_path + "/training/label_02/" + track_id + ".txt" for track_id in track_ids],
-        [dataset_tracking_path + "/training/calib/" + track_id + ".txt" for track_id in track_ids],
+        [
+            dataset_tracking_path + "/training/velodyne/" + track_id
+            for track_id in track_ids
+        ],
+        [
+            dataset_tracking_path + "/training/label_02/" + track_id + ".txt"
+            for track_id in track_ids
+        ],
+        [
+            dataset_tracking_path + "/training/calib/" + track_id + ".txt"
+            for track_id in track_ids
+        ],
     )
 
     learner = VoxelBofObjectTracking3DLearner(
@@ -488,15 +533,50 @@ def test_pp_siamese_fit_siamese_training(
 
 
 def test_rotated_pp_siamese_infer(
-    model_name,
+    model_name=None,
     load=0,
     classes=["Car", "Van", "Truck"],
     draw=True,
     iou_min=0.5,
     device=DEVICE,
     backbone="pp",
+    params_file=None,
+    object_ids=[0, 10],  # [0, 3]
+    start_frame=10,
+    track_id="0011",
     **kwargs,
 ):
+
+    if params_file is not None:
+        params = load_params_from_file(params_file)
+        model_name = params["model_name"] if "model_name" in params else model_name
+        load = params["load"] if "load" in params else load
+        draw = params["draw"] if "draw" in params else draw
+        iou_min = params["iou_min"] if "iou_min" in params else iou_min
+        classes = params["classes"] if "classes" in params else classes
+        device = params["device"] if "device" in params else device
+        backbone = params["backbone"] if "backbone" in params else backbone
+
+        for k, v in params.items():
+            if (
+                k
+                not in [
+                    "model_name",
+                    "load",
+                    "draw",
+                    "iou_min",
+                    "classes",
+                    "tracks",
+                    "device",
+                    "eval_id",
+                    "near_distance",
+                    "backbone",
+                    "raise_on_infer_error",
+                    "limit_object_ids",
+                ]
+            ) and (k not in kwargs):
+                kwargs[k] = v
+
     print("Infer", name, "start", file=sys.stderr)
     import pygifsicle
     import imageio
@@ -505,7 +585,6 @@ def test_rotated_pp_siamese_infer(
         model_config_path=backbone_configs[backbone],
         device=device,
         backbone=backbone,
-        lr=0.001,
         checkpoint_after_iter=2000,
         **kwargs,
     )
@@ -520,11 +599,7 @@ def test_rotated_pp_siamese_infer(
         learner.load_from_checkpoint(checkpoints_path, load)
 
     count = len(dataset_tracking)
-    object_ids = [4
-    ]  # [0, 3]
-    count = 160
-    start_frame = 10
-    track_id = "0004"
+
     dataset = LabeledTrackingPointCloudsDatasetIterator(
         dataset_tracking_path + "/training/velodyne/" + track_id,
         dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
@@ -537,6 +612,8 @@ def test_rotated_pp_siamese_infer(
 
         while len(selected_labels) <= 0:
             start_frame += 1
+            if start_frame >= len(dataset):
+                return None, None
             point_cloud_with_calibration, labels = dataset[start_frame]
             selected_labels = TrackingAnnotation3DList(
                 [label for label in labels if (label.id == object_id)]
@@ -546,14 +623,13 @@ def test_rotated_pp_siamese_infer(
             return None, None
 
         calib = point_cloud_with_calibration.calib
-        labels_lidar = tracking_boxes_to_lidar(
-            selected_labels, calib, classes=classes
-        )
+        labels_lidar = tracking_boxes_to_lidar(selected_labels, calib, classes=classes)
         label_lidar = labels_lidar[0]
 
         learner.init(point_cloud_with_calibration, label_lidar, draw=draw)
 
         images = []
+        images_small = []
         ious = []
         count_tracked = 0
 
@@ -581,13 +657,16 @@ def test_rotated_pp_siamese_infer(
                 if label_lidar is None
                 else TrackingAnnotation3DList([result[0], label_lidar])
             )
-            image = draw_point_cloud_bev(
-                point_cloud_with_calibration.data, all_labels
+            image = draw_point_cloud_bev(point_cloud_with_calibration.data, all_labels)
+            image_small = draw_point_cloud_bev(
+                point_cloud_with_calibration.data, all_labels, scale=1
             )
 
             if draw:
                 pil_image = PilImage.fromarray(image)
+                pil_image_small = PilImage.fromarray(image_small)
                 images.append(pil_image)
+                images_small.append(pil_image_small)
 
             result = tracking_boxes_to_camera(result, calib)[0]
             label_lidar = tracking_boxes_to_camera(
@@ -627,15 +706,7 @@ def test_rotated_pp_siamese_infer(
             ious.append(iou)
 
             print(
-                track_id,
-                "%",
-                object_id,
-                "[",
-                i,
-                "/",
-                count - 1,
-                "] iou =",
-                iou,
+                track_id, "%", object_id, "[", i, "/", count - 1, "] iou =", iou,
             )
 
         if len(ious) <= 0:
@@ -667,10 +738,25 @@ def test_rotated_pp_siamese_infer(
             pygifsicle.optimize(filename("infer"))
             print("Saving", "infer", "video")
 
-            for group, images in learner._images.items():
+            for group, g_images in learner._images.items():
                 print("Saving", group, "video")
-                imageio.mimsave(filename(group), images)
+                imageio.mimsave(filename(group), g_images)
                 pygifsicle.optimize(filename(group))
+
+                if group == "summary":
+                    stacked_images = [
+                        stack_images(
+                            [cv2.resize(x, (0, 0), fx=5, fy=5), y], "horizontal"
+                        )
+                        for x, y in zip(g_images, images)
+                    ]
+
+                    for i, img in enumerate(stacked_images):
+                        image = PilImage.fromarray(img)
+                        image.save(filename("all/" + str(i)))
+
+                    imageio.mimsave(filename("all"), stacked_images)
+                    pygifsicle.optimize(filename(group))
 
         return mean_iou, tracked
 
@@ -684,8 +770,103 @@ def test_rotated_pp_siamese_infer(
         print(key, "time =", t * 1000, "ms, fps =", 1 / t)
 
 
+def load_params_from_file(params_file):
+
+    import ast
+    from pathlib import Path
+
+    path = Path(params_file)
+    model_name = path.parent.name
+
+    int_names = [
+        "load",
+        "feature_blocks",
+        "score_upscale",
+        "rotations_count",
+        "rotation_interpolation",
+        "r_pos",
+        "iters",
+        "batch_size",
+        "checkpoint_after_iter",
+        "checkpoint_load_iter",
+    ]
+
+    float_names = [
+        "window_influence",
+        "context_amount",
+        "target_feature_merge_scale",
+        "rotation_penalty",
+        "rotation_step",
+        "lr",
+        "threshold",
+        "scale",
+    ]
+
+    object_names = [
+        "optimizer_params",
+        "lr_schedule_params",
+        "target_size",
+        "search_size",
+    ]
+
+    string_names = [
+        "search_type",
+        "target_type",
+        "bof_mode",
+        "model_config_path",
+        "optimizer",
+        "lr_schedule",
+        "backbone",
+        "network_head",
+        "temp_path",
+        "device",
+        "tanet_config_path",
+    ]
+
+    with open(params_file, "r") as f:
+        str_values = f.readlines()
+
+        params = None
+        result = {}
+
+        for s in str_values:
+            key, value = s.split(" = ")
+            if key == "params":
+                params = value
+
+        if params is None:
+            return result
+
+        def parse_args(name, value):
+            if name in int_names:
+                return int(value)
+            elif name in float_names:
+                return float(value)
+            elif name in object_names:
+                return ast.literal_eval(value)
+            elif name in string_names:
+                return value[:-1]
+
+        args = list(
+            map(
+                lambda x: (x[0], parse_args(x[0], x[1])),
+                map(
+                    lambda x: x.split("="),
+                    filter(lambda x: "=" in x, params.split("--")),
+                ),
+            )
+        )
+
+        for name, value in args:
+            result[name] = value
+
+        result["model_name"] = model_name
+
+        return result
+
+
 def test_rotated_pp_siamese_eval(
-    model_name,
+    model_name=None,
     load=0,
     draw=False,
     iou_min=0.0,
@@ -697,8 +878,55 @@ def test_rotated_pp_siamese_eval(
     backbone="pp",
     raise_on_infer_error=False,
     limit_object_ids=False,
+    params_file=None,
     **kwargs,
 ):
+
+    if params_file is not None:
+        params = load_params_from_file(params_file)
+        model_name = params["model_name"] if "model_name" in params else model_name
+        load = params["load"] if "load" in params else load
+        draw = params["draw"] if "draw" in params else draw
+        iou_min = params["iou_min"] if "iou_min" in params else iou_min
+        classes = params["classes"] if "classes" in params else classes
+        tracks = params["tracks"] if "tracks" in params else tracks
+        device = params["device"] if "device" in params else device
+        eval_id = params["eval_id"] if "eval_id" in params else eval_id
+        near_distance = (
+            params["near_distance"] if "near_distance" in params else near_distance
+        )
+        backbone = params["backbone"] if "backbone" in params else backbone
+        raise_on_infer_error = (
+            params["raise_on_infer_error"]
+            if "raise_on_infer_error" in params
+            else raise_on_infer_error
+        )
+        limit_object_ids = (
+            params["limit_object_ids"]
+            if "limit_object_ids" in params
+            else limit_object_ids
+        )
+
+        for k, v in params.items():
+            if (
+                k
+                not in [
+                    "model_name",
+                    "load",
+                    "draw",
+                    "iou_min",
+                    "classes",
+                    "tracks",
+                    "device",
+                    "eval_id",
+                    "near_distance",
+                    "backbone",
+                    "raise_on_infer_error",
+                    "limit_object_ids",
+                ]
+            ) and (k not in kwargs):
+                kwargs[k] = v
+
     print("Eval", name, "start", file=sys.stderr)
     print("Using device:", device)
     import pygifsicle
@@ -790,9 +1018,7 @@ def test_rotated_pp_siamese_eval(
 
                 calib = point_cloud_with_calibration.calib
                 labels_lidar = tracking_boxes_to_lidar(selected_labels, calib)
-                label_lidar = (
-                    labels_lidar[0] if len(labels_lidar) > 0 else None
-                )
+                label_lidar = labels_lidar[0] if len(labels_lidar) > 0 else None
 
                 try:
 
@@ -841,9 +1067,7 @@ def test_rotated_pp_siamese_eval(
                         ],
                         axis=1,
                     )
-                    iou3d = float(
-                        d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64)
-                    )
+                    iou3d = float(d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64))
 
                     if iou3d > iou_min:
                         count_tracked += 1
@@ -891,12 +1115,16 @@ def test_rotated_pp_siamese_eval(
                 )
 
             filename = (
-                "./plots/video/eval_" + model_name + "_track_"
+                "./plots/video/eval_"
+                + model_name
+                + "_track_"
                 + str(track_id)
                 + "_obj_"
                 + str(object_id)
                 + "_"
-                + str(load) + "_" + str(eval_id)
+                + str(load)
+                + "_"
+                + str(eval_id)
                 + ".gif"
             )
 
@@ -907,12 +1135,8 @@ def test_rotated_pp_siamese_eval(
                 mean_success = None
                 tracked = None
             else:
-                mean_iou3d = sum([iou3d for iou3d, iouAabb in ious]) / len(
-                    ious
-                )
-                mean_iouAabb = sum([iouAabb for iou3d, iouAabb in ious]) / len(
-                    ious
-                )
+                mean_iou3d = sum([iou3d for iou3d, iouAabb in ious]) / len(ious)
+                mean_iouAabb = sum([iouAabb for iou3d, iouAabb in ious]) / len(ious)
                 tracked = count_tracked / len(ious)
                 mean_precision = object_precision.average
                 mean_success = object_success.average
@@ -929,8 +1153,18 @@ def test_rotated_pp_siamese_eval(
 
             return mean_iou3d, mean_iouAabb, tracked, mean_precision, mean_success
 
-        for object_id in range(0, min(5, dataset.max_id + 1)) if limit_object_ids else range(0, dataset.max_id + 1):
-            mean_iou3d, mean_iouAabb, tracked, mean_precision, mean_success = test_object_id(object_id)
+        for object_id in (
+            range(0, min(5, dataset.max_id + 1))
+            if limit_object_ids
+            else range(0, dataset.max_id + 1)
+        ):
+            (
+                mean_iou3d,
+                mean_iouAabb,
+                tracked,
+                mean_precision,
+                mean_success,
+            ) = test_object_id(object_id)
 
             if mean_iou3d is not None:
                 all_mean_iou3ds.append(mean_iou3d)
@@ -941,9 +1175,7 @@ def test_rotated_pp_siamese_eval(
 
         if len(all_mean_iou3ds) > 0:
             track_mean_iou3d = sum(all_mean_iou3ds) / len(all_mean_iou3ds)
-            track_mean_iouAabb = sum(all_mean_iouAabbs) / len(
-                all_mean_iouAabbs
-            )
+            track_mean_iouAabb = sum(all_mean_iouAabbs) / len(all_mean_iouAabbs)
             track_mean_tracked = sum(all_tracked) / len(all_tracked)
             track_mean_precision = sum(all_precision) / len(all_precision)
             track_mean_success = sum(all_success) / len(all_success)
@@ -960,22 +1192,28 @@ def test_rotated_pp_siamese_eval(
         print("track_mean_precision =", track_mean_precision)
         print("track_mean_success =", track_mean_success)
 
-        return track_mean_iou3d, track_mean_iouAabb, track_mean_tracked, track_mean_precision, track_mean_success
+        return (
+            track_mean_iou3d,
+            track_mean_iouAabb,
+            track_mean_tracked,
+            track_mean_precision,
+            track_mean_success,
+        )
 
     if tracks is None:
         tracks = [
-            "0000",
-            "0001",
-            "0002",
-            "0003",
-            "0004",
+            # "0000",
+            # "0001",
+            # "0002",
+            # "0003",
+            # "0004",
             # "0005",
             # "0006",
             # "0007",
             # "0008",
             # "0009",
-            # "0010",
-            # "0011",
+            "0010",
+            "0011",
             # "0012",
             # "0013",
             # "0014",
@@ -994,9 +1232,13 @@ def test_rotated_pp_siamese_eval(
     all_success = []
 
     for track in tracks:
-        track_mean_iou3d, track_mean_iouAabb, track_mean_tracked, track_mean_precision, track_mean_success = test_track(
-            track
-        )
+        (
+            track_mean_iou3d,
+            track_mean_iouAabb,
+            track_mean_tracked,
+            track_mean_precision,
+            track_mean_success,
+        ) = test_track(track)
 
         if track_mean_iou3d is not None:
             all_iou3ds.append(track_mean_iou3d)
@@ -1047,7 +1289,9 @@ def test_rotated_pp_siamese_eval(
     print("all_precision =", all_precision)
     print("all_success =", all_success)
 
-    with open(results_path + "/results_" + str(load) + "_" + str(eval_id) + ".txt", "w") as f:
+    with open(
+        results_path + "/results_" + str(load) + "_" + str(eval_id) + ".txt", "w"
+    ) as f:
 
         for k, v in result.items():
             print(k, "=", v, file=f)
@@ -1092,9 +1336,7 @@ def create_extended_eval_kwargs():
                                 + "wi"
                                 + str(window_influence).replace(".", "")
                                 + "tfms"
-                                + str(target_feature_merge_scale).replace(
-                                    ".", ""
-                                )
+                                + str(target_feature_merge_scale).replace(".", "")
                             )
 
                             results[name] = {
@@ -1138,9 +1380,7 @@ def create_small_eval_kwargs():
                                 + "wi"
                                 + str(window_influence).replace(".", "")
                                 + "tfms"
-                                + str(target_feature_merge_scale).replace(
-                                    ".", ""
-                                )
+                                + str(target_feature_merge_scale).replace(".", "")
                             )
 
                             results[name] = {
@@ -1238,9 +1478,7 @@ def create_small_val_eval_kwargs():
                                 + "wi"
                                 + str(window_influence).replace(".", "")
                                 + "tfms"
-                                + str(target_feature_merge_scale).replace(
-                                    ".", ""
-                                )
+                                + str(target_feature_merge_scale).replace(".", "")
                             )
 
                             results[name] = {
