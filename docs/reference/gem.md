@@ -208,7 +208,7 @@ Parameters:
   Valid values are: "weights_detr", "pretrained_detr", "pretrained_gem", "test_data_l515" and "test_data_sample_images".
   In case of "weights_detr", the weigths for single modal DETR with *resnet50* backbone are downloaded.
   In case of "pretrained_detr", the weigths for single modal pretrained DETR with *resnet50* backbone are downloaded.
-  In case of "pretrained_gem", the weights (backbone: *'resnet50' or 'mobilenetv2*, fusion_method: *'scalar averaged'*, trained on *RGB-Infrared l515_dataset*) are downloaded.
+  In case of "pretrained_gem", the weights (backbone: *'resnet50' or 'mobilenetv2'*, fusion_method: *'scalar averaged'*, trained on *RGB-Infrared l515_dataset*) are downloaded.
   In case of "test_data_l515", the *RGB-Infrared l515* dataset is downloaded from the OpenDR server.
   In case of "test_data_sample images", two sample images for testing the *infer* function are downloaded.
 - **verbose** : *bool, default=False*
