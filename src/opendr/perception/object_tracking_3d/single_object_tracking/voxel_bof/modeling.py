@@ -267,6 +267,10 @@ def collect_results(template="", tracks=None):
                 good_tracks = True
 
                 if tracks is not None:
+
+                    if len(tracks) != len(values["tracks"].split(",")):
+                        good_tracks = False
+
                     for track_id in tracks:
                         if track_id not in values["tracks"]:
                             good_tracks = False
