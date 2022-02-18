@@ -3,7 +3,7 @@
 conda create --name opendr python=3.8 -y
 conda activate opendr
 conda env config vars set OPENDR_HOME=$PWD
-conda env config vars set PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+conda env config vars set PYTHONPATH=$PWD/src:$PYTHONPATH
 
 # Reactivate env to let env vars take effect
 conda deactivate
