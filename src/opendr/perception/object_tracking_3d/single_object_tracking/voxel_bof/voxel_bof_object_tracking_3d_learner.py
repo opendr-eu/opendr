@@ -140,6 +140,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
         target_feature_merge_scale=0,
         loss_function="bce",  # focal, bce
         r_pos=16,
+        augment=True,
+        augment_rotation=True,
+        train_pseudo_image=False,
         search_type="normal",
         target_type="normal",
         bof_mode="none",
@@ -185,6 +188,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.search_type = search_type
         self.target_type = target_type
         self.bof_mode = bof_mode
+        self.augment = augment
+        self.augment_rotation = augment_rotation
+        self.train_pseudo_image = train_pseudo_image
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -482,9 +488,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
             loss_function=self.loss_function,
             r_pos=self.r_pos,
             infer_point_cloud_mapper=self.infer_point_cloud_mapper,
+            augment=self.augment,
+            augment_rotation=self.augment_rotation,
             search_type=self.search_type,
             target_type=self.target_type,
             training_method=self.training_method,
+            train_pseudo_image=self.train_pseudo_image,
         )
 
         logger.close()

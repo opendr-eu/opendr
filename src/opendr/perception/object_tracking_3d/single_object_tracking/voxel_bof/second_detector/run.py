@@ -264,6 +264,7 @@ def create_target_search_regions(
     Trv2c=None,
     boxes_lidar=None,
     augment=True,
+    augment_rotation=True,
     search_type="normal",
     target_type="normal",
 ):
@@ -323,7 +324,7 @@ def create_target_search_regions(
         search_sizes = original_search_size_by_target_size(sizes_image, search_type)
 
         targets, searches = create_targets_and_searches(
-            centers_image, sizes_image, search_sizes, rotations, augment=augment,
+            centers_image, sizes_image, search_sizes, rotations, augment=augment, augment_rotation=augment_rotation
         )
         batch_targets.append(targets)
         batch_searches.append(searches)
@@ -626,6 +627,8 @@ def create_pseudo_images_and_labels(
     gt_boxes=None,
     loss="bce",
     r_pos=16,
+    augment=True,
+    augment_rotation=True,
     search_type="normal",
     target_type="normal",
 ):
@@ -640,12 +643,16 @@ def create_pseudo_images_and_labels(
             annos,
             example_torch["rect"].cpu().numpy(),
             example_torch["Trv2c"].cpu().numpy(),
+            augment=augment,
+            augment_rotation=augment_rotation,
             search_type=search_type,
             target_type=target_type,
         )
     elif gt_boxes is not None:
         batch_targets, batch_searches = create_target_search_regions(
             net.bv_range, net.voxel_size, boxes_lidar=gt_boxes,
+            augment=augment,
+            augment_rotation=augment_rotation,
             search_type=search_type,
             target_type=target_type,
         )
@@ -946,6 +953,8 @@ def create_siamese_pseudo_images_and_labels(
     float_dtype,
     loss="bce",
     r_pos=16,
+    augment=True,
+    augment_rotation=True,
     search_type="normal",
     target_type="normal",
 ):
@@ -967,6 +976,7 @@ def create_siamese_pseudo_images_and_labels(
         net.voxel_size,
         boxes_lidar=target_box_lidar.reshape(1, *target_box_lidar.shape),
         augment=False,
+        augment_rotation=augment_rotation,
         search_type=search_type,
         target_type=target_type,
     )
@@ -975,6 +985,8 @@ def create_siamese_pseudo_images_and_labels(
         net.bv_range,
         net.voxel_size,
         boxes_lidar=search_box_lidar.reshape(1, *search_box_lidar.shape),
+        augment=augment,
+        augment_rotation=augment_rotation,
         search_type=search_type,
         target_type=target_type,
     )
@@ -1100,9 +1112,12 @@ def train(
     r_pos=16,
     bof_training_steps=10000,
     infer_point_cloud_mapper=None,
+    augment=True,
+    augment_rotation=True,
     search_type="normal",
     target_type="normal",
     training_method="detection",
+    train_pseudo_image=False,
 ):
     if training_method == "detection":
         return train_detection(
@@ -1139,7 +1154,11 @@ def train(
             r_pos,
             bof_training_steps,
             infer_point_cloud_mapper,
-            search_type
+            augment,
+            augment_rotation,
+            search_type,
+            target_type,
+            train_pseudo_image,
         )
     elif training_method == "siamese":
         return train_siamese(
@@ -1176,7 +1195,11 @@ def train(
             r_pos,
             bof_training_steps,
             infer_point_cloud_mapper,
-            search_type
+            augment,
+            augment_rotation,
+            search_type,
+            target_type,
+            train_pseudo_image,
         )
     else:
         raise ValueError()
@@ -1216,8 +1239,11 @@ def train_siamese(
     r_pos=16,
     bof_training_steps=10000,
     infer_point_cloud_mapper=None,
+    augment=True,
+    augment_rotation=True,
     search_type="normal",
     target_type="normal",
+    train_pseudo_image=False,
 ):
 
     net = siamese_model.branch
@@ -1311,6 +1337,8 @@ def train_siamese(
                 loss=loss_function,
                 r_pos=r_pos,
                 float_dtype=float_dtype,
+                augment=augment,
+                augment_rotation=augment_rotation,
                 search_type=search_type,
                 target_type=target_type,
             )
@@ -1557,8 +1585,11 @@ def train_detection(
     r_pos=16,
     bof_training_steps=10000,
     infer_point_cloud_mapper=None,
+    augment=True,
+    augment_rotation=True,
     search_type="normal",
     target_type="normal",
+    train_pseudo_image=False,
 ):
 
     net = siamese_model.branch
@@ -1643,7 +1674,7 @@ def train_detection(
                 example, float_dtype, device=device
             )
 
-            if debug:
+            if debug or train_pseudo_image:
                 items = create_pseudo_images_and_labels(
                     net,
                     example_torch,
@@ -1653,6 +1684,8 @@ def train_detection(
                     context_amount=context_amount,
                     loss=loss_function,
                     r_pos=r_pos,
+                    augment=augment,
+                    augment_rotation=augment_rotation,
                     search_type=search_type,
                     target_type=target_type,
                 )
@@ -1667,11 +1700,13 @@ def train_detection(
                         context_amount=context_amount,
                         loss=loss_function,
                         r_pos=r_pos,
+                        augment=augment,
+                        augment_rotation=augment_rotation,
                         search_type=search_type,
                         target_type=target_type,
                     )
 
-            for (
+            for i, (
                 target_image,
                 search_image,
                 labels,
@@ -1680,7 +1715,7 @@ def train_detection(
                 search,
                 search_size_with_context,
                 pseudo_image,
-            ) in items:
+            ) in enumerate(items):
                 pred, feat_target, feat_search = siamese_model(
                     search_image, target_image
                 )
@@ -1805,7 +1840,7 @@ def train_detection(
                     )
                     print("%", end="")
                 else:
-                    loss.backward()
+                    loss.backward(retain_graph=i + 1 < len(items))
                     # torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
                     mixed_optimizer.step()
                     mixed_optimizer.zero_grad()
@@ -1965,6 +2000,8 @@ def evaluate(
                 gt_annos[
                     i * eval_input_cfg.batch_size : (i + 1) * eval_input_cfg.batch_size
                 ],
+                augment=augment,
+                augment_rotation=augment_rotation,
                 search_type=search_type,
                 target_type=target_type,
             )

@@ -541,7 +541,7 @@ def test_rotated_pp_siamese_infer(
     device=DEVICE,
     backbone="pp",
     params_file=None,
-    object_ids=[0, 10],  # [0, 3]
+    object_ids=[0, 10, 43],  # [0, 3]
     start_frame=10,
     track_id="0011",
     **kwargs,
@@ -550,7 +550,8 @@ def test_rotated_pp_siamese_infer(
     if params_file is not None:
         params = load_params_from_file(params_file)
         model_name = params["model_name"] if "model_name" in params else model_name
-        load = params["load"] if "load" in params else load
+        if load == 0:
+            load = params["load"] if "load" in params else load
         draw = params["draw"] if "draw" in params else draw
         iou_min = params["iou_min"] if "iou_min" in params else iou_min
         classes = params["classes"] if "classes" in params else classes
@@ -598,13 +599,13 @@ def test_rotated_pp_siamese_infer(
     else:
         learner.load_from_checkpoint(checkpoints_path, load)
 
-    count = len(dataset_tracking)
-
     dataset = LabeledTrackingPointCloudsDatasetIterator(
         dataset_tracking_path + "/training/velodyne/" + track_id,
         dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
         dataset_tracking_path + "/training/calib/" + track_id + ".txt",
     )
+
+    count = len(dataset)
 
     def test_object_id(object_id, start_frame=-1):
 
@@ -1314,6 +1315,8 @@ def create_extended_eval_kwargs():
         "rotation_step": [0.15, 0.1, 0.075, 0.04],
         "rotations_count": [3, 5],
         "target_feature_merge_scale": [0, 0.005, 0.01],
+        "search_type": [["normal", "n"], ["small", "s"], ["a+4", "4"]],
+        "target_type": [["normal", "n"], ["original", "o"], ["a+1", "1"]],
     }
     results = {}
 
@@ -1325,28 +1328,40 @@ def create_extended_eval_kwargs():
                         for target_feature_merge_scale in params[
                             "target_feature_merge_scale"
                         ]:
-                            name = (
-                                str(rotations_count).replace(".", "")
-                                + "r"
-                                + str(rotation_step).replace(".", "")
-                                + "-rp"
-                                + str(rotation_penalty).replace(".", "")
-                                + "su"
-                                + str(score_upscale).replace(".", "")
-                                + "wi"
-                                + str(window_influence).replace(".", "")
-                                + "tfms"
-                                + str(target_feature_merge_scale).replace(".", "")
-                            )
+                            for search_type, search_type_name in params[
+                                "search_type"
+                            ]:
+                                for target_type, target_type_name in params[
+                                    "target_type"
+                                ]:
+                                    name = (
+                                        str(rotations_count).replace(".", "")
+                                        + "r"
+                                        + str(rotation_step).replace(".", "")
+                                        + "-rp"
+                                        + str(rotation_penalty).replace(".", "")
+                                        + "-s"
+                                        + str(search_type_name).replace(".", "")
+                                        + "t"
+                                        + str(target_type_name).replace(".", "")
+                                        + "-su"
+                                        + str(score_upscale).replace(".", "")
+                                        + "wi"
+                                        + str(window_influence).replace(".", "")
+                                        + "tfms"
+                                        + str(target_feature_merge_scale).replace(".", "")
+                                    )
 
-                            results[name] = {
-                                "window_influence": window_influence,
-                                "score_upscale": score_upscale,
-                                "rotation_penalty": rotation_penalty,
-                                "rotation_step": rotation_step,
-                                "rotations_count": rotations_count,
-                                "target_feature_merge_scale": target_feature_merge_scale,
-                            }
+                                    results[name] = {
+                                        "window_influence": window_influence,
+                                        "score_upscale": score_upscale,
+                                        "rotation_penalty": rotation_penalty,
+                                        "rotation_step": rotation_step,
+                                        "rotations_count": rotations_count,
+                                        "target_feature_merge_scale": target_feature_merge_scale,
+                                        "search_type": search_type,
+                                        "target_type": target_type,
+                                    }
     return results
 
 
@@ -1358,6 +1373,8 @@ def create_small_eval_kwargs():
         "rotation_step": [0.15, 0.1],
         "rotations_count": [3],
         "target_feature_merge_scale": [0.005, 0],
+        "search_type": [["normal", "n"], ["small", "s"], ["a+4", "4"]],
+        "target_type": [["normal", "n"], ["original", "o"], ["a+1", "1"]],
     }
     results = {}
 
@@ -1369,28 +1386,40 @@ def create_small_eval_kwargs():
                         for target_feature_merge_scale in params[
                             "target_feature_merge_scale"
                         ]:
-                            name = (
-                                str(rotations_count).replace(".", "")
-                                + "r"
-                                + str(rotation_step).replace(".", "")
-                                + "-rp"
-                                + str(rotation_penalty).replace(".", "")
-                                + "su"
-                                + str(score_upscale).replace(".", "")
-                                + "wi"
-                                + str(window_influence).replace(".", "")
-                                + "tfms"
-                                + str(target_feature_merge_scale).replace(".", "")
-                            )
+                            for search_type, search_type_name in params[
+                                "search_type"
+                            ]:
+                                for target_type, target_type_name in params[
+                                    "target_type"
+                                ]:
+                                    name = (
+                                        str(rotations_count).replace(".", "")
+                                        + "r"
+                                        + str(rotation_step).replace(".", "")
+                                        + "-rp"
+                                        + str(rotation_penalty).replace(".", "")
+                                        + "-s"
+                                        + str(search_type_name).replace(".", "")
+                                        + "t"
+                                        + str(target_type_name).replace(".", "")
+                                        + "-su"
+                                        + str(score_upscale).replace(".", "")
+                                        + "wi"
+                                        + str(window_influence).replace(".", "")
+                                        + "tfms"
+                                        + str(target_feature_merge_scale).replace(".", "")
+                                    )
 
-                            results[name] = {
-                                "window_influence": window_influence,
-                                "score_upscale": score_upscale,
-                                "rotation_penalty": rotation_penalty,
-                                "rotation_step": rotation_step,
-                                "rotations_count": rotations_count,
-                                "target_feature_merge_scale": target_feature_merge_scale,
-                            }
+                                    results[name] = {
+                                        "window_influence": window_influence,
+                                        "score_upscale": score_upscale,
+                                        "rotation_penalty": rotation_penalty,
+                                        "rotation_step": rotation_step,
+                                        "rotations_count": rotations_count,
+                                        "target_feature_merge_scale": target_feature_merge_scale,
+                                        "search_type": search_type,
+                                        "target_type": target_type,
+                                    }
     return results
 
 
@@ -1456,6 +1485,8 @@ def create_small_val_eval_kwargs():
         "rotation_step": [0.15, 0.1],
         "rotations_count": [3],
         "target_feature_merge_scale": [0.05, 0.005, 0],
+        "search_type": [["normal", "n"], ["small", "s"], ["a+4", "4"]],
+        "target_type": [["normal", "n"], ["original", "o"], ["a+1", "1"]],
     }
     results = {}
 
@@ -1467,28 +1498,40 @@ def create_small_val_eval_kwargs():
                         for target_feature_merge_scale in params[
                             "target_feature_merge_scale"
                         ]:
-                            name = (
-                                str(rotations_count).replace(".", "")
-                                + "r"
-                                + str(rotation_step).replace(".", "")
-                                + "-rp"
-                                + str(rotation_penalty).replace(".", "")
-                                + "su"
-                                + str(score_upscale).replace(".", "")
-                                + "wi"
-                                + str(window_influence).replace(".", "")
-                                + "tfms"
-                                + str(target_feature_merge_scale).replace(".", "")
-                            )
+                            for search_type, search_type_name in params[
+                                "search_type"
+                            ]:
+                                for target_type, target_type_name in params[
+                                    "target_type"
+                                ]:
+                                    name = (
+                                        str(rotations_count).replace(".", "")
+                                        + "r"
+                                        + str(rotation_step).replace(".", "")
+                                        + "-rp"
+                                        + str(rotation_penalty).replace(".", "")
+                                        + "-s"
+                                        + str(search_type_name).replace(".", "")
+                                        + "t"
+                                        + str(target_type_name).replace(".", "")
+                                        + "-su"
+                                        + str(score_upscale).replace(".", "")
+                                        + "wi"
+                                        + str(window_influence).replace(".", "")
+                                        + "tfms"
+                                        + str(target_feature_merge_scale).replace(".", "")
+                                    )
 
-                            results[name] = {
-                                "window_influence": window_influence,
-                                "score_upscale": score_upscale,
-                                "rotation_penalty": rotation_penalty,
-                                "rotation_step": rotation_step,
-                                "rotations_count": rotations_count,
-                                "target_feature_merge_scale": target_feature_merge_scale,
-                            }
+                                    results[name] = {
+                                        "window_influence": window_influence,
+                                        "score_upscale": score_upscale,
+                                        "rotation_penalty": rotation_penalty,
+                                        "rotation_step": rotation_step,
+                                        "rotations_count": rotations_count,
+                                        "target_feature_merge_scale": target_feature_merge_scale,
+                                        "search_type": search_type,
+                                        "target_type": target_type,
+                                    }
     return results
 
 
