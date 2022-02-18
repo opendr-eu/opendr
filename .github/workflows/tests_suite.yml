@@ -243,6 +243,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Delete artifacts
       uses: geekyeggo/delete-artifact@v1
