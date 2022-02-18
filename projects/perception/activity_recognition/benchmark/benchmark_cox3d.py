@@ -49,20 +49,20 @@ def benchmark_cox3d():
     #     "m": 64,
     #     "l": 8,
     # }
-    # batch_size = {  # Xavier
-    #     "xs": 128,
-    #     "s": 128,
-    #     "m": 64,
-    #     "l": 8,
-    # }
-    batch_size = {  # CPU - larger batch sizes don't increase throughput
-        "xs": 1,
-        "s": 1,
-        "m": 1,
-        "l": 1,
+    batch_size = {  # Xavier
+        "xs": 64,
+        "s": 32,
+        "m": 16,
+        "l": 8,
     }
+    # batch_size = {  # CPU - larger batch sizes don't increase throughput
+    #     "xs": 1,
+    #     "s": 1,
+    #     "m": 1,
+    #     "l": 1,
+    # }
 
-    for backbone in ["xs", "s", "m", "l"]:
+    for backbone in ["s", "m", "l"]:
         print(f"==== Benchmarking CoX3DLearner ({backbone}) ====")
 
         learner = CoX3DLearner(
