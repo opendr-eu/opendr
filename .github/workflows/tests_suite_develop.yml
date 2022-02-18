@@ -106,3 +106,14 @@ jobs:
             source tests/sources/tools/control/mobile_manipulation/run_ros.sh
             python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
+  delete-artifacts:
+    needs: [test-tools, build-wheel, build-docker, test-wheel, test-docker]
+    if: ${{ always() }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    steps:
+    - name: Delete artifacts
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: build-${{ matrix.os }}
