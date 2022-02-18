@@ -87,6 +87,7 @@ class SingleShotDetectorLearner(Learner):
                 self.ctx = mx.gpu(0)
             else:
                 self.ctx = mx.cpu()
+                print("Device set to cuda but no GPU available, using CPU...")
         else:
             self.ctx = mx.cpu()
 
