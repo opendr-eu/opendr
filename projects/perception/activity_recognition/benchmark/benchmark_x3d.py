@@ -48,18 +48,18 @@ def benchmark_x3d():
     #     "m": 8,
     #     "l": 2,
     # }
-    # batch_size = {  # Xavier
-    #     "xs": 32,
-    #     "s": 16,
-    #     "m": 8,
-    #     "l": 2,
-    # }
-    batch_size = {  # CPU - larger batch sizes don't increase throughput
-        "xs": 1,
-        "s": 1,
-        "m": 1,
-        "l": 1,
+    batch_size = {  # Xavier
+        "xs": 32,
+        "s": 16,
+        "m": 8,
+        "l": 2,
     }
+    # batch_size = {  # CPU - larger batch sizes don't increase throughput
+    #     "xs": 1,
+    #     "s": 1,
+    #     "m": 1,
+    #     "l": 1,
+    # }
 
     for backbone in ["xs", "s", "m", "l"]:
         print(f"==== Benchmarking X3DLearner ({backbone}) ====")
@@ -109,11 +109,12 @@ def benchmark_x3d():
             get_device_fn=get_device_fn,
             transfer_to_device_fn=transfer_to_device_fn,
             batch_size=batch_size[backbone],
+            print_fn=print,
         )
         print(yaml.dump({"learner.infer": results1}))
 
         print("== Benchmarking model directly ==")
-        results2 = benchmark(learner.model, sample, num_runs=num_runs)
+        results2 = benchmark(learner.model, sample, num_runs=num_runs, print_fn=print)
         print(yaml.dump({"learner.model.forward": results2}))
 
 
