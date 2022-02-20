@@ -26,7 +26,7 @@ cd $OPENDR_HOME/projects/control/eagerx/demos
 python3 [demo_name]
 ```
 
-where possible values for [demo_name] are: *demo_full_state*, *demo_pid*, *demo_classifier*
+where possible values for [demo_name] are: *demo_full_state.py*, *demo_pid.py*, *demo_classifier.py*
 
 Setting `--device cpu` performs training and inference on CPU.  
 Setting `--name example` sets the name of the environment.  
