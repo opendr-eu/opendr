@@ -44,8 +44,9 @@ def example_full_state(name, eps, eval_eps, device):
 
     # Use stable-baselines
     import stable_baselines3 as sb
+
     model = sb.SAC("MlpPolicy", env, verbose=1, device=device)
-    model.learn(total_timesteps=int(eps*200))
+    model.learn(total_timesteps=int(eps * 200))
 
     # Evaluate trained policy
     for i in range(eval_eps):
