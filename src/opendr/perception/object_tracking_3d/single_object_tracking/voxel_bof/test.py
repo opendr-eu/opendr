@@ -720,8 +720,12 @@ def test_rotated_pp_siamese_infer(
         print("mean_iou =", mean_iou)
         print("tracked =", tracked)
 
+        os.makedirs("./plots/video/" + model_name, exist_ok=True)
+        os.makedirs("./plots/video/" + model_name + "/all", exist_ok=True)
+
         filename = lambda x: (
             "./plots/video/"
+            + model_name + "/"
             + x
             + "_"
             + model_name

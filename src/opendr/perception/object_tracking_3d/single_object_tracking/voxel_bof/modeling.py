@@ -898,6 +898,51 @@ def create_selected_eval_kwargs():
     return results
 
 
+def create_selected_eval_kwargs_wi():
+    params = {
+        "window_influence": [0.35, 0.65, 0.95],
+        "score_upscale": [16],
+        "rotation_penalty": [0.98],
+        "rotation_step": [0.15, 0.1],
+        "rotations_count": [3],
+        "target_feature_merge_scale": [0, 0.01],
+    }
+
+    results = {}
+
+    for window_influence in params["window_influence"]:
+        for score_upscale in params["score_upscale"]:
+            for rotation_penalty in params["rotation_penalty"]:
+                for rotation_step in params["rotation_step"]:
+                    for rotations_count in params["rotations_count"]:
+                        for target_feature_merge_scale in params[
+                            "target_feature_merge_scale"
+                        ]:
+                            name = (
+                                str(rotations_count).replace(".", "")
+                                + "r"
+                                + str(rotation_step).replace(".", "")
+                                + "-rp"
+                                + str(rotation_penalty).replace(".", "")
+                                + "su"
+                                + str(score_upscale).replace(".", "")
+                                + "wi"
+                                + str(window_influence).replace(".", "")
+                                + "tfms"
+                                + str(target_feature_merge_scale).replace(".", "")
+                            )
+
+                            results[name] = {
+                                "window_influence": window_influence,
+                                "score_upscale": score_upscale,
+                                "rotation_penalty": rotation_penalty,
+                                "rotation_step": rotation_step,
+                                "rotations_count": rotations_count,
+                                "target_feature_merge_scale": target_feature_merge_scale,
+                            }
+    return results
+
+
 def create_extended_eval_kwargs():
     params = {
         "window_influence": [0.35, 0.45],
@@ -1645,16 +1690,16 @@ def run_search_small(device_id=0, total_devices=4):
 
     def create_models(eval_kwargs):
         result = []
-        for feature_blocks in [1, 3]:
+        for feature_blocks in [1]:
             for size in [-1]:
-                for context_amount in [0.1, 0.3]:
+                for context_amount in [0.2, 0.4]:
                     for lr in [0.00001, 0.000002]:
                         for r_pos in [4, 1]:
                             target_size = [127, 127] if size == 1 else [-1, -1]
                             search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
-                                "z1-b"
+                                "x1-b"
                                 + str(feature_blocks)
                                 + ("-us" if size == 1 else "-os")
                                 + "-c"
@@ -1672,7 +1717,7 @@ def run_search_small(device_id=0, total_devices=4):
                                         target_size=target_size,
                                         search_size=search_size,
                                         context_amount=context_amount,
-                                        train_steps=64000,
+                                        train_steps=128000,
                                         save_step=2000,
                                         loads=[
                                             2000,
@@ -1680,11 +1725,13 @@ def run_search_small(device_id=0, total_devices=4):
                                             16000,
                                             32000,
                                             64000,
+                                            128000,
                                         ],
                                         lr=lr,
                                         r_pos=r_pos,
-                                        search_type="a+4",
-                                        target_type="original",
+                                        search_type="big",
+                                        target_type="normal",
+                                        augment=False,
                                     ),
                                     eval_kwargs,
                                 )
@@ -1712,16 +1759,16 @@ def run_search_small_1(device_id=0, total_devices=4):
 
     def create_models(eval_kwargs):
         result = []
-        for feature_blocks in [1, 3]:
+        for feature_blocks in [1]:
             for size in [-1]:
-                for context_amount in [0.1, 0.3]:
+                for context_amount in [0.2, 0.4]:
                     for lr in [0.00001, 0.000002]:
                         for r_pos in [8, 16]:
                             target_size = [127, 127] if size == 1 else [-1, -1]
                             search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
-                                "z1-b"
+                                "x1-b"
                                 + str(feature_blocks)
                                 + ("-us" if size == 1 else "-os")
                                 + "-c"
@@ -1739,7 +1786,7 @@ def run_search_small_1(device_id=0, total_devices=4):
                                         target_size=target_size,
                                         search_size=search_size,
                                         context_amount=context_amount,
-                                        train_steps=64000,
+                                        train_steps=128000,
                                         save_step=2000,
                                         loads=[
                                             2000,
@@ -1747,11 +1794,13 @@ def run_search_small_1(device_id=0, total_devices=4):
                                             16000,
                                             32000,
                                             64000,
+                                            128000,
                                         ],
                                         lr=lr,
                                         r_pos=r_pos,
-                                        search_type="a+4",
-                                        target_type="original",
+                                        search_type="big",
+                                        target_type="normal",
+                                        augment=False,
                                     ),
                                     eval_kwargs,
                                 )
@@ -1779,16 +1828,16 @@ def run_search_small_2(device_id=0, total_devices=4):
 
     def create_models(eval_kwargs):
         result = []
-        for feature_blocks in [1, 3]:
+        for feature_blocks in [1]:
             for size in [-1]:
-                for context_amount in [0.2, 0.4]:
+                for context_amount in [-0.2]:
                     for lr in [0.00001, 0.000002]:
-                        for r_pos in [8, 16]:
+                        for r_pos in [8, 4, 1]:
                             target_size = [127, 127] if size == 1 else [-1, -1]
                             search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
-                                "z1-b"
+                                "x1-b"
                                 + str(feature_blocks)
                                 + ("-us" if size == 1 else "-os")
                                 + "-c"
@@ -1806,7 +1855,7 @@ def run_search_small_2(device_id=0, total_devices=4):
                                         target_size=target_size,
                                         search_size=search_size,
                                         context_amount=context_amount,
-                                        train_steps=64000,
+                                        train_steps=128000,
                                         save_step=2000,
                                         loads=[
                                             2000,
@@ -1814,11 +1863,13 @@ def run_search_small_2(device_id=0, total_devices=4):
                                             16000,
                                             32000,
                                             64000,
+                                            128000,
                                         ],
                                         lr=lr,
                                         r_pos=r_pos,
-                                        search_type="a+4",
-                                        target_type="original",
+                                        search_type="big",
+                                        target_type="normal",
+                                        augment=False,
                                     ),
                                     eval_kwargs,
                                 )
@@ -1846,16 +1897,16 @@ def run_search_small_3(device_id=0, total_devices=4):
 
     def create_models(eval_kwargs):
         result = []
-        for feature_blocks in [1, 3]:
+        for feature_blocks in [1]:
             for size in [-1]:
                 for context_amount in [0.2, 0.4]:
-                    for lr in [0.00001, 0.000002]:
+                    for lr in [0.0001]:
                         for r_pos in [4, 1]:
                             target_size = [127, 127] if size == 1 else [-1, -1]
                             search_size = [255, 255] if size == 1 else [-1, -1]
 
                             name = (
-                                "z1-b"
+                                "x2-b"
                                 + str(feature_blocks)
                                 + ("-us" if size == 1 else "-os")
                                 + "-c"
@@ -1873,7 +1924,7 @@ def run_search_small_3(device_id=0, total_devices=4):
                                         target_size=target_size,
                                         search_size=search_size,
                                         context_amount=context_amount,
-                                        train_steps=64000,
+                                        train_steps=128000,
                                         save_step=2000,
                                         loads=[
                                             2000,
@@ -1881,11 +1932,13 @@ def run_search_small_3(device_id=0, total_devices=4):
                                             16000,
                                             32000,
                                             64000,
+                                            128000,
                                         ],
                                         lr=lr,
                                         r_pos=r_pos,
-                                        search_type="a+4",
-                                        target_type="original",
+                                        # search_type="big",
+                                        # target_type="normal",
+                                        augment=False,
                                     ),
                                     eval_kwargs,
                                 )
@@ -1906,6 +1959,150 @@ def run_search_small_3(device_id=0, total_devices=4):
         )
         print(result)
 
+
+def run_x3(id=0, total_experiments=4, total_devices=4):
+
+    device_id = id % total_devices
+
+    eval_kwargs = create_selected_eval_kwargs_wi()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1, 2]:
+            for size in [-1]:
+                for context_amount in [0.2, 0.4, 0.3, -0.2]:
+                    for lr in [0.0001]:
+                        for r_pos in [8, 4, 2, 1]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "x3-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=256000,
+                                        save_step=2000,
+                                        loads=[
+                                            256000,
+                                            2000,
+                                            8000,
+                                            16000,
+                                            32000,
+                                            64000,
+                                            128000,
+                                        ],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                        # search_type="big",
+                                        # target_type="normal",
+                                        augment=False,
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_experiments
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def run_x3d(id=0, total_experiments=4, total_devices=4):
+
+    device_id = id % total_devices
+
+    eval_kwargs = create_selected_eval_kwargs_wi()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1, 2]:
+            for size in [-1]:
+                for context_amount in [0.2, 0.4, 0.3, -0.2]:
+                    for lr in [0.0001]:
+                        for r_pos in [8, 4, 2, 1]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "x3d-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=256000,
+                                        save_step=2000,
+                                        loads=[
+                                            256000,
+                                            2000,
+                                            8000,
+                                            16000,
+                                            32000,
+                                            64000,
+                                            128000,
+                                        ],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                        decay_steps=8000,
+                                        # search_type="big",
+                                        # target_type="normal",
+                                        augment=False,
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_experiments
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
 
 
 if __name__ == "__main__":
