@@ -42,8 +42,8 @@ def benchmark_fair_mot():
     sample = Image.open(media_dir + "/000001.jpg")
     samples = [sample for _ in range(batch_size)]
 
-    if os.path.exists(root_dir + "/results.txt"):
-        os.remove(root_dir + "/results.txt")
+    if os.path.exists(root_dir + "/results_fair_mot.txt"):
+        os.remove(root_dir + "/results_fair_mot.txt")
 
     for model_name in models:
         print(f"==== Benchmarking ObjectTracking2DFairMotLearner ({model_name}) ====")
@@ -84,7 +84,7 @@ def benchmark_fair_mot():
         print("Inner FPS =", inner_fps)
         print(yaml.dump({"learner.infer": results1}))
 
-        with open(root_dir + "/results.txt", "a") as f:
+        with open(root_dir + "/results_fair_mot.txt", "a") as f:
             print(f"==== Benchmarking ObjectTracking2DFairMotLearner ({model_name}) ====", file=f)
             # print(f"Inner FPS =", inner_fps, file=f)
             print(yaml.dump({"learner.infer": results1}), file=f)
