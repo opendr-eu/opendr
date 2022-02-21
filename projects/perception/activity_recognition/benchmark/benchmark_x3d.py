@@ -48,18 +48,24 @@ def benchmark_x3d():
     #     "m": 8,
     #     "l": 2,
     # }
-    batch_size = {  # Xavier
-        "xs": 32,
-        "s": 16,
-        "m": 8,
-        "l": 2,
-    }
-    # batch_size = {  # CPU - larger batch sizes don't increase throughput
-    #     "xs": 1,
-    #     "s": 1,
-    #     "m": 1,
-    #     "l": 1,
+    # batch_size = {  # TX2
+    #     "xs": 16,
+    #     "s": 8,
+    #     "m": 4,
+    #     "l": 2,
     # }
+    # batch_size = {  # Xavier
+    #     "xs": 32,
+    #     "s": 16,
+    #     "m": 8,
+    #     "l": 2,
+    # }
+    batch_size = {  # CPU - larger batch sizes don't increase throughput
+        "xs": 1,
+        "s": 1,
+        "m": 1,
+        "l": 1,
+    }
 
     for backbone in ["xs", "s", "m", "l"]:
         print(f"==== Benchmarking X3DLearner ({backbone}) ====")

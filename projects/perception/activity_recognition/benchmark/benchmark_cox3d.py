@@ -31,7 +31,6 @@ logger.setLevel("DEBUG")
 def benchmark_cox3d():
     temp_dir = "./projects/perception/activity_recognition/benchmark/tmp"
 
-    batch_size = 8
     num_runs = 100
 
     # As found in src/opendr/perception/activity_recognition/x3d/hparams
@@ -49,18 +48,24 @@ def benchmark_cox3d():
     #     "m": 64,
     #     "l": 8,
     # }
-    batch_size = {  # Xavier
-        "xs": 64,
-        "s": 32,
-        "m": 16,
-        "l": 8,
-    }
-    # batch_size = {  # CPU - larger batch sizes don't increase throughput
-    #     "xs": 1,
-    #     "s": 1,
-    #     "m": 1,
-    #     "l": 1,
+    # batch_size = {  # TX2
+    #     "xs": 32,
+    #     "s": 16,
+    #     "m": 8,
+    #     "l": 4,
     # }
+    # batch_size = {  # Xavier
+    #     "xs": 64,
+    #     "s": 32,
+    #     "m": 16,
+    #     "l": 8,
+    # }
+    batch_size = {  # CPU - larger batch sizes don't increase throughput
+        "xs": 1,
+        "s": 1,
+        "m": 1,
+        "l": 1,
+    }
 
     for backbone in ["s", "m", "l"]:
         print(f"==== Benchmarking CoX3DLearner ({backbone}) ====")
