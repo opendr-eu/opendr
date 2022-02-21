@@ -65,12 +65,12 @@ def benchmark_fair_mot():
     sample = next(data_generator)
     samples = [next(data_generator) for _ in range(batch_size)]
 
-    if os.path.exists(root_dir + "/results.txt"):
-        os.remove(root_dir + "/results.txt")
+    if os.path.exists(root_dir + "/results_deep_sort.txt"):
+        os.remove(root_dir + "/results_deep_sort.txt")
 
     for model_name in models:
         print(
-            f"==== Benchmarking ObjectTracking2DFairMotLearner ({model_name}) ===="
+            f"==== Benchmarking ObjectTracking2DDeepSortLearner ({model_name}) ===="
         )
 
         learner = ObjectTracking2DDeepSortLearner(
@@ -109,9 +109,9 @@ def benchmark_fair_mot():
         print("Inner FPS =", inner_fps)
         print(yaml.dump({"learner.infer": results1}))
 
-        with open(root_dir + "/results.txt", "a") as f:
+        with open(root_dir + "/results_deep_sort.txt", "a") as f:
             print(
-                f"==== Benchmarking ObjectTracking2DFairMotLearner ({model_name}) ====",
+                f"==== Benchmarking ObjectTracking2DDeepSortLearner ({model_name}) ====",
                 file=f,
             )
             print(f"Inner FPS =", inner_fps, file=f)
