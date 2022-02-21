@@ -17,46 +17,36 @@ import yaml
 import torch
 import logging
 from pytorch_benchmark import benchmark
-from opendr.perception.object_tracking_2d import ObjectTracking2DFairMotLearner
-from opendr.engine.data import Image
+from opendr.perception.object_tracking_3d import ObjectTracking3DAb3dmotLearner, KittiTrackingDatasetIterator
+from opendr.engine.datasets import PointCloudsDatasetIterator
 
 logger = logging.getLogger("benchmark")
 logging.basicConfig()
 logger.setLevel("DEBUG")
 
 
-def benchmark_fair_mot():
-    root_dir = "./projects/perception/object_tracking_2d/benchmark"
-    temp_dir = root_dir + "/tmp"
-    models_dir = root_dir + "/models"
+def benchmark_ab3dmot():
+    root_dir = "./projects/perception/object_tracking_3d/benchmark"
     media_dir = root_dir + "/media"
     num_runs = 100
 
     models = [
-        "crowdhuman_dla34",
-        "fairmot_dla34",
+        "ab3dmot",
     ]
 
-    batch_size = 2
+    batch_size = 10
 
-    sample = Image.open(media_dir + "/000001.jpg")
-    samples = [sample for _ in range(batch_size)]
+    dataset = KittiTrackingDatasetIterator(media_dir, media_dir, "tracking")
+    sample = dataset[0][0][0]
+    samples = dataset[0][0][:10]
 
-    if os.path.exists(root_dir + "/results_fair_mot.txt"):
-        os.remove(root_dir + "/results_fair_mot.txt")
+    if os.path.exists(root_dir + "/results_ab3dmot.txt"):
+        os.remove(root_dir + "/results_ab3dmot.txt")
 
     for model_name in models:
-        print(f"==== Benchmarking ObjectTracking2DFairMotLearner ({model_name}) ====")
+        print(f"==== Benchmarking ObjectTracking3DAb3dmotLearner ({model_name}) ====")
 
-        learner = ObjectTracking2DFairMotLearner(
-            temp_path=temp_dir,
-        )
-    
-        if model_name is not None and not os.path.exists(
-            models_dir + "/" + model_name
-        ):
-            learner.download(model_name, models_dir)
-        learner.load(models_dir + "/" + model_name, verbose=True)
+        learner = ObjectTracking3DAb3dmotLearner()
 
         def get_device_fn(*args):
             nonlocal learner
@@ -84,8 +74,8 @@ def benchmark_fair_mot():
         print("Inner FPS =", inner_fps)
         print(yaml.dump({"learner.infer": results1}))
 
-        with open(root_dir + "/results_fair_mot.txt", "a") as f:
-            print(f"==== Benchmarking ObjectTracking2DFairMotLearner ({model_name}) ====", file=f)
+        with open(root_dir + "/results_ab3dmot.txt", "a") as f:
+            print(f"==== Benchmarking ObjectTracking3DAb3dmotLearner ({model_name}) ====", file=f)
             print(f"Inner FPS =", inner_fps, file=f)
             print(yaml.dump({"learner.infer": results1}), file=f)
             print("\n\n", file=f)
@@ -98,4 +88,4 @@ def benchmark_fair_mot():
 
 
 if __name__ == "__main__":
-    benchmark_fair_mot()
+    benchmark_ab3dmot()
