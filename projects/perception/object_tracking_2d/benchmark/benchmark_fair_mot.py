@@ -17,46 +17,38 @@ import yaml
 import torch
 import logging
 from pytorch_benchmark import benchmark
-from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
-from opendr.engine.datasets import PointCloudsDatasetIterator
+from opendr.perception.object_tracking_2d import ObjectTracking2DFairMotLearner
+from opendr.engine.data import Image
 
 logger = logging.getLogger("benchmark")
 logging.basicConfig()
 logger.setLevel("DEBUG")
 
 
-def benchmark_detection():
-    root_dir = "./projects/perception/object_detection_3d/benchmark"
+def benchmark_fair_mot():
+    root_dir = "./projects/perception/object_tracking_2d/benchmark"
     temp_dir = root_dir + "/tmp"
-    configs_dir = root_dir + "/configs"
     models_dir = root_dir + "/models"
     media_dir = root_dir + "/media"
     num_runs = 100
 
     models = [
-        ["pointpillars_car_xyres_16", "pointpillars_car_xyres_16.proto"],
-        ["pointpillars_ped_cycle_xyres_16", "pointpillars_ped_cycle_xyres_16.proto"],
-        ["tanet_car_xyres_16", "tanet_car_xyres_16.proto"],
-        ["tanet_car_xyres_16", "tanet_car_xyres_16_near_0.24.proto"],
-        ["tanet_ped_cycle_xyres_16", "tanet_ped_cycle_xyres_16.proto"],
+        "crowdhuman_dla34",
+        "fairmot_dla34",
     ]
 
     batch_size = 2
 
-    dataset = PointCloudsDatasetIterator(media_dir)
-    sample = dataset[0]
-    samples = [dataset[0] for _ in range(batch_size)]
+    sample = Image.open(media_dir + "/000001.jpg")
+    samples = [sample for _ in range(batch_size)]
 
     if os.path.exists(root_dir + "/results.txt"):
         os.remove(root_dir + "/results.txt")
 
-    for model_name, config in models:
-        print(f"==== Benchmarking VoxelObjectDetection3DLearner ({config}) ====")
+    for model_name in models:
+        print(f"==== Benchmarking ObjectTracking2DFairMotLearner ({model_name}) ====")
 
-        config_path = configs_dir + "/" + config
-
-        learner = VoxelObjectDetection3DLearner(
-            config_path,
+        learner = ObjectTracking2DFairMotLearner(
             temp_path=temp_dir,
         )
     
@@ -87,14 +79,14 @@ def benchmark_detection():
             batch_size=batch_size,
         )
 
-        inner_fps = learner.model._total_inference_count / (learner.model._total_forward_time + learner.model._total_postprocess_time)
+        inner_fps = learner.infers_count / (learner.infers_time)
 
         print("Inner FPS =", inner_fps)
         print(yaml.dump({"learner.infer": results1}))
 
         with open(root_dir + "/results.txt", "a") as f:
-            print(f"==== Benchmarking VoxelObjectDetection3DLearner ({config}) ====", file=f)
-            print("Inner FPS =", inner_fps, file=f)
+            print(f"==== Benchmarking ObjectTracking2DFairMotLearner ({model_name}) ====", file=f)
+            # print(f"Inner FPS =", inner_fps, file=f)
             print(yaml.dump({"learner.infer": results1}), file=f)
             print("\n\n", file=f)
 
@@ -106,4 +98,4 @@ def benchmark_detection():
 
 
 if __name__ == "__main__":
-    benchmark_detection()
+    benchmark_fair_mot()
