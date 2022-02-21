@@ -25,7 +25,7 @@ logging.basicConfig()
 logger.setLevel("DEBUG")
 
 
-def benchmark_detection():
+def benchmark_voxel():
     root_dir = "./projects/perception/object_detection_3d/benchmark"
     temp_dir = root_dir + "/tmp"
     configs_dir = root_dir + "/configs"
@@ -47,8 +47,8 @@ def benchmark_detection():
     sample = dataset[0]
     samples = [dataset[0] for _ in range(batch_size)]
 
-    if os.path.exists(root_dir + "/results.txt"):
-        os.remove(root_dir + "/results.txt")
+    if os.path.exists(root_dir + "/results_voxel.txt"):
+        os.remove(root_dir + "/results_voxel.txt")
 
     for model_name, config in models:
         print(f"==== Benchmarking VoxelObjectDetection3DLearner ({config}) ====")
@@ -92,7 +92,7 @@ def benchmark_detection():
         print("Inner FPS =", inner_fps)
         print(yaml.dump({"learner.infer": results1}))
 
-        with open(root_dir + "/results.txt", "a") as f:
+        with open(root_dir + "/results_voxel.txt", "a") as f:
             print(f"==== Benchmarking VoxelObjectDetection3DLearner ({config}) ====", file=f)
             print("Inner FPS =", inner_fps, file=f)
             print(yaml.dump({"learner.infer": results1}), file=f)
@@ -106,4 +106,4 @@ def benchmark_detection():
 
 
 if __name__ == "__main__":
-    benchmark_detection()
+    benchmark_voxel()
