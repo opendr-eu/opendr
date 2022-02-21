@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
 from opendr.engine.learners import Learner
 from opendr.engine.datasets import DatasetIterator
 from opendr.engine.target import BoundingBox3DList
@@ -48,6 +49,9 @@ class ObjectTracking3DAb3dmotLearner(Learner):
         self.covariance_matrix = covariance_matrix
         self.process_uncertainty_matrix = process_uncertainty_matrix
         self.iou_threshold = iou_threshold
+        
+        self.infers_count = 0
+        self.infers_time = 0
 
         self.__create_model()
 
@@ -126,8 +130,15 @@ class ObjectTracking3DAb3dmotLearner(Learner):
         results = []
 
         for box_list in bounding_boxes_3d_list:
+            
+            t0 = time.time()
+
             result = self.model.update(box_list)
             results.append(result)
+            
+            t0 = time.time() - t0
+            self.infers_count += 1
+            self.infers_time += t0
 
         if is_single_input:
             results = results[0]
