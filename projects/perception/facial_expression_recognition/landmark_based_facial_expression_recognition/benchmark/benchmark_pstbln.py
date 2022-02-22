@@ -57,10 +57,10 @@ def benchmark_pstbln(args):
 
     batch_size = 1
     num_runs = 100
-    C = 3
+    C = 2
     T = num_frames
     V = num_point
-    M = 2
+    M = 1
     data = torch.randn(batch_size, C, T, V, M)
     samples = data
 
@@ -92,7 +92,7 @@ def benchmark_pstbln(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda:2")
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
     parser.add_argument('--method', type=str, default='pstbln_afew',
                         help='action detection method')
     parser.add_argument('--dataset_name', type=str, default='afew',
