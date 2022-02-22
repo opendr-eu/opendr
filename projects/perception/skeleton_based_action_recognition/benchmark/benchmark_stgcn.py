@@ -63,10 +63,8 @@ def benchmark_stgcn(args):
     T = 300
     V = 25
     M = 2
-    data = np.zeros((batch_size, C, T, V, M))
-    data = SkeletonSequence(data)
-    data = torch.from_numpy(data.numpy())
-    # data = torch.randn(batch_size, C, T, V, M)
+    # data = np.zeros((batch_size, C, T, V, M))
+    data = torch.randn(batch_size, C, T, V, M)
     sample = [data[0:1]]
     samples = [data[0:1] for _ in range(batch_size)]
     # samples = [SkeletonSequence(data[v]) for v in range(batch_size)]
