@@ -65,8 +65,11 @@ def benchmark_stgcn(args):
     M = 2
     data = np.zeros((batch_size, C, T, V, M))
     # data = torch.randn(batch_size, C, T, V, M)
-    sample = SkeletonSequence(data[0])
-    samples = [SkeletonSequence(data[v]) for v in range(batch_size)]
+    sample = SkeletonSequence(data[0:1])
+    sample = torch.from_numpy(sample.numpy())
+    samples = SkeletonSequence(data)
+    samples = torch.from_numpy(samples.numpy())
+    # samples = [SkeletonSequence(data[v]) for v in range(batch_size)]
 
     def get_device_fn(*args):
         nonlocal learner
