@@ -57,7 +57,7 @@ def benchmark_stgcn(args):
     if args.device == 'cuda':
         learner.model.cuda()
 
-    batch_size = 100
+    batch_size = 1
     num_runs = 100
     C = 3
     T = 300
