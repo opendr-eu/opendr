@@ -33,7 +33,7 @@ logger.setLevel("DEBUG")
 
 
 def benchmark_stgcn(args):
-    results_dir = "./projects/perception/skeleton_based_action_recognition/benchmark/results"
+    results_dir = "./results"
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
     device = args.device
