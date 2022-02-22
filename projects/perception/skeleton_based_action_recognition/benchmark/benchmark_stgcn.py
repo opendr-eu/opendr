@@ -64,11 +64,11 @@ def benchmark_stgcn(args):
     V = 25
     M = 2
     data = np.zeros((batch_size, C, T, V, M))
+    data = SkeletonSequence(data)
+    data = torch.from_numpy(data.numpy())
     # data = torch.randn(batch_size, C, T, V, M)
-    sample = SkeletonSequence(data[0:1])
-    sample = torch.from_numpy(sample.numpy())
-    samples = SkeletonSequence(data)
-    samples = torch.from_numpy(samples.numpy())
+    sample = [data[0:1]]
+    samples = [data[0:1] for _ in range(batch_size)]
     # samples = [SkeletonSequence(data[v]) for v in range(batch_size)]
 
     def get_device_fn(*args):
