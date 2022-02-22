@@ -63,10 +63,7 @@ def benchmark_stgcn(args):
     T = 300
     V = 25
     M = 2
-    # data = np.zeros((batch_size, C, T, V, M))
     data = torch.randn(batch_size, C, T, V, M)
-    sample = None # data[0:1] # [data[0:1]]
-    # samples = [data[0:1] for _ in range(batch_size)]
     samples = data
 
     def get_device_fn(*args):
@@ -79,7 +76,7 @@ def benchmark_stgcn(args):
     print("== Benchmarking learner.infer ==")
     results1 = benchmark(model=learner.infer,
                          sample=samples,
-                         sample_with_batch_size1=sample,
+                         sample_with_batch_size1=None,
                          num_runs=num_runs,
                          get_device_fn=get_device_fn,
                          transfer_to_device_fn=transfer_to_device_fn,
@@ -91,7 +88,7 @@ def benchmark_stgcn(args):
         print(yaml.dump({"learner.infer": results1}), file=f)
         print("\n\n", file=f)
         print(f"== Benchmarking model directly ==", file=f)
-        results2 = benchmark(learner.model, sample, num_runs=num_runs, print_fn=print)
+        results2 = benchmark(learner.model, data, num_runs=num_runs, print_fn=print)
         print(yaml.dump({"learner.model.forward": results2}))
 
 
