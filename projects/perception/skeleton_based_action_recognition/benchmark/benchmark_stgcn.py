@@ -23,6 +23,8 @@ import logging
 import argparse
 from opendr.perception.skeleton_based_action_recognition import ProgressiveSpatioTemporalGCNLearner
 from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGCNLearner
+from opendr.engine.data import SkeletonSequence
+
 
 
 logger = logging.getLogger("benchmark")
@@ -62,9 +64,9 @@ def benchmark_stgcn(args):
     V = 25
     M = 2
     # seq = np.zeros((batch_size, C, T, V, M))
-    seq = torch.randn(batch_size, C, T, V, M)
-    sample = seq[0]
-    samples = [seq[0] for _ in range(batch_size)]
+    data = torch.randn(batch_size, C, T, V, M)
+    sample = SkeletonSequence(data[0])
+    samples = [SkeletonSequence(data[v]) for v in range(batch_size)]
 
     def get_device_fn(*args):
         nonlocal learner
