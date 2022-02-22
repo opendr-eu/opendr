@@ -20,9 +20,7 @@ import logging
 
 # opendr imports
 import argparse
-from opendr.perception.skeleton_based_action_recognition import ProgressiveSpatioTemporalGCNLearner
-from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGCNLearner
-
+from opendr.perception.facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
 
 
 logger = logging.getLogger("benchmark")
@@ -30,28 +28,18 @@ logging.basicConfig()
 logger.setLevel("DEBUG")
 
 
-def benchmark_stgcn(args):
+def benchmark_pstbln(args):
     results_dir = "./results"
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
     device = args.device
-    if args.method == 'pstgcn':
-        print(f"==== Benchmarking pstgcn ({args.dataset_name}) ====")
-        if args.dataset_name == 'nturgbd_cv':
-            learner = ProgressiveSpatioTemporalGCNLearner(device=args.device, dataset_name='nturgbd_cv',
-                                                                    topology=[5, 4, 5, 2, 3, 4, 3, 4], in_channels=3,
-                                                                    num_point=25, graph_type='ntu')
-        elif args.dataset_name == 'nturgbd_cs':
-            learner = ProgressiveSpatioTemporalGCNLearner(device=args.device, dataset_name='nturgbd_cs',
-                                                                    topology=[5, 4, 3, 5, 3, 5, 7, 4], in_channels=3,
-                                                                    num_point=25, graph_type='ntu')
-    else:
-        print(f"==== Benchmarking {args.method} ({args.dataset_name}) ====")
-        learner = SpatioTemporalGCNLearner(device=args.device, dataset_name='nturgbd_cv',
-                                           method_name=args.method, in_channels=3, num_point=25,
-                                           graph_type='ntu', num_class=60, num_subframes=100)
-
+    print(f"==== Benchmarking {args.method} ({args.dataset_name}) ====")
+    learner = ProgressiveSpatioTemporalBLNLearner(device=device, dataset_name='afew',
+                                                  num_class=num_class,
+                                                  num_point=num_point, num_person=1, in_channels=2,
+                                                  blocksize=5, topology=[15, 10, 15, 5, 5, 10])
     learner.init_model()
+
     if args.device == 'cuda':
         learner.model.cuda()
 
@@ -92,12 +80,26 @@ def benchmark_stgcn(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
-    parser.add_argument('--method', type=str, default='stgcn',
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda:2")
+    parser.add_argument('--method', type=str, default='pstbln_afew',
                         help='action detection method')
-    parser.add_argument('--dataset_name', type=str, default='nturgbd_cv',
+    parser.add_argument('--dataset_name', type=str, default='afew',
                         help='action detection method')
 
     args = parser.parse_args()
-    benchmark_stgcn(args)
+    device = args.device
+    if args.method == 'pstbln_ck+':
+        num_point = 303
+        num_class = 7
+        num_frames = 5
+    elif args.method == 'pstbln_casia':
+        num_point = 309
+        num_class = 6
+        num_frames = 5
+    elif args.method == 'pstbln_afew':
+        num_point = 312
+        num_class = 7
+        num_frames = 150
+
+    benchmark_pstbln(args)
 
