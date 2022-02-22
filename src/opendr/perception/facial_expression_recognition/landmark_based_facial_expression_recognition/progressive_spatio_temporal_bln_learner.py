@@ -55,7 +55,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
     def __init__(self, lr=1e-1, batch_size=128, optimizer_name='sgd', lr_schedule='',
                  checkpoint_after_iter=0, checkpoint_load_iter=0, temp_path='temp',
                  device='cuda', num_workers=32, epochs=400, experiment_name='pstbln_casia',
-                 device_indices=[2], val_batch_size=128, drop_after_epoch=[400],
+                 device_indices=[0], val_batch_size=128, drop_after_epoch=[400],
                  start_epoch=0, dataset_name='CASIA', num_class=6, num_point=309, num_person=1, in_channels=2,
                  blocksize=5, num_blocks=100, num_layers=10, topology=[],
                  layer_threshold=1e-4, block_threshold=1e-4):
