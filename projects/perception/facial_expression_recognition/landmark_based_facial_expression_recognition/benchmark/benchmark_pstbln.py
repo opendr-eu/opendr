@@ -56,7 +56,7 @@ def benchmark_pstbln(args):
         learner.model.cuda()
 
     batch_size = 1
-    num_runs = 100
+    num_runs = 1
     C = 2
     T = num_frames
     V = num_point
