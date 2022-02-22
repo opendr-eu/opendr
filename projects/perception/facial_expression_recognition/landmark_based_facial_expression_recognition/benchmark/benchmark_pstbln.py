@@ -72,7 +72,7 @@ def benchmark_pstbln(args):
         return sample
 
     print("== Benchmarking learner.infer ==")
-    results1 = benchmark(model=learner.infer,
+    results1 = benchmark(model=learner.infer(monte_carlo_dropout=False),
                          sample=samples,
                          sample_with_batch_size1=None,
                          num_runs=num_runs,
