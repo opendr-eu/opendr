@@ -33,6 +33,18 @@ def benchmark_pstbln(args):
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
     device = args.device
+    if args.method == 'pstbln_ck+':
+        num_point = 303
+        num_class = 7
+        num_frames = 5
+    elif args.method == 'pstbln_casia':
+        num_point = 309
+        num_class = 6
+        num_frames = 5
+    elif args.method == 'pstbln_afew':
+        num_point = 312
+        num_class = 7
+        num_frames = 150
     print(f"==== Benchmarking {args.method} ({args.dataset_name}) ====")
     learner = ProgressiveSpatioTemporalBLNLearner(device=device, dataset_name='afew',
                                                   num_class=num_class,
@@ -46,8 +58,8 @@ def benchmark_pstbln(args):
     batch_size = 1
     num_runs = 100
     C = 3
-    T = 300
-    V = 25
+    T = num_frames
+    V = num_point
     M = 2
     data = torch.randn(batch_size, C, T, V, M)
     samples = data
@@ -87,19 +99,6 @@ if __name__ == '__main__':
                         help='action detection method')
 
     args = parser.parse_args()
-    device = args.device
-    if args.method == 'pstbln_ck+':
-        num_point = 303
-        num_class = 7
-        num_frames = 5
-    elif args.method == 'pstbln_casia':
-        num_point = 309
-        num_class = 6
-        num_frames = 5
-    elif args.method == 'pstbln_afew':
-        num_point = 312
-        num_class = 7
-        num_frames = 150
 
     benchmark_pstbln(args)
 
