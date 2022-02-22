@@ -538,7 +538,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         np.save(os.path.join(self.parent_dir, 'Topology.npy'), self.topology)
         return self.topology
 
-    def infer(self, facial_landmarks_batch, monte_carlo_dropout=True, mcdo_repeats=100):
+    def infer(self, facial_landmarks_batch, monte_carlo_dropout=False, mcdo_repeats=100):
         """
         This method performs inference on the batch provided.
         :param facial_landmarks_batch: Object that holds a batch of data to run inference on.

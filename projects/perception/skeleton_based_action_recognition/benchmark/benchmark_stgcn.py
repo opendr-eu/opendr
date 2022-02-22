@@ -23,8 +23,6 @@ import argparse
 from opendr.perception.skeleton_based_action_recognition import ProgressiveSpatioTemporalGCNLearner
 from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGCNLearner
 
-
-
 logger = logging.getLogger("benchmark")
 logging.basicConfig()
 logger.setLevel("DEBUG")
