@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.0-devel
+FROM nvidia/cuda:11.1-devel
 
 # Install dependencies
 RUN apt-get update && \

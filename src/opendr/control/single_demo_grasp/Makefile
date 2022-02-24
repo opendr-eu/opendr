@@ -17,9 +17,9 @@ MAKECMDGOALS = release
 endif
 
 ifeq ($(OPENDR_DEVICE),gpu)
-DETECTRON_WHEEL=https://dl.fbaipublicfiles.com/detectron2/wheels/cu110/torch1.7/index.html
+DETECTRON_WHEEL=https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.8/index.html
 else
-DETECTRON_WHEEL=https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.7/index.html
+DETECTRON_WHEEL=https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.8/index.html
 endif
 
 .PHONY: release install_compilation_dependencies install_runtime_dependencies
