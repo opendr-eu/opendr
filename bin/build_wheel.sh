@@ -1,19 +1,21 @@
 #!/bin/bash
 
-# Build all OpenDR dependecies
-./bin/install.sh
+# Fetch any submodules missing
+git submodule update --init --recursive
 
-# Activate OpenDR
-source ./bin/activate.sh
+# Clean existing packages
+rm dist/*
+rm src/*egg-info -rf
 
-# Prepare requirements.txt for wheel distributions
-pip3 freeze > requirements.txt
+pip install cython numpy
 
-# Remove detectron and git repositories (installation not supported through PyPI)
-sed -i '/detectron2/d' requirements.txt
-sed -i '/git/d' requirements.txt
-sed -i '/pkg_resources/d' requirements.txt
-sed -i '/auditwheel/d' requirements.txt
+# Build OpenDR packages
+while read p; do
+  echo "Building wheel for $p"
+  echo "exec(open('src/opendr/_setup.py').read())" > setup.py
+  echo "build_package('$p')" >> setup.py
+  python3 setup.py sdist
+done < packages.txt
 
-# Build binary wheel and repair it
-python3 setup.py sdist
+rm setup.py
+rm MANIFEST.in
