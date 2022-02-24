@@ -35,8 +35,7 @@ pip3 install setuptools configparser
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' \
             && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
 
-
-# If working on GPU install GPU dependencies beforehand
+# If working on GPU install GPU dependencies as needed
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
   echo "[INFO] Installing  mxnet-cu111==1.8.0. You can override this later if you are using a different CUDA version."
   pip3 install mxnet-cu111==1.8.0
@@ -47,7 +46,6 @@ fi
 # Build OpenDR
 make install_compilation_dependencies
 make install_runtime_dependencies
-
 
 make libopendr
 
