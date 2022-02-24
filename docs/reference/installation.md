@@ -55,18 +55,8 @@ make unittest
 make ctests
 ```
 
-If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 10.2](https://developer.nvidia.com/cuda-10.2-download-archive).
-To do so, you can follow these steps:
-```bash
-sudo apt install gcc-8 g++-8 gcc-9 g++-9
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8 --slave /usr/bin/g++ g++ /usr/bin/g++-8
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 9 --slave /usr/bin/g++ g++ /usr/bin/g++-9
-echo "Please switch to GCC 8"
-sudo update-alternatives --config gcc
-```
-Then, you can install CUDA, along CuDNN.
-You can also refer to this [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda) for installation instructions.
-Note that NVIDIA 30xx GPUs may not be fully supported, due to CUDA limitations.
+If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 11.1](https://developer.nvidia.com/cuda-11.1.0-download-archive), along with [CuDNN](https://developer.nvidia.com/cudnn).
+
 
 # Installing using *pip*
 
@@ -95,14 +85,16 @@ This is not needed for newer CPUs.
 The same OpenDR package is used for both CPU and GPU systems. 
 However, you need to have the appropriate GPU-enabled dependencies installed to use a GPU with OpenDR.
 If you plan to use GPU, then you should first install [mxnet-cuda](https://mxnet.apache.org/versions/1.4.1/install/index.html?platform=Linux&language=Python&processor=CPU) and [detectron2](https://detectron2.readthedocs.io/en/latest/tutorials/install.html).
-For example, if you stick with the default PyTorch version (1.7) and use CUDA10.2, then you can simply follow:
+For example, if you stick with the default PyTorch version (1.8) and use CUDA11.1, then you can simply follow:
 ```bash
 sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev 
 python3 -m venv venv
 source venv/bin/activate
 pip install wheel
+pip3 install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+python3 -m pip install detectron2==0.5 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.8/index.html
 pip install detectron2==0.5 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.7/index.html
-pip install mxnet-cu102==1.8.0 
+pip3 install mxnet-cu111==1.8.0
 pip install opendr-toolkit-engine
 pip install opendr-toolkit
 ```
