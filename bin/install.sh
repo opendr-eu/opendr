@@ -40,6 +40,8 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
   echo "[INFO] Installing  mxnet-cu110==1.8.0. You can override this later if you are using a different CUDA version."
   pip3 install mxnet-cu110==1.8.0
+  echo "[INFO] Installing torch==1.7.1+cu110. You can override this later if you are using a different CUDA version."
+  pip3 install torch==1.7.1+cu110 torchvision==0.8.2+cu110  -f https://download.pytorch.org/whl/torch_stable.html
 fi
 
 # Build OpenDR
