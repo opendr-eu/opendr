@@ -336,7 +336,7 @@ def stack_images(images, mode="horizontal"):
             pad = delta // 2
 
             images[i] = np.pad(
-                images[i], [(pad, pad + delta % 2), (0, 0), (0, 0)]
+                images[i], [(pad, pad + delta % 2), (1, 1), (0, 0)], constant_values=(((255, 0, 255), (255, 0, 255)), ((255, 0, 255), (255, 0, 255)), (0, 0))
             )
 
         return cv2.hconcat(images)
@@ -348,10 +348,11 @@ def stack_images(images, mode="horizontal"):
             pad = delta // 2
 
             images[i] = np.pad(
-                images[i], [(0, 0), (pad, pad + delta % 2), (0, 0)]
+                images[i], [(1, 1), (pad, pad + delta % 2), (0, 0)], constant_values=(((255, 0, 255), (255, 0, 255)), ((255, 0, 255), (255, 0, 255)), (0, 0))
             )
 
         return cv2.vconcat(images)
+
 
 class Metric:
     def __init__(self, value=None) -> None:

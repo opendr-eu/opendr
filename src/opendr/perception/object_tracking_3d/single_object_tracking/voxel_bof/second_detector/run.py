@@ -147,17 +147,20 @@ def tracking_boxes_to_lidar(
 
 def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
 
-    pi = pseudo_image.mean(axis=0).detach().cpu().numpy()
+    if isinstance(pseudo_image, np.ndarray):
+        rgb_pi = pseudo_image
+    else:
+        pi = pseudo_image.mean(axis=0).detach().cpu().numpy()
 
-    grayscale_pi = (
-        (pseudo_image.mean(axis=0) * 255 / pseudo_image.mean(axis=0).max())
-        .detach()
-        .cpu()
-        .numpy()
-        .astype(np.uint8)
-    )
-    rgb_pi = np.stack([grayscale_pi] * 3, axis=-1)
-    rgb_pi[pi < 0, 0] = 0
+        grayscale_pi = (
+            (pseudo_image.mean(axis=0) * 255 / pseudo_image.mean(axis=0).max())
+            .detach()
+            .cpu()
+            .numpy()
+            .astype(np.uint8)
+        )
+        rgb_pi = np.stack([grayscale_pi] * 3, axis=-1)
+        rgb_pi[pi < 0, 0] = 0
 
     for target, color in zip(targets, colors):
 
@@ -178,8 +181,8 @@ def original_target_size_by_object_size(object_size, target_type="normal"):
         return object_size + 5
     elif target_type == "original":
         return object_size
-    elif target_type == "a+1":
-        return object_size + 1
+    elif target_type == "a+4":
+        return object_size + 4
 
 
 def original_search_size_by_target_size(target_size, search_type="normal"):
@@ -322,11 +325,18 @@ def create_target_search_regions(
 
         object_size = (sizes[:, :2] / voxel_size_bev).astype(np.int32)
 
-        sizes_image = original_target_size_by_object_size(object_size, target_type=target_type)
+        sizes_image = original_target_size_by_object_size(
+            object_size, target_type=target_type
+        )
         search_sizes = original_search_size_by_target_size(sizes_image, search_type)
 
         targets, searches = create_targets_and_searches(
-            centers_image, sizes_image, search_sizes, rotations, augment=augment, augment_rotation=augment_rotation
+            centers_image,
+            sizes_image,
+            search_sizes,
+            rotations,
+            augment=augment,
+            augment_rotation=augment_rotation,
         )
         batch_targets.append(targets)
         batch_searches.append(searches)
@@ -420,45 +430,7 @@ def get_rotated_sub_image(pseudo_image, center, size, angle):
         torch.tensor(-angle / np.pi * 180).reshape(1),
         torch.tensor(1).reshape(1),
     ).to(pi.device)
-    img_warped = tgm.warp_affine(pi, M, dsize=(pi.shape[2], pi.shape[3]))
-    # draw_pseudo_image(pi[0], "./plots/pi.png")
-    # draw_pseudo_image(pi[0], "./plots/pi1.png", [[size / 2, np.array([2, 2])], [center, np.array([1, 1])]], [(255, 0, 0), (255, 255, 0)])
-    # draw_pseudo_image(img_warped[0], "./plots/rpi.png")
-    # draw_pseudo_image(
-    #     img_warped[0], "./plots/rpi_c.png", [[center, size]], [(255, 0, 0)]
-    # )
-
-    # theta = torch.tensor(
-    #     cv2.getRotationMatrix2D(
-    #         center=(int(center[1]), int(center[0])), angle=angle / np.pi * 180, scale=1
-    #     ),
-    #     device=pseudo_image.device,
-    #     dtype=torch.float32
-    # )
-
-    # # theta = torch.tensor(
-    # #     [
-    # #         [math.cos(angle), math.sin(-angle), 0],
-    # #         [math.sin(angle), math.cos(angle), 0],
-    # #     ],
-    # #     dtype=torch.float32,
-    # #     device=pseudo_image.device,
-    # # )
-
-    # grid = F.affine_grid(
-    #     theta.unsqueeze(0), pseudo_image.unsqueeze(0).size()
-    # ).to(pseudo_image.device)
-    # output = F.grid_sample(pseudo_image.unsqueeze(0), grid)
-
-    # draw_pseudo_image(pseudo_image, "./plots/pi.png")
-    # draw_pseudo_image(
-    #     pseudo_image, "./plots/pi_c.png", [[center, size]], [(255, 0, 0)]
-    # )
-    # draw_pseudo_image(output[0], "./plots/rpi.png")
-
-    # x = int(center[1] - size[1] / 2)
-    # y = int(center[0] - size[0] / 2)
-
+    img_warped = tgm.warp_affine(pi, M, dsize=(pi.shape[2] * 2, pi.shape[3] * 2))
     image = get_sub_image(img_warped[0], center, size)
 
     # draw_pseudo_image(image, "./plots/im.png")
@@ -603,7 +575,7 @@ def sub_image_with_context(
         center -= offset - np.array(pseudo_image.shape[-2:], dtype=np.float32) / 2
 
     sub_image = get_rotated_sub_image(
-        pseudo_image, center[[1, 0]], sub_image_size, target[2],
+        pseudo_image, center, sub_image_size[[1, 0]], target[2],
     )
     # draw_pseudo_image(sub_image, "./plots/train/sub_image" + str(0) + ".png")
 
@@ -652,7 +624,9 @@ def create_pseudo_images_and_labels(
         )
     elif gt_boxes is not None:
         batch_targets, batch_searches = create_target_search_regions(
-            net.bv_range, net.voxel_size, boxes_lidar=gt_boxes,
+            net.bv_range,
+            net.voxel_size,
+            boxes_lidar=gt_boxes,
             augment=augment,
             augment_rotation=augment_rotation,
             search_type=search_type,
@@ -796,18 +770,23 @@ def displacement_score_to_image_coordinates(
         # disp_search * search_region_size / search_region_upscale_size
         # disp_search * search_region_size / feature_to_image_coordinates(final_score_size, feature_blocks) # search_region_upscale_size
         (disp_score / final_score_size)
-        * search_region_size_with_context  # search_region_upscale_size
+        * search_region_size_with_context[[1, 0]]  # search_region_upscale_size
     )
+
+    theta = search_region_rotation
 
     rot = np.array(
         [
-            [math.cos(search_region_rotation), -math.sin(search_region_rotation),],
-            [math.sin(search_region_rotation), math.cos(search_region_rotation),],
+            [math.cos(theta), -math.sin(theta)],
+            [math.sin(theta), math.cos(theta)],
         ]
     )
 
     disp_image = np.dot(rot, disp_image_rotated)
 
+    # draw_pseudo_image(scores.squeeze(0), "./plots/f.png", [[max_idx.cpu().numpy(), np.array((1, 1)), 0], [half, np.array((1, 1)), 0]], [[255, 0, 0], [0, 255, 0]])
+
+    # return disp_image_rotated
     return disp_image
 
 
@@ -856,8 +835,154 @@ def create_multi_rotate_searches(search, rotate_penalty, delta, count):
     return all_searches_and_penalties
 
 
+def directed_penalty(shape, direction, device):
+
+    t = time.time()
+    hann_1d = torch.hann_window(shape[1], device=device).unsqueeze(0)
+
+    matrix = hann_1d.expand((shape[0], shape[1])).unsqueeze(0)
+
+    # angle = np.arctan2(direction[1], direction[0])
+
+    # M = tgm.get_rotation_matrix2d(
+    #     torch.tensor([shape[1] / 2, shape[0] / 2], dtype=torch.float32).reshape(1, 2),
+    #     torch.tensor(-angle / np.pi * 180).reshape(1),
+    #     torch.tensor(1).reshape(1),
+    # ).to(device)
+    # matrix_warped = tgm.warp_affine(matrix.unsqueeze(0), M, dsize=(matrix.shape[1], matrix.shape[2])).squeeze(0).squeeze(0)
+
+    t = time.time() - t
+    print("matrix time =", t)
+    return matrix  # matrix_warped
+    return torch.ones(shape, device=device)
+
+    # too slow so far
+
+    def kernel(sigma, length, x, y):
+        return sigma ** 2 * np.exp(-np.abs(x - y) ** 2 / (2 * length ** 2))
+
+    t = time.time()
+    matrix = torch.empty(shape, device=device)
+
+    for x in range(shape[0]):
+        for y in range(shape[1]):
+            matrix[x, y] = max(
+                0.5,
+                kernel(
+                    1,
+                    1,
+                    8 * (x - shape[0] / 2) / shape[0],
+                    8 * (y - shape[1] / 2) / shape[1],
+                ),
+            )
+
+    t = time.time() - t
+    print("matrix time =", t)
+    return matrix
+
+
+# def draw_msra_gaussian(shape, sigma, device):
+
+#     heatmap = np.zeros(shape)
+#     center = [shape[0] / 2, shape[1] / 2]
+
+#     tmp_size = sigma * 3
+#     mu_x = int(center[0] + 0.5)
+#     mu_y = int(center[1] + 0.5)
+#     w, h = shape
+#     ul = [int(mu_x - tmp_size), int(mu_y - tmp_size)]
+#     br = [int(mu_x + tmp_size + 1), int(mu_y + tmp_size + 1)]
+#     if ul[0] >= h or ul[1] >= w or br[0] < 0 or br[1] < 0:
+#         return heatmap
+#     size = 2 * tmp_size + 1
+#     x = np.arange(0, size, 1, np.float32)
+#     y = x[:, np.newaxis]
+#     x0 = y0 = size // 2
+#     g = np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))
+#     g_x = max(0, -ul[0]), min(br[0], h) - ul[0]
+#     g_y = max(0, -ul[1]), min(br[1], w) - ul[1]
+#     img_x = max(0, ul[0]), min(br[0], h)
+#     img_y = max(0, ul[1]), min(br[1], w)
+#     heatmap[img_y[0]: img_y[1], img_x[0]: img_x[1]] = g[g_y[0]: g_y[1], g_x[0]: g_x[1]]
+#     return torch.tensor(heatmap, device=device)
+
+
+def draw_msra_gaussian(shape, sigma, theta, device):
+
+    heatmap = np.zeros(shape)
+    center = [shape[0] / 2, shape[1] / 2]
+
+    tmp_size = sigma * 3
+    mu_x = int(center[0] + 0.5)
+    mu_y = int(center[1] + 0.5)
+    w, h = shape
+    ul = [int(mu_x - tmp_size[0]), int(mu_y - tmp_size[1])]
+    br = [int(mu_x + tmp_size[0] + 1), int(mu_y + tmp_size[1] + 1)]
+    if ul[0] >= h or ul[1] >= w or br[0] < 0 or br[1] < 0:
+        return heatmap
+    size = 2 * tmp_size + 1
+    x = np.arange(0, size[0], 1, np.float32)
+    y = np.arange(0, size[1], 1, np.float32).reshape(-1, 1)
+
+    x0, y0 = size // 2
+
+    R = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+    SigmaInverse = np.linalg.inv(np.array([[sigma[0], 0], [0, sigma[1]]]))
+    RSigmaInverse = R @ SigmaInverse @ R.T
+
+    a, b = RSigmaInverse[0]
+    _, c = RSigmaInverse[1]
+
+    g = np.exp(-(a * (x - x0) ** 2 + c * (y - y0) ** 2 - 2 * b * (x - x0) * (y - y0)))
+    g_x = max(0, -ul[0]), min(br[0], h) - ul[0]
+    g_y = max(0, -ul[1]), min(br[1], w) - ul[1]
+    img_x = max(0, ul[0]), min(br[0], h)
+    img_y = max(0, ul[1]), min(br[1], w)
+    heatmap[img_y[0]: img_y[1], img_x[0]: img_x[1]] = g[
+        g_y[0]: g_y[1], g_x[0]: g_x[1]
+    ]
+    return torch.tensor(heatmap, device=device)
+
+
+# def create_scaled_scores(
+#     target_features,
+#     search_features,
+#     model,
+#     score_upscale,
+#     window_influence,
+#     extrapolation_direction=None,
+# ):
+
+#     scores = model.process_features(search_features, target_features)
+#     hann_penalty = hann_window(scores2.shape[-2:], device=scores2.device)
+
+#     # draw_pseudo_image(hann_penalty.unsqueeze(0), "./plots/hann_penalty.png")
+
+#     score_shape = np.array([*scores.shape[-2:]])
+
+#     if extrapolation_direction is None:
+#         theta = 0
+#         sigma = np.array([1, 1], dtype=np.float32) * score_shape
+#     else:
+#         theta = np.arctan2(extrapolation_direction[1], extrapolation_direction[0])
+#         sigma = np.array([0.5, 5], dtype=np.float32) * score_shape
+
+#     gaussian_penalty = draw_msra_gaussian(score_shape, sigma, theta, scores.device)
+#     # draw_pseudo_image(gaussian_penalty.unsqueeze(0), "./plots/gaussian_penalty.png")
+
+#     penalty = gaussian_penalty
+#     scores_scaled = (1 - window_influence) * scores + window_influence * penalty
+
+#     scores2 = torch.nn.functional.interpolate(
+#         scores_scaled, scale_factor=score_upscale, mode="bicubic", align_corners=False,
+#     )
+#     # draw_pseudo_image(scores2.squeeze(0), "./plots/scores2.png")
+
+#     return scores2, scores, scores2
+
 def create_scaled_scores(
-    target_features, search_features, model, score_upscale, window_influence
+    target_features, search_features, model, score_upscale, window_influence,
+    extrapolation_direction=None,
 ):
 
     scores = model.process_features(search_features, target_features)
@@ -873,7 +998,7 @@ def create_scaled_scores(
 def rotate_vector(vector, angle):
 
     rot = np.array(
-        [[math.cos(angle), -math.sin(angle),], [math.sin(angle), math.cos(angle),],]
+        [[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle),],]
     )
 
     result = np.dot(rot, vector)
@@ -1039,8 +1164,12 @@ def create_siamese_pseudo_images_and_labels(
         offset=search[0],
     )
 
-    draw_pseudo_image(target_image.squeeze(axis=0), "./plots/siamese/pi_target_" + str(0) + ".png")
-    draw_pseudo_image(search_image.squeeze(axis=0), "./plots/siamese/pi_search_" + str(0) + ".png")
+    draw_pseudo_image(
+        target_image.squeeze(axis=0), "./plots/siamese/pi_target_" + str(0) + ".png"
+    )
+    draw_pseudo_image(
+        search_image.squeeze(axis=0), "./plots/siamese/pi_search_" + str(0) + ".png"
+    )
     draw_pseudo_image(target_pseudo_image, "./plots/siamese/pi_t" + str(0) + ".png")
     draw_pseudo_image(search_pseudo_image, "./plots/siamese/pi_s" + str(0) + ".png")
     # draw_pseudo_image(pseudo_image[i], "./plots/pi_t2" + str(0) + ".png", [[target[0][[1, 0]], target[1][[1, 0]]]], [(255, 0, 0)])
@@ -1479,7 +1608,7 @@ def train_siamese(
                             (125, 255, 0),
                         ],
                     )
-                    print('#', end="")
+                    print("#", end="")
                 else:
                     loss.backward()
                     # torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
@@ -1709,15 +1838,18 @@ def train_detection(
                         target_type=target_type,
                     )
 
-            for i, (
-                target_image,
-                search_image,
-                labels,
-                weights,
-                target,
-                search,
-                search_size_with_context,
-                pseudo_image,
+            for (
+                i,
+                (
+                    target_image,
+                    search_image,
+                    labels,
+                    weights,
+                    target,
+                    search,
+                    search_size_with_context,
+                    pseudo_image,
+                ),
             ) in enumerate(items):
                 pred, feat_target, feat_search = siamese_model(
                     search_image, target_image

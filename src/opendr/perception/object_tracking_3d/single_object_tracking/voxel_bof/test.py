@@ -723,7 +723,7 @@ def test_rotated_pp_siamese_infer(
         os.makedirs("./plots/video/" + model_name, exist_ok=True)
         os.makedirs("./plots/video/" + model_name + "/all", exist_ok=True)
 
-        filename = lambda x: (
+        filename_y = lambda x, y: (
             "./plots/video/"
             + model_name + "/"
             + x
@@ -735,8 +735,11 @@ def test_rotated_pp_siamese_infer(
             + str(object_id)
             + "_steps_"
             + str(load)
+            + y
             + ".gif"
         )
+
+        filename = lambda x: filename_y(x, "")
 
         if draw:
             imageio.mimsave(filename("infer"), images)
@@ -758,7 +761,7 @@ def test_rotated_pp_siamese_infer(
 
                     for i, img in enumerate(stacked_images):
                         image = PilImage.fromarray(img)
-                        image.save(filename("all/" + str(i)))
+                        image.save(filename_y("all/", str(i)))
 
                     imageio.mimsave(filename("all"), stacked_images)
                     pygifsicle.optimize(filename(group))
@@ -963,13 +966,13 @@ def test_rotated_pp_siamese_eval(
     total_precision_far = Precision()
 
     def test_track(track_id):
-        count = len(dataset_tracking)
         # count = 120
         dataset = LabeledTrackingPointCloudsDatasetIterator(
             dataset_tracking_path + "/training/velodyne/" + track_id,
             dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
             dataset_tracking_path + "/training/calib/" + track_id + ".txt",
         )
+        count = len(dataset)
 
         all_mean_iou3ds = []
         all_mean_iouAabbs = []
@@ -999,6 +1002,9 @@ def test_rotated_pp_siamese_eval(
 
             if not selected_labels[0].name in classes:
                 return None, None, None, None, None
+
+            total_precision.add_accuracy(0.0)
+            total_success.add_overlap(1.0)
 
             calib = point_cloud_with_calibration.calib
             labels_lidar = tracking_boxes_to_lidar(

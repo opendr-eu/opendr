@@ -146,6 +146,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         search_type="normal",
         target_type="normal",
         bof_mode="none",
+        extrapolation_mode="none",
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -191,6 +192,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.augment = augment
         self.augment_rotation = augment_rotation
         self.train_pseudo_image = train_pseudo_image
+        self.extrapolation_mode = extrapolation_mode
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -213,6 +215,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             "final_result": [],
         }
         self.training_method = "detection"
+        self.extrapolation_direction = None
 
         self.model.rpn_ort_session = None  # ONNX runtime inference session
 
@@ -655,6 +658,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     pseudo_image.squeeze(axis=0),
                     "./plots/small_pi/" + str(frame) + ".png",
                 )
+                draw_pseudo_image(
+                    pseudo_image.squeeze(axis=0),
+                    "./plots/small_pi/a.png",
+                )
                 self.__add_image(draw_pi, "small_pi")
 
             t1 = time.time()
@@ -692,6 +699,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
                         search_image.squeeze(axis=0),
                         "./plots/search/" + str(frame) + "_" + str(i) + ".png",
                     )
+                    draw_pseudo_image(
+                        search_image.squeeze(axis=0),
+                        "./plots/search/a.png",
+                    )
 
                     draw_search_feat = draw_pseudo_image(
                         search_features.squeeze(axis=0),
@@ -700,6 +711,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
                         + "_"
                         + str(i)
                         + ".png",
+                    )
+                    draw_pseudo_image(
+                        search_features.squeeze(axis=0),
+                        "./plots/search_feat/a.png",
                     )
 
                     self.__add_image(draw_search, "search")
@@ -719,6 +734,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     self.model,
                     self.score_upscale,
                     self.window_influence,
+                    self.extrapolation_direction,
                 )
                 multi_rotate_scores_searches_penalties_and_features.append(
                     [scores, target, penalty, search_features]
@@ -803,9 +819,17 @@ class VoxelBofObjectTracking3DLearner(Learner):
             new_target = [center_image, self.init_target[1], new_angle]
             new_search = [
                 center_image,
-                original_search_size_by_target_size(new_target[1]),
+                original_search_size_by_target_size(new_target[1], self.search_type),
                 new_angle,
             ]
+
+            if self.extrapolation_mode == "linear":
+                new_search[0] += delta_image
+                self.extrapolation_direction = delta_image[[1, 0]]
+            elif self.extrapolation_mode == "none":
+                pass
+            else:
+                raise ValueError()
 
             self.search_region = new_search
             self.last_target = new_target
@@ -836,16 +860,26 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     + "_target_feat_full.png",
                 )
                 draw_target_feat_current_frame = draw_pseudo_image(
-                    target_image.squeeze(axis=0),
+                    target_features.squeeze(axis=0),
                     "./plots/scores/"
                     + str(frame)
                     + "_target_feat_current_frame.png",
+                )
+
+                draw_target_image = draw_pseudo_image(
+                    target_image.squeeze(axis=0),
+                    "./plots/scores/"
+                    + str(frame)
+                    + "_target_image_current_frame.png",
                 )
 
                 if draw:
                     self.__add_image(draw_target_feat_full, "target_feat_full")
                     self.__add_image(
                         draw_target_feat_current_frame, "target_feat_current_frame"
+                    )
+                    self.__add_image(
+                        draw_target_image, "target_image_current_frame"
                     )
 
             t7 = time.time()
@@ -905,6 +939,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 if "target_feat_current_frame" in self._images:
                     images_feat.append(self._images["target_feat_current_frame"][-1])
                     images_feat.append(self._images["target_feat_full"][-1])
+                    images_feat.append(self._images["target_image_current_frame"][-1])
 
                 image = stack_images([
                     image, stack_images(images_feat, "horizontal")
@@ -913,6 +948,29 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     image, self._images["small_pi"][-1]
                 ], "vertical")
                 self.__add_image(image, "summary")
+
+                draw_pseudo_image(
+                    image,
+                    "./plots/summary/"
+                    + str(frame)
+                    + "_"
+                    + str(i)
+                    + ".png",
+                )
+
+                draw_pseudo_image(
+                    image,
+                    "./plots/summary/a"
+                    + ".png",
+                )
+
+            # delta_image_f = displacement_score_to_image_coordinates(
+            #     top_scores,
+            #     self.score_upscale,
+            #     top_search[1],
+            #     top_search[2],
+            #     self.search_size,
+            # )
 
             return result
 
@@ -971,6 +1029,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         init_lidar_aabb = create_lidar_aabb_from_target(
             [target[0], init_size_with_context, target[2]],
+            # [target[0], target[1] * 4, target[2]],
             net.voxel_size,
             net.bv_range,
             net.point_cloud_range[[2, 5]],
@@ -990,12 +1049,23 @@ class VoxelBofObjectTracking3DLearner(Learner):
         )
 
         if draw:
-            draw_pseudo_image(
+            draw_pi = draw_pseudo_image(
+                pseudo_image.squeeze(0), "./plots/init/pseudo_image.png",
+            )
+            draw_init = draw_pseudo_image(
                 init_image.squeeze(0), "./plots/init/image.png",
             )
-            draw_pseudo_image(
+            draw_feat = draw_pseudo_image(
                 self.init_target_features.squeeze(0),
                 "./plots/init/target_features.png",
+            )
+
+            image = stack_images([draw_pi, draw_init], "vertical")
+            image = stack_images([image, draw_feat], "vertical")
+
+            draw_pseudo_image(
+                image,
+                "./plots/init/all.png",
             )
 
         # draw_pseudo_image(init_image, "./plots/init_image.png")

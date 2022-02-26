@@ -2105,6 +2105,77 @@ def run_x3d(id=0, total_experiments=4, total_devices=4):
         print(result)
 
 
+def run_x4(id=0, total_experiments=4, total_devices=4):
+
+    device_id = id % total_devices
+
+    eval_kwargs = create_selected_eval_kwargs_wi()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1]:
+            for size in [-1]:
+                for context_amount in [0, 0.05, 0.1]:
+                    for lr in [0.00001]:
+                        for r_pos in [16]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "x4-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=128000,
+                                        save_step=2000,
+                                        loads=[
+                                            128000,
+                                            2000,
+                                            8000,
+                                            16000,
+                                            32000,
+                                            64000,
+                                        ],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                        search_type="normal",
+                                        target_type="normal",
+                                        augment=False,
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_experiments
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
 if __name__ == "__main__":
 
     fire.Fire()
