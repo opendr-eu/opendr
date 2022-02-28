@@ -38,7 +38,7 @@ Setting `--eval-eps 10` sets the number of evaluation episodes.
 To cite EAGERx in publications:
 ```bibtex
 @article{eagerx,
-    author  = {van der Heijden, Bas and Luijkx, Jelle, and Ferranti, Laura and Kober, jens and Babuska, Robert},
+    author  = {van der Heijden, Bas and Luijkx, Jelle, and Ferranti, Laura and Kober, Jens and Babuska, Robert},
     title = {EAGER: Engine Agnostic Gym Environment for Robotics},
     year = {2022},
     publisher = {GitHub},
