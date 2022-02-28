@@ -191,6 +191,8 @@ def original_search_size_by_target_size(target_size, search_type="normal"):
         return target_size * 2 + (target_size < 20) * 30
     elif search_type == "small":
         return target_size + target_size // 2
+    elif search_type == "snormal":
+        return target_size * 2
     elif search_type == "big":
         return target_size * 4
     elif search_type == "a+4":
