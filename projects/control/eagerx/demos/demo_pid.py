@@ -21,6 +21,9 @@ from eagerx.core.graph import Graph
 import eagerx.bridges.openai_gym as eagerx_gym
 import eagerx_examples  # noqa: F401
 
+# Import stable-baselines
+import stable_baselines3 as sb
+
 
 def example_pid_only(name, eps, eval_eps, device):
     # Start roscore & initialize main thread as node
@@ -34,13 +37,13 @@ def example_pid_only(name, eps, eval_eps, device):
 
     # Define graph (agnostic) & connect nodes
     graph = Graph.create(nodes=[pid], objects=[pendulum])
-    graph.connect(source=("pendulum", "sensors", "reward"), observation="reward")
-    graph.connect(source=("pendulum", "sensors", "done"), observation="done")
-    graph.connect(source=("pendulum", "sensors", "observation"), observation="state")
+    graph.connect(source=pendulum.sensors.reward, observation="reward")
+    graph.connect(source=pendulum.sensors.done, observation="done")
+    graph.connect(source=pendulum.sensors.observation, observation="state")
     # Connect PID
-    graph.connect(source=("pendulum", "sensors", "observation"), target=("pid", "inputs", "y"))
-    graph.connect(action="yref", target=("pid", "inputs", "yref"))
-    graph.connect(source=("pid", "outputs", "u"), target=("pendulum", "actuators", "action"))
+    graph.connect(source=pendulum.sensors.observation, target=pid.inputs.y)
+    graph.connect(action="yref", target=pid.inputs.yref)
+    graph.connect(source=pid.outputs.u, target=pendulum.actuators.action)
 
     # Define bridge
     bridge = Bridge.make("GymBridge", rate=20)
@@ -48,9 +51,7 @@ def example_pid_only(name, eps, eval_eps, device):
     # Initialize Environment (agnostic graph +  bridge)
     env = eagerx_gym.EagerGym(name=name, rate=20, graph=graph, bridge=bridge)
 
-    # Use stable-baselines
-    import stable_baselines3 as sb
-
+    # Initialize and train stable-baselines model
     model = sb.SAC("MlpPolicy", env, verbose=1, device=device)
     model.learn(total_timesteps=int(eps * 200))
 
