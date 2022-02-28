@@ -26,7 +26,9 @@ from functools import partial
 from typing import List, Optional, Tuple, Union
 from joblib import Memory
 from opendr.perception.activity_recognition.datasets.utils import decoder
-from opendr.perception.activity_recognition.datasets.utils.transforms import standard_video_transforms
+from opendr.perception.activity_recognition.datasets.utils.transforms import (
+    standard_video_transforms,
+)
 from opendr.engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
 
@@ -36,7 +38,10 @@ except ModuleNotFoundError:
     try:
         import torchvision
     except ModuleNotFoundError:
-        raise ModuleNotFoundError("Either pyav (`pip install av`) or torchvision must be installed for the Kinetics loader to work")
+        raise ModuleNotFoundError(
+            "Either pyav (`pip install av`) or torchvision "
+            "must be installed for the Kinetics loader to work"
+        )
 
 logger = getLogger(__file__)
 
@@ -67,7 +72,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         split="train",
         video_transform=None,
         use_caching=False,
-        decoder_backend="pyav"
+        decoder_backend="pyav",
     ):
         """
         Kinetics dataset
@@ -83,9 +88,11 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
             temporal_downsampling (int): rate of downsampling in time. Defaults to 1.
             split (str, optional): Which split to use (Options are ["train", "val", "test"]). Defaults to "train".
             video_transform (callable, optional): A function/transform that takes in a TxHxWxC video
-                and returns a transformed version. If None, a standard video transform will be applied. Defaults to None.
+                and returns a transformed version. If None, a standard video transform will be applied.
+                Defaults to None.
             use_caching (bool): Cache long-running operations. Defaults to False.
-            decoder_backend (str): Name of library to use for video decoding (Options are ["pyav", "torchvision"]). Defaults to "pyav".
+            decoder_backend (str): Name of library to use for video decoding
+                (Options are ["pyav", "torchvision"]). Defaults to "pyav".
         """
         ExternalDataset.__init__(self, path=str(path), dataset_type="kinetics")
         DatasetIterator.__init__(self)
@@ -114,11 +121,15 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
             self.video_transform = video_transform
         else:
             train_transform, eval_transform = standard_video_transforms()
-            self.video_transform = train_transform if self.split == "train" else eval_transform
+            self.video_transform = (
+                train_transform if self.split == "train" else eval_transform
+            )
 
-        validate_splits = Memory(Path(os.getcwd()) / ".cache", verbose=1).cache(
-            _validate_splits
-        ) if use_caching else _validate_splits
+        validate_splits = (
+            Memory(Path(os.getcwd()) / ".cache", verbose=1).cache(_validate_splits)
+            if use_caching
+            else _validate_splits
+        )
 
         (
             self.labels,
@@ -128,11 +139,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
             self.classes,
             _,  # num_not_found,
             self.video_inds,
-        ) = validate_splits(
-            self.root_path,
-            self.annotation_path,
-            split
-        )
+        ) = validate_splits(self.root_path, self.annotation_path, split)
         if len(self.classes) not in {400, 600, 700}:
             logger.warning(
                 f"Only found {len(self.classes)} classes for {split} set, but expected either 400, 600, or 700 for Kinetics."
@@ -155,7 +162,9 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         for _ in range(self.num_retries):
             try:
                 video_container = _get_video_container(
-                    self.file_paths[idx], multi_thread_decode=False, backend=self.decoder_backend,
+                    self.file_paths[idx],
+                    multi_thread_decode=False,
+                    backend=self.decoder_backend,
                 )
             except Exception as e:
                 logger.info(
@@ -235,7 +244,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
             "perception",
             "activity_recognition",
             "datasets",
-            "kinetics400mini.zip"
+            "kinetics400mini.zip",
         )
         zip_path = str(Path(path) / "kinetics400mini.zip")
         unzip_path = str(Path(path))
@@ -244,7 +253,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         urlretrieve(url=url, filename=zip_path)
 
         logger.info(f"Unzipping Kinetics400 mini to {(unzip_path)}")
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(unzip_path)
         os.remove(zip_path)
 
@@ -267,7 +276,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
             "perception",
             "activity_recognition",
             "datasets",
-            "kinetics3.zip"
+            "kinetics3.zip",
         )
         zip_path = str(Path(path) / "kinetics3.zip")
         unzip_path = str(Path(path))
@@ -276,7 +285,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         urlretrieve(url=url, filename=zip_path)
 
         logger.info(f"Unzipping Kinetics3 to {(unzip_path)}")
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(unzip_path)
         os.remove(zip_path)
 
@@ -297,7 +306,10 @@ def _make_path_name(
     if "label" in annotation["annotations"] and annotation["annotations"]["label"]:
         label = annotation["annotations"]["label"]
         p = (
-            root_path / annotation["subset"] / label / f"{key}_{start}_{stop}.{extention}"
+            root_path
+            / annotation["subset"]
+            / label
+            / f"{key}_{start}_{stop}.{extention}"
         ).resolve()
     else:
         p = (
@@ -309,9 +321,7 @@ def _make_path_name(
 
 
 def _validate_splits(
-    root: str,
-    annotation_path: str,
-    split: str,
+    root: str, annotation_path: str, split: str,
 ):
     root_path = Path(root)
     assert root_path.is_dir()
