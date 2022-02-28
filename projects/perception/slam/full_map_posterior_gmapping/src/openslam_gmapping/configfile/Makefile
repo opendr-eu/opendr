@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # limitations under the License.
 
 OBJS= configfile.o
-APPS= configfile_test 
+APPS= configfile_test
 
 -include ../global.mk
 -include ../build_tools/Makefile.generic-shared-object

@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     recognizer.load(".")
 
     recognizer.download(path=".", mode="test_data")
-    recognizer.fit_reference(path=join(".", "test_data", "images"), save_path=".")
+    recognizer.fit_reference(path=join(".", "test_data", "images"), save_path=".", create_new=True)
     image_path = join(".", "test_data", "images", "1", "1.jpg")
     img = Image.open(image_path)
 

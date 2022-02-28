@@ -2,7 +2,7 @@
 
 OpenDR can be installed in the following ways:
 1. By cloning this repository (CPU/GPU support)
-2. Using *pip* (CPU only)
+2. Using *pip* (CPU/GPU support)
 3. Using *docker* (CPU/GPU support)
 
 The following table summarizes the installation options based on your system architecture and OS:
@@ -10,13 +10,13 @@ The following table summarizes the installation options based on your system arc
 | Installation Method | CPU/GPU  | OS                    |
 |---------------------|----------|-----------------------|
 | Clone & Install     | Both     | Ubuntu 20.04 (x86-64) |
-| pip                 | CPU-only | Ubuntu 20.04 (x86-64) |
-| docker              | Both     | Linux                 |
+| pip                 | Both     | Ubuntu 20.04 (x86-64) |
+| docker              | Both     | Linux / Windows       |
 
 
 # Installing by cloning OpenDR repository (Ubuntu 20.04, x86, architecture)
 
-This is the recommended way of installing the toolkit, since it allows for fully exploiting all the provided functionalities.
+This is the recommended way of installing the whole toolkit, since it allows for fully exploiting all the provided functionalities.
 To install the toolkit, please first make sure that you have `git` available on your system.
 ```bash
 sudo apt install git
@@ -70,25 +70,76 @@ Note that NVIDIA 30xx GPUs may not be fully supported, due to CUDA limitations.
 
 # Installing using *pip*
 
-You can directly install OpenDR toolkit for CPU-only inference using pip.
+## CPU-only installation
+
+You can directly install the Python API of the OpenDR toolkit using pip.
 First, install the required dependencies:
 ```bash
-export DISABLE_BCOLZ_AVX2=true
-sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget
+sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev 
 python3 -m venv venv
 source venv/bin/activate
-wget https://raw.githubusercontent.com/opendr-eu/opendr/master/dependencies/pip_requirements.txt
-cat pip_requirements.txt | xargs -n 1 -L 1 pip install
+pip install wheel
 ```
-Then, you can install the Python API of the toolkit using pip:
+Then, you  install the Python API of the toolkit using pip:
 ```bash
+export DISABLE_BCOLZ_AVX2=true
+pip install opendr-toolkit-engine
 pip install opendr-toolkit
 ```
-For some systems it is necessary to disable AVX2 during `bcolz` dependency installation (`export DISABLE_BCOLZ_AVX2=true`).
-Please note that only the Python API is exposed when you install OpenDR toolkit using *pip*.
-
 *pip* wheels only install code that is available under the *src/opendr* folder of the toolkit.
 Tools provided in *projects* are not installed by *pip*.
+If you have a CPU that does not support AVX2, the please also `export DISABLE_BCOLZ_AVX2=true` before installing the toolkit.
+This is not needed for newer CPUs.
+
+## Enabling GPU-acceleration
+The same OpenDR package is used for both CPU and GPU systems. 
+However, you need to have the appropriate GPU-enabled dependencies installed to use a GPU with OpenDR.
+If you plan to use GPU, then you should first install [mxnet-cuda](https://mxnet.apache.org/versions/1.4.1/install/index.html?platform=Linux&language=Python&processor=CPU) and [detectron2](https://detectron2.readthedocs.io/en/latest/tutorials/install.html).
+For example, if you stick with the default PyTorch version (1.7) and use CUDA10.2, then you can simply follow:
+```bash
+sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev 
+python3 -m venv venv
+source venv/bin/activate
+pip install wheel
+pip install detectron2==0.5 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.7/index.html
+pip install mxnet-cu102==1.8.0 
+pip install opendr-toolkit-engine
+pip install opendr-toolkit
+```
+
+## Installing only a *particular* tool using *pip* (CPU/GPU)
+
+If you do not want to install the whole repository, you can only install a specific OpenDR tool.
+For example, if you just want to perform pose estimation you can just run:
+```bash
+pip install opendr-toolkit-engine
+pip install opendr-toolkit-pose-estimation
+```
+Note that `opendr-toolkit-engine` must be always installed in your system, while multiple tools can be installed in this way. 
+OpenDR distributes the following packages that can be installed:
+- *opendr-toolkit-activity_recognition*
+- *opendr-toolkit-speech_recognition*
+- *opendr-toolkit-semantic_segmentation*
+- *opendr-toolkit-skeleton_based_action_recognition*
+- *opendr-toolkit-face_recognition*
+- *opendr-toolkit-facial_expression_recognition*
+- *opendr-toolkit-panoptic_segmentation*
+- *opendr-toolkit-pose_estimation*
+- *opendr-toolkit-compressive_learning*
+- *opendr-toolkit-hyperparameter_tuner*
+- *opendr-toolkit-heart_anomaly_detection*
+- *opendr-toolkit-human_model_generation*
+- *opendr-toolkit-multimodal_human_centric*
+- *opendr-toolkit-object_detection_2d*
+- *opendr-toolkit-object_tracking_2d*
+- *opendr-toolkit-object_detection_3d*
+- *opendr-toolkit-object_tracking_3d*
+- *opendr-toolkit-mobile_manipulation* (requires a functional ROS installation)
+- *opendr-toolkit-single_demo_grasp* (requires a functional ROS installation)
+
+
+Note that `opendr-toolkit` is actually just a metapackage that includes all the afformentioned packages.
+
 
 # Installing using *docker*
 ## CPU docker

@@ -1,5 +1,5 @@
 
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -125,7 +125,7 @@ def draw_preds(frame, preds: Dict):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--onnx", help="Use ONNX", default=False, action="store_true")
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cpu")
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
     parser.add_argument('--video', default=0,
@@ -224,5 +224,4 @@ if __name__ == '__main__':
             break
 
     print("Average inference fps: ", avg_fps)
-    image_provider.release()
     cv2.destroyAllWindows()

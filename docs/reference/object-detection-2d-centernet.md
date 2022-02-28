@@ -5,7 +5,7 @@ The *centernet* module contains the *CenterNetDetectorLearner* class, which inhe
 ### Class CenterNetDetectorLearner
 Bases: `engine.learners.Learner`
 
-The *CenterNetDetectorLearner* class is a wrapper of the SSD detector[[1]](#centernet-1)
+The *CenterNetDetectorLearner* class is a wrapper of the CenterNet detector[[1]](#centernet-1)
 [GluonCV implementation](https://github.com/dmlc/gluon-cv/blob/master/gluoncv/model_zoo/center_net/center_net.py).
 It can be used to perform object detection on images (inference) as well as train new object detection models.
 

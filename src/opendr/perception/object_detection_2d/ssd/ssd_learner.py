@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -87,6 +87,7 @@ class SingleShotDetectorLearner(Learner):
                 self.ctx = mx.gpu(0)
             else:
                 self.ctx = mx.cpu()
+                print("Device set to cuda but no GPU available, using CPU...")
         else:
             self.ctx = mx.cpu()
 
