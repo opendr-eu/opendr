@@ -128,6 +128,7 @@ jobs:
     - name: Upload wheel as artifact
       uses: actions/upload-artifact@v2
       with:
+        name: wheel-artifact
         path:
           dist/*.tar.gz
   build-docker:
@@ -145,6 +146,7 @@ jobs:
     - name: Upload image artifact
       uses: actions/upload-artifact@v2
       with:
+        name: docker-artifact
         path:
           cpu_test.zip
   test-wheel:
@@ -237,15 +239,27 @@ jobs:
         docker run --name toolkit -i opendr/opendr-toolkit:cpu_test bash
         docker start toolkit
         docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
-  delete-artifacts:
-    needs: [test-tools, build-wheel, build-docker, test-wheel, test-docker]
+  delete-docker-artifacts:
+    needs: [build-docker, test-docker]
     if: ${{ always() }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Delete artifacts
+    - name: Delete docker artifacts
       uses: geekyeggo/delete-artifact@v1
       with:
-        name: build-${{ matrix.os }}
+        name: docker-artifact
+  delete-wheel-artifacts:
+    needs: [build-wheel, test-wheel]
+    if: ${{ always() }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Delete wheel artifacts
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wheel-artifact
