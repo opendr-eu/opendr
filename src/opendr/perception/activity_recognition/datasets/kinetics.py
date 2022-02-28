@@ -306,10 +306,7 @@ def _make_path_name(
     if "label" in annotation["annotations"] and annotation["annotations"]["label"]:
         label = annotation["annotations"]["label"]
         p = (
-            root_path
-            / annotation["subset"]
-            / label
-            / f"{key}_{start}_{stop}.{extention}"
+            root_path / annotation["subset"] / label / f"{key}_{start}_{stop}.{extention}"
         ).resolve()
     else:
         p = (
