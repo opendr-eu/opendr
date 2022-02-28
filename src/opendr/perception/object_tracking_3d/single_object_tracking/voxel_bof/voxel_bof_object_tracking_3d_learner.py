@@ -147,6 +147,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         target_type="normal",
         bof_mode="none",
         extrapolation_mode="none",
+        offset_interpolation=1,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -193,6 +194,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.augment_rotation = augment_rotation
         self.train_pseudo_image = train_pseudo_image
         self.extrapolation_mode = extrapolation_mode
+        self.offset_interpolation = offset_interpolation
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -809,6 +811,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             )
 
             delta_image = delta_image[[1, 0]]
+            delta_image *= self.offset_interpolation
             center_image = self.search_region[0] + delta_image
 
             new_angle = (
