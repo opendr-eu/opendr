@@ -37,12 +37,12 @@ def benchmark_stgcn(args):
         print(f"==== Benchmarking pstgcn ({args.dataset_name}) ====")
         if args.dataset_name == 'nturgbd_cv':
             learner = ProgressiveSpatioTemporalGCNLearner(device=args.device, dataset_name='nturgbd_cv',
-                                                                    topology=[5, 4, 5, 2, 3, 4, 3, 4], in_channels=3,
-                                                                    num_point=25, graph_type='ntu')
+                                                          topology=[5, 4, 5, 2, 3, 4, 3, 4], in_channels=3,
+                                                          num_point=25, graph_type='ntu')
         elif args.dataset_name == 'nturgbd_cs':
             learner = ProgressiveSpatioTemporalGCNLearner(device=args.device, dataset_name='nturgbd_cs',
-                                                                    topology=[5, 4, 3, 5, 3, 5, 7, 4], in_channels=3,
-                                                                    num_point=25, graph_type='ntu')
+                                                          topology=[5, 4, 3, 5, 3, 5, 7, 4], in_channels=3,
+                                                          num_point=25, graph_type='ntu')
     else:
         print(f"==== Benchmarking {args.method} ({args.dataset_name}) ====")
         learner = SpatioTemporalGCNLearner(device=args.device, dataset_name='nturgbd_cv',
@@ -98,4 +98,3 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     benchmark_stgcn(args)
-
