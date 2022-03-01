@@ -604,12 +604,28 @@ def test_rotated_pp_siamese_infer(
         dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
         dataset_tracking_path + "/training/calib/" + track_id + ".txt",
     )
+    
+    total_success = Success()
+    total_precision = Precision()
+    total_success_near = Success()
+    total_precision_near = Precision()
+    total_success_far = Success()
+    total_precision_far = Precision()
+
+    all_mean_iou3ds = []
+    all_mean_iouAabbs = []
+    all_tracked = []
+    all_precision = []
+    all_success = []
 
     count = len(dataset)
 
     def test_object_id(object_id, start_frame=-1):
 
         selected_labels = []
+
+        object_success = Success()
+        object_precision = Precision()
 
         while len(selected_labels) <= 0:
             start_frame += 1
@@ -621,7 +637,12 @@ def test_rotated_pp_siamese_infer(
             )
 
         if not selected_labels[0].name in classes:
-            return None, None
+            return None, None, None, None, None
+
+        total_precision.add_accuracy(0.0)
+        total_success.add_overlap(1.0)
+        object_precision.add_accuracy(0.0)
+        object_success.add_overlap(1.0)
 
         calib = point_cloud_with_calibration.calib
         labels_lidar = tracking_boxes_to_lidar(selected_labels, calib, classes=classes)
@@ -690,35 +711,60 @@ def test_rotated_pp_siamese_infer(
                 ],
                 axis=1,
             )
-            iou = float(d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64))
+            iou3d = float(d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64))
 
-            # iou = iou_2d(
-            #     result.location[:2],
-            #     result.dimensions[:2],
-            #     label_lidar.location[:2],
-            #     label_lidar.dimensions[:2],
-            # ) # * min(result[0].rotation_y / label_lidar.rotation_y, label_lidar.rotation_y / result[0].rotation_y)
+            iouAabb = iou_2d(
+                result.location[:2],
+                result.dimensions[:2],
+                label_lidar.location[:2],
+                label_lidar.dimensions[:2],
+            )
 
-            # iou = max(0, iou)
-
-            if iou > iou_min:
+            if iou3d > iou_min:
                 count_tracked += 1
 
-            ious.append(iou)
+            accuracy = estimate_accuracy(result, label_lidar)
+
+            ious.append((iou3d, iouAabb))
+            object_precision.add_accuracy(accuracy)
+            object_success.add_overlap(iou3d)
+            total_precision.add_accuracy(accuracy)
+            total_success.add_overlap(iou3d)
 
             print(
-                track_id, "%", object_id, "[", i, "/", count - 1, "] iou =", iou,
+                track_id,
+                "%",
+                object_id,
+                "[",
+                i,
+                "/",
+                count - 1,
+                "] iou3d =",
+                iou3d,
+                "iouAabb =",
+                iouAabb,
+                "accuracy(error) =",
+                accuracy,
             )
 
         if len(ious) <= 0:
-            mean_iou = None
+            mean_iou3d = None
+            mean_iouAabb = None
+            mean_precision = None
+            mean_success = None
             tracked = None
         else:
-            mean_iou = sum(ious) / len(ious)
+            mean_iou3d = sum([iou3d for iou3d, iouAabb in ious]) / len(ious)
+            mean_iouAabb = sum([iouAabb for iou3d, iouAabb in ious]) / len(ious)
             tracked = count_tracked / len(ious)
+            mean_precision = object_precision.average
+            mean_success = object_success.average
 
-        print("mean_iou =", mean_iou)
+        print("mean_iou3d =", mean_iou3d)
+        print("mean_iouAabb =", mean_iouAabb)
         print("tracked =", tracked)
+        print("mean_precision =", mean_precision)
+        print("mean_success =", mean_success)
 
         os.makedirs("./plots/video/" + model_name, exist_ok=True)
         os.makedirs("./plots/video/" + model_name + "/all", exist_ok=True)
@@ -766,12 +812,27 @@ def test_rotated_pp_siamese_infer(
                     imageio.mimsave(filename("all"), stacked_images)
                     pygifsicle.optimize(filename(group))
 
-        return mean_iou, tracked
+        return mean_iou3d, mean_iouAabb, tracked, mean_precision, mean_success
 
     for object_id in object_ids:
-        test_object_id(object_id, start_frame)
+        (
+            mean_iou3d,
+            mean_iouAabb,
+            tracked,
+            mean_precision,
+            mean_success,
+        ) = test_object_id(object_id)
+
+        if mean_iou3d is not None:
+            all_mean_iou3ds.append(mean_iou3d)
+            all_mean_iouAabbs.append(mean_iouAabb)
+            all_tracked.append(tracked)
+            all_precision.append(mean_precision)
+            all_success.append(mean_success)
 
     print("fps:", learner.fps())
+    print("total_precision:", total_precision.average)
+    print("total_success:", total_success.average)
 
     for key, values in learner.times.items():
         t = sum(values) / len(values)
@@ -1125,8 +1186,10 @@ def test_rotated_pp_siamese_eval(
                     distance,
                 )
 
+            os.makedirs("./plots/video/" + model_name, exist_ok=True)
+
             filename = (
-                "./plots/video/eval_"
+                "./plots/video/" + model_name + "/eval_"
                 + model_name
                 + "_track_"
                 + str(track_id)
