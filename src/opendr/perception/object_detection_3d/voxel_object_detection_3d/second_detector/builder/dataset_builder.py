@@ -76,7 +76,7 @@ def create_prep_func(
         remove_outside_points=False,
         remove_unknown=cfg.remove_unknown_examples,
         create_targets=training,
-        shuffle_points=cfg.shuffle_points,
+        shuffle_points=cfg.shuffle_points if training else False,
         gt_rotation_noise=list(cfg.groundtruth_rotation_uniform_noise),
         gt_loc_noise_std=list(cfg.groundtruth_localization_noise_std),
         global_rotation_noise=list(cfg.global_rotation_uniform_noise),

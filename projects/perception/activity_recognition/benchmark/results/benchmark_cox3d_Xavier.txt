@@ -1,0 +1,1437 @@
+/home/maleci/.local/lib/python3.6/site-packages/pkg_resources/__init__.py:119: PkgResourcesDeprecationWarning: 0.18ubuntu0.18.04.1 is an invalid version and will not be supported in a future release
+  PkgResourcesDeprecationWarning,
+/home/maleci/.local/lib/python3.6/site-packages/torchvision-0.10.0-py3.6-linux-aarch64.egg/torchvision/transforms/_functional_video.py:6: UserWarning: The _functional_video module is deprecated. Please use the functional module instead.
+  "The _functional_video module is deprecated. Please use the functional module instead."
+/home/maleci/.local/lib/python3.6/site-packages/torchvision-0.10.0-py3.6-linux-aarch64.egg/torchvision/transforms/_transforms_video.py:26: UserWarning: The _transforms_video module is deprecated. Please use the transforms module instead.
+  "The _transforms_video module is deprecated. Please use the transforms module instead."
+WARNING:opendr.perception.activity_recognition.cox3d.algorithm.utils:Padding along the temporal dimension only affects the computation in `forward3d`. In `forward` it is omitted.
+ERROR:torch-benchmark:Unable to measure model params due to error: 'function' object has no attribute 'parameters'
+ERROR:torch-benchmark:Unable to measure model FLOPs due to error: 'list' object has no attribute 'shape'
+==== Benchmarking CoX3DLearner (s) ====
+== Benchmarking learner.infer ==
+Machine info:
+  cpu:
+    architecture: aarch64
+    cores:
+      physical: 8
+      total: 8
+    frequency: 2.27 GHz
+    model: ARMv8 Processor rev 0 (v8l)
+  gpus: null
+  memory:
+    available: 26.98 GB
+    total: 31.17 GB
+    used: 7.18 GB
+  system:
+    node: xavier
+    release: 4.9.140-tegra
+    system: Linux
+
+Model device: cuda:0
+Memory results (batch_size=1):
+  max_inference: 846.47 MB
+  max_inference_bytes: 887590400
+  post_inference: 826.18 MB
+  post_inference_bytes: 866313728
+  pre_inference: 14.73 MB
+  pre_inference_bytes: 15445504
+
+Warming up with batch_size=32:   0%|          | 0/10 [00:00<?, ?it/s]Warming up with batch_size=32:  10%|█         | 1/10 [00:00<00:01,  5.94it/s]Warming up with batch_size=32:  20%|██        | 2/10 [00:00<00:01,  6.70it/s]Warming up with batch_size=32:  30%|███       | 3/10 [00:00<00:00,  7.29it/s]Warming up with batch_size=32:  40%|████      | 4/10 [00:00<00:00,  7.31it/s]Warming up with batch_size=32:  50%|█████     | 5/10 [00:00<00:00,  7.54it/s]Warming up with batch_size=32:  60%|██████    | 6/10 [00:00<00:00,  7.77it/s]Warming up with batch_size=32:  70%|███████   | 7/10 [00:00<00:00,  7.83it/s]Warming up with batch_size=32:  80%|████████  | 8/10 [00:01<00:00,  7.94it/s]Warming up with batch_size=32:  90%|█████████ | 9/10 [00:01<00:00,  8.02it/s]Warming up with batch_size=32: 100%|██████████| 10/10 [00:01<00:00,  8.10it/s]Warming up with batch_size=32: 100%|██████████| 10/10 [00:01<00:00,  7.68it/s]
+Measuring inference for batch_size=32:   0%|          | 0/100 [00:00<?, ?it/s]Measuring inference for batch_size=32:   1%|          | 1/100 [00:00<00:12,  8.22it/s]Measuring inference for batch_size=32:   2%|▏         | 2/100 [00:00<00:11,  8.29it/s]Measuring inference for batch_size=32:   3%|▎         | 3/100 [00:00<00:11,  8.39it/s]Measuring inference for batch_size=32:   4%|▍         | 4/100 [00:00<00:11,  8.52it/s]Measuring inference for batch_size=32:   5%|▌         | 5/100 [00:00<00:11,  8.54it/s]Measuring inference for batch_size=32:   6%|▌         | 6/100 [00:00<00:11,  8.37it/s]Measuring inference for batch_size=32:   7%|▋         | 7/100 [00:00<00:11,  8.41it/s]Measuring inference for batch_size=32:   8%|▊         | 8/100 [00:00<00:10,  8.47it/s]Measuring inference for batch_size=32:   9%|▉         | 9/100 [00:01<00:10,  8.49it/s]Measuring inference for batch_size=32:  10%|█         | 10/100 [00:01<00:10,  8.56it/s]Measuring inference for batch_size=32:  11%|█         | 11/100 [00:01<00:10,  8.57it/s]Measuring inference for batch_size=32:  12%|█▏        | 12/100 [00:01<00:10,  8.65it/s]Measuring inference for batch_size=32:  13%|█▎        | 13/100 [00:01<00:10,  8.40it/s]Measuring inference for batch_size=32:  14%|█▍        | 14/100 [00:01<00:10,  8.46it/s]Measuring inference for batch_size=32:  15%|█▌        | 15/100 [00:01<00:09,  8.53it/s]Measuring inference for batch_size=32:  16%|█▌        | 16/100 [00:01<00:09,  8.49it/s]Measuring inference for batch_size=32:  17%|█▋        | 17/100 [00:02<00:09,  8.59it/s]Measuring inference for batch_size=32:  18%|█▊        | 18/100 [00:02<00:09,  8.55it/s]Measuring inference for batch_size=32:  19%|█▉        | 19/100 [00:02<00:09,  8.58it/s]Measuring inference for batch_size=32:  20%|██        | 20/100 [00:02<00:09,  8.71it/s]Measuring inference for batch_size=32:  21%|██        | 21/100 [00:02<00:08,  8.84it/s]Measuring inference for batch_size=32:  22%|██▏       | 22/100 [00:02<00:08,  8.73it/s]Measuring inference for batch_size=32:  23%|██▎       | 23/100 [00:02<00:08,  8.67it/s]Measuring inference for batch_size=32:  24%|██▍       | 24/100 [00:02<00:08,  8.71it/s]Measuring inference for batch_size=32:  25%|██▌       | 25/100 [00:02<00:08,  8.65it/s]Measuring inference for batch_size=32:  26%|██▌       | 26/100 [00:03<00:08,  8.69it/s]Measuring inference for batch_size=32:  27%|██▋       | 27/100 [00:03<00:08,  8.74it/s]Measuring inference for batch_size=32:  28%|██▊       | 28/100 [00:03<00:08,  8.65it/s]Measuring inference for batch_size=32:  29%|██▉       | 29/100 [00:03<00:08,  8.74it/s]Measuring inference for batch_size=32:  30%|███       | 30/100 [00:03<00:08,  8.59it/s]Measuring inference for batch_size=32:  31%|███       | 31/100 [00:03<00:08,  8.50it/s]Measuring inference for batch_size=32:  32%|███▏      | 32/100 [00:03<00:07,  8.69it/s]Measuring inference for batch_size=32:  33%|███▎      | 33/100 [00:03<00:07,  8.78it/s]Measuring inference for batch_size=32:  34%|███▍      | 34/100 [00:03<00:07,  8.91it/s]Measuring inference for batch_size=32:  35%|███▌      | 35/100 [00:04<00:07,  9.05it/s]Measuring inference for batch_size=32:  36%|███▌      | 36/100 [00:04<00:07,  8.97it/s]Measuring inference for batch_size=32:  37%|███▋      | 37/100 [00:04<00:07,  8.99it/s]Measuring inference for batch_size=32:  38%|███▊      | 38/100 [00:04<00:06,  9.08it/s]Measuring inference for batch_size=32:  39%|███▉      | 39/100 [00:04<00:06,  9.19it/s]Measuring inference for batch_size=32:  40%|████      | 40/100 [00:04<00:06,  9.11it/s]Measuring inference for batch_size=32:  41%|████      | 41/100 [00:04<00:06,  9.15it/s]Measuring inference for batch_size=32:  42%|████▏     | 42/100 [00:04<00:06,  9.13it/s]Measuring inference for batch_size=32:  43%|████▎     | 43/100 [00:04<00:06,  9.18it/s]Measuring inference for batch_size=32:  44%|████▍     | 44/100 [00:05<00:06,  9.10it/s]Measuring inference for batch_size=32:  45%|████▌     | 45/100 [00:05<00:06,  8.99it/s]Measuring inference for batch_size=32:  46%|████▌     | 46/100 [00:05<00:06,  8.89it/s]Measuring inference for batch_size=32:  47%|████▋     | 47/100 [00:05<00:05,  8.87it/s]Measuring inference for batch_size=32:  48%|████▊     | 48/100 [00:05<00:05,  8.87it/s]Measuring inference for batch_size=32:  49%|████▉     | 49/100 [00:05<00:05,  8.69it/s]Measuring inference for batch_size=32:  50%|█████     | 50/100 [00:05<00:05,  8.82it/s]Measuring inference for batch_size=32:  51%|█████     | 51/100 [00:05<00:05,  8.75it/s]Measuring inference for batch_size=32:  52%|█████▏    | 52/100 [00:05<00:05,  8.78it/s]Measuring inference for batch_size=32:  53%|█████▎    | 53/100 [00:06<00:05,  8.80it/s]Measuring inference for batch_size=32:  54%|█████▍    | 54/100 [00:06<00:05,  8.68it/s]Measuring inference for batch_size=32:  55%|█████▌    | 55/100 [00:06<00:05,  8.73it/s]Measuring inference for batch_size=32:  56%|█████▌    | 56/100 [00:06<00:04,  8.90it/s]Measuring inference for batch_size=32:  57%|█████▋    | 57/100 [00:06<00:04,  8.92it/s]Measuring inference for batch_size=32:  58%|█████▊    | 58/100 [00:06<00:04,  8.93it/s]Measuring inference for batch_size=32:  59%|█████▉    | 59/100 [00:06<00:04,  8.71it/s]Measuring inference for batch_size=32:  60%|██████    | 60/100 [00:06<00:04,  8.65it/s]Measuring inference for batch_size=32:  61%|██████    | 61/100 [00:06<00:04,  8.79it/s]Measuring inference for batch_size=32:  62%|██████▏   | 62/100 [00:07<00:04,  8.93it/s]Measuring inference for batch_size=32:  63%|██████▎   | 63/100 [00:07<00:04,  9.01it/s]Measuring inference for batch_size=32:  64%|██████▍   | 64/100 [00:07<00:03,  9.14it/s]Measuring inference for batch_size=32:  65%|██████▌   | 65/100 [00:07<00:03,  9.08it/s]Measuring inference for batch_size=32:  66%|██████▌   | 66/100 [00:07<00:03,  9.16it/s]Measuring inference for batch_size=32:  67%|██████▋   | 67/100 [00:07<00:03,  9.25it/s]Measuring inference for batch_size=32:  68%|██████▊   | 68/100 [00:07<00:03,  9.30it/s]Measuring inference for batch_size=32:  69%|██████▉   | 69/100 [00:07<00:03,  9.23it/s]Measuring inference for batch_size=32:  70%|███████   | 70/100 [00:07<00:03,  9.10it/s]Measuring inference for batch_size=32:  71%|███████   | 71/100 [00:08<00:03,  9.03it/s]Measuring inference for batch_size=32:  72%|███████▏  | 72/100 [00:08<00:03,  9.05it/s]Measuring inference for batch_size=32:  73%|███████▎  | 73/100 [00:08<00:03,  8.58it/s]Measuring inference for batch_size=32:  74%|███████▍  | 74/100 [00:08<00:02,  8.72it/s]Measuring inference for batch_size=32:  75%|███████▌  | 75/100 [00:08<00:02,  8.79it/s]Measuring inference for batch_size=32:  76%|███████▌  | 76/100 [00:08<00:02,  8.94it/s]Measuring inference for batch_size=32:  77%|███████▋  | 77/100 [00:08<00:02,  8.95it/s]Measuring inference for batch_size=32:  78%|███████▊  | 78/100 [00:08<00:02,  8.92it/s]Measuring inference for batch_size=32:  79%|███████▉  | 79/100 [00:08<00:02,  9.12it/s]Measuring inference for batch_size=32:  80%|████████  | 80/100 [00:09<00:02,  8.86it/s]Measuring inference for batch_size=32:  81%|████████  | 81/100 [00:09<00:02,  8.75it/s]Measuring inference for batch_size=32:  82%|████████▏ | 82/100 [00:09<00:02,  8.69it/s]Measuring inference for batch_size=32:  83%|████████▎ | 83/100 [00:09<00:02,  8.20it/s]Measuring inference for batch_size=32:  84%|████████▍ | 84/100 [00:09<00:01,  8.05it/s]Measuring inference for batch_size=32:  85%|████████▌ | 85/100 [00:09<00:01,  8.14it/s]Measuring inference for batch_size=32:  86%|████████▌ | 86/100 [00:09<00:01,  7.85it/s]Measuring inference for batch_size=32:  87%|████████▋ | 87/100 [00:09<00:01,  7.78it/s]Measuring inference for batch_size=32:  88%|████████▊ | 88/100 [00:10<00:01,  7.61it/s]Measuring inference for batch_size=32:  89%|████████▉ | 89/100 [00:10<00:01,  7.95it/s]Measuring inference for batch_size=32:  90%|█████████ | 90/100 [00:10<00:01,  8.12it/s]Measuring inference for batch_size=32:  91%|█████████ | 91/100 [00:10<00:01,  8.18it/s]Measuring inference for batch_size=32:  92%|█████████▏| 92/100 [00:10<00:00,  8.19it/s]Measuring inference for batch_size=32:  93%|█████████▎| 93/100 [00:10<00:00,  8.30it/s]Measuring inference for batch_size=32:  94%|█████████▍| 94/100 [00:10<00:00,  8.61it/s]Measuring inference for batch_size=32:  95%|█████████▌| 95/100 [00:10<00:00,  8.75it/s]Measuring inference for batch_size=32:  96%|█████████▌| 96/100 [00:11<00:00,  8.40it/s]Measuring inference for batch_size=32:  97%|█████████▋| 97/100 [00:11<00:00,  8.79it/s]Measuring inference for batch_size=32:  98%|█████████▊| 98/100 [00:11<00:00,  8.86it/s]Measuring inference for batch_size=32:  99%|█████████▉| 99/100 [00:11<00:00,  8.37it/s]Measuring inference for batch_size=32: 100%|██████████| 100/100 [00:11<00:00,  8.52it/s]Measuring inference for batch_size=32: 100%|██████████| 100/100 [00:11<00:00,  8.69it/s]
+Timing results (batch_size=1):
+  cpu_to_gpu:
+    human_readable:
+      batch_latency: 16.654 us +/- 3.924 us [11.683 us, 36.240 us]
+      batches_per_second: 62.67 K +/- 11.67 K [27.59 K, 85.60 K]
+    metrics:
+      batches_per_second_max: 85598.04081632652
+      batches_per_second_mean: 62668.49380944983
+      batches_per_second_min: 27594.105263157893
+      batches_per_second_std: 11674.729355217693
+      seconds_per_batch_max: 3.62396240234375e-05
+      seconds_per_batch_mean: 1.665353775024414e-05
+      seconds_per_batch_min: 1.1682510375976562e-05
+      seconds_per_batch_std: 3.923615809623246e-06
+  gpu_to_cpu:
+    human_readable:
+      batch_latency: 247.099 us +/- 97.406 us [202.179 us, 1.154 ms]
+      batches_per_second: 4.23 K +/- 575.93 [866.23, 4.95 K]
+    metrics:
+      batches_per_second_max: 4946.11320754717
+      batches_per_second_mean: 4234.454641182191
+      batches_per_second_min: 866.2337876910368
+      batches_per_second_std: 575.9252157760366
+      seconds_per_batch_max: 0.0011544227600097656
+      seconds_per_batch_mean: 0.0002470993995666504
+      seconds_per_batch_min: 0.000202178955078125
+      seconds_per_batch_std: 9.740564187311266e-05
+  on_device_inference:
+    human_readable:
+      batch_latency: 113.913 ms +/- 7.267 ms [100.250 ms, 136.636 ms]
+      batches_per_second: 8.81 +/- 0.53 [7.32, 9.98]
+    metrics:
+      batches_per_second_max: 9.975109221194025
+      batches_per_second_mean: 8.812220060936161
+      batches_per_second_min: 7.318714414588906
+      batches_per_second_std: 0.5288983799701357
+      seconds_per_batch_max: 0.13663601875305176
+      seconds_per_batch_mean: 0.11391314506530761
+      seconds_per_batch_min: 0.1002495288848877
+      seconds_per_batch_std: 0.007267115556695038
+  total:
+    human_readable:
+      batch_latency: 114.177 ms +/- 7.297 ms [100.489 ms, 136.934 ms]
+      batches_per_second: 8.79 +/- 0.53 [7.30, 9.95]
+    metrics:
+      batches_per_second_max: 9.951371358071558
+      batches_per_second_mean: 8.791966354255715
+      batches_per_second_min: 7.302798680925302
+      batches_per_second_std: 0.5283376270181036
+      seconds_per_batch_max: 0.1369338035583496
+      seconds_per_batch_mean: 0.11417689800262451
+      seconds_per_batch_min: 0.10048866271972656
+      seconds_per_batch_std: 0.007297277841663952
+
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input
+Jetson PowerLogger found 9 power devices
+Measuring energy for batch_size=1:   0%|          | 0/10 [00:00<?, ?it/s]Measuring energy for batch_size=1:  10%|█         | 1/10 [00:00<00:01,  5.86it/s]Measuring energy for batch_size=1:  20%|██        | 2/10 [00:00<00:01,  5.74it/s]Measuring energy for batch_size=1:  30%|███       | 3/10 [00:00<00:01,  5.73it/s]Measuring energy for batch_size=1:  40%|████      | 4/10 [00:00<00:01,  5.74it/s]Measuring energy for batch_size=1:  50%|█████     | 5/10 [00:00<00:00,  5.72it/s]Measuring energy for batch_size=1:  60%|██████    | 6/10 [00:01<00:00,  5.72it/s]Measuring energy for batch_size=1:  70%|███████   | 7/10 [00:01<00:00,  5.76it/s]Measuring energy for batch_size=1:  80%|████████  | 8/10 [00:01<00:00,  5.75it/s]Measuring energy for batch_size=1:  90%|█████████ | 9/10 [00:01<00:00,  5.74it/s]Measuring energy for batch_size=1: 100%|██████████| 10/10 [00:01<00:00,  5.72it/s]Measuring energy for batch_size=1: 100%|██████████| 10/10 [00:01<00:00,  5.73it/s]
+Energy results (batch_size=1):
+  joules: 2.0729032445192335
+  kWh: 5.758064568108982e-07
+
+Memory results (batch_size=32):
+  max_inference: 850.28 MB
+  max_inference_bytes: 891588096
+  post_inference: 829.96 MB
+  post_inference_bytes: 870272512
+  pre_inference: 308.01 MB
+  pre_inference_bytes: 322972672
+
+Warming up with batch_size=32:   0%|          | 0/10 [00:00<?, ?it/s]Warming up with batch_size=32:  10%|█         | 1/10 [00:00<00:05,  1.59it/s]Warming up with batch_size=32:  20%|██        | 2/10 [00:01<00:04,  1.73it/s]Warming up with batch_size=32:  30%|███       | 3/10 [00:01<00:03,  1.77it/s]Warming up with batch_size=32:  40%|████      | 4/10 [00:02<00:03,  1.77it/s]Warming up with batch_size=32:  50%|█████     | 5/10 [00:02<00:02,  1.80it/s]Warming up with batch_size=32:  60%|██████    | 6/10 [00:03<00:02,  1.82it/s]Warming up with batch_size=32:  70%|███████   | 7/10 [00:03<00:01,  1.83it/s]Warming up with batch_size=32:  80%|████████  | 8/10 [00:04<00:01,  1.84it/s]Warming up with batch_size=32:  90%|█████████ | 9/10 [00:04<00:00,  1.84it/s]Warming up with batch_size=32: 100%|██████████| 10/10 [00:05<00:00,  1.84it/s]Warming up with batch_size=32: 100%|██████████| 10/10 [00:05<00:00,  1.81it/s]
+Measuring inference for batch_size=32:   0%|          | 0/100 [00:00<?, ?it/s]Measuring inference for batch_size=32:   1%|          | 1/100 [00:00<00:53,  1.84it/s]Measuring inference for batch_size=32:   2%|▏         | 2/100 [00:01<00:54,  1.79it/s]Measuring inference for batch_size=32:   3%|▎         | 3/100 [00:01<00:54,  1.76it/s]Measuring inference for batch_size=32:   4%|▍         | 4/100 [00:02<00:54,  1.77it/s]Measuring inference for batch_size=32:   5%|▌         | 5/100 [00:02<00:53,  1.78it/s]Measuring inference for batch_size=32:   6%|▌         | 6/100 [00:03<00:52,  1.79it/s]Measuring inference for batch_size=32:   7%|▋         | 7/100 [00:03<00:52,  1.78it/s]Measuring inference for batch_size=32:   8%|▊         | 8/100 [00:04<00:52,  1.77it/s]Measuring inference for batch_size=32:   9%|▉         | 9/100 [00:05<00:51,  1.76it/s]Measuring inference for batch_size=32:  10%|█         | 10/100 [00:05<00:52,  1.70it/s]Measuring inference for batch_size=32:  11%|█         | 11/100 [00:06<00:51,  1.73it/s]Measuring inference for batch_size=32:  12%|█▏        | 12/100 [00:06<00:51,  1.71it/s]Measuring inference for batch_size=32:  13%|█▎        | 13/100 [00:07<00:53,  1.64it/s]Measuring inference for batch_size=32:  14%|█▍        | 14/100 [00:08<00:53,  1.62it/s]Measuring inference for batch_size=32:  15%|█▌        | 15/100 [00:08<00:52,  1.61it/s]Measuring inference for batch_size=32:  16%|█▌        | 16/100 [00:09<00:50,  1.67it/s]Measuring inference for batch_size=32:  17%|█▋        | 17/100 [00:09<00:49,  1.69it/s]Measuring inference for batch_size=32:  18%|█▊        | 18/100 [00:10<00:47,  1.71it/s]Measuring inference for batch_size=32:  19%|█▉        | 19/100 [00:11<00:46,  1.75it/s]Measuring inference for batch_size=32:  20%|██        | 20/100 [00:11<00:46,  1.71it/s]Measuring inference for batch_size=32:  21%|██        | 21/100 [00:12<00:47,  1.68it/s]Measuring inference for batch_size=32:  22%|██▏       | 22/100 [00:12<00:46,  1.69it/s]Measuring inference for batch_size=32:  23%|██▎       | 23/100 [00:13<00:44,  1.72it/s]Measuring inference for batch_size=32:  24%|██▍       | 24/100 [00:13<00:43,  1.73it/s]Measuring inference for batch_size=32:  25%|██▌       | 25/100 [00:14<00:43,  1.74it/s]Measuring inference for batch_size=32:  26%|██▌       | 26/100 [00:15<00:41,  1.78it/s]Measuring inference for batch_size=32:  27%|██▋       | 27/100 [00:15<00:40,  1.81it/s]Measuring inference for batch_size=32:  28%|██▊       | 28/100 [00:16<00:39,  1.83it/s]Measuring inference for batch_size=32:  29%|██▉       | 29/100 [00:16<00:38,  1.84it/s]Measuring inference for batch_size=32:  30%|███       | 30/100 [00:17<00:37,  1.86it/s]Measuring inference for batch_size=32:  31%|███       | 31/100 [00:17<00:37,  1.86it/s]Measuring inference for batch_size=32:  32%|███▏      | 32/100 [00:18<00:36,  1.87it/s]Measuring inference for batch_size=32:  33%|███▎      | 33/100 [00:18<00:35,  1.87it/s]Measuring inference for batch_size=32:  34%|███▍      | 34/100 [00:19<00:35,  1.87it/s]Measuring inference for batch_size=32:  35%|███▌      | 35/100 [00:19<00:34,  1.87it/s]Measuring inference for batch_size=32:  36%|███▌      | 36/100 [00:20<00:34,  1.87it/s]Measuring inference for batch_size=32:  37%|███▋      | 37/100 [00:20<00:33,  1.87it/s]Measuring inference for batch_size=32:  38%|███▊      | 38/100 [00:21<00:33,  1.87it/s]Measuring inference for batch_size=32:  39%|███▉      | 39/100 [00:22<00:32,  1.87it/s]Measuring inference for batch_size=32:  40%|████      | 40/100 [00:22<00:32,  1.87it/s]Measuring inference for batch_size=32:  41%|████      | 41/100 [00:23<00:31,  1.87it/s]Measuring inference for batch_size=32:  42%|████▏     | 42/100 [00:23<00:31,  1.87it/s]Measuring inference for batch_size=32:  43%|████▎     | 43/100 [00:24<00:30,  1.86it/s]Measuring inference for batch_size=32:  44%|████▍     | 44/100 [00:24<00:29,  1.87it/s]Measuring inference for batch_size=32:  45%|████▌     | 45/100 [00:25<00:29,  1.87it/s]Measuring inference for batch_size=32:  46%|████▌     | 46/100 [00:25<00:28,  1.87it/s]Measuring inference for batch_size=32:  47%|████▋     | 47/100 [00:26<00:28,  1.87it/s]Measuring inference for batch_size=32:  48%|████▊     | 48/100 [00:26<00:27,  1.87it/s]Measuring inference for batch_size=32:  49%|████▉     | 49/100 [00:27<00:27,  1.87it/s]Measuring inference for batch_size=32:  50%|█████     | 50/100 [00:27<00:26,  1.87it/s]Measuring inference for batch_size=32:  51%|█████     | 51/100 [00:28<00:26,  1.88it/s]Measuring inference for batch_size=32:  52%|█████▏    | 52/100 [00:28<00:25,  1.87it/s]Measuring inference for batch_size=32:  53%|█████▎    | 53/100 [00:29<00:25,  1.87it/s]Measuring inference for batch_size=32:  54%|█████▍    | 54/100 [00:30<00:24,  1.87it/s]Measuring inference for batch_size=32:  55%|█████▌    | 55/100 [00:30<00:24,  1.87it/s]Measuring inference for batch_size=32:  56%|█████▌    | 56/100 [00:31<00:23,  1.87it/s]Measuring inference for batch_size=32:  57%|█████▋    | 57/100 [00:31<00:23,  1.87it/s]Measuring inference for batch_size=32:  58%|█████▊    | 58/100 [00:32<00:22,  1.87it/s]Measuring inference for batch_size=32:  59%|█████▉    | 59/100 [00:32<00:21,  1.87it/s]Measuring inference for batch_size=32:  60%|██████    | 60/100 [00:33<00:21,  1.87it/s]Measuring inference for batch_size=32:  61%|██████    | 61/100 [00:33<00:20,  1.87it/s]Measuring inference for batch_size=32:  62%|██████▏   | 62/100 [00:34<00:20,  1.87it/s]Measuring inference for batch_size=32:  63%|██████▎   | 63/100 [00:34<00:19,  1.87it/s]Measuring inference for batch_size=32:  64%|██████▍   | 64/100 [00:35<00:19,  1.86it/s]Measuring inference for batch_size=32:  65%|██████▌   | 65/100 [00:35<00:19,  1.80it/s]Measuring inference for batch_size=32:  66%|██████▌   | 66/100 [00:36<00:19,  1.79it/s]Measuring inference for batch_size=32:  67%|██████▋   | 67/100 [00:37<00:19,  1.73it/s]Measuring inference for batch_size=32:  68%|██████▊   | 68/100 [00:37<00:20,  1.55it/s]Measuring inference for batch_size=32:  69%|██████▉   | 69/100 [00:38<00:19,  1.61it/s]Measuring inference for batch_size=32:  70%|███████   | 70/100 [00:39<00:18,  1.64it/s]Measuring inference for batch_size=32:  71%|███████   | 71/100 [00:39<00:17,  1.66it/s]Measuring inference for batch_size=32:  72%|███████▏  | 72/100 [00:40<00:16,  1.71it/s]Measuring inference for batch_size=32:  73%|███████▎  | 73/100 [00:40<00:15,  1.75it/s]Measuring inference for batch_size=32:  74%|███████▍  | 74/100 [00:41<00:15,  1.72it/s]Measuring inference for batch_size=32:  75%|███████▌  | 75/100 [00:42<00:14,  1.69it/s]Measuring inference for batch_size=32:  76%|███████▌  | 76/100 [00:42<00:14,  1.70it/s]Measuring inference for batch_size=32:  77%|███████▋  | 77/100 [00:43<00:13,  1.74it/s]Measuring inference for batch_size=32:  78%|███████▊  | 78/100 [00:43<00:12,  1.74it/s]Measuring inference for batch_size=32:  79%|███████▉  | 79/100 [00:44<00:12,  1.74it/s]Measuring inference for batch_size=32:  80%|████████  | 80/100 [00:44<00:11,  1.78it/s]Measuring inference for batch_size=32:  81%|████████  | 81/100 [00:45<00:10,  1.81it/s]Measuring inference for batch_size=32:  82%|████████▏ | 82/100 [00:45<00:09,  1.83it/s]Measuring inference for batch_size=32:  83%|████████▎ | 83/100 [00:46<00:09,  1.84it/s]Measuring inference for batch_size=32:  84%|████████▍ | 84/100 [00:46<00:08,  1.82it/s]Measuring inference for batch_size=32:  85%|████████▌ | 85/100 [00:47<00:08,  1.76it/s]Measuring inference for batch_size=32:  86%|████████▌ | 86/100 [00:48<00:08,  1.73it/s]Measuring inference for batch_size=32:  87%|████████▋ | 87/100 [00:48<00:07,  1.68it/s]Measuring inference for batch_size=32:  88%|████████▊ | 88/100 [00:49<00:07,  1.70it/s]Measuring inference for batch_size=32:  89%|████████▉ | 89/100 [00:49<00:06,  1.69it/s]Measuring inference for batch_size=32:  90%|█████████ | 90/100 [00:50<00:05,  1.75it/s]Measuring inference for batch_size=32:  91%|█████████ | 91/100 [00:51<00:05,  1.78it/s]Measuring inference for batch_size=32:  92%|█████████▏| 92/100 [00:51<00:04,  1.81it/s]Measuring inference for batch_size=32:  93%|█████████▎| 93/100 [00:52<00:03,  1.81it/s]Measuring inference for batch_size=32:  94%|█████████▍| 94/100 [00:52<00:03,  1.83it/s]Measuring inference for batch_size=32:  95%|█████████▌| 95/100 [00:53<00:02,  1.84it/s]Measuring inference for batch_size=32:  96%|█████████▌| 96/100 [00:53<00:02,  1.85it/s]Measuring inference for batch_size=32:  97%|█████████▋| 97/100 [00:54<00:01,  1.85it/s]Measuring inference for batch_size=32:  98%|█████████▊| 98/100 [00:54<00:01,  1.86it/s]Measuring inference for batch_size=32:  99%|█████████▉| 99/100 [00:55<00:00,  1.86it/s]Measuring inference for batch_size=32: 100%|██████████| 100/100 [00:55<00:00,  1.86it/s]Measuring inference for batch_size=32: 100%|██████████| 100/100 [00:55<00:00,  1.79it/s]
+Timing results (batch_size=32):
+  cpu_to_gpu:
+    human_readable:
+      batch_latency: 12.481 us +/- 4.288 us [7.153 us, 24.557 us]
+      batches_per_second: 88.61 K +/- 25.90 K [40.72 K, 139.81 K]
+    metrics:
+      batches_per_second_max: 139810.13333333333
+      batches_per_second_mean: 88608.5910701397
+      batches_per_second_min: 40721.398058252424
+      batches_per_second_std: 25900.121775248466
+      seconds_per_batch_max: 2.4557113647460938e-05
+      seconds_per_batch_mean: 1.2481212615966797e-05
+      seconds_per_batch_min: 7.152557373046875e-06
+      seconds_per_batch_std: 4.287741229785676e-06
+  gpu_to_cpu:
+    human_readable:
+      batch_latency: 2.700 ms +/- 566.009 us [2.271 ms, 6.555 ms]
+      batches_per_second: 380.91 +/- 52.89 [152.56, 440.39]
+    metrics:
+      batches_per_second_max: 440.39311213775727
+      batches_per_second_mean: 380.9062546859012
+      batches_per_second_min: 152.56452786265095
+      batches_per_second_std: 52.893036115792476
+      seconds_per_batch_max: 0.006554603576660156
+      seconds_per_batch_mean: 0.002699563503265381
+      seconds_per_batch_min: 0.0022706985473632812
+      seconds_per_batch_std: 0.0005660091758923404
+  on_device_inference:
+    human_readable:
+      batch_latency: 552.547 ms +/- 29.932 ms [525.059 ms, 634.623 ms]
+      batches_per_second: 1.81 +/- 0.09 [1.58, 1.90]
+    metrics:
+      batches_per_second_max: 1.9045470603353467
+      batches_per_second_mean: 1.8147900021049197
+      batches_per_second_min: 1.5757397249981215
+      batches_per_second_std: 0.09220981326166876
+      seconds_per_batch_max: 0.6346225738525391
+      seconds_per_batch_mean: 0.5525468969345093
+      seconds_per_batch_min: 0.5250592231750488
+      seconds_per_batch_std: 0.029932081251266212
+  total:
+    human_readable:
+      batch_latency: 555.259 ms +/- 30.276 ms [527.697 ms, 640.533 ms]
+      batches_per_second: 1.81 +/- 0.09 [1.56, 1.90]
+    metrics:
+      batches_per_second_max: 1.895027427110663
+      batches_per_second_mean: 1.8059885857902302
+      batches_per_second_min: 1.5611993042483951
+      batches_per_second_std: 0.09231491302241022
+      seconds_per_batch_max: 0.6405332088470459
+      seconds_per_batch_mean: 0.5552589416503906
+      seconds_per_batch_min: 0.5276968479156494
+      seconds_per_batch_std: 0.03027579126199468
+
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input
+Jetson PowerLogger found 9 power devices
+Measuring energy for batch_size=32:   0%|          | 0/10 [00:00<?, ?it/s]Measuring energy for batch_size=32:  10%|█         | 1/10 [00:00<00:04,  1.89it/s]Measuring energy for batch_size=32:  20%|██        | 2/10 [00:01<00:04,  1.89it/s]Measuring energy for batch_size=32:  30%|███       | 3/10 [00:01<00:03,  1.80it/s]Measuring energy for batch_size=32:  40%|████      | 4/10 [00:02<00:03,  1.76it/s]Measuring energy for batch_size=32:  50%|█████     | 5/10 [00:02<00:02,  1.74it/s]Measuring energy for batch_size=32:  60%|██████    | 6/10 [00:03<00:02,  1.73it/s]Measuring energy for batch_size=32:  70%|███████   | 7/10 [00:03<00:01,  1.72it/s]Measuring energy for batch_size=32:  80%|████████  | 8/10 [00:04<00:01,  1.72it/s]Measuring energy for batch_size=32:  90%|█████████ | 9/10 [00:05<00:00,  1.72it/s]Measuring energy for batch_size=32: 100%|██████████| 10/10 [00:05<00:00,  1.72it/s]Measuring energy for batch_size=32: 100%|██████████| 10/10 [00:05<00:00,  1.74it/s]
+Energy results (batch_size=32):
+  joules: 14.524772275074323
+  kWh: 4.034658965298423e-06
+
+learner.infer:
+  device: cuda
+  energy:
+    batch_size_1:
+      joules: 2.0729032445192335
+      kWh: 5.758064568108982e-07
+    batch_size_32:
+      joules: 14.524772275074323
+      kWh: 4.034658965298423e-06
+  machine_info:
+    cpu:
+      architecture: aarch64
+      cores:
+        physical: 8
+        total: 8
+      frequency: 2.27 GHz
+      model: ARMv8 Processor rev 0 (v8l)
+    gpus: null
+    memory:
+      available: 26.98 GB
+      total: 31.17 GB
+      used: 7.18 GB
+    system:
+      node: xavier
+      release: 4.9.140-tegra
+      system: Linux
+  timing:
+    batch_size_1:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 16.654 us +/- 3.924 us [11.683 us, 36.240 us]
+          batches_per_second: 62.67 K +/- 11.67 K [27.59 K, 85.60 K]
+        metrics:
+          batches_per_second_max: 85598.04081632652
+          batches_per_second_mean: 62668.49380944983
+          batches_per_second_min: 27594.105263157893
+          batches_per_second_std: 11674.729355217693
+          seconds_per_batch_max: 3.62396240234375e-05
+          seconds_per_batch_mean: 1.665353775024414e-05
+          seconds_per_batch_min: 1.1682510375976562e-05
+          seconds_per_batch_std: 3.923615809623246e-06
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 247.099 us +/- 97.406 us [202.179 us, 1.154 ms]
+          batches_per_second: 4.23 K +/- 575.93 [866.23, 4.95 K]
+        metrics:
+          batches_per_second_max: 4946.11320754717
+          batches_per_second_mean: 4234.454641182191
+          batches_per_second_min: 866.2337876910368
+          batches_per_second_std: 575.9252157760366
+          seconds_per_batch_max: 0.0011544227600097656
+          seconds_per_batch_mean: 0.0002470993995666504
+          seconds_per_batch_min: 0.000202178955078125
+          seconds_per_batch_std: 9.740564187311266e-05
+      on_device_inference:
+        human_readable:
+          batch_latency: 113.913 ms +/- 7.267 ms [100.250 ms, 136.636 ms]
+          batches_per_second: 8.81 +/- 0.53 [7.32, 9.98]
+        metrics:
+          batches_per_second_max: 9.975109221194025
+          batches_per_second_mean: 8.812220060936161
+          batches_per_second_min: 7.318714414588906
+          batches_per_second_std: 0.5288983799701357
+          seconds_per_batch_max: 0.13663601875305176
+          seconds_per_batch_mean: 0.11391314506530761
+          seconds_per_batch_min: 0.1002495288848877
+          seconds_per_batch_std: 0.007267115556695038
+      total:
+        human_readable:
+          batch_latency: 114.177 ms +/- 7.297 ms [100.489 ms, 136.934 ms]
+          batches_per_second: 8.79 +/- 0.53 [7.30, 9.95]
+        metrics:
+          batches_per_second_max: 9.951371358071558
+          batches_per_second_mean: 8.791966354255715
+          batches_per_second_min: 7.302798680925302
+          batches_per_second_std: 0.5283376270181036
+          seconds_per_batch_max: 0.1369338035583496
+          seconds_per_batch_mean: 0.11417689800262451
+          seconds_per_batch_min: 0.10048866271972656
+          seconds_per_batch_std: 0.007297277841663952
+    batch_size_32:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 12.481 us +/- 4.288 us [7.153 us, 24.557 us]
+          batches_per_second: 88.61 K +/- 25.90 K [40.72 K, 139.81 K]
+        metrics:
+          batches_per_second_max: 139810.13333333333
+          batches_per_second_mean: 88608.5910701397
+          batches_per_second_min: 40721.398058252424
+          batches_per_second_std: 25900.121775248466
+          seconds_per_batch_max: 2.4557113647460938e-05
+          seconds_per_batch_mean: 1.2481212615966797e-05
+          seconds_per_batch_min: 7.152557373046875e-06
+          seconds_per_batch_std: 4.287741229785676e-06
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 2.700 ms +/- 566.009 us [2.271 ms, 6.555 ms]
+          batches_per_second: 380.91 +/- 52.89 [152.56, 440.39]
+        metrics:
+          batches_per_second_max: 440.39311213775727
+          batches_per_second_mean: 380.9062546859012
+          batches_per_second_min: 152.56452786265095
+          batches_per_second_std: 52.893036115792476
+          seconds_per_batch_max: 0.006554603576660156
+          seconds_per_batch_mean: 0.002699563503265381
+          seconds_per_batch_min: 0.0022706985473632812
+          seconds_per_batch_std: 0.0005660091758923404
+      on_device_inference:
+        human_readable:
+          batch_latency: 552.547 ms +/- 29.932 ms [525.059 ms, 634.623 ms]
+          batches_per_second: 1.81 +/- 0.09 [1.58, 1.90]
+        metrics:
+          batches_per_second_max: 1.9045470603353467
+          batches_per_second_mean: 1.8147900021049197
+          batches_per_second_min: 1.5757397249981215
+          batches_per_second_std: 0.09220981326166876
+          seconds_per_batch_max: 0.6346225738525391
+          seconds_per_batch_mean: 0.5525468969345093
+          seconds_per_batch_min: 0.5250592231750488
+          seconds_per_batch_std: 0.029932081251266212
+      total:
+        human_readable:
+          batch_latency: 555.259 ms +/- 30.276 ms [527.697 ms, 640.533 ms]
+          batches_per_second: 1.81 +/- 0.09 [1.56, 1.90]
+        metrics:
+          batches_per_second_max: 1.895027427110663
+          batches_per_second_mean: 1.8059885857902302
+          batches_per_second_min: 1.5611993042483951
+          batches_per_second_std: 0.09231491302241022
+          seconds_per_batch_max: 0.6405332088470459
+          seconds_per_batch_mean: 0.5552589416503906
+          seconds_per_batch_min: 0.5276968479156494
+          seconds_per_batch_std: 0.03027579126199468
+
+== Benchmarking model directly ==
+Machine info:
+  cpu:
+    architecture: aarch64
+    cores:
+      physical: 8
+      total: 8
+    frequency: 2.27 GHz
+    model: ARMv8 Processor rev 0 (v8l)
+  gpus: null
+  memory:
+    available: 16.04 GB
+    total: 31.17 GB
+    used: 15.12 GB
+  system:
+    node: xavier
+    release: 4.9.140-tegra
+    system: Linux
+
+Model device: cuda:0
+Model parameters: 3794322 (3.79 M)
+Model FLOPs: 138232160 (138.23 M)
+Memory results (batch_size=1):
+  max_inference: 850.80 MB
+  max_inference_bytes: 892128768
+  post_inference: 830.44 MB
+  post_inference_bytes: 870778368
+  pre_inference: 70.38 MB
+  pre_inference_bytes: 73803264
+
+Warming up with batch_size=32:   0%|          | 0/10 [00:00<?, ?it/s]Warming up with batch_size=32:  10%|█         | 1/10 [00:00<00:01,  8.92it/s]Warming up with batch_size=32:  20%|██        | 2/10 [00:00<00:00,  9.01it/s]Warming up with batch_size=32:  30%|███       | 3/10 [00:00<00:00,  9.41it/s]Warming up with batch_size=32:  50%|█████     | 5/10 [00:00<00:00,  9.89it/s]Warming up with batch_size=32:  70%|███████   | 7/10 [00:00<00:00, 10.13it/s]Warming up with batch_size=32:  90%|█████████ | 9/10 [00:00<00:00, 10.22it/s]Warming up with batch_size=32: 100%|██████████| 10/10 [00:01<00:00,  9.88it/s]
+Measuring inference for batch_size=32:   0%|          | 0/100 [00:00<?, ?it/s]Measuring inference for batch_size=32:   2%|▏         | 2/100 [00:00<00:09, 10.22it/s]Measuring inference for batch_size=32:   4%|▍         | 4/100 [00:00<00:09,  9.93it/s]Measuring inference for batch_size=32:   5%|▌         | 5/100 [00:00<00:09,  9.89it/s]Measuring inference for batch_size=32:   6%|▌         | 6/100 [00:00<00:09,  9.67it/s]Measuring inference for batch_size=32:   7%|▋         | 7/100 [00:00<00:09,  9.70it/s]Measuring inference for batch_size=32:   8%|▊         | 8/100 [00:00<00:09,  9.61it/s]Measuring inference for batch_size=32:  10%|█         | 10/100 [00:01<00:09,  9.96it/s]Measuring inference for batch_size=32:  11%|█         | 11/100 [00:01<00:09,  9.85it/s]Measuring inference for batch_size=32:  12%|█▏        | 12/100 [00:01<00:09,  9.68it/s]Measuring inference for batch_size=32:  14%|█▍        | 14/100 [00:01<00:08,  9.98it/s]Measuring inference for batch_size=32:  15%|█▌        | 15/100 [00:01<00:08,  9.97it/s]Measuring inference for batch_size=32:  16%|█▌        | 16/100 [00:01<00:08,  9.71it/s]Measuring inference for batch_size=32:  17%|█▋        | 17/100 [00:01<00:08,  9.74it/s]Measuring inference for batch_size=32:  18%|█▊        | 18/100 [00:01<00:08,  9.67it/s]Measuring inference for batch_size=32:  20%|██        | 20/100 [00:02<00:08,  9.99it/s]Measuring inference for batch_size=32:  22%|██▏       | 22/100 [00:02<00:07, 10.23it/s]Measuring inference for batch_size=32:  24%|██▍       | 24/100 [00:02<00:07, 10.40it/s]Measuring inference for batch_size=32:  26%|██▌       | 26/100 [00:02<00:07, 10.51it/s]Measuring inference for batch_size=32:  28%|██▊       | 28/100 [00:02<00:06, 10.54it/s]Measuring inference for batch_size=32:  30%|███       | 30/100 [00:02<00:06, 10.57it/s]Measuring inference for batch_size=32:  32%|███▏      | 32/100 [00:03<00:06, 10.60it/s]Measuring inference for batch_size=32:  34%|███▍      | 34/100 [00:03<00:06, 10.64it/s]Measuring inference for batch_size=32:  36%|███▌      | 36/100 [00:03<00:06, 10.66it/s]Measuring inference for batch_size=32:  38%|███▊      | 38/100 [00:03<00:05, 10.69it/s]Measuring inference for batch_size=32:  40%|████      | 40/100 [00:03<00:05, 10.67it/s]Measuring inference for batch_size=32:  42%|████▏     | 42/100 [00:04<00:05, 10.65it/s]Measuring inference for batch_size=32:  44%|████▍     | 44/100 [00:04<00:05, 10.67it/s]Measuring inference for batch_size=32:  46%|████▌     | 46/100 [00:04<00:05, 10.70it/s]Measuring inference for batch_size=32:  48%|████▊     | 48/100 [00:04<00:04, 10.70it/s]Measuring inference for batch_size=32:  50%|█████     | 50/100 [00:04<00:04, 10.71it/s]Measuring inference for batch_size=32:  52%|█████▏    | 52/100 [00:05<00:04, 10.76it/s]Measuring inference for batch_size=32:  54%|█████▍    | 54/100 [00:05<00:04, 10.76it/s]Measuring inference for batch_size=32:  56%|█████▌    | 56/100 [00:05<00:04, 10.79it/s]Measuring inference for batch_size=32:  58%|█████▊    | 58/100 [00:05<00:03, 10.82it/s]Measuring inference for batch_size=32:  60%|██████    | 60/100 [00:05<00:03, 10.84it/s]Measuring inference for batch_size=32:  62%|██████▏   | 62/100 [00:05<00:03, 10.83it/s]Measuring inference for batch_size=32:  64%|██████▍   | 64/100 [00:06<00:03, 10.85it/s]Measuring inference for batch_size=32:  66%|██████▌   | 66/100 [00:06<00:03, 10.87it/s]Measuring inference for batch_size=32:  68%|██████▊   | 68/100 [00:06<00:02, 10.90it/s]Measuring inference for batch_size=32:  70%|███████   | 70/100 [00:06<00:02, 10.96it/s]Measuring inference for batch_size=32:  72%|███████▏  | 72/100 [00:06<00:02, 10.97it/s]Measuring inference for batch_size=32:  74%|███████▍  | 74/100 [00:07<00:02, 10.97it/s]Measuring inference for batch_size=32:  76%|███████▌  | 76/100 [00:07<00:02, 11.01it/s]Measuring inference for batch_size=32:  78%|███████▊  | 78/100 [00:07<00:01, 11.01it/s]Measuring inference for batch_size=32:  80%|████████  | 80/100 [00:07<00:01, 11.03it/s]Measuring inference for batch_size=32:  82%|████████▏ | 82/100 [00:07<00:01, 11.02it/s]Measuring inference for batch_size=32:  84%|████████▍ | 84/100 [00:07<00:01, 11.01it/s]Measuring inference for batch_size=32:  86%|████████▌ | 86/100 [00:08<00:01, 11.03it/s]Measuring inference for batch_size=32:  88%|████████▊ | 88/100 [00:08<00:01, 11.02it/s]Measuring inference for batch_size=32:  90%|█████████ | 90/100 [00:08<00:00, 11.05it/s]Measuring inference for batch_size=32:  92%|█████████▏| 92/100 [00:08<00:00, 11.07it/s]Measuring inference for batch_size=32:  94%|█████████▍| 94/100 [00:08<00:00, 11.01it/s]Measuring inference for batch_size=32:  96%|█████████▌| 96/100 [00:09<00:00, 11.03it/s]Measuring inference for batch_size=32:  98%|█████████▊| 98/100 [00:09<00:00, 11.00it/s]Measuring inference for batch_size=32: 100%|██████████| 100/100 [00:09<00:00, 11.01it/s]Measuring inference for batch_size=32: 100%|██████████| 100/100 [00:09<00:00, 10.65it/s]
+Timing results (batch_size=1):
+  cpu_to_gpu:
+    human_readable:
+      batch_latency: 190.635 us +/- 45.057 us [129.461 us, 333.071 us]
+      batches_per_second: 5.49 K +/- 1.05 K [3.00 K, 7.72 K]
+    metrics:
+      batches_per_second_max: 7724.316758747698
+      batches_per_second_mean: 5486.398907811185
+      batches_per_second_min: 3002.365068002863
+      batches_per_second_std: 1049.5869593352215
+      seconds_per_batch_max: 0.0003330707550048828
+      seconds_per_batch_mean: 0.00019063472747802735
+      seconds_per_batch_min: 0.00012946128845214844
+      seconds_per_batch_std: 4.5056925432856544e-05
+  gpu_to_cpu:
+    human_readable:
+      batch_latency: 176.156 us +/- 21.535 us [117.540 us, 235.081 us]
+      batches_per_second: 5.77 K +/- 752.34 [4.25 K, 8.51 K]
+    metrics:
+      batches_per_second_max: 8507.71602434077
+      batches_per_second_mean: 5766.610324744081
+      batches_per_second_min: 4253.858012170385
+      batches_per_second_std: 752.3447379275071
+      seconds_per_batch_max: 0.00023508071899414062
+      seconds_per_batch_mean: 0.00017615556716918946
+      seconds_per_batch_min: 0.00011754035949707031
+      seconds_per_batch_std: 2.1535398191322695e-05
+  on_device_inference:
+    human_readable:
+      batch_latency: 93.029 ms +/- 4.421 ms [88.813 ms, 109.531 ms]
+      batches_per_second: 10.77 +/- 0.47 [9.13, 11.26]
+    metrics:
+      batches_per_second_max: 11.2596649190485
+      batches_per_second_mean: 10.771666029731232
+      batches_per_second_min: 9.129801831922823
+      batches_per_second_std: 0.4709963439222451
+      seconds_per_batch_max: 0.10953140258789062
+      seconds_per_batch_mean: 0.09302917242050171
+      seconds_per_batch_min: 0.08881258964538574
+      seconds_per_batch_std: 0.004421463812684828
+  total:
+    human_readable:
+      batch_latency: 93.396 ms +/- 4.453 ms [89.133 ms, 110.010 ms]
+      batches_per_second: 10.73 +/- 0.47 [9.09, 11.22]
+    metrics:
+      batches_per_second_max: 11.219156243647218
+      batches_per_second_mean: 10.729497240713743
+      batches_per_second_min: 9.090050865052653
+      batches_per_second_std: 0.4704493241852625
+      seconds_per_batch_max: 0.11001038551330566
+      seconds_per_batch_mean: 0.09339596271514893
+      seconds_per_batch_min: 0.08913326263427734
+      seconds_per_batch_std: 0.004453331987751125
+
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input
+Jetson PowerLogger found 9 power devices
+Measuring energy for batch_size=1:   0%|          | 0/10 [00:00<?, ?it/s]Measuring energy for batch_size=1:  10%|█         | 1/10 [00:00<00:01,  7.85it/s]Measuring energy for batch_size=1:  20%|██        | 2/10 [00:00<00:01,  7.85it/s]Measuring energy for batch_size=1:  30%|███       | 3/10 [00:00<00:00,  7.83it/s]Measuring energy for batch_size=1:  40%|████      | 4/10 [00:00<00:00,  7.83it/s]Measuring energy for batch_size=1:  50%|█████     | 5/10 [00:00<00:00,  7.83it/s]Measuring energy for batch_size=1:  60%|██████    | 6/10 [00:00<00:00,  7.86it/s]Measuring energy for batch_size=1:  70%|███████   | 7/10 [00:00<00:00,  7.91it/s]Measuring energy for batch_size=1:  80%|████████  | 8/10 [00:01<00:00,  7.96it/s]Measuring energy for batch_size=1:  90%|█████████ | 9/10 [00:01<00:00,  7.90it/s]Measuring energy for batch_size=1: 100%|██████████| 10/10 [00:01<00:00,  7.92it/s]Measuring energy for batch_size=1: 100%|██████████| 10/10 [00:01<00:00,  7.88it/s]
+Energy results (batch_size=1):
+  joules: 1.2473798392407098
+  kWh: 3.4649439978908604e-07
+
+Memory results (batch_size=32):
+  max_inference: 850.80 MB
+  max_inference_bytes: 892128768
+  post_inference: 830.44 MB
+  post_inference_bytes: 870778368
+  pre_inference: 308.01 MB
+  pre_inference_bytes: 322972672
+
+Warming up with batch_size=32:   0%|          | 0/10 [00:00<?, ?it/s]Warming up with batch_size=32:  10%|█         | 1/10 [00:00<00:04,  1.98it/s]Warming up with batch_size=32:  20%|██        | 2/10 [00:01<00:04,  1.97it/s]Warming up with batch_size=32:  30%|███       | 3/10 [00:01<00:03,  1.98it/s]Warming up with batch_size=32:  40%|████      | 4/10 [00:02<00:03,  1.97it/s]Warming up with batch_size=32:  50%|█████     | 5/10 [00:02<00:02,  1.97it/s]Warming up with batch_size=32:  60%|██████    | 6/10 [00:03<00:02,  1.97it/s]Warming up with batch_size=32:  70%|███████   | 7/10 [00:03<00:01,  1.97it/s]Warming up with batch_size=32:  80%|████████  | 8/10 [00:04<00:01,  1.97it/s]Warming up with batch_size=32:  90%|█████████ | 9/10 [00:04<00:00,  1.97it/s]Warming up with batch_size=32: 100%|██████████| 10/10 [00:05<00:00,  1.97it/s]Warming up with batch_size=32: 100%|██████████| 10/10 [00:05<00:00,  1.97it/s]
+Measuring inference for batch_size=32:   0%|          | 0/100 [00:00<?, ?it/s]Measuring inference for batch_size=32:   1%|          | 1/100 [00:00<00:50,  1.98it/s]Measuring inference for batch_size=32:   2%|▏         | 2/100 [00:01<00:49,  1.97it/s]Measuring inference for batch_size=32:   3%|▎         | 3/100 [00:01<00:49,  1.97it/s]Measuring inference for batch_size=32:   4%|▍         | 4/100 [00:02<00:48,  1.97it/s]Measuring inference for batch_size=32:   5%|▌         | 5/100 [00:02<00:48,  1.97it/s]Measuring inference for batch_size=32:   6%|▌         | 6/100 [00:03<00:47,  1.97it/s]Measuring inference for batch_size=32:   7%|▋         | 7/100 [00:03<00:47,  1.97it/s]Measuring inference for batch_size=32:   8%|▊         | 8/100 [00:04<00:46,  1.97it/s]Measuring inference for batch_size=32:   9%|▉         | 9/100 [00:04<00:46,  1.97it/s]Measuring inference for batch_size=32:  10%|█         | 10/100 [00:05<00:45,  1.97it/s]Measuring inference for batch_size=32:  11%|█         | 11/100 [00:05<00:45,  1.97it/s]Measuring inference for batch_size=32:  12%|█▏        | 12/100 [00:06<00:44,  1.97it/s]Measuring inference for batch_size=32:  13%|█▎        | 13/100 [00:06<00:44,  1.97it/s]Measuring inference for batch_size=32:  14%|█▍        | 14/100 [00:07<00:43,  1.97it/s]Measuring inference for batch_size=32:  15%|█▌        | 15/100 [00:07<00:43,  1.97it/s]Measuring inference for batch_size=32:  16%|█▌        | 16/100 [00:08<00:42,  1.97it/s]Measuring inference for batch_size=32:  17%|█▋        | 17/100 [00:08<00:42,  1.97it/s]Measuring inference for batch_size=32:  18%|█▊        | 18/100 [00:09<00:41,  1.97it/s]Measuring inference for batch_size=32:  19%|█▉        | 19/100 [00:09<00:41,  1.97it/s]Measuring inference for batch_size=32:  20%|██        | 20/100 [00:10<00:40,  1.97it/s]Measuring inference for batch_size=32:  21%|██        | 21/100 [00:10<00:40,  1.97it/s]Measuring inference for batch_size=32:  22%|██▏       | 22/100 [00:11<00:39,  1.97it/s]Measuring inference for batch_size=32:  23%|██▎       | 23/100 [00:11<00:39,  1.97it/s]Measuring inference for batch_size=32:  24%|██▍       | 24/100 [00:12<00:38,  1.97it/s]Measuring inference for batch_size=32:  25%|██▌       | 25/100 [00:12<00:38,  1.97it/s]Measuring inference for batch_size=32:  26%|██▌       | 26/100 [00:13<00:37,  1.97it/s]Measuring inference for batch_size=32:  27%|██▋       | 27/100 [00:13<00:37,  1.97it/s]Measuring inference for batch_size=32:  28%|██▊       | 28/100 [00:14<00:36,  1.97it/s]Measuring inference for batch_size=32:  29%|██▉       | 29/100 [00:14<00:36,  1.97it/s]Measuring inference for batch_size=32:  30%|███       | 30/100 [00:15<00:35,  1.97it/s]Measuring inference for batch_size=32:  31%|███       | 31/100 [00:15<00:34,  1.97it/s]Measuring inference for batch_size=32:  32%|███▏      | 32/100 [00:16<00:34,  1.97it/s]Measuring inference for batch_size=32:  33%|███▎      | 33/100 [00:16<00:34,  1.97it/s]Measuring inference for batch_size=32:  34%|███▍      | 34/100 [00:17<00:33,  1.97it/s]Measuring inference for batch_size=32:  35%|███▌      | 35/100 [00:17<00:33,  1.97it/s]Measuring inference for batch_size=32:  36%|███▌      | 36/100 [00:18<00:32,  1.97it/s]Measuring inference for batch_size=32:  37%|███▋      | 37/100 [00:18<00:32,  1.97it/s]Measuring inference for batch_size=32:  38%|███▊      | 38/100 [00:19<00:31,  1.97it/s]Measuring inference for batch_size=32:  39%|███▉      | 39/100 [00:19<00:30,  1.97it/s]Measuring inference for batch_size=32:  40%|████      | 40/100 [00:20<00:30,  1.97it/s]Measuring inference for batch_size=32:  41%|████      | 41/100 [00:20<00:29,  1.97it/s]Measuring inference for batch_size=32:  42%|████▏     | 42/100 [00:21<00:29,  1.97it/s]Measuring inference for batch_size=32:  43%|████▎     | 43/100 [00:21<00:28,  1.97it/s]Measuring inference for batch_size=32:  44%|████▍     | 44/100 [00:22<00:28,  1.97it/s]Measuring inference for batch_size=32:  45%|████▌     | 45/100 [00:22<00:27,  1.97it/s]Measuring inference for batch_size=32:  46%|████▌     | 46/100 [00:23<00:27,  1.97it/s]Measuring inference for batch_size=32:  47%|████▋     | 47/100 [00:23<00:26,  1.97it/s]Measuring inference for batch_size=32:  48%|████▊     | 48/100 [00:24<00:26,  1.97it/s]Measuring inference for batch_size=32:  49%|████▉     | 49/100 [00:24<00:25,  1.97it/s]Measuring inference for batch_size=32:  50%|█████     | 50/100 [00:25<00:25,  1.97it/s]Measuring inference for batch_size=32:  51%|█████     | 51/100 [00:25<00:24,  1.97it/s]Measuring inference for batch_size=32:  52%|█████▏    | 52/100 [00:26<00:24,  1.97it/s]Measuring inference for batch_size=32:  53%|█████▎    | 53/100 [00:26<00:23,  1.97it/s]Measuring inference for batch_size=32:  54%|█████▍    | 54/100 [00:27<00:23,  1.97it/s]Measuring inference for batch_size=32:  55%|█████▌    | 55/100 [00:27<00:22,  1.97it/s]Measuring inference for batch_size=32:  56%|█████▌    | 56/100 [00:28<00:22,  1.97it/s]Measuring inference for batch_size=32:  57%|█████▋    | 57/100 [00:28<00:21,  1.97it/s]Measuring inference for batch_size=32:  58%|█████▊    | 58/100 [00:29<00:21,  1.97it/s]Measuring inference for batch_size=32:  59%|█████▉    | 59/100 [00:29<00:20,  1.97it/s]Measuring inference for batch_size=32:  60%|██████    | 60/100 [00:30<00:20,  1.97it/s]Measuring inference for batch_size=32:  61%|██████    | 61/100 [00:30<00:19,  1.97it/s]Measuring inference for batch_size=32:  62%|██████▏   | 62/100 [00:31<00:19,  1.97it/s]Measuring inference for batch_size=32:  63%|██████▎   | 63/100 [00:31<00:18,  1.97it/s]Measuring inference for batch_size=32:  64%|██████▍   | 64/100 [00:32<00:18,  1.97it/s]Measuring inference for batch_size=32:  65%|██████▌   | 65/100 [00:32<00:17,  1.97it/s]Measuring inference for batch_size=32:  66%|██████▌   | 66/100 [00:33<00:17,  1.97it/s]Measuring inference for batch_size=32:  67%|██████▋   | 67/100 [00:33<00:16,  1.97it/s]Measuring inference for batch_size=32:  68%|██████▊   | 68/100 [00:34<00:16,  1.97it/s]Measuring inference for batch_size=32:  69%|██████▉   | 69/100 [00:35<00:15,  1.97it/s]Measuring inference for batch_size=32:  70%|███████   | 70/100 [00:35<00:15,  1.97it/s]Measuring inference for batch_size=32:  71%|███████   | 71/100 [00:36<00:14,  1.97it/s]Measuring inference for batch_size=32:  72%|███████▏  | 72/100 [00:36<00:14,  1.97it/s]Measuring inference for batch_size=32:  73%|███████▎  | 73/100 [00:37<00:13,  1.97it/s]Measuring inference for batch_size=32:  74%|███████▍  | 74/100 [00:37<00:13,  1.97it/s]Measuring inference for batch_size=32:  75%|███████▌  | 75/100 [00:38<00:12,  1.97it/s]Measuring inference for batch_size=32:  76%|███████▌  | 76/100 [00:38<00:12,  1.97it/s]Measuring inference for batch_size=32:  77%|███████▋  | 77/100 [00:39<00:11,  1.97it/s]Measuring inference for batch_size=32:  78%|███████▊  | 78/100 [00:39<00:11,  1.97it/s]Measuring inference for batch_size=32:  79%|███████▉  | 79/100 [00:40<00:10,  1.97it/s]Measuring inference for batch_size=32:  80%|████████  | 80/100 [00:40<00:10,  1.97it/s]Measuring inference for batch_size=32:  81%|████████  | 81/100 [00:41<00:09,  1.97it/s]Measuring inference for batch_size=32:  82%|████████▏ | 82/100 [00:41<00:09,  1.97it/s]Measuring inference for batch_size=32:  83%|████████▎ | 83/100 [00:42<00:08,  1.97it/s]Measuring inference for batch_size=32:  84%|████████▍ | 84/100 [00:42<00:08,  1.97it/s]Measuring inference for batch_size=32:  85%|████████▌ | 85/100 [00:43<00:07,  1.97it/s]Measuring inference for batch_size=32:  86%|████████▌ | 86/100 [00:43<00:07,  1.97it/s]Measuring inference for batch_size=32:  87%|████████▋ | 87/100 [00:44<00:06,  1.97it/s]Measuring inference for batch_size=32:  88%|████████▊ | 88/100 [00:44<00:06,  1.97it/s]Measuring inference for batch_size=32:  89%|████████▉ | 89/100 [00:45<00:05,  1.97it/s]Measuring inference for batch_size=32:  90%|█████████ | 90/100 [00:45<00:05,  1.97it/s]Measuring inference for batch_size=32:  91%|█████████ | 91/100 [00:46<00:04,  1.97it/s]Measuring inference for batch_size=32:  92%|█████████▏| 92/100 [00:46<00:04,  1.97it/s]Measuring inference for batch_size=32:  93%|█████████▎| 93/100 [00:47<00:03,  1.97it/s]Measuring inference for batch_size=32:  94%|█████████▍| 94/100 [00:47<00:03,  1.97it/s]Measuring inference for batch_size=32:  95%|█████████▌| 95/100 [00:48<00:02,  1.97it/s]Measuring inference for batch_size=32:  96%|█████████▌| 96/100 [00:48<00:02,  1.97it/s]Measuring inference for batch_size=32:  97%|█████████▋| 97/100 [00:49<00:01,  1.97it/s]Measuring inference for batch_size=32:  98%|█████████▊| 98/100 [00:49<00:01,  1.97it/s]Measuring inference for batch_size=32:  99%|█████████▉| 99/100 [00:50<00:00,  1.97it/s]Measuring inference for batch_size=32: 100%|██████████| 100/100 [00:50<00:00,  1.97it/s]Measuring inference for batch_size=32: 100%|██████████| 100/100 [00:50<00:00,  1.97it/s]
+Timing results (batch_size=32):
+  cpu_to_gpu:
+    human_readable:
+      batch_latency: 1.311 ms +/- 54.877 us [1.198 ms, 1.487 ms]
+      batches_per_second: 764.38 +/- 31.37 [672.60, 834.69]
+    metrics:
+      batches_per_second_max: 834.6873631840796
+      batches_per_second_mean: 764.3771386473682
+      batches_per_second_min: 672.5952533675433
+      batches_per_second_std: 31.36960112317541
+      seconds_per_batch_max: 0.0014867782592773438
+      seconds_per_batch_mean: 0.0013105034828186034
+      seconds_per_batch_min: 0.0011980533599853516
+      seconds_per_batch_std: 5.487705222701681e-05
+  gpu_to_cpu:
+    human_readable:
+      batch_latency: 46.535 ms +/- 921.981 us [45.551 ms, 49.850 ms]
+      batches_per_second: 21.50 +/- 0.41 [20.06, 21.95]
+    metrics:
+      batches_per_second_max: 21.953270245373083
+      batches_per_second_mean: 21.497576625548763
+      batches_per_second_min: 20.06008981907053
+      batches_per_second_std: 0.411864122136237
+      seconds_per_batch_max: 0.0498502254486084
+      seconds_per_batch_mean: 0.046534531116485596
+      seconds_per_batch_min: 0.045551300048828125
+      seconds_per_batch_std: 0.0009219812232228263
+  on_device_inference:
+    human_readable:
+      batch_latency: 458.584 ms +/- 1.666 ms [455.076 ms, 462.540 ms]
+      batches_per_second: 2.18 +/- 0.01 [2.16, 2.20]
+    metrics:
+      batches_per_second_max: 2.1974375564840405
+      batches_per_second_mean: 2.180655753627029
+      batches_per_second_min: 2.161975595260493
+      batches_per_second_std: 0.007924077085886572
+      seconds_per_batch_max: 0.4625399112701416
+      seconds_per_batch_mean: 0.45858370780944824
+      seconds_per_batch_min: 0.4550755023956299
+      seconds_per_batch_std: 0.0016659455048465934
+  total:
+    human_readable:
+      batch_latency: 506.429 ms +/- 1.512 ms [502.417 ms, 510.000 ms]
+      batches_per_second: 1.97 +/- 0.01 [1.96, 1.99]
+    metrics:
+      batches_per_second_max: 1.9903772189033218
+      batches_per_second_mean: 1.9746290899321024
+      batches_per_second_min: 1.9607861836769136
+      batches_per_second_std: 0.0059022302540474025
+      seconds_per_batch_max: 0.5099995136260986
+      seconds_per_batch_mean: 0.5064287424087525
+      seconds_per_batch_min: 0.5024173259735107
+      seconds_per_batch_std: 0.0015124452698716323
+
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input
+Jetson PowerLogger found 9 power devices
+Measuring energy for batch_size=32:   0%|          | 0/10 [00:00<?, ?it/s]Measuring energy for batch_size=32:  10%|█         | 1/10 [00:00<00:04,  1.91it/s]Measuring energy for batch_size=32:  20%|██        | 2/10 [00:01<00:04,  1.91it/s]Measuring energy for batch_size=32:  30%|███       | 3/10 [00:01<00:03,  1.90it/s]Measuring energy for batch_size=32:  40%|████      | 4/10 [00:02<00:03,  1.90it/s]Measuring energy for batch_size=32:  50%|█████     | 5/10 [00:02<00:02,  1.90it/s]Measuring energy for batch_size=32:  60%|██████    | 6/10 [00:03<00:02,  1.90it/s]Measuring energy for batch_size=32:  70%|███████   | 7/10 [00:03<00:01,  1.90it/s]Measuring energy for batch_size=32:  80%|████████  | 8/10 [00:04<00:01,  1.90it/s]Measuring energy for batch_size=32:  90%|█████████ | 9/10 [00:04<00:00,  1.90it/s]Measuring energy for batch_size=32: 100%|██████████| 10/10 [00:05<00:00,  1.90it/s]Measuring energy for batch_size=32: 100%|██████████| 10/10 [00:05<00:00,  1.90it/s]
+ERROR:torch-benchmark:Unable to measure model params due to error: 'function' object has no attribute 'parameters'
+ERROR:torch-benchmark:Unable to measure model FLOPs due to error: 'list' object has no attribute 'shape'
+Energy results (batch_size=32):
+  joules: 13.810768707764941
+  kWh: 3.836324641045817e-06
+
+learner.model.forward:
+  device: cuda
+  energy:
+    batch_size_1:
+      joules: 1.2473798392407098
+      kWh: 3.4649439978908604e-07
+    batch_size_32:
+      joules: 13.810768707764941
+      kWh: 3.836324641045817e-06
+  flops: 138232160
+  machine_info:
+    cpu:
+      architecture: aarch64
+      cores:
+        physical: 8
+        total: 8
+      frequency: 2.27 GHz
+      model: ARMv8 Processor rev 0 (v8l)
+    gpus: null
+    memory:
+      available: 16.04 GB
+      total: 31.17 GB
+      used: 15.12 GB
+    system:
+      node: xavier
+      release: 4.9.140-tegra
+      system: Linux
+  params: 3794322
+  timing:
+    batch_size_1:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 190.635 us +/- 45.057 us [129.461 us, 333.071 us]
+          batches_per_second: 5.49 K +/- 1.05 K [3.00 K, 7.72 K]
+        metrics:
+          batches_per_second_max: 7724.316758747698
+          batches_per_second_mean: 5486.398907811185
+          batches_per_second_min: 3002.365068002863
+          batches_per_second_std: 1049.5869593352215
+          seconds_per_batch_max: 0.0003330707550048828
+          seconds_per_batch_mean: 0.00019063472747802735
+          seconds_per_batch_min: 0.00012946128845214844
+          seconds_per_batch_std: 4.5056925432856544e-05
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 176.156 us +/- 21.535 us [117.540 us, 235.081 us]
+          batches_per_second: 5.77 K +/- 752.34 [4.25 K, 8.51 K]
+        metrics:
+          batches_per_second_max: 8507.71602434077
+          batches_per_second_mean: 5766.610324744081
+          batches_per_second_min: 4253.858012170385
+          batches_per_second_std: 752.3447379275071
+          seconds_per_batch_max: 0.00023508071899414062
+          seconds_per_batch_mean: 0.00017615556716918946
+          seconds_per_batch_min: 0.00011754035949707031
+          seconds_per_batch_std: 2.1535398191322695e-05
+      on_device_inference:
+        human_readable:
+          batch_latency: 93.029 ms +/- 4.421 ms [88.813 ms, 109.531 ms]
+          batches_per_second: 10.77 +/- 0.47 [9.13, 11.26]
+        metrics:
+          batches_per_second_max: 11.2596649190485
+          batches_per_second_mean: 10.771666029731232
+          batches_per_second_min: 9.129801831922823
+          batches_per_second_std: 0.4709963439222451
+          seconds_per_batch_max: 0.10953140258789062
+          seconds_per_batch_mean: 0.09302917242050171
+          seconds_per_batch_min: 0.08881258964538574
+          seconds_per_batch_std: 0.004421463812684828
+      total:
+        human_readable:
+          batch_latency: 93.396 ms +/- 4.453 ms [89.133 ms, 110.010 ms]
+          batches_per_second: 10.73 +/- 0.47 [9.09, 11.22]
+        metrics:
+          batches_per_second_max: 11.219156243647218
+          batches_per_second_mean: 10.729497240713743
+          batches_per_second_min: 9.090050865052653
+          batches_per_second_std: 0.4704493241852625
+          seconds_per_batch_max: 0.11001038551330566
+          seconds_per_batch_mean: 0.09339596271514893
+          seconds_per_batch_min: 0.08913326263427734
+          seconds_per_batch_std: 0.004453331987751125
+    batch_size_32:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 1.311 ms +/- 54.877 us [1.198 ms, 1.487 ms]
+          batches_per_second: 764.38 +/- 31.37 [672.60, 834.69]
+        metrics:
+          batches_per_second_max: 834.6873631840796
+          batches_per_second_mean: 764.3771386473682
+          batches_per_second_min: 672.5952533675433
+          batches_per_second_std: 31.36960112317541
+          seconds_per_batch_max: 0.0014867782592773438
+          seconds_per_batch_mean: 0.0013105034828186034
+          seconds_per_batch_min: 0.0011980533599853516
+          seconds_per_batch_std: 5.487705222701681e-05
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 46.535 ms +/- 921.981 us [45.551 ms, 49.850 ms]
+          batches_per_second: 21.50 +/- 0.41 [20.06, 21.95]
+        metrics:
+          batches_per_second_max: 21.953270245373083
+          batches_per_second_mean: 21.497576625548763
+          batches_per_second_min: 20.06008981907053
+          batches_per_second_std: 0.411864122136237
+          seconds_per_batch_max: 0.0498502254486084
+          seconds_per_batch_mean: 0.046534531116485596
+          seconds_per_batch_min: 0.045551300048828125
+          seconds_per_batch_std: 0.0009219812232228263
+      on_device_inference:
+        human_readable:
+          batch_latency: 458.584 ms +/- 1.666 ms [455.076 ms, 462.540 ms]
+          batches_per_second: 2.18 +/- 0.01 [2.16, 2.20]
+        metrics:
+          batches_per_second_max: 2.1974375564840405
+          batches_per_second_mean: 2.180655753627029
+          batches_per_second_min: 2.161975595260493
+          batches_per_second_std: 0.007924077085886572
+          seconds_per_batch_max: 0.4625399112701416
+          seconds_per_batch_mean: 0.45858370780944824
+          seconds_per_batch_min: 0.4550755023956299
+          seconds_per_batch_std: 0.0016659455048465934
+      total:
+        human_readable:
+          batch_latency: 506.429 ms +/- 1.512 ms [502.417 ms, 510.000 ms]
+          batches_per_second: 1.97 +/- 0.01 [1.96, 1.99]
+        metrics:
+          batches_per_second_max: 1.9903772189033218
+          batches_per_second_mean: 1.9746290899321024
+          batches_per_second_min: 1.9607861836769136
+          batches_per_second_std: 0.0059022302540474025
+          seconds_per_batch_max: 0.5099995136260986
+          seconds_per_batch_mean: 0.5064287424087525
+          seconds_per_batch_min: 0.5024173259735107
+          seconds_per_batch_std: 0.0015124452698716323
+
+==== Benchmarking CoX3DLearner (m) ====
+== Benchmarking learner.infer ==
+Machine info:
+  cpu:
+    architecture: aarch64
+    cores:
+      physical: 8
+      total: 8
+    frequency: 2.27 GHz
+    model: ARMv8 Processor rev 0 (v8l)
+  gpus: null
+  memory:
+    available: 16.01 GB
+    total: 31.17 GB
+    used: 15.15 GB
+  system:
+    node: xavier
+    release: 4.9.140-tegra
+    system: Linux
+
+Model device: cuda:0
+Memory results (batch_size=1):
+  max_inference: 13.21 GB
+  max_inference_bytes: 14186497024
+  post_inference: 10.11 GB
+  post_inference_bytes: 10859600896
+  pre_inference: 9.34 GB
+  pre_inference_bytes: 10024946688
+
+Warming up with batch_size=16:   0%|          | 0/10 [00:00<?, ?it/s]Warming up with batch_size=16:  10%|█         | 1/10 [00:00<00:01,  8.30it/s]Warming up with batch_size=16:  20%|██        | 2/10 [00:00<00:00,  8.75it/s]Warming up with batch_size=16:  30%|███       | 3/10 [00:00<00:00,  8.91it/s]Warming up with batch_size=16:  40%|████      | 4/10 [00:00<00:00,  9.24it/s]Warming up with batch_size=16:  50%|█████     | 5/10 [00:00<00:00,  9.48it/s]Warming up with batch_size=16:  70%|███████   | 7/10 [00:00<00:00,  9.55it/s]Warming up with batch_size=16:  80%|████████  | 8/10 [00:00<00:00,  9.66it/s]Warming up with batch_size=16: 100%|██████████| 10/10 [00:01<00:00,  9.61it/s]Warming up with batch_size=16: 100%|██████████| 10/10 [00:01<00:00,  9.42it/s]
+Measuring inference for batch_size=16:   0%|          | 0/100 [00:00<?, ?it/s]Measuring inference for batch_size=16:   1%|          | 1/100 [00:00<00:10,  9.81it/s]Measuring inference for batch_size=16:   3%|▎         | 3/100 [00:00<00:09,  9.76it/s]Measuring inference for batch_size=16:   4%|▍         | 4/100 [00:00<00:10,  9.54it/s]Measuring inference for batch_size=16:   6%|▌         | 6/100 [00:00<00:09,  9.78it/s]Measuring inference for batch_size=16:   7%|▋         | 7/100 [00:00<00:09,  9.82it/s]Measuring inference for batch_size=16:   9%|▉         | 9/100 [00:00<00:09, 10.00it/s]Measuring inference for batch_size=16:  11%|█         | 11/100 [00:01<00:08,  9.96it/s]Measuring inference for batch_size=16:  12%|█▏        | 12/100 [00:01<00:08,  9.92it/s]Measuring inference for batch_size=16:  14%|█▍        | 14/100 [00:01<00:08, 10.08it/s]Measuring inference for batch_size=16:  16%|█▌        | 16/100 [00:01<00:08, 10.14it/s]Measuring inference for batch_size=16:  18%|█▊        | 18/100 [00:01<00:08, 10.06it/s]Measuring inference for batch_size=16:  20%|██        | 20/100 [00:02<00:08,  9.97it/s]Measuring inference for batch_size=16:  22%|██▏       | 22/100 [00:02<00:07,  9.93it/s]Measuring inference for batch_size=16:  23%|██▎       | 23/100 [00:02<00:07,  9.80it/s]Measuring inference for batch_size=16:  24%|██▍       | 24/100 [00:02<00:07,  9.72it/s]Measuring inference for batch_size=16:  25%|██▌       | 25/100 [00:02<00:07,  9.77it/s]Measuring inference for batch_size=16:  26%|██▌       | 26/100 [00:02<00:07,  9.77it/s]Measuring inference for batch_size=16:  27%|██▋       | 27/100 [00:02<00:07,  9.70it/s]Measuring inference for batch_size=16:  28%|██▊       | 28/100 [00:02<00:07,  9.67it/s]Measuring inference for batch_size=16:  30%|███       | 30/100 [00:03<00:07,  9.96it/s]Measuring inference for batch_size=16:  31%|███       | 31/100 [00:03<00:07,  9.80it/s]Measuring inference for batch_size=16:  32%|███▏      | 32/100 [00:03<00:06,  9.72it/s]Measuring inference for batch_size=16:  34%|███▍      | 34/100 [00:03<00:06, 10.00it/s]Measuring inference for batch_size=16:  36%|███▌      | 36/100 [00:03<00:06, 10.22it/s]Measuring inference for batch_size=16:  38%|███▊      | 38/100 [00:03<00:06,  9.93it/s]Measuring inference for batch_size=16:  39%|███▉      | 39/100 [00:03<00:06,  9.74it/s]Measuring inference for batch_size=16:  40%|████      | 40/100 [00:04<00:06,  9.75it/s]Measuring inference for batch_size=16:  42%|████▏     | 42/100 [00:04<00:05,  9.98it/s]Measuring inference for batch_size=16:  44%|████▍     | 44/100 [00:04<00:05, 10.12it/s]Measuring inference for batch_size=16:  46%|████▌     | 46/100 [00:04<00:05,  9.83it/s]Measuring inference for batch_size=16:  47%|████▋     | 47/100 [00:04<00:05,  9.82it/s]Measuring inference for batch_size=16:  48%|████▊     | 48/100 [00:04<00:05,  9.75it/s]Measuring inference for batch_size=16:  49%|████▉     | 49/100 [00:04<00:05,  9.71it/s]Measuring inference for batch_size=16:  50%|█████     | 50/100 [00:05<00:05,  9.77it/s]Measuring inference for batch_size=16:  51%|█████     | 51/100 [00:05<00:05,  9.64it/s]Measuring inference for batch_size=16:  53%|█████▎    | 53/100 [00:05<00:04,  9.90it/s]Measuring inference for batch_size=16:  55%|█████▌    | 55/100 [00:05<00:04,  9.95it/s]Measuring inference for batch_size=16:  56%|█████▌    | 56/100 [00:05<00:04,  9.82it/s]Measuring inference for batch_size=16:  58%|█████▊    | 58/100 [00:05<00:04, 10.00it/s]Measuring inference for batch_size=16:  59%|█████▉    | 59/100 [00:05<00:04,  9.91it/s]Measuring inference for batch_size=16:  61%|██████    | 61/100 [00:06<00:03, 10.04it/s]Measuring inference for batch_size=16:  63%|██████▎   | 63/100 [00:06<00:03, 10.16it/s]Measuring inference for batch_size=16:  65%|██████▌   | 65/100 [00:06<00:03, 10.15it/s]Measuring inference for batch_size=16:  67%|██████▋   | 67/100 [00:06<00:03, 10.22it/s]Measuring inference for batch_size=16:  69%|██████▉   | 69/100 [00:06<00:03, 10.24it/s]Measuring inference for batch_size=16:  71%|███████   | 71/100 [00:07<00:02, 10.40it/s]Measuring inference for batch_size=16:  73%|███████▎  | 73/100 [00:07<00:02, 10.52it/s]Measuring inference for batch_size=16:  75%|███████▌  | 75/100 [00:07<00:02, 10.44it/s]Measuring inference for batch_size=16:  77%|███████▋  | 77/100 [00:07<00:02, 10.32it/s]Measuring inference for batch_size=16:  79%|███████▉  | 79/100 [00:07<00:02, 10.21it/s]Measuring inference for batch_size=16:  81%|████████  | 81/100 [00:08<00:01, 10.26it/s]Measuring inference for batch_size=16:  83%|████████▎ | 83/100 [00:08<00:01, 10.21it/s]Measuring inference for batch_size=16:  85%|████████▌ | 85/100 [00:08<00:01, 10.16it/s]Measuring inference for batch_size=16:  87%|████████▋ | 87/100 [00:08<00:01, 10.14it/s]Measuring inference for batch_size=16:  89%|████████▉ | 89/100 [00:08<00:01, 10.03it/s]Measuring inference for batch_size=16:  91%|█████████ | 91/100 [00:09<00:00, 10.07it/s]Measuring inference for batch_size=16:  93%|█████████▎| 93/100 [00:09<00:00, 10.13it/s]Measuring inference for batch_size=16:  95%|█████████▌| 95/100 [00:09<00:00, 10.08it/s]Measuring inference for batch_size=16:  97%|█████████▋| 97/100 [00:09<00:00, 10.04it/s]Measuring inference for batch_size=16:  99%|█████████▉| 99/100 [00:09<00:00,  9.82it/s]Measuring inference for batch_size=16: 100%|██████████| 100/100 [00:10<00:00,  9.78it/s]Measuring inference for batch_size=16: 100%|██████████| 100/100 [00:10<00:00,  9.99it/s]
+Timing results (batch_size=1):
+  cpu_to_gpu:
+    human_readable:
+      batch_latency: 7.751 us +/- 2.942 us [4.053 us, 15.497 us]
+      batches_per_second: 148.21 K +/- 52.96 K [64.53 K, 246.72 K]
+    metrics:
+      batches_per_second_max: 246723.76470588235
+      batches_per_second_mean: 148210.92320481804
+      batches_per_second_min: 64527.75384615385
+      batches_per_second_std: 52958.27605461368
+      seconds_per_batch_max: 1.5497207641601562e-05
+      seconds_per_batch_mean: 7.750988006591796e-06
+      seconds_per_batch_min: 4.0531158447265625e-06
+      seconds_per_batch_std: 2.941836983453729e-06
+  gpu_to_cpu:
+    human_readable:
+      batch_latency: 219.185 us +/- 23.877 us [184.059 us, 335.217 us]
+      batches_per_second: 4.61 K +/- 438.29 [2.98 K, 5.43 K]
+    metrics:
+      batches_per_second_max: 5433.036269430052
+      batches_per_second_mean: 4609.336725334623
+      batches_per_second_min: 2983.1465149359888
+      batches_per_second_std: 438.2923928341741
+      seconds_per_batch_max: 0.0003352165222167969
+      seconds_per_batch_mean: 0.00021918535232543946
+      seconds_per_batch_min: 0.00018405914306640625
+      seconds_per_batch_std: 2.3876523922562313e-05
+  on_device_inference:
+    human_readable:
+      batch_latency: 99.347 ms +/- 4.367 ms [90.778 ms, 109.541 ms]
+      batches_per_second: 10.08 +/- 0.44 [9.13, 11.02]
+    metrics:
+      batches_per_second_max: 11.015929129163831
+      batches_per_second_mean: 10.084955557469895
+      batches_per_second_min: 9.128967243443247
+      batches_per_second_std: 0.43805150575378754
+      seconds_per_batch_max: 0.10954141616821289
+      seconds_per_batch_mean: 0.09934707164764404
+      seconds_per_batch_min: 0.09077763557434082
+      seconds_per_batch_std: 0.0043667797533661476
+  total:
+    human_readable:
+      batch_latency: 99.574 ms +/- 4.375 ms [90.966 ms, 109.764 ms]
+      batches_per_second: 10.06 +/- 0.44 [9.11, 10.99]
+    metrics:
+      batches_per_second_max: 10.993148782034817
+      batches_per_second_mean: 10.061955505022018
+      batches_per_second_min: 9.110486509029458
+      batches_per_second_std: 0.43689479893434924
+      seconds_per_batch_max: 0.10976362228393555
+      seconds_per_batch_mean: 0.09957400798797607
+      seconds_per_batch_min: 0.09096574783325195
+      seconds_per_batch_std: 0.004374756397522246
+
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input
+Jetson PowerLogger found 9 power devices
+Measuring energy for batch_size=1:   0%|          | 0/10 [00:00<?, ?it/s]Measuring energy for batch_size=1:  10%|█         | 1/10 [00:00<00:01,  7.94it/s]Measuring energy for batch_size=1:  20%|██        | 2/10 [00:00<00:01,  7.98it/s]Measuring energy for batch_size=1:  30%|███       | 3/10 [00:00<00:00,  7.98it/s]Measuring energy for batch_size=1:  40%|████      | 4/10 [00:00<00:00,  7.99it/s]Measuring energy for batch_size=1:  50%|█████     | 5/10 [00:00<00:00,  7.05it/s]Measuring energy for batch_size=1:  60%|██████    | 6/10 [00:00<00:00,  6.59it/s]Measuring energy for batch_size=1:  70%|███████   | 7/10 [00:01<00:00,  6.33it/s]Measuring energy for batch_size=1:  80%|████████  | 8/10 [00:01<00:00,  6.17it/s]Measuring energy for batch_size=1:  90%|█████████ | 9/10 [00:01<00:00,  6.06it/s]Measuring energy for batch_size=1: 100%|██████████| 10/10 [00:01<00:00,  5.95it/s]Measuring energy for batch_size=1: 100%|██████████| 10/10 [00:01<00:00,  6.52it/s]
+Energy results (batch_size=1):
+  joules: 1.7435000051673257
+  kWh: 4.843055569909238e-07
+
+Memory results (batch_size=16):
+  max_inference: 13.21 GB
+  max_inference_bytes: 14188213248
+  post_inference: 10.12 GB
+  post_inference_bytes: 10861317120
+  pre_inference: 9.92 GB
+  pre_inference_bytes: 10647350784
+
+Warming up with batch_size=16:   0%|          | 0/10 [00:00<?, ?it/s]Warming up with batch_size=16:  10%|█         | 1/10 [00:01<00:12,  1.40s/it]Warming up with batch_size=16:  20%|██        | 2/10 [00:02<00:11,  1.41s/it]Warming up with batch_size=16:  30%|███       | 3/10 [00:04<00:09,  1.41s/it]Warming up with batch_size=16:  40%|████      | 4/10 [00:05<00:08,  1.41s/it]Warming up with batch_size=16:  50%|█████     | 5/10 [00:07<00:07,  1.40s/it]Warming up with batch_size=16:  60%|██████    | 6/10 [00:08<00:05,  1.41s/it]Warming up with batch_size=16:  70%|███████   | 7/10 [00:09<00:04,  1.41s/it]Warming up with batch_size=16:  80%|████████  | 8/10 [00:11<00:02,  1.40s/it]Warming up with batch_size=16:  90%|█████████ | 9/10 [00:12<00:01,  1.40s/it]Warming up with batch_size=16: 100%|██████████| 10/10 [00:14<00:00,  1.40s/it]Warming up with batch_size=16: 100%|██████████| 10/10 [00:14<00:00,  1.41s/it]
+Measuring inference for batch_size=16:   0%|          | 0/100 [00:00<?, ?it/s]Measuring inference for batch_size=16:   1%|          | 1/100 [00:01<02:19,  1.41s/it]Measuring inference for batch_size=16:   2%|▏         | 2/100 [00:02<02:17,  1.40s/it]Measuring inference for batch_size=16:   3%|▎         | 3/100 [00:04<02:16,  1.41s/it]Measuring inference for batch_size=16:   4%|▍         | 4/100 [00:05<02:15,  1.41s/it]Measuring inference for batch_size=16:   5%|▌         | 5/100 [00:07<02:13,  1.41s/it]Measuring inference for batch_size=16:   6%|▌         | 6/100 [00:08<02:12,  1.41s/it]Measuring inference for batch_size=16:   7%|▋         | 7/100 [00:09<02:11,  1.41s/it]Measuring inference for batch_size=16:   8%|▊         | 8/100 [00:11<02:09,  1.41s/it]Measuring inference for batch_size=16:   9%|▉         | 9/100 [00:12<02:07,  1.41s/it]Measuring inference for batch_size=16:  10%|█         | 10/100 [00:14<02:06,  1.41s/it]Measuring inference for batch_size=16:  11%|█         | 11/100 [00:15<02:05,  1.41s/it]Measuring inference for batch_size=16:  12%|█▏        | 12/100 [00:16<02:03,  1.40s/it]Measuring inference for batch_size=16:  13%|█▎        | 13/100 [00:18<02:02,  1.41s/it]Measuring inference for batch_size=16:  14%|█▍        | 14/100 [00:19<02:00,  1.40s/it]Measuring inference for batch_size=16:  15%|█▌        | 15/100 [00:21<01:59,  1.41s/it]Measuring inference for batch_size=16:  16%|█▌        | 16/100 [00:22<01:58,  1.41s/it]Measuring inference for batch_size=16:  17%|█▋        | 17/100 [00:23<01:56,  1.41s/it]Measuring inference for batch_size=16:  18%|█▊        | 18/100 [00:25<01:55,  1.41s/it]Measuring inference for batch_size=16:  19%|█▉        | 19/100 [00:26<01:53,  1.40s/it]Measuring inference for batch_size=16:  20%|██        | 20/100 [00:28<01:52,  1.40s/it]Measuring inference for batch_size=16:  21%|██        | 21/100 [00:29<01:50,  1.40s/it]Measuring inference for batch_size=16:  22%|██▏       | 22/100 [00:30<01:49,  1.40s/it]Measuring inference for batch_size=16:  23%|██▎       | 23/100 [00:32<01:47,  1.40s/it]Measuring inference for batch_size=16:  24%|██▍       | 24/100 [00:33<01:46,  1.40s/it]Measuring inference for batch_size=16:  25%|██▌       | 25/100 [00:35<01:45,  1.40s/it]Measuring inference for batch_size=16:  26%|██▌       | 26/100 [00:36<01:44,  1.41s/it]Measuring inference for batch_size=16:  27%|██▋       | 27/100 [00:37<01:42,  1.40s/it]Measuring inference for batch_size=16:  28%|██▊       | 28/100 [00:39<01:41,  1.41s/it]Measuring inference for batch_size=16:  29%|██▉       | 29/100 [00:40<01:40,  1.41s/it]Measuring inference for batch_size=16:  30%|███       | 30/100 [00:42<01:38,  1.41s/it]Measuring inference for batch_size=16:  31%|███       | 31/100 [00:43<01:37,  1.41s/it]Measuring inference for batch_size=16:  32%|███▏      | 32/100 [00:44<01:35,  1.41s/it]Measuring inference for batch_size=16:  33%|███▎      | 33/100 [00:46<01:34,  1.41s/it]Measuring inference for batch_size=16:  34%|███▍      | 34/100 [00:47<01:32,  1.40s/it]Measuring inference for batch_size=16:  35%|███▌      | 35/100 [00:49<01:31,  1.41s/it]Measuring inference for batch_size=16:  36%|███▌      | 36/100 [00:50<01:30,  1.41s/it]Measuring inference for batch_size=16:  37%|███▋      | 37/100 [00:52<01:28,  1.41s/it]Measuring inference for batch_size=16:  38%|███▊      | 38/100 [00:53<01:27,  1.41s/it]Measuring inference for batch_size=16:  39%|███▉      | 39/100 [00:54<01:25,  1.41s/it]Measuring inference for batch_size=16:  40%|████      | 40/100 [00:56<01:24,  1.41s/it]Measuring inference for batch_size=16:  41%|████      | 41/100 [00:57<01:22,  1.40s/it]Measuring inference for batch_size=16:  42%|████▏     | 42/100 [00:59<01:21,  1.40s/it]Measuring inference for batch_size=16:  43%|████▎     | 43/100 [01:00<01:20,  1.40s/it]Measuring inference for batch_size=16:  44%|████▍     | 44/100 [01:01<01:18,  1.40s/it]Measuring inference for batch_size=16:  45%|████▌     | 45/100 [01:03<01:17,  1.41s/it]Measuring inference for batch_size=16:  46%|████▌     | 46/100 [01:04<01:15,  1.41s/it]Measuring inference for batch_size=16:  47%|████▋     | 47/100 [01:06<01:14,  1.41s/it]Measuring inference for batch_size=16:  48%|████▊     | 48/100 [01:07<01:13,  1.41s/it]Measuring inference for batch_size=16:  49%|████▉     | 49/100 [01:08<01:11,  1.41s/it]Measuring inference for batch_size=16:  50%|█████     | 50/100 [01:10<01:10,  1.41s/it]Measuring inference for batch_size=16:  51%|█████     | 51/100 [01:11<01:08,  1.41s/it]Measuring inference for batch_size=16:  52%|█████▏    | 52/100 [01:13<01:07,  1.41s/it]Measuring inference for batch_size=16:  53%|█████▎    | 53/100 [01:14<01:06,  1.41s/it]Measuring inference for batch_size=16:  54%|█████▍    | 54/100 [01:15<01:04,  1.41s/it]Measuring inference for batch_size=16:  55%|█████▌    | 55/100 [01:17<01:03,  1.41s/it]Measuring inference for batch_size=16:  56%|█████▌    | 56/100 [01:18<01:01,  1.41s/it]Measuring inference for batch_size=16:  57%|█████▋    | 57/100 [01:20<01:00,  1.41s/it]Measuring inference for batch_size=16:  58%|█████▊    | 58/100 [01:21<00:59,  1.41s/it]Measuring inference for batch_size=16:  59%|█████▉    | 59/100 [01:22<00:57,  1.41s/it]Measuring inference for batch_size=16:  60%|██████    | 60/100 [01:24<00:56,  1.41s/it]Measuring inference for batch_size=16:  61%|██████    | 61/100 [01:25<00:54,  1.41s/it]Measuring inference for batch_size=16:  62%|██████▏   | 62/100 [01:27<00:53,  1.41s/it]Measuring inference for batch_size=16:  63%|██████▎   | 63/100 [01:28<00:52,  1.41s/it]Measuring inference for batch_size=16:  64%|██████▍   | 64/100 [01:29<00:50,  1.41s/it]Measuring inference for batch_size=16:  65%|██████▌   | 65/100 [01:31<00:49,  1.41s/it]Measuring inference for batch_size=16:  66%|██████▌   | 66/100 [01:32<00:47,  1.41s/it]Measuring inference for batch_size=16:  67%|██████▋   | 67/100 [01:34<00:46,  1.41s/it]Measuring inference for batch_size=16:  68%|██████▊   | 68/100 [01:35<00:45,  1.41s/it]Measuring inference for batch_size=16:  69%|██████▉   | 69/100 [01:37<00:43,  1.41s/it]Measuring inference for batch_size=16:  70%|███████   | 70/100 [01:38<00:42,  1.41s/it]Measuring inference for batch_size=16:  71%|███████   | 71/100 [01:39<00:40,  1.41s/it]Measuring inference for batch_size=16:  72%|███████▏  | 72/100 [01:41<00:39,  1.41s/it]Measuring inference for batch_size=16:  73%|███████▎  | 73/100 [01:42<00:38,  1.41s/it]Measuring inference for batch_size=16:  74%|███████▍  | 74/100 [01:44<00:36,  1.41s/it]Measuring inference for batch_size=16:  75%|███████▌  | 75/100 [01:45<00:35,  1.41s/it]Measuring inference for batch_size=16:  76%|███████▌  | 76/100 [01:46<00:33,  1.41s/it]Measuring inference for batch_size=16:  77%|███████▋  | 77/100 [01:48<00:33,  1.47s/it]Measuring inference for batch_size=16:  78%|███████▊  | 78/100 [01:50<00:33,  1.51s/it]Measuring inference for batch_size=16:  79%|███████▉  | 79/100 [01:51<00:32,  1.54s/it]Measuring inference for batch_size=16:  80%|████████  | 80/100 [01:53<00:30,  1.51s/it]Measuring inference for batch_size=16:  81%|████████  | 81/100 [01:54<00:28,  1.50s/it]Measuring inference for batch_size=16:  82%|████████▏ | 82/100 [01:56<00:26,  1.49s/it]Measuring inference for batch_size=16:  83%|████████▎ | 83/100 [01:57<00:25,  1.52s/it]Measuring inference for batch_size=16:  84%|████████▍ | 84/100 [01:59<00:24,  1.52s/it]Measuring inference for batch_size=16:  85%|████████▌ | 85/100 [02:00<00:23,  1.54s/it]Measuring inference for batch_size=16:  86%|████████▌ | 86/100 [02:02<00:21,  1.53s/it]Measuring inference for batch_size=16:  87%|████████▋ | 87/100 [02:03<00:19,  1.53s/it]Measuring inference for batch_size=16:  88%|████████▊ | 88/100 [02:05<00:18,  1.54s/it]Measuring inference for batch_size=16:  89%|████████▉ | 89/100 [02:06<00:16,  1.53s/it]Measuring inference for batch_size=16:  90%|█████████ | 90/100 [02:08<00:15,  1.52s/it]Measuring inference for batch_size=16:  91%|█████████ | 91/100 [02:09<00:13,  1.50s/it]Measuring inference for batch_size=16:  92%|█████████▏| 92/100 [02:11<00:12,  1.53s/it]Measuring inference for batch_size=16:  93%|█████████▎| 93/100 [02:13<00:10,  1.55s/it]Measuring inference for batch_size=16:  94%|█████████▍| 94/100 [02:14<00:09,  1.52s/it]Measuring inference for batch_size=16:  95%|█████████▌| 95/100 [02:15<00:07,  1.50s/it]Measuring inference for batch_size=16:  96%|█████████▌| 96/100 [02:17<00:05,  1.48s/it]Measuring inference for batch_size=16:  97%|█████████▋| 97/100 [02:18<00:04,  1.46s/it]Measuring inference for batch_size=16:  98%|█████████▊| 98/100 [02:20<00:02,  1.46s/it]Measuring inference for batch_size=16:  99%|█████████▉| 99/100 [02:21<00:01,  1.45s/it]Measuring inference for batch_size=16: 100%|██████████| 100/100 [02:23<00:00,  1.47s/it]Measuring inference for batch_size=16: 100%|██████████| 100/100 [02:23<00:00,  1.43s/it]
+Timing results (batch_size=16):
+  cpu_to_gpu:
+    human_readable:
+      batch_latency: 10.707 us +/- 11.355 us [6.914 us, 112.295 us]
+      batches_per_second: 110.02 K +/- 22.50 K [8.91 K, 144.63 K]
+    metrics:
+      batches_per_second_max: 144631.1724137931
+      batches_per_second_mean: 110016.79438025078
+      batches_per_second_min: 8905.104033970276
+      batches_per_second_std: 22498.92399888458
+      seconds_per_batch_max: 0.00011229515075683594
+      seconds_per_batch_mean: 1.0707378387451171e-05
+      seconds_per_batch_min: 6.9141387939453125e-06
+      seconds_per_batch_std: 1.1355338803679648e-05
+  gpu_to_cpu:
+    human_readable:
+      batch_latency: 1.403 ms +/- 198.796 us [1.253 ms, 2.689 ms]
+      batches_per_second: 722.66 +/- 71.18 [371.84, 797.85]
+    metrics:
+      batches_per_second_max: 797.8512459577706
+      batches_per_second_mean: 722.6553747332963
+      batches_per_second_min: 371.8354609929078
+      batches_per_second_std: 71.17860575250567
+      seconds_per_batch_max: 0.002689361572265625
+      seconds_per_batch_mean: 0.0014028000831604005
+      seconds_per_batch_min: 0.001253366470336914
+      seconds_per_batch_std: 0.00019879609010032493
+  on_device_inference:
+    human_readable:
+      batch_latency: 1.430 s +/- 55.194 ms [1.396 s, 1.620 s]
+      batches_per_second: 0.70 +/- 0.02 [0.62, 0.72]
+    metrics:
+      batches_per_second_max: 0.7164434049878543
+      batches_per_second_mean: 0.700286054547176
+      batches_per_second_min: 0.6173316016724736
+      batches_per_second_std: 0.024994190589971283
+      seconds_per_batch_max: 1.6198749542236328
+      seconds_per_batch_mean: 1.4299567794799806
+      seconds_per_batch_min: 1.3957836627960205
+      seconds_per_batch_std: 0.05519390306091017
+  total:
+    human_readable:
+      batch_latency: 1.431 s +/- 55.284 ms [1.397 s, 1.621 s]
+      batches_per_second: 0.70 +/- 0.02 [0.62, 0.72]
+    metrics:
+      batches_per_second_max: 0.7157683918153704
+      batches_per_second_mean: 0.6995957469571955
+      batches_per_second_min: 0.6167856473765275
+      batches_per_second_std: 0.0249854130494989
+      seconds_per_batch_max: 1.6213088035583496
+      seconds_per_batch_mean: 1.4313702869415283
+      seconds_per_batch_min: 1.3970999717712402
+      seconds_per_batch_std: 0.05528432167975014
+
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input
+Jetson PowerLogger found 9 power devices
+Measuring energy for batch_size=16:   0%|          | 0/10 [00:00<?, ?it/s]Measuring energy for batch_size=16:  10%|█         | 1/10 [00:01<00:13,  1.53s/it]Measuring energy for batch_size=16:  20%|██        | 2/10 [00:03<00:12,  1.52s/it]Measuring energy for batch_size=16:  30%|███       | 3/10 [00:04<00:10,  1.50s/it]Measuring energy for batch_size=16:  40%|████      | 4/10 [00:06<00:10,  1.70s/it]Measuring energy for batch_size=16:  50%|█████     | 5/10 [00:08<00:08,  1.62s/it]Measuring energy for batch_size=16:  60%|██████    | 6/10 [00:09<00:06,  1.57s/it]Measuring energy for batch_size=16:  70%|███████   | 7/10 [00:10<00:04,  1.53s/it]Measuring energy for batch_size=16:  80%|████████  | 8/10 [00:12<00:03,  1.67s/it]Measuring energy for batch_size=16:  90%|█████████ | 9/10 [00:14<00:01,  1.61s/it]Measuring energy for batch_size=16: 100%|██████████| 10/10 [00:15<00:00,  1.57s/it]Measuring energy for batch_size=16: 100%|██████████| 10/10 [00:15<00:00,  1.58s/it]
+Energy results (batch_size=16):
+  joules: 44.090939974948554
+  kWh: 1.2247483326374598e-05
+
+learner.infer:
+  device: cuda
+  energy:
+    batch_size_1:
+      joules: 1.7435000051673257
+      kWh: 4.843055569909238e-07
+    batch_size_16:
+      joules: 44.090939974948554
+      kWh: 1.2247483326374598e-05
+  machine_info:
+    cpu:
+      architecture: aarch64
+      cores:
+        physical: 8
+        total: 8
+      frequency: 2.27 GHz
+      model: ARMv8 Processor rev 0 (v8l)
+    gpus: null
+    memory:
+      available: 16.01 GB
+      total: 31.17 GB
+      used: 15.15 GB
+    system:
+      node: xavier
+      release: 4.9.140-tegra
+      system: Linux
+  timing:
+    batch_size_1:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 7.751 us +/- 2.942 us [4.053 us, 15.497 us]
+          batches_per_second: 148.21 K +/- 52.96 K [64.53 K, 246.72 K]
+        metrics:
+          batches_per_second_max: 246723.76470588235
+          batches_per_second_mean: 148210.92320481804
+          batches_per_second_min: 64527.75384615385
+          batches_per_second_std: 52958.27605461368
+          seconds_per_batch_max: 1.5497207641601562e-05
+          seconds_per_batch_mean: 7.750988006591796e-06
+          seconds_per_batch_min: 4.0531158447265625e-06
+          seconds_per_batch_std: 2.941836983453729e-06
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 219.185 us +/- 23.877 us [184.059 us, 335.217 us]
+          batches_per_second: 4.61 K +/- 438.29 [2.98 K, 5.43 K]
+        metrics:
+          batches_per_second_max: 5433.036269430052
+          batches_per_second_mean: 4609.336725334623
+          batches_per_second_min: 2983.1465149359888
+          batches_per_second_std: 438.2923928341741
+          seconds_per_batch_max: 0.0003352165222167969
+          seconds_per_batch_mean: 0.00021918535232543946
+          seconds_per_batch_min: 0.00018405914306640625
+          seconds_per_batch_std: 2.3876523922562313e-05
+      on_device_inference:
+        human_readable:
+          batch_latency: 99.347 ms +/- 4.367 ms [90.778 ms, 109.541 ms]
+          batches_per_second: 10.08 +/- 0.44 [9.13, 11.02]
+        metrics:
+          batches_per_second_max: 11.015929129163831
+          batches_per_second_mean: 10.084955557469895
+          batches_per_second_min: 9.128967243443247
+          batches_per_second_std: 0.43805150575378754
+          seconds_per_batch_max: 0.10954141616821289
+          seconds_per_batch_mean: 0.09934707164764404
+          seconds_per_batch_min: 0.09077763557434082
+          seconds_per_batch_std: 0.0043667797533661476
+      total:
+        human_readable:
+          batch_latency: 99.574 ms +/- 4.375 ms [90.966 ms, 109.764 ms]
+          batches_per_second: 10.06 +/- 0.44 [9.11, 10.99]
+        metrics:
+          batches_per_second_max: 10.993148782034817
+          batches_per_second_mean: 10.061955505022018
+          batches_per_second_min: 9.110486509029458
+          batches_per_second_std: 0.43689479893434924
+          seconds_per_batch_max: 0.10976362228393555
+          seconds_per_batch_mean: 0.09957400798797607
+          seconds_per_batch_min: 0.09096574783325195
+          seconds_per_batch_std: 0.004374756397522246
+    batch_size_16:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 10.707 us +/- 11.355 us [6.914 us, 112.295 us]
+          batches_per_second: 110.02 K +/- 22.50 K [8.91 K, 144.63 K]
+        metrics:
+          batches_per_second_max: 144631.1724137931
+          batches_per_second_mean: 110016.79438025078
+          batches_per_second_min: 8905.104033970276
+          batches_per_second_std: 22498.92399888458
+          seconds_per_batch_max: 0.00011229515075683594
+          seconds_per_batch_mean: 1.0707378387451171e-05
+          seconds_per_batch_min: 6.9141387939453125e-06
+          seconds_per_batch_std: 1.1355338803679648e-05
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 1.403 ms +/- 198.796 us [1.253 ms, 2.689 ms]
+          batches_per_second: 722.66 +/- 71.18 [371.84, 797.85]
+        metrics:
+          batches_per_second_max: 797.8512459577706
+          batches_per_second_mean: 722.6553747332963
+          batches_per_second_min: 371.8354609929078
+          batches_per_second_std: 71.17860575250567
+          seconds_per_batch_max: 0.002689361572265625
+          seconds_per_batch_mean: 0.0014028000831604005
+          seconds_per_batch_min: 0.001253366470336914
+          seconds_per_batch_std: 0.00019879609010032493
+      on_device_inference:
+        human_readable:
+          batch_latency: 1.430 s +/- 55.194 ms [1.396 s, 1.620 s]
+          batches_per_second: 0.70 +/- 0.02 [0.62, 0.72]
+        metrics:
+          batches_per_second_max: 0.7164434049878543
+          batches_per_second_mean: 0.700286054547176
+          batches_per_second_min: 0.6173316016724736
+          batches_per_second_std: 0.024994190589971283
+          seconds_per_batch_max: 1.6198749542236328
+          seconds_per_batch_mean: 1.4299567794799806
+          seconds_per_batch_min: 1.3957836627960205
+          seconds_per_batch_std: 0.05519390306091017
+      total:
+        human_readable:
+          batch_latency: 1.431 s +/- 55.284 ms [1.397 s, 1.621 s]
+          batches_per_second: 0.70 +/- 0.02 [0.62, 0.72]
+        metrics:
+          batches_per_second_max: 0.7157683918153704
+          batches_per_second_mean: 0.6995957469571955
+          batches_per_second_min: 0.6167856473765275
+          batches_per_second_std: 0.0249854130494989
+          seconds_per_batch_max: 1.6213088035583496
+          seconds_per_batch_mean: 1.4313702869415283
+          seconds_per_batch_min: 1.3970999717712402
+          seconds_per_batch_std: 0.05528432167975014
+
+== Benchmarking model directly ==
+Machine info:
+  cpu:
+    architecture: aarch64
+    cores:
+      physical: 8
+      total: 8
+    frequency: 2.27 GHz
+    model: ARMv8 Processor rev 0 (v8l)
+  gpus: null
+  memory:
+    available: 2.62 GB
+    total: 31.17 GB
+    used: 28.25 GB
+  system:
+    node: xavier
+    release: 4.9.140-tegra
+    system: Linux
+
+Model device: cuda:0
+Model parameters: 3794322 (3.79 M)
+Model FLOPs: 269136368 (269.14 M)
+Memory results (batch_size=1):
+  max_inference: 13.21 GB
+  max_inference_bytes: 14188213248
+  post_inference: 10.12 GB
+  post_inference_bytes: 10861317120
+  pre_inference: 9.45 GB
+  pre_inference_bytes: 10142865920
+
+Warming up with batch_size=16:   0%|          | 0/10 [00:00<?, ?it/s]Warming up with batch_size=16:  10%|█         | 1/10 [00:00<00:01,  8.51it/s]Warming up with batch_size=16:  30%|███       | 3/10 [00:00<00:00, 10.14it/s]Warming up with batch_size=16:  40%|████      | 4/10 [00:00<00:00,  9.89it/s]Warming up with batch_size=16:  60%|██████    | 6/10 [00:00<00:00, 10.32it/s]Warming up with batch_size=16:  80%|████████  | 8/10 [00:00<00:00, 10.32it/s]Warming up with batch_size=16: 100%|██████████| 10/10 [00:00<00:00, 10.18it/s]Warming up with batch_size=16: 100%|██████████| 10/10 [00:00<00:00, 10.12it/s]
+Measuring inference for batch_size=16:   0%|          | 0/100 [00:00<?, ?it/s]Measuring inference for batch_size=16:   1%|          | 1/100 [00:00<00:09,  9.93it/s]Measuring inference for batch_size=16:   3%|▎         | 3/100 [00:00<00:09, 10.51it/s]Measuring inference for batch_size=16:   5%|▌         | 5/100 [00:00<00:09, 10.20it/s]Measuring inference for batch_size=16:   7%|▋         | 7/100 [00:00<00:09, 10.16it/s]Measuring inference for batch_size=16:   9%|▉         | 9/100 [00:00<00:08, 10.42it/s]Measuring inference for batch_size=16:  11%|█         | 11/100 [00:01<00:08, 10.42it/s]Measuring inference for batch_size=16:  13%|█▎        | 13/100 [00:01<00:08, 10.58it/s]Measuring inference for batch_size=16:  15%|█▌        | 15/100 [00:01<00:07, 10.85it/s]Measuring inference for batch_size=16:  17%|█▋        | 17/100 [00:01<00:07, 10.86it/s]Measuring inference for batch_size=16:  19%|█▉        | 19/100 [00:01<00:07, 10.68it/s]Measuring inference for batch_size=16:  21%|██        | 21/100 [00:01<00:07, 10.50it/s]Measuring inference for batch_size=16:  23%|██▎       | 23/100 [00:02<00:07, 10.29it/s]Measuring inference for batch_size=16:  25%|██▌       | 25/100 [00:02<00:07,  9.72it/s]Measuring inference for batch_size=16:  26%|██▌       | 26/100 [00:02<00:07,  9.61it/s]Measuring inference for batch_size=16:  27%|██▋       | 27/100 [00:02<00:07,  9.30it/s]Measuring inference for batch_size=16:  28%|██▊       | 28/100 [00:02<00:08,  8.97it/s]Measuring inference for batch_size=16:  29%|██▉       | 29/100 [00:02<00:08,  8.67it/s]Measuring inference for batch_size=16:  30%|███       | 30/100 [00:03<00:08,  8.60it/s]Measuring inference for batch_size=16:  32%|███▏      | 32/100 [00:03<00:07,  9.22it/s]Measuring inference for batch_size=16:  34%|███▍      | 34/100 [00:03<00:06,  9.75it/s]Measuring inference for batch_size=16:  35%|███▌      | 35/100 [00:03<00:06,  9.64it/s]Measuring inference for batch_size=16:  36%|███▌      | 36/100 [00:03<00:06,  9.59it/s]Measuring inference for batch_size=16:  38%|███▊      | 38/100 [00:03<00:06, 10.03it/s]Measuring inference for batch_size=16:  40%|████      | 40/100 [00:04<00:05, 10.05it/s]Measuring inference for batch_size=16:  41%|████      | 41/100 [00:04<00:05,  9.89it/s]Measuring inference for batch_size=16:  42%|████▏     | 42/100 [00:04<00:05,  9.78it/s]Measuring inference for batch_size=16:  43%|████▎     | 43/100 [00:04<00:05,  9.60it/s]Measuring inference for batch_size=16:  45%|████▌     | 45/100 [00:04<00:05,  9.85it/s]Measuring inference for batch_size=16:  47%|████▋     | 47/100 [00:04<00:05,  9.97it/s]Measuring inference for batch_size=16:  49%|████▉     | 49/100 [00:04<00:05, 10.04it/s]Measuring inference for batch_size=16:  51%|█████     | 51/100 [00:05<00:04, 10.20it/s]Measuring inference for batch_size=16:  53%|█████▎    | 53/100 [00:05<00:04, 10.32it/s]Measuring inference for batch_size=16:  55%|█████▌    | 55/100 [00:05<00:04, 10.35it/s]Measuring inference for batch_size=16:  57%|█████▋    | 57/100 [00:05<00:04, 10.57it/s]Measuring inference for batch_size=16:  59%|█████▉    | 59/100 [00:05<00:03, 10.72it/s]Measuring inference for batch_size=16:  61%|██████    | 61/100 [00:06<00:03, 10.95it/s]Measuring inference for batch_size=16:  63%|██████▎   | 63/100 [00:06<00:03, 11.04it/s]Measuring inference for batch_size=16:  65%|██████▌   | 65/100 [00:06<00:03, 11.14it/s]Measuring inference for batch_size=16:  67%|██████▋   | 67/100 [00:06<00:02, 11.25it/s]Measuring inference for batch_size=16:  69%|██████▉   | 69/100 [00:06<00:03,  9.81it/s]Measuring inference for batch_size=16:  71%|███████   | 71/100 [00:07<00:03,  8.96it/s]Measuring inference for batch_size=16:  72%|███████▏  | 72/100 [00:07<00:03,  8.65it/s]Measuring inference for batch_size=16:  73%|███████▎  | 73/100 [00:07<00:03,  8.67it/s]Measuring inference for batch_size=16:  74%|███████▍  | 74/100 [00:07<00:02,  8.68it/s]Measuring inference for batch_size=16:  75%|███████▌  | 75/100 [00:07<00:02,  8.47it/s]Measuring inference for batch_size=16:  76%|███████▌  | 76/100 [00:07<00:02,  8.33it/s]Measuring inference for batch_size=16:  77%|███████▋  | 77/100 [00:07<00:02,  8.19it/s]Measuring inference for batch_size=16:  78%|███████▊  | 78/100 [00:07<00:02,  8.05it/s]Measuring inference for batch_size=16:  79%|███████▉  | 79/100 [00:08<00:02,  8.15it/s]Measuring inference for batch_size=16:  80%|████████  | 80/100 [00:08<00:02,  8.33it/s]Measuring inference for batch_size=16:  82%|████████▏ | 82/100 [00:08<00:01,  9.18it/s]Measuring inference for batch_size=16:  83%|████████▎ | 83/100 [00:08<00:01,  9.06it/s]Measuring inference for batch_size=16:  85%|████████▌ | 85/100 [00:08<00:01,  9.55it/s]Measuring inference for batch_size=16:  86%|████████▌ | 86/100 [00:08<00:01,  9.47it/s]Measuring inference for batch_size=16:  88%|████████▊ | 88/100 [00:09<00:01,  9.73it/s]Measuring inference for batch_size=16:  89%|████████▉ | 89/100 [00:09<00:01,  9.59it/s]Measuring inference for batch_size=16:  91%|█████████ | 91/100 [00:09<00:00,  9.50it/s]Measuring inference for batch_size=16:  93%|█████████▎| 93/100 [00:09<00:00,  9.81it/s]Measuring inference for batch_size=16:  95%|█████████▌| 95/100 [00:09<00:00, 10.16it/s]Measuring inference for batch_size=16:  97%|█████████▋| 97/100 [00:09<00:00, 10.45it/s]Measuring inference for batch_size=16:  99%|█████████▉| 99/100 [00:10<00:00, 10.16it/s]Measuring inference for batch_size=16: 100%|██████████| 100/100 [00:10<00:00,  9.81it/s]
+Timing results (batch_size=1):
+  cpu_to_gpu:
+    human_readable:
+      batch_latency: 291.264 us +/- 106.395 us [176.191 us, 681.877 us]
+      batches_per_second: 3.82 K +/- 1.12 K [1.47 K, 5.68 K]
+    metrics:
+      batches_per_second_max: 5675.648173207037
+      batches_per_second_mean: 3822.282610661656
+      batches_per_second_min: 1466.5398601398601
+      batches_per_second_std: 1122.4859245685277
+      seconds_per_batch_max: 0.0006818771362304688
+      seconds_per_batch_mean: 0.00029126405715942385
+      seconds_per_batch_min: 0.0001761913299560547
+      seconds_per_batch_std: 0.00010639460213666434
+  gpu_to_cpu:
+    human_readable:
+      batch_latency: 207.424 us +/- 97.781 us [129.938 us, 791.550 us]
+      batches_per_second: 5.27 K +/- 1.09 K [1.26 K, 7.70 K]
+    metrics:
+      batches_per_second_max: 7695.970642201835
+      batches_per_second_mean: 5266.9723340445835
+      batches_per_second_min: 1263.3445783132531
+      batches_per_second_std: 1093.8223078625072
+      seconds_per_batch_max: 0.0007915496826171875
+      seconds_per_batch_mean: 0.00020742416381835938
+      seconds_per_batch_min: 0.00012993812561035156
+      seconds_per_batch_std: 9.778070598534785e-05
+  on_device_inference:
+    human_readable:
+      batch_latency: 100.791 ms +/- 13.319 ms [85.595 ms, 154.954 ms]
+      batches_per_second: 10.07 +/- 1.16 [6.45, 11.68]
+    metrics:
+      batches_per_second_max: 11.6829726191471
+      batches_per_second_mean: 10.072485177168987
+      batches_per_second_min: 6.453539880878196
+      batches_per_second_std: 1.1565238678213545
+      seconds_per_batch_max: 0.1549537181854248
+      seconds_per_batch_mean: 0.1007911992073059
+      seconds_per_batch_min: 0.08559465408325195
+      seconds_per_batch_std: 0.013318839906567828
+  total:
+    human_readable:
+      batch_latency: 101.290 ms +/- 13.387 ms [86.003 ms, 155.681 ms]
+      batches_per_second: 10.02 +/- 1.15 [6.42, 11.63]
+    metrics:
+      batches_per_second_max: 11.627492563545989
+      batches_per_second_mean: 10.023019729861634
+      batches_per_second_min: 6.423376086373904
+      batches_per_second_std: 1.151585563997
+      seconds_per_batch_max: 0.15568137168884277
+      seconds_per_batch_mean: 0.1012898874282837
+      seconds_per_batch_min: 0.08600306510925293
+      seconds_per_batch_std: 0.01338732513753431
+
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input
+Jetson PowerLogger found 9 power devices
+Measuring energy for batch_size=1:   0%|          | 0/10 [00:00<?, ?it/s]Measuring energy for batch_size=1:  10%|█         | 1/10 [00:00<00:01,  5.70it/s]Measuring energy for batch_size=1:  20%|██        | 2/10 [00:00<00:01,  5.69it/s]Measuring energy for batch_size=1:  30%|███       | 3/10 [00:00<00:01,  5.66it/s]Measuring energy for batch_size=1:  40%|████      | 4/10 [00:00<00:01,  5.59it/s]Measuring energy for batch_size=1:  50%|█████     | 5/10 [00:00<00:00,  5.58it/s]Measuring energy for batch_size=1:  60%|██████    | 6/10 [00:01<00:00,  5.60it/s]Measuring energy for batch_size=1:  70%|███████   | 7/10 [00:01<00:00,  5.64it/s]Measuring energy for batch_size=1:  80%|████████  | 8/10 [00:01<00:00,  6.20it/s]Measuring energy for batch_size=1:  90%|█████████ | 9/10 [00:01<00:00,  5.99it/s]Measuring energy for batch_size=1: 100%|██████████| 10/10 [00:01<00:00,  5.88it/s]Measuring energy for batch_size=1: 100%|██████████| 10/10 [00:01<00:00,  5.79it/s]
+Energy results (batch_size=1):
+  joules: 2.473419131697019
+  kWh: 6.870608699158386e-07
+
+Memory results (batch_size=16):
+  max_inference: 13.21 GB
+  max_inference_bytes: 14188213248
+  post_inference: 10.12 GB
+  post_inference_bytes: 10861317120
+  pre_inference: 9.92 GB
+  pre_inference_bytes: 10647350784
+
+Warming up with batch_size=16:   0%|          | 0/10 [00:00<?, ?it/s]Warming up with batch_size=16:  10%|█         | 1/10 [00:01<00:13,  1.48s/it]Warming up with batch_size=16:  20%|██        | 2/10 [00:02<00:11,  1.48s/it]Warming up with batch_size=16:  30%|███       | 3/10 [00:04<00:10,  1.49s/it]Warming up with batch_size=16:  40%|████      | 4/10 [00:05<00:08,  1.48s/it]Warming up with batch_size=16:  50%|█████     | 5/10 [00:07<00:07,  1.45s/it]Warming up with batch_size=16:  60%|██████    | 6/10 [00:08<00:05,  1.43s/it]Warming up with batch_size=16:  70%|███████   | 7/10 [00:10<00:04,  1.42s/it]Warming up with batch_size=16:  80%|████████  | 8/10 [00:11<00:02,  1.41s/it]Warming up with batch_size=16:  90%|█████████ | 9/10 [00:12<00:01,  1.40s/it]Warming up with batch_size=16: 100%|██████████| 10/10 [00:14<00:00,  1.40s/it]Warming up with batch_size=16: 100%|██████████| 10/10 [00:14<00:00,  1.43s/it]
+Measuring inference for batch_size=16:   0%|          | 0/100 [00:00<?, ?it/s]Measuring inference for batch_size=16:   1%|          | 1/100 [00:01<02:18,  1.40s/it]Measuring inference for batch_size=16:   2%|▏         | 2/100 [00:02<02:16,  1.40s/it]Measuring inference for batch_size=16:   3%|▎         | 3/100 [00:04<02:15,  1.40s/it]Measuring inference for batch_size=16:   4%|▍         | 4/100 [00:05<02:13,  1.39s/it]Measuring inference for batch_size=16:   5%|▌         | 5/100 [00:06<02:12,  1.39s/it]Measuring inference for batch_size=16:   6%|▌         | 6/100 [00:08<02:10,  1.39s/it]Measuring inference for batch_size=16:   7%|▋         | 7/100 [00:09<02:09,  1.39s/it]Measuring inference for batch_size=16:   8%|▊         | 8/100 [00:11<02:08,  1.40s/it]Measuring inference for batch_size=16:   9%|▉         | 9/100 [00:12<02:06,  1.39s/it]Measuring inference for batch_size=16:  10%|█         | 10/100 [00:13<02:05,  1.40s/it]Measuring inference for batch_size=16:  11%|█         | 11/100 [00:15<02:04,  1.40s/it]Measuring inference for batch_size=16:  12%|█▏        | 12/100 [00:16<02:02,  1.40s/it]Measuring inference for batch_size=16:  13%|█▎        | 13/100 [00:18<02:01,  1.40s/it]Measuring inference for batch_size=16:  14%|█▍        | 14/100 [00:19<02:00,  1.40s/it]Measuring inference for batch_size=16:  15%|█▌        | 15/100 [00:20<01:58,  1.40s/it]Measuring inference for batch_size=16:  16%|█▌        | 16/100 [00:22<01:57,  1.40s/it]Measuring inference for batch_size=16:  17%|█▋        | 17/100 [00:23<01:55,  1.40s/it]Measuring inference for batch_size=16:  18%|█▊        | 18/100 [00:25<01:54,  1.40s/it]Measuring inference for batch_size=16:  19%|█▉        | 19/100 [00:26<01:53,  1.40s/it]Measuring inference for batch_size=16:  20%|██        | 20/100 [00:27<01:51,  1.40s/it]Measuring inference for batch_size=16:  21%|██        | 21/100 [00:29<01:50,  1.40s/it]Measuring inference for batch_size=16:  22%|██▏       | 22/100 [00:30<01:48,  1.40s/it]Measuring inference for batch_size=16:  23%|██▎       | 23/100 [00:32<01:47,  1.40s/it]Measuring inference for batch_size=16:  24%|██▍       | 24/100 [00:33<01:45,  1.39s/it]Measuring inference for batch_size=16:  25%|██▌       | 25/100 [00:34<01:44,  1.39s/it]Measuring inference for batch_size=16:  26%|██▌       | 26/100 [00:36<01:43,  1.39s/it]Measuring inference for batch_size=16:  27%|██▋       | 27/100 [00:37<01:41,  1.39s/it]Measuring inference for batch_size=16:  28%|██▊       | 28/100 [00:39<01:40,  1.39s/it]Measuring inference for batch_size=16:  29%|██▉       | 29/100 [00:40<01:38,  1.39s/it]Measuring inference for batch_size=16:  30%|███       | 30/100 [00:41<01:37,  1.39s/it]Measuring inference for batch_size=16:  31%|███       | 31/100 [00:43<01:36,  1.39s/it]Measuring inference for batch_size=16:  32%|███▏      | 32/100 [00:44<01:34,  1.39s/it]Measuring inference for batch_size=16:  33%|███▎      | 33/100 [00:46<01:33,  1.40s/it]Measuring inference for batch_size=16:  34%|███▍      | 34/100 [00:47<01:31,  1.39s/it]Measuring inference for batch_size=16:  35%|███▌      | 35/100 [00:48<01:30,  1.39s/it]Measuring inference for batch_size=16:  36%|███▌      | 36/100 [00:50<01:29,  1.39s/it]Measuring inference for batch_size=16:  37%|███▋      | 37/100 [00:51<01:27,  1.39s/it]Measuring inference for batch_size=16:  38%|███▊      | 38/100 [00:53<01:26,  1.39s/it]Measuring inference for batch_size=16:  39%|███▉      | 39/100 [00:54<01:25,  1.39s/it]Measuring inference for batch_size=16:  40%|████      | 40/100 [00:55<01:23,  1.39s/it]Measuring inference for batch_size=16:  41%|████      | 41/100 [00:57<01:22,  1.40s/it]Measuring inference for batch_size=16:  42%|████▏     | 42/100 [00:58<01:20,  1.40s/it]Measuring inference for batch_size=16:  43%|████▎     | 43/100 [00:59<01:19,  1.39s/it]Measuring inference for batch_size=16:  44%|████▍     | 44/100 [01:01<01:18,  1.39s/it]Measuring inference for batch_size=16:  45%|████▌     | 45/100 [01:02<01:16,  1.39s/it]Measuring inference for batch_size=16:  46%|████▌     | 46/100 [01:04<01:15,  1.39s/it]Measuring inference for batch_size=16:  47%|████▋     | 47/100 [01:05<01:13,  1.40s/it]Measuring inference for batch_size=16:  48%|████▊     | 48/100 [01:06<01:12,  1.39s/it]Measuring inference for batch_size=16:  49%|████▉     | 49/100 [01:08<01:10,  1.39s/it]Measuring inference for batch_size=16:  50%|█████     | 50/100 [01:09<01:09,  1.39s/it]Measuring inference for batch_size=16:  51%|█████     | 51/100 [01:11<01:08,  1.40s/it]Measuring inference for batch_size=16:  52%|█████▏    | 52/100 [01:12<01:06,  1.39s/it]Measuring inference for batch_size=16:  53%|█████▎    | 53/100 [01:13<01:05,  1.39s/it]Measuring inference for batch_size=16:  54%|█████▍    | 54/100 [01:15<01:04,  1.39s/it]Measuring inference for batch_size=16:  55%|█████▌    | 55/100 [01:16<01:02,  1.39s/it]Measuring inference for batch_size=16:  56%|█████▌    | 56/100 [01:18<01:01,  1.39s/it]Measuring inference for batch_size=16:  57%|█████▋    | 57/100 [01:19<00:59,  1.39s/it]Measuring inference for batch_size=16:  58%|█████▊    | 58/100 [01:20<00:58,  1.39s/it]Measuring inference for batch_size=16:  59%|█████▉    | 59/100 [01:22<00:57,  1.39s/it]Measuring inference for batch_size=16:  60%|██████    | 60/100 [01:23<00:55,  1.39s/it]Measuring inference for batch_size=16:  61%|██████    | 61/100 [01:25<00:54,  1.39s/it]Measuring inference for batch_size=16:  62%|██████▏   | 62/100 [01:26<00:52,  1.39s/it]Measuring inference for batch_size=16:  63%|██████▎   | 63/100 [01:27<00:51,  1.39s/it]Measuring inference for batch_size=16:  64%|██████▍   | 64/100 [01:29<00:50,  1.39s/it]Measuring inference for batch_size=16:  65%|██████▌   | 65/100 [01:30<00:48,  1.39s/it]Measuring inference for batch_size=16:  66%|██████▌   | 66/100 [01:32<00:47,  1.39s/it]Measuring inference for batch_size=16:  67%|██████▋   | 67/100 [01:33<00:45,  1.39s/it]Measuring inference for batch_size=16:  68%|██████▊   | 68/100 [01:34<00:44,  1.39s/it]Measuring inference for batch_size=16:  69%|██████▉   | 69/100 [01:36<00:43,  1.39s/it]Measuring inference for batch_size=16:  70%|███████   | 70/100 [01:37<00:41,  1.39s/it]Measuring inference for batch_size=16:  71%|███████   | 71/100 [01:38<00:40,  1.39s/it]Measuring inference for batch_size=16:  72%|███████▏  | 72/100 [01:40<00:39,  1.39s/it]Measuring inference for batch_size=16:  73%|███████▎  | 73/100 [01:41<00:37,  1.39s/it]Measuring inference for batch_size=16:  74%|███████▍  | 74/100 [01:43<00:36,  1.39s/it]Measuring inference for batch_size=16:  75%|███████▌  | 75/100 [01:44<00:34,  1.39s/it]Measuring inference for batch_size=16:  76%|███████▌  | 76/100 [01:45<00:33,  1.39s/it]Measuring inference for batch_size=16:  77%|███████▋  | 77/100 [01:47<00:32,  1.39s/it]Measuring inference for batch_size=16:  78%|███████▊  | 78/100 [01:48<00:30,  1.40s/it]Measuring inference for batch_size=16:  79%|███████▉  | 79/100 [01:50<00:29,  1.40s/it]Measuring inference for batch_size=16:  80%|████████  | 80/100 [01:51<00:27,  1.40s/it]Measuring inference for batch_size=16:  81%|████████  | 81/100 [01:52<00:26,  1.40s/it]Measuring inference for batch_size=16:  82%|████████▏ | 82/100 [01:54<00:25,  1.40s/it]Measuring inference for batch_size=16:  83%|████████▎ | 83/100 [01:55<00:23,  1.40s/it]Measuring inference for batch_size=16:  84%|████████▍ | 84/100 [01:57<00:22,  1.40s/it]Measuring inference for batch_size=16:  85%|████████▌ | 85/100 [01:58<00:20,  1.40s/it]Measuring inference for batch_size=16:  86%|████████▌ | 86/100 [01:59<00:19,  1.40s/it]Measuring inference for batch_size=16:  87%|████████▋ | 87/100 [02:01<00:18,  1.40s/it]Measuring inference for batch_size=16:  88%|████████▊ | 88/100 [02:02<00:16,  1.40s/it]Measuring inference for batch_size=16:  89%|████████▉ | 89/100 [02:04<00:15,  1.40s/it]Measuring inference for batch_size=16:  90%|█████████ | 90/100 [02:05<00:13,  1.40s/it]Measuring inference for batch_size=16:  91%|█████████ | 91/100 [02:06<00:12,  1.40s/it]Measuring inference for batch_size=16:  92%|█████████▏| 92/100 [02:08<00:11,  1.40s/it]Measuring inference for batch_size=16:  93%|█████████▎| 93/100 [02:09<00:09,  1.40s/it]Measuring inference for batch_size=16:  94%|█████████▍| 94/100 [02:11<00:08,  1.40s/it]Measuring inference for batch_size=16:  95%|█████████▌| 95/100 [02:12<00:06,  1.40s/it]Measuring inference for batch_size=16:  96%|█████████▌| 96/100 [02:13<00:05,  1.40s/it]Measuring inference for batch_size=16:  97%|█████████▋| 97/100 [02:15<00:04,  1.40s/it]Measuring inference for batch_size=16:  98%|█████████▊| 98/100 [02:16<00:02,  1.44s/it]Measuring inference for batch_size=16:  99%|█████████▉| 99/100 [02:18<00:01,  1.47s/it]Measuring inference for batch_size=16: 100%|██████████| 100/100 [02:19<00:00,  1.47s/it]Measuring inference for batch_size=16: 100%|██████████| 100/100 [02:19<00:00,  1.40s/it]
+Timing results (batch_size=16):
+  cpu_to_gpu:
+    human_readable:
+      batch_latency: 1.434 ms +/- 62.998 us [1.303 ms, 1.628 ms]
+      batches_per_second: 698.75 +/- 30.16 [614.19, 767.63]
+    metrics:
+      batches_per_second_max: 767.6251830161054
+      batches_per_second_mean: 698.7535149102785
+      batches_per_second_min: 614.1900717528189
+      batches_per_second_std: 30.159276596522204
+      seconds_per_batch_max: 0.0016281604766845703
+      seconds_per_batch_mean: 0.0014338326454162598
+      seconds_per_batch_min: 0.0013027191162109375
+      seconds_per_batch_std: 6.299785195421367e-05
+  gpu_to_cpu:
+    human_readable:
+      batch_latency: 755.538 ms +/- 16.812 ms [744.913 ms, 889.188 ms]
+      batches_per_second: 1.32 +/- 0.03 [1.12, 1.34]
+    metrics:
+      batches_per_second_max: 1.3424384648277168
+      batches_per_second_mean: 1.3241316768541072
+      batches_per_second_min: 1.1246218016025638
+      batches_per_second_std: 0.02569290653326685
+      seconds_per_batch_max: 0.8891878128051758
+      seconds_per_batch_mean: 0.7555378651618958
+      seconds_per_batch_min: 0.7449131011962891
+      seconds_per_batch_std: 0.016811935538394714
+  on_device_inference:
+    human_readable:
+      batch_latency: 640.613 ms +/- 8.911 ms [634.774 ms, 706.345 ms]
+      batches_per_second: 1.56 +/- 0.02 [1.42, 1.58]
+    metrics:
+      batches_per_second_max: 1.575362722197746
+      batches_per_second_mean: 1.5612832629652609
+      batches_per_second_min: 1.415739082739125
+      batches_per_second_std: 0.020016042622475607
+      seconds_per_batch_max: 0.7063448429107666
+      seconds_per_batch_mean: 0.6406129622459411
+      seconds_per_batch_min: 0.6347744464874268
+      seconds_per_batch_std: 0.008910530806653997
+  total:
+    human_readable:
+      batch_latency: 1.398 s +/- 23.001 ms [1.385 s, 1.557 s]
+      batches_per_second: 0.72 +/- 0.01 [0.64, 0.72]
+    metrics:
+      batches_per_second_max: 0.722143367265069
+      batches_per_second_mean: 0.7156966060890249
+      batches_per_second_min: 0.6424467205349474
+      batches_per_second_std: 0.010724676303238416
+      seconds_per_batch_max: 1.556549310684204
+      seconds_per_batch_mean: 1.397584660053253
+      seconds_per_batch_min: 1.3847665786743164
+      seconds_per_batch_std: 0.02300056161354714
+
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input
+Jetson PowerLogger found 9 power devices
+Measuring energy for batch_size=16:   0%|          | 0/10 [00:00<?, ?it/s]Measuring energy for batch_size=16:  10%|█         | 1/10 [00:01<00:13,  1.48s/it]Measuring energy for batch_size=16:  20%|██        | 2/10 [00:02<00:11,  1.48s/it]Measuring energy for batch_size=16:  30%|███       | 3/10 [00:04<00:10,  1.53s/it]Measuring energy for batch_size=16:  40%|████      | 4/10 [00:05<00:08,  1.49s/it]Measuring energy for batch_size=16:  50%|█████     | 5/10 [00:07<00:07,  1.53s/it]Measuring energy for batch_size=16:  60%|██████    | 6/10 [00:09<00:06,  1.56s/it]Measuring energy for batch_size=16:  70%|███████   | 7/10 [00:10<00:04,  1.56s/it]Measuring energy for batch_size=16:  80%|████████  | 8/10 [00:12<00:03,  1.54s/it]Measuring energy for batch_size=16:  90%|█████████ | 9/10 [00:13<00:01,  1.55s/it]Measuring energy for batch_size=16: 100%|██████████| 10/10 [00:15<00:00,  1.56s/it]Measuring energy for batch_size=16: 100%|██████████| 10/10 [00:15<00:00,  1.54s/it]
+ERROR:torch-benchmark:Unable to measure model params due to error: 'function' object has no attribute 'parameters'
+ERROR:torch-benchmark:Unable to measure model FLOPs due to error: 'list' object has no attribute 'shape'
+Energy results (batch_size=16):
+  joules: 47.45605527701854
+  kWh: 1.3182237576949596e-05
+
+learner.model.forward:
+  device: cuda
+  energy:
+    batch_size_1:
+      joules: 2.473419131697019
+      kWh: 6.870608699158386e-07
+    batch_size_16:
+      joules: 47.45605527701854
+      kWh: 1.3182237576949596e-05
+  flops: 269136368
+  machine_info:
+    cpu:
+      architecture: aarch64
+      cores:
+        physical: 8
+        total: 8
+      frequency: 2.27 GHz
+      model: ARMv8 Processor rev 0 (v8l)
+    gpus: null
+    memory:
+      available: 2.62 GB
+      total: 31.17 GB
+      used: 28.25 GB
+    system:
+      node: xavier
+      release: 4.9.140-tegra
+      system: Linux
+  params: 3794322
+  timing:
+    batch_size_1:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 291.264 us +/- 106.395 us [176.191 us, 681.877 us]
+          batches_per_second: 3.82 K +/- 1.12 K [1.47 K, 5.68 K]
+        metrics:
+          batches_per_second_max: 5675.648173207037
+          batches_per_second_mean: 3822.282610661656
+          batches_per_second_min: 1466.5398601398601
+          batches_per_second_std: 1122.4859245685277
+          seconds_per_batch_max: 0.0006818771362304688
+          seconds_per_batch_mean: 0.00029126405715942385
+          seconds_per_batch_min: 0.0001761913299560547
+          seconds_per_batch_std: 0.00010639460213666434
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 207.424 us +/- 97.781 us [129.938 us, 791.550 us]
+          batches_per_second: 5.27 K +/- 1.09 K [1.26 K, 7.70 K]
+        metrics:
+          batches_per_second_max: 7695.970642201835
+          batches_per_second_mean: 5266.9723340445835
+          batches_per_second_min: 1263.3445783132531
+          batches_per_second_std: 1093.8223078625072
+          seconds_per_batch_max: 0.0007915496826171875
+          seconds_per_batch_mean: 0.00020742416381835938
+          seconds_per_batch_min: 0.00012993812561035156
+          seconds_per_batch_std: 9.778070598534785e-05
+      on_device_inference:
+        human_readable:
+          batch_latency: 100.791 ms +/- 13.319 ms [85.595 ms, 154.954 ms]
+          batches_per_second: 10.07 +/- 1.16 [6.45, 11.68]
+        metrics:
+          batches_per_second_max: 11.6829726191471
+          batches_per_second_mean: 10.072485177168987
+          batches_per_second_min: 6.453539880878196
+          batches_per_second_std: 1.1565238678213545
+          seconds_per_batch_max: 0.1549537181854248
+          seconds_per_batch_mean: 0.1007911992073059
+          seconds_per_batch_min: 0.08559465408325195
+          seconds_per_batch_std: 0.013318839906567828
+      total:
+        human_readable:
+          batch_latency: 101.290 ms +/- 13.387 ms [86.003 ms, 155.681 ms]
+          batches_per_second: 10.02 +/- 1.15 [6.42, 11.63]
+        metrics:
+          batches_per_second_max: 11.627492563545989
+          batches_per_second_mean: 10.023019729861634
+          batches_per_second_min: 6.423376086373904
+          batches_per_second_std: 1.151585563997
+          seconds_per_batch_max: 0.15568137168884277
+          seconds_per_batch_mean: 0.1012898874282837
+          seconds_per_batch_min: 0.08600306510925293
+          seconds_per_batch_std: 0.01338732513753431
+    batch_size_16:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 1.434 ms +/- 62.998 us [1.303 ms, 1.628 ms]
+          batches_per_second: 698.75 +/- 30.16 [614.19, 767.63]
+        metrics:
+          batches_per_second_max: 767.6251830161054
+          batches_per_second_mean: 698.7535149102785
+          batches_per_second_min: 614.1900717528189
+          batches_per_second_std: 30.159276596522204
+          seconds_per_batch_max: 0.0016281604766845703
+          seconds_per_batch_mean: 0.0014338326454162598
+          seconds_per_batch_min: 0.0013027191162109375
+          seconds_per_batch_std: 6.299785195421367e-05
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 755.538 ms +/- 16.812 ms [744.913 ms, 889.188 ms]
+          batches_per_second: 1.32 +/- 0.03 [1.12, 1.34]
+        metrics:
+          batches_per_second_max: 1.3424384648277168
+          batches_per_second_mean: 1.3241316768541072
+          batches_per_second_min: 1.1246218016025638
+          batches_per_second_std: 0.02569290653326685
+          seconds_per_batch_max: 0.8891878128051758
+          seconds_per_batch_mean: 0.7555378651618958
+          seconds_per_batch_min: 0.7449131011962891
+          seconds_per_batch_std: 0.016811935538394714
+      on_device_inference:
+        human_readable:
+          batch_latency: 640.613 ms +/- 8.911 ms [634.774 ms, 706.345 ms]
+          batches_per_second: 1.56 +/- 0.02 [1.42, 1.58]
+        metrics:
+          batches_per_second_max: 1.575362722197746
+          batches_per_second_mean: 1.5612832629652609
+          batches_per_second_min: 1.415739082739125
+          batches_per_second_std: 0.020016042622475607
+          seconds_per_batch_max: 0.7063448429107666
+          seconds_per_batch_mean: 0.6406129622459411
+          seconds_per_batch_min: 0.6347744464874268
+          seconds_per_batch_std: 0.008910530806653997
+      total:
+        human_readable:
+          batch_latency: 1.398 s +/- 23.001 ms [1.385 s, 1.557 s]
+          batches_per_second: 0.72 +/- 0.01 [0.64, 0.72]
+        metrics:
+          batches_per_second_max: 0.722143367265069
+          batches_per_second_mean: 0.7156966060890249
+          batches_per_second_min: 0.6424467205349474
+          batches_per_second_std: 0.010724676303238416
+          seconds_per_batch_max: 1.556549310684204
+          seconds_per_batch_mean: 1.397584660053253
+          seconds_per_batch_min: 1.3847665786743164
+          seconds_per_batch_std: 0.02300056161354714
+
+==== Benchmarking CoX3DLearner (l) ====
+== Benchmarking learner.infer ==
+Machine info:
+  cpu:
+    architecture: aarch64
+    cores:
+      physical: 8
+      total: 8
+    frequency: 2.27 GHz
+    model: ARMv8 Processor rev 0 (v8l)
+  gpus: null
+  memory:
+    available: 2.55 GB
+    total: 31.17 GB
+    used: 28.24 GB
+  system:
+    node: xavier
+    release: 4.9.140-tegra
+    system: Linux
+
+Model device: cuda:0
+Memory results (batch_size=1):
+  max_inference: 19.59 GB
+  max_inference_bytes: 21034201600
+  post_inference: 19.57 GB
+  post_inference_bytes: 21012165120
+  pre_inference: 18.36 GB
+  pre_inference_bytes: 19711865856
+
+Warming up with batch_size=8:   0%|          | 0/10 [00:00<?, ?it/s]Warming up with batch_size=8:  10%|█         | 1/10 [00:00<00:02,  4.15it/s]Warming up with batch_size=8:  20%|██        | 2/10 [00:00<00:01,  4.47it/s]Warming up with batch_size=8:  30%|███       | 3/10 [00:00<00:01,  4.59it/s]Warming up with batch_size=8:  40%|████      | 4/10 [00:00<00:01,  4.59it/s]Warming up with batch_size=8:  50%|█████     | 5/10 [00:01<00:01,  4.61it/s]Warming up with batch_size=8:  60%|██████    | 6/10 [00:01<00:00,  4.57it/s]Warming up with batch_size=8:  70%|███████   | 7/10 [00:01<00:00,  4.68it/s]Warming up with batch_size=8:  80%|████████  | 8/10 [00:01<00:00,  4.57it/s]Warming up with batch_size=8:  90%|█████████ | 9/10 [00:01<00:00,  4.46it/s]Warming up with batch_size=8: 100%|██████████| 10/10 [00:02<00:00,  4.34it/s]Warming up with batch_size=8: 100%|██████████| 10/10 [00:02<00:00,  4.48it/s]
+Measuring inference for batch_size=8:   0%|          | 0/100 [00:00<?, ?it/s]Measuring inference for batch_size=8:   1%|          | 1/100 [00:00<00:23,  4.18it/s]Measuring inference for batch_size=8:   2%|▏         | 2/100 [00:00<00:21,  4.53it/s]Measuring inference for batch_size=8:   3%|▎         | 3/100 [00:00<00:21,  4.55it/s]Measuring inference for batch_size=8:   4%|▍         | 4/100 [00:00<00:20,  4.63it/s]Measuring inference for batch_size=8:   5%|▌         | 5/100 [00:01<00:20,  4.71it/s]Measuring inference for batch_size=8:   6%|▌         | 6/100 [00:01<00:20,  4.58it/s]Measuring inference for batch_size=8:   7%|▋         | 7/100 [00:01<00:20,  4.52it/s]Measuring inference for batch_size=8:   8%|▊         | 8/100 [00:01<00:20,  4.47it/s]Measuring inference for batch_size=8:   9%|▉         | 9/100 [00:01<00:20,  4.45it/s]Measuring inference for batch_size=8:  10%|█         | 10/100 [00:02<00:20,  4.43it/s]Measuring inference for batch_size=8:  11%|█         | 11/100 [00:02<00:19,  4.52it/s]Measuring inference for batch_size=8:  12%|█▏        | 12/100 [00:02<00:19,  4.54it/s]Measuring inference for batch_size=8:  13%|█▎        | 13/100 [00:02<00:18,  4.64it/s]Measuring inference for batch_size=8:  14%|█▍        | 14/100 [00:03<00:19,  4.47it/s]Measuring inference for batch_size=8:  15%|█▌        | 15/100 [00:03<00:20,  4.23it/s]Measuring inference for batch_size=8:  16%|█▌        | 16/100 [00:03<00:21,  3.96it/s]Measuring inference for batch_size=8:  17%|█▋        | 17/100 [00:03<00:20,  3.99it/s]Measuring inference for batch_size=8:  18%|█▊        | 18/100 [00:04<00:20,  4.07it/s]Measuring inference for batch_size=8:  19%|█▉        | 19/100 [00:04<00:19,  4.08it/s]Measuring inference for batch_size=8:  20%|██        | 20/100 [00:04<00:18,  4.25it/s]Measuring inference for batch_size=8:  21%|██        | 21/100 [00:04<00:17,  4.42it/s]Measuring inference for batch_size=8:  22%|██▏       | 22/100 [00:05<00:17,  4.47it/s]Measuring inference for batch_size=8:  23%|██▎       | 23/100 [00:05<00:16,  4.56it/s]Measuring inference for batch_size=8:  24%|██▍       | 24/100 [00:05<00:16,  4.64it/s]Measuring inference for batch_size=8:  25%|██▌       | 25/100 [00:05<00:16,  4.69it/s]Measuring inference for batch_size=8:  26%|██▌       | 26/100 [00:05<00:16,  4.61it/s]Measuring inference for batch_size=8:  27%|██▋       | 27/100 [00:06<00:15,  4.58it/s]Measuring inference for batch_size=8:  28%|██▊       | 28/100 [00:06<00:15,  4.60it/s]Measuring inference for batch_size=8:  29%|██▉       | 29/100 [00:06<00:15,  4.67it/s]Measuring inference for batch_size=8:  30%|███       | 30/100 [00:06<00:15,  4.61it/s]Measuring inference for batch_size=8:  31%|███       | 31/100 [00:06<00:14,  4.73it/s]Measuring inference for batch_size=8:  32%|███▏      | 32/100 [00:07<00:14,  4.79it/s]Measuring inference for batch_size=8:  33%|███▎      | 33/100 [00:07<00:14,  4.77it/s]Measuring inference for batch_size=8:  34%|███▍      | 34/100 [00:07<00:13,  4.81it/s]Measuring inference for batch_size=8:  35%|███▌      | 35/100 [00:07<00:13,  4.83it/s]Measuring inference for batch_size=8:  36%|███▌      | 36/100 [00:07<00:13,  4.89it/s]Measuring inference for batch_size=8:  37%|███▋      | 37/100 [00:08<00:13,  4.70it/s]Measuring inference for batch_size=8:  38%|███▊      | 38/100 [00:08<00:13,  4.74it/s]Measuring inference for batch_size=8:  39%|███▉      | 39/100 [00:08<00:12,  4.79it/s]Measuring inference for batch_size=8:  40%|████      | 40/100 [00:08<00:12,  4.68it/s]Measuring inference for batch_size=8:  41%|████      | 41/100 [00:09<00:12,  4.72it/s]Measuring inference for batch_size=8:  42%|████▏     | 42/100 [00:09<00:12,  4.82it/s]Measuring inference for batch_size=8:  43%|████▎     | 43/100 [00:09<00:11,  4.91it/s]Measuring inference for batch_size=8:  44%|████▍     | 44/100 [00:09<00:11,  4.92it/s]Measuring inference for batch_size=8:  45%|████▌     | 45/100 [00:09<00:11,  4.68it/s]Measuring inference for batch_size=8:  46%|████▌     | 46/100 [00:10<00:11,  4.69it/s]Measuring inference for batch_size=8:  47%|████▋     | 47/100 [00:10<00:11,  4.81it/s]Measuring inference for batch_size=8:  48%|████▊     | 48/100 [00:10<00:10,  4.90it/s]Measuring inference for batch_size=8:  49%|████▉     | 49/100 [00:10<00:10,  4.96it/s]Measuring inference for batch_size=8:  50%|█████     | 50/100 [00:10<00:09,  5.00it/s]Measuring inference for batch_size=8:  51%|█████     | 51/100 [00:11<00:09,  5.02it/s]Measuring inference for batch_size=8:  52%|█████▏    | 52/100 [00:11<00:09,  5.01it/s]Measuring inference for batch_size=8:  53%|█████▎    | 53/100 [00:11<00:09,  4.91it/s]Measuring inference for batch_size=8:  54%|█████▍    | 54/100 [00:11<00:09,  4.91it/s]Measuring inference for batch_size=8:  55%|█████▌    | 55/100 [00:11<00:09,  4.96it/s]Measuring inference for batch_size=8:  56%|█████▌    | 56/100 [00:12<00:08,  5.01it/s]Measuring inference for batch_size=8:  57%|█████▋    | 57/100 [00:12<00:08,  5.02it/s]Measuring inference for batch_size=8:  58%|█████▊    | 58/100 [00:12<00:08,  5.00it/s]Measuring inference for batch_size=8:  59%|█████▉    | 59/100 [00:12<00:08,  4.99it/s]Measuring inference for batch_size=8:  60%|██████    | 60/100 [00:12<00:08,  4.96it/s]Measuring inference for batch_size=8:  61%|██████    | 61/100 [00:13<00:07,  4.96it/s]Measuring inference for batch_size=8:  62%|██████▏   | 62/100 [00:13<00:07,  4.99it/s]Measuring inference for batch_size=8:  63%|██████▎   | 63/100 [00:13<00:07,  4.95it/s]Measuring inference for batch_size=8:  64%|██████▍   | 64/100 [00:13<00:07,  4.96it/s]Measuring inference for batch_size=8:  65%|██████▌   | 65/100 [00:13<00:07,  4.97it/s]Measuring inference for batch_size=8:  66%|██████▌   | 66/100 [00:14<00:06,  4.91it/s]Measuring inference for batch_size=8:  67%|██████▋   | 67/100 [00:14<00:06,  4.82it/s]Measuring inference for batch_size=8:  68%|██████▊   | 68/100 [00:14<00:06,  4.74it/s]Measuring inference for batch_size=8:  69%|██████▉   | 69/100 [00:14<00:06,  4.79it/s]Measuring inference for batch_size=8:  70%|███████   | 70/100 [00:14<00:06,  4.72it/s]Measuring inference for batch_size=8:  71%|███████   | 71/100 [00:15<00:06,  4.79it/s]Measuring inference for batch_size=8:  72%|███████▏  | 72/100 [00:15<00:05,  4.84it/s]Measuring inference for batch_size=8:  73%|███████▎  | 73/100 [00:15<00:05,  4.77it/s]Measuring inference for batch_size=8:  74%|███████▍  | 74/100 [00:15<00:05,  4.83it/s]Measuring inference for batch_size=8:  75%|███████▌  | 75/100 [00:15<00:05,  4.90it/s]Measuring inference for batch_size=8:  76%|███████▌  | 76/100 [00:16<00:04,  4.95it/s]Measuring inference for batch_size=8:  77%|███████▋  | 77/100 [00:16<00:04,  4.90it/s]Measuring inference for batch_size=8:  78%|███████▊  | 78/100 [00:16<00:04,  4.89it/s]Measuring inference for batch_size=8:  79%|███████▉  | 79/100 [00:16<00:04,  4.96it/s]Measuring inference for batch_size=8:  80%|████████  | 80/100 [00:16<00:04,  4.86it/s]Measuring inference for batch_size=8:  81%|████████  | 81/100 [00:17<00:03,  4.80it/s]Measuring inference for batch_size=8:  82%|████████▏ | 82/100 [00:17<00:03,  4.78it/s]Measuring inference for batch_size=8:  83%|████████▎ | 83/100 [00:17<00:03,  4.83it/s]Measuring inference for batch_size=8:  84%|████████▍ | 84/100 [00:17<00:03,  4.78it/s]Measuring inference for batch_size=8:  85%|████████▌ | 85/100 [00:18<00:03,  4.82it/s]Measuring inference for batch_size=8:  86%|████████▌ | 86/100 [00:18<00:02,  4.86it/s]Measuring inference for batch_size=8:  87%|████████▋ | 87/100 [00:18<00:02,  4.85it/s]Measuring inference for batch_size=8:  88%|████████▊ | 88/100 [00:18<00:02,  4.91it/s]Measuring inference for batch_size=8:  89%|████████▉ | 89/100 [00:18<00:02,  4.89it/s]Measuring inference for batch_size=8:  90%|█████████ | 90/100 [00:19<00:02,  4.90it/s]Measuring inference for batch_size=8:  91%|█████████ | 91/100 [00:19<00:01,  4.95it/s]Measuring inference for batch_size=8:  92%|█████████▏| 92/100 [00:19<00:01,  4.95it/s]Measuring inference for batch_size=8:  93%|█████████▎| 93/100 [00:19<00:01,  4.96it/s]Measuring inference for batch_size=8:  94%|█████████▍| 94/100 [00:19<00:01,  4.99it/s]Measuring inference for batch_size=8:  95%|█████████▌| 95/100 [00:20<00:01,  4.98it/s]Measuring inference for batch_size=8:  96%|█████████▌| 96/100 [00:20<00:00,  4.99it/s]Measuring inference for batch_size=8:  97%|█████████▋| 97/100 [00:20<00:00,  5.01it/s]Measuring inference for batch_size=8:  98%|█████████▊| 98/100 [00:20<00:00,  4.99it/s]Measuring inference for batch_size=8:  99%|█████████▉| 99/100 [00:20<00:00,  5.00it/s]Measuring inference for batch_size=8: 100%|██████████| 100/100 [00:21<00:00,  4.99it/s]Measuring inference for batch_size=8: 100%|██████████| 100/100 [00:21<00:00,  4.75it/s]
+Timing results (batch_size=1):
+  cpu_to_gpu:
+    human_readable:
+      batch_latency: 9.727 us +/- 4.353 us [5.484 us, 37.909 us]
+      batches_per_second: 116.19 K +/- 33.69 K [26.38 K, 182.36 K]
+    metrics:
+      batches_per_second_max: 182361.04347826086
+      batches_per_second_mean: 116193.01042889034
+      batches_per_second_min: 26379.270440251574
+      batches_per_second_std: 33694.8053949865
+      seconds_per_batch_max: 3.790855407714844e-05
+      seconds_per_batch_mean: 9.72747802734375e-06
+      seconds_per_batch_min: 5.4836273193359375e-06
+      seconds_per_batch_std: 4.352820737715318e-06
+  gpu_to_cpu:
+    human_readable:
+      batch_latency: 255.029 us +/- 46.126 us [207.186 us, 568.151 us]
+      batches_per_second: 4.00 K +/- 487.67 [1.76 K, 4.83 K]
+    metrics:
+      batches_per_second_max: 4826.586881472957
+      batches_per_second_mean: 4004.072476198246
+      batches_per_second_min: 1760.0939991607218
+      batches_per_second_std: 487.6656224547172
+      seconds_per_batch_max: 0.0005681514739990234
+      seconds_per_batch_mean: 0.0002550292015075684
+      seconds_per_batch_min: 0.0002071857452392578
+      seconds_per_batch_std: 4.612627574745791e-05
+  on_device_inference:
+    human_readable:
+      batch_latency: 209.141 ms +/- 15.483 ms [193.513 ms, 287.798 ms]
+      batches_per_second: 4.80 +/- 0.31 [3.47, 5.17]
+    metrics:
+      batches_per_second_max: 5.167613706366768
+      batches_per_second_mean: 4.804462744605985
+      batches_per_second_min: 3.474663059155289
+      batches_per_second_std: 0.3130013546507698
+      seconds_per_batch_max: 0.2877976894378662
+      seconds_per_batch_mean: 0.2091412663459778
+      seconds_per_batch_min: 0.1935129165649414
+      seconds_per_batch_std: 0.015483416908575213
+  total:
+    human_readable:
+      batch_latency: 209.406 ms +/- 15.493 ms [193.753 ms, 288.036 ms]
+      batches_per_second: 4.80 +/- 0.31 [3.47, 5.16]
+    metrics:
+      batches_per_second_max: 5.161210298538501
+      batches_per_second_mean: 4.798364935746041
+      batches_per_second_min: 3.4717869467292326
+      batches_per_second_std: 0.3124794872196641
+      seconds_per_batch_max: 0.2880361080169678
+      seconds_per_batch_mean: 0.2094060230255127
+      seconds_per_batch_min: 0.19375300407409668
+      seconds_per_batch_std: 0.01549313870160134
+
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input
+Jetson PowerLogger found 9 power devices
+Measuring energy for batch_size=1:   0%|          | 0/10 [00:00<?, ?it/s]Measuring energy for batch_size=1:  10%|█         | 1/10 [00:00<00:02,  3.81it/s]Measuring energy for batch_size=1:  20%|██        | 2/10 [00:00<00:02,  3.82it/s]Measuring energy for batch_size=1:  30%|███       | 3/10 [00:00<00:01,  3.81it/s]Measuring energy for batch_size=1:  40%|████      | 4/10 [00:01<00:01,  3.33it/s]Measuring energy for batch_size=1:  50%|█████     | 5/10 [00:01<00:01,  3.30it/s]Measuring energy for batch_size=1:  60%|██████    | 6/10 [00:01<00:01,  3.28it/s]Measuring energy for batch_size=1:  70%|███████   | 7/10 [00:02<00:00,  3.09it/s]Measuring energy for batch_size=1:  80%|████████  | 8/10 [00:02<00:00,  2.94it/s]Measuring energy for batch_size=1:  90%|█████████ | 9/10 [00:02<00:00,  2.88it/s]Measuring energy for batch_size=1: 100%|██████████| 10/10 [00:03<00:00,  2.86it/s]Measuring energy for batch_size=1: 100%|██████████| 10/10 [00:03<00:00,  3.11it/s]
+Energy results (batch_size=1):
+  joules: 5.266195421554248
+  kWh: 1.4628320615428466e-06
+
+Memory results (batch_size=8):
+  max_inference: 20.37 GB
+  max_inference_bytes: 21874460672
+  post_inference: 19.57 GB
+  post_inference_bytes: 21012154880
+  pre_inference: 20.36 GB
+  pre_inference_bytes: 21865115648
+
+Warming up with batch_size=8:   0%|          | 0/10 [00:00<?, ?it/s]Warming up with batch_size=8:  10%|█         | 1/10 [00:00<00:06,  1.31it/s]Warming up with batch_size=8:  20%|██        | 2/10 [00:01<00:06,  1.31it/s]Warming up with batch_size=8:  30%|███       | 3/10 [00:02<00:05,  1.31it/s]Warming up with batch_size=8:  40%|████      | 4/10 [00:03<00:04,  1.32it/s]Warming up with batch_size=8:  50%|█████     | 5/10 [00:03<00:03,  1.33it/s]Warming up with batch_size=8:  60%|██████    | 6/10 [00:04<00:02,  1.34it/s]Warming up with batch_size=8:  70%|███████   | 7/10 [00:05<00:02,  1.34it/s]Warming up with batch_size=8:  80%|████████  | 8/10 [00:06<00:01,  1.34it/s]Warming up with batch_size=8:  90%|█████████ | 9/10 [00:06<00:00,  1.34it/s]Warming up with batch_size=8: 100%|██████████| 10/10 [00:07<00:00,  1.34it/s]Warming up with batch_size=8: 100%|██████████| 10/10 [00:07<00:00,  1.33it/s]
+Measuring inference for batch_size=8:   0%|          | 0/100 [00:00<?, ?it/s]Measuring inference for batch_size=8:   1%|          | 1/100 [00:00<01:13,  1.35it/s]Measuring inference for batch_size=8:   2%|▏         | 2/100 [00:01<01:12,  1.34it/s]Measuring inference for batch_size=8:   3%|▎         | 3/100 [00:02<01:12,  1.34it/s]Measuring inference for batch_size=8:   4%|▍         | 4/100 [00:02<01:11,  1.35it/s]Measuring inference for batch_size=8:   5%|▌         | 5/100 [00:03<01:10,  1.34it/s]Measuring inference for batch_size=8:   6%|▌         | 6/100 [00:04<01:09,  1.34it/s]Measuring inference for batch_size=8:   7%|▋         | 7/100 [00:05<01:09,  1.34it/s]Measuring inference for batch_size=8:   8%|▊         | 8/100 [00:05<01:08,  1.35it/s]Measuring inference for batch_size=8:   9%|▉         | 9/100 [00:06<01:07,  1.34it/s]Measuring inference for batch_size=8:  10%|█         | 10/100 [00:07<01:07,  1.34it/s]Measuring inference for batch_size=8:  11%|█         | 11/100 [00:08<01:06,  1.34it/s]Measuring inference for batch_size=8:  12%|█▏        | 12/100 [00:08<01:05,  1.34it/s]Measuring inference for batch_size=8:  13%|█▎        | 13/100 [00:09<01:04,  1.34it/s]Measuring inference for batch_size=8:  14%|█▍        | 14/100 [00:10<01:03,  1.34it/s]Measuring inference for batch_size=8:  15%|█▌        | 15/100 [00:11<01:03,  1.35it/s]Measuring inference for batch_size=8:  16%|█▌        | 16/100 [00:11<01:02,  1.35it/s]Measuring inference for batch_size=8:  17%|█▋        | 17/100 [00:12<01:01,  1.35it/s]Measuring inference for batch_size=8:  18%|█▊        | 18/100 [00:13<01:00,  1.35it/s]Measuring inference for batch_size=8:  19%|█▉        | 19/100 [00:14<01:00,  1.35it/s]Measuring inference for batch_size=8:  20%|██        | 20/100 [00:14<00:59,  1.34it/s]Measuring inference for batch_size=8:  21%|██        | 21/100 [00:15<00:58,  1.35it/s]Measuring inference for batch_size=8:  22%|██▏       | 22/100 [00:16<00:57,  1.35it/s]Measuring inference for batch_size=8:  23%|██▎       | 23/100 [00:17<00:57,  1.35it/s]Measuring inference for batch_size=8:  24%|██▍       | 24/100 [00:17<00:56,  1.34it/s]Measuring inference for batch_size=8:  25%|██▌       | 25/100 [00:18<00:55,  1.34it/s]Measuring inference for batch_size=8:  26%|██▌       | 26/100 [00:19<00:55,  1.34it/s]Measuring inference for batch_size=8:  27%|██▋       | 27/100 [00:20<00:54,  1.35it/s]Measuring inference for batch_size=8:  28%|██▊       | 28/100 [00:20<00:53,  1.34it/s]Measuring inference for batch_size=8:  29%|██▉       | 29/100 [00:21<00:52,  1.34it/s]Measuring inference for batch_size=8:  30%|███       | 30/100 [00:22<00:52,  1.34it/s]Measuring inference for batch_size=8:  31%|███       | 31/100 [00:23<00:51,  1.35it/s]Measuring inference for batch_size=8:  32%|███▏      | 32/100 [00:23<00:50,  1.34it/s]Measuring inference for batch_size=8:  33%|███▎      | 33/100 [00:24<00:49,  1.34it/s]Measuring inference for batch_size=8:  34%|███▍      | 34/100 [00:25<00:49,  1.34it/s]Measuring inference for batch_size=8:  35%|███▌      | 35/100 [00:26<00:48,  1.35it/s]Measuring inference for batch_size=8:  36%|███▌      | 36/100 [00:26<00:47,  1.35it/s]Measuring inference for batch_size=8:  37%|███▋      | 37/100 [00:27<00:46,  1.35it/s]Measuring inference for batch_size=8:  38%|███▊      | 38/100 [00:28<00:46,  1.35it/s]Measuring inference for batch_size=8:  39%|███▉      | 39/100 [00:29<00:45,  1.35it/s]Measuring inference for batch_size=8:  40%|████      | 40/100 [00:29<00:44,  1.35it/s]Measuring inference for batch_size=8:  41%|████      | 41/100 [00:30<00:43,  1.35it/s]Measuring inference for batch_size=8:  42%|████▏     | 42/100 [00:31<00:43,  1.35it/s]Measuring inference for batch_size=8:  43%|████▎     | 43/100 [00:31<00:42,  1.35it/s]Measuring inference for batch_size=8:  44%|████▍     | 44/100 [00:32<00:41,  1.35it/s]Measuring inference for batch_size=8:  45%|████▌     | 45/100 [00:33<00:40,  1.35it/s]Measuring inference for batch_size=8:  46%|████▌     | 46/100 [00:34<00:40,  1.35it/s]Measuring inference for batch_size=8:  47%|████▋     | 47/100 [00:34<00:39,  1.35it/s]Measuring inference for batch_size=8:  48%|████▊     | 48/100 [00:35<00:38,  1.35it/s]Measuring inference for batch_size=8:  49%|████▉     | 49/100 [00:36<00:37,  1.35it/s]Measuring inference for batch_size=8:  50%|█████     | 50/100 [00:37<00:37,  1.35it/s]Measuring inference for batch_size=8:  51%|█████     | 51/100 [00:37<00:36,  1.35it/s]Measuring inference for batch_size=8:  52%|█████▏    | 52/100 [00:38<00:35,  1.35it/s]Measuring inference for batch_size=8:  53%|█████▎    | 53/100 [00:39<00:34,  1.34it/s]Measuring inference for batch_size=8:  54%|█████▍    | 54/100 [00:40<00:34,  1.35it/s]Measuring inference for batch_size=8:  55%|█████▌    | 55/100 [00:40<00:33,  1.35it/s]Measuring inference for batch_size=8:  56%|█████▌    | 56/100 [00:41<00:32,  1.35it/s]Measuring inference for batch_size=8:  57%|█████▋    | 57/100 [00:42<00:31,  1.35it/s]Measuring inference for batch_size=8:  58%|█████▊    | 58/100 [00:43<00:31,  1.35it/s]Measuring inference for batch_size=8:  59%|█████▉    | 59/100 [00:43<00:30,  1.35it/s]Measuring inference for batch_size=8:  60%|██████    | 60/100 [00:44<00:29,  1.35it/s]Measuring inference for batch_size=8:  61%|██████    | 61/100 [00:45<00:28,  1.35it/s]Measuring inference for batch_size=8:  62%|██████▏   | 62/100 [00:46<00:28,  1.35it/s]Measuring inference for batch_size=8:  63%|██████▎   | 63/100 [00:46<00:27,  1.35it/s]Measuring inference for batch_size=8:  64%|██████▍   | 64/100 [00:47<00:26,  1.35it/s]Measuring inference for batch_size=8:  65%|██████▌   | 65/100 [00:48<00:25,  1.35it/s]Measuring inference for batch_size=8:  66%|██████▌   | 66/100 [00:49<00:25,  1.35it/s]Measuring inference for batch_size=8:  67%|██████▋   | 67/100 [00:49<00:24,  1.35it/s]Measuring inference for batch_size=8:  68%|██████▊   | 68/100 [00:50<00:23,  1.35it/s]Measuring inference for batch_size=8:  69%|██████▉   | 69/100 [00:51<00:23,  1.35it/s]Measuring inference for batch_size=8:  70%|███████   | 70/100 [00:52<00:22,  1.35it/s]Measuring inference for batch_size=8:  71%|███████   | 71/100 [00:52<00:21,  1.35it/s]Measuring inference for batch_size=8:  72%|███████▏  | 72/100 [00:53<00:20,  1.35it/s]Measuring inference for batch_size=8:  73%|███████▎  | 73/100 [00:54<00:20,  1.35it/s]Measuring inference for batch_size=8:  74%|███████▍  | 74/100 [00:54<00:19,  1.34it/s]Measuring inference for batch_size=8:  75%|███████▌  | 75/100 [00:55<00:18,  1.34it/s]Measuring inference for batch_size=8:  76%|███████▌  | 76/100 [00:56<00:17,  1.34it/s]Measuring inference for batch_size=8:  77%|███████▋  | 77/100 [00:57<00:17,  1.34it/s]Measuring inference for batch_size=8:  78%|███████▊  | 78/100 [00:57<00:16,  1.35it/s]Measuring inference for batch_size=8:  79%|███████▉  | 79/100 [00:58<00:15,  1.35it/s]Measuring inference for batch_size=8:  80%|████████  | 80/100 [00:59<00:14,  1.35it/s]Measuring inference for batch_size=8:  81%|████████  | 81/100 [01:00<00:14,  1.35it/s]Measuring inference for batch_size=8:  82%|████████▏ | 82/100 [01:00<00:13,  1.35it/s]Measuring inference for batch_size=8:  83%|████████▎ | 83/100 [01:01<00:12,  1.34it/s]Measuring inference for batch_size=8:  84%|████████▍ | 84/100 [01:02<00:11,  1.34it/s]Measuring inference for batch_size=8:  85%|████████▌ | 85/100 [01:03<00:11,  1.35it/s]Measuring inference for batch_size=8:  86%|████████▌ | 86/100 [01:03<00:10,  1.35it/s]Measuring inference for batch_size=8:  87%|████████▋ | 87/100 [01:04<00:09,  1.35it/s]Measuring inference for batch_size=8:  88%|████████▊ | 88/100 [01:05<00:08,  1.35it/s]Measuring inference for batch_size=8:  89%|████████▉ | 89/100 [01:06<00:08,  1.35it/s]Measuring inference for batch_size=8:  90%|█████████ | 90/100 [01:06<00:07,  1.35it/s]Measuring inference for batch_size=8:  91%|█████████ | 91/100 [01:07<00:06,  1.35it/s]Measuring inference for batch_size=8:  92%|█████████▏| 92/100 [01:08<00:05,  1.35it/s]Measuring inference for batch_size=8:  93%|█████████▎| 93/100 [01:09<00:05,  1.35it/s]Measuring inference for batch_size=8:  94%|█████████▍| 94/100 [01:09<00:04,  1.35it/s]Measuring inference for batch_size=8:  95%|█████████▌| 95/100 [01:10<00:03,  1.35it/s]Measuring inference for batch_size=8:  96%|█████████▌| 96/100 [01:11<00:02,  1.34it/s]Measuring inference for batch_size=8:  97%|█████████▋| 97/100 [01:12<00:02,  1.35it/s]Measuring inference for batch_size=8:  98%|█████████▊| 98/100 [01:12<00:01,  1.35it/s]Measuring inference for batch_size=8:  99%|█████████▉| 99/100 [01:13<00:00,  1.35it/s]Measuring inference for batch_size=8: 100%|██████████| 100/100 [01:14<00:00,  1.34it/s]Measuring inference for batch_size=8: 100%|██████████| 100/100 [01:14<00:00,  1.35it/s]
+Timing results (batch_size=8):
+  cpu_to_gpu:
+    human_readable:
+      batch_latency: 11.365 us +/- 6.605 us [7.153 us, 42.439 us]
+      batches_per_second: 102.01 K +/- 27.26 K [23.56 K, 139.81 K]
+    metrics:
+      batches_per_second_max: 139810.13333333333
+      batches_per_second_mean: 102008.19158545272
+      batches_per_second_min: 23563.505617977527
+      batches_per_second_std: 27259.65308696795
+      seconds_per_batch_max: 4.2438507080078125e-05
+      seconds_per_batch_mean: 1.1365413665771485e-05
+      seconds_per_batch_min: 7.152557373046875e-06
+      seconds_per_batch_std: 6.604758816938136e-06
+  gpu_to_cpu:
+    human_readable:
+      batch_latency: 815.213 us +/- 111.630 us [669.241 us, 1.446 ms]
+      batches_per_second: 1.25 K +/- 140.42 [691.79, 1.49 K]
+    metrics:
+      batches_per_second_max: 1494.2301389383683
+      batches_per_second_mean: 1245.3674031188991
+      batches_per_second_min: 691.7869041728517
+      batches_per_second_std: 140.4242651038645
+      seconds_per_batch_max: 0.0014455318450927734
+      seconds_per_batch_mean: 0.0008152127265930176
+      seconds_per_batch_min: 0.0006692409515380859
+      seconds_per_batch_std: 0.00011162951058639342
+  on_device_inference:
+    human_readable:
+      batch_latency: 741.358 ms +/- 2.150 ms [736.938 ms, 750.007 ms]
+      batches_per_second: 1.35 +/- 0.00 [1.33, 1.36]
+    metrics:
+      batches_per_second_max: 1.3569666971967436
+      batches_per_second_mean: 1.3488877123998335
+      batches_per_second_min: 1.3333214654919199
+      batches_per_second_std: 0.0039038554747061267
+      seconds_per_batch_max: 0.7500066757202148
+      seconds_per_batch_mean: 0.741357774734497
+      seconds_per_batch_min: 0.7369377613067627
+      seconds_per_batch_std: 0.002149910038454061
+  total:
+    human_readable:
+      batch_latency: 742.184 ms +/- 2.165 ms [737.654 ms, 750.797 ms]
+      batches_per_second: 1.35 +/- 0.00 [1.33, 1.36]
+    metrics:
+      batches_per_second_max: 1.3556496174462112
+      batches_per_second_mean: 1.347385580818317
+      batches_per_second_min: 1.3319174664790134
+      batches_per_second_std: 0.003923344497992248
+      seconds_per_batch_max: 0.7507972717285156
+      seconds_per_batch_mean: 0.7421843528747558
+      seconds_per_batch_min: 0.7376537322998047
+      seconds_per_batch_std: 0.002165366551626324
+
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input
+Device found @ /sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input
+Jetson PowerLogger found 9 power devices
+Measuring energy for batch_size=8:   0%|          | 0/10 [00:00<?, ?it/s]Measuring energy for batch_size=8:  10%|█         | 1/10 [00:00<00:06,  1.31it/s]Measuring energy for batch_size=8:  20%|██        | 2/10 [00:01<00:06,  1.31it/s]Measuring energy for batch_size=8:  30%|███       | 3/10 [00:07<00:21,  3.06s/it]Measuring energy for batch_size=8:  40%|████      | 4/10 [00:18<00:38,  6.44s/it]Measuring energy for batch_size=8:  40%|████      | 4/10 [28:27<42:41, 426.86s/it]
+Traceback (most recent call last):
+  File "benchmark_cox3d.py", line 123, in <module>
+    benchmark_cox3d()
+  File "benchmark_cox3d.py", line 113, in benchmark_cox3d
+    print_fn=print,
+  File "/home/maleci/.local/lib/python3.6/site-packages/pytorch_benchmark/benchmark.py", line 400, in benchmark
+  File "/home/maleci/.local/lib/python3.6/site-packages/pytorch_benchmark/benchmark.py", line 262, in measure_energy
+    meas.append(p_est.estimate_fn_power(test_fn)[0] / 1000)
+  File "/home/maleci/.local/lib/python3.6/site-packages/pytorch_benchmark/jetson_power.py", line 119, in estimate_fn_power
+    sleep(self.sampling_interval)
+KeyboardInterrupt
+Exception ignored in: <module 'threading' from '/usr/lib/python3.6/threading.py'>
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/threading.py", line 1294, in _shutdown
+    t.join()
+  File "/usr/lib/python3.6/threading.py", line 1056, in join
+    self._wait_for_tstate_lock()
+  File "/usr/lib/python3.6/threading.py", line 1072, in _wait_for_tstate_lock
+KeyboardInterrupt
+Error in atexit._run_exitfuncs:
+
