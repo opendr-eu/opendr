@@ -61,7 +61,7 @@ class EndToEndPlanningTest(unittest.TestCase):
         self.assertTrue((episode_reward < 100), "Episode reward cannot pass 100")
 
     def test_fit(self):
-        self.learner.__init__(self.env, n_steps=12)  # dummy commit
+        self.learner.__init__(self.env, n_steps=12)
         initial_weights = self.learner.agent.get_parameters()
         self.learner.fit(logging_path=str(TEMP_SAVE_DIR), total_timesteps=15)
         trained_weights = self.learner.agent.get_parameters()
