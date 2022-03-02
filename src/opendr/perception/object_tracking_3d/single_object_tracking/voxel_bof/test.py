@@ -2,6 +2,7 @@ import sys
 import os
 import torch
 import fire
+from pathlib import Path
 from opendr.engine.target import TrackingAnnotation3D, TrackingAnnotation3DList
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.eval import (
     d3_box_overlap,
@@ -604,7 +605,7 @@ def test_rotated_pp_siamese_infer(
         dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
         dataset_tracking_path + "/training/calib/" + track_id + ".txt",
     )
-    
+
     total_success = Success()
     total_precision = Precision()
     total_success_near = Success()
@@ -833,6 +834,13 @@ def test_rotated_pp_siamese_infer(
     print("fps:", learner.fps())
     print("total_precision:", total_precision.average)
     print("total_success:", total_success.average)
+
+    with open("./plots/video/" + model_name + "/results.txt", "a") as f:
+        print("total_precision:", total_precision.average, file=f)
+        print("total_success:", total_success.average, file=f)
+        print("kwargs:", " ".join(["--" + str(k) + "=" + str(v) for k, v in kwargs.items()]), file=f)
+        print("----", file=f)
+        print("", file=f)
 
     for key, values in learner.times.items():
         t = sum(values) / len(values)
@@ -1202,6 +1210,8 @@ def test_rotated_pp_siamese_eval(
                 + ".gif"
             )
 
+            os.makedirs(str(Path(filename).parent), exist_ok=True)
+
             if len(ious) <= 0:
                 mean_iou3d = None
                 mean_iouAabb = None
@@ -1363,8 +1373,11 @@ def test_rotated_pp_siamese_eval(
     print("all_precision =", all_precision)
     print("all_success =", all_success)
 
+    results_filename = results_path + "/results_" + str(load) + "_" + str(eval_id) + ".txt"
+    os.makedirs(str(Path(results_filename).parent), exist_ok=True)
+
     with open(
-        results_path + "/results_" + str(load) + "_" + str(eval_id) + ".txt", "w"
+        results_filename, "w"
     ) as f:
 
         for k, v in result.items():
@@ -1682,6 +1695,123 @@ def eval_all_extended_test_set(
         eval_id_prefix="test_set_",
         **kwargs,
     )
+
+
+def create_v1_eval_kwargs():
+    params = {
+        "window_influence": [0.35, 0.45, 0.65, 0.85],
+        "score_upscale": [8, 16, 32],
+        "rotation_penalty": [0.98, 0.90],
+        "offset_interpolation": [1, 0.5, 0.75, 0.3],
+        "target_feature_merge_scale": [0, 0.005, 0.01],
+        "extrapolation_mode": [["none", "n"], ["linear", "l"]],
+        "search_type": [["normal", "n"], ["small", "s"], ["snormal", "sn"]],
+        "target_type": [["normal", "n"], ["original", "o"]],
+    }
+    results = {}
+
+    for window_influence in params["window_influence"]:
+        for score_upscale in params["score_upscale"]:
+            for rotation_penalty in params["rotation_penalty"]:
+                for offset_interpolation in params["offset_interpolation"]:
+                    for target_feature_merge_scale in params[
+                        "target_feature_merge_scale"
+                    ]:
+                        for search_type, search_type_name in params[
+                            "search_type"
+                        ]:
+                            for target_type, target_type_name in params[
+                                "target_type"
+                            ]:
+                                for extrapolation_mode, extrapolation_mode_name in params[
+                                    "extrapolation_mode"
+                                ]:
+                                    name = (
+                                        "rp"
+                                        + str(rotation_penalty).replace(".", "")
+                                        + "-s"
+                                        + str(search_type_name).replace(".", "")
+                                        + "t"
+                                        + str(target_type_name).replace(".", "")
+                                        + "-su"
+                                        + str(score_upscale).replace(".", "")
+                                        + "-wi"
+                                        + str(window_influence).replace(".", "")
+                                        + "-tfms"
+                                        + str(target_feature_merge_scale).replace(".", "")
+                                        + "-oi"
+                                        + str(offset_interpolation).replace(".", "")
+                                        + "-ex"
+                                        + str(extrapolation_mode_name).replace(".", "")
+                                    )
+
+                                    results[name] = {
+                                        "window_influence": window_influence,
+                                        "score_upscale": score_upscale,
+                                        "rotation_penalty": rotation_penalty,
+                                        "target_feature_merge_scale": target_feature_merge_scale,
+                                        "offset_interpolation": offset_interpolation,
+                                        "extrapolation_mode": extrapolation_mode,
+                                        "search_type": search_type,
+                                        "target_type": target_type,
+                                    }
+    return results
+
+
+def multi_eval(
+    id=0,
+    gpu_capacity=4,
+    total_devices=4,
+    model_name=None,
+    tracks=["0000", "0006"],
+    eval_kwargs_name="v1",
+    params_file=None,
+    eval_id_prefix="",
+    draw=False,
+    **kwargs,
+):
+
+    eval_kwargs = {
+        "v1": create_v1_eval_kwargs,
+    }[eval_kwargs_name]()
+
+    results = {}
+
+    runs = [(id, e_kwargs) for (id, e_kwargs) in eval_kwargs.items()]
+
+    device_id = id // gpu_capacity
+    i = id % gpu_capacity
+
+    print("id =", id, "runs per process = ", len(runs) / (gpu_capacity * total_devices))
+
+    while i < len(runs):
+
+        id, e_kwargs = runs[i]
+
+        if params_file is None:
+            eval_id = "multi-" + eval_kwargs_name + eval_id_prefix + "/" + id
+        else:
+            eval_id = (
+                "multi-" + eval_kwargs_name +
+                params_file.replace("./", "").replace("temp/", "").replace("/", "").replace(".txt", "") +
+                eval_id_prefix + "/" + id
+            )
+
+        result = test_rotated_pp_siamese_eval(
+            model_name,
+            draw=draw,
+            tracks=tracks,
+            device="cuda:" + str(device_id),
+            eval_id=eval_id,
+            params_file=params_file,
+            **kwargs,
+            **e_kwargs,
+        )
+        results[str(id)] = result
+
+        i += gpu_capacity * total_devices
+
+    return results
 
 
 if __name__ == "__main__":

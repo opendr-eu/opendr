@@ -252,42 +252,52 @@ def collect_results(template="", tracks=None):
         if template not in model:
             continue
 
-        files = [f for f in os.listdir(models_path + "/" + model) if "results_" in f]
+        def process_folder(path, init=True):
 
-        for file in files:
-            with open(models_path + "/" + model + "/" + file, "r") as f:
-                str_values = f.readlines()
+            nonlocal results
 
-                values = {}
+            files = [f for f in os.listdir(path) if "results_" in f or not init]
 
-                for s in str_values:
-                    key, value = s.split(" = ")
-                    values[key] = value
+            for file in files:
 
-                good_tracks = True
+                if os.path.isdir(path + "/" + file):
+                    process_folder(path + "/" + file, False)
+                else:
+                    with open(path + "/" + file, "r") as f:
+                        str_values = f.readlines()
 
-                if tracks is not None:
+                        values = {}
 
-                    if len(tracks) != len(values["tracks"].split(",")):
-                        good_tracks = False
+                        for s in str_values:
+                            key, value = s.split(" = ")
+                            values[key] = value
 
-                    for track_id in tracks:
-                        if track_id not in values["tracks"]:
-                            good_tracks = False
+                        good_tracks = True
 
-                if not good_tracks:
-                    continue
+                        if tracks is not None:
 
-                result = [
-                    models_path + model + "/" + file,
-                    float(values["total_mean_iou3d"]),
-                    float(
-                        values["total_precision"] if "total_precision" in values else -1
-                    ),
-                    float(values["total_success"] if "total_success" in values else -1),
-                    float(values["fps"] if "fps" in values else -1),
-                ]
-                results.append(result)
+                            if len(tracks) != len(values["tracks"].split(",")):
+                                good_tracks = False
+
+                            for track_id in tracks:
+                                if track_id not in values["tracks"]:
+                                    good_tracks = False
+
+                        if not good_tracks:
+                            continue
+
+                        result = [
+                            path + "/" + file,
+                            float(values["total_mean_iou3d"]),
+                            float(
+                                values["total_precision"] if "total_precision" in values else -1
+                            ),
+                            float(values["total_success"] if "total_success" in values else -1),
+                            float(values["fps"] if "fps" in values else -1),
+                        ]
+                        results.append(result)
+
+        process_folder(models_path + model)
 
     results = sorted(results, key=lambda x: x[3])
     for name, iou3d, precision, success, fps in results:
