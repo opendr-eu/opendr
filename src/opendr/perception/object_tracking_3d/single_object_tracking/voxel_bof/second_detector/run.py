@@ -181,8 +181,12 @@ def original_target_size_by_object_size(object_size, target_type="normal"):
         return object_size + 5
     elif target_type == "original":
         return object_size
+    elif target_type == "small":
+        return object_size + 2
     elif target_type == "a+4":
         return object_size + 4
+    else:
+        raise ValueError()
 
 
 def original_search_size_by_target_size(target_size, search_type="normal"):
