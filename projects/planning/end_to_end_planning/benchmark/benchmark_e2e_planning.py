@@ -29,7 +29,6 @@ logger.setLevel("DEBUG")
 
 def benchmark_e2e_planner():
     root_dir = "./projects/planning/end_to_end_planning/benchmark"
-    media_dir = root_dir + "/media"
     num_runs = 100
     env = AgiEnv()
 
