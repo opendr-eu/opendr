@@ -13,7 +13,8 @@ sudo apt-get install ros-melodic-webots-ros
 
 Running roscore:
 
-source /opt/ros/melodic/setup.bash
+echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
+source ~/.bashrc
 roscore
 
 Then in another terminal:
