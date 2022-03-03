@@ -268,13 +268,6 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
             if label.trainId != 255 and label.trainId != -1 and label.hasInstances:
                 coco_categories.append({"id": label.trainId, "name": label.name})
 
-        coco_out = {
-            "info": {"version": "1.0"},
-            "images": [],
-            "categories": coco_categories,
-            "annotations": []
-        }
-
         # Process splits
         for split, (split_img_subdir, split_mask_subdir) in splits.items():
             img_split_dir = output_path / split / 'images'
@@ -286,6 +279,13 @@ class CityscapesDataset(ExternalDataset, DatasetIterator):
             mask_input_dir = input_path / split_mask_subdir
             img_list = [(file.parent.name, file.stem.replace('_gtFine_instanceIds', ''), 'gtFine') for file in
                         mask_input_dir.glob('*/*_instanceIds.png')]
+
+            coco_out = {
+                "info": {"version": "1.0"},
+                "images": [],
+                "categories": coco_categories,
+                "annotations": []
+            }
 
             # Convert to COCO detection format
             with tqdm(total=len(img_list), desc=f'Converting {split}') as pbar:

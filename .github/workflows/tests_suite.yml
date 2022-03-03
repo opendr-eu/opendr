@@ -2,7 +2,7 @@ name: Test Suite (master)
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   schedule:
     - cron:  '0 23 * * *'
 
@@ -139,6 +139,7 @@ jobs:
     - name: Upload wheel as artifact
       uses: actions/upload-artifact@v2
       with:
+        name: wheel-artifact
         path:
           dist/*.tar.gz
   build-docker:
@@ -156,6 +157,7 @@ jobs:
     - name: Upload image artifact
       uses: actions/upload-artifact@v2
       with:
+        name: docker-artifact
         path:
           cpu_test.zip
   test-wheel:
@@ -216,9 +218,9 @@ jobs:
           fi
           echo "Installing $package package"
           if [ "$package" == "opendr" ]; then
-            pip install ./artifact/artifact/opendr-toolkit-*.tar.gz
+            pip install ./artifact/wheel-artifact/opendr-toolkit-*.tar.gz
           else
-            pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz
+            pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
           fi
         done < packages.txt
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
@@ -272,10 +274,10 @@ jobs:
         source venv/bin/activate
         pip install wheel
         # Install engine and requirements for other packages
-        pip install ./artifact/artifact/opendr-toolkit-engine-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
         # The following two are dependecies for some other packages and pip cannot automatically install them if they are not on a repo
-        pip install ./artifact/artifact/opendr-toolkit-compressive-learning-*.tar.gz
-        pip install ./artifact/artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
 
         # Install specific package for testing
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
@@ -286,10 +288,10 @@ jobs:
         echo "Installing $package package"
         # Utils contains hyperparameter tuning
         if [ "$package" == "utils" ]; then
-              pip install ./artifact/artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
+              pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
 
         else
-              pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz
+              pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
@@ -326,7 +328,31 @@ jobs:
         path: artifact
     - name: Test docker
       run: |
-        docker load < ./artifact/artifact/cpu_test.zip
+        docker load < ./artifact/docker-artifact/cpu_test.zip
         docker run --name toolkit -i opendr/opendr-toolkit:cpu_test bash
         docker start toolkit
         docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+  delete-docker-artifacts:
+    needs: [build-docker, test-docker]
+    if: ${{ always() }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Delete docker artifacts
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: docker-artifact
+  delete-wheel-artifacts:
+    needs: [build-wheel, test-wheel, test-wheel-separate]
+    if: ${{ always() }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Delete wheel artifacts
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wheel-artifact
