@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from numpy import arccos, dot, linalg, rad2deg
+
 from opendr.engine.learners import Learner
 from opendr.engine.target import Category, Keypoint
-from numpy import arccos, dot, rad2deg, linalg
 
 
 class FallDetectorLearner(Learner):
