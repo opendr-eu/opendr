@@ -39,7 +39,7 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
   echo "[INFO] Installing  mxnet-cu111==1.8.0. You can override this later if you are using a different CUDA version."
   pip3 install mxnet-cu111==1.8.0
-  echo "[INFO] Installing torch==1.7.1+cu110. You can override this later if you are using a different CUDA version."
+  echo "[INFO] Installing torch==1.8.1+cu110. You can override this later if you are using a different CUDA version."
   pip3 install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 fi
 
