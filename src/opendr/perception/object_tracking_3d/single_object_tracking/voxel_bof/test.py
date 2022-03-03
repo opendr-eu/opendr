@@ -853,7 +853,13 @@ def load_params_from_file(params_file):
     from pathlib import Path
 
     path = Path(params_file)
-    model_name = path.parent.name
+
+    model_name = "none"
+
+    parents = [p.name for p in path.parents]
+    for i in range(len(parents) - 1):
+        if parents[i + 1] == "temp":
+            model_name = parents[i]
 
     int_names = [
         "load",
@@ -877,6 +883,7 @@ def load_params_from_file(params_file):
         "lr",
         "threshold",
         "scale",
+        "offset_interpolation",
     ]
 
     object_names = [
@@ -898,6 +905,7 @@ def load_params_from_file(params_file):
         "temp_path",
         "device",
         "tanet_config_path",
+        "extrapolation_mode",
     ]
 
     with open(params_file, "r") as f:
@@ -1033,6 +1041,9 @@ def test_rotated_pp_siamese_eval(
     total_precision_near = Precision()
     total_success_far = Success()
     total_precision_far = Precision()
+
+    object_precisions = []
+    object_sucesses = []
 
     def test_track(track_id):
         # count = 120
@@ -1257,6 +1268,9 @@ def test_rotated_pp_siamese_eval(
                 all_precision.append(mean_precision)
                 all_success.append(mean_success)
 
+        object_precisions.append([str(i) + ": " + str(x) for i, x in enumerate(all_precision)])
+        object_sucesses.append([str(i) + ": " + str(x) for i, x in enumerate(all_success)])
+
         if len(all_mean_iou3ds) > 0:
             track_mean_iou3d = sum(all_mean_iou3ds) / len(all_mean_iou3ds)
             track_mean_iouAabb = sum(all_mean_iouAabbs) / len(all_mean_iouAabbs)
@@ -1362,6 +1376,8 @@ def test_rotated_pp_siamese_eval(
         "total_success_far": total_success_far.average,
         "fps": learner.fps(),
         "params": params_str,
+        "object_precisions": object_precisions,
+        "object_sucesses": object_sucesses,
     }
 
     for k, v in result.items():
