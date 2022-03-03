@@ -57,7 +57,8 @@ image_filenames = [
     f'{DATA_ROOT}/val/images/lindau_000003_000019.png',
 ]
 images = [Image.open(f) for f in image_filenames]
-learner = EfficientPsLearner()
+config_file = 'singlegpu_cityscapes.py' # stored in efficient_ps/configs
+learner = EfficientPsLearner(config_file)
 learner.load('model.pth') # alternatively, one can just specify the path to the folder
 predictions = learner.infer(images)
 for image, prediction in zip(images, predictions):
@@ -69,7 +70,8 @@ for image, prediction in zip(images, predictions):
 from opendr.perception.panoptic_segmentation import EfficientPsLearner, CityscapesDataset
 DATA_ROOT = '~/data/cityscapes'
 val_dataset = CityscapesDataset(path=f'{DATA_ROOT}/val')
-learner = EfficientPsLearner()
+config_file = 'singlegpu_cityscapes.py' # stored in efficient_ps/configs
+learner = EfficientPsLearner(config_file)
 learner.load('model.pth') # alternatively, one can just specify the path to the folder
 learner.eval(val_dataset, print_results=True)
 ```
@@ -80,6 +82,7 @@ from opendr.perception.panoptic_segmentation import EfficientPsLearner, Cityscap
 DATA_ROOT = '~/data/cityscapes'
 train_dataset = CityscapesDataset(path=f'{DATA_ROOT}/training')
 val_dataset = CityscapesDataset(path=f'{DATA_ROOT}/val')
-learner = EfficientPsLearner()
+config_file = 'singlegpu_cityscapes.py' # stored in efficient_ps/configs
+learner = EfficientPsLearner(config_file)
 learner.fit(train_dataset, val_dataset)
 ```

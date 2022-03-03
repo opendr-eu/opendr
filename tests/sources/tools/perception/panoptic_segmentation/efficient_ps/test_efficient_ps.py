@@ -12,10 +12,12 @@
 # limitations under the License.
 
 import os
+import sys
 import shutil
 import unittest
 import warnings
 import zipfile
+from pathlib import Path
 
 from opendr.engine.data import Image
 from opendr.engine.target import Heatmap
@@ -54,6 +56,10 @@ class TestEfficientPsLearner(unittest.TestCase):
         with zipfile.ZipFile(test_data_zipped, 'r') as f:
             f.extractall(cls.test_data)
 
+        # Configuration for the weights pre-trained on Cityscapes
+        cls.config_file = str(Path(sys.modules[
+                               EfficientPsLearner.__module__].__file__).parent / 'configs' / 'singlegpu_cityscapes.py')
+
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
@@ -61,7 +67,8 @@ class TestEfficientPsLearner(unittest.TestCase):
 
     def test_init(self):
         # Verify that the internal variables are initialized as expected by the other functions
-        learner = EfficientPsLearner()
+
+        learner = EfficientPsLearner(self.config_file)
         self.assertFalse(learner._is_model_trained)
 
     def test_fit(self):
@@ -73,7 +80,7 @@ class TestEfficientPsLearner(unittest.TestCase):
         warnings.simplefilter('ignore', DeprecationWarning)
 
         val_dataset = CityscapesDataset(path=os.path.join(self.test_data, 'eval_data'))
-        learner = EfficientPsLearner(batch_size=1)
+        learner = EfficientPsLearner(self.config_file, batch_size=1)
         learner.load(self.model_weights)
         eval_results = learner.eval(val_dataset)
         self.assertIsInstance(eval_results, dict)
@@ -81,7 +88,7 @@ class TestEfficientPsLearner(unittest.TestCase):
     def test_infer_single_image(self):
         image_filename = os.path.join(self.test_data, 'infer_data', 'lindau_000001_000019.png')
         image = Image.open(image_filename)
-        learner = EfficientPsLearner()
+        learner = EfficientPsLearner(self.config_file)
         learner.load(self.model_weights)
         prediction = learner.infer(image)
         for heatmap in prediction:
@@ -93,7 +100,7 @@ class TestEfficientPsLearner(unittest.TestCase):
             os.path.join(self.test_data, 'infer_data', 'lindau_000003_000019.png'),
         ]
         images = [Image.open(f) for f in image_filenames]
-        learner = EfficientPsLearner()
+        learner = EfficientPsLearner(self.config_file)
         learner.load(self.model_weights)
         predictions = learner.infer(images)
         for prediction in predictions:
@@ -104,7 +111,7 @@ class TestEfficientPsLearner(unittest.TestCase):
         # The model has not been trained.
         warnings.simplefilter('ignore', UserWarning)
 
-        learner = EfficientPsLearner()
+        learner = EfficientPsLearner(self.config_file)
         temp_model_path = os.path.join(self.temp_dir, 'checkpoints')
         # Make sure that no model has been written to that path yet
         if os.path.exists(temp_model_path):
@@ -116,7 +123,7 @@ class TestEfficientPsLearner(unittest.TestCase):
         rmdir(temp_model_path)
 
     def test_load_pretrained(self):
-        learner = EfficientPsLearner()
+        learner = EfficientPsLearner(self.config_file)
         successful = learner.load(self.model_weights)
         self.assertTrue(learner._is_model_trained)
         self.assertTrue(successful)
@@ -125,7 +132,7 @@ class TestEfficientPsLearner(unittest.TestCase):
         image_filename = os.path.join(self.test_data, 'infer_data', 'lindau_000001_000019.png')
         temp_prediction_path = os.path.join(self.temp_dir, 'prediction.png')
         image = Image.open(image_filename)
-        learner = EfficientPsLearner()
+        learner = EfficientPsLearner(self.config_file)
         learner.load(self.model_weights)
         prediction = learner.infer(image)
         # Make sure that no file has been written to that path yet
