@@ -91,10 +91,10 @@ sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake pytho
 python3 -m venv venv
 source venv/bin/activate
 pip install wheel
-pip3 install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 python3 -m pip install detectron2==0.5 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.8/index.html
 pip install detectron2==0.5 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.7/index.html
-pip3 install mxnet-cu111==1.8.0
+pip install mxnet-cu111==1.8.0
 pip install opendr-toolkit-engine
 pip install opendr-toolkit
 ```
