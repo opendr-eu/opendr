@@ -199,7 +199,7 @@ jobs:
         source venv/bin/activate
         wget https://raw.githubusercontent.com/opendr-eu/opendr/${{ steps.branch-name.outputs.current_branch }}/dependencies/pip_requirements.txt
         cat pip_requirements.txt | xargs -n 1 -L 1 pip install
-        pip install ./artifact/artifact/*.tar.gz
+        pip install ./artifact/wheel-artifact/*.tar.gz
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
     needs: build-docker
@@ -235,7 +235,7 @@ jobs:
         path: artifact
     - name: Test docker
       run: |
-        docker load < ./artifact/artifact/cpu_test.zip
+        docker load < ./artifact/docker-artifact/cpu_test.zip
         docker run --name toolkit -i opendr/opendr-toolkit:cpu_test bash
         docker start toolkit
         docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
