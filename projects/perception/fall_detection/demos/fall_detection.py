@@ -67,12 +67,12 @@ def fall_detection_on_img(img):
     img = cv2.putText(img, text, (0, 12), cv2.FONT_HERSHEY_SIMPLEX,
                       0.5, color, 1, cv2.LINE_AA)
 
-    if keypoints[0].x != -1:
-        cv2.line(img, (int(keypoints[0].x), int(keypoints[0].y)),
-                 (int(keypoints[1].x), int(keypoints[1].y)), color, 4)
-    if keypoints[2] != -1:
-        cv2.line(img, (int(keypoints[1].x), int(keypoints[1].y)),
-                 (int(keypoints[2].x), int(keypoints[2].y)), color, 4)
+    if keypoints[0].data[0] != -1:
+        cv2.line(img, (int(keypoints[0].data[0]), int(keypoints[0].data[1])),
+                 (int(keypoints[1].data[0]), int(keypoints[1].data[1])), color, 4)
+    if keypoints[2].data[0] != -1:
+        cv2.line(img, (int(keypoints[1].data[0]), int(keypoints[1].data[1])),
+                 (int(keypoints[2].data[0]), int(keypoints[2].data[1])), color, 4)
     cv2.imshow('Results', img)
     cv2.waitKey(0)
 
@@ -90,7 +90,7 @@ image_path_standing = "fall_detection_images/rgb_0088.png"
 pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
                                             mobilenet_use_stride=stride, half_precision=half_precision)
 
-pose_estimator.download(path="../", verbose=True)
+pose_estimator.download(path="./", verbose=True)
 pose_estimator.load("openpose_default")
 fall_detector = FallDetectorLearner(pose_estimator=pose_estimator)
 
@@ -141,12 +141,12 @@ else:
 
             img = cv2.putText(img, text, (50, 80), cv2.FONT_HERSHEY_SIMPLEX,
                               1, color, 2, cv2.LINE_AA)
-            if keypoints[0].x != -1:
-                cv2.line(img, (int(keypoints[0].x), int(keypoints[0].y)),
-                         (int(keypoints[1].x), int(keypoints[1].y)), color, 4)
-            if keypoints[2].x != -1:
-                cv2.line(img, (int(keypoints[1].x), int(keypoints[1].y)),
-                         (int(keypoints[2].x), int(keypoints[2].y)), color, 4)
+            if keypoints[0].data[0] != -1:
+                cv2.line(img, (int(keypoints[0].data[0]), int(keypoints[0].data[1])),
+                         (int(keypoints[1].data[0]), int(keypoints[1].data[1])), color, 4)
+            if keypoints[2].data[0] != -1:
+                cv2.line(img, (int(keypoints[1].data[0]), int(keypoints[1].data[1])),
+                         (int(keypoints[2].data[0]), int(keypoints[2].data[1])), color, 4)
             cv2.imshow('Result', img)
             cv2.waitKey(1)
             counter += 1
