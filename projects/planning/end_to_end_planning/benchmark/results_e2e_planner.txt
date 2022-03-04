@@ -1,0 +1,440 @@
+==== Benchmarking EndToEndPlanningRLLearner (e2e_planner) ====
+learner.infer:
+  device: cuda
+  energy:
+    batch_size_1:
+      joules: 0.0
+      kWh: 0.0
+  machine_info:
+    cpu:
+      architecture: aarch64
+      cores:
+        physical: 8
+        total: 8
+      frequency: 2.27 GHz
+      model: ARMv8 Processor rev 0 (v8l)
+    gpus: null
+    memory:
+      available: 27.14 GB
+      total: 31.17 GB
+      used: 3.83 GB
+    system:
+      node: xavier
+      release: 4.9.140-tegra
+      system: Linux
+  timing:
+    batch_size_1:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 1.259 us +/- 2.235 us [0.477 us, 22.888 us]
+          batches_per_second: 1.10 M +/- 358.26 K [43.69 K, 2.10 M]
+        metrics:
+          batches_per_second_max: 2097152.0
+          batches_per_second_mean: 1096411.5913384394
+          batches_per_second_min: 43690.666666666664
+          batches_per_second_std: 358262.32989625854
+          seconds_per_batch_max: 2.288818359375e-05
+          seconds_per_batch_mean: 1.25885009765625e-06
+          seconds_per_batch_min: 4.76837158203125e-07
+          seconds_per_batch_std: 2.2350594173216032e-06
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 4.504 us +/- 0.820 us [3.099 us, 8.106 us]
+          batches_per_second: 228.63 K +/- 37.84 K [123.36 K, 322.64 K]
+        metrics:
+          batches_per_second_max: 322638.76923076925
+          batches_per_second_mean: 228627.9317949718
+          batches_per_second_min: 123361.88235294117
+          batches_per_second_std: 37835.627112068854
+          seconds_per_batch_max: 8.106231689453125e-06
+          seconds_per_batch_mean: 4.503726959228516e-06
+          seconds_per_batch_min: 3.0994415283203125e-06
+          seconds_per_batch_std: 8.20308910187107e-07
+      on_device_inference:
+        human_readable:
+          batch_latency: 5.845 ms +/- 1.849 ms [4.525 ms, 19.795 ms]
+          batches_per_second: 179.06 +/- 28.04 [50.52, 220.99]
+        metrics:
+          batches_per_second_max: 220.9854583772392
+          batches_per_second_mean: 179.06123861918087
+          batches_per_second_min: 50.51734977778313
+          batches_per_second_std: 28.03647456391877
+          seconds_per_batch_max: 0.01979517936706543
+          seconds_per_batch_mean: 0.005844933986663818
+          seconds_per_batch_min: 0.004525184631347656
+          seconds_per_batch_std: 0.001848950281234691
+      total:
+        human_readable:
+          batch_latency: 5.851 ms +/- 1.849 ms [4.530 ms, 19.802 ms]
+          batches_per_second: 178.87 +/- 27.99 [50.50, 220.74]
+        metrics:
+          batches_per_second_max: 220.74122414609758
+          batches_per_second_mean: 178.87343486823838
+          batches_per_second_min: 50.50031906567937
+          batches_per_second_std: 27.988407490692232
+          seconds_per_batch_max: 0.019801855087280273
+          seconds_per_batch_mean: 0.005850696563720703
+          seconds_per_batch_min: 0.004530191421508789
+          seconds_per_batch_std: 0.0018491216098541247
+
+
+
+
+==== Benchmarking EndToEndPlanningRLLearner (e2e_planner) ====
+learner.infer:
+  device: cuda
+  energy:
+    batch_size_1:
+      joules: 0.0
+      kWh: 0.0
+  machine_info:
+    cpu:
+      architecture: aarch64
+      cores:
+        physical: 8
+        total: 8
+      frequency: 2.27 GHz
+      model: ARMv8 Processor rev 0 (v8l)
+    gpus: null
+    memory:
+      available: 26.92 GB
+      total: 31.17 GB
+      used: 4.10 GB
+    system:
+      node: xavier
+      release: 4.9.140-tegra
+      system: Linux
+  timing:
+    batch_size_1:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 1.187 us +/- 0.934 us [0.477 us, 6.199 us]
+          batches_per_second: 1.13 M +/- 452.46 K [161.32 K, 2.10 M]
+        metrics:
+          batches_per_second_max: 2097152.0
+          batches_per_second_mean: 1126185.750642648
+          batches_per_second_min: 161319.38461538462
+          batches_per_second_std: 452456.88476094336
+          seconds_per_batch_max: 6.198883056640625e-06
+          seconds_per_batch_mean: 1.1873245239257814e-06
+          seconds_per_batch_min: 4.76837158203125e-07
+          seconds_per_batch_std: 9.337854721279671e-07
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 5.920 us +/- 3.371 us [3.099 us, 32.902 us]
+          batches_per_second: 192.10 K +/- 53.05 K [30.39 K, 322.64 K]
+        metrics:
+          batches_per_second_max: 322638.76923076925
+          batches_per_second_mean: 192104.06697764443
+          batches_per_second_min: 30393.507246376812
+          batches_per_second_std: 53048.511765715295
+          seconds_per_batch_max: 3.2901763916015625e-05
+          seconds_per_batch_mean: 5.9199333190917965e-06
+          seconds_per_batch_min: 3.0994415283203125e-06
+          seconds_per_batch_std: 3.3710827379958344e-06
+      on_device_inference:
+        human_readable:
+          batch_latency: 6.063 ms +/- 1.474 ms [4.752 ms, 14.878 ms]
+          batches_per_second: 170.63 +/- 24.98 [67.21, 210.42]
+        metrics:
+          batches_per_second_max: 210.42010735965485
+          batches_per_second_mean: 170.62701818363945
+          batches_per_second_min: 67.21317885358076
+          batches_per_second_std: 24.977806667193455
+          seconds_per_batch_max: 0.014878034591674805
+          seconds_per_batch_mean: 0.006062505245208741
+          seconds_per_batch_min: 0.004752397537231445
+          seconds_per_batch_std: 0.0014743242360607766
+      total:
+        human_readable:
+          batch_latency: 6.070 ms +/- 1.475 ms [4.757 ms, 14.891 ms]
+          batches_per_second: 170.43 +/- 24.96 [67.16, 210.23]
+        metrics:
+          batches_per_second_max: 210.23026414716054
+          batches_per_second_mean: 170.42637334765143
+          batches_per_second_min: 67.15506668587989
+          batches_per_second_std: 24.957657640383932
+          seconds_per_batch_max: 0.014890909194946289
+          seconds_per_batch_mean: 0.006069612503051758
+          seconds_per_batch_min: 0.0047566890716552734
+          seconds_per_batch_std: 0.0014754034628989253
+
+
+
+
+==== Benchmarking EndToEndPlanningRLLearner (e2e_planner) ====
+learner.infer:
+  device: cuda
+  energy:
+    batch_size_1:
+      joules: 0.0
+      kWh: 0.0
+    batch_size_10:
+      joules: 0.538213846130371
+      kWh: 1.495038461473253e-07
+  machine_info:
+    cpu:
+      architecture: aarch64
+      cores:
+        physical: 8
+        total: 8
+      frequency: 2.27 GHz
+      model: ARMv8 Processor rev 0 (v8l)
+    gpus: null
+    memory:
+      available: 26.89 GB
+      total: 31.17 GB
+      used: 4.16 GB
+    system:
+      node: xavier
+      release: 4.9.140-tegra
+      system: Linux
+  timing:
+    batch_size_1:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 0.982 us +/- 0.630 us [0.477 us, 4.053 us]
+          batches_per_second: 1.25 M +/- 447.13 K [246.72 K, 2.10 M]
+        metrics:
+          batches_per_second_max: 2097152.0
+          batches_per_second_mean: 1246457.5789537523
+          batches_per_second_min: 246723.76470588235
+          batches_per_second_std: 447129.9974787598
+          seconds_per_batch_max: 4.0531158447265625e-06
+          seconds_per_batch_mean: 9.822845458984375e-07
+          seconds_per_batch_min: 4.76837158203125e-07
+          seconds_per_batch_std: 6.301471151993481e-07
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 5.691 us +/- 4.243 us [3.099 us, 36.240 us]
+          batches_per_second: 201.65 K +/- 49.01 K [27.59 K, 322.64 K]
+        metrics:
+          batches_per_second_max: 322638.76923076925
+          batches_per_second_mean: 201649.7564554814
+          batches_per_second_min: 27594.105263157893
+          batches_per_second_std: 49014.13205297487
+          seconds_per_batch_max: 3.62396240234375e-05
+          seconds_per_batch_mean: 5.691051483154297e-06
+          seconds_per_batch_min: 3.0994415283203125e-06
+          seconds_per_batch_std: 4.2428667824511955e-06
+      on_device_inference:
+        human_readable:
+          batch_latency: 6.418 ms +/- 1.893 ms [4.622 ms, 12.308 ms]
+          batches_per_second: 166.70 +/- 37.88 [81.25, 216.37]
+        metrics:
+          batches_per_second_max: 216.3685323703895
+          batches_per_second_mean: 166.7006027780929
+          batches_per_second_min: 81.24874571411968
+          batches_per_second_std: 37.883045693610434
+          seconds_per_batch_max: 0.012307882308959961
+          seconds_per_batch_mean: 0.0064180874824523925
+          seconds_per_batch_min: 0.004621744155883789
+          seconds_per_batch_std: 0.0018931672836194477
+      total:
+        human_readable:
+          batch_latency: 6.425 ms +/- 1.895 ms [4.626 ms, 12.315 ms]
+          batches_per_second: 166.53 +/- 37.84 [81.20, 216.19]
+        metrics:
+          batches_per_second_max: 216.1900932941601
+          batches_per_second_mean: 166.5253075046957
+          batches_per_second_min: 81.20312863006272
+          batches_per_second_std: 37.84108811578341
+          seconds_per_batch_max: 0.012314796447753906
+          seconds_per_batch_mean: 0.006424760818481446
+          seconds_per_batch_min: 0.004625558853149414
+          seconds_per_batch_std: 0.0018948808870943173
+    batch_size_10:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 1.686 us +/- 1.050 us [0.477 us, 4.768 us]
+          batches_per_second: 895.31 K +/- 545.75 K [209.72 K, 2.10 M]
+        metrics:
+          batches_per_second_max: 2097152.0
+          batches_per_second_mean: 895311.469174381
+          batches_per_second_min: 209715.2
+          batches_per_second_std: 545753.4655426323
+          seconds_per_batch_max: 4.76837158203125e-06
+          seconds_per_batch_mean: 1.685619354248047e-06
+          seconds_per_batch_min: 4.76837158203125e-07
+          seconds_per_batch_std: 1.050262932477323e-06
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 5.970 us +/- 3.947 us [4.530 us, 33.140 us]
+          batches_per_second: 185.50 K +/- 32.76 K [30.17 K, 220.75 K]
+        metrics:
+          batches_per_second_max: 220752.84210526315
+          batches_per_second_mean: 185503.36124396606
+          batches_per_second_min: 30174.84892086331
+          batches_per_second_std: 32758.394812114577
+          seconds_per_batch_max: 3.314018249511719e-05
+          seconds_per_batch_mean: 5.970001220703125e-06
+          seconds_per_batch_min: 4.5299530029296875e-06
+          seconds_per_batch_std: 3.947094284647896e-06
+      on_device_inference:
+        human_readable:
+          batch_latency: 52.450 ms +/- 5.293 ms [41.048 ms, 73.327 ms]
+          batches_per_second: 19.26 +/- 1.94 [13.64, 24.36]
+        metrics:
+          batches_per_second_max: 24.361551731147884
+          batches_per_second_mean: 19.25897418182188
+          batches_per_second_min: 13.637573767293654
+          batches_per_second_std: 1.9358338668135544
+          seconds_per_batch_max: 0.07332682609558105
+          seconds_per_batch_mean: 0.052449986934661866
+          seconds_per_batch_min: 0.041048288345336914
+          seconds_per_batch_std: 0.00529343126264063
+      total:
+        human_readable:
+          batch_latency: 52.458 ms +/- 5.295 ms [41.054 ms, 73.362 ms]
+          batches_per_second: 19.26 +/- 1.94 [13.63, 24.36]
+        metrics:
+          batches_per_second_max: 24.35801479726355
+          batches_per_second_mean: 19.25620902118965
+          batches_per_second_min: 13.631058621653418
+          batches_per_second_std: 1.9357161990035638
+          seconds_per_batch_max: 0.07336187362670898
+          seconds_per_batch_mean: 0.052457642555236814
+          seconds_per_batch_min: 0.04105424880981445
+          seconds_per_batch_std: 0.005295115316478522
+
+
+
+
+==== Benchmarking EndToEndPlanningRLLearner (e2e_planner) ====
+learner.infer:
+  device: cuda
+  energy:
+    batch_size_1:
+      joules: 0.0
+      kWh: 0.0
+    batch_size_100:
+      joules: 5.132207585422198
+      kWh: 1.4256132181728329e-06
+  machine_info:
+    cpu:
+      architecture: aarch64
+      cores:
+        physical: 8
+        total: 8
+      frequency: 2.27 GHz
+      model: ARMv8 Processor rev 0 (v8l)
+    gpus: null
+    memory:
+      available: 26.86 GB
+      total: 31.17 GB
+      used: 4.20 GB
+    system:
+      node: xavier
+      release: 4.9.140-tegra
+      system: Linux
+  timing:
+    batch_size_1:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 1.190 us +/- 1.895 us [0.477 us, 19.550 us]
+          batches_per_second: 1.11 M +/- 358.05 K [51.15 K, 2.10 M]
+        metrics:
+          batches_per_second_max: 2097152.0
+          batches_per_second_mean: 1114049.2802973287
+          batches_per_second_min: 51150.04878048781
+          batches_per_second_std: 358047.31029308727
+          seconds_per_batch_max: 1.9550323486328125e-05
+          seconds_per_batch_mean: 1.189708709716797e-06
+          seconds_per_batch_min: 4.76837158203125e-07
+          seconds_per_batch_std: 1.8946388090393749e-06
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 4.647 us +/- 1.279 us [2.861 us, 11.683 us]
+          batches_per_second: 226.06 K +/- 43.80 K [85.60 K, 349.53 K]
+        metrics:
+          batches_per_second_max: 349525.3333333333
+          batches_per_second_mean: 226059.24791358548
+          batches_per_second_min: 85598.04081632652
+          batches_per_second_std: 43801.07312657167
+          seconds_per_batch_max: 1.1682510375976562e-05
+          seconds_per_batch_mean: 4.646778106689453e-06
+          seconds_per_batch_min: 2.86102294921875e-06
+          seconds_per_batch_std: 1.2788195636146487e-06
+      on_device_inference:
+        human_readable:
+          batch_latency: 5.301 ms +/- 1.785 ms [3.942 ms, 16.012 ms]
+          batches_per_second: 201.88 +/- 42.42 [62.45, 253.69]
+        metrics:
+          batches_per_second_max: 253.6928567108208
+          batches_per_second_mean: 201.87957933289397
+          batches_per_second_min: 62.453342068821755
+          batches_per_second_std: 42.4150884043725
+          seconds_per_batch_max: 0.016011953353881836
+          seconds_per_batch_mean: 0.005300974845886231
+          seconds_per_batch_min: 0.003941774368286133
+          seconds_per_batch_std: 0.0017847211001094708
+      total:
+        human_readable:
+          batch_latency: 5.307 ms +/- 1.785 ms [3.946 ms, 16.019 ms]
+          batches_per_second: 201.64 +/- 42.35 [62.43, 253.45]
+        metrics:
+          batches_per_second_max: 253.44757991419422
+          batches_per_second_mean: 201.64280314160672
+          batches_per_second_min: 62.42545654794684
+          batches_per_second_std: 42.352228217288015
+          seconds_per_batch_max: 0.016019105911254883
+          seconds_per_batch_mean: 0.005306811332702637
+          seconds_per_batch_min: 0.003945589065551758
+          seconds_per_batch_std: 0.0017852590269552655
+    batch_size_100:
+      cpu_to_gpu:
+        human_readable:
+          batch_latency: 5.729 us +/- 3.342 us [1.431 us, 16.451 us]
+          batches_per_second: 263.31 K +/- 167.64 K [60.79 K, 699.05 K]
+        metrics:
+          batches_per_second_max: 699050.6666666666
+          batches_per_second_mean: 263309.5332795671
+          batches_per_second_min: 60787.014492753624
+          batches_per_second_std: 167638.1557577888
+          seconds_per_batch_max: 1.6450881958007812e-05
+          seconds_per_batch_mean: 5.729198455810547e-06
+          seconds_per_batch_min: 1.430511474609375e-06
+          seconds_per_batch_std: 3.3416819830930585e-06
+      gpu_to_cpu:
+        human_readable:
+          batch_latency: 10.645 us +/- 5.677 us [4.530 us, 40.531 us]
+          batches_per_second: 123.93 K +/- 63.14 K [24.67 K, 220.75 K]
+        metrics:
+          batches_per_second_max: 220752.84210526315
+          batches_per_second_mean: 123932.92614799598
+          batches_per_second_min: 24672.376470588235
+          batches_per_second_std: 63141.63978780961
+          seconds_per_batch_max: 4.0531158447265625e-05
+          seconds_per_batch_mean: 1.0645389556884765e-05
+          seconds_per_batch_min: 4.5299530029296875e-06
+          seconds_per_batch_std: 5.676903576298258e-06
+      on_device_inference:
+        human_readable:
+          batch_latency: 390.917 ms +/- 25.722 ms [352.470 ms, 478.022 ms]
+          batches_per_second: 2.57 +/- 0.16 [2.09, 2.84]
+        metrics:
+          batches_per_second_max: 2.8371196056189025
+          batches_per_second_mean: 2.568760975832218
+          batches_per_second_min: 2.0919555823334837
+          batches_per_second_std: 0.16280135803036266
+          seconds_per_batch_max: 0.47802162170410156
+          seconds_per_batch_mean: 0.3909169888496399
+          seconds_per_batch_min: 0.35247015953063965
+          seconds_per_batch_std: 0.025721927991760825
+      total:
+        human_readable:
+          batch_latency: 390.933 ms +/- 25.716 ms [352.492 ms, 478.029 ms]
+          batches_per_second: 2.57 +/- 0.16 [2.09, 2.84]
+        metrics:
+          batches_per_second_max: 2.836943060308064
+          batches_per_second_mean: 2.5686475073038615
+          batches_per_second_min: 2.0919211511615208
+          batches_per_second_std: 0.16274919096335336
+          seconds_per_batch_max: 0.4780294895172119
+          seconds_per_batch_mean: 0.3909333634376526
+          seconds_per_batch_min: 0.352492094039917
+          seconds_per_batch_std: 0.02571600869920587
+
+
+
+
