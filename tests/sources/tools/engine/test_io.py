@@ -14,7 +14,7 @@
 
 import unittest
 import shutil
-import opendr.utils.io as io
+import opendr.engine.helper.io as io
 from pathlib import Path
 from logging import getLogger
 import json

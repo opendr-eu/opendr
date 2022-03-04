@@ -40,5 +40,11 @@ make install_compilation_dependencies
 make install_runtime_dependencies
 make libopendr
 
+# If working on GPU install GPU dependencies as needed
+if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
+  echo "[INFO] Installing  mxnet-cu102==1.8.0. You can override this later if you are using a different CUDA version."
+  pip3 install mxnet-cu102==1.8.0
+fi
+
 deactivate
 

@@ -23,49 +23,50 @@ rosrun perception image_dataset.py
 By default, it downloads a `nano_MOT20` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(Image, Target)` as elements.
 
 ## Pose Estimation ROS Node
-Assuming that you have already [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
+Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
 
-
-1. Add OpenDR to `PYTHONPATH` (please make sure you do not overwrite `PYTHONPATH` ), e.g.,
-```shell
-export PYTHONPATH="/home/user/opendr/src:$PYTHONPATH"
-```
-
-2. Start the node responsible for publishing images. If you have a usb camera, then you can use the corresponding node (assuming you have installed the corresponding package):
+1. Start the node responsible for publishing images. If you have a usb camera, then you can use the corresponding node (assuming you have installed the corresponding package):
 
 ```shell
 rosrun usb_cam usb_cam_node
 ```
 
-3. You are then ready to start the pose detection node
+2. You are then ready to start the pose detection node
 
 ```shell
 rosrun perception pose_estimation.py
 ```
 
-4. You can examine the annotated image stream using `rqt_image_view` (select the topic `/opendr/image_pose_annotated`) or
+3. You can examine the annotated image stream using `rqt_image_view` (select the topic `/opendr/image_pose_annotated`) or
    `rostopic echo /opendr/poses`
 
 ## Face Recognition ROS Node
-Assuming that you have already [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
+Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
 
 
-1. Add OpenDR to `PYTHONPATH` (please make sure you do not overwrite `PYTHONPATH` ), e.g.,
-```shell
-export PYTHONPATH="/home/user/opendr/src:$PYTHONPATH"
-```
-
-2. Start the node responsible for publishing images. If you have a usb camera, then you can use the corresponding node (assuming you have installed the corresponding package):
+1. Start the node responsible for publishing images. If you have a usb camera, then you can use the corresponding node (assuming you have installed the corresponding package):
 
 ```shell
 rosrun usb_cam usb_cam_node
 ```
 
-3. You are then ready to start the face recognition node
+2. You are then ready to start the face recognition node. Note that you should pass the folder containing the images of known faces as argument to create the corresponding database of known persons.
 
 ```shell
-rosrun perception face_recognition.py
+rosrun perception face_recognition.py _database_path:='./database'
 ```
+**Notes**
+
+Reference images should be placed in a defined structure like:
+- imgs
+    - ID1
+      - image1
+      - image2
+    - ID2
+    - ID3
+    - ...
+
+Τhe name of the sub-folder, e.g. ID1, will be published under `/opendr/face_recognition_id`.
 
 4. The database entry and the returned confidence is published under the topic name `/opendr/face_recognition`, and the human-readable ID
 under `/opendr/face_recognition_id`.
