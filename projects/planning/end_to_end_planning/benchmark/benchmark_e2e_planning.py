@@ -35,10 +35,10 @@ def benchmark_e2e_planner():
         "e2e_planner",
     ]
 
-    batch_size = 1
+    batch_size = 10
 
     sample = env.observation_space.sample()
-    samples = [env.observation_space.sample() for i in range(10)]
+    samples = [env.observation_space.sample() for i in range(batch_size)]
 
     if os.path.exists(root_dir + "/results_ab3dmot.txt"):
         os.remove(root_dir + "/results_ab3dmot.txt")
