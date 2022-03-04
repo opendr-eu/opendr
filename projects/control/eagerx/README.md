@@ -32,6 +32,7 @@ Setting `--device cpu` performs training and inference on CPU.
 Setting `--name example` sets the name of the environment.  
 Setting `--eps 200` sets the number of training episodes.  
 Setting `--eval-eps 10` sets the number of evaluation episodes.
+Adding `--render` enables rendering of the environment.
 
 ## Citing EAGERx
 

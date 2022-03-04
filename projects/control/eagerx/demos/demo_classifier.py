@@ -25,7 +25,7 @@ import eagerx_examples  # noqa: F401
 import stable_baselines3 as sb
 
 
-def example_classifier(name, eps, eval_eps, device):
+def example_classifier(name, eps, eval_eps, device, render=False):
     # Start roscore & initialize main thread as node
     initialize("eagerx", anonymous=True, log_level=log.INFO)
 
@@ -55,12 +55,17 @@ def example_classifier(name, eps, eval_eps, device):
     # Connect PID
     graph.connect(action="yref", target=pid.inputs.yref)
     graph.connect(source=pid.outputs.u, target=pendulum.actuators.action)
+    # Add rendering
+    if render:
+        graph.render(source=pendulum.sensors.image, rate=10, display=True)
 
     # Define bridge
     bridge = Bridge.make("GymBridge", rate=20)
 
     # Initialize Environment (agnostic graph +  bridge)
     env = eagerx_gym.EagerGym(name=name, rate=20, graph=graph, bridge=bridge)
+    if render:
+        env.render(mode='human')
 
     # Initialize and train stable-baselines model
     model = sb.SAC("MlpPolicy", env, verbose=1, device=device)
@@ -82,7 +87,8 @@ if __name__ == "__main__":
     parser.add_argument("--name", help="Name of the environment", type=str, default="example")
     parser.add_argument("--eps", help="Number of training episodes", type=int, default=200)
     parser.add_argument("--eval_eps", help="Number of evaluation episodes", type=int, default=20)
+    parser.add_argument("--render", help="Toggle rendering", action='store_true')
 
     args = parser.parse_args()
 
-    example_classifier(name=args.name, eps=args.eps, eval_eps=args.eval_eps, device=args.device)
+    example_classifier(name=args.name, eps=args.eps, eval_eps=args.eval_eps, device=args.device, render=args.render)
