@@ -35,7 +35,7 @@ def benchmark_e2e_planner():
         "e2e_planner",
     ]
 
-    batch_size = 10
+    batch_size = 100
 
     sample = env.observation_space.sample()
     samples = [env.observation_space.sample() for i in range(batch_size)]
