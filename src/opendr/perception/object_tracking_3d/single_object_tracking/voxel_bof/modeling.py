@@ -7,6 +7,7 @@ from multiprocessing import Process, set_start_method, get_context
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.test import (
     test_pp_siamese_fit,
     test_pp_siamese_fit_siamese_training,
+    test_pp_siamese_fit_siamese_triplet_training,
     test_rotated_pp_siamese_eval,
     test_rotated_pp_siamese_infer,
 )
@@ -92,6 +93,16 @@ class Model:
                 )
             elif self.training_method == "siamese":
                 test_pp_siamese_fit_siamese_training(
+                    self.model_name,
+                    0,
+                    steps,
+                    False,
+                    checkpoint_after_iter=self.save_step,
+                    device=device,
+                    **self.kwargs,
+                )
+            elif self.training_method == "siamese_triplet":
+                test_pp_siamese_fit_siamese_triplet_training(
                     self.model_name,
                     0,
                     steps,
@@ -269,8 +280,11 @@ def collect_results(template="", tracks=None):
                         values = {}
 
                         for s in str_values:
-                            key, value = s.split(" = ")
-                            values[key] = value
+                            splits = s.split(" = ")
+
+                            if len(splits) == 2:
+                                key, value = s.split(" = ")
+                                values[key] = value
 
                         good_tracks = True
 
@@ -2184,6 +2198,212 @@ def run_x4(id=0, total_experiments=4, total_devices=4):
             device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
         )
         print(result)
+
+
+def create_t_eval_kwargs():
+    params = {
+        "window_influence": [0.45],
+        "score_upscale": [8],
+        "rotation_penalty": [0.98, 0.90],
+        "offset_interpolation": [1, 0.3],
+        "target_feature_merge_scale": [0, 0.01],
+        "extrapolation_mode": [["none", "n"], ["linear", "l"]],
+        "search_type": [["normal", "n"], ["small", "s"], ["snormal", "sn"]],
+        "target_type": [["normal", "n"], ["original", "o"]],
+    }
+    results = {}
+
+    for window_influence in params["window_influence"]:
+        for score_upscale in params["score_upscale"]:
+            for rotation_penalty in params["rotation_penalty"]:
+                for offset_interpolation in params["offset_interpolation"]:
+                    for target_feature_merge_scale in params[
+                        "target_feature_merge_scale"
+                    ]:
+                        for search_type, search_type_name in params[
+                            "search_type"
+                        ]:
+                            for target_type, target_type_name in params[
+                                "target_type"
+                            ]:
+                                for extrapolation_mode, extrapolation_mode_name in params[
+                                    "extrapolation_mode"
+                                ]:
+                                    name = (
+                                        "rp"
+                                        + str(rotation_penalty).replace(".", "")
+                                        + "-s"
+                                        + str(search_type_name).replace(".", "")
+                                        + "t"
+                                        + str(target_type_name).replace(".", "")
+                                        + "-su"
+                                        + str(score_upscale).replace(".", "")
+                                        + "-wi"
+                                        + str(window_influence).replace(".", "")
+                                        + "-tfms"
+                                        + str(target_feature_merge_scale).replace(".", "")
+                                        + "-oi"
+                                        + str(offset_interpolation).replace(".", "")
+                                        + "-ex"
+                                        + str(extrapolation_mode_name).replace(".", "")
+                                    )
+
+                                    results[name] = {
+                                        "window_influence": window_influence,
+                                        "score_upscale": score_upscale,
+                                        "rotation_penalty": rotation_penalty,
+                                        "target_feature_merge_scale": target_feature_merge_scale,
+                                        "offset_interpolation": offset_interpolation,
+                                        "extrapolation_mode": extrapolation_mode,
+                                        "search_type": search_type,
+                                        "target_type": target_type,
+                                    }
+    return results
+
+
+def run_t0(id=0, total_experiments=4, total_devices=4):
+
+    device_id = id % total_devices
+
+    eval_kwargs = create_t_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1]:
+            for size in [-1]:
+                for lr in [0.00001, 0.0001]:
+                    for context_amount in [0, 0.2, -0.2]:
+                        for r_pos in [1, 4]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "x4-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=128000,
+                                        save_step=2000,
+                                        loads=[
+                                            128000,
+                                            2000,
+                                            8000,
+                                            16000,
+                                            32000,
+                                            64000,
+                                        ],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                        search_type="normal",
+                                        target_type="normal",
+                                        augment=False,
+                                        training_method="siamese_triplet",
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_experiments
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def run_t1(id=0, total_experiments=4, total_devices=4):
+
+    device_id = id % total_devices
+
+    eval_kwargs = create_t_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1]:
+            for size in [-1]:
+                for lr in [0.00001, 0.0001]:
+                    for context_amount in [0, 0.2, -0.2]:
+                        for r_pos in [1, 4]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "t1-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=128000,
+                                        save_step=2000,
+                                        loads=[
+                                            128000,
+                                            2000,
+                                            8000,
+                                            16000,
+                                            32000,
+                                            64000,
+                                        ],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                        search_type="normal",
+                                        target_type="normal",
+                                        augment=False,
+                                        training_method="siamese_triplet",
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_experiments
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
 
 
 if __name__ == "__main__":

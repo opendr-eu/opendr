@@ -9,6 +9,7 @@ from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_dete
 )
 from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import (
     SiameseTrackingDatasetIterator,
+    SiameseTripletTrackingDatasetIterator,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.metrics import (
     Precision,
@@ -498,6 +499,73 @@ def test_pp_siamese_fit_siamese_training(
     print("Using device:", device)
 
     dataset_siamese_tracking = SiameseTrackingDatasetIterator(
+        [
+            dataset_tracking_path + "/training/velodyne/" + track_id
+            for track_id in track_ids
+        ],
+        [
+            dataset_tracking_path + "/training/label_02/" + track_id + ".txt"
+            for track_id in track_ids
+        ],
+        [
+            dataset_tracking_path + "/training/calib/" + track_id + ".txt"
+            for track_id in track_ids
+        ],
+    )
+
+    learner = VoxelBofObjectTracking3DLearner(
+        model_config_path=backbone_configs[backbone],
+        device=device,
+        lr=lr,
+        checkpoint_after_iter=checkpoint_after_iter,
+        checkpoint_load_iter=load,
+        backbone=backbone,
+        **kwargs,
+    )
+    learner.load(backbone_model_paths[backbone], backbone=True, verbose=True)
+    learner.fit(
+        dataset_siamese_tracking,
+        model_dir="./temp/" + model_name,
+        debug=debug,
+        steps=steps,
+        # verbose=True
+    )
+
+    print()
+
+
+def test_pp_siamese_fit_siamese_triplet_training(
+    model_name,
+    load=0,
+    steps=0,
+    debug=False,
+    device=DEVICE,
+    checkpoint_after_iter=1000,
+    lr=0.0001,
+    backbone="pp",
+    track_ids=[
+        "0000",
+        "0001",
+        "0002",
+        "0003",
+        "0004",
+        "0005",
+        "0006",
+        "0007",
+        "0008",
+        "0009",
+        "0012",
+        "0013",
+        "0014",
+        "0015",
+        "0016",
+    ],
+    **kwargs,
+):
+    print("Fit", name, "start", file=sys.stderr)
+    print("Using device:", device)
+
+    dataset_siamese_tracking = SiameseTripletTrackingDatasetIterator(
         [
             dataset_tracking_path + "/training/velodyne/" + track_id
             for track_id in track_ids
