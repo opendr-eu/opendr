@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-from cv2 import AGAST_FEATURE_DETECTOR_AGAST_5_8
 import yaml
 import torch
 import logging
@@ -39,6 +38,7 @@ def benchmark_e2e_planner():
     batch_size = 1
 
     sample = env.observation_space.sample()
+    samples = [env.observation_space.sample() for i in range(10)]
 
     if os.path.exists(root_dir + "/results_ab3dmot.txt"):
         os.remove(root_dir + "/results_ab3dmot.txt")
@@ -61,7 +61,7 @@ def benchmark_e2e_planner():
         print("== Benchmarking learner.infer ==")
         results1 = benchmark(
             model=learner.infer,
-            sample=sample,
+            sample=samples,
             sample_with_batch_size1=sample,
             num_runs=num_runs,
             get_device_fn=get_device_fn,

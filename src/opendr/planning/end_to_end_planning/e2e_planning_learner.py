@@ -162,14 +162,19 @@ class EndToEndPlanningRLLearner(LearnerRL):
         """
         Loads a model from the path provided.
 
-        :param batch: Path to saved model
-        :type batch: list
+        :param batch: observations
+        :type batch: dict or list
         :param deterministic: use deterministic actions from the policy
         :type deterministic: bool
         :return: the selected action
         :rtype: int
         """
-        return self.agent.predict(batch, deterministic=deterministic)
+        if isinstance(batch, dict):
+            return self.agent.predict(batch, deterministic=deterministic)
+        elif isinstance(batch, list) or isinstance(batch, np.ndarray):
+            return [self.agent.predict(obs, deterministic=deterministic) for obs in batch]
+        else:
+            raise ValueError()
 
     def reset(self):
         raise NotImplementedError()
