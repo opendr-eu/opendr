@@ -87,13 +87,16 @@ class ClusterNMS(NMSCustom):
 
         elif self.nms_type == 'spm_dist_weighted':
             if self.cross_class:
-                [boxes, classes, scores] = cc_cluster_SPM_dist_weighted_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
-                                                                            top_k=self.top_k, post_k=self.post_k)
+                [boxes, classes, scores] = cc_cluster_SPM_dist_weighted_nms(boxes=boxes, scores=scores,
+                                                                            iou_thres=self.iou_thres,
+                                                                            top_k=self.top_k,
+                                                                            post_k=self.post_k)
             else:
-                [boxes, classes, scores] = cluster_SPM_dist_weighted_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
+                [boxes, classes, scores] = cluster_SPM_dist_weighted_nms(boxes=boxes, scores=scores,
+                                                                         iou_thres=self.iou_thres,
                                                                          top_k=self.top_k, post_k=self.post_k)
 
-        keep_ids = torch.where(scores>threshold)
+        keep_ids = torch.where(scores > threshold)
         scores = scores[keep_ids].cpu().numpy()
         classes = classes[keep_ids].cpu().numpy()
         boxes = boxes[keep_ids].cpu().numpy()
@@ -122,10 +125,10 @@ def cc_cluster_nms_default(boxes=None, scores=None, iou_thres=0.45, top_k=400, p
     B = iou
     for i in range(200):
         A=B
-        maxA,_=torch.max(A, dim=0)
-        E = (maxA<=iou_thres).float().unsqueeze(1).expand_as(A)
+        maxA, _ = torch.max(A, dim=0)
+        E = (maxA <= iou_thres).float().unsqueeze(1).expand_as(A)
         B=iou.mul(E)
-        if A.equal(B)==True:
+        if A.equal(B):
             break
 
     idx_out = torch.where(maxA > iou_thres)
@@ -136,7 +139,6 @@ def cc_cluster_nms_default(boxes=None, scores=None, iou_thres=0.45, top_k=400, p
     classes = classes[idx]
     boxes = boxes[idx]
     return boxes, classes, scores
-
 
 
 def cluster_nms_default(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=200):
@@ -176,8 +178,7 @@ def cluster_nms_default(boxes=None, scores=None, iou_thres=0.45, top_k=400, post
 
 
 def cc_cluster_diounms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=200):
-    # Collapse all the classes into 1
-
+    
     scores, classes = scores.max(dim=0)
     _, idx = scores.sort(0, descending=True)
     idx = idx[:top_k]
@@ -191,7 +192,7 @@ def cc_cluster_diounms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_
         maxA, _ = torch.max(A, dim=0)
         E = (maxA <= iou_thres).float().unsqueeze(1).expand_as(A)
         B = iou.mul(E)
-        if A.equal(B) == True:
+        if A.equal(B):
             break
 
     idx_out = torch.where(maxA > iou_thres)
