@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2021 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,10 +43,13 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 # algorithm imports
 from opendr.perception.object_detection_2d.utils.eval_utils import DetectionDatasetCOCOEval
 from opendr.perception.object_detection_2d.datasets import DetectionDataset
-from opendr.perception.object_detection_2d.datasets.transforms import ImageToNDArrayTransform, BoundingBoxListToNumpyArray, \
-    transform_test
-import torch
+from opendr.perception.object_detection_2d.datasets.transforms import ImageToNDArrayTransform, \
+    BoundingBoxListToNumpyArray, \
+    transform_test, pad_test
+from opendr.perception.object_detection_2d.nms.utils.nms_custom import NMSCustom
+
 gutils.random.seed(0)
+import datetime
 
 
 class SingleShotDetectorLearner(Learner):
@@ -87,7 +90,6 @@ class SingleShotDetectorLearner(Learner):
                 self.ctx = mx.gpu(0)
             else:
                 self.ctx = mx.cpu()
-                print("Device set to cuda but no GPU available, using CPU...")
         else:
             self.ctx = mx.cpu()
 
@@ -138,7 +140,7 @@ class SingleShotDetectorLearner(Learner):
         if verbose:
             print("Model parameters saved.")
 
-        with open(os.path.join(path,  model_name + '.json'), 'w', encoding='utf-8') as f:
+        with open(os.path.join(path, model_name + '.json'), 'w', encoding='utf-8') as f:
             json.dump(metadata, f, ensure_ascii=False, indent=4)
         if verbose:
             print("Model metadata saved.")
@@ -213,7 +215,7 @@ class SingleShotDetectorLearner(Learner):
             if verbose:
                 print("Downloading params...")
             file_url = os.path.join(url, "pretrained", "ssd_512_vgg16_atrous_wider_person",
-                                         "ssd_512_vgg16_atrous_wider_person.params")
+                                    "ssd_512_vgg16_atrous_wider_person.params")
 
             urlretrieve(file_url,
                         os.path.join(path, "ssd_512_vgg16_atrous_wider_person.params"))
@@ -540,7 +542,7 @@ class SingleShotDetectorLearner(Learner):
         eval_dict = {k.lower(): v for k, v in zip(map_name, mean_ap)}
         return eval_dict
 
-    def infer(self, img, threshold=0.2, keep_size=False, custom_nms=None):
+    def infer(self, img, threshold=0.2, keep_size=False, custom_nms:NMSCustom=None, nms_thresh=0.45, nms_topk=400, post_nms=100):
         """
         Performs inference on a single image and returns the resulting bounding boxes.
         :param img: image to perform inference on
@@ -552,13 +554,13 @@ class SingleShotDetectorLearner(Learner):
         :return: list of bounding boxes
         :rtype: BoundingBoxList
         """
+
         assert self._model is not None, "Model has not been loaded, call load(path) first"
 
-        if custom_nms is not None:
-            self._model.set_nms(nms_thresh=0.0, nms_topk=1200)
+        if custom_nms:
+            self._model.set_nms(nms_thresh=0.85, nms_topk=5000, post_nms=1000)
         else:
-            self._model.set_nms(nms_thresh=0.45, nms_topk=400)
-
+            self._model.set_nms(nms_thresh=nms_thresh, nms_topk=nms_topk, post_nms=post_nms)
         if not isinstance(img, Image):
             img = Image(img)
         _img = img.convert("channels_last", "rgb")
@@ -570,37 +572,43 @@ class SingleShotDetectorLearner(Learner):
             x, img_mx = transform_test(img_mx)
         else:
             x, img_mx = presets.ssd.transform_test(img_mx, short=self.img_size)
-
         h_mx, w_mx, _ = img_mx.shape
+        x = pad_test(x, min_size=self.img_size)
         x = x.as_in_context(self.ctx)
         class_IDs, scores, boxes = self._model(x)
 
         class_IDs = class_IDs[0, :, 0].asnumpy()
         scores = scores[0, :, 0].asnumpy()
-        mask = np.where((class_IDs >= 0) & (scores > threshold))[0]
+        mask = np.where(class_IDs >= 0)[0]
+        if custom_nms is None:
+            mask = np.intersect1d(mask, np.where(scores > threshold)[0])
         if mask.size == 0:
             return BoundingBoxList([])
 
         scores = scores[mask, np.newaxis]
         class_IDs = class_IDs[mask, np.newaxis]
         boxes = boxes[0, mask, :].asnumpy()
+        if x.shape[2] > h_mx:
+            boxes[:, [1, 3]] -= (x.shape[2] - h_mx)
+        elif x.shape[3] > w_mx:
+            boxes[:, [0, 2]] -= (x.shape[3] - w_mx)
         boxes[:, [0, 2]] /= w_mx
         boxes[:, [1, 3]] /= h_mx
         boxes[:, [0, 2]] *= width
         boxes[:, [1, 3]] *= height
 
-        # bounding_boxes = BoundingBoxList([])
-        # for idx, box in enumerate(boxes):
-        #    bbox = BoundingBox(left=box[0], top=box[1],
-        #                       width=box[2] - box[0],
-        #                       height=box[3] - box[1],
-        #                       name=class_IDs[idx, :],
-        #                       score=scores[idx, :])
-        #    bounding_boxes.data.append(bbox)
-        if custom_nms:
-            bounding_boxes = np.concatenate([boxes, scores], axis=1)
-            bounding_boxes = [torch.tensor(bounding_boxes, device=self.device)]  # List based on class index
-            custom_nms.run_nms(bounding_boxes)
+        if custom_nms is not None:
+            bounding_boxes, _ = custom_nms.run_nms(boxes=boxes, scores=scores, threshold=threshold, img=_img)
+        else:
+            bounding_boxes = BoundingBoxList([])
+            for idx, box in enumerate(boxes):
+                bbox = BoundingBox(left=box[0], top=box[1],
+                                   width=box[2] - box[0],
+                                   height=box[3] - box[1],
+                                   name=class_IDs[idx, :],
+                                   score=scores[idx, :])
+                bounding_boxes.data.append(bbox)
+
         return bounding_boxes
 
     @staticmethod
