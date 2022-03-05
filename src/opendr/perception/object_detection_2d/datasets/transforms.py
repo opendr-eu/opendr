@@ -142,6 +142,7 @@ def transform_test(imgs, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
         return tensors[0], origs[0]
     return tensors, origs
 
+
 def pad_test(img, min_size=512):
     h_pad_size = 0
     pad_dim = 0
@@ -152,10 +153,12 @@ def pad_test(img, min_size=512):
         h_pad_size = int((min_size - img.shape[min_dim]) / 2.0)
         if min_dim == 2:
             img_padded = mx.nd.pad(img, mode="constant", constant_value=0,
-                          pad_width=(0, 0, 0, 0, h_pad_size, h_pad_size, 0, 0))
+                                   pad_width=(0, 0, 0, 0, h_pad_size,
+                                              h_pad_size, 0, 0))
             # img_mx = np.pad(img_mx, ((h_pad_size, h_pad_size), (0, 0), (0, 0)))
         else:
             img_padded = mx.nd.pad(img, mode="constant", constant_value=0,
-                          pad_width=(0, 0, 0, 0, 0, 0, h_pad_size, h_pad_size))
+                                   pad_width=(0, 0, 0, 0, 0, 0,
+                                              h_pad_size, h_pad_size))
             # img_mx = np.pad(img_mx, ((0, 0), (h_pad_size, h_pad_size), (0, 0)))
     return img_padded
