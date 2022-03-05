@@ -258,7 +258,7 @@ def cc_cluster_SPM_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_
         maxA, _ = torch.max(A, dim=0)
         E = (maxA <= iou_thres).float().unsqueeze(1).expand_as(A)
         B = iou.mul(E)
-        if A.equal(B) == True:
+        if A.equal(B):
             break
     scores = torch.prod(torch.exp(-B ** 2 / 0.2), 0) * scores
 
@@ -318,7 +318,7 @@ def cc_cluster_SPM_dist_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, 
         maxA, _ = torch.max(A, dim=0)
         E = (maxA <= iou_thres).float().unsqueeze(1).expand_as(A)
         B = iou.mul(E)
-        if A.equal(B) == True:
+        if A.equal(B):
             break
     D = distance(boxes, boxes)
     X = (B >= 0).float()
@@ -386,7 +386,7 @@ def cc_cluster_SPM_dist_weighted_nms(boxes=None, scores=None, iou_thres=0.45, to
         maxA, _ = torch.max(A, dim=0)
         E = (maxA <= iou_thres).float().unsqueeze(1).expand_as(A)
         B = iou.mul(E)
-        if A.equal(B) == True:
+        if A.equal(B):
             break
     D = distance(boxes, boxes)
     X = (B >= 0).float()
