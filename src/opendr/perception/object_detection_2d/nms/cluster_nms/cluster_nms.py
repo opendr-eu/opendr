@@ -178,7 +178,7 @@ def cluster_nms_default(boxes=None, scores=None, iou_thres=0.45, top_k=400, post
 
 
 def cc_cluster_diounms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=200):
-    
+
     scores, classes = scores.max(dim=0)
     _, idx = scores.sort(0, descending=True)
     idx = idx[:top_k]
