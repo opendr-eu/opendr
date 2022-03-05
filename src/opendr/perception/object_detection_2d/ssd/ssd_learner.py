@@ -49,8 +49,6 @@ from opendr.perception.object_detection_2d.datasets.transforms import ImageToNDA
 from opendr.perception.object_detection_2d.nms.utils.nms_custom import NMSCustom
 
 gutils.random.seed(0)
-import datetime
-
 
 class SingleShotDetectorLearner(Learner):
     supported_backbones = {"vgg16_atrous": [512, 300],
@@ -542,7 +540,8 @@ class SingleShotDetectorLearner(Learner):
         eval_dict = {k.lower(): v for k, v in zip(map_name, mean_ap)}
         return eval_dict
 
-    def infer(self, img, threshold=0.2, keep_size=False, custom_nms:NMSCustom=None, nms_thresh=0.45, nms_topk=400, post_nms=100):
+    def infer(self, img, threshold=0.2, keep_size=False, custom_nms: NMSCustom=None,
+              nms_thresh=0.45, nms_topk=400, post_nms=100):
         """
         Performs inference on a single image and returns the resulting bounding boxes.
         :param img: image to perform inference on
