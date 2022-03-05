@@ -58,32 +58,40 @@ class ClusterNMS(NMSCustom):
 
         if self.nms_type == 'default':
             if self.cross_class:
-                [boxes, classes, scores] = cc_cluster_nms_default(boxes=boxes, scores=scores, iou_thres=self.iou_thres, top_k=self.top_k, post_k=self.post_k)
+                [boxes, classes, scores] = cc_cluster_nms_default(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
+                                                                  top_k=self.top_k, post_k=self.post_k)
             else:
-                [boxes, classes, scores] = cluster_nms_default(boxes=boxes, scores=scores, iou_thres=self.iou_thres, top_k=self.top_k, post_k=self.post_k)
+                [boxes, classes, scores] = cluster_nms_default(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
+                                                               top_k=self.top_k, post_k=self.post_k)
         elif self.nms_type == 'diou':
             if self.cross_class:
                 [boxes, classes, scores] = cc_cluster_diounms(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
-                                                                  top_k=self.top_k, post_k=self.post_k)
+                                                              top_k=self.top_k, post_k=self.post_k)
             else:
-                [boxes, classes, scores] = cluster_diounms(boxes=boxes, scores=scores, iou_thres=self.iou_thres, post_k=self.post_k)
+                [boxes, classes, scores] = cluster_diounms(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
+                                                           top_k=self.top_k, post_k=self.post_k)
         elif self.nms_type == 'spm':
             if self.cross_class:
                 [boxes, classes, scores] = cc_cluster_SPM_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
-                                                           post_k=self.post_k)
+                                                              top_k=self.top_k, post_k=self.post_k)
             else:
-                [boxes, classes, scores] = cluster_SPM_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres, post_k=self.post_k)
+                [boxes, classes, scores] = cluster_SPM_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
+                                                           top_k=self.top_k, post_k=self.post_k)
         elif self.nms_type == 'spm_dist':
             if self.cross_class:
-                [boxes, classes, scores] = cc_cluster_SPM_dist_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres, post_k=self.post_k)
+                [boxes, classes, scores] = cc_cluster_SPM_dist_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
+                                                                   top_k=self.top_k, post_k=self.post_k)
             else:
-                [boxes, classes, scores] = cluster_SPM_dist_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres, post_k=self.post_k)
+                [boxes, classes, scores] = cluster_SPM_dist_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
+                                                                top_k=self.top_k, post_k=self.post_k)
 
         elif self.nms_type == 'spm_dist_weighted':
             if self.cross_class:
-                [boxes, classes, scores] = cc_cluster_SPM_dist_weighted_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres, post_k=self.post_k)
+                [boxes, classes, scores] = cc_cluster_SPM_dist_weighted_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
+                                                                            top_k=self.top_k, post_k=self.post_k)
             else:
-                [boxes, classes, scores] = cluster_SPM_dist_weighted_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres, post_k=self.post_k)
+                [boxes, classes, scores] = cluster_SPM_dist_weighted_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
+                                                                         top_k=self.top_k, post_k=self.post_k)
 
         keep_ids = torch.where(scores>threshold)
         scores = scores[keep_ids].cpu().numpy()
