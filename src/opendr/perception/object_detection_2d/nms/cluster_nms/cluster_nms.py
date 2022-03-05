@@ -124,10 +124,10 @@ def cc_cluster_nms_default(boxes=None, scores=None, iou_thres=0.45, top_k=400, p
     iou = jaccard(boxes, boxes).triu_(diagonal=1)
     B = iou
     for i in range(200):
-        A=B
+        A = B
         maxA, _ = torch.max(A, dim=0)
         E = (maxA <= iou_thres).float().unsqueeze(1).expand_as(A)
-        B=iou.mul(E)
+        B = iou.mul(E)
         if A.equal(B):
             break
 
@@ -269,6 +269,7 @@ def cc_cluster_SPM_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_
     boxes = boxes[idx]
     return boxes, classes, scores
 
+
 def cluster_SPM_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=200):
 
     scores, idx = scores.sort(1, descending=True)
@@ -302,6 +303,7 @@ def cluster_SPM_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=2
     classes = classes[idx]
     boxes = boxes[idx]
     return boxes, classes, scores
+
 
 def cc_cluster_SPM_dist_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=200):
 
@@ -369,6 +371,7 @@ def cluster_SPM_dist_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, pos
     boxes = boxes[idx]
 
     return boxes, classes, scores
+
 
 def cc_cluster_SPM_dist_weighted_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=200):
 
