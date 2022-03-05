@@ -50,6 +50,7 @@ from opendr.perception.object_detection_2d.nms.utils.nms_custom import NMSCustom
 
 gutils.random.seed(0)
 
+
 class SingleShotDetectorLearner(Learner):
     supported_backbones = {"vgg16_atrous": [512, 300],
                            "resnet50_v1": [512],
