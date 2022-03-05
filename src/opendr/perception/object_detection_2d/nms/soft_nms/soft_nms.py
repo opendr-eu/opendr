@@ -6,7 +6,7 @@ import numpy as np
 
 
 class SoftNMS(NMSCustom):
-    def __init__(self, nms_type= 'linear', device='cuda', nms_thres=None, top_k=400, post_k=100):
+    def __init__(self, nms_type='linear', device='cuda', nms_thres=None, top_k=400, post_k=100):
         self.nms_types = ['linear', 'gaussian']
         if nms_type not in self.nms_types:
             raise ValueError('Type: ' + nms_type + ' of Soft-NMS is not supported.')
@@ -65,14 +65,12 @@ class SoftNMS(NMSCustom):
         dets = torch.cat((boxes, scores.unsqueeze(-1)), dim=1)
 
         retained_box = []
-        i=0
+        i = 0
         while dets.shape[0] > 0:
             max_idx = np.argmax(dets[:, 4], axis=0)
-            #dets[[0, max_idx], :] = dets[[max_idx, 0], :]
+            # dets[[0, max_idx], :] = dets[[max_idx, 0], :]
             scores[i] = dets[0, 4]
-
-            iou = jaccard(dets[:1,:-1], dets[1:,:-1]).triu_(diagonal=0).squeeze(0)
-
+            iou = jaccard(dets[:1, :-1], dets[1:, :-1]).triu_(diagonal=0).squeeze(0)
             weight = torch.ones_like(iou)
             if self.nms_type == 'linear':
                 weight[iou > self.nms_thres] -= iou[iou > self.nms_thres]
@@ -80,7 +78,7 @@ class SoftNMS(NMSCustom):
                 weight = np.exp(-(iou * iou) / self.nms_thres)
 
             dets[1:, 4] *= weight
-            #retained_idx = torch.where(dets[1:, 4] >= 0)[0]
+            # retained_idx = torch.where(dets[1:, 4] >= 0)[0]
             dets = dets[1:, :]
             i = i + 1
         keep_ids = torch.where(scores > threshold)
@@ -148,9 +146,6 @@ def cc_fast_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=200):
     classes = classes[idx]
     boxes = boxes[idx]
     return boxes, classes, scores
-
-
-
 
 
 def py_soft_nms(dets, method='linear', iou_thr=0.3, sigma=0.5, score_thr=0.001):
