@@ -11,7 +11,7 @@ RUN apt-get --yes install gcc-8 g++-8 wget  && \
     update-alternatives --auto gcc && \
     apt-get --yes install zlib1g-dev libbz2-dev libreadline-dev libssl-dev libsqlite3-dev libffi-dev && \
     wget https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run && \
-    wget http://people.cs.uchicago.edu/~kauffman/nvidia/cudnn/cudnn-10.2-linux-x64-v8.2.0.53.tgz
+    wget https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.0.53/10.2_04222021/cudnn-10.2-linux-x64-v8.2.0.53.tgz
 
 RUN sudo apt-get --yes install libxml2 && \
     sh cuda_10.2.89_440.33.01_linux.run --silent --toolkit --override  --librarypath=/usr/local/cuda-10.2 && \
@@ -45,10 +45,12 @@ RUN sudo apt-get --yes install build-essential && \
 ENV OPENDR_DEVICE gpu
 RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
 WORKDIR "/opendr"
-RUN ./bin/install.sh
+RUN export LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64 && \
+    ./bin/install.sh
 
 # Create script for starting Jupyter Notebook
 RUN /bin/bash -c "source ./bin/activate.sh; pip3 install jupyter"
+RUN echo "export LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64" >> /bin/activate.sh
 RUN echo "#!/bin/bash\n source ./bin/activate.sh\n ./venv/bin/jupyter notebook --port=8888 --no-browser --ip 0.0.0.0 --allow-root" > start.sh
 RUN chmod +x start.sh
 
