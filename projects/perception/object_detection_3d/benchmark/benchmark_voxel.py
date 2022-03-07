@@ -59,7 +59,7 @@ def benchmark_voxel():
             config_path,
             temp_path=temp_dir,
         )
-    
+
         if model_name is not None and not os.path.exists(
             models_dir + "/" + model_name
         ):
@@ -87,7 +87,10 @@ def benchmark_voxel():
             batch_size=batch_size,
         )
 
-        inner_fps = learner.model._total_inference_count / (learner.model._total_forward_time + learner.model._total_postprocess_time)
+        inner_fps = (
+            learner.model._total_inference_count /
+            (learner.model._total_forward_time + learner.model._total_postprocess_time)
+        )
 
         print("Inner FPS =", inner_fps)
         print(yaml.dump({"learner.infer": results1}))

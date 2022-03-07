@@ -80,10 +80,10 @@ def benchmark_stgcn(args):
                          print_fn=print,
                          )
     with open(results_dir + f"/benchmark_{args.method}_{device}.txt", "a") as f:
-        print(f"== Benchmarking learner.infer ==", file=f)
+        print("== Benchmarking learner.infer ==", file=f)
         print(yaml.dump({"learner.infer": results1}), file=f)
         print("\n\n", file=f)
-        print(f"== Benchmarking model directly ==", file=f)
+        print("== Benchmarking model directly ==", file=f)
         results2 = benchmark(learner.model, data, num_runs=num_runs, print_fn=print)
         print(yaml.dump({"learner.model.forward": results2}))
 

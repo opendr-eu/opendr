@@ -285,7 +285,7 @@ class ObjectTracking2DDeepSortLearner(Learner):
         for image, frame_id in zip(batch, frame_ids):
 
             t0 = time.time()
-            
+
             result = self.tracker.infer(image, frame_id)
             results.append(result)
 

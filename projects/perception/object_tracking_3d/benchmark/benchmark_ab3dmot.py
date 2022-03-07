@@ -18,7 +18,6 @@ import torch
 import logging
 from pytorch_benchmark import benchmark
 from opendr.perception.object_tracking_3d import ObjectTracking3DAb3dmotLearner, KittiTrackingDatasetIterator
-from opendr.engine.datasets import PointCloudsDatasetIterator
 
 logger = logging.getLogger("benchmark")
 logging.basicConfig()
@@ -76,7 +75,7 @@ def benchmark_ab3dmot():
 
         with open(root_dir + "/results_ab3dmot.txt", "a") as f:
             print(f"==== Benchmarking ObjectTracking3DAb3dmotLearner ({model_name}) ====", file=f)
-            print(f"Inner FPS =", inner_fps, file=f)
+            print("Inner FPS =", inner_fps, file=f)
             print(yaml.dump({"learner.infer": results1}), file=f)
             print("\n\n", file=f)
 

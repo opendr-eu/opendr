@@ -376,7 +376,6 @@ class ObjectTracking2DFairMotLearner(Learner):
 
         results = []
 
-
         for image, frame_id in zip(batch, frame_ids):
 
             img0 = image.convert("channels_last", "bgr")  # BGR

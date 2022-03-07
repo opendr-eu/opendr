@@ -51,7 +51,7 @@ def benchmark_fair_mot():
         learner = ObjectTracking2DFairMotLearner(
             temp_path=temp_dir,
         )
-    
+
         if model_name is not None and not os.path.exists(
             models_dir + "/" + model_name
         ):
@@ -86,7 +86,7 @@ def benchmark_fair_mot():
 
         with open(root_dir + "/results_fair_mot.txt", "a") as f:
             print(f"==== Benchmarking ObjectTracking2DFairMotLearner ({model_name}) ====", file=f)
-            print(f"Inner FPS =", inner_fps, file=f)
+            print("Inner FPS =", inner_fps, file=f)
             print(yaml.dump({"learner.infer": results1}), file=f)
             print("\n\n", file=f)
 

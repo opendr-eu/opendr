@@ -17,7 +17,6 @@ import yaml
 import torch
 import logging
 from pytorch_benchmark import benchmark
-from opendr.engine.data import Image
 from opendr.perception.object_tracking_2d import ObjectTracking2DDeepSortLearner
 from opendr.perception.object_tracking_2d.datasets.mot_dataset import MotDataset
 from projects.perception.object_tracking_2d.demos.fair_mot_deep_sort.data_generators import (
@@ -60,7 +59,8 @@ def benchmark_fair_mot():
                 "nano_mot20.train",
             )
         },
-    cycle=True)
+        cycle=True
+    )
 
     sample = next(data_generator)
     samples = [next(data_generator) for _ in range(batch_size)]
@@ -114,7 +114,7 @@ def benchmark_fair_mot():
                 f"==== Benchmarking ObjectTracking2DDeepSortLearner ({model_name}) ====",
                 file=f,
             )
-            print(f"Inner FPS =", inner_fps, file=f)
+            print("Inner FPS =", inner_fps, file=f)
             print(yaml.dump({"learner.infer": results1}), file=f)
             print("\n\n", file=f)
 
