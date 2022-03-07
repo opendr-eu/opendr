@@ -37,6 +37,7 @@ try:
 except ModuleNotFoundError:
     try:
         import torchvision
+        assert len(torchvision.__version__) > 0
     except ModuleNotFoundError:
         raise ModuleNotFoundError(
             "Either pyav (`pip install av`) or torchvision "
