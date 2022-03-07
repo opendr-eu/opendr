@@ -1847,7 +1847,7 @@ def multi_eval(
     gpu_capacity=4,
     total_devices=4,
     model_name=None,
-    tracks=["0000", "0006"],
+    tracks=["0010", "0011"],
     eval_kwargs_name="v1",
     params_file=None,
     eval_id_prefix="",

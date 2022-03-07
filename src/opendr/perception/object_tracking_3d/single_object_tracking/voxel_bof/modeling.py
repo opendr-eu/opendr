@@ -148,6 +148,12 @@ class Model:
 
             for id, kwargs in eval_kwargs.items():
 
+                self_kwargs = {**self.kwargs}
+
+                for key in kwargs.keys():
+                    if key in self_kwargs:
+                        del self_kwargs[key]
+
                 result = test_rotated_pp_siamese_eval(
                     self.model_name,
                     load,
@@ -156,7 +162,7 @@ class Model:
                     tracks=track_ids,
                     device=device,
                     eval_id=id,
-                    **self.kwargs,
+                    **self_kwargs,
                     **kwargs,
                 )
                 results[str(load) + "_" + str(id)] = result
@@ -258,7 +264,9 @@ def collect_results(template="", tracks=None):
 
     results = []
 
-    for model in models:
+    for i, model in enumerate(models):
+
+        print(f"[{i+1}/{len(models)}]", end='\r')
 
         if template not in model:
             continue
@@ -269,9 +277,12 @@ def collect_results(template="", tracks=None):
 
             files = [f for f in os.listdir(path) if "results_" in f or not init]
 
-            for file in files:
+            for q, file in enumerate(files):
+
+                print(("  " if init else "    ") + f"[{q+1}/{len(files)}]", end='\r')
 
                 if os.path.isdir(path + "/" + file):
+                    print()
                     process_folder(path + "/" + file, False)
                 else:
                     with open(path + "/" + file, "r") as f:
@@ -311,6 +322,7 @@ def collect_results(template="", tracks=None):
                         ]
                         results.append(result)
 
+            print()
         process_folder(models_path + model)
 
     results = sorted(results, key=lambda x: x[3])
@@ -2404,6 +2416,77 @@ def run_t1(id=0, total_experiments=4, total_devices=4):
         )
         print(result)
 
+
+def run_t2(id=0, total_experiments=4, total_devices=4):
+
+    device_id = id % total_devices
+
+    eval_kwargs = create_t_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1]:
+            for size in [-1]:
+                for lr in [0.00001, 0.0001]:
+                    for context_amount in [0, 0.2, -0.2]:
+                        for r_pos in [2, 4]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "t2-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=128000,
+                                        save_step=2000,
+                                        loads=[
+                                            128000,
+                                            2000,
+                                            8000,
+                                            16000,
+                                            32000,
+                                            64000,
+                                        ],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                        search_type="normal",
+                                        target_type="normal",
+                                        augment=False,
+                                        training_method="siamese_triplet",
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_experiments
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
 
 
 if __name__ == "__main__":
