@@ -39,9 +39,9 @@ Constructor parameters:
 - **dropout**: *float, default=0.05*\
   Specifies the dropout rate.
 <!--- - **pretrained_demo_model**: *\ --->
-- **app_feats**: {'fmod', 'zeros', 'custom'}, default='a'*\
+- **app_feats**: *{'fmod', 'zeros', 'custom'}, default='fmod'*\
   Specifies the type of the appearance-based features of RoIs used in the model.
-- **fmod_map_type**: {'EDGEMAP', 'FAST', 'AKAZE', 'BRISK', 'ORB'}, default='EDGEMAP'*\
+- **fmod_map_type**: *{'EDGEMAP', 'FAST', 'AKAZE', 'BRISK', 'ORB'}, default='EDGEMAP'*\
   Specifies the type of maps used by FMoD, in the case where *app_feats*='fmod'.
 - **fmod_map_bin**:*bool, default=True*\
   Specifies whether FMoD maps are binary or not, in the case where *app_feats*='fmod'.
