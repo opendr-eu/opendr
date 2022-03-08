@@ -82,4 +82,4 @@ Parameters:
 - **datasets_folder**: *str, default='./datasets'*\
   Specifies the path to the folder where the datasets are stored.
 - **use_ssd**: *bool, default=False*\
-  If set to True, RoIs fromm SSD are fed to the seq2Seq-nms model. Otherwise, RoIs from the default detector of the specified dataset are used as input.
+  If set to True, RoIs from SSD are fed to the seq2Seq-nms model. Otherwise, RoIs from the default detector of the specified dataset are used as input.
