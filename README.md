@@ -61,7 +61,7 @@ If you use OpenDR for your research, please cite the following paper that introd
 <pre>
 @article{passalis2022opendr,
   title={OpenDR: An Open Toolkit for Enabling High Performance, Low Footprint Deep Learning for Robotics},
-  author={Passalis, Nikolaos and Pedrazzi, Stefania and Babuska, Robert and Burgard, Wolfram and Dias, Daniel and Ferro, Francesco and Gabbouj, Moncef and Green, Ole and Iosifidis, Alexandros and Kayacan, Erdal and Kober, Jens and Michel, Olivier and Nikolaidis, Nikos and Nousi, Paraskevi and Pieters, Roel and Tzelepi, Maria and Valada, Valada and Tefas, Anastasios},
+  author={Passalis, Nikolaos and Pedrazzi, Stefania and Babuska, Robert and Burgard, Wolfram and Dias, Daniel and Ferro, Francesco and Gabbouj, Moncef and Green, Ole and Iosifidis, Alexandros and Kayacan, Erdal and Kober, Jens and Michel, Olivier and Nikolaidis, Nikos and Nousi, Paraskevi and Pieters, Roel and Tzelepi, Maria and Valada, Abhinav and Tefas, Anastasios},
   journal={arXiv preprint arXiv:2203.00403},
   year={2022}
 }
