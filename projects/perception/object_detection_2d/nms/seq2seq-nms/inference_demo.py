@@ -8,7 +8,7 @@ OPENDR_HOME = os.environ['OPENDR_HOME']
 
 seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering = 0.8, experiment_name='auth_exp51', app_feats = 'fmod',
                                       fmod_init_path=OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/'
-                                                                   'datasets/PETS/FMoD/pets_edgemap_b.pkl', device='cuda')
+                                                                   'datasets/PETS/FMoD/pets_edgemap_b.pkl', device='cpu')
 seq2SeqNMSLearner.load(OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/temp/auth_exp51/'
                                      'checkpoints/checkpoint_epoch_7', verbose=True)
 ssd = SingleShotDetectorLearner(device='cuda')
