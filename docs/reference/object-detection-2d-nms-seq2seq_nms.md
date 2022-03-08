@@ -106,3 +106,18 @@ Parameters:
 - **use_ssd**: *bool, default=False*\
   If set to True, RoIs from SSD are fed to the seq2Seq-nms model. Otherwise, RoIs from the default detector of the specified dataset are used as input.
   
+#### `Seq2SeqNMSLearner.infer`
+```python
+Seq2SeqNMSLearner.infer(self, boxes, scores, boxes_sorted, max_dt_boxes, img_res, threshold)
+```
+
+Performs non-maximum suppression, using seq2seq-nms. Appearance-based RoI feature computation is not included.
+
+Parameters:
+
+- **img**: *object*\
+  Object of type engine.data.Image.
+- **threshold**: *float, default=0.2*\
+  Defines the detection threshold. Bounding boxes with confidence under this value are discarded.
+- **keep_size**: *bool, default=False*\
+  Specifies whether to resize the input image to *self.img_size* or keep original image dimensions.
