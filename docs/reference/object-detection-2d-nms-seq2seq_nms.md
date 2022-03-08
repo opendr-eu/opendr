@@ -13,7 +13,8 @@ public methods:
 
 #### `Seq2SeqNMSLearner` constructor
 ```python
-SingleShotDetectorLearner(self, lr, lr_schedule='', checkpoint_after_iter, checkpoint_load_iter, experiment_name, temp_path, device, use_fmod, fmod_map_type, fmod_map_bin, dropout, fmod_roi_pooling_dim, fmod_map_res_dim, fmod_pyramid_lvl, lq_dim, sq_dim, app_input_dim, num_JPUs, pretrained_demo_model, log_after, iou_filtering, fmod_init_path)
+Seq2SeqNMSLearner(self, lr, epochs, device', temp_path, checkpoint_after_iter, checkpoint_load_iter, log_after, variant, experiment_name,
+                 iou_filtering, dropout, pretrained_demo_model, app_feats, fmod_map_type, fmod_map_bin, app_input_dim, fmod_init_path)
 ```
 
 Constructor parameters:
@@ -45,7 +46,7 @@ Constructor parameters:
   Specifies the type of the appearance-based features of RoIs used in the model.
 - **fmod_map_type**: *{'EDGEMAP', 'FAST', 'AKAZE', 'BRISK', 'ORB'}, default='EDGEMAP'*\
   Specifies the type of maps used by FMoD, in the case where *app_feats*='fmod'.
-- **fmod_map_bin**:*bool, default=True*\
+- **fmod_map_bin**: *bool, default=True*\
   Specifies whether FMoD maps are binary or not, in the case where *app_feats*='fmod'.
 - **app_input_dim**: *int, default=None*\
   Specifies the dimension of appearance-based RoI features. In the case where *app_feats*='fmod', the corresponding dimension is automatically computed.
