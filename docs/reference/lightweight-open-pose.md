@@ -300,8 +300,7 @@ Parameters:
 
 #### Performance Evaluation
 
-The performance evaluation results of the *LightweightOpenPoseLearner* are reported in the Table below. A wide variety of different hardware was used for the evaluation, ranging from workstation GPUs (e.g., NVIDIA RTX 2070) to various embedded systems, such as NVIDIA Jetson Xavier-based platforms. 
-
+The performance evaluation results of the *LightweightOpenPoseLearner* are reported in the Table below:
 
 | Method            | CPU i7-9700K (FPS) | RTX 2070 (FPS) | Jetson TX2 (FPS) | Xavier NX (FPS) | Xavier AGX (FPS) |
 |-------------------|-------|-------|-----|-----|-------|
@@ -312,13 +311,51 @@ The performance evaluation results of the *LightweightOpenPoseLearner* are repor
 | OpenDR - H+S      | 30.9  | 68.4  | 12.2| 12.9| 18.4  |
 | OpenDR - Full     | 47.4  | 98.2  | 17.1| 18.8| 25.9  |
 
-We have evaluated the effect of using different inference settings, namely:
+A wide variety of different hardware was used for the evaluation, ranging from workstation GPUs (e.g., NVIDIA RTX 2070) to various embedded systems, such as NVIDIA Jetson Xavier-based platforms. We have evaluated the effect of using different inference settings, namely:
 *OpenDR - Baseline*, which refers to directly using the Lightweight OpenPose method adapted to OpenDR with no additional optimizations,
 *OpenDR - Half*, which refers to enabling inference in half (FP) precision,
 *OpenDR  - Stride*,  which  refers  to  increasing  stride  by  two  in  the  input  layer  of  the model,
 *OpenDR - Stages*, which refers to removing the refinement stages,
 *OpenDR - H+S*, which uses both half precision and increased stride, and
 *OpenDR - Full*, which refers to combining all three available optimization.
+
+Apart from the inference speed, which is reported in FPS, we also report the memory usage, as well as energy consumption on a reference platform in the Table below:
+
+NVIDIA Jetson AGX was used as the reference platform for measuring energy requirements for these experiments.  We calculated the average metrics of 100 runs, while an image with resolution of 640×425  pixels  was  used  as input to the models. 
+
+| Method  | Memory (MB) | Energy (Joules)  - Total per inference  |
+|-------------------|---------|-------|
+| OpenDR - Baseline | 1187.75 | 1.65  | 
+| OpenDR - Half     | 1085.75 | 1.17  |
+| OpenDR - Stride   | 1037.5  | 1.40  |
+| OpenDR - Stages   | 1119.75 | 1.15  |
+| OpenDR - H+S      | 1013.75 | 0.70  |
+| OpenDR - Full     | 999.75  | 0.52  |
+
+The average precision and average recall on the COCO evaluation split is also reported in the Table below:
+| Method |  Average Precision (IoU=0.50)  | Average Recall (IoU=0.50) |
+|-------------------|-------|-------|
+| OpenDR - Baseline | 0.557 | 0.598 |
+| OpenDR - Half     | 0.558 | 0.594 |
+| OpenDR - Stride   | 0.239 | 0.283 |
+| OpenDR - Stages   | 0.481 | 0.527 |
+| OpenDR - H+S      | 0.240 | 0.281 |
+| OpenDR - Full     | 0.203 | 0.245 |
+For measuring the precision and recall we used the standard approach proposed for COCO, using an Intersection of Union (IoU) metric at 0.5. 
+
+The platform compatibility evaluation is also reported below:
+
+| Platform  | Compatibility Evaluation |
+| ----------------------------------------------|-------|
+| x86 - Ubuntu 20.04 (bare installation - CPU)  | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (bare installation - GPU)  | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (pip installation)         | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (CPU docker)               | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (GPU docker)               | :heavy_check_mark:   |
+| NVIDIA Jetson TX2                             | :heavy_check_mark:   |
+| NVIDIA Jetson Xavier AGX                      | :heavy_check_mark:   |
+| NVIDIA Jetson Xavier NX                       | :heavy_check_mark:   |
+
 
 
 #### Notes
