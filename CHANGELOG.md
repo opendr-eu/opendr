@@ -1,5 +1,5 @@
 # OpenDR Toolkit Change Log
-a
+
 ## Version 1.X
 Released on XX, XXth, 2022.
 
