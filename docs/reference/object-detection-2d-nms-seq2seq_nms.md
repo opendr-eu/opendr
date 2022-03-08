@@ -53,3 +53,21 @@ Constructor parameters:
   Specifies the dimension of appearance-based RoI features. In the case where *app_feats*='fmod', the corresponding dimension is automatically computed.
 - **fmod_init_path**: *str, default=None *\
   Specifies the path to the the file used for normalizing appearance-based features, in the case where *app_feats*='fmod'.
+
+
+
+#### `Seq2SeqNMSLearner.fit`
+```python
+Seq2SeqNMSLearner.fit(self, dataset, logging_path, logging_flush_secs, silent, verbose, nms_gt_iou, max_dt_boxes, datasets_folder, use_ssd)
+```
+
+This method is used to train the algorithm on a `Dataset_NMS` dataset. Returns a dictionary containing stats regarding the training process.
+
+Parameters:
+
+- **dataset**: *object*\
+  Object that holds the training dataset.
+- **val_dataset**: *object, default=None*\
+  Object that holds the validation dataset.
+- **verbose**: *bool, default=True*\
+  If True, enables maximum verbosity.
