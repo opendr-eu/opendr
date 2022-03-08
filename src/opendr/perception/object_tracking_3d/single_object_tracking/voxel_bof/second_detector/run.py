@@ -766,6 +766,11 @@ def displacement_score_to_image_coordinates(
     max_score = torch.max(scores)
     max_idx = (scores == max_score).nonzero(as_tuple=False)[0][-2:]
 
+    if max_score > 0:
+        norm_max = (max_score / scores[scores > 0].mean()).detach().cpu().numpy()
+    else:
+        norm_max = max_score.detach().cpu().numpy()
+
     final_score_size = np.array(scores.shape[-2:])
 
     half = (final_score_size - 1) / 2
@@ -793,7 +798,7 @@ def displacement_score_to_image_coordinates(
     # draw_pseudo_image(scores.squeeze(0), "./plots/f.png", [[max_idx.cpu().numpy(), np.array((1, 1)), 0], [half, np.array((1, 1)), 0]], [[255, 0, 0], [0, 255, 0]])
 
     # return disp_image_rotated
-    return disp_image
+    return disp_image, norm_max
 
 
 def create_multi_scale_searches(search, scale_penalty, delta=0.05):
@@ -1497,10 +1502,10 @@ def train_siamese(
                 )
                 loss = net.criterion(pred, labels, weights)
 
-                delta = displacement_score_to_image_coordinates(
+                delta, _ = displacement_score_to_image_coordinates(
                     pred, 1, search_size_with_context, 0, feature_blocks
                 )
-                true_delta = displacement_score_to_image_coordinates(
+                true_delta, _ = displacement_score_to_image_coordinates(
                     labels, 1, search_size_with_context, 0, feature_blocks
                 )
 
@@ -1862,10 +1867,10 @@ def train_detection(
                 )
                 loss = net.criterion(pred, labels, weights)
 
-                delta = displacement_score_to_image_coordinates(
+                delta, _ = displacement_score_to_image_coordinates(
                     pred, 1, search_size_with_context, 0, feature_blocks
                 )
-                true_delta = displacement_score_to_image_coordinates(
+                true_delta, _ = displacement_score_to_image_coordinates(
                     labels, 1, search_size_with_context, 0, feature_blocks
                 )
 

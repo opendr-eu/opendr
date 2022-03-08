@@ -148,6 +148,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         bof_mode="none",
         extrapolation_mode="none",
         offset_interpolation=1,
+        min_top_score=None,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -195,6 +196,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.train_pseudo_image = train_pseudo_image
         self.extrapolation_mode = extrapolation_mode
         self.offset_interpolation = offset_interpolation
+        self.min_top_score = min_top_score
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -802,7 +804,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             t5 = time.time()
 
-            delta_image = displacement_score_to_image_coordinates(
+            delta_image, norm_max = displacement_score_to_image_coordinates(
                 top_scores,
                 self.score_upscale,
                 top_search[1],
@@ -810,14 +812,33 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 self.search_size,
             )
 
-            delta_image = delta_image[[1, 0]]
-            delta_image *= self.offset_interpolation
-            center_image = self.search_region[0] + delta_image
-
             new_angle = (
                 top_search[2] * self.rotation_interpolation
                 + self.search_region[2] * (1 - self.rotation_interpolation)
             )
+
+            unreliable = self.min_top_score is not None and norm_max <= self.min_top_score
+
+            if unreliable:
+
+                if self.extrapolation_mode == "linear":
+                    delta_image = self.extrapolation_direction / self.offset_interpolation
+                elif self.extrapolation_mode == "none":
+                    delta_image = np.array([0, 0], dtype=delta_image.dtype)
+                else:
+                    raise ValueError()
+
+                print("^not reliable, delta_image =", delta_image)
+
+                new_angle = (
+                    self.search_region[2]
+                )
+
+            print("norm_max_score =", norm_max, "raw_max_score =", torch.max(top_scores))
+
+            delta_image = delta_image[[1, 0]]
+            delta_image *= self.offset_interpolation
+            center_image = self.search_region[0] + delta_image
 
             new_target = [center_image, self.init_target[1], new_angle]
             new_search = [
@@ -826,13 +847,14 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 new_angle,
             ]
 
-            if self.extrapolation_mode == "linear":
-                new_search[0] += delta_image
-                self.extrapolation_direction = delta_image[[1, 0]]
-            elif self.extrapolation_mode == "none":
-                pass
-            else:
-                raise ValueError()
+            if not unreliable:
+                if self.extrapolation_mode == "linear":
+                    new_search[0] += delta_image
+                    self.extrapolation_direction = delta_image[[1, 0]]
+                elif self.extrapolation_mode == "none":
+                    pass
+                else:
+                    raise ValueError()
 
             self.search_region = new_search
             self.last_target = new_target
@@ -840,7 +862,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             t6 = time.time()
             self.times["displacement_score_to_image_coordinates"].append(t6 - t5)
 
-            if self.target_feature_merge_scale > 0:
+            if self.target_feature_merge_scale > 0 and not unreliable:
                 target_features, target_image = create_pseudo_image_features(
                     pseudo_image,
                     new_target,
