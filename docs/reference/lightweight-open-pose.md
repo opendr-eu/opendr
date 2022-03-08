@@ -333,6 +333,7 @@ Apart from the inference speed, which is reported in FPS, we also report the mem
 NVIDIA Jetson AGX was used as the reference platform for measuring energy requirements for these experiments.  We calculated the average metrics of 100 runs, while an image with resolution of 640×425  pixels  was  used  as input to the models. 
 
 The average precision and average recall on the COCO evaluation split is also reported in the Table below:
+
 | Method |  Average Precision (IoU=0.50)  | Average Recall (IoU=0.50) |
 |-------------------|-------|-------|
 | OpenDR - Baseline | 0.557 | 0.598 |
@@ -356,7 +357,6 @@ The platform compatibility evaluation is also reported below:
 | NVIDIA Jetson TX2                             | :heavy_check_mark:   |
 | NVIDIA Jetson Xavier AGX                      | :heavy_check_mark:   |
 | NVIDIA Jetson Xavier NX                       | :heavy_check_mark:   |
-
 
 
 #### Notes
