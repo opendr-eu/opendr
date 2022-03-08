@@ -408,7 +408,7 @@ def create_logisticloss_labels(
             # if dist <= 0:
             #     labels[r, c] = 1
             if loss == "bce":
-                if np.all(dist <= r_pos + r_additional):
+                if r_pos is not None and np.all(dist <= r_pos + r_additional):
                     labels[r, c] = min_pos * dist / r_pos + max_pos * (1 - dist / r_pos)
                 elif np.all(dist <= r_neg):
                     labels[r, c] = ignore_label
@@ -510,6 +510,8 @@ def create_static_label_and_weights(
     feature_blocks,
     loss="bce",
     radius=8,
+    max_pos=1,
+    min_pos=0.5,
 ):
     if target_size[0] <= 0:
         target_size = target_size_with_context
@@ -532,9 +534,14 @@ def create_static_label_and_weights(
     t = delta_position_label_space[[1, 0]]
     # t = (0, 0)
 
-    r_pos = image_to_feature_coordinates(radius, feature_blocks)
+    r_pos = None if radius is None else image_to_feature_coordinates(radius, feature_blocks)
 
-    labels = create_logisticloss_labels(label_size, t, r_pos, loss=loss)
+    labels = create_logisticloss_labels(
+        label_size, t,
+        r_pos, loss=loss,
+        max_pos=max_pos,
+        min_pos=min_pos,
+    )
     weights = np.zeros_like(labels)
 
     # pred_target_position = score_to_image_coordinates(torch.tensor(labels), target[1], search)
@@ -542,8 +549,8 @@ def create_static_label_and_weights(
 
     neg_label = 0 if loss == "bce" or loss == "focal" else -1
 
-    pos_num = np.sum(labels == 1)
-    neg_num = np.sum(labels == neg_label)
+    pos_num = max(1, np.sum(labels == 1))
+    neg_num = max(1, np.sum(labels == neg_label))
     if pos_num > 0:
         weights[labels == 1] = 0.5 / pos_num
     weights[labels == neg_label] = 0.5 / neg_num
@@ -1220,7 +1227,240 @@ def create_siamese_pseudo_images_and_labels(
     return [result]
 
 
+def create_siamese_triplet_pseudo_images_and_labels(
+    net,
+    infer_point_cloud_mapper,
+    target_point_cloud,
+    search_point_cloud,
+    other_point_cloud,
+    target_label_lidar_kitti,
+    search_label_lidar_kitti,
+    other_label_lidar_kitti,
+    target_size,
+    search_size,
+    context_amount,
+    float_dtype,
+    loss="bce",
+    r_pos=16,
+    augment=True,
+    augment_rotation=True,
+    search_type="normal",
+    target_type="normal",
+):
+
+    dims = target_label_lidar_kitti["dimensions"][0]
+    locs = target_label_lidar_kitti["location"][0]
+    rots = target_label_lidar_kitti["rotation_y"][0][0]
+
+    target_box_lidar = np.concatenate([locs, dims, rots[..., np.newaxis]], axis=1)
+
+    dims = search_label_lidar_kitti["dimensions"][0]
+    locs = search_label_lidar_kitti["location"][0]
+    rots = search_label_lidar_kitti["rotation_y"][0][0]
+
+    search_box_lidar = np.concatenate([locs, dims, rots[..., np.newaxis]], axis=1)
+
+    dims = other_label_lidar_kitti["dimensions"][0]
+    locs = other_label_lidar_kitti["location"][0]
+    rots = other_label_lidar_kitti["rotation_y"][0][0]
+
+    other_box_lidar = np.concatenate([locs, dims, rots[..., np.newaxis]], axis=1)
+
+    batch_targets, _ = create_target_search_regions(
+        net.bv_range,
+        net.voxel_size,
+        boxes_lidar=target_box_lidar.reshape(1, *target_box_lidar.shape),
+        augment=False,
+        augment_rotation=augment_rotation,
+        search_type=search_type,
+        target_type=target_type,
+    )
+
+    batch_search_targets, batch_searches = create_target_search_regions(
+        net.bv_range,
+        net.voxel_size,
+        boxes_lidar=search_box_lidar.reshape(1, *search_box_lidar.shape),
+        augment=augment,
+        augment_rotation=augment_rotation,
+        search_type=search_type,
+        target_type=target_type,
+    )
+
+    _, batch_search_others = create_target_search_regions(
+        net.bv_range,
+        net.voxel_size,
+        boxes_lidar=other_box_lidar.reshape(1, *other_box_lidar.shape),
+        augment=augment,
+        augment_rotation=augment_rotation,
+        search_type=search_type,
+        target_type=target_type,
+    )
+
+    target = batch_targets[0][0]
+    search = batch_searches[0][0]
+    search_target = batch_search_targets[0][0]
+    other_search = batch_search_others[0][0]
+
+    target_size_with_context = size_with_context(target[1], context_amount)
+    search_size_with_context = size_with_context(search[1], context_amount)
+    other_search_size_with_context = size_with_context(other_search[1], context_amount)
+
+    target_lidar_aabb = create_lidar_aabb_from_target(
+        [target[0], target_size_with_context, target[2]],
+        net.voxel_size,
+        net.bv_range,
+        net.point_cloud_range[[2, 5]],
+    )
+    search_lidar_aabb = create_lidar_aabb_from_target(
+        [search[0], search_size_with_context, search[2]],
+        net.voxel_size,
+        net.bv_range,
+        net.point_cloud_range[[2, 5]],
+    )
+    other_search_lidar_aabb = create_lidar_aabb_from_target(
+        [other_search[0], other_search_size_with_context, other_search[2]],
+        net.voxel_size,
+        net.bv_range,
+        net.point_cloud_range[[2, 5]],
+    )
+
+    target_pc_range = pc_range_by_lidar_aabb(target_lidar_aabb)
+    target_pseudo_image = infer_create_pseudo_image(
+        net, target_point_cloud, target_pc_range, infer_point_cloud_mapper, float_dtype
+    )[0]
+
+    search_pc_range = pc_range_by_lidar_aabb(search_lidar_aabb)
+    search_pseudo_image = infer_create_pseudo_image(
+        net, search_point_cloud, search_pc_range, infer_point_cloud_mapper, float_dtype
+    )[0]
+
+    other_search_pc_range = pc_range_by_lidar_aabb(other_search_lidar_aabb)
+    other_search_pseudo_image = infer_create_pseudo_image(
+        net, other_point_cloud, other_search_pc_range, infer_point_cloud_mapper, float_dtype
+    )[0]
+
+    target_image, _ = sub_image_with_context(
+        target_pseudo_image,
+        target,
+        (target_size[0], target_size[1]),
+        context_amount,
+        offset=target[0],
+    )
+
+    search_image, _ = sub_image_with_context(
+        search_pseudo_image,
+        search,
+        (search_size[0], search_size[1]),
+        context_amount,
+        offset=search[0],
+    )
+
+    other_search_image, _ = sub_image_with_context(
+        other_search_pseudo_image,
+        other_search,
+        (search_size[0], search_size[1]),
+        context_amount,
+        offset=other_search[0],
+    )
+
+    draw_pseudo_image(
+        target_image.squeeze(axis=0), "./plots/siamese/pi_target_" + str(0) + ".png"
+    )
+    draw_pseudo_image(
+        search_image.squeeze(axis=0), "./plots/siamese/pi_search_" + str(0) + ".png"
+    )
+    draw_pseudo_image(
+        other_search_image.squeeze(axis=0), "./plots/siamese/pi_other_search_" + str(0) + ".png"
+    )
+    draw_pseudo_image(target_pseudo_image, "./plots/siamese/pi_t" + str(0) + ".png")
+    draw_pseudo_image(search_pseudo_image, "./plots/siamese/pi_s" + str(0) + ".png")
+    draw_pseudo_image(other_search_pseudo_image, "./plots/siamese/pi_o" + str(0) + ".png")
+    # draw_pseudo_image(pseudo_image[i], "./plots/pi_t2" + str(0) + ".png", [[target[0][[1, 0]], target[1][[1, 0]]]], [(255, 0, 0)])
+
+    feature_blocks = net.feature_blocks
+
+    labels_plus, weights_plus = create_static_label_and_weights(
+        # [target[0][[1, 0]], target[1][[1, 0]]],
+        # [search[0][[1, 0]], search[1][[1, 0]]],
+        search_target,
+        search,
+        target_size,
+        search_size,
+        np.array(target_image.shape[-2:], dtype=np.int32),
+        np.array(search_image.shape[-2:], dtype=np.int32),
+        feature_blocks,
+        loss=loss,
+        radius=r_pos,
+    )
+
+    labels_minus, weights_minus = create_static_label_and_weights(
+        # [target[0][[1, 0]], target[1][[1, 0]]],
+        # [search[0][[1, 0]], search[1][[1, 0]]],
+        [other_search[0], search_target[1], other_search[2]],
+        other_search,
+        target_size,
+        search_size,
+        np.array(target_image.shape[-2:], dtype=np.int32),
+        np.array(other_search_image.shape[-2:], dtype=np.int32),
+        feature_blocks,
+        loss=loss,
+        radius=r_pos,
+        max_pos=0.5,
+        min_pos=0.1,
+    )
+
+    labels_plus_torch = torch.tensor(labels_plus, device=target_image.device)
+    weights_plus_torch = torch.tensor(weights_plus, device=target_image.device)
+
+    labels_minus_torch = torch.tensor(labels_minus, device=target_image.device)
+    weights_minus_torch = torch.tensor(weights_minus, device=target_image.device)
+
+    result = (
+        target_image,
+        search_image,
+        other_search_image,
+        labels_plus_torch,
+        weights_plus_torch,
+        labels_minus_torch,
+        weights_minus_torch,
+        target,
+        search_target,
+        search,
+        other_search,
+        search_size_with_context,
+        target_pseudo_image,
+        search_pseudo_image,
+        other_search_pseudo_image,
+    )
+
+    return [result]
+
+
 def train(
+    *args,
+    training_method="detection",
+    **kwargs,
+):
+    if training_method == "detection":
+        return train_detection(
+            *args,
+            **kwargs,
+        )
+    elif training_method == "siamese":
+        return train_siamese(
+            *args,
+            **kwargs,
+        )
+    elif training_method == "siamese_triplet":
+        return train_siamese_triplet(
+            *args,
+            **kwargs,
+        )
+    else:
+        raise ValueError()
+
+
+def train_siamese_triplet(
     siamese_model,
     input_cfg,
     train_cfg,
@@ -1258,93 +1498,355 @@ def train(
     augment_rotation=True,
     search_type="normal",
     target_type="normal",
-    training_method="detection",
     train_pseudo_image=False,
 ):
-    if training_method == "detection":
-        return train_detection(
-            siamese_model,
-            input_cfg,
-            train_cfg,
-            eval_input_cfg,
-            model_cfg,
-            mixed_optimizer,
-            lr_scheduler,
-            model_dir,
-            float_dtype,
-            refine_weight,
-            loss_scale,
-            class_names,
-            center_limit_range,
-            input_dataset_iterator,
-            eval_dataset_iterator,
-            gt_annos,
-            device,
-            checkpoint_after_iter,
-            checkpoints_path,
-            target_size,
-            search_size,
-            display_step,
-            log,
-            auto_save,
-            image_shape,
-            evaluate,
-            context_amount,
-            debug,
-            train_steps,
-            loss_function,
-            r_pos,
-            bof_training_steps,
-            infer_point_cloud_mapper,
-            augment,
-            augment_rotation,
-            search_type,
-            target_type,
-            train_pseudo_image,
+
+    net = siamese_model.branch
+    net.global_step -= net.global_step
+    feature_blocks = net.feature_blocks
+
+    writer = SummaryWriter(str(model_dir))
+
+    ######################
+    # PREPARE INPUT
+    ######################
+
+    def _worker_init_fn(worker_id):
+        time_seed = np.array(time.time(), dtype=np.int32)
+        np.random.seed(time_seed + worker_id)
+        log(
+            Logger.LOG_WHEN_VERBOSE,
+            f"WORKER {worker_id} seed:",
+            np.random.get_state()[1][0],
         )
-    elif training_method == "siamese":
-        return train_siamese(
-            siamese_model,
-            input_cfg,
-            train_cfg,
-            eval_input_cfg,
-            model_cfg,
-            mixed_optimizer,
-            lr_scheduler,
-            model_dir,
-            float_dtype,
-            refine_weight,
-            loss_scale,
-            class_names,
-            center_limit_range,
-            input_dataset_iterator,
-            eval_dataset_iterator,
-            gt_annos,
-            device,
-            checkpoint_after_iter,
-            checkpoints_path,
-            target_size,
-            search_size,
-            display_step,
-            log,
-            auto_save,
-            image_shape,
-            evaluate,
-            context_amount,
-            debug,
-            train_steps,
-            loss_function,
-            r_pos,
-            bof_training_steps,
-            infer_point_cloud_mapper,
-            augment,
-            augment_rotation,
-            search_type,
-            target_type,
-            train_pseudo_image,
-        )
-    else:
-        raise ValueError()
+
+    dataloader = torch.utils.data.DataLoader(
+        input_dataset_iterator,
+        batch_size=1,
+        shuffle=True,
+        num_workers=input_cfg.num_workers,
+        pin_memory=False,
+        worker_init_fn=_worker_init_fn,
+    )
+    eval_dataloader = torch.utils.data.DataLoader(
+        eval_dataset_iterator,
+        batch_size=1,
+        shuffle=False,
+        num_workers=eval_input_cfg.num_workers,
+        pin_memory=False,
+        collate_fn=merge_second_batch,
+    )
+    data_iter = iter(dataloader)
+
+    ######################
+    # TRAINING
+    ######################
+    total_step_elapsed = 0
+    t = time.time()
+
+    total_loop = train_cfg.steps // train_cfg.steps_per_eval + 1
+    clear_metrics_every_epoch = train_cfg.clear_metrics_every_epoch
+
+    if train_cfg.steps % train_cfg.steps_per_eval == 0:
+        total_loop -= 1
+    mixed_optimizer.zero_grad()
+
+    average_loss = 0
+    average_delta_error = 0
+
+    if bof_training_steps > 0:
+        freeze_non_bof(net)
+
+    for _ in range(total_loop):
+        if total_step_elapsed + train_cfg.steps_per_eval > train_cfg.steps:
+            steps = train_cfg.steps % train_cfg.steps_per_eval
+        else:
+            steps = train_cfg.steps_per_eval
+        for step in range(steps):
+            lr_scheduler.step()
+            try:
+                sample = next(data_iter)
+            except StopIteration:
+                log(Logger.LOG_WHEN_NORMAL, "end epoch")
+                if clear_metrics_every_epoch:
+                    net.clear_metrics()
+                data_iter = iter(dataloader)
+                sample = next(data_iter)
+            (
+                target_point_cloud,
+                search_point_cloud,
+                other_point_cloud,
+                target_label_lidar_kitti,
+                search_label_lidar_kitti,
+                other_label_lidar_kitti
+            ) = sample
+
+            items = create_siamese_triplet_pseudo_images_and_labels(
+                net,
+                infer_point_cloud_mapper,
+                target_point_cloud,
+                search_point_cloud,
+                other_point_cloud,
+                target_label_lidar_kitti,
+                search_label_lidar_kitti,
+                other_label_lidar_kitti,
+                target_size=target_size,
+                search_size=search_size,
+                context_amount=context_amount,
+                loss=loss_function,
+                r_pos=r_pos,
+                float_dtype=float_dtype,
+                augment=augment,
+                augment_rotation=augment_rotation,
+                search_type=search_type,
+                target_type=target_type,
+            )
+
+            for (
+                target_image,
+                search_image,
+                other_search_image,
+                labels_plus,
+                weights_plus,
+                labels_minus,
+                weights_minus,
+                target,
+                search_target,
+                search,
+                other_search,
+                search_size_with_context,
+                target_pseudo_image,
+                search_pseudo_image,
+                other_search_pseudo_image,
+            ) in items:
+                pred_plus, feat_target_plus, feat_search_plus = siamese_model(
+                    search_image, target_image
+                )
+                pred_minus, feat_target_minus, feat_search_minus = siamese_model(
+                    other_search_image, target_image
+                )
+                loss_plus = net.criterion(pred_plus, labels_plus, weights_plus)
+                loss_minus = 0.35 * net.criterion(pred_minus, labels_minus, weights_minus)
+
+                loss = loss_plus + loss_minus
+
+                delta = displacement_score_to_image_coordinates(
+                    pred_plus, 1, search_size_with_context, 0, feature_blocks
+                )
+                true_delta = displacement_score_to_image_coordinates(
+                    labels_plus, 1, search_size_with_context, 0, feature_blocks
+                )
+
+                delta = delta[[1, 0]]
+                true_delta = true_delta[[1, 0]]
+
+                predicted_center_image = search[0] + delta
+                true_center_image = search[0] + true_delta
+
+                if debug:
+                    # feat_search.register_hook(
+                    #     lambda grad: (
+                    #         None,
+                    #         draw_pseudo_image(grad[0], "./plots/grad/feat_search.png"),
+                    #     )[0]
+                    # )
+                    # feat_target.register_hook(
+                    #     lambda grad: (
+                    #         None,
+                    #         draw_pseudo_image(grad[0], "./plots/grad/feat_target.png"),
+                    #     )[0]
+                    # )
+                    # search_image.register_hook(
+                    #     lambda grad: (
+                    #         None,
+                    #         draw_pseudo_image(grad[0], "./plots/grad/search_image.png"),
+                    #     )[0]
+                    # )
+                    # target_image.register_hook(
+                    #     lambda grad: (
+                    #         None,
+                    #         draw_pseudo_image(grad[0], "./plots/grad/target_image.png"),
+                    #     )[0]
+                    # )
+                    draw_pseudo_image(pred_plus[0], "./plots/train/pred_plus.png")
+                    draw_pseudo_image(pred_minus[0], "./plots/train/pred_minus.png")
+                    draw_pseudo_image(labels_plus[0], "./plots/train/labels_plus.png")
+                    draw_pseudo_image(labels_minus[0], "./plots/train/labels_minus.png")
+                    draw_pseudo_image(feat_search_plus[0], "./plots/train/feat_search_plus.png")
+                    draw_pseudo_image(feat_search_minus[0], "./plots/train/feat_search_minus.png")
+                    draw_pseudo_image(feat_target_plus[0], "./plots/train/feat_target_plus.png")
+                    draw_pseudo_image(feat_target_minus[0], "./plots/train/feat_target_minus.png")
+                    draw_pseudo_image(
+                        feat_target_plus[0][0:1, :, :], "./plots/train/feat_search_0.png"
+                    )
+                    draw_pseudo_image(
+                        feat_target_plus[0][0:1, :, :], "./plots/train/feat_target_0.png"
+                    )
+
+                    vector = search_target[0] - search[0]
+                    rot1 = rotate_vector(vector, search[2])
+
+                    draw_pseudo_image(
+                        search_image[0],
+                        "./plots/train/search_image.png",
+                        [
+                            [
+                                np.array(search_image.shape[-2:]) / 2,
+                                np.array([2, 2]),
+                                0,
+                            ],
+                            [
+                                (rot1 / search_size_with_context)[[1, 0]]
+                                * np.array(search_image.shape[-2:])
+                                + np.array(search_image.shape[-2:]) / 2,
+                                np.array([1, 1]),
+                                0,
+                            ],
+                            [
+                                (delta / search_size_with_context)[[1, 0]]
+                                * np.array(search_image.shape[-2:])
+                                + np.array(search_image.shape[-2:]) / 2,
+                                np.array([1, 1]),
+                                0,
+                            ],
+                            [
+                                (true_delta / search_size_with_context)[[1, 0]]
+                                * np.array(search_image.shape[-2:])
+                                + np.array(search_image.shape[-2:]) / 2,
+                                np.array([1, 1]),
+                                0,
+                            ],
+                        ],
+                        [
+                            (255, 0, 0),
+                            (0, 255, 0),
+                            (0, 0, 255),
+                            (255, 255, 0),
+                            (0, 255, 255),
+                            (255, 0, 255),
+                        ],
+                    )
+
+                    draw_pseudo_image(
+                        target_image[0],
+                        "./plots/train/target_image.png",
+                        [[np.array(target_image.shape[-2:]) / 2, np.array([1, 1]), 0,]],
+                        [(0, 255, 0)],
+                    )
+
+                    draw_pseudo_image(
+                        other_search_image[0],
+                        "./plots/train/other_search_image.png",
+                    )
+
+                    draw_pseudo_image(
+                        search_pseudo_image,
+                        "./plots/train/pseudo_image.png",
+                        [
+                            [search[0][[1, 0]], np.array([5, 5]), 0],
+                            [target[0][[1, 0]], np.array([4, 4]), 0],
+                            [predicted_center_image[[1, 0]], np.array([3, 3]), 0],
+                            [true_center_image[[1, 0]], np.array([3, 3]), 0],
+                        ],
+                        [
+                            (255, 0, 0),
+                            (0, 255, 255),
+                            (0, 0, 255),
+                            (0, 255, 0),
+                            (125, 0, 255),
+                            (125, 255, 0),
+                        ],
+                    )
+                    draw_pseudo_image(
+                        other_search_pseudo_image,
+                        "./plots/train/other_search_pseudo_image.png",
+                        [
+                            [other_search[0][[1, 0]], np.array([5, 5]), 0],
+                        ],
+                        [
+                            (255, 0, 0),
+                        ],
+                    )
+                    print("#", end="")
+                else:
+                    loss.backward()
+                    # torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
+                    mixed_optimizer.step()
+                    mixed_optimizer.zero_grad()
+                net.update_global_step()
+                global_step = net.get_global_step()
+
+                average_loss += loss
+                average_delta_error += np.abs(delta - true_delta)
+
+                if bof_training_steps > 0 and global_step >= bof_training_steps:
+                    unfreeze_non_bof(net)
+                    bof_training_steps = 0
+
+                if global_step % display_step == 0:
+                    average_loss /= display_step
+                    average_delta_error /= display_step
+
+                    print(
+                        model_dir,
+                        "[",
+                        global_step,
+                        "]",
+                        "loss=" + str(float(average_loss.detach().cpu())),
+                        "loss_minus=" + str(float(loss_minus.detach().cpu())),
+                        "error_position=",
+                        average_delta_error,
+                        "lr=",
+                        float(mixed_optimizer.param_groups[0]["lr"]),
+                    )
+
+                    writer.add_scalar(
+                        "loss", float(average_loss.detach().cpu()), global_step
+                    )
+                    writer.add_scalar(
+                        "loss_plus", float(loss_plus.detach().cpu()), global_step
+                    )
+                    writer.add_scalar(
+                        "loss_minus", float(loss_minus.detach().cpu()), global_step
+                    )
+                    writer.add_scalar(
+                        "error_position_x", float(average_delta_error[0]), global_step
+                    )
+                    writer.add_scalar(
+                        "error_position_y", float(average_delta_error[1]), global_step
+                    )
+                    writer.add_scalar(
+                        "learning_rate", float(mixed_optimizer.param_groups[0]["lr"])
+                    )
+
+                    average_loss = 0
+                    average_delta_error = 0
+
+                if (
+                    checkpoint_after_iter > 0
+                    and global_step % checkpoint_after_iter == 0
+                ):
+
+                    save_path = checkpoints_path / f"checkpoint_{global_step}.pth"
+
+                    torch.save(
+                        {
+                            "siamese_model": siamese_model.state_dict(),
+                            "optimizer": mixed_optimizer.state_dict(),
+                        },
+                        save_path,
+                    )
+
+                if global_step > train_steps and train_steps > 0:
+                    return
+
+        total_step_elapsed += steps
+
+        if evaluate:
+            pass
+            # net.eval()
+
+        net.train()
 
 
 def train_siamese(

@@ -28,7 +28,7 @@ from opendr.engine.datasets import (
     MappedDatasetIterator,
 )
 from opendr.engine.data import PointCloud
-from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import SiameseTrackingDatasetIterator
+from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import SiameseTrackingDatasetIterator, SiameseTripletTrackingDatasetIterator
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.draw import stack_images
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.load import (
     create_model as second_create_model,
@@ -140,7 +140,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         target_feature_merge_scale=0,
         loss_function="bce",  # focal, bce
         r_pos=16,
-        augment=True,
+        augment=False,
         augment_rotation=True,
         train_pseudo_image=False,
         search_type="normal",
@@ -1310,16 +1310,6 @@ class VoxelBofObjectTracking3DLearner(Learner):
             return map
 
         def create_map_siamese_dataset_func(is_training):
-
-            # prep_func = create_prep_func(
-            #     input_cfg if is_training else eval_input_cfg,
-            #     model_cfg,
-            #     is_training,
-            #     voxel_generator,
-            #     target_assigner,
-            #     use_sampler=False,
-            # )
-
             def map(data_target):
 
                 target_point_cloud_calib, search_point_cloud_calib, target_label, search_label = data_target
@@ -1338,6 +1328,33 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
                 return (
                     target_point_cloud, search_point_cloud, target_label_lidar_kitti, search_label_lidar_kitti,
+                )
+
+            return map
+
+        def create_map_siamese_triplet_dataset_func(is_training):
+            def map(data_target):
+
+                target_point_cloud_calib, search_point_cloud_calib, other_point_cloud_calib, target_label, search_label, other_label = data_target
+                target_point_cloud = target_point_cloud_calib.data
+                search_point_cloud = search_point_cloud_calib.data
+                other_point_cloud = other_point_cloud_calib.data
+                calib = target_point_cloud_calib.calib
+
+                target_label_lidar = tracking_boxes_to_lidar(target_label, calib)
+                search_label_lidar = tracking_boxes_to_lidar(search_label, calib)
+                other_label_lidar = tracking_boxes_to_lidar(other_label, calib)
+
+                target_label_lidar_kitti = target_label_lidar.kitti()
+                search_label_lidar_kitti = search_label_lidar.kitti()
+                other_label_lidar_kitti = other_label_lidar.kitti()
+
+                del target_label_lidar_kitti["name"]
+                del search_label_lidar_kitti["name"]
+                del other_label_lidar_kitti["name"]
+
+                return (
+                    target_point_cloud, search_point_cloud, other_point_cloud, target_label_lidar_kitti, search_label_lidar_kitti, other_label_lidar_kitti
                 )
 
             return map
@@ -1383,6 +1400,11 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 dataset, create_map_siamese_dataset_func(True),
             )
             self.training_method = "siamese"
+        elif isinstance(dataset, SiameseTripletTrackingDatasetIterator):
+            input_dataset_iterator = MappedDatasetIterator(
+                dataset, create_map_siamese_triplet_dataset_func(True),
+            )
+            self.training_method = "siamese_triplet"
         elif isinstance(dataset, DatasetIterator):
             input_dataset_iterator = MappedDatasetIterator(
                 dataset, create_map_siamese_dataset_func(True),
@@ -1440,6 +1462,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
         elif isinstance(val_dataset, SiameseTrackingDatasetIterator):
             eval_dataset_iterator = MappedDatasetIterator(
                 val_dataset, create_map_siamese_dataset_func(True),
+            )
+        elif isinstance(val_dataset, SiameseTripletTrackingDatasetIterator):
+            eval_dataset_iterator = MappedDatasetIterator(
+                val_dataset, create_map_siamese_triplet_dataset_func(True),
             )
         elif val_dataset is None:
             if isinstance(dataset, ExternalDataset):

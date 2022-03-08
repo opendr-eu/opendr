@@ -73,35 +73,52 @@ class SiameseTrackingDatasetIterator(DatasetIterator):
                 frames_with_current_object = []
                 for frame, frame_labels in enumerate(track_labels):
                     for label in frame_labels:
-                        if (label.id == object_id) and (label.id >= 0) and label.name in clases:
+                        if (
+                            (label.id == object_id)
+                            and (label.id >= 0)
+                            and label.name in clases
+                        ):
                             frames_with_current_object.append(frame)
 
                 for a in frames_with_current_object:
                     for b in frames_with_current_object:
-                        self.track_target_search_frames_with_id.append((
-                            track_id, a, b, object_id
-                        ))
+                        self.track_target_search_frames_with_id.append(
+                            (track_id, a, b, object_id)
+                        )
 
         print()
 
     def __getitem__(self, idx):
 
-        track_id, target_frame_id, search_frame_id, object_id = self.track_target_search_frames_with_id[idx]
+        (
+            track_id,
+            target_frame_id,
+            search_frame_id,
+            object_id,
+        ) = self.track_target_search_frames_with_id[idx]
 
         target_points = np.fromfile(
-            os.path.join(self.lidar_paths[track_id], self.lidar_files[track_id][target_frame_id]),
+            os.path.join(
+                self.lidar_paths[track_id], self.lidar_files[track_id][target_frame_id]
+            ),
             dtype=np.float32,
             count=-1,
         ).reshape([-1, self.num_point_features])
 
         search_points = np.fromfile(
-            os.path.join(self.lidar_paths[track_id], self.lidar_files[track_id][search_frame_id]),
+            os.path.join(
+                self.lidar_paths[track_id], self.lidar_files[track_id][search_frame_id]
+            ),
             dtype=np.float32,
             count=-1,
         ).reshape([-1, self.num_point_features])
 
-        target_label = [x for x in self.labels[track_id][target_frame_id] if x.id == object_id][0]
-        search_label = [x for x in self.labels[track_id][search_frame_id] if x.id == object_id][0]
+        target_label = [
+            x for x in self.labels[track_id][target_frame_id] if x.id == object_id
+        ][0]
+        search_label = [
+            x for x in self.labels[track_id][search_frame_id] if x.id == object_id
+        ][0]
 
         result = (
             PointCloudWithCalibration(target_points, self.calibs[track_id], None),
@@ -114,6 +131,135 @@ class SiameseTrackingDatasetIterator(DatasetIterator):
 
     def __len__(self):
         return len(self.track_target_search_frames_with_id)
+
+
+class SiameseTripletTrackingDatasetIterator(DatasetIterator):
+    def __init__(
+        self,
+        lidar_paths,
+        label_paths,
+        calib_paths,
+        labels_format="tracking",  # detection, tracking
+        clases=["Car"],  # detection, tracking
+        num_point_features=4,
+    ):
+        super().__init__()
+
+        self.lidar_paths = lidar_paths
+        self.label_paths = label_paths
+        self.calib_paths = calib_paths
+        self.num_point_features = num_point_features
+
+        self.lidar_files = [
+            sorted(os.listdir(lidar_path)) for lidar_path in self.lidar_paths
+        ]
+        labels_and_max_ids = [
+            load_tracking_file(label_path, "tracking", labels_format,)
+            for label_path in self.label_paths
+        ]
+
+        self.labels = [x[0] for x in labels_and_max_ids]
+        self.max_ids = [x[1] for x in labels_and_max_ids]
+
+        self.calibs = [parse_calib(calib_path) for calib_path in self.calib_paths]
+
+        self.track_target_search_frames_with_id_other_frame_id = []
+
+        for track_id, (track_labels, max_id) in enumerate(labels_and_max_ids):
+
+            for object_id in range(max_id + 1):
+                frames_with_current_object = []
+                other_objects = []
+                for frame, frame_labels in enumerate(track_labels):
+                    for label in frame_labels:
+                        if (label.id >= 0) and label.name in clases:
+                            if label.id == object_id:
+                                frames_with_current_object.append(frame)
+                            else:
+                                other_objects.append((frame, label.id))
+
+                for a in frames_with_current_object:
+                    for b in frames_with_current_object:
+
+                        other_object_frame, other_object_id = other_objects[np.random.randint(
+                            0, len(other_objects)
+                        )]
+
+                        element = (
+                            track_id,
+                            a,
+                            b,
+                            object_id,
+                            other_object_frame,
+                            other_object_id,
+                        )
+                        self.track_target_search_frames_with_id_other_frame_id.append(
+                            element
+                        )
+
+        print()
+
+    def __getitem__(self, idx):
+
+        (
+            track_id,
+            target_frame_id,
+            search_frame_id,
+            object_id,
+            other_object_frame,
+            other_object_id,
+        ) = self.track_target_search_frames_with_id_other_frame_id[idx]
+
+        target_points = np.fromfile(
+            os.path.join(
+                self.lidar_paths[track_id], self.lidar_files[track_id][target_frame_id]
+            ),
+            dtype=np.float32,
+            count=-1,
+        ).reshape([-1, self.num_point_features])
+
+        search_points = np.fromfile(
+            os.path.join(
+                self.lidar_paths[track_id], self.lidar_files[track_id][search_frame_id]
+            ),
+            dtype=np.float32,
+            count=-1,
+        ).reshape([-1, self.num_point_features])
+
+        other_points = np.fromfile(
+            os.path.join(
+                self.lidar_paths[track_id],
+                self.lidar_files[track_id][other_object_frame],
+            ),
+            dtype=np.float32,
+            count=-1,
+        ).reshape([-1, self.num_point_features])
+
+        target_label = [
+            x for x in self.labels[track_id][target_frame_id] if x.id == object_id
+        ][0]
+        search_label = [
+            x for x in self.labels[track_id][search_frame_id] if x.id == object_id
+        ][0]
+        other_label = [
+            x
+            for x in self.labels[track_id][other_object_frame]
+            if x.id == other_object_id
+        ][0]
+
+        result = (
+            PointCloudWithCalibration(target_points, self.calibs[track_id], None),
+            PointCloudWithCalibration(search_points, self.calibs[track_id], None),
+            PointCloudWithCalibration(other_points, self.calibs[track_id], None),
+            target_label,
+            search_label,
+            other_label,
+        )
+
+        return result
+
+    def __len__(self):
+        return len(self.track_target_search_frames_with_id_other_frame_id)
 
 
 def load_tracking_file(file_path, format, return_format, remove_dontcare=False):
