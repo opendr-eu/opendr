@@ -8,7 +8,7 @@ OPENDR_HOME = os.environ['OPENDR_HOME']
 ssd = SingleShotDetectorLearner(device='cuda')
 ssd.download(".", mode="pretrained")
 ssd.load("./ssd_default_person", verbose=True)
-img = Image.open(OPENDR_HOME + '/projects/perception/object_detection_2d/nms/seq2seq-nms/img_temp/frame_0000.jpg')
+img = Image.open(OPENDR_HOME + '/projects/perception/object_detection_2d/nms/img_temp/frame_0000.jpg')
 if not isinstance(img, Image):
     img = Image(img)
 cluster_nms = FastNMS(device='cpu', cross_class=True)
