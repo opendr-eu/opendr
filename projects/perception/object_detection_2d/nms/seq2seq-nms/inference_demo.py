@@ -14,7 +14,7 @@ seq2SeqNMSLearner.load(OPENDR_HOME + '/src/opendr/perception/object_detection_2d
 ssd = SingleShotDetectorLearner(device='cuda')
 ssd.download(".", mode="pretrained")
 ssd.load("./ssd_default_person", verbose=True)
-img = Image.open(OPENDR_HOME + '/projects/perception/object_detection_2d/nms/seq2seq-nms/img_temp/frame_0000.jpg')
+img = Image.open(OPENDR_HOME + '/projects/perception/object_detection_2d/nms/img_temp/frame_0000.jpg')
 if not isinstance(img, Image):
     img = Image(img)
 boxes = ssd.infer(img, threshold=0.6, custom_nms=seq2SeqNMSLearner)
