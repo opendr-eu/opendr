@@ -50,8 +50,8 @@ class FMoD:
         self.std = None
 
     def set_mean_std(self, mean_values=None, std_values=None):
-        self.mean = torch.tensor(mean_values)
-        self.std = torch.tensor(std_values)
+        self.mean = torch.tensor(mean_values).float()
+        self.std = torch.tensor(std_values).float()
         if self.device == 'cuda':
             self.mean = self.mean .cuda()
             self.std = self.std.cuda()

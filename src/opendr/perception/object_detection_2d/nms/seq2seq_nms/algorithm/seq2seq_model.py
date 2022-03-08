@@ -19,26 +19,26 @@ import torch.nn.functional as F
 
 
 class Seq2SeqNet(nn.Module):
-    def __init__(self, dropout=0.01, use_fmod=True, app_input_dim=315, geom_input_dim=14, lq_dim=256, sq_dim=128,
-                 num_JPUs=4, device='gpu'):
+    def __init__(self, dropout=0.01, use_app_feats=True, app_input_dim=315, geom_input_dim=14, lq_dim=256, sq_dim=128,
+                 num_JPUs=4, device='cuda'):
         super().__init__()
-        self.use_fmod = use_fmod
+        self.use_app_feats = use_app_feats
         self.dropout_q = nn.Dropout(dropout * 0.25)
         self.num_JPUs = num_JPUs
         self.joint_processing_units = []
         for i in range(self.num_JPUs):
             self.joint_processing_units.append(Joint_processing_unit(lq_dim=lq_dim, sq_dim=sq_dim, dropout=dropout))
-            if device == 'gpu':
+            if device == 'cuda':
                 self.joint_processing_units[i] = self.joint_processing_units[i].cuda()
         self.joint_processing_units = nn.ModuleList(self.joint_processing_units)
-        if self.use_fmod:
-            q_fmod_dims = [180, 180]
-            self.q_fmod_layers = nn.Sequential(
-                nn.Linear(app_input_dim, q_fmod_dims[0]),
+        if self.use_app_feats:
+            q_app_dims = [180, 180]
+            self.q_app_layers = nn.Sequential(
+                nn.Linear(app_input_dim, q_app_dims[0]),
                 nn.GELU(),
                 nn.Dropout(dropout * 0.25),
-                nn.LayerNorm(q_fmod_dims[0], eps=1e-6),
-                nn.Linear(q_fmod_dims[0], q_fmod_dims[1]),
+                nn.LayerNorm(q_app_dims[0], eps=1e-6),
+                nn.Linear(q_app_dims[0], q_app_dims[1]),
                 nn.GELU(),
                 nn.Dropout(dropout * 0.25),
                 # nn.LayerNorm(q_fmod_dims[1], eps=1e-6)
@@ -68,9 +68,9 @@ class Seq2SeqNet(nn.Module):
 
         q_final_in_dim = q_geom_dims[-1]
         k_final_in_dim = k_geom_dims[-1]
-        if self.use_fmod:
-            q_final_in_dim = q_geom_dims[-1] + q_fmod_dims[-1]
-            k_final_in_dim = k_geom_dims[-1] + q_fmod_dims[-1]
+        if self.use_app_feats:
+            q_final_in_dim = q_geom_dims[-1] + q_app_dims[-1]
+            k_final_in_dim = k_geom_dims[-1] + q_app_dims[-1]
 
         self.q_full_layers = nn.Sequential(
             nn.LayerNorm(q_final_in_dim, eps=1e-6),
@@ -96,17 +96,17 @@ class Seq2SeqNet(nn.Module):
             nn.Sigmoid()
         )
 
-    def forward(self, q_geom_feats=None, k_geom_feats=None, msk=None, fmod_feats=None):
+    def forward(self, q_geom_feats=None, k_geom_feats=None, msk=None, app_feats=None):
         q_feats = self.q_geom_layers(q_geom_feats)
         k_feats = self.k_geom_layers(k_geom_feats)
 
-        if self.use_fmod and fmod_feats is not None:
-            fmod_feats = self.q_fmod_layers(fmod_feats)
-            q_feats = torch.cat((q_feats, fmod_feats), dim=2)
-            k_feats = torch.cat((k_feats, fmod_feats.transpose(0, 1).repeat(k_feats.shape[1], 1, 1)), dim=2)
+        if self.use_app_feats and app_feats is not None:
+            app_feats = self.q_app_layers(app_feats)
+            q_feats = torch.cat((q_feats, app_feats), dim=2)
+            k_feats = torch.cat((k_feats, app_feats.transpose(0, 1).repeat(k_feats.shape[1], 1, 1)), dim=2)
 
-        elif fmod_feats is None:
-            raise UserWarning("FMoD representations not provided.")
+        elif app_feats is None:
+            raise UserWarning("Appearance-based representations not provided.")
         q_feats = self.q_full_layers(q_feats)
         k_feats = self.k_full_layers(k_feats)
         for i in range(self.num_JPUs):
