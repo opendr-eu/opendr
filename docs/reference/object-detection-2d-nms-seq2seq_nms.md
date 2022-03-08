@@ -42,10 +42,10 @@ Constructor parameters:
 - **app_feats**: {'fmod', 'zeros', 'custom'}, default='a'*\
   Specifies the type of the appearance-based features of RoIs used in the model.
 - **fmod_map_type**: {'EDGEMAP', 'FAST', 'AKAZE', 'BRISK', 'ORB'}, default='EDGEMAP'*\
-  Specifies the type of maps used by FMoD, in the case where **app_feats**='fmod'.
+  Specifies the type of maps used by FMoD, in the case where *app_feats*='fmod'.
 - **fmod_map_bin**:*bool, default=True*\
-  Specifies whether FMoD maps are binary or not, in the case where **app_feats**='fmod'.
+  Specifies whether FMoD maps are binary or not, in the case where *app_feats*='fmod'.
 - **app_input_dim**: *int, default=None*\
-  Specifies the dimension of appearance-based RoI features. In the case where **app_feats**='fmod', the corresponding dimension is automatically computed.
+  Specifies the dimension of appearance-based RoI features. In the case where *app_feats*='fmod', the corresponding dimension is automatically computed.
 - **fmod_init_path**: *str, default=None *\
-  Specifies the path to the the file used for normalizing appearance-based features, in the case where **app_feats**='fmod'.
+  Specifies the path to the the file used for normalizing appearance-based features, in the case where *app_feats*='fmod'.
