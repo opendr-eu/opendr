@@ -298,6 +298,29 @@ Parameters:
   pose_estimator.save('./parent_dir/optimized_model')
   ```
 
+#### Performance Evaluation
+
+The performance evaluation results of the *LightweightOpenPoseLearner* are reported in the Table below. A wide variety of different hardware was used for the evaluation, ranging from workstation GPUs (e.g., NVIDIA RTX 2070) to various embedded systems, such as NVIDIA Jetson Xavier-based platforms. 
+
+
+| Method            | CPU i7-9700K (FPS) | RTX 2070 (FPS) | Jetson TX2 (FPS) | Xavier NX (FPS) | Xavier AGX (FPS) |
+|-------------------|-------|-------|-----|-----|-------|
+| OpenDR - Baseline | 13.6  | 50.1  | 5.6 | 7.4 | 11.2  |
+| OpenDR - Half     | 13.5  | 47.5  | 5.4 | 9.5 | 12.9  |
+| OpenDR - Stride   | 31.0  | 72.1  | 12.2| 13.8| 15.5  |
+| OpenDR - Stages   | 19.3  | 59.8  | 7.2 | 10.2| 15.7  |
+| OpenDR - H+S      | 30.9  | 68.4  | 12.2| 12.9| 18.4  |
+| OpenDR - Full     | 47.4  | 98.2  | 17.1| 18.8| 25.9  |
+
+We have evaluated the effect of using different inference settings, namely:
+*OpenDR - Baseline*, which refers to directly using the Lightweight OpenPose method adapted to OpenDR with no additional optimizations,
+*OpenDR - Half*, which refers to enabling inference in half (FP) precision,
+*OpenDR  - Stride*,  which  refers  to  increasing  stride  by  two  in  the  input  layer  of  the model,
+*OpenDR - Stages*, which refers to removing the refinement stages,
+*OpenDR - H+S*, which uses both half precision and increased stride, and
+*OpenDR - Full*, which refers to combining all three available optimization.
+
+
 #### Notes
 
 For the metrics of the algorithm the COCO dataset evaluation scores are used as explained [here](
