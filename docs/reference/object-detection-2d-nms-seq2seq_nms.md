@@ -111,13 +111,42 @@ Parameters:
 Seq2SeqNMSLearner.infer(self, boxes, scores, boxes_sorted, max_dt_boxes, img_res, threshold)
 ```
 
-Performs non-maximum suppression, using seq2seq-nms. Appearance-based RoI feature computation is not included.
+Performs non-maximum suppression, using seq2seq-nms. In the case where FMoD is selected for appearance-based RoI feature computation, FMoD maps are not computed.
 
 Parameters:
 
-- **img**: *object*\
-  Object of type engine.data.Image.
-- **threshold**: *float, default=0.2*\
-  Defines the detection threshold. Bounding boxes with confidence under this value are discarded.
-- **keep_size**: *bool, default=False*\
-  Specifies whether to resize the input image to *self.img_size* or keep original image dimensions.
+#### `Seq2SeqNMSLearner.run_nms`
+```python
+Seq2SeqNMSLearner.run_nms(self, boxes, scores, boxes_sorted, max_dt_boxes, img_res, threshold)
+```
+
+Performs non-maximum suppression, using seq2seq-nms. It incorporates the full pipeline needed for inference.
+
+Parameters:
+
+#### `Seq2SeqNMSLearner.save`
+```python
+Seq2SeqNMSLearner.save(self, path, verbose)
+```
+
+Saves a model in OpenDR format at the specified path. 
+
+Parameters:
+
+#### `Seq2SeqNMSLearner.load`
+```python
+Seq2SeqNMSLearner.load(self, path, verbose)
+```
+
+Loads a model which was previously saved in OpenDR format at the specified path.
+
+Parameters:
+
+#### `Seq2SeqNMSLearner.download`
+```python
+Seq2SeqNMSLearner.download(self, path, mode, verbose, url)
+```
+
+Downloads pretrained models of seq2seq-nms.
+
+Parameters:
