@@ -83,3 +83,26 @@ Parameters:
   Specifies the path to the folder where the datasets are stored.
 - **use_ssd**: *bool, default=False*\
   If set to True, RoIs from SSD are fed to the seq2Seq-nms model. Otherwise, RoIs from the default detector of the specified dataset are used as input.
+  
+#### `Seq2SeqNMSLearner.eval`
+```python
+Seq2SeqNMSLearner.eval(self, dataset, split, verbose, max_dt_boxes, datasets_folder, use_ssd)
+```
+
+Performs evaluation on a set of dataset.
+
+Parameters:
+
+- **dataset**: *{'PETS', 'COCO'}*\
+  Specifies the name of the dataset among those available from training.
+- **split**: *{'train', 'val', 'test'} default='test'*\
+  Specifies the set of the corresponding dataset where the evaluation will be performed.
+- **verbose**: *bool, default=True*\
+  If True, enables maximum verbosity.
+- **max_dt_boxes**: *int, default=500*\
+  Specifies the maximum number of RoIs provided to seq2Seq-nms model as input.
+- **datasets_folder**: *str, default='./datasets'*\
+  Specifies the path to the folder where the datasets are stored.
+- **use_ssd**: *bool, default=False*\
+  If set to True, RoIs from SSD are fed to the seq2Seq-nms model. Otherwise, RoIs from the default detector of the specified dataset are used as input.
+  
