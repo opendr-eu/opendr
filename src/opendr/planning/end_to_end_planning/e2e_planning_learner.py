@@ -40,6 +40,7 @@ import os
 from pathlib import Path
 from urllib.request import urlretrieve
 
+import stable_baselines3
 from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
@@ -143,6 +144,7 @@ class EndToEndPlanningRLLearner(LearnerRL):
         :return: Whether save succeeded or not
         :rtype: bool
         """
+        print("gym version:", gym.__version__, "stable baselines version:", stable_baselines3.__version__)
         self.agent.save(path)
 
     def load(self, path):
