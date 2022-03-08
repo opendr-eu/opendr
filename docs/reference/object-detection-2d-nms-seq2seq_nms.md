@@ -65,9 +65,19 @@ This method is used to train the algorithm on a `Dataset_NMS` dataset. Returns a
 
 Parameters:
 
-- **dataset**: *object*\
-  Object that holds the training dataset.
-- **val_dataset**: *object, default=None*\
-  Object that holds the validation dataset.
+- **dataset**: *{'PETS', 'COCO'}*\
+  Specifies the name of the dataset among those available from training.
+- **logging_path**: *str, default=None*\
+  Path to save log files. If set to None, only the console will be used for logging.
+- **logging_flush_secs**: *int, default=30*\
+  How often, in seconds, to flush the TensorBoard data to disk.
+- **silent**: *bool, default=False*\
+  If set to True, disables all printing of training progress reports and other information to STDOUT.
 - **verbose**: *bool, default=True*\
   If True, enables maximum verbosity.
+- **nms_gt_iou**: *float, default=0.5*\
+  Specifies the threshold used to determine whether a detection RoI must be suppressed or not based on its IoU with the image's ground-truth RoIs.
+- **max_dt_boxes**: *int, default=500*\
+  Specifies the maximum number of RoIs provided to seq2Seq-nms model as input.
+- **datasets_folder**: *str, default='./datasets'*\
+  Specifies the path to the folder where the datasets are stored.
