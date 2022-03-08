@@ -38,8 +38,8 @@ Constructor parameters:
   Specifies the IoU threshold used for filtering RoIs before provided by the seq2seq-nms model.If set to values <0 or >1, no filtering is applied.
 - **dropout**: *float, default=0.05*\
   Specifies the dropout rate.
-- **pretrained_demo_model**: *\
-- **app_feats**: {'fmod', 'zeros', 'custom'}, default='fmod' *\
+<!--- - **pretrained_demo_model**: *\ --->
+- **app_feats**: {'fmod', 'zeros', 'custom'}, default='fmod'*\
   Specifies the type of the appearance-based features of RoIs used in the model.
 - **fmod_map_type**: {'EDGEMAP', 'FAST', 'AKAZE', 'BRISK', 'ORB'}, default='EDGEMAP'*\
   Specifies the type of maps used by FMoD, in the case where **app_feats**='fmod'.
