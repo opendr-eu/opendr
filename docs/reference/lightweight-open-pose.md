@@ -314,7 +314,7 @@ The performance evaluation results of the *LightweightOpenPoseLearner* are repor
 We have evaluated the effect of using different inference settings, namely:
 - *OpenDR - Baseline*, which refers to directly using the Lightweight OpenPose method adapted to OpenDR with no additional optimizations,
 - *OpenDR - Half*, which refers to enabling inference in half (FP) precision,
-- *OpenDR  - Stride*,  which  refers  to  increasing  stride  by  two  in  the  input  layer  of  the model,
+- *OpenDR - Stride*, which refers to increasing stride by two in the input layer of the model,
 - *OpenDR - Stages*, which refers to removing the refinement stages,
 - *OpenDR - H+S*, which uses both half precision and increased stride, and
 - *OpenDR - Full*, which refers to combining all three available optimization.
@@ -330,7 +330,8 @@ Apart from the inference speed, which is reported in FPS, we also report the mem
 | OpenDR - H+S      | 1013.75 | 0.70  |
 | OpenDR - Full     | 999.75  | 0.52  |
 
-NVIDIA Jetson AGX was used as the reference platform for measuring energy requirements for these experiments.  We calculated the average metrics of 100 runs, while an image with resolution of 640×425  pixels  was  used  as input to the models. 
+NVIDIA Jetson AGX was used as the reference platform for measuring energy requirements for these experiments. 
+We calculated the average metrics of 100 runs, while an image with resolution of 640×425 pixels was used as input to the models. 
 
 The average precision and average recall on the COCO evaluation split is also reported in the Table below:
 
