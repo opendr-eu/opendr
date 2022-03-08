@@ -341,6 +341,7 @@ The average precision and average recall on the COCO evaluation split is also re
 | OpenDR - Stages   | 0.481 | 0.527 |
 | OpenDR - H+S      | 0.240 | 0.281 |
 | OpenDR - Full     | 0.203 | 0.245 |
+
 For measuring the precision and recall we used the standard approach proposed for COCO, using an Intersection of Union (IoU) metric at 0.5. 
 
 The platform compatibility evaluation is also reported below:
