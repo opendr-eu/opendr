@@ -13,7 +13,7 @@ public methods:
 
 #### `Seq2SeqNMSLearner` constructor
 ```python
-Seq2SeqNMSLearner(self, lr, epochs, device', temp_path, checkpoint_after_iter, checkpoint_load_iter, log_after, variant, experiment_name,
+Seq2SeqNMSLearner(self, lr, epochs, device, temp_path, checkpoint_after_iter, checkpoint_load_iter, log_after, variant, experiment_name,
                  iou_filtering, dropout, pretrained_demo_model, app_feats, fmod_map_type, fmod_map_bin, app_input_dim, fmod_init_path)
 ```
 
