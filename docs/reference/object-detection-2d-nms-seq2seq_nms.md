@@ -32,6 +32,8 @@ Constructor parameters:
   Specifies the epoch to load a saved checkpoint from. If set to 0 no checkpoint will be loaded.
 - **log_after**: *int, default=500*\
   Specifies interval (in iterations/batches) between information logging on *stdout*.
+- **variant**: *{'light', 'medium', 'full'}, default='medium'*\
+  Specifies the variant of seq2seq-nms model.
 - **experiment_name**: *str, default='default'*\
   Specifies the name of the experiment.
 - **iou_filtering**: *float, default=0.8*\
