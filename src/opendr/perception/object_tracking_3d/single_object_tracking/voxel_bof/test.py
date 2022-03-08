@@ -808,7 +808,7 @@ def test_rotated_pp_siamese_infer(
 
                     for i, img in enumerate(stacked_images):
                         image = PilImage.fromarray(img)
-                        image.save(filename_y("all/", str(i)))
+                        image.save(filename_y("all/", "_" + str(start_frame + i)))
 
                     imageio.mimsave(filename("all"), stacked_images)
                     pygifsicle.optimize(filename(group))
@@ -1774,13 +1774,81 @@ def create_v1_eval_kwargs():
     return results
 
 
+def create_v2_eval_kwargs():
+    params = {
+        "window_influence": [0.35, 0.85],
+        "score_upscale": [8],
+        "rotation_penalty": [0.98, 0.90],
+        "offset_interpolation": [1, 0.5, 0.75, 0.3],
+        "target_feature_merge_scale": [0, 0.005, 0.01],
+        "min_top_score": [1.0, 0.4],
+        "extrapolation_mode": [["none", "n"], ["linear", "l"]],
+        "search_type": [["normal", "n"], ["small", "s"], ["snormal", "sn"]],
+        "target_type": [["normal", "n"], ["original", "o"]],
+    }
+    results = {}
+
+    for window_influence in params["window_influence"]:
+        for score_upscale in params["score_upscale"]:
+            for rotation_penalty in params["rotation_penalty"]:
+                for offset_interpolation in params["offset_interpolation"]:
+                    for target_feature_merge_scale in params[
+                        "target_feature_merge_scale"
+                    ]:
+                        for min_top_score in params[
+                            "min_top_score"
+                        ]:
+                            for search_type, search_type_name in params[
+                                "search_type"
+                            ]:
+                                for target_type, target_type_name in params[
+                                    "target_type"
+                                ]:
+                                    for extrapolation_mode, extrapolation_mode_name in params[
+                                        "extrapolation_mode"
+                                    ]:
+                                        name = (
+                                            "rp"
+                                            + str(rotation_penalty).replace(".", "")
+                                            + "-s"
+                                            + str(search_type_name).replace(".", "")
+                                            + "t"
+                                            + str(target_type_name).replace(".", "")
+                                            + "-su"
+                                            + str(score_upscale).replace(".", "")
+                                            + "-wi"
+                                            + str(window_influence).replace(".", "")
+                                            + "-tfms"
+                                            + str(target_feature_merge_scale).replace(".", "")
+                                            + "-mts"
+                                            + str(min_top_score).replace(".", "")
+                                            + "-oi"
+                                            + str(offset_interpolation).replace(".", "")
+                                            + "-ex"
+                                            + str(extrapolation_mode_name).replace(".", "")
+                                        )
+
+                                        results[name] = {
+                                            "window_influence": window_influence,
+                                            "score_upscale": score_upscale,
+                                            "rotation_penalty": rotation_penalty,
+                                            "target_feature_merge_scale": target_feature_merge_scale,
+                                            "min_top_score": min_top_score,
+                                            "offset_interpolation": offset_interpolation,
+                                            "extrapolation_mode": extrapolation_mode,
+                                            "search_type": search_type,
+                                            "target_type": target_type,
+                                        }
+    return results
+
+
 def multi_eval(
     id=0,
     gpu_capacity=4,
     total_devices=4,
     model_name=None,
     tracks=["0000", "0006"],
-    eval_kwargs_name="v1",
+    eval_kwargs_name="v2",
     params_file=None,
     eval_id_prefix="",
     draw=False,
@@ -1789,6 +1857,7 @@ def multi_eval(
 
     eval_kwargs = {
         "v1": create_v1_eval_kwargs,
+        "v2": create_v2_eval_kwargs,
     }[eval_kwargs_name]()
 
     results = {}
