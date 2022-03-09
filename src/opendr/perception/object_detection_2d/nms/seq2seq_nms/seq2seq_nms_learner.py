@@ -147,8 +147,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         elif self.epochs <= self.checkpoint_load_iter:
             raise ValueError("Training epochs are less than those of the loaded model")
 
-        if self.app_feats == 'fmod' and self.fmod_mean_std is None:
-            self.fmod_mean_std = self.load_FMoD_init_from_dataset(dataset=dataset, map_type=self.fmod_map_type,
+        if self.app_feats == 'fmod':
+            if self.fmod_mean_std is None:
+                self.fmod_mean_std = self.load_FMoD_init_from_dataset(dataset=dataset, map_type=self.fmod_map_type,
                                                                   fmod_pyramid_lvl=self.fmod_pyramid_lvl,
                                                                   datasets_folder=datasets_folder,
                                                                   verbose=verbose)
@@ -314,8 +315,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         elif self.model is None:
             raise AttributeError("self.model is None. Please load a model or set checkpoint_load_iter.")
 
-        if self.app_feats == 'fmod' and (self.fmod_mean_std is None):
-            self.fmod_mean_std = self.load_FMoD_init_from_dataset(dataset=dataset, map_type=self.fmod_map_type,
+        if self.app_feats == 'fmod':
+            if self.fmod_mean_std is None:
+                self.fmod_mean_std = self.load_FMoD_init_from_dataset(dataset=dataset, map_type=self.fmod_map_type,
                                                                   fmod_pyramid_lvl=self.fmod_pyramid_lvl,
                                                                   datasets_folder=datasets_folder,
                                                                   verbose=verbose)
