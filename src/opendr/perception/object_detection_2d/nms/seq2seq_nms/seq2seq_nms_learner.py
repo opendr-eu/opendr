@@ -472,6 +472,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             try:
                 with open(pkl_fmod, 'rb') as f:
                     self.fmod_mean_std = pickle.load(f)
+                    self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
             except FileNotFoundError as e:
                 e.strerror = "File " + pkl_fmod + "not found."
                 raise e
