@@ -343,16 +343,16 @@ class Dataset_NMS(Dataset):
                 ssd.download(".", mode="pretrained")
                 ssd.load("./ssd_default_person", verbose=True)
             if not os.path.exists(os.path.join(self.path, imgs_split)):
-                self.download('http://images.cocodataset.org/zips/' + imgs_split +'.zip',
-                              download_path=os.path.join(self.path), file_format = "zip",
+                self.download('http://images.cocodataset.org/zips/' + imgs_split + '.zip',
+                              download_path=os.path.join(self.path), file_format="zip",
                               create_dir=True)
             pkl_filename = os.path.join(self.path, 'data_' + self.detector + '_' + self.dataset_sets[self.split] + '_coco.pkl')
             if not os.path.exists(pkl_filename):
                 if not os.path.exists(os.path.join(self.path, 'annotations', 'instances_' + imgs_split + '.json')):
                     self.download('http://images.cocodataset.org/annotations/annotations_trainval2014.zip',
                                   download_path=os.path.join(self.path), file_format='zip', create_dir=True)
-                if not os.path.exists(os.path.join(self.path, 'detections', 'coco_2014_' + self.dataset_sets[self.split]
-                                                   + '_FRCN_train.pkl')):
+                if not os.path.exists(os.path.join(self.path, 'detections',
+                                                   'coco_2014_' + self.dataset_sets[self.split] + '_FRCN_train.pkl')):
                     self.download('http://datasets.d2.mpi-inf.mpg.de/hosang17cvpr/coco_2014_FRCN.tar.gz',
                                   download_path=os.path.join(self.path, 'detections'), file_format='tar.gz',
                                   create_dir=True)
