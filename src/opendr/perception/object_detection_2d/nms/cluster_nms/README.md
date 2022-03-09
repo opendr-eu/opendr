@@ -1,7 +1,7 @@
 Cluster-NMS
 ======
 
-This folder contains an implementation of Cluster-NMS [1](#cluster_nms-1).
+This folder contains an implementation of Cluster-NMS [[1]](#cluster_nms-1).
 
 Sources
 ------
