@@ -124,6 +124,9 @@ Performs non-maximum suppression, using seq2seq-nms. It incorporates the full pi
 
 Parameters:
 
+- **boxes**: *numpy.ndarray, default=None*\
+  Image coordinates of candidate detection RoIs, expressed as the coordinates of their upper-left and top-down corners (x_min, y_min, x_max, y_max). For N candidate detection RoIS, the size of the array is Nx4.
+
 #### `Seq2SeqNMSLearner.save`
 ```python
 Seq2SeqNMSLearner.save(self, path, verbose)
