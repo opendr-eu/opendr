@@ -398,6 +398,73 @@ Inherited from [X3DLearner](/src/opendr/perception/activity_recognition/x3d/x3d_
   ```
 
 
+
+#### Performance Evaluation
+
+TABLE-1: Input shapes, prediction accuracy on Kinetics 400, floating point operations (FLOPs), parameter count and maximum allocated memory of activity recognition learners at inference.
+| Model   | Input shape (TxS2) | Acc. (%) | FLOPs (G) | Params (M) | Mem. (MB) |
+| ------- | ------------------ | -------- | --------- | ---------- | --------- |
+| X3D-L   | 16x3122            | 69.29    | 19.17     | 6.15       | 240.66    |
+| X3D-M   | 16x2242            | 67.24    | 4.97      | 4.97       | 126.29    |
+| X3D-S   | 13x1602            | 64.71    | 2.06      | 3.79       | 61.29     |
+| X3D-XS  | 4x1602             | 59.37    | 0.64      | 3.79       | 28.79     |
+| CoX3D-L | 1x3122             | 71.61    | 1.54      | 6.15       | 184.37    |
+| CoX3D-M | 1x2242             | 71.03    | 0.40      | 4.97       | 68.96     |
+| CoX3D-S | 1x1602             | 67.33    | 0.21      | 3.79       | 41.99     |
+
+
+TABLE-2: Speed (evaluations/second) of activity recognition learner inference on various computational devices
+| Model   | CPU   | TX2  | Xavier | RTX 2080 Ti |
+| ------- | ----- | ---- | ------ | ----------- |
+| X3D-L   | 0.22  | 0.18 | 1.26   | 3.55        |
+| X3D-M   | 0.75  | 0.69 | 4.50   | 6.94        |
+| X3D-S   | 2.06  | 0.95 | 9.55   | 7.12        |
+| X3D-XS  | 6.51  | 1.14 | 12.23  | 7.99        |
+| CoX3D-L | 2.00  | 0.30 | 4.69   | 4.62        |
+| CoX3D-M | 6.65  | 1.12 | 9.76   | 10.12       |
+| CoX3D-S | 11.60 | 1.16 | 9.36   | 9.84        |
+
+
+TABLE-3: Throughput (evaluations/second) of activity recognition learner inference on various computational devices. The largest fitting power of two was used as batch size for each device. 
+| Model   | CPU   | TX2  | Xavier | RTX 2080 Ti |
+| ------- | ----- | ---- | ------ | ----------- |
+| X3D-L   | 0.22  | 0.21 | 1.73   | 3.55        |
+| X3D-M   | 0.75  | 1.10 | 6.20   | 11.22       |
+| X3D-S   | 2.06  | 2.47 | 7.83   | 29.51       |
+| X3D-XS  | 6.51  | 6.50 | 38.27  | 78.75       |
+| CoX3D-L | 2.00  | 0.62 | 10.40  | 14.47       |
+| CoX3D-M | 6.65  | 4.32 | 44.07  | 105.64      |
+| CoX3D-S | 11.60 | 8.22 | 64.91  | 196.54      |
+
+
+TABLE-4: Energy (Joules) of activity recognition learner inference on embedded devices. 
+| Model   | TX2    | Xavier |
+| ------- | ------ | ------ |
+| X3D-L   | 187.89 | 23.54  |
+| X3D-M   | 56.50  | 5.49   |
+| X3D-S   | 33.58  | 2.00   |
+| X3D-XS  | 26.15  | 1.45   |
+| CoX3D-L | 117.34 | 5.27   |
+| CoX3D-M | 24.53  | 1.74   |
+| CoX3D-S | 22.79  | 2.07   |
+
+
+TABLE-5: Human Activity Recognition platform compatibility evaluation.
+| Platform                                     | Test results |
+| -------------------------------------------- | ------------ |
+| x86 - Ubuntu 20.04 (bare installation - CPU) | Pass         |
+| x86 - Ubuntu 20.04 (bare installation - GPU) | Pass         |
+| x86 - Ubuntu 20.04 (pip installation)        | Pass         |
+| x86 - Ubuntu 20.04 (CPU docker)              | Pass         |
+| x86 - Ubuntu 20.04 (GPU docker)              | Pass         |
+| NVIDIA Jetson TX2                            | Pass\*       |
+| NVIDIA Jetson Xavier AGX                     | Pass\*       |
+
+*On NVIDIA Jetson devices, the Kinetics-400 dataset loader (dataset associated with available pretrained models) is not supported. While import triggers an error in version 1.0 of the toolkit, a patch has been submitted, which avoids the import-error for the upcoming version. Model inference works as expected.
+
+
+
+
 #### References
 <a name="x3d" href="https://arxiv.org/abs/2004.04730">[1]</a> X3D: Expanding Architectures for Efficient Video Recognition,
 [arXiv](https://arxiv.org/abs/2004.04730).
