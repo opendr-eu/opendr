@@ -115,9 +115,22 @@ Performs non-maximum suppression, using seq2seq-nms. In the case where FMoD is s
 
 Parameters:
 
+- **boxes**: *torch.tensor, default=None*\
+  Image coordinates of candidate detection RoIs, expressed as the coordinates of their upper-left and top-down corners (x_min, y_min, x_max, y_max). For N candidate detection RoIs, the size of the *torch.tensor* is Nx4.
+- **scores**: *torch.tensor, default=None*\
+  Specifies the scores of the candidate detection RoIs, assigned previously by a detector. For N candidate detection RoIs, the size of the *torch.tensor* is Nx1.
+- **boxes_sorted**: *bool, default=False*\
+  Specifies whether *boxes* and *scores* are sorted based on *scores* in descending order.
+- **max_dt_boxes**: *int, default=400*\
+  Specifies the maximum number of detection RoIs that are fed as input to seq2seq-nms model.
+- **img_res**: *[int, int], default=None*\
+  Specifies the image resolution expressed as [width, height].
+- **threshold**: *float, default=0.1*\
+  Specifies the score threshold that will determine which RoIs will be kept after seq2seq-nms rescoring. 
+  
 #### `Seq2SeqNMSLearner.run_nms`
 ```python
-Seq2SeqNMSLearner.run_nms(self, boxes, scores, boxes_sorted, max_dt_boxes, img_res, threshold)
+Seq2SeqNMSLearner.run_nms(self, boxes, scores, img, threshold, boxes_sorted, top_k)
 ```
 
 Performs non-maximum suppression, using seq2seq-nms. It incorporates the full pipeline needed for inference.
@@ -130,21 +143,36 @@ Parameters:
   Specifies the scores of the candidate detection RoIs, assigned previously by a detector. For N candidate detection RoIs, the size of the array is Nx1.
 - **boxes_sorted**: *bool, default=False*\
   Specifies whether *boxes* and *scores* are sorted based on *scores* in descending order.
-- **max_dt_boxes**: *int, default=400*\
+- **top_k**: *int, default=400*\
   Specifies the maximum number of detection RoIs that are fed as input to seq2seq-nms model.
-- **img_res**: *[int, int], default=None*\
-  Specifies the image resolution expressed as [width, height].
+- **img**: *object*\
+  Object of type engine.data.Image.
 - **threshold**: *float, default=0.1*\
   Specifies the score threshold that will determine which RoIs will be kept after seq2seq-nms rescoring. 
   
 #### `Seq2SeqNMSLearner.save`
 ```python
-Seq2SeqNMSLearner.save(self, path, verbose)
+Seq2SeqNMSLearner.save(self, path, verbose, optimizer, scheduler, current_epoch, max_dt_boxes)
 ```
 
 Saves a model in OpenDR format at the specified path. 
 
 Parameters:
+
+- **path**: *str*\
+  Specifies the folder where the model will be saved.
+- **verbose**: *bool default=True*\
+  If True, enables maximum verbosity.
+- **optimizer**: *torch.optim.Optimizer default=None*\
+  Specifies the optimizer used for training.
+- **scheduler**: *torch.optim.lr_scheduler default=None*\
+  Specifies the learning rate scheduler used for training.
+- **current_epoch**: *int, default=None*\
+  Specifies the number of epochs the model has been trained.
+- **max_dt_boxes**: *int, default=400*\
+  Specifies the maximum number of detection RoIs that are fed as input to seq2seq-nms model.
+  
+ 
 
 #### `Seq2SeqNMSLearner.load`
 ```python
