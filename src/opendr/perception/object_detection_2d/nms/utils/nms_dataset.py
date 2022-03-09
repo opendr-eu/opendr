@@ -344,14 +344,15 @@ class Dataset_NMS(Dataset):
                 ssd.load("./ssd_default_person", verbose=True)
             if not os.path.exists(os.path.join(self.path, imgs_split)):
                 self.download('http://images.cocodataset.org/zips/' + imgs_split +'.zip',
-                              download_path=os.path.join(self.path), file_format="zip",
+                              download_path=os.path.join(self.path), file_format = "zip",
                               create_dir=True)
             pkl_filename = os.path.join(self.path, 'data_' + self.detector + '_' + self.dataset_sets[self.split] + '_coco.pkl')
             if not os.path.exists(pkl_filename):
-                if not os.path.exists(os.path.join(self.path, 'annotations', 'instances_' + imgs_split +'.json')):
-                     self.download('http://images.cocodataset.org/annotations/annotations_trainval2014.zip',
-                                   download_path=os.path.join(self.path), file_format="zip", create_dir=True)
-                if not os.path.exists(os.path.join(self.path, 'detections', 'coco_2014_' + self.dataset_sets[self.split]+ '_FRCN_train.pkl')):
+                if not os.path.exists(os.path.join(self.path, 'annotations', 'instances_' + imgs_split + '.json')):
+                    self.download('http://images.cocodataset.org/annotations/annotations_trainval2014.zip',
+                                  download_path=os.path.join(self.path), file_format='zip', create_dir=True)
+                if not os.path.exists(os.path.join(self.path, 'detections', 'coco_2014_' + self.dataset_sets[self.split]
+                                                   + '_FRCN_train.pkl')):
                     self.download('http://datasets.d2.mpi-inf.mpg.de/hosang17cvpr/coco_2014_FRCN.tar.gz',
                                   download_path=os.path.join(self.path, 'detections'), file_format='tar.gz',
                                   create_dir=True)
@@ -371,7 +372,7 @@ class Dataset_NMS(Dataset):
                         bboxes_list = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
                                                 nms_topk=6000, post_nms=6000)
                         bboxes_list = BoundingBoxListToNumpyArray()(bboxes_list)
-                        if bboxes_list.shape[0]>0:
+                        if bboxes_list.shape[0] > 0:
                             bboxes_list = bboxes_list[bboxes_list[:, 4] > 0.015]
                         if bboxes_list.shape[0] > 0:
                             bboxes_list = bboxes_list[np.argsort(bboxes_list[:, 4]), :][::-1]
@@ -379,16 +380,13 @@ class Dataset_NMS(Dataset):
                         for b in range(len(bboxes_list)):
                             dt_boxes.append(np.array([bboxes_list[b, 0], bboxes_list[b, 1], bboxes_list[b, 2],
                                                       bboxes_list[b, 3], bboxes_list[b, 4][0]]))
-                    #if len(dt_boxes) > 0:
-                    #    dt_boxes[:, 2] = dt_boxes[:, 0] + dt_boxes[:, 2]
-                    #    dt_boxes[:, 3] = dt_boxes[:, 1] + dt_boxes[:, 3]
                     dt_boxes = np.asarray(dt_boxes)
                     annots_in_frame = annots.loadAnns(annots.getAnnIds(imgIds=[dets_default[1][i]], iscrowd=False))
                     gt_boxes = []
                     for j in range(len(annots_in_frame)):
                         gt_boxes.append(annots_in_frame[j]['bbox'])
                     gt_boxes = np.asarray(np.asarray(gt_boxes))
-                    if gt_boxes.shape[0]>0:
+                    if gt_boxes.shape[0] > 0:
                         gt_boxes[:, 2] = gt_boxes[:, 0] + gt_boxes[:, 2]
                         gt_boxes[:, 3] = gt_boxes[:, 1] + gt_boxes[:, 3]
                     self.src_data.append({
@@ -407,6 +405,7 @@ class Dataset_NMS(Dataset):
                     self.src_data = pickle.load(fp_pkl)
             self.classes = ['background', 'person']
             self.class_ids = [-1, 1]
+
     @staticmethod
     def download(
             url, download_path, dataset_sub_path=".", file_format="zip", create_dir=False):
