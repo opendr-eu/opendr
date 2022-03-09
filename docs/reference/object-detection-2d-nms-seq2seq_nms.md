@@ -5,8 +5,7 @@ The *seq2seq-nms* module contains the *Seq2SeqNMSLearner* class, which inherits 
 ### Class Seq2SeqNMSLearner
 Bases: `engine.learners.Learner`
 
-
-It can be used to perform single-class non-maximum suppression on images (inference) as well as training new seq2seq-nms models.
+It can be used to perform single-class non-maximum suppression on images (inference) as well as training new seq2seq-nms models. The implementation is based on [[1]](#seq2seq_nms-1).
 
 The [Seq2SeqNMSLearner](/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/seq2seq_nms_learner.py) class has the following
 public methods:
@@ -183,11 +182,35 @@ Loads a model which was previously saved in OpenDR format at the specified path.
 
 Parameters:
 
+- **path**: *str*\
+  Specifies the folder where the model will be loaded from.
+- **verbose**: *bool default=True*\
+  If True, enables maximum verbosity.
+  
+  
 #### `Seq2SeqNMSLearner.download`
 ```python
-Seq2SeqNMSLearner.download(self, path, mode, verbose, url)
+Seq2SeqNMSLearner.download(self, path, model_name, verbose, url)
 ```
 
 Downloads pretrained models of seq2seq-nms.
 
 Parameters:
+
+Downloads data needed for the various functions of the learner, e.g., pretrained models as well as test data.
+
+Parameters:
+
+- **path**: *str, default=None*\
+  Specifies the folder where data will be downloaded. If *None*, the *self.temp_path* directory is used instead.
+- **model_name**: *{'seq2seq_medium_pets_jpd_fmod_3', 'seq2seq_medium_pets_ssd_fmod_3', 'seq2seq_medium_coco_frcn_fmod_3', 'seq2seq_medium_pets_ssd_fmod_3'}, default=''seq2seq_medium_pets_jpd_fmod_3'*\
+  If *'pretrained'*, downloads a pretrained detector model. If *'images'*, downloads an image to perform inference on. If
+  *'test_data'* downloads a dummy dataset for testing purposes.
+- **verbose**: *bool default=True*\
+  If True, enables maximum verbosity.
+- **url**: *str, default=OpenDR FTP URL*\
+  URL of the FTP server.
+  
+  #### References
+<a name="seq2seq_nms-1" href="https://www.techrxiv.org/articles/preprint/Neural_Attention-driven_Non-Maximum_Suppression_for_Person_Detection/16940275">[1]</a> Neural Attention-driven Non-Maximum Suppression for Person Detection,
+[TechRxiv](https://www.techrxiv.org/articles/preprint/Neural_Attention-driven_Non-Maximum_Suppression_for_Person_Detection/16940275).
