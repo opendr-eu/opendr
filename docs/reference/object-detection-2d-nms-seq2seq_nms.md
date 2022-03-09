@@ -230,8 +230,8 @@ Parameters:
   ```
 
 * **Inference and result drawing example on a test .jpg image using OpenCV.**
-  ```
-  python
+
+  ```python
   from opendr.perception.object_detection_2d.nms.seq2seq_nms.seq2seq_nms_learner import Seq2SeqNMSLearner
   from opendr.engine.data import Image
   from opendr.perception.object_detection_2d import SingleShotDetectorLearner
