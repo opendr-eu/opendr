@@ -486,7 +486,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
     def assign_params(self, metadata, verbose):
 
-        if verbose and self.geom_input_dim is not None and self.geom_input_dim != metadata["variant"]:
+        if verbose and self.variant is not None and self.variant != metadata["variant"]:
             print("Incompatible value for the attribute \"variant\". It is now set to: " +
                   str(metadata["variant"]))
         self.variant = metadata["variant"]
@@ -539,11 +539,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                   str(metadata["num_JPUs"]))
         self.num_JPUs = metadata["num_JPUs"]
         if verbose and 'max_dt_boxes' in metadata:
-            print('Model is trained with as ' + str(metadata['max_dt_boxes']) + 'its maximum number of detections.')
-        if verbose and self.fmod_pyramid_lvl is not None and \
-                self.fmod_pyramid_lvl != metadata["fmod_mean_std"]:
-            print("Incompatible value for the attribute \"fmod_mean_std\". It is now set to: " +
-                  str(metadata["fmod_mean_std"]))
+            print('Model is trained with as ' + str(metadata['max_dt_boxes']) + ' the maximum number of detections.')
 
     def load_state(self, checkpoint=None):
         if checkpoint is None:
