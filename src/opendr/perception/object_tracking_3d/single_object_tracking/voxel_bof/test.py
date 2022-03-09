@@ -676,10 +676,10 @@ def test_rotated_pp_siamese_infer(
 
     total_success = Success()
     total_precision = Precision()
-    total_success_near = Success()
-    total_precision_near = Precision()
-    total_success_far = Success()
-    total_precision_far = Precision()
+    total_success_ideal = Success()
+    total_precision_ideal = Precision()
+    total_success_same = Success()
+    total_precision_same = Precision()
 
     all_mean_iou3ds = []
     all_mean_iouAabbs = []
@@ -710,6 +710,8 @@ def test_rotated_pp_siamese_infer(
 
         total_precision.add_accuracy(0.0)
         total_success.add_overlap(1.0)
+        total_precision_ideal.add_accuracy(0.0)
+        total_success_ideal.add_overlap(1.0)
         object_precision.add_accuracy(0.0)
         object_success.add_overlap(1.0)
 
@@ -759,9 +761,44 @@ def test_rotated_pp_siamese_infer(
                 images.append(pil_image)
                 images_small.append(pil_image_small)
 
+            label_ideal = TrackingAnnotation3D(
+                label_lidar.name,
+                label_lidar.truncated,
+                label_lidar.occluded,
+                label_lidar.alpha,
+                label_lidar.bbox2d,
+                label_lidar.dimensions,
+                np.array(
+                    [*label_lidar.location[:-1], learner.init_label.location[-1]]
+                ),
+                label_lidar.rotation_y,
+                label_lidar.id,
+                1,
+                label_lidar.frame,
+            )
+            label_same = TrackingAnnotation3D(
+                label_lidar.name,
+                label_lidar.truncated,
+                label_lidar.occluded,
+                label_lidar.alpha,
+                label_lidar.bbox2d,
+                label_lidar.dimensions,
+                label_lidar.location,
+                label_lidar.rotation_y,
+                label_lidar.id,
+                1,
+                label_lidar.frame,
+            )
+
             result = tracking_boxes_to_camera(result, calib)[0]
             label_lidar = tracking_boxes_to_camera(
                 TrackingAnnotation3DList([label_lidar]), calib
+            )[0]
+            label_ideal = tracking_boxes_to_camera(
+                TrackingAnnotation3DList([label_ideal]), calib
+            )[0]
+            label_same = tracking_boxes_to_camera(
+                TrackingAnnotation3DList([label_same]), calib
             )[0]
 
             dt_boxes = np.concatenate(
@@ -769,6 +806,22 @@ def test_rotated_pp_siamese_infer(
                     result.location.reshape(1, 3),
                     result.dimensions.reshape(1, 3),
                     result.rotation_y.reshape(1, 1),
+                ],
+                axis=1,
+            )
+            dt_boxes_ideal = np.concatenate(
+                [
+                    label_ideal.location.reshape(1, 3),
+                    label_ideal.dimensions.reshape(1, 3),
+                    label_ideal.rotation_y.reshape(1, 1),
+                ],
+                axis=1,
+            )
+            dt_boxes_same = np.concatenate(
+                [
+                    label_same.location.reshape(1, 3) + 0.00001,
+                    label_same.dimensions.reshape(1, 3) + 0.00001,
+                    label_same.rotation_y.reshape(1, 1),
                 ],
                 axis=1,
             )
@@ -781,6 +834,8 @@ def test_rotated_pp_siamese_infer(
                 axis=1,
             )
             iou3d = float(d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64))
+            iou3d_ideal = float(d3_box_overlap(gt_boxes, dt_boxes_ideal).astype(np.float64))
+            iou3d_same = float(d3_box_overlap(gt_boxes, dt_boxes_same).astype(np.float64))
 
             iouAabb = iou_2d(
                 result.location[:2],
@@ -793,12 +848,18 @@ def test_rotated_pp_siamese_infer(
                 count_tracked += 1
 
             accuracy = estimate_accuracy(result, label_lidar)
+            accuracy_ideal = estimate_accuracy(label_ideal, label_lidar)
+            accuracy_same = estimate_accuracy(label_same, label_lidar)
 
             ious.append((iou3d, iouAabb))
             object_precision.add_accuracy(accuracy)
             object_success.add_overlap(iou3d)
             total_precision.add_accuracy(accuracy)
             total_success.add_overlap(iou3d)
+            total_precision_same.add_accuracy(accuracy_same)
+            total_success_same.add_overlap(iou3d_same)
+            total_precision_ideal.add_accuracy(accuracy_ideal)
+            total_success_ideal.add_overlap(iou3d_ideal)
 
             print(
                 track_id,
@@ -814,7 +875,11 @@ def test_rotated_pp_siamese_infer(
                 iouAabb,
                 "accuracy(error) =",
                 accuracy,
+                "] iou3d_same =",
+                iou3d_same,
             )
+
+            print()
 
         if len(ious) <= 0:
             mean_iou3d = None
@@ -902,16 +967,24 @@ def test_rotated_pp_siamese_infer(
     print("fps:", learner.fps())
     print("total_precision:", total_precision.average)
     print("total_success:", total_success.average)
+    print("total_precision_same:", total_precision_same.average)
+    print("total_success_same:", total_success_same.average)
+    print("total_precision_ideal:", total_precision_ideal.average)
+    print("total_success_ideal:", total_success_ideal.average)
 
     with open("./plots/video/" + model_name + "/results.txt", "a") as f:
         print("total_precision:", total_precision.average, file=f)
         print("total_success:", total_success.average, file=f)
+        print("total_precision_same:", total_precision_same.average, file=f)
+        print("total_success_same:", total_success_same.average, file=f)
+        print("total_precision_ideal:", total_precision_ideal.average, file=f)
+        print("total_success_ideal:", total_success_ideal.average, file=f)
         print("kwargs:", " ".join(["--" + str(k) + "=" + str(v) for k, v in kwargs.items()]), file=f)
         print("----", file=f)
         print("", file=f)
 
     for key, values in learner.times.items():
-        t = sum(values) / len(values)
+        t = -1 if len(values) <= 0 else (sum(values) / len(values))
         print(key, "time =", t * 1000, "ms, fps =", 1 / t)
 
 
@@ -1109,6 +1182,10 @@ def test_rotated_pp_siamese_eval(
     total_precision_near = Precision()
     total_success_far = Success()
     total_precision_far = Precision()
+    total_success_ideal = Success()
+    total_precision_ideal = Precision()
+    total_success_same = Success()
+    total_precision_same = Precision()
 
     object_precisions = []
     object_sucesses = []
@@ -1198,6 +1275,35 @@ def test_rotated_pp_siamese_eval(
                         pil_image = PilImage.fromarray(image)
                         images.append(pil_image)
 
+                    label_ideal = TrackingAnnotation3D(
+                        label_lidar.name,
+                        label_lidar.truncated,
+                        label_lidar.occluded,
+                        label_lidar.alpha,
+                        label_lidar.bbox2d,
+                        label_lidar.dimensions,
+                        np.array(
+                            [*label_lidar.location[:-1], learner.init_label.location[-1]]
+                        ),
+                        label_lidar.rotation_y,
+                        label_lidar.id,
+                        1,
+                        label_lidar.frame,
+                    )
+                    label_same = TrackingAnnotation3D(
+                        label_lidar.name,
+                        label_lidar.truncated,
+                        label_lidar.occluded,
+                        label_lidar.alpha,
+                        label_lidar.bbox2d,
+                        label_lidar.dimensions,
+                        label_lidar.location,
+                        label_lidar.rotation_y,
+                        label_lidar.id,
+                        1,
+                        label_lidar.frame,
+                    )
+
                     iouAabb = iou_2d(
                         result[0].location[:2],
                         result[0].dimensions[:2],
@@ -1208,6 +1314,12 @@ def test_rotated_pp_siamese_eval(
                     result = tracking_boxes_to_camera(result, calib)[0]
                     label_lidar = tracking_boxes_to_camera(
                         TrackingAnnotation3DList([label_lidar]), calib
+                    )[0]
+                    label_ideal = tracking_boxes_to_camera(
+                        TrackingAnnotation3DList([label_ideal]), calib
+                    )[0]
+                    label_same = tracking_boxes_to_camera(
+                        TrackingAnnotation3DList([label_same]), calib
                     )[0]
 
                     dt_boxes = np.concatenate(
@@ -1226,12 +1338,32 @@ def test_rotated_pp_siamese_eval(
                         ],
                         axis=1,
                     )
+                    dt_boxes_ideal = np.concatenate(
+                        [
+                            label_ideal.location.reshape(1, 3),
+                            label_ideal.dimensions.reshape(1, 3),
+                            label_ideal.rotation_y.reshape(1, 1),
+                        ],
+                        axis=1,
+                    )
+                    dt_boxes_same = np.concatenate(
+                        [
+                            label_same.location.reshape(1, 3) + 0.00001,
+                            label_same.dimensions.reshape(1, 3) + 0.00001,
+                            label_same.rotation_y.reshape(1, 1),
+                        ],
+                        axis=1,
+                    )
                     iou3d = float(d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64))
+                    iou3d_ideal = float(d3_box_overlap(gt_boxes, dt_boxes_ideal).astype(np.float64))
+                    iou3d_same = float(d3_box_overlap(gt_boxes, dt_boxes_same).astype(np.float64))
 
                     if iou3d > iou_min:
                         count_tracked += 1
 
                     accuracy = estimate_accuracy(result, label_lidar)
+                    accuracy_ideal = estimate_accuracy(label_ideal, label_lidar)
+                    accuracy_same = estimate_accuracy(label_same, label_lidar)
                 except Exception as e:
                     if raise_on_infer_error:
                         raise e
@@ -1240,6 +1372,10 @@ def test_rotated_pp_siamese_eval(
                         iou3d = 0
                         iouAabb = 0
                         accuracy = 0
+                        iou3d_ideal = 0
+                        iou3d_same = 0
+                        accuracy_ideal = 0
+                        accuracy_same = 0
 
                 distance = np.linalg.norm(label_lidar.location, ord=2)
                 ious.append((iou3d, iouAabb))
@@ -1247,6 +1383,11 @@ def test_rotated_pp_siamese_eval(
                 object_success.add_overlap(iou3d)
                 total_precision.add_accuracy(accuracy)
                 total_success.add_overlap(iou3d)
+
+                total_precision_same.add_accuracy(accuracy_same)
+                total_success_same.add_overlap(iou3d_same)
+                total_precision_ideal.add_accuracy(accuracy_ideal)
+                total_success_ideal.add_overlap(iou3d_ideal)
 
                 if distance < near_distance:
                     total_precision_near.add_accuracy(accuracy)
@@ -1446,6 +1587,10 @@ def test_rotated_pp_siamese_eval(
         "params": params_str,
         "object_precisions": object_precisions,
         "object_sucesses": object_sucesses,
+        "total_precision_same": total_precision_same.average,
+        "total_success_same": total_success_same.average,
+        "total_precision_ideal": total_precision_ideal.average,
+        "total_success_ideal": total_success_ideal.average,
     }
 
     for k, v in result.items():

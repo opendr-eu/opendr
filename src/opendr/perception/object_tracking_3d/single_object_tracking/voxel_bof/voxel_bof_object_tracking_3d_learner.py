@@ -1201,7 +1201,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         return model_dir
 
     def fps(self):
-        return sum(self.fpses) / len(self.fpses)
+        return -1 if len(self.fpses) <= 0 else (sum(self.fpses) / len(self.fpses))
 
     def __convert_rpn_to_onnx(
         self,
