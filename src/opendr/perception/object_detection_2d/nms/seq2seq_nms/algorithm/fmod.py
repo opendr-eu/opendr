@@ -24,8 +24,8 @@ class FMoD:
     def __init__(self, roi_pooling_dim=None, pyramid_depth=3, map_type="SIFT", map_bin=False,
                  resize_dim=None, device='cpu'):
         if roi_pooling_dim is None:
-            roi_pooling_dim = [160, 160]
-        self.roi_pooling_dim = roi_pooling_dim
+            roi_pooling_dim = 160
+        self.roi_pooling_dim = [roi_pooling_dim, roi_pooling_dim]
         self.pyramid_depth = pyramid_depth
         self.boxes_p = []
         self.rp_size = []
