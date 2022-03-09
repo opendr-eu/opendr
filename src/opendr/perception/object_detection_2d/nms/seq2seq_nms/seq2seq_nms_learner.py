@@ -150,9 +150,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if self.app_feats == 'fmod':
             if self.fmod_mean_std is None:
                 self.fmod_mean_std = self.load_FMoD_init_from_dataset(dataset=dataset, map_type=self.fmod_map_type,
-                                                                  fmod_pyramid_lvl=self.fmod_pyramid_lvl,
-                                                                  datasets_folder=datasets_folder,
-                                                                  verbose=verbose)
+                                                                      fmod_pyramid_lvl=self.fmod_pyramid_lvl,
+                                                                      datasets_folder=datasets_folder,
+                                                                      verbose=verbose)
             self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
 
         start_epoch = 0
@@ -318,9 +318,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if self.app_feats == 'fmod':
             if self.fmod_mean_std is None:
                 self.fmod_mean_std = self.load_FMoD_init_from_dataset(dataset=dataset, map_type=self.fmod_map_type,
-                                                                  fmod_pyramid_lvl=self.fmod_pyramid_lvl,
-                                                                  datasets_folder=datasets_folder,
-                                                                  verbose=verbose)
+                                                                      fmod_pyramid_lvl=self.fmod_pyramid_lvl,
+                                                                      datasets_folder=datasets_folder,
+                                                                      verbose=verbose)
             self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
 
         self.model = self.model.eval()
