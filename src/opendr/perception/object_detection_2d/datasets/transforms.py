@@ -146,11 +146,9 @@ def transform_test(imgs, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
 
 def pad_test(img, min_size=512):
     h_pad_size = 0
-    pad_dim = 0
     min_dim = 2 + np.argmin([img.shape[2:4]])
     img_padded = img
     if img.shape[min_dim] < min_size:
-        pad_dim = min_dim
         h_pad_size = int((min_size - img.shape[min_dim]) / 2.0)
         if min_dim == 2:
             img_padded = mx.nd.pad(img, mode="constant", constant_value=0,
