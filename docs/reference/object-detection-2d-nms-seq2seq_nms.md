@@ -230,7 +230,8 @@ Parameters:
   ```
 
 * **Inference and result drawing example on a test .jpg image using OpenCV.**
-  ```python
+  ```
+python
 from opendr.perception.object_detection_2d.nms.seq2seq_nms.seq2seq_nms_learner import Seq2SeqNMSLearner
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import SingleShotDetectorLearner
@@ -251,8 +252,8 @@ if not isinstance(img, Image):
 boxes = ssd.infer(img, threshold=0.25, custom_nms=seq2SeqNMSLearner)
 draw_bounding_boxes(img.opencv(), boxes, class_names=ssd.classes, show=True)
   ```
-  
-  
+
+
 #### References
 <a name="seq2seq_nms-1" href="https://www.techrxiv.org/articles/preprint/Neural_Attention-driven_Non-Maximum_Suppression_for_Person_Detection/16940275">[1]</a> Neural Attention-driven Non-Maximum Suppression for Person Detection,
 [TechRxiv](https://www.techrxiv.org/articles/preprint/Neural_Attention-driven_Non-Maximum_Suppression_for_Person_Detection/16940275).
