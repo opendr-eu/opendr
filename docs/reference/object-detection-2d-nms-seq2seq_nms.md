@@ -125,8 +125,18 @@ Performs non-maximum suppression, using seq2seq-nms. It incorporates the full pi
 Parameters:
 
 - **boxes**: *numpy.ndarray, default=None*\
-  Image coordinates of candidate detection RoIs, expressed as the coordinates of their upper-left and top-down corners (x_min, y_min, x_max, y_max). For N candidate detection RoIS, the size of the array is Nx4.
-
+  Image coordinates of candidate detection RoIs, expressed as the coordinates of their upper-left and top-down corners (x_min, y_min, x_max, y_max). For N candidate detection RoIs, the size of the array is Nx4.
+- **scores**: *numpy.ndarray, default=None*\
+  Specifies the scores of the candidate detection RoIs, assigned previously by a detector. For N candidate detection RoIs, the size of the array is Nx1.
+- **boxes_sorted**: *bool, default=False*\
+  Specifies whether *boxes* and *scores* are sorted based on *scores* in descending order.
+- **max_dt_boxes**: *int, default=400*\
+  Specifies the maximum number of detection RoIs that are fed as input to seq2seq-nms model.
+- **img_res**: *[int, int], default=None*\
+  Specifies the image resolution expressed as [width, height].
+- **threshold**: *float, default=0.1*\
+  Specifies the score threshold that will determine which RoIs will be kept after seq2seq-nms rescoring. 
+  
 #### `Seq2SeqNMSLearner.save`
 ```python
 Seq2SeqNMSLearner.save(self, path, verbose)
