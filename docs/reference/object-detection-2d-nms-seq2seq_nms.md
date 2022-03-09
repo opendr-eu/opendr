@@ -210,7 +210,7 @@ Parameters:
   
 #### Examples
 
-* **Training example using an `ExternalDataset`**.
+* **Training example.**
   To train seq2seq-nms properly, the PETS and COCO datasets are supported as Dataset_NMS types. 
 
   ```python
@@ -218,19 +218,17 @@ Parameters:
   import os
   OPENDR_HOME = os.environ['OPENDR_HOME']
   
-seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering=0.8, experiment_name='pets_exp0',
+  seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering=0.8, experiment_name='pets_exp0',
                                       app_feats='fmod', checkpoint_after_iter=1,
                                       temp_path=OPENDR_HOME + '/src/opendr/perception/'
                                                               'object_detection_2d/nms/seq2seq_nms/temp',
                                       epochs=8)
-
-seq2SeqNMSLearner.fit(dataset='PETS', use_ssd=False,
+  seq2SeqNMSLearner.fit(dataset='PETS', use_ssd=False,
                       datasets_folder=OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/datasets',
                       logging_path='./logs_pets_exp1', silent=False, verbose=True, nms_gt_iou=0.50,
                       max_dt_boxes=500)
   ```
-  
-  
+
 * **Inference and result drawing example on a test .jpg image using OpenCV.**
   ```python
 from opendr.perception.object_detection_2d.nms.seq2seq_nms.seq2seq_nms_learner import Seq2SeqNMSLearner
