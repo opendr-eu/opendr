@@ -1,3 +1,5 @@
+# Copyright 2020-2022 OpenDR European Project
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -9,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 
 from opendr.engine.datasets import Dataset
 import os
@@ -465,7 +468,3 @@ class Dataset_NMS(Dataset):
             os.remove(tar_path)
         else:
             raise ValueError("Unsupported file_format: " + file_format)
-
-    # def __prepare_dataset(self):
-    #    seq_root = os.path.join(self.path, "images/train")
-    #    label_root = os.path.join(self.path, "labels/test")
