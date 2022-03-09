@@ -35,6 +35,7 @@ from opendr.perception.object_detection_2d.nms.utils.nms_utils import drop_dets,
     run_coco_eval, filter_iou_boxes, bb_intersection_over_union, compute_class_weights, apply_torchNMS
 import pickle
 
+
 class Seq2SeqNMSLearner(Learner, NMSCustom):
     def __init__(self, lr=0.0001, epochs=8, device='cuda', temp_path='./temp', checkpoint_after_iter=0,
                  checkpoint_load_iter=0, log_after=500, variant='medium', experiment_name='default',
@@ -147,8 +148,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
         if self.app_feats == 'fmod' and self.fmod_mean_std is None:
             self.fmod_mean_std = self.load_FMoD_init_from_dataset(dataset=dataset, map_type=self.fmod_map_type,
-                                                             fmod_pyramid_lvl=self.fmod_pyramid_lvl,
-                                                             datasets_folder=datasets_folder, verbose=verbose)
+                                                                  fmod_pyramid_lvl=self.fmod_pyramid_lvl,
+                                                                  datasets_folder=datasets_folder,
+                                                                  verbose=verbose)
             self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
 
         start_epoch = 0
@@ -313,8 +315,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
         if self.app_feats == 'fmod' and (self.fmod_mean_std is None):
             self.fmod_mean_std = self.load_FMoD_init_from_dataset(dataset=dataset, map_type=self.fmod_map_type,
-                                                             fmod_pyramid_lvl=self.fmod_pyramid_lvl,
-                                                             datasets_folder=datasets_folder, verbose=verbose)
+                                                                  fmod_pyramid_lvl=self.fmod_pyramid_lvl,
+                                                                  datasets_folder=datasets_folder,
+                                                                  verbose=verbose)
             self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
 
         self.model = self.model.eval()
@@ -422,8 +425,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             metadata["fmod_roi_pooling_dim"] = self.fmod_roi_pooling_dim
             metadata["fmod_map_res_dim"] = self.fmod_map_res_dim
             metadata["fmod_pyramid_lvl"] = self.fmod_pyramid_lvl
-            metadata["fmod_normalization"] = 'fmod_normalization.pkl'
-            with open(os.path.join(os.path.dirname(path),'fmod_normalization.pkl'), 'wb') as f:
+            metadata["fmod_normalization"] = "fmod_normalization.pkl"
+            with open(os.path.join(os.path.dirname(path), 'fmod_normalization.pkl'), 'wb') as f:
                 pickle.dump(self.fmod_mean_std, f)
         with open(path + '.json', 'w', encoding='utf-8') as f:
             json.dump(metadata, f, ensure_ascii=False, indent=4)
@@ -539,7 +542,6 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 self.fmod_pyramid_lvl != metadata["fmod_mean_std"]:
             print("Incompatible value for the attribute \"fmod_mean_std\". It is now set to: " +
                   str(metadata["fmod_mean_std"]))
-        #self.fmod_mean_std = metadata["fmod_mean_std"]
 
     def load_state(self, checkpoint=None):
         if checkpoint is None:
