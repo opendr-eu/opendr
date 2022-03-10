@@ -232,20 +232,19 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 msk = self.compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
                 q_geom_feats, k_geom_feats = self.compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
                                                                             resolution=img_res)
-
-                optimizer.zero_grad()
                 preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
                                    app_feats=app_feats)
                 preds = torch.clamp(preds, 0.001, 1 - 0.001)
                 labels = det_matching(scores=preds, dt_boxes=dt_boxes, gt_boxes=gt_boxes,
-                                      iou_thres=nms_gt_iou)
+                                      iou_thres=nms_gt_iou, device=self.device)
 
                 weights = (training_weights[class_index][1] * labels + training_weights[class_index][0] * (
-                        1 - labels)).cuda()
+                        1 - labels))
 
                 e = torch.distributions.uniform.Uniform(0.02, 0.0205).sample([labels.shape[0], 1])
                 if self.device == 'cuda':
                     e = e.cuda()
+                    weights = weights.cuda()
                 labels = labels * (1 - e) + (1 - labels) * e
                 ce_loss = F.binary_cross_entropy(preds, labels, reduction="none")
                 loss = (ce_loss * weights).sum()
