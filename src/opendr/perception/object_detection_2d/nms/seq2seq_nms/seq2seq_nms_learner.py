@@ -189,6 +189,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                     dt_scores, dt_scores_ids = torch.sort(dt_scores, descending=True)
                     dt_boxes = dt_boxes[dt_scores_ids]
                 else:
+                    pbar.update(1)
                     continue
                 gt_boxes = torch.tensor([]).float()
                 if len(dataset_nms.src_data[sample_id]['gt_boxes'][class_index]) > 0:
@@ -208,6 +209,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
                 dt_boxes, dt_scores = drop_dets(dt_boxes, dt_scores)
                 if dt_boxes.shape[0] < 1:
+                    pbar.update(1)
                     continue
                 if self.iou_filtering is not None and 1.0 > self.iou_filtering > 0:
                     dt_boxes, dt_scores = apply_torchNMS(boxes=dt_boxes, scores=dt_scores,
@@ -256,7 +258,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 loss_t = loss.detach().cpu().numpy()
                 total_loss_iter = total_loss_iter + loss_t
                 total_loss_epoch = total_loss_epoch + loss_t
-                
+
                 num_iter = num_iter + 1
                 if self.log_after != 0 and num_iter % self.log_after == 0:
                     if logging:
