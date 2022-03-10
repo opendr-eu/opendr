@@ -249,8 +249,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 ce_loss = F.binary_cross_entropy(preds, labels, reduction="none")
                 loss = (ce_loss * weights).sum()
 
-                loss.backward()
                 optimizer.zero_grad()
+                loss.backward()
                 optimizer.step()
                 # Memory leak if not loss not detached in total_loss_iter and total_loss_epoch computations
                 loss_t = loss.detach().cpu().numpy()
