@@ -248,10 +248,15 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 labels = labels * (1 - e) + (1 - labels) * e
                 ce_loss = F.binary_cross_entropy(preds, labels, reduction="none")
                 loss = (ce_loss * weights).sum()
-                total_loss_iter = total_loss_iter + loss
-                total_loss_epoch = total_loss_epoch + loss
+
                 loss.backward()
+                optimizer.zero_grad()
                 optimizer.step()
+                # Memory leak if not loss not detached in total_loss_iter and total_loss_epoch computations
+                loss_t = loss.detach().cpu().numpy()
+                total_loss_iter = total_loss_iter + loss_t
+                total_loss_epoch = total_loss_epoch + loss_t
+                
                 num_iter = num_iter + 1
                 if self.log_after != 0 and num_iter % self.log_after == 0:
                     if logging:
