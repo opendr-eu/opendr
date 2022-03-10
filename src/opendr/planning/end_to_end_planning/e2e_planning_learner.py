@@ -53,23 +53,20 @@ __all__ = ["rospy", ]
 
 
 class EndToEndPlanningRLLearner(LearnerRL):
-    def __init__(self, env, n_steps=128, lr=1e-5, iters=1_000_000, batch_size=64, lr_schedule='linear',
-                 lr_end: float = 1e-6, backbone='MlpPolicy', checkpoint_after_iter=20_000, checkpoint_load_iter=0,
+    def __init__(self, env, lr=3e-4, n_steps=1024, iters=int(5e4), batch_size=64, checkpoint_after_iter=500,
                  temp_path='', device='cuda'):
         """
         Specifies a proximal policy optimization (PPO) agent that can be trained for end to end planning for obstacle avoidance.
         Internally uses Stable-Baselines (https://github.com/hill-a/stable-baselines).
         """
         super(EndToEndPlanningRLLearner, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer='adam',
-                                                        lr_schedule=lr_schedule, backbone=backbone, network_head='',
-                                                        checkpoint_after_iter=checkpoint_after_iter,
-                                                        checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
+                                                        network_head='', temp_path=temp_path, checkpoint_after_iter=checkpoint_after_iter,
                                                         device=device, threshold=0.0, scale=1.0)
         self.env = env
         if isinstance(self.env, DummyVecEnv):
             self.env = self.env.envs[0]
         self.env = DummyVecEnv([lambda: self.env])
-        self.agent = PPO("MultiInputPolicy", self.env, n_steps=n_steps, verbose=1)
+        self.agent = PPO("MultiInputPolicy", self.env, learning_rate=self.lr, n_steps=n_steps, batch_size=self.batch_size, verbose=1)
 
     def download(self, path=None,
                  url=OPENDR_SERVER_URL + "planning/end_to_end_planning"):
@@ -83,13 +80,12 @@ class EndToEndPlanningRLLearner(LearnerRL):
             urlretrieve(url=url, filename=file_destination)
         return file_destination
 
-    def fit(self, env=None, logging_path='', total_timesteps=int(5e4), silent=False, verbose=True):
+    def fit(self, env=None, logging_path='', silent=False, verbose=True):
         """
         Train the agent on the environment.
 
         :param env: gym.Env, optional, if specified use this env to train
         :param logging_path: str, path for logging and checkpointing
-        :param total_timesteps: int, total timesteps to be trained
         :param silent: bool, disable verbosity
         :param verbose: bool, enable verbosity
         :return:
@@ -109,7 +105,7 @@ class EndToEndPlanningRLLearner(LearnerRL):
         self.env = Monitor(self.env, filename=self.logdir)
         self.env = DummyVecEnv([lambda: self.env])
         self.agent.set_env(self.env)
-        self.agent.learn(total_timesteps=total_timesteps, callback=self.callback)
+        self.agent.learn(total_timesteps=self.iters, callback=self.callback)
 
     def eval(self, env):
         """
@@ -144,7 +140,6 @@ class EndToEndPlanningRLLearner(LearnerRL):
         :return: Whether save succeeded or not
         :rtype: bool
         """
-        print("gym version:", gym.__version__, "stable baselines version:", stable_baselines3.__version__)
         self.agent.save(path)
 
     def load(self, path):
@@ -165,13 +160,18 @@ class EndToEndPlanningRLLearner(LearnerRL):
         Loads a model from the path provided.
 
         :param batch: Path to saved model
-        :type batch: list
+        :type batch: dict ot list of dict
         :param deterministic: use deterministic actions from the policy
         :type deterministic: bool
         :return: the selected action
-        :rtype: int
+        :rtype: int or list
         """
-        return self.agent.predict(batch, deterministic=deterministic)
+        if isinstance(batch, dict):
+            return self.agent.predict(batch, deterministic=deterministic)
+        elif isinstance(batch, list) or isinstance(batch, np.ndarray):
+            return [self.agent.predict(obs, deterministic=deterministic) for obs in batch]
+        else:
+            raise ValueError()
 
     def reset(self):
         raise NotImplementedError()
@@ -187,7 +187,7 @@ class EndToEndPlanningRLLearner(LearnerRL):
         else:
             return True
 
-        if x[-1] - self.last_checkpoint_time_step > 20:
+        if x[-1] - self.last_checkpoint_time_step > self.checkpoint_after_iter:
             self.last_checkpoint_time_step = x[-1]
             check_point_path = Path(self.logdir,
                                     'checkpoint_save' + str(x[-1]) + 'with_mean_rew' + str(mean_reward))
