@@ -223,7 +223,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                     app_feats = self.fMoD.extract_FMoD_feats(dt_boxes)
                     app_feats = torch.unsqueeze(app_feats, dim=1)
                 elif self.app_feats == 'zeros':
-                    app_feats = torch.zeros([dt_boxes.shape[0], self.app_input_dim])
+                    app_feats = torch.zeros([dt_boxes.shape[0], 1, self.app_input_dim])
                     if self.device == 'cuda':
                         app_feats = app_feats.cuda()
                 elif self.app_feats == 'custom':
@@ -370,7 +370,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 app_feats = self.fMoD.extract_FMoD_feats(dt_boxes)
                 app_feats = torch.unsqueeze(app_feats, dim=1)
             elif self.app_feats == 'zeros':
-                app_feats = torch.zeros([dt_boxes.shape[0], self.app_input_dim])
+                app_feats = torch.zeros([dt_boxes.shape[0], 1, self.app_input_dim])
                 if self.device == 'cuda':
                     app_feats = app_feats.cuda()
             elif self.app_feats == 'custom':
@@ -625,7 +625,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             app_feats = self.fMoD.extract_FMoD_feats(boxes)
             app_feats = torch.unsqueeze(app_feats, dim=1)
         elif self.app_feats == 'zeros':
-            app_feats = torch.zeros([boxes.shape[0], self.app_input_dim])
+            app_feats = torch.zeros([boxes.shape[0], 1, self.app_input_dim])
             if self.device == 'cuda':
                 app_feats = app_feats.cuda()
         elif self.app_feats == 'custom':
