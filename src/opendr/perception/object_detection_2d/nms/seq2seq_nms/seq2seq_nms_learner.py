@@ -182,9 +182,6 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             np.random.shuffle(train_ids)
             for sample_id in train_ids:
                 image_fln = dataset_nms.src_data[sample_id]['filename']
-                loss = torch.tensor([0.0], requires_grad=True)
-                if self.device == 'cuda':
-                    loss = loss.cuda()
                 if len(dataset_nms.src_data[sample_id]['dt_boxes'][class_index]) > 0:
                     dt_boxes = torch.tensor(
                         dataset_nms.src_data[sample_id]['dt_boxes'][class_index][:, 0:4]).float()
@@ -243,7 +240,6 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 labels = det_matching(scores=preds, dt_boxes=dt_boxes, gt_boxes=gt_boxes,
                                       iou_thres=nms_gt_iou)
 
-                # weights = (2.92 * labels + 0.932 * (1 - labels)).cuda()
                 weights = (training_weights[class_index][1] * labels + training_weights[class_index][0] * (
                         1 - labels)).cuda()
 
@@ -252,7 +248,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                     e = e.cuda()
                 labels = labels * (1 - e) + (1 - labels) * e
                 ce_loss = F.binary_cross_entropy(preds, labels, reduction="none")
-                loss = loss + (ce_loss * weights).sum()
+                loss = (ce_loss * weights).sum()
                 total_loss_iter = total_loss_iter + loss
                 total_loss_epoch = total_loss_epoch + loss
                 loss.backward()
