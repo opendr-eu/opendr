@@ -210,6 +210,50 @@ Parameters:
   draw_bounding_boxes(img.opencv(), boxes, class_names=ssd.classes, show=True)
   ```
   
+
+#### Performance Evaluation
+
+In terms of speed, the performance of SSD is summarized in the table below (in FPS).
+
+| Method | RTX 2070 | TX2 | AGX |
+|---------|----------|-----|-----|
+| SSD | 85 | 16 | 27 |
+
+Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below. The measurement was made on a Jetson TX2 module.
+
+| Method  | Memory (MB) | Energy (Joules)  - Total per inference  |
+|-------------------|---------|-------|
+| SSD | 4583 | 2.47  | 
+
+
+Finally, we measure the performance on the COCO dataset, using the corresponding metrics.
+
+| Metric   | SSD      |
+|---------|-----------|
+| mAP     | 27.4      |
+| AP@0.5  | 45.6      |
+| AP@0.75 | 28.9      |
+| mAP (S) | 2.8       |
+| mAP (M) | 25.8      |
+| mAP (L) | 42.9      |
+| AR      | 36.3      |
+| AR (S)  | 4.5       |
+| AR (M)  | 37.5      |
+| AR (L)  | 53.7      |
+
+The platform compatibility evaluation is also reported below:
+
+| Platform  | Compatibility Evaluation |
+| ----------------------------------------------|-------|
+| x86 - Ubuntu 20.04 (bare installation - CPU)  | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (bare installation - GPU)  | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (pip installation)         | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (CPU docker)               | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (GPU docker)               | :heavy_check_mark:   |
+| NVIDIA Jetson TX2                             | :heavy_check_mark:   |
+| NVIDIA Jetson Xavier AGX                      | :heavy_check_mark:   |
+| NVIDIA Jetson Xavier NX                       | :heavy_check_mark:   |
+
 #### References
 <a name="ssd-1" href="https://arxiv.org/abs/1512.02325">[1]</a> SSD: Single Shot MultiBox Detector,
 [arXiv](https://arxiv.org/abs/1512.02325).
