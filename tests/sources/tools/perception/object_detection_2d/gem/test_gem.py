@@ -20,12 +20,9 @@ import warnings
 from opendr.engine.datasets import ExternalDataset
 from opendr.perception.object_detection_2d import GemLearner
 import os
-
-device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
-
 from PIL import Image
 
-DEVICE = device
+DEVICE = device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 print("Using device:", DEVICE)
 print("Using device:", DEVICE, file=sys.stderr)

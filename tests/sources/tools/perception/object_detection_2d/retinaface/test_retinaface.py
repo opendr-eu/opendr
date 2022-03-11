@@ -16,13 +16,13 @@ import unittest
 import gc
 import cv2
 import shutil
-import os
 import numpy as np
 from opendr.perception.object_detection_2d import RetinaFaceLearner
 from opendr.perception.object_detection_2d import WiderFaceDataset
 import os
 
 device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
+
 
 def rmfile(path):
     try:

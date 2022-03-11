@@ -23,6 +23,7 @@ import os
 
 device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
+
 def rmfile(path):
     try:
         os.remove(path)
