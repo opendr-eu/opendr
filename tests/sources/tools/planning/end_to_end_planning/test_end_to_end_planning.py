@@ -61,9 +61,9 @@ class EndToEndPlanningTest(unittest.TestCase):
         self.assertTrue((episode_reward < 100), "Episode reward cannot pass 100")
 
     def test_fit(self):
-        self.learner.__init__(self.env, n_steps=12)
+        self.learner.__init__(self.env, n_steps=12, iters=15)
         initial_weights = self.learner.agent.get_parameters()
-        self.learner.fit(logging_path=str(TEMP_SAVE_DIR), total_timesteps=15)
+        self.learner.fit(logging_path=str(TEMP_SAVE_DIR))
         trained_weights = self.learner.agent.get_parameters()
         self.assertFalse(isequal_dict_of_ndarray(initial_weights, trained_weights),
                          "Fit method did not change model weights")
