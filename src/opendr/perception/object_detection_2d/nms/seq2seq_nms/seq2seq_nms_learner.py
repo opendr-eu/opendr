@@ -187,7 +187,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             np.random.shuffle(train_ids)
             for sample_id in train_ids:
 
-                if self.log_after != 0 and num_iter>0 and num_iter % self.log_after == 0:
+                if self.log_after != 0 and num_iter > 0 and (num_iter+2) % self.log_after == 0:
                     if logging:
                         file_writer.add_scalar(tag="cross_entropy_loss",
                                                scalar_value=total_loss_iter/self.log_after,
