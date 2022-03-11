@@ -236,7 +236,7 @@ class Dataset_NMS(Dataset):
                 ssd.download(".", mode="pretrained")
                 ssd.load("./ssd_default_person", verbose=True)
             if not os.path.exists(os.path.join(self.path, imgs_split)):
-                self.download('http://images.cocodataset.org/zips/' + imgs_split +'.zip',
+                self.download('http://images.cocodataset.org/zips/' + imgs_split + '.zip',
                               download_path=os.path.join(self.path), file_format="zip",
                               create_dir=True)
             pkl_filename = os.path.join(self.path, 'data_' + self.detector + '_' +
@@ -281,7 +281,7 @@ class Dataset_NMS(Dataset):
                         bboxes_list = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
                                                 nms_topk=6000, post_nms=6000)
                         bboxes_list = BoundingBoxListToNumpyArray()(bboxes_list)
-                        if bboxes_list.shape[0]>0:
+                        if bboxes_list.shape[0] > 0:
                             bboxes_list = bboxes_list[bboxes_list[:, 4] > 0.015]
                         if bboxes_list.shape[0] > 0:
                             bboxes_list = bboxes_list[np.argsort(bboxes_list[:, 4]), :][::-1]
@@ -295,7 +295,7 @@ class Dataset_NMS(Dataset):
                     for j in range(len(annots_in_frame)):
                         gt_boxes.append(annots_in_frame[j]['bbox'])
                     gt_boxes = np.asarray(np.asarray(gt_boxes))
-                    if gt_boxes.shape[0]>0:
+                    if gt_boxes.shape[0] > 0:
                         gt_boxes[:, 2] = gt_boxes[:, 0] + gt_boxes[:, 2]
                         gt_boxes[:, 3] = gt_boxes[:, 1] + gt_boxes[:, 3]
                     self.src_data.append({
