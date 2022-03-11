@@ -32,7 +32,7 @@ from pycocotools.coco import COCO
 class Dataset_NMS(Dataset):
     def __init__(self, path=None, dataset_name=None, split=None, use_ssd=True, device='cuda'):
         super().__init__()
-        available_dataset = ['COCO', 'PETS',]
+        available_dataset = ['COCO', 'PETS']
         self.dataset_sets = {'train': None,
                              'val': None,
                              'test': None}
