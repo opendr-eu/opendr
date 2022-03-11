@@ -35,11 +35,11 @@ from opendr.perception.object_detection_2d.nms.utils.nms_dataset import Dataset_
 from opendr.perception.object_detection_2d.nms.utils.nms_custom import NMSCustom
 from opendr.perception.object_detection_2d.nms.utils.nms_utils import drop_dets, det_matching, \
     run_coco_eval, filter_iou_boxes, bb_intersection_over_union, compute_class_weights, apply_torchNMS
-
+import gc
 
 class Seq2SeqNMSLearner(Learner, NMSCustom):
     def __init__(self, lr=0.0001, epochs=8, device='cuda', temp_path='./temp', checkpoint_after_iter=0,
-                 checkpoint_load_iter=0, log_after=500, variant='medium', experiment_name='default',
+                 checkpoint_load_iter=0, log_after=10000, variant='medium', experiment_name='default',
                  iou_filtering=0.8, dropout=0.05, pretrained_demo_model=None, app_feats='fmod',
                  fmod_map_type='EDGEMAP', fmod_map_bin=True, app_input_dim=None):
         super(Seq2SeqNMSLearner, self).__init__(lr=lr, batch_size=1,
@@ -52,6 +52,11 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         self.use_app_feats = False
         if self.app_feats is not None:
             self.use_app_feats = True
+        self.fmod_map_type=None
+        self.fmod_map_bin=None
+        self.fmod_map_res_dim = None
+        self.fmod_pyramid_lvl = None
+        self.fmod_roi_pooling_dim = None
         if self.app_feats == 'fmod':
             self.fmod_map_type = fmod_map_type
             self.fmod_roi_pooling_dim = 160
@@ -237,16 +242,16 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
                                    app_feats=app_feats)
                 preds = torch.clamp(preds, 0.001, 1 - 0.001)
+
                 labels = det_matching(scores=preds, dt_boxes=dt_boxes, gt_boxes=gt_boxes,
                                       iou_thres=nms_gt_iou, device=self.device)
-
                 weights = (training_weights[class_index][1] * labels + training_weights[class_index][0] * (
                         1 - labels))
 
                 e = torch.distributions.uniform.Uniform(0.02, 0.0205).sample([labels.shape[0], 1])
                 if self.device == 'cuda':
-                    e = e.cuda()
                     weights = weights.cuda()
+                    e = e.cuda()
                 labels = labels * (1 - e) + (1 - labels) * e
                 ce_loss = F.binary_cross_entropy(preds, labels, reduction="none")
                 loss = (ce_loss * weights).sum()
@@ -258,17 +263,16 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 loss_t = loss.detach().cpu().numpy()
                 total_loss_iter = total_loss_iter + loss_t
                 total_loss_epoch = total_loss_epoch + loss_t
-
                 num_iter = num_iter + 1
                 if self.log_after != 0 and num_iter % self.log_after == 0:
                     if logging:
                         file_writer.add_scalar(tag="cross_entropy_loss",
-                                               scalar_value=total_loss_iter / self.log_after,
+                                               scalar_value=total_loss_iter/self.log_after,
                                                global_step=num_iter)
                     if verbose:
                         print(''.join(['\nEpoch: {}',
                                        ' Iter: {}, cross_entropy_loss: {}']).format(epoch, num_iter,
-                                                                                    total_loss_iter / self.log_after))
+                                                                                    total_loss_iter/self.log_after))
                     total_loss_iter = 0
                 if not silent:
                     pbar.update(1)
@@ -277,8 +281,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             if verbose:
                 print(''.join(['\nEpoch: {}',
                                ' cross_entropy_loss: {}\n']).format(epoch,
-                                                                    total_loss_epoch / len(train_ids)))
-            training_dict['cross_entropy_loss'].append(total_loss_epoch / len(train_ids))
+                                                                    total_loss_epoch/len(train_ids)))
+            training_dict['cross_entropy_loss'].append(total_loss_epoch/len(train_ids))
             if self.checkpoint_after_iter != 0 and epoch % self.checkpoint_after_iter == self.checkpoint_after_iter - 1:
                 snapshot_name = '{}/checkpoint_epoch_{}'.format(checkpoints_folder, epoch)
                 self.save(path=snapshot_name, optimizer=optimizer, scheduler=scheduler,
@@ -467,7 +471,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         except FileNotFoundError as e:
             e.strerror = "File " + pth_path + "not found."
             raise e
-        if metadata['fmod_normalization']:
+        if 'fmod_normalization' in metadata:
             pkl_fmod = os.path.join(dir_path, metadata["fmod_normalization"])
             if verbose:
                 print("Loading FMoD normalization values:", pkl_fmod)
@@ -509,26 +513,31 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if verbose and self.fmod_map_type is not None and self.fmod_map_type != metadata["fmod_map_type"]:
             print("Incompatible value for the attribute \"fmod_map_type\". It is now set to: " +
                   str(metadata["fmod_map_type"]))
-        self.fmod_map_type = metadata["fmod_map_type"]
+        if "fmod_map_type" in metadata:
+            self.fmod_map_type = metadata["fmod_map_type"]
         if verbose and self.fmod_map_bin is not None and self.fmod_map_bin != metadata["fmod_map_bin"]:
             print("Incompatible value for the attribute \"fmod_map_bin\". It is now set to: " +
                   str(metadata["fmod_map_bin"]))
-        self.fmod_map_bin = metadata["fmod_map_bin"]
+        if "fmod_map_bin" in metadata:
+            self.fmod_map_bin = metadata["fmod_map_bin"]
         if verbose and self.fmod_roi_pooling_dim is not None and \
                 self.fmod_roi_pooling_dim != metadata["fmod_roi_pooling_dim"]:
             print("Incompatible value for the attribute \"fmod_roi_pooling_dim\". It is now set to: " +
                   str(metadata["fmod_roi_pooling_dim"]))
-        self.fmod_roi_pooling_dim = metadata["fmod_roi_pooling_dim"]
+        if "fmod_roi_pooling_dim" in metadata:
+            self.fmod_roi_pooling_dim = metadata["fmod_roi_pooling_dim"]
         if verbose and self.fmod_map_res_dim is not None and \
                 self.fmod_map_res_dim != metadata["fmod_map_res_dim"]:
             print("Incompatible value for the attribute \"fmod_map_res_dim\". It is now set to: " +
                   str(metadata["fmod_map_res_dim"]))
-        self.fmod_map_res_dim = metadata["fmod_map_res_dim"]
+        if "fmod_roi_pooling_dim" in metadata:
+            self.fmod_roi_pooling_dim = metadata["fmod_roi_pooling_dim"]
         if verbose and self.fmod_pyramid_lvl is not None and \
                 self.fmod_pyramid_lvl != metadata["fmod_pyramid_lvl"]:
             print("Incompatible value for the attribute \"fmod_pyramid_lvl\". It is now set to: " +
                   str(metadata["fmod_pyramid_lvl"]))
-        self.fmod_pyramid_lvl = metadata["fmod_pyramid_lvl"]
+        if "fmod_pyramid_lvl" in metadata:
+            self.fmod_pyramid_lvl = metadata["fmod_pyramid_lvl"]
         if verbose and self.lq_dim is not None and \
                 self.lq_dim != metadata["lq_dim"]:
             print("Incompatible value for the attribute \"lq_dim\". It is now set to: " +
@@ -543,7 +552,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                   str(metadata["num_JPUs"]))
         self.num_JPUs = metadata["num_JPUs"]
         if verbose and 'max_dt_boxes' in metadata:
-            print('Model is trained with as ' + str(metadata['max_dt_boxes']) + ' the maximum number of detections.')
+            print('Model is trained with ' + str(metadata['max_dt_boxes']) + ' as the maximum number of detections.')
 
     def load_state(self, checkpoint=None):
         if checkpoint is None:
