@@ -25,7 +25,6 @@ from tqdm import tqdm
 from opendr.perception.object_detection_2d import SingleShotDetectorLearner
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d.datasets.transforms import BoundingBoxListToNumpyArray
-import json
 from pycocotools.coco import COCO
 
 
@@ -290,7 +289,7 @@ class Dataset_NMS(Dataset):
                             dt_boxes.append(np.array([bboxes_list[b, 0], bboxes_list[b, 1], bboxes_list[b, 2],
                                                       bboxes_list[b, 3], bboxes_list[b, 4][0]]))
                     dt_boxes = np.asarray(dt_boxes)
-                    annots_in_frame = annots.loadAnns(annots.getAnnIds(imgIds=[dets_default[1][i]], iscrowd=False))
+                    annots_in_frame = annots.loadAnns(annots.getAnnIds(imgIds=[dets_default[1][i]], catIds=[1], iscrowd=False))
                     gt_boxes = []
                     for j in range(len(annots_in_frame)):
                         gt_boxes.append(annots_in_frame[j]['bbox'])
