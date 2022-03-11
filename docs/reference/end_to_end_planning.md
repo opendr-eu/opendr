@@ -6,7 +6,8 @@ class *LearnerRL*.
 ### Class EndToEndPlanningRLLearner
 Bases: `engine.learners.LearnerRL`
 
-
+The *EndToEndPlanningRLLearner* is an agent that can be used to train quadrotor robots equipped with a depth sensor to
+follow a provided trajectory while avoiding obstacles.
 
 The [EndToEndPlanningRLLearner](/src/opendr/planning/end_to_end_planning/e2e_planning_learner.py) class has the 
 following public methods:
