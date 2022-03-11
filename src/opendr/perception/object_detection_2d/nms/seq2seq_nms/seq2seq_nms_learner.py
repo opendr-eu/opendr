@@ -39,7 +39,7 @@ from opendr.perception.object_detection_2d.nms.utils.nms_utils import drop_dets,
 
 class Seq2SeqNMSLearner(Learner, NMSCustom):
     def __init__(self, lr=0.0001, epochs=8, device='cuda', temp_path='./temp', checkpoint_after_iter=0,
-                 checkpoint_load_iter=0, log_after=100, variant='medium', experiment_name='default',
+                 checkpoint_load_iter=0, log_after=10000, variant='medium', experiment_name='default',
                  iou_filtering=0.8, dropout=0.05, pretrained_demo_model=None, app_feats='fmod',
                  fmod_map_type='EDGEMAP', fmod_map_bin=True, app_input_dim=None):
         super(Seq2SeqNMSLearner, self).__init__(lr=lr, batch_size=1,
