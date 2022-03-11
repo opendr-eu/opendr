@@ -38,7 +38,7 @@ ___
 
     
 ### Tests
-- -[ ] Create Unit tests in `tests/tools/perception/panoptic_segmentation/efficient_lps`
+- -[X] Create Unit tests in `tests/tools/perception/panoptic_segmentation/efficient_lps`
 - -[ ] Add tests to be executed to some file
 
 ## Documentation
