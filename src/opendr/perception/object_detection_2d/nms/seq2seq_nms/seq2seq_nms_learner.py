@@ -39,7 +39,7 @@ from opendr.perception.object_detection_2d.nms.utils.nms_utils import drop_dets,
 
 class Seq2SeqNMSLearner(Learner, NMSCustom):
     def __init__(self, lr=0.0001, epochs=8, device='cuda', temp_path='./temp', checkpoint_after_iter=0,
-                 checkpoint_load_iter=0, log_after=10000, variant='medium', experiment_name='default',
+                 checkpoint_load_iter=0, log_after=100, variant='medium', experiment_name='default',
                  iou_filtering=0.8, dropout=0.05, pretrained_demo_model=None, app_feats='fmod',
                  fmod_map_type='EDGEMAP', fmod_map_bin=True, app_input_dim=None):
         super(Seq2SeqNMSLearner, self).__init__(lr=lr, batch_size=1,
@@ -187,7 +187,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             np.random.shuffle(train_ids)
             for sample_id in train_ids:
 
-                if self.log_after != 0 and num_iter > 0 and (num_iter+2) % self.log_after == 0:
+                if self.log_after != 0 and (num_iter ) > 0 and (num_iter ) % self.log_after == 0:
                     if logging:
                         file_writer.add_scalar(tag="cross_entropy_loss",
                                                scalar_value=total_loss_iter/self.log_after,
@@ -206,7 +206,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                     dt_scores, dt_scores_ids = torch.sort(dt_scores, descending=True)
                     dt_boxes = dt_boxes[dt_scores_ids]
                 else:
-                    pbar.update(1)
+                    if not silent:
+                        pbar.update(1)
                     num_iter = num_iter + 1
                     continue
                 gt_boxes = torch.tensor([]).float()
@@ -227,7 +228,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
                 dt_boxes, dt_scores = drop_dets(dt_boxes, dt_scores)
                 if dt_boxes.shape[0] < 1:
-                    pbar.update(1)
+                    if not silent:
+                        pbar.update(1)
                     num_iter = num_iter + 1
                     continue
                 if self.iou_filtering is not None and 1.0 > self.iou_filtering > 0:
