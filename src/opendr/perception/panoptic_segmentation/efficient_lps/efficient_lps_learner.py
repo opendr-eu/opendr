@@ -51,6 +51,9 @@ from mmdet.utils import collect_env, get_root_logger
 from opendr.perception.panoptic_segmentation.datasets import SemanticKittiDataset, NuscenesDataset
 
 
+Prediction = Tuple[Union[Heatmap, np.ndarray], Union[Heatmap, np.ndarray], Optional[Image]]
+
+
 class EfficientLpsLearner(Learner):
 	"""
 	The EfficientLpsLearner class provides the top-level API to training and evaluating the EfficientLPS network.
@@ -67,11 +70,11 @@ class EfficientLpsLearner(Learner):
 				 weight_decay: float = 0.0001,
 				 optimizer_config: Optional[Dict[str, Any]] = None,
 				 checkpoint_after_iter: int = 1,
-				 temp_path: str = str(Path(__file__).parent / "eval_tmp_dir"),
+				 temp_path: Union[str, Path] = Path(__file__).parent / "eval_tmp_dir",
 				 device: str = "cuda:0",
 				 num_workers: int = 1,
 				 seed: Optional[float] = None,
-				 config_file: str = str(Path(__file__).parent / "configs" / "singlegpu_sample.py")
+				 config_file: Union[str, Path] = Path(__file__).parent / "configs" / "singlegpu_sample.py"
 				 ):
 		"""
 		Constructor
@@ -95,7 +98,7 @@ class EfficientLpsLearner(Learner):
 		:param checkpoint_after_iter: Interval in epochs after which to save model checkpoints [Training]
 		:type checkpoint_after_iter: int
 		:param temp_path: Path to a temporary folder that will be created to evaluate the model [Training | Evaluation]
-		:type temp_path: str
+		:type temp_path: str | Path
 		:param device: Hardware device to deploy the model to
 		:type device: str
 		:param num_workers: Number of workers used by the data loaders [Training | Evaluation]
@@ -103,10 +106,10 @@ class EfficientLpsLearner(Learner):
 		:param seed: Random seed to shuffle the data during training [Training]
 		:type seed: float (Optional)
 		:param config_file: Path to a python configuration file that contains the model and data loading pipelines.
-		:type config_file: str
+		:type config_file: str | Path
 		"""
 
-		super().__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer, temp_path=temp_path,
+		super().__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer, temp_path=str(temp_path),
 						 device=device)
 
 		if lr_schedule is None:
@@ -131,7 +134,7 @@ class EfficientLpsLearner(Learner):
 		self._checkpoint_after_iter = checkpoint_after_iter
 		self._num_workers = num_workers
 
-		self._cfg = Config.fromfile(config_file)
+		self._cfg = Config.fromfile(str(config_file))
 		self._cfg.workflow = [("train", 1)]
 		self._cfg.model.pretrained = None
 		self._cfg.optimizer = {
@@ -159,6 +162,10 @@ class EfficientLpsLearner(Learner):
 		prev_stdout = sys.stdout
 		sys.stdout = open(os.devnull, 'w')
 		self.model = build_detector(self._cfg.model, train_cfg=self._cfg.train_cfg, test_cfg=self._cfg.test_cfg)
+		if not hasattr(self.model, "CLASSES"):
+			warnings.warn(
+				"Class names are not saved in the checkpoint\"s meta data, use Cityscapes classes by default.")
+			self.model.CLASSES = get_classes("cityscapes")
 		sys.stdout.close()
 		sys.stdout = prev_stdout
 		self.model.to(self.device)
@@ -173,7 +180,7 @@ class EfficientLpsLearner(Learner):
 	def fit(self,
 			dataset: Union[SemanticKittiDataset, NuscenesDataset],
 			val_dataset: Optional[Union[SemanticKittiDataset, NuscenesDataset]] = None,
-			logging_path: str = str(Path(__file__).parent / "logging"),
+			logging_path: Union[str, Path] = Path(__file__).parent / "logging",
 			silent: bool = True,
 			verbose: Optional[bool] = True
 			) -> Dict[str, List[Dict[str, Any]]]:
@@ -185,7 +192,7 @@ class EfficientLpsLearner(Learner):
 		:param val_dataset: Object that holds the Validation Dataset
 		:type val_dataset: OpenDR Dataset class type
 		:param logging_path: Path to store the log files, e.g., training progress and tensorboard logs
-		:type logging_path: str
+		:type logging_path: str | Path
 		:param silent: If True, printing the training progress to STDOUT is disabled. Evaluation will still be shown.
 		:type silent: bool
 		:param verbose: Unused.
@@ -199,7 +206,7 @@ class EfficientLpsLearner(Learner):
 		if verbose is not None:
 			warnings.warn("The verbose parameter is not supported and will be ignored.")
 
-		self._cfg.work_dir = logging_path
+		self._cfg.work_dir = str(logging_path)
 
 		dataset.pipeline = self._cfg.train_pipeline
 		dataloaders = [build_dataloader(
@@ -430,7 +437,7 @@ class EfficientLpsLearner(Learner):
 			  batch: Union[PointCloud, List[PointCloud]],
 			  return_raw_logits: bool = False,
 			  projected: bool = False
-			  ) -> List[Tuple[np.ndarray, np.ndarray, Optional[Image]]]:
+			  ) -> Union[Prediction, List[Prediction]]:
 		"""
 		Method to perform inference on a provided batch of data.
 
@@ -505,13 +512,13 @@ class EfficientLpsLearner(Learner):
 		return results
 
 	def save(self,
-			 path: str
+			 path: Union[str, Path]
 			 ) -> bool:
 		"""
         Saves the model in the path provided.
 
         :param path: Path to save directory
-        :type path: str
+        :type path: str | Path
 
         :return: Whether save succeeded or not
         :rtype: bool
@@ -521,7 +528,10 @@ class EfficientLpsLearner(Learner):
 			warnings.warn("The current model has not been trained.")
 	
 		# Create structure according to OpenDR specification
-		dir_path = Path(path) / "efficient_lps"
+		dir_path = path
+		if not isinstance(path, Path):
+			dir_path = Path(path)
+		dir_path = dir_path / "efficient_lps"
 		if dir_path.exists():
 			warnings.warn("The given path already exists. Any content will be overwritten.")
 		else:
@@ -553,24 +563,26 @@ class EfficientLpsLearner(Learner):
 		return True
 
 	def load(self,
-			 path: str
+			 path: Union[str, Path]
 			 ) -> bool:
 		"""
         Loads a model from the provided path.
 
         :param path: Path to saved model
-        :type path: str
+        :type path: str | Path
 
         :return: Whether load succeeded or not
         :rtype: bool
         """
 
-		if ".pth" in path:  # Read the actual model
+		if not isinstance(path, Path):
+			path = Path(path)
+
+		if path.suffix == ".pth":  # Read the actual model
 			try:
-				checkpoint = load_checkpoint(self.model, path)
-				if "CLASSES" in checkpoint["meta"]:
-					self.model.CLASSES = checkpoint["meta"]["CLASSES"]
-				else:
+				checkpoint = load_checkpoint(self.model, str(path))
+				self.model.CLASSES = checkpoint["meta"].get("CLASSES")
+				if not self.model.CLASSES:
 					warnings.warn(
 						"Class names are not saved in the checkpoint\"s meta data, use Cityscapes classes by default.")
 					self.model.CLASSES = get_classes("cityscapes")
@@ -579,18 +591,18 @@ class EfficientLpsLearner(Learner):
 				return False
 			return True
 		else:  # OpenDR specification
-			meta_path = Path(path) / f"{Path(path).name}.json"
+			meta_path = path / f"{path.name}.json"
 			if not meta_path.exists():
 				warnings.warn(f"No model meta data found at {meta_path}")
 				return False
 			with open(meta_path, "r") as f:
 				meta_data = json.load(f)
 			# According to the OpenDR specification, the model path is given with a leading slash
-			model_path = Path(path) / str(meta_data["model_paths"]).lstrip("/")
+			model_path = path / str(meta_data["model_paths"]).lstrip("/")
 			if not model_path.exists():
 				warnings.warn(f"No model weights found at {model_path}")
 				return False
-			return self.load(str(model_path))
+			return self.load(model_path)
 
 	def optimize(self, target_device: str) -> bool:
 		# Not needed for this learner.
@@ -601,7 +613,7 @@ class EfficientLpsLearner(Learner):
 		raise NotImplementedError("EfficientLPS is stateless, no reset() needed.")
 
 	@staticmethod
-	def download(path: str,
+	def download(path: Union[str, Path],
 				 mode: str = "model",
 				 trained_on: str = "kitti"
 				 ) -> str:
@@ -615,7 +627,7 @@ class EfficientLpsLearner(Learner):
 			- NuScenes
 	
 		:param path: Path to save the model weights
-		:type path: str
+		:type path: str | Path
 		:param mode: What kind of data to download
 		:type mode: str
 		:param trained_on: Dataset on which the model has been trained [applicable only to mode == "model"]
@@ -640,9 +652,11 @@ class EfficientLpsLearner(Learner):
 			url = f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficientlps/test_data/test_data.zip"
 		else:
 			raise ValueError("Invalid mode. Valid options are ['model', 'test_data']")
-	
-		filename = os.path.join(path, url.split("/")[-1])
-		os.makedirs(path, exist_ok=True)
+
+		if not isinstance(path, Path):
+			path = Path(path)
+		filename = path / url.split("/")[-1]
+		path.mkdir(parents=True, exist_ok=True)
 	
 		def pbar_hook(prog_bar: tqdm):
 			prev_b = [0]
@@ -657,14 +671,14 @@ class EfficientLpsLearner(Learner):
 	
 		with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1, desc=f"Downloading {filename}") as pbar:
 			urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
-		return filename
+		return str(filename)
 
 	@staticmethod
 	def visualize(pointcloud: PointCloud,
 				  predictions: Tuple[np.ndarray, np.ndarray],
 				  show_figure: bool = True,
 				  save_figure: bool = False,
-				  figure_filename: Optional[str] = None,
+				  figure_filename: Optional[Union[str, Path]] = None,
 				  figure_size: Tuple[float, float] = (15, 10),
 				  max_inst: int = 20,
 				  min_alpha: float = 0.25,
@@ -713,7 +727,7 @@ class EfficientLpsLearner(Learner):
 
 		PALETTE.append([0, 0, 0])
 		colors = np.array(PALETTE, dtype=np.float) / 255.
-		colors = colors[sem]
+		colors = colors[sem % colors.shape[0]]  # Use the mod of the sem. label in case some values aren't in the colors
 		alphas = ((min_alpha - 1) / max_inst) * inst + 1
 		alphas = np.clip(alphas, min_alpha, 1)
 		colors = np.c_[colors, alphas]
@@ -725,7 +739,9 @@ class EfficientLpsLearner(Learner):
 		plt.close()
 
 		if save_figure:
-			Path(figure_filename).parent.mkdir(parents=True, exist_ok=True)
+			if not isinstance(figure_filename, Path):
+				figure_filename = Path(figure_filename)
+			figure_filename.parent.mkdir(parents=True, exist_ok=True)
 			visualization_img.save(figure_filename)
 		if show_figure:
 			visualization_img.show()

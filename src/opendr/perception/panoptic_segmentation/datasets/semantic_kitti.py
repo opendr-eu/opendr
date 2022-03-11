@@ -64,18 +64,18 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 	NOTE: Only sequences 00-10 have ground truth values and, thus are the only ones with the poses.txt and labels/.
 	"""
 
-	def __init__(self, path: str,
+	def __init__(self, path: Union[str, Path],
 				 split: Optional[str]):
 		"""
 		Constructor.
 
 		:param path: Path to the KITTI dataset root. Parent of the sequences/ directory.
-		:type path: str
+		:type path: str | Path
 		:param split: Type of the data split. Valid values: ["train", "valid", "test"]. If None, then "train" will be used.
 		:type split: str|None
 		"""
 
-		super().__init__(path=path, dataset_type="SemanticKITTIDataset")
+		super().__init__(path=str(path), dataset_type="SemanticKITTIDataset")
 
 		self._pipeline = None
 		self._mmdet_dataset = (None, None)
@@ -133,7 +133,7 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 		TODO:
 
 		"""
-		if isinstance(prediction_path, str):
+		if not isinstance(prediction_path, Path):
 			prediction_path = Path(prediction_path)
 
 		if not prediction_path.exists():
