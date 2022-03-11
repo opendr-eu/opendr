@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
+import cv2.cv2
 import torch
 import torch.nn.functional as F
 import pickle
@@ -275,6 +274,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+
                 # Memory leak if not loss not detached in total_loss_iter and total_loss_epoch computations
                 loss_t = loss.detach().cpu().numpy()
                 total_loss_iter = total_loss_iter + loss_t
