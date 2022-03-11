@@ -60,13 +60,15 @@ class EndToEndPlanningRLLearner(LearnerRL):
         Internally uses Stable-Baselines (https://github.com/hill-a/stable-baselines).
         """
         super(EndToEndPlanningRLLearner, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer='adam',
-                                                        network_head='', temp_path=temp_path, checkpoint_after_iter=checkpoint_after_iter,
+                                                        network_head='', temp_path=temp_path,
+                                                        checkpoint_after_iter=checkpoint_after_iter,
                                                         device=device, threshold=0.0, scale=1.0)
         self.env = env
         if isinstance(self.env, DummyVecEnv):
             self.env = self.env.envs[0]
         self.env = DummyVecEnv([lambda: self.env])
-        self.agent = PPO("MultiInputPolicy", self.env, learning_rate=self.lr, n_steps=n_steps, batch_size=self.batch_size, verbose=1)
+        self.agent = PPO("MultiInputPolicy", self.env, learning_rate=self.lr, n_steps=n_steps,
+                         batch_size=self.batch_size, verbose=1)
 
     def download(self, path=None,
                  url=OPENDR_SERVER_URL + "planning/end_to_end_planning"):
@@ -152,7 +154,6 @@ class EndToEndPlanningRLLearner(LearnerRL):
         :rtype: bool
         """
         self.agent = PPO.load(path)
-        # self.agent.policy = MultiInputPolicy
         self.agent.set_env(self.env)
 
     def infer(self, batch, deterministic: bool = True):
