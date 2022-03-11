@@ -35,7 +35,7 @@ from opendr.perception.object_detection_2d.nms.utils.nms_dataset import Dataset_
 from opendr.perception.object_detection_2d.nms.utils.nms_custom import NMSCustom
 from opendr.perception.object_detection_2d.nms.utils.nms_utils import drop_dets, det_matching, \
     run_coco_eval, filter_iou_boxes, bb_intersection_over_union, compute_class_weights, apply_torchNMS
-import gc
+
 
 class Seq2SeqNMSLearner(Learner, NMSCustom):
     def __init__(self, lr=0.0001, epochs=8, device='cuda', temp_path='./temp', checkpoint_after_iter=0,
@@ -52,8 +52,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         self.use_app_feats = False
         if self.app_feats is not None:
             self.use_app_feats = True
-        self.fmod_map_type=None
-        self.fmod_map_bin=None
+        self.fmod_map_type = None
+        self.fmod_map_bin = None
         self.fmod_map_res_dim = None
         self.fmod_pyramid_lvl = None
         self.fmod_roi_pooling_dim = None
@@ -195,6 +195,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                     dt_boxes = dt_boxes[dt_scores_ids]
                 else:
                     pbar.update(1)
+                    num_iter = num_iter + 1
                     continue
                 gt_boxes = torch.tensor([]).float()
                 if len(dataset_nms.src_data[sample_id]['gt_boxes'][class_index]) > 0:
@@ -215,6 +216,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 dt_boxes, dt_scores = drop_dets(dt_boxes, dt_scores)
                 if dt_boxes.shape[0] < 1:
                     pbar.update(1)
+                    num_iter = num_iter + 1
                     continue
                 if self.iou_filtering is not None and 1.0 > self.iou_filtering > 0:
                     dt_boxes, dt_scores = apply_torchNMS(boxes=dt_boxes, scores=dt_scores,
@@ -302,7 +304,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             self.classes = dataset_nms.classes
             self.class_ids = dataset_nms.class_ids
 
-        annotations_filename = str.lower(dataset) + '_' + split + '.json'
+        annotations_filename = dataset_nms.annotation_file
 
         eval_folder = os.path.join(self.parent_dir, self.experiment_name, 'eval')
         if not os.path.isdir(os.path.join(self.parent_dir, self.experiment_name)):
