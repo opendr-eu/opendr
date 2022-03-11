@@ -116,23 +116,16 @@ TABLE-1: OpenDR 3D human model generation speed evaluation
 
 
 
-Table AUTH-TABLE-21: 3D Human Model Generation platform compatibility evaluation
-Platform
-Test results
-x86 - Ubuntu 20.04 (bare installation - CPU)
-Pass
-x86 - Ubuntu 20.04 (bare installation - GPU)
-Pass
-x86 - Ubuntu 20.04 (pip installation)
-Pass
-x86 - Ubuntu 20.04 (CPU docker)
-Pass (Human Model Generation only)
-x86 - Ubuntu 20.04 (GPU docker)
-Pass (Human Model Generation only)
-NVIDIA Jetson TX2
-Not tested
-NVIDIA Jetson Xavier NX
-Not tested
+TABLE-2: 3D Human Model Generation platform compatibility evaluation
+| Platform                                     | Test results                       |
+| -------------------------------------------- | ---------------------------------- |
+| x86 - Ubuntu 20.04 (bare installation - CPU) | Pass                               |
+| x86 - Ubuntu 20.04 (bare installation - GPU) | Pass                               |
+| x86 - Ubuntu 20.04 (pip installation)        | Pass                               |
+| x86 - Ubuntu 20.04 (CPU docker)              | Pass (Human Model Generation only) |
+| x86 - Ubuntu 20.04 (GPU docker)              | Pass (Human Model Generation only) |
+| NVIDIA Jetson TX2                            | Not tested                         |
+| NVIDIA Jetson Xavier NX                      | Not tested                         |
 
 
 #### References
