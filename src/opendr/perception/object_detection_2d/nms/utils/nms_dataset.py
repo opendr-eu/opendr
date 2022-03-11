@@ -1,5 +1,3 @@
-# Copyright 2020-2022 OpenDR European Project
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -20,8 +18,6 @@ import ssl
 import time
 from zipfile import ZipFile
 import tarfile
-import gdown
-import shutil
 import pickle
 import numpy as np
 import math
@@ -36,7 +32,7 @@ from pycocotools.coco import COCO
 class Dataset_NMS(Dataset):
     def __init__(self, path=None, dataset_name=None, split=None, use_ssd=True, device='cuda'):
         super().__init__()
-        available_dataset = ['COCO', 'PETS', 'CrowdHuman']
+        available_dataset = ['COCO', 'PETS',]
         self.dataset_sets = {'train': None,
                              'val': None,
                              'test': None}
@@ -219,123 +215,18 @@ class Dataset_NMS(Dataset):
 
             self.classes = ['background', 'human']
             self.class_ids = [-1, 1]
-
-        elif self.dataset_name == "CrowdHuman":
-            splits = ['train', 'val']
-            if self.split not in splits:
-                raise ValueError(self.split + ' split is not available...')
-            self.detector = 'YOLOv4'
-            self.detector_type = 'default'
-            if use_ssd:
-                self.detector = 'SSD'
-                self.detector_type = 'custom'
-            if not os.path.exists(os.path.join(self.path, 'images/train')):
-                os.makedirs(os.path.join(self.path, 'images/train'), exist_ok=True)
-                urls = ['https://drive.google.com/file/d/134QOvaatwKdy0iIeNqA_p-xkAhkV4F8Y/view?usp=sharing',
-                        'https://drive.google.com/u/0/uc?id=17evzPh7gc1JBNvnW1ENXLy5Kr4Q_Nnla',
-                        'https://drive.google.com/u/0/uc?id=1tdp0UCgxrqy1B6p8LkR-Iy0aIJ8l4fJW']
-                outputs = [os.path.join(self.path, 'CrowdHuman_train01.zip'), 'CrowdHuman_train02.zip',
-                           'CrowdHuman_train03.zip']
-                for i in range(0, len(urls)):
-                    gdown.download(urls[i], outputs[i], quiet=False)
-                    zip_path = os.path.join('.', outputs[i])
-                    with ZipFile(zip_path, 'r') as zip_ref:
-                        download_path = os.path.join(self.path, 'images', 'train')
-                        zip_ref.extractall(download_path)
-                    os.remove(zip_path)
-
-            if not os.path.exists(os.path.join(self.path, 'images/val')):
-                os.makedirs(os.path.join(self.path, 'images/val'), exist_ok=True)
-                url = 'https://drive.google.com/u/0/uc?id=18jFI789CoHTppQ7vmRSFEdnGaSQZ4YzO'
-                output = 'CrowdHuman_val.zip'
-                gdown.download(url, output, quiet=False)
-                zip_path = os.path.join('.', output)
-                with ZipFile(zip_path, 'r') as zip_ref:
-                    download_path = os.path.join(self.path, 'images', 'val')
-                    zip_ref.extractall(download_path)
-                os.remove(zip_path)
-
-            if not os.path.exists(
-                    os.path.join(self.path, 'data_' + self.detector + '_' + self.split + '_crowdhuman.pkl')):
-                # Download detections from FTP server
-                ssd = None
-                if use_ssd:
-                    ssd = SingleShotDetectorLearner(device=device)
-                    ssd.download(".", mode="pretrained")
-                    ssd.load("./ssd_default_person", verbose=True)
-
-                # Download annotations from official CrowdHuman GoogleDrive repo
-                if not os.path.exists(os.path.join(self.path, 'annotations', 'annotation_' + self.split + '.odgt')):
-                    os.makedirs(os.path.join(self.path, 'annotations'), exist_ok=True)
-                    url = None
-                    if self.split == 'train':
-                        url = 'https://drive.google.com/u/0/uc?id=1UUTea5mYqvlUObsC1Z8CFldHJAtLtMX3&export=download'
-                    elif self.split == 'val':
-                        url = 'https://drive.google.com/u/0/uc?id=10WIRwu8ju8GRLuCkZ_vT6hnNxs5ptwoL&export=download'
-                    output = 'annotation_' + self.split + '.odgt'
-                    gdown.download(url, output, quiet=False)
-                    shutil.move(os.path.join('.', output),
-                                os.path.join('.', 'datasets', 'CrowdHuman', 'annotations', self.split))
-
-                with open(os.path.join(self.path, 'annotations', 'annotation_' + self.split + '.odgt')) as fp_gt:
-                    data_dt = None
-                    if self.detector_type == 'default':
-                        fp_dt = open(
-                            os.path.join(self.path, 'detections', 'det_data_' + self.split + '_crowdhuman.pkl'), 'rb')
-                        data_dt = pickle.load(fp_dt)
-                    line = fp_gt.readline()
-                    i = 0
-                    while line:
-                        annotations = json.loads(line)
-                        img = Image.open(os.path.join(self.path, 'images/' + self.split, annotations['ID'] + '.jpg'))
-                        dt_boxes = []
-                        if self.detector_type == 'default' and data_dt[i]['id'] != annotations['ID']:
-                            continue
-                        elif self.detector_type == 'default':
-                            dt_boxes = data_dt[i]['dt_boxes']
-                        elif self.detector_type == 'custom' and self.detector == 'SSD':
-                            bboxes_list = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
-                                                    nms_topk=10000, post_nms=10000)
-                            bboxes_list = BoundingBoxListToNumpyArray()(bboxes_list)
-                            bboxes_list = bboxes_list[bboxes_list[:, 4] > 0.015]
-                            bboxes_list = bboxes_list[np.argsort(bboxes_list[:, 4]), :][::-1]
-                            bboxes_list = bboxes_list[:8000, :]
-                            for b in range(len(bboxes_list)):
-                                dt_boxes.append(np.array([bboxes_list[b, 0], bboxes_list[b, 1], bboxes_list[b, 2],
-                                                          bboxes_list[b, 3], bboxes_list[b, 4][0]]))
-                        gt_boxes = []
-                        for j in range(len(annotations['gtboxes'])):
-                            if annotations['gtboxes'][j]['tag'] == 'person':
-                                gt_box = annotations['gtboxes'][j]['fbox']
-                                gt_box[2] = gt_box[2] + gt_box[0]
-                                gt_box[3] = gt_box[3] + gt_box[1]
-                                gt_boxes.append(gt_box)
-                        self.src_data.append({
-                            'id': annotations['ID'],
-                            'filename': annotations['ID'] + '.jpg',
-                            'resolution': img.opencv().shape[0:2][::-1],
-                            'gt_boxes': [np.asarray([]), np.asarray(gt_boxes)],
-                            'dt_boxes': [np.asarray([]), np.asarray(dt_boxes)]
-                        })
-                        line = fp_gt.readline()
-                        i = i + 1
-                with open(os.path.join(self.path, 'data_' + self.split + '_crowdhuman.pkl'), 'wb') as handle:
-                    pickle.dump(self.src_data, handle, protocol=pickle.DEFAULT_PROTOCOL)
-            else:
-                with open(os.path.join(self.path, 'data_' + self.split + '_crowdhuman.pkl'), 'rb') as fp_dt:
-                    self.src_data = pickle.load(fp_dt)
+            self.annotation_file = 'instances_' + self.dataset_sets[self.split] + '.json'
         elif self.dataset_name == "COCO":
             self.dataset_sets['train'] = 'train'
             self.dataset_sets['val'] = 'minival'
             self.dataset_sets['test'] = 'valminusminival'
-            imgs_split = None
             if self.dataset_sets[self.split] is None:
                 raise ValueError(self.split + ' split is not available...')
             elif self.dataset_sets[self.split] == 'train':
                 imgs_split = 'train2014'
             else:
                 imgs_split = 'val2014'
-            self.detector = 'YOLOv4'
+            self.detector = 'FRCN'
             self.detector_type = 'default'
             ssd = None
             if use_ssd:
@@ -345,23 +236,39 @@ class Dataset_NMS(Dataset):
                 ssd.download(".", mode="pretrained")
                 ssd.load("./ssd_default_person", verbose=True)
             if not os.path.exists(os.path.join(self.path, imgs_split)):
-                self.download('http://images.cocodataset.org/zips/' + imgs_split + '.zip',
+                self.download('http://images.cocodataset.org/zips/' + imgs_split +'.zip',
                               download_path=os.path.join(self.path), file_format="zip",
                               create_dir=True)
-            pkl_filename = os.path.join(self.path, 'data_' + self.detector + '_' + self.dataset_sets[self.split] + '_coco.pkl')
+            pkl_filename = os.path.join(self.path, 'data_' + self.detector + '_' +
+                                        self.dataset_sets[self.split] + '_coco.pkl')
             if not os.path.exists(pkl_filename):
-                if not os.path.exists(os.path.join(self.path, 'annotations', 'instances_' + imgs_split + '.json')):
-                    self.download('http://images.cocodataset.org/annotations/annotations_trainval2014.zip',
-                                  download_path=os.path.join(self.path), file_format='zip', create_dir=True)
-                if not os.path.exists(os.path.join(self.path, 'detections',
-                                                   'coco_2014_' + self.dataset_sets[self.split] + '_FRCN_train.pkl')):
+                if not os.path.exists(os.path.join(self.path, 'annotations', 'instances_' +
+                                                                             self.dataset_sets[self.split] +
+                                                                             '2014.json')):
+                    if self.dataset_sets[self.split] == 'train':
+                        ann_url = 'http://images.cocodataset.org/annotations/annotations_trainval2014.zip'
+                        self.download(ann_url, download_path=os.path.join(self.path), file_format="zip",
+                                      create_dir=True)
+                    else:
+                        if self.dataset_sets[self.split] == 'val':
+                            ann_url = 'https://dl.dropboxusercontent.com/s/o43o90bna78omob/' \
+                                      'instances_minival2014.json.zip?dl=0'
+                        else:
+                            ann_url = 'https://dl.dropboxusercontent.com/s/s3tw5zcg7395368/' \
+                                      'instances_valminusminival2014.json.zip?dl=0'
+                        self.download(ann_url, download_path=os.path.join(self.path, 'annotations'), file_format="zip",
+                                      create_dir=True)
+                if not os.path.exists(os.path.join(self.path, 'detections', 'coco_2014_' +
+                                                                            self.dataset_sets[self.split] +
+                                                                            '_FRCN_train.pkl')):
                     self.download('http://datasets.d2.mpi-inf.mpg.de/hosang17cvpr/coco_2014_FRCN.tar.gz',
                                   download_path=os.path.join(self.path, 'detections'), file_format='tar.gz',
                                   create_dir=True)
                 with open(os.path.join(self.path, 'detections',
                                        'coco_2014_' + self.dataset_sets[self.split] + '_FRCN_train.pkl'), 'rb') as f:
                     dets_default = pickle.load(f, encoding='latin1')
-                annots = COCO(annotation_file=os.path.join(self.path, 'annotations', 'instances_' + imgs_split + '.json'))
+                annots = COCO(annotation_file=os.path.join(self.path, 'annotations', 'instances_' +
+                                                           self.dataset_sets[self.split] + '2014.json'))
                 pbarDesc = "Overall progress"
                 pbar = tqdm(desc=pbarDesc, total=len(dets_default[1]))
                 for i in range(len(dets_default[1])):
@@ -374,7 +281,7 @@ class Dataset_NMS(Dataset):
                         bboxes_list = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
                                                 nms_topk=6000, post_nms=6000)
                         bboxes_list = BoundingBoxListToNumpyArray()(bboxes_list)
-                        if bboxes_list.shape[0] > 0:
+                        if bboxes_list.shape[0]>0:
                             bboxes_list = bboxes_list[bboxes_list[:, 4] > 0.015]
                         if bboxes_list.shape[0] > 0:
                             bboxes_list = bboxes_list[np.argsort(bboxes_list[:, 4]), :][::-1]
@@ -388,7 +295,7 @@ class Dataset_NMS(Dataset):
                     for j in range(len(annots_in_frame)):
                         gt_boxes.append(annots_in_frame[j]['bbox'])
                     gt_boxes = np.asarray(np.asarray(gt_boxes))
-                    if gt_boxes.shape[0] > 0:
+                    if gt_boxes.shape[0]>0:
                         gt_boxes[:, 2] = gt_boxes[:, 0] + gt_boxes[:, 2]
                         gt_boxes[:, 3] = gt_boxes[:, 1] + gt_boxes[:, 3]
                     self.src_data.append({
@@ -407,6 +314,7 @@ class Dataset_NMS(Dataset):
                     self.src_data = pickle.load(fp_pkl)
             self.classes = ['background', 'person']
             self.class_ids = [-1, 1]
+            self.annotation_file = 'instances_' + self.dataset_sets[self.split] + '2014.json'
 
     @staticmethod
     def download(
