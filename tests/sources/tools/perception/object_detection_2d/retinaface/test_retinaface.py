@@ -20,7 +20,9 @@ import os
 import numpy as np
 from opendr.perception.object_detection_2d import RetinaFaceLearner
 from opendr.perception.object_detection_2d import WiderFaceDataset
+import os
 
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 def rmfile(path):
     try:
@@ -45,7 +47,7 @@ class TestRetinaFaceLearner(unittest.TestCase):
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "retinaface", "retinaface_temp")
-        cls.detector = RetinaFaceLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
+        cls.detector = RetinaFaceLearner(device=device, temp_path=cls.temp_dir, batch_size=1, epochs=1,
                                          checkpoint_after_iter=0, lr=1e-4)
         # Download all required files for testing
         cls.detector.download(mode="pretrained")

@@ -14,13 +14,14 @@
 
 import unittest
 import shutil
-import os
 import torch
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.engine.datasets import ExternalDataset
 from opendr.engine.data import Image
 import warnings
+import os
 
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 def rmfile(path):
     try:
@@ -45,7 +46,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "pose_estimation",
                                     "lightweight_open_pose", "lw_open_pose_temp")
-        cls.pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
+        cls.pose_estimator = LightweightOpenPoseLearner(device=device, temp_path=cls.temp_dir, batch_size=1, epochs=1,
                                                         checkpoint_after_iter=0, num_workers=1)
         # Download all required files for testing
         cls.pose_estimator.download(mode="pretrained")
