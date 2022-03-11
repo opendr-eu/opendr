@@ -186,6 +186,18 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 pbar = tqdm(desc=pbarDesc, total=len(train_ids))
             np.random.shuffle(train_ids)
             for sample_id in train_ids:
+
+                if self.log_after != 0 and num_iter>0 and num_iter % self.log_after == 0:
+                    if logging:
+                        file_writer.add_scalar(tag="cross_entropy_loss",
+                                               scalar_value=total_loss_iter/self.log_after,
+                                               global_step=num_iter)
+                    if verbose:
+                        print(''.join(['\nEpoch: {}',
+                                       ' Iter: {}, cross_entropy_loss: {}']).format(epoch, num_iter,
+                                                                                    total_loss_iter/self.log_after))
+                    total_loss_iter = 0
+
                 image_fln = dataset_nms.src_data[sample_id]['filename']
                 if len(dataset_nms.src_data[sample_id]['dt_boxes'][class_index]) > 0:
                     dt_boxes = torch.tensor(
@@ -266,16 +278,6 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 total_loss_iter = total_loss_iter + loss_t
                 total_loss_epoch = total_loss_epoch + loss_t
                 num_iter = num_iter + 1
-                if self.log_after != 0 and num_iter % self.log_after == 0:
-                    if logging:
-                        file_writer.add_scalar(tag="cross_entropy_loss",
-                                               scalar_value=total_loss_iter/self.log_after,
-                                               global_step=num_iter)
-                    if verbose:
-                        print(''.join(['\nEpoch: {}',
-                                       ' Iter: {}, cross_entropy_loss: {}']).format(epoch, num_iter,
-                                                                                    total_loss_iter/self.log_after))
-                    total_loss_iter = 0
                 if not silent:
                     pbar.update(1)
             if not silent:
