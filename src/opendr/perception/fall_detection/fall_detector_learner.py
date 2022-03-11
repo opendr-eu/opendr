@@ -14,12 +14,14 @@
 
 from os import walk, path
 from csv import reader
+from tqdm import tqdm
 
 from numpy import arccos, dot, linalg, rad2deg
 
 from opendr.engine.learners import Learner
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
 from opendr.engine.target import Category, Keypoint
+from opendr.engine.data import Image
 
 
 class FallDetectorLearner(Learner):
@@ -32,39 +34,53 @@ class FallDetectorLearner(Learner):
         pass
 
     def eval(self, dataset):
-        data, labels = self.__prepare_val_dataset(dataset)
+        data = self.__prepare_val_dataset(dataset)
 
         tp = 0
         tn = 0
         fp = 0
         fn = 0
         no_detections = 0
-        for image, label in zip(data, labels):
+
+        p_bar_desc = "Evaluation progress"
+        pbar_eval = tqdm(desc=p_bar_desc, total=len(data), bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
+
+        for i in range(len(data)):
+            image = data[i][0]
+            label = data[i][1].data
             if label == 0:  # Temporary pose, skip
+                pbar_eval.update(1)
                 continue
 
-            fallen, _ = self.infer(image)
+            image = Image.open(image)
+            fallen, keypoints = self.infer(image)
+            fallen = fallen.data
 
-            if fallen == -1:  # Can't detect fallen or standing
+            if fallen == 0:  # Can't detect fallen or standing
                 no_detections += 1
+                pbar_eval.update(1)
                 continue
 
-            if label == -1 and fallen == 0:  # Person standing, detected standing, true negative
+            if label == -1 and fallen == -1:  # Person standing, detected standing, true negative
                 tn += 1
-            elif label == 1 and fallen == 1:  # Person fallen, detected fall, true positive
+            if label == 1 and fallen == 1:  # Person fallen, detected fall, true positive
                 tp += 1
             elif label == -1 and fallen == 1:  # Person standing, detected fall, false positive
                 fp += 1
-            elif label == 1 and fallen == 0:  # Person fallen, detected standing, false negative
+            elif label == 1 and fallen == -1:  # Person fallen, detected standing, false negative
                 fn += 1
-
+            pbar_eval.update(1)
+        pbar_eval.close()
         accuracy = (tp + tn) / (tp + tn + fp + fn)
         sensitivity = tp / (tp + fn)
         specificity = tn / (tn + fp)
-        detection_accuracy = (tp + tn + fp + fn) / len(labels)
-        return accuracy, sensitivity, specificity, detection_accuracy
+        detection_accuracy = (tp + tn + fp + fn) / len(data)
 
-    def __prepare_val_dataset(self, dataset):
+        return {"accuracy": accuracy, "sensitivity": sensitivity, "specificity": specificity,
+                "detection_accuracy": detection_accuracy, "no_detections": no_detections}
+
+    @staticmethod
+    def __prepare_val_dataset(dataset):
         if isinstance(dataset, ExternalDataset):
             if dataset.dataset_type.lower() != "ur_fall_dataset":
                 raise UserWarning("dataset_type must be \"ur_fall_dataset\"")
@@ -82,48 +98,44 @@ class FallDetectorLearner(Learner):
             raise UserWarning("Didn't find \"urfall-cam0-adls.csv\" file in the dataset path provided.")
         if "urfall-cam0-falls.csv" not in f:
             raise UserWarning("Didn't find \"urfall-cam0-falls.csv\" file in the dataset path provided.")
-        labels = {"adls": [], "falls": []}
+
+        # Verify all subfolders with images are present
+        for i in range(1, 41, 1):
+            dirname = f"adl-{i:02d}-cam0-rgb"
+            if dirname not in dirs:
+                raise UserWarning("Didn't find \"" + dirname + "\" dir in the dataset path provided.")
+
+        for i in range(1, 31, 1):
+            dirname = f"fall-{i:02d}-cam0-rgb"
+            if dirname not in dirs:
+                raise UserWarning("Didn't find \"" + dirname + "\" dir in the dataset path provided.")
+
+        data = []
+        labels = []
         with open(path.join(dataset.path, "urfall-cam0-adls.csv")) as adls_labels_file, \
                 open(path.join(dataset.path, "urfall-cam0-falls.csv")) as falls_labels_file:
             # pass the file object to reader() to get the reader object
             adls_reader = reader(adls_labels_file)
             falls_reader = reader(falls_labels_file)
             # Iterate over each row in the csv using reader object
-            adls_previous_video, falls_previous_video = 0, 0
             for adls_row in adls_reader:
-                adls_current_video = int(adls_row[0][-2:])
-                if adls_current_video != adls_previous_video:
-                    labels["adls"].append([])
-                    adls_previous_video = adls_current_video
-                labels["adls"][-1].append(Category(int(adls_row[2])))
-                print(adls_row)
-                print(adls_current_video)
+                # Append image path based on video id, frame id
+                dataset_folder_name = "UR Fall Dataset"
+                folder_name = adls_row[0] + "-cam0-rgb"
+                img_name = folder_name + f"-{int(adls_row[1]):03d}.png"
+                data.append(path.join(dataset_folder_name, folder_name, img_name))
+                # Append label
+                labels.append(Category(int(adls_row[2])))
 
             for falls_row in falls_reader:
-                falls_current_video = int(falls_row[0][-2:])
-                print(falls_row)
-                print(falls_current_video)
-        exit()
-        # Verify all subfolders with images are present
-        for i in range(1, 41, 1):
-            if i < 10:
-                dirname = "adl-0" + str(i) + "-cam0-rgb"
-            else:
-                dirname = "adl-" + str(i) + "-cam0-rgb"
-            if dirname not in dirs:
-                raise UserWarning("Didn't find \"" + dirname + "\" dir in the dataset path provided.")
+                # Append image path based on video id, frame id
+                folder_name = falls_row[0] + "-cam0-rgb"
+                img_name = folder_name + f"-{int(falls_row[1]):03d}.png"
+                data.append(path.join(dataset_folder_name, folder_name, img_name))
+                # Append label
+                labels.append(Category(int(falls_row[2])))
 
-        for i in range(1, 31, 1):
-            if i < 10:
-                dirname = "fall-0" + str(i) + "-cam0-rgb"
-            else:
-                dirname = "fall-" + str(i) + "-cam0-rgb"
-            if dirname not in dirs:
-                raise UserWarning("Didn't find \"" + dirname + "\" dir in the dataset path provided.")
-
-
-        data = URFallDatasetIterator(None, None)
-        return data, labels
+        return URFallDatasetIterator(data, labels)
 
     def save(self, path):
         pass
@@ -142,7 +154,7 @@ class FallDetectorLearner(Learner):
         if len(poses) != 0:
             return self.naive_fall_detection(poses[0])
         else:
-            return Category(-1), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])]
+            return Category(0), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])]
 
     @staticmethod
     def get_angle_to_horizontal(v1, v2):
@@ -166,7 +178,7 @@ class FallDetectorLearner(Learner):
             hips = pose["l_hip"]
         else:
             # Can't detect fall without hips
-            return Category(-1), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])]
+            return Category(0), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])]
 
         # Figure out head average position
         head = [-1, -1]
@@ -228,15 +240,15 @@ class FallDetectorLearner(Learner):
             if legs_vertical == 0:  # Legs are not vertical, probably not under torso, so person has fallen
                 return Category(1), [Keypoint(head), Keypoint(hips), Keypoint(legs)]
             elif legs_vertical == 1:  # Legs are vertical, so person is standing
-                return Category(0), [Keypoint(head), Keypoint(hips), Keypoint(legs)]
+                return Category(-1), [Keypoint(head), Keypoint(hips), Keypoint(legs)]
         elif torso_vertical != -1:
             if torso_vertical == 0:  # Torso is not vertical, without legs we assume person has fallen
                 return Category(1), [Keypoint(head), Keypoint(hips), Keypoint(legs)]
             elif torso_vertical == 1:  # Torso is vertical, without legs we assume person is standing
-                return Category(0), [Keypoint(head), Keypoint(hips), Keypoint(legs)]
+                return Category(-1), [Keypoint(head), Keypoint(hips), Keypoint(legs)]
         else:
             # Only hips detected, can't detect fall
-            return Category(-1), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])]
+            return Category(0), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])]
 
 
 class URFallDatasetIterator(DatasetIterator):
@@ -246,14 +258,7 @@ class URFallDatasetIterator(DatasetIterator):
         self.labels = labels
 
     def __getitem__(self, idx):
-        event_type, video_idx, frame_idx = idx[0], idx[1], idx[2]
-        return self.data[event_type][video_idx][frame_idx], self.labels[event_type, video_idx, frame_idx]
+        return self.data[idx], self.labels[idx]
 
     def __len__(self):
-        count = 0
-        for event in self.data:
-            for video in event:
-                # for _ in video:
-                #     count += 1
-                count += len(video)
-        return count
+        return len(self.labels)
