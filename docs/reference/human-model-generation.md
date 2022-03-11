@@ -103,6 +103,36 @@ A demo in the form of a Jupyter Notebook is available
   model_3D = model_generator.infer(imgs_rgb=[rgb_img], imgs_msk=[msk_img], extract_pose=False)
   ```
 
+#### Performance Evaluation
+
+TABLE-1: OpenDR 3D human model generation speed evaluation
+| Method                                          | CPU i7-9700K (ms) | RTX 2070 (ms) |
+| Human Model Generation only                     | 488.2±265.0       | 212.3±98.0    | 
+| Human Model Generation + 3D pose approximation  | 679.8±283.0       | 531.6±236     |
+
+
+
+
+
+
+Table AUTH-TABLE-21: 3D Human Model Generation platform compatibility evaluation
+Platform
+Test results
+x86 - Ubuntu 20.04 (bare installation - CPU)
+Pass
+x86 - Ubuntu 20.04 (bare installation - GPU)
+Pass
+x86 - Ubuntu 20.04 (pip installation)
+Pass
+x86 - Ubuntu 20.04 (CPU docker)
+Pass (Human Model Generation only)
+x86 - Ubuntu 20.04 (GPU docker)
+Pass (Human Model Generation only)
+NVIDIA Jetson TX2
+Not tested
+NVIDIA Jetson Xavier NX
+Not tested
+
 
 #### References
 <a name="pifu-paper" href="https://shunsukesaito.github.io/PIFu/">[1]</a>
