@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from opendr.engine.datasets import Dataset
 import os
 from urllib.request import urlretrieve
