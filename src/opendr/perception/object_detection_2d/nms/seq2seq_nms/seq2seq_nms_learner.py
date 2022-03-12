@@ -361,6 +361,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 dt_scores, dt_scores_ids = torch.sort(dt_scores, descending=True)
                 dt_boxes = dt_boxes[dt_scores_ids]
             else:
+                pbar_eval.update(1)
                 continue
 
             if self.device == "cuda":
