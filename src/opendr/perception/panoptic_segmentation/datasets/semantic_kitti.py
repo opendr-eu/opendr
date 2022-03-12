@@ -14,7 +14,7 @@
 
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Tuple
 import sys
 
 import numpy as np
@@ -61,11 +61,14 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 	           ├── calib.txt
                ⋮
 
-	NOTE: Only sequences 00-10 have ground truth values and, thus are the only ones with the poses.txt and labels/.
+	NOTE: Only sequences 00-10 have ground truth values and, thus are the only ones with the poses.txt file
+	and labels/ directory.
 	"""
 
-	def __init__(self, path: Union[str, Path],
-				 split: Optional[str]):
+	def __init__(self,
+				 path: Union[str, Path],
+				 split: Optional[str]
+				 ):
 		"""
 		Constructor.
 
@@ -79,39 +82,53 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 
 		self._pipeline = None
 		self._mmdet_dataset = (None, None)
+		self._file_list = None
 		self.split = split
 
 	@property
-	def pipeline(self) -> List[Dict[str, Any]]:
+	def pipeline(self
+				 ) -> List[Dict[str, Any]]:
 		"""
 		Getter of the data loading pipeline.
 
-		:return: data loading pipeline
+		:return: data loading pipeline.
 		:rtype: list
 		"""
 		return self._pipeline
 
 	@pipeline.setter
-	def pipeline(self, value: List[Dict[str, Any]]):
+	def pipeline(self,
+				 value: List[Dict[str, Any]]
+				 ):
 		"""
-		Setter for the data loading pipeline
+		Setter for the data loading pipeline.
 
-		:param value: data loading pipeline
+		:param value: data loading pipeline.
 		:type value: list
 		"""
 		self._pipeline = value
 
 	@property
-	def split(self) -> str:
+	def split(self
+			  ) -> str:
 		"""
-		TODO:
+		Getter for the data split key.
 
-		:return:
+		:return: Key of the dataset split.
+		:rtype: str
 		"""
 		return self._split
 
 	@split.setter
-	def split(self, value: str):
+	def split(self,
+			  value: str
+			  ):
+		"""
+		Setter for the data split key.
+
+		:param value: Type of the data split. Valid values: ["train", "valid", "test"]. If None, then "train" will be used.
+		:type value: str|None
+		"""
 
 		if value is None:
 			self._split = "train"
@@ -130,9 +147,24 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 				 min_points: int = 50,
 				 ) -> Dict[str, Any]:
 		"""
-		TODO:
+        This method is used to evaluate the predictions versus the ground truth returns the following stats:
+            - Panoptic Quality (PQ)
+            - Segmentation Quality (SQ)
+            - Recognition Quality (RQ)
+            - Intersection over Union (IOU)
 
-		"""
+        This function contains modified code from '_evaluate_panoptic()' in
+            src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS/mmdet/datasets/semantic_kitti.py
+
+        :param prediction_path: path to the predicted stuffandthing maps.
+        :type prediction_path: str | pathlib.Path
+        :param min_points:
+        :type min_points: int
+
+        :return: Evaluation statistics.
+        :rtype: dict
+        """
+
 		if not isinstance(prediction_path, Path):
 			prediction_path = Path(prediction_path)
 
@@ -172,7 +204,7 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 		class_iou, class_all_iou = class_evaluator.getSemIoU()
 
 		results_all = {"PQ": class_pq, "SQ": class_sq, "RQ": class_rq, "IoU": class_iou}
-		resuls_cls = {"PQ": class_all_pq, "SQ": class_all_sq, "RQ": class_all_rq, "IoU": class_all_iou}
+		results_cls = {"PQ": class_all_pq, "SQ": class_all_sq, "RQ": class_all_rq, "IoU": class_all_iou}
 
 		things = ['car', 'truck', 'bicycle', 'motorcycle', 'other-vehicle', 'person', 'bicyclist', 'motorcyclist']
 		stuff = [ 'road', 'sidewalk', 'parking', 'other-ground', 'building', 'vegetation', 'trunk', 'terrain', 'fence',
@@ -184,52 +216,105 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 
 		results = {
 			"all": results_all,
-			"things": { k: np.mean(v[things_idx]).item() for k, v in resuls_cls.items()},
-			"stuff": { k: np.mean(v[stuff_idx]).item() for k, v in resuls_cls.items()},
-			"per_class": { k: {vk: v[i] for vk, v in resuls_cls.items()} for k, i in class_dict.items()}
+			"things": { k: np.mean(v[things_idx]).item() for k, v in results_cls.items()},
+			"stuff": { k: np.mean(v[stuff_idx]).item() for k, v in results_cls.items()},
+			"per_class": { k: {vk: v[i] for vk, v in results_cls.items()} for k, i in class_dict.items()}
 		}
 
 		return results
 
-	def __getitem__(self, idx):
+	def __getitem__(self,
+					idx: int
+					) -> Tuple[PointCloud, None]:
 		"""
-		TODO
-		"""
-		raise NotImplementedError
+        Method is used for loading the idx-th sample of a dataset along with its annotation.
+        In this case, the annotation is split up into different files and, thus, a different interface is used.
 
-	def __len__(self):
+        :param idx: Index of the sample to load.
+        :type idx: int
+
+        :return: The idx-th sample and the corresponding annotation.
+        :rtype: Tuple of (PointCloud, None)
+        """
+
+		dataset = self._get_mmdet_dataset(test_mode=not self.split == "train", ignore_pipeline=True)
+		item_path = dataset.vel_seq_infos[idx]
+		point_cloud = self.load_point_cloud(item_path)
+
+		return point_cloud, None
+
+	def __len__(self
+				) -> int:
 		"""
-		TODO
-		:return:
-		"""
-		raise NotImplementedError
+        This method returns the size of the dataset in terms of number of data points (scan frames).
+
+        :return: the size of the dataset
+        :rtype: int
+        """
+
+		return len(self._get_mmdet_dataset(test_mode=not self.split == "train", ignore_pipeline=True))
 
 	def get_mmdet_dataset(self,
-						  test_mode: bool = False
+						  test_mode: bool = False,
 						  ) -> MmdetCityscapesDataset:
 		"""
-		TODO
-		:param test_mode:
+		Returns the dataset in a format compatible with the mmdet dataloader.
+
+        :param test_mode: Whether to use the train or test data pipelines.
+						  If set to True, the panoptic ground truth data has to be present
 		:type test_mode: bool
 
-		:return:
+		:return: MMDet compatible dataset
+		:rtype: MmdetCityscapesDataset
 		"""
+
+		return self._get_mmdet_dataset(test_mode=test_mode, ignore_pipeline=False)
+
+	def _get_mmdet_dataset(self,
+						   test_mode: bool = False,
+						   ignore_pipeline: bool = False,
+						   ) -> MmdetCityscapesDataset:
+		"""
+		Private version of the get_mmdet_dataset that can ignore the pipeline.
+
+		:param test_mode: Whether to use the train or test data pipelines.
+						  If set to True, the panoptic ground truth data has to be present
+		:type test_mode: bool
+		:param ignore_pipeline: Ignores the fact that no pipeline has been set. Used by the iterator methods.
+		                        Use caution when setting it to True.
+		:type ignore_pipeline: bool
+
+		:return: MMDet compatible dataset
+		:rtype: MmdetCityscapesDataset
+		"""
+
 		if self._mmdet_dataset[0] is None or self._mmdet_dataset[1] != test_mode:
-			self._mmdet_dataset = (self._build_mmdet_dataset(test_mode), test_mode)
+			self._mmdet_dataset = (self._build_mmdet_dataset(test_mode, ignore_pipeline=ignore_pipeline), test_mode)
 		return self._mmdet_dataset[0]
 
 	def _build_mmdet_dataset(self,
-							 test_mode: bool = False
+							 test_mode: bool = False,
+							 ignore_pipeline: bool = False,
 							 ) -> MmdetCityscapesDataset:
 		"""
-		TODO
+		Generates the mmdet representation of the dataset to be used with the mmdet API.
 
-		:param test_mode:
+		:param test_mode: Whether to use the train or test data pipelines.
+						  If set to True, the panoptic ground truth data has to be present
 		:type test_mode: bool
-		:return:
+		:param ignore_pipeline: Ignores the fact that no pipeline has been set. Used by the iterator methods.
+		                        Use caution when setting it to True.
+		:type ignore_pipeline: bool
+
+		:return: MMDet compatible dataset
+		:rtype: MmdetCityscapesDataset
 		"""
-		if self.pipeline is None:
-			raise ValueError("No dataset pipeline has been set.")
+
+		if not self.pipeline:
+			if ignore_pipeline:
+				self.pipeline = []
+			else:
+				raise ValueError("No dataset pipeline has been set.")
 
 		config_path = Path(__file__).parent.parent / "efficient_lps" / "algorithm" / "EfficientLPS" / "configs"
 
@@ -247,3 +332,7 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 			mmdet_dataset = build_dataset(cfg)
 
 		return mmdet_dataset
+
+	@staticmethod
+	def load_point_cloud(path):
+		return PointCloud(data=np.fromfile(path, dtype=np.float32).reshape(-1, 4))

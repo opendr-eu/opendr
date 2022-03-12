@@ -40,10 +40,6 @@ def rmdir(_dir):
         print(f'Error: {e.filename} - {e.strerror}.')
 
 
-def load_point_cloud(path):
-    return np.fromfile(path, dtype=np.float32).reshape(-1, 4)
-
-
 class TestEfficientLpsLearner(unittest.TestCase):
     temp_dir = None
 
@@ -51,8 +47,7 @@ class TestEfficientLpsLearner(unittest.TestCase):
     def setUpClass(cls):
         print("\n\n**********************************\nTEST EfficientLPS Learner\n**********************************")
 
-        cls.temp_dir = Path("tests") / "sources" / "tools" / "perception" / "panoptic_segmentation"
-        cls.temp_dir = cls.temp_dir / "efficient_lps" / "efficient_lps_temp"
+        cls.temp_dir = Path(__file__).parent / "efficient_lps_temp"
         if cls.temp_dir.exists():
             rmdir(cls.temp_dir)
         cls.temp_dir.mkdir(parents=False, exist_ok=True)
@@ -92,7 +87,7 @@ class TestEfficientLpsLearner(unittest.TestCase):
     def test_infer_single_point_cloud(self):
         # TODO: Verify Test file after uploading to server
         point_cloud_filename = self.test_data / "infer_data" / "seq08_f000000.bin"
-        point_cloud = PointCloud(data=load_point_cloud(point_cloud_filename))
+        point_cloud = SemanticKittiDataset.load_point_cloud(point_cloud_filename)
         learner = EfficientLpsLearner()
         learner.load(self.model_weights)
         prediction = learner.infer(point_cloud, projected=True)
@@ -111,7 +106,7 @@ class TestEfficientLpsLearner(unittest.TestCase):
             self.test_data / "infer_data" / "seq08_f000000.bin",
             self.test_data / "infer_data" / "seq08_f000010.bin",
         ]
-        point_clouds = [PointCloud(data=load_point_cloud(f)) for f in pcl_filenames]
+        point_clouds = [SemanticKittiDataset.load_point_cloud(f) for f in pcl_filenames]
         learner = EfficientLpsLearner()
         learner.load(self.model_weights)
         predictions = learner.infer(point_clouds, projected=True)
@@ -151,7 +146,7 @@ class TestEfficientLpsLearner(unittest.TestCase):
         # TODO: Verify Test file after uploading to server
         point_cloud_filename = self.test_data / "infer_data" / "seq08_f000000.bin"
         temp_prediction_path = self.temp_dir / "prediction.png"
-        point_cloud = PointCloud(data=load_point_cloud(point_cloud_filename))
+        point_cloud = SemanticKittiDataset.load_point_cloud(point_cloud_filename)
         learner = EfficientLpsLearner()
         learner.load(self.model_weights)
         prediction = learner.infer(point_cloud, projected=False)[:2]
@@ -162,6 +157,24 @@ class TestEfficientLpsLearner(unittest.TestCase):
                                      figure_filename=temp_prediction_path)
         self.assertTrue(temp_prediction_path.exists())
         rmfile(temp_prediction_path)
+
+    def test_semantic_kitti_dataset(self):
+        # Test the iterator methods of the dataset
+        # TODO: comment out this test, since it depends on having the full Kitti Dataset installed somewhere
+        kitti_path = "/home/arceyd/MasterThesis/dat/kitti/dataset/"
+
+        for split in ["train", "valid", "test"]:
+            dataset = SemanticKittiDataset(kitti_path, split=split)
+
+            # Test the length of the dataset
+            len_dataset = len(dataset)
+            self.assertIsInstance(len_dataset, int)
+            self.assertGreaterEqual(len_dataset, 0)
+
+            # Get the 11th pointcloud from the dataset
+            i10 = dataset[10]
+            self.assertIsInstance(i10[0], PointCloud)
+            self.assertIsNone(i10[1])
 
 
 if __name__ == "__main__":
