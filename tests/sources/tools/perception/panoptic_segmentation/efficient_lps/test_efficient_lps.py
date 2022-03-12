@@ -160,21 +160,22 @@ class TestEfficientLpsLearner(unittest.TestCase):
 
     def test_semantic_kitti_dataset(self):
         # Test the iterator methods of the dataset
-        # TODO: comment out this test, since it depends on having the full Kitti Dataset installed somewhere
-        kitti_path = "/home/arceyd/MasterThesis/dat/kitti/dataset/"
-
-        for split in ["train", "valid", "test"]:
-            dataset = SemanticKittiDataset(kitti_path, split=split)
-
-            # Test the length of the dataset
-            len_dataset = len(dataset)
-            self.assertIsInstance(len_dataset, int)
-            self.assertGreaterEqual(len_dataset, 0)
-
-            # Get the 11th pointcloud from the dataset
-            i10 = dataset[10]
-            self.assertIsInstance(i10[0], PointCloud)
-            self.assertIsNone(i10[1])
+        # Test commented out, since it depends on having the full Kitti Dataset installed somewhere
+        # kitti_path = "~/dat/kitti/dataset/"
+        #
+        # for split in ["train", "valid", "test"]:
+        #     dataset = SemanticKittiDataset(kitti_path, split=split)
+        #
+        #     # Test the length of the dataset
+        #     len_dataset = len(dataset)
+        #     self.assertIsInstance(len_dataset, int)
+        #     self.assertGreaterEqual(len_dataset, 0)
+        #
+        #     # Get the 11th pointcloud from the dataset
+        #     i10 = dataset[10]
+        #     self.assertIsInstance(i10[0], PointCloud)
+        #     self.assertIsNone(i10[1])
+        pass
 
 
 if __name__ == "__main__":
