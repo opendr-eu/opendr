@@ -99,7 +99,7 @@ class TestX3DLearner(unittest.TestCase):
     def test_infer(self):
         ds = KineticsDataset(path=self.dataset_path, frames_per_clip=4, split="test")
         dl = torch.utils.data.DataLoader(ds, batch_size=2, num_workers=0)
-        batch = next(iter(dl))[0]
+        batch = next(iter(dl))[0].to(device)
 
         self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
 
