@@ -99,7 +99,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         if self.dataset_name is None:
             raise ValueError(self.dataset_name +
                              "is not a valid dataset name. Supported datasets: casia, ck+, afew")
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             self.output_device = self.device_indices[0] if type(self.device_indices) is list else self.device_indices
         self.__init_seed(1)
 
@@ -162,7 +162,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         else:
             self.logging = False
 
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if type(self.device_indices) is list:
                 if len(self.device_indices) > 1:
                     self.model = nn.DataParallel(self.model, device_ids=self.device_indices,
@@ -229,7 +229,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
             for batch_idx, (data, label, index) in enumerate(process):
                 self.global_step += 1
                 # get data
-                if self.device == 'cuda':
+                if 'cuda' in self.device:
                     data = Variable(data.float().cuda(self.output_device), requires_grad=False)
                     label = Variable(label.long().cuda(self.output_device), requires_grad=False)
                 else:
@@ -351,7 +351,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         process = tqdm(val_loader)
         for batch_idx, (data, label, index) in enumerate(process):
             with torch.no_grad():
-                if self.device == "cuda":
+                if "cuda" in self.device:
                     data = Variable(data.float().cuda(self.output_device), requires_grad=False)
                     label = Variable(label.long().cuda(self.output_device), requires_grad=False)
                 else:
@@ -365,7 +365,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                     for i in range(len(output)):
                         list_output.append(output[i].cpu())
                     output = torch.stack(list_output).mean(axis=0)
-                    if self.device == "cuda":
+                    if "cuda" in self.device:
                         output = output.cuda(self.output_device)
                 else:
                     output = self.model(data)
@@ -463,7 +463,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         else:
             if self.logging:
                 shutil.copy2(inspect.getfile(PSTBLN), self.logging_path)
-            if self.device == 'cuda':
+            if 'cuda' in self.device:
                 self.model = PSTBLN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
                                     in_channels=self.in_channels, topology=self.topology, blocksize=self.blocksize,
                                     cuda_=True).cuda(self.output_device)
@@ -552,7 +552,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
             facial_landmarks_batch = SkeletonSequence(facial_landmarks_batch)
         facial_landmarks_batch = torch.from_numpy(facial_landmarks_batch.numpy())
 
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             facial_landmarks_batch = Variable(facial_landmarks_batch.float().cuda(self.output_device),
                                               requires_grad=False)
         else:
@@ -580,7 +580,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                     print('mean predicted probability for each lass is:', mean_probs)
                     print('uncertainty of the predictions for each lass is:', std_probs)
                     output = torch.stack(list_output).mean(axis=0)
-                    if self.device == "cuda":
+                    if "cuda" in self.device:
                         output = output.cuda(self.output_device)
                 else:
                     output = self.model(facial_landmarks_batch)
@@ -636,7 +636,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                                                  " CK+, AFEW")
         n = self.batch_size
         onnx_input = torch.randn(n, c, t, v, m)
-        if self.device == "cuda":
+        if "cuda" in self.device:
             onnx_input = Variable(onnx_input.float().cuda(self.output_device), requires_grad=False)
         else:
             onnx_input = Variable(onnx_input.float(), requires_grad=False)
@@ -742,7 +742,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                 raise e
             if verbose:
                 print("Loading checkpoint")
-            if self.device == "cuda":
+            if "cuda" in self.device:
                 weights = OrderedDict(
                     [[k.split('module.')[-1], v.cuda(self.output_device)] for k, v in weights.items()])
             else:
@@ -911,7 +911,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
     def __init_seed(self, seed):
-        if self.device == "cuda":
+        if "cuda" in self.device:
             torch.cuda.manual_seed_all(seed)
             torch.backends.cudnn.enabled = True
             torch.backends.cudnn.deterministic = True
