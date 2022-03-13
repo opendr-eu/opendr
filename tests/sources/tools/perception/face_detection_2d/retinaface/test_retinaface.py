@@ -45,7 +45,7 @@ class TestRetinaFaceLearner(unittest.TestCase):
         print("\n\n**********************************\nTEST RetinaFace Learner\n"
               "**********************************")
 
-        cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
+        cls.temp_dir = os.path.join("", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "retinaface", "retinaface_temp")
         cls.detector = RetinaFaceLearner(device=device, temp_path=cls.temp_dir, batch_size=1, epochs=1,
                                          checkpoint_after_iter=0, lr=1e-4)
