@@ -472,7 +472,7 @@ class SpatioTemporalGCNLearner(Learner):
 
     def init_model(self):
         """Initializes the imported model."""
-        cuda_ = ('cuda'in self.device)
+        cuda_ = ('cuda' in self.device)
         if self.method_name == 'stgcn':
             self.model = STGCN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
                                in_channels=self.in_channels, graph_type=self.graph_type,
@@ -492,6 +492,7 @@ class SpatioTemporalGCNLearner(Learner):
             if self.logging:
                 shutil.copy2(inspect.getfile(STBLN), self.logging_path)
         self.loss = nn.CrossEntropyLoss()
+        self.model.to(self.device)
         # print(self.model)
 
     def infer(self, SkeletonSeq_batch):
