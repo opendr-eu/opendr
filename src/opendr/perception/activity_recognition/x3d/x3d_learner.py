@@ -433,6 +433,7 @@ class X3DLearner(Learner):
         self.trainer.limit_val_batches = steps or self.trainer.limit_val_batches
 
         self.trainer.fit(self.model, train_dataloader, val_dataloader)
+        self.model.to(self.device)
 
     def eval(self, dataset: Dataset, steps: int=None) -> Dict[str, Any]:
         """Evaluate the model on the dataset
