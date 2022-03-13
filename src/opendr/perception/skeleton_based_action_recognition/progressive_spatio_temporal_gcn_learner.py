@@ -697,6 +697,8 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
             if verbose:
                 print("Loaded ONNX model.")
 
+        self.model.to(self.device)
+
     def __load_from_pt(self, path, verbose=True):
         """Loads the .pt model weights (or checkpoint) from the path provided.
         :param path: path of the directory the model (checkpoint) was saved

@@ -654,12 +654,15 @@ class SpatioTemporalGCNLearner(Learner):
             metadata = json.load(metadata_file)
         if not metadata["optimized"]:
             self.__load_from_pt(os.path.join(path, model_name + '.pt'))
+
             if verbose:
                 print("Loaded Pytorch model.")
         else:
             self.__load_from_onnx(os.path.join(path, model_name + '.onnx'))
             if verbose:
                 print("Loaded ONNX model.")
+
+        self.model.to(self.device)
 
     def __load_from_pt(self, path, verbose=True):
         """Loads the .pt model weights (or checkpoint) from the path provided.
