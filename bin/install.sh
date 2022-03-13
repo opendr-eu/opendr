@@ -47,8 +47,8 @@ make install_runtime_dependencies
 
 # If working on GPU install GPU dependencies as needed
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
-  pip3 uninstall mxnet
-  pip3 uninstall torch
+  pip3 uninstall -y mxnet
+  pip3 uninstall -y torch
   echo "[INFO] Installing  mxnet-cu112==1.8.0post0. You can override this later if you are using a different CUDA version."
   pip3 install mxnet-cu112==1.8.0post0
   echo "[INFO] Installing torch==1.8.1+cu111. You can override this later if you are using a different CUDA version."
