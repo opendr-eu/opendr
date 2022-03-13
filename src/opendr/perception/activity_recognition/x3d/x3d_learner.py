@@ -416,7 +416,7 @@ class X3DLearner(Learner):
 
         self.trainer = pl.Trainer(
             max_epochs=epochs or self.iters,
-            gpus=1 if self.device == "cuda" else 0,
+            gpus=1 if "cuda" in self.device else 0,
             callbacks=[
                 pl.callbacks.ModelCheckpoint(
                     save_top_k=1,
@@ -455,7 +455,7 @@ class X3DLearner(Learner):
 
         if not hasattr(self, "trainer"):
             self.trainer = pl.Trainer(
-                gpus=1 if self.device == "cuda" else 0,
+                gpus=1 if "cuda" in self.device else 0,
                 logger=_experiment_logger(),
             )
         self.trainer.limit_test_batches = steps or self.trainer.limit_test_batches
