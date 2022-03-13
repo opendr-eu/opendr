@@ -746,6 +746,7 @@ class LightweightOpenPoseLearner(Learner):
                                                           groups=self.shufflenet_groups)
         else:
             raise UserWarning("Tried to initialize model while model is already initialized.")
+        self.model.to(self.device)
 
     def __save(self, path, optimizer, scheduler, iter_, current_epoch):
         """
