@@ -324,6 +324,7 @@ class X3DLearner(Learner):
 
         weights_path = path.parent / meta_data["model_paths"]
         self._load_model_weights(weights_path)
+        self.model.to(self.device)
 
         return self
 

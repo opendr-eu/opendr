@@ -99,14 +99,14 @@ class TestCoX3DLearner(unittest.TestCase):
     def test_infer(self):
         ds = KineticsDataset(path=self.dataset_path, frames_per_clip=4, split="test")
         dl = torch.utils.data.DataLoader(ds, batch_size=2, num_workers=0)
-        batch = next(iter(dl))[0].to(device)
+        batch = next(iter(dl))[0]
         batch = batch[:, :, 0]  # Select a single frame
 
         self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
         self.learner.model.clean_model_state()
 
         # Input is Tensor
-        results1 = self.learner.infer(batch)
+        results1 = self.learner.infer(batch.to(device))
         # Results is a batch with each item summing to 1.0
         assert all([torch.isclose(torch.sum(r.confidence), torch.tensor(1.0)) for r in results1])
 
