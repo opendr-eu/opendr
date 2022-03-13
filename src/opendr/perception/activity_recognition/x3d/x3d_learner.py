@@ -182,6 +182,7 @@ class X3DLearner(Learner):
         names_not_loaded = set(new_model_state.keys()) - set(to_load.keys())
         if len(names_not_loaded) > 0:
             logger.warning(f"Some model weight could not be loaded: {names_not_loaded}")
+        self.model.to(self.device)
 
         return self
 
