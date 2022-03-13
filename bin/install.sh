@@ -37,8 +37,6 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main
 
 # If working on GPU install GPU dependencies as needed
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
-  echo "[INFO] Installing  mxnet-cu112==1.8.0post0. You can override this later if you are using a different CUDA version."
-  pip3 install mxnet-cu112==1.8.0post0
   echo "[INFO] Installing torch==1.8.1+cu111. You can override this later if you are using a different CUDA version."
   pip3 install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 fi
@@ -46,6 +44,16 @@ fi
 # Build OpenDR
 make install_compilation_dependencies
 make install_runtime_dependencies
+
+# If working on GPU install GPU dependencies as needed
+if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
+  pip3 uninstall mxnet
+  pip3 uninstall torch
+  echo "[INFO] Installing  mxnet-cu112==1.8.0post0. You can override this later if you are using a different CUDA version."
+  pip3 install mxnet-cu112==1.8.0post0
+  echo "[INFO] Installing torch==1.8.1+cu111. You can override this later if you are using a different CUDA version."
+  pip3 install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+fi
 
 make libopendr
 
