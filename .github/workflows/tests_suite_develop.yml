@@ -74,7 +74,7 @@ jobs:
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
-          - perception/object_detection_2d/yolo
+          - perception/object_detection_2d/yolov3
           - perception/face_detection_2d
           - simulation/human_model_generation
           - perception/facial_expression_recognition
@@ -177,7 +177,7 @@ jobs:
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
-          - perception/object_detection_2d/yolo
+          - perception/object_detection_2d/yolov3
           - perception/face_detection_2d
           - perception/facial_expression_recognition
           # - perception/object_detection_3d
@@ -247,7 +247,7 @@ jobs:
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
-          - perception/object_detection_2d/yolo
+          - perception/object_detection_2d/yolov3
           - perception/face_detection_2d
           - perception/facial_expression_recognition
           # - perception/object_detection_3d
@@ -323,7 +323,7 @@ jobs:
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
-          - perception/object_detection_2d/yolo
+          - perception/object_detection_2d/yolov3
           - perception/face_detection_2d
           - perception/facial_expression_recognition
           - perception/object_detection_3d
