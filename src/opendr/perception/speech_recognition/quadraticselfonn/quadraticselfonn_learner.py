@@ -184,7 +184,7 @@ class QuadraticSelfOnnLearner(Learner):
         return statistics
 
     def eval(self, dataset):
-        dataloader = DataLoader(dataset, batch_size=self.batch_size, pin_memory= "cuda" in self.device)
+        dataloader = DataLoader(dataset, batch_size=self.batch_size, pin_memory="cuda" in self.device)
         self.model.eval()
         test_loss = 0
         correct_predictions = 0
