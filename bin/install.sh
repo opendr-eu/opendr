@@ -35,12 +35,6 @@ pip3 install setuptools configparser
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' \
             && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
 
-# If working on GPU install GPU dependencies as needed
-if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
-  echo "[INFO] Installing torch==1.8.1+cu111. You can override this later if you are using a different CUDA version."
-  pip3 install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
-fi
-
 # Build OpenDR
 make install_compilation_dependencies
 make install_runtime_dependencies
@@ -49,10 +43,12 @@ make install_runtime_dependencies
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
   pip3 uninstall -y mxnet
   pip3 uninstall -y torch
-  echo "[INFO] Installing  mxnet-cu112==1.8.0post0. You can override this later if you are using a different CUDA version."
+  echo "[INFO] Replacing  mxnet-cu112==1.8.0post0 to enable CUDA acceleration."
   pip3 install mxnet-cu112==1.8.0post0
-  echo "[INFO] Installing torch==1.8.1+cu111. You can override this later if you are using a different CUDA version."
+  echo "[INFO] Replacing torch==1.8.1+cu111 to enable CUDA acceleration."
   pip3 install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+  echo "[INFO] Reinstalling detectronv2."
+  pip3 install 'git+https://github.com/facebookresearch/detectron2.git'
 fi
 
 make libopendr
