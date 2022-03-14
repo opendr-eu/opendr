@@ -13,6 +13,11 @@
 # limitations under the License.
 
 from opendr.engine.datasets import Dataset
+from opendr.perception.object_detection_2d import SingleShotDetectorLearner
+from opendr.engine.data import Image
+from opendr.perception.object_detection_2d.datasets.transforms import BoundingBoxListToNumpyArray
+from opendr.engine.constants import OPENDR_SERVER_URL
+from pycocotools.coco import COCO
 import os
 from urllib.request import urlretrieve
 import ssl
@@ -23,11 +28,6 @@ import pickle
 import numpy as np
 import math
 from tqdm import tqdm
-from opendr.perception.object_detection_2d import SingleShotDetectorLearner
-from opendr.engine.data import Image
-from opendr.perception.object_detection_2d.datasets.transforms import BoundingBoxListToNumpyArray
-from pycocotools.coco import COCO
-
 
 class Dataset_NMS(Dataset):
     def __init__(self, path=None, dataset_name=None, split=None, use_ssd=True, device='cuda'):
@@ -323,7 +323,7 @@ class Dataset_NMS(Dataset):
                 raise ValueError(self.split + ' split is not available...')
             pkl_filename = os.path.join(self.path, 'test_module.pkl')
             if not os.path.exists(pkl_filename):
-                data_url = '***.zip'
+                data_url = OPENDR_SERVER_URL + '/perception/object_detection_2d/nms/datasets/test_module.zip'
                 self.download(data_url, download_path=os.path.join(self.path), file_format="zip",
                               create_dir=True)
             with open(pkl_filename, 'rb') as fp_pkl:
