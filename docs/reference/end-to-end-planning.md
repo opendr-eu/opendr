@@ -104,24 +104,23 @@ Parameters:
 ### Simulation environment setup
 
 The environment includes an Ardupilot controlled quadrotor in Webots simulation. 
-Installation of Ardupilot software follows this link: `https://github.com/ArduPilot/ardupilot`
+For the installation of Ardupilot instructions are available [here](https://github.com/ArduPilot/ardupilot).
 
-The files under `ardupilot.zip` should be replaced under the installation of Ardupilot, can be downloaded by running 
-`download_ardupilot_files.py` script.
-In order to run the Ardupilot in Webots 2021a controller codes should be replaced. 
-For older versions of Webots, these files can be skipped.
-The world file for the environment is provided 
-under `/ardupilot/libraries/SITL/examples/webots/worlds/` for training and testing.
+The required files to complete Ardupilot setup can be downloaded by running [`download_ardupilot_files.py`](src/opendr/planning/end_to_end_planning/download_ardupilot_files.py) script.
+The downloaded files (zipped as `ardupilot.zip`) should be replaced under the installation of Ardupilot.
+In order to run Ardupilot in Webots 2021a, controller codes should be replaced. (For older versions of Webots, these files can be skipped.)
+The world file for the environment is provided under `/ardupilot/libraries/SITL/examples/webots/worlds/` for training and testing.
 
-Install `mavros` package into catkin workspace for ROS communication with Ardupilot. 
+Install `mavros` package for ROS communication with Ardupilot.
+Instructions are available [here](https://github.com/mavlink/mavros/blob/master/mavros/README.md#installation).
+Source installation is recomended.
 
 ### Running the environment
 
 The following steps should be executed to have a ROS communication between Gym environment and simulation.
-- Start the Webots and open the provided world file. The simulation time should stop at first time step and wait for 
-Ardupilot software to run.
-- Run following script from Ardupilot directory: `./libraries/SITL/examples/Webots/dronePlus.sh` which starts 
-software in the loop execution of the Ardupilot software.
+- Start the Webots and open the provided world file. 
+The simulation time should stop at first time step and wait for Ardupilot software to run.
+- Run following script from Ardupilot directory: `./libraries/SITL/examples/Webots/dronePlus.sh` which starts software in the loop execution of the Ardupilot software.
 - Run `roscore`.
 - Run `roslaunch mavros apm.launch` which creates ROS communication for Ardupilot.
 - Run following ROS nodes in `src/opendr/planning/end_to_end_planning/src`:
@@ -129,16 +128,14 @@ software in the loop execution of the Ardupilot software.
   - `take_off` which takes off the quadrotor.
   - `range_image` which converts the depth image into array format to be input for the learner.
   
-After these steps the [AgiEnv](src/opendr/planning/end_to_end_planning/envs/agi_env.py) gym environment can send 
-action comments to the simulated drone and receive depth image and pose information from simulation. 
+After these steps the [AgiEnv](src/opendr/planning/end_to_end_planning/envs/agi_env.py) gym environment can send action comments to the simulated drone and receive depth image and pose information from simulation. 
 
 ### Examples
 
 Training in Webots environment:
 
 ```python
-from opendr.planning.end_to_end_planning.e2e_planning_learner import EndToEndPlanningRLLearner
-from opendr.planning.end_to_end_planning.envs.agi_env import AgiEnv
+from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, AgiEnv
 
 env = AgiEnv()
 learner = EndToEndPlanningRLLearner(env, n_steps=1024)
@@ -149,8 +146,7 @@ learner.fit(logging_path='./end_to_end_planning_tmp')
 Running a pretrained model:
 
 ```python
-from opendr.planning.end_to_end_planning.e2e_planning_learner import EndToEndPlanningRLLearner
-from opendr.planning.end_to_end_planning.envs.agi_env import AgiEnv
+from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, AgiEnv
 
 env = AgiEnv()
 learner = EndToEndPlanningRLLearner(env)

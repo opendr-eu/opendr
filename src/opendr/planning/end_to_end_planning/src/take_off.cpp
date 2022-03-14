@@ -58,8 +58,6 @@ int main(int argc, char **argv) {
     ros::spinOnce();
     rate.sleep();
   }
-  // we might need to give real pose data here !!!!   /// the very first way point, drone will try to go there !!!!!!! so chose
-  // it as target altitude then assign a way point
   geometry_msgs::PoseStamped pose;
   pose.pose.position.x = 0;
   pose.pose.position.y = 0;
