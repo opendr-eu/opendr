@@ -40,7 +40,6 @@ sudo pip3 install -e .
 cd $OPENDR_HOME
 chmod a+rwx ./mxnet
 
-
 sudo apt-get update
 sudo apt-get install --yes libfreetype6-dev lsb-release git curl wget
 
