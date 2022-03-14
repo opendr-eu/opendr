@@ -15,8 +15,8 @@
 import time
 
 import cv2
+import argparse
 
-from opendr.engine.data import Image
 from opendr.perception.fall_detection import FallDetectorLearner
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.pose_estimation import draw
@@ -43,67 +43,71 @@ class VideoReader(object):
         return img
 
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--onnx", help="Use ONNX", default=False, action="store_true")
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
+    parser.add_argument("--draw", help="Whether to draw additional pose lines", default=False, action="store_true")
+    args = parser.parse_args()
 
+    onnx, device, draw_poses = args.onnx, args.device, args.draw
+    stride = False
+    stages = 2
+    half_precision = False
 
-device = "cuda"
-stride = False
-stages = 2
-half_precision = False
+    pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
+                                                mobilenet_use_stride=stride, half_precision=half_precision)
 
+    pose_estimator.download(path="./", verbose=True)
+    pose_estimator.load("openpose_default")
+    fall_detector = FallDetectorLearner(pose_estimator=pose_estimator)
 
-pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
-                                            mobilenet_use_stride=stride, half_precision=half_precision)
+    image_provider = VideoReader(0)
 
-pose_estimator.download(path="./", verbose=True)
-pose_estimator.load("openpose_default")
-fall_detector = FallDetectorLearner(pose_estimator=pose_estimator)
+    counter, fps = 0, 0
+    try:
+        for img in image_provider:
 
-image_provider = VideoReader(0)
+            start_time = time.perf_counter()
 
-counter, avg_fps = 0, 0
-try:
-    for img in image_provider:
+            # Perform inference
+            if draw_poses:
+                poses = pose_estimator.infer(img)
+                for pose in poses:
+                    draw(img, pose)
 
-        start_time = time.perf_counter()
+            fallen, keypoints = fall_detector.infer(img)
+            fallen = fallen.data
 
-        # Perform inference
-        poses = pose_estimator.infer(img)
-        fallen, keypoints = fall_detector.infer(img)
+            end_time = time.perf_counter()
+            fps = 1.0 / (end_time - start_time)
 
-        end_time = time.perf_counter()
-        fps = 1.0 / (end_time - start_time)
+            # Wait a few frames for FPS to stabilize
+            if counter > 5:
+                image = cv2.putText(img, "FPS: %.2f" % (fps,), (50, 50), cv2.FONT_HERSHEY_SIMPLEX,
+                                    1, (255, 0, 0), 2, cv2.LINE_AA)
 
-        for pose in poses:
-            draw(img, pose)
+            text = "CAN'T DETECT FALL"
+            color = (255, 255, 255)
+            if fallen == 1:
+                text = "FALLEN"
+                color = (0, 0, 255)
+            elif fallen == -1:
+                text = "STANDING"
+                color = (0, 255, 0)
 
-        # Calculate a running average on FPS
-        avg_fps = 0.8 * fps + 0.2 * fps
-
-        # Wait a few frames for FPS to stabilize
-        if counter > 5:
-            image = cv2.putText(img, "FPS: %.2f" % (avg_fps,), (50, 50), cv2.FONT_HERSHEY_SIMPLEX,
-                                1, (255, 0, 0), 2, cv2.LINE_AA)
-
-        text = "CAN'T DETECT FALL"
-        color = (255, 255, 255)
-        if fallen.data == 1:
-            text = "FALLEN"
-            color = (0, 0, 255)
-        elif fallen.data == 0:
-            text = "STANDING"
-            color = (0, 255, 0)
-
-        img = cv2.putText(img, text, (50, 80), cv2.FONT_HERSHEY_SIMPLEX,
-                          1, color, 2, cv2.LINE_AA)
-        if keypoints[0].data[0] != -1:
-            cv2.line(img, (int(keypoints[0].data[0]), int(keypoints[0].data[1])),
-                     (int(keypoints[1].data[0]), int(keypoints[1].data[1])), color, 4)
-        if keypoints[2].data[0] != -1:
-            cv2.line(img, (int(keypoints[1].data[0]), int(keypoints[1].data[1])),
-                     (int(keypoints[2].data[0]), int(keypoints[2].data[1])), color, 4)
-        cv2.imshow('Result', img)
-        cv2.waitKey(1)
-        counter += 1
-except Exception as e:
-    print(e)
-    print("Average inference fps: ", avg_fps)
+            img = cv2.putText(img, text, (50, 80), cv2.FONT_HERSHEY_SIMPLEX,
+                              1, color, 2, cv2.LINE_AA)
+            if draw_poses:
+                if keypoints[0].data[0] != -1:
+                    cv2.line(img, (int(keypoints[0].data[0]), int(keypoints[0].data[1])),
+                             (int(keypoints[1].data[0]), int(keypoints[1].data[1])), color, 4)
+                if keypoints[2].data[0] != -1:
+                    cv2.line(img, (int(keypoints[1].data[0]), int(keypoints[1].data[1])),
+                             (int(keypoints[2].data[0]), int(keypoints[2].data[1])), color, 4)
+            cv2.imshow('Result', img)
+            cv2.waitKey(1)
+            counter += 1
+    except Exception as e:
+        print(e)
+        print("Inference fps: ", fps)
