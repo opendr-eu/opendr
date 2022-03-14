@@ -860,9 +860,14 @@ class LightweightOpenPoseLearner(Learner):
             inp = torch.randn(1, 3, self.base_height, width).cuda()
         else:
             inp = torch.randn(1, 3, self.base_height, width)
+        if self.half:
+            inp = inp.half()
         input_names = ['data']
-        output_names = ['stage_0_output_1_heatmaps', 'stage_0_output_0_pafs',
-                        'stage_1_output_1_heatmaps', 'stage_1_output_0_pafs']
+        if self.num_refinement_stages == 2:
+            output_names = ['stage_0_output_1_heatmaps', 'stage_0_output_0_pafs',
+                            'stage_1_output_1_heatmaps', 'stage_1_output_0_pafs']
+        else:
+            output_names = ['stage_0_output_1_heatmaps', 'stage_0_output_0_pafs']
 
         torch.onnx.export(self.model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
                           do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names,
