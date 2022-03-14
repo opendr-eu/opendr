@@ -250,7 +250,7 @@ class Dataset_NMS(Dataset):
                         self.download(ann_url, download_path=os.path.join(self.path), file_format="zip",
                                       create_dir=True)
                     else:
-                        if self.dataset_sets[self.split] == 'val':
+                        if self.dataset_sets[self.split] == 'minival':
                             ann_url = 'https://dl.dropboxusercontent.com/s/o43o90bna78omob/' \
                                       'instances_minival2014.json.zip?dl=0'
                         else:
