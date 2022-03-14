@@ -32,7 +32,7 @@ from pycocotools.coco import COCO
 class Dataset_NMS(Dataset):
     def __init__(self, path=None, dataset_name=None, split=None, use_ssd=True, device='cuda'):
         super().__init__()
-        available_dataset = ['COCO', 'PETS']
+        available_dataset = ['COCO', 'PETS', 'TEST_MODULE']
         self.dataset_sets = {'train': None,
                              'val': None,
                              'test': None}
@@ -315,6 +315,22 @@ class Dataset_NMS(Dataset):
             self.classes = ['background', 'person']
             self.class_ids = [-1, 1]
             self.annotation_file = 'instances_' + self.dataset_sets[self.split] + '2014.json'
+        elif self.dataset_name == "TEST_MODULE":
+            self.dataset_sets['train'] = 'test'
+            self.dataset_sets['val'] = 'test'
+            self.dataset_sets['test'] = 'test'
+            if self.dataset_sets[self.split] is None:
+                raise ValueError(self.split + ' split is not available...')
+            pkl_filename = os.path.join(self.path, 'test_module.pkl')
+            if not os.path.exists(pkl_filename):
+                data_url = '***.zip'
+                self.download(data_url, download_path=os.path.join(self.path), file_format="zip",
+                              create_dir=True)
+            with open(pkl_filename, 'rb') as fp_pkl:
+                self.src_data = pickle.load(fp_pkl)
+            self.classes = ['background', 'person']
+            self.class_ids = [-1, 1]
+            self.annotation_file = 'test_module_anns.json'
 
     @staticmethod
     def download(
