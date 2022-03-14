@@ -159,7 +159,7 @@ class EndToEndPlanningRLLearner(LearnerRL):
         """
         Loads a model from the path provided.
 
-        :param batch: Path to saved model
+        :param batch: single or list of observations
         :type batch: dict ot list of dict
         :param deterministic: use deterministic actions from the policy
         :type deterministic: bool

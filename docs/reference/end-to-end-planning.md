@@ -87,6 +87,20 @@ Parameters:
 - **path**: *str*\
   Path of the model to be loaded.
 
+
+#### `EndToEndPlanningRLLearner.infer`
+```python
+EndToEndPlanningRLLearner.infer(self, batch, deterministic)
+```
+Performs inference on a single observation or a list of observations.
+
+Parameters:
+
+- **batch**: *dict or list of dict, default=None*\
+  Single observation or list of observations.
+- **deterministic**: *bool, default=True*\
+  Use deterministic actions from the policy
+
 ### Simulation environment setup
 
 The environment includes an Ardupilot controlled quadrotor in Webots simulation. 
