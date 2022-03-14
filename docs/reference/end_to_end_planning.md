@@ -87,9 +87,6 @@ Parameters:
 - **path**: *str*\
   Path of the model to be loaded.
 
-
-
-
 ### Simulation environment setup
 
 The environment includes an Ardupilot controlled quadrotor in Webots simulation. 
