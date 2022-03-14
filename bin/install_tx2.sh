@@ -7,7 +7,6 @@ export PYTHON=python3
 export LD_LIBRARY_PATH=$OPENDR_HOME/src:$LD_LIBRARY_PATH
 
 # Install mxnet
-
 cd $OPENDR_HOME
 
 sudo apt-get install -y gfortran build-essential git python3-pip python-numpy libopencv-dev graphviz libopenblas-dev libopenblas-base libatlas-base-dev python-numpy
