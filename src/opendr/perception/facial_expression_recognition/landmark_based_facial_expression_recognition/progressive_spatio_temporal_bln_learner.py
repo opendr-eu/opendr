@@ -594,7 +594,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
 
         return category
 
-    def optimize(self, do_constant_folding=False):
+    def optimize(self, do_constant_folding=True):
         """
         Optimize method converts the model to ONNX format and saves the
         model in the parent directory defined by self.temp_path. The ONNX model is then loaded.
