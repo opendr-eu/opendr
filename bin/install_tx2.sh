@@ -13,7 +13,6 @@ cd $OPENDR_HOME
 sudo apt-get install -y gfortran build-essential git python3-pip python-numpy libopencv-dev graphviz libopenblas-dev libopenblas-base libatlas-base-dev python-numpy
 
 sudo pip3 install --upgrade pip setuptools
-
 sudo pip3 install numpy==1.19.4
 
 git clone --recursive -b v1.8.x https://github.com/apache/incubator-mxnet.git mxnet
