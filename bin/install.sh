@@ -45,7 +45,7 @@ if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
   pip3 uninstall -y torch
   echo "[INFO] Replacing  mxnet-cu112==1.8.0post0 to enable CUDA acceleration."
   pip3 install mxnet-cu112==1.8.0post0
-  echo "[INFO] Replacing torch==1.9.1+cu111 to enable CUDA acceleration."
+  echo "[INFO] Replacing torch==1.9.0+cu111 to enable CUDA acceleration."
   pip3 install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
   echo "[INFO] Reinstalling detectronv2."
   pip3 install 'git+https://github.com/facebookresearch/detectron2.git'
