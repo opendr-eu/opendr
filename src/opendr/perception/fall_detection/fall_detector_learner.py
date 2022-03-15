@@ -182,7 +182,7 @@ class FallDetectorLearner(Learner):
             hips = pose["l_hip"]
         else:
             # Can't detect fall without hips
-            return Category(0), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])]
+            return Category(0), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])], pose
 
         # Figure out head average position
         head = [-1, -1]
@@ -242,17 +242,17 @@ class FallDetectorLearner(Learner):
 
         if legs_vertical != -1:
             if legs_vertical == 0:  # Legs are not vertical, probably not under torso, so person has fallen
-                return Category(1), [Keypoint(head), Keypoint(hips), Keypoint(legs)]
+                return Category(1), [Keypoint(head), Keypoint(hips), Keypoint(legs)], pose
             elif legs_vertical == 1:  # Legs are vertical, so person is standing
-                return Category(-1), [Keypoint(head), Keypoint(hips), Keypoint(legs)]
+                return Category(-1), [Keypoint(head), Keypoint(hips), Keypoint(legs)], pose
         elif torso_vertical != -1:
             if torso_vertical == 0:  # Torso is not vertical, without legs we assume person has fallen
-                return Category(1), [Keypoint(head), Keypoint(hips), Keypoint(legs)]
+                return Category(1), [Keypoint(head), Keypoint(hips), Keypoint(legs)], pose
             elif torso_vertical == 1:  # Torso is vertical, without legs we assume person is standing
-                return Category(-1), [Keypoint(head), Keypoint(hips), Keypoint(legs)]
+                return Category(-1), [Keypoint(head), Keypoint(hips), Keypoint(legs)], pose
         else:
             # Only hips detected, can't detect fall
-            return Category(0), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])]
+            return Category(0), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])], pose
 
 
 class URFallDatasetIterator(DatasetIterator):
