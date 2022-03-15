@@ -151,10 +151,14 @@ class FallDetectorLearner(Learner):
 
     def infer(self, img):
         poses = self.pose_estimator.infer(img)
-        if len(poses) != 0:
-            return self.naive_fall_detection(poses[0])
-        else:
-            return Category(0), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])]
+        results = []
+        for pose in poses:
+            results.append(self.naive_fall_detection(pose))
+
+        if len(results) >= 1:
+            return results
+
+        return []
 
     @staticmethod
     def get_angle_to_horizontal(v1, v2):
