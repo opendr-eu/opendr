@@ -137,4 +137,3 @@ class TestSeq2SeqNMS(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
