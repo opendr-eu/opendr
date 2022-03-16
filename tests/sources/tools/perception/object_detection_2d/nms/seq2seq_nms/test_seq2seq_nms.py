@@ -38,7 +38,6 @@ def rmdir(_dir):
 
 class TestSeq2SeqNMS(unittest.TestCase):
 
-
     @classmethod
     def setUpClass(cls):
         print("\n\n**********************************\nTEST Seq2Seq-NMS Learner\n"
@@ -51,6 +50,7 @@ class TestSeq2SeqNMS(unittest.TestCase):
 
         # Download all required files for testing
         cls.seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd', path=cls.temp_dir)
+
     @classmethod
     def tearDownClass(cls):
         print('Removing temporary directories for Seq2Seq-NMS...')
@@ -79,9 +79,9 @@ class TestSeq2SeqNMS(unittest.TestCase):
 
         m = list(self.seq2SeqNMSLearner.model.collect_params().values())[2].data().asnumpy().copy()
         self.seq2SeqNMSLearner.fit(dataset='TEST-MODULE', use_ssd=False,
-                              datasets_folder=self.temp_dir + '/datasets',
-                              logging_path=None, silent=False, verbose=True, nms_gt_iou=0.50,
-                              max_dt_boxes=200)
+                                   datasets_folder=self.temp_dir + '/datasets',
+                                   logging_path=None, silent=False, verbose=True, nms_gt_iou=0.50,
+                                   max_dt_boxes=200)
         n = list(self.seq2SeqNMSLearner.model.collect_params().values())[2].data().asnumpy()
         self.assertFalse(np.array_equal(m, n),
                          msg="Model parameters did not change after running fit.")
@@ -97,7 +97,7 @@ class TestSeq2SeqNMS(unittest.TestCase):
                                                    use_ssd=False)
         if results_dict is None:
             self.assertIsNotNone(results_dict,
-                                msg="Eval results dictionary not returned.")
+                                 msg="Eval results dictionary not returned.")
         else:
             self.assertGreater(results_dict[0][0][1][0], 0.58)
         del results_dict
