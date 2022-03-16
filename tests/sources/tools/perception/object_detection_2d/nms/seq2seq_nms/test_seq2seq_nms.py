@@ -92,7 +92,7 @@ class TestSeq2SeqNMS(unittest.TestCase):
     def test_eval(self):
         print('Starting evaluation test for Seq2Seq-NMS...')
         self.seq2SeqNMSLearner.load(self.temp_dir + '/seq2seq_pets_jpd/', verbose=True)
-        results_dict = self.seq2SeqNMSLearner.eval(dataset='PETS', split='test', max_dt_boxes=800,
+        results_dict = self.seq2SeqNMSLearner.eval(dataset='TEST-MODULE', split='test', max_dt_boxes=800,
                                                    datasets_folder=self.temp_dir + '/datasets',
                                                    use_ssd=False)
         if results_dict is None:
