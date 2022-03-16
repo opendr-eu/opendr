@@ -435,7 +435,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
     def load(self, path, verbose=False):
 
         if os.path.isdir(path):
-            model_name = os.path.join(path, 'last_weights')
+            model_name = 'last_weights'
             dir_path = path
         else:
             model_name = os.path.basename(os.path.normpath(path)).split('.')[0]
