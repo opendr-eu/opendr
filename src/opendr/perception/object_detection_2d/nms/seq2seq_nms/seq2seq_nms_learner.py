@@ -395,7 +395,10 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         return eval_result
 
     def save(self, path, verbose=False, optimizer=None, scheduler=None, current_epoch=None, max_dt_boxes=400):
-        path = path.split('.')[0]
+        fname  = path.split('/')[-1]
+        dir_name = path.replace('/'+fname,'')
+        if not os.path.isdir(dir_name):
+            os.makedirs(dir_name)
         custom_dict = {'state_dict': self.model.state_dict(), 'current_epoch': current_epoch}
         if optimizer is not None:
             custom_dict['optimizer'] = optimizer.state_dict()
@@ -403,7 +406,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             custom_dict['scheduler'] = scheduler.state_dict()
         torch.save(custom_dict, path + '.pth')
 
-        metadata = {"model_paths": [os.path.basename(path) + '.pth'], "framework": "pytorch", "has_data": False,
+        metadata = {"model_paths": [fname + '.pth'], "framework": "pytorch", "has_data": False,
                     "inference_params": {}, "optimized": False, "optimizer_info": {}, "backbone": {},
                     "format": "pth", "classes": self.classes, "app_feats": self.app_feats,
                     "lq_dim": self.lq_dim, "sq_dim": self.sq_dim, "num_JPUs": self.num_JPUs,
@@ -416,7 +419,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             metadata["fmod_map_res_dim"] = self.fmod_map_res_dim
             metadata["fmod_pyramid_lvl"] = self.fmod_pyramid_lvl
             metadata["fmod_normalization"] = "fmod_normalization.pkl"
-            with open(os.path.join(os.path.dirname(path), 'fmod_normalization.pkl'), 'wb') as f:
+            with open(os.path.join(dir_name, 'fmod_normalization.pkl'), 'wb') as f:
                 pickle.dump(self.fmod_mean_std, f)
         with open(path + '.json', 'w', encoding='utf-8') as f:
             json.dump(metadata, f, ensure_ascii=False, indent=4)
@@ -436,7 +439,6 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             raise UserWarning("Tried to initialize model while model is already initialized.")
 
     def load(self, path, verbose=False):
-
         if os.path.isdir(path):
             model_name = 'last_weights'
             dir_path = path
@@ -473,7 +475,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if verbose:
             print("Loaded parameters and metadata.")
         return True
-
+    
     def assign_params(self, metadata, verbose):
 
         if verbose and self.variant is not None and self.variant != metadata["variant"]:
