@@ -491,11 +491,62 @@ Proto files can be found in [voxel_object_detection_3d/second_detector/configs](
   - **num_workers**:\
     Specifies the number of workers for the data loader.
 
+#### Performance Evaluation
+
+The tests were conducted on the following computational devices:
+- **Intel(R) Xeon(R) Gold 6230R CPU on server**
+- **Nvidia Jetson TX2**
+- **Nvidia Jetson Xavier AGX**
+- **Nvidia RTX 2080 Ti GPU on server with Intel Xeon Gold processors**
+
+Inference time is measured as the time taken to transfer the input to the model (e.g., from CPU to GPU), run inference using the algorithm, and return results to CPU. Inner FPS refers to the speed of the model when the data is ready. We report FPS (single sample per inference) as the mean of 100 runs.
+
+Full FPS Evaluation of PointPillars and TANet for classes Car, Pedestrian, Cyclist on KITTI dataset. TANet Near represents evaluation on the near sub-scene [[4]](#object-detectiond-3d-4).
+| Model        | Object Class         | TX2 (FPS) | Xavier (FPS) | RTX 2080 Ti (FPS) |
+| ------------ | -------------------- | --------- | ------------ | ----------------- |
+| PointPillars | Car                  | 1.73      | 6.29         | 21.06             |
+| PointPillars | Pedestrian + Cyclist | 1.40      | 5.00         | 13.87             |
+| TANet        | Car                  | 0.71      | 2.60         | 13.66             |
+| TANet Near   | Car                  | 1.50      | 5.41         | 21.52             |
+| TANet        | Pedestrian + Cyclist | 0.60      | 2.41         | 9.98              |
+
+Inner FPS Evaluation (model only) of PointPillars and TANet for classes Car, Pedestrian, Cyclist on KITTI dataset.
+| Model        | Object Class         | TX2 (FPS) | Xavier (FPS) | RTX 2080 Ti (FPS) |
+| ------------ | -------------------- | --------- | ------------ | ----------------- |
+| PointPillars | Car                  | 1.81      | 7.68         | 46.42             |
+| PointPillars | Pedestrian + Cyclist | 1.75      | 7.16         | 43.93             |
+| TANet        | Car                  | 0.75      | 2.84         | 21.64             |
+| TANet Near   | Car                  | 1.58      | 5.94         | 33.51             |
+| TANet        | Pedestrian + Cyclist | 0.66      | 2.85         | 19.51             |
+
+Energy (Joules) of PointPillars and TANet on embedded devices. 
+| Model        | Object Class         | TX2 (Joules) | Xavier (Joules) |
+| ------------ | -------------------- | --------- | ------------ |
+| PointPillars | Car                  | 17.89     | 3.22         |
+| PointPillars | Pedestrian + Cyclist | 21.01     | 4.43         |
+| TANet        | Car                  | 45.96     | 11.40        |
+| TANet Near   | Car                  | 20.78     | 4.78         |
+| TANet        | Pedestrian + Cyclist | 54.50     | 12.67        |
+
+3D Object Detection platform compatibility evaluation.
+| Platform                                     | Test results |
+| -------------------------------------------- | ------------ |
+| x86 - Ubuntu 20.04 (bare installation - CPU) | Pass         |
+| x86 - Ubuntu 20.04 (bare installation - GPU) | Pass         |
+| x86 - Ubuntu 20.04 (pip installation)        | Pass         |
+| x86 - Ubuntu 20.04 (CPU docker)              | Pass         |
+| x86 - Ubuntu 20.04 (GPU docker)              | Pass         |
+| NVIDIA Jetson TX2                            | Pass         |
+| NVIDIA Jetson Xavier AGX                     | Pass         |
 
 
 #### References
 <a name="#object-detectiond-3d-1" href="https://arxiv.org/pdf/1912.05163.pdf">[1]</a> TANet: Robust 3D Object Detection from Point Clouds with Triple Attention,
 [arXiv](https://arxiv.org/pdf/1912.05163.pdf).
+
 <a name="#object-detectiond-3d-2" href="https://arxiv.org/abs/1812.05784">[2]</a> PointPillars: Fast Encoders for Object Detection from Point Clouds,
 [arXiv](https://arxiv.org/abs/1812.05784).
-<a name="#object-detectiond-3d-3" href="https://github.com/happinesslz/TANet">[3]</a> Github: [TANet](https://github.com/happinesslz/TANet)
+
+<a name="#object-detectiond-3d-3" href="https://github.com/happinesslz/TANet">[3]</a> Github: [TANet](https://github.com/happinesslz/TANet).
+
+<a name="#object-detectiond-3d-4" href="https://ieeexplore.ieee.org/document/9574075">[4]</a> I. Oleksiienko and A. Iosifidis, "Analysis of voxel-based 3D object detection methods efficiency for real-time embedded systems," 2021 International Conference on Emerging Techniques in Computational Intelligence (ICETCI), 2021, pp. 59-64.
