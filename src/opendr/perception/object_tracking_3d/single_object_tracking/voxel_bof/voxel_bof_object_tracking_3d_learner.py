@@ -30,6 +30,7 @@ from opendr.engine.datasets import (
 from opendr.engine.data import PointCloud
 from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import SiameseTrackingDatasetIterator, SiameseTripletTrackingDatasetIterator
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.draw import stack_images
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.regressor.vertical import VerticalPositionRegressor
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.load import (
     create_model as second_create_model,
     load_from_checkpoint,
@@ -149,6 +150,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
         extrapolation_mode="none",
         offset_interpolation=1,
         min_top_score=None,
+        regress_vertical_position=False,
+        overwrite_strides=None,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -197,6 +200,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.extrapolation_mode = extrapolation_mode
         self.offset_interpolation = offset_interpolation
         self.min_top_score = min_top_score
+        self.regress_vertical_position = regress_vertical_position
+        self.overwrite_strides = overwrite_strides
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -422,6 +427,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         image_shape=(1224, 370),
         evaluate=True,
         debug=False,
+        load_optimizer=True,
     ):
 
         logger = Logger(silent, verbose, logging_path)
@@ -460,7 +466,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         if self.checkpoint_load_iter != 0:
             self.load_from_checkpoint(
-                checkpoints_path, self.checkpoint_load_iter
+                checkpoints_path, self.checkpoint_load_iter, load_optimizer=load_optimizer
             )
 
         train(
@@ -501,6 +507,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
             target_type=self.target_type,
             training_method=self.training_method,
             train_pseudo_image=self.train_pseudo_image,
+            regress_vertical_position=self.regress_vertical_position,
+            overwrite_strides=self.overwrite_strides,
         )
 
         logger.close()
@@ -632,7 +640,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         self._images[group].append(image)
 
-    def load_from_checkpoint(self, checkpoints_path, step):
+    def load_from_checkpoint(self, checkpoints_path, step, load_optimizer=True):
         self.lr_scheduler = load_from_checkpoint(
             self.model,
             self.mixed_optimizer,
@@ -640,6 +648,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             self.lr_schedule,
             self.lr_schedule_params,
             self.device,
+            load_optimizer=load_optimizer
         )
 
     def infer(self, point_cloud, frame=0, id=None, draw=False):
@@ -862,7 +871,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
             t6 = time.time()
             self.times["displacement_score_to_image_coordinates"].append(t6 - t5)
 
-            if self.target_feature_merge_scale > 0 and not unreliable:
+            vertical_position = self.init_label.location[-1]
+
+            if (self.target_feature_merge_scale or self.regress_vertical_position) > 0 and not unreliable:
                 target_features, target_image = create_pseudo_image_features(
                     pseudo_image,
                     new_target,
@@ -872,33 +883,39 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     offset=target[0],
                 )
 
-                self.init_target_features = (
-                    self.init_target_features
-                    * (1 - self.target_feature_merge_scale)
-                    + target_features * self.target_feature_merge_scale
-                )
+                if self.target_feature_merge_scale:
+                    self.init_target_features = (
+                        self.init_target_features
+                        * (1 - self.target_feature_merge_scale)
+                        + target_features * self.target_feature_merge_scale
+                    )
 
-                draw_target_feat_full = draw_pseudo_image(
-                    self.init_target_features.squeeze(axis=0),
-                    "./plots/target_feat/"
-                    + str(frame)
-                    + "_target_feat_full.png",
-                )
-                draw_target_feat_current_frame = draw_pseudo_image(
-                    target_features.squeeze(axis=0),
-                    "./plots/scores/"
-                    + str(frame)
-                    + "_target_feat_current_frame.png",
-                )
-
-                draw_target_image = draw_pseudo_image(
-                    target_image.squeeze(axis=0),
-                    "./plots/scores/"
-                    + str(frame)
-                    + "_target_image_current_frame.png",
-                )
+                if self.regress_vertical_position:
+                    vertical_position = (
+                        np.mean(self.model.branch.point_cloud_range[[2, 5]]) +
+                        self.model.vertical_position_regressor(target_features)
+                    ).detach().cpu().numpy()
 
                 if draw:
+                    draw_target_feat_full = draw_pseudo_image(
+                        self.init_target_features.squeeze(axis=0),
+                        "./plots/target_feat/"
+                        + str(frame)
+                        + "_target_feat_full.png",
+                    )
+                    draw_target_feat_current_frame = draw_pseudo_image(
+                        target_features.squeeze(axis=0),
+                        "./plots/scores/"
+                        + str(frame)
+                        + "_target_feat_current_frame.png",
+                    )
+
+                    draw_target_image = draw_pseudo_image(
+                        target_image.squeeze(axis=0),
+                        "./plots/scores/"
+                        + str(frame)
+                        + "_target_image_current_frame.png",
+                    )
                     self.__add_image(draw_target_feat_full, "target_feat_full")
                     self.__add_image(
                         draw_target_feat_current_frame, "target_feat_current_frame"
@@ -934,7 +951,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                         None,
                         None,
                         location=np.array(
-                            [*location_lidar, self.init_label.location[-1]]
+                            [*location_lidar, vertical_position]
                         ),
                         dimensions=self.init_label.dimensions,
                         # np.array(
@@ -1548,6 +1565,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             lr_schedule_params=self.lr_schedule_params,
             loss_function=self.loss_function,
             bof_mode=self.bof_mode,
+            overwrite_strides=self.overwrite_strides,
         )
 
         self.model = model
@@ -1580,6 +1598,14 @@ class VoxelBofObjectTracking3DLearner(Learner):
             return _prep_v9_infer(x, prep_func, pc_range)
 
         self.infer_point_cloud_mapper = infer_point_cloud_mapper
+
+        if self.regress_vertical_position:
+            self.model.vertical_position_regressor = VerticalPositionRegressor(
+                self.model.branch.rpn.num_filters[self.feature_blocks - 1],
+            )
+
+            self.model.vertical_position_regressor.to(self.model.branch.device)
+            self.model.vertical_criterion = torch.nn.L1Loss()
 
     @staticmethod
     def __extract_trailing(path):

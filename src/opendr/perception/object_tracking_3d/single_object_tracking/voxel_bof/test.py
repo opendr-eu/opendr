@@ -493,6 +493,7 @@ def test_pp_siamese_fit_siamese_training(
         "0015",
         "0016",
     ],
+    load_optimizer=True,
     **kwargs,
 ):
     print("Fit", name, "start", file=sys.stderr)
@@ -528,6 +529,7 @@ def test_pp_siamese_fit_siamese_training(
         model_dir="./temp/" + model_name,
         debug=debug,
         steps=steps,
+        load_optimizer=load_optimizer,
         # verbose=True
     )
 
@@ -761,20 +763,20 @@ def test_rotated_pp_siamese_infer(
                 images.append(pil_image)
                 images_small.append(pil_image_small)
 
-            label_ideal = TrackingAnnotation3D(
-                label_lidar.name,
-                label_lidar.truncated,
-                label_lidar.occluded,
-                label_lidar.alpha,
-                label_lidar.bbox2d,
-                label_lidar.dimensions,
+            result_ideal = TrackingAnnotation3D(
+                result[0].name,
+                result[0].truncated,
+                result[0].occluded,
+                result[0].alpha,
+                result[0].bbox2d,
+                result[0].dimensions,
                 np.array(
-                    [*label_lidar.location[:-1], learner.init_label.location[-1]]
+                    [*result[0].location[:-1], label_lidar.location[-1]]
                 ),
-                label_lidar.rotation_y,
-                label_lidar.id,
+                result[0].rotation_y,
+                result[0].id,
                 1,
-                label_lidar.frame,
+                result[0].frame,
             )
             label_same = TrackingAnnotation3D(
                 label_lidar.name,
@@ -794,8 +796,8 @@ def test_rotated_pp_siamese_infer(
             label_lidar = tracking_boxes_to_camera(
                 TrackingAnnotation3DList([label_lidar]), calib
             )[0]
-            label_ideal = tracking_boxes_to_camera(
-                TrackingAnnotation3DList([label_ideal]), calib
+            result_ideal = tracking_boxes_to_camera(
+                TrackingAnnotation3DList([result_ideal]), calib
             )[0]
             label_same = tracking_boxes_to_camera(
                 TrackingAnnotation3DList([label_same]), calib
@@ -811,9 +813,9 @@ def test_rotated_pp_siamese_infer(
             )
             dt_boxes_ideal = np.concatenate(
                 [
-                    label_ideal.location.reshape(1, 3),
-                    label_ideal.dimensions.reshape(1, 3),
-                    label_ideal.rotation_y.reshape(1, 1),
+                    result_ideal.location.reshape(1, 3),
+                    result_ideal.dimensions.reshape(1, 3),
+                    result_ideal.rotation_y.reshape(1, 1),
                 ],
                 axis=1,
             )
@@ -848,7 +850,7 @@ def test_rotated_pp_siamese_infer(
                 count_tracked += 1
 
             accuracy = estimate_accuracy(result, label_lidar)
-            accuracy_ideal = estimate_accuracy(label_ideal, label_lidar)
+            accuracy_ideal = estimate_accuracy(result_ideal, label_lidar)
             accuracy_same = estimate_accuracy(label_same, label_lidar)
 
             ious.append((iou3d, iouAabb))
@@ -1111,7 +1113,7 @@ def test_rotated_pp_siamese_eval(
     if params_file is not None:
         params = load_params_from_file(params_file)
         model_name = params["model_name"] if "model_name" in params else model_name
-        load = params["load"] if "load" in params else load
+        load = params["load"] if ("load" in params and load == 0) else load
         draw = params["draw"] if "draw" in params else draw
         iou_min = params["iou_min"] if "iou_min" in params else iou_min
         classes = params["classes"] if "classes" in params else classes
@@ -1184,6 +1186,8 @@ def test_rotated_pp_siamese_eval(
     total_precision_far = Precision()
     total_success_ideal = Success()
     total_precision_ideal = Precision()
+    total_success_horizontal = Success()
+    total_precision_horizontal = Precision()
     total_success_same = Success()
     total_precision_same = Precision()
 
@@ -1275,20 +1279,20 @@ def test_rotated_pp_siamese_eval(
                         pil_image = PilImage.fromarray(image)
                         images.append(pil_image)
 
-                    label_ideal = TrackingAnnotation3D(
-                        label_lidar.name,
-                        label_lidar.truncated,
-                        label_lidar.occluded,
-                        label_lidar.alpha,
-                        label_lidar.bbox2d,
-                        label_lidar.dimensions,
+                    result_ideal = TrackingAnnotation3D(
+                        result[0].name,
+                        result[0].truncated,
+                        result[0].occluded,
+                        result[0].alpha,
+                        result[0].bbox2d,
+                        result[0].dimensions,
                         np.array(
-                            [*label_lidar.location[:-1], learner.init_label.location[-1]]
+                            [*result[0].location[:-1], label_lidar.location[-1]]
                         ),
-                        label_lidar.rotation_y,
-                        label_lidar.id,
+                        result[0].rotation_y,
+                        result[0].id,
                         1,
-                        label_lidar.frame,
+                        result[0].frame,
                     )
                     label_same = TrackingAnnotation3D(
                         label_lidar.name,
@@ -1315,8 +1319,8 @@ def test_rotated_pp_siamese_eval(
                     label_lidar = tracking_boxes_to_camera(
                         TrackingAnnotation3DList([label_lidar]), calib
                     )[0]
-                    label_ideal = tracking_boxes_to_camera(
-                        TrackingAnnotation3DList([label_ideal]), calib
+                    result_ideal = tracking_boxes_to_camera(
+                        TrackingAnnotation3DList([result_ideal]), calib
                     )[0]
                     label_same = tracking_boxes_to_camera(
                         TrackingAnnotation3DList([label_same]), calib
@@ -1340,9 +1344,9 @@ def test_rotated_pp_siamese_eval(
                     )
                     dt_boxes_ideal = np.concatenate(
                         [
-                            label_ideal.location.reshape(1, 3),
-                            label_ideal.dimensions.reshape(1, 3),
-                            label_ideal.rotation_y.reshape(1, 1),
+                            result_ideal.location.reshape(1, 3),
+                            result_ideal.dimensions.reshape(1, 3),
+                            result_ideal.rotation_y.reshape(1, 1),
                         ],
                         axis=1,
                     )
@@ -1362,7 +1366,7 @@ def test_rotated_pp_siamese_eval(
                         count_tracked += 1
 
                     accuracy = estimate_accuracy(result, label_lidar)
-                    accuracy_ideal = estimate_accuracy(label_ideal, label_lidar)
+                    accuracy_ideal = estimate_accuracy(result_ideal, label_lidar)
                     accuracy_same = estimate_accuracy(label_same, label_lidar)
                 except Exception as e:
                     if raise_on_infer_error:
@@ -2060,7 +2064,7 @@ def multi_eval(
     gpu_capacity=4,
     total_devices=4,
     model_name=None,
-    tracks=["0010", "0011"],
+    tracks=["0019", "0020"],
     eval_kwargs_name="v2",
     params_file=None,
     eval_id_prefix="",

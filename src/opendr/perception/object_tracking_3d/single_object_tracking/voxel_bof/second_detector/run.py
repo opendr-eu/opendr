@@ -475,18 +475,26 @@ def create_pseudo_image_features(
     return features, image
 
 
-def image_to_feature_coordinates(pos, feature_blocks):
+def image_to_feature_coordinates(pos, feature_blocks, overwrite_strides=None):
 
     result = pos
 
-    for _ in range(feature_blocks):
-        result = (result + 1) // 2
+    for i in range(feature_blocks):
+        stride = 2 if overwrite_strides is None else overwrite_strides[i]
+        result = (result + (stride - 1)) // stride
 
     return result
 
 
-def feature_to_image_coordinates(pos, feature_blocks):
-    return pos * (2 ** feature_blocks)
+def feature_to_image_coordinates(pos, feature_blocks, overwrite_strides=None):
+
+    result = pos
+
+    for i in range(feature_blocks):
+        stride = 2 if overwrite_strides is None else overwrite_strides[i]
+        result = result * stride
+
+    return result
 
 
 def image_to_lidar_coordinates(location, size, voxel_size, bv_range):
@@ -512,6 +520,7 @@ def create_static_label_and_weights(
     radius=8,
     max_pos=1,
     min_pos=0.5,
+    overwrite_strides=None,
 ):
     if target_size[0] <= 0:
         target_size = target_size_with_context
@@ -519,8 +528,8 @@ def create_static_label_and_weights(
         search_size = search_size_with_context
 
     label_size = (
-        image_to_feature_coordinates(search_size, feature_blocks)
-        - image_to_feature_coordinates(target_size, feature_blocks)
+        image_to_feature_coordinates(search_size, feature_blocks, overwrite_strides)
+        - image_to_feature_coordinates(target_size, feature_blocks, overwrite_strides)
         + 1
     ).astype(np.int32)
 
@@ -1061,7 +1070,7 @@ def pc_range_by_lidar_aabb(lidar_aabb):
     return pc_range
 
 
-def freeze_non_bof(net):
+def freeze_model(net, exclude_bof=False):
 
     has_bof = False
 
@@ -1069,20 +1078,22 @@ def freeze_non_bof(net):
         if ".bof" in name:
             has_bof = True
 
-    if has_bof:
+    if has_bof or not exclude_bof:
         for name, param in net.named_parameters():
-            if ".bof" not in name:
+            if (".bof" not in name) or (not exclude_bof):
                 param.requires_grad = False
 
-        print("Non BoF layers are frozen")
+        if exclude_bof:
+            print("Non BoF layers are frozen")
+        else:
+            print("Net Frozen")
 
 
-def unfreeze_non_bof(net):
-    for name, param in net.named_parameters():
-        if ".bof" not in name:
-            param.requires_grad = True
+def unfreeze_model(net):
+    for _, param in net.named_parameters():
+        param.requires_grad = True
 
-    print("Non BoF layers are unfrozen")
+    print("Net unfrozen")
 
 
 def create_siamese_pseudo_images_and_labels(
@@ -1102,6 +1113,7 @@ def create_siamese_pseudo_images_and_labels(
     augment_rotation=True,
     search_type="normal",
     target_type="normal",
+    overwrite_strides=None,
 ):
 
     dims = target_label_lidar_kitti["dimensions"][0]
@@ -1206,16 +1218,20 @@ def create_siamese_pseudo_images_and_labels(
         feature_blocks,
         loss=loss,
         radius=r_pos,
+        overwrite_strides=overwrite_strides,
     )
 
     labels_torch = torch.tensor(labels, device=target_image.device)
     weights_torch = torch.tensor(weights, device=target_image.device)
+
+    vertical_position = target_box_lidar[0, 2] - np.mean(net.point_cloud_range[[2, 5]])
 
     result = (
         target_image,
         search_image,
         labels_torch,
         weights_torch,
+        vertical_position,
         target,
         search_target,
         search,
@@ -1499,6 +1515,7 @@ def train_siamese_triplet(
     search_type="normal",
     target_type="normal",
     train_pseudo_image=False,
+    regress_vertical_position=False,
 ):
 
     net = siamese_model.branch
@@ -1555,7 +1572,7 @@ def train_siamese_triplet(
     average_delta_error = 0
 
     if bof_training_steps > 0:
-        freeze_non_bof(net)
+        freeze_model(net, True)
 
     for _ in range(total_loop):
         if total_step_elapsed + train_cfg.steps_per_eval > train_cfg.steps:
@@ -1780,7 +1797,7 @@ def train_siamese_triplet(
                 average_delta_error += np.abs(delta - true_delta)
 
                 if bof_training_steps > 0 and global_step >= bof_training_steps:
-                    unfreeze_non_bof(net)
+                    unfreeze_model(net)
                     bof_training_steps = 0
 
                 if global_step % display_step == 0:
@@ -1881,13 +1898,16 @@ def train_siamese(
     train_steps=0,
     loss_function="bce",
     r_pos=16,
-    bof_training_steps=10000,
+    bof_training_steps=0,  # 10000,
     infer_point_cloud_mapper=None,
     augment=True,
     augment_rotation=True,
     search_type="normal",
     target_type="normal",
     train_pseudo_image=False,
+    regress_vertical_position=False,
+    regression_training_isolated=True,
+    overwrite_strides=None,
 ):
 
     net = siamese_model.branch
@@ -1941,10 +1961,14 @@ def train_siamese(
     mixed_optimizer.zero_grad()
 
     average_loss = 0
+    average_v_loss = 0
     average_delta_error = 0
 
     if bof_training_steps > 0:
-        freeze_non_bof(net)
+        freeze_model(net, True)
+
+    if regress_vertical_position and regression_training_isolated:
+        freeze_model(net)
 
     for _ in range(total_loop):
         if total_step_elapsed + train_cfg.steps_per_eval > train_cfg.steps:
@@ -1985,6 +2009,7 @@ def train_siamese(
                 augment_rotation=augment_rotation,
                 search_type=search_type,
                 target_type=target_type,
+                overwrite_strides=overwrite_strides,
             )
 
             for (
@@ -1992,6 +2017,7 @@ def train_siamese(
                 search_image,
                 labels,
                 weights,
+                vertical_position,
                 target,
                 search_target,
                 search,
@@ -2002,7 +2028,21 @@ def train_siamese(
                 pred, feat_target, feat_search = siamese_model(
                     search_image, target_image
                 )
-                loss = net.criterion(pred, labels, weights)
+
+                loss = 0
+
+                if not (regress_vertical_position and regression_training_isolated):
+                    loss = net.criterion(pred, labels, weights)
+
+                v_loss = 0
+
+                if regress_vertical_position:
+                    pred_vertical_position = siamese_model.vertical_position_regressor(feat_target)
+                    v_loss = siamese_model.vertical_criterion(
+                        pred_vertical_position,
+                        torch.tensor(vertical_position, dtype=torch.float32, device=pred_vertical_position.device)
+                    )
+                    loss += 0.1 * v_loss
 
                 delta, _ = displacement_score_to_image_coordinates(
                     pred, 1, search_size_with_context, 0, feature_blocks
@@ -2131,14 +2171,16 @@ def train_siamese(
                 global_step = net.get_global_step()
 
                 average_loss += loss
+                average_v_loss += v_loss
                 average_delta_error += np.abs(delta - true_delta)
 
                 if bof_training_steps > 0 and global_step >= bof_training_steps:
-                    unfreeze_non_bof(net)
+                    unfreeze_model(net)
                     bof_training_steps = 0
 
                 if global_step % display_step == 0:
                     average_loss /= display_step
+                    average_v_loss /= display_step
                     average_delta_error /= display_step
 
                     print(
@@ -2147,6 +2189,7 @@ def train_siamese(
                         global_step,
                         "]",
                         "loss=" + str(float(average_loss.detach().cpu())),
+                        "v_loss=" + (str(float(average_v_loss.detach().cpu())) if regress_vertical_position else "None"),
                         "error_position=",
                         average_delta_error,
                         "lr=",
@@ -2156,6 +2199,12 @@ def train_siamese(
                     writer.add_scalar(
                         "loss", float(average_loss.detach().cpu()), global_step
                     )
+
+                    if regress_vertical_position:
+                        writer.add_scalar(
+                            "v_loss", float(average_v_loss.detach().cpu()), global_step
+                        )
+
                     writer.add_scalar(
                         "error_position_x", float(average_delta_error[0]), global_step
                     )
@@ -2235,6 +2284,7 @@ def train_detection(
     search_type="normal",
     target_type="normal",
     train_pseudo_image=False,
+    regress_vertical_position=False,
 ):
 
     net = siamese_model.branch
@@ -2298,7 +2348,7 @@ def train_detection(
     average_delta_error = 0
 
     if bof_training_steps > 0:
-        freeze_non_bof(net)
+        freeze_model(net, True)
 
     for _ in range(total_loop):
         if total_step_elapsed + train_cfg.steps_per_eval > train_cfg.steps:
@@ -2499,7 +2549,7 @@ def train_detection(
                 average_delta_error += np.abs(delta - true_delta)
 
                 if bof_training_steps > 0 and global_step >= bof_training_steps:
-                    unfreeze_non_bof(net)
+                    unfreeze_model(net)
                     bof_training_steps = 0
 
                 if global_step % display_step == 0:

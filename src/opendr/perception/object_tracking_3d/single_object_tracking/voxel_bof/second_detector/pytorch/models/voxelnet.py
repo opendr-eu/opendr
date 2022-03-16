@@ -397,8 +397,10 @@ class RPN(nn.Module):
         box_code_size=7,
         name="rpn",
         bof_mode="none",
+        overwrite_strides=None,
     ):
         super(RPN, self).__init__()
+        self.num_filters = num_filters
         self._num_anchor_per_loc = num_anchor_per_loc
         self._use_direction_classifier = use_direction_classifier
         self._use_bev = use_bev
@@ -416,6 +418,10 @@ class RPN(nn.Module):
                 np.prod(layer_strides[: i + 1]) // upsample_strides[i]
             )
         assert all([x == factors[0] for x in factors])
+
+        if overwrite_strides is not None:
+            layer_strides = overwrite_strides
+
         if use_norm:
             if use_groupnorm:
                 BatchNorm2d = change_default_args(
@@ -625,6 +631,7 @@ class VoxelNet(nn.Module):
         pc_range=(0, -40, -3, 70.4, 40, 1),
         name="voxelnet",
         bof_mode="none",
+        overwrite_strides=None,
     ):
         super().__init__()
         self.name = name
@@ -733,6 +740,7 @@ class VoxelNet(nn.Module):
             num_groups=num_groups,
             box_code_size=target_assigner.box_coder.code_size,
             bof_mode=bof_mode,
+            overwrite_strides=overwrite_strides,
         )
 
         self.rpn_acc = metrics.Accuracy(

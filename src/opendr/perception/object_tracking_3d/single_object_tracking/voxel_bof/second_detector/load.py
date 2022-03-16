@@ -99,6 +99,7 @@ def create_model(
     log=print,
     verbose=False,
     bof_mode="none",
+    overwrite_strides=None,
 ):
 
     loss_scale = None
@@ -130,11 +131,11 @@ def create_model(
     ######################
     center_limit_range = model_cfg.post_center_limit_range
     net = second_builder.build(
-        model_cfg, voxel_generator, target_assigner, device, bof_mode
+        model_cfg, voxel_generator, target_assigner, device, bof_mode, overwrite_strides=overwrite_strides
     )
     net.device = device
     net.bv_range = bv_range
-    net.point_cloud_range =voxel_generator. point_cloud_range
+    net.point_cloud_range = voxel_generator.point_cloud_range
     net.voxel_size = model_cfg.voxel_generator.voxel_size
 
     if loss_function == "bce":
@@ -200,12 +201,14 @@ def load_from_checkpoint(
     lr_schedule_name,
     lr_schedule_params,
     device=None,
+    load_optimizer=True
 ):
     all_params = torch.load(path, map_location=device)
-    model.load_state_dict(all_params["siamese_model"])
-    mixed_optimizer.load_state_dict(all_params["optimizer"])
+    model.load_state_dict(all_params["siamese_model"], strict=False)
+    if load_optimizer:
+        mixed_optimizer.load_state_dict(all_params["optimizer"])
     gstep = model.branch.get_global_step() - 1
     lr_scheduler = lr_scheduler_builder.build_online(
-        lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep
+        lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep if load_optimizer else -1
     )
     return lr_scheduler
