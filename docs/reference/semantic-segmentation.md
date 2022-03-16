@@ -223,7 +223,53 @@ Parameters:
       cv2.waitKey(-1)
   ```
   
-  
+#### Performance Evaluation
+
+In terms of speed, the performance of BiseNet for different input sizes is summarized in the table below (in FPS).
+
+| Input Size | RTX 2070 | TX2 | NX  | AGX |
+|512x512     |170.43    |11.25|21.43|39.06|
+|512x1024    |93.84     |5.92 |11.14|20.83|
+|1024x1024   |49.11     |3.03 |5.78 |11.02|
+|104x2048    |25.07     |1.50 |2.77 |5.44 |
+
+Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below. The measurement was made on a Jetson TX2 module.
+
+| Method  | Memory (MB) | Energy (Joules) |
+|---------|-------------|-----------------|
+| BiseNet | 1113        | 48.208          | 
+
+
+Finally, we measure the performance of BiseNet on the CamVid dataset, using IoU.
+
+| Class      | IOU (%)  |
+|------------|----------|
+| Bicyclist  |60.0      |
+| Building   |80.3      |
+| Car        |87.1      |
+| Column Pole|33.3      |
+| Fence      |42.7      |
+| Pedestrian |55.2      |
+| Road       |90.8      |
+| Sidewalk   |85.5      |
+| Sign Symbol|20.9      |
+| Sky        |91.2      |
+| Tree       |73.5      |
+| Mean       |65.5      |
+
+
+The platform compatibility evaluation is also reported below:
+
+| Platform  | Compatibility Evaluation |
+| ----------------------------------------------|-------|
+| x86 - Ubuntu 20.04 (bare installation - CPU)  | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (bare installation - GPU)  | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (pip installation)         | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (CPU docker)               | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (GPU docker)               | :heavy_check_mark:   |
+| NVIDIA Jetson TX2                             | :heavy_check_mark:   |
+| NVIDIA Jetson Xavier AGX                      | :heavy_check_mark:   |
+
 #### References
 <a name="bisenetp" href="https://arxiv.org/abs/1808.00897">[1]</a> BiSeNet: Bilateral Segmentation Network for Real-time Semantic Segmentation,
 [arXiv](https://arxiv.org/abs/1808.00897).
