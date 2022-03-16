@@ -357,6 +357,34 @@ Parameters:
   print(result)
   ```
 
+#### Performance Evaluation
+
+The tests were conducted on the following computational devices:
+- **Intel(R) Xeon(R) Gold 6230R CPU on server**
+- **Nvidia Jetson TX2**
+- **Nvidia Jetson Xavier AGX**
+- **Nvidia RTX 2080 Ti GPU on server with Intel Xeon Gold processors**
+
+Inference time is measured as the time taken to transfer the input to the model (e.g., from CPU to GPU), run inference using the algorithm, and return results to CPU. Inner FPS refers to the speed of the model when the data is ready. We report FPS (single sample per inference) as the mean of 100 runs.
+
+Full FPS Evaluation of DeepSORT and FairMOT on MOT20 dataset
+| Model    | TX2 (FPS) | Xavier (FPS) | RTX 2080 Ti (FPS) |
+| -------- | --------- | ------------ | ----------------- |
+| DeepSORT | 2.71      | 6.36         | 16.07             |
+| FairMOT  | 0.79      | 2.36         | 10.42             |
+
+Inner FPS Evaluation (model only) of DeepSORT and FairMOT on MOT20 dataset.
+| Model    | TX2 (FPS) | Xavier (FPS) | RTX 2080 Ti (FPS) |
+| -------- | --------- | ------------ | ----------------- |
+| DeepSORT | 2.71      | 6.36         | 16.07             |
+| FairMOT  | 0.79      | 2.36         | 17.16             |
+
+Energy (Joules) of DeepSORT and FairMOT on embedded devices.
+| Model    | TX2 (Joules) | Xavier (Joules) |
+| -------- | ------------ | --------------- |
+| DeepSORT | 11.27        | 3.72            |
+| FairMOT  | 41.24        | 12.85           |
+
 #### References
 <a name="#object-tracking-2d-1" href="https://arxiv.org/abs/1703.07402">[1]</a> Simple Online and Realtime Tracking with a Deep Association Metric,
 [arXiv](https://arxiv.org/abs/1703.07402).  
