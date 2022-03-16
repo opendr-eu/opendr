@@ -162,3 +162,24 @@ for i in range(number_of_timesteps):
         obs = env.reset()
 print("Reward collected is:", sum_of_rew)
 ```
+
+### Performance Evaluation
+
+TABLE 1: Speed (FPS) and energy consumption for inference on various platforms.
+
+|                 | TX2   | Xavier | RTX 2080 Ti |
+| --------------- | ----- | ------ | ----------- |
+| FPS Evaluation  | 153.5 | 201.6  | 973.6       |
+| Energy (Joules) | 0.12  | 0.051  | \-          |
+
+TABLE 2: Platform compatibility evaluation.
+
+| Platform                                     | Test results |
+| -------------------------------------------- | ------------ |
+| x86 - Ubuntu 20.04 (bare installation - CPU) | Pass         |
+| x86 - Ubuntu 20.04 (bare installation - GPU) | Pass         |
+| x86 - Ubuntu 20.04 (pip installation)        | Pass         |
+| x86 - Ubuntu 20.04 (CPU docker)              | Pass         |
+| x86 - Ubuntu 20.04 (GPU docker)              | Pass         |
+| NVIDIA Jetson TX2                            | Pass         |
+| NVIDIA Jetson Xavier AGX                     | Pass         |
