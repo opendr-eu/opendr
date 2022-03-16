@@ -1,5 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
-#
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -183,7 +182,6 @@ class Self_attention_module(nn.Module):
         q = torch.matmul(scores, v)
         q = q.transpose(1, 2).contiguous().view(samples_dim, -1, self.s_dim)
         q = self.q_out(q)
-
         return q
 
 
