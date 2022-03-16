@@ -29,6 +29,7 @@ import numpy as np
 import math
 from tqdm import tqdm
 
+
 class Dataset_NMS(Dataset):
     def __init__(self, path=None, dataset_name=None, split=None, use_ssd=True, device='cuda'):
         super().__init__()
@@ -215,7 +216,7 @@ class Dataset_NMS(Dataset):
 
             self.classes = ['background', 'human']
             self.class_ids = [-1, 1]
-            self.annotation_file = 'instances_' + self.dataset_sets[self.split] + '.json'
+            self.annotation_file = 'pets_' + self.dataset_sets[self.split] + '.json'
         elif self.dataset_name == "COCO":
             self.dataset_sets['train'] = 'train'
             self.dataset_sets['val'] = 'minival'
@@ -290,7 +291,8 @@ class Dataset_NMS(Dataset):
                             dt_boxes.append(np.array([bboxes_list[b, 0], bboxes_list[b, 1], bboxes_list[b, 2],
                                                       bboxes_list[b, 3], bboxes_list[b, 4][0]]))
                     dt_boxes = np.asarray(dt_boxes)
-                    annots_in_frame = annots.loadAnns(annots.getAnnIds(imgIds=[dets_default[1][i]], catIds=[1], iscrowd=False))
+                    annots_in_frame = annots.loadAnns(
+                        annots.getAnnIds(imgIds=[dets_default[1][i]], catIds=[1], iscrowd=False))
                     gt_boxes = []
                     for j in range(len(annots_in_frame)):
                         gt_boxes.append(annots_in_frame[j]['bbox'])
