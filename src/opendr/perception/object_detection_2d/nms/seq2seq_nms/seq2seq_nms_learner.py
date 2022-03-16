@@ -395,8 +395,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         return eval_result
 
     def save(self, path, verbose=False, optimizer=None, scheduler=None, current_epoch=None, max_dt_boxes=400):
-        fname  = path.split('/')[-1]
-        dir_name = path.replace('/'+fname,'')
+        fname = path.split('/')[-1]
+        dir_name = path.replace('/' + fname, '')
         if not os.path.isdir(dir_name):
             os.makedirs(dir_name)
         custom_dict = {'state_dict': self.model.state_dict(), 'current_epoch': current_epoch}
@@ -475,7 +475,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if verbose:
             print("Loaded parameters and metadata.")
         return True
-    
+
     def assign_params(self, metadata, verbose):
 
         if verbose and self.variant is not None and self.variant != metadata["variant"]:
