@@ -11,20 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
-import torch.nn.functional as F
-import pickle
-import numpy as np
-import os
+
 from opendr.engine.learners import Learner
 from opendr.engine.constants import OPENDR_SERVER_URL
-from urllib.request import urlretrieve
-import torch.nn as nn
-from tensorboardX import SummaryWriter
-import torch.optim as optim
-from tqdm import tqdm
-import collections
-import json
 from opendr.engine.target import BoundingBox, BoundingBoxList
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d.nms.seq2seq_nms.algorithm.seq2seq_model import Seq2SeqNet
@@ -33,12 +22,25 @@ from opendr.perception.object_detection_2d.nms.utils.nms_dataset import Dataset_
 from opendr.perception.object_detection_2d.nms.utils.nms_custom import NMSCustom
 from opendr.perception.object_detection_2d.nms.utils.nms_utils import drop_dets, det_matching, \
     run_coco_eval, filter_iou_boxes, bb_intersection_over_union, compute_class_weights, apply_torchNMS
+import torch
+import torch.nn.functional as F
+import pickle
+import numpy as np
+import os
+from urllib.request import urlretrieve
+import torch.nn as nn
+from tensorboardX import SummaryWriter
+import torch.optim as optim
+from tqdm import tqdm
+import collections
+import json
+import zipfile
 
 
 class Seq2SeqNMSLearner(Learner, NMSCustom):
     def __init__(self, lr=0.0001, epochs=8, device='cuda', temp_path='./temp', checkpoint_after_iter=0,
-                 checkpoint_load_iter=0, log_after=10000, variant='medium', experiment_name='default',
-                 iou_filtering=0.8, dropout=0.05, pretrained_demo_model=None, app_feats='fmod',
+                 checkpoint_load_iter=0, log_after=10000, variant='medium',
+                 iou_filtering=0.8, dropout=0.05, app_feats='fmod',
                  fmod_map_type='EDGEMAP', fmod_map_bin=True, app_input_dim=None):
         super(Seq2SeqNMSLearner, self).__init__(lr=lr, batch_size=1,
                                                 checkpoint_after_iter=checkpoint_after_iter,
@@ -81,13 +83,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         self.geom_input_dim = 14
         self.set_architecture()
         self.dropout = dropout
-        self.parent_dir = temp_path
-        if not os.path.isdir(self.parent_dir):
-            os.mkdir(self.parent_dir)
-        self.experiment_name = experiment_name
-        if not os.path.isdir(os.path.join(self.parent_dir, self.experiment_name)):
-            os.mkdir(os.path.join(self.parent_dir, self.experiment_name))
-        self.pretrained_demo_model = pretrained_demo_model
+        self.temp_path = temp_path
+        if not os.path.isdir(self.temp_path):
+            os.mkdir(self.temp_path)
         self.checkpoint_load_iter = checkpoint_load_iter
         self.log_after = log_after
         self.iou_filtering = iou_filtering
@@ -99,6 +97,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             self.fMoD = FMoD(roi_pooling_dim=self.fmod_roi_pooling_dim, pyramid_depth=self.fmod_pyramid_lvl,
                              resize_dim=self.fmod_map_res_dim,
                              map_type=self.fmod_map_type, map_bin=self.fmod_map_bin, device=self.device)
+        self.init_model()
+        if self.device == 'cuda':
+            self.model = self.model.cuda()
 
     def fit(self, dataset, logging_path='', logging_flush_secs=30, silent=True,
             verbose=True, nms_gt_iou=0.5, max_dt_boxes=400, datasets_folder='./datasets',
@@ -116,27 +117,10 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             logging = False
             file_writer = None
 
-        if self.model is None:
-            self.init_model()
-        checkpoints_folder = os.path.join(self.parent_dir, self.experiment_name, 'checkpoints')
+        checkpoints_folder = os.path.join(self.temp_path, 'checkpoints')
         if self.checkpoint_after_iter != 0 and not os.path.exists(checkpoints_folder):
             os.makedirs(checkpoints_folder)
 
-        if self.pretrained_demo_model is not None:
-            self.download(path=self.temp_path, model_name=self.pretrained_demo_model,
-                          verbose=verbose and not silent)
-            weights_path = None
-            if self.pretrained_demo_model == 'PETS':
-                weights_path = os.path.join(checkpoints_folder, self.pretrained_demo_model)
-                self.checkpoint_load_iter = 7
-            elif self.pretrained_demo_model == 'COCO':
-                weights_path = os.path.join(checkpoints_folder, "seq2seq_coco.pth")
-                self.checkpoint_load_iter = '?'
-            self.load(path=weights_path, verbose=verbose)
-        elif self.checkpoint_load_iter != 0:
-            checkpoint_name = "checkpoint_epoch_" + str(self.checkpoint_load_iter)
-            checkpoint_full_path = os.path.join(checkpoints_folder, checkpoint_name)
-            self.load(checkpoint_full_path)
 
         if not silent and verbose:
             print("Model trainable parameters:", self.count_parameters())
@@ -159,18 +143,13 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
 
         start_epoch = 0
-        drop_after_epoch = [4, 6]
+        drop_after_epoch = [5, 8]
 
         train_ids = np.arange(len(dataset_nms.src_data))
         total_loss_iter = 0
         total_loss_epoch = 0
         optimizer = optim.Adam(self.model.parameters(), lr=self.lr, betas=(0.9, 0.99), eps=1e-9)  # HERE
         scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=drop_after_epoch, gamma=0.1)
-
-        if self.checkpoint_load_iter != 0:
-            checkpoint_name = "checkpoint_epoch_" + str(self.checkpoint_load_iter)
-            checkpoint_full_path = os.path.join(checkpoints_folder, checkpoint_name)
-            self.load(checkpoint_full_path)
 
         num_iter = 0
         training_weights = compute_class_weights(pos_weights=[0.9, 0.1], max_dets=max_dt_boxes, dataset_nms=dataset_nms)
@@ -292,6 +271,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 snapshot_name = '{}/checkpoint_epoch_{}'.format(checkpoints_folder, epoch)
                 self.save(path=snapshot_name, optimizer=optimizer, scheduler=scheduler,
                           current_epoch=epoch, max_dt_boxes=max_dt_boxes)
+                snapshot_name_lw = '{}/last_weights'.format(checkpoints_folder)
+                self.save(path=snapshot_name_lw, optimizer=optimizer, scheduler=scheduler,
+                          current_epoch=epoch, max_dt_boxes=max_dt_boxes)
             total_loss_epoch = 0
             scheduler.step()
         if logging:
@@ -309,22 +291,12 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
         annotations_filename = dataset_nms.annotation_file
 
-        eval_folder = os.path.join(self.parent_dir, self.experiment_name, 'eval')
-        if not os.path.isdir(os.path.join(self.parent_dir, self.experiment_name)):
-            os.mkdir(os.path.join(self.parent_dir, self.experiment_name))
+        eval_folder = os.path.join(self.temp_path, 'eval')
+        if not os.path.isdir(os.path.join(self.temp_path)):
+            os.mkdir(os.path.join(self.temp_path))
         if not os.path.isdir(eval_folder):
             os.mkdir(eval_folder)
         output_file = os.path.join(eval_folder, 'detections.json')
-
-        if self.model is None and self.checkpoint_load_iter != 0:
-            self.init_model()
-            checkpoint_name = "checkpoint_epoch_" + str(self.checkpoint_load_iter)
-            checkpoint_folder = os.path.join(self.parent_dir, self.experiment_name, 'checkpoints')
-            checkpoint_full_path = os.path.join(checkpoint_folder, checkpoint_name)
-            self.load(path=checkpoint_full_path, verbose=verbose)
-
-        elif self.model is None:
-            raise AttributeError("self.model is None. Please load a model or set checkpoint_load_iter.")
 
         if self.app_feats == 'fmod':
             if self.fmod_mean_std is None:
@@ -382,7 +354,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             if self.app_feats == 'fmod':
                 img = Image.open(image_path)
                 img = img.convert(format='channels_last', channel_order='bgr')
-                self.fMoD.extract_maps(img=img, augm=True)
+                self.fMoD.extract_maps(img=img, augm=False)
                 app_feats = self.fMoD.extract_FMoD_feats(dt_boxes)
                 app_feats = torch.unsqueeze(app_feats, dim=1)
             elif self.app_feats == 'zeros':
@@ -421,6 +393,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             print(eval_result[i][0][2][1])
             print(eval_result[i][0][3][1])
             print('\n')
+        return eval_result
 
     def save(self, path, verbose=False, optimizer=None, scheduler=None, current_epoch=None, max_dt_boxes=400):
         path = path.split('.')[0]
@@ -462,12 +435,16 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
     def load(self, path, verbose=False):
 
-        model_name = os.path.basename(os.path.normpath(path)).split('.')[0]
-        dir_path = os.path.dirname(os.path.normpath(path))
+        if os.path.isdir(path):
+            model_name = os.path.join(path, 'last_weights')
+            dir_path = path
+        else:
+            model_name = os.path.basename(os.path.normpath(path)).split('.')[0]
+            dir_path = os.path.dirname(os.path.normpath(path))
 
         if verbose:
             print("Model name:", model_name, "-->", os.path.join(dir_path, model_name + ".json"))
-        with open(os.path.join(dir_path, model_name + ".json")) as f:
+        with open(os.path.join(dir_path, model_name + ".json"), encoding='utf-8-sig') as f:
             metadata = json.load(f)
         pth_path = os.path.join(dir_path, metadata["model_paths"][0])
         if verbose:
@@ -490,10 +467,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 raise e
 
         self.assign_params(metadata=metadata, verbose=verbose)
-        self.init_model()
         self.load_state(checkpoint)
-        if self.device == 'cuda':
-            self.model = self.model.cuda()
         if verbose:
             print("Loaded parameters and metadata.")
         return True
@@ -586,8 +560,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             raise UserWarning("Model is not initialized, can't count trainable parameters.")
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
-    def download(self, path=None, model_name='seq2seq_medium_pets_jpd_fmod_3', verbose=False,
-                 url=OPENDR_SERVER_URL + "perception/object_detection_2d/nms/pretrained/"):
+    def download(self, path=None, model_name='seq2seq_pets_jpd', verbose=False,
+                 url=OPENDR_SERVER_URL + "perception/object_detection_2d/nms/"):
 
         if path is None:
             path = self.temp_path
@@ -595,18 +569,15 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if not os.path.exists(path):
             os.makedirs(path)
 
-        path = os.path.join(path, model_name)
-        if not os.path.exists(path):
-            os.makedirs(path)
-
         if verbose:
             print("Downloading pretrained model...")
 
-        file_url_json = os.path.join(url, "pretrained", model_name + '.json')
-        file_url_pth = os.path.join(url, "pretrained", model_name + '.pth')
+        file_url = os.path.join(url, "pretrained", model_name + '.zip')
         try:
-            urlretrieve(file_url_json, os.path.join(path, model_name + '.json'))
-            urlretrieve(file_url_pth, os.path.join(path, model_name + '.pth'))
+            urlretrieve(file_url, os.path.join(path, model_name + '.zip'))
+            with zipfile.ZipFile(os.path.join(path, model_name + '.zip'), 'r') as zip_ref:
+                zip_ref.extractall(path)
+            os.remove(os.path.join(path, model_name + '.zip'))
         except:
             raise UserWarning('Pretrained model not found on server.')
 
@@ -745,7 +716,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         scoresBs = scores.unsqueeze(0).unsqueeze(-1).repeat(scores.shape[0], 1, 1)
         scoresAs = scores.unsqueeze(1).unsqueeze(1).repeat(1, scores.shape[0], 1)
 
-        scale_div = [resolution[0] / 20, resolution[1] / 20]
+        scale_div = [resolution[1] / 20, resolution[0] / 20]
         dx = ((boxBs[:, :, 0] - boxAs[:, :, 0] + boxBs[:, :, 2] - boxAs[:, :, 2]) / 2).unsqueeze(-1)
         dy = ((boxBs[:, :, 1] - boxAs[:, :, 1] + boxBs[:, :, 3] - boxAs[:, :, 3]) / 2).unsqueeze(-1)
         dxy = dx * dx + dy * dy
