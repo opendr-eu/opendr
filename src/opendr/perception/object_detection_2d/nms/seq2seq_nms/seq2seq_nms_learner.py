@@ -396,8 +396,11 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
     def save(self, path, verbose=False, optimizer=None, scheduler=None, current_epoch=None, max_dt_boxes=400):
         path = path.split('.')[0]
-        custom_dict = {'state_dict': self.model.state_dict(), 'optimizer': optimizer.state_dict(),
-                       'scheduler': scheduler.state_dict(), 'current_epoch': current_epoch}
+        custom_dict = {'state_dict': self.model.state_dict(), 'current_epoch': current_epoch}
+        if optimizer is not None:
+            custom_dict['optimizer'] = optimizer.state_dict()
+        if scheduler is not None:
+            custom_dict['scheduler'] = scheduler.state_dict()
         torch.save(custom_dict, path + '.pth')
 
         metadata = {"model_paths": [os.path.basename(path) + '.pth'], "framework": "pytorch", "has_data": False,
