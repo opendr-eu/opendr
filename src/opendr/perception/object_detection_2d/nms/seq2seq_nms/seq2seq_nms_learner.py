@@ -121,7 +121,6 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if self.checkpoint_after_iter != 0 and not os.path.exists(checkpoints_folder):
             os.makedirs(checkpoints_folder)
 
-
         if not silent and verbose:
             print("Model trainable parameters:", self.count_parameters())
 
@@ -143,7 +142,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
 
         start_epoch = 0
-        drop_after_epoch = [5, 8]
+        drop_after_epoch = [4, 6]
 
         train_ids = np.arange(len(dataset_nms.src_data))
         total_loss_iter = 0
