@@ -55,14 +55,12 @@ class TestSeq2SeqNMS(unittest.TestCase):
     def tearDownClass(cls):
         print('Removing temporary directories for Seq2Seq-NMS...')
         # Clean up downloaded files
-        rmfile(os.path.join(cls.temp_dir, "TEST-MODULE", "test_module.pkl"))
-        rmfile(os.path.join(cls.temp_dir, "TEST-MODULE", "val2014", "COCO_val2014_000000262148.jpg"))
-        rmfile(os.path.join(cls.temp_dir, "TEST-MODULE", "FMoD", "coco_edgemap_b_3.pkl"))
-        rmfile(os.path.join(cls.temp_dir, "TEST-MODULE", "annotations", "test_module_anns.json"))
-        rmdir(os.path.join(cls.temp_dir, "TEST-MODULE", "val2014"))
-        rmdir(os.path.join(cls.temp_dir, "TEST-MODULE", "FMoD"))
-        rmdir(os.path.join(cls.temp_dir, "TEST-MODULE", "val2014"))
-
+        rmfile(os.path.join(cls.temp_dir, "datasets", "TEST_MODULE", "test_module.pkl"))
+        rmfile(os.path.join(cls.temp_dir, "datasets", "TEST_MODULE", "val2014", "COCO_val2014_000000262148.jpg"))
+        rmfile(os.path.join(cls.temp_dir, "datasets", "TEST_MODULE", "FMoD", "coco_edgemap_b_3.pkl"))
+        rmfile(os.path.join(cls.temp_dir, "datasets", "TEST_MODULE", "annotations", "test_module_anns.json"))
+        rmdir(os.path.join(cls.temp_dir, "datasets", "TEST_MODULE", "val2014"))
+        rmdir(os.path.join(cls.temp_dir, "datasets", "TEST_MODULE", "FMoD"))
         rmfile(os.path.join(cls.temp_dir, "seq2seq_pets_jpd", "fmod_normalization.pkl"))
         rmfile(os.path.join(cls.temp_dir, "seq2seq_pets_jpd", "last_weights.json"))
         rmfile(os.path.join(cls.temp_dir, "seq2seq_pets_jpd", "last_weights.pth"))
@@ -77,12 +75,12 @@ class TestSeq2SeqNMS(unittest.TestCase):
     def test_fit(self):
         print('Starting training test for Seq2Seq-NMS...')
 
-        m = list(self.seq2SeqNMSLearner.model.collect_params().values())[2].data().asnumpy().copy()
-        self.seq2SeqNMSLearner.fit(dataset='TEST-MODULE', use_ssd=False,
+        m = list(self.seq2SeqNMSLearner.model.parameters())[0].clone()
+        self.seq2SeqNMSLearner.fit(dataset='TEST_MODULE', use_ssd=False,
                                    datasets_folder=self.temp_dir + '/datasets',
                                    logging_path=None, silent=False, verbose=True, nms_gt_iou=0.50,
                                    max_dt_boxes=200)
-        n = list(self.seq2SeqNMSLearner.model.collect_params().values())[2].data().asnumpy()
+        n = list(self.seq2SeqNMSLearner.model.parameters())[0].clone()
         self.assertFalse(np.array_equal(m, n),
                          msg="Model parameters did not change after running fit.")
         del m, n
@@ -92,14 +90,14 @@ class TestSeq2SeqNMS(unittest.TestCase):
     def test_eval(self):
         print('Starting evaluation test for Seq2Seq-NMS...')
         self.seq2SeqNMSLearner.load(self.temp_dir + '/seq2seq_pets_jpd/', verbose=True)
-        results_dict = self.seq2SeqNMSLearner.eval(dataset='TEST-MODULE', split='test', max_dt_boxes=800,
+        results_dict = self.seq2SeqNMSLearner.eval(dataset='TEST_MODULE', split='test', max_dt_boxes=800,
                                                    datasets_folder=self.temp_dir + '/datasets',
                                                    use_ssd=False)
         if results_dict is None:
             self.assertIsNotNone(results_dict,
                                  msg="Eval results dictionary not returned.")
         else:
-            self.assertGreater(results_dict[0][0][1][0], 0.58)
+            self.assertGreater(results_dict[0][0][1][0], 0.4)
         del results_dict
         gc.collect()
         print('Finished evaluation test for Seq2Seq-NMS...')
@@ -107,12 +105,11 @@ class TestSeq2SeqNMS(unittest.TestCase):
     def test_infer(self):
         print('Starting inference test for Seq2Seq-NMS...')
         self.seq2SeqNMSLearner.load(self.temp_dir + '/seq2seq_pets_jpd/', verbose=True)
-
-        dataset_nms = Dataset_NMS(path=self.temp_dir + '/datasets', dataset_name='TEST-MODULE', split='train', use_ssd=False)
+        dataset_nms = Dataset_NMS(path=self.temp_dir + '/datasets', dataset_name='TEST_MODULE', split='train', use_ssd=False)
         image_fln = dataset_nms.src_data[0]['filename']
-        img = Image(image_fln)
+        img = Image.open(os.path.join(self.temp_dir, 'datasets', 'TEST_MODULE', image_fln))
         boxes = dataset_nms.src_data[0]['dt_boxes'][1][:, 0:4]
-        scores = dataset_nms.src_data[0]['dt_boxes'][1][:, 4]
+        scores = np.expand_dims(dataset_nms.src_data[0]['dt_boxes'][1][:, 4], axis=-1)
 
         bounding_box_list = self.seq2SeqNMSLearner.run_nms(boxes=boxes, scores=scores, img=img, threshold=0.5)
 
@@ -124,13 +121,14 @@ class TestSeq2SeqNMS(unittest.TestCase):
         del scores
         del dataset_nms
         gc.collect()
-        print('Finished inference test for SSD...')
+        print('Finished inference test for Seq2Seq-NMS...')
 
     def test_save_load(self):
         print('Starting save/load test for Seq2Seq-NMS...')
-        self.seq2SeqNMSLearner.save(os.path.join(self.temp_dir, "test_model"), current_epoch=0)
+        self.seq2SeqNMSLearner.save(os.path.join(self.temp_dir, "test_model", "checkpoints", "last_weights"), current_epoch=0)
         self.seq2SeqNMSLearner.model = None
-        self.seq2SeqNMSLearner.load(os.path.join(self.temp_dir, "test_model"))
+        self.seq2SeqNMSLearner.init_model()
+        self.seq2SeqNMSLearner.load(os.path.join(self.temp_dir, "test_model", 'checkpoints'))
         self.assertIsNotNone(self.seq2SeqNMSLearner.model, "model is None after loading model.")
         # Cleanup
         rmdir(os.path.join(self.temp_dir, "test_model"))
@@ -139,3 +137,4 @@ class TestSeq2SeqNMS(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
