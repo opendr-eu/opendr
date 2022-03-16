@@ -228,6 +228,7 @@ Parameters:
 In terms of speed, the performance of BiseNet for different input sizes is summarized in the table below (in FPS).
 
 | Input Size | RTX 2070 | TX2 | NX  | AGX |
+|------------|----------|-----|-----|-----|
 |512x512     |170.43    |11.25|21.43|39.06|
 |512x1024    |93.84     |5.92 |11.14|20.83|
 |1024x1024   |49.11     |3.03 |5.78 |11.02|
