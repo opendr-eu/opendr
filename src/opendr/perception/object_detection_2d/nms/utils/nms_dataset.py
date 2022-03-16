@@ -326,7 +326,7 @@ class Dataset_NMS(Dataset):
             pkl_filename = os.path.join(self.path, 'test_module.pkl')
             if not os.path.exists(pkl_filename):
                 data_url = OPENDR_SERVER_URL + '/perception/object_detection_2d/nms/datasets/test_module.zip'
-                self.download(data_url, download_path=os.path.join(self.path), file_format="zip",
+                self.download(data_url, download_path=os.path.join(self.path).replace("TEST_MODULE",""), file_format="zip",
                               create_dir=True)
             with open(pkl_filename, 'rb') as fp_pkl:
                 self.src_data = pickle.load(fp_pkl)
