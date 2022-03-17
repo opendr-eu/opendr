@@ -61,9 +61,9 @@ class ObjectDetectionSSDNode:
         elif nms_type == 'soft-nms':
             self.custom_nms = SoftNMS(nms_thres=0.45, device=self.device)
         elif nms_type == 'fast-nms':
-            self.custom_nms = FastNMS(nms_thres=0.45, device=self.device)     
+            self.custom_nms = FastNMS(nms_thres=0.45, device=self.device)
         elif nms_type == 'cluster-nms':
-            self.custom_nms = ClusterNMS(nms_thres=0.45, device=self.device)                                         
+            self.custom_nms = ClusterNMS(nms_thres=0.45, device=self.device)
 
         # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
