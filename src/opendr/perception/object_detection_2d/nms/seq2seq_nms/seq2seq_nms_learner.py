@@ -40,7 +40,7 @@ import zipfile
 class Seq2SeqNMSLearner(Learner, NMSCustom):
     def __init__(self, lr=0.0001, epochs=8, device='cuda', temp_path='./temp', checkpoint_after_iter=0,
                  checkpoint_load_iter=0, log_after=10000, variant='medium',
-                 iou_filtering=0.8, dropout=0.05, app_feats='fmod',
+                 iou_filtering=0.8, dropout=0.025, app_feats='fmod',
                  fmod_map_type='EDGEMAP', fmod_map_bin=True, app_input_dim=None):
         super(Seq2SeqNMSLearner, self).__init__(lr=lr, batch_size=1,
                                                 checkpoint_after_iter=checkpoint_after_iter,
@@ -117,7 +117,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             logging = False
             file_writer = None
 
-        checkpoints_folder = os.path.join(self.temp_path, 'checkpoints')
+        checkpoints_folder = self.temp_path
         if self.checkpoint_after_iter != 0 and not os.path.exists(checkpoints_folder):
             os.makedirs(checkpoints_folder)
 
@@ -240,7 +240,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 weights = (training_weights[class_index][1] * labels + training_weights[class_index][0] * (
                         1 - labels))
 
-                e = torch.distributions.uniform.Uniform(0.02, 0.0205).sample([labels.shape[0], 1])
+                e = torch.distributions.uniform.Uniform(0.05, 0.055).sample([labels.shape[0], 1])
                 if self.device == 'cuda':
                     weights = weights.cuda()
                     e = e.cuda()
@@ -290,7 +290,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
         annotations_filename = dataset_nms.annotation_file
 
-        eval_folder = os.path.join(self.temp_path, 'eval')
+        eval_folder = self.temp_path
         if not os.path.isdir(os.path.join(self.temp_path)):
             os.mkdir(os.path.join(self.temp_path))
         if not os.path.isdir(eval_folder):
@@ -385,6 +385,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         eval_result = run_coco_eval(gt_file_path=os.path.join(dataset_nms.path, 'annotations', annotations_filename),
                                     dt_file_path=output_file, only_classes=[1],
                                     verbose=verbose, max_dets=[max_dt_boxes])
+        os.remove(output_file)
         for i in range(len(eval_result)):
             print('Evaluation results (num_dets={})'.format(str(eval_result[i][1])))
             print(eval_result[i][0][0][1])
