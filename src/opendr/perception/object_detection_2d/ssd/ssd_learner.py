@@ -456,18 +456,27 @@ class SingleShotDetectorLearner(Learner):
         else:
             return self.lr
 
-    def eval(self, dataset, use_subset=False, subset_size=100, verbose=False):
+    def eval(self, dataset, use_subset=False, subset_size=100, verbose=False, 
+             nms_thresh=0.45, nms_topk=400, post_nms=100):
         """
         This method performs evaluation on a given dataset and returns a dictionary with the evaluation results.
         :param dataset: dataset object, to perform evaluation on
         :type dataset: opendr.perception.object_detection_2d.datasets.DetectionDataset or opendr.engine.data.ExternalDataset
-        :return: dictionary containing evaluation metric names nad values
         :param use_subset: if True, only a subset of the dataset is evaluated, defaults to False
         :type use_subset: bool, optional
         :param subset_size: if use_subset is True, subset_size controls the size of the subset to be evaluated
         :type subset_size: int, optional
         :param verbose: if True, additional information is printed on stdout
         :type verbose: bool, optional
+        :param nms_thresh: Non-maximum suppression threshold. You can specify < 0 or > 1 to disable NMS.
+        :type nms_thresh: float, default is 0.45
+        :param nms_topk: Apply NMS to top k detection results, use -1 to disable so that every Detection result is used in NMS.
+        :type nms_topk: int, default is 400
+        :param post_nms: Only return top post_nms detection results, the rest is discarded.
+        The number is based on COCO dataset which has maximum 100 objects per image. You can adjust this number if 
+        expecting more objects. You can use -1 to return all detections.
+        :type post_nms: int, default is 100
+        :return: dictionary containing evaluation metric names nad values
         :rtype: dict
         """
         autograd.set_training(False)
@@ -486,7 +495,7 @@ class SingleShotDetectorLearner(Learner):
             self._model.initialize()
             self._model.collect_params().reset_ctx(ctx)
         self._model.hybridize(static_alloc=True, static_shape=True)
-        self._model.set_nms(nms_thresh=0.45, nms_topk=400)
+        self._model.set_nms(nms_thresh=nms_thresh, nms_topk=nms_topk, post_nms=post_nms)
 
         dataset, eval_metric = self.__prepare_val_dataset(dataset, data_shape=self.img_size)
 
@@ -551,6 +560,16 @@ class SingleShotDetectorLearner(Learner):
         :type threshold: float, optional
         :param keep_size: if True, the image is not resized to fit the data shape used during training
         :type keep_size: bool, optional
+        :param custom_nms: Custom NMS method to be employed on inference
+        :type perception.object_detection_2d.nms.utils.nms_custom.NMSCustom
+        :param nms_thresh: Non-maximum suppression threshold. You can specify < 0 or > 1 to disable NMS.
+        :type nms_thresh: float, default is 0.45
+        :param nms_topk: Apply NMS to top k detection results, use -1 to disable so that every Detection result is used in NMS.
+        :type nms_topk: int, default is 400
+        :param post_nms: Only return top post_nms detection results, the rest is discarded.
+        The number is based on COCO dataset which has maximum 100 objects per image. You can adjust this number if 
+        expecting more objects. You can use -1 to return all detections.
+        :type post_nms: int, default is 100
         :return: list of bounding boxes
         :rtype: BoundingBoxList
         """
