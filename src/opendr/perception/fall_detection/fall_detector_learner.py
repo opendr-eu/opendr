@@ -34,6 +34,16 @@ class FallDetectorLearner(Learner):
         pass
 
     def eval(self, dataset):
+        """
+        Evaluation on UR Fall Dataset, discards all temporary poses, then tries to detect the pose (note that in this
+        dataset there is always one pose in the frame). If a pose a detected, fall detection is run on it and
+        the result is compared to the label to get the carious metrics.
+
+        The overall regular accuracy is reported, as well as sensitivity and specificity, the detection accuracy of the
+        pose estimator, i.e. for how many poses we got a fall detection result, not counting the temporary poses.
+        Lastly, it returns the absolute number of frames where the pose detection was entirely missed.
+
+        """
         data = self.__prepare_val_dataset(dataset)
 
         tp = 0
@@ -41,6 +51,7 @@ class FallDetectorLearner(Learner):
         fp = 0
         fn = 0
         no_detections = 0
+        temp_poses = 0
 
         p_bar_desc = "Evaluation progress"
         pbar_eval = tqdm(desc=p_bar_desc, total=len(data), bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
@@ -49,14 +60,15 @@ class FallDetectorLearner(Learner):
             image = data[i][0]
             label = data[i][1].data
             if label == 0:  # Temporary pose, skip
+                temp_poses += 1
                 pbar_eval.update(1)
                 continue
 
             image = Image.open(image)
-            fallen, keypoints = self.infer(image)
-            fallen = fallen.data
-
-            if fallen == 0:  # Can't detect fallen or standing
+            detections = self.infer(image)
+            if len(detections) > 0:
+                fallen = detections[0][0].data
+            else:  # Can't detect fallen or standing
                 no_detections += 1
                 pbar_eval.update(1)
                 continue
@@ -74,7 +86,7 @@ class FallDetectorLearner(Learner):
         accuracy = (tp + tn) / (tp + tn + fp + fn)
         sensitivity = tp / (tp + fn)
         specificity = tn / (tn + fp)
-        detection_accuracy = (tp + tn + fp + fn) / len(data)
+        detection_accuracy = (tp + tn + fp + fn) / (len(data) - temp_poses)
 
         return {"accuracy": accuracy, "sensitivity": sensitivity, "specificity": specificity,
                 "detection_accuracy": detection_accuracy, "no_detections": no_detections}
