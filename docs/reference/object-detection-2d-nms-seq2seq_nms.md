@@ -12,8 +12,8 @@ public methods:
 
 #### `Seq2SeqNMSLearner` constructor
 ```python
-Seq2SeqNMSLearner(self, lr, epochs, device, temp_path, checkpoint_after_iter, checkpoint_load_iter, log_after, variant, experiment_name,
-                 iou_filtering, dropout, pretrained_demo_model, app_feats, fmod_map_type, fmod_map_bin, app_input_dim)
+Seq2SeqNMSLearner(self, lr, epochs, device, temp_path, checkpoint_after_iter, checkpoint_load_iter, log_after, variant,
+                  iou_filtering, dropout, app_feats, fmod_map_type, fmod_map_bin, app_input_dim)
 ```
 
 Constructor parameters:
@@ -34,14 +34,10 @@ Constructor parameters:
   Specifies interval (in iterations/batches) between information logging on *stdout*.
 - **variant**: *{'light', 'medium', 'full'}, default='medium'*\
   Specifies the variant of seq2seq-nms model.
-- **experiment_name**: *str, default='default'*\
-  Specifies the name of the experiment.
 - **iou_filtering**: *float, default=0.8*\
   Specifies the IoU threshold used for filtering RoIs before provided by the seq2seq-nms model.If set to values <0 or >1, no filtering is applied.
-- **dropout**: *float, default=0.05*\
+- **dropout**: *float, default=0.025*\
   Specifies the dropout rate.
-- **pretrained_demo_model**: *{'PETS_JPD_medium', 'COCO_FRCN_medium' , defualt=None*\
-- Specifies the name of the pretrained model
 - **app_feats**: *{'fmod', 'zeros', 'custom'}, default='fmod'*\
   Specifies the type of the appearance-based features of RoIs used in the model.
 - **fmod_map_type**: *{'EDGEMAP', 'FAST', 'AKAZE', 'BRISK', 'ORB'}, default='EDGEMAP'*\
@@ -218,15 +214,15 @@ Parameters:
   import os
   OPENDR_HOME = os.environ['OPENDR_HOME']
   
-  seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering=0.8, experiment_name='pets_exp0',
-                                      app_feats='fmod', checkpoint_after_iter=1,
-                                      temp_path=OPENDR_HOME + '/src/opendr/perception/'
+  seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering=0.8, 
+                                        app_feats='fmod', checkpoint_after_iter=1,
+                                        temp_path=OPENDR_HOME + '/src/opendr/perception/'
                                                               'object_detection_2d/nms/seq2seq_nms/temp',
-                                      epochs=8)
+                                        epochs=8)
   seq2SeqNMSLearner.fit(dataset='PETS', use_ssd=False,
-                      datasets_folder=OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/datasets',
-                      logging_path='./logs_pets_exp1', silent=False, verbose=True, nms_gt_iou=0.50,
-                      max_dt_boxes=500)
+                        datasets_folder=OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/datasets',
+                        logging_path='./logs_pets_exp1', silent=False, verbose=True, nms_gt_iou=0.50,
+                        max_dt_boxes=500)
   ```
 
 * **Inference and result drawing example on a test .jpg image using OpenCV.**
@@ -239,10 +235,10 @@ Parameters:
   import os
   OPENDR_HOME = os.environ['OPENDR_HOME']
 
-  seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering = 0.8, experiment_name='pets_exp0',
+  seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering = 0.8,
                                         app_feats='fmod', device='cpu')
-  seq2SeqNMSLearner.load(OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/temp/pets_exp0/'
-                                       'checkpoints/checkpoint_epoch_7', verbose=True)
+  seq2SeqNMSLearner.load(OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/pets_exp0/'
+                                       'checkpoint_epoch_7', verbose=True)
   ssd = SingleShotDetectorLearner(device='cuda')
   ssd.download(".", mode="pretrained")
   ssd.load("./ssd_default_person", verbose=True)
