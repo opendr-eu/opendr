@@ -1,8 +1,11 @@
-# Soft-NMS Demos
+Soft-NMS
+======
 
-This folder contains minimal code usage examples that showcase the basic functionality of the Soft-NMS implementation 
-provided by OpenDR. Specifically the following examples are provided:
-1. inference_demo.py: Perform inference on a single image. Setting `--device cpu` performs inference on CPU.
+This folder contains an implementation of Soft-NMS [[1]](#soft_nms-1).
 
-2. eval_demo.py: Perform evaluation on the `PETS` dataset, implemented in OpenDR format.
-   Setting `--device cpu` performs evaluation on CPU. 
+Sources
+------
+Large parts of code are taken from [here](https://github.com/DocF/Soft-NMS) with modifications to make it compatible with OpenDR specifications.
+
+<a name="soft_nms-1" href="https://arxiv.org/abs/1704.04503">[1]</a> Soft-NMS -- Improving Object Detection With One Line of Code,
+[ArXiv](https://arxiv.org/abs/1704.04503).
