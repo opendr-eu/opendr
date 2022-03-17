@@ -20,7 +20,7 @@ from opendr.perception.object_detection_2d import draw_bounding_boxes
 import os
 OPENDR_HOME = os.environ['OPENDR_HOME']
 
-seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering = 0.8,
+seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering=0.8,
                                       app_feats='fmod', device='cpu')
 seq2_seq_tmp_dir = OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/temp'
 seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd', path=seq2_seq_tmp_dir)
