@@ -125,10 +125,10 @@ class TestSeq2SeqNMS(unittest.TestCase):
 
     def test_save_load(self):
         print('Starting save/load test for Seq2Seq-NMS...')
-        self.seq2SeqNMSLearner.save(os.path.join(self.temp_dir, "test_model", "checkpoints", "last_weights"), current_epoch=0)
+        self.seq2SeqNMSLearner.save(os.path.join(self.temp_dir, "test_model", "last_weights"), current_epoch=0)
         self.seq2SeqNMSLearner.model = None
         self.seq2SeqNMSLearner.init_model()
-        self.seq2SeqNMSLearner.load(os.path.join(self.temp_dir, "test_model", 'checkpoints'))
+        self.seq2SeqNMSLearner.load(os.path.join(self.temp_dir, "test_model"))
         self.assertIsNotNone(self.seq2SeqNMSLearner.model, "model is None after loading model.")
         # Cleanup
         rmdir(os.path.join(self.temp_dir, "test_model"))
