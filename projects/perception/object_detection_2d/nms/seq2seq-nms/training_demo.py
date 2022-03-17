@@ -18,9 +18,11 @@ import os
 OPENDR_HOME = os.environ['OPENDR_HOME']
 
 seq2seq_tmp_path = OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/coco_tmp'
+seq2seq_logs_path = OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/coco_logs'
+
 seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering=None, app_feats='fmod',
                                       checkpoint_after_iter=1, temp_path=seq2seq_tmp_path, epochs=8)
 seq2SeqNMSLearner.fit(dataset='COCO', use_ssd=False,
                       datasets_folder=OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/datasets',
-                      logging_path='./logs_coco_own3', silent=False, verbose=True, nms_gt_iou=0.50,
+                      logging_path=seq2seq_logs_path, silent=False, verbose=True, nms_gt_iou=0.50,
                       max_dt_boxes=450)
