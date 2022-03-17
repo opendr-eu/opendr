@@ -220,6 +220,8 @@ def drop_dets(boxes, scores, keep_ratio=0.85):
     ids_keep = ids[0:int(len(boxes) * keep_ratio)]
     boxes_new = boxes[ids_keep, :]
     scores_new = scores[ids_keep]
+    scores_new, scores_new_ids = torch.sort(scores_new, descending=True)
+    boxes_new = boxes_new[scores_new_ids]
     return boxes_new, scores_new
 
 
