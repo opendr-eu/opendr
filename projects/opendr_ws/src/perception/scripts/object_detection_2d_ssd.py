@@ -55,15 +55,15 @@ class ObjectDetectionSSDNode:
         # Initialize Seq2Seq-NMS if selected
         if nms_type == 'seq2seq-nms':
             self.custom_nms = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering = 0.8,
-                                                app_feats='fmod', device='cpu')
+                                                app_feats='fmod', device=self.device)
             self.custom_nms.download(model_name='seq2seq_pets_jpd', path=.)
             self.custom_nms.load(./seq2seq_pets_jpd/', verbose=True)
         elif nms_type == 'soft-nms':
-            self.custom_nms = SoftNMS(nms_thres=0.45, device='cpu)
+            self.custom_nms = SoftNMS(nms_thres=0.45, device=self.device)
         elif nms_type == 'fast-nms':
-            self.custom_nms = FastNMS(nms_thres=0.45, device='cpu)     
+            self.custom_nms = FastNMS(nms_thres=0.45, device=self.device)     
         elif nms_type == 'cluster-nms':
-            self.custom_nms = ClusterNMS(nms_thres=0.45, device='cpu)                                         
+            self.custom_nms = ClusterNMS(nms_thres=0.45, device=self.device)                                         
                                         
         # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
