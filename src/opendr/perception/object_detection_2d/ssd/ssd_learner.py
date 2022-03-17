@@ -456,7 +456,7 @@ class SingleShotDetectorLearner(Learner):
         else:
             return self.lr
 
-    def eval(self, dataset, use_subset=False, subset_size=100, verbose=False, 
+    def eval(self, dataset, use_subset=False, subset_size=100, verbose=False,
              nms_thresh=0.45, nms_topk=400, post_nms=100):
         """
         This method performs evaluation on a given dataset and returns a dictionary with the evaluation results.
@@ -473,7 +473,7 @@ class SingleShotDetectorLearner(Learner):
         :param nms_topk: Apply NMS to top k detection results, use -1 to disable so that every Detection result is used in NMS.
         :type nms_topk: int, default is 400
         :param post_nms: Only return top post_nms detection results, the rest is discarded.
-        The number is based on COCO dataset which has maximum 100 objects per image. You can adjust this number if 
+        The number is based on COCO dataset which has maximum 100 objects per image. You can adjust this number if
         expecting more objects. You can use -1 to return all detections.
         :type post_nms: int, default is 100
         :return: dictionary containing evaluation metric names nad values
@@ -567,7 +567,7 @@ class SingleShotDetectorLearner(Learner):
         :param nms_topk: Apply NMS to top k detection results, use -1 to disable so that every Detection result is used in NMS.
         :type nms_topk: int, default is 400
         :param post_nms: Only return top post_nms detection results, the rest is discarded.
-        The number is based on COCO dataset which has maximum 100 objects per image. You can adjust this number if 
+        The number is based on COCO dataset which has maximum 100 objects per image. You can adjust this number if
         expecting more objects. You can use -1 to return all detections.
         :type post_nms: int, default is 100
         :return: list of bounding boxes
