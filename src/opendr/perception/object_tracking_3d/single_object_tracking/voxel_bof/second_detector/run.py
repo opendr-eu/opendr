@@ -1194,14 +1194,14 @@ def create_siamese_pseudo_images_and_labels(
         offset=search[0],
     )
 
-    draw_pseudo_image(
-        target_image.squeeze(axis=0), "./plots/siamese/pi_target_" + str(0) + ".png"
-    )
-    draw_pseudo_image(
-        search_image.squeeze(axis=0), "./plots/siamese/pi_search_" + str(0) + ".png"
-    )
-    draw_pseudo_image(target_pseudo_image, "./plots/siamese/pi_t" + str(0) + ".png")
-    draw_pseudo_image(search_pseudo_image, "./plots/siamese/pi_s" + str(0) + ".png")
+    # draw_pseudo_image(
+    #     target_image.squeeze(axis=0), "./plots/siamese/pi_target_" + str(0) + ".png"
+    # )
+    # draw_pseudo_image(
+    #     search_image.squeeze(axis=0), "./plots/siamese/pi_search_" + str(0) + ".png"
+    # )
+    # draw_pseudo_image(target_pseudo_image, "./plots/siamese/pi_t" + str(0) + ".png")
+    # draw_pseudo_image(search_pseudo_image, "./plots/siamese/pi_s" + str(0) + ".png")
     # draw_pseudo_image(pseudo_image[i], "./plots/pi_t2" + str(0) + ".png", [[target[0][[1, 0]], target[1][[1, 0]]]], [(255, 0, 0)])
 
     feature_blocks = net.feature_blocks

@@ -45,6 +45,7 @@ class SiameseTrackingDatasetIterator(DatasetIterator):
         labels_format="tracking",  # detection, tracking
         clases=["Car"],  # detection, tracking
         num_point_features=4,
+        samples_per_object=20,
     ):
         super().__init__()
 
@@ -80,11 +81,23 @@ class SiameseTrackingDatasetIterator(DatasetIterator):
                         ):
                             frames_with_current_object.append(frame)
 
+                object_samples = []
+
                 for a in frames_with_current_object:
                     for b in frames_with_current_object:
-                        self.track_target_search_frames_with_id.append(
+                        object_samples.append(
                             (track_id, a, b, object_id)
                         )
+
+                np.random.shuffle(object_samples)
+
+                if len(object_samples) > samples_per_object:
+                    object_samples = object_samples[:samples_per_object]
+
+                if len(object_samples) > 0:
+                    self.track_target_search_frames_with_id.extend(
+                        object_samples
+                    )
 
         print()
 

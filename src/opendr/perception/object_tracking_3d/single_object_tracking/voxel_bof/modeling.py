@@ -2214,10 +2214,10 @@ def run_x4(id=0, total_experiments=4, total_devices=4):
 
 def create_t_eval_kwargs():
     params = {
-        "window_influence": [0.45],
+        "window_influence": [0.45, 0.75],
         "score_upscale": [8],
         "rotation_penalty": [0.98, 0.90],
-        "offset_interpolation": [1, 0.3],
+        "offset_interpolation": [1, 0.7, 0.3],
         "target_feature_merge_scale": [0, 0.01],
         "extrapolation_mode": [["none", "n"], ["linear", "l"]],
         "search_type": [["normal", "n"], ["small", "s"], ["snormal", "sn"]],
@@ -2468,6 +2468,78 @@ def run_t2(id=0, total_experiments=4, total_devices=4):
                                         target_type="normal",
                                         augment=False,
                                         training_method="siamese_triplet",
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    i = device_id
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+        i += total_experiments
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+
+
+def run_ta0(id=0, total_experiments=4, total_devices=4):
+
+    device_id = id % total_devices
+
+    eval_kwargs = create_t_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [3, 1]:
+            for size in [-1]:
+                for lr in [0.00001, 0.0001]:
+                    for context_amount in [0, 0.3, -0.3]:
+                        for r_pos in [2, 4, 8]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "ta0-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=128000,
+                                        save_step=2000,
+                                        loads=[
+                                            128000,
+                                            2000,
+                                            8000,
+                                            16000,
+                                            32000,
+                                            64000,
+                                        ],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                        search_type="normal",
+                                        target_type="normal",
+                                        # augment=False,
+                                        training_method="siamese",
                                     ),
                                     eval_kwargs,
                                 )

@@ -147,11 +147,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
         search_type="normal",
         target_type="normal",
         bof_mode="none",
-        extrapolation_mode="none",
+        extrapolation_mode="none",  # "none", "linear"
         offset_interpolation=1,
         min_top_score=None,
         regress_vertical_position=False,
         overwrite_strides=None,
+        target_features_mode="init",  # "all", "selected", "last"
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -202,6 +203,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.min_top_score = min_top_score
         self.regress_vertical_position = regress_vertical_position
         self.overwrite_strides = overwrite_strides
+        self.target_features_mode = target_features_mode
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -741,42 +743,49 @@ class VoxelBofObjectTracking3DLearner(Learner):
             for i, (search_features, target, penalty,) in enumerate(
                 multi_rotate_features_and_searches_and_penalties
             ):
-                scores, original_scores, scaled_scores = create_scaled_scores(
-                    self.init_target_features,
-                    search_features,
-                    self.model,
-                    self.score_upscale,
-                    self.window_influence,
-                    self.extrapolation_direction,
-                )
-                multi_rotate_scores_searches_penalties_and_features.append(
-                    [scores, target, penalty, search_features]
-                )
 
-                if draw:
-                    draw_scores = draw_pseudo_image(
-                        scores.squeeze(axis=0),
-                        "./plots/scores/" + str(frame) + "_" + str(i) + ".png",
+                target_features_to_compare = [self.init_target_features]
+
+                if self.target_features_mode in ["all", "selected", "last"]:
+                    target_features_to_compare = [*target_features_to_compare, *self.lifetime_target_features]
+
+                for it, target_features in enumerate(target_features_to_compare):
+                    scores, original_scores, scaled_scores = create_scaled_scores(
+                        target_features,
+                        search_features,
+                        self.model,
+                        self.score_upscale,
+                        self.window_influence,
+                        self.extrapolation_direction,
                     )
-                    draw_scores_original = draw_pseudo_image(
-                        original_scores.squeeze(axis=0),
-                        "./plots/scores_original/"
-                        + str(frame)
-                        + "_"
-                        + str(i)
-                        + ".png",
+                    multi_rotate_scores_searches_penalties_and_features.append(
+                        [scores, target, penalty, search_features]
                     )
-                    draw_scaled_scores = draw_pseudo_image(
-                        scaled_scores.squeeze(axis=0),
-                        "./plots/scores_scaled_scores/"
-                        + str(frame)
-                        + "_"
-                        + str(i)
-                        + ".png",
-                    )
-                    self.__add_image(draw_scores, "scores")
-                    self.__add_image(draw_scores_original, "scores_original")
-                    self.__add_image(draw_scaled_scores, "scaled_scores")
+
+                    if draw:
+                        draw_scores = draw_pseudo_image(
+                            scores.squeeze(axis=0),
+                            "./plots/scores/" + str(frame) + "_" + str(i) + "_" + str(it) + ".png",
+                        )
+                        draw_scores_original = draw_pseudo_image(
+                            original_scores.squeeze(axis=0),
+                            "./plots/scores_original/"
+                            + str(frame)
+                            + "_"
+                            + str(i) + "_" + str(it)
+                            + ".png",
+                        )
+                        draw_scaled_scores = draw_pseudo_image(
+                            scaled_scores.squeeze(axis=0),
+                            "./plots/scores_scaled_scores/"
+                            + str(frame)
+                            + "_"
+                            + str(i) + "_" + str(it)
+                            + ".png",
+                        )
+                        self.__add_image(draw_scores, "scores")
+                        self.__add_image(draw_scores_original, "scores_original")
+                        self.__add_image(draw_scaled_scores, "scaled_scores")
 
             t4 = time.time()
             self.times["create_scaled_scores"].append(t4 - t3)
@@ -829,7 +838,6 @@ class VoxelBofObjectTracking3DLearner(Learner):
             unreliable = self.min_top_score is not None and norm_max <= self.min_top_score
 
             if unreliable:
-
                 if self.extrapolation_mode == "linear":
                     delta_image = self.extrapolation_direction / self.offset_interpolation
                 elif self.extrapolation_mode == "none":
@@ -873,7 +881,13 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             vertical_position = self.init_label.location[-1]
 
-            if (self.target_feature_merge_scale or self.regress_vertical_position) > 0 and not unreliable:
+            create_target_features = (
+                self.target_feature_merge_scale > 0 or
+                self.regress_vertical_position or
+                self.target_features_mode in ["all", "selected", "last"]
+            )
+
+            if create_target_features and not unreliable:
                 target_features, target_image = create_pseudo_image_features(
                     pseudo_image,
                     new_target,
@@ -895,6 +909,19 @@ class VoxelBofObjectTracking3DLearner(Learner):
                         np.mean(self.model.branch.point_cloud_range[[2, 5]]) +
                         self.model.vertical_position_regressor(target_features)
                     ).detach().cpu().numpy()
+
+                if self.target_features_mode in ["all", "selected", "last"]:
+
+                    selected = True
+
+                    if self.target_features_mode == "selected":
+                        selected = True
+
+                    if selected:
+                        self.lifetime_target_features.append(target_features)
+
+                    if self.target_features_mode == "last":
+                        self.lifetime_target_features = [self.lifetime_target_features[-1]]
 
                 if draw:
                     draw_target_feat_full = draw_pseudo_image(
@@ -1039,8 +1066,6 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 "final_result": [],
             }
 
-        self.model.eval()
-
         self.init_label = label_lidar
 
         label_lidar_kitti = label_lidar.kitti()
@@ -1089,6 +1114,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
             self.context_amount,
             offset=target[0],
         )
+
+        self.lifetime_target_features = []
 
         if draw:
             draw_pi = draw_pseudo_image(
