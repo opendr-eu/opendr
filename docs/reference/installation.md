@@ -37,7 +37,7 @@ Please also make sure that you have enough RAM available for the installation (a
 
 
 If you want to install GPU-related dependencies, then you can appropriately set the `OPENDR_DEVICE` variable.
-The toolkit defaults to using CPU. 
+The toolkit defaults to using CPU.
 Therefore, if you want to use GPU, please set this variable accordingly *before* running the installation script:
 ```bash
 export OPENDR_DEVICE=gpu
@@ -59,7 +59,7 @@ make unittest
 make ctests
 ```
 
-If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 11.1](https://developer.nvidia.com/cuda-11.1.0-download-archive), along with [CuDNN](https://developer.nvidia.com/cudnn).
+If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 11.2](https://developer.nvidia.com/cuda-11.2.0-download-archive), along with [CuDNN](https://developer.nvidia.com/cudnn).
 
 **HINT:** All tests probe for the `TEST_DEVICE` enviromental variable when running.
 If this enviromental variable is set during testing, it allows for easily running all tests on a different device (e.g., setting `TEST_DEVICE=cuda:0` runs all tests on the first GPU of the system).
