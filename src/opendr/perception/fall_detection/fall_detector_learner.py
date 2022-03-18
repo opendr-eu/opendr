@@ -16,7 +16,7 @@ from os import walk, path
 from csv import reader
 from tqdm import tqdm
 
-from numpy import arccos, dot, linalg, rad2deg
+from numpy import linalg, rad2deg, arctan2
 
 from opendr.engine.learners import Learner
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
@@ -174,9 +174,9 @@ class FallDetectorLearner(Learner):
 
     @staticmethod
     def get_angle_to_horizontal(v1, v2):
-        vector = abs(v1 - v2)
+        vector = v1 - v2
         unit_vector = vector / linalg.norm(vector)
-        return rad2deg(arccos(dot(unit_vector, [1, 0])))
+        return rad2deg(arctan2(unit_vector[1], unit_vector[0]))
 
     def naive_fall_detection(self, pose):
         """
@@ -237,8 +237,7 @@ class FallDetectorLearner(Learner):
         torso_vertical = -1
         # Figure out the head-hips vector (torso) angle to horizontal axis
         if head[0] != -1 and head[1] != -1:
-            angle_to_horizontal = self.get_angle_to_horizontal(head, hips)
-            if 45 < angle_to_horizontal < 135:
+            if 45 < self.get_angle_to_horizontal(head, hips) < 135:
                 torso_vertical = 1
             else:
                 torso_vertical = 0
@@ -246,8 +245,7 @@ class FallDetectorLearner(Learner):
         legs_vertical = -1
         # Figure out the hips-legs vector angle to horizontal axis
         if legs[0] != -1 and legs[1] != -1:
-            angle_to_horizontal = self.get_angle_to_horizontal(hips, legs)
-            if 30 < angle_to_horizontal < 150:
+            if -150 < self.get_angle_to_horizontal(hips, legs) < -30:
                 legs_vertical = 1
             else:
                 legs_vertical = 0
