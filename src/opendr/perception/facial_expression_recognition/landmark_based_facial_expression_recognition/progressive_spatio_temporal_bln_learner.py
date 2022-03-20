@@ -616,7 +616,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
 
         self.__load_from_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"))
 
-    def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=True):
+    def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=False):
         """
         Converts the loaded regular PyTorch model to an ONNX model and saves it to disk.
         :param output_name: path and name to save the model, e.g. "/models/onnx_model.onnx"
@@ -636,8 +636,16 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                                                  " CK+, AFEW")
         n = self.batch_size
         onnx_input = torch.randn(n, c, t, v, m)
+
         if "cuda" in self.device:
-            onnx_input = Variable(onnx_input.float().cuda(self.output_device), requires_grad=False)
+            print("[WARN] Temporarily moving model to CPU for ONNX exporting.")
+            # This is a hack due to https://github.com/pytorch/pytorch/issues/72175
+            # Some parts of the model do not make it to GPU, exporting it through CPU
+            self.model.cpu()
+            self.model.cuda_ = False
+            for x in self.model.layers:
+                self.model.layers[x].bln.cuda_ = False
+            onnx_input = Variable(onnx_input.float(), requires_grad=False)
         else:
             onnx_input = Variable(onnx_input.float(), requires_grad=False)
         # Export the model
@@ -651,6 +659,13 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                           output_names=['onnx_output'],  # the model's output names
                           dynamic_axes={'onnx_input': {0: 'n'},  # variable lenght axes
                                         'onnx_output': {0: 'n'}})
+
+        # This is a hack due to https://github.com/pytorch/pytorch/issues/72175 (see above)
+        if "cuda" in self.device:
+            self.model.cuda_ = True
+            for x in self.model.layers:
+                self.model.layers[x].bln.cuda_ = True
+            self.model.cuda(self.output_device)
 
     def save(self, path, model_name, verbose=True):
         """

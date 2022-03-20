@@ -111,7 +111,7 @@ class TestCoX3DLearner(unittest.TestCase):
         assert all([torch.isclose(torch.sum(r.confidence), torch.tensor(1.0)) for r in results1])
 
         # Input is Image
-        results2 = self.learner.infer(Image(batch[0], dtype=np.float))
+        results2 = self.learner.infer([Image(batch[0], dtype=np.float32), Image(batch[1], dtype=np.float32)])
         assert torch.allclose(results1[0].confidence, results2[0].confidence, atol=1e-6)
 
         # Input is List[Image]

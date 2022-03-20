@@ -608,7 +608,17 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         n = self.batch_size
         onnx_input = torch.randn(n, c, t, v, m)
         if "cuda" in self.device:
-            onnx_input = Variable(onnx_input.float().cuda(self.output_device), requires_grad=False)
+            print("[WARN] Temporarily moving model to CPU for ONNX exporting.")
+            # This is a hack due to https://github.com/pytorch/pytorch/issues/72175
+            # Some parts of the model do not make it to GPU, exporting it through CPU
+            self.model.cpu()
+            self.model.cuda_ = False
+            for x in self.model.layers:
+                if hasattr(self.model.layers[x], 'gcn'):
+                    self.model.layers[x].gcn.cuda_ = False
+                elif hasattr(self.model.layers[x], 'cuda_'):
+                    self.model.layers[x].cuda_ = False
+            onnx_input = Variable(onnx_input.float(), requires_grad=False)
         else:
             onnx_input = Variable(onnx_input.float(), requires_grad=False)
         # torch_out = self.model(onnx_input)
@@ -623,6 +633,14 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                           output_names=['onnx_output'],  # the model's output names
                           dynamic_axes={'onnx_input': {0: 'n'},  # variable lenght axes
                                         'onnx_output': {0: 'n'}})
+        # This is a hack due to https://github.com/pytorch/pytorch/issues/72175 (see above)
+        if "cuda" in self.device:
+            self.model.cuda_ = True
+            if hasattr(self.model.layers[x], 'gcn'):
+                self.model.layers[x].gcn.cuda_ = True
+            elif hasattr(self.model.layers[x], 'cuda_'):
+                self.model.layers[x].cuda_ = True
+            self.model.cuda(self.output_device)
 
     def save(self, path, model_name='', verbose=True):
         """
