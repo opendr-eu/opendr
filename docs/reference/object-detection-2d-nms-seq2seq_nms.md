@@ -48,7 +48,8 @@ Constructor parameters:
 - **fmod_map_bin**: *bool, default=True*\
   Specifies whether FMoD maps are binary or not, in the case where *app_feats*='fmod'.
 - **app_input_dim**: *int, default=None*\
-  Specifies the dimension of appearance-based RoI features. In the case where *app_feats*='fmod', the corresponding dimension is automatically computed.
+  Specifies the dimension of appearance-based RoI features.
+  In the case where *app_feats*='fmod', the corresponding dimension is automatically computed.
 
 
 #### `Seq2SeqNMSLearner.fit`
