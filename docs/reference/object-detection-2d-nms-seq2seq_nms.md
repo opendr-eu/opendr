@@ -226,7 +226,7 @@ Parameters:
   To train seq2seq-nms properly, the PETS and COCO datasets are supported as Dataset_NMS types. 
 
   ```python
-  from opendr.perception.object_detection_2d.nms.seq2seq_nms.seq2seq_nms_learner import Seq2SeqNMSLearner
+  from opendr.perception.object_detection_2d.nms import Seq2SeqNMSLearner
   import os
   OPENDR_HOME = os.environ['OPENDR_HOME']
   
@@ -244,7 +244,7 @@ Parameters:
 * **Inference and result drawing example on a test .jpg image using OpenCV.**
 
   ```python
-  from opendr.perception.object_detection_2d.nms.seq2seq_nms.seq2seq_nms_learner import Seq2SeqNMSLearner
+  from opendr.perception.object_detection_2d.nms import Seq2SeqNMSLearner
   from opendr.engine.data import Image
   from opendr.perception.object_detection_2d import SingleShotDetectorLearner
   from opendr.perception.object_detection_2d import draw_bounding_boxes
