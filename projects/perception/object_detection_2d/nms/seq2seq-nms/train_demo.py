@@ -37,6 +37,6 @@ seq2seq_logs_path = OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nm
 seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering=None, app_feats='fmod',
                                       checkpoint_after_iter=1, temp_path=seq2seq_tmp_path, epochs=8)
 seq2SeqNMSLearner.fit(dataset=args.dataset, use_ssd=False,
-                      datasets_folder= args.data_root,
+                      datasets_folder=args.data_root,
                       logging_path=seq2seq_logs_path, silent=False, verbose=True, nms_gt_iou=0.50,
                       max_dt_boxes=args.max_dt_boxes)
