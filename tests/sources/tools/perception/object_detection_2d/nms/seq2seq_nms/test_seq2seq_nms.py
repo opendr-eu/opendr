@@ -18,7 +18,7 @@ import shutil
 import os
 import numpy as np
 from opendr.perception.object_detection_2d.nms import Seq2SeqNMSLearner
-from opendr.perception.object_detection_2d.nms.utils import Dataset_NMS
+from opendr.perception.object_detection_2d.nms.utils.nms_dataset import Dataset_NMS
 from opendr.engine.data import Image
 
 
