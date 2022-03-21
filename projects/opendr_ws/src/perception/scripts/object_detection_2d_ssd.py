@@ -25,7 +25,6 @@ from opendr.perception.object_detection_2d import draw_bounding_boxes
 from opendr.perception.object_detection_2d.nms import Seq2SeqNMSLearner, SoftNMS, FastNMS, ClusterNMS
 
 
-
 class ObjectDetectionSSDNode:
     def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_boxes_annotated",
                  detections_topic="/opendr/objects", device="cuda", backbone="vgg16_atrous", nms_type='default'):
