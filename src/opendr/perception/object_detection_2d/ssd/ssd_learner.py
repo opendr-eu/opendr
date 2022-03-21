@@ -46,7 +46,7 @@ from opendr.perception.object_detection_2d.datasets import DetectionDataset
 from opendr.perception.object_detection_2d.datasets.transforms import ImageToNDArrayTransform, \
     BoundingBoxListToNumpyArray, \
     transform_test, pad_test
-from opendr.perception.object_detection_2d.nms.utils.nms_custom import NMSCustom
+from opendr.perception.object_detection_2d.nms import NMSCustom
 
 gutils.random.seed(0)
 
