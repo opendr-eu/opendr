@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opendr.perception.object_detection_2d.nms import NMSCustom
+from opendr.perception.object_detection_2d.nms.utils.nms_custom import NMSCustom
 from opendr.perception.object_detection_2d.nms.utils.nms_utils import jaccard
 from opendr.engine.target import BoundingBox, BoundingBoxList
 import torch
