@@ -27,7 +27,8 @@ Constructor parameters:
 - **temp_path**: *str, default='./temp'*\
   Specifies a path to be used for storage of checkpoints during training.
 - **checkpoint_after_iter**: *int, default=0*\
-  Specifies the epoch interval between checkpoints during training. If set to 0 no checkpoint will be saved.
+  Specifies the epoch interval between checkpoints during training.
+  If set to 0 no checkpoint will be saved.
 - **checkpoint_load_iter**: *int, default=0*\
   Specifies the epoch to load a saved checkpoint from. If set to 0 no checkpoint will be loaded.
 - **log_after**: *int, default=500*\
