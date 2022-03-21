@@ -227,9 +227,7 @@ class FallDetectorLearner(Learner):
             ankles = pose["l_ank"]
 
         legs = [-1, -1]
-        if knees[0] != -1 and knees[1] != -1 and ankles[0] != -1 and ankles[1] != -1:
-            legs = (knees + ankles) / 2
-        elif ankles[0] != -1 and ankles[1] != -1:
+        if ankles[0] != -1 and ankles[1] != -1:
             legs = ankles
         elif knees[0] != -1 and knees[1] != -1:
             legs = knees
@@ -237,7 +235,7 @@ class FallDetectorLearner(Learner):
         torso_vertical = -1
         # Figure out the head-hips vector (torso) angle to horizontal axis
         if head[0] != -1 and head[1] != -1:
-            if 45 < self.get_angle_to_horizontal(head, hips) < 135:
+            if 45 < self.get_angle_to_horizontal(hips, head) < 135:
                 torso_vertical = 1
             else:
                 torso_vertical = 0
