@@ -191,7 +191,7 @@ Parameters:
 
 - **path**: *str*\
   Specifies the folder where the model will be loaded from.
-- **verbose**: *bool default=True*\
+- **verbose**: *bool default=False*\
   If True, enables maximum verbosity.
   
   
