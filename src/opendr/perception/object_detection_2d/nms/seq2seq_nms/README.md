@@ -4,9 +4,9 @@ Seq2Seq-NMS
 This folder contains an implementation of Seq2Seq-NMS [[1]](#seq2seq_nms-1).
 
 TABLE-1: Average Precision (AP) of pretrained models
-| Model name | Dataset | <td colspan=2> Validation Set <td colspan=2> Test set |
-|------------|---------|-------|-----------------------|---------|-------------|
-|            |         | AP    | AP                    | AP      | AP          |
+| Model name | Dataset | <td colspan=2> Validation Set </td> <td colspan=2> Test set </td> |
+|------------|---------|-------|-------------------------|-----------------|---------------|
+|            |         | AP    | AP                      | AP              | AP            |
 
 
 
