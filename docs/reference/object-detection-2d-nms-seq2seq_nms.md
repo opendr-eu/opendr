@@ -57,7 +57,8 @@ Constructor parameters:
 Seq2SeqNMSLearner.fit(self, dataset, logging_path, logging_flush_secs, silent, verbose, nms_gt_iou, max_dt_boxes, datasets_folder, use_ssd)
 ```
 
-This method is used to train the algorithm on a `Dataset_NMS` dataset. Returns a dictionary containing stats regarding the training process.
+This method is used to train the algorithm on a `Dataset_NMS` dataset.
+Returns a dictionary containing stats regarding the training process.
 
 Parameters:
 
