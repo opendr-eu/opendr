@@ -159,5 +159,4 @@ def pad_test(img, min_size=512):
             img_padded = mx.nd.pad(img, mode="constant", constant_value=0,
                                    pad_width=(0, 0, 0, 0, 0, 0,
                                               h_pad_size, h_pad_size))
-            # img_mx = np.pad(img_mx, ((0, 0), (h_pad_size, h_pad_size), (0, 0)))
     return img_padded
