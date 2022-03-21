@@ -2220,8 +2220,8 @@ def create_t_eval_kwargs():
         "offset_interpolation": [1, 0.7, 0.3],
         "target_feature_merge_scale": [0, 0.01],
         "extrapolation_mode": [["none", "n"], ["linear", "l"]],
-        "search_type": [["normal", "n"], ["small", "s"], ["snormal", "sn"]],
-        "target_type": [["normal", "n"], ["original", "o"]],
+        "search_type": [["small", "s"], ["snormal", "sn"]],
+        "target_type": [["normal", "n"]],
     }
     results = {}
 
@@ -2559,6 +2559,79 @@ def run_ta0(id=0, total_experiments=4, total_devices=4):
             device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
         )
         print(result)
+
+
+def run_up0(id=0, gpu_capacity=4, total_devices=4):
+
+    device_id = id % total_devices
+    i = id
+
+    eval_kwargs = create_t_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [3]:
+            for size in [-1]:
+                for lr in [0.0001]:
+                    for context_amount in [0.3]:
+                        for r_pos in [4]:
+                            for upscaling_mode in ["raw", "processed"]:
+                                for augment in [False, True]:
+                                    target_size = [127, 127] if size == 1 else [-1, -1]
+                                    search_size = [255, 255] if size == 1 else [-1, -1]
+
+                                    name = (
+                                        "up0-b"
+                                        + str(feature_blocks)
+                                        + ("-us" if size == 1 else "-os")
+                                        + "-c"
+                                        + str(context_amount).replace(".", "")
+                                        + "-lr"
+                                        + str(lr).replace(".", "")
+                                        + "-ups"
+                                        + str(upscaling_mode).replace(".", "")
+                                        + ("-aug" if augment else "-naug")
+                                        + "-rpos"
+                                        + str(r_pos).replace(".", "")
+                                    )
+                                    result.append(
+                                        (
+                                            Model(
+                                                name,
+                                                feature_blocks=feature_blocks,
+                                                target_size=target_size,
+                                                search_size=search_size,
+                                                context_amount=context_amount,
+                                                train_steps=64000,
+                                                save_step=2000,
+                                                loads=[
+                                                    64000,
+                                                    2000,
+                                                ],
+                                                lr=lr,
+                                                r_pos=r_pos,
+                                                search_type="normal",
+                                                target_type="normal",
+                                                training_method="siamese",
+                                                upscaling_mode=upscaling_mode,
+                                                augment=augment,
+                                            ),
+                                            eval_kwargs,
+                                        )
+                                    )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+        i += gpu_capacity * total_devices
 
 
 if __name__ == "__main__":

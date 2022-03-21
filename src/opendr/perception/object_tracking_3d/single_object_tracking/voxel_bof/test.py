@@ -1581,8 +1581,6 @@ def test_rotated_pp_siamese_eval(
         "total_mean_tracked": total_mean_tracked,
         "total_mean_precision": total_mean_precision,
         "total_mean_success": total_mean_success,
-        "total_precision": total_precision.average,
-        "total_success": total_success.average,
         "total_precision_near": total_precision_near.average,
         "total_success_near": total_success_near.average,
         "total_precision_far": total_precision_far.average,
@@ -1595,6 +1593,8 @@ def test_rotated_pp_siamese_eval(
         "total_success_same": total_success_same.average,
         "total_precision_ideal": total_precision_ideal.average,
         "total_success_ideal": total_success_ideal.average,
+        "total_precision": total_precision.average,
+        "total_success": total_success.average,
     }
 
     for k, v in result.items():
@@ -2081,8 +2081,8 @@ def multi_eval(
 
     runs = [(id, e_kwargs) for (id, e_kwargs) in eval_kwargs.items()]
 
-    device_id = id // gpu_capacity
-    i = id % gpu_capacity
+    device_id = id % gpu_capacity
+    i = id
 
     print("id =", id, "runs per process = ", len(runs) / (gpu_capacity * total_devices))
 
