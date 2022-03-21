@@ -27,7 +27,15 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
 )
 
 
-def build(model_cfg: second_pb2.VoxelNet, voxel_generator, target_assigner, device, bof_mode, overwrite_strides=False) -> VoxelNet:
+def build(
+    model_cfg: second_pb2.VoxelNet,
+    voxel_generator,
+    target_assigner,
+    device,
+    bof_mode,
+    overwrite_strides=False,
+    upscaling_mode="none",
+) -> VoxelNet:
     """build second pytorch instance.
     """
     if not isinstance(model_cfg, second_pb2.VoxelNet):
@@ -102,5 +110,6 @@ def build(model_cfg: second_pb2.VoxelNet, voxel_generator, target_assigner, devi
         pc_range=voxel_generator.point_cloud_range,
         bof_mode=bof_mode,
         overwrite_strides=overwrite_strides,
+        upscaling_mode=upscaling_mode,
     )
     return net

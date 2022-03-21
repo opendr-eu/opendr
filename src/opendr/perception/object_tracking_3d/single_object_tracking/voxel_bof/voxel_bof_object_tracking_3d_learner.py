@@ -153,6 +153,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         regress_vertical_position=False,
         overwrite_strides=None,
         target_features_mode="init",  # "all", "selected", "last"
+        upscaling_mode="none",  # "raw", "processed"
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -204,6 +205,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.regress_vertical_position = regress_vertical_position
         self.overwrite_strides = overwrite_strides
         self.target_features_mode = target_features_mode
+        self.upscaling_mode = upscaling_mode
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -511,6 +513,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             train_pseudo_image=self.train_pseudo_image,
             regress_vertical_position=self.regress_vertical_position,
             overwrite_strides=self.overwrite_strides,
+            upscaling_mode=self.upscaling_mode,
         )
 
         logger.close()
@@ -1305,7 +1308,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         all_params = torch.load(path, map_location=self.device)
         model.load_state_dict(
             all_params if use_original_dict else all_params[state_dict_name],
-            strict=self.bof_mode == "none",
+            strict=self.bof_mode == "none" and self.upscaling_mode == "none",
         )
 
     def __prepare_datasets(
@@ -1593,6 +1596,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             loss_function=self.loss_function,
             bof_mode=self.bof_mode,
             overwrite_strides=self.overwrite_strides,
+            upscaling_mode=self.upscaling_mode,
         )
 
         self.model = model

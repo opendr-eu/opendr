@@ -398,12 +398,15 @@ class RPN(nn.Module):
         name="rpn",
         bof_mode="none",
         overwrite_strides=None,
+        upscaling_mode="none",
+        upscaling_filters=64,
     ):
         super(RPN, self).__init__()
         self.num_filters = num_filters
         self._num_anchor_per_loc = num_anchor_per_loc
         self._use_direction_classifier = use_direction_classifier
         self._use_bev = use_bev
+        self.upscaling_mode = upscaling_mode
         assert len(layer_nums) == 3
         assert len(layer_strides) == len(layer_nums)
         assert len(num_filters) == len(layer_nums)
@@ -543,6 +546,9 @@ class RPN(nn.Module):
                 sum(num_upsample_filters), num_anchor_per_loc * 2, 1
             )
 
+        if upscaling_mode == "processed":
+            self.conv_upscaling = nn.Conv2d(sum(num_upsample_filters), upscaling_filters, 1)
+
         self.bof_mid = None
         self.bof_end = None
 
@@ -559,18 +565,43 @@ class RPN(nn.Module):
             else:
                 raise ValueError()
 
-    def forward(self, x, bev=None, feature_blocks=3):
+    def forward(self, input, bev=None, feature_blocks=3):
+
+        x = input
+
+        should_upscale = self.upscaling_mode in ["raw", "processed"]
+        ups = []
 
         if feature_blocks >= 1:
             x = self.block1(x)
-        # up1 = self.deconv1(x)
+
+            if should_upscale:
+                ups.append(self.deconv1(x))
         if feature_blocks >= 2:
             x = self.block2(x)
-        # up2 = self.deconv2(x)
+
+            if should_upscale:
+                ups.append(self.deconv2(x))
         if feature_blocks >= 3:
             x = self.block3(x)
-        # up3 = self.deconv3(x)
-        # x = torch.cat([up1, up2, up3], dim=1)
+
+            if should_upscale:
+                ups.append(self.deconv3(x))
+
+        if should_upscale:
+
+            shapes = [np.array(x.shape[-2:]) for x in ups]
+            max_shape = np.max(shapes, axis=0)
+            pads = [max_shape - x for x in shapes]
+            padded = [
+                x if np.sum(pad) <= 0 else torch.nn.functional.pad(x, pad=(0, pad[1], 0, pad[0]), mode="constant", value=0)
+                for x, pad in zip(ups, pads)
+            ]
+
+            x = torch.cat(padded, dim=1)
+
+            if self.upscaling_mode == "processed":
+                x = self.conv_upscaling(x)
 
         if self.bof_end is not None:
             x = self.bof_end(x)
@@ -632,6 +663,7 @@ class VoxelNet(nn.Module):
         name="voxelnet",
         bof_mode="none",
         overwrite_strides=None,
+        upscaling_mode="none",
     ):
         super().__init__()
         self.name = name
@@ -741,6 +773,7 @@ class VoxelNet(nn.Module):
             box_code_size=target_assigner.box_coder.code_size,
             bof_mode=bof_mode,
             overwrite_strides=overwrite_strides,
+            upscaling_mode=upscaling_mode,
         )
 
         self.rpn_acc = metrics.Accuracy(

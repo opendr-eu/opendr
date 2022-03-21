@@ -475,7 +475,7 @@ def create_pseudo_image_features(
     return features, image
 
 
-def image_to_feature_coordinates(pos, feature_blocks, overwrite_strides=None):
+def image_to_feature_coordinates(pos, feature_blocks, overwrite_strides=None, upscaling_mode="none"):
 
     result = pos
 
@@ -483,14 +483,21 @@ def image_to_feature_coordinates(pos, feature_blocks, overwrite_strides=None):
         stride = 2 if overwrite_strides is None else overwrite_strides[i]
         result = (result + (stride - 1)) // stride
 
+    if upscaling_mode in ["raw", "processed"]:
+        for i in range(1, feature_blocks):
+            stride = 2 if overwrite_strides is None else overwrite_strides[i]
+            result = result * stride
+
     return result
 
 
-def feature_to_image_coordinates(pos, feature_blocks, overwrite_strides=None):
+def feature_to_image_coordinates(pos, feature_blocks, overwrite_strides=None, upscaling_mode="none"):
 
     result = pos
 
-    for i in range(feature_blocks):
+    upper_limit = min(1, feature_blocks) if upscaling_mode in ["raw", "processed"] else feature_blocks
+
+    for i in range(upper_limit):
         stride = 2 if overwrite_strides is None else overwrite_strides[i]
         result = result * stride
 
@@ -521,6 +528,7 @@ def create_static_label_and_weights(
     max_pos=1,
     min_pos=0.5,
     overwrite_strides=None,
+    upscaling_mode="none",
 ):
     if target_size[0] <= 0:
         target_size = target_size_with_context
@@ -528,8 +536,8 @@ def create_static_label_and_weights(
         search_size = search_size_with_context
 
     label_size = (
-        image_to_feature_coordinates(search_size, feature_blocks, overwrite_strides)
-        - image_to_feature_coordinates(target_size, feature_blocks, overwrite_strides)
+        image_to_feature_coordinates(search_size, feature_blocks, overwrite_strides, upscaling_mode)
+        - image_to_feature_coordinates(target_size, feature_blocks, overwrite_strides, upscaling_mode)
         + 1
     ).astype(np.int32)
 
@@ -1114,6 +1122,7 @@ def create_siamese_pseudo_images_and_labels(
     search_type="normal",
     target_type="normal",
     overwrite_strides=None,
+    upscaling_mode="none",
 ):
 
     dims = target_label_lidar_kitti["dimensions"][0]
@@ -1219,6 +1228,7 @@ def create_siamese_pseudo_images_and_labels(
         loss=loss,
         radius=r_pos,
         overwrite_strides=overwrite_strides,
+        upscaling_mode=upscaling_mode,
     )
 
     labels_torch = torch.tensor(labels, device=target_image.device)
@@ -1908,6 +1918,7 @@ def train_siamese(
     regress_vertical_position=False,
     regression_training_isolated=True,
     overwrite_strides=None,
+    upscaling_mode="none",
 ):
 
     net = siamese_model.branch
@@ -2010,6 +2021,7 @@ def train_siamese(
                 search_type=search_type,
                 target_type=target_type,
                 overwrite_strides=overwrite_strides,
+                upscaling_mode=upscaling_mode,
             )
 
             for (
