@@ -136,7 +136,8 @@ Parameters:
 Seq2SeqNMSLearner.run_nms(self, boxes, scores, img, threshold, boxes_sorted, top_k)
 ```
 
-Performs non-maximum suppression, using seq2seq-nms. It incorporates the full pipeline needed for inference.
+Performs non-maximum suppression, using seq2seq-nms.
+It incorporates the full pipeline needed for inference.
 
 Parameters:
 
