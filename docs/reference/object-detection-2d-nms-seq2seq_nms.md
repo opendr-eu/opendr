@@ -116,7 +116,8 @@ Performs non-maximum suppression, using seq2seq-nms. In the case where FMoD is s
 Parameters:
 
 - **boxes**: *torch.tensor, default=None*\
-  Image coordinates of candidate detection RoIs, expressed as the coordinates of their upper-left and top-down corners (x_min, y_min, x_max, y_max). For N candidate detection RoIs, the size of the *torch.tensor* is Nx4.
+  Image coordinates of candidate detection RoIs, expressed as the coordinates of their upper-left and top-down corners (x_min, y_min, x_max, y_max).
+  For N candidate detection RoIs, the size of the *torch.tensor* is Nx4.
 - **scores**: *torch.tensor, default=None*\
   Specifies the scores of the candidate detection RoIs, assigned previously by a detector. For N candidate detection RoIs, the size of the *torch.tensor* is Nx1.
 - **boxes_sorted**: *bool, default=False*\
