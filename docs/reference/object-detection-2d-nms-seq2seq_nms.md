@@ -145,7 +145,8 @@ Parameters:
   Image coordinates of candidate detection RoIs, expressed as the coordinates of their upper-left and top-down corners (x_min, y_min, x_max, y_max).
   For N candidate detection RoIs, the size of the array is Nx4.
 - **scores**: *numpy.ndarray, default=None*\
-  Specifies the scores of the candidate detection RoIs, assigned previously by a detector. For N candidate detection RoIs, the size of the array is Nx1.
+  Specifies the scores of the candidate detection RoIs, assigned previously by a detector.
+  For N candidate detection RoIs, the size of the array is Nx1.
 - **boxes_sorted**: *bool, default=False*\
   Specifies whether *boxes* and *scores* are sorted based on *scores* in descending order.
 - **top_k**: *int, default=400*\
