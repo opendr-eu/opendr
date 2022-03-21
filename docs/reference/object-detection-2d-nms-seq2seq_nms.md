@@ -111,7 +111,8 @@ Parameters:
 Seq2SeqNMSLearner.infer(self, boxes, scores, boxes_sorted, max_dt_boxes, img_res, threshold)
 ```
 
-Performs non-maximum suppression, using seq2seq-nms. In the case where FMoD is selected for appearance-based RoI feature computation, FMoD maps are not computed.
+Performs non-maximum suppression, using seq2seq-nms.
+In the case where FMoD is selected for appearance-based RoI feature computation, FMoD maps are not computed.
 
 Parameters:
 
