@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opendr.perception.object_detection_2d.nms.seq2seq_nms.seq2seq_nms_learner import Seq2SeqNMSLearner
+from opendr.perception.object_detection_2d.nms import Seq2SeqNMSLearner
 import os
 OPENDR_HOME = os.environ['OPENDR_HOME']
 temp_path = OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/pets_tmp'
