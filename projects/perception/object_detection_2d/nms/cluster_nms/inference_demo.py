@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from opendr.perception.object_detection_2d.nms.cluster_nms.cluster_nms import ClusterNMS
+from opendr.perception.object_detection_2d.nms import ClusterNMS
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import SingleShotDetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
