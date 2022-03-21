@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from opendr.engine.datasets import Dataset
-from opendr.perception.object_detection_2d import SingleShotDetectorLearner
+from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d.datasets.transforms import BoundingBoxListToNumpyArray
 from opendr.engine.constants import OPENDR_SERVER_URL
