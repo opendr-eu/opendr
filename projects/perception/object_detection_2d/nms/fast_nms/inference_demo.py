@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from opendr.perception.object_detection_2d.nms.fast_nms.fast_nms import FastNMS
+from opendr.perception.object_detection_2d.nms import FastNMS
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import SingleShotDetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
