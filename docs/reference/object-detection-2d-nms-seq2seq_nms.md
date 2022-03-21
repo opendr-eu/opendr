@@ -209,7 +209,8 @@ Downloads data needed for the various functions of the learner, e.g., pretrained
 Parameters:
 
 - **path**: *str, default=None*\
-  Specifies the folder where data will be downloaded. If *None*, the *self.temp_path* directory is used instead.
+  Specifies the folder where data will be downloaded.
+  If *None*, the *self.temp_path* directory is used instead.
 - **model_name**: *{'seq2seq_medium_pets_jpd_fmod_3', 'seq2seq_medium_pets_ssd_fmod_3', 'seq2seq_medium_coco_frcn_fmod_3', 'seq2seq_medium_pets_ssd_fmod_3'}, default=''seq2seq_medium_pets_jpd_fmod_3'*\
   If *'pretrained'*, downloads a pretrained detector model.
   If *'images'*, downloads an image to perform inference on. If
