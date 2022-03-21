@@ -17,9 +17,7 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.target import BoundingBox, BoundingBoxList
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d.nms.seq2seq_nms.algorithm.seq2seq_model import Seq2SeqNet
-from opendr.perception.object_detection_2d.nms import FMoD
-from opendr.perception.object_detection_2d.nms import Dataset_NMS
-from opendr.perception.object_detection_2d.nms import NMSCustom
+from opendr.perception.object_detection_2d.nms import FMoD, Dataset_NMS, NMSCustom
 from opendr.perception.object_detection_2d.nms.utils.nms_utils import drop_dets, det_matching, \
     run_coco_eval, filter_iou_boxes, bb_intersection_over_union, compute_class_weights, apply_torchNMS
 import torch
