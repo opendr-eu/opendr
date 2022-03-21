@@ -64,7 +64,8 @@ Parameters:
 - **dataset**: *{'PETS', 'COCO'}*\
   Specifies the name of the dataset among those available from training.
 - **logging_path**: *str, default=None*\
-  Path to save log files. If set to None, only the console will be used for logging.
+  Path to save log files.
+  If set to None, only the console will be used for logging.
 - **logging_flush_secs**: *int, default=30*\
   How often, in seconds, to flush the TensorBoard data to disk.
 - **silent**: *bool, default=False*\
