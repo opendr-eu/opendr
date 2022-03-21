@@ -167,7 +167,7 @@ Parameters:
 
 - **path**: *str*\
   Specifies the folder where the model will be saved.
-- **verbose**: *bool default=True*\
+- **verbose**: *bool default=False*\
   If True, enables maximum verbosity.
 - **optimizer**: *torch.optim.Optimizer default=None*\
   Specifies the optimizer used for training.
