@@ -37,7 +37,8 @@ Constructor parameters:
 - **variant**: *{'light', 'medium', 'full'}, default='medium'*\
   Specifies the variant of seq2seq-nms model.
 - **iou_filtering**: *float, default=0.8*\
-  Specifies the IoU threshold used for filtering RoIs before provided by the seq2seq-nms model.If set to values <0 or >1, no filtering is applied.
+  Specifies the IoU threshold used for filtering RoIs before provided by the seq2seq-nms model.
+  If set to values <0 or >1, no filtering is applied.
 - **dropout**: *float, default=0.025*\
   Specifies the dropout rate.
 - **app_feats**: *{'fmod', 'zeros', 'custom'}, default='fmod'*\
