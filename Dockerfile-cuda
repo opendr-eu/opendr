@@ -11,7 +11,6 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 ENTRYPOINT ["/tini", "--"]
 
-# Avoid switching back to gcc9 when install build-essential
 RUN sudo apt-get --yes install build-essential
 
 # Clone the repo and install the toolkit
