@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from opendr.engine.datasets import Dataset
-from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d.datasets.transforms import BoundingBoxListToNumpyArray
 from opendr.engine.constants import OPENDR_SERVER_URL
@@ -99,6 +98,7 @@ class Dataset_NMS(Dataset):
             if not os.path.exists(pkl_filename):
                 ssd = None
                 if use_ssd:
+                    from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
                     ssd = SingleShotDetectorLearner(device=device)
                     ssd.download(".", mode="pretrained")
                     ssd.load("./ssd_default_person", verbose=True)
@@ -233,6 +233,7 @@ class Dataset_NMS(Dataset):
             if use_ssd:
                 self.detector = 'SSD'
                 self.detector_type = 'custom'
+                from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
                 ssd = SingleShotDetectorLearner(device=device)
                 ssd.download(".", mode="pretrained")
                 ssd.load("./ssd_default_person", verbose=True)
