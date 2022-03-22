@@ -38,13 +38,19 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main
 # Build OpenDR
 make install_compilation_dependencies
 make install_runtime_dependencies
-make libopendr
 
 # If working on GPU install GPU dependencies as needed
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
-  echo "[INFO] Installing  mxnet-cu102==1.8.0. You can override this later if you are using a different CUDA version."
-  pip3 install mxnet-cu102==1.8.0
+  pip3 uninstall -y mxnet
+  pip3 uninstall -y torch
+  echo "[INFO] Replacing  mxnet-cu112==1.8.0post0 to enable CUDA acceleration."
+  pip3 install mxnet-cu112==1.8.0post0
+  echo "[INFO] Replacing torch==1.9.0+cu111 to enable CUDA acceleration."
+  pip3 install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+  echo "[INFO] Reinstalling detectronv2."
+  pip3 install 'git+https://github.com/facebookresearch/detectron2.git'
 fi
 
-deactivate
+make libopendr
 
+deactivate
