@@ -1034,6 +1034,7 @@ def load_params_from_file(params_file):
         "lr_schedule_params",
         "target_size",
         "search_size",
+        "overwrite_strides",
     ]
 
     string_names = [
@@ -1049,6 +1050,7 @@ def load_params_from_file(params_file):
         "device",
         "tanet_config_path",
         "extrapolation_mode",
+        "upscaling_mode",
     ]
 
     with open(params_file, "r") as f:
