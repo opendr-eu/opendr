@@ -275,13 +275,13 @@ class LightweightOpenPoseLearner(Learner):
         if not self.weights_only and self.checkpoint_load_iter != 0:
             try:
                 optimizer.load_state_dict(checkpoint['optimizer'])
-                if self.device == "cuda":
+                if "cuda" in self.device:
                     # Move optimizer state to cuda
                     # Taken from https://github.com/pytorch/pytorch/issues/2830#issuecomment-336194949
                     for state in optimizer.state.values():
                         for k, v in state.items():
                             if torch.is_tensor(v):
-                                state[k] = v.cuda()
+                                state[k] = v.to(self.device)
                 scheduler.load_state_dict(checkpoint['scheduler'])
                 num_iter = checkpoint['iter']
                 current_epoch = checkpoint['current_epoch']
@@ -290,11 +290,11 @@ class LightweightOpenPoseLearner(Learner):
         elif self.checkpoint_load_iter != 0:
             num_iter = self.checkpoint_load_iter
 
-        if self.device == "cuda":
+        if "cuda" in self.device:
             self.model = DataParallel(self.model)
         self.model.train()
-        if self.device == "cuda":
-            self.model = self.model.cuda()
+        if "cuda" in self.device:
+            self.model = self.model.to(self.device)
 
         if epochs is not None:
             self.epochs = epochs
@@ -320,12 +320,12 @@ class LightweightOpenPoseLearner(Learner):
                 paf_masks = batch_data['paf_mask']
                 keypoint_maps = batch_data['keypoint_maps']
                 paf_maps = batch_data['paf_maps']
-                if self.device == "cuda":
-                    images = images.cuda()
-                    keypoint_masks = keypoint_masks.cuda()
-                    paf_masks = paf_masks.cuda()
-                    keypoint_maps = keypoint_maps.cuda()
-                    paf_maps = paf_maps.cuda()
+                if "cuda" in self.device:
+                    images = images.to(self.device)
+                    keypoint_masks = keypoint_masks.to(self.device)
+                    paf_masks = paf_masks.to(self.device)
+                    keypoint_maps = keypoint_maps.to(self.device)
+                    paf_maps = paf_maps.to(self.device)
 
                 stages_output = self.model(images)
                 losses = []
@@ -450,7 +450,7 @@ class LightweightOpenPoseLearner(Learner):
         if logging:
             file_writer.close()
         # Return a dict of lists of PAF and Heatmap losses per stage and a list of all evaluation results dictionaries
-        if self.half and self.device == 'cuda':
+        if self.half and 'cuda' in self.device:
             self.model.half()
 
         return {"paf_losses": paf_losses, "heatmap_losses": heatmap_losses, "eval_results_list": eval_results_list}
@@ -518,8 +518,8 @@ class LightweightOpenPoseLearner(Learner):
             raise AttributeError("self.model is None. Please load a model or set checkpoint_load_iter.")
 
         self.model = self.model.eval()  # Change model state to evaluation
-        if self.device == "cuda":
-            self.model = self.model.cuda()
+        if "cuda" in self.device:
+            self.model = self.model.to(self.device)
             if self.half:
                 self.model.half()
 
@@ -616,8 +616,8 @@ class LightweightOpenPoseLearner(Learner):
         padded_img, pad = pad_width(scaled_img, self.stride, self.pad_value, min_dims)
 
         tensor_img = torch.from_numpy(padded_img).permute(2, 0, 1).unsqueeze(0).float()
-        if self.device == "cuda":
-            tensor_img = tensor_img.cuda()
+        if "cuda" in self.device:
+            tensor_img = tensor_img.to(self.device)
             if self.half:
                 tensor_img = tensor_img.half()
 
@@ -746,6 +746,7 @@ class LightweightOpenPoseLearner(Learner):
                                                           groups=self.shufflenet_groups)
         else:
             raise UserWarning("Tried to initialize model while model is already initialized.")
+        self.model.to(self.device)
 
     def __save(self, path, optimizer, scheduler, iter_, current_epoch):
         """
@@ -805,8 +806,8 @@ class LightweightOpenPoseLearner(Learner):
         #     load_from_mobilenet(self.model, checkpoint)
         # else:
         load_state(self.model, checkpoint)
-        if self.device == "cuda":
-            self.model.cuda()
+        if "cuda" in self.device:
+            self.model.to(self.device)
             if self.half:
                 self.model.half()
         self.model.train(False)
@@ -856,8 +857,8 @@ class LightweightOpenPoseLearner(Learner):
         :type do_constant_folding: bool, optional
         """
         width = 344
-        if self.device == "cuda":
-            inp = torch.randn(1, 3, self.base_height, width).cuda()
+        if "cuda" in self.device:
+            inp = torch.randn(1, 3, self.base_height, width).to(self.device)
         else:
             inp = torch.randn(1, 3, self.base_height, width)
         if self.half:
@@ -1055,8 +1056,8 @@ class LightweightOpenPoseLearner(Learner):
             padded_img, pad = pad_width(scaled_img, stride, pad_value, min_dims)
 
             tensor_img = torch.from_numpy(padded_img).permute(2, 0, 1).unsqueeze(0).float()
-            if self.device == "cuda":
-                tensor_img = tensor_img.cuda()
+            if "cuda" in self.device:
+                tensor_img = tensor_img.to(self.device)
                 if self.half:
                     tensor_img = tensor_img.half()
             stages_output = self.model(tensor_img)
