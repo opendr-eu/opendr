@@ -1075,7 +1075,7 @@ def load_params_from_file(params_file):
             elif name in object_names:
                 return ast.literal_eval(value)
             elif name in string_names:
-                return value[:-1]
+                return value.replace('\n', '')[:-1]
 
         args = list(
             map(
