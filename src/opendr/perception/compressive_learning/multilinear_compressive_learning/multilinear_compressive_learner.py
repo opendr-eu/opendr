@@ -215,7 +215,7 @@ class MultilinearCompressiveLearner(Learner):
 
         train_loader = DataLoader(DataWrapper(train_set),
                                   batch_size=self.batch_size,
-                                  pin_memory=self.device == 'cuda',
+                                  pin_memory='cuda' in self.device,
                                   shuffle=True)
 
         if val_set is None:
@@ -223,14 +223,14 @@ class MultilinearCompressiveLearner(Learner):
         else:
             val_loader = DataLoader(DataWrapper(val_set),
                                     batch_size=self.batch_size,
-                                    pin_memory=self.device == 'cuda',
+                                    pin_memory='cuda' in self.device,
                                     shuffle=False)
         if test_set is None:
             test_loader = None
         else:
             test_loader = DataLoader(DataWrapper(test_set),
                                      batch_size=self.batch_size,
-                                     pin_memory=self.device == 'cuda',
+                                     pin_memory='cuda' in self.device,
                                      shuffle=False)
 
         if self.test_mode and not silent:
@@ -298,7 +298,7 @@ class MultilinearCompressiveLearner(Learner):
         self._validate_dataset(dataset)
         loader = DataLoader(DataWrapper(dataset),
                             batch_size=self.batch_size,
-                            pin_memory=self.device == 'cuda',
+                            pin_memory='cuda' in self.device,
                             shuffle=False)
 
         device = torch.device(self.device)

@@ -82,9 +82,12 @@ class SingleShotDetectorLearner(Learner):
                                  "Supported image sizes: {}".format(img_size, self.backbone,
                                                                     self.supported_backbones[self.backbone]))
 
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if mx.context.num_gpus() > 0:
-                self.ctx = mx.gpu(0)
+                if self.device == 'cuda':
+                    self.ctx = mx.gpu(0)
+                else:
+                    self.ctx = mx.gpu(int(self.device.split(':')[1]))
             else:
                 self.ctx = mx.cpu()
                 print("Device set to cuda but no GPU available, using CPU...")
@@ -321,9 +324,12 @@ class SingleShotDetectorLearner(Learner):
 
         # set device
         # NOTE: multi-gpu a little bugged
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if mx.context.num_gpus() > 0:
-                ctx = [mx.gpu(0)]
+                if self.device == 'cuda':
+                    ctx = [mx.gpu(0)]
+                else:
+                    ctx = [mx.gpu(int(self.device.split(':')[1]))]
             else:
                 ctx = [mx.cpu()]
         else:
@@ -471,9 +477,12 @@ class SingleShotDetectorLearner(Learner):
         """
         autograd.set_training(False)
         # NOTE: multi-gpu is a little bugged
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if mx.context.num_gpus() > 0:
-                ctx = [mx.gpu(0)]
+                if self.device == 'cuda':
+                    ctx = [mx.gpu(0)]
+                else:
+                    ctx = [mx.gpu(int(self.device.split(':')[1]))]
             else:
                 ctx = [mx.cpu()]
         else:

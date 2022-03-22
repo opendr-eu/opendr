@@ -839,8 +839,8 @@ class FaceRecognitionLearner(Learner):
             self.ort_head_session = ort.InferenceSession(path_head)
 
     def __convert_to_onnx(self, verbose=False):
-        if self.device == 'cuda':
-            inp = torch.randn(1, 3, self.input_size[0], self.input_size[1]).cuda()
+        if 'cuda' in self.device:
+            inp = torch.randn(1, 3, self.input_size[0], self.input_size[1]).to(self.device)
         else:
             inp = torch.randn(1, 3, self.input_size[0], self.input_size[1])
         input_names = ['data']
@@ -849,8 +849,8 @@ class FaceRecognitionLearner(Learner):
         torch.onnx.export(self.backbone_model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
                           input_names=input_names, output_names=output_names)
         if self.mode == 'full' and self.network_head == 'classifier':
-            if self.device == 'cuda':
-                inp = torch.randn(1, self.embedding_size).cuda()
+            if 'cuda' in self.device:
+                inp = torch.randn(1, self.embedding_size).to(self.device)
             else:
                 inp = torch.randn(1, self.embedding_size)
             input_names = ['features']

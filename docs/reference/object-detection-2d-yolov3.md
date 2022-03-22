@@ -5,7 +5,7 @@ The *yolov3* module contains the *YOLOv3DetectorLearner* class, which inherits f
 ### Class YOLOv3DetectorLearner
 Bases: `engine.learners.Learner`
 
-The *YOLOv3DetectorLearner* class is a wrapper of the SSD detector[[1]](#yolo-1)
+The *YOLOv3DetectorLearner* class is a wrapper of the YOLO detector[[1]](#yolo-1)
 [GluonCV implementation](https://github.com/dmlc/gluon-cv/blob/master/gluoncv/model_zoo/yolo/yolo3.py).
 It can be used to perform object detection on images (inference) as well as train new object detection models.
 

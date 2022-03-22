@@ -70,7 +70,12 @@ jobs:
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
           - control/mobile_manipulation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
           - simulation/human_model_generation
           - perception/facial_expression_recognition
           - control/single_demo_grasp
@@ -169,7 +174,12 @@ jobs:
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
           - perception/facial_expression_recognition
           # - perception/object_detection_3d
           # - control/mobile_manipulation
@@ -234,7 +244,12 @@ jobs:
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
           - perception/facial_expression_recognition
           # - perception/object_detection_3d
           # - control/mobile_manipulation
@@ -305,7 +320,12 @@ jobs:
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
           - perception/facial_expression_recognition
           - perception/object_detection_3d
           - control/mobile_manipulation
