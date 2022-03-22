@@ -104,7 +104,7 @@ class SpatioTemporalGCNLearner(Learner):
             raise ValueError(self.method_name +
                              "is not a valid dataset name. Supported methods: stgcn, tagcn, stbln")
 
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             self.output_device = self.device_ind[0] if type(self.device_ind) is list else self.device_ind
         self.__init_seed(1)
 
@@ -165,7 +165,7 @@ class SpatioTemporalGCNLearner(Learner):
         # Initialize the model
         if self.model is None:
             self.init_model()
-            if self.device == 'cuda':
+            if 'cuda' in self.device:
                 self.model = self.model.cuda(self.output_device)
                 if type(self.device_ind) is list:
                     if len(self.device_ind) > 1:
@@ -251,7 +251,7 @@ class SpatioTemporalGCNLearner(Learner):
             for batch_idx, (data, label, index) in enumerate(process):
                 self.global_step += 1
                 # get data
-                if self.device == 'cuda':
+                if 'cuda' in self.device:
                     data = Variable(data.float().cuda(self.output_device), requires_grad=False)
                     label = Variable(label.long().cuda(self.output_device), requires_grad=False)
                 else:
@@ -367,7 +367,7 @@ class SpatioTemporalGCNLearner(Learner):
         process = tqdm(val_loader)
         for batch_idx, (data, label, index) in enumerate(process):
             with torch.no_grad():
-                if self.device == "cuda":
+                if "cuda" in self.device:
                     data = Variable(data.float().cuda(self.output_device), requires_grad=False)
                     label = Variable(label.long().cuda(self.output_device), requires_grad=False)
                 else:
@@ -472,7 +472,7 @@ class SpatioTemporalGCNLearner(Learner):
 
     def init_model(self):
         """Initializes the imported model."""
-        cuda_ = (self.device == 'cuda')
+        cuda_ = ('cuda' in self.device)
         if self.method_name == 'stgcn':
             self.model = STGCN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
                                in_channels=self.in_channels, graph_type=self.graph_type,
@@ -492,6 +492,7 @@ class SpatioTemporalGCNLearner(Learner):
             if self.logging:
                 shutil.copy2(inspect.getfile(STBLN), self.logging_path)
         self.loss = nn.CrossEntropyLoss()
+        self.model.to(self.device)
         # print(self.model)
 
     def infer(self, SkeletonSeq_batch):
@@ -508,7 +509,7 @@ class SpatioTemporalGCNLearner(Learner):
             SkeletonSeq_batch = SkeletonSequence(SkeletonSeq_batch)
         SkeletonSeq_batch = torch.from_numpy(SkeletonSeq_batch.numpy())
 
-        if self.device == "cuda":
+        if "cuda" in self.device:
             SkeletonSeq_batch = Variable(SkeletonSeq_batch.float().cuda(self.output_device), requires_grad=False)
         else:
             SkeletonSeq_batch = Variable(SkeletonSeq_batch.float(), requires_grad=False)
@@ -536,7 +537,7 @@ class SpatioTemporalGCNLearner(Learner):
 
         return category
 
-    def optimize(self, do_constant_folding=False):
+    def optimize(self, do_constant_folding=True):
         """
         Optimize method converts the model to ONNX format and saves the
         model in the parent directory defined by self.temp_path. The ONNX model is then loaded.
@@ -570,8 +571,18 @@ class SpatioTemporalGCNLearner(Learner):
         c, t, v, m = [self.in_channels, 300, self.num_point, self.num_person]
         n = self.batch_size
         onnx_input = torch.randn(n, c, t, v, m)
-        if self.device == "cuda":
-            onnx_input = Variable(onnx_input.float().cuda(self.output_device), requires_grad=False)
+        if "cuda" in self.device:
+            print("[WARN] Temporarily moving model to CPU for ONNX exporting.")
+            # This is a hack due to https://github.com/pytorch/pytorch/issues/72175
+            # Some parts of the model do not make it to GPU, exporting it through CPU
+            self.model.cpu()
+            self.model.cuda_ = False
+            for x in self.model.layers:
+                if hasattr(self.model.layers[x], 'gcn'):
+                    self.model.layers[x].gcn.cuda_ = False
+                elif hasattr(self.model.layers[x], 'cuda_'):
+                    self.model.layers[x].cuda_ = False
+            onnx_input = Variable(onnx_input.float(), requires_grad=False)
         else:
             onnx_input = Variable(onnx_input.float(), requires_grad=False)
         # torch_out = self.model(onnx_input)
@@ -587,6 +598,15 @@ class SpatioTemporalGCNLearner(Learner):
                           output_names=['onnx_output'],  # the model's output names
                           dynamic_axes={'onnx_input': {0: 'n'},  # variable lenght axes
                                         'onnx_output': {0: 'n'}})
+
+        # This is a hack due to https://github.com/pytorch/pytorch/issues/72175 (see above)
+        if "cuda" in self.device:
+            self.model.cuda_ = True
+            if hasattr(self.model.layers[x], 'gcn'):
+                self.model.layers[x].gcn.cuda_ = True
+            elif hasattr(self.model.layers[x], 'cuda_'):
+                self.model.layers[x].cuda_ = True
+            self.model.cuda(self.output_device)
 
     def save(self, path, model_name='', verbose=True):
         """
@@ -678,7 +698,7 @@ class SpatioTemporalGCNLearner(Learner):
                 raise e
             if verbose:
                 print("Loading checkpoint")
-            if self.device == "cuda":
+            if "cuda" in self.device:
                 weights = OrderedDict(
                     [[k.split('module.')[-1], v.cuda(self.output_device)] for k, v in weights.items()])
             else:
@@ -695,7 +715,7 @@ class SpatioTemporalGCNLearner(Learner):
                     print('  ' + d)
                 state.update(weights)
                 self.model.load_state_dict(state)
-            if self.device == "cuda":
+            if "cuda" in self.device:
                 self.model = self.model.cuda(self.output_device)
                 if type(self.device_ind) is list:
                     if len(self.device_ind) > 1:
@@ -913,7 +933,7 @@ class SpatioTemporalGCNLearner(Learner):
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
     def __init_seed(self, seed):
-        if self.device == "cuda":
+        if "cuda" in self.device:
             torch.cuda.manual_seed_all(seed)
             torch.backends.cudnn.enabled = True
             torch.backends.cudnn.deterministic = True
