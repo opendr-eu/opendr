@@ -36,9 +36,9 @@ Using dockerfiles is strongly advised (please see below), unless you know what y
 Please also make sure that you have enough RAM available for the installation (about 4GB of free RAM is needed for the full installation/compilation).
 
 
-You can set the inference/training device using the `OPENDR_DEVICE` variable.
+If you want to install GPU-related dependencies, then you can appropriately set the `OPENDR_DEVICE` variable.
 The toolkit defaults to using CPU.
-If you want to use GPU, please set this variable accordingly:
+Therefore, if you want to use GPU, please set this variable accordingly *before* running the installation script:
 ```bash
 export OPENDR_DEVICE=gpu
 ```
@@ -49,24 +49,20 @@ source ./bin/activate.sh
 ```
 Then, you are ready to use the toolkit!
 
+**NOTE:** `OPENDR_DEVICE` does not alter the inference/training device at *runtime*. 
+It only affects the dependency installation.
+You can use OpenDR API to change the inference device.
+
 You can also verify the installation by using the supplied Python and C unit tests:
 ```bash
 make unittest
 make ctests
 ```
 
-If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 10.2](https://developer.nvidia.com/cuda-10.2-download-archive).
-To do so, you can follow these steps:
-```bash
-sudo apt install gcc-8 g++-8 gcc-9 g++-9
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8 --slave /usr/bin/g++ g++ /usr/bin/g++-8
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 9 --slave /usr/bin/g++ g++ /usr/bin/g++-9
-echo "Please switch to GCC 8"
-sudo update-alternatives --config gcc
-```
-Then, you can install CUDA, along CuDNN.
-You can also refer to this [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda) for installation instructions.
-Note that NVIDIA 30xx GPUs may not be fully supported, due to CUDA limitations.
+If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 11.2](https://developer.nvidia.com/cuda-11.2.0-download-archive), along with [CuDNN](https://developer.nvidia.com/cudnn).
+
+**HINT:** All tests probe for the `TEST_DEVICE` enviromental variable when running.
+If this enviromental variable is set during testing, it allows for easily running all tests on a different device (e.g., setting `TEST_DEVICE=cuda:0` runs all tests on the first GPU of the system).
 
 # Installing using *pip*
 
@@ -95,14 +91,15 @@ This is not needed for newer CPUs.
 The same OpenDR package is used for both CPU and GPU systems. 
 However, you need to have the appropriate GPU-enabled dependencies installed to use a GPU with OpenDR.
 If you plan to use GPU, then you should first install [mxnet-cuda](https://mxnet.apache.org/versions/1.4.1/install/index.html?platform=Linux&language=Python&processor=CPU) and [detectron2](https://detectron2.readthedocs.io/en/latest/tutorials/install.html).
-For example, if you stick with the default PyTorch version (1.7) and use CUDA10.2, then you can simply follow:
+For example, if you stick with the default PyTorch version (1.8) and use CUDA11.2, then you can simply follow:
 ```bash
 sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev 
 python3 -m venv venv
 source venv/bin/activate
 pip install wheel
-pip install detectron2==0.5 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.7/index.html
-pip install mxnet-cu102==1.8.0 
+pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+pip install 'git+https://github.com/facebookresearch/detectron2.git'
+pip install mxnet-cu112==1.8.0post0
 pip install opendr-toolkit-engine
 pip install opendr-toolkit
 ```
