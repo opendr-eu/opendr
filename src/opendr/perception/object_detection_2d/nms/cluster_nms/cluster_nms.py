@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This file contains code frin the CIoU distribution (https://github.com/Zzh-tju/CIoU).
+# This file contains code from the CIoU distribution (https://github.com/Zzh-tju/CIoU).
 # Copyright (c) 2020 Zheng, Zhaohui.
 # 
 # This program is free software: you can redistribute it and/or modify  
