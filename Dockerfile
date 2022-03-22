@@ -12,7 +12,7 @@ RUN chmod +x /tini
 ENTRYPOINT ["/tini", "--"]
 
 # Clone the repo and install the toolkit
-RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
+RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr -b end-to-end-planning
 WORKDIR "/opendr"
 RUN ./bin/install.sh
 
