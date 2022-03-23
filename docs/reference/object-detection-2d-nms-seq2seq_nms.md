@@ -268,7 +268,7 @@ Parameters:
 #### Performance Evaluation
 
 TABLE-1: Average Precision (AP) achieved by pretrained models on the person detection task. The maximum number or RoIs, employed for the performance evaluation was set to 800.
-![Alt text](/src/opendr/object_detection_2d/nms/seq2seq_nms/stats_pretrained.png?raw=true "Title")
+![Alt text](opendr-eu/opendr/nms-module/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/stats_pretrained.png?raw=true "Title")
 
 
 #### References
