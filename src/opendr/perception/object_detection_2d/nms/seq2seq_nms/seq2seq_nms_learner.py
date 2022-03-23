@@ -143,9 +143,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
         start_epoch = 0
         drop_after_epoch = []
-        if lr_step and self.epochs>1:
+        if lr_step and self.epochs > 1:
             drop_after_epoch = [int(self.epochs * 0.5)]
-            if self.epochs>3:
+            if self.epochs > 3:
                 drop_after_epoch.append(int(self.epochs * 0.7))
 
         train_ids = np.arange(len(dataset_nms.src_data))
@@ -153,7 +153,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         total_loss_epoch = 0
         optimizer = optim.Adam(self.model.parameters(), lr=self.lr, betas=(0.9, 0.99), eps=1e-9)  # HERE
         scheduler = None
-        if len(drop_after_epoch)>0:
+        if len(drop_after_epoch) > 0:
             scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=drop_after_epoch, gamma=0.1)
 
         num_iter = 0
@@ -246,7 +246,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 weights = (training_weights[class_index][1] * labels + training_weights[class_index][0] * (
                         1 - labels))
 
-                e = torch.distributions.uniform.Uniform(0.05, 0.055).sample([labels.shape[0], 1])
+                e = torch.distributions.uniform.Uniform(0.001, 0.005).sample([labels.shape[0], 1])
                 if "cuda" in self.device:
                     weights = weights.to(self.device)
                     e = e.to(self.device)
