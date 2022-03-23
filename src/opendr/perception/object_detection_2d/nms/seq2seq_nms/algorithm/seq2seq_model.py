@@ -26,10 +26,11 @@ class Seq2SeqNet(nn.Module):
         self.dropout_q = nn.Dropout(dropout * 0.25)
         self.num_JPUs = num_JPUs
         self.joint_processing_units = []
+        self.device = device
         for i in range(self.num_JPUs):
             self.joint_processing_units.append(Joint_processing_unit(lq_dim=lq_dim, sq_dim=sq_dim, dropout=dropout))
-            if device == 'cuda':
-                self.joint_processing_units[i] = self.joint_processing_units[i].cuda()
+            if "cuda" in self.device:
+                self.joint_processing_units[i] = self.joint_processing_units[i].to(self.device)
         self.joint_processing_units = nn.ModuleList(self.joint_processing_units)
         if self.use_app_feats:
             q_app_dims = [180, 180]
