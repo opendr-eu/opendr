@@ -98,8 +98,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                              resize_dim=self.fmod_map_res_dim,
                              map_type=self.fmod_map_type, map_bin=self.fmod_map_bin, device=self.device)
         self.init_model()
-        if self.device == 'cuda':
-            self.model = self.model.cuda()
+        if "cuda" in self.device:
+            self.model = self.model.to(self.device)
 
     def fit(self, dataset, logging_path='', logging_flush_secs=30, silent=True,
             verbose=True, nms_gt_iou=0.5, max_dt_boxes=400, datasets_folder='./datasets',
@@ -125,8 +125,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             print("Model trainable parameters:", self.count_parameters())
 
         self.model.train()
-        if self.device == 'cuda':
-            self.model = self.model.cuda()
+        if "cuda" in self.device:
+            self.model = self.model.to(self.device)
 
         if self.epochs is None:
             raise ValueError("Training epochs not specified")
@@ -198,10 +198,10 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 image_path = os.path.join(datasets_folder, dataset, image_fln)
                 img_res = dataset_nms.src_data[sample_id]['resolution'][::-1]
 
-                if self.device == "cuda":
-                    dt_boxes = dt_boxes.cuda()
-                    dt_scores = dt_scores.cuda()
-                    gt_boxes = gt_boxes.cuda()
+                if "cuda" in self.device:
+                    dt_boxes = dt_boxes.to(self.device)
+                    dt_scores = dt_scores.to(self.device)
+                    gt_boxes = gt_boxes.to(self.device)
 
                 val_ids = torch.logical_and((dt_boxes[:, 2] - dt_boxes[:, 0]) > 4,
                                             (dt_boxes[:, 3] - dt_boxes[:, 1]) > 4)
@@ -229,8 +229,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                     app_feats = torch.unsqueeze(app_feats, dim=1)
                 elif self.app_feats == 'zeros':
                     app_feats = torch.zeros([dt_boxes.shape[0], 1, self.app_input_dim])
-                    if self.device == 'cuda':
-                        app_feats = app_feats.cuda()
+                    if "cuda" in self.device:
+                        app_feats = app_feats.to(self.device)
                 elif self.app_feats == 'custom':
                     raise AttributeError("Custom appearance-based features are not yet supported.")
 
@@ -247,9 +247,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                         1 - labels))
 
                 e = torch.distributions.uniform.Uniform(0.05, 0.055).sample([labels.shape[0], 1])
-                if self.device == 'cuda':
-                    weights = weights.cuda()
-                    e = e.cuda()
+                if "cuda" in self.device:
+                    weights = weights.to(self.device)
+                    e = e.to(self.device)
                 labels = labels * (1 - e) + (1 - labels) * e
                 ce_loss = F.binary_cross_entropy(preds, labels, reduction="none")
                 loss = (ce_loss * weights).sum()
@@ -313,12 +313,12 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
 
         self.model = self.model.eval()
-        if self.device == "cuda":
-            self.model = self.model.cuda()
+        if "cuda" in self.device:
+            self.model = self.model.to(self.device)
 
         self.model = self.model.eval()
-        if self.device == "cuda":
-            self.model = self.model.cuda()
+        if "cuda" in self.device:
+            self.model = self.model.to(self.device)
 
         train_ids = np.arange(len(dataset_nms.src_data))
         nms_results = []
@@ -342,9 +342,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 pbar_eval.update(1)
                 continue
 
-            if self.device == "cuda":
-                dt_boxes = dt_boxes.cuda()
-                dt_scores = dt_scores.cuda()
+            if "cuda" in self.device:
+                dt_boxes = dt_boxes.to(self.device)
+                dt_scores = dt_scores.to(self.device)
 
             val_ids = torch.logical_and((dt_boxes[:, 2] - dt_boxes[:, 0]) > 4,
                                         (dt_boxes[:, 3] - dt_boxes[:, 1]) > 4)
@@ -365,8 +365,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 app_feats = torch.unsqueeze(app_feats, dim=1)
             elif self.app_feats == 'zeros':
                 app_feats = torch.zeros([dt_boxes.shape[0], 1, self.app_input_dim])
-                if self.device == 'cuda':
-                    app_feats = app_feats.cuda()
+                if "cuda" in self.device:
+                    app_feats = app_feats.to(self.device)
             elif self.app_feats == 'custom':
                 raise AttributeError("Custom appearance-based features are not yet supported.")
             msk = self.compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
@@ -601,9 +601,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             raise ValueError('Multi-class NMS is not supported in Seq2Seq-NMS yet.')
         if boxes.shape[0] != scores.shape[0]:
             raise ValueError('Scores and boxes must have the same size in dim 0.')
-        if self.device == "cuda":
-            boxes = boxes.cuda()
-            scores = scores.cuda()
+        if "cuda" in self.device:
+            boxes = boxes.to(self.device)
+            scores = scores.to(self.device)
 
         scores = scores.squeeze(-1)
         keep_ids = torch.where(scores > 0.05)[0]
@@ -630,8 +630,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             app_feats = torch.unsqueeze(app_feats, dim=1)
         elif self.app_feats == 'zeros':
             app_feats = torch.zeros([boxes.shape[0], 1, self.app_input_dim])
-            if self.device == 'cuda':
-                app_feats = app_feats.cuda()
+            if "cuda" in self.device:
+                app_feats = app_feats.to(self.device)
         elif self.app_feats == 'custom':
             raise AttributeError("Custom appearance-based features are not yet supported.")
 
@@ -679,16 +679,16 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         elif torch.is_tensor(boxes):
             if self.device == 'cpu':
                 boxes = boxes.cpu()
-            elif self.device == 'cuda':
-                boxes = boxes.cuda()
+                if "cuda" in self.device:
+                    boxes = boxes.to(self.device)
 
         if isinstance(scores, np.ndarray):
             scores = torch.tensor(scores, device=self.device)
         elif torch.is_tensor(scores):
             if self.device == 'cpu':
                 scores = scores.cpu()
-            elif self.device == 'cuda':
-                scores = scores.cuda()
+                if "cuda" in self.device:
+                    scores = scores.to(self.device)
         boxes = self.infer(boxes=boxes, scores=scores, boxes_sorted=boxes_sorted, max_dt_boxes=top_k,
                            img_res=img.opencv().shape[::-1][1:])
         return boxes
