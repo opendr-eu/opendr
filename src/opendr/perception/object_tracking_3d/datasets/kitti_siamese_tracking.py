@@ -45,7 +45,7 @@ class SiameseTrackingDatasetIterator(DatasetIterator):
         labels_format="tracking",  # detection, tracking
         clases=["Car"],  # detection, tracking
         num_point_features=4,
-        samples_per_object=20,
+        samples_per_object=200,
     ):
         super().__init__()
 
