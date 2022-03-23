@@ -232,6 +232,14 @@ class FallDetectorLearner(Learner):
         elif knees[0] != -1 and knees[1] != -1:
             legs = knees
 
+        # Get average calves angle
+        calves_vertical = -1
+        if knees[0] != -1 and ankles[-1] != -1:
+            if -160 < self.get_angle_to_horizontal(knees, ankles) < -20:
+                calves_vertical = 1
+            else:
+                calves_vertical = 0
+
         torso_vertical = -1
         # Figure out the head-hips vector (torso) angle to horizontal axis
         if head[0] != -1 and head[1] != -1:
@@ -247,6 +255,10 @@ class FallDetectorLearner(Learner):
                 legs_vertical = 1
             else:
                 legs_vertical = 0
+
+        if calves_vertical != -1:
+            if calves_vertical == 0:  # Calves are not vertical, so person has fallen
+                return Category(1), [Keypoint(head), Keypoint(hips), Keypoint(legs)], pose
 
         if legs_vertical != -1:
             if legs_vertical == 0:  # Legs are not vertical, probably not under torso, so person has fallen
