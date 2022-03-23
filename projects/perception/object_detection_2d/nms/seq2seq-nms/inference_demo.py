@@ -12,20 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from opendr.perception.object_detection_2d.nms import Seq2SeqNMSLearner
-from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import SingleShotDetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
+from opendr.engine.data import Image
 import os
+import argparse
 OPENDR_HOME = os.environ['OPENDR_HOME']
 
-seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering=0.8,
-                                      app_feats='fmod', device='cpu')
-seq2_seq_tmp_dir = OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/temp'
-seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd', path=seq2_seq_tmp_dir)
-seq2SeqNMSLearner.load(os.path.join(seq2_seq_tmp_dir, 'seq2seq_pets_jpd'), verbose=True)
-ssd = SingleShotDetectorLearner(device='cuda')
+parser = argparse.ArgumentParser()
+parser.add_argument("--app_feats", help="Type of appearance-based features", type=str, default="fmod",
+                    choices=["fmod", "zeros"])
+parser.add_argument("--fmod_type", help="Type of fmod maps", type=str, default="EDGEMAP",
+                    choices=["EDGEMAP", "FAST", "AKAZE", "BRISK", "ORB"])
+parser.add_argument("--iou_filtering", help="Pre-processing IoU threshold", type=float, default=1.0)
+parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+parser.add_argument("--pretrained_model", help="Name of pretrained model", type=str, default='seq2seq_pets_jpd',
+                    choices=['seq2seq_pets_jpd'])
+
+args = parser.parse_args()
+tmp_path = os.path.join(OPENDR_HOME, 'projects/perception/object_detection_2d/nms/seq2seq-nms/tmp')
+seq2SeqNMSLearner = Seq2SeqNMSLearner(device=args.device, app_feats=args.app_feats, fmod_map_type=args.fmod_type,
+                                      iou_filtering=args.iou_filtering,
+                                      temp_path=tmp_path)
+seq2SeqNMSLearner.download(model_name=args.pretrained_model, path=tmp_path)
+seq2SeqNMSLearner.load(os.path.join(tmp_path, args.pretrained_model), verbose=True)
+
+ssd = SingleShotDetectorLearner(device=args.device)
 ssd.download(".", mode="pretrained")
 ssd.load("./ssd_default_person", verbose=True)
 img = Image.open(OPENDR_HOME + '/projects/perception/object_detection_2d/nms/img_temp/frame_0000.jpg')
