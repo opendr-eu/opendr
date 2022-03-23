@@ -14,12 +14,34 @@
 
 from opendr.perception.object_detection_2d.nms import Seq2SeqNMSLearner
 import os
+import argparse
 OPENDR_HOME = os.environ['OPENDR_HOME']
-temp_path = OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/pets_tmp'
-dataset_path = OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/pets_dataset'
-seq2SeqNMSLearner = Seq2SeqNMSLearner(iou_filtering=0.8, app_feats='fmod', temp_path=temp_path,
-                                      device='cuda')
-seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd', path=temp_path)
-seq2SeqNMSLearner.load(os.path.join(temp_path, 'seq2seq_pets_jpd'), verbose=True)
-seq2SeqNMSLearner.eval(dataset='PETS', split='test', max_dt_boxes=600,
-                       datasets_folder=dataset_path, use_ssd=False)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--app_feats", help="Type of appearance-based features", type=str, default="fmod",
+                    choices=["fmod", "zeros"])
+parser.add_argument("--fmod_type", help="Type of fmod maps", type=str, default="EDGEMAP",
+                    choices=["EDGEMAP", "FAST", "AKAZE", "BRISK", "ORB"])
+parser.add_argument("--iou_filtering", help="Pre-processing IoU threshold", type=float, default=1.0)
+parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+parser.add_argument("--pretrained_model", help="Name of pretrained model", type=str, default='seq2seq_pets_jpd',
+                    choices=['seq2seq_pets_jpd'])
+parser.add_argument("--split", help="The split of the corresponding dataset", type=str, default='test',
+                    choices=["test", "val", "train"])
+parser.add_argument("--max_dt_boxes", help="Maximum number of input RoIs fed to Seq2Seq-NMS", type=int, default=600)
+parser.add_argument("--dataset", help="Dataset to train on", type=str, default="PETS", choices=["PETS", "COCO",
+                                                                                                "TEST_MODULE"])
+parser.add_argument("--data_root", help="Dataset root folder", type=str,
+                    default=os.path.join(OPENDR_HOME,
+                                         'projects/perception/object_detection_2d/nms/seq2seq-nms/datasets'))
+parser.add_argument("--use_ssd", help="Train using SSD as detector", type=bool, default=False)
+
+args = parser.parse_args()
+tmp_path = os.path.join(OPENDR_HOME, 'projects/perception/object_detection_2d/nms/seq2seq-nms/tmp')
+seq2SeqNMSLearner = Seq2SeqNMSLearner(device=args.device, app_feats=args.app_feats, fmod_map_type=args.fmod_type,
+                                      iou_filtering=args.iou_filtering,
+                                      temp_path=tmp_path)
+seq2SeqNMSLearner.download(model_name=args.pretrained_model, path=tmp_path)
+seq2SeqNMSLearner.load(os.path.join(tmp_path, args.pretrained_model), verbose=True)
+seq2SeqNMSLearner.eval(dataset=args.dataset, use_ssd=args.use_ssd, split=args.split, max_dt_boxes=args.max_dt_boxes,
+                       datasets_folder=args.data_root)
