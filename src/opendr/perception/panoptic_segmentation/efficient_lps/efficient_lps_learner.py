@@ -51,7 +51,7 @@ from mmdet.utils import collect_env, get_root_logger
 from opendr.perception.panoptic_segmentation.datasets import SemanticKittiDataset, NuscenesDataset
 
 
-Prediction = Tuple[Union[Heatmap, np.ndarray], Union[Heatmap, np.ndarray], Optional[Image]]
+Prediction = Union[Tuple[Heatmap, Heatmap, Image], Tuple[np.ndarray, np.ndarray, None]]
 
 
 class EfficientLpsLearner(Learner):

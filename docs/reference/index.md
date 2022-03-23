@@ -58,6 +58,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [semantic_segmentation Module](semantic-segmentation.md)
         - panoptic segmentation:
             - [efficient_ps Module](efficient-ps.md)
+            - [efficient_lps Module](efficient-lps.md)
         - heart anomaly detection:
             - [gated_recurrent_unit Module](gated-recurrent-unit-learner.md)
             - [attention_neural_bag_of_feature_learner Module](attention-neural-bag-of-feature-learner.md)

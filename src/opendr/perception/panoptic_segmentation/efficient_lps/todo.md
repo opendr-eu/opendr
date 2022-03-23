@@ -42,10 +42,11 @@ ___
 - -[ ] Add tests to be executed to some file
 
 ## Documentation
-- -[ ] Create main README in `docs/reference/efficient_lps`
-    - -[ ] Add link to readme in `docs/reference/index.md`
+- -[X] Create main README in `docs/reference/efficient_lps`
+    - -[X] Add link to readme in `docs/reference/index.md`
     
-- -[ ] Update functionality README in `src/opendr/perception/panoptic_segmentation/README.md`
+
+- -[X] Update functionality README in `src/opendr/perception/panoptic_segmentation/README.md`
     
 
 - -[ ] Update dataset README in `src/opendr/perception/panoptic_segmentation/datasets/README.md`
@@ -59,3 +60,4 @@ ___
 - -[ ] Upload to OpenDR server:
     - -[ ] Pre-trained model weights (for unittest and inference)
     - -[ ] Test data (for unittest)
+    - -[ ] Update download Links in EfficientLpsLearner Class 
