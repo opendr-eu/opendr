@@ -103,7 +103,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
     def fit(self, dataset, logging_path='', logging_flush_secs=30, silent=True,
             verbose=True, nms_gt_iou=0.5, max_dt_boxes=400, datasets_folder='./datasets',
-            use_ssd=False):
+            use_ssd=False, lr_step=True):
 
         dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split='train', use_ssd=use_ssd)
         if self.classes is None:
@@ -142,13 +142,19 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
 
         start_epoch = 0
-        drop_after_epoch = [4, 6]
+        drop_after_epoch = []
+        if lr_step and self.epochs>1:
+            drop_after_epoch = [int(self.epochs * 0.5)]
+            if self.epochs>3:
+                drop_after_epoch.append(int(self.epochs * 0.7))
 
         train_ids = np.arange(len(dataset_nms.src_data))
         total_loss_iter = 0
         total_loss_epoch = 0
         optimizer = optim.Adam(self.model.parameters(), lr=self.lr, betas=(0.9, 0.99), eps=1e-9)  # HERE
-        scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=drop_after_epoch, gamma=0.1)
+        scheduler = None
+        if len(drop_after_epoch)>0:
+            scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=drop_after_epoch, gamma=0.1)
 
         num_iter = 0
         training_weights = compute_class_weights(pos_weights=[0.9, 0.1], max_dets=max_dt_boxes, dataset_nms=dataset_nms)
@@ -274,7 +280,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 self.save(path=snapshot_name_lw, optimizer=optimizer, scheduler=scheduler,
                           current_epoch=epoch, max_dt_boxes=max_dt_boxes)
             total_loss_epoch = 0
-            scheduler.step()
+            if scheduler is not None:
+                scheduler.step()
         if logging:
             file_writer.close()
         return training_dict
