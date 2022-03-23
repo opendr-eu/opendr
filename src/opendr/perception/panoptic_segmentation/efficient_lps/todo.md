@@ -13,8 +13,8 @@ ___
 ### CONFLICTS:
 - -[ ] Check installation and dependency conflicts between MMDet and EfficientNet in EfficientLPS and EfficientPS.
 ### ROS
-- -[ ] Create ROS Node in `projects/opendr_ws/perception/scripts`
-   - -[ ] Docstrings and Type-Hints
+- -[X] Create ROS Node in `projects/opendr_ws/perception/scripts`
+   - -[X] Docstrings and Type-Hints
 
 ### Demo 
 - -[X] Create & test Demo script in `projects/perception/panoptic_segmentation/efficient_lps`
@@ -29,12 +29,12 @@ ___
         - -[ ] Implement & test iterator methods \_\_getitem\_\_() and \_\_len\_\_().
         - -[ ] Docstrings and Type-Hints
         
-    - -[ ] Kitti in `src/opendr/perception/panoptic_segmentation/semantic_kitti.py`
+    - -[X] Kitti in `src/opendr/perception/panoptic_segmentation/semantic_kitti.py`
         - -[X] Test data for training.
         - -[X] Test data for inference.
         - -[X] Implement & test evaluate() method.
-        - -[ ] Implement & test iterator methods \_\_getitem\_\_() and \_\_len\_\_().
-        - -[ ] Docstrings and Type-Hints
+        - -[X] Implement & test iterator methods \_\_getitem\_\_() and \_\_len\_\_().
+        - -[X] Docstrings and Type-Hints
 
     
 ### Tests
