@@ -3,7 +3,7 @@ Seq2Seq-NMS
 
 This folder contains an implementation of Seq2Seq-NMS [[1]](#seq2seq_nms-1).
 
-TABLE-1: Average Precision (AP) achieved by pretrained models on PETS and COCO datasets
+TABLE-1: Average Precision (AP) achieved by pretrained models on the person detection task. The maximum number or RoIs, employed for the performance evaluation was set to 800.
 ![Alt text](stats_pretrained.png?raw=true "Title")
 
 
