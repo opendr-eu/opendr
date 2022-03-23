@@ -78,8 +78,8 @@ class BisenetLearner(Learner):
 
     def build_model(self):
         self.model = BiSeNet(num_classes=self.num_classes, context_path=self.context_path)
-        if self.device == 'cuda':
-            self.model = torch.nn.DataParallel(self.model).cuda()
+        if 'cuda' in self.device:
+            self.model = torch.nn.DataParallel(self.model).to(self.device)
 
     def fit(self, dataset, val_dataset=None, silent=False, verbose=True):
         """
@@ -101,9 +101,9 @@ class BisenetLearner(Learner):
             tq.set_description('epoch %d, lr %f' % (epoch, self.lr))
             loss_record = []
             for i, (data, label) in enumerate(dataloader_train):
-                if self.device == 'cuda':
-                    data = data.cuda()
-                    label = label.cuda()
+                if 'cuda' in self.device:
+                    data = data.to(self.device)
+                    label = label.to(self.device)
                 output, output_sup1, output_sup2 = self.model(data)
                 loss1 = self.loss_func(output, label)
                 loss2 = self.loss_func(output_sup1, label)
@@ -145,9 +145,9 @@ class BisenetLearner(Learner):
             hist = np.zeros((self.num_classes, self.num_classes))
             for i, (data, label) in enumerate(dataloader_test):
                 tq.update(1)
-                if self.device == 'cuda':
-                    data = data.cuda()
-                    label = label.cuda()
+                if 'cuda' in self.device:
+                    data = data.to(self.device)
+                    label = label.to(self.device)
                 predict = self.model(data).squeeze().cpu()
                 predict = reverse_one_hot(predict)
                 predict = np.array(predict)
@@ -269,7 +269,7 @@ class BisenetLearner(Learner):
         metadata["model_paths"].append(param_filepath)
         if self.device == 'cpu':
             torch.save(self.model.state_dict(), model_path)
-        elif self.device == 'cuda':
+        elif 'cuda' in self.device:
             torch.save(self.model.module.state_dict(), model_path)
         if verbose:
             print("Model parameters saved.")
@@ -296,7 +296,7 @@ class BisenetLearner(Learner):
         if self.device == 'cpu':
             self.model.load_state_dict(torch.load(os.path.join(path, metadata["model_paths"][0]),
                                                   map_location=torch.device('cpu')),)
-        elif self.device == 'cuda':
+        elif 'cuda' in self.device:
             self.model.module.load_state_dict(torch.load(os.path.join(path, metadata["model_paths"][0])))
         self.model.eval()
 

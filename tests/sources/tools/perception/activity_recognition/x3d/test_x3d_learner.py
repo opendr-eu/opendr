@@ -22,6 +22,10 @@ from opendr.engine.data import Video
 from pathlib import Path
 from logging import getLogger
 
+import os
+
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
+
 logger = getLogger(__name__)
 
 _BACKBONE = "xs"
@@ -37,7 +41,7 @@ class TestX3DLearner(unittest.TestCase):
         # Download model weights
         X3DLearner.download(path=Path(cls.temp_dir) / "weights", model_names={_BACKBONE})
         cls.learner = X3DLearner(
-            device="cpu", temp_path=str(cls.temp_dir), iters=1, batch_size=2, backbone=_BACKBONE, num_workers=0,
+            device=device, temp_path=str(cls.temp_dir), iters=1, batch_size=2, backbone=_BACKBONE, num_workers=0,
         )
 
         # Download mini dataset
@@ -100,7 +104,7 @@ class TestX3DLearner(unittest.TestCase):
         self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
 
         # Input is Tensor
-        results1 = self.learner.infer(batch)
+        results1 = self.learner.infer(batch.to(device))
         # Results is a batch with each item summing to 1.0
         assert all([torch.isclose(torch.sum(r.confidence), torch.tensor(1.0)) for r in results1])
 

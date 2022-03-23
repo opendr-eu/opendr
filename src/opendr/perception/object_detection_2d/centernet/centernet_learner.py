@@ -82,9 +82,12 @@ class CenterNetDetectorLearner(Learner):
         self.wh_weight = wh_weight
         self.center_reg_weight = center_reg_weight
 
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if mx.context.num_gpus() > 0:
-                self.ctx = mx.gpu(0)
+                if self.device == 'cuda':
+                    self.ctx = mx.gpu(0)
+                else:
+                    self.ctx = mx.gpu(int(self.device.split(':')[1]))
             else:
                 self.ctx = mx.cpu()
         else:
@@ -147,9 +150,12 @@ class CenterNetDetectorLearner(Learner):
             print('Saving models as {}'.format(save_prefix))
 
         # get net & set device
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if mx.context.num_gpus() > 0:
-                ctx = [mx.gpu(0)]
+                if self.device == 'cuda':
+                    ctx = [mx.gpu(0)]
+                else:
+                    ctx = [mx.gpu(int(self.device.split(':')[1]))]
             else:
                 ctx = [mx.cpu()]
         else:
@@ -310,9 +316,12 @@ class CenterNetDetectorLearner(Learner):
         autograd.set_training(False)
 
         # NOTE: multi-gpu is a little bugged
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if mx.context.num_gpus() > 0:
-                ctx = [mx.gpu(0)]
+                if self.device == 'cuda':
+                    ctx = [mx.gpu(0)]
+                else:
+                    ctx = [mx.gpu(int(self.device.split(':')[1]))]
             else:
                 ctx = [mx.cpu()]
         else:
