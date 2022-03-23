@@ -39,8 +39,8 @@ class FMoD:
             self.rp_size.append([int(self.roi_pooling_dim[0] * s), int(self.roi_pooling_dim[1] * s)])
         self.device = device
         self.boxes_p = torch.tensor(self.boxes_p).float()
-        if self.device == 'cuda':
-            self.boxes_p = self.boxes_p.cuda()
+        if "cuda" in self.device:
+            self.boxes_p = self.boxes_p.to(self.device)
         self.resc = 1.0
         self.map = None
         self.resize_dim = resize_dim
@@ -52,9 +52,9 @@ class FMoD:
     def set_mean_std(self, mean_values=None, std_values=None):
         self.mean = torch.tensor(mean_values).float()
         self.std = torch.tensor(std_values).float()
-        if self.device == 'cuda':
-            self.mean = self.mean .cuda()
-            self.std = self.std.cuda()
+        if "cuda" in self.device:
+            self.mean = self.mean.to(self.device)
+            self.std = self.std.to(self.device)
 
     def extract_maps(self, img=None, augm=False):
         if img is None:
@@ -116,8 +116,8 @@ class FMoD:
             else:
                 self.map[coords_y, coords_x] = 255
         self.map = torch.from_numpy(self.map).float()
-        if self.device == 'cuda':
-            self.map = self.map.cuda()
+        if "cuda" in self.device:
+            self.map = self.map.to(self.device)
 
     def extract_FMoD_feats(self, boxes):
         num_rois = boxes.shape[0]
