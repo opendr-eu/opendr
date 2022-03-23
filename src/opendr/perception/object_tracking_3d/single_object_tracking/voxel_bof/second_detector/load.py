@@ -132,7 +132,7 @@ def create_model(
     ######################
     center_limit_range = model_cfg.post_center_limit_range
     net = second_builder.build(
-        model_cfg, voxel_generator, target_assigner, device, bof_mode, overwrite_strides=overwrite_strides, upscaling_mode=upscaling_mode
+        model_cfg, voxel_generator, target_assigner, device, bof_mode, overwrite_strides=overwrite_strides, upscaling_mode=upscaling_mode, feature_blocks=feature_blocks
     )
     net.device = device
     net.bv_range = bv_range

@@ -35,6 +35,7 @@ def build(
     bof_mode,
     overwrite_strides=False,
     upscaling_mode="none",
+    feature_blocks=None,
 ) -> VoxelNet:
     """build second pytorch instance.
     """
@@ -111,5 +112,6 @@ def build(
         bof_mode=bof_mode,
         overwrite_strides=overwrite_strides,
         upscaling_mode=upscaling_mode,
+        feature_blocks=feature_blocks,
     )
     return net

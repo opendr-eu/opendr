@@ -400,6 +400,7 @@ class RPN(nn.Module):
         overwrite_strides=None,
         upscaling_mode="none",
         upscaling_filters=64,
+        feature_blocks=None,
     ):
         super(RPN, self).__init__()
         self.num_filters = num_filters
@@ -547,7 +548,7 @@ class RPN(nn.Module):
             )
 
         if upscaling_mode == "processed":
-            self.conv_upscaling = nn.Conv2d(sum(num_upsample_filters), upscaling_filters, 1)
+            self.conv_upscaling = nn.Conv2d(sum(num_upsample_filters[:feature_blocks]), upscaling_filters, 1)
 
         self.bof_mid = None
         self.bof_end = None
@@ -664,6 +665,7 @@ class VoxelNet(nn.Module):
         bof_mode="none",
         overwrite_strides=None,
         upscaling_mode="none",
+        feature_blocks=None,
     ):
         super().__init__()
         self.name = name
@@ -774,6 +776,7 @@ class VoxelNet(nn.Module):
             bof_mode=bof_mode,
             overwrite_strides=overwrite_strides,
             upscaling_mode=upscaling_mode,
+            feature_blocks=feature_blocks,
         )
 
         self.rpn_acc = metrics.Accuracy(
