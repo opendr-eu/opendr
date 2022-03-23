@@ -12,41 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+from opendr.perception.object_detection_2d.nms import Seq2SeqNMSLearner
+import os
 import argparse
+OPENDR_HOME = os.environ['OPENDR_HOME']
 
-from opendr.engine.datasets import ExternalDataset
-from opendr.perception.object_detection_2d import SingleShotDetectorLearner
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", help="Dataset to train on", type=str, default="voc", choices=["voc", "coco",
-                                                                                                   "widerperson"])
-    parser.add_argument("--data-root", help="Dataset root folder", type=str)
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--batch-size", help="Batch size to use for training", type=int, default=6)
-    parser.add_argument("--lr", help="Learning rate to use for training", type=float, default=5e-4)
-    parser.add_argument("--val-after", help="Epochs in-between  evaluations", type=int, default=5)
-    parser.add_argument("--checkpoint-freq", help="Frequency in-between checkpoint saving", type=int, default=5)
-    parser.add_argument("--n-epochs", help="Number of total epochs", type=int, default=25)
-    parser.add_argument("--resume-from", help="Epoch to load checkpoint file and resume training from", type=int, default=0)
-
-    args = parser.parse_args()
-
-    if args.dataset == 'voc':
-        dataset = ExternalDataset(args.data_root, 'voc')
-        val_dataset = ExternalDataset(args.data_root, 'voc')
-    elif args.dataset == 'coco':
-        dataset = ExternalDataset(args.data_root, 'coco')
-        val_dataset = ExternalDataset(args.data_root, 'coco')
-    elif args.dataset == 'widerperson':
-        from opendr.perception.object_detection_2d.datasets import WiderPersonDataset
-        dataset = WiderPersonDataset(root=args.data_root, splits=['train'])
-        val_dataset = WiderPersonDataset(root=args.data_root, splits=['val'])
-
-    ssd = SingleShotDetectorLearner(device=args.device, batch_size=args.batch_size, lr=args.lr, val_after=args.val_after,
-                                    checkpoint_load_iter=args.resume_from, epochs=args.n_epochs,
-                                    checkpoint_after_iter=args.checkpoint_freq)
-
-    ssd.fit(dataset, val_dataset)
-    ssd.save("./ssd_saved_model")
+parser = argparse.ArgumentParser()
+parser.add_argument("--app_feats", help="Type of appearance-based features", type=str, default="fmod",
+                    choices=["fmod", "zeros"])
+parser.add_argument("--fmod_type", help="Type of fmod maps", type=str, default="EDGEMAP",
+                    choices=["EDGEMAP", "FAST", "AKAZE", "BRISK", "ORB"])
+parser.add_argument("--iou_filtering", help="Pre-processing IoU threshold", type=float, default=1.0)
+parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+parser.add_argument("--lr", help="Learning rate to use for training", type=float, default=1e-4)
+parser.add_argument("--n_epochs", help="Number of total epochs", type=int, default=1)
+parser.add_argument("--tmp_path", help="Temporary path where weights will be saved", type=str,
+                    default=os.path.join(OPENDR_HOME, 'projects/perception/object_detection_2d/nms/seq2seq-nms/tmp'))
+parser.add_argument("--checkpoint_freq", help="Frequency in-between checkpoint saving", type=int, default=1)
+parser.add_argument("--resume-from", help="Epoch to load checkpoint file and resume training from", type=int, default=0)
+parser.add_argument("--dataset", help="Dataset to train on", type=str, default="PETS", choices=["PETS", "COCO",
+                                                                                                "TEST_MODULE"])
+parser.add_argument("--use_ssd", help="Train using SSD or the dataset's default detector", type=bool, default=False)
+parser.add_argument("--max_dt_boxes", help="Maximum number of input RoIs fed to Seq2Seq-NMS", type=int, default=500)
+parser.add_argument("--data-root", help="Dataset root folder", type=str,
+                    default=os.path.join(OPENDR_HOME,
+                                         'projects/perception/object_detection_2d/nms/seq2seq-nms/datasets'))
+args = parser.parse_args()
+seq2SeqNMSLearner = Seq2SeqNMSLearner(epochs=args.n_epochs, lr=args.lr, device=args.device,
+                                      fmod_map_type=args.fmod_type, iou_filtering=args.iou_filtering,
+                                      temp_path=args.tmp_path, checkpoint_after_iter=args.checkpoint_freq,
+                                      checkpoint_load_iter=args.resume_from)
+seq2SeqNMSLearner.fit(dataset=args.dataset, use_ssd=args.use_ssd,
+                      datasets_folder=args.data_root, silent=False, verbose=True,
+                      max_dt_boxes=args.max_dt_boxes)
+seq2SeqNMSLearner.save(path=os.path.join(args.tmp_path, 'saved_model'), current_epoch=args.n_epochs-1, max_dt_boxes=args.max_dt_boxes)
