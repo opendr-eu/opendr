@@ -677,18 +677,14 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if isinstance(boxes, np.ndarray):
             boxes = torch.tensor(boxes, device=self.device)
         elif torch.is_tensor(boxes):
-            if self.device == 'cpu':
-                boxes = boxes.cpu()
-                if "cuda" in self.device:
-                    boxes = boxes.to(self.device)
+            if "cuda" in self.device:
+                boxes = boxes.to(self.device)
 
         if isinstance(scores, np.ndarray):
             scores = torch.tensor(scores, device=self.device)
         elif torch.is_tensor(scores):
-            if self.device == 'cpu':
-                scores = scores.cpu()
-                if "cuda" in self.device:
-                    scores = scores.to(self.device)
+            if "cuda" in self.device:
+                scores = scores.to(self.device)
         boxes = self.infer(boxes=boxes, scores=scores, boxes_sorted=boxes_sorted, max_dt_boxes=top_k,
                            img_res=img.opencv().shape[::-1][1:])
         return boxes
