@@ -547,8 +547,15 @@ class RPN(nn.Module):
                 sum(num_upsample_filters), num_anchor_per_loc * 2, 1
             )
 
-        if upscaling_mode == "processed":
+        if self.upscaling_mode == "none":
+            self.final_filters = self.num_filters[feature_blocks - 1]
+        elif upscaling_mode == "raw":
+            self.final_filters = sum(num_upsample_filters[:feature_blocks])
+        elif upscaling_mode == "processed":
             self.conv_upscaling = nn.Conv2d(sum(num_upsample_filters[:feature_blocks]), upscaling_filters, 1)
+            self.final_filters = upscaling_filters
+        else:
+            raise ValueError()
 
         self.bof_mid = None
         self.bof_end = None

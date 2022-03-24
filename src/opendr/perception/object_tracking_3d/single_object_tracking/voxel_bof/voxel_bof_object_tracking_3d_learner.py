@@ -1635,7 +1635,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         if self.regress_vertical_position:
             self.model.vertical_position_regressor = VerticalPositionRegressor(
-                self.model.branch.rpn.num_filters[self.feature_blocks - 1],
+                # self.model.branch.rpn.num_filters[self.feature_blocks - 1],
+                self.model.branch.rpn.final_filters,
             )
 
             self.model.vertical_position_regressor.to(self.model.branch.device)
