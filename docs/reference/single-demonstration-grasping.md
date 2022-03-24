@@ -199,7 +199,8 @@ TABLE-4: OpenDR Single Demonstration Grasping inferences success evaluation.
 | C (simulation) | 0.935         | 
 
 
-Finally, we evaluated the ability of the provided tool to run on different platforms. The tool has been verified to run correctly on the platforms reported in Table TABLE-5. 
+Finally, we evaluated the ability of the provided tool to run on different platforms.
+The tool has been verified to run correctly on the platforms reported in Table TABLE-5. 
 
 TABLE-5: OpenDR Single Demonstration Grasping platform compatibility evaluation.
 | Platform                                     | Test results           |
