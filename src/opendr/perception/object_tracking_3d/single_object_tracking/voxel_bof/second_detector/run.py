@@ -1916,7 +1916,7 @@ def train_siamese(
     target_type="normal",
     train_pseudo_image=False,
     regress_vertical_position=False,
-    regression_training_isolated=True,
+    regression_training_isolated=False,
     overwrite_strides=None,
     upscaling_mode="none",
 ):

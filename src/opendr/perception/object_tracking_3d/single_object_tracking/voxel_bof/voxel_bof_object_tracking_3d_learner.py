@@ -151,6 +151,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         offset_interpolation=1,
         min_top_score=None,
         regress_vertical_position=False,
+        regression_training_isolated=False,
         overwrite_strides=None,
         target_features_mode="init",  # "all", "selected", "last"
         upscaling_mode="none",  # "raw", "processed"
@@ -203,6 +204,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.offset_interpolation = offset_interpolation
         self.min_top_score = min_top_score
         self.regress_vertical_position = regress_vertical_position
+        self.regression_training_isolated = regression_training_isolated
         self.overwrite_strides = overwrite_strides
         self.target_features_mode = target_features_mode
         self.upscaling_mode = upscaling_mode
@@ -512,6 +514,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             training_method=self.training_method,
             train_pseudo_image=self.train_pseudo_image,
             regress_vertical_position=self.regress_vertical_position,
+            regression_training_isolated=self.regression_training_isolated,
             overwrite_strides=self.overwrite_strides,
             upscaling_mode=self.upscaling_mode,
         )
