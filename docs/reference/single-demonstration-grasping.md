@@ -173,7 +173,8 @@ TABLE-1: OpenDR Single Demonstration Grasping platform inference speeds.
 
 
 
-The energy consumption of the detection model during inference was also measured on Xavier NX and reported accordingly. It is worth mentioning that the inference on the first inference iteration requires more energy for initialization which as it can be seen in TABLE-2.
+The energy consumption of the detection model during inference was also measured on Xavier NX and reported accordingly.
+It is worth mentioning that the inference on the first inference iteration requires more energy for initialization which as it can be seen in TABLE-2.
 
 TABLE-2: OpenDR Single Demonstration Grasping energy consumptions and memory usage.
 | Stage                       | Energy (Joules)  |
