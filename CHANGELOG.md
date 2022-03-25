@@ -4,7 +4,7 @@
 Released on XX, XXth, 2022.
 
   - New Features:
-    - `planning/end_to_end_planning`: released. [#223](https://github.com/opendr-eu/opendr/pull/223)
+    - `planning/end_to_end_planning`: added the tool. [#223](https://github.com/opendr-eu/opendr/pull/223)
   - Enhancements:
     - Added support for modular pip packages allowing tools to be installed separately ([#201](https://github.com/opendr-eu/opendr/pull/201)).
     - Simplified the installation process for pip by including the appropriate post-installation scripts ([#201](https://github.com/opendr-eu/opendr/pull/201)).
