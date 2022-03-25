@@ -19,6 +19,9 @@ from pathlib import Path
 from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, AgiEnv
 import opendr
 import torch
+import os
+
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 TEST_ITERS = 3
 TEMP_SAVE_DIR = Path(__file__).parent / "end_to_end_planning_tmp/"
@@ -42,7 +45,7 @@ class EndToEndPlanningTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.env = AgiEnv()
-        cls.learner = EndToEndPlanningRLLearner(cls.env)
+        cls.learner = EndToEndPlanningRLLearner(cls.env, device=device)
 
     @classmethod
     def tearDownClass(cls):
