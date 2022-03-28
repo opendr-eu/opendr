@@ -208,6 +208,9 @@ class Dataset_NMS(Dataset):
                     pbar.close()
                     if self.detector_type == 'default':
                         fp_dt.close()
+                    elif self.detector == 'SSD':
+                        del ssd
+                        gc.collect()
                     with open(pkl_filename, 'wb') as handle:
                         pickle.dump(self.src_data, handle, protocol=pickle.DEFAULT_PROTOCOL)
             else:
@@ -310,6 +313,9 @@ class Dataset_NMS(Dataset):
                     })
                     pbar.update(1)
                 pbar.close()
+                if self.detector == 'SSD':
+                    del ssd
+                    gc.collect()
                 with open(pkl_filename, 'wb') as handle:
                     pickle.dump(self.src_data, handle, protocol=pickle.DEFAULT_PROTOCOL)
             else:
