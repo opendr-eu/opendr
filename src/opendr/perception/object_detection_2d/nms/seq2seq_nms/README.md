@@ -9,6 +9,7 @@ TABLE-1: Average Precision (AP) achieved by pretrained models on the person dete
 | seq2seq_coco_frcn_fmod |     COCO    |      SSD     |                  FMoD                 |                 -                |                              |                        |
 
 \* The minival set was used as validation set.
+
 \*\* The 
 ![Alt text](stats_pretrained.png?raw=true "Title")
 
