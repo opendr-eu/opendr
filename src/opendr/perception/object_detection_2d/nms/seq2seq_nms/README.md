@@ -10,7 +10,7 @@ TABLE-1: Average Precision (AP) achieved by pretrained models on the person dete
 
 \* The minival set was used as validation set.
 
-\*\* The 
+\*\* The minitest set was used as test set.
 ![Alt text](stats_pretrained.png?raw=true "Title")
 
 
