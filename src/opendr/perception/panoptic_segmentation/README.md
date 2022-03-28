@@ -101,14 +101,18 @@ Original GitHub repository: [https://github.com/robot-learning-freiburg/Efficien
 @article{sirohi2021efficientlps,
     title={EfficientLPS: Efficient LiDAR Panoptic Segmentation},
     author={Sirohi, Kshitij and Mohan, Rohit and Büscher, Daniel and Burgard, Wolfram and Valada, Abhinav},
-    journal={arXiv preprint arXiv:2102.08009},
-    year={2021}
+    journal={IEEE Transactions on Robotics},
+    year={2021}, 
+    volume={},
+    number={},
+    pages={1-21},
+    doi={10.1109/TRO.2021.3122069}
 }
 ```
 
 **Base repositories**
 
-The OpenDR implementation extends the [EfficientLPS repository](https://github.com/robot-learning-freiburg/EfficientLPS), from [Kshitij Sirohi](http://www2.informatik.uni-freiburg.de/~sirohik/), [Rohit Mohan](https://rl.uni-freiburg.de/people/mohan) and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada), with the OpenDR interface.
+The OpenDR implementation extends the [EfficientLPS repository](https://github.com/robot-learning-freiburg/EfficientLPS), from [Kshitij Sirohi](http://www2.informatik.uni-freiburg.de/~sirohik/), [Rohit Mohan](https://rl.uni-freiburg.de/people/mohan), [Daniel Büscher](http://www2.informatik.uni-freiburg.de/~buescher/) and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada), with the OpenDR interface.
 
 Please note that the original repository is heavily based on
 - [mmdetection](https://github.com/open-mmlab/mmdetection) by the [OpenMMLab](https://openmmlab.com/) project
