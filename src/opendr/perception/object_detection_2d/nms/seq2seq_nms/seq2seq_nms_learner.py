@@ -316,10 +316,6 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if "cuda" in self.device:
             self.model = self.model.to(self.device)
 
-        self.model = self.model.eval()
-        if "cuda" in self.device:
-            self.model = self.model.to(self.device)
-
         train_ids = np.arange(len(dataset_nms.src_data))
         nms_results = []
         pbar_eval = None
