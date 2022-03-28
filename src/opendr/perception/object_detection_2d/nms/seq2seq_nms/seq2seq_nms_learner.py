@@ -105,7 +105,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             verbose=True, nms_gt_iou=0.5, max_dt_boxes=400, datasets_folder='./datasets',
             use_ssd=False, lr_step=True):
 
-        dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split='train', use_ssd=use_ssd)
+        dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split='train', use_ssd=use_ssd,
+                                  device=self.device)
         if self.classes is None:
             self.classes = dataset_nms.classes
             self.class_ids = dataset_nms.class_ids
@@ -289,7 +290,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
     def eval(self, dataset, split='test', verbose=True, max_dt_boxes=400,
              datasets_folder='./datasets', use_ssd=False):
 
-        dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split=split, use_ssd=use_ssd)
+        dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split=split, use_ssd=use_ssd,
+                                  device=self.device)
 
         if self.classes is None:
             self.classes = dataset_nms.classes
