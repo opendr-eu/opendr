@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opendr.perception.object_detection_2d.nms import Seq2SeqNMSLearner
+from opendr.perception.object_detection_2d import Seq2SeqNMSLearner
 from opendr.perception.object_detection_2d import SingleShotDetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 from opendr.engine.data import Image
