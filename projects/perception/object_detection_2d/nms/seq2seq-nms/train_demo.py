@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from opendr.perception.object_detection_2d.nms import Seq2SeqNMSLearner
+from opendr.perception.object_detection_2d import Seq2SeqNMSLearner
 import os
 import argparse
 OPENDR_HOME = os.environ['OPENDR_HOME']
