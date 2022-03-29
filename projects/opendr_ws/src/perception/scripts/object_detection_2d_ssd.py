@@ -22,7 +22,7 @@ from opendr_bridge import ROSBridge
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import SingleShotDetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
-from opendr.perception.object_detection_2d.nms import Seq2SeqNMSLearner, SoftNMS, FastNMS, ClusterNMS
+from opendr.perception.object_detection_2d import Seq2SeqNMSLearner, SoftNMS, FastNMS, ClusterNMS
 
 
 class ObjectDetectionSSDNode:
