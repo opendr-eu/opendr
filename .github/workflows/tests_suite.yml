@@ -77,6 +77,7 @@ jobs:
           - perception/object_detection_2d/ssd
           - perception/object_detection_2d/yolov3
           - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - simulation/human_model_generation
           - perception/facial_expression_recognition
           - control/single_demo_grasp
@@ -179,6 +180,7 @@ jobs:
           - perception/object_detection_2d/ssd
           - perception/object_detection_2d/yolov3
           - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
           # - perception/object_detection_3d
           # - control/mobile_manipulation
@@ -248,6 +250,7 @@ jobs:
           - perception/object_detection_2d/ssd
           - perception/object_detection_2d/yolov3
           - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
           # - perception/object_detection_3d
           # - control/mobile_manipulation
@@ -323,6 +326,7 @@ jobs:
           - perception/object_detection_2d/ssd
           - perception/object_detection_2d/yolov3
           - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
           - perception/object_detection_3d
           - control/mobile_manipulation
