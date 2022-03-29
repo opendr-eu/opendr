@@ -57,7 +57,9 @@ ___
 - -[X] Add README for demo usage in `projects/perception/panoptic_segmentation/efficient_lps`
 
 ## Data
-- -[ ] Upload to OpenDR server:
+- -[X] Upload to OpenDR server:
     - -[ ] Pre-trained model weights (for unittest and inference)
-    - -[ ] Test data (for unittest)
-    - -[ ] Update download Links in EfficientLpsLearner Class 
+        - -[X] SemanticKITTI pre-trained model weights.
+        - -[ ] NuScenes pre-trained model weights.
+    - -[X] Test data (for unittest)
+    - -[X] Update download Links in EfficientLpsLearner Class 

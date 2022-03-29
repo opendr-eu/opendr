@@ -4,7 +4,6 @@ The file [example_usage](./example_usage.py) contains code snippets explaining t
 
 1. Download the provided pre-trained model weights.
 
-[//]: # (TODO: Verify)
 2. Prepare the supported datasets (KITTI, Nuscenes) after having downloaded the raw files.
    See the [datasets' readme](../../../../src/opendr/perception/panoptic_segmentation/datasets/README.md)
    for further details.

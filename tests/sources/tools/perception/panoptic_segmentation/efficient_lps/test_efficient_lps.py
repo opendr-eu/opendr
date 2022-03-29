@@ -58,7 +58,7 @@ class TestEfficientLpsLearner(unittest.TestCase):
 
         cls.test_data = cls.temp_dir / "test_data"
         with zipfile.ZipFile(test_data_zipped, "r") as f:
-            f.extractall(cls.test_data)
+            f.extractall(cls.temp_dir)
 
     @classmethod
     def tearDownClass(cls):
@@ -85,7 +85,6 @@ class TestEfficientLpsLearner(unittest.TestCase):
         self.assertIsInstance(eval_results, dict)
 
     def test_infer_single_point_cloud(self):
-        # TODO: Verify Test file after uploading to server
         point_cloud_filename = self.test_data / "infer_data" / "seq08_f000000.bin"
         point_cloud = SemanticKittiDataset.load_point_cloud(point_cloud_filename)
         learner = EfficientLpsLearner()
@@ -101,7 +100,6 @@ class TestEfficientLpsLearner(unittest.TestCase):
         self.assertIsNone(prediction[2])
 
     def test_infer_batch_point_clouds(self):
-        # TODO: Verify Test files after uploading to server
         pcl_filenames = [
             self.test_data / "infer_data" / "seq08_f000000.bin",
             self.test_data / "infer_data" / "seq08_f000010.bin",
@@ -143,7 +141,6 @@ class TestEfficientLpsLearner(unittest.TestCase):
         self.assertTrue(successful)
 
     def test_save_visualization(self):
-        # TODO: Verify Test file after uploading to server
         point_cloud_filename = self.test_data / "infer_data" / "seq08_f000000.bin"
         temp_prediction_path = self.temp_dir / "prediction.png"
         point_cloud = SemanticKittiDataset.load_point_cloud(point_cloud_filename)

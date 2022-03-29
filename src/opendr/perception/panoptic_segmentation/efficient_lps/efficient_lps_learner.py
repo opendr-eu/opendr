@@ -622,9 +622,8 @@ class EfficientLpsLearner(Learner):
 		Valid modes include pre-trained model weights and data used in the unit tests.
 	
 		Currently, the following pre-trained models are available:
-			TODO: Verify
 			- KITTI panoptic segmentation dataset
-			- NuScenes
+			- NuScenes (# TODO)
 	
 		:param path: Path to save the model weights
 		:type path: str | Path
@@ -636,20 +635,18 @@ class EfficientLpsLearner(Learner):
 		:return: Path to the downloaded file
 		:rtype: str
 		"""
-
 		if mode == "model":
 			models = {
-				# TODO: Check URLs after uploading models
-				"nuscenes": f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficientlps/models/model_nuscenes.pth",
-				"kitti": f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficientlps/models/model_semantickitti.pth"
+				# TODO: No NuScenes pre-trained model yet.
+				# "nuscenes": f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_lps/models/model_nuscenes.pth",
+				"kitti": f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_lps/models/model_semantickitti.pth"
 			}
 			if trained_on not in models.keys():
 				raise ValueError(f"Could not find model weights pre-trained on {trained_on}. "
 								 f"Valid options are {list(models.keys())}")
 			url = models[trained_on]
 		elif mode == "test_data":
-			# TODO: Check URLs after uploading models
-			url = f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficientlps/test_data/test_data.zip"
+			url = f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_lps/test_data.zip"
 		else:
 			raise ValueError("Invalid mode. Valid options are ['model', 'test_data']")
 
