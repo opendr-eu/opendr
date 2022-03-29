@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from os import walk, path
+import os
 from csv import reader
+from urllib.request import urlretrieve
+
 from tqdm import tqdm
+from numpy import arctan2, linalg, rad2deg
 
-from numpy import linalg, rad2deg, arctan2
-
+from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.learners import Learner
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
 from opendr.engine.target import Category, Keypoint
@@ -33,7 +35,7 @@ class FallDetectorLearner(Learner):
     def fit(self, dataset, val_dataset=None, logging_path='', silent=True, verbose=True):
         pass
 
-    def eval(self, dataset):
+    def eval(self, dataset, verbose=False):
         """
         Evaluation on UR Fall Dataset, discards all temporary poses, then tries to detect the pose (note that in this
         dataset there is always one pose in the frame). If a pose a detected, fall detection is run on it and
@@ -53,15 +55,17 @@ class FallDetectorLearner(Learner):
         no_detections = 0
         temp_poses = 0
 
-        p_bar_desc = "Evaluation progress"
-        pbar_eval = tqdm(desc=p_bar_desc, total=len(data), bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
+        if verbose:
+            p_bar_desc = "Evaluation progress"
+            pbar_eval = tqdm(desc=p_bar_desc, total=len(data), bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
 
         for i in range(len(data)):
             image = data[i][0]
             label = data[i][1].data
             if label == 0:  # Temporary pose, skip
                 temp_poses += 1
-                pbar_eval.update(1)
+                if verbose:
+                    pbar_eval.update(1)
                 continue
 
             image = Image.open(image)
@@ -70,7 +74,8 @@ class FallDetectorLearner(Learner):
                 fallen = detections[0][0].data
             else:  # Can't detect fallen or standing
                 no_detections += 1
-                pbar_eval.update(1)
+                if verbose:
+                    pbar_eval.update(1)
                 continue
 
             if label == -1 and fallen == -1:  # Person standing, detected standing, true negative
@@ -81,8 +86,10 @@ class FallDetectorLearner(Learner):
                 fp += 1
             elif label == 1 and fallen == -1:  # Person fallen, detected standing, false negative
                 fn += 1
-            pbar_eval.update(1)
-        pbar_eval.close()
+            if verbose:
+                pbar_eval.update(1)
+        if verbose:
+            pbar_eval.close()
         accuracy = (tp + tn) / (tp + tn + fp + fn)
         sensitivity = tp / (tp + fn)
         specificity = tn / (tn + fp)
@@ -94,72 +101,120 @@ class FallDetectorLearner(Learner):
     @staticmethod
     def __prepare_val_dataset(dataset):
         if isinstance(dataset, ExternalDataset):
-            if dataset.dataset_type.lower() != "ur_fall_dataset":
-                raise UserWarning("dataset_type must be \"ur_fall_dataset\"")
+            if dataset.dataset_type.lower() != "ur_fall_dataset" and dataset.dataset_type.lower() != "test":
+                raise UserWarning("dataset_type must be \"ur_fall_dataset\" or \"test\", not " + dataset.dataset_type)
 
         # Get files and subdirectories of dataset.path directory
         f = []
         dirs = []
-        for (dirpath, dirnames, filenames) in walk(dataset.path):
+        for (dirpath, dirnames, filenames) in os.walk(dataset.path):
             f = filenames
             dirs = dirnames
             break
 
-        # Verify csv files with labels are present
-        if "urfall-cam0-adls.csv" not in f:
-            raise UserWarning("Didn't find \"urfall-cam0-adls.csv\" file in the dataset path provided.")
-        if "urfall-cam0-falls.csv" not in f:
-            raise UserWarning("Didn't find \"urfall-cam0-falls.csv\" file in the dataset path provided.")
+        if dataset.dataset_type.lower() == "ur_fall_dataset":
+            # Verify csv files with labels are present
+            if "urfall-cam0-adls.csv" not in f:
+                raise UserWarning("Didn't find \"urfall-cam0-adls.csv\" file in the dataset path provided.")
+            if "urfall-cam0-falls.csv" not in f:
+                raise UserWarning("Didn't find \"urfall-cam0-falls.csv\" file in the dataset path provided.")
 
-        # Verify all subfolders with images are present
-        for i in range(1, 41, 1):
-            dirname = f"adl-{i:02d}-cam0-rgb"
-            if dirname not in dirs:
-                raise UserWarning("Didn't find \"" + dirname + "\" dir in the dataset path provided.")
+            # Verify all subfolders with images are present
+            for i in range(1, 41, 1):
+                dirname = f"adl-{i:02d}-cam0-rgb"
+                if dirname not in dirs:
+                    raise UserWarning("Didn't find \"" + dirname + "\" dir in the dataset path provided.")
 
-        for i in range(1, 31, 1):
-            dirname = f"fall-{i:02d}-cam0-rgb"
-            if dirname not in dirs:
-                raise UserWarning("Didn't find \"" + dirname + "\" dir in the dataset path provided.")
+            for i in range(1, 31, 1):
+                dirname = f"fall-{i:02d}-cam0-rgb"
+                if dirname not in dirs:
+                    raise UserWarning("Didn't find \"" + dirname + "\" dir in the dataset path provided.")
 
-        data = []
-        labels = []
-        with open(path.join(dataset.path, "urfall-cam0-adls.csv")) as adls_labels_file, \
-                open(path.join(dataset.path, "urfall-cam0-falls.csv")) as falls_labels_file:
-            # pass the file object to reader() to get the reader object
-            adls_reader = reader(adls_labels_file)
-            falls_reader = reader(falls_labels_file)
-            # Iterate over each row in the csv using reader object
-            for adls_row in adls_reader:
-                # Append image path based on video id, frame id
-                dataset_folder_name = "UR Fall Dataset"
-                folder_name = adls_row[0] + "-cam0-rgb"
-                img_name = folder_name + f"-{int(adls_row[1]):03d}.png"
-                data.append(path.join(dataset_folder_name, folder_name, img_name))
-                # Append label
-                labels.append(Category(int(adls_row[2])))
+            data = []
+            labels = []
+            with open(os.path.join(dataset.path, "urfall-cam0-adls.csv")) as adls_labels_file, \
+                    open(os.path.join(dataset.path, "urfall-cam0-falls.csv")) as falls_labels_file:
+                # pass the file object to reader() to get the reader object
+                adls_reader = reader(adls_labels_file)
+                falls_reader = reader(falls_labels_file)
+                # Iterate over each row in the csv using reader object
+                for adls_row in adls_reader:
+                    # Append image path based on video id, frame id
+                    folder_name = adls_row[0] + "-cam0-rgb"
+                    img_name = folder_name + f"-{int(adls_row[1]):03d}.png"
+                    data.append(os.path.join(dataset.path, folder_name, img_name))
+                    # Append label
+                    labels.append(Category(int(adls_row[2])))
 
-            for falls_row in falls_reader:
-                # Append image path based on video id, frame id
-                folder_name = falls_row[0] + "-cam0-rgb"
-                img_name = folder_name + f"-{int(falls_row[1]):03d}.png"
-                data.append(path.join(dataset_folder_name, folder_name, img_name))
-                # Append label
-                labels.append(Category(int(falls_row[2])))
-
+                for falls_row in falls_reader:
+                    # Append image path based on video id, frame id
+                    folder_name = falls_row[0] + "-cam0-rgb"
+                    img_name = folder_name + f"-{int(falls_row[1]):03d}.png"
+                    data.append(os.path.join(dataset.path, folder_name, img_name))
+                    # Append label
+                    labels.append(Category(int(falls_row[2])))
+        else:
+            # Verify files are present
+            if "annotations.csv" not in f:
+                raise UserWarning("Didn't find \"annotations.csv\" file in the dataset path provided.")
+            if "fallen.png" not in f:
+                raise UserWarning("Didn't find \"fallen.png\" file in the dataset path provided.")
+            if "standing.png" not in f:
+                raise UserWarning("Didn't find \"standing.png\" file in the dataset path provided.")
+            if "no_person.png" not in f:
+                raise UserWarning("Didn't find \"no_person.png\" file in the dataset path provided.")
+            data = []
+            labels = []
+            with open(os.path.join(dataset.path, "annotations.csv")) as annotations_file:
+                annotations_reader = reader(annotations_file)
+                for annot_row in annotations_reader:
+                    # Append image path based on video id, frame id
+                    img_name = f"{annot_row[1]}.png"
+                    data.append(os.path.join(dataset.path, img_name))
+                    # Append label
+                    labels.append(Category(int(annot_row[2])))
         return URFallDatasetIterator(data, labels)
 
     def save(self, path):
-        pass
+        raise NotImplementedError
 
     def load(self, path):
-        pass
+        raise NotImplementedError
 
     def optimize(self, target_device):
-        pass
+        raise NotImplementedError
 
     def reset(self):
-        pass
+        raise NotImplementedError
+
+    @staticmethod
+    def download(path=None, mode="test_data", verbose=False,
+                 url=OPENDR_SERVER_URL + "perception/fall_detection/"):
+        valid_modes = ["test_data"]
+        if mode not in valid_modes:
+            raise UserWarning("mode parameter not valid:", mode, ", file should be:", valid_modes)
+
+        if path is None:
+            path = "."
+
+        if mode == "test_data":
+            if verbose:
+                print("Downloading test data...")
+            if not os.path.exists(os.path.join(path, "test_images")):
+                os.makedirs(os.path.join(path, "test_images"))
+            # Download annotation file
+            file_url = os.path.join(url, "test_images", "annotations.csv")
+            urlretrieve(file_url, os.path.join(path, "test_images", "annotations.csv"))
+            # Download test images
+            file_url = os.path.join(url, "test_images", "fallen.png")
+            urlretrieve(file_url, os.path.join(path, "test_images", "fallen.png"))
+            file_url = os.path.join(url, "test_images", "standing.png")
+            urlretrieve(file_url, os.path.join(path, "test_images", "standing.png"))
+            file_url = os.path.join(url, "test_images", "no_person.png")
+            urlretrieve(file_url, os.path.join(path, "test_images", "no_person.png"))
+
+            if verbose:
+                print("Test data download complete.")
 
     def infer(self, img):
         poses = self.pose_estimator.infer(img)
