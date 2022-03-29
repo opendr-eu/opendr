@@ -33,7 +33,7 @@ def example_full_state(name, eps, eval_eps, device, render=False):
     sensors = ["observation", "reward", "done"]
     if render:
         sensors.append("image")
-    pendulum = Object.make("GymObject", "pendulum", sensors=sensors, gym_env_id="Pendulum-v0", gym_rate=20)
+    pendulum = Object.make("GymObject", "pendulum", sensors=sensors, env_id="Pendulum-v0", rate=20)
 
     # Define graph (agnostic) & connect nodes
     graph = Graph.create(objects=[pendulum])
@@ -48,9 +48,9 @@ def example_full_state(name, eps, eval_eps, device, render=False):
     bridge = Bridge.make("GymBridge", rate=20)
 
     # Initialize Environment (agnostic graph +  bridge)
-    env = eagerx_gym.EagerGym(name=name, rate=20, graph=graph, bridge=bridge)
+    env = eagerx_gym.EagerxGym(name=name, rate=20, graph=graph, bridge=bridge)
     if render:
-        env.render(mode='human')
+        env.render(mode="human")
 
     # Initialize and train stable-baselines model
     model = sb.SAC("MlpPolicy", env, verbose=1, device=device)
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     parser.add_argument("--name", help="Name of the environment", type=str, default="example")
     parser.add_argument("--eps", help="Number of training episodes", type=int, default=200)
     parser.add_argument("--eval_eps", help="Number of evaluation episodes", type=int, default=20)
-    parser.add_argument("--render", help="Toggle rendering", action='store_true')
+    parser.add_argument("--render", help="Toggle rendering", action="store_true")
 
     args = parser.parse_args()
 
