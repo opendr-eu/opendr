@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import time
 
 import cv2
-import argparse
 
 from opendr.perception.fall_detection import FallDetectorLearner
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
@@ -45,22 +45,19 @@ class VideoReader(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--onnx", help="Use ONNX", default=False, action="store_true")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
     parser.add_argument("--draw", help="Whether to draw additional pose lines", default=False, action="store_true")
     args = parser.parse_args()
 
-    onnx, device, draw_poses = args.onnx, args.device, args.draw
-    stride = False
-    stages = 2
-    half_precision = False
+    draw_poses = args.draw
 
-    pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
-                                                mobilenet_use_stride=stride, half_precision=half_precision)
-
-    pose_estimator.download(path="./", verbose=True)
+    pose_estimator = LightweightOpenPoseLearner(device=args.device, num_refinement_stages=2,
+                                                mobilenet_use_stride=False,
+                                                half_precision=False)
+    pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
-    fall_detector = FallDetectorLearner(pose_estimator=pose_estimator)
+
+    fall_detector = FallDetectorLearner(pose_estimator)
 
     image_provider = VideoReader(0)
 
