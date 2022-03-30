@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cv2
 import argparse
+
+import cv2
 
 from opendr.engine.data import Image
 from opendr.perception.fall_detection import FallDetectorLearner
@@ -68,26 +69,23 @@ def fall_detection_on_img(img, draw_pose=False, draw_fall_detection_lines=False)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--onnx", help="Use ONNX", default=False, action="store_true")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
-    parser.add_argument("--draw", help="Whether to draw additional pose lines", default=False, action="store_true")
     args = parser.parse_args()
 
-    onnx, device, draw_pose = args.onnx, args.device, args.draw
-    stride = False
-    stages = 2
-    half_precision = False
-
-    pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
-                                                mobilenet_use_stride=stride, half_precision=half_precision)
+    pose_estimator = LightweightOpenPoseLearner(device=args.device, num_refinement_stages=2,
+                                                mobilenet_use_stride=False,
+                                                half_precision=False)
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
-    fall_detector = FallDetectorLearner(pose_estimator=pose_estimator)
 
-    # TODO test images should be downloaded from FTP
-    print("Running detector on image without humans")
-    fall_detection_on_img(Image.open("fall_detection_images/no_humans.png"), draw_pose, draw_pose)
-    print("Running detector on image fallen")
-    fall_detection_on_img(Image.open("fall_detection_images/rgb_1240_2.png"), draw_pose, draw_pose)
-    print("Running detector on image standing")
-    fall_detection_on_img(Image.open("fall_detection_images/rgb_0088_2.png"), draw_pose, draw_pose)
+    fall_detector = FallDetectorLearner(pose_estimator)
+
+    # Download a sample dataset
+    fall_detector.download(".", verbose=True)
+
+    print("Running detector on image without humans...")
+    fall_detection_on_img(Image.open("test_images/no_person.png"), True)
+    print("Running detector on image with a fallen person...")
+    fall_detection_on_img(Image.open("test_images/fallen.png"), True)
+    print("Running detector on image with a standing person...")
+    fall_detection_on_img(Image.open("test_images/standing.png"), True)
