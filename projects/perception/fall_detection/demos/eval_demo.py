@@ -12,26 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 
 from opendr.engine.datasets import ExternalDataset
 from opendr.perception.fall_detection import FallDetectorLearner
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 
-# TODO Sample of dataset should be downloaded from FTP
-ur_dataset = ExternalDataset(path="./UR Fall Dataset", dataset_type="ur_fall_dataset")
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--device", help="Device to use for pose estimator (cpu, cuda)", type=str, default="cuda")
+    args = parser.parse_args()
 
-device = "cuda"
-stride = False
-stages = 2
-half_precision = False
+    pose_estimator = LightweightOpenPoseLearner(device=args.device, num_refinement_stages=2,
+                                                mobilenet_use_stride=False,
+                                                half_precision=False)
+    pose_estimator.download(path=".", verbose=True)
+    pose_estimator.load("openpose_default")
 
-pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
-                                            mobilenet_use_stride=stride, half_precision=half_precision)
-pose_estimator.download(path="./", verbose=True)
-pose_estimator.load("openpose_default")
+    fall_detector = FallDetectorLearner(pose_estimator)
 
-fall_detector = FallDetectorLearner(pose_estimator)
+    # Download a sample dataset
+    fall_detector.download(".", verbose=True)
+    ur_dataset = ExternalDataset(path="./test_images", dataset_type="test")
 
-r = fall_detector.eval(dataset=ur_dataset)
-print(f"Accuracy: {r['accuracy']} \nSensitivity: {r['sensitivity']} \nSpecificity: {r['specificity']} "
-      f"\nDetection Accuracy: {r['detection_accuracy']} \nNo Detection Frames: {r['no_detections']}")
+    r = fall_detector.eval(dataset=ur_dataset, verbose=True)
+    print(f"Evaluation results: \n Accuracy: {r['accuracy']} \n Sensitivity: {r['sensitivity']} "
+          f"\n Specificity: {r['specificity']} \n Detection Accuracy: {r['detection_accuracy']} "
+          f"\n No Detection Frames: {r['no_detections']}")
