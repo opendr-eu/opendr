@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import argparse
+import os
 
 # EAGERx imports
 from eagerx import Object, Bridge, Node, initialize, log
@@ -34,14 +35,15 @@ def example_classifier(name, eps, eval_eps, device, render=False):
         "GymObject",
         "pendulum",
         sensors=["image", "observation", "reward", "done"],
-        gym_env_id="Pendulum-v0",
-        gym_rate=20,
-        gym_always_render=True,
+        env_id="Pendulum-v0",
+        rate=20,
+        always_render=True,
         render_shape=[28, 28],
     )
 
     # Define PID controller & classifier
-    classifier = Node.make("Classifier", "classifier", rate=20, cam_rate=20, data="../data/with_actions.h5")
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    classifier = Node.make("Classifier", "classifier", rate=20, cam_rate=20, data=dir_path + "/../data/with_actions.h5")
     pid = Node.make("PidController", "pid", rate=20, gains=[8, 1, 0], y_range=[-4, 4])
 
     # Define graph (agnostic) & connect nodes
@@ -63,9 +65,9 @@ def example_classifier(name, eps, eval_eps, device, render=False):
     bridge = Bridge.make("GymBridge", rate=20)
 
     # Initialize Environment (agnostic graph +  bridge)
-    env = eagerx_gym.EagerGym(name=name, rate=20, graph=graph, bridge=bridge)
+    env = eagerx_gym.EagerxGym(name=name, rate=20, graph=graph, bridge=bridge)
     if render:
-        env.render(mode='human')
+        env.render(mode="human")
 
     # Initialize and train stable-baselines model
     model = sb.SAC("MlpPolicy", env, verbose=1, device=device)
@@ -87,7 +89,7 @@ if __name__ == "__main__":
     parser.add_argument("--name", help="Name of the environment", type=str, default="example")
     parser.add_argument("--eps", help="Number of training episodes", type=int, default=200)
     parser.add_argument("--eval_eps", help="Number of evaluation episodes", type=int, default=20)
-    parser.add_argument("--render", help="Toggle rendering", action='store_true')
+    parser.add_argument("--render", help="Toggle rendering", action="store_true")
 
     args = parser.parse_args()
 
