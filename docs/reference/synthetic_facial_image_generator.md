@@ -62,7 +62,7 @@ Note that the integrated tool currently only supports GPU inference.
 
 | Method                                      |   GPU NVIDIA RTX 2070 (ms)| 
 |---------------------------------------------|---------------------------|
-|Synthetic Multi-view Facial Image Generation |      20.41 ± 0.23         | 
+|Synthetic Multi-view Facial Image Generation |      20.41                | 
 
 In the following Table the results of running the Synthetic Multi-view Facial Image Generation tool for different platforms and varying installation procedures are provided.
 Again, note that this tool mainly targets offline data generation.
