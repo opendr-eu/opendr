@@ -33,9 +33,9 @@ class FallDetectorLearner(Learner):
         self.pose_estimator = pose_estimator
 
     def fit(self, dataset, val_dataset=None, logging_path='', silent=True, verbose=True):
-        pass
+        raise NotImplementedError
 
-    def eval(self, dataset, verbose=False):
+    def eval(self, dataset, verbose=True):
         """
         Evaluation on UR Fall Dataset, discards all temporary poses, then tries to detect the pose (note that in this
         dataset there is always one pose in the frame). If a pose a detected, fall detection is run on it and
@@ -220,7 +220,7 @@ class FallDetectorLearner(Learner):
         poses = self.pose_estimator.infer(img)
         results = []
         for pose in poses:
-            results.append(self.naive_fall_detection(pose))
+            results.append(self.__naive_fall_detection(pose))
 
         if len(results) >= 1:
             return results
@@ -228,12 +228,12 @@ class FallDetectorLearner(Learner):
         return []
 
     @staticmethod
-    def get_angle_to_horizontal(v1, v2):
+    def __get_angle_to_horizontal(v1, v2):
         vector = v1 - v2
         unit_vector = vector / linalg.norm(vector)
         return rad2deg(arctan2(unit_vector[1], unit_vector[0]))
 
-    def naive_fall_detection(self, pose):
+    def __naive_fall_detection(self, pose):
         """
         This naive implementation of fall detection first establishes the average point between the two hips keypoints.
         It then tries to figure out the average position of the head and legs. Together with the hips point,
@@ -290,7 +290,7 @@ class FallDetectorLearner(Learner):
         # Get average calves angle
         calves_vertical = -1
         if knees[0] != -1 and ankles[-1] != -1:
-            if -160 < self.get_angle_to_horizontal(knees, ankles) < -20:
+            if -160 < self.__get_angle_to_horizontal(knees, ankles) < -20:
                 calves_vertical = 1
             else:
                 calves_vertical = 0
@@ -298,7 +298,7 @@ class FallDetectorLearner(Learner):
         torso_vertical = -1
         # Figure out the head-hips vector (torso) angle to horizontal axis
         if head[0] != -1 and head[1] != -1:
-            if 45 < self.get_angle_to_horizontal(hips, head) < 135:
+            if 45 < self.__get_angle_to_horizontal(hips, head) < 135:
                 torso_vertical = 1
             else:
                 torso_vertical = 0
@@ -306,7 +306,7 @@ class FallDetectorLearner(Learner):
         legs_vertical = -1
         # Figure out the hips-legs vector angle to horizontal axis
         if legs[0] != -1 and legs[1] != -1:
-            if -150 < self.get_angle_to_horizontal(hips, legs) < -30:
+            if -150 < self.__get_angle_to_horizontal(hips, legs) < -30:
                 legs_vertical = 1
             else:
                 legs_vertical = 0
