@@ -54,7 +54,10 @@ Users that wish to modify these parameters shall change the respective input arg
 
 ### Performance Evaluation
 
-In this subsection, we measure the inference speed of the synthetic multi-view facial image generation algorithm integrated in the OpenDR toolkit. The results are presented in the following Table. These tests have been performed using a GPU NVIDIA RTX 2070 and the reported time concerns one sample facial image. Note that the integrated tool currently only supports GPU inference. 
+In this subsection, we measure the inference speed of the synthetic multi-view facial image generation algorithm integrated in the OpenDR toolkit.
+The results are presented in the following Table.
+These tests have been performed using a GPU NVIDIA RTX 2070 and the reported time concerns one sample facial image.
+Note that the integrated tool currently only supports GPU inference. 
 
 
 | Method                                      |   GPU NVIDIA RTX 2070 (ms)| 
