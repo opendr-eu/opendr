@@ -58,7 +58,7 @@ class EndToEndPlanningTest(unittest.TestCase):
         self.assertTrue((action < self.env.action_space.n), "Actions above discrete action space dimensions")
 
     def test_eval(self):
-        episode_reward = self.learner.eval(self.env)
+        episode_reward = self.learner.eval(self.env)["rewards_collected"]
         self.assertTrue((episode_reward > -100), "Episode reward cannot be lower than -100")
         self.assertTrue((episode_reward < 100), "Episode reward cannot pass 100")
 

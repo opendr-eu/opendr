@@ -76,6 +76,7 @@ class EndToEndPlanningRLLearner(LearnerRL):
                 print('env should be gym.Env')
                 return
         self.last_checkpoint_time_step = 0
+        self.mean_reward = -10
         self.logdir = logging_path
         if isinstance(self.env, DummyVecEnv):
             self.env = self.env.envs[0]
@@ -85,6 +86,7 @@ class EndToEndPlanningRLLearner(LearnerRL):
         self.env = DummyVecEnv([lambda: self.env])
         self.agent.set_env(self.env)
         self.agent.learn(total_timesteps=self.iters, callback=self.callback)
+        return {"last_20_episodes_mean_reward": self.mean_reward}
 
     def eval(self, env):
         """
@@ -108,7 +110,7 @@ class EndToEndPlanningRLLearner(LearnerRL):
             sum_of_rewards += rewards
             if dones:
                 break
-        return sum_of_rewards
+        return {"rewards_collected": sum_of_rewards}
 
     def save(self, path):
         """
@@ -161,14 +163,14 @@ class EndToEndPlanningRLLearner(LearnerRL):
         x, y = ts2xy(load_results(self.logdir), 'timesteps')
 
         if len(y) > 20:
-            mean_reward = np.mean(y[-20:])
+            self.mean_reward = np.mean(y[-20:])
         else:
             return True
 
         if x[-1] - self.last_checkpoint_time_step > self.checkpoint_after_iter:
             self.last_checkpoint_time_step = x[-1]
             check_point_path = Path(self.logdir,
-                                    'checkpoint_save' + str(x[-1]) + 'with_mean_rew' + str(mean_reward))
+                                    'checkpoint_save' + str(x[-1]) + 'with_mean_rew' + str(self.mean_reward))
             self.save(str(check_point_path))
 
         return True
