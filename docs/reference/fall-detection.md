@@ -46,14 +46,14 @@ This method is used to perform fall detection on an image.
 Returns a list of tuples, one for every person detected, that each contains an `engine.target.Category`, a list of
 three keypoints that define two lines that are used to determine if the person has fallen, and the complete poses that
 were detected.
-It returns an empty list if no detections were made.
+It returns an empty list if no pose detections were made.
 
 The `engine.target.Category` is `1` if person has fallen, `-1` if person is standing and `0` if a person is detected, but
 the algorithm is unable to detect if person is standing or fallen.
 
 Parameters:
 
-- **img**: *object***\
+- **img**: *object*\
   Object of type engine.data.Image.
 
 #### `FallDetectorLearner.download`
