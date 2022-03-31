@@ -287,7 +287,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             file_writer.close()
         return training_dict
 
-    def eval(self, dataset, split='test', verbose=True, max_dt_boxes=400, threshold=None,
+    def eval(self, dataset, split='test', verbose=True, max_dt_boxes=400, threshold=0.0,
              datasets_folder='./datasets', use_ssd=False):
 
         dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split=split, use_ssd=use_ssd,
@@ -375,7 +375,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                                    app_feats=app_feats)
                 bboxes = dt_boxes.cpu().numpy().astype('float64')
             preds = preds.cpu().detach()
-            if threshold is not None:
+            if threshold > 0.0:
                 ids = (preds > threshold)
                 preds = preds[ids]
                 bboxes = bboxes[ids.numpy().squeeze(-1), :]
