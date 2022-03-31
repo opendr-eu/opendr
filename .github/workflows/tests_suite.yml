@@ -80,6 +80,7 @@ jobs:
           - simulation/human_model_generation
           - perception/facial_expression_recognition
           - control/single_demo_grasp
+          - planning/end_to_end_planning
           # - perception/object_tracking_3d
         include:
           - os: ubuntu-20.04
@@ -328,6 +329,7 @@ jobs:
           - control/mobile_manipulation
           - simulation/human_model_generation
           - control/single_demo_grasp
+          - planning/end_to_end_planning
           # - perception/object_tracking_3d
     runs-on: ubuntu-20.04
     steps:
