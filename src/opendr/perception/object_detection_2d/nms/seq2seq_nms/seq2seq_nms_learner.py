@@ -287,7 +287,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             file_writer.close()
         return training_dict
 
-    def eval(self, dataset, split='test', verbose=True, max_dt_boxes=400,
+    def eval(self, dataset, split='test', verbose=True, max_dt_boxes=400, threshold=None,
              datasets_folder='./datasets', use_ssd=False):
 
         dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split=split, use_ssd=use_ssd,
@@ -374,6 +374,11 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
                                    app_feats=app_feats)
                 bboxes = dt_boxes.cpu().numpy().astype('float64')
+            preds = preds.cpu().detach()
+            if threshold is not None:
+                ids = (preds > threshold)
+                preds = preds[ids]
+                bboxes = bboxes[ids.numpy().squeeze(-1), :]
             for j in range(len(preds)):
                 nms_results.append({
                     'image_id': dataset_nms.src_data[sample_id]['id'],
