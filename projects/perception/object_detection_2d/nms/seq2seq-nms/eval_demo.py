@@ -35,7 +35,8 @@ parser.add_argument("--data_root", help="Dataset root folder", type=str,
                     default=os.path.join(OPENDR_HOME,
                                          'projects/perception/object_detection_2d/nms/seq2seq-nms/datasets'))
 parser.add_argument("--use_ssd", help="Train using SSD as detector", type=bool, default=False)
-parser.add_argument("--post_thres", help="Confidence threshold, used for RoI selection after seq2seq-nms rescoring", type=float, default=0.0)
+parser.add_argument("--post_thres", help="Confidence threshold, used for RoI selection after seq2seq-nms rescoring",
+                    type=float, default=0.0)
 
 args = parser.parse_args()
 tmp_path = os.path.join(OPENDR_HOME, 'projects/perception/object_detection_2d/nms/seq2seq-nms/tmp')
