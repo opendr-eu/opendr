@@ -100,6 +100,8 @@ Parameters:
   If True, enables maximum verbosity.
 - **max_dt_boxes**: *int, default=500*\
   Specifies the maximum number of RoIs provided to seq2Seq-nms model as input.
+- **threshold**: *float, default=0.0*\
+  Specifies the confidence threshold, used for RoI selection after seq2seq-nms rescoring.
 - **datasets_folder**: *str, default='./datasets'*\
   Specifies the path to the folder where the datasets are stored.
 - **use_ssd**: *bool, default=False*\
@@ -267,7 +269,7 @@ Parameters:
   draw_bounding_boxes(img.opencv(), boxes, class_names=ssd.classes, show=True)
   ```
   
-  * **Evaluation of pretrained model on PETS dataset.**
+* **Evaluation of pretrained model on PETS dataset.**
 
   ```python
   from opendr.perception.object_detection_2d import Seq2SeqNMSLearner
