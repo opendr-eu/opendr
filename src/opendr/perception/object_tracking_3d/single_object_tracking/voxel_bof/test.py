@@ -31,6 +31,7 @@ from opendr.perception.object_tracking_3d.datasets.kitti_tracking import (
     LabeledTrackingPointCloudsDatasetIterator,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.draw import (
+    AverageMetric,
     draw_point_cloud_bev,
     draw_point_cloud_projected_2,
     stack_images,
@@ -688,6 +689,8 @@ def test_rotated_pp_siamese_infer(
     all_tracked = []
     all_precision = []
     all_success = []
+    vertical_error = AverageMetric()
+    vertical_error_no_regress = AverageMetric()
 
     count = len(dataset)
 
@@ -791,6 +794,9 @@ def test_rotated_pp_siamese_infer(
                 1,
                 label_lidar.frame,
             )
+
+            vertical_error.update(np.abs(label_lidar.location[-1] - result[0].location[-1]))
+            vertical_error_no_regress.update(np.abs(label_lidar.location[-1] - learner.init_label.location[-1]))
 
             result = tracking_boxes_to_camera(result, calib)[0]
             label_lidar = tracking_boxes_to_camera(
@@ -973,6 +979,8 @@ def test_rotated_pp_siamese_infer(
     print("total_success_same:", total_success_same.average)
     print("total_precision_ideal:", total_precision_ideal.average)
     print("total_success_ideal:", total_success_ideal.average)
+    print("vertical_error:", vertical_error.get(-1))
+    print("vertical_error_no_regress:", vertical_error_no_regress.get(-1))
 
     with open("./plots/video/" + model_name + "/results.txt", "a") as f:
         print("total_precision:", total_precision.average, file=f)
@@ -981,6 +989,8 @@ def test_rotated_pp_siamese_infer(
         print("total_success_same:", total_success_same.average, file=f)
         print("total_precision_ideal:", total_precision_ideal.average, file=f)
         print("total_success_ideal:", total_success_ideal.average, file=f)
+        print("vertical_error:", vertical_error.get(-1), file=f)
+        print("vertical_error_no_regress:", vertical_error_no_regress.get(-1), file=f)
         print("kwargs:", " ".join(["--" + str(k) + "=" + str(v) for k, v in kwargs.items()]), file=f)
         print("----", file=f)
         print("", file=f)
