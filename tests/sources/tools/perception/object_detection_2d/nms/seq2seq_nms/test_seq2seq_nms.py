@@ -49,7 +49,7 @@ class TestSeq2SeqNMS(unittest.TestCase):
                                                   device='cpu',  checkpoint_after_iter=1, epochs=1)
 
         # Download all required files for testing
-        cls.seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd', path=cls.temp_dir)
+        cls.seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd_fmod', path=cls.temp_dir)
 
     @classmethod
     def tearDownClass(cls):
