@@ -24,7 +24,7 @@ parser.add_argument("--fmod_type", help="Type of fmod maps", type=str, default="
                     choices=["EDGEMAP", "FAST", "AKAZE", "BRISK", "ORB"])
 parser.add_argument("--iou_filtering", help="Pre-processing IoU threshold", type=float, default=1.0)
 parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-parser.add_argument("--pretrained_model", help="Name of pretrained model", type=str, default='seq2seq_pets_jpd',
+parser.add_argument("--pretrained_model", help="Name of pretrained model", type=str, default='seq2seq_pets_jpd_fmod',
                     choices=['seq2seq_pets_jpd'])
 parser.add_argument("--split", help="The split of the corresponding dataset", type=str, default='test',
                     choices=["test", "val", "train"])
