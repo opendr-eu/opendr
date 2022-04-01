@@ -257,8 +257,8 @@ Parameters:
   seq2SeqNMSLearner = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering = 0.8,
                                         app_feats='fmod', device='cpu',
                                         temp_path=temp_path)
-  seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd', path=temp_path)
-  seq2SeqNMSLearner.load(os.path.join(temp_path, seq2seq_pets_jpd), verbose=True)
+  seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd_fmod', path=temp_path)
+  seq2SeqNMSLearner.load(os.path.join(temp_path, seq2seq_pets_jpd_fmod), verbose=True)
   ssd = SingleShotDetectorLearner(device='cuda')
   ssd.download(".", mode="pretrained")
   ssd.load("./ssd_default_person", verbose=True)
@@ -281,8 +281,8 @@ Parameters:
   
   seq2SeqNMSLearner = Seq2SeqNMSLearner(iou_filtering=0.8, app_feats='fmod',
                                         temp_path=temp_path, device='cuda')
-  seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd', path=temp_path)
-  seq2SeqNMSLearner.load(os.path.join(temp_path, seq2seq_pets_jpd), verbose=True)
+  seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd_fmod', path=temp_path)
+  seq2SeqNMSLearner.load(os.path.join(temp_path, seq2seq_pets_jpd_fmod), verbose=True)
   seq2SeqNMSLearner.eval(dataset='PETS', split='test', max_dt_boxes=800,
                        datasets_folder=datasets_folder, use_ssd=False, threshold=0.0)
   ```
