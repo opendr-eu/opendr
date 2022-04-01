@@ -396,13 +396,14 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                                     dt_file_path=output_file, only_classes=[1],
                                     verbose=verbose, max_dets=[max_dt_boxes])
         os.remove(output_file)
-        for i in range(len(eval_result)):
-            print('Evaluation results (num_dets={})'.format(str(eval_result[i][1])))
-            print(eval_result[i][0][0][1])
-            print(eval_result[i][0][1][1])
-            print(eval_result[i][0][2][1])
-            print(eval_result[i][0][3][1])
-            print('\n')
+        if verbose:
+            for i in range(len(eval_result)):
+                print('Evaluation results (num_dets={})'.format(str(eval_result[i][1])))
+                print(eval_result[i][0][0][1])
+                print(eval_result[i][0][1][1])
+                print(eval_result[i][0][2][1])
+                print(eval_result[i][0][3][1])
+                print('\n')
         return eval_result
 
     def save(self, path, verbose=False, optimizer=None, scheduler=None, current_epoch=None, max_dt_boxes=400):
