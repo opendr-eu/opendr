@@ -3211,7 +3211,7 @@ def run_fx3_0(id=0, gpu_capacity=4, total_devices=4):
         result = []
         for feature_blocks in [1]:
             for size in [-1]:
-                for context_amount in [0.3, 0.1]:
+                for context_amount in [0.3, 0.1, -0.2, -0.1]:
                     for lr in [0.0001]:
                         for r_pos in [8, 4, 2, 1]:
                             target_size = [127, 127] if size == 1 else [-1, -1]
