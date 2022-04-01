@@ -105,7 +105,7 @@ A demo in the form of a Jupyter Notebook is available
 
 #### Performance Evaluation
 
-TABLE-1: OpenDR 3D human model generation speed evaluation
+TABLE-1: OpenDR 3D human model generation speed evaluation.
 | Method                                          | CPU i7-9700K (ms) | RTX 2070 (ms) |
 | ----------------------------------------------- | ----------------- | ------------- |
 | Human Model Generation only                     | 488.2       | 212.3    | 
