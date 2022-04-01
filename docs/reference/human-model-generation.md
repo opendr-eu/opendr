@@ -113,7 +113,7 @@ TABLE-1: OpenDR 3D human model generation speed evaluation
 
 
 
-TABLE-2: 3D Human Model Generation platform compatibility evaluation
+TABLE-2: 3D Human Model Generation platform compatibility evaluation.
 | Platform                                     | Test results |
 | -------------------------------------------- | ------------ |
 | x86 - Ubuntu 20.04 (bare installation - CPU) | Pass         |
