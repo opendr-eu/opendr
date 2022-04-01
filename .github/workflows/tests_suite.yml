@@ -67,6 +67,7 @@ jobs:
           - perception/object_tracking_2d
           - perception/object_detection_3d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
