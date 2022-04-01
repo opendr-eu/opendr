@@ -3200,9 +3200,10 @@ def create_fx_eval_kwargs():
     return results
 
 
-def run_fx3_0(id=0, total_experiments=4, total_devices=4):
+def run_fx3_0(id=0, gpu_capacity=4, total_devices=4):
 
     device_id = id % total_devices
+    i = id
 
     eval_kwargs = create_fx_eval_kwargs()
 
@@ -3260,21 +3261,20 @@ def run_fx3_0(id=0, total_experiments=4, total_devices=4):
 
     models = create_models(eval_kwargs)
 
-    i = device_id
-
     while i < len(models):
         model, eval_kwargs = models[i]
-        i += total_experiments
 
         result = model.eval_and_train(
             device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
         )
         print(result)
+        i += gpu_capacity * total_devices
 
 
-def run_fx3_0_1(id=0, total_experiments=4, total_devices=4):
+def run_fx3_0_1(id=0, gpu_capacity=4, total_devices=4):
 
     device_id = id % total_devices
+    i = id
 
     eval_kwargs = create_fx_eval_kwargs()
 
@@ -3332,16 +3332,14 @@ def run_fx3_0_1(id=0, total_experiments=4, total_devices=4):
 
     models = create_models(eval_kwargs)
 
-    i = device_id
-
     while i < len(models):
         model, eval_kwargs = models[i]
-        i += total_experiments
 
         result = model.eval_and_train(
             device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
         )
         print(result)
+        i += gpu_capacity * total_devices
 
 if __name__ == "__main__":
 
