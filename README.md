@@ -56,6 +56,18 @@ OpenDR has the following roadmap:
 ## How to contribute
 Please follow the instructions provided in the [wiki](https://github.com/tasostefas/opendr_internal/wiki).
 
+## How to cite us
+If you use OpenDR for your research, please cite the following paper that introduces OpenDR architecture and design:
+<pre>
+@article{opendr2022,
+  title={OpenDR: An Open Toolkit for Enabling High Performance, Low Footprint Deep Learning for Robotics},
+  author={Passalis, Nikolaos and Pedrazzi, Stefania and Babuska, Robert and Burgard, Wolfram and Dias, Daniel and Ferro, Francesco and Gabbouj, Moncef and Green, Ole and Iosifidis, Alexandros and Kayacan, Erdal and Kober, Jens and Michel, Olivier and Nikolaidis, Nikos and Nousi, Paraskevi and Pieters, Roel and Tzelepi, Maria and Valada, Abhinav and Tefas, Anastasios},
+  journal={arXiv preprint arXiv:2203.00403},
+  year={2022}
+}
+</pre>
+
+
 
 ## Acknowledgments
 *OpenDR project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871449.*
