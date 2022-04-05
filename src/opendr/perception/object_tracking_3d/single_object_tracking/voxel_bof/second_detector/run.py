@@ -176,33 +176,48 @@ def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
     return image
 
 
-def original_target_size_by_object_size(object_size, target_type="normal"):
+def original_target_size_by_object_size(object_size, target_type="normal", make_odd=True):
+
+    result = object_size
+
     if target_type == "normal":
-        return object_size + 5
+        result = object_size + 5
     elif target_type == "original":
-        return object_size
+        result = object_size
     elif target_type == "small":
-        return object_size + 2
+        result = object_size + 2
     elif target_type == "a+4":
-        return object_size + 4
+        result = object_size + 4
     else:
         raise ValueError()
 
+    if make_odd:
+        result += 1 - (result % 2)
 
-def original_search_size_by_target_size(target_size, search_type="normal"):
+    return result
+
+
+def original_search_size_by_target_size(target_size, search_type="normal", make_odd=True):
+
+    result = target_size
 
     if search_type == "normal":
-        return target_size * 2 + (target_size < 20) * 30
+        result = target_size * 2 + (target_size < 20) * 30
     elif search_type == "small":
-        return target_size + target_size // 2
+        result = target_size + target_size // 2
     elif search_type == "snormal":
-        return target_size * 2
+        result = target_size * 2
     elif search_type == "big":
-        return target_size * 4
+        result = target_size * 4
     elif search_type == "a+4":
-        return target_size + 4
+        result = target_size + 4
     else:
         raise ValueError()
+
+    if make_odd:
+        result += 1 - (result % 2)
+
+    return result
 
 
 def create_targets_and_searches(
