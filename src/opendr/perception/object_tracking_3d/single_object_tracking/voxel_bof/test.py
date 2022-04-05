@@ -691,6 +691,8 @@ def test_rotated_pp_siamese_infer(
     all_success = []
     vertical_error = AverageMetric()
     vertical_error_no_regress = AverageMetric()
+    all_vertical_error = []
+    all_vertical_error_no_regress = []
 
     count = len(dataset)
 
@@ -719,6 +721,8 @@ def test_rotated_pp_siamese_infer(
         total_success_ideal.add_overlap(1.0)
         object_precision.add_accuracy(0.0)
         object_success.add_overlap(1.0)
+        object_vertical_error = AverageMetric()
+        object_vertical_error_no_regress = AverageMetric()
 
         calib = point_cloud_with_calibration.calib
         labels_lidar = tracking_boxes_to_lidar(selected_labels, calib, classes=classes)
@@ -797,6 +801,8 @@ def test_rotated_pp_siamese_infer(
 
             vertical_error.update(np.abs(label_lidar.location[-1] - result[0].location[-1]))
             vertical_error_no_regress.update(np.abs(label_lidar.location[-1] - learner.init_label.location[-1]))
+            object_vertical_error.update(np.abs(label_lidar.location[-1] - result[0].location[-1]))
+            object_vertical_error_no_regress.update(np.abs(label_lidar.location[-1] - learner.init_label.location[-1]))
 
             result = tracking_boxes_to_camera(result, calib)[0]
             label_lidar = tracking_boxes_to_camera(
@@ -883,11 +889,14 @@ def test_rotated_pp_siamese_infer(
                 iouAabb,
                 "accuracy(error) =",
                 accuracy,
-                "] iou3d_same =",
-                iou3d_same,
+                "ve = ", object_vertical_error.get(-1),
+                "ve_nr = ", object_vertical_error_no_regress.get(-1)
             )
 
             print()
+
+        all_vertical_error.append(object_vertical_error.get(-1))
+        all_vertical_error_no_regress.append(object_vertical_error_no_regress.get(-1))
 
         if len(ious) <= 0:
             mean_iou3d = None
@@ -981,6 +990,8 @@ def test_rotated_pp_siamese_infer(
     print("total_success_ideal:", total_success_ideal.average)
     print("vertical_error:", vertical_error.get(-1))
     print("vertical_error_no_regress:", vertical_error_no_regress.get(-1))
+    print("all_vertical_error:", all_vertical_error)
+    print("all_vertical_error_no_regress:", all_vertical_error_no_regress)
 
     with open("./plots/video/" + model_name + "/results.txt", "a") as f:
         print("total_precision:", total_precision.average, file=f)
@@ -1198,10 +1209,12 @@ def test_rotated_pp_siamese_eval(
     total_precision_far = Precision()
     total_success_ideal = Success()
     total_precision_ideal = Precision()
-    total_success_horizontal = Success()
-    total_precision_horizontal = Precision()
     total_success_same = Success()
     total_precision_same = Precision()
+    vertical_error = AverageMetric()
+    vertical_error_no_regress = AverageMetric()
+    all_vertical_error = []
+    all_vertical_error_no_regress = []
 
     object_precisions = []
     object_sucesses = []
@@ -1229,6 +1242,8 @@ def test_rotated_pp_siamese_eval(
 
             object_success = Success()
             object_precision = Precision()
+            object_vertical_error = AverageMetric()
+            object_vertical_error_no_regress = AverageMetric()
 
             while len(selected_labels) <= 0:
                 start_frame += 1
@@ -1327,7 +1342,13 @@ def test_rotated_pp_siamese_eval(
                         label_lidar.dimensions[:2],
                     )
 
+                    vertical_error.update(np.abs(label_lidar.location[-1] - result[0].location[-1]))
+                    vertical_error_no_regress.update(np.abs(label_lidar.location[-1] - learner.init_label.location[-1]))
+                    object_vertical_error.update(np.abs(label_lidar.location[-1] - result[0].location[-1]))
+                    object_vertical_error_no_regress.update(np.abs(label_lidar.location[-1] - learner.init_label.location[-1]))
+
                     result = tracking_boxes_to_camera(result, calib)[0]
+
                     label_lidar = tracking_boxes_to_camera(
                         TrackingAnnotation3DList([label_lidar]), calib
                     )[0]
@@ -1428,7 +1449,12 @@ def test_rotated_pp_siamese_eval(
                     accuracy,
                     "distance =",
                     distance,
+                    "ve = ", object_vertical_error.get(-1),
+                    "ve_nr = ", object_vertical_error_no_regress.get(-1)
                 )
+
+            all_vertical_error.append(object_vertical_error.get(-1))
+            all_vertical_error_no_regress.append(object_vertical_error_no_regress.get(-1))
 
             os.makedirs("./plots/video/" + model_name, exist_ok=True)
 
@@ -1607,6 +1633,10 @@ def test_rotated_pp_siamese_eval(
         "total_success_ideal": total_success_ideal.average,
         "total_precision": total_precision.average,
         "total_success": total_success.average,
+        "vertical_error:": vertical_error.get(-1),
+        "vertical_error_no_regress:": vertical_error_no_regress.get(-1),
+        "all_vertical_error:": all_vertical_error,
+        "all_vertical_error_no_regress:": all_vertical_error_no_regress,
     }
 
     for k, v in result.items():
@@ -2071,13 +2101,81 @@ def create_v2_eval_kwargs():
     return results
 
 
+def create_v3_eval_kwargs():
+    params = {
+        "window_influence": [0.50, 0.80, 0.90, 0.40],
+        "score_upscale": [16, 8, 4, 2, 1],
+        "rotation_penalty": [0.98],
+        "offset_interpolation": [0.3, 0.35, 0.25],
+        "target_feature_merge_scale": [0],
+        "min_top_score": [1.0, 0.4],
+        "extrapolation_mode": [["linear", "l"], ["none", "n"], ],
+        "search_type": [["normal", "n"], ["small", "s"], ["snormal", "sn"]],
+        "target_type": [["normal", "n"]],
+    }
+    results = {}
+
+    for window_influence in params["window_influence"]:
+        for score_upscale in params["score_upscale"]:
+            for rotation_penalty in params["rotation_penalty"]:
+                for offset_interpolation in params["offset_interpolation"]:
+                    for target_feature_merge_scale in params[
+                        "target_feature_merge_scale"
+                    ]:
+                        for min_top_score in params[
+                            "min_top_score"
+                        ]:
+                            for search_type, search_type_name in params[
+                                "search_type"
+                            ]:
+                                for target_type, target_type_name in params[
+                                    "target_type"
+                                ]:
+                                    for extrapolation_mode, extrapolation_mode_name in params[
+                                        "extrapolation_mode"
+                                    ]:
+                                        name = (
+                                            "rp"
+                                            + str(rotation_penalty).replace(".", "")
+                                            + "-s"
+                                            + str(search_type_name).replace(".", "")
+                                            + "t"
+                                            + str(target_type_name).replace(".", "")
+                                            + "-su"
+                                            + str(score_upscale).replace(".", "")
+                                            + "-wi"
+                                            + str(window_influence).replace(".", "")
+                                            + "-tfms"
+                                            + str(target_feature_merge_scale).replace(".", "")
+                                            + "-mts"
+                                            + str(min_top_score).replace(".", "")
+                                            + "-oi"
+                                            + str(offset_interpolation).replace(".", "")
+                                            + "-ex"
+                                            + str(extrapolation_mode_name).replace(".", "")
+                                        )
+
+                                        results[name] = {
+                                            "window_influence": window_influence,
+                                            "score_upscale": score_upscale,
+                                            "rotation_penalty": rotation_penalty,
+                                            "target_feature_merge_scale": target_feature_merge_scale,
+                                            "min_top_score": min_top_score,
+                                            "offset_interpolation": offset_interpolation,
+                                            "extrapolation_mode": extrapolation_mode,
+                                            "search_type": search_type,
+                                            "target_type": target_type,
+                                        }
+    return results
+
+
 def multi_eval(
     id=0,
     gpu_capacity=4,
     total_devices=4,
     model_name=None,
-    tracks=["0019", "0020"],
-    eval_kwargs_name="v2",
+    tracks=["0010", "0011"],
+    eval_kwargs_name="v3",
     params_file=None,
     eval_id_prefix="",
     draw=False,
@@ -2087,13 +2185,14 @@ def multi_eval(
     eval_kwargs = {
         "v1": create_v1_eval_kwargs,
         "v2": create_v2_eval_kwargs,
+        "v3": create_v3_eval_kwargs,
     }[eval_kwargs_name]()
 
     results = {}
 
     runs = [(id, e_kwargs) for (id, e_kwargs) in eval_kwargs.items()]
 
-    device_id = id % gpu_capacity
+    device_id = id % total_devices
     i = id
 
     print("id =", id, "runs per process = ", len(runs) / (gpu_capacity * total_devices))
