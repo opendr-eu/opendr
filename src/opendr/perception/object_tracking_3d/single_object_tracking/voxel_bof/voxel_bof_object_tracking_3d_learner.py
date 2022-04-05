@@ -28,9 +28,16 @@ from opendr.engine.datasets import (
     MappedDatasetIterator,
 )
 from opendr.engine.data import PointCloud
-from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import SiameseTrackingDatasetIterator, SiameseTripletTrackingDatasetIterator
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.draw import stack_images
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.regressor.vertical import VerticalPositionRegressor
+from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import (
+    SiameseTrackingDatasetIterator,
+    SiameseTripletTrackingDatasetIterator,
+)
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.draw import (
+    stack_images,
+)
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.regressor.vertical import (
+    create_vertical_position_regressor,
+)
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.load import (
     create_model as second_create_model,
     load_from_checkpoint,
@@ -286,9 +293,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             model_metadata["format"] = "pth"
 
             torch.save(
-                {
-                    "state_dict": self.model.voxel_feature_extractor.state_dict()
-                },
+                {"state_dict": self.model.voxel_feature_extractor.state_dict()},
                 os.path.join(
                     path_no_folder_name,
                     folder_name_no_ext,
@@ -296,9 +301,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 ),
             )
             torch.save(
-                {
-                    "state_dict": self.model.middle_feature_extractor.state_dict()
-                },
+                {"state_dict": self.model.middle_feature_extractor.state_dict()},
                 os.path.join(
                     path_no_folder_name,
                     folder_name_no_ext,
@@ -325,9 +328,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             model_metadata["format"] = "onnx"
 
             torch.save(
-                {
-                    "state_dict": self.model.voxel_feature_extractor.state_dict()
-                },
+                {"state_dict": self.model.voxel_feature_extractor.state_dict()},
                 os.path.join(
                     path_no_folder_name,
                     folder_name_no_ext,
@@ -335,9 +336,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 ),
             )
             torch.save(
-                {
-                    "state_dict": self.model.middle_feature_extractor.state_dict()
-                },
+                {"state_dict": self.model.middle_feature_extractor.state_dict()},
                 os.path.join(
                     path_no_folder_name,
                     folder_name_no_ext,
@@ -356,9 +355,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             if verbose:
                 print("Saved Pytorch VFE, MFE and ONNX RPN sub-models.")
 
-        with open(
-            os.path.join(new_path, folder_name_no_ext + ".json"), "w"
-        ) as outfile:
+        with open(os.path.join(new_path, folder_name_no_ext + ".json"), "w") as outfile:
             json.dump(model_metadata, outfile)
 
     def load(self, path, verbose=False, backbone=False):
@@ -472,7 +469,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         if self.checkpoint_load_iter != 0:
             self.load_from_checkpoint(
-                checkpoints_path, self.checkpoint_load_iter, load_optimizer=load_optimizer
+                checkpoints_path,
+                self.checkpoint_load_iter,
+                load_optimizer=load_optimizer,
             )
 
         train(
@@ -534,11 +533,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         logger = Logger(silent, verbose, logging_path)
 
-        (
-            _,
-            eval_dataset_iterator,
-            ground_truth_annotations,
-        ) = self.__prepare_datasets(
+        (_, eval_dataset_iterator, ground_truth_annotations,) = self.__prepare_datasets(
             None,
             dataset,
             self.input_config,
@@ -578,8 +573,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
             raise ValueError("No model loaded or created")
 
         result = infer_create_pseudo_image(
-            self.model.branch, point_clouds, pc_range, self.infer_point_cloud_mapper, self.float_dtype,
-            times=self.times
+            self.model.branch,
+            point_clouds,
+            pc_range,
+            self.infer_point_cloud_mapper,
+            self.float_dtype,
+            times=self.times,
         )
 
         return result
@@ -615,9 +614,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             t2 = time.time()
             self.times["pseudo_image/infer_point_cloud_mapper"].append(t2 - t1)
 
-            input_data = merge_second_batch(
-                [pc_mapped]
-            )
+            input_data = merge_second_batch([pc_mapped])
             t21 = time.time()
             self.times["pseudo_image/merge_second_batch"].append(t21 - t2)
         elif isinstance(point_clouds, list):
@@ -631,9 +628,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             )
 
         pseudo_image = self.model.branch.create_pseudo_image(
-            example_convert_to_torch(
-                input_data, self.float_dtype, device=self.device
-            ),
+            example_convert_to_torch(input_data, self.float_dtype, device=self.device),
             pc_range,
         )
 
@@ -656,7 +651,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             self.lr_schedule,
             self.lr_schedule_params,
             self.device,
-            load_optimizer=load_optimizer
+            load_optimizer=load_optimizer,
         )
 
     def infer(self, point_cloud, frame=0, id=None, draw=False):
@@ -680,8 +675,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     "./plots/small_pi/" + str(frame) + ".png",
                 )
                 draw_pseudo_image(
-                    pseudo_image.squeeze(axis=0),
-                    "./plots/small_pi/a.png",
+                    pseudo_image.squeeze(axis=0), "./plots/small_pi/a.png",
                 )
                 self.__add_image(draw_pi, "small_pi")
 
@@ -699,9 +693,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             multi_rotate_features_and_searches_and_penalties = []
 
-            for i, (search, penalty) in enumerate(
-                multi_rotate_searches_and_penalties
-            ):
+            for i, (search, penalty) in enumerate(multi_rotate_searches_and_penalties):
                 search_features, search_image = create_pseudo_image_features(
                     pseudo_image,
                     search,
@@ -721,21 +713,15 @@ class VoxelBofObjectTracking3DLearner(Learner):
                         "./plots/search/" + str(frame) + "_" + str(i) + ".png",
                     )
                     draw_pseudo_image(
-                        search_image.squeeze(axis=0),
-                        "./plots/search/a.png",
+                        search_image.squeeze(axis=0), "./plots/search/a.png",
                     )
 
                     draw_search_feat = draw_pseudo_image(
                         search_features.squeeze(axis=0),
-                        "./plots/search_feat/"
-                        + str(frame)
-                        + "_"
-                        + str(i)
-                        + ".png",
+                        "./plots/search_feat/" + str(frame) + "_" + str(i) + ".png",
                     )
                     draw_pseudo_image(
-                        search_features.squeeze(axis=0),
-                        "./plots/search_feat/a.png",
+                        search_features.squeeze(axis=0), "./plots/search_feat/a.png",
                     )
 
                     self.__add_image(draw_search, "search")
@@ -753,7 +739,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 target_features_to_compare = [self.init_target_features]
 
                 if self.target_features_mode in ["all", "selected", "last"]:
-                    target_features_to_compare = [*target_features_to_compare, *self.lifetime_target_features]
+                    target_features_to_compare = [
+                        *target_features_to_compare,
+                        *self.lifetime_target_features,
+                    ]
 
                 for it, target_features in enumerate(target_features_to_compare):
                     scores, original_scores, scaled_scores = create_scaled_scores(
@@ -771,14 +760,22 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     if draw:
                         draw_scores = draw_pseudo_image(
                             scores.squeeze(axis=0),
-                            "./plots/scores/" + str(frame) + "_" + str(i) + "_" + str(it) + ".png",
+                            "./plots/scores/"
+                            + str(frame)
+                            + "_"
+                            + str(i)
+                            + "_"
+                            + str(it)
+                            + ".png",
                         )
                         draw_scores_original = draw_pseudo_image(
                             original_scores.squeeze(axis=0),
                             "./plots/scores_original/"
                             + str(frame)
                             + "_"
-                            + str(i) + "_" + str(it)
+                            + str(i)
+                            + "_"
+                            + str(it)
                             + ".png",
                         )
                         draw_scaled_scores = draw_pseudo_image(
@@ -786,7 +783,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
                             "./plots/scores_scaled_scores/"
                             + str(frame)
                             + "_"
-                            + str(i) + "_" + str(it)
+                            + str(i)
+                            + "_"
+                            + str(it)
                             + ".png",
                         )
                         self.__add_image(draw_scores, "scores")
@@ -815,9 +814,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 )
 
                 max_score = torch.max(top_scores)
-                max_idx = (top_scores == max_score).nonzero(as_tuple=False)[0][
-                    -2:
-                ]
+                max_idx = (top_scores == max_score).nonzero(as_tuple=False)[0][-2:]
 
                 draw_pseudo_image(
                     top_scores.squeeze(axis=0),
@@ -836,16 +833,21 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 self.search_size,
             )
 
-            new_angle = (
-                top_search[2] * self.rotation_interpolation
-                + self.search_region[2] * (1 - self.rotation_interpolation)
+            new_angle = top_search[
+                2
+            ] * self.rotation_interpolation + self.search_region[2] * (
+                1 - self.rotation_interpolation
             )
 
-            unreliable = self.min_top_score is not None and norm_max <= self.min_top_score
+            unreliable = (
+                self.min_top_score is not None and norm_max <= self.min_top_score
+            )
 
             if unreliable:
                 if self.extrapolation_mode == "linear":
-                    delta_image = self.extrapolation_direction / self.offset_interpolation
+                    delta_image = (
+                        self.extrapolation_direction / self.offset_interpolation
+                    )
                 elif self.extrapolation_mode == "none":
                     delta_image = np.array([0, 0], dtype=delta_image.dtype)
                 else:
@@ -853,11 +855,11 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
                 print("^not reliable, delta_image =", delta_image)
 
-                new_angle = (
-                    self.search_region[2]
-                )
+                new_angle = self.search_region[2]
 
-            print("norm_max_score =", norm_max, "raw_max_score =", torch.max(top_scores))
+            print(
+                "norm_max_score =", norm_max, "raw_max_score =", torch.max(top_scores)
+            )
 
             delta_image = delta_image[[1, 0]]
             delta_image *= self.offset_interpolation
@@ -888,9 +890,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
             vertical_position = self.init_label.location[-1]
 
             create_target_features = (
-                self.target_feature_merge_scale > 0 or
-                self.regress_vertical_position or
-                self.target_features_mode in ["all", "selected", "last"]
+                self.target_feature_merge_scale > 0
+                or self.regress_vertical_position
+                or self.target_features_mode in ["all", "selected", "last"]
             )
 
             if create_target_features and not unreliable:
@@ -912,9 +914,14 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
                 if self.regress_vertical_position:
                     vertical_position = (
-                        np.mean(self.model.branch.point_cloud_range[[2, 5]]) +
-                        self.model.vertical_position_regressor(target_features)
-                    ).detach().cpu().numpy()
+                        (
+                            np.mean(self.model.branch.point_cloud_range[[2, 5]])
+                            + self.model.vertical_position_regressor(target_features)
+                        )
+                        .detach()
+                        .cpu()
+                        .numpy()
+                    )
 
                 if self.target_features_mode in ["all", "selected", "last"]:
 
@@ -927,14 +934,14 @@ class VoxelBofObjectTracking3DLearner(Learner):
                         self.lifetime_target_features.append(target_features)
 
                     if self.target_features_mode == "last":
-                        self.lifetime_target_features = [self.lifetime_target_features[-1]]
+                        self.lifetime_target_features = [
+                            self.lifetime_target_features[-1]
+                        ]
 
                 if draw:
                     draw_target_feat_full = draw_pseudo_image(
                         self.init_target_features.squeeze(axis=0),
-                        "./plots/target_feat/"
-                        + str(frame)
-                        + "_target_feat_full.png",
+                        "./plots/target_feat/" + str(frame) + "_target_feat_full.png",
                     )
                     draw_target_feat_current_frame = draw_pseudo_image(
                         target_features.squeeze(axis=0),
@@ -953,9 +960,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     self.__add_image(
                         draw_target_feat_current_frame, "target_feat_current_frame"
                     )
-                    self.__add_image(
-                        draw_target_image, "target_image_current_frame"
-                    )
+                    self.__add_image(draw_target_image, "target_image_current_frame")
 
             t7 = time.time()
             self.times["target_feature_merge"].append(t7 - t6)
@@ -983,9 +988,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                         0,
                         None,
                         None,
-                        location=np.array(
-                            [*location_lidar, vertical_position]
-                        ),
+                        location=np.array([*location_lidar, vertical_position]),
                         dimensions=self.init_label.dimensions,
                         # np.array(
                         #     [*size_lidar, self.init_label.dimensions[-1]]
@@ -1008,7 +1011,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             if draw:
                 image = self._images["search"][-1]
-                image = stack_images([image, self._images["scores_original"][-1]], "horizontal")
+                image = stack_images(
+                    [image, self._images["scores_original"][-1]], "horizontal"
+                )
 
                 images_feat = [self._images["search_feat"][-1]]
                 if "target_feat_current_frame" in self._images:
@@ -1016,27 +1021,18 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     images_feat.append(self._images["target_feat_full"][-1])
                     images_feat.append(self._images["target_image_current_frame"][-1])
 
-                image = stack_images([
-                    image, stack_images(images_feat, "horizontal")
-                ], "vertical")
-                image = stack_images([
-                    image, self._images["small_pi"][-1]
-                ], "vertical")
+                image = stack_images(
+                    [image, stack_images(images_feat, "horizontal")], "vertical"
+                )
+                image = stack_images([image, self._images["small_pi"][-1]], "vertical")
                 self.__add_image(image, "summary")
 
                 draw_pseudo_image(
-                    image,
-                    "./plots/summary/"
-                    + str(frame)
-                    + "_"
-                    + str(i)
-                    + ".png",
+                    image, "./plots/summary/" + str(frame) + "_" + str(i) + ".png",
                 )
 
                 draw_pseudo_image(
-                    image,
-                    "./plots/summary/a"
-                    + ".png",
+                    image, "./plots/summary/a" + ".png",
                 )
 
             # delta_image_f = displacement_score_to_image_coordinates(
@@ -1096,9 +1092,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         target = batch_targets[0][0]
         search = batch_searches[0][0]
 
-        init_size_with_context = size_with_context(
-            target[1], self.context_amount
-        )
+        init_size_with_context = size_with_context(target[1], self.context_amount)
 
         init_lidar_aabb = create_lidar_aabb_from_target(
             [target[0], init_size_with_context, target[2]],
@@ -1139,8 +1133,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             image = stack_images([image, draw_feat], "vertical")
 
             draw_pseudo_image(
-                image,
-                "./plots/init/all.png",
+                image, "./plots/init/all.png",
             )
 
         # draw_pseudo_image(init_image, "./plots/init_image.png")
@@ -1302,11 +1295,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         # onnx.helper.printable_graph(self.model.graph)
 
     def __load_from_pth(
-        self,
-        model,
-        path,
-        use_original_dict=False,
-        state_dict_name="state_dict",
+        self, model, path, use_original_dict=False, state_dict_name="state_dict",
     ):
         all_params = torch.load(path, map_location=self.device)
         model.load_state_dict(
@@ -1351,9 +1340,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     example["annos"] = annotation
 
                 if point_cloud_with_calibration.image_shape is not None:
-                    example[
-                        "image_shape"
-                    ] = point_cloud_with_calibration.image_shape
+                    example["image_shape"] = point_cloud_with_calibration.image_shape
 
                 return example
 
@@ -1362,7 +1349,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
         def create_map_siamese_dataset_func(is_training):
             def map(data_target):
 
-                target_point_cloud_calib, search_point_cloud_calib, target_label, search_label = data_target
+                (
+                    target_point_cloud_calib,
+                    search_point_cloud_calib,
+                    target_label,
+                    search_label,
+                ) = data_target
                 target_point_cloud = target_point_cloud_calib.data
                 search_point_cloud = search_point_cloud_calib.data
                 calib = target_point_cloud_calib.calib
@@ -1377,7 +1369,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 del search_label_lidar_kitti["name"]
 
                 return (
-                    target_point_cloud, search_point_cloud, target_label_lidar_kitti, search_label_lidar_kitti,
+                    target_point_cloud,
+                    search_point_cloud,
+                    target_label_lidar_kitti,
+                    search_label_lidar_kitti,
                 )
 
             return map
@@ -1385,7 +1380,14 @@ class VoxelBofObjectTracking3DLearner(Learner):
         def create_map_siamese_triplet_dataset_func(is_training):
             def map(data_target):
 
-                target_point_cloud_calib, search_point_cloud_calib, other_point_cloud_calib, target_label, search_label, other_label = data_target
+                (
+                    target_point_cloud_calib,
+                    search_point_cloud_calib,
+                    other_point_cloud_calib,
+                    target_label,
+                    search_label,
+                    other_label,
+                ) = data_target
                 target_point_cloud = target_point_cloud_calib.data
                 search_point_cloud = search_point_cloud_calib.data
                 other_point_cloud = other_point_cloud_calib.data
@@ -1404,7 +1406,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 del other_label_lidar_kitti["name"]
 
                 return (
-                    target_point_cloud, search_point_cloud, other_point_cloud, target_label_lidar_kitti, search_label_lidar_kitti, other_label_lidar_kitti
+                    target_point_cloud,
+                    search_point_cloud,
+                    other_point_cloud,
+                    target_label_lidar_kitti,
+                    search_label_lidar_kitti,
+                    other_label_lidar_kitti,
                 )
 
             return map
@@ -1422,19 +1429,11 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 )
 
             dataset_path = dataset.path
-            input_cfg.kitti_info_path = (
-                dataset_path + "/" + input_cfg.kitti_info_path
-            )
-            input_cfg.kitti_root_path = (
-                dataset_path + "/" + input_cfg.kitti_root_path
-            )
-            input_cfg.record_file_path = (
-                dataset_path + "/" + input_cfg.record_file_path
-            )
+            input_cfg.kitti_info_path = dataset_path + "/" + input_cfg.kitti_info_path
+            input_cfg.kitti_root_path = dataset_path + "/" + input_cfg.kitti_root_path
+            input_cfg.record_file_path = dataset_path + "/" + input_cfg.record_file_path
             input_cfg.database_sampler.database_info_path = (
-                dataset_path
-                + "/"
-                + input_cfg.database_sampler.database_info_path
+                dataset_path + "/" + input_cfg.database_sampler.database_info_path
             )
 
             input_dataset_iterator = input_reader_builder.build(
@@ -1501,8 +1500,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             if gt_annos is None:
                 gt_annos = [
-                    info["annos"]
-                    for info in eval_dataset_iterator.dataset.kitti_infos
+                    info["annos"] for info in eval_dataset_iterator.dataset.kitti_infos
                 ]
 
         elif isinstance(val_dataset, DatasetIterator):
@@ -1634,13 +1632,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.infer_point_cloud_mapper = infer_point_cloud_mapper
 
         if self.regress_vertical_position:
-            self.model.vertical_position_regressor = VerticalPositionRegressor(
-                # self.model.branch.rpn.num_filters[self.feature_blocks - 1],
+            self.model.vertical_position_regressor = create_vertical_position_regressor(
                 self.model.branch.rpn.final_filters,
             )
 
             self.model.vertical_position_regressor.to(self.model.branch.device)
-            self.model.vertical_criterion = torch.nn.L1Loss()
+            self.model.vertical_criterion = torch.nn.SmoothL1Loss()
 
     @staticmethod
     def __extract_trailing(path):
@@ -1653,7 +1650,5 @@ class VoxelBofObjectTracking3DLearner(Learner):
         :rtype: tuple of three strings
         """
         head, tail = ntpath.split(path)
-        folder_name = tail or ntpath.basename(
-            head
-        )  # handle both a/b/c and a/b/c/
+        folder_name = tail or ntpath.basename(head)  # handle both a/b/c and a/b/c/
         return folder_name, head, tail
