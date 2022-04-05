@@ -323,7 +323,7 @@ class BoundingBox(Target):
 
         if with_confidence:
             result = np.array([
-                self.frame,
+                frame,
                 self.left,
                 self.top,
                 self.width,
