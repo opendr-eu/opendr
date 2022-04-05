@@ -56,6 +56,7 @@ wget https://nvidia.box.com/shared/static/wa34qwrwtk9njtyarwt5nvo6imenfy26.whl -
 sudo apt-get install libopenblas-base libopenmpi-dev
 pip3 install Cython
 pip3 install $TORCH
+rm ./torch-1.7.0-cp36-cp36m-linux_aarch64.whl
 
 # Install Torchvision
 TORCH_VISION=0.8.1
@@ -90,6 +91,7 @@ pip3 install autocfg==0.0.8
 pip3 install Automat==20.2.0
 pip3 install autopage==0.4.0
 pip3 install bcolz==1.2.1
+pip3 cache purge
 pip3 install cachetools==4.2.4
 pip3 install catkin-pkg==0.4.24
 pip3 install catkin-tools==0.8.2
@@ -116,6 +118,7 @@ pip3 install filterpy==1.4.5
 pip3 install flake8==4.0.1
 pip3 install flake8-import-order==0.18.1
 pip3 install flask
+pip3 cache purge
 pip3 install frozenlist==1.2.0
 pip3 install fsspec==2021.11.1
 pip3 install future==0.18.2
@@ -140,7 +143,7 @@ pip3 install iniconfig==1.1.1
 pip3 install joblib==1.0.1
 pip3 install kiwisolver==1.3.1
 pip3 install lap==0.4.0
-
+pip3 cache purge
 sudo apt-get install --yes llvm-10*
 sudo ln -s /usr/bin/llvm-config-10 /usr/bin/llvm-config
 pip3 install llvmlite==0.36.0
@@ -163,6 +166,7 @@ pip3 install oauthlib==3.1.1
 pip3 install onnx==1.10.2
 pip3 install onnxruntime==1.3.0
 pip3 install opencv-python==4.5.4.60
+pip3 cache purge
 pip3 install optuna==2.10.0
 pip3 install osrf-pycommon==1.0.0
 pip3 install packaging==21.3
@@ -193,6 +197,7 @@ pip3 install pytest==6.2.5
 pip3 install pytest-benchmark==3.4.1
 pip3 install python-dateutil==2.8.2
 pip3 install pytorch-lightning==1.2.3
+pip3 cache purge
 pip3 install pytz==2021.3
 pip3 install PyWavelets==1.1.1
 pip3 install PyYAML==5.3
@@ -220,6 +225,7 @@ pip3 install tenacity==8.0.1
 pip3 install tensorboard==2.4.1
 pip3 install tensorboard-plugin-wit==1.8.0
 pip3 install tensorboardX==2.0
+pip3 cache purge
 pip3 install toml==0.10.2
 pip3 install tqdm==4.54.0
 pip3 install trimesh==3.5.23
@@ -236,6 +242,7 @@ pip3 install yacs==0.1.8
 pip3 install yarl==1.7.2
 pip3 install zipp==3.6.0
 pip3 install zope.interface==5.4.0
+pip3 cache purge
 
 cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
 make
