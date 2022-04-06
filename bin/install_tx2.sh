@@ -244,6 +244,6 @@ pip3 install zipp==3.6.0
 pip3 install zope.interface==5.4.0
 pip3 cache purge
 
-cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
-make
-cd $OPENDR_HOME
+# cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
+# make
+# cd $OPENDR_HOME
