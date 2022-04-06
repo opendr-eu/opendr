@@ -63,7 +63,7 @@ TORCH_VISION=0.8.1
 sudo apt-get install --yes libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
 git clone --branch v$TORCH_VISION https://github.com/pytorch/vision torchvision
 cd torchvision
-export BUILD_VERSION=$TORCH_VISION
+export BUILD_VERSION=0.8.1
 sudo python3 setup.py install
 cd ../
 
