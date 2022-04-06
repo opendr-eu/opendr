@@ -61,7 +61,7 @@ rm ./torch-1.7.0-cp36-cp36m-linux_aarch64.whl
 # Install Torchvision
 TORCH_VISION=0.8.1
 sudo apt-get install --yes libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
-git clone --branch v$TORCH_VISION https://github.com/pytorch/vision torchvision
+git clone --branch v0.8.1 https://github.com/pytorch/vision torchvision
 cd torchvision
 export BUILD_VERSION=0.8.1
 sudo python3 setup.py install
