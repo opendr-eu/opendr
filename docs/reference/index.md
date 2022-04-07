@@ -43,6 +43,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [centernet Module](object-detection-2d-centernet.md)
             - [ssd Module](object-detection-2d-ssd.md)
             - [yolov3 Module](object-detection-2d-yolov3.md)
+            - [seq2seq-nms Module](object-detection-2d-nms-seq2seq_nms.md)
         - object detection 3d:
             - [voxel Module](voxel-object-detection-3d.md)
         - object tracking 2d:
@@ -109,6 +110,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [centernet Demo](/projects/perception/object_detection_2d/centernet)
             - [ssd Demo](/projects/perception/object_detection_2d/ssd)
             - [yolov3 Demo](/projects/perception/object_detection_2d/yolov3)
+            - [seq2seq-nms Demo](projects/perception/object_detection_2d/nms/seq2seq-nms)
         - object detection 3d:
             - [voxel Demo](/projects/perception/object_detection_3d/demos/voxel_object_detection_3d)
         - object tracking 2d:
