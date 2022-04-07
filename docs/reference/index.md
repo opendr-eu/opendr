@@ -110,7 +110,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [centernet Demo](/projects/perception/object_detection_2d/centernet)
             - [ssd Demo](/projects/perception/object_detection_2d/ssd)
             - [yolov3 Demo](/projects/perception/object_detection_2d/yolov3)
-            - [seq2seq-nms Demo](projects/perception/object_detection_2d/nms/seq2seq-nms)
+            - [seq2seq-nms Demo](/projects/perception/object_detection_2d/nms/seq2seq-nms)
         - object detection 3d:
             - [voxel Demo](/projects/perception/object_detection_3d/demos/voxel_object_detection_3d)
         - object tracking 2d:
