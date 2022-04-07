@@ -200,7 +200,7 @@ pip3 install pytorch-lightning==1.2.3
 pip3 cache purge
 pip3 install pytz==2021.3
 pip3 install PyWavelets==1.1.1
-pip3 install PyYAML==5.3
+pip3 install --ignore-installed PyYAML==5.3
 pip3 install requests==2.26.0
 pip3 install requests-oauthlib==1.3.0
 pip3 install resampy==0.2.2
