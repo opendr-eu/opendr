@@ -2103,13 +2103,13 @@ def create_v2_eval_kwargs():
 
 def create_v3_eval_kwargs():
     params = {
-        "window_influence": [0.50, 0.80, 0.90, 0.40],
-        "score_upscale": [16, 8, 4, 2, 1],
+        "window_influence": [0.45, 0.85],
+        "score_upscale": [16, 8, 32, 1],
         "rotation_penalty": [0.98],
         "offset_interpolation": [0.3, 0.35, 0.25],
         "target_feature_merge_scale": [0],
-        "min_top_score": [1.0, 0.4],
-        "extrapolation_mode": [["linear", "l"], ["none", "n"], ],
+        "min_top_score": [None, 1.0, 0.4],
+        "extrapolation_mode": [["linear", "l"]],
         "search_type": [["normal", "n"], ["small", "s"], ["snormal", "sn"]],
         "target_type": [["normal", "n"]],
     }
