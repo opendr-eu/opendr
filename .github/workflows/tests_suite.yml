@@ -286,6 +286,7 @@ jobs:
         # The following two are dependecies for some other packages and pip cannot automatically install them if they are not on a repo
         pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
         pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
 
         # Install specific package for testing
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
@@ -338,6 +339,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Download artifact
+
       uses: actions/download-artifact@v2
       with:
         path: artifact
