@@ -54,7 +54,7 @@ class ConvolutionalVerticalPositionRegressor(nn.Module):
 
         for i, (layer_stride, (in_filters, out_filters)) in enumerate(zip(layer_strides, layer_filters)):
             layers.append(
-                nn.Conv2d(in_filters, out_filters, 1, padding=1, stride=layer_stride)
+                nn.Conv2d(in_filters, out_filters, 1, stride=layer_stride)
             )
             if i < len(layer_filters) - 1:
                 layers.append(nn.BatchNorm2d(out_filters))
@@ -104,7 +104,7 @@ class CenterLinearVerticalPositionRegressor(nn.Module):
         return result
 
 
-def create_vertical_position_regressor(input_filters, type="center_linear", **kwargs):
+def create_vertical_position_regressor(input_filters, type="convolutional", **kwargs):
     if type == "center_linear":
         return CenterLinearVerticalPositionRegressor(input_filters, **kwargs)
     elif type == "convolutional":
