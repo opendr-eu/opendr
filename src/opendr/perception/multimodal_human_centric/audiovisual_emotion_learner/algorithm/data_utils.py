@@ -1,0 +1,105 @@
+# -*- coding: utf-8 -*-
+import librosa
+import numpy as np
+import cv2
+import torch
+from facenet_pytorch import MTCNN
+
+
+def preprocess_video(video_path, target_time=3.6, input_fps=30, save_frames=15, target_im_size=224, device='cpu'):
+    """
+    This function preprocesses input video file: crops/pads it to desired target_time (match with audio),
+    performs face detection and uniformly selects N frames
+    Parameters
+    ----------
+    video_path : str
+        path to video file.
+    target_time : float, optional
+        Target time of processed video file in seconds. The default is 3.6.
+    input_fps : int, optional
+        Frames Per Second of input video file. The default is 30.
+    save_frames : int, optional
+        Length of target frame sequence. The default is 15.
+    target_im_size : int, optional
+        Target width and height of each frame. The default is 224.
+
+    Returns
+    -------
+    numpy_video: numpy.array
+                 N frames as numpy array
+
+    """
+
+    mtcnn = MTCNN(image_size=(720, 1280), device=device)
+
+    def select_distributed(m, n): return [i*n//m + n//(2*m) for i in range(m)]
+
+    cap = cv2.VideoCapture(video_path)
+    framen = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    if target_time*input_fps > framen:
+        skip_begin = int((framen - (target_time*input_fps)) // 2)
+        for i in range(skip_begin):
+            _, im = cap.read()
+
+    framen = int(target_time*input_fps)
+    frames_to_select = select_distributed(save_frames, framen)
+    numpy_video = []
+    frame_ctr = 0
+    while True:
+        ret, im = cap.read()
+        if not ret or len(frames_to_select) == 0:
+            break
+        if frame_ctr not in frames_to_select:
+            frame_ctr += 1
+            continue
+        else:
+            frames_to_select.remove(frame_ctr)
+            frame_ctr += 1
+
+        im_rgb = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+        im_rgb = torch.tensor(im_rgb).to(device)
+
+        bbox = mtcnn.detect(im_rgb)
+        if bbox[0] is not None:
+            bbox = bbox[0][0]
+            bbox = [round(x) for x in bbox]
+            x1, y1, x2, y2 = bbox
+
+        im = im[y1:y2, x1:x2, :]
+        im = cv2.resize(im, (target_im_size, target_im_size))
+        numpy_video.append(im)
+
+    if len(frames_to_select) > 0:
+        for i in range(len(frames_to_select)):
+            numpy_video.append(np.zeros((224, 224, 3), dtype=np.uint8))
+
+    numpy_video = np.array(numpy_video)
+    return numpy_video
+
+
+def preprocess_audio(audio_path, sr=22050, target_time=3.6):
+    """
+    This function preprocesses an audio file. Audio file is cropped/padded to target time.
+
+    Parameters
+    ----------
+    audio_path : str
+        Path to audio file.
+    target_time : int, optional
+        Target duration of audio. The default is 3.6.
+    sr : int, optional
+        Sampling rate of audio. The default is 22050.
+
+    Returns
+    -------
+    y : numpy array
+        audio file saved as numpy array.
+    """
+    y, _ = librosa.core.load(audio_path, sr=sr)
+    target_length = int(sr * target_time)
+    if len(y) < target_length:
+        y = np.array(list(y) + [0 for i in range(target_length - len(y))])
+    else:
+        remain = len(y) - target_length
+        y = y[remain//2:-(remain - remain//2)]
+    return y
