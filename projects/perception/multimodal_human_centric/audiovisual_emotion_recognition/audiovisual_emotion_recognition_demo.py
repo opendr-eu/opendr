@@ -16,8 +16,9 @@
 
 import argparse
 import librosa
-from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner./
-algorithm.data import get_audiovisual_emotion_dataset
+from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm.data import (
+    get_audiovisual_emotion_dataset
+    )
 from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
 
 NUM_2_CLASS = {0: 'neutral', 1: 'calm', 2: 'happy', 3: 'sad', 4: 'angry', 5: 'fearful', 6: 'disgust', 7: 'surprised'}
