@@ -20,7 +20,8 @@ def update_tensorboard(tensorboard_logger, logger_prefix, name, value, epoch_idx
 
 
 def train(model, train_loader, val_loader, learning_rate, momentum, dampening, weight_decay, n_epochs, save_dir, lr_steps,
-          mod_drop='zerodrop', device='cpu', silent=False, verbose=True, tensorboard_logger=None, eval_mode='audiovisual', restore_best=False):
+          mod_drop='zerodrop', device='cpu', silent=False, verbose=True,
+          tensorboard_logger=None, eval_mode='audiovisual', restore_best=False):
 
     metrics = {'train_loss': [], 'train_acc': []}
     train_logger = Logger(os.path.join(save_dir, 'train.log'),

@@ -135,7 +135,8 @@ class AudiovisualEmotionLearner(Learner):
                 self._validate_x2(x2)
                 self._validate_y(y)
 
-    def fit(self, dataset, val_dataset=None, logging_path='logs/', silent=False, verbose=True, eval_mode='audiovisual', restore_best=False):
+    def fit(self, dataset, val_dataset=None, logging_path='logs/', silent=False, verbose=True,
+            eval_mode='audiovisual', restore_best=False):
         """
         Method to train the audiovisual emotion recognition model
 
@@ -410,7 +411,7 @@ class AudiovisualEmotionLearner(Learner):
 
         if verbose:
             print('Pretrained model is loaded successfully')
-    
+
     def download(self, path):
         """
         This function is used to download a pretrained model for the audiovisual emotion recognition task
@@ -446,7 +447,6 @@ class AudiovisualEmotionLearner(Learner):
             print('Pretrained model downloaded to the following directory\n{}'.format(path))
         else:
             raise UserWarning('No pretrained model for architecture "{}"'.format(self.architecture))
-
 
     def optimize(self):
         raise NotImplementedError

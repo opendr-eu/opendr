@@ -16,7 +16,8 @@
 
 import argparse
 import librosa
-from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm.data import get_audiovisual_emotion_dataset
+from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner./
+     algorithm.data import get_audiovisual_emotion_dataset
 from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
 
 NUM_2_CLASS = {0: 'neutral', 1: 'calm', 2: 'happy', 3: 'sad', 4: 'angry', 5: 'fearful', 6: 'disgust', 7: 'surprised'}
@@ -30,9 +31,8 @@ args = parser.parse_args()
 avlearner = AudiovisualEmotionLearner(device='cuda', fusion='ia', mod_drop='zerodrop')
 
 avlearner.download('model')
-avlearner.load('model')  
+avlearner.load('model')
 
 audio, video = avlearner.load_inference_data(args.input_audio, args.input_video)
 prediction = avlearner.infer(audio, video)
 print(NUM_2_CLASS[prediction.data])
-
