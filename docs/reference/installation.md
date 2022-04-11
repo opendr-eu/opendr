@@ -246,3 +246,40 @@ and
 ```
 sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda
 ```
+
+# Build the TX-2 docker image yourself
+You can also build the corresponding docker image on a Nvidia-TX2:
+```bash
+git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
+cd opendr
+sudo docker build -t opendr/opendr-tx2 .
+```
+Note that TX-2 should be flashed with Jetpack 4.6 and that this might take a while (~4-5h).
+
+To enable GPU usage on TX-2 within docker, first edit `/etc/docker/daemon.json` in order to set the default docker runtime:
+```
+{
+    "runtimes": {
+        "nvidia": {
+            "path": "nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    },
+    "default-runtime": "nvidia"
+}
+```
+
+Restart docker afterwards:
+```
+sudo systemctl restart docker.service
+```
+
+In order to run the docker image, run the following command to access bash within the docker:
+```bash
+sudo docker run --gpus all -it --privileged -v /tmp/.X11-unix:/tmp/.X11-unix =e DISPLAY=unix$DISPLAY opendr/opendr-tx2 /bin/bash
+```
+
+After that you should enable the environment variables with:
+```bash
+source bin/activate_tx2.sh
+```
