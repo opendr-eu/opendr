@@ -103,8 +103,7 @@ class AudiovisualEmotionLearner(Learner):
 
         if x.data.shape[1] != self.seq_length:
             msg = 'The temporal dimension of data does not match specified sequence length of the model\n' +\
-                  'Received input with temporal dimension: {} and specified sequence length is: {}.'.format(x.data.shape[1],
-                  self.seq_length)
+                  'Received input with dimension: {} and sequence length is: {}.'.format(x.data.shape[1], self.seq_length)
             raise ValueError(msg)
 
     def _validate_y(self, y):
