@@ -16,8 +16,6 @@ import torch
 import numpy as np
 import os
 from opendr.engine.datasets import DatasetIterator
-from urllib.request import urlretrieve
-import zipfile
 from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm import spatial_transforms as transforms
 from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm.data_utils import (
      preprocess_video,
