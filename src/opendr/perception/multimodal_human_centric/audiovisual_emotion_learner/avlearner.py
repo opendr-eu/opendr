@@ -13,17 +13,13 @@
 # limitations under the License.
 
 # general imports
-import numpy as np
 import torch
 from torch.utils.data import DataLoader
 import os
 import json
 from torch.utils.tensorboard import SummaryWriter
 from urllib.request import urlretrieve
-import cv2
 import librosa
-from PIL import Image
-import soundfile as sf
 
 # OpenDR engine imports
 from opendr.engine.learners import Learner
@@ -107,8 +103,8 @@ class AudiovisualEmotionLearner(Learner):
 
         if x.data.shape[1] != self.seq_length:
             msg = 'The temporal dimension of data does not match specified sequence length of the model\n' +\
-                  'Received input with temporal dimension: {} and specified sequence length is: ' +\
-                   '{}.'.format(x.data.shape[1], self.seq_length)
+                  'Received input with temporal dimension: {} and specified sequence length is: {}.'.format(x.data.shape[1],
+                  self.seq_length)
             raise ValueError(msg)
 
     def _validate_y(self, y):

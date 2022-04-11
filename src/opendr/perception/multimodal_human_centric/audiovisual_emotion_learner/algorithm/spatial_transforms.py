@@ -149,7 +149,6 @@ class RandomRotate(object):
         self.interpolation = Image.BILINEAR
 
     def __call__(self, img):
-        im_size = img.size
         ret_img = img.rotate(self.rotate_angle, resample=self.interpolation)
 
         return ret_img

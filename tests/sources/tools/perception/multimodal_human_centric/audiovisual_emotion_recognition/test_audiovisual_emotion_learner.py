@@ -18,16 +18,12 @@ import torch
 import tempfile
 import numpy as np
 import random
-import imageio
-from urllib.request import urlretrieve
-import cv2
 
 # OpenDR imports
 from opendr.engine.data import Video, Timeseries
 from opendr.engine.target import Category
 from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
 from opendr.engine.datasets import DatasetIterator
-from opendr.engine.constants import OPENDR_SERVER_URL
 
 
 class DummyDataset(DatasetIterator):
@@ -99,7 +95,6 @@ class TestRgbdHandGestureLearner(unittest.TestCase):
 
         # create learner and download pretrained model
         learner = AudiovisualEmotionLearner(num_class=8)
-        model_path = os.path.join(temp_dir.name, 'model')
 
         # make inference
         pred = learner.infer(xa, xv)
