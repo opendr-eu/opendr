@@ -442,6 +442,7 @@ def test_pp_siamese_fit(
     checkpoint_after_iter=1000,
     lr=0.0001,
     backbone="pp",
+    load_backbone=True,
     **kwargs,
 ):
     print("Fit", name, "start", file=sys.stderr)
@@ -456,7 +457,8 @@ def test_pp_siamese_fit(
         backbone=backbone,
         **kwargs,
     )
-    learner.load(backbone_model_paths[backbone], backbone=True, verbose=True)
+    if load_backbone:
+        learner.load(backbone_model_paths[backbone], backbone=True, verbose=True)
     learner.fit(
         kitti_detection,
         model_dir="./temp/" + model_name,
@@ -495,6 +497,7 @@ def test_pp_siamese_fit_siamese_training(
         "0016",
     ],
     load_optimizer=True,
+    load_backbone=True,
     **kwargs,
 ):
     print("Fit", name, "start", file=sys.stderr)
@@ -524,7 +527,8 @@ def test_pp_siamese_fit_siamese_training(
         backbone=backbone,
         **kwargs,
     )
-    learner.load(backbone_model_paths[backbone], backbone=True, verbose=True)
+    if load_backbone:
+        learner.load(backbone_model_paths[backbone], backbone=True, verbose=True)
     learner.fit(
         dataset_siamese_tracking,
         model_dir="./temp/" + model_name,
