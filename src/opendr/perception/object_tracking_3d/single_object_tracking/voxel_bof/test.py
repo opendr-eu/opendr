@@ -2379,7 +2379,7 @@ def create_v6_eval_kwargs():
 
 def create_v6c_eval_kwargs():
     params = {
-        "window_influence": [0.85, 0.86, 0.85, 0.84, 0.87],
+        "window_influence": [0.85, 0.8, 0.9],
         "score_upscale": [16, 8],
         "rotation_penalty": [0.98],
         "offset_interpolation": [0.3, 0.25, 0.255, 0.245, 0.305, 0.295, 0.253, 0.247],
