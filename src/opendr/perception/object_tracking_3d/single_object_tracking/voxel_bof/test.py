@@ -2377,13 +2377,88 @@ def create_v6_eval_kwargs():
     return results
 
 
+def create_v6c_eval_kwargs():
+    params = {
+        "window_influence": [0.85, 0.86, 0.85, 0.84, 0.87],
+        "score_upscale": [16, 8],
+        "rotation_penalty": [0.98],
+        "offset_interpolation": [0.3, 0.25, 0.255, 0.245, 0.305, 0.295, 0.253, 0.247],
+        "target_feature_merge_scale": [0, 0.01, 0.005],
+        "min_top_score": [None, 0.1],
+        "extrapolation_mode": [["linear", "l"]],
+        "search_type": [["small", "s"], ["snormal", "sn"]],
+        "target_type": [["normal", "n"], ["original", "o"]],
+        "context_amount": [0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 0.30, 0.31, 0.32],
+    }
+    results = {}
+
+    for window_influence in params["window_influence"]:
+        for score_upscale in params["score_upscale"]:
+            for rotation_penalty in params["rotation_penalty"]:
+                for offset_interpolation in params["offset_interpolation"]:
+                    for target_feature_merge_scale in params[
+                        "target_feature_merge_scale"
+                    ]:
+                        for min_top_score in params[
+                            "min_top_score"
+                        ]:
+                            for search_type, search_type_name in params[
+                                "search_type"
+                            ]:
+                                for target_type, target_type_name in params[
+                                    "target_type"
+                                ]:
+                                    for extrapolation_mode, extrapolation_mode_name in params[
+                                        "extrapolation_mode"
+                                    ]:
+                                        for context_amount in params[
+                                            "context_amount"
+                                        ]:
+                                            name = (
+                                                "rp"
+                                                + str(rotation_penalty).replace(".", "")
+                                                + "-s"
+                                                + str(search_type_name).replace(".", "")
+                                                + "t"
+                                                + str(target_type_name).replace(".", "")
+                                                + "-su"
+                                                + str(score_upscale).replace(".", "")
+                                                + "-wi"
+                                                + str(window_influence).replace(".", "")
+                                                + "-tfms"
+                                                + str(target_feature_merge_scale).replace(".", "")
+                                                + "-mts"
+                                                + str(min_top_score).replace(".", "")
+                                                + "-oi"
+                                                + str(offset_interpolation).replace(".", "")
+                                                + "-ex"
+                                                + str(extrapolation_mode_name).replace(".", "")
+                                                + "-c"
+                                                + str(context_amount).replace(".", "")
+                                            )
+
+                                            results[name] = {
+                                                "window_influence": window_influence,
+                                                "score_upscale": score_upscale,
+                                                "rotation_penalty": rotation_penalty,
+                                                "target_feature_merge_scale": target_feature_merge_scale,
+                                                "min_top_score": min_top_score,
+                                                "offset_interpolation": offset_interpolation,
+                                                "extrapolation_mode": extrapolation_mode,
+                                                "search_type": search_type,
+                                                "target_type": target_type,
+                                                "context_amount": context_amount,
+                                            }
+    return results
+
+
 def multi_eval(
     id=0,
     gpu_capacity=4,
     total_devices=4,
     model_name=None,
     tracks=["0010", "0011"],
-    eval_kwargs_name="v6",
+    eval_kwargs_name="v6c",
     params_file=None,
     eval_id_prefix="",
     draw=False,
@@ -2397,6 +2472,7 @@ def multi_eval(
         "v4": create_v4_eval_kwargs,
         "v5": create_v5_eval_kwargs,
         "v6": create_v6_eval_kwargs,
+        "v6c": create_v6c_eval_kwargs,
     }[eval_kwargs_name]()
 
     results = {}
