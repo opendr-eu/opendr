@@ -422,7 +422,7 @@ class AudiovisualEmotionLearner(Learner):
             os.makedirs(path, exist_ok=True)
 
         if self.fusion + '_' + self.mod_drop in PRETRAINED_MODEL:
-            assert self.n_class == 8,\
+            assert self.num_class == 8,\
                 'For pretrained audiovisual emotionrecognition model, `num_cluss` must be 8'
 
             server_url = os.path.join(OPENDR_SERVER_URL,
@@ -441,7 +441,7 @@ class AudiovisualEmotionLearner(Learner):
             urlretrieve(weights_url, weights_file)
             print('Pretrained model downloaded to the following directory\n{}'.format(path))
         else:
-            raise UserWarning('No pretrained model for architecture "{}"'.format(self.architecture))
+            raise UserWarning('No pretrained model for fusion "{}" and modality drop "{}"'.format(self.fusion, self.mod_drop))
 
     def optimize(self):
         raise NotImplementedError
