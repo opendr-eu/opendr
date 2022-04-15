@@ -52,9 +52,9 @@ while True:
                 color = (0, 255, 0)
             else:
                 color = (0, 0, 255)
-            img = cv2.rectangle(frame, (startX ,startY), (endX, endY), color, thickness)
+            img = cv2.rectangle(frame, (startX, startY), (endX, endY), color, thickness)
             img = cv2.putText(img, result.description, (startX, endY - 10), font,
-                           fontScale, color, thickness, cv2.LINE_AA)
+                              fontScale, color, thickness, cv2.LINE_AA)
     else:
         img = frame
     cv2.imshow("face recognition", img)
