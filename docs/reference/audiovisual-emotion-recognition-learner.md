@@ -165,7 +165,7 @@ The former keeps the metadata and the latter keeps the model weights.
 AudiovisualEmotionLearner.load(path)  
 ```
 
-This method is used to download a pretrained model from a given directory. Pretrained models are provided for the 'ia' fusion with 'zerodrop' modality dropout. The pretrained model is trained ion [RAVDESS](https://zenodo.org/record/1188976#.YlkXNyjP1PY) dataset which is under CC BY-NC-SA 4.0 license.
+This method is used to download a pretrained model from a given directory. Pretrained models are provided for the 'ia' fusion with 'zerodrop' modality dropout. The pretrained model is trained on [RAVDESS](https://zenodo.org/record/1188976#.YlkXNyjP1PY) dataset which is under CC BY-NC-SA 4.0 license.
 
 **Parameters**:
 
