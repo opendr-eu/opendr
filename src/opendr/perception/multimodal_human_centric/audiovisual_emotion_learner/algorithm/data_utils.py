@@ -16,8 +16,6 @@ import os
 import librosa
 import numpy as np
 import cv2
-import torch
-import time
 from opendr.perception.object_detection_2d import RetinaFaceLearner
 
 
