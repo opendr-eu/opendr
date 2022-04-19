@@ -24,7 +24,7 @@ from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algo
 import librosa
 from PIL import Image
 import random
-
+from tqdm import tqdm
 
 class RavdessDataset(DatasetIterator):
     def __init__(self, annotation, video_transform, sr=22050, n_mfcc=10):
@@ -119,7 +119,7 @@ def preprocess_ravdess(src='RAVDESS/', sr=22050, n_mfcc=10, target_time=3.6,
         elif int(actor[-2:]) in test_ids:
             subset = 'testing'
 
-        for file in os.listdir(os.path.join(src, actor)):
+        for file in tqdm(os.listdir(os.path.join(src, actor))):
             if file.endswith('.mp4'):
                 video = preprocess_video(os.path.join(src, actor, file), target_time, input_fps,
                                          save_frames, target_im_size, device)

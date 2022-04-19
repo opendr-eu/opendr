@@ -323,6 +323,15 @@ class AudiovisualEmotionLearner(Learner):
 
         return prediction
 
+    def pred_to_label(self, prediction):
+        """
+        This function converts the numeric class value to huamn-interpretable emotion label for RAVDESS dataset
+        """
+        assert self.num_class == 8, 'Unknown emotion class vocabulary for given number of classes'
+
+        NUM_2_CLASS = {0: 'neutral', 1: 'calm', 2: 'happy', 3: 'sad', 4: 'angry', 5: 'fearful', 6: 'disgust', 7: 'surprised'}
+        return NUM_2_CLASS[prediction.data]
+
     def save(self, path, verbose=True):
         """
         This function is used to save the current model given a directory path.

@@ -17,7 +17,6 @@
 import argparse
 from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
 
-NUM_2_CLASS = {0: 'neutral', 1: 'calm', 2: 'happy', 3: 'sad', 4: 'angry', 5: 'fearful', 6: 'disgust', 7: 'surprised'}
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-input_video', type=str, help='path to video file', required=True)
@@ -32,4 +31,4 @@ avlearner.load('model')
 
 audio, video = avlearner.load_inference_data(args.input_audio, args.input_video)
 prediction = avlearner.infer(audio, video)
-print(NUM_2_CLASS[prediction.data])
+print(avlearner.pred_to_label(prediction))

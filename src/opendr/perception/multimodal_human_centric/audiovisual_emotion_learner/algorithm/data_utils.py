@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import librosa
 import numpy as np
 import cv2
 import torch
-from facenet_pytorch import MTCNN
+import time
+from opendr.perception.object_detection_2d import RetinaFaceLearner
 
 
 def preprocess_video(video_path, target_time=3.6, input_fps=30, save_frames=15, target_im_size=224, device='cpu'):
@@ -43,7 +45,11 @@ def preprocess_video(video_path, target_time=3.6, input_fps=30, save_frames=15, 
 
     """
 
-    mtcnn = MTCNN(image_size=(720, 1280), device=device)
+    learner = RetinaFaceLearner(backbone='resnet', device=device)
+
+    if not os.path.exists('./retinaface_resnet'):
+        learner.download(".", mode="pretrained")
+    learner.load("./retinaface_resnet")
 
     def select_distributed(m, n): return [i*n//m + n//(2*m) for i in range(m)]
 
@@ -69,16 +75,13 @@ def preprocess_video(video_path, target_time=3.6, input_fps=30, save_frames=15, 
             frames_to_select.remove(frame_ctr)
             frame_ctr += 1
 
-        im_rgb = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-        im_rgb = torch.tensor(im_rgb).to(device)
+        bboxes = learner.infer(im)
+        if len(bboxes) > 1:
+            print('Warning! Multiple faces detected. Using first detected face')
 
-        bbox = mtcnn.detect(im_rgb)
-        if bbox[0] is not None:
-            bbox = bbox[0][0]
-            bbox = [round(x) for x in bbox]
-            x1, y1, x2, y2 = bbox
+        im = im[int(bboxes[0].top):int(bboxes[0].top+bboxes[0].height),
+                int(bboxes[0].left):int(bboxes[0].left+bboxes[0].width), :]
 
-        im = im[y1:y2, x1:x2, :]
         im = cv2.resize(im, (target_im_size, target_im_size))
         numpy_video.append(im)
 
