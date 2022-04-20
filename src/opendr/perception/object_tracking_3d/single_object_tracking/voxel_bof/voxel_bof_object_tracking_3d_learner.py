@@ -156,6 +156,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         bof_mode="none",
         extrapolation_mode="none",  # "none", "linear"
         offset_interpolation=1,
+        vertical_offset_interpolation=1,
         min_top_score=None,
         regress_vertical_position=False,
         regression_training_isolated=False,
@@ -215,6 +216,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.overwrite_strides = overwrite_strides
         self.target_features_mode = target_features_mode
         self.upscaling_mode = upscaling_mode
+        self.vertical_offset_interpolation = vertical_offset_interpolation
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -962,6 +964,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     )
                     self.__add_image(draw_target_image, "target_image_current_frame")
 
+            vertical_position = vertical_position * self.vertical_offset_interpolation + self.last_vertical_position * (1 - self.vertical_offset_interpolation)
+            self.last_vertical_position = vertical_position
+
             t7 = time.time()
             self.times["target_feature_merge"].append(t7 - t6)
 
@@ -1152,6 +1157,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
             net.bv_range,
             net.point_cloud_range[[2, 5]],
         )
+
+        self.last_vertical_position = self.init_label.location[-1]
 
     def optimize(self, do_constant_folding=False):
         """

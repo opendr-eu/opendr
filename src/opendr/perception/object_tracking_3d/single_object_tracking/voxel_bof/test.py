@@ -1052,6 +1052,7 @@ def load_params_from_file(params_file):
         "threshold",
         "scale",
         "offset_interpolation",
+        "vertical_offset_interpolation",
     ]
 
     object_names = [
