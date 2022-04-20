@@ -3800,6 +3800,8 @@ def run_fx3_1(id=0, gpu_capacity=4, total_devices=4):
                                     + str(lr).replace(".", "")
                                     + "-rpos"
                                     + str(r_pos).replace(".", "")
+                                    + "-ds"
+                                    + str(decay_steps).replace(".", "")
                                 )
                                 result.append(
                                     (
@@ -3872,6 +3874,8 @@ def run_fx3_1_0(id=0, gpu_capacity=4, total_devices=4):
                                     + str(lr).replace(".", "")
                                     + "-rpos"
                                     + str(r_pos).replace(".", "")
+                                    + "-ds"
+                                    + str(decay_steps).replace(".", "")
                                 )
                                 result.append(
                                     (
