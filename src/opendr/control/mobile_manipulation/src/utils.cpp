@@ -194,9 +194,7 @@ namespace utils {
     return diff;
   }
 
-  bool startsWith(const std::string &str, const std::string &substr) {
-    return (str.find(substr) == 0);
-  }
+  bool startsWith(const std::string &str, const std::string &substr) { return (str.find(substr) == 0); }
 
   bool endsWith(const std::string &str, const std::string &substr) {
     size_t pos = str.rfind(substr);
