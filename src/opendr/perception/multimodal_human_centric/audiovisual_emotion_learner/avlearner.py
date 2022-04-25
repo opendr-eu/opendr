@@ -137,7 +137,8 @@ class AudiovisualEmotionLearner(Learner):
 
         :param dataset: training dataset object
         :type dataset: engine.datasets.DatasetIterator
-        :param val_set: validation samples, default to None
+        :param val_dataset: validation samples, default to None
+
                         if available, `val_set` is used to select
                         the best checkpoint for final model
         :type val_set: engine.datasets.DatasetIterator
