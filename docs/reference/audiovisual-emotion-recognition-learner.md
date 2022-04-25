@@ -5,7 +5,9 @@ The *audiovisual_emotion_learner* module contains the *AudiovisualEmotionLearner
 ### Class AudiovisualEmotionLearner
 Bases: `opendr.engine.learners.Learner`
 
-The *AudiovisualEmotionLearner* class provides an implementation of audiovisual emotion recognition method using audio and video (frontal face) inputs. The implementation follows the method described in ['Self-attention fusion for audiovisual emotion recognition with incomplete data'](https://arxiv.org/abs/2201.11095). Three fusion methods are provided.
+The *AudiovisualEmotionLearner* class provides an implementation of audiovisual emotion recognition method using audio and video (frontal face) inputs.
+The implementation follows the method described in ['Self-attention fusion for audiovisual emotion recognition with incomplete data'](https://arxiv.org/abs/2201.11095).
+Three fusion methods are provided.
 
 AudiovisualEmotionLearner relies on EfficientFace model implementation [1]. Parts  of training pipeline are modified from [2].
 
