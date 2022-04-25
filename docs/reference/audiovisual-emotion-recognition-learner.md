@@ -279,7 +279,9 @@ opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm
   Additionally, pretrained EfficientFace model can be obtained from [here](https://github.com/zengqunzhao/EfficientFace) and used for weight initialization of the vision backbone by setting `pretr_ef='EfficientFace_Trained_on_AffectNet7.pth.tar'`.
   
 * **Using pretrained audiovisual emotion recognition model**.  
-  In this example, we will demonstrate how a pretrained audiovisual emotion recognition model can be used. First, we will download the pre-trained model. The model is trained on RAVDESS [3] dataset under CC BY-NC-SA 4.0 license.
+  In this example, we will demonstrate how a pretrained audiovisual emotion recognition model can be used.
+  First, we will download the pre-trained model.
+  The model is trained on RAVDESS [3] dataset under CC BY-NC-SA 4.0 license.
 
    ```python
   from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner 
