@@ -298,7 +298,6 @@ jobs:
         # Utils contains hyperparameter tuning
         if [ "$package" == "utils" ]; then
               pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
-
         else
               pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
@@ -339,7 +338,6 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Download artifact
-
       uses: actions/download-artifact@v2
       with:
         path: artifact
