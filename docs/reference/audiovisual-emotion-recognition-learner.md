@@ -24,7 +24,7 @@ AudiovisualEmotionLearner(self, num_class, seq_length, fusion, mod_drop, pretr_e
 - **num_class**: *int, default=8*  
   Specifies the number of classes.
 
-- **seq_length**: *int, default=15*
+- **seq_length**: *int, default=15*\
   Length of frame sequence representing a video.
 
 - **fusion**: *str, default='ia'*
