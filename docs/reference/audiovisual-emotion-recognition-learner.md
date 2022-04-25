@@ -33,7 +33,8 @@ AudiovisualEmotionLearner(self, num_class, seq_length, fusion, mod_drop, pretr_e
   Refer [here](https://arxiv.org/abs/2201.11095) for details.
 
 - **mod_dropout**: *str, default='zerodrop', {'nodrop', 'noisedrop', 'zerodrop'}*
-  Modality dropout method. Refer to [here](https://arxiv.org/abs/2201.11095) for details.
+  Modality dropout method.
+  Refer to [here](https://arxiv.org/abs/2201.11095) for details.
 
 - **pretr_ef**: *str, default=None*
   Checkpoint of the pre-trained EfficientFace  model that is used to initialize the weights of the vision backbone. Default is None or no initialization. It is recommended to use pre-trained model for initialization and the pre-trained model can be obtained e.g. from [here](https://github.com/zengqunzhao/EfficientFace) (EfficientFace_Trained_on_AffectNet7.pth.tar is recommended)
