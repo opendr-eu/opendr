@@ -44,28 +44,28 @@ AudiovisualEmotionLearner(self, num_class, seq_length, fusion, mod_drop, pretr_e
 - **lr** : *float, default=0.04*\
   Specifies the learning rate of the optimizer.
 
-- **lr_steps**: *list of ints, default=[40, 55, 65, 70, 200, 250]*
+- **lr_steps**: *list of ints, default=[40, 55, 65, 70, 200, 250]*\
   Specifies the epochs on which learning rate is reduced by the factor of 10.
 
-- **momentum**: *float, default=0.9*
+- **momentum**: *float, default=0.9*\
   Specifies the momentum of SGD optimizer.
 
-- **dampening**: *float, default=0.9*
+- **dampening**: *float, default=0.9*\
   Specifies the dampening factor coefficient.
 
-- **weight_decay**: *float, default=1e-3*
+- **weight_decay**: *float, default=1e-3*\
   Specifies the weight decay coefficient.  
 
-- **iters**: *int, default=100*
+- **iters**: *int, default=100*\
   Specifies the number of epochs used to train the classifier. 
  
-- **batch-size**: int, default=8
+- **batch-size**: int, default=8\
   Specifies the minibatch size.
 
-- **n_workers**: *int, default=4*   
+- **n_workers**: *int, default=4*\
   Specifies number of threads to be used in data loading. 
   
-- **device**: *str, default='cpu', {'cuda', 'cpu'}*   
+- **device**: *str, default='cpu', {'cuda', 'cpu'}*\
   Specifies the computation device.  
 
 #### `AudiovisualEmotionLearner.fit`
@@ -74,28 +74,35 @@ AudiovisualEmotionLearner.fit(self, dataset, val_dataset, logging_path, silent, 
 )
 ```
 
-Method to train the audiovisual emotion recognition model. After calling this method the model is trained for specified number of ierations and the last checkpoint is saved. If the validation set is provided, best checkpoint on validation set is saved in addition.
+Method to train the audiovisual emotion recognition model.
+After calling this method the model is trained for specified number of iterations and the last checkpoint is saved.
+If the validation set is provided, the best checkpoint on validation set is saved in addition.
 
 Returns a dictionary containing a list of cross entropy measures (dict keys: `"train_loss"`, `"val_loss"`) and a list of accuracy (dict key: `"train_acc"`, `"val_acc"`) during the entire optimization process.  
 
 **Parameters**:
 
-  - **dataset**: *engine.datasets.DatasetIterator*   
-    OpenDR dataset object that holds the training set. The `__get_item__` should return audio data of shape (C x N), video data of shape (C x N x H x W).
+- **dataset**: *engine.datasets.DatasetIterator*\
+    OpenDR dataset object that holds the training set.
+    The `__get_item__` should return audio data of shape (C x N), video data of shape (C x N x H x W).
 
-  - **val_dataset**: *engine.datasets.DatasetIterator, default=None*    
-    OpenDR dataset object that holds the validation set. The `__get_item__` should return audio data of shape (C x N), video data of shape (C x N x H x W).
-    If `val_set` is not `None`, it is used to select the model's weights that produce the best validation accuracy and save these weights.
+- **val_dataset**: *engine.datasets.DatasetIterator, default=None*\
+    OpenDR dataset object that holds the validation set.
+    The `__get_item__` should return audio data of shape (C x N), video data of shape (C x N x H x W).
+    If `val_dataset` is not `None`, it is used to select the model's weights that produce the best validation accuracy and save these weights.
 
-  - **logging_path**: *str, default='logs/'*     
+- **logging_path**: *str, default='logs/'*\
     Path for saving Tensorboard logs and model checkpoints.  
 
-  - **silent**: *bool, default=False*     
+- **silent**: *bool, default=False*\
     If set to True, disables all printing, otherwise, the performance statistics are printed to STDOUT after every 10th epoch.  
-  - **verbose**: *bool, default=True*   
-    If set to True, the performance statistics are printed to after every epoch.
- - **eval_mode**: *str, default='audiovisual', {'audiovisual', 'noisyaudio', 'noisyvideo', 'onlyaudio', 'onlyvideo'}*
-   Evaluation mode of the model. Check [here](https://arxiv.org/abs/2201.11095) for details.
+  
+- **verbose**: *bool, default=True*\
+    If set to True, the performance statistics are printed after every epoch.
+ 
+- **eval_mode**: *str, default='audiovisual', {'audiovisual', 'noisyaudio', 'noisyvideo', 'onlyaudio', 'onlyvideo'}*\
+   Evaluation mode of the model.
+   Check [here](https://arxiv.org/abs/2201.11095) for details.
 - **restore_best**: *bool, default=False*
   If set to true, best weights on validation set are restored in the end of training if validation set is provided, otherwise best weights on train set.
 
@@ -114,14 +121,17 @@ This method is used to evaluate the current audiovisual emotion recognition mode
  
 **Parameters**:
 
-- **dataset**: *engine.datasets.DatasetIterator*   
-  OpenDR dataset object that holds the training set. The `__get_item__` should return audio data of shape (C x N), video data of shape (C x N x H x W).
+- **dataset**: *engine.datasets.DatasetIterator*\
+  OpenDR dataset object that holds the training set.
+  The `__get_item__` should return audio data of shape (C x N), video data of shape (C x N x H x W).
 
-- **silent**: *bool, default=False*     
+- **silent**: *bool, default=False*\
   If set to True, disables all prints
-- **verbose**: *bool, default=True*   
+
+- **verbose**: *bool, default=True*\
   If set to True, prints the accuracy and performance of the model
-- **mode**: *str, default='audiovisual', {'audiovisual', 'noisyaudio', 'noisyvideo', 'onlyaudio', 'onlyvideo'}
+
+- **mode**: *str, default='audiovisual', {'audiovisual', 'noisyaudio', 'noisyvideo', 'onlyaudio', 'onlyvideo'}\
    Evaluation mode of the model. Check [here](https://arxiv.org/abs/2201.11095) for details. 
  
 **Returns**:
@@ -132,7 +142,7 @@ This method is used to evaluate the current audiovisual emotion recognition mode
 
 #### `AudiovisualEmotionLearner.infer`  
 ```python
-AudiovisualEmotionLearner.infer(audio, video)
+AudiovisualEmotionLearner.infer(self, audio, video)
 ```
 
 This method is used to generate the emotion prediction given an audio and a video.  
@@ -140,14 +150,15 @@ Returns an instance of `engine.target.Category` representing the prediction.
 
 **Parameters**:
 
-- **audio**: *engine.data.Timeseries*  
+- **audio**: *engine.data.Timeseries*\
   Object of type `engine.data.Timeseries` that holds the input audio data. 
-- **video**: *engine.data.Video*  
+
+- **video**: *engine.data.Video*\
   Object of type `engine.data.Video` that holds the input video data.
 
 **Returns**:
 
-- **prediction**: *engine.target.Category*  
+- **prediction**: *engine.target.Category*\
   Object of type `engine.target.Category` that contains the prediction.  
 
 
@@ -163,38 +174,41 @@ The former keeps the metadata and the latter keeps the model weights.
 
 **Parameters**:
 
-- **path**: *str*    
+- **path**: *str*\
   Directory path to save the model.   
-- **verbose**: *bool, default=True*   
+- **verbose**: *bool, default=True*\
   If set to True, print acknowledge message when saving is successful.   
   
 #### `AudiovisualEmotionLearner.download`  
 ```python
-AudiovisualEmotionLearner.load(path)  
+AudiovisualEmotionLearner.download(self, path)  
 ```
 
-This method is used to download a pretrained model from a given directory. Pretrained models are provided for the 'ia' fusion with 'zerodrop' modality dropout. The pretrained model is trained on [RAVDESS](https://zenodo.org/record/1188976#.YlkXNyjP1PY) dataset which is under CC BY-NC-SA 4.0 license.
+This method is used to download a pretrained model from a given directory.
+Pretrained models are provided for the 'ia' fusion with 'zerodrop' modality dropout.
+The pretrained model is trained on [RAVDESS](https://zenodo.org/record/1188976#.YlkXNyjP1PY) dataset which is under CC BY-NC-SA 4.0 license.
 
 **Parameters**:
 
-- **path**: *str*  
+- **path**: *str*\
   Directory path to download the model.
   Under this path, "metadata.json" and "model_weights.pt" will be downloaded.
-  The weights of the downloaded pretrained model can be loaded by calling AudiovisualEmotionLearner.load(path) afterward.
+  The weights of the downloaded pretrained model can be loaded by calling the AudiovisualEmotionLearner.load method.
 
 #### `AudiovisualEmotionLearner.load`  
 ```python
-AudiovisualEmotionLearner.load(path, verbose)  
+AudiovisualEmotionLearner.load(self, path, verbose)  
 ```
 
-This method is used to load a previously saved model (by calling `AudiovisualEmotionLearner.save(path)`) from a given directory.  
+This method is used to load a previously saved model (by calling `AudiovisualEmotionLearner.save`) from a given directory.  
 Note that under the given directory path, `"metadata.json"` and `"model_weights.pt"` must exist.   
 
 **Parameters**:
 
-- **path**: *str*  
+- **path**: *str*\
   Directory path of the model to be loaded.  
-- **verbose**: *bool, default=True*  
+
+- **verbose**: *bool, default=True*\
   If set to True, print acknowledge message when model loading is successful.  
 
 #### `opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm.data.get_audiovisual_emotion_dataset`
@@ -205,32 +219,32 @@ opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm
 
 **Parameters**:
   
-- **path**: *str*   
+- **path**: *str*\
   Specifies the directory path where the dataset resides. 
   For training on [Ravdess dataset](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0196391) please download the data from [here](https://zenodo.org/record/1188976#.YlCAwijP2bi). 
 
-- **sr**: *int, default=22050*
+- **sr**: *int, default=22050*\
   Specifies sampling rate for audio processing.
 
-- **n-mfcc**: *int, default=10*
+- **n-mfcc**: *int, default=10*\
   Specifies number of MFCC featuers to extract from audio.
 
-- **preprocess**: *bool, default=False*
+- **preprocess**: *bool, default=False*\
   Preprocesses the downloaded Ravdess dataset for training and saves the processed data files.
 
-- **target_time**: *float, default=3.6*
+- **target_time**: *float, default=3.6*\
   Target in seconds time to which the videos and audios are cropped/padded.
 
-- **input_fps**: *int, default=30*
+- **input_fps**: *int, default=30*\
   Frames per second of input video file
 
-- **save_frames**: *int, defauult=15*
-  Number of frames frmo the video to keep for training
+- **save_frames**: *int, defauult=15*\
+  Number of frames from the video to keep for training
 
-- **target_im_size**: *int, default=224*
+- **target_im_size**: *int, default=224*\
   Target height and width of video to which the video is reshaped
 
-- **device**: *{'cpu', 'cuda'}*
+- **device**: *{'cpu', 'cuda'}*\
   Device on which to run the preprocessing (has no effect if preprocess=False)
 
 **Returns**:
@@ -248,7 +262,9 @@ opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm
 ### Examples
 
 * **Training an audio and vision emotion recognition model**.  
-  In this example, we will train an audiovisual emotion recognition model on [Ravdess](https://zenodo.org/record/1188976#.YlCAwijP2bi) dataset. First, the dataset needs to be downloaded (the files Video_Speech_Actor_[01-24].zip and Audio_Speech_Actors_01-24.zip). The directory should be organized as follows:
+  In this example, we will train an audiovisual emotion recognition model on [Ravdess](https://zenodo.org/record/1188976#.YlCAwijP2bi) dataset.
+  First, the dataset needs to be downloaded (the files Video_Speech_Actor_[01-24].zip and Audio_Speech_Actors_01-24.zip).
+  The directory should be organized as follows:
     ```
     RAVDESS
     └───ACTOR01
@@ -270,7 +286,9 @@ opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm
   
   train_set, val_set, test_set = get_audiovisual_emotion_dataset('RAVDESS/', preprocess=True)
   ```
-  When the data is downloaded and processed for the first time, it has to be preprocessed by setting the argument `preprocess=True` in `get_audiovisual_emotion_dataset()`. This will preprocess the audio and video files and save the preprocessed files as numpy arrays, as well as create a random train-val-test split. The preprocessing should be ran once and `preprocess=False` should be used in subsequent runs on the same dataset.
+  When the data is downloaded and processed for the first time, it has to be preprocessed by setting the argument `preprocess=True` in `get_audiovisual_emotion_dataset()`.
+  This will preprocess the audio and video files and save the preprocessed files as numpy arrays, as well as create a random train-val-test split.
+  The preprocessing should be ran once and `preprocess=False` should be used in subsequent runs on the same dataset.
    
   Then, we can construct the emotion recognition model, and train the learner for 100 iterations as follows:  
 
@@ -284,7 +302,8 @@ opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm
   
   Additionally, pretrained EfficientFace model can be obtained from [here](https://github.com/zengqunzhao/EfficientFace) and used for weight initialization of the vision backbone by setting `pretr_ef='EfficientFace_Trained_on_AffectNet7.pth.tar'`.
   
-* **Using pretrained audiovisual emotion recognition model**.  
+* **Using pretrained audiovisual emotion recognition model**
+
   In this example, we will demonstrate how a pretrained audiovisual emotion recognition model can be used.
   First, we will download the pre-trained model.
   The model is trained on RAVDESS [3] dataset under CC BY-NC-SA 4.0 license.
