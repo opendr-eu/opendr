@@ -17,6 +17,7 @@ import torch
 import tempfile
 import numpy as np
 import random
+import os
 
 # OpenDR imports
 from opendr.engine.data import Video, Timeseries
@@ -24,6 +25,7 @@ from opendr.engine.target import Category
 from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
 from opendr.engine.datasets import DatasetIterator
 
+DEVICE = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 class DummyDataset(DatasetIterator):
     def __init__(self, n_class=8, n_sample=4):
@@ -51,7 +53,7 @@ def get_random_learner():
                                         iters=1,
                                         batch_size=2,
                                         fusion=fusion,
-                                        mod_drop=mod_drop)
+                                        mod_drop=mod_drop, device=DEVICE)
     return learner
 
 
