@@ -230,11 +230,13 @@ opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm
 
 **Returns**:
 
-- **train_set**: *opendr.engine.datasets.DatasetIterator*   
+- **train_set**: *opendr.engine.datasets.DatasetIterator*\
   The training set object that can be used with the `fit()` method to train the hand gesture classifier.   
-- **val_set**: *opendr.engine.datasets.DatasetIterator*   
+
+- **val_set**: *opendr.engine.datasets.DatasetIterator*\
   The validation set object that can be used with the `fit()` method to train the hand gesture classifier.   
-- **test_set**: *opendr.engine.datasets.DatasetIterator*   
+
+- **test_set**: *opendr.engine.datasets.DatasetIterator*\   
   The test set object that can be used with the `fit()` method to train the hand gesture classifier.   
 
 
