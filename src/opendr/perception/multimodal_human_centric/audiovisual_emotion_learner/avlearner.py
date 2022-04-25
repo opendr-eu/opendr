@@ -141,7 +141,8 @@ class AudiovisualEmotionLearner(Learner):
 
                         if available, `val_set` is used to select
                         the best checkpoint for final model
-        :type val_set: engine.datasets.DatasetIterator
+        :type val_dataset: engine.datasets.DatasetIterator
+
         :param logging_path: path to save checkpoints
                              and log data, default to "logs/"
         :type logging_path: string
