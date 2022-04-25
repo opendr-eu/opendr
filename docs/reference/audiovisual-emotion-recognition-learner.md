@@ -274,7 +274,8 @@ opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm
   performance = learner.fit(train_set, val_set, logging_path = 'logs', restore_best=True)
   learner.save('model')
   ```
-  Here, we restore the best performance on the validation set and save the model. The training logs are saved under logs/.
+  Here, we restore the best performance on the validation set and save the model.
+  The training logs are saved under logs/.
   
   Additionally, pretrained EfficientFace model can be obtained from [here](https://github.com/zengqunzhao/EfficientFace) and used for weight initialization of the vision backbone by setting `pretr_ef='EfficientFace_Trained_on_AffectNet7.pth.tar'`.
   
