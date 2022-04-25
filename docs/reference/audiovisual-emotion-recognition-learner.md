@@ -41,7 +41,7 @@ AudiovisualEmotionLearner(self, num_class, seq_length, fusion, mod_drop, pretr_e
   Default is None or no initialization.
   It is recommended to use pre-trained model for initialization and the pre-trained model can be obtained e.g. from [here](https://github.com/zengqunzhao/EfficientFace) (EfficientFace_Trained_on_AffectNet7.pth.tar is recommended)
 
-- **lr** : *float, default=0.04*
+- **lr** : *float, default=0.04*\
   Specifies the learning rate of the optimizer.
 
 - **lr_steps**: *list of ints, default=[40, 55, 65, 70, 200, 250]*
