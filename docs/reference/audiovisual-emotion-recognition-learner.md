@@ -27,7 +27,7 @@ AudiovisualEmotionLearner(self, num_class, seq_length, fusion, mod_drop, pretr_e
 - **seq_length**: *int, default=15*\
   Length of frame sequence representing a video.
 
-- **fusion**: *str, default='ia'*
+- **fusion**: *str, default='ia'*\
   Modality fusion method. Options are 'ia', 'it', 'lt', referring to 'intermediate attention', 'intermediate transformer', and 'late transformer' fusion. Refer [here](https://arxiv.org/abs/2201.11095) for details.
 
 - **mod_dropout**: *str, default='zerodrop', {'nodrop', 'noisedrop', 'zerodrop'}*
