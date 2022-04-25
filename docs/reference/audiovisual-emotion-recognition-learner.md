@@ -9,7 +9,8 @@ The *AudiovisualEmotionLearner* class provides an implementation of audiovisual 
 The implementation follows the method described in ['Self-attention fusion for audiovisual emotion recognition with incomplete data'](https://arxiv.org/abs/2201.11095).
 Three fusion methods are provided.
 
-AudiovisualEmotionLearner relies on EfficientFace model implementation [1]. Parts  of training pipeline are modified from [2].
+AudiovisualEmotionLearner relies on EfficientFace model implementation [1].
+Parts of training pipeline are modified from [2].
 
 The [AudiovisualEmotionLearner](/src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/avlearner.py) class has the following public methods:
 
