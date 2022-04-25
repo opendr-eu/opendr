@@ -30,9 +30,9 @@ AttentionNeuralBagOfFeatureLearner(self, in_channels, series_length, n_class, n_
 - **quantization_type**: *{"nbof", "tnbof"}, default="nbof"*  
   Specifies the type of quantization layer.  
   There are two types of quantization layer: the logistic neural bag-of-feature layer ("nbof") or the temporal logistic bag-of-feature layer ("tnbof").  
- - **attention_type**: *{"spatial", "temporal"}, default="spatial"*  
+ - **attention_type**: *{"spatial", "temporal", "spatialsa", "temporalsa", "spatiotemporal"}, default="spatial"*  
   Specifies the type of attention mechanism.  
-  There are two types of attention: the spatial attention mechanism that focuses on the different codewords ("spatial") or the temporal attention mechanism that focuses on different temporal instances ("temporal").    
+  There are two types of attention: the spatial attention mechanism that focuses on the different codewords ("spatial") or the temporal attention mechanism that focuses on different temporal instances ("temporal"). Additionaly, there are three self-attention based mecahnisms as described [here](https://arxiv.org/abs/2201.11092).   
 - **lr_scheduler**: *callable, default=`opendr.perception.heart_anomaly_detection.attention_neural_bag_of_feature.attention_neural_bag_of_feature_learner.get_cosine_lr_scheduler(2e-4, 1e-5)`*     
   Specifies the function that computes the learning rate, given the total number of epochs `n_epoch` and the current epoch index `epoch_idx`.  
   That is, the optimizer uses this function to determine the learning rate at a given epoch index.  
