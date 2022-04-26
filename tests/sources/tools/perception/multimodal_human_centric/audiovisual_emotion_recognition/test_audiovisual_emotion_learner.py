@@ -25,6 +25,7 @@ from opendr.engine.target import Category
 from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
 from opendr.engine.datasets import DatasetIterator
 
+
 DEVICE = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 class DummyDataset(DatasetIterator):

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Parts of this code is modified from https://github.com/zengqunzhao/EfficientFace/blob/master/models/EfficientFace.py under MIT license:
+Parts of this code is modified from https://github.com/zengqunzhao/EfficientFace/blob/master/models/EfficientFace.py:
 """
 
 # MIT License
