@@ -52,6 +52,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [ab3dmot Module](object-tracking-3d-ab3dmot.md)
         - multimodal human centric:
             - [rgbd_hand_gesture_learner Module](rgbd-hand-gesture-learner.md)
+            - [audiovisual_emotion_recognition_learner Module](audiovisual-emotion-recognition-learner.md)
         - compressive learning:
             - [multilinear_compressive_learning Module](multilinear-compressive-learning.md)
         - semantic segmentation:
@@ -101,7 +102,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - pose estimation:
             - [lightweight_open_pose Demo](/projects/perception/lightweight_open_pose)
         - multimodal human centric:
-            - [rgbd_hand_gesture_learner Demo](/projects/perception/multimodal_human_centric)
+            - [rgbd_hand_gesture_learner Demo](/projects/perception/multimodal_human_centric/rgbd_hand_gesture_recognition)
+            - [audiovisual_emotion_recognition Demo](/projects/perception/multimodal_human_centric/audiovisual_emotion_recognition)
         - object detection 2d:
             - [detr Demo](/projects/perception/object_detection_2d/detr)
             - [gem Demo](/projects/perception/object_detection_2d/gem)
