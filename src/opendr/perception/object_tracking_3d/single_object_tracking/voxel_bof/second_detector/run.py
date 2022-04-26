@@ -991,58 +991,79 @@ def draw_msra_gaussian(shape, sigma, theta, device):
     heatmap[img_y[0]: img_y[1], img_x[0]: img_x[1]] = g[
         g_y[0]: g_y[1], g_x[0]: g_x[1]
     ]
-    return torch.tensor(heatmap, device=device)
+    return torch.tensor(heatmap, device=device) / heatmap.sum()
 
 
-# def create_scaled_scores(
-#     target_features,
-#     search_features,
-#     model,
-#     score_upscale,
-#     window_influence,
-#     extrapolation_direction=None,
-# ):
+penalty_maps = {}
 
-#     scores = model.process_features(search_features, target_features)
-#     hann_penalty = hann_window(scores2.shape[-2:], device=scores2.device)
-
-#     # draw_pseudo_image(hann_penalty.unsqueeze(0), "./plots/hann_penalty.png")
-
-#     score_shape = np.array([*scores.shape[-2:]])
-
-#     if extrapolation_direction is None:
-#         theta = 0
-#         sigma = np.array([1, 1], dtype=np.float32) * score_shape
-#     else:
-#         theta = np.arctan2(extrapolation_direction[1], extrapolation_direction[0])
-#         sigma = np.array([0.5, 5], dtype=np.float32) * score_shape
-
-#     gaussian_penalty = draw_msra_gaussian(score_shape, sigma, theta, scores.device)
-#     # draw_pseudo_image(gaussian_penalty.unsqueeze(0), "./plots/gaussian_penalty.png")
-
-#     penalty = gaussian_penalty
-#     scores_scaled = (1 - window_influence) * scores + window_influence * penalty
-
-#     scores2 = torch.nn.functional.interpolate(
-#         scores_scaled, scale_factor=score_upscale, mode="bicubic", align_corners=False,
-#     )
-#     # draw_pseudo_image(scores2.squeeze(0), "./plots/scores2.png")
-
-#     return scores2, scores, scores2
 
 def create_scaled_scores(
-    target_features, search_features, model, score_upscale, window_influence,
+    target_features,
+    search_features,
+    model,
+    score_upscale,
+    window_influence,
     extrapolation_direction=None,
+    penalty_type="gaussian",  # "hann", "gaussian",
 ):
 
     scores = model.process_features(search_features, target_features)
     scores2 = torch.nn.functional.interpolate(
-        scores, scale_factor=score_upscale, mode="bicubic"
+        scores, scale_factor=score_upscale, mode="bicubic", align_corners=False,
     )
-    penalty = hann_window(scores2.shape[-2:], device=scores2.device)
+
+    scores2_shape = np.array([*scores2.shape[-2:]])
+
+    if extrapolation_direction is None:
+        theta = 0
+        sigma = np.array([10, 10], dtype=np.float32) * scores2_shape
+    else:
+        theta = np.arctan2(extrapolation_direction[1], extrapolation_direction[0])
+        sigma = np.array([1, 10], dtype=np.float32) * scores2_shape
+
+    global penalty_maps
+
+    if penalty_type == "hann":
+        index = (
+            int(sum(scores2_shape)),
+        )
+
+        if index not in penalty_maps:
+            hann_penalty = hann_window(scores2.shape[-2:], device=scores2.device)
+            penalty_maps[index] = hann_penalty
+            draw_pseudo_image(hann_penalty.unsqueeze(0), "./plots/directed_scores/hann_penalty.png")
+        penalty = penalty_maps[index]
+    elif penalty_type == "gaussian":
+
+        index = (
+            int(sum(scores2_shape)),
+            int(theta / (2 * np.pi / 15)),
+        )
+
+        if index not in penalty_maps:
+            gaussian_penalty = draw_msra_gaussian(scores2_shape, sigma, theta, scores2.device)
+            penalty_maps[index] = gaussian_penalty
+            draw_pseudo_image(gaussian_penalty.unsqueeze(0), "./plots/directed_scores/gaussian_penalty.png")
+        penalty = penalty_maps[index]
+    # draw_pseudo_image(scores2.squeeze(0), "./plots/directed_scores/scores2.png")
+
     scores2_scaled = (1 - window_influence) * scores2 + window_influence * penalty
 
-    return scores2_scaled, scores, scores2
+    return scores2_scaled, scores, penalty.unsqueeze(0)
+
+# def create_scaled_scores(
+#     target_features, search_features, model, score_upscale, window_influence,
+#     extrapolation_direction=None,
+# ):
+
+#     scores = model.process_features(search_features, target_features)
+#     scores2 = torch.nn.functional.interpolate(
+#         scores, scale_factor=score_upscale, mode="bicubic"
+#     )
+#     penalty = hann_window(scores2.shape[-2:], device=scores2.device)
+#     scores2_scaled = (1 - window_influence) * scores2 + window_influence * penalty
+
+#     return scores2_scaled, scores, scores2
 
 
 def rotate_vector(vector, angle):

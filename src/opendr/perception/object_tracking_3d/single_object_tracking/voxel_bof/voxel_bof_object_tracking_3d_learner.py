@@ -747,7 +747,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     ]
 
                 for it, target_features in enumerate(target_features_to_compare):
-                    scores, original_scores, scaled_scores = create_scaled_scores(
+                    scores, original_scores, penalty_map = create_scaled_scores(
                         target_features,
                         search_features,
                         self.model,
@@ -780,9 +780,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
                             + str(it)
                             + ".png",
                         )
-                        draw_scaled_scores = draw_pseudo_image(
-                            scaled_scores.squeeze(axis=0),
-                            "./plots/scores_scaled_scores/"
+                        draw_penalty_map = draw_pseudo_image(
+                            penalty_map,
+                            "./plots/penalty_map/"
                             + str(frame)
                             + "_"
                             + str(i)
@@ -792,7 +792,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                         )
                         self.__add_image(draw_scores, "scores")
                         self.__add_image(draw_scores_original, "scores_original")
-                        self.__add_image(draw_scaled_scores, "scaled_scores")
+                        self.__add_image(draw_penalty_map, "penalty_map")
 
             t4 = time.time()
             self.times["create_scaled_scores"].append(t4 - t3)
@@ -850,6 +850,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     delta_image = (
                         self.extrapolation_direction / self.offset_interpolation
                     )
+                if self.extrapolation_mode == "linear+":
+                    delta_image = (
+                        self.extrapolation_direction / self.offset_interpolation
+                    )
                 elif self.extrapolation_mode == "none":
                     delta_image = np.array([0, 0], dtype=delta_image.dtype)
                 else:
@@ -878,6 +882,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 if self.extrapolation_mode == "linear":
                     new_search[0] += delta_image
                     self.extrapolation_direction = delta_image[[1, 0]]
+                if self.extrapolation_mode == "linear+":
+                    new_search[0] += new_target[0] - self.last_target[0]
+                    self.extrapolation_direction = (new_target[0] - self.last_target[0])[[1, 0]]
                 elif self.extrapolation_mode == "none":
                     pass
                 else:
@@ -1029,7 +1036,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 image = stack_images(
                     [image, stack_images(images_feat, "horizontal")], "vertical"
                 )
-                image = stack_images([image, self._images["small_pi"][-1]], "vertical")
+                image = stack_images([image, self._images["small_pi"][-1], self._images["penalty_map"][-1]], "vertical")
                 self.__add_image(image, "summary")
 
                 draw_pseudo_image(
