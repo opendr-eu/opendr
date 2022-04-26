@@ -28,6 +28,7 @@ from opendr.engine.datasets import DatasetIterator
 
 DEVICE = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
+
 class DummyDataset(DatasetIterator):
     def __init__(self, n_class=8, n_sample=4):
         super(DummyDataset, self).__init__()
