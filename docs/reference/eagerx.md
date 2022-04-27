@@ -35,7 +35,7 @@ Documentation is available online: [https://eagerx.readthedocs.io](https://eager
    Instead of using low-dimensional angular observations, the environment now produces pixel images of the pendulum.
    In order to speed-up learning, we use a pre-trained classifier to convert these pixel images to estimated angular observations.
    Then, the agent uses these estimated angular observations similarly as in 'demo_2_pid' to successfully swing-up the pendulum.
-   
+
 Example usage:
 ```bash
 cd $OPENDR_HOME/projects/control/eagerx/demos
@@ -49,3 +49,39 @@ Setting `--name example` sets the name of the environment.
 Setting `--eps 200` sets the number of training episodes.  
 Setting `--eval-eps 10` sets the number of evaluation episodes.
 Adding `--render` enables rendering of the environment.
+
+### Performance Evaluation
+
+In this subsection, we attempt to quantify the computational overhead that the communication protocol of EAGERx introduces.
+Ultimately, an EAGERx environment consists of nodes (e.g. sensors, actuators, classifiers, controllers, etc…) that communicate with each other via the EAGERx’s reactive communication protocol to ensure I/O synchronisation.
+We create an experimental setup where we interconnect a set of the same  nodes in series and let every node run at the same simulated rate (1 Hz).
+The nodes perform no significant computation in their callback, and use small messages (ROS message: std.msgs.msg/UInt64) in terms of size (Mb).
+Hence, the rate at which this environment can be simulated is mostly determined by the computational overhead of the protocol and the hardware used during the experiment (8 core - Intel Core i9-10980HK Processor).
+We will record the real-time rate (Hz) at which we are able to simulate the environment for a varying number of interconnected nodes, synchronisation modes (sync vs. async), and concurrency mode (multi-threaded vs multi-process).
+In async mode, every node will produce outputs at the set simulated rate (1 Hz) times a provided real-time factor (i.e. real-time rate = real-time factor * simulated rate).
+This real-time factor is set experimentally at the highest value, while each node can still keep its simulated rate.
+In sync mode, nodes are connected reactively, meaning that every node will wait for an input from the preceding node, before producing an output message to the node that succeeds it.
+This means that we do not need to set a real-time factor.
+Instead, nodes will run as fast as possible, while adhering to this simple rule.
+The recorded rate provides an indication of the computational overhead that the communication protocol of EAGERx introduces.
+The results are presented in table below.
+
+|            | Multi-threaded |            | Multi-process |            |
+|------------|:--------------:|:----------:|:-------------:|:----------:|
+| # of nodes |    Sync (Hz)   | Async (Hz) |   Sync (Hz)   | Async (Hz) |
+| 4          |       800      |     458    |      700      |    1800    |
+| 5          |       668      |     390    |      596      |    1772    |
+| 6          |       576      |     341    |      501      |    1770    |
+| 7          |       535      |     307    |      450      |    1691    |
+| 12         |       354      |     200    |      279      |    1290    |
+
+The platform compatibility evaluation is also reported below:
+
+| Platform                                     | Test results |
+|----------------------------------------------|:------------:|
+| x86 - Ubuntu 20.04 (bare installation - CPU) |     Pass     |
+| x86 - Ubuntu 20.04 (bare installation - GPU) |     Pass     |
+| x86 - Ubuntu 20.04 (pip installation)        |     Pass     |
+| x86 - Ubuntu 20.04 (CPU docker)              |     Pass     |
+| x86 - Ubuntu 20.04 (GPU docker)              |     Pass     |
+| NVIDIA Jetson TX2                            |     Pass     |

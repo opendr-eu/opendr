@@ -809,6 +809,66 @@ Parameters:
 
 
 
+#### Performance Evaluation
+
+The tests were conducted on the following computational devices:
+- Intel(R) Xeon(R) Gold 6230R CPU on server
+- Nvidia Jetson TX2
+- Nvidia Jetson Xavier AGX
+- Nvidia RTX 2080 Ti GPU on server with Intel Xeon Gold processors
+
+
+Inference time is measured as the time taken to transfer the input to the model (e.g., from CPU to GPU), run inference using the algorithm, and return results to CPU.
+The ST-GCN, TAGCN and ST-BLN models are implemented in *SpatioTemporalGCNLearner* and the PST-GCN model is implemented in *ProgressiveSpatioTemporalGCNLearner*. 
+
+Note that the models receive each input sample as a sequence of 300 skeletons, and the pose estimation process is not involved in this benchmarking.
+The skeletal data is from NTU-RGBD dataset. We report speed (single sample per inference) as the mean of 100 runs.
+The noted memory is the maximum allocated memory on GPU during inference.
+
+The performance evaluation results of the *SpatioTemporalGCNLearner* and *ProgressiveSpatioTemporalGCNLearner* in terms of prediction accuracy on NTU-RGBD-60, parameter count and maximum allocated memory are reported in the following Tables.
+The performance of TA-GCN is reported when it selects 100 frames out of 300 (T=100). PST-GCN finds different architectures for two different dataset settings (CV and CS) which leads to different classification accuracy, number of parameters and memory allocation. 
+
+| Method            | Acc. (%) | Params (M) | Mem. (MB) | 
+|-------------------|----------|------------|-----------|
+| ST-GCN            | 88.3     | 3.12       | 47.37     | 
+| TA-GCN (T=100)    | 94.2     | 2.24       | 42.65     | 
+| ST-BLN            | 93.8     | 5.3        | 55.77     |
+| PST-GCN (CV)      | 94.33    | 0.63       | 31.65     |
+| PST-GCN (CS)      | 87.9     | 0.92       | 32.2      | 
+
+The inference speed (evaluations/second) of both learners on various computational devices are as follows:
+
+| Method         | CPU   | Jetson TX2 | Jetson Xavier | RTX 2080 Ti | 
+|----------------|-------|------------|---------------|-------------|
+| ST-GCN         | 13.26 | 4.89       | 15.27         | 63.32       | 
+| TA-GCN (T=100) | 20.47 | 10.6       | 25.43         | 93.33       | 
+| ST-BLN         | 7.69  | 3.57       | 12.56         | 55.98       |
+| PST-GCN (CV)   | 15.38 | 6.57       | 20.25         | 83.10       | 
+| PST-GCN (CS)   | 13.07 | 5.53       | 19.41         | 77.57       | 
+
+Energy (Joules) of both learners’ inference on embedded devices is shown in the following: 
+
+| Method            | Jetson TX2  | Jetson Xavier  | 
+|-------------------|-------------|----------------|
+| ST-GCN            | 6.07        | 1.38           | 
+| TA-GCN (T=100)    | 2.23        | 0.59           | 
+| ST-BLN            | 9.26        | 2.01           |
+| PST-GCN (CV)      | 4.13        | 1.00           | 
+| PST-GCN (CS)      | 5.54        | 1.12           |
+
+The platform compatibility evaluation is also reported below:
+
+| Platform  | Compatibility Evaluation |
+| ----------------------------------------------|--------------------------|
+| x86 - Ubuntu 20.04 (bare installation - CPU)  | :heavy_check_mark:       |
+| x86 - Ubuntu 20.04 (bare installation - GPU)  | :heavy_check_mark:       |
+| x86 - Ubuntu 20.04 (pip installation)         | :heavy_check_mark:       |
+| x86 - Ubuntu 20.04 (CPU docker)               | :heavy_check_mark:       |
+| x86 - Ubuntu 20.04 (GPU docker)               | :heavy_check_mark:       |
+| NVIDIA Jetson TX2                             | :heavy_check_mark:       |
+| NVIDIA Jetson Xavier AGX                      | :heavy_check_mark:       |
+
+
 ## References
 
 <a id="1">[1]</a> 
