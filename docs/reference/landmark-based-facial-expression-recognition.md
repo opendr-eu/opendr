@@ -506,10 +506,6 @@ The platform compatibility evaluation is also reported below:
 
 
 
-
-
-
-
 ## References
 
 <a id="1">[1]</a>
