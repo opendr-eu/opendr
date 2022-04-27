@@ -425,7 +425,8 @@ TABLE-2: Speed (evaluations/second) of activity recognition learner inference on
 | CoX3D-S | 11.60 | 1.16 | 9.36   | 9.84        |
 
 
-TABLE-3: Throughput (evaluations/second) of activity recognition learner inference on various computational devices. The largest fitting power of two was used as batch size for each device. 
+TABLE-3: Throughput (evaluations/second) of activity recognition learner inference on various computational devices.
+The largest fitting power of two was used as batch size for each device. 
 | Model   | CPU   | TX2  | Xavier | RTX 2080 Ti |
 | ------- | ----- | ---- | ------ | ----------- |
 | X3D-L   | 0.22  | 0.21 | 1.73   | 3.55        |
