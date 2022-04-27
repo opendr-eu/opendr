@@ -1,7 +1,5 @@
 FROM ubuntu:20.04
 
-ARG branch
-
 # Install dependencies
 RUN apt-get update && \
     apt-get --yes install git sudo
@@ -14,7 +12,7 @@ RUN chmod +x /tini
 ENTRYPOINT ["/tini", "--"]
 
 # Clone the repo and install the toolkit
-RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr -b $branch
+RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
 WORKDIR "/opendr"
 RUN ./bin/install.sh
 
