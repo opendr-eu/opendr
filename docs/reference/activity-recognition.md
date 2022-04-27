@@ -413,7 +413,7 @@ TABLE-1: Input shapes, prediction accuracy on Kinetics 400, floating point opera
 | CoX3D-S | 1x1602             | 67.33    | 0.21      | 3.79       | 41.99     |
 
 
-TABLE-2: Speed (evaluations/second) of activity recognition learner inference on various computational devices
+TABLE-2: Speed (evaluations/second) of activity recognition learner inference on various computational devices.
 | Model   | CPU   | TX2  | Xavier | RTX 2080 Ti |
 | ------- | ----- | ---- | ------ | ----------- |
 | X3D-L   | 0.22  | 0.18 | 1.26   | 3.55        |
