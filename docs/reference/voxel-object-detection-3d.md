@@ -503,7 +503,8 @@ Inference time is measured as the time taken to transfer the input to the model 
 Inner FPS refers to the speed of the model when the data is ready.
 We report FPS (single sample per inference) as the mean of 100 runs.
 
-Full FPS Evaluation of PointPillars and TANet for classes Car, Pedestrian, Cyclist on KITTI dataset. TANet Near represents evaluation on the near sub-scene [[4]](#object-detectiond-3d-4).
+Full FPS Evaluation of PointPillars and TANet for classes Car, Pedestrian, Cyclist on KITTI dataset.
+TANet Near represents evaluation on the near sub-scene [[4]](#object-detectiond-3d-4).
 | Model        | Object Class         | TX2 (FPS) | Xavier (FPS) | RTX 2080 Ti (FPS) |
 | ------------ | -------------------- | --------- | ------------ | ----------------- |
 | PointPillars | Car                  | 1.73      | 6.29         | 21.06             |
