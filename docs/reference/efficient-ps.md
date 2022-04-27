@@ -17,7 +17,7 @@ Bases: `engine.learners.Learner`
 
 The *EfficientPsLearner* class is a wrapper around the EfficientPS implementation of the original author's repository adding the OpenDR interface.
 
-The [EfficientPsLearner](/src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) class the following public methods:
+The [EfficientPsLearner](/src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) class has the following public methods:
 #### `EfficientPsLearner` constructor
 ```python
 EfficientPsLearner(lr, iters, batch_size, optimizer, lr_schedule, momentum, weight_decay, optimizer_config, checkpoint_after_iter, temp_path, device, num_workers, seed, config_file)
@@ -174,3 +174,41 @@ Parameters:
   The size of the figure in inches. Only used for the detailed version. Otherwise, the size of the input data is used.
 - **detailed**: *bool, default=False*\
   If True, the generated figure will be a compilation of the input color image, the semantic segmentation map, a contours plot showing the individual objects, and a combined panoptic segmentation overlay on the color image. Otherwise, only the latter will be shown.
+
+
+#### Performance Evaluation
+
+The speed (fps) is evaluated for the Cityscapes dataset (2048x1024 pixels):
+
+| Dataset    | GeForce GTX 980 | GeForce GTX TITAN X | TITAN RTX | Xavier AGX |
+|------------|-----------------|---------------------|-----------|------------|
+| Cityscapes | 1.3             | 1.1                 | 3.2       | 1.7        |
+
+The memory and energy usage is evaluated for different datasets.
+An NVIDIA Jetson Xavier AGX was used as the reference platform for energy measurements.
+Note that the exact number for the memory depends on the image resolution and the number of instances in an image.
+The reported memory is the max number seen during evaluation on the respective validation set.
+The energy is measured during the evaluation.
+
+| Dataset                | Memory (MB) | Energy (Joules) - Total per inference AGX |
+|------------------------|-------------|-------------------------------------------|
+| Cityscapes (2048x1024) | 11812       | 39.3                                      |
+| Kitti (1280x384)       | 3328        | 15.1                                      |
+
+The performance is evaluated using three different metrics, namely Panoptic Quality (PQ), Segmentation Quality (SQ), and Recognition Quality (RQ).
+
+| Dataset    | PQ   | SQ   | RQ   |
+|------------|------|------|------|
+| Cityscapes | 64.4 | 81.8 | 77.7 |
+| Kitti      | 42.6 | 77.2 | 53.1 |
+
+EfficientPS is compatible with the following platforms:
+
+| Platform                                     | Compatibility |
+|----------------------------------------------|---------------|
+| x86 - Ubuntu 20.04 (bare installation - CPU) | ❌            |
+| x86 - Ubuntu 20.04 (bare installation - GPU) | ✔️            |
+| x86 - Ubuntu 20.04 (pip installation)        | ❌            |
+| x86 - Ubuntu 20.04 (CPU docker)              | ❌            |
+| x86 - Ubuntu 20.04 (GPU docker)              | ✔️            |
+| NVIDIA Jetson Xavier AGX                     | ✔️            |
