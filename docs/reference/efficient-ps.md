@@ -207,8 +207,8 @@ EfficientPS is compatible with the following platforms:
 | Platform                                     | Compatibility |
 |----------------------------------------------|---------------|
 | x86 - Ubuntu 20.04 (bare installation - CPU) | ❌            |
-| x86 - Ubuntu 20.04 (bare installation - GPU) | ✔️             |
+| x86 - Ubuntu 20.04 (bare installation - GPU) | ✔️            |
 | x86 - Ubuntu 20.04 (pip installation)        | ❌            |
 | x86 - Ubuntu 20.04 (CPU docker)              | ❌            |
-| x86 - Ubuntu 20.04 (GPU docker)              | ✔️             |
-| NVIDIA Jetson Xavier AGX                     | ✔️             |
+| x86 - Ubuntu 20.04 (GPU docker)              | ✔️            |
+| NVIDIA Jetson Xavier AGX                     | ✔️            |
