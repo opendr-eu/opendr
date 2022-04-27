@@ -203,9 +203,7 @@ Parameters:
   learner.load('./retinaface_{}'.format(backbone))
 
   learner.download('.', mode='images')
-  img = Image.open('./cov4
-  
-  .jpg')
+  img = Image.open('./cov4.jpg')
   bounding_boxes = learner.infer(img)
 
   img = draw_bounding_boxes(img.opencv(), bounding_boxes, learner.classes, show=True)
