@@ -461,7 +461,9 @@ TABLE-5: Human Activity Recognition platform compatibility evaluation.
 | NVIDIA Jetson TX2                            | Pass\*       |
 | NVIDIA Jetson Xavier AGX                     | Pass\*       |
 
-*On NVIDIA Jetson devices, the Kinetics-400 dataset loader (dataset associated with available pretrained models) is not supported. While import triggers an error in version 1.0 of the toolkit, a patch has been submitted, which avoids the import-error for the upcoming version. Model inference works as expected.
+*On NVIDIA Jetson devices, the Kinetics-400 dataset loader (dataset associated with available pretrained models) is not supported.
+While import triggers an error in version 1.0 of the toolkit, a patch has been submitted, which avoids the import-error for the upcoming version.
+Model inference works as expected.
 
 
 
