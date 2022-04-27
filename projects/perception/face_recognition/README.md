@@ -9,6 +9,6 @@ More specifically, the following applications are provided:
 3. demos/inference_demo.py: A tool that demonstrates how to perform inference on a single image
 4. demos/benchmarking_demo.py: A simple benchmarking tool for measuring the performance of FaceRecognition in various platforms
 5. demos/webcam_demo.py: A tool that demonstrates how to perform face detection and recognition with the use of a webcam.
-   1. To use this tool you have to first create a database containing the faces to be recognised. To do this, you will have to prepare the face images using the [align](opendr/docs/reference/facerecognition.md###FaceRecognitionLearner.align) method of the tool and then the [fit_reference](####FaceRecognitionLearner.fit_reference) method.
+   1. To use this tool you have to first create a database containing the faces to be recognised. To do this, you will have to prepare the face images using the [align](docs/reference/facerecognition.md###FaceRecognitionLearner.align) method of the tool and then the [fit_reference](####FaceRecognitionLearner.fit_reference) method.
 
 Please use the --device cpu flag for the demos if you are running them on a machine without a CUDA-enabled GPU.
