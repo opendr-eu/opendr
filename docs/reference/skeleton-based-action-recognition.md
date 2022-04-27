@@ -821,7 +821,9 @@ The tests were conducted on the following computational devices:
 Inference time is measured as the time taken to transfer the input to the model (e.g., from CPU to GPU), run inference using the algorithm, and return results to CPU.
 The ST-GCN, TAGCN and ST-BLN models are implemented in *SpatioTemporalGCNLearner* and the PST-GCN model is implemented in *ProgressiveSpatioTemporalGCNLearner*. 
 
-Note that the models receive each input sample as a sequence of 300 skeletons, and the pose estimation process is not involved in this benchmarking. The skeletal data is from NTU-RGBD dataset. We report speed (single sample per inference) as the mean of 100 runs. The noted memory is the maximum allocated memory on GPU during inference.
+Note that the models receive each input sample as a sequence of 300 skeletons, and the pose estimation process is not involved in this benchmarking.
+The skeletal data is from NTU-RGBD dataset. We report speed (single sample per inference) as the mean of 100 runs.
+The noted memory is the maximum allocated memory on GPU during inference.
 
 The performance evaluation results of the *SpatioTemporalGCNLearner* and *ProgressiveSpatioTemporalGCNLearner* in terms of prediction accuracy on NTU-RGBD-60, parameter count and maximum allocated memory are reported in the following Tables.
 The performance of TA-GCN is reported when it selects 100 frames out of 300 (T=100). PST-GCN finds different architectures for two different dataset settings (CV and CS) which leads to different classification accuracy, number of parameters and memory allocation. 
