@@ -465,7 +465,6 @@ TABLE-5: Human Activity Recognition platform compatibility evaluation.
 
 
 
-
 #### References
 <a name="x3d" href="https://arxiv.org/abs/2004.04730">[1]</a> X3D: Expanding Architectures for Efficient Video Recognition,
 [arXiv](https://arxiv.org/abs/2004.04730).
