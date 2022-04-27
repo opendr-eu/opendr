@@ -1019,7 +1019,7 @@ def create_scaled_scores(
         sigma = np.array([10, 10], dtype=np.float32) * scores2_shape
     else:
         theta = np.arctan2(extrapolation_direction[1], extrapolation_direction[0])
-        sigma = np.array([1, 10], dtype=np.float32) * scores2_shape
+        sigma = np.array([0.4, 8], dtype=np.float32) * scores2_shape
 
     global penalty_maps
 

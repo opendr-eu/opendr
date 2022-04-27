@@ -882,7 +882,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 if self.extrapolation_mode == "linear":
                     new_search[0] += delta_image
                     self.extrapolation_direction = delta_image[[1, 0]]
-                if self.extrapolation_mode == "linear+":
+                elif self.extrapolation_mode == "linear+":
                     new_search[0] += new_target[0] - self.last_target[0]
                     self.extrapolation_direction = (new_target[0] - self.last_target[0])[[1, 0]]
                 elif self.extrapolation_mode == "none":
