@@ -139,8 +139,14 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: true
+    - name: Get branch name
+      id: branch-name
+      uses: tj-actions/branch-names@v5.1
     - name: Build image
       run: |
+        cat Dockerfile
+        sed -i 's/# %branch-name-template%/-b ${{ steps.branch-name.outputs.current_branch }}/' Dockerfile
+        cat Dockerfile
         docker build --tag opendr/opendr-toolkit:cpu_test --file Dockerfile .
         docker save opendr/opendr-toolkit:cpu_test > cpu_test.zip
     - name: Upload image artifact
