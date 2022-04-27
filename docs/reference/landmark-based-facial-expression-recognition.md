@@ -455,6 +455,57 @@ Parameters:
   ```
 
 
+#### Performance Evaluation
+
+The tests were conducted on the following computational devices:
+- Intel(R) Xeon(R) Gold 6230R CPU on server
+- Nvidia Jetson TX2
+- Nvidia Jetson Xavier AGX
+- Nvidia RTX 2080 Ti GPU on server with Intel Xeon Gold processors
+
+Inference time is measured as the time taken to transfer the input to the model (e.g., from CPU to GPU), run inference using the algorithm, and return results to CPU.
+The PST-BLN model is implemented in *ProgressiveSpatioTemporalBLNLearner*.
+
+Note that the model receives each input sample as a sequence of 150 graphs built by facial landmarks as nodes and the connections between them as edges.
+The facial landmarks are extracted by Dlib library as a preprocessing step, and the landmark extraction process is not involved in this benchmarking.
+The model is evaluated on the AFEW dataset which contains Acted Facial Expression in the Wild video clips captured from movies.
+We report speed (single sample per inference), as the mean of 100 runs, of the optimized ST-BLN model found by PST-BLN algorithm.
+The noted memory is the maximum allocated memory on GPU during inference.
+ 
+Prediction accuracy on AFEW dataset, parameter count and maximum allocated memory of learner's inference are reported in the following table:
+
+| Method  | Acc. (%) | Params (M) | Mem. (MB) | 
+|---------|----------|------------|-----------|
+| PST-BLN | 33.33    | 0.01       | 76.41     | 
+
+The speed (evaluations/second) of the learner's inference on various computational devices is:
+
+| Method  | CPU   | Jetson TX2 | Jetson Xavier  | RTX 2080 Ti | 
+|---------|-------|------------|----------------|-------------|
+| PST-BLN | 8.05  | 3.81       | 14.27          | 125.17      | 
+
+
+Energy (Joules) of both learners’ inference on embedded devices is shown in the following: 
+
+| Method  | Jetson TX2 | Jetson Xavier | 
+|---------|------------|---------------|
+| PST-BLN | 5.33       | 1.12          | 
+
+
+The platform compatibility evaluation is also reported below:
+
+| Platform  | Compatibility Evaluation |
+| ----------------------------------------------|--------------------------|
+| x86 - Ubuntu 20.04 (bare installation - CPU)  | :heavy_check_mark:       |
+| x86 - Ubuntu 20.04 (bare installation - GPU)  | :heavy_check_mark:       |
+| x86 - Ubuntu 20.04 (pip installation)         | :heavy_check_mark:       |
+| x86 - Ubuntu 20.04 (CPU docker)               | :heavy_check_mark:       |
+| x86 - Ubuntu 20.04 (GPU docker)               | :heavy_check_mark:       |
+| NVIDIA Jetson TX2                             | :heavy_check_mark:       |
+| NVIDIA Jetson Xavier AGX                      | :heavy_check_mark:       |
+
+
+
 ## References
 
 <a id="1">[1]</a>
