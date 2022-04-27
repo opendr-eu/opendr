@@ -234,7 +234,8 @@ In terms of speed, the performance of YOLOv3 is summarized in the table below (i
 |---------|----------|-----|-----|
 | YOLOv3 | 50 | 9 | 16 |
 
-Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below. The measurement was made on a Jetson TX2 module.
+Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below.
+The measurement was made on a Jetson TX2 module.
 
 | Method  | Memory (MB) | Energy (Joules)  - Total per inference  |
 |-------------------|---------|-------|

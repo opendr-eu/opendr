@@ -119,10 +119,10 @@ Parameters:
 #### Performance Evaluation
 
 The tests were conducted on the following computational devices:
-- **Intel(R) Xeon(R) Gold 6230R CPU on server**
-- **Nvidia Jetson TX2**
-- **Nvidia Jetson Xavier AGX**
-- **Nvidia RTX 2080 Ti GPU on server with Intel Xeon Gold processors**
+- Intel(R) Xeon(R) Gold 6230R CPU on server
+- Nvidia Jetson TX2
+- Nvidia Jetson Xavier AGX
+- Nvidia RTX 2080 Ti GPU on server with Intel Xeon Gold processors
 
 Inference time is measured as the time taken to transfer the input to the model (e.g., from CPU to GPU), run inference using the algorithm, and return results to CPU. Inner FPS refers to the speed of the model when the data is ready. We report FPS (single sample per inference) as the mean of 100 runs.
 
@@ -146,7 +146,6 @@ AB3DMOT platform compatibility evaluation.
 | x86 - Ubuntu 20.04 (GPU docker)              | Pass         |
 | NVIDIA Jetson TX2                            | Pass         |
 | NVIDIA Jetson Xavier AGX                     | Pass         |
-
 
 
 #### References

@@ -234,7 +234,8 @@ In terms of speed, the performance of BiseNet for different input sizes is summa
 |1024x1024   |49.11     |3.03 |5.78 |11.02|
 |104x2048    |25.07     |1.50 |2.77 |5.44 |
 
-Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below. The measurement was made on a Jetson TX2 module.
+Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below.
+The measurement was made on a Jetson TX2 module.
 
 | Method  | Memory (MB) | Energy (Joules) |
 |---------|-------------|-----------------|

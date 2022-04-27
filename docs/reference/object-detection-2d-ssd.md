@@ -219,7 +219,8 @@ In terms of speed, the performance of SSD is summarized in the table below (in F
 |---------|----------|-----|-----|
 | SSD | 85 | 16 | 27 |
 
-Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below. The measurement was made on a Jetson TX2 module.
+Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below.
+The measurement was made on a Jetson TX2 module.
 
 | Method  | Memory (MB) | Energy (Joules)  - Total per inference  |
 |-------------------|---------|-------|

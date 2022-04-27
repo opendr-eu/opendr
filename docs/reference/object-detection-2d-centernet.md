@@ -234,7 +234,8 @@ In terms of speed, the performance of CenterNet is summarized in the table below
 |---------|----------|-----|-----|
 | CenterNet | 88 | 19 | 14 |
 
-Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below. The measurement was made on a Jetson TX2 module.
+Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below.
+The measurement was made on a Jetson TX2 module.
 
 | Method  | Memory (MB) | Energy (Joules)  - Total per inference  |
 |-------------------|---------|-------|
