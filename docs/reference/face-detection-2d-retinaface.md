@@ -218,7 +218,8 @@ In terms of speed, the performance of RetinaFace is summarized in the table belo
 | RetinaFace | 47 | 3 | 8 |
 | RetinaFace-MobileNet | 114 | 13 | 18 |
 
-Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below. The measurement was made on a Jetson TX2 module.
+Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below.
+The measurement was made on a Jetson TX2 module.
 
 | Variant  | Memory (MB) | Energy (Joules)  - Total per inference  |
 |-------------------|---------|-------|
