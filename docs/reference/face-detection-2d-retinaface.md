@@ -227,8 +227,7 @@ The measurement was made on a Jetson TX2 module.
 | RetinaFace-MobileNet     | 4262 | 8.73  |
 
 Finally, we measure the recall on the WIDER face validation subset at 87.83%.
-Note that RetinaFace can make use of image pyramids and horizontal flipping to
-achieve even better recall at the cost of additional computations.
+Note that RetinaFace can make use of image pyramids and horizontal flipping to achieve even better recall at the cost of additional computations.
 For the MobileNet version, recall drops to 77.81%.  
 
 The platform compatibility evaluation is also reported below:
