@@ -184,12 +184,16 @@ The speed (fps) is evaluated for the Cityscapes dataset (2048x1024 pixels):
 |------------|-----------------|---------------------|-----------|------------|
 | Cityscapes | 1.3             | 1.1                 | 3.2       | 1.7        |
 
-The memory and energy usage is evaluated for different datasets. An NVIDIA Jetson Xavier AGX was used as the reference platform for energy measurements. Note that the exact number for the memory depends on the image resolution and the number of instances in an image. The reported memory is the max number seen during evaluation on the respective validation set. The energy is measured during the evaluation.
+The memory and energy usage is evaluated for different datasets.
+An NVIDIA Jetson Xavier AGX was used as the reference platform for energy measurements.
+Note that the exact number for the memory depends on the image resolution and the number of instances in an image.
+The reported memory is the max number seen during evaluation on the respective validation set.
+The energy is measured during the evaluation.
 
 | Dataset                | Memory (MB) | Energy (Joules) - Total per inference AGX |
 |------------------------|-------------|-------------------------------------------|
-| Cityscapes (2048x1024) | 11812MB     | 39.3                                      |
-| Kitti (1280x384)       | 3328MB      | 15.1                                      |
+| Cityscapes (2048x1024) | 11812       | 39.3                                      |
+| Kitti (1280x384)       | 3328        | 15.1                                      |
 
 The performance is evaluated using three different metrics, namely Panoptic Quality (PQ), Segmentation Quality (SQ), and Recognition Quality (RQ).
 
