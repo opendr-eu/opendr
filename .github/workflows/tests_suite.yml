@@ -67,6 +67,7 @@ jobs:
           - perception/object_tracking_2d
           - perception/object_detection_3d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
@@ -171,6 +172,7 @@ jobs:
           - perception/multimodal_human_centric
           - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
@@ -240,6 +242,7 @@ jobs:
           - perception/multimodal_human_centric
           - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
@@ -283,6 +286,7 @@ jobs:
         # The following two are dependecies for some other packages and pip cannot automatically install them if they are not on a repo
         pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
         pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
 
         # Install specific package for testing
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
@@ -294,7 +298,6 @@ jobs:
         # Utils contains hyperparameter tuning
         if [ "$package" == "utils" ]; then
               pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
-
         else
               pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
@@ -315,6 +318,7 @@ jobs:
           - perception/multimodal_human_centric
           - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
