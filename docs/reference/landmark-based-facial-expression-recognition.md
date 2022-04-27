@@ -458,10 +458,10 @@ Parameters:
 #### Performance Evaluation
 
 The tests were conducted on the following computational devices:
-- **Intel(R) Xeon(R) Gold 6230R CPU on server**
-- **Nvidia Jetson TX2**
-- **Nvidia Jetson Xavier AGX**
-- **Nvidia RTX 2080 Ti GPU on server with Intel Xeon Gold processors**
+- Intel(R) Xeon(R) Gold 6230R CPU on server
+- Nvidia Jetson TX2
+- Nvidia Jetson Xavier AGX
+- Nvidia RTX 2080 Ti GPU on server with Intel Xeon Gold processors
 
 Inference time is measured as the time taken to transfer the input to the model (e.g., from CPU to GPU), run inference using the algorithm, and return results to CPU. The PST-BLN model is implemented in *ProgressiveSpatioTemporalBLNLearner*.
 
