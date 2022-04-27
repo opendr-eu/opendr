@@ -259,7 +259,8 @@ Then source the catkin workspace and run the launch file as described in the `RO
 
 #### Performance Evaluation
 
-Note that test time inference can be directly performed on a standard CPU. As this achieves very high control frequencies, we do not expect any benefits through the use of accelerators (GPUs).
+Note that test time inference can be directly performed on a standard CPU.
+As this achieves very high control frequencies, we do not expect any benefits through the use of accelerators (GPUs).
 
 TABLE-1: Control frequency in Hertz.
 
