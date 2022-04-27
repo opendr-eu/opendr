@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ARG BRANCH
+ARG branch
 
 # Install dependencies
 RUN apt-get update && \
