@@ -413,5 +413,3 @@ The platform compatibility evaluation is also reported below:
 | NVIDIA Jetson Xavier AGX                      | :heavy_check_mark:   |
 | NVIDIA Jetson Xavier NX                       | :heavy_check_mark:   |
 
-
-
