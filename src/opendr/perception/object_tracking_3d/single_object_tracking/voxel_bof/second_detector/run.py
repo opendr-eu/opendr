@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from multiprocessing import Value
 import os
 import torch
 import numpy as np
@@ -1944,7 +1943,7 @@ def train_siamese(
     train_steps=0,
     loss_function="bce",
     r_pos=16,
-    bof_training_steps=0,  # 10000,
+    bof_training_steps=2000,
     infer_point_cloud_mapper=None,
     augment=True,
     augment_rotation=True,
@@ -1955,6 +1954,8 @@ def train_siamese(
     regression_training_isolated=False,
     overwrite_strides=None,
     upscaling_mode="none",
+    steps_per_val=8000,
+    val_steps=1000,
 ):
 
     net = siamese_model.branch
@@ -1990,7 +1991,7 @@ def train_siamese(
         shuffle=False,
         num_workers=eval_input_cfg.num_workers,
         pin_memory=False,
-        collate_fn=merge_second_batch,
+        # collate_fn=merge_second_batch,
     )
     data_iter = iter(dataloader)
 
@@ -2018,10 +2019,10 @@ def train_siamese(
         freeze_model(net)
 
     for _ in range(total_loop):
-        if total_step_elapsed + train_cfg.steps_per_eval > train_cfg.steps:
-            steps = train_cfg.steps % train_cfg.steps_per_eval
+        if total_step_elapsed + steps_per_val > train_cfg.steps:
+            steps = train_cfg.steps % steps_per_val
         else:
-            steps = train_cfg.steps_per_eval
+            steps = steps_per_val
         for step in range(steps):
             lr_scheduler.step()
             try:
@@ -2287,8 +2288,126 @@ def train_siamese(
         total_step_elapsed += steps
 
         if evaluate:
-            pass
-            # net.eval()
+            net.eval()
+            eval_data_iter = iter(eval_dataloader)
+
+            for step in range(val_steps):
+                sample = next(eval_data_iter)
+                (
+                    target_point_cloud,
+                    search_point_cloud,
+                    target_label_lidar_kitti,
+                    search_label_lidar_kitti,
+                ) = sample
+
+                items = create_siamese_pseudo_images_and_labels(
+                    net,
+                    infer_point_cloud_mapper,
+                    target_point_cloud,
+                    search_point_cloud,
+                    target_label_lidar_kitti,
+                    search_label_lidar_kitti,
+                    target_size=target_size,
+                    search_size=search_size,
+                    context_amount=context_amount,
+                    loss=loss_function,
+                    r_pos=r_pos,
+                    float_dtype=float_dtype,
+                    augment=augment,
+                    augment_rotation=augment_rotation,
+                    search_type=search_type,
+                    target_type=target_type,
+                    overwrite_strides=overwrite_strides,
+                    upscaling_mode=upscaling_mode,
+                )
+
+                for (
+                    target_image,
+                    search_image,
+                    labels,
+                    weights,
+                    vertical_position,
+                    target,
+                    search_target,
+                    search,
+                    search_size_with_context,
+                    target_pseudo_image,
+                    search_pseudo_image,
+                ) in items:
+                    pred, feat_target, feat_search = siamese_model(
+                        search_image, target_image
+                    )
+
+                    loss = 0
+
+                    if not (regress_vertical_position and regression_training_isolated):
+                        loss = net.criterion(pred, labels, weights)
+
+                    v_loss = 0
+
+                    if regress_vertical_position:
+                        pred_vertical_position = siamese_model.vertical_position_regressor(feat_target)
+                        v_loss = siamese_model.vertical_criterion(
+                            pred_vertical_position,
+                            torch.tensor(vertical_position, dtype=torch.float32, device=pred_vertical_position.device)
+                        )
+                        loss += 0.1 * v_loss
+
+                    delta, _ = displacement_score_to_image_coordinates(
+                        pred, 1, search_size_with_context, 0, feature_blocks
+                    )
+                    true_delta, _ = displacement_score_to_image_coordinates(
+                        labels, 1, search_size_with_context, 0, feature_blocks
+                    )
+
+                    delta = delta[[1, 0]]
+                    true_delta = true_delta[[1, 0]]
+
+                    predicted_center_image = search[0] + delta
+                    true_center_image = search[0] + true_delta
+
+                    average_loss += loss
+                    average_v_loss += v_loss
+                    average_delta_error += np.abs(delta - true_delta)
+
+                    if step % display_step == 0:
+                        average_loss /= display_step
+                        average_v_loss /= display_step
+                        average_delta_error /= display_step
+
+                        print(
+                            model_dir,
+                            "val [",
+                            step,
+                            "/",
+                            val_steps,
+                            "]",
+                            "loss=" + str(float(average_loss.detach().cpu())),
+                            "v_loss=" + (str(float(average_v_loss.detach().cpu())) if regress_vertical_position else "None"),
+                            "error_position=",
+                            average_delta_error,
+                            "lr=",
+                            float(mixed_optimizer.param_groups[0]["lr"]),
+                        )
+
+                        writer.add_scalar(
+                            "val_loss", float(average_loss.detach().cpu()), global_step
+                        )
+
+                        if regress_vertical_position:
+                            writer.add_scalar(
+                                "val_v_loss", float(average_v_loss.detach().cpu()), global_step
+                            )
+
+                        writer.add_scalar(
+                            "val_error_position_x", float(average_delta_error[0]), global_step
+                        )
+                        writer.add_scalar(
+                            "val_error_position_y", float(average_delta_error[1]), global_step
+                        )
+
+                        average_loss = 0
+                        average_delta_error = 0
 
         net.train()
 

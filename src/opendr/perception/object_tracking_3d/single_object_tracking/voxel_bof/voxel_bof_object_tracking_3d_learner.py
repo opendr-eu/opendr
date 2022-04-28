@@ -1517,10 +1517,6 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     info["annos"] for info in eval_dataset_iterator.dataset.kitti_infos
                 ]
 
-        elif isinstance(val_dataset, DatasetIterator):
-            eval_dataset_iterator = MappedDatasetIterator(
-                val_dataset, create_map_point_cloud_dataset_func(False),
-            )
         elif isinstance(val_dataset, SiameseTrackingDatasetIterator):
             eval_dataset_iterator = MappedDatasetIterator(
                 val_dataset, create_map_siamese_dataset_func(True),
@@ -1528,6 +1524,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
         elif isinstance(val_dataset, SiameseTripletTrackingDatasetIterator):
             eval_dataset_iterator = MappedDatasetIterator(
                 val_dataset, create_map_siamese_triplet_dataset_func(True),
+            )
+        elif isinstance(val_dataset, DatasetIterator):
+            eval_dataset_iterator = MappedDatasetIterator(
+                val_dataset, create_map_point_cloud_dataset_func(False),
             )
         elif val_dataset is None:
             if isinstance(dataset, ExternalDataset):
