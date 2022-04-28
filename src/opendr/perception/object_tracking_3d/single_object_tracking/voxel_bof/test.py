@@ -471,7 +471,7 @@ def test_pp_siamese_fit(
 
 
 def test_pp_siamese_fit_siamese_training(
-    model_name,
+    model_name=None,
     load=0,
     steps=0,
     debug=False,
@@ -496,12 +496,36 @@ def test_pp_siamese_fit_siamese_training(
         "0015",
         "0016",
     ],
+    validation_track_ids=[
+        "0017",
+        "0018",
+    ],
     load_optimizer=True,
     load_backbone=True,
+    params_file=None,
     **kwargs,
 ):
     print("Fit", name, "start", file=sys.stderr)
     print("Using device:", device)
+
+    if params_file is not None:
+        params = load_params_from_file(params_file)
+        model_name = params["model_name"] if "model_name" in params else model_name
+        device = params["device"] if "device" in params else device
+        backbone = params["backbone"] if "backbone" in params else backbone
+
+        for k, v in params.items():
+            if (
+                k
+                not in [
+                    "model_name",
+                    "load",
+                    "device",
+                    "backbone",
+                    "lr",
+                ]
+            ) and (k not in kwargs):
+                kwargs[k] = v
 
     dataset_siamese_tracking = SiameseTrackingDatasetIterator(
         [
@@ -518,6 +542,21 @@ def test_pp_siamese_fit_siamese_training(
         ],
     )
 
+    val_dataset_siamese_tracking = SiameseTrackingDatasetIterator(
+        [
+            dataset_tracking_path + "/training/velodyne/" + track_id
+            for track_id in validation_track_ids
+        ],
+        [
+            dataset_tracking_path + "/training/label_02/" + track_id + ".txt"
+            for track_id in validation_track_ids
+        ],
+        [
+            dataset_tracking_path + "/training/calib/" + track_id + ".txt"
+            for track_id in validation_track_ids
+        ],
+    )
+
     learner = VoxelBofObjectTracking3DLearner(
         model_config_path=backbone_configs[backbone],
         device=device,
@@ -531,6 +570,7 @@ def test_pp_siamese_fit_siamese_training(
         learner.load(backbone_model_paths[backbone], backbone=True, verbose=True)
     learner.fit(
         dataset_siamese_tracking,
+        val_dataset=val_dataset_siamese_tracking,
         model_dir="./temp/" + model_name,
         debug=debug,
         steps=steps,
