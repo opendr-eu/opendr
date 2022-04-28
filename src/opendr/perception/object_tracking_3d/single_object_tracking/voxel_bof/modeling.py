@@ -3927,7 +3927,7 @@ def create_b_eval_kwargs():
         "rotation_penalty": [0.98, 0.90],
         "offset_interpolation": [0.25, 0.3, 1],
         "target_feature_merge_scale": [0, 0.01],
-        "extrapolation_mode": [["linear", "l"], ["none", "n"]],
+        "extrapolation_mode": [["linear", "l"], ["linear+", "lp"], ["none", "n"]],
         "search_type": [["small", "s"], ["snormal", "sn"]],
         "target_type": [["normal", "n"]],
     }
@@ -4052,6 +4052,79 @@ def run_upl0(id=0, gpu_capacity=4, total_devices=4):
         )
         print(result)
         i += gpu_capacity * total_devices
+
+
+def run_bof_fx3_0_2(id=0, gpu_capacity=4, total_devices=4):
+
+    device_id = id % total_devices
+    i = id
+
+    eval_kwargs = create_b_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for feature_blocks in [1]:
+            for size in [-1]:
+                for context_amount in [0.35, 0.25, 0.3, 0.27]:
+                    for lr in [0.0001]:
+                        for r_pos in [8, 4, 2, 1]:
+                            target_size = [127, 127] if size == 1 else [-1, -1]
+                            search_size = [255, 255] if size == 1 else [-1, -1]
+
+                            name = (
+                                "fx3-0-2-b"
+                                + str(feature_blocks)
+                                + ("-us" if size == 1 else "-os")
+                                + "-c"
+                                + str(context_amount).replace(".", "")
+                                + "-lr"
+                                + str(lr).replace(".", "")
+                                + "-rpos"
+                                + str(r_pos).replace(".", "")
+                            )
+                            result.append(
+                                (
+                                    Model(
+                                        name,
+                                        feature_blocks=feature_blocks,
+                                        target_size=target_size,
+                                        search_size=search_size,
+                                        context_amount=context_amount,
+                                        train_steps=256000,
+                                        save_step=2000,
+                                        loads=[
+                                            256000,
+                                            2000,
+                                            8000,
+                                            16000,
+                                            32000,
+                                            64000,
+                                            128000,
+                                        ],
+                                        lr=lr,
+                                        r_pos=r_pos,
+                                        # search_type="big",
+                                        # target_type="normal",
+                                        bof_mode=['end', [1]],
+                                        augment=False,
+                                    ),
+                                    eval_kwargs,
+                                )
+                            )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+        i += gpu_capacity * total_devices
+
 
 
 if __name__ == "__main__":
