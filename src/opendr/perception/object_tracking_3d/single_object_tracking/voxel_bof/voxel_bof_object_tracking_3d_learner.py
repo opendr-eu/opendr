@@ -677,7 +677,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     "./plots/small_pi/" + str(frame) + ".png",
                 )
                 draw_pseudo_image(
-                    pseudo_image.squeeze(axis=0), "./plots/small_pi/a.png",
+                    pseudo_image.squeeze(axis=0),
+                    "./plots/small_pi/a.png",
                 )
                 self.__add_image(draw_pi, "small_pi")
 
@@ -715,7 +716,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
                         "./plots/search/" + str(frame) + "_" + str(i) + ".png",
                     )
                     draw_pseudo_image(
-                        search_image.squeeze(axis=0), "./plots/search/a.png",
+                        search_image.squeeze(axis=0),
+                        "./plots/search/a.png",
                     )
 
                     draw_search_feat = draw_pseudo_image(
@@ -723,7 +725,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
                         "./plots/search_feat/" + str(frame) + "_" + str(i) + ".png",
                     )
                     draw_pseudo_image(
-                        search_features.squeeze(axis=0), "./plots/search_feat/a.png",
+                        search_features.squeeze(axis=0),
+                        "./plots/search_feat/a.png",
                     )
 
                     self.__add_image(draw_search, "search")
@@ -734,9 +737,11 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
             multi_rotate_scores_searches_penalties_and_features = []
 
-            for i, (search_features, target, penalty,) in enumerate(
-                multi_rotate_features_and_searches_and_penalties
-            ):
+            for i, (
+                search_features,
+                target,
+                penalty,
+            ) in enumerate(multi_rotate_features_and_searches_and_penalties):
 
                 target_features_to_compare = [self.init_target_features]
 
@@ -884,7 +889,9 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     self.extrapolation_direction = delta_image[[1, 0]]
                 elif self.extrapolation_mode == "linear+":
                     new_search[0] += new_target[0] - self.last_target[0]
-                    self.extrapolation_direction = (new_target[0] - self.last_target[0])[[1, 0]]
+                    self.extrapolation_direction = (
+                        new_target[0] - self.last_target[0]
+                    )[[1, 0]]
                 elif self.extrapolation_mode == "none":
                     pass
                 else:
@@ -971,7 +978,10 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     )
                     self.__add_image(draw_target_image, "target_image_current_frame")
 
-            vertical_position = vertical_position * self.vertical_offset_interpolation + self.last_vertical_position * (1 - self.vertical_offset_interpolation)
+            vertical_position = (
+                vertical_position * self.vertical_offset_interpolation
+                + self.last_vertical_position * (1 - self.vertical_offset_interpolation)
+            )
             self.last_vertical_position = vertical_position
 
             t7 = time.time()
@@ -1036,15 +1046,24 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 image = stack_images(
                     [image, stack_images(images_feat, "horizontal")], "vertical"
                 )
-                image = stack_images([image, self._images["small_pi"][-1], self._images["penalty_map"][-1]], "vertical")
+                image = stack_images(
+                    [
+                        image,
+                        self._images["small_pi"][-1],
+                        self._images["penalty_map"][-1],
+                    ],
+                    "vertical",
+                )
                 self.__add_image(image, "summary")
 
                 draw_pseudo_image(
-                    image, "./plots/summary/" + str(frame) + "_" + str(i) + ".png",
+                    image,
+                    "./plots/summary/" + str(frame) + "_" + str(i) + ".png",
                 )
 
                 draw_pseudo_image(
-                    image, "./plots/summary/a" + ".png",
+                    image,
+                    "./plots/summary/a" + ".png",
                 )
 
             # delta_image_f = displacement_score_to_image_coordinates(
@@ -1131,10 +1150,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         if draw:
             draw_pi = draw_pseudo_image(
-                pseudo_image.squeeze(0), "./plots/init/pseudo_image.png",
+                pseudo_image.squeeze(0),
+                "./plots/init/pseudo_image.png",
             )
             draw_init = draw_pseudo_image(
-                init_image.squeeze(0), "./plots/init/image.png",
+                init_image.squeeze(0),
+                "./plots/init/image.png",
             )
             draw_feat = draw_pseudo_image(
                 self.init_target_features.squeeze(0),
@@ -1145,7 +1166,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
             image = stack_images([image, draw_feat], "vertical")
 
             draw_pseudo_image(
-                image, "./plots/init/all.png",
+                image,
+                "./plots/init/all.png",
             )
 
         # draw_pseudo_image(init_image, "./plots/init_image.png")
@@ -1309,7 +1331,11 @@ class VoxelBofObjectTracking3DLearner(Learner):
         # onnx.helper.printable_graph(self.model.graph)
 
     def __load_from_pth(
-        self, model, path, use_original_dict=False, state_dict_name="state_dict",
+        self,
+        model,
+        path,
+        use_original_dict=False,
+        state_dict_name="state_dict",
     ):
         all_params = torch.load(path, map_location=self.device)
         model.load_state_dict(
@@ -1460,17 +1486,20 @@ class VoxelBofObjectTracking3DLearner(Learner):
             )
         elif isinstance(dataset, SiameseTrackingDatasetIterator):
             input_dataset_iterator = MappedDatasetIterator(
-                dataset, create_map_siamese_dataset_func(True),
+                dataset,
+                create_map_siamese_dataset_func(True),
             )
             self.training_method = "siamese"
         elif isinstance(dataset, SiameseTripletTrackingDatasetIterator):
             input_dataset_iterator = MappedDatasetIterator(
-                dataset, create_map_siamese_triplet_dataset_func(True),
+                dataset,
+                create_map_siamese_triplet_dataset_func(True),
             )
             self.training_method = "siamese_triplet"
         elif isinstance(dataset, DatasetIterator):
             input_dataset_iterator = MappedDatasetIterator(
-                dataset, create_map_siamese_dataset_func(True),
+                dataset,
+                create_map_siamese_dataset_func(True),
             )
         else:
             if require_dataset or dataset is not None:
@@ -1519,15 +1548,18 @@ class VoxelBofObjectTracking3DLearner(Learner):
 
         elif isinstance(val_dataset, SiameseTrackingDatasetIterator):
             eval_dataset_iterator = MappedDatasetIterator(
-                val_dataset, create_map_siamese_dataset_func(True),
+                val_dataset,
+                create_map_siamese_dataset_func(True),
             )
         elif isinstance(val_dataset, SiameseTripletTrackingDatasetIterator):
             eval_dataset_iterator = MappedDatasetIterator(
-                val_dataset, create_map_siamese_triplet_dataset_func(True),
+                val_dataset,
+                create_map_siamese_triplet_dataset_func(True),
             )
         elif isinstance(val_dataset, DatasetIterator):
             eval_dataset_iterator = MappedDatasetIterator(
-                val_dataset, create_map_point_cloud_dataset_func(False),
+                val_dataset,
+                create_map_point_cloud_dataset_func(False),
             )
         elif val_dataset is None:
             if isinstance(dataset, ExternalDataset):
@@ -1570,7 +1602,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
                     ]
             elif isinstance(dataset, DatasetIterator):
                 eval_dataset_iterator = MappedDatasetIterator(
-                    dataset, create_map_siamese_dataset_func(True),
+                    dataset,
+                    create_map_siamese_dataset_func(True),
                 )
             else:
                 raise ValueError(
