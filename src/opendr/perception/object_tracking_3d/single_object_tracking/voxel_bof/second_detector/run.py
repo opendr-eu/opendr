@@ -1949,7 +1949,7 @@ def train_siamese(
     augment_rotation=True,
     search_type="normal",
     target_type="normal",
-    train_pseudo_image=False,
+    train_pseudo_image=True,
     regress_vertical_position=False,
     regression_training_isolated=False,
     overwrite_strides=None,
@@ -2291,6 +2291,10 @@ def train_siamese(
             net.eval()
             eval_data_iter = iter(eval_dataloader)
 
+            val_average_loss = 0
+            val_average_v_loss = 0
+            val_average_delta_error = 0
+
             for step in range(val_steps):
                 sample = next(eval_data_iter)
                 (
@@ -2366,14 +2370,11 @@ def train_siamese(
                     predicted_center_image = search[0] + delta
                     true_center_image = search[0] + true_delta
 
-                    average_loss += loss
-                    average_v_loss += v_loss
-                    average_delta_error += np.abs(delta - true_delta)
+                    val_average_loss += loss
+                    val_average_v_loss += v_loss
+                    val_average_delta_error += np.abs(delta - true_delta)
 
                     if step % display_step == 0:
-                        average_loss /= display_step
-                        average_v_loss /= display_step
-                        average_delta_error /= display_step
 
                         print(
                             model_dir,
@@ -2382,32 +2383,29 @@ def train_siamese(
                             "/",
                             val_steps,
                             "]",
-                            "loss=" + str(float(average_loss.detach().cpu())),
-                            "v_loss=" + (str(float(average_v_loss.detach().cpu())) if regress_vertical_position else "None"),
+                            "loss=" + str(float(val_average_loss.detach().cpu()) / (step + 1)),
+                            "v_loss=" + (str(float(val_average_v_loss.detach().cpu() / (step + 1))) if regress_vertical_position else "None"),
                             "error_position=",
-                            average_delta_error,
+                            val_average_delta_error / (step + 1),
                             "lr=",
                             float(mixed_optimizer.param_groups[0]["lr"]),
                         )
 
-                        writer.add_scalar(
-                            "val_loss", float(average_loss.detach().cpu()), global_step
-                        )
+            writer.add_scalar(
+                "val_loss", float(val_average_loss.detach().cpu()) / (val_steps), global_step
+            )
 
-                        if regress_vertical_position:
-                            writer.add_scalar(
-                                "val_v_loss", float(average_v_loss.detach().cpu()), global_step
-                            )
+            if regress_vertical_position:
+                writer.add_scalar(
+                    "val_v_loss", float(val_average_v_loss.detach().cpu()) / (val_steps), global_step
+                )
 
-                        writer.add_scalar(
-                            "val_error_position_x", float(average_delta_error[0]), global_step
-                        )
-                        writer.add_scalar(
-                            "val_error_position_y", float(average_delta_error[1]), global_step
-                        )
-
-                        average_loss = 0
-                        average_delta_error = 0
+            writer.add_scalar(
+                "val_error_position_x", float(val_average_delta_error[0]) / (val_steps), global_step
+            )
+            writer.add_scalar(
+                "val_error_position_y", float(val_average_delta_error[1]) / (val_steps), global_step
+            )
 
         net.train()
 
