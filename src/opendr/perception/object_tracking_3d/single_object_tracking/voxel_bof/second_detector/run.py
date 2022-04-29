@@ -73,7 +73,9 @@ def example_convert_to_torch(example, dtype=torch.float32, device=None) -> dict:
 
 
 def tracking_boxes_to_lidar(
-    label_original, calib, classes=["Car", "Van", "Pedestrian", "Cyclist", "Truck"],
+    label_original,
+    calib,
+    classes=["Car", "Van", "Pedestrian", "Cyclist", "Truck"],
 ):
 
     label = label_original.kitti()
@@ -175,7 +177,9 @@ def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
     return image
 
 
-def original_target_size_by_object_size(object_size, target_type="normal", make_odd=True):
+def original_target_size_by_object_size(
+    object_size, target_type="normal", make_odd=True
+):
 
     result = object_size
 
@@ -196,7 +200,9 @@ def original_target_size_by_object_size(object_size, target_type="normal", make_
     return result
 
 
-def original_search_size_by_target_size(target_size, search_type="normal", make_odd=True):
+def original_search_size_by_target_size(
+    target_size, search_type="normal", make_odd=True
+):
 
     result = target_size
 
@@ -489,7 +495,9 @@ def create_pseudo_image_features(
     return features, image
 
 
-def image_to_feature_coordinates(pos, feature_blocks, overwrite_strides=None, upscaling_mode="none"):
+def image_to_feature_coordinates(
+    pos, feature_blocks, overwrite_strides=None, upscaling_mode="none"
+):
 
     result = pos
 
@@ -505,11 +513,17 @@ def image_to_feature_coordinates(pos, feature_blocks, overwrite_strides=None, up
     return result
 
 
-def feature_to_image_coordinates(pos, feature_blocks, overwrite_strides=None, upscaling_mode="none"):
+def feature_to_image_coordinates(
+    pos, feature_blocks, overwrite_strides=None, upscaling_mode="none"
+):
 
     result = pos
 
-    upper_limit = min(1, feature_blocks) if upscaling_mode in ["raw", "processed"] else feature_blocks
+    upper_limit = (
+        min(1, feature_blocks)
+        if upscaling_mode in ["raw", "processed"]
+        else feature_blocks
+    )
 
     for i in range(upper_limit):
         stride = 2 if overwrite_strides is None else overwrite_strides[i]
@@ -550,8 +564,12 @@ def create_static_label_and_weights(
         search_size = search_size_with_context
 
     label_size = (
-        image_to_feature_coordinates(search_size, feature_blocks, overwrite_strides, upscaling_mode)
-        - image_to_feature_coordinates(target_size, feature_blocks, overwrite_strides, upscaling_mode)
+        image_to_feature_coordinates(
+            search_size, feature_blocks, overwrite_strides, upscaling_mode
+        )
+        - image_to_feature_coordinates(
+            target_size, feature_blocks, overwrite_strides, upscaling_mode
+        )
         + 1
     ).astype(np.int32)
 
@@ -565,11 +583,15 @@ def create_static_label_and_weights(
     t = delta_position_label_space[[1, 0]]
     # t = (0, 0)
 
-    r_pos = None if radius is None else image_to_feature_coordinates(radius, feature_blocks)
+    r_pos = (
+        None if radius is None else image_to_feature_coordinates(radius, feature_blocks)
+    )
 
     labels = create_logisticloss_labels(
-        label_size, t,
-        r_pos, loss=loss,
+        label_size,
+        t,
+        r_pos,
+        loss=loss,
         max_pos=max_pos,
         min_pos=min_pos,
     )
@@ -619,7 +641,10 @@ def sub_image_with_context(
         center -= offset - np.array(pseudo_image.shape[-2:], dtype=np.float32) / 2
 
     sub_image = get_rotated_sub_image(
-        pseudo_image, center, sub_image_size[[1, 0]], target[2],
+        pseudo_image,
+        center,
+        sub_image_size[[1, 0]],
+        target[2],
     )
     # draw_pseudo_image(sub_image, "./plots/train/sub_image" + str(0) + ".png")
 
@@ -764,7 +789,9 @@ def score_to_image_coordinates(scores, target_region_size, search_region):
     return center_image
 
 
-def select_best_scores_and_search(multi_scale_scores_searches_penalties_and_features,):
+def select_best_scores_and_search(
+    multi_scale_scores_searches_penalties_and_features,
+):
 
     (
         top_scores,
@@ -908,7 +935,7 @@ def directed_penalty(shape, direction, device):
     # too slow so far
 
     def kernel(sigma, length, x, y):
-        return sigma ** 2 * np.exp(-np.abs(x - y) ** 2 / (2 * length ** 2))
+        return sigma**2 * np.exp(-np.abs(x - y) ** 2 / (2 * length**2))
 
     t = time.time()
     matrix = torch.empty(shape, device=device)
@@ -987,8 +1014,8 @@ def draw_msra_gaussian(shape, sigma, theta, device):
     g_y = max(0, -ul[1]), min(br[1], w) - ul[1]
     img_x = max(0, ul[0]), min(br[0], h)
     img_y = max(0, ul[1]), min(br[1], w)
-    heatmap[img_y[0]: img_y[1], img_x[0]: img_x[1]] = g[
-        g_y[0]: g_y[1], g_x[0]: g_x[1]
+    heatmap[img_y[0] : img_y[1], img_x[0] : img_x[1]] = g[
+        g_y[0] : g_y[1], g_x[0] : g_x[1]
     ]
     return torch.tensor(heatmap, device=device) / heatmap.sum()
 
@@ -1008,7 +1035,10 @@ def create_scaled_scores(
 
     scores = model.process_features(search_features, target_features)
     scores2 = torch.nn.functional.interpolate(
-        scores, scale_factor=score_upscale, mode="bicubic", align_corners=False,
+        scores,
+        scale_factor=score_upscale,
+        mode="bicubic",
+        align_corners=False,
     )
 
     scores2_shape = np.array([*scores2.shape[-2:]])
@@ -1023,14 +1053,14 @@ def create_scaled_scores(
     global penalty_maps
 
     if penalty_type == "hann":
-        index = (
-            int(sum(scores2_shape)),
-        )
+        index = (int(sum(scores2_shape)),)
 
         if index not in penalty_maps:
             hann_penalty = hann_window(scores2.shape[-2:], device=scores2.device)
             penalty_maps[index] = hann_penalty
-            draw_pseudo_image(hann_penalty.unsqueeze(0), "./plots/directed_scores/hann_penalty.png")
+            draw_pseudo_image(
+                hann_penalty.unsqueeze(0), "./plots/directed_scores/hann_penalty.png"
+            )
         penalty = penalty_maps[index]
     elif penalty_type == "gaussian":
 
@@ -1040,15 +1070,21 @@ def create_scaled_scores(
         )
 
         if index not in penalty_maps:
-            gaussian_penalty = draw_msra_gaussian(scores2_shape, sigma, theta, scores2.device)
+            gaussian_penalty = draw_msra_gaussian(
+                scores2_shape, sigma, theta, scores2.device
+            )
             penalty_maps[index] = gaussian_penalty
-            draw_pseudo_image(gaussian_penalty.unsqueeze(0), "./plots/directed_scores/gaussian_penalty.png")
+            draw_pseudo_image(
+                gaussian_penalty.unsqueeze(0),
+                "./plots/directed_scores/gaussian_penalty.png",
+            )
         penalty = penalty_maps[index]
     # draw_pseudo_image(scores2.squeeze(0), "./plots/directed_scores/scores2.png")
 
     scores2_scaled = (1 - window_influence) * scores2 + window_influence * penalty
 
     return scores2_scaled, scores, penalty.unsqueeze(0)
+
 
 # def create_scaled_scores(
 #     target_features, search_features, model, score_upscale, window_influence,
@@ -1068,7 +1104,13 @@ def create_scaled_scores(
 def rotate_vector(vector, angle):
 
     rot = np.array(
-        [[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle),],]
+        [
+            [math.cos(angle), -math.sin(angle)],
+            [
+                math.sin(angle),
+                math.cos(angle),
+            ],
+        ]
     )
 
     result = np.dot(rot, vector)
@@ -1397,7 +1439,11 @@ def create_siamese_triplet_pseudo_images_and_labels(
 
     other_search_pc_range = pc_range_by_lidar_aabb(other_search_lidar_aabb)
     other_search_pseudo_image = infer_create_pseudo_image(
-        net, other_point_cloud, other_search_pc_range, infer_point_cloud_mapper, float_dtype
+        net,
+        other_point_cloud,
+        other_search_pc_range,
+        infer_point_cloud_mapper,
+        float_dtype,
     )[0]
 
     target_image, _ = sub_image_with_context(
@@ -1431,11 +1477,14 @@ def create_siamese_triplet_pseudo_images_and_labels(
         search_image.squeeze(axis=0), "./plots/siamese/pi_search_" + str(0) + ".png"
     )
     draw_pseudo_image(
-        other_search_image.squeeze(axis=0), "./plots/siamese/pi_other_search_" + str(0) + ".png"
+        other_search_image.squeeze(axis=0),
+        "./plots/siamese/pi_other_search_" + str(0) + ".png",
     )
     draw_pseudo_image(target_pseudo_image, "./plots/siamese/pi_t" + str(0) + ".png")
     draw_pseudo_image(search_pseudo_image, "./plots/siamese/pi_s" + str(0) + ".png")
-    draw_pseudo_image(other_search_pseudo_image, "./plots/siamese/pi_o" + str(0) + ".png")
+    draw_pseudo_image(
+        other_search_pseudo_image, "./plots/siamese/pi_o" + str(0) + ".png"
+    )
     # draw_pseudo_image(pseudo_image[i], "./plots/pi_t2" + str(0) + ".png", [[target[0][[1, 0]], target[1][[1, 0]]]], [(255, 0, 0)])
 
     feature_blocks = net.feature_blocks
@@ -1640,7 +1689,7 @@ def train_siamese_triplet(
                 other_point_cloud,
                 target_label_lidar_kitti,
                 search_label_lidar_kitti,
-                other_label_lidar_kitti
+                other_label_lidar_kitti,
             ) = sample
 
             items = create_siamese_triplet_pseudo_images_and_labels(
@@ -1688,7 +1737,9 @@ def train_siamese_triplet(
                     other_search_image, target_image
                 )
                 loss_plus = net.criterion(pred_plus, labels_plus, weights_plus)
-                loss_minus = 0.35 * net.criterion(pred_minus, labels_minus, weights_minus)
+                loss_minus = 0.35 * net.criterion(
+                    pred_minus, labels_minus, weights_minus
+                )
 
                 loss = loss_plus + loss_minus
 
@@ -1734,15 +1785,25 @@ def train_siamese_triplet(
                     draw_pseudo_image(pred_minus[0], "./plots/train/pred_minus.png")
                     draw_pseudo_image(labels_plus[0], "./plots/train/labels_plus.png")
                     draw_pseudo_image(labels_minus[0], "./plots/train/labels_minus.png")
-                    draw_pseudo_image(feat_search_plus[0], "./plots/train/feat_search_plus.png")
-                    draw_pseudo_image(feat_search_minus[0], "./plots/train/feat_search_minus.png")
-                    draw_pseudo_image(feat_target_plus[0], "./plots/train/feat_target_plus.png")
-                    draw_pseudo_image(feat_target_minus[0], "./plots/train/feat_target_minus.png")
                     draw_pseudo_image(
-                        feat_target_plus[0][0:1, :, :], "./plots/train/feat_search_0.png"
+                        feat_search_plus[0], "./plots/train/feat_search_plus.png"
                     )
                     draw_pseudo_image(
-                        feat_target_plus[0][0:1, :, :], "./plots/train/feat_target_0.png"
+                        feat_search_minus[0], "./plots/train/feat_search_minus.png"
+                    )
+                    draw_pseudo_image(
+                        feat_target_plus[0], "./plots/train/feat_target_plus.png"
+                    )
+                    draw_pseudo_image(
+                        feat_target_minus[0], "./plots/train/feat_target_minus.png"
+                    )
+                    draw_pseudo_image(
+                        feat_target_plus[0][0:1, :, :],
+                        "./plots/train/feat_search_0.png",
+                    )
+                    draw_pseudo_image(
+                        feat_target_plus[0][0:1, :, :],
+                        "./plots/train/feat_target_0.png",
                     )
 
                     vector = search_target[0] - search[0]
@@ -1792,7 +1853,13 @@ def train_siamese_triplet(
                     draw_pseudo_image(
                         target_image[0],
                         "./plots/train/target_image.png",
-                        [[np.array(target_image.shape[-2:]) / 2, np.array([1, 1]), 0,]],
+                        [
+                            [
+                                np.array(target_image.shape[-2:]) / 2,
+                                np.array([1, 1]),
+                                0,
+                            ]
+                        ],
                         [(0, 255, 0)],
                     )
 
@@ -1951,7 +2018,7 @@ def train_siamese(
     target_type="normal",
     train_pseudo_image=True,
     regress_vertical_position=False,
-    regression_training_isolated=False,
+    regression_training_isolation=False,
     overwrite_strides=None,
     upscaling_mode="none",
     steps_per_val=8000,
@@ -2015,7 +2082,10 @@ def train_siamese(
     if bof_training_steps > 0:
         freeze_model(net, True)
 
-    if regress_vertical_position and regression_training_isolated:
+    if regress_vertical_position and (
+        regression_training_isolation is True
+        or isinstance(regression_training_isolation, int)
+    ):
         freeze_model(net)
 
     for _ in range(total_loop):
@@ -2080,16 +2150,22 @@ def train_siamese(
 
                 loss = 0
 
-                if not (regress_vertical_position and regression_training_isolated):
+                if not (regress_vertical_position and regression_training_isolation):
                     loss = net.criterion(pred, labels, weights)
 
                 v_loss = 0
 
                 if regress_vertical_position:
-                    pred_vertical_position = siamese_model.vertical_position_regressor(feat_target)
+                    pred_vertical_position = siamese_model.vertical_position_regressor(
+                        feat_target
+                    )
                     v_loss = siamese_model.vertical_criterion(
                         pred_vertical_position,
-                        torch.tensor(vertical_position, dtype=torch.float32, device=pred_vertical_position.device)
+                        torch.tensor(
+                            vertical_position,
+                            dtype=torch.float32,
+                            device=pred_vertical_position.device,
+                        ),
                     )
                     loss += 0.1 * v_loss
 
@@ -2189,7 +2265,13 @@ def train_siamese(
                     draw_pseudo_image(
                         target_image[0],
                         "./plots/train/target_image.png",
-                        [[np.array(target_image.shape[-2:]) / 2, np.array([1, 1]), 0,]],
+                        [
+                            [
+                                np.array(target_image.shape[-2:]) / 2,
+                                np.array([1, 1]),
+                                0,
+                            ]
+                        ],
                         [(0, 255, 0)],
                     )
                     draw_pseudo_image(
@@ -2227,6 +2309,14 @@ def train_siamese(
                     unfreeze_model(net)
                     bof_training_steps = 0
 
+                if (
+                    isinstance(regression_training_isolation, int)
+                    and regression_training_isolation > 0
+                    and global_step >= regression_training_isolation
+                ):
+                    unfreeze_model(net)
+                    regression_training_isolation = 0
+
                 if global_step % display_step == 0:
                     average_loss /= display_step
                     average_v_loss /= display_step
@@ -2238,7 +2328,12 @@ def train_siamese(
                         global_step,
                         "]",
                         "loss=" + str(float(average_loss.detach().cpu())),
-                        "v_loss=" + (str(float(average_v_loss.detach().cpu())) if regress_vertical_position else "None"),
+                        "v_loss="
+                        + (
+                            str(float(average_v_loss.detach().cpu()))
+                            if regress_vertical_position
+                            else "None"
+                        ),
                         "error_position=",
                         average_delta_error,
                         "lr=",
@@ -2344,16 +2439,24 @@ def train_siamese(
 
                     loss = 0
 
-                    if not (regress_vertical_position and regression_training_isolated):
+                    if not (
+                        regress_vertical_position and regression_training_isolation
+                    ):
                         loss = net.criterion(pred, labels, weights)
 
                     v_loss = 0
 
                     if regress_vertical_position:
-                        pred_vertical_position = siamese_model.vertical_position_regressor(feat_target)
+                        pred_vertical_position = (
+                            siamese_model.vertical_position_regressor(feat_target)
+                        )
                         v_loss = siamese_model.vertical_criterion(
                             pred_vertical_position,
-                            torch.tensor(vertical_position, dtype=torch.float32, device=pred_vertical_position.device)
+                            torch.tensor(
+                                vertical_position,
+                                dtype=torch.float32,
+                                device=pred_vertical_position.device,
+                            ),
                         )
                         loss += 0.1 * v_loss
 
@@ -2383,8 +2486,18 @@ def train_siamese(
                             "/",
                             val_steps,
                             "]",
-                            "loss=" + str(float(val_average_loss.detach().cpu()) / (step + 1)),
-                            "v_loss=" + (str(float(val_average_v_loss.detach().cpu() / (step + 1))) if regress_vertical_position else "None"),
+                            "loss="
+                            + str(float(val_average_loss.detach().cpu()) / (step + 1)),
+                            "v_loss="
+                            + (
+                                str(
+                                    float(
+                                        val_average_v_loss.detach().cpu() / (step + 1)
+                                    )
+                                )
+                                if regress_vertical_position
+                                else "None"
+                            ),
                             "error_position=",
                             val_average_delta_error / (step + 1),
                             "lr=",
@@ -2392,19 +2505,27 @@ def train_siamese(
                         )
 
             writer.add_scalar(
-                "val_loss", float(val_average_loss.detach().cpu()) / (val_steps), global_step
+                "val_loss",
+                float(val_average_loss.detach().cpu()) / (val_steps),
+                global_step,
             )
 
             if regress_vertical_position:
                 writer.add_scalar(
-                    "val_v_loss", float(val_average_v_loss.detach().cpu()) / (val_steps), global_step
+                    "val_v_loss",
+                    float(val_average_v_loss.detach().cpu()) / (val_steps),
+                    global_step,
                 )
 
             writer.add_scalar(
-                "val_error_position_x", float(val_average_delta_error[0]) / (val_steps), global_step
+                "val_error_position_x",
+                float(val_average_delta_error[0]) / (val_steps),
+                global_step,
             )
             writer.add_scalar(
-                "val_error_position_y", float(val_average_delta_error[1]) / (val_steps), global_step
+                "val_error_position_y",
+                float(val_average_delta_error[1]) / (val_steps),
+                global_step,
             )
 
         net.train()
@@ -2680,7 +2801,13 @@ def train_detection(
                     draw_pseudo_image(
                         target_image[0],
                         "./plots/train/target_image.png",
-                        [[np.array(target_image.shape[-2:]) / 2, np.array([1, 1]), 0,]],
+                        [
+                            [
+                                np.array(target_image.shape[-2:]) / 2,
+                                np.array([1, 1]),
+                                0,
+                            ]
+                        ],
                         [(0, 255, 0)],
                     )
                     draw_pseudo_image(
@@ -3005,7 +3132,10 @@ def comput_kitti_output(
 
 
 def compute_lidar_kitti_output(
-    predictions_dicts, center_limit_range, class_names, global_set,
+    predictions_dicts,
+    center_limit_range,
+    class_names,
+    global_set,
 ):
     annos = []
     for i, preds_dict in enumerate(predictions_dicts):
@@ -3254,7 +3384,8 @@ def infer_create_pseudo_image(
         raise ValueError("point_clouds should be a PointCloud or a list of PointCloud")
 
     pseudo_image = net.create_pseudo_image(
-        example_convert_to_torch(input_data, float_dtype, device=net.device), pc_range,
+        example_convert_to_torch(input_data, float_dtype, device=net.device),
+        pc_range,
     )
 
     t3 = time.time()

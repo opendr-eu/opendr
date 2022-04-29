@@ -2969,7 +2969,7 @@ def run_vup(id=0, gpu_capacity=4, total_devices=4):
                                                 upscaling_mode=upscaling_mode,
                                                 augment=augment,
                                                 regress_vertical_position=True,
-                                                regression_training_isolated=False,
+                                                regression_training_isolation=False,
                                             ),
                                             eval_kwargs,
                                         )
@@ -3044,7 +3044,7 @@ def run_vup0_1(id=0, gpu_capacity=4, total_devices=4):
                                                 upscaling_mode=upscaling_mode,
                                                 augment=augment,
                                                 regress_vertical_position=True,
-                                                regression_training_isolated=False,
+                                                regression_training_isolation=False,
                                             ),
                                             eval_kwargs,
                                         )
@@ -3119,7 +3119,7 @@ def run_vup0_2(id=0, gpu_capacity=4, total_devices=4):
                                                 upscaling_mode=upscaling_mode,
                                                 augment=augment,
                                                 regress_vertical_position=True,
-                                                regression_training_isolated=False,
+                                                regression_training_isolation=False,
                                             ),
                                             eval_kwargs,
                                         )
@@ -3194,7 +3194,7 @@ def run_vup1(id=0, gpu_capacity=4, total_devices=4):
                                                 upscaling_mode=upscaling_mode,
                                                 augment=augment,
                                                 regress_vertical_position=True,
-                                                regression_training_isolated=False,
+                                                regression_training_isolation=False,
                                             ),
                                             eval_kwargs,
                                         )
@@ -4125,6 +4125,63 @@ def run_bof_fx3_0_2(id=0, gpu_capacity=4, total_devices=4):
         print(result)
         i += gpu_capacity * total_devices
 
+
+def run_vertical0(id=0, gpu_capacity=4, total_devices=4):
+
+    device_id = id % total_devices
+    i = id
+
+    eval_kwargs = create_b_eval_kwargs()
+
+    def create_models(eval_kwargs):
+        result = []
+        for vertical_regressor_type, vertical_regressor_name in [
+            ["center_linear", "cl"],
+            ["convolutional", "conv"],
+            ["convolutional_3k", "conv3"],
+        ]:
+            for regression_training_isolation in [2000, True]:
+                name = (
+                    "vertical0-"
+                    + str(vertical_regressor_name)
+                    + ("-iso" if regression_training_isolation is True else "")
+                )
+                result.append(
+                    (
+                        Model(
+                            name,
+                            params_file=f"./temp/{name}/best.txt",
+                            vertical_regressor_type=vertical_regressor_type,
+                            regress_vertical_position=True,
+                            regression_training_isolation=regression_training_isolation,
+                            train_steps=128000,
+                            save_step=2000,
+                            loads=[
+                                128000,
+                                2000,
+                                8000,
+                                16000,
+                                32000,
+                                64000,
+                            ],
+                            augment=True,
+                        ),
+                        eval_kwargs,
+                    )
+                )
+
+        return result
+
+    models = create_models(eval_kwargs)
+
+    while i < len(models):
+        model, eval_kwargs = models[i]
+
+        result = model.eval_and_train(
+            device="cuda:" + str(device_id), eval_kwargs=eval_kwargs
+        )
+        print(result)
+        i += gpu_capacity * total_devices
 
 
 if __name__ == "__main__":

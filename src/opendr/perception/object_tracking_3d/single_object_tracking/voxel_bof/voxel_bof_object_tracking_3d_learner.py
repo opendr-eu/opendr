@@ -159,10 +159,12 @@ class VoxelBofObjectTracking3DLearner(Learner):
         vertical_offset_interpolation=1,
         min_top_score=None,
         regress_vertical_position=False,
-        regression_training_isolated=False,
+        regression_training_isolation=False,
         overwrite_strides=None,
         target_features_mode="init",  # "all", "selected", "last"
         upscaling_mode="none",  # "raw", "processed"
+        vertical_regressor_type="center_linear",
+        vertical_regressor_kwargs={},
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(VoxelBofObjectTracking3DLearner, self).__init__(
@@ -212,11 +214,13 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.offset_interpolation = offset_interpolation
         self.min_top_score = min_top_score
         self.regress_vertical_position = regress_vertical_position
-        self.regression_training_isolated = regression_training_isolated
+        self.regression_training_isolation = regression_training_isolation
         self.overwrite_strides = overwrite_strides
         self.target_features_mode = target_features_mode
         self.upscaling_mode = upscaling_mode
         self.vertical_offset_interpolation = vertical_offset_interpolation
+        self.vertical_regressor_type = vertical_regressor_type
+        self.vertical_regressor_kwargs = vertical_regressor_kwargs
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -515,7 +519,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             training_method=self.training_method,
             train_pseudo_image=self.train_pseudo_image,
             regress_vertical_position=self.regress_vertical_position,
-            regression_training_isolated=self.regression_training_isolated,
+            regression_training_isolation=self.regression_training_isolation,
             overwrite_strides=self.overwrite_strides,
             upscaling_mode=self.upscaling_mode,
         )
@@ -1681,6 +1685,8 @@ class VoxelBofObjectTracking3DLearner(Learner):
         if self.regress_vertical_position:
             self.model.vertical_position_regressor = create_vertical_position_regressor(
                 self.model.branch.rpn.final_filters,
+                self.vertical_regressor_type,
+                **self.vertical_regressor_kwargs,
             )
 
             self.model.vertical_position_regressor.to(self.model.branch.device)
