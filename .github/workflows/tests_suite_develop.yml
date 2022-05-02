@@ -1,5 +1,7 @@
 name: Test Suite (develop)
 
+# note: this workflow is only triggered by the nightly scheduled run.
+# it is identical to master's workflow, but targets the develop branch.
 on:
   schedule:
     - cron:  '0 23 * * *'
@@ -28,7 +30,7 @@ jobs:
           - os: ubuntu-20.04
             DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
           - os: macos-10.15
-            DEPENDENCIES_INSTALLATION: "brew install clang-format cppcheck"
+            DEPENDENCIES_INSTALLATION: "brew install clang-format@11 cppcheck; ln /usr/local/bin/clang-format-11 /usr/local/bin/clang-format"
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -135,6 +137,7 @@ jobs:
     - name: Upload wheel as artifact
       uses: actions/upload-artifact@v2
       with:
+        name: wheel-artifact
         path:
           dist/*.tar.gz
   build-docker:
@@ -149,10 +152,17 @@ jobs:
     - name: Build image
       run: |
         docker build --tag opendr/opendr-toolkit:cpu_test --file Dockerfile .
+    - name: Get branch name
+      id: branch-name
+      uses: tj-actions/branch-names@v5.1
+    - name: Build image
+      run: |
+        docker build --tag opendr/opendr-toolkit:cpu_test --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --file Dockerfile .
         docker save opendr/opendr-toolkit:cpu_test > cpu_test.zip
     - name: Upload image artifact
       uses: actions/upload-artifact@v2
       with:
+        name: docker-artifact
         path:
           cpu_test.zip
   test-wheel:
@@ -341,7 +351,31 @@ jobs:
         path: artifact
     - name: Test docker
       run: |
-        docker load < ./artifact/artifact/cpu_test.zip
+        docker load < ./artifact/docker-artifact/cpu_test.zip
         docker run --name toolkit -i opendr/opendr-toolkit:cpu_test bash
         docker start toolkit
         docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+  delete-docker-artifacts:
+    needs: [build-docker, test-docker]
+    if: ${{ always() }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Delete docker artifacts
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: docker-artifact
+  delete-wheel-artifacts:
+    needs: [build-wheel, test-wheel]
+    if: ${{ always() }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Delete wheel artifacts
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wheel-artifact
