@@ -23,6 +23,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from opendr.perception.heart_anomaly_detection.attention_neural_bag_of_feature.algorithm.samodels import SelfAttention
 
 
 class ResidualBlock(nn.Module):
@@ -257,19 +258,34 @@ class ANBoF(nn.Module):
         # nbof block
         in_channels, series_length = self.compute_intermediate_dimensions(in_channels, series_length)
         self.quantization_block = NBoF(in_channels, n_codeword)
-
+        self.att_type = att_type
+        out_dim = n_codeword
         # attention block
-        self.attention_block = Attention(n_codeword, series_length, att_type)
+        if att_type in ['spatiotemporal', 'spatialsa', 'temporalsa']:
+            self.attention_block = SelfAttention(n_codeword, series_length, att_type)
+            self.attention_block2 = SelfAttention(n_codeword, series_length, att_type)
+            self.attention_block3 = SelfAttention(n_codeword, series_length, att_type)
+            out_dim = n_codeword*3
+        else:
+            self.attention_block = Attention(n_codeword, series_length, att_type)
 
         # classifier
-        self.classifier = nn.Sequential(nn.Linear(in_features=n_codeword, out_features=512),
+        self.classifier = nn.Sequential(nn.Linear(in_features=out_dim, out_features=512),
                                         nn.ReLU(),
                                         nn.Dropout(dropout),
                                         nn.Linear(in_features=512, out_features=n_class))
 
     def forward(self, x):
         x = self.resnet_block(x)
-        x = self.attention_block(self.quantization_block(x)).mean(-1)
+        x = self.quantization_block(x)
+        if self.att_type in ['spatiotemporal', 'spatialsa', 'temporalsa']:
+            x1 = self.attention_block(x)
+            x2 = self.attention_block2(x)
+            x3 = self.attention_block3(x)
+            x = torch.cat([x1, x2, x3], axis=1)
+        else:
+            x = self.attention_block(x)
+        x = x.mean(-1)
         x = self.classifier(x)
         return x
 
@@ -298,13 +314,24 @@ class ATNBoF(nn.Module):
         # tnbof block
         in_channels, series_length = self.compute_intermediate_dimensions(in_channels, series_length)
         self.quantization_block = TNBoF(in_channels, n_codeword)
+        out_dim = n_codeword * 2
 
         # attention block
-        self.short_attention_block = Attention(n_codeword, series_length - int(series_length / 2), att_type)
-        self.long_attention_block = Attention(n_codeword, series_length, att_type)
+        self.att_type = att_type
+        if att_type in ['spatiotemporal', 'spatialsa', 'temporalsa']:
+            out_dim = out_dim * 3
+            self.short_attention_block = SelfAttention(n_codeword, series_length - int(series_length / 2), att_type)
+            self.long_attention_block = SelfAttention(n_codeword, series_length, att_type)
+            self.short_attention_block2 = SelfAttention(n_codeword, series_length - int(series_length / 2), att_type)
+            self.long_attention_block2 = SelfAttention(n_codeword, series_length, att_type)
+            self.short_attention_block3 = SelfAttention(n_codeword, series_length - int(series_length / 2), att_type)
+            self.long_attention_block3 = SelfAttention(n_codeword, series_length, att_type)
+        else:
+            self.short_attention_block = Attention(n_codeword, series_length - int(series_length / 2), att_type)
+            self.long_attention_block = Attention(n_codeword, series_length, att_type)
 
         # classifier
-        self.classifier = nn.Sequential(nn.Linear(in_features=n_codeword * 2, out_features=512),
+        self.classifier = nn.Sequential(nn.Linear(in_features=out_dim, out_features=512),
                                         nn.ReLU(),
                                         nn.Dropout(dropout),
                                         nn.Linear(in_features=512, out_features=n_class))
@@ -312,8 +339,20 @@ class ATNBoF(nn.Module):
     def forward(self, x):
         x = self.resnet_block(x)
         x_short, x_long = self.quantization_block(x)
-        x_short = self.short_attention_block(x_short).mean(-1)
-        x_long = self.long_attention_block(x_long).mean(-1)
+        if self.att_type in ['spatialsa', 'temporalsa', 'spatiotemporal']:
+            x_short1 = self.short_attention_block(x_short)
+            x_long1 = self.long_attention_block(x_long)
+            x_short2 = self.short_attention_block2(x_short)
+            x_long2 = self.long_attention_block2(x_long)
+            x_short3 = self.short_attention_block3(x_short)
+            x_long3 = self.long_attention_block3(x_long)
+            x_short = torch.cat([x_short1, x_short2, x_short3], axis=1)
+            x_long = torch.cat([x_long1, x_long2, x_long3], axis=1)
+        else:
+            x_short = self.short_attention_block(x_short)
+            x_long = self.long_attention_block(x_long)
+        x_short = x_short.mean(-1)
+        x_long = x_long.mean(-1)
         x = torch.cat([x_short, x_long], dim=-1)
         x = self.classifier(x)
         return x
