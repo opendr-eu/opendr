@@ -59,7 +59,7 @@ def get_random_learner():
     return learner
 
 
-class TestRgbdHandGestureLearner(unittest.TestCase):
+class TestAudiovisualEmotionLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         print("\n\n**********************************\nTEST AudiovisualEmotionLearner\n"
