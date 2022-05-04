@@ -16,6 +16,7 @@
 
 import argparse
 from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
+import os
 
 parser = argparse.ArgumentParser()
 
@@ -23,6 +24,9 @@ parser.add_argument('-input_video', type=str, help='path to video file', require
 parser.add_argument('-input_audio', type=str, help='path to audio file', required=True)
 
 args = parser.parse_args()
+
+assert os.path.exists(args.input_video), 'Provided input video file does not exist'
+assert os.path.exists(args.input_audio), 'Provided input audio file does not exist'
 
 avlearner = AudiovisualEmotionLearner(device='cuda', fusion='ia', mod_drop='zerodrop')
 
