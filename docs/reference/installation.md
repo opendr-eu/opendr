@@ -272,7 +272,7 @@ Supported device arguments are: 'tx2', 'agx' and 'nx' for the corresponding embe
 
 In order to run the docker image, run the following command to access bash within the docker:
 ```bash
-sudo docker run --gpus all -it --privileged -v /tmp/.X11-unix:/tmp/.X11-unix =e DISPLAY=unix$DISPLAY opendr/opendr-tx2 /bin/bash
+sudo docker run -it --privileged -v /tmp/.X11-unix:/tmp/.X11-unix =e DISPLAY=unix$DISPLAY opendr/opendr-embedded /bin/bash
 ```
 
 After that you should enable the environment variables with:
