@@ -2,8 +2,10 @@ from opendr.perception.multimodal_human_centric.rgbd_hand_gesture_learner.rgbd_h
     RgbdHandGestureLearner,
     get_builtin_architectures,
 )
-from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
-from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm.data import get_audiovisual_emotion_dataset
+from opendr.perception.multimodal_human_centric.\
+    audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
+from opendr.perception.multimodal_human_centric.\
+    audiovisual_emotion_learner.algorithm.data import get_audiovisual_emotion_dataset
 from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm import spatial_transforms
 
 __all__ = ['RgbdHandGestureLearner', 'get_builtin_architectures', 'AudiovisualEmotionLearner', 'get_audiovisual_emotion_dataset', 'spatial_transforms']
