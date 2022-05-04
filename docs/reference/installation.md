@@ -266,7 +266,7 @@ Install the toolkit:
 ```bash
 git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
 cd opendr
-sudo docker build -t opendr/opendr-embedded -f Dockerfile-nvidia --build-arg device=tx2 .
+sudo docker build --build-arg device=tx2 -t opendr/opendr-embedded -f Dockerfile-embedded .
 ```
 Supported device arguments are: 'tx2', 'agx' and 'nx' for the corresponding embedded device.
 
