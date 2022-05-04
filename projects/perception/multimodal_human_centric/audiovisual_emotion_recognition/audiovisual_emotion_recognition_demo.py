@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import argparse
-from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
+from opendr.perception.multimodal_human_centric import AudiovisualEmotionLearner
 import os
 
 parser = argparse.ArgumentParser()

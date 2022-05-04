@@ -281,8 +281,8 @@ opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm
     The training, validation, and testing data objects can be constructed easily by using our method `get_audiovisual_emotion_dataset()` as follows: 
     
   ```python
-  from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm.data import get_audiovisual_emotion_dataset
-  from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
+  from opendr.perception.multimodal_human_centric import get_audiovisual_emotion_dataset
+  from opendr.perception.multimodal_human_centric import AudiovisualEmotionLearner
   
   train_set, val_set, test_set = get_audiovisual_emotion_dataset('RAVDESS/', preprocess=True)
   ```

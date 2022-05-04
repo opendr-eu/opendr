@@ -27,8 +27,8 @@ from audio_common_msgs.msg import AudioData
 from vision_msgs.msg import Classification2D
 
 from opendr_bridge import ROSBridge
-from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
-from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm import spatial_transforms as transforms
+from opendr.perception.multimodal_human_centric import AudiovisualEmotionLearner
+from opendr.perception.multimodal_human_centric import spatial_transforms as transforms
 from opendr.engine.data import Video, Timeseries
 
 

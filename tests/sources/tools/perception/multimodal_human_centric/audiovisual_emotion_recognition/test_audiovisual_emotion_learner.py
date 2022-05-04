@@ -22,7 +22,7 @@ import os
 # OpenDR imports
 from opendr.engine.data import Video, Timeseries
 from opendr.engine.target import Category
-from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.avlearner import AudiovisualEmotionLearner
+from opendr.perception.multimodal_human_centric import AudiovisualEmotionLearner
 from opendr.engine.datasets import DatasetIterator
 
 
