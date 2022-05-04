@@ -69,30 +69,22 @@ Then, you can install CUDA, along CuDNN.
 You can also refer to this [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile-cuda) for installation instructions.
 Note that NVIDIA 30xx GPUs may not be fully supported, due to CUDA limitations.
 
-# Installing by cloning OpenDR repository on a Nvidia-TX2
-If you are installing the toolkit on a Nvidia-TX2:
+# Installing by cloning OpenDR repository on a Nvidia embedded device
+If you are installing the toolkit on a Nvidia embedded device:
 ```bash
 cd opendr
-./bin/install_tx2.sh
+./bin/install_nvidia.sh tx2 | agx | nx
 ```
-Note that TX2 should be flashed with Jetpack 4.6 and that this might take a while (~4-5h), while the script also makes system-wide changes and might prompt for password input.
+Supported Nvidia embedded devices are: TX-2, AGX and Xavier-NX. To install the toolkit correctly, use the corresponding argument for the device you are installing the toolkit on.
+
+**Note that the Nvidia embedded device should be flashed with Jetpack 4.6 and that this might take a while (~4-5h), while the script also makes system-wide changes and might prompt for password input.**
 
 In order to use the toolkit, you should export some system variables by running `activate_tx2.sh`.
 Note that this should be run before every toolkit use:
 ```bash
-./bin/activate_tx2.sh
+./bin/activate_nvidia.sh
 ```
 Then, you are ready to use the toolkit!
-
-The script works also on Nvidia Xavier NX and AGX. You should change line 37 in [install_tx2.sh](https://github.com/opendr-eu/opendr/blob/tx2_install/bin/install_tx2.sh) from:
-```
--gencode arch=compute_62,code=sm_62
-```
-to:
-```
--gencode arch=compute_72,code=sm_72 
-```
-for Xavier NX and AGX Xavier.
 
 # Installing using *pip*
 
@@ -247,12 +239,12 @@ and
 sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda
 ```
 
-# Build the TX-2 docker image yourself
-You can also build the corresponding docker image on a Nvidia-TX2:
+# Build the docker image yourself on a Nvidia embedded device
+You can also build the corresponding docker image on a Nvidia embedded device (supported: TX-2, Xavier-NX and AGX):
 
-Note that TX-2 should be flashed with Jetpack 4.6 and that this might take a while (~4-5h).
+Note that the embedded device should be flashed with Jetpack 4.6 and that this might take a while (~4-5h).
 
-To enable GPU usage on TX-2 within docker, first edit `/etc/docker/daemon.json` in order to set the default docker runtime:
+To enable GPU usage on the embedded device within docker, first edit `/etc/docker/daemon.json` in order to set the default docker runtime:
 ```
 {
     "runtimes": {
@@ -274,9 +266,9 @@ Install the toolkit:
 ```bash
 git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
 cd opendr
-sudo docker build -t opendr/opendr-tx2 .
+sudo docker build -t opendr/opendr-embedded -f Dockerfile-nvidia --build-arg device=tx2 .
 ```
-
+Supported device arguments are: 'tx2', 'agx' and 'nx' for the corresponding embedded device.
 
 In order to run the docker image, run the following command to access bash within the docker:
 ```bash
@@ -285,5 +277,5 @@ sudo docker run --gpus all -it --privileged -v /tmp/.X11-unix:/tmp/.X11-unix =e 
 
 After that you should enable the environment variables with:
 ```bash
-source bin/activate_tx2.sh
+source bin/activate_nvidia.sh
 ```

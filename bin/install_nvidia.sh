@@ -1,5 +1,16 @@
 #!/bin/bash
 
+if [[ $1 = "tx2" ]];
+then
+  echo "Installing OpenDR on Nvidia TX2"
+elif [[ $1 = "agx" ]] ||  [[ $1 = "nx" ]]
+then
+  echo "Installing OpenDR on Nvidia AGX/NX"
+else
+  echo "Wrong argument, supported inputs are 'tx2', 'agx' and 'nx'"
+  exit 1
+fi
+
 # export OpenDR related paths
 export OPENDR_HOME=$PWD
 export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
@@ -30,7 +41,18 @@ sed -i 's/USE_CUDA_PATH = NONE/USE_CUDA_PATH = \/usr\/local\/cuda/' config.mk
 # CUDA_ARCH setting
 sed -i 's/CUDA_ARCH = -gencode arch=compute_53,code=sm_53 -gencode arch=compute_62,code=sm_62 -gencode arch=compute_72,code=sm_72/ /' config.mk
 sed -i 's/USE_CUDNN = 0/USE_CUDNN = 1/' config.mk
-sed -i '/USE_CUDNN/a CUDA_ARCH = -gencode arch=compute_62,code=sm_62' config.mk
+
+if [[ $1 = "tx2" ]];
+then
+  sed -i '/USE_CUDNN/a CUDA_ARCH = -gencode arch=compute_62,code=sm_62' config.mk
+elif [[ $1 = "agx" ]] ||  [[ $1 = "nx" ]]
+then
+  echo "AGX or nx"
+  sed -i '/USE_CUDNN/a CUDA_ARCH = -gencode arch=compute_72,code=sm_72' config.mk
+else
+  echo "Wrong argument, supported inputs are 'tx2', 'agx' and 'nx'"
+fi
+
 
 make -j $(nproc) NVCC=/usr/local/cuda/bin/nvcc
 

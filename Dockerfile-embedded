@@ -4,6 +4,7 @@
 #
 ARG BASE_IMAGE=nvcr.io/nvidia/l4t-base:r32.6.1
 FROM ${BASE_IMAGE}
+ARG device=tx2
 
 ARG ROS_PKG=ros_base
 ENV ROS_DISTRO=noetic
@@ -72,7 +73,7 @@ WORKDIR /
 
 RUN git clone --depth 1 --recurse-submodules -j8 --branch tx2_install https://github.com/opendr-eu/opendr
 RUN apt-get update
-RUN cd ./opendr && ./bin/install_tx2.sh
+RUN cd ./opendr && ./bin/install_nvidia.sh $device
 
 
 
