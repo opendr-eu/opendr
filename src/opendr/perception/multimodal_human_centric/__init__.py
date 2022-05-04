@@ -9,4 +9,4 @@ from opendr.perception.multimodal_human_centric.\
 from opendr.perception.multimodal_human_centric.audiovisual_emotion_learner.algorithm import spatial_transforms
 
 __all__ = ['RgbdHandGestureLearner', 'get_builtin_architectures', 'AudiovisualEmotionLearner',
-    'get_audiovisual_emotion_dataset', 'spatial_transforms']
+           'get_audiovisual_emotion_dataset', 'spatial_transforms']
