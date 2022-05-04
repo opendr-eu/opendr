@@ -191,7 +191,7 @@ Also, a tutorial in the form of a Jupyter Notebook is available
   # Initialize learner with the tuned hyperparameters
   learner = DetrLearner(**best_parameters)
   ```
-  
+
 * **Hyperparameter tuning example with the [DetrLearner](detr.md) with a custom study**
 
   This example shows how to tune a selection of the hyperparameters of the *DetrLearner* and
@@ -201,7 +201,7 @@ Also, a tutorial in the form of a Jupyter Notebook is available
   from opendr.utils.hyperparameter_tuner import HyperparameterTuner
   from opendr.perception.object_detection_2d import DetrLearner
   from opendr.engine.datasets import ExternalDataset
-  
+
   import optuna
 
   # Create a coco dataset, containing training and evaluation data
@@ -225,7 +225,7 @@ Also, a tutorial in the form of a Jupyter Notebook is available
 
   # Specify timeout such that optimization is performed for 4 hours
   timeout = 14400
-  
+
   # Create custom Study
   sampler = optuna.samplers.CmaEsSampler()
   study = optuna.create_study(study_name='detr_cma', sampler=sampler)
@@ -245,6 +245,51 @@ Also, a tutorial in the form of a Jupyter Notebook is available
   # Initialize learner with the tuned hyperparameters
   learner = DetrLearner(**best_parameters)
   ```
+
+#### Performance Evaluation
+
+In this section, we will present the performance evaluation of this tool.
+This tool is not evaluated quantitatively, since hyperparameter tuning is very problem-specific.
+Also, the tool provides an interface with the existing Optuna framework, therefore evaluation of the performance of the hyperparameter tuning tool will be nothing more than evaluating the performance of Optuna.
+Quantitative results for Optuna on the Street View House Numbers (SVHN) dataset can be found in [[1]](#optuna-paper).
+Rather than providing quantitative results, we will here present an evaluation of the tool in terms of support, features and compatibility.
+Below, the supported learner base classes and supported hyperparameter types are presented.
+Here it is shown that the hyperparameter tuning tool supports all learners that are present in the OpenDR toolkit.
+Also, the hyperparameter types that are supported by Optuna are supported by the tool.
+More information on these types can be found [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.trial.Trial.html).
+
+| Supported Types                                         |
+|---------------------------------------------------------|
+| All OpenDR Learners (Learner, LearnerRL, LearnerActive) |
+| Categorical Hyperparameters                             |
+| Discrete Hyperparameters                                |
+| Floating Point Hyperparameters                          |
+| Integer Hyperparameters                                 |
+| Loguniform/Uniform Continous Hyperparameters            |
+
+Below, the sampling algorithms that are available in the tool are shown.
+These include both single and multi-objective algorithms.
+
+| Available Sampling Algorithms                                                                               |
+|-------------------------------------------------------------------------------------------------------------|
+| Grid Sampling                                                                                               |
+| Independent Sampling                                                                                        |
+| Tree-structured Parzen Estimator (TPE) Sampling                                                             |
+| Covariance Matrix Adaptation - Evolution Strategy (CMA-ES) Sampling                                         |
+| Partially Fixed Sampling                                                                                    |
+| Nondominated Sorting Genetic Algorithm II (NSGA-II) Sampling                                                |
+| Multiobjective Tree-Structured Parzen Estimator for Computationally Expensive Optimization (MTSPE) Sampling |
+
+The platform compatibility evaluation is also reported below:
+
+| Platform                                     | Test results |
+|----------------------------------------------|:------------:|
+| x86 - Ubuntu 20.04 (bare installation - CPU) |     Pass     |
+| x86 - Ubuntu 20.04 (bare installation - GPU) |     Pass     |
+| x86 - Ubuntu 20.04 (pip installation)        |     Pass     |
+| x86 - Ubuntu 20.04 (CPU docker)              |     Pass     |
+| x86 - Ubuntu 20.04 (GPU docker)              |     Pass     |
+| NVIDIA Jetson TX2                            |     Pass     |
 
 #### References
 <a name="optuna-paper" href="https://dl.acm.org/doi/10.1145/3292500.3330701">[1]</a>
