@@ -67,6 +67,7 @@ jobs:
           - perception/object_tracking_2d
           - perception/object_detection_3d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
@@ -146,9 +147,12 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: true
+    - name: Get branch name
+      id: branch-name
+      uses: tj-actions/branch-names@v5.1
     - name: Build image
       run: |
-        docker build --tag opendr/opendr-toolkit:cpu_test --file Dockerfile .
+        docker build --tag opendr/opendr-toolkit:cpu_test --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --file Dockerfile .
         docker save opendr/opendr-toolkit:cpu_test > cpu_test.zip
     - name: Upload image artifact
       uses: actions/upload-artifact@v2
@@ -172,6 +176,7 @@ jobs:
           - perception/multimodal_human_centric
           - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
@@ -242,6 +247,7 @@ jobs:
           - perception/multimodal_human_centric
           - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
@@ -286,6 +292,7 @@ jobs:
         # The following two are dependecies for some other packages and pip cannot automatically install them if they are not on a repo
         pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
         pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
 
         # Install specific package for testing
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
@@ -297,7 +304,6 @@ jobs:
         # Utils contains hyperparameter tuning
         if [ "$package" == "utils" ]; then
               pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
-
         else
               pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
@@ -318,6 +324,7 @@ jobs:
           - perception/multimodal_human_centric
           - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation

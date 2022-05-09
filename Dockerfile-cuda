@@ -1,5 +1,7 @@
 FROM nvidia/cuda:11.2.0-cudnn8-devel-ubuntu20.04
 
+ARG branch
+
 # Install dependencies
 RUN apt-get update && \
     apt-get --yes install git sudo apt-utils
@@ -15,7 +17,7 @@ RUN sudo apt-get --yes install build-essential
 
 # Clone the repo and install the toolkit
 ENV OPENDR_DEVICE gpu
-RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
+RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr -b $branch
 WORKDIR "/opendr"
 RUN ./bin/install.sh
 

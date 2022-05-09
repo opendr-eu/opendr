@@ -53,6 +53,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [ab3dmot Module](object-tracking-3d-ab3dmot.md)
         - multimodal human centric:
             - [rgbd_hand_gesture_learner Module](rgbd-hand-gesture-learner.md)
+            - [audiovisual_emotion_recognition_learner Module](audiovisual-emotion-recognition-learner.md)
         - compressive learning:
             - [multilinear_compressive_learning Module](multilinear-compressive-learning.md)
         - semantic segmentation:
@@ -62,10 +63,12 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - heart anomaly detection:
             - [gated_recurrent_unit Module](gated-recurrent-unit-learner.md)
             - [attention_neural_bag_of_feature_learner Module](attention-neural-bag-of-feature-learner.md)
+        - fall detection:
+            - [fall_detection Module](fall-detection.md)
 
     - `control` Module
         - [mobile_manipulation Module](mobile-manipulation.md)
-        - [single_demo_grasp Module](single-demonstration-grasping.md)        
+        - [single_demo_grasp Module](single-demonstration-grasping.md)
 
     - `simulation` Module
         - [human_model_generation Module](human_model_generation.md)
@@ -102,7 +105,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - pose estimation:
             - [lightweight_open_pose Demo](/projects/perception/lightweight_open_pose)
         - multimodal human centric:
-            - [rgbd_hand_gesture_learner Demo](/projects/perception/multimodal_human_centric)
+            - [rgbd_hand_gesture_learner Demo](/projects/perception/multimodal_human_centric/rgbd_hand_gesture_recognition)
+            - [audiovisual_emotion_recognition Demo](/projects/perception/multimodal_human_centric/audiovisual_emotion_recognition)
         - object detection 2d:
             - [detr Demo](/projects/perception/object_detection_2d/detr)
             - [gem Demo](/projects/perception/object_detection_2d/gem)
@@ -121,6 +125,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [bisnet Demo](/projects/perception/semantic_segmentation/bisenet)
         - action recognition:
             - [skeleton_based_action_recognition Demo](/projects/perception/skeleton_based_action_recognition)
+        - fall detection:
+            - [fall_detection Demo](/projects/perception/fall_detection.md)
         - [full_map_posterior_slam Module](/projects/perception/slam/full_map_posterior_gmapping)
     - `simulation` Module
         - [SMPL+D Human Models Dataset](/projects/simulation/SMPL%2BD_human_models)
