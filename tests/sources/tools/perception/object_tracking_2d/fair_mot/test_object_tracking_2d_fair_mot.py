@@ -15,7 +15,6 @@
 import sys
 import unittest
 import shutil
-import os
 import torch
 from opendr.perception.object_tracking_2d import (
     MotDataset,
@@ -23,8 +22,9 @@ from opendr.perception.object_tracking_2d import (
     RawMotDatasetIterator,
 )
 from opendr.perception.object_tracking_2d import ObjectTracking2DFairMotLearner
+import os
 
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+DEVICE = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 print("Using device:", DEVICE)
 print("Using device:", DEVICE, file=sys.stderr)

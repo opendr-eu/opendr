@@ -4,12 +4,14 @@
 Released on XX, XXth, 2022.
 
   - New Features:
-    - None.
+    - Added end-to-end planning tool ([#223](https://github.com/opendr-eu/opendr/pull/223)).
   - Enhancements:
     - Added support for modular pip packages allowing tools to be installed separately ([#201](https://github.com/opendr-eu/opendr/pull/201)).
     - Simplified the installation process for pip by including the appropriate post-installation scripts ([#201](https://github.com/opendr-eu/opendr/pull/201)).
     - Improved the structure of the toolkit by moving `io` from `utils` to `engine.helper` ([#201](https://github.com/opendr-eu/opendr/pull/201)).
-    - Added support for `post-install` scripts and `opendr` dependencies in `.ini` files  ([#201](https://github.com/opendr-eu/opendr/pull/201)). 
+    - Added support for `post-install` scripts and `opendr` dependencies in `.ini` files  ([#201](https://github.com/opendr-eu/opendr/pull/201)).
+    - Updated toolkit to support CUDA 11.2 and improved GPU support ([#215](https://github.com/opendr-eu/opendr/pull/215)).
+    - Added a standalone pose-based fall detection tool ([#237](https://github.com/opendr-eu/opendr/pull/237))
   - Bug Fixes:
     - Updated wheel building pipeline to include missing files and removed unnecessary dependencies ([#200](https://github.com/opendr-eu/opendr/pull/200)).
     - `panoptic_segmentation/efficient_ps`: updated dataset preparation scripts to create correct validation ground truth ([#221](https://github.com/opendr-eu/opendr/pull/221)).
