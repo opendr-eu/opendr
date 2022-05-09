@@ -1,3 +1,4 @@
+import time
 import sys
 import os
 import torch
@@ -15,6 +16,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.metri
     Precision,
     Success,
 )
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.realtime_evaluator import RealTimeEvaluator
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
     iou_2d,
     tracking_boxes_to_lidar,
@@ -2622,6 +2624,588 @@ def multi_eval(
         i += gpu_capacity * total_devices
 
     return results
+
+
+def test_realtime_rotated_pp_siamese_eval(
+    model_name=None,
+    load=0,
+    draw=False,
+    iou_min=0.0,
+    classes=["Car", "Van", "Truck"],
+    tracks=None,
+    device=DEVICE,
+    eval_id="default",
+    near_distance=30,
+    backbone="pp",
+    raise_on_infer_error=False,
+    limit_object_ids=False,
+    params_file=None,
+    data_fps=20,
+    require_predictive_inference=False,
+    wait_for_next_frame=False,
+    cap_model_fps=None,
+    warmups_needed=10,
+    **kwargs,
+):
+
+    if params_file is not None:
+        params = load_params_from_file(params_file)
+        model_name = params["model_name"] if "model_name" in params else model_name
+        load = params["load"] if ("load" in params and load == 0) else load
+        draw = params["draw"] if "draw" in params else draw
+        iou_min = params["iou_min"] if "iou_min" in params else iou_min
+        classes = params["classes"] if "classes" in params else classes
+        tracks = params["tracks"] if "tracks" in params else tracks
+        device = params["device"] if "device" in params else device
+        eval_id = params["eval_id"] if "eval_id" in params else eval_id
+        near_distance = (
+            params["near_distance"] if "near_distance" in params else near_distance
+        )
+        backbone = params["backbone"] if "backbone" in params else backbone
+        raise_on_infer_error = (
+            params["raise_on_infer_error"]
+            if "raise_on_infer_error" in params
+            else raise_on_infer_error
+        )
+        limit_object_ids = (
+            params["limit_object_ids"]
+            if "limit_object_ids" in params
+            else limit_object_ids
+        )
+
+        for k, v in params.items():
+            if (
+                k
+                not in [
+                    "model_name",
+                    "load",
+                    "draw",
+                    "iou_min",
+                    "classes",
+                    "tracks",
+                    "device",
+                    "eval_id",
+                    "near_distance",
+                    "backbone",
+                    "raise_on_infer_error",
+                    "limit_object_ids",
+                ]
+            ) and (k not in kwargs):
+                kwargs[k] = v
+
+    print("Eval", name, "start", file=sys.stderr)
+    print("Using device:", device)
+    import pygifsicle
+    import imageio
+
+    learner = VoxelBofObjectTracking3DLearner(
+        model_config_path=backbone_configs[backbone],
+        device=device,
+        backbone=backbone,
+        checkpoint_after_iter=2000,
+        **kwargs,
+    )
+
+    real_time_evaluator = RealTimeEvaluator(
+        data_fps=data_fps,
+        require_predictive_inference=require_predictive_inference,
+        wait_for_next_frame=wait_for_next_frame,
+        cap_model_fps=cap_model_fps,
+    )
+
+    checkpoints_path = "./temp/" + model_name + "/checkpoints"
+    results_path = "./temp/" + model_name
+
+    if load == 0:
+        learner.load(checkpoints_path, backbone=False, verbose=True)
+    elif load == "pretrained":
+        learner.load(backbone_model_paths[backbone], backbone=True, verbose=True)
+    else:
+        learner.load_from_checkpoint(checkpoints_path, load)
+
+    total_success = Success()
+    total_precision = Precision()
+    total_success_near = Success()
+    total_precision_near = Precision()
+    total_success_far = Success()
+    total_precision_far = Precision()
+    total_success_ideal = Success()
+    total_precision_ideal = Precision()
+    total_success_same = Success()
+    total_precision_same = Precision()
+    vertical_error = AverageMetric()
+    vertical_error_no_regress = AverageMetric()
+    all_vertical_error = []
+    all_vertical_error_no_regress = []
+
+    object_precisions = []
+    object_sucesses = []
+
+    total_frames = 0
+    dropped_frames = 0
+
+    def test_track(track_id):
+        # count = 120
+        dataset = LabeledTrackingPointCloudsDatasetIterator(
+            dataset_tracking_path + "/training/velodyne/" + track_id,
+            dataset_tracking_path + "/training/label_02/" + track_id + ".txt",
+            dataset_tracking_path + "/training/calib/" + track_id + ".txt",
+        )
+        count = len(dataset)
+
+        all_mean_iou3ds = []
+        all_mean_iouAabbs = []
+        all_tracked = []
+        all_precision = []
+        all_success = []
+
+        def test_object_id(object_id):
+
+            nonlocal warmups_needed
+            nonlocal total_frames
+            nonlocal dropped_frames
+
+            start_frame = -1
+
+            selected_labels = []
+
+            object_success = Success()
+            object_precision = Precision()
+            object_vertical_error = AverageMetric()
+            object_vertical_error_no_regress = AverageMetric()
+            point_cloud_with_calibration = None
+
+            while len(selected_labels) <= 0:
+                start_frame += 1
+
+                if start_frame >= len(dataset):
+                    return None, None, None, None, None
+
+                point_cloud_with_calibration, labels = dataset[start_frame]
+                selected_labels = TrackingAnnotation3DList(
+                    [label for label in labels if (label.id == object_id)]
+                )
+
+            if not selected_labels[0].name in classes:
+                return None, None, None, None, None
+
+            calib = point_cloud_with_calibration.calib
+            labels_lidar = tracking_boxes_to_lidar(
+                selected_labels, calib, classes=classes
+            )
+            label_lidar = labels_lidar[0]
+
+            learner.init(point_cloud_with_calibration, label_lidar)
+            real_time_evaluator.init(label_lidar, labels_lidar)
+            total_precision.add_accuracy(0.0)
+            total_success.add_overlap(1.0)
+
+            images = []
+            ious = []
+            count_tracked = 0
+
+            for i in range(start_frame, count):
+                point_cloud_with_calibration, labels = dataset[i]
+                selected_labels = TrackingAnnotation3DList(
+                    [label for label in labels if label.id == object_id]
+                )
+
+                if len(selected_labels) <= 0:
+                    break
+
+                calib = point_cloud_with_calibration.calib
+                labels_lidar = tracking_boxes_to_lidar(selected_labels, calib)
+                label_lidar_dataset = labels_lidar[0] if len(labels_lidar) > 0 else None
+
+                while warmups_needed > 0:
+                    warmups_needed -= 1
+                    print(f"Warm up [{warmups_needed}]")
+                    learner.infer(
+                        point_cloud_with_calibration, id=-1, frame=i, draw=False,
+                    )
+
+                label_lidar, result, frame_to_compare, frame_result = real_time_evaluator.on_data(label_lidar_dataset, i)
+                print("frame_to_compare =", frame_to_compare, "frame_result =", frame_result, "frame =", i)
+
+                if real_time_evaluator.can_frame_be_processed():
+
+                    t0 = time.time()
+
+                    result_infer = learner.infer(
+                        point_cloud_with_calibration, id=-1, frame=i, draw=False,
+                    )
+
+                    t0 = time.time() - t0
+                    real_time_evaluator.on_prediction(result_infer, t0, i)
+                    total_frames += 1
+                else:
+                    dropped_frames += 1
+
+                all_labels = (
+                    result
+                    if label_lidar is None
+                    else TrackingAnnotation3DList([result[0], label_lidar])
+                )
+                image = draw_point_cloud_bev(
+                    point_cloud_with_calibration.data, all_labels
+                )
+
+                if draw:
+                    pil_image = PilImage.fromarray(image)
+                    images.append(pil_image)
+
+                result_ideal = TrackingAnnotation3D(
+                    result[0].name,
+                    result[0].truncated,
+                    result[0].occluded,
+                    result[0].alpha,
+                    result[0].bbox2d,
+                    result[0].dimensions,
+                    np.array(
+                        [*result[0].location[:-1], label_lidar.location[-1]]
+                    ),
+                    result[0].rotation_y,
+                    result[0].id,
+                    1,
+                    result[0].frame,
+                )
+                label_same = TrackingAnnotation3D(
+                    label_lidar.name,
+                    label_lidar.truncated,
+                    label_lidar.occluded,
+                    label_lidar.alpha,
+                    label_lidar.bbox2d,
+                    label_lidar.dimensions,
+                    label_lidar.location,
+                    label_lidar.rotation_y,
+                    label_lidar.id,
+                    1,
+                    label_lidar.frame,
+                )
+
+                iouAabb = iou_2d(
+                    result[0].location[:2],
+                    result[0].dimensions[:2],
+                    label_lidar.location[:2],
+                    label_lidar.dimensions[:2],
+                )
+
+                vertical_error.update(np.abs(label_lidar.location[-1] - result[0].location[-1]))
+                vertical_error_no_regress.update(np.abs(label_lidar.location[-1] - learner.init_label.location[-1]))
+                object_vertical_error.update(np.abs(label_lidar.location[-1] - result[0].location[-1]))
+                object_vertical_error_no_regress.update(np.abs(label_lidar.location[-1] - learner.init_label.location[-1]))
+
+                result = tracking_boxes_to_camera(result, calib)[0]
+
+                label_lidar = tracking_boxes_to_camera(
+                    TrackingAnnotation3DList([label_lidar]), calib
+                )[0]
+                result_ideal = tracking_boxes_to_camera(
+                    TrackingAnnotation3DList([result_ideal]), calib
+                )[0]
+                label_same = tracking_boxes_to_camera(
+                    TrackingAnnotation3DList([label_same]), calib
+                )[0]
+
+                dt_boxes = np.concatenate(
+                    [
+                        result.location.reshape(1, 3),
+                        result.dimensions.reshape(1, 3),
+                        result.rotation_y.reshape(1, 1),
+                    ],
+                    axis=1,
+                )
+                gt_boxes = np.concatenate(
+                    [
+                        label_lidar.location.reshape(1, 3),
+                        label_lidar.dimensions.reshape(1, 3),
+                        label_lidar.rotation_y.reshape(1, 1),
+                    ],
+                    axis=1,
+                )
+                dt_boxes_ideal = np.concatenate(
+                    [
+                        result_ideal.location.reshape(1, 3),
+                        result_ideal.dimensions.reshape(1, 3),
+                        result_ideal.rotation_y.reshape(1, 1),
+                    ],
+                    axis=1,
+                )
+                dt_boxes_same = np.concatenate(
+                    [
+                        label_same.location.reshape(1, 3) + 0.00001,
+                        label_same.dimensions.reshape(1, 3) + 0.00001,
+                        label_same.rotation_y.reshape(1, 1),
+                    ],
+                    axis=1,
+                )
+                iou3d = float(d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64))
+                iou3d_ideal = float(d3_box_overlap(gt_boxes, dt_boxes_ideal).astype(np.float64))
+                iou3d_same = float(d3_box_overlap(gt_boxes, dt_boxes_same).astype(np.float64))
+
+                if iou3d > iou_min:
+                    count_tracked += 1
+
+                accuracy = estimate_accuracy(result, label_lidar)
+                accuracy_ideal = estimate_accuracy(result_ideal, label_lidar)
+                accuracy_same = estimate_accuracy(label_same, label_lidar)
+
+                distance = np.linalg.norm(label_lidar.location, ord=2)
+                ious.append((iou3d, iouAabb))
+                object_precision.add_accuracy(accuracy)
+                object_success.add_overlap(iou3d)
+                total_precision.add_accuracy(accuracy)
+                total_success.add_overlap(iou3d)
+
+                total_precision_same.add_accuracy(accuracy_same)
+                total_success_same.add_overlap(iou3d_same)
+                total_precision_ideal.add_accuracy(accuracy_ideal)
+                total_success_ideal.add_overlap(iou3d_ideal)
+
+                if distance < near_distance:
+                    total_precision_near.add_accuracy(accuracy)
+                    total_success_near.add_overlap(iou3d)
+                else:
+                    total_precision_far.add_accuracy(accuracy)
+                    total_success_far.add_overlap(iou3d)
+
+                print(
+                    track_id,
+                    "%",
+                    object_id,
+                    "[",
+                    i,
+                    "/",
+                    count - 1,
+                    "] iou3d =",
+                    iou3d,
+                    "iouAabb =",
+                    iouAabb,
+                    "accuracy(error) =",
+                    accuracy,
+                    "distance =",
+                    distance,
+                    "ve = ", object_vertical_error.get(-1),
+                    "ve_nr = ", object_vertical_error_no_regress.get(-1)
+                )
+
+            all_vertical_error.append(object_vertical_error.get(-1))
+            all_vertical_error_no_regress.append(object_vertical_error_no_regress.get(-1))
+
+            os.makedirs("./plots/video/" + model_name, exist_ok=True)
+
+            filename = (
+                "./plots/video/" + model_name + "/eval_"
+                + model_name
+                + "_track_"
+                + str(track_id)
+                + "_obj_"
+                + str(object_id)
+                + "_"
+                + str(load)
+                + "_"
+                + str(eval_id)
+                + ".gif"
+            )
+
+            os.makedirs(str(Path(filename).parent), exist_ok=True)
+
+            if len(ious) <= 0:
+                mean_iou3d = None
+                mean_iouAabb = None
+                mean_precision = None
+                mean_success = None
+                tracked = None
+            else:
+                mean_iou3d = sum([iou3d for iou3d, iouAabb in ious]) / len(ious)
+                mean_iouAabb = sum([iouAabb for iou3d, iouAabb in ious]) / len(ious)
+                tracked = count_tracked / len(ious)
+                mean_precision = object_precision.average
+                mean_success = object_success.average
+
+            print("mean_iou3d =", mean_iou3d)
+            print("mean_iouAabb =", mean_iouAabb)
+            print("tracked =", tracked)
+            print("mean_precision =", mean_precision)
+            print("mean_success =", mean_success)
+            print("dropped_frames =", dropped_frames)
+            print("total_frames =", total_frames)
+
+            if draw and len(images) > 0:
+                imageio.mimsave(filename, images)
+                pygifsicle.optimize(filename)
+
+            return mean_iou3d, mean_iouAabb, tracked, mean_precision, mean_success
+
+        for object_id in (
+            range(0, min(5, dataset.max_id + 1))
+            if limit_object_ids
+            else range(0, dataset.max_id + 1)
+        ):
+            (
+                mean_iou3d,
+                mean_iouAabb,
+                tracked,
+                mean_precision,
+                mean_success,
+            ) = test_object_id(object_id)
+
+            if mean_iou3d is not None:
+                all_mean_iou3ds.append(mean_iou3d)
+                all_mean_iouAabbs.append(mean_iouAabb)
+                all_tracked.append(tracked)
+                all_precision.append(mean_precision)
+                all_success.append(mean_success)
+
+        object_precisions.append([str(i) + ": " + str(x) for i, x in enumerate(all_precision)])
+        object_sucesses.append([str(i) + ": " + str(x) for i, x in enumerate(all_success)])
+
+        if len(all_mean_iou3ds) > 0:
+            track_mean_iou3d = sum(all_mean_iou3ds) / len(all_mean_iou3ds)
+            track_mean_iouAabb = sum(all_mean_iouAabbs) / len(all_mean_iouAabbs)
+            track_mean_tracked = sum(all_tracked) / len(all_tracked)
+            track_mean_precision = sum(all_precision) / len(all_precision)
+            track_mean_success = sum(all_success) / len(all_success)
+        else:
+            track_mean_iou3d = None
+            track_mean_iouAabb = None
+            track_mean_tracked = None
+            track_mean_precision = None
+            track_mean_success = None
+
+        print("track_mean_iou3d =", track_mean_iou3d)
+        print("track_mean_iouAabb =", track_mean_iouAabb)
+        print("track_mean_tracked =", track_mean_tracked)
+        print("track_mean_precision =", track_mean_precision)
+        print("track_mean_success =", track_mean_success)
+
+        return (
+            track_mean_iou3d,
+            track_mean_iouAabb,
+            track_mean_tracked,
+            track_mean_precision,
+            track_mean_success,
+        )
+
+    if tracks is None:
+        tracks = [
+            # "0000",
+            # "0001",
+            # "0002",
+            # "0003",
+            # "0004",
+            # "0005",
+            # "0006",
+            # "0007",
+            # "0008",
+            # "0009",
+            "0010",
+            "0011",
+            # "0012",
+            # "0013",
+            # "0014",
+            # "0015",
+            # "0016",
+            # "0017",
+            # "0018",
+            # "0019",
+            # "0020",
+        ]
+
+    all_iou3ds = []
+    all_iouAabbs = []
+    all_tracked = []
+    all_precision = []
+    all_success = []
+
+    for track in tracks:
+        (
+            track_mean_iou3d,
+            track_mean_iouAabb,
+            track_mean_tracked,
+            track_mean_precision,
+            track_mean_success,
+        ) = test_track(track)
+
+        if track_mean_iou3d is not None:
+            all_iou3ds.append(track_mean_iou3d)
+            all_iouAabbs.append(track_mean_iouAabb)
+            all_tracked.append(track_mean_tracked)
+            all_precision.append(track_mean_precision)
+            all_success.append(track_mean_success)
+
+    total_mean_iou3d = sum(all_iou3ds) / len(all_iou3ds)
+    total_mean_iouAabb = sum(all_iouAabbs) / len(all_iouAabbs)
+    total_mean_tracked = sum(all_tracked) / len(all_tracked)
+    total_mean_precision = sum(all_precision) / len(all_precision)
+    total_mean_success = sum(all_success) / len(all_success)
+
+    params = {
+        "backbone": backbone,
+        "load": load,
+        **kwargs,
+    }
+
+    params_str = ""
+
+    for key, value in params.items():
+        params_str += "--" + key + "=" + str(value) + " "
+
+    result = {
+        "total_mean_iou3d": total_mean_iou3d,
+        "total_mean_iouAabb": total_mean_iouAabb,
+        "total_mean_tracked": total_mean_tracked,
+        "total_mean_precision": total_mean_precision,
+        "total_mean_success": total_mean_success,
+        "total_precision_near": total_precision_near.average,
+        "total_success_near": total_success_near.average,
+        "total_precision_far": total_precision_far.average,
+        "total_success_far": total_success_far.average,
+        "fps": learner.fps(),
+        "params": params_str,
+        "object_precisions": object_precisions,
+        "object_sucesses": object_sucesses,
+        "total_precision_same": total_precision_same.average,
+        "total_success_same": total_success_same.average,
+        "total_precision_ideal": total_precision_ideal.average,
+        "total_success_ideal": total_success_ideal.average,
+        "total_precision": total_precision.average,
+        "total_success": total_success.average,
+        "vertical_error:": vertical_error.get(-1),
+        "vertical_error_no_regress:": vertical_error_no_regress.get(-1),
+        "all_vertical_error:": all_vertical_error,
+        "all_vertical_error_no_regress:": all_vertical_error_no_regress,
+        "total_frames:": total_frames,
+        "dropped_frames:": dropped_frames,
+    }
+
+    for k, v in result.items():
+        print(k, "=", v)
+
+    print("all_iou3ds =", all_iou3ds)
+    print("all_iouAabbs =", all_iouAabbs)
+    print("all_tracked =", all_tracked)
+    print("all_precision =", all_precision)
+    print("all_success =", all_success)
+
+    results_filename = results_path + "/results_" + str(load) + "_" + str(eval_id) + ".txt"
+    os.makedirs(str(Path(results_filename).parent), exist_ok=True)
+
+    with open(
+        results_filename, "w"
+    ) as f:
+
+        for k, v in result.items():
+            print(k, "=", v, file=f)
+
+        print("all_iou3ds =", all_iou3ds, file=f)
+        print("all_iouAabbs =", all_iouAabbs, file=f)
+        print("all_tracked =", all_tracked, file=f)
+        print("all_precision =", all_precision, file=f)
+        print("all_success =", all_success, file=f)
+        print("tracks =", tracks, file=f)
+
+    return result
 
 
 if __name__ == "__main__":
