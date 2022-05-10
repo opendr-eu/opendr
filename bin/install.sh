@@ -9,21 +9,28 @@ if [[ -z "${OPENDR_DEVICE}" ]]; then
   export OPENDR_DEVICE=cpu
 fi
 
+UBUNTU_VERSION=$(lsb_release -rs)
+
+if [[ $UBUNTU_VERSION == "22.04" ]]; then
+  sudo apt install --yes software-properties-common
+  sudo add-apt-repository ppa:deadsnakes/ppa -y
+else
+
 # Install base ubuntu deps
+sudo apt update
 sudo apt-get install --yes libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv
 
 # Get all submodules
 git submodule init
 git submodule update
 
-case $(lsb_release -r |cut -f2) in
-  "18.04")
+if [[ $UBUNTU_VERSION == "18.04" ]]; then
     export ROS_DISTRO=melodic;;
-  "20.04")
+elif [[ $UBUNTU_VERSION == "20.04" ||  $UBUNTU_VERSION == "22.04" ]]; then
     export ROS_DISTRO=noetic;;
-  *)
-    echo "Not tested for this ubuntu version" && exit 1;;
-esac
+else
+    echo "OpenDR toolkit has not been tested for this ubuntu version" && exit 1;;
+fi
 
 # Create a virtual environment and update
 python3 -m venv venv
