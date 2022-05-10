@@ -101,12 +101,12 @@ car_configs = {
     "pointpillars_car": config_pointpillars_car,
 }
 
-kitti_detection = KittiDataset(dataset_detection_path)
-dataset_detection = LabeledPointCloudsDatasetIterator(
-    dataset_detection_path + "/training/velodyne_reduced",
-    dataset_detection_path + "/training/label_2",
-    dataset_detection_path + "/training/calib",
-)
+# kitti_detection = KittiDataset(dataset_detection_path)
+# dataset_detection = LabeledPointCloudsDatasetIterator(
+#     dataset_detection_path + "/training/velodyne_reduced",
+#     dataset_detection_path + "/training/label_2",
+#     dataset_detection_path + "/training/calib",
+# )
 track_id = "0000"
 dataset_tracking = LabeledTrackingPointCloudsDatasetIterator(
     dataset_tracking_path + "/training/velodyne/" + track_id,
@@ -2797,21 +2797,29 @@ def test_realtime_rotated_pp_siamese_eval(
 
             learner.init(point_cloud_with_calibration, label_lidar)
             real_time_evaluator.init(label_lidar, labels_lidar)
-            total_precision.add_accuracy(0.0)
-            total_success.add_overlap(1.0)
 
             images = []
             ious = []
             count_tracked = 0
 
-            for i in range(start_frame, count):
+            allow_extra_last_frame = not require_predictive_inference
+            extra_last_frame_used = False
+
+            i = start_frame - 1
+            while i < count:
+                i += 1
                 point_cloud_with_calibration, labels = dataset[i]
                 selected_labels = TrackingAnnotation3DList(
                     [label for label in labels if label.id == object_id]
                 )
 
                 if len(selected_labels) <= 0:
-                    break
+                    if allow_extra_last_frame and not extra_last_frame_used:
+                        i -= 2
+                        extra_last_frame_used = True
+                        continue
+                    else:
+                        break
 
                 calib = point_cloud_with_calibration.calib
                 labels_lidar = tracking_boxes_to_lidar(selected_labels, calib)
@@ -2942,6 +2950,9 @@ def test_realtime_rotated_pp_siamese_eval(
                 iou3d = float(d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64))
                 iou3d_ideal = float(d3_box_overlap(gt_boxes, dt_boxes_ideal).astype(np.float64))
                 iou3d_same = float(d3_box_overlap(gt_boxes, dt_boxes_same).astype(np.float64))
+
+                if np.all(gt_boxes == dt_boxes):
+                    iou3d = 1.0
 
                 if iou3d > iou_min:
                     count_tracked += 1
