@@ -81,27 +81,27 @@ class EnsembleCNNLearner(Learner):
     def save(self, state_dicts, base_path_to_save_model, current_branch_save):
         model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
                           "inference_params": {}, "optimized": None, "optimizer_info": {}}
-        if not path.isdir(path.join(base_path_to_save_model, current_branch_save)):
-            makedirs(path.join(base_path_to_save_model, current_branch_save))
+        if not path.isdir(path.join(base_path_to_save_model, str(current_branch_save))):
+            makedirs(path.join(base_path_to_save_model, str(current_branch_save)))
         if self.ort_session is None:
-            model_metadata["model_paths"] = [path.join(base_path_to_save_model, current_branch_save)]
+            model_metadata["model_paths"] = [path.join(base_path_to_save_model, str(current_branch_save))]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pt"
             torch.save(state_dicts[0],
-                       path.join(base_path_to_save_model, current_branch_save), "Net-Base-Shared_Representations.pt")
+                       path.join(base_path_to_save_model, str(current_branch_save)), "Net-Base-Shared_Representations.pt")
             for i in range(1, len(state_dicts)):
                 torch.save(state_dicts[i],
-                           path.join(base_path_to_save_model, current_branch_save), "Net-Branch_{}.pt".format(i))
+                           path.join(base_path_to_save_model, str(current_branch_save)), "Net-Branch_{}.pt".format(i))
             print("Pytorch model has been "
-                  "saved at: {}".format(path.join(base_path_to_save_model, current_branch_save)))
+                  "saved at: {}".format(path.join(base_path_to_save_model, str(current_branch_save))))
         else:
-            model_metadata["model_paths"] = [[path.join(base_path_to_save_model, current_branch_save)]]
+            model_metadata["model_paths"] = [[path.join(base_path_to_save_model, str(current_branch_save))]]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             shutil.copy2(path.join(self.temp_path, self.name_experiment, "onnx_model.onnx"),
                          model_metadata["model_paths"][0])
             print("ONNX model has been "
-                  "saved at: {}".format(path.join(base_path_to_save_model, current_branch_save)))
+                  "saved at: {}".format(path.join(base_path_to_save_model, str(current_branch_save))))
         json_model_name = self.name_experiment + '.json'
         json_model_path = path.join(base_path_to_save_model, json_model_name)
         with open(json_model_path, 'w') as outfile:
