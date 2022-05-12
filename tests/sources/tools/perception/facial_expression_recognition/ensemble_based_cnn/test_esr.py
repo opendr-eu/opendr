@@ -130,13 +130,16 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         print("\n\n**********************************\nTest ESR save_load function \n*"
               "*********************************")
         path_to_saved_network = path.join(self.temp_dir, self.learner.name_experiment)
+        if not path.isdir(path_to_saved_network):
+            makedirs(path_to_saved_network)
         self.learner.model = None
         self.learner.ort_session = None
         self.learner.init_model(num_branches=1)
         self.learner.save(state_dicts=self.learner.model.to_state_dict(),
                           base_path_to_save_model=path_to_saved_network,
                           current_branch_save=0)
-        self.learner.load(ensemble_size=1, path_to_saved_network=path_to_saved_network, fix_backbone=True)
+        self.learner.load(ensemble_size=1, path_to_saved_network=path.join(path_to_saved_network, str(0)),
+                          fix_backbone=True)
         self.assertIsNotNone(self.learner.model, "model is None after loading pt model.")
         # Cleanup
 
