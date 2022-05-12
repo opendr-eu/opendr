@@ -38,7 +38,7 @@ def rmdir(_dir):
 
 
 PATH_ = './tests/sources/tools/perception/facial_expression_recognition/ensemble_based_cnn/temp/'
-DATA_PATH = '~/FER_data/AffectNet'
+DATA_PATH = '../../FER_data/AffectNet'
 
 
 class TestEnsembleBasedCNNLearner(unittest.TestCase):
