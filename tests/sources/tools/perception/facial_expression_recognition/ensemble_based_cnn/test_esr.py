@@ -136,7 +136,6 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.learner.save(state_dicts=self.learner.model.to_state_dict(),
                           base_path_to_save_model=path_to_saved_network,
                           current_branch_save=0)
-        self.learner.model = None
         self.learner.load(ensemble_size=1, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         self.assertIsNotNone(self.learner.model, "model is None after loading pt model.")
         # Cleanup
