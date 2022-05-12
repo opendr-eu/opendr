@@ -56,7 +56,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
                                          batch_size=2, max_training_epoch=1, ensemble_size=9,
                                          name_experiment='esr_test', base_path_experiment=PATH_,
                                          lr=1e-1, categorical_train=True, dimensional_finetune=True,
-                                         base_path_to_dataset=DATA_PATH)
+                                         base_path_to_dataset=DATA_PATH, max_tuning_epoch=1)
 
         cls.dataset_path = cls.learner.base_path_to_dataset
         cls.Pretrained_MODEL_PATH = './trained_models/esr_9'
