@@ -220,18 +220,18 @@ class EnsembleCNNLearner(Learner):
                         running_updates += 1
                     # Statistics
                     print('[Branch {:d}, Epochs {:d}--{:d}] Loss: {:.4f} Acc: {}'.
-                          format(self.model.get_ensemble_size(), epoch+1, max_training_epoch,
+                          format(self.model.get_ensemble_size(), epoch+1, self.max_training_epoch,
                                  running_loss / running_updates, np.array(running_corrects) / len(train_data)))
 
                     # Validation
-                    if ((epoch % self.validation_interval) == 0) or ((epoch + 1) == max_training_epoch):
+                    if ((epoch % self.validation_interval) == 0) or ((epoch + 1) == self.max_training_epoch):
                         self.model.eval()
                         eval_results = self.eval(eval_type='categorical')
                         val_loss = eval_results["running_emotion_loss"]
                         val_corrects = eval_results["running_emotion_corrects"]
 
                         print('Validation - [Branch {:d}, Epochs {:d}--{:d}] Loss: {:.4f} Acc: {}'.format(
-                               self.model.get_ensemble_size(), epoch + 1, max_training_epoch, val_loss[-1],
+                               self.model.get_ensemble_size(), epoch + 1, self.max_training_epoch, val_loss[-1],
                                np.array(val_corrects) / len(val_data)))
 
                         # Add to history training and validation statistics
@@ -262,7 +262,7 @@ class EnsembleCNNLearner(Learner):
 
                 # Change branch on training
                 if self.model.get_ensemble_size() < self.ensemble_size:
-                    max_training_epoch = 20
+                    self.max_training_epoch = 20
                     # Reload best configuration
                     self.reload(best_ensemble)
                     # Add a new branch
