@@ -104,7 +104,7 @@ class EnsembleCNNLearner(Learner):
             print("ONNX model has been "
                   "saved at: {}".format(path.join(base_path_to_save_model, str(current_branch_save))))
         json_model_name = self.name_experiment + '.json'
-        json_model_path = path.join(base_path_to_save_model, json_model_name)
+        json_model_path = path.join(base_path_to_save_model, str(current_branch_save), json_model_name)
         with open(json_model_path, 'w') as outfile:
             json.dump(model_metadata, outfile)
 
