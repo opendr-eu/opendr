@@ -38,7 +38,7 @@ def rmdir(_dir):
 
 
 PATH_ = './temp'
-DATA_PATH = './AffectNet_tiny'
+DATA_PATH = './data/AffectNet_tiny/'
 
 
 class TestEnsembleBasedCNNLearner(unittest.TestCase):
