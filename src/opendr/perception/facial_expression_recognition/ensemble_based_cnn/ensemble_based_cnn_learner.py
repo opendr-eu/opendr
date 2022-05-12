@@ -182,6 +182,7 @@ class EnsembleCNNLearner(Learner):
             val_loader = DataLoader(val_data, batch_size=self.batch_size, shuffle=False, num_workers=8)
 
             for branch_on_training in range(self.ensemble_size):
+                branch_on_training
                 # Best network
                 best_ensemble = self.model.to_state_dict()
                 best_ensemble_acc = 0.0
@@ -226,7 +227,7 @@ class EnsembleCNNLearner(Learner):
                     # Validation
                     if ((epoch % self.validation_interval) == 0) or ((epoch + 1) == self.max_training_epoch):
                         self.model.eval()
-                        eval_results = self.eval(eval_type='categorical')
+                        eval_results = self.eval(eval_type='categorical', current_branch_on_training=branch_on_training)
                         val_loss = eval_results["running_emotion_loss"]
                         val_corrects = eval_results["running_emotion_corrects"]
 
@@ -306,7 +307,7 @@ class EnsembleCNNLearner(Learner):
             self.__finetune(train_loader=train_loader, val_loader=val_loader)
 
     def __finetune(self, train_loader):
-        self.current_branch_on_training = 0
+        current_branch_on_training = 0
         for branch_on_training in range(self.ensemble_size):
             # Best network
             best_ensemble = self.model.to_state_dict()
@@ -332,7 +333,7 @@ class EnsembleCNNLearner(Learner):
                     out_emotions, out_va = self.model(inputs)
                     # Compute loss of affect_values
                     loss = 0.0
-                    for i_4 in range(self.current_branch_on_training + 1):
+                    for i_4 in range(current_branch_on_training + 1):
                         out_valence = out_va[i_4][:, 0].view(len(out_va[i_4][:, 0]), 1)
                         out_arousal = out_va[i_4][:, 1].view(len(out_va[i_4][:, 1]), 1)
                         loss += torch.sqrt(self.criterion_dim(out_valence, labels_valence))
@@ -346,12 +347,13 @@ class EnsembleCNNLearner(Learner):
                     running_updates += 1
                 # Statistics
                 print('[Branch {:d}, Epochs {:d}--{:d}] Loss: {:.4f}'.
-                      format(self.current_branch_on_training + 1, epoch + 1, self.max_training_epoch,
+                      format(current_branch_on_training + 1, epoch + 1, self.max_training_epoch,
                              running_loss / running_updates))
                 # Validation
                 if (epoch % self.validation_interval) == 0:
                     self.model.eval()
-                    eval_results = self.eval(eval_type='dimensional')
+                    eval_results = self.eval(eval_type='dimensional',
+                                             current_branch_on_training=current_branch_on_training)
                     val_loss = eval_results["valence_arousal_losses"]
                     # Add to history training and validation statistics
                     history_loss.append(running_loss / running_updates)
@@ -363,7 +365,7 @@ class EnsembleCNNLearner(Learner):
                     history_val_loss_valence[-1].append(val_loss[0][-1])
                     history_val_loss_arousal[-1].append(val_loss[1][-1])
                     print('Validation - [Branch {:d}, Epochs {:d}--{:d}] Loss (V) - (A): ({}) - ({})'.format(
-                          self.current_branch_on_training + 1, epoch + 1, self.max_training_epoch,
+                          current_branch_on_training + 1, epoch + 1, self.max_training_epoch,
                           [hvlv[-1] for hvlv in history_val_loss_valence],
                           [hvla[-1] for hvla in history_val_loss_arousal]))
 
@@ -375,17 +377,17 @@ class EnsembleCNNLearner(Learner):
                         # Save network
                         self.save(best_ensemble, path.join(self.base_path_experiment,
                                                            self.name_experiment, 'Saved_Networks'),
-                                                           self.current_branch_on_training + 1)
+                                                           current_branch_on_training + 1)
 
                     # Save graphs
                     self.__plot_dimensional(history_loss, history_val_loss_valence, history_val_loss_arousal,
-                                            self.current_branch_on_training + 1,
+                                            current_branch_on_training + 1,
                                             path.join(self.base_path_experiment, self.name_experiment))
                     self.model.train()
 
             # Change branch on training
-            if self.current_branch_on_training < self.model.get_ensemble_size:
-                self.current_branch_on_training += 1
+            if current_branch_on_training < self.model.get_ensemble_size:
+                current_branch_on_training += 1
                 self.max_training_epoch = 2
                 # Reload best configuration
                 self.model.reload(best_ensemble)
@@ -397,14 +399,14 @@ class EnsembleCNNLearner(Learner):
                 self.optimizer_ = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr / 10,
                                              'momentum': self.momentum},
                                             {'params': self.model.convolutional_branches
-                                            [self.current_branch_on_training].parameters(),
+                                            [current_branch_on_training].parameters(),
                                              'lr': self.lr,
                                              'momentum': self.momentum}])
             # Finish training after fine-tuning all branches
             else:
                 break
 
-    def eval(self, eval_type='categorical'):
+    def eval(self, eval_type='categorical', current_branch_on_training=0):
         cpu_device = torch.device('cpu')
         val_va_predictions = [[] for _ in range(self.model.get_ensemble_size() + 1)]
         val_targets_valence = []
@@ -427,7 +429,7 @@ class EnsembleCNNLearner(Learner):
             for inputs_eval, labels_eval in val_loader:
                 inputs_eval, labels_eval = inputs_eval.to(self.device), labels_eval.to(self.device)
                 out_emotion_eval, out_va_eval = self.model(inputs_eval)
-                outputs_eval = out_emotion_eval[:self.current_branch_on_training + 1]
+                outputs_eval = out_emotion_eval[:current_branch_on_training + 1]
                 # Ensemble prediction
                 overall_preds = torch.zeros(outputs_eval[0].size()).to(self.device)
                 for o_eval, outputs_per_branch_eval in enumerate(outputs_eval, 0):
@@ -460,15 +462,15 @@ class EnsembleCNNLearner(Learner):
                 labels_eval_valence = labels_eval[:, 0].view(len(labels_eval[:, 0]), 1)
                 labels_eval_arousal = labels_eval[:, 1].view(len(labels_eval[:, 1]), 1)
                 out_emotion_eval, out_va_eval = self.model(inputs_eval)
-                outputs_eval = out_va_eval[:self.current_branch_on_training + 1]
+                outputs_eval = out_va_eval[:current_branch_on_training + 1]
 
                 # Ensemble prediction
                 val_predictions_ensemble = torch.zeros(outputs_eval[0].size()).to(cpu_device)
-                for evaluate_branch in range(self.current_branch_on_training + 1):
+                for evaluate_branch in range(current_branch_on_training + 1):
                     out_va_eval_cpu = out_va_eval[evaluate_branch].detach().to(cpu_device)
                     val_va_predictions[evaluate_branch].extend(out_va_eval_cpu)
                     val_predictions_ensemble += out_va_eval_cpu
-                val_va_predictions[-1].extend(val_predictions_ensemble / (self.current_branch_on_training + 1))
+                val_va_predictions[-1].extend(val_predictions_ensemble / (current_branch_on_training + 1))
                 val_targets_valence.extend(labels_eval_valence)
                 val_targets_arousal.extend(labels_eval_arousal)
 
@@ -476,7 +478,7 @@ class EnsembleCNNLearner(Learner):
             val_targets_arousal = torch.stack(val_targets_arousal)
 
             for evaluate_branch in range(self.model.get_ensemble_size() + 1):
-                if evaluate_branch < (self.current_branch_on_training + 1) or \
+                if evaluate_branch < (current_branch_on_training + 1) or \
                         evaluate_branch == self.model.get_ensemble_size():
                     list_tensor = torch.stack(val_va_predictions[evaluate_branch])
                     out_valence_eval = list_tensor[:, 0].view(len(list_tensor[:, 0]), 1)
