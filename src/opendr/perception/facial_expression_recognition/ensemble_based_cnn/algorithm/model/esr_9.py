@@ -222,7 +222,7 @@ class ESR(nn.Module):
     def reload(self, best_configuration):
         self.base.load_state_dict(best_configuration[0])
         for i in range(self.get_ensemble_size()):
-            self.branches[i].load_state_dict(best_configuration[i + 1])
+            self.convolutional_branches[i].load_state_dict(best_configuration[i + 1])
 
     def forward(self, x):
         """
