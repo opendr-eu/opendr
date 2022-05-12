@@ -78,7 +78,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         m = list(self.learner.model.parameters())[0].clone()
         self.learner.fit()
         self.assertFalse(torch.equal(m, list(self.learner.model.parameters())[0]),
-                         msg="Model parameters did not change after running fit.")'''
+                         msg="Model parameters did not change after running fit.")
 
     def test_eval(self):
         print("\n\n**********************************\nTest ESR eval function \n*"
@@ -94,9 +94,9 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.assertNotEqual(sum([len(eval_dimensional_results["valence_arousal_losses"][i]) for i in range(2)]), 0,
                             msg="Eval results contains empty lists for valence and arousal estimation loss")
         self.assertNotEqual(sum(eval_categorical_results['running_emotion_loss']), 0.0,
-                                 msg="Eval results have zero loss for categorical expression recognition")
+                                 msg="Eval results have zero loss for categorical expression recognition")'''
 
-    '''def test_infer(self):
+    def test_infer(self):
         print("\n\n**********************************\nTest ESR infer function \n*"
               "*********************************")
         path_to_saved_network = self.Pretrained_MODEL_PATH
@@ -127,7 +127,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
                                  msg="overall ensembled dimension results are zero")
 
-    def test_save_load(self):
+    '''def test_save_load(self):
         print("\n\n**********************************\nTest ESR save_load function \n*"
               "*********************************")
         path_to_saved_network = path.join(self.temp_dir, self.learner.name_experiment)
