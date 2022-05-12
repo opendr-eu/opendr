@@ -38,6 +38,7 @@ def rmdir(_dir):
 
 
 PATH_ = './tests/sources/tools/perception/facial_expression_recognition/ensemble_based_cnn/temp/'
+DATA_PATH = '~/FER_data/AffectNet'
 
 
 class TestEnsembleBasedCNNLearner(unittest.TestCase):
@@ -55,7 +56,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
                                          batch_size=2, max_training_epoch=1, ensemble_size=9,
                                          name_experiment='esr_test', base_path_experiment=PATH_,
                                          lr=1e-1, categorical_train=True, dimensional_finetune=True,
-                                         base_path_to_dataset=PATH_ + './data/AffectNet')
+                                         base_path_to_dataset=DATA_PATH)
 
         cls.dataset_path = cls.learner.base_path_to_dataset
         cls.Pretrained_MODEL_PATH = PATH_ + 'trained_models/esr_9'
