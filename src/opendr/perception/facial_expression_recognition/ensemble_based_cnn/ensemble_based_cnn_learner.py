@@ -291,7 +291,7 @@ class EnsembleCNNLearner(Learner):
             self.load(self.ensemble_size, path_to_saved_network=path.join(
                 self.base_path_experiment, self.name_experiment, 'Saved_Networks', str(self.model.get_ensemble_size())),
                 fix_backbone=True)
-                        # Set loss and optimizer
+            # Set loss and optimizer
             self.model.to_device(self.device)
             self.optimizer_ = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr,
                                          'momentum': self.momentum},
@@ -639,12 +639,14 @@ class EnsembleCNNLearner(Learner):
         """
         # Input to the model
         onnx_input = torch.randn(self.batch_size, 3, 96, 96)
-        if self.device == "cuda":
+        '''if self.device == "cuda":
             onnx_input = Variable(onnx_input.float().cuda(self.output_device), requires_grad=False)
         else:
-            onnx_input = Variable(onnx_input.float(), requires_grad=False)
+            onnx_input = Variable(onnx_input.float(), requires_grad=False)'''
+
         # Export the model
         self.model.eval()
+        self.model.to_device(self.device)
         torch.onnx.export(self.model,
                           onnx_input,
                           output_name,
