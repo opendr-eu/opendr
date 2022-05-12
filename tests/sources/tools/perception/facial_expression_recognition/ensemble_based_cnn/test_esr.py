@@ -37,7 +37,7 @@ def rmdir(_dir):
         print("Error: %s - %s." % (e.filename, e.strerror))
 
 
-PATH_ = './tests/sources/tools/perception/facial_expression_recognition/ensemble_based_cnn/temp/'
+PATH_ = './tests/sources/tools/perception/facial_expression_recognition/ensemble_based_cnn/'
 DATA_PATH = '../../FER_data/AffectNet'
 
 
@@ -48,7 +48,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
             "\n\n**********************************\nTEST Ensemble Based CNN Learner for Facial Expression and "
             "Emotion Analysis\n*"
             "*********************************")
-        cls.temp_dir = PATH_
+        cls.temp_dir = PATH_ + 'temp'
         if not path.isdir(PATH_):
             makedirs(PATH_)
 
