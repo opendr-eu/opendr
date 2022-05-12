@@ -240,9 +240,9 @@ class ESR(nn.Module):
         x_shared_representations = self.base(x)
 
         # Add to the lists of predictions outputs from each convolutional branch in the ensemble
-        for branch in self.convolutional_branches:
+        '''for branch in self.convolutional_branches:
             output_emotion, output_affect = branch(x_shared_representations)
             emotions.append(output_emotion)
-            affect_values.append(output_affect)
+            affect_values.append(output_affect)'''
 
         return emotions, affect_values  # 9 lists for each output. each list of emotions ha 8 values and each list of affect values has 2 values! 9*8 , 9*2

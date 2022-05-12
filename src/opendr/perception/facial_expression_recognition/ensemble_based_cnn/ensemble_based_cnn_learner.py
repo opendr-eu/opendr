@@ -637,7 +637,7 @@ class EnsembleCNNLearner(Learner):
         :param do_constant_folding: whether to optimize constants, defaults to 'False'
         :type do_constant_folding: bool, optional
         """
-        # Input to the model #### edit the next 3 lines for onnx_input
+        # Input to the model
         onnx_input = torch.randn(self.batch_size, 3, 96, 96)
         if self.device == "cuda":
             onnx_input = Variable(onnx_input.float().cuda(self.output_device), requires_grad=False)
