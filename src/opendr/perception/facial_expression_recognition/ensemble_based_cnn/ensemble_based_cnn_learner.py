@@ -648,6 +648,9 @@ class EnsembleCNNLearner(Learner):
         """
         self.ort_session = onnxruntime.InferenceSession(path)
 
+    def reset(self):
+        """This method is not used in this implementation."""
+        return NotImplementedError
     # def download(self):
 
 
