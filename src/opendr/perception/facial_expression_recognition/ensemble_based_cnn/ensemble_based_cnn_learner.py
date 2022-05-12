@@ -50,7 +50,8 @@ class EnsembleCNNLearner(Learner):
                  temp_path='./tmp/', device='cuda', device_ind=[0],
                  validation_interval=1, max_training_epoch=2, momentum=0.9,
                  ensemble_size=9, base_path_experiment='./experiments/', name_experiment='AffectNet_Continuous',
-                 dimensional_finetune=True, categorical_train=False, base_path_to_dataset='./data/AffectNet'
+                 dimensional_finetune=True, categorical_train=False, base_path_to_dataset='./data/AffectNet',
+                 max_tuning_epoch=1
                  ):
         super(EnsembleCNNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
                                                  temp_path=temp_path, device=device)
@@ -74,6 +75,7 @@ class EnsembleCNNLearner(Learner):
         self.dimensional_finetune = dimensional_finetune
         self.categorical_train = categorical_train
         self.ort_session = None
+        self.max_tuning_epoch = max_tuning_epoch
 
     def init_model(self, num_branches):
         self.model = ESR(device=self.device, ensemble_size=num_branches)
@@ -154,7 +156,7 @@ class EnsembleCNNLearner(Learner):
                            transforms.RandomAffine(degrees=30,
                                                    translate=(.1, .1),
                                                    scale=(1.0, 1.25),
-                                                   resample=PIL.Image.BILINEAR)]
+                                                   interpolation=PIL.Image.BILINEAR)]
         print("Starting: {}".format(str(self.name_experiment)))
         print("Running on {}".format(self.device))
 
@@ -264,7 +266,7 @@ class EnsembleCNNLearner(Learner):
 
                 # Change branch on training
                 if self.model.get_ensemble_size() < self.ensemble_size:
-                    self.max_training_epoch = 20
+                    self.max_training_epoch = self.max_tuning_epoch
                     # Reload best configuration
                     self.model.reload(best_ensemble)
                     # Add a new branch
