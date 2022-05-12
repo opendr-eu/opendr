@@ -269,7 +269,7 @@ class EnsembleCNNLearner(Learner):
                     self.model.reload(best_ensemble)
                     # Add a new branch
                     self.model.add_branch()
-                    self.to_device(self.device)
+                    self.model.to_device(self.device)
                     self.optimizer_ = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr/10,
                                             'momentum': self.momentum},
                                            {'params': self.model.convolutional_branches[-1].parameters(), 'lr': self.lr,
