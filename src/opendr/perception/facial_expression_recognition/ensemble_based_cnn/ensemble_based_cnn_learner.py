@@ -76,6 +76,8 @@ class EnsembleCNNLearner(Learner):
         self.categorical_train = categorical_train
         self.ort_session = None
         self.max_tuning_epoch = max_tuning_epoch
+        self.criterion_cat = nn.CrossEntropyLoss()
+        self.criterion_dim = nn.MSELoss(reduction='mean')
 
     def init_model(self, num_branches):
         self.model = ESR(device=self.device, ensemble_size=num_branches)
@@ -165,7 +167,6 @@ class EnsembleCNNLearner(Learner):
             self.model = None
             self.init_model(num_branches=1)  # The model is built by adding and training branches one by one
             self.model.to_device(self.device)
-            self.criterion_cat = nn.CrossEntropyLoss()
             self.optimizer_ = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr,
                                          'momentum': self.momentum},
                                         {'params': self.model.convolutional_branches[-1].parameters(), 'lr': self.lr,
@@ -292,7 +293,6 @@ class EnsembleCNNLearner(Learner):
                 fix_backbone=True)
                         # Set loss and optimizer
             self.model.to_device(self.device)
-            self.criterion_dim = nn.MSELoss(reduction='mean')
             self.optimizer_ = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr,
                                          'momentum': self.momentum},
                                         {'params': self.model.convolutional_branches[0].parameters(),
