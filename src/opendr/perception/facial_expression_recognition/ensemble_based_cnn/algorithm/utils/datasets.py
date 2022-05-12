@@ -118,7 +118,7 @@ class AffectNetCategorical(Dataset, DatasetIterator):
         """
 
         label_info = idx.split('s')
-        discrete_label = np.int(label_info[1])
+        discrete_label = int(label_info[1])
 
         return discrete_label if (discrete_label < 8) else -1
 
@@ -258,7 +258,7 @@ class AffectNetDimensional(Dataset, DatasetIterator):
 
         label_info = idx.split('s')
 
-        discrete_label = np.int(label_info[1])
+        discrete_label = int(label_info[1])
         valence = np.float32(label_info[2]) / 1000.0
         arousal = np.float32(label_info[-1].split('.')[0]) / 1000.0
 
