@@ -125,7 +125,13 @@ class EnsembleCNNLearner(Learner):
                     torch.load(path.join(path_to_saved_network, file_name_conv_branch.format(i + 1)),
                                map_location=self.device))
             if self.dimensional_finetune and fix_backbone:
-                # Base no trainable
+                for param in self.model.parameters():
+                    param.requires_grad = False
+                for i in range(ensemble_size):
+                    for p in self.model.convolutional_branches[i].fc_dimensional.parameters():
+                        p.requires_grad = True
+
+                '''# Base no trainable
                 for module in self.model.base:
                     for p in module.parameters():
                         p.requires_grad = False
@@ -135,7 +141,7 @@ class EnsembleCNNLearner(Learner):
                         for p in module.parameters():
                             p.requires_grad = False
                     for p in self.model.convolutional_branches[i].fc_dimensional.parameters():
-                        p.requires_grad = True
+                        p.requires_grad = True'''
 
     def fit(self):
         # Make dir
