@@ -309,7 +309,7 @@ class EnsembleCNNLearner(Learner):
             train_loader = DataLoader(train_data, batch_size=self.batch_size, shuffle=True, num_workers=8)
 
             # Finetune the pretrained model on continuous affect values
-            self.__finetune(train_loader=train_loader, val_loader=val_loader)
+            self.__finetune(train_loader=train_loader)
 
     def __finetune(self, train_loader):
         current_branch_on_training = 0
