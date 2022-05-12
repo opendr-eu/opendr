@@ -266,7 +266,7 @@ class EnsembleCNNLearner(Learner):
                 if self.model.get_ensemble_size() < self.ensemble_size:
                     self.max_training_epoch = 20
                     # Reload best configuration
-                    self.reload(best_ensemble)
+                    self.model.reload(best_ensemble)
                     # Add a new branch
                     self.model.add_branch()
                     self.to_device(self.device)
