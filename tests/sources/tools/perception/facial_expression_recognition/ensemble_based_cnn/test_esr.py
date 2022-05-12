@@ -68,7 +68,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         # Clean up downloaded files
         rmdir(os.path.join(cls.temp_dir))
 
-    def test_fit(self):
+    '''def test_fit(self):
         print("\n\n**********************************\nTest ESR fit function \n*"
               "*********************************")
 
@@ -169,7 +169,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.assertIsNotNone(self.learner.ort_session,
                              "ort_session is None after optimizing the pretrained model.")
         # Cleanup
-        self.learner.ort_session = None
+        self.learner.ort_session = None'''
 
 
 if __name__ == "__main__":
