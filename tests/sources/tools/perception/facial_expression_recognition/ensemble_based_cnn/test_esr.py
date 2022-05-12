@@ -16,6 +16,7 @@ import unittest
 import shutil
 import os
 import torch
+import numpy
 from opendr.perception.facial_expression_recognition import EnsembleCNNLearner
 from opendr.engine.data import Image
 from opendr.perception.facial_expression_recognition import datasets
@@ -110,7 +111,8 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.learner.init_model(num_branches=9)
         self.learner.load(self.learner.ensemble_size, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         # input is Tensor
-        print('batch size', batch[0].shape)
+        data = numpy.asarray(batch)
+        print('batch_size', data.shape)
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(batch)
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
         self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
