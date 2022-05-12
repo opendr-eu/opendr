@@ -198,7 +198,6 @@ class EnsembleCNNLearner(Learner):
                     running_loss = 0.0
                     running_corrects = [0.0 for _ in range(self.model.get_ensemble_size())]
                     running_updates = 0
-                    scheduler.step()
                     for inputs, labels in train_loader:
                         inputs, labels = inputs.to(self.device), labels.to(self.device)
                         self.optimizer_.zero_grad()
@@ -215,6 +214,7 @@ class EnsembleCNNLearner(Learner):
                         loss.backward()
                         # Optimize
                         self.optimizer_.step()
+                        scheduler.step()
                         # Save loss
                         running_loss += loss.item()
                         running_updates += 1
