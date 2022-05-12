@@ -639,11 +639,6 @@ class EnsembleCNNLearner(Learner):
         """
         # Input to the model
         onnx_input = torch.randn(self.batch_size, 3, 96, 96)
-        '''if self.device == "cuda":
-            onnx_input = Variable(onnx_input.float().cuda(self.output_device), requires_grad=False)
-        else:
-            onnx_input = Variable(onnx_input.float(), requires_grad=False)'''
-
         # Export the model
         self.model.eval()
         self.model.to_device(self.device)
