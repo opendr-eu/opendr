@@ -186,7 +186,7 @@ class EnsembleCNNLearner(Learner):
                 best_ensemble = self.model.to_state_dict()
                 best_ensemble_acc = 0.0
                 # Initialize scheduler
-                scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5, last_epoch=-1)
+                scheduler = optim.lr_scheduler.StepLR(self.optimizer_, step_size=10, gamma=0.5, last_epoch=-1)
                 # History
                 history_loss = []
                 history_acc = [[] for _ in range(self.model.get_ensemble_size())]
