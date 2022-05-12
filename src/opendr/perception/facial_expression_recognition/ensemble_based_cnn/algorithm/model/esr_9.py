@@ -174,7 +174,7 @@ class ESR(nn.Module):
     INPUT_IMAGE_NORMALIZATION_MEAN = [0.0, 0.0, 0.0]
     INPUT_IMAGE_NORMALIZATION_STD = [1.0, 1.0, 1.0]
 
-    def __init__(self, device, ensemble_size=9):
+    def __init__(self, device, ensemble_size=9, optimize=False):
         """
         Loads ESR-9.
         :param device: Device to load ESR-9: GPU or CPU.
@@ -186,6 +186,7 @@ class ESR(nn.Module):
         # Base of ESR-9 as described in the docstring (see mark 1)
         self.base = Base()
         self.base.to(device)
+        self.optimize_ = optimize
 
         # Load 9 convolutional branches that composes ESR-9 as described in the docstring (see mark 2)
         self.convolutional_branches = []
@@ -224,7 +225,7 @@ class ESR(nn.Module):
         for i in range(self.get_ensemble_size()):
             self.convolutional_branches[i].load_state_dict(best_configuration[i + 1])
 
-    def forward(self, x, optimize=False):
+    def forward(self, x):
         """
         Forward method of ESR-9.
 
@@ -241,7 +242,7 @@ class ESR(nn.Module):
 
         # Add to the lists of predictions outputs from each convolutional branch in the ensemble
         for branch in self.convolutional_branches:
-            if optimize:
+            if self.optimize_:
                 x_shared_representations = x_shared_representations.detach()
             output_emotion, output_affect = branch(x_shared_representations)
             emotions.append(output_emotion)
