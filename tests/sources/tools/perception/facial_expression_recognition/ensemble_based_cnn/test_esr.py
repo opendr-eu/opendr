@@ -68,7 +68,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         # Clean up downloaded files
         rmdir(os.path.join(cls.temp_dir))
 
-    '''def test_fit(self):
+    def test_fit(self):
         print("\n\n**********************************\nTest ESR fit function \n*"
               "*********************************")
 
@@ -80,7 +80,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.assertFalse(torch.equal(m, list(self.learner.model.parameters())[0]),
                          msg="Model parameters did not change after running fit.")
 
-    def test_eval(self):
+    '''def test_eval(self):
         print("\n\n**********************************\nTest ESR eval function \n*"
               "*********************************")
         path_to_saved_network = self.Pretrained_MODEL_PATH
