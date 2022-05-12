@@ -111,9 +111,9 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.learner.init_model(num_branches=9)
         self.learner.load(self.learner.ensemble_size, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         # input is Tensor
-        data = numpy.asarray(batch)
-        print('batch_size', data[0].ndim)
-        ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(batch)
+        #data = numpy.asarray(batch)
+        #print('batch_size', data[0].ndim)
+        ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(batch[0])
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
         self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
                                  msg="overall ensembled dimension results are zero")
