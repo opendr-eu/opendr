@@ -287,8 +287,10 @@ class EnsembleCNNLearner(Learner):
         if self.dimensional_finetune:
             self.init_model(num_branches=self.ensemble_size)
             # Load network trained on AffectNet_Categorical and fix its backbone
-            self.load(self.ensemble_size, fix_backbone=True)
-            # Set loss and optimizer
+            self.load(self.ensemble_size, path_to_saved_network=path.join(
+                self.base_path_experiment, self.name_experiment, 'Saved_Networks', self.model.get_ensemble_size()),
+                fix_backbone=True)
+                        # Set loss and optimizer
             self.model.to_device(self.device)
             self.criterion_dim = nn.MSELoss(reduction='mean')
             self.optimizer_ = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr,
