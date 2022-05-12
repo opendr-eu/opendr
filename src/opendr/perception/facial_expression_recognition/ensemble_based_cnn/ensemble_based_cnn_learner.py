@@ -391,7 +391,7 @@ class EnsembleCNNLearner(Learner):
                     self.model.train()
 
             # Change branch on training
-            if current_branch_on_training < self.model.get_ensemble_size():
+            if (current_branch_on_training + 1) < self.model.get_ensemble_size():
                 current_branch_on_training += 1
                 self.max_training_epoch = 2
                 # Reload best configuration
