@@ -53,7 +53,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         cls.temp_dir = PATH_
 
         cls.learner = EnsembleCNNLearner(device="cpu", temp_path=cls.temp_dir,
-                                         batch_size=2, max_training_epoch=1, ensemble_size=9,
+                                         batch_size=2, max_training_epoch=1, ensemble_size=2,
                                          name_experiment='esr_test', base_path_experiment=PATH_,
                                          lr=1e-1, categorical_train=True, dimensional_finetune=True,
                                          base_path_to_dataset=DATA_PATH, max_tuning_epoch=1)
