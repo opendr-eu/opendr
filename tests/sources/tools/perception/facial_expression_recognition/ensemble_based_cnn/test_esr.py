@@ -107,7 +107,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
                                                  base_path_to_affectnet=self.learner.base_path_to_dataset)
         val_loader = DataLoader(val_data, batch_size=self.batch_size, shuffle=False, num_workers=8)
         batch = next(iter(val_loader))[0]
-        self.learner.model = None
+        self.learner.init_model(num_branches=9)
         self.learner.load(self.learner.ensemble_size, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         # input is Tensor
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(batch)
