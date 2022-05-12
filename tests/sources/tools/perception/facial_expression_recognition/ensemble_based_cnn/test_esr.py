@@ -95,7 +95,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.assertNotEqual(sum([len(eval_dimensional_results["valence_arousal_losses"][i]) for i in range(2)]), 0,
                             msg="Eval results contains empty lists for valence and arousal estimation loss")
         self.assertNotEqual(sum(eval_categorical_results['running_emotion_loss']), 0.0,
-                                 msg="Eval results have zero loss for categorical expression recognition")'''
+                                 msg="Eval results have zero loss for categorical expression recognition")
 
     def test_infer(self):
         print("\n\n**********************************\nTest ESR infer function \n*"
@@ -111,8 +111,6 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.learner.init_model(num_branches=9)
         self.learner.load(self.learner.ensemble_size, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         # input is Tensor
-        #data = numpy.asarray(batch)
-        #print('batch_size', data[0].ndim)
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(batch[0])
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
         self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
@@ -128,7 +126,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer([Image(v) for v in batch])
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
         self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
-                                 msg="overall ensembled dimension results are zero")
+                                 msg="overall ensembled dimension results are zero")'''
 
     '''def test_save_load(self):
         print("\n\n**********************************\nTest ESR save_load function \n*"
@@ -161,7 +159,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.learner.load(ensemble_size=1, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         self.assertIsNotNone(self.learner.ort_session, "ort_session is None after loading onnx model.")
         # Cleanup
-        self.learner.ort_session = None
+        self.learner.ort_session = None'''
 
     def test_optimize(self):
         print("\n\n**********************************\nTest ESR optimize function \n*"
@@ -169,13 +167,13 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         path_to_saved_network = self.Pretrained_MODEL_PATH
         self.learner.model = None
         self.learner.ort_session = None
-        self.learner.init_model(num_branches=1)
+        self.learner.init_model(num_branches=9)
         self.learner.load(ensemble_size=1, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         self.learner.optimize()
         self.assertIsNotNone(self.learner.ort_session,
                              "ort_session is None after optimizing the pretrained model.")
         # Cleanup
-        self.learner.ort_session = None'''
+        self.learner.ort_session = None
 
 
 if __name__ == "__main__":

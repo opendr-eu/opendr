@@ -579,7 +579,7 @@ class EnsembleCNNLearner(Learner):
             input_batch = [input_batch]
         if type(input_batch) is list:
             input_batch = torch.stack([torch.tensor(v.data) for v in input_batch])
-        print('input_batch shape', input_batch.shape)
+        # print('input_batch shape', input_batch.shape)
         cpu_device = torch.device('cpu')
 
         input_batch = input_batch.to(device=self.device, dtype=torch.float)
