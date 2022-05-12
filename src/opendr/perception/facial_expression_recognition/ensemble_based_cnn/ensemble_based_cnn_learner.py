@@ -201,7 +201,7 @@ class EnsembleCNNLearner(Learner):
                     scheduler.step()
                     for inputs, labels in train_loader:
                         inputs, labels = inputs.to(self.device), labels.to(self.device)
-                        optimizer.zero_grad()
+                        self.optimizer_.zero_grad()
                         # Forward
                         out_emotions, out_va = self.model(inputs)
                         confs_preds = [torch.max(o, 1) for o in out_emotions]
@@ -214,7 +214,7 @@ class EnsembleCNNLearner(Learner):
                         # Backward
                         loss.backward()
                         # Optimize
-                        optimizer.step()
+                        self.optimizer_.step()
                         # Save loss
                         running_loss += loss.item()
                         running_updates += 1
@@ -268,12 +268,12 @@ class EnsembleCNNLearner(Learner):
                     # Add a new branch
                     self.model.add_branch()
                     self.to_device(self.device)
-                    optimizer = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr/10,
+                    self.optimizer_ = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr/10,
                                             'momentum': self.momentum},
                                            {'params': self.model.convolutional_branches[-1].parameters(), 'lr': self.lr,
                                             'momentum': self.momentum}])
                     for b in range(self.model.get_ensemble_size() - 1):
-                        optimizer.add_param_group({'params': self.model.convolutional_branches[b].parameters(),
+                        self.optimizer_.add_param_group({'params': self.model.convolutional_branches[b].parameters(),
                                                    'lr': self.lr/10, 'momentum': self.momentum})
                 # Finish training after training all branches
                 else:
