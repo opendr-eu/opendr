@@ -68,7 +68,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         # Clean up downloaded files
         rmdir(os.path.join(cls.temp_dir))
 
-    def test_fit(self):
+    '''def test_fit(self):
         print("\n\n**********************************\nTest ESR fit function \n*"
               "*********************************")
 
@@ -78,9 +78,9 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         m = list(self.learner.model.parameters())[0].clone()
         self.learner.fit()
         self.assertFalse(torch.equal(m, list(self.learner.model.parameters())[0]),
-                         msg="Model parameters did not change after running fit.")
+                         msg="Model parameters did not change after running fit.")'''
 
-    '''def test_eval(self):
+    def test_eval(self):
         print("\n\n**********************************\nTest ESR eval function \n*"
               "*********************************")
         path_to_saved_network = self.Pretrained_MODEL_PATH
@@ -95,7 +95,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.self.assertNotEqual(sum(eval_categorical_results['running_emotion_loss']), 0.0,
                                  msg="Eval results have zero loss for categorical expression recognition")
 
-    def test_infer(self):
+    '''def test_infer(self):
         print("\n\n**********************************\nTest ESR infer function \n*"
               "*********************************")
         path_to_saved_network = self.Pretrained_MODEL_PATH
