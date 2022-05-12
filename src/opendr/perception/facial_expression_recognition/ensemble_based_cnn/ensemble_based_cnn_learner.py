@@ -163,7 +163,7 @@ class EnsembleCNNLearner(Learner):
             self.init_model(num_branches=1)  # The model is built by adding and training branches one by one
             self.model.to_device(self.device)
             self.criterion_cat = nn.CrossEntropyLoss()
-            self.optimizer = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr,
+            self.optimizer_ = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr,
                                          'momentum': self.momentum},
                                         {'params': self.model.convolutional_branches[-1].parameters(), 'lr': self.lr,
                                          'momentum': self.momentum}])
@@ -287,12 +287,12 @@ class EnsembleCNNLearner(Learner):
             # Set loss and optimizer
             self.model.to_device(self.device)
             self.criterion_dim = nn.MSELoss(reduction='mean')
-            self.optimizer = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr,
+            self.optimizer_ = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr,
                                          'momentum': self.momentum},
                                         {'params': self.model.convolutional_branches[0].parameters(),
                                          'lr': self.lr, 'momentum': self.momentum}])
             for b in range(1, self.model.get_ensemble_size()):
-                self.optimizer.add_param_group({'params': self.model.convolutional_branches[b].parameters(),
+                self.optimizer_.add_param_group({'params': self.model.convolutional_branches[b].parameters(),
                                                 'lr': self.lr / 10, 'momentum': self.momentum})
             # Data loaders
             train_data = datasets.AffectNetDimensional(idx_set=0,
@@ -327,7 +327,7 @@ class EnsembleCNNLearner(Learner):
                     inputs, labels = inputs.to(self.device), labels.to(self.device)
                     labels_valence = labels[:, 0].view(len(labels[:, 0]), 1)
                     labels_arousal = labels[:, 1].view(len(labels[:, 1]), 1)
-                    self.optimizer.zero_grad()
+                    self.optimizer_.zero_grad()
                     # Forward
                     out_emotions, out_va = self.model(inputs)
                     # Compute loss of affect_values
@@ -340,7 +340,7 @@ class EnsembleCNNLearner(Learner):
                     # Backward
                     loss.backward()
                     # Optimize
-                    self.optimizer.step()
+                    self.optimizer_.step()
                     # Save loss
                     running_loss += loss.item()
                     running_updates += 1
@@ -391,13 +391,13 @@ class EnsembleCNNLearner(Learner):
                 self.model.reload(best_ensemble)
                 self.model.to_device(self.device)
                 for b in range(self.model.get_ensemble_size()):
-                    self.optimizer.add_param_group({'params': self.model.convolutional_branches[b].parameters(),
+                    self.optimizer_.add_param_group({'params': self.model.convolutional_branches[b].parameters(),
                                                     'lr': self.lr / 10,
                                                     'momentum': self.momentum})
-                self.optimizer = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr / 10,
+                self.optimizer_ = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr / 10,
                                              'momentum': self.momentum},
-                                            {'params':
-                                                 self.model.convolutional_branches[self.current_branch_on_training].parameters(),
+                                            {'params': self.model.convolutional_branches
+                                            [self.current_branch_on_training].parameters(),
                                              'lr': self.lr,
                                              'momentum': self.momentum}])
             # Finish training after fine-tuning all branches
