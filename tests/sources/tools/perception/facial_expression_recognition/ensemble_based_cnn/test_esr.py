@@ -37,7 +37,7 @@ def rmdir(_dir):
         print("Error: %s - %s." % (e.filename, e.strerror))
 
 
-PATH_ = './tests/sources/tools/perception/facial_expression_recognition/ensemble_based_cnn/'
+PATH_ = './temp'
 DATA_PATH = '../../FER_data/AffectNet'
 
 
@@ -48,9 +48,9 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
             "\n\n**********************************\nTEST Ensemble Based CNN Learner for Facial Expression and "
             "Emotion Analysis\n*"
             "*********************************")
-        cls.temp_dir = PATH_ + 'temp'
-        if not path.isdir(cls.temp_dir):
-            makedirs(cls.temp_dir)
+        if not path.isdir(PATH_):
+            makedirs(PATH_)
+        cls.temp_dir = PATH_
 
         cls.learner = EnsembleCNNLearner(device="cpu", temp_path=cls.temp_dir,
                                          batch_size=2, max_training_epoch=1, ensemble_size=9,
@@ -59,7 +59,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
                                          base_path_to_dataset=DATA_PATH)
 
         cls.dataset_path = cls.learner.base_path_to_dataset
-        cls.Pretrained_MODEL_PATH = PATH_ + 'trained_models/esr_9'
+        cls.Pretrained_MODEL_PATH = './trained_models/esr_9'
 
         # Download all required files for testing
 
