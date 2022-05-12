@@ -84,6 +84,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         print("\n\n**********************************\nTest ESR eval function \n*"
               "*********************************")
         path_to_saved_network = self.Pretrained_MODEL_PATH
+        self.learner.init_model(num_branches=1)
         self.learner.load(self.learner.ensemble_size, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         if self.learner.categorical_train:
             eval_categorical_results = self.learner.eval(eval_type='categorical')
