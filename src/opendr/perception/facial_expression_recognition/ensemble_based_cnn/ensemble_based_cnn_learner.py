@@ -644,6 +644,7 @@ class EnsembleCNNLearner(Learner):
         else:
             onnx_input = Variable(onnx_input.float(), requires_grad=False)
         # Export the model
+        self.model.eval()
         torch.onnx.export(self.model,
                           onnx_input,
                           output_name,
