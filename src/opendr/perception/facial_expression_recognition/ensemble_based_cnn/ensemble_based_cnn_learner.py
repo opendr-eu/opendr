@@ -400,7 +400,7 @@ class EnsembleCNNLearner(Learner):
                 for b in range(self.model.get_ensemble_size()):
                     if b != current_branch_on_training:
                         self.optimizer_.add_param_group({'params': self.model.convolutional_branches[b].parameters(),
-                                                         'lr': self.lr / 10})
+                                                         'lr': 0.01})
                         #,
                         #'lr': self.lr / 10,
                         #'momentum': self.momentum
