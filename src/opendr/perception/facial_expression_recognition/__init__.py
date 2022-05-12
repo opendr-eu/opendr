@@ -11,6 +11,10 @@ from opendr.perception.facial_expression_recognition.\
 from opendr.perception.facial_expression_recognition.\
     landmark_based_facial_expression_recognition.algorithm.datasets.AFEW_data_gen import data_normalization
 
+from opendr.perception.facial_expression_recognition.\
+    ensemble_based_cnn.ensemble_based_cnn_learner import EnsembleCNNLearner
+from opendr.perception.facial_expression_recognition.\
+    ensemble_based_cnn.algorithm.utils import datasets
 
 __all__ = ['ProgressiveSpatioTemporalBLNLearner', 'CK_CLASSES', 'CASIA_CLASSES', 'landmark_extractor',
-           'gen_muscle_data', 'data_normalization']
+           'gen_muscle_data', 'data_normalization', 'EnsembleCNNLearner', 'datasets']
