@@ -73,6 +73,7 @@ class EnsembleCNNLearner(Learner):
         self.ensemble_size = ensemble_size
         self.dimensional_finetune = dimensional_finetune
         self.categorical_train = categorical_train
+        self.ort_session = None
 
     def init_model(self, num_branches):
         self.model = ESR(device=self.device, ensemble_size=num_branches)
