@@ -93,7 +93,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
 
         self.assertNotEqual(sum([len(eval_dimensional_results["valence_arousal_losses"][i]) for i in range(2)]), 0,
                             msg="Eval results contains empty lists for valence and arousal estimation loss")
-        self.self.assertNotEqual(sum(eval_categorical_results['running_emotion_loss']), 0.0,
+        self.assertNotEqual(sum(eval_categorical_results['running_emotion_loss']), 0.0,
                                  msg="Eval results have zero loss for categorical expression recognition")
 
     '''def test_infer(self):
@@ -112,19 +112,19 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         # input is Tensor
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(batch)
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
-        self.self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
+        self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
                                  msg="overall ensembled dimension results are zero")
 
         # Input is Image
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(Image(batch[0]))
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
-        self.self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
+        self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
                                  msg="overall ensembled dimension results are zero")
 
         # Input is List[Image]
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer([Image(v) for v in batch])
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
-        self.self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
+        self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
                                  msg="overall ensembled dimension results are zero")
 
     def test_save_load(self):
