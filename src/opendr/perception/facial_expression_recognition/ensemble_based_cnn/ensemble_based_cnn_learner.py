@@ -397,19 +397,17 @@ class EnsembleCNNLearner(Learner):
                 # Reload best configuration
                 self.model.reload(best_ensemble)
                 self.model.to_device(self.device)
-                for b in range(self.model.get_ensemble_size()):
-                    if b != current_branch_on_training:
-                        self.optimizer_.add_param_group({'params': self.model.convolutional_branches[b].parameters(),
-                                                         'lr': 0.01})
-                        #,
-                        #'lr': self.lr / 10,
-                        #'momentum': self.momentum
                 self.optimizer_ = optim.SGD([
                     {'params': self.model.base.parameters(), 'lr': self.lr / 10,
                      'momentum': self.momentum},
                     {'params': self.model.convolutional_branches[current_branch_on_training].parameters(),
                      'lr': self.lr,
                      'momentum': self.momentum}])
+                for b in range(self.model.get_ensemble_size()):
+                    if b != current_branch_on_training:
+                        self.optimizer_.add_param_group({'params': self.model.convolutional_branches[b].parameters(),
+                                                         'lr': self.lr/10,
+                                                         'momentum': self.momentum})
             # Finish training after fine-tuning all branches
             else:
                 break
