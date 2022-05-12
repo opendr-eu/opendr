@@ -156,7 +156,7 @@ class EnsembleCNNLearner(Learner):
                            transforms.RandomAffine(degrees=30,
                                                    translate=(.1, .1),
                                                    scale=(1.0, 1.25),
-                                                   interpolation=PIL.Image.BILINEAR)]
+                                                   resample=PIL.Image.BILINEAR)]
         print("Starting: {}".format(str(self.name_experiment)))
         print("Running on {}".format(self.device))
 
