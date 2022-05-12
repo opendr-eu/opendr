@@ -79,8 +79,8 @@ class EnsembleCNNLearner(Learner):
         self.criterion_cat = nn.CrossEntropyLoss()
         self.criterion_dim = nn.MSELoss(reduction='mean')
 
-    def init_model(self, num_branches):
-        self.model = ESR(device=self.device, ensemble_size=num_branches)
+    def init_model(self, num_branches, optimize=False):
+        self.model = ESR(device=self.device, ensemble_size=num_branches, optimize=optimize)
         self.model.to_device(self.device)
 
     def save(self, state_dicts, base_path_to_save_model, current_branch_save):
