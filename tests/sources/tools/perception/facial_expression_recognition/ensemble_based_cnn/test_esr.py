@@ -68,7 +68,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         # Clean up downloaded files
         rmdir(os.path.join(cls.temp_dir))
 
-    '''def test_fit(self):
+    def test_fit(self):
         print("\n\n**********************************\nTest ESR fit function \n*"
               "*********************************")
 
@@ -80,7 +80,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.assertFalse(torch.equal(m, list(self.learner.model.parameters())[0]),
                          msg="Model parameters did not change after running fit.")
 
-    def test_eval(self):
+    '''def test_eval(self):
         print("\n\n**********************************\nTest ESR eval function \n*"
               "*********************************")
         path_to_saved_network = self.Pretrained_MODEL_PATH
@@ -124,7 +124,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer([Image(v) for v in batch])
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
         self.self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
-                                 msg="overall ensembled dimension results are zero")'''
+                                 msg="overall ensembled dimension results are zero")
 
     def test_save_load(self):
         print("\n\n**********************************\nTest ESR save_load function \n*"
@@ -143,7 +143,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.assertIsNotNone(self.learner.model, "model is None after loading pt model.")
         # Cleanup
 
-    '''def test_save_load_onnx(self):
+    def test_save_load_onnx(self):
         print("\n\n**********************************\nTest ESR save_load ONNX function \n*"
               "*********************************")
         path_to_saved_network = path.join(self.temp_dir, self.learner.name_experiment, 'onnx_optimize')
