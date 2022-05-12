@@ -49,8 +49,8 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
             "Emotion Analysis\n*"
             "*********************************")
         cls.temp_dir = PATH_ + 'temp'
-        if not path.isdir(PATH_):
-            makedirs(PATH_)
+        if not path.isdir(cls.temp_dir):
+            makedirs(cls.temp_dir)
 
         cls.learner = EnsembleCNNLearner(device="cpu", temp_path=cls.temp_dir,
                                          batch_size=2, max_training_epoch=1, ensemble_size=9,
