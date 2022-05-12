@@ -650,12 +650,9 @@ class EnsembleCNNLearner(Learner):
                           output_name,
                           verbose=verbose,
                           opset_version=11,
-                          enable_onnx_checker=True,
                           do_constant_folding=do_constant_folding,
                           input_names=['onnx_input'],
-                          output_names=['onnx_output'],
-                          dynamic_axes={'onnx_input': {0: 'n'},
-                                        'onnx_output': {0: 'n'}})
+                          output_names=['onnx_output'])
 
     def __load_from_onnx(self, path):
         """
