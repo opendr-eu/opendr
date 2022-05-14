@@ -5,7 +5,7 @@ The *seq2seq-nms* module contains the *Seq2SeqNMSLearner* class, which inherits 
 ### Class Seq2SeqNMSLearner
 Bases: `engine.learners.Learner`
 
-It can be used to perform single-class non-maximum suppression on images (inference) as well as training new seq2seq-nms models. The implementation is based on [[1]](#seq2seq_nms-1). The method is set-up for performing NMS on the person-detection task, using the implemention of the [SSD](/docs/reference/object-detection-2d-ssd.md) detector. However, the method can also be employed in any single-class detection method, that incorporates a non-maximum suppression step. 
+It can be used to perform single-class non-maximum suppression (NMS) on images (inference) as well as training new seq2seq-nms models. The implementation is based on [[1]](#seq2seq_nms-1). The method is set-up for performing NMS on the person-detection task, using the implemention of the [SSD](/docs/reference/object-detection-2d-ssd.md) detector. The method can also be employed for performing single-class NMS, in any class other than human/pedestrian class. In that case the method needs to be re-trained from scratch. Finally, a pretrained-model can be employed for evaluation or inference on the same class that it was trained with, using RoIs from a different detector than the one used in the training. In that case, we advise to fine-tune the Seq2Seq-nms model using RoIs the detector, employed in the inference/evaluation of the method, in order to achieve the highest possible performance.
 
 The [Seq2SeqNMSLearner](/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/seq2seq_nms_learner.py) class has the following
 public methods:
