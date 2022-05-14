@@ -139,7 +139,7 @@ Seq2SeqNMSLearner.run_nms(self, boxes, scores, img, threshold, boxes_sorted, top
 ```
 
 Performs non-maximum suppression, using seq2seq-nms.
-It incorporates the full pipeline needed for inference.
+It incorporates the full pipeline needed for inference, including the FMoD's edge/interest-point map computation step.
 
 Parameters:
 
