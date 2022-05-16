@@ -101,7 +101,7 @@ class EnsembleCNNLearner(Learner):
             print("Pytorch model has been "
                   "saved at: {}".format(path.join(base_path_to_save_model, str(current_branch_save))))
         else:
-            model_metadata["model_paths"] = [[path.join(base_path_to_save_model, str(current_branch_save))]]
+            model_metadata["model_paths"] = [path.join(base_path_to_save_model, str(current_branch_save))]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             shutil.copy2(path.join(self.temp_path, self.name_experiment, "onnx_model.onnx"),
