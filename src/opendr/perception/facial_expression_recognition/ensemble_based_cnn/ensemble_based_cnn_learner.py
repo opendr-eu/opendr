@@ -645,7 +645,7 @@ class EnsembleCNNLearner(Learner):
         torch.onnx.export(self.model,
                           onnx_input,
                           output_name,
-                          verbose=verbose,
+                          verbose=True,
                           opset_version=11,
                           do_constant_folding=do_constant_folding,
                           input_names=['onnx_input'],
