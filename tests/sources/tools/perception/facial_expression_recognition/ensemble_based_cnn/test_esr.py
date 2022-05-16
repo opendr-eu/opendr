@@ -167,10 +167,12 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         path_to_saved_network = self.Pretrained_MODEL_PATH
         self.learner.model = None
         self.learner.ort_session = None
-        self.learner.init_model(num_branches=1, optimize=True)
-        self.learner.load(ensemble_size=1, path_to_saved_network=path_to_saved_network, fix_backbone=True)
-        self.learner.optimize()
-        self.assertIsNotNone(self.learner.ort_session,
+        with torch.no_grad:
+            self.learner.init_model(num_branches=1, optimize=True)
+            self.learner.load(ensemble_size=1, path_to_saved_network=path_to_saved_network, fix_backbone=True)
+            self.learner.model.eval()
+            self.learner.optimize()
+            self.assertIsNotNone(self.learner.ort_session,
                              "ort_session is None after optimizing the pretrained model.")
         # Cleanup
         self.learner.ort_session = None
