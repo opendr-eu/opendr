@@ -104,7 +104,7 @@ class EnsembleCNNLearner(Learner):
             model_metadata["model_paths"] = [path.join(base_path_to_save_model, str(current_branch_save))]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
-            shutil.copy2(path.join(self.temp_path, self.name_experiment, "onnx_model.onnx"),
+            shutil.copy2(path.join(self.temp_path, self.name_experiment, ".onnx"),
                          model_metadata["model_paths"][0])
             print("ONNX model has been "
                   "saved at: {}".format(path.join(base_path_to_save_model, str(current_branch_save))))
@@ -621,14 +621,14 @@ class EnsembleCNNLearner(Learner):
             raise UserWarning("Model is already optimized in ONNX.")
         try:
             self.__convert_to_onnx(path.join(self.temp_path, self.name_experiment,
-                                             "onnx_model.onnx"), do_constant_folding)
+                                             ".onnx"), do_constant_folding)
         except FileNotFoundError:
             # Create temp directory
             os.makedirs(path.join(self.temp_path, self.name_experiment), exist_ok=True)
-            self.__convert_to_onnx(path.join(self.temp_path, self.name_experiment, "onnx_model.onnx"),
+            self.__convert_to_onnx(path.join(self.temp_path, self.name_experiment, ".onnx"),
                                    do_constant_folding, verbose=False)
 
-        self.__load_from_onnx(path.join(self.temp_path, self.name_experiment, "onnx_model.onnx"))
+        self.__load_from_onnx(path.join(self.temp_path, self.name_experiment, ".onnx"))
 
     def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=False):
         """
