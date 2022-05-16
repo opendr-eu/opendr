@@ -248,4 +248,4 @@ class ESR(nn.Module):
             emotions.append(output_emotion)
             affect_values.append(output_affect)
 
-        return emotions#, affect_values  # 9 lists for each output. each list of emotions ha 8 values and each list of affect values has 2 values! 9*8 , 9*2
+        return emotions, affect_values  # 9 lists for each output. each list of emotions ha 8 values and each list of affect values has 2 values! 9*8 , 9*2
