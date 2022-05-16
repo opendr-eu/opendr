@@ -240,8 +240,12 @@ class ESR(nn.Module):
         with torch.no_grad():
             # Get shared representations
             x_shared_representations = self.base(x)
+            #'''
+            self.branches = nn.ModuleList([ConvolutionalBranch() for i in range(len(self.convolutional_branches))])
+            #'''
             # Add to the lists of predictions outputs from each convolutional branch in the ensemble
             #for branch in self.convolutional_branches:
+            for branch in self.branches:
                 #if self.optimize_:
                     # x_shared_representations = x_shared_representations.detach()
                     # x_shared_representations = Variable(x_shared_representations.type(torch.FloatTensor),
@@ -250,8 +254,8 @@ class ESR(nn.Module):
                 # x_shared_representations = nn.Parameter(x_shared_representations.detach())
                 # x_shared_representations = Variable(torch.from_numpy(x_shared_representations).type(torch.FloatTensor),
                                                                                         #requires_grad=False)
-                #output_emotion, output_affect = branch(x_shared_representations)
-                #emotions.append(output_emotion)
-                #affect_values.append(output_affect)
+                output_emotion, output_affect = branch(x_shared_representations)
+                emotions.append(output_emotion)
+                affect_values.append(output_affect)
 
-        return x_shared_representations #emotions, affect_values
+        return emotions, affect_values
