@@ -175,7 +175,7 @@ class ESR(nn.Module):
     INPUT_IMAGE_NORMALIZATION_MEAN = [0.0, 0.0, 0.0]
     INPUT_IMAGE_NORMALIZATION_STD = [1.0, 1.0, 1.0]
 
-    def __init__(self, device, ensemble_size=9, optimize=False):
+    def __init__(self, device, ensemble_size=9):
         """
         Loads ESR-9.
         :param device: Device to load ESR-9: GPU or CPU.
@@ -187,17 +187,15 @@ class ESR(nn.Module):
         # Base of ESR-9 as described in the docstring (see mark 1)
         self.base = Base()
         self.base.to(device)
-        self.optimize_ = optimize
 
         # Load 9 convolutional branches that composes ESR-9 as described in the docstring (see mark 2)
         self.convolutional_branches = []
-        #self.convolutional_branches = nn.ModuleList([])
 
         for i in range(ensemble_size):
             self.add_branch()
             self.convolutional_branches[-1].to(device)
 
-        self.convolutional_branches = nn.Sequential(*self.convolutional_branches) ## added
+        self.convolutional_branches = nn.Sequential(*self.convolutional_branches)
 
         self.to(device)
 
@@ -241,21 +239,11 @@ class ESR(nn.Module):
         # List of emotions and affect values from the ensemble
         emotions = []
         affect_values = []
-        #self.branches = nn.ModuleList([ConvolutionalBranch() for i in range(len(self.convolutional_branches))])
 
         # Get shared representations
         x_shared_representations = self.base(x)
         # Add to the lists of predictions outputs from each convolutional branch in the ensemble
-        #for branch in self.convolutional_branches:
         for branch in self.convolutional_branches:
-            #if self.optimize_:
-                # x_shared_representations = x_shared_representations.detach()
-                # x_shared_representations = Variable(x_shared_representations.type(torch.FloatTensor),
-                #                                    requires_grad=False)
-            # x_shared_representations = x_shared_representations.detach().numpy()
-            # x_shared_representations = nn.Parameter(x_shared_representations.detach())
-            # x_shared_representations = Variable(torch.from_numpy(x_shared_representations).type(torch.FloatTensor),
-                                                                                    #requires_grad=False)
             output_emotion, output_affect = branch(x_shared_representations)
             emotions.append(output_emotion)
             affect_values.append(output_affect)
