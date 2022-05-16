@@ -191,9 +191,13 @@ class ESR(nn.Module):
 
         # Load 9 convolutional branches that composes ESR-9 as described in the docstring (see mark 2)
         self.convolutional_branches = []
+        #self.convolutional_branches = nn.ModuleList([])
+
         for i in range(ensemble_size):
             self.add_branch()
             self.convolutional_branches[-1].to(device)
+
+        self.convolutional_branches = nn.Sequential(*self.convolutional_branches) ## added
 
         self.to(device)
 
@@ -237,13 +241,13 @@ class ESR(nn.Module):
         # List of emotions and affect values from the ensemble
         emotions = []
         affect_values = []
-        self.branches = nn.ModuleList([ConvolutionalBranch() for i in range(len(self.convolutional_branches))])
+        #self.branches = nn.ModuleList([ConvolutionalBranch() for i in range(len(self.convolutional_branches))])
 
         # Get shared representations
         x_shared_representations = self.base(x)
         # Add to the lists of predictions outputs from each convolutional branch in the ensemble
         #for branch in self.convolutional_branches:
-        for branch in self.branches:
+        for branch in self.convolutional_branches:
             #if self.optimize_:
                 # x_shared_representations = x_shared_representations.detach()
                 # x_shared_representations = Variable(x_shared_representations.type(torch.FloatTensor),
