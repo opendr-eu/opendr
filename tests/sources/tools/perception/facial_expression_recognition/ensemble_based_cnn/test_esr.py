@@ -143,7 +143,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.learner.load(ensemble_size=1, path_to_saved_network=path.join(path_to_saved_network, str(0)),
                           fix_backbone=True)
         self.assertIsNotNone(self.learner.model, "model is None after loading pt model.")
-        # Cleanup
+        # Cleanup'''
 
     def test_save_load_onnx(self):
         print("\n\n**********************************\nTest ESR save_load ONNX function \n*"
@@ -159,9 +159,9 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.learner.load(ensemble_size=1, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         self.assertIsNotNone(self.learner.ort_session, "ort_session is None after loading onnx model.")
         # Cleanup
-        self.learner.ort_session = None'''
+        self.learner.ort_session = None
 
-    def test_optimize(self):
+    '''def test_optimize(self):
         print("\n\n**********************************\nTest ESR optimize function \n*"
               "*********************************")
         path_to_saved_network = self.Pretrained_MODEL_PATH
@@ -172,7 +172,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.learner.optimize()
         self.assertIsNotNone(self.learner.ort_session, "ort_session is None after optimizing the pretrained model.")
     # Cleanup
-        self.learner.ort_session = None
+        self.learner.ort_session = None'''
 
 
 if __name__ == "__main__":
