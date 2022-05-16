@@ -250,7 +250,9 @@ class ESR(nn.Module):
             x_shared_representations = x_shared_representations.detach().numpy()
             # x_shared_representations = nn.Parameter(x_shared_representations.detach())
             with torch.no_grad():
-                output_emotion, output_affect = branch(torch.from_numpy(x_shared_representations))
+                x_shared_representations = Variable(x_shared_representations.type(torch.FloatTensor),
+                                                                                        requires_grad=False)
+                output_emotion, output_affect = branch(x_shared_representations)
                 emotions.append(output_emotion)
                 affect_values.append(output_affect)
 
