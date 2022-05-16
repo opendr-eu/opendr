@@ -254,4 +254,4 @@ class ESR(nn.Module):
                 #emotions.append(output_emotion)
                 #affect_values.append(output_affect)
 
-        return emotions, affect_values
+        return x_shared_representations #emotions, affect_values
