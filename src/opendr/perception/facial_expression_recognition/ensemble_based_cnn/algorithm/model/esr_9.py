@@ -244,9 +244,10 @@ class ESR(nn.Module):
         # Add to the lists of predictions outputs from each convolutional branch in the ensemble
         for branch in self.convolutional_branches:
             if self.optimize_:
-                x_shared_representations = x_shared_representations.detach()
+                # x_shared_representations = x_shared_representations.detach()
                 #x_shared_representations = Variable(x_shared_representations.type(torch.FloatTensor),
                 #                                    requires_grad=False)
+            x_shared_representations = nn.Parameter(x_shared_representations)
             output_emotion, output_affect = branch(x_shared_representations)
             emotions.append(output_emotion)
             affect_values.append(output_affect)
