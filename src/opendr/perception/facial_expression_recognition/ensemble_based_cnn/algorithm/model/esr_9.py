@@ -15,10 +15,11 @@ Reference:
     and arousal computing in the wild. IEEE Transactions on Affective Computing, 10(1), pp.18-31.
 """
 
-
+import torch
 import torch.nn.functional as F
 import torch.nn as nn
 import copy
+from torch.autograd import Variable
 
 
 class Base(nn.Module):
@@ -243,9 +244,11 @@ class ESR(nn.Module):
         # Add to the lists of predictions outputs from each convolutional branch in the ensemble
         for branch in self.convolutional_branches:
             if self.optimize_:
-                x_shared_representations = x_shared_representations.detach()
+                # x_shared_representations = x_shared_representations.detach()
+                x_shared_representations = Variable(x_shared_representations.type(torch.FloatTensor),
+                                                    requires_grad=False)
             output_emotion, output_affect = branch(x_shared_representations)
             emotions.append(output_emotion)
             affect_values.append(output_affect)
 
-        return emotions#, affect_values  # 9 lists for each output. each list of emotions ha 8 values and each list of affect values has 2 values! 9*8 , 9*2
+        return emotions, affect_values
