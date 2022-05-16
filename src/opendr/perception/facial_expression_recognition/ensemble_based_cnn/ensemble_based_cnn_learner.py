@@ -642,14 +642,15 @@ class EnsembleCNNLearner(Learner):
         # Export the model
         self.model.eval()
         self.model.to_device(self.device)
-        torch.onnx.export(self.model,
-                          onnx_input,
-                          output_name,
-                          verbose=verbose,
-                          opset_version=11,
-                          do_constant_folding=do_constant_folding,
-                          input_names=['onnx_input'],
-                          output_names=['onnx_output'])
+        with torch.no_grad():
+            torch.onnx.export(self.model,
+                              onnx_input,
+                              output_name,
+                              verbose=verbose,
+                              opset_version=11,
+                              do_constant_folding=do_constant_folding,
+                              input_names=['onnx_input'],
+                              output_names=['onnx_output'])
 
     def __load_from_onnx(self, path):
         """
