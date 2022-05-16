@@ -237,12 +237,11 @@ class ESR(nn.Module):
         # List of emotions and affect values from the ensemble
         emotions = []
         affect_values = []
+        self.branches = nn.ModuleList([ConvolutionalBranch() for i in range(len(self.convolutional_branches))])
+
         with torch.no_grad():
             # Get shared representations
             x_shared_representations = self.base(x)
-            #'''
-            self.branches = nn.ModuleList([ConvolutionalBranch() for i in range(len(self.convolutional_branches))])
-            #'''
             # Add to the lists of predictions outputs from each convolutional branch in the ensemble
             #for branch in self.convolutional_branches:
             for branch in self.branches:
