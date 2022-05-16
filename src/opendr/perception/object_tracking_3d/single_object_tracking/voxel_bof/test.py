@@ -2808,10 +2808,15 @@ def test_realtime_rotated_pp_siamese_eval(
             i = start_frame - 1
             while i < count:
                 i += 1
-                point_cloud_with_calibration, labels = dataset[i]
-                selected_labels = TrackingAnnotation3DList(
-                    [label for label in labels if label.id == object_id]
-                )
+
+                has_label = i < count
+                selected_labels = []
+
+                if has_label:
+                    point_cloud_with_calibration, labels = dataset[i]
+                    selected_labels = TrackingAnnotation3DList(
+                        [label for label in labels if label.id == object_id]
+                    )
 
                 if len(selected_labels) <= 0:
                     if allow_extra_last_frame and not extra_last_frame_used:
