@@ -43,8 +43,10 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 # algorithm imports
 from opendr.perception.object_detection_2d.utils.eval_utils import DetectionDatasetCOCOEval
 from opendr.perception.object_detection_2d.datasets import DetectionDataset
-from opendr.perception.object_detection_2d.datasets.transforms import ImageToNDArrayTransform, BoundingBoxListToNumpyArray, \
-    transform_test
+from opendr.perception.object_detection_2d.datasets.transforms import ImageToNDArrayTransform, \
+    BoundingBoxListToNumpyArray, \
+    transform_test, pad_test
+from opendr.perception.object_detection_2d.nms.utils import NMSCustom
 
 gutils.random.seed(0)
 
@@ -90,7 +92,6 @@ class SingleShotDetectorLearner(Learner):
                     self.ctx = mx.gpu(int(self.device.split(':')[1]))
             else:
                 self.ctx = mx.cpu()
-                print("Device set to cuda but no GPU available, using CPU...")
         else:
             self.ctx = mx.cpu()
 
@@ -141,7 +142,7 @@ class SingleShotDetectorLearner(Learner):
         if verbose:
             print("Model parameters saved.")
 
-        with open(os.path.join(path,  model_name + '.json'), 'w', encoding='utf-8') as f:
+        with open(os.path.join(path, model_name + '.json'), 'w', encoding='utf-8') as f:
             json.dump(metadata, f, ensure_ascii=False, indent=4)
         if verbose:
             print("Model metadata saved.")
@@ -216,7 +217,7 @@ class SingleShotDetectorLearner(Learner):
             if verbose:
                 print("Downloading params...")
             file_url = os.path.join(url, "pretrained", "ssd_512_vgg16_atrous_wider_person",
-                                         "ssd_512_vgg16_atrous_wider_person.params")
+                                    "ssd_512_vgg16_atrous_wider_person.params")
 
             urlretrieve(file_url,
                         os.path.join(path, "ssd_512_vgg16_atrous_wider_person.params"))
@@ -461,18 +462,27 @@ class SingleShotDetectorLearner(Learner):
         else:
             return self.lr
 
-    def eval(self, dataset, use_subset=False, subset_size=100, verbose=False):
+    def eval(self, dataset, use_subset=False, subset_size=100, verbose=False,
+             nms_thresh=0.45, nms_topk=400, post_nms=100):
         """
         This method performs evaluation on a given dataset and returns a dictionary with the evaluation results.
         :param dataset: dataset object, to perform evaluation on
         :type dataset: opendr.perception.object_detection_2d.datasets.DetectionDataset or opendr.engine.data.ExternalDataset
-        :return: dictionary containing evaluation metric names nad values
         :param use_subset: if True, only a subset of the dataset is evaluated, defaults to False
         :type use_subset: bool, optional
         :param subset_size: if use_subset is True, subset_size controls the size of the subset to be evaluated
         :type subset_size: int, optional
         :param verbose: if True, additional information is printed on stdout
         :type verbose: bool, optional
+        :param nms_thresh: Non-maximum suppression threshold. You can specify < 0 or > 1 to disable NMS.
+        :type nms_thresh: float, default is 0.45
+        :param nms_topk: Apply NMS to top k detection results, use -1 to disable so that every Detection result is used in NMS.
+        :type nms_topk: int, default is 400
+        :param post_nms: Only return top post_nms detection results, the rest is discarded.
+        The number is based on COCO dataset which has maximum 100 objects per image. You can adjust this number if
+        expecting more objects. You can use -1 to return all detections.
+        :type post_nms: int, default is 100
+        :return: dictionary containing evaluation metric names nad values
         :rtype: dict
         """
         autograd.set_training(False)
@@ -494,7 +504,7 @@ class SingleShotDetectorLearner(Learner):
             self._model.initialize()
             self._model.collect_params().reset_ctx(ctx)
         self._model.hybridize(static_alloc=True, static_shape=True)
-        self._model.set_nms(nms_thresh=0.45, nms_topk=400)
+        self._model.set_nms(nms_thresh=nms_thresh, nms_topk=nms_topk, post_nms=post_nms)
 
         dataset, eval_metric = self.__prepare_val_dataset(dataset, data_shape=self.img_size)
 
@@ -549,7 +559,8 @@ class SingleShotDetectorLearner(Learner):
         eval_dict = {k.lower(): v for k, v in zip(map_name, mean_ap)}
         return eval_dict
 
-    def infer(self, img, threshold=0.2, keep_size=False):
+    def infer(self, img, threshold=0.2, keep_size=False, custom_nms: NMSCustom=None,
+              nms_thresh=0.45, nms_topk=400, post_nms=100):
         """
         Performs inference on a single image and returns the resulting bounding boxes.
         :param img: image to perform inference on
@@ -558,13 +569,26 @@ class SingleShotDetectorLearner(Learner):
         :type threshold: float, optional
         :param keep_size: if True, the image is not resized to fit the data shape used during training
         :type keep_size: bool, optional
+        :param custom_nms: Custom NMS method to be employed on inference
+        :type perception.object_detection_2d.nms.utils.nms_custom.NMSCustom
+        :param nms_thresh: Non-maximum suppression threshold. You can specify < 0 or > 1 to disable NMS.
+        :type nms_thresh: float, default is 0.45
+        :param nms_topk: Apply NMS to top k detection results, use -1 to disable so that every Detection result is used in NMS.
+        :type nms_topk: int, default is 400
+        :param post_nms: Only return top post_nms detection results, the rest is discarded.
+        The number is based on COCO dataset which has maximum 100 objects per image. You can adjust this number if
+        expecting more objects. You can use -1 to return all detections.
+        :type post_nms: int, default is 100
         :return: list of bounding boxes
         :rtype: BoundingBoxList
         """
+
         assert self._model is not None, "Model has not been loaded, call load(path) first"
 
-        self._model.set_nms(nms_thresh=0.45, nms_topk=400)
-
+        if custom_nms:
+            self._model.set_nms(nms_thresh=0.85, nms_topk=5000, post_nms=1000)
+        else:
+            self._model.set_nms(nms_thresh=nms_thresh, nms_topk=nms_topk, post_nms=post_nms)
         if not isinstance(img, Image):
             img = Image(img)
         _img = img.convert("channels_last", "rgb")
@@ -576,33 +600,43 @@ class SingleShotDetectorLearner(Learner):
             x, img_mx = transform_test(img_mx)
         else:
             x, img_mx = presets.ssd.transform_test(img_mx, short=self.img_size)
-
         h_mx, w_mx, _ = img_mx.shape
+        x = pad_test(x, min_size=self.img_size)
         x = x.as_in_context(self.ctx)
         class_IDs, scores, boxes = self._model(x)
 
         class_IDs = class_IDs[0, :, 0].asnumpy()
         scores = scores[0, :, 0].asnumpy()
-        mask = np.where((class_IDs >= 0) & (scores > threshold))[0]
+        mask = np.where(class_IDs >= 0)[0]
+        if custom_nms is None:
+            mask = np.intersect1d(mask, np.where(scores > threshold)[0])
         if mask.size == 0:
             return BoundingBoxList([])
 
         scores = scores[mask, np.newaxis]
         class_IDs = class_IDs[mask, np.newaxis]
         boxes = boxes[0, mask, :].asnumpy()
+        if x.shape[2] > h_mx:
+            boxes[:, [1, 3]] -= (x.shape[2] - h_mx)
+        elif x.shape[3] > w_mx:
+            boxes[:, [0, 2]] -= (x.shape[3] - w_mx)
         boxes[:, [0, 2]] /= w_mx
         boxes[:, [1, 3]] /= h_mx
         boxes[:, [0, 2]] *= width
         boxes[:, [1, 3]] *= height
 
-        bounding_boxes = BoundingBoxList([])
-        for idx, box in enumerate(boxes):
-            bbox = BoundingBox(left=box[0], top=box[1],
-                               width=box[2] - box[0],
-                               height=box[3] - box[1],
-                               name=class_IDs[idx, :],
-                               score=scores[idx, :])
-            bounding_boxes.data.append(bbox)
+        if custom_nms is not None:
+            bounding_boxes, _ = custom_nms.run_nms(boxes=boxes, scores=scores, threshold=threshold, img=_img)
+        else:
+            bounding_boxes = BoundingBoxList([])
+            for idx, box in enumerate(boxes):
+                bbox = BoundingBox(left=box[0], top=box[1],
+                                   width=box[2] - box[0],
+                                   height=box[3] - box[1],
+                                   name=class_IDs[idx, :],
+                                   score=scores[idx, :])
+                bounding_boxes.data.append(bbox)
+
         return bounding_boxes
 
     @staticmethod

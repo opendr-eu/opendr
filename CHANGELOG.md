@@ -5,6 +5,7 @@ Released on XX, XXth, 2022.
 
   - New Features:
     - Added end-to-end planning tool ([#223](https://github.com/opendr-eu/opendr/pull/223)).
+    - Added seq2seq-nms module, along with other custom NMS implementations for 2D object detection.([#232](https://github.com/opendr-eu/opendr/pull/232)).
   - Enhancements:
     - Added support for modular pip packages allowing tools to be installed separately ([#201](https://github.com/opendr-eu/opendr/pull/201)).
     - Simplified the installation process for pip by including the appropriate post-installation scripts ([#201](https://github.com/opendr-eu/opendr/pull/201)).
