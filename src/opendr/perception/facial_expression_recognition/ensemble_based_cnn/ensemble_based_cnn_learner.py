@@ -638,7 +638,7 @@ class EnsembleCNNLearner(Learner):
         :type do_constant_folding: bool, optional
         """
         # Input to the model
-        onnx_input = torch.randn(3, 3, 96, 96)
+        onnx_input = torch.randn(self.batch_size, 3, 96, 96)
         # Export the model
         self.model.eval()
         self.model.to_device(self.device)
