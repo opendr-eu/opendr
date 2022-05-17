@@ -301,6 +301,7 @@ recognizer.save('./temp/saved_models')
 * **Inference example - backbone_only mode**
 ```python
 from opendr.perception.face_recognition import FaceRecognitionLearner
+from opendr.engine.data import Image
 recognizer = FaceRecognitionLearner(backbone='ir_50', mode='backbone_only', device='cuda')
 recognizer.load('./temp/saved_models')
 recognizer.fit_reference(path='./data/imgs', save_path='./temp/demo')
