@@ -361,8 +361,7 @@ class EnsembleCNNLearner(Learner):
                         best_ensemble = self.model.to_state_dict()
                         # Save network
                         self.save(best_ensemble, path.join(self.base_path_experiment,
-                                                           self.name_experiment, 'trained_models'),
-                                                           current_branch_on_training + 1)
+                                                           self.name_experiment, 'trained_models'))
 
                     # Save graphs
                     self.__plot_dimensional(history_loss, history_val_loss_valence, history_val_loss_arousal,
