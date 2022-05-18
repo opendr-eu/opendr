@@ -89,9 +89,9 @@ class EnsembleCNNLearner(Learner):
             model_metadata["model_paths"] = [base_path_to_save_model]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pt"
-            torch.save(state_dicts[0], base_path_to_save_model, "Net-Base-Shared_Representations.pt")
+            torch.save(state_dicts[0], path.join(base_path_to_save_model, "Net-Base-Shared_Representations.pt"))
             for i in range(1, len(state_dicts)):
-                torch.save(state_dicts[i], base_path_to_save_model, "Net-Branch_{}.pt".format(i))
+                torch.save(state_dicts[i], path.join(base_path_to_save_model, "Net-Branch_{}.pt".format(i)))
             print("Pytorch model has been saved at: {}".format(base_path_to_save_model))
         else:
             model_metadata["model_paths"] = [base_path_to_save_model]
