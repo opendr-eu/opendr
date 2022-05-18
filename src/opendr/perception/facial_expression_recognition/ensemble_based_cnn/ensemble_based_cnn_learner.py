@@ -80,23 +80,19 @@ class EnsembleCNNLearner(Learner):
         self.model = ESR(device=self.device, ensemble_size=num_branches)
         self.model.to_device(self.device)
 
-    def save(self, state_dicts, base_path_to_save_model, current_branch_save):
+    def save(self, state_dicts, base_path_to_save_model):
         model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
                           "inference_params": {}, "optimized": None, "optimizer_info": {}}
-        if not path.isdir(path.join(base_path_to_save_model, str(current_branch_save))):
-            makedirs(path.join(base_path_to_save_model, str(current_branch_save)))
+        if not path.isdir(base_path_to_save_model):
+            makedirs(base_path_to_save_model)
         if self.ort_session is None:
-            model_metadata["model_paths"] = [path.join(base_path_to_save_model, str(current_branch_save))]
+            model_metadata["model_paths"] = [base_path_to_save_model]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pt"
-            torch.save(state_dicts[0],
-                       path.join(base_path_to_save_model, str(current_branch_save),
-                                 "Net-Base-Shared_Representations.pt"))
+            torch.save(state_dicts[0], base_path_to_save_model, "Net-Base-Shared_Representations.pt")
             for i in range(1, len(state_dicts)):
-                torch.save(state_dicts[i],
-                           path.join(base_path_to_save_model, str(current_branch_save), "Net-Branch_{}.pt".format(i)))
-            print("Pytorch model has been "
-                  "saved at: {}".format(path.join(base_path_to_save_model, str(current_branch_save))))
+                torch.save(state_dicts[i], base_path_to_save_model, "Net-Branch_{}.pt".format(i))
+            print("Pytorch model has been saved at: {}".format(base_path_to_save_model))
         else:
             model_metadata["model_paths"] = [base_path_to_save_model]
             model_metadata["optimized"] = True
@@ -106,7 +102,6 @@ class EnsembleCNNLearner(Learner):
             print("ONNX model has been "
                   "saved at: {}".format(base_path_to_save_model))
         json_model_name = self.name_experiment + '.json'
-        # json_model_path = path.join(base_path_to_save_model, str(current_branch_save), json_model_name)
         json_model_path = path.join(base_path_to_save_model, json_model_name)
         with open(json_model_path, 'w') as outfile:
             json.dump(model_metadata, outfile)
@@ -241,8 +236,7 @@ class EnsembleCNNLearner(Learner):
                             best_ensemble = self.model.to_state_dict()
                             # Save network
                             self.save(best_ensemble,
-                                      path.join(self.base_path_experiment, self.name_experiment, 'Saved_Networks'),
-                                      self.model.get_ensemble_size())
+                                      path.join(self.base_path_experiment, self.name_experiment, 'trained_models'))
 
                         # Save graphs
                         self.__plot_categorical(history_loss, history_acc, history_val_loss, history_val_acc,
@@ -275,7 +269,7 @@ class EnsembleCNNLearner(Learner):
             self.init_model(num_branches=self.ensemble_size)
             # Load network trained on AffectNet_Categorical and fix its backbone
             self.load(self.ensemble_size, path_to_saved_network=path.join(
-                self.base_path_experiment, self.name_experiment, 'Saved_Networks', str(self.model.get_ensemble_size())),
+                self.base_path_experiment, self.name_experiment, 'trained_models', str(self.model.get_ensemble_size())),
                 fix_backbone=True)
             # Set loss and optimizer
             self.model.to_device(self.device)
@@ -367,7 +361,7 @@ class EnsembleCNNLearner(Learner):
                         best_ensemble = self.model.to_state_dict()
                         # Save network
                         self.save(best_ensemble, path.join(self.base_path_experiment,
-                                                           self.name_experiment, 'Saved_Networks'),
+                                                           self.name_experiment, 'trained_models'),
                                                            current_branch_on_training + 1)
 
                     # Save graphs

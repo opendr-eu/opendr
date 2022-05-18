@@ -16,7 +16,6 @@ import unittest
 import shutil
 import os
 import torch
-import numpy
 from opendr.perception.facial_expression_recognition import EnsembleCNNLearner
 from opendr.engine.data import Image
 from opendr.perception.facial_expression_recognition import datasets
@@ -140,10 +139,8 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.learner.ort_session = None
         self.learner.init_model(num_branches=1)
         self.learner.save(state_dicts=self.learner.model.to_state_dict(),
-                          base_path_to_save_model=path_to_saved_network,
-                          current_branch_save=0)
-        self.learner.load(ensemble_size=1, path_to_saved_network=path.join(path_to_saved_network, str(0)),
-                          fix_backbone=True)
+                          base_path_to_save_model=path_to_saved_network)
+        self.learner.load(ensemble_size=1, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         self.assertIsNotNone(self.learner.model, "model is None after loading pt model.")
         # Cleanup
 
@@ -155,8 +152,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.learner.ort_session = None
         self.learner.init_model(num_branches=1)
         self.learner.optimize()
-        self.learner.save(state_dicts=self.learner.model.to_state_dict(),
-                          base_path_to_save_model=path_to_saved_network, current_branch_save=0)
+        self.learner.save(state_dicts=self.learner.model.to_state_dict(), base_path_to_save_model=path_to_saved_network)
         self.learner.model = None
         self.learner.load(ensemble_size=1, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         self.assertIsNotNone(self.learner.ort_session, "ort_session is None after loading onnx model.")
