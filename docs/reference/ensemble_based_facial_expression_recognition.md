@@ -122,8 +122,6 @@ Parameters:
 EnsembleCNNLearner.load(self, ensemble_size, path_to_saved_network, file_name_base_network,
                         file_name_conv_branch, fix_backbone)
 ```
-
-This method is used to load a previously saved model from its saved folder.
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
 
 Parameters:

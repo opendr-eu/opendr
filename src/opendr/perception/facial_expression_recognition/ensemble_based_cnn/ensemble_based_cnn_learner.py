@@ -77,10 +77,20 @@ class EnsembleCNNLearner(Learner):
         self.criterion_dim = nn.MSELoss(reduction='mean')
 
     def init_model(self, num_branches):
+        """
+        This method is used to initialize the model.
+
+        :param num_branches: Specifies the number of ensemble branches in the model.
+        """
         self.model = ESR(device=self.device, ensemble_size=num_branches)
         self.model.to_device(self.device)
 
     def save(self, state_dicts, base_path_to_save_model):
+        """
+        This method is used to save a trained model.
+        :param state_dicts: Object of type Python dictionary containing the trained model weights.
+        :param base_path_to_save_model: Specifies the path in which the model will be saved.
+        """
         model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
                           "inference_params": {}, "optimized": None, "optimizer_info": {}}
         if not path.isdir(base_path_to_save_model):
@@ -109,6 +119,18 @@ class EnsembleCNNLearner(Learner):
     def load(self, ensemble_size, path_to_saved_network="./trained_models/esr_9",
              file_name_base_network="Net-Base-Shared_Representations.pt",
              file_name_conv_branch="Net-Branch_{}.pt", fix_backbone=True):
+        """
+        Loads the model from inside the directory of the path provided, using the metadata .json file included.
+
+        :param ensemble_size: Specifies the number of ensemble branches in the model for which the pretrained weights
+        should be loaded.
+        :param path_to_saved_network: Path of the model to be loaded.
+        :param file_name_base_network: The file name of the base network to be loaded.
+        :param file_name_conv_branch: The file name of the ensemble branch network to be loaded.
+        :param fix_backbone:  If true, all the model weights except the classifier are fixed so that the last layers'
+        weights are finetuned on dimensional data. Otherwise, all the model weights will be trained from scratch.
+
+        """
         with open(path.join(path_to_saved_network, self.name_experiment + ".json")) as metadata_file:
             metadata = json.load(metadata_file)
         if metadata["optimized"]:
@@ -130,6 +152,9 @@ class EnsembleCNNLearner(Learner):
                         p.requires_grad = True
 
     def fit(self):
+        """
+        This method is used for training the algorithm on a train dataset and validating on a val dataset.
+        """
         # Make dir
         if not path.isdir(path.join(self.base_path_experiment, self.name_experiment)):
             makedirs(path.join(self.base_path_experiment, self.name_experiment))
@@ -254,12 +279,12 @@ class EnsembleCNNLearner(Learner):
                     self.model.add_branch()
                     self.model.to_device(self.device)
                     self.optimizer_ = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr/10,
-                                            'momentum': self.momentum},
-                                           {'params': self.model.convolutional_branches[-1].parameters(), 'lr': self.lr,
-                                            'momentum': self.momentum}])
+                                                  'momentum': self.momentum},
+                                                 {'params': self.model.convolutional_branches[-1].parameters(),
+                                                  'lr': self.lr, 'momentum': self.momentum}])
                     for b in range(self.model.get_ensemble_size() - 1):
                         self.optimizer_.add_param_group({'params': self.model.convolutional_branches[b].parameters(),
-                                                   'lr': self.lr/10, 'momentum': self.momentum})
+                                                         'lr': self.lr/10, 'momentum': self.momentum})
                 # Finish training after training all branches
                 else:
                     break
@@ -274,12 +299,12 @@ class EnsembleCNNLearner(Learner):
             # Set loss and optimizer
             self.model.to_device(self.device)
             self.optimizer_ = optim.SGD([{'params': self.model.base.parameters(), 'lr': self.lr,
-                                         'momentum': self.momentum},
+                                          'momentum': self.momentum},
                                         {'params': self.model.convolutional_branches[0].parameters(),
                                          'lr': self.lr, 'momentum': self.momentum}])
             for b in range(1, self.model.get_ensemble_size()):
                 self.optimizer_.add_param_group({'params': self.model.convolutional_branches[b].parameters(),
-                                                'lr': self.lr / 10, 'momentum': self.momentum})
+                                                 'lr': self.lr / 10, 'momentum': self.momentum})
             # Data loaders
             train_data = datasets.AffectNetDimensional(idx_set=0,
                                                        max_loaded_images_per_label=5000,
@@ -392,6 +417,14 @@ class EnsembleCNNLearner(Learner):
                 break
 
     def eval(self, eval_type='categorical', current_branch_on_training=0):
+        """
+        This method is used for evaluating the algorithm on a val dataset.
+        :param eval_type: Specifies the type of data that model is evaluated on.
+        It can be either categorical or dimensional data.
+        :param current_branch_on_training: Specifies the index of trained branch which should be evaluated on
+        validation data.
+        :return: a dictionary containing stats regarding evaluation.
+        """
         cpu_device = torch.device('cpu')
         val_va_predictions = [[] for _ in range(self.model.get_ensemble_size() + 1)]
         val_targets_valence = []
@@ -552,6 +585,12 @@ class EnsembleCNNLearner(Learner):
         np.save(path.join(base_path_his, "Acc_Val_Branch_{}".format(branch_idx)), np.array(his_val_acc))
 
     def infer(self, input_batch: Union[Image, List[Image], torch.Tensor]):
+        """
+        This method is used to perform inference on an image or a batch of images.
+
+        :param input_batch: a batch of images
+        :return: dimensional and categorical emotion results.
+        """
         if not isinstance(input_batch, (Image, list)):
             input_batch = Image(input_batch)
         if type(input_batch) is Image:
