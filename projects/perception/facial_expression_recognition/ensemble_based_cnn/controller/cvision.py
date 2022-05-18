@@ -11,7 +11,6 @@ import torch
 from torchvision import transforms
 import PIL
 import cv2
-import dlib  #####
 
 # OpenDR Modules
 from gui.fer import FER
@@ -25,17 +24,7 @@ _HAAR_SCALE_FACTOR = 1.2
 _HAAR_NEIGHBORS = 9
 _HAAR_MIN_SIZE = (60, 60)
 
-# Haar cascade parameters
-_DLIB_SCALE_FACTOR_SMALL_IMAGES = [0.5, 1.0]
-_DLIB_SCALE_FACTOR_LARGE_IMAGES = [0.2, 0.5]
-_DLIB_SCALE_FACTOR_THRESHOLD = (500 * 500)
-
-# Face detector methods
-_ID_FACE_DETECTOR_DLIB = 1
-_ID_FACE_DETECTOR_DLIB_STANDARD = 2
-_FACE_DETECTOR_DLIB = None
-
-_ID_FACE_DETECTOR_HAAR_CASCADE = 3
+# Face detector method
 _FACE_DETECTOR_HAAR_CASCADE = None
 
 # Facial expression recognition network: Ensemble with Shared Representations (ESR)
@@ -45,12 +34,11 @@ _ESR_9 = None
 _GRAD_CAM = None
 
 
-def detect_face(image, face_detection_method=_ID_FACE_DETECTOR_DLIB):
+def detect_face(image):
     """
     Detects faces in an image.
 
     :param image: (ndarray) Raw input image.
-    :param face_detection_method: (int) (1) haar cascade classifiers or (2) Dlib face detection method.
     :return: (list) Tuples with coordinates of a detected face.
     """
 
@@ -59,29 +47,13 @@ def detect_face(image, face_detection_method=_ID_FACE_DETECTOR_DLIB):
     # Converts to greyscale
     greyscale_image = image_processing.convert_bgr_to_grey(image)
 
-    if face_detection_method == _ID_FACE_DETECTOR_HAAR_CASCADE:
-        face_coordinates = _haar_cascade_face_detection(greyscale_image, _HAAR_SCALE_FACTOR, _HAAR_NEIGHBORS, _HAAR_MIN_SIZE)
-    elif face_detection_method == _ID_FACE_DETECTOR_DLIB:
-        # If input image is large, upper-bound of the scale factor is 0.5
-        scale_factors = _DLIB_SCALE_FACTOR_LARGE_IMAGES if (greyscale_image.size > _DLIB_SCALE_FACTOR_THRESHOLD) else _DLIB_SCALE_FACTOR_SMALL_IMAGES
-
-        # Down-sample the image to speed-up face detection
-        for scale in scale_factors:
-            greyscale_image_re_scaled = image_processing.resize(greyscale_image, f=scale)
-            face_coordinates = _dlib_face_detection(greyscale_image_re_scaled)
-
-            # If found a face, then stop iterating
-            if len(face_coordinates) > 0:
-                face_coordinates = ((1 / scale) * face_coordinates).astype(int)
-                break
-    else: # Standard Dlib
-        face_coordinates = _dlib_face_detection(greyscale_image).astype(int)
-
+    face_coordinates = _haar_cascade_face_detection(greyscale_image, _HAAR_SCALE_FACTOR,
+                                                    _HAAR_NEIGHBORS, _HAAR_MIN_SIZE)
     # Returns None if no face is detected
     return face_coordinates[0] if (len(face_coordinates) > 0 and (np.sum(face_coordinates[0]) > 0)) else None
 
 
-def recognize_facial_expression(image, on_gpu, face_detection_method, grad_cam):
+def recognize_facial_expression(image, on_gpu, grad_cam):
     """
     Detects a face in the input image.
     If more than one face is detected, the biggest one is used.
@@ -98,7 +70,7 @@ def recognize_facial_expression(image, on_gpu, face_detection_method, grad_cam):
     saliency_maps = []
 
     # Detect face
-    face_coordinates = detect_face(image, face_detection_method)
+    face_coordinates = detect_face(image)
 
     if face_coordinates is None:
         to_return_fer = FER(image)
@@ -126,36 +98,6 @@ def recognize_facial_expression(image, on_gpu, face_detection_method, grad_cam):
     return to_return_fer
 
 
-def _dlib_face_detection(image):
-    """
-    Face detection using the CNN implementation from Dlib.
-
-    References:
-    Davis E. King. Dlib-ml: A Machine Learning Toolkit. Journal of Machine Learning Research 10, pp. 1755-1758, 2009
-
-    :param image: (ndarray) Raw image
-    :return: (ndarray) The coordinates of the detected face
-    """
-    global _FACE_DETECTOR_DLIB
-
-    face_coordinates = []
-
-    # Verifies if dlib is initialized
-    if _FACE_DETECTOR_DLIB is None:
-        _FACE_DETECTOR_DLIB = dlib.cnn_face_detection_model_v1('./model/utils/templates/dlib/cnn_face_detector.dat')
-
-    # Calls dlib's face detection method
-    faces = _FACE_DETECTOR_DLIB(image)
-
-    # Gets coordinates
-    if not (faces is None):
-        for face_id, net_output in enumerate(faces):
-            xi, xf, yi, yf = (net_output.rect.left(), net_output.rect.right(), net_output.rect.top(), net_output.rect.bottom())
-            face_coordinates.append([[xi, yi], [xf, yf]])
-
-    return np.array(face_coordinates)
-
-
 def _haar_cascade_face_detection(image, scale_factor, neighbors, min_size):
     """
     Face detection using the Haar Feature-based Cascade Classifiers (Viola and Jones, 2004).
@@ -173,7 +115,7 @@ def _haar_cascade_face_detection(image, scale_factor, neighbors, min_size):
 
     # Verifies if haar cascade classifiers are initialized
     if _FACE_DETECTOR_HAAR_CASCADE is None:
-        _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("./model/utils/templates/haar_cascade/frontal_face.xml")
+        _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("face_detector/haar_cascade/frontal_face.xml")
 
     # Runs haar cascade classifiers
     faces = _FACE_DETECTOR_HAAR_CASCADE.detectMultiScale(image, scale_factor, neighbors, minSize=min_size)

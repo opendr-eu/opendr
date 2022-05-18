@@ -7,7 +7,6 @@ https://github.com/siqueira-hc/Efficient-Facial-Feature-Learning-with-Wide-Ensem
 # External Libraries
 from torchvision.transforms import ToTensor, Normalize
 from torch.utils.data import Dataset
-from skimage import io
 from PIL import Image
 import numpy as np
 import pandas
@@ -15,8 +14,6 @@ import torch
 
 # Standard Libraries
 from os import path, listdir
-import sys
-import csv
 import re
 
 # OpenDR imports

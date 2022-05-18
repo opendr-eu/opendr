@@ -63,13 +63,15 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         cls.Pretrained_MODEL_PATH = './trained_models/esr_9'
 
         # Download all required files for testing
+        # cls.dataset_path = cls.learner.download(mode='data')
+        # cls.Pretrained_MODEL_PATH = cls.learner.download(mode='pretrained')
 
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
         rmdir(os.path.join(cls.temp_dir))
 
-    '''def test_fit(self):
+    def test_fit(self):
         print("\n\n**********************************\nTest ESR fit function \n*"
               "*********************************")
 
@@ -126,9 +128,9 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer([Image(v) for v in batch])
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
         self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
-                                 msg="overall ensembled dimension results are zero")'''
+                                 msg="overall ensembled dimension results are zero")
 
-    '''def test_save_load(self):
+    def test_save_load(self):
         print("\n\n**********************************\nTest ESR save_load function \n*"
               "*********************************")
         path_to_saved_network = path.join(self.temp_dir, self.learner.name_experiment)
@@ -143,7 +145,7 @@ class TestEnsembleBasedCNNLearner(unittest.TestCase):
         self.learner.load(ensemble_size=1, path_to_saved_network=path.join(path_to_saved_network, str(0)),
                           fix_backbone=True)
         self.assertIsNotNone(self.learner.model, "model is None after loading pt model.")
-        # Cleanup'''
+        # Cleanup
 
     def test_save_load_onnx(self):
         print("\n\n**********************************\nTest ESR save_load ONNX function \n*"

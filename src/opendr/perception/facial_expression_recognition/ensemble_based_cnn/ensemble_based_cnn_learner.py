@@ -26,16 +26,16 @@ import torch.optim as optim
 import torch.nn as nn
 import PIL
 import numpy as np
+import zipfile
 import torch
-from torch.autograd import Variable
 import os
 from os import path, makedirs
 import onnxruntime
 from typing import Union, List
 import shutil
 import json
+from urllib.request import urlretrieve
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 # OpenDR engine imports
 from opendr.engine.learners import Learner
 from opendr.engine.data import Image
@@ -46,26 +46,23 @@ from opendr.perception.facial_expression_recognition.ensemble_based_cnn.algorith
 
 
 class EnsembleCNNLearner(Learner):
-    def __init__(self, lr=1e-1, batch_size=32, lr_schedule='',
-                 temp_path='./tmp/', device='cuda', device_ind=[0],
+    def __init__(self, lr=1e-1, batch_size=32,
+                 temp_path='./temp/', device='cuda', device_ind=[0],
                  validation_interval=1, max_training_epoch=2, momentum=0.9,
-                 ensemble_size=9, base_path_experiment='./experiments/', name_experiment='AffectNet_Continuous',
+                 ensemble_size=9, base_path_experiment='./experiments/', name_experiment='esr_9',
                  dimensional_finetune=True, categorical_train=False, base_path_to_dataset='./data/AffectNet',
                  max_tuning_epoch=1
                  ):
-        super(EnsembleCNNLearner, self).__init__(lr=lr, batch_size=batch_size, lr_schedule=lr_schedule,
-                                                 temp_path=temp_path, device=device)
+        super(EnsembleCNNLearner, self).__init__(lr=lr, batch_size=batch_size, temp_path=temp_path, device=device)
         # dataset_name = ''
         # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.device = device
         self.device_ind = device_ind
         self.output_device = self.device_ind[0] if type(self.device_ind) is list else self.device_ind
-        self.parent_dir = temp_path
         self.lr = lr
         self.momentum = momentum
         self.batch_size = batch_size
         self.temp_path = temp_path
-        self.lr_schedule = lr_schedule
         self.base_path_experiment = base_path_experiment
         self.name_experiment = name_experiment
         self.base_path_to_dataset = base_path_to_dataset
@@ -79,7 +76,7 @@ class EnsembleCNNLearner(Learner):
         self.criterion_cat = nn.CrossEntropyLoss()
         self.criterion_dim = nn.MSELoss(reduction='mean')
 
-    def init_model(self, num_branches, optimize=False):
+    def init_model(self, num_branches):
         self.model = ESR(device=self.device, ensemble_size=num_branches)
         self.model.to_device(self.device)
 
@@ -122,7 +119,7 @@ class EnsembleCNNLearner(Learner):
         if metadata["optimized"]:
             self.__load_from_onnx(path.join(path_to_saved_network, self.name_experiment + '.onnx'))
         else:
-            # load base
+            # Load base
             self.model.base.load_state_dict(torch.load(
                 path.join(path_to_saved_network, file_name_base_network), map_location=self.device))
             # Load branches
@@ -136,18 +133,6 @@ class EnsembleCNNLearner(Learner):
                 for i in range(ensemble_size):
                     for p in self.model.convolutional_branches[i].fc_dimensional.parameters():
                         p.requires_grad = True
-
-                '''# Base no trainable
-                for module in self.model.base:
-                    for p in module.parameters():
-                        p.requires_grad = False
-                # Branch no trainable, but last layer
-                for i in range(ensemble_size):
-                    for module in self.model.convolutional_branches[i]:
-                        for p in module.parameters():
-                            p.requires_grad = False
-                    for p in self.model.convolutional_branches[i].fc_dimensional.parameters():
-                        p.requires_grad = True'''
 
     def fit(self):
         # Make dir
@@ -663,7 +648,72 @@ class EnsembleCNNLearner(Learner):
     def reset(self):
         """This method is not used in this implementation."""
         return NotImplementedError
-    # def download(self):
 
+    def download(self, path=None, mode="pretrained",
+                 url=OPENDR_SERVER_URL + "perception/facial_expression_recognition/ensemble_based_cnn"):
+        """
+        This method downloads files depending on mode and saves them in the path provided. It supports downloading:
+        - The pretrained models
+        - Dataset
+        :param path: Local path to save the files, defaults to self.temp_path if None
+        :type path: str, path, optional
+        :param mode: What file to download, can be one of "pretrained", "train_data", "val_data"
+        defaults to "pretrained"
+        :type mode: str, optional
+        :param verbose: Whether to print messages in the console, defaults to False
+        :type verbose: bool, optional
+        :param url: URL of the FTP server, defaults to OpenDR FTP URL
+        :type url: str, optional
+        :param file_name: the name of the file containing the pretrained model.
+        :type file_name: str
+        """
+
+        valid_modes = ["pretrained", "data"]
+        if mode not in valid_modes:
+            raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
+        if path is None:
+            path = self.temp_path
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if mode == "pretrained":
+            print("Downloading pretrained model...")
+            # download the .json model
+            if not os.path.exists(os.path.join(path, 'trained_models/esr_9', self.name_experiment+'.json')):
+
+                file_url = os.path.join(url, 'trained_models/esr_9', self.name_experiment+'.json')
+                urlretrieve(file_url, os.path.join(path, 'trained_models/esr_9', self.name_experiment+'.json'))
+                print("Downloaded metadata json.")
+            else:
+                print("Metadata json file already exists.")
+            # download the .pt model
+            if not os.path.exists(os.path.join(path, 'trained_models/esr_9', 'Net-Base-Shared_Representations.pt')):
+                file_url = os.path.join(url, 'trained_models/esr_9', 'Net-Base-Shared_Representations.pt')
+                urlretrieve(file_url, os.path.join(path, 'trained_models/esr_9', 'Net-Base-Shared_Representations.pt'))
+                for i in range(self.ensemble_size):
+                    file_url = os.path.join(url, 'trained_models/esr_9', "Net-Branch_{}.pt".format(i))
+                    urlretrieve(file_url, os.path.join(path, 'trained_models/esr_9', "Net-Branch_{}.pt".format(i)))
+            else:
+                print("Trained model .pt file already exists.")
+            print("Pretrained model download complete.")
+            downloaded_files_path = os.path.join(path, 'trained_models/esr_9')
+
+        elif mode == "data":
+            print("Downloading data...")
+            zip_path = os.path.join(path, 'data/AffectNet_mini.zip')
+            unzip_path = os.path.join(path, 'data')
+            if not os.path.exists(zip_path):
+                # Download train data
+                file_url = os.path.join(url, 'data/AffectNet_mini.zip')
+                urlretrieve(file_url, zip_path)
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    zip_ref.extractall(unzip_path)
+                os.remove(zip_path)
+            else:
+                print("data files already exists.")
+            print("Data download complete.")
+            downloaded_files_path = os.path.join(path, self.dataset_name)
+
+        return downloaded_files_path
 
 
