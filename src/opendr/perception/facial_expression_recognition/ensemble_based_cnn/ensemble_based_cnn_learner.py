@@ -269,7 +269,7 @@ class EnsembleCNNLearner(Learner):
             self.init_model(num_branches=self.ensemble_size)
             # Load network trained on AffectNet_Categorical and fix its backbone
             self.load(self.ensemble_size, path_to_saved_network=path.join(
-                self.base_path_experiment, self.name_experiment, 'trained_models', str(self.model.get_ensemble_size())),
+                self.base_path_experiment, self.name_experiment, 'trained_models'),
                 fix_backbone=True)
             # Set loss and optimizer
             self.model.to_device(self.device)
