@@ -115,7 +115,7 @@ def _haar_cascade_face_detection(image, scale_factor, neighbors, min_size):
 
     # Verifies if haar cascade classifiers are initialized
     if _FACE_DETECTOR_HAAR_CASCADE is None:
-        _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("face_detector/haar_cascade/frontal_face.xml")
+        _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("/face_detector/haar_cascade/frontal_face.xml")
 
     # Runs haar cascade classifiers
     faces = _FACE_DETECTOR_HAAR_CASCADE.detectMultiScale(image, scale_factor, neighbors, minSize=min_size)
