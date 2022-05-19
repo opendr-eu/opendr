@@ -218,9 +218,9 @@ class EnsembleCNNLearner(Learner):
                         # Compute loss
                         loss = 0.0
                         for i_4 in range(self.model.get_ensemble_size()):
-                                         preds = confs_preds[i_4][1]
-                                         running_corrects[i_4] += torch.sum(preds == labels).cpu().numpy()
-                                         loss += self.criterion_cat(out_emotions[i_4], labels)
+                            preds = confs_preds[i_4][1]
+                            running_corrects[i_4] += torch.sum(preds == labels).cpu().numpy()
+                            loss += self.criterion_cat(out_emotions[i_4], labels)
                         # Backward
                         loss.backward()
                         # Optimize
@@ -606,8 +606,8 @@ class EnsembleCNNLearner(Learner):
 
         # categorical result
         softmax_ = nn.Softmax(dim=0)
-        categorical_results = out_emotions[:self.ensemble_size]  # a list of #n torch tensors where n is number of branches
-        overall_emotion_preds = torch.zeros(categorical_results[0].size()).to(self.device) # size: batchsize * 8
+        categorical_results = out_emotions[:self.ensemble_size]  # a list of 9 or (n) torch tensors
+        overall_emotion_preds = torch.zeros(categorical_results[0].size()).to(self.device)  # size: batchsize * 8
         for o_eval, outputs_per_branch_eval in enumerate(categorical_results, 0):
             _, preds_indices = torch.max(outputs_per_branch_eval, 1)
             for v_i, v_p in enumerate(preds_indices, 0):
@@ -659,7 +659,6 @@ class EnsembleCNNLearner(Learner):
         # Export the model
         self.model.eval()
         self.model.to_device(self.device)
-        #with torch.no_grad():
         torch.onnx.export(self.model,
                           onnx_input,
                           output_name,
@@ -747,5 +746,3 @@ class EnsembleCNNLearner(Learner):
             downloaded_files_path = os.path.join(path, self.dataset_name)
 
         return downloaded_files_path
-
-

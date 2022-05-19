@@ -313,7 +313,8 @@ class AffectNetDimensional(Dataset, DatasetIterator):
 
                     counter_loaded_images_per_label[int(quadrant)] += 1
 
-                has_loading_finished = (np.sum(counter_loaded_images_per_label) >= (self.max_loaded_images_per_label * self.num_labels))
+                has_loading_finished = (np.sum(counter_loaded_images_per_label) >=
+                                        (self.max_loaded_images_per_label * self.num_labels))
 
                 if has_loading_finished:
                     break
@@ -401,10 +402,3 @@ def pre_process_affect_net(base_path_to_images, base_path_to_annotations, base_d
     print('Images successfully processed: %d' % (image_id - len(error_image_id)))
     print('Images processed with error: %d' % len(error_image_id))
     print('Image IDs processed with error: %s' % error_image_id)
-
-# Other methods <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-#base_path_to_images = '/mnt/archive/common/datasets/facial_datasets/AffectNet'
-#base_path_to_annotations = '/mnt/archive/common/datasets/facial_datasets/AffectNet/Manually_Annotated_file_lists'
-#base_destination_path = '/mnt/archive/common/datasets/facial_datasets/AffectNet/preprocessed'
-#pre_process_affect_net(base_path_to_images=base_path_to_images, base_path_to_annotations=base_path_to_annotations,
-#                      base_destination_path=base_destination_path, set_index=1)

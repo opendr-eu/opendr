@@ -103,7 +103,8 @@ def _haar_cascade_face_detection(image, scale_factor, neighbors, min_size):
     Face detection using the Haar Feature-based Cascade Classifiers (Viola and Jones, 2004).
 
     References:
-    Viola, P. and Jones, M. J. (2004). Robust real-time face detection. International journal of computer vision, 57(2), 137-154.
+    Viola, P. and Jones, M. J. (2004). Robust real-time face detection.
+    International journal of computer vision, 57(2), 137-154.
 
     :param image: (ndarray) Raw image.
     :param scale_factor: Scale factor to resize input image.
@@ -213,4 +214,3 @@ def _generate_saliency_maps(input_face, emotion_outputs, device):
 
     # Generate saliency map
     return _GRAD_CAM.grad_cam(input_face, emotion_outputs)
-

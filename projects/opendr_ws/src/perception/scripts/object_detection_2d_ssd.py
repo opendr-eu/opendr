@@ -22,11 +22,12 @@ from opendr_bridge import ROSBridge
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import SingleShotDetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
+from opendr.perception.object_detection_2d import Seq2SeqNMSLearner, SoftNMS, FastNMS, ClusterNMS
 
 
 class ObjectDetectionSSDNode:
     def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_boxes_annotated",
-                 detections_topic="/opendr/objects", device="cuda", backbone="vgg16_atrous"):
+                 detections_topic="/opendr/objects", device="cuda", backbone="vgg16_atrous", nms_type='default'):
         """
         Creates a ROS Node for face detection
         :param input_image_topic: Topic from which we are reading the input image
@@ -41,6 +42,8 @@ class ObjectDetectionSSDNode:
         :type device: str
         :param backbone: backbone network
         :type backbone: str
+        :param ms_type: type of NMS method
+        :type nms_type: str
         """
 
         # Initialize the face detector
@@ -48,6 +51,20 @@ class ObjectDetectionSSDNode:
         self.object_detector.download(path=".", verbose=True)
         self.object_detector.load("ssd_default_person")
         self.class_names = self.object_detector.classes
+        self.custom_nms = None
+
+        # Initialize Seq2Seq-NMS if selected
+        if nms_type == 'seq2seq-nms':
+            self.custom_nms = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering=0.8,
+                                                app_feats='fmod', device=self.device)
+            self.custom_nms.download(model_name='seq2seq_pets_jpd', path='.')
+            self.custom_nms.load('./seq2seq_pets_jpd/', verbose=True)
+        elif nms_type == 'soft-nms':
+            self.custom_nms = SoftNMS(nms_thres=0.45, device=self.device)
+        elif nms_type == 'fast-nms':
+            self.custom_nms = FastNMS(nms_thres=0.45, device=self.device)
+        elif nms_type == 'cluster-nms':
+            self.custom_nms = ClusterNMS(nms_thres=0.45, device=self.device)
 
         # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
@@ -76,7 +93,7 @@ class ObjectDetectionSSDNode:
         image = self.bridge.from_ros_image(data, encoding='bgr8')
 
         # Run pose estimation
-        boxes = self.object_detector.infer(image, threshold=0.45, keep_size=False)
+        boxes = self.object_detector.infer(image, threshold=0.45, keep_size=False, custom_nms=self.custom_nms)
 
         # Get an OpenCV image back
         image = np.float32(image.opencv())

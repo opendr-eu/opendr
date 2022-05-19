@@ -165,11 +165,11 @@ class FERDemo:
 
         if is_blank:
             image_processing.draw_text(self._input_container,
-                             FERDemo._TEXT_BLANK_INPUT,
-                             self._container_center_position - 60,
-                             FERDemo._COLOUR_BGR_WHITE,
-                             FERDemo._TEXT_PARAM_SCALE[self._screen_size],
-                             FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
+                                       FERDemo._TEXT_BLANK_INPUT,
+                                       self._container_center_position - 60,
+                                       FERDemo._COLOUR_BGR_WHITE,
+                                       FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                       FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
         else:
             # Compute resize factor 'f'
             h, w, c = self._fer.input_image.shape
@@ -205,19 +205,19 @@ class FERDemo:
 
         if is_blank:
             image_processing.draw_text(self._output_container,
-                             FERDemo._TEXT_BLANK_INPUT,
-                             self._container_center_position - 60,
-                             FERDemo._COLOUR_BGR_WHITE,
-                             FERDemo._TEXT_PARAM_SCALE[self._screen_size],
-                             FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
+                                       FERDemo._TEXT_BLANK_INPUT,
+                                       self._container_center_position - 60,
+                                       FERDemo._COLOUR_BGR_WHITE,
+                                       FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                       FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
         else:
             if self._fer.face_image is None:
                 image_processing.draw_text(self._output_container,
-                                 FERDemo._TEXT_NO_FACE,
-                                 self._container_center_position - 210,
-                                 FERDemo._COLOUR_BGR_BLACK,
-                                 FERDemo._TEXT_PARAM_SCALE[self._screen_size],
-                                 FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
+                                           FERDemo._TEXT_NO_FACE,
+                                           self._container_center_position - 210,
+                                           FERDemo._COLOUR_BGR_BLACK,
+                                           FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                           FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
             else:
                 # Display ensemble and individual classifications
                 # Resize face image

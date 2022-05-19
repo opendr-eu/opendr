@@ -52,6 +52,32 @@ produce the facial images can be easily incorporated in the class creation while
 The process is executed for the CNN parameters and GPUs specified in the arguments of the aforementioned command.
 Users that wish to modify these parameters shall change the respective input arguments which derived from a parser including the arguments path in, path_3ddfa, save_path, val_yaw, val_pitch etc. 
 
+### Performance Evaluation
+
+In this subsection, we measure the inference speed of the synthetic multi-view facial image generation algorithm integrated in the OpenDR toolkit.
+The results are presented in the following Table.
+These tests have been performed using a GPU NVIDIA RTX 2070 and the reported time concerns one sample facial image.
+Note that the integrated tool currently only supports GPU inference. 
+
+
+| Method                                      |   GPU NVIDIA RTX 2070 (ms)| 
+|---------------------------------------------|---------------------------|
+|Synthetic Multi-view Facial Image Generation |      20.41                | 
+
+In the following Table the results of running the Synthetic Multi-view Facial Image Generation tool for different platforms and varying installation procedures are provided.
+Again, note that this tool mainly targets offline data generation.
+Therefore, it has not been tested on embedded platforms, since they are not usually used for generating data for training.
+
+| Platform                                     | Compatibility  |
+|----------------------------------------------|----------------|
+| x86 - Ubuntu 20.04 (bare installation - CPU) | ❌             |
+| x86 - Ubuntu 20.04 (bare installation - GPU) | ✔️             |
+| x86 - Ubuntu 20.04 (pip installation)        | ✔️             |
+| x86 - Ubuntu 20.04 (CPU docker)              | ❌             |
+| x86 - Ubuntu 20.04 (GPU docker)              | ✔️             |
+| NVIDIA Jetson Xavier NX                      | N/A            |
+| NVIDIA Jetson TX2                            | N/A            |
+
 #### References
 <a name="R-R-paper" href="https://github.com/Hangz-nju-cuhk/Rotate-and-Render">[1]</a>
 Hang Zhou, Jihao Liu, Ziwei Liu, Yu Liu, Xiaogang Wang, Rotate-and-Render: Unsupervised Photorealistic Face Rotation from Single-View Images,

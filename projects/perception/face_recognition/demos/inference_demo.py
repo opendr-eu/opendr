@@ -32,7 +32,7 @@ if __name__ == '__main__':
     recognizer.load(".")
 
     recognizer.download(path=".", mode="test_data")
-    recognizer.fit_reference(path=join(".", "test_data", "images"), save_path=".")
+    recognizer.fit_reference(path=join(".", "test_data", "images"), save_path=".", create_new=True)
     image_path = join(".", "test_data", "images", "1", "1.jpg")
     img = Image.open(image_path)
 

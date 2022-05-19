@@ -152,7 +152,7 @@ When 'ExternalDataset' is of type 'ImageFolder', images should be placed in a de
 
 #### `FaceRecognitionLearner.fit_reference`
 ```python
-FaceRecognitionLearner.fit_reference(self, path, save_path)
+FaceRecognitionLearner.fit_reference(self, path, save_path, create_new)
 ```
 
 This method is used to create a reference database to be used in inference when mode='backbone_only'.
@@ -164,6 +164,8 @@ Parameters:
   Path containing the reference images. If a reference database was already created can be left blank.
 - **save_path**: *str, default=None*\
   Path to save (load if already created) the .pkl reference file.
+- **create_new**: *bool, default=True*\
+  Whether to create a new or load an existing .pkl reference file.
 
 **Notes**
 
@@ -368,4 +370,46 @@ while True:
 cap.release()
 cv2.destroyAllWindows()
 ```
+
+#### Performance Evaluation
+
+The performance evaluation results of the *FaceRecognitionLearner* are reported in the Table below:
+
+| Backbone          | CPU i7-9700K (FPS) | RTX 2070 (FPS) | Jetson TX2 (FPS) | Xavier NX (FPS) | Xavier AGX (FPS) |
+|-------------------|--------|----------------|------------------|-----------------|------------------|
+| MobileFaceNet | 137.83 | 224.26         | 29.84            | 28.85           | 37.17            |
+| IR-50   | 25.40  | 176.25         | 17.99            | 17.18           | 19.58            |
+
+
+Apart from the inference speed, which is reported in FPS, we also report the memory usage, as well as energy consumption on a reference platform in the Table below:
+
+| Backbone      | Memory (MB) | Energy (Joules)  - Total per inference |
+|---------------|------------|----------------------------------------|
+| MobileFaceNet | 949.75     | 0.41                                   | 
+| IR-50         | 1315.75    | 1.15                                   |
+
+
+NVIDIA Jetson AGX was used as the reference platform for measuring energy requirements for these experiments. 
+We calculated the average metrics of 100 runs. 
+
+The accuracy on Labeled Faces in the Wild (LFW), Celebrities in Frontal-Profile in the Wild, both frontal to frontal (CFP-FF) and frontal to profile (CFP-FP) setups, AgeDB-30 and VGGFace2 datasets is also reported in the Table below:
+
+| Backbone        | LFW    | CFP-FF | CFP-FP | AgeDB-30 | VGGFace2 |
+|-----------------|--------|--------|--------|----------|----------|
+| MobileFaceNet   | 99.46% | 99.27% | 93.62% | 95.49%   | 93.24%   |
+| IR-50           | 99.84% | 99.67% | 98.11% | 97.73%   | 95.3%    |
+
+
+The platform compatibility evaluation is also reported below:
+
+| Platform  | Compatibility Evaluation |
+| ----------------------------------------------|-------|
+| x86 - Ubuntu 20.04 (bare installation - CPU)  | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (bare installation - GPU)  | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (pip installation)         | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (CPU docker)               | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (GPU docker)               | :heavy_check_mark:   |
+| NVIDIA Jetson TX2                             | :heavy_check_mark:   |
+| NVIDIA Jetson Xavier AGX                      | :heavy_check_mark:   |
+| NVIDIA Jetson Xavier NX                       | :heavy_check_mark:   |
 

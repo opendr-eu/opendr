@@ -242,8 +242,8 @@ def draw_graph(image, x, y, initial_coordinates, samples, text_x, text_y, color_
 
 
 def draw_text(image, text, initial_coordinates, color=(0, 255, 0), scale=1, thickness=1):
-              cv2.putText(image, text, (int(initial_coordinates[0]), int(initial_coordinates[1])),
-              cv2.FONT_HERSHEY_COMPLEX, fontScale=scale, color=color, thickness=thickness)
+    cv2.putText(image, text, (int(initial_coordinates[0]), int(initial_coordinates[1])),
+    cv2.FONT_HERSHEY_COMPLEX, fontScale=scale, color=color, thickness=thickness)
 
 
 def draw_image(image, image_to_draw, initial_coordinates):
@@ -280,4 +280,3 @@ def superimpose(img_1, img_2, w_1=0.35, w_2=0.65, gamma=0):
     saliency_map = resize(img_1.cpu().detach().numpy(), output_size=(img_2.shape[1], img_2.shape[0]))
     saliency_map = cv2.applyColorMap(np.clip(saliency_map * 255, 0, 255).astype(np.uint8), cv2.COLORMAP_JET)
     return cv2.addWeighted(saliency_map, w_1, img_2, w_2, gamma)
-
