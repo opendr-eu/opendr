@@ -682,7 +682,7 @@ class EnsembleCNNLearner(Learner):
         return NotImplementedError
 
     def download(self, path=None, mode="pretrained",
-                 url=OPENDR_SERVER_URL + "perception/facial_expression_recognition/ensemble_based_cnn"):
+                 url=OPENDR_SERVER_URL + "perception/ensemble_based_cnn"):
         """
         This method downloads files depending on mode and saves them in the path provided. It supports downloading:
         - The pretrained models
