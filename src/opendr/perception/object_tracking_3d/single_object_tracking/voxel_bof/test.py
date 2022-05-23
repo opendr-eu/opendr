@@ -1103,6 +1103,7 @@ def load_params_from_file(params_file):
         "target_size",
         "search_size",
         "overwrite_strides",
+        "bof_mode",
     ]
 
     string_names = [
