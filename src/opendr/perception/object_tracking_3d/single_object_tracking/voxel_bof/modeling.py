@@ -256,7 +256,10 @@ def run_all(device_id=0, total_devices=4):
         print(result)
 
 
-def collect_results(template="", tracks=None):
+def collect_results(template="", file_template="", tracks=None):
+
+    if isinstance(template, str):
+        template = [template]
 
     models_path = "./temp/"
 
@@ -268,7 +271,13 @@ def collect_results(template="", tracks=None):
 
         print(f"[{i+1}/{len(models)}]", end='\r')
 
-        if template not in model:
+        model_ok = True
+
+        for t in template:
+            if t not in model:
+                model_ok = False
+
+        if not model_ok:
             continue
 
         def process_folder(path, init=True):
@@ -285,6 +294,10 @@ def collect_results(template="", tracks=None):
                     print()
                     process_folder(path + "/" + file, False)
                 else:
+
+                    if file_template not in file:
+                        continue
+
                     with open(path + "/" + file, "r") as f:
                         str_values = f.readlines()
 
