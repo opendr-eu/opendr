@@ -238,17 +238,17 @@ def draw_graph(image, x, y, initial_coordinates, samples, text_x, text_y, color_
 
     # Draw to image
     image[initial_coordinates[0]:initial_coordinates[0] + data.shape[0],
-    initial_coordinates[1]:initial_coordinates[1] + data.shape[1], :] = data[:]
+          initial_coordinates[1]:initial_coordinates[1] + data.shape[1], :] = data[:]
 
 
 def draw_text(image, text, initial_coordinates, color=(0, 255, 0), scale=1, thickness=1):
     cv2.putText(image, text, (int(initial_coordinates[0]), int(initial_coordinates[1])),
-    cv2.FONT_HERSHEY_COMPLEX, fontScale=scale, color=color, thickness=thickness)
+                cv2.FONT_HERSHEY_COMPLEX, fontScale=scale, color=color, thickness=thickness)
 
 
 def draw_image(image, image_to_draw, initial_coordinates):
     image[int(initial_coordinates[0]):int(initial_coordinates[0]) + image_to_draw.shape[0],
-    int(initial_coordinates[1]):int(initial_coordinates[1]) + image_to_draw.shape[1], :] = image_to_draw
+          int(initial_coordinates[1]):int(initial_coordinates[1]) + image_to_draw.shape[1], :] = image_to_draw
 
 # Drawing methods
 
