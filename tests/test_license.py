@@ -106,6 +106,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
             'src/opendr/perception/facial_expression_recognition/ensemble_based_cnn/algorithm',
+            'projects/perception/facial_expression_recognition/ensemble_based_cnn',
         ]
 
         skippedFilePaths = [
@@ -117,8 +118,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/efficientface_utils.py',
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/spatial_transforms.py',
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/transformer_timm.py',
-            'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/utils.py',
-            'projects/perception/facial_expression_recognition/ensemble_based_cnn/inference_demo.py',
+            'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/utils.py'
         ]
 
         skippedDirectories = [
