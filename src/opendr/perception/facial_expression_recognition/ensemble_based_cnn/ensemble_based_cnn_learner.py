@@ -189,7 +189,6 @@ class EnsembleCNNLearner(Learner):
                                                      transforms=None,
                                                      is_norm_by_mean_std=False,
                                                      base_path_to_affectnet=self.base_path_to_dataset)
-            val_loader = DataLoader(val_data, batch_size=self.batch_size, shuffle=False, num_workers=8)
 
             for branch_on_training in range(self.ensemble_size):
                 branch_on_training

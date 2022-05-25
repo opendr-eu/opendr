@@ -70,7 +70,7 @@ def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, fr
     except Exception as e:
         print("Error raised during video mode.")
         raise e
-    except KeyboardInterrupt as qe:
+    except KeyboardInterrupt:
         print("Keyboard interrupt event raised.")
     finally:
         image_processing.release_video_capture()

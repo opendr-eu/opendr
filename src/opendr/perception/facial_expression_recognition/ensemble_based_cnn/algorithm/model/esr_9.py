@@ -15,11 +15,9 @@ Reference:
     and arousal computing in the wild. IEEE Transactions on Affective Computing, 10(1), pp.18-31.
 """
 
-import torch
 import torch.nn.functional as F
 import torch.nn as nn
 import copy
-from torch.autograd import Variable
 
 
 class Base(nn.Module):
