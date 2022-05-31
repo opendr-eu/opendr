@@ -1,7 +1,7 @@
 #!/bin/sh
 export OPENDR_HOME=$PWD
 export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
-export PYTHON=python3
+alias python=python3
 export LD_LIBRARY_PATH=$OPENDR_HOME/lib:$LD_LIBRARY_PATH
 
 export PATH=/usr/local/cuda/bin:$PATH
