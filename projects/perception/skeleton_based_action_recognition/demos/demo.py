@@ -209,7 +209,7 @@ if __name__ == '__main__':
                 category_labels = preds2label(prediction.confidence)
                 print(category_labels)
                 draw_preds(img, category_labels)
-            
+
             # Calculate a running average on FPS
             end_time = time.perf_counter()
             fps = 1.0 / (end_time - start_time)
