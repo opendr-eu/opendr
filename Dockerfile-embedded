@@ -81,7 +81,7 @@ RUN apt-get update
 RUN cd ./opendr && ./bin/install_nvidia.sh $device
 
 RUN cd ./projects/opendr_ws/src && \
-    git clone https://github.com/ros-perception/vision_opencv &&\
+    git clone https://github.com/ros-perception/vision_opencv && \
     cd ../ && \
     catkin_make \
 
