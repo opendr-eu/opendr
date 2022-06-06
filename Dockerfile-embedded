@@ -79,8 +79,3 @@ WORKDIR /
 RUN git clone --depth 1 --recurse-submodules -j8 --branch tx2_install https://github.com/opendr-eu/opendr
 RUN apt-get update
 RUN cd ./opendr && ./bin/install_nvidia.sh $device
-
-RUN cd ./projects/opendr_ws/src && \
-    git clone https://github.com/ros-perception/vision_opencv && \
-    cd ../ && \
-    catkin_make
