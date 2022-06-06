@@ -15,15 +15,15 @@ For running a minimal working example you can follow the instructions below:
    ```source /opt/ros/noetic/setup.bash```
 
 1. Make sure you are inside opendr_ws
-2. If you are planning to use a usb camera for the demos, install the corresponding package and its dependencies:
-
+2. If you are planning to use a usb camera for the demos, install the corresponding package and its dependencies (Note that usb_cam package cannot be installed on Nvidia embedded devices):
+   
 ```shell
 cd src
 git clone https://github.com/ros-drivers/usb_cam
 cd ..
 rosdep install --from-paths src/ --ignore-src
 ```
-3. Install the following dependencies, required in order to use the OpenDR ROS tools:
+3. Install the following dependencies, required in order to use the OpenDR ROS tools (On Nvidia embedded devices skip to 5.):
 ```shell
 sudo apt-get install ros-noetic-vision-msgs ros-noetic-geometry-msgs ros-noetic-sensor-msgs ros-noetic-audio-common-msgs
 ```
