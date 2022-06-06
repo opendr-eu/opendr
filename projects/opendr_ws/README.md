@@ -23,7 +23,7 @@ git clone https://github.com/ros-drivers/usb_cam
 cd ..
 rosdep install --from-paths src/ --ignore-src
 ```
-3. Install the following dependencies, required in order to use the OpenDR ROS tools (On Nvidia embedded devices skip to 5.):
+3. Install the following dependencies, required in order to use the OpenDR ROS tools (On Nvidia embedded devices skip to 6.):
 ```shell
 sudo apt-get install ros-noetic-vision-msgs ros-noetic-geometry-msgs ros-noetic-sensor-msgs ros-noetic-audio-common-msgs
 ```
@@ -32,6 +32,17 @@ sudo apt-get install ros-noetic-vision-msgs ros-noetic-geometry-msgs ros-noetic-
 catkin_make
 ```
 5. Source the workspace and you are ready to go!
+```shell
+source devel/setup.bash
+```
+6. Nvidia embedded devices: install vision_opencv:
+```shell
+cd ./projects/opendr_ws/src
+git clone https://github.com/ros-perception/vision_opencv
+cd ..
+catkin_make
+```
+Then source the workspace:
 ```shell
 source devel/setup.bash
 ```
