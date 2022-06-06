@@ -193,6 +193,7 @@ In this case, do not forget to enable the virtual environment with:
 ```bash
 source bin/activate.sh
 ```
+
 ## Build the docker images yourself _(optional)_
 Alternatively you can also build the docker images locally using the [Dockerfile](/Dockerfile) ([Dockerfile-cuda](/Dockerfile-cuda) for cuda) provided in the root folder of the toolkit.
 
@@ -236,6 +237,30 @@ and
 sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda
 ```
 
+## Nvidia embedded devices docker
+You can also run the corresponding docker image on a Nvidia embedded device (supported: TX-2, Xavier-NX and AGX):
+
+Note that the embedded device should be flashed with Jetpack 4.6 and that this might take a while (~4-5h).
+
+To enable GPU usage on the embedded device within docker, first edit `/etc/docker/daemon.json` in order to set the default docker runtime:
+```
+{
+    "runtimes": {
+        "nvidia": {
+            "path": "nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    },
+    "default-runtime": "nvidia"
+}
+```
+
+Restart docker afterwards:
+```
+sudo systemctl restart docker.service
+```
+
+
 # Build the docker image yourself on a Nvidia embedded device
 You can also build the corresponding docker image on a Nvidia embedded device (supported: TX-2, Xavier-NX and AGX):
 
@@ -257,6 +282,13 @@ To enable GPU usage on the embedded device within docker, first edit `/etc/docke
 Restart docker afterwards:
 ```
 sudo systemctl restart docker.service
+```
+You can directly run the corresponding docker image by running one of the below:
+```bash
+xhost +local:root
+sudo docker run -it --privileged -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:tx_2 /bin/bash
+sudo docker run -it --privileged -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:nx /bin/bash
+sudo docker run -it --privileged -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:agx /bin/bash
 ```
 
 Install the toolkit:
