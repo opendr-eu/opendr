@@ -79,3 +79,10 @@ WORKDIR /
 RUN git clone --depth 1 --recurse-submodules -j8 --branch tx2_install https://github.com/opendr-eu/opendr
 RUN apt-get update
 RUN cd ./opendr && ./bin/install_nvidia.sh $device
+RUN cd ./opendr/projects/opendr_ws/src && \
+	git clone https://github.com/ros-perception/vision_opencv && \
+	sed -i 's/(Boost REQUIRED python37)/(Boost REQUIRED python3)/' ./vision_opencv/cv_bridge/CMakeLists.txt && \
+	cd ../
+RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
+RUN /bin/bash -c '. /opt/ros/noetic/setup.bash; cd /opendr/projects/opendr_ws; catkin_make'
+
