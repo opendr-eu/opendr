@@ -299,10 +299,10 @@ void build_database_face_recognition(const char *database_folder, const char *ou
 
   cv::Size s = database_out.size();
 
-  fout.write((char *)(&s.height), sizeof(int));
-  fout.write((char *)(&s.width), sizeof(int));
-  fout.write((char *)database_out.data, sizeof(float) * s.height * s.width);
-  fout.write((char *)(&database_ids[0]), sizeof(int) * s.height);
+  fout.write(static_cast<char *>(&s.height), sizeof(int));
+  fout.write(static_cast<char *>(&s.width), sizeof(int));
+  fout.write(static_cast<char *>(database_out.data), sizeof(float) * s.height * s.width);
+  fout.write(static_cast<char *>(&database_ids[0]), sizeof(int) * s.height);
   fout.flush();
   fout.close();
 }
