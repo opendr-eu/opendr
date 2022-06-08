@@ -16,7 +16,7 @@ from opendr.engine.learners import Learner
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.target import BoundingBox, BoundingBoxList
 from opendr.engine.data import Image
-from opendr.perception.object_detection_2d.nms.seq2seq_nms.algorithm.seq2seq_model import Seq2SeqNet
+from opendr.perception.object_detection_2d.nms.seq2seq_nms.algorithm.seq2seq_model import Seq2SeqNet 
 from opendr.perception.object_detection_2d.nms.utils import NMSCustom
 from opendr.perception.object_detection_2d.nms.utils.nms_dataset import Dataset_NMS
 from opendr.perception.object_detection_2d.nms.seq2seq_nms.algorithm.fmod import FMoD
