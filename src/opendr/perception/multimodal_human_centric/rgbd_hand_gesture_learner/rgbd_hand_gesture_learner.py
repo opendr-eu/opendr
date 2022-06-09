@@ -198,14 +198,14 @@ class RgbdHandGestureLearner(Learner):
         if isinstance(train_set, RgbdDataset):
             train_loader = DataLoader(train_set,
                                       batch_size=self.batch_size,
-                                      pin_memory=self.device == 'cuda',
+                                      pin_memory='cuda' in self.device,
                                       num_workers=self.n_workers,
                                       shuffle=True)
         else:
             train_loader = DataLoader(DataWrapper(train_set),
                                       batch_size=self.batch_size,
                                       num_workers=self.n_workers,
-                                      pin_memory=self.device == 'cuda',
+                                      pin_memory='cuda' in self.device,
                                       shuffle=True)
 
         if val_set is None:
@@ -215,13 +215,13 @@ class RgbdHandGestureLearner(Learner):
                 val_loader = DataLoader(val_set,
                                         batch_size=self.batch_size,
                                         num_workers=self.n_workers,
-                                        pin_memory=self.device == 'cuda',
+                                        pin_memory='cuda' in self.device,
                                         shuffle=False)
             else:
                 val_loader = DataLoader(DataWrapper(val_set),
                                         batch_size=self.batch_size,
                                         num_workers=self.n_workers,
-                                        pin_memory=self.device == 'cuda',
+                                        pin_memory='cuda' in self.device,
                                         shuffle=False)
 
         if test_set is None:
@@ -231,13 +231,13 @@ class RgbdHandGestureLearner(Learner):
                 test_loader = DataLoader(test_set,
                                          batch_size=self.batch_size,
                                          num_workers=self.n_workers,
-                                         pin_memory=self.device == 'cuda',
+                                         pin_memory='cuda' in self.device,
                                          shuffle=False)
             else:
                 test_loader = DataLoader(DataWrapper(test_set),
                                          batch_size=self.batch_size,
                                          num_workers=self.n_workers,
-                                         pin_memory=self.device == 'cuda',
+                                         pin_memory='cuda' in self.device,
                                          shuffle=False)
 
         if self.test_mode and not silent:
@@ -296,13 +296,13 @@ class RgbdHandGestureLearner(Learner):
             loader = DataLoader(dataset,
                                 batch_size=self.batch_size,
                                 num_workers=self.n_workers,
-                                pin_memory=self.device == 'cuda',
+                                pin_memory='cuda' in self.device,
                                 shuffle=False)
         else:
             loader = DataLoader(DataWrapper(dataset),
                                 batch_size=self.batch_size,
                                 num_workers=self.n_workers,
-                                pin_memory=self.device == 'cuda',
+                                pin_memory='cuda' in self.device,
                                 shuffle=False)
 
         device = torch.device(self.device)

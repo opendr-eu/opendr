@@ -86,9 +86,12 @@ class YOLOv3DetectorLearner(Learner):
         if self.backbone not in self.supported_backbones:
             raise ValueError(self.backbone + " backbone is not supported.")
 
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if mx.context.num_gpus() > 0:
-                self.ctx = mx.gpu(0)
+                if self.device == 'cuda':
+                    self.ctx = mx.gpu(0)
+                else:
+                    self.ctx = mx.gpu(int(self.device.split(':')[1]))
             else:
                 print('No GPU found, using CPU...')
                 self.ctx = mx.cpu()
@@ -183,9 +186,12 @@ class YOLOv3DetectorLearner(Learner):
                 raise e
 
         # get net & set device
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if mx.context.num_gpus() > 0:
-                ctx = [mx.gpu(0)]
+                if self.device == 'cuda':
+                    ctx = [mx.gpu(0)]
+                else:
+                    ctx = [mx.gpu(int(self.device.split(':')[1]))]
             else:
                 ctx = [mx.cpu()]
         else:
@@ -352,9 +358,12 @@ class YOLOv3DetectorLearner(Learner):
         autograd.set_training(False)
 
         # TODO: multi-gpu?
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if mx.context.num_gpus() > 0:
-                ctx = [mx.gpu(0)]
+                if self.device == 'cuda':
+                    ctx = [mx.gpu(0)]
+                else:
+                    ctx = [mx.gpu(int(self.device.split(':')[1]))]
             else:
                 ctx = [mx.cpu()]
         else:

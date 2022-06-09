@@ -184,7 +184,8 @@ ccrop = transforms.Compose([
 
 
 def ccrop_batch(imgs_tensor):
-    ccropped_imgs = torch.empty_like(imgs_tensor)
+    ccropped_imgs = torch.empty((len(imgs_tensor),
+                                 imgs_tensor[0].shape[0], imgs_tensor[0].shape[1], imgs_tensor[0].shape[2]))
     for i, img_ten in enumerate(imgs_tensor):
         ccropped_imgs[i] = ccrop(img_ten)
 
@@ -247,14 +248,12 @@ def perform_val_imagefolder(device, embedding_size, batch_size, backbone, carray
                     transforms.Normalize(mean=[0.5, 0.5, 0.5],
                                          std=[0.5, 0.5, 0.5])])
                 for i in range(len(image1)):
-                    image1[i] = np.array(transform(Image.open(image1[i])))
-                    image2[i] = np.array(transform(Image.open(image2[i])))
+                    image1[i] = transform(Image.open(image1[i]))
+                    image2[i] = transform(Image.open(image2[i]))
                     if labels[i] == 'True':
                         pairs.append(True)
                     else:
                         pairs.append(False)
-                image1 = torch.tensor(image1)
-                image2 = torch.tensor(image2)
                 if tta:
                     ccropped = ccrop_batch(image1)
                     fliped = hflip_batch(ccropped)
