@@ -530,10 +530,9 @@ class SpatioTemporalGCNLearner(Learner):
 
         m = nn.Softmax(dim=0)
         softmax_predictions = m(output.data[0])
-        class_confidence = float(torch.max(softmax_predictions))
         class_ind = int(torch.argmax(softmax_predictions))
         class_description = self.classes_dict[class_ind]
-        category = Category(prediction=class_ind, confidence=class_confidence, description=class_description)
+        category = Category(prediction=class_ind, confidence=softmax_predictions, description=class_description)
 
         return category
 
