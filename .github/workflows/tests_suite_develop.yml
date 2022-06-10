@@ -230,9 +230,9 @@ jobs:
           fi
           echo "Installing $package package"
           if [ "$package" == "opendr" ]; then
-            pip install ./artifact/artifact/opendr-toolkit-*.tar.gz
+            pip install ./artifact/wheel-artifact/opendr-toolkit-*.tar.gz
           else
-            pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz
+            pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
           fi
         done < packages.txt
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
@@ -294,10 +294,11 @@ jobs:
         source venv/bin/activate
         pip install wheel
         # Install engine and requirements for other packages
-        pip install ./artifact/artifact/opendr-toolkit-engine-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
         # The following two are dependecies for some other packages and pip cannot automatically install them if they are not on a repo
-        pip install ./artifact/artifact/opendr-toolkit-compressive-learning-*.tar.gz
-        pip install ./artifact/artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
         # Install specific package for testing
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
         arr=(${package//// })
@@ -307,9 +308,9 @@ jobs:
         echo "Installing $package package"
         # Utils contains hyperparameter tuning
         if [ "$package" == "utils" ]; then
-              pip install ./artifact/artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
+              pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
         else
-              pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz
+              pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
