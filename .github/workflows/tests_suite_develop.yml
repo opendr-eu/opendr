@@ -298,7 +298,6 @@ jobs:
         # The following two are dependecies for some other packages and pip cannot automatically install them if they are not on a repo
         pip install ./artifact/artifact/opendr-toolkit-compressive-learning-*.tar.gz
         pip install ./artifact/artifact/opendr-toolkit-object-detection-2d-*.tar.gz
-
         # Install specific package for testing
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
         arr=(${package//// })
@@ -309,7 +308,6 @@ jobs:
         # Utils contains hyperparameter tuning
         if [ "$package" == "utils" ]; then
               pip install ./artifact/artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
-
         else
               pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz
         fi
