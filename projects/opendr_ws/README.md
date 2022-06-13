@@ -41,18 +41,19 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes:
 
 ### [Perception](src/perception/README.md)
 1. Pose Estimation
-2. 2D Object Detection
-3. Face Detection
-4. Panoptic Segmentation
-5. Face Recognition
-6. Semantic Segmentation
-7. RGBD Hand Gesture Recognition
-8. Heart Anomaly Detection
-9. Video Human Activity Recognition
-10. Landmark-based Facial Expression Recognition
-11. Skeleton-based Human Action Recognition
-12. Speech Command Recognition
-13. Voxel Object Detection 3D
-14. AB3DMOT Object Tracking 3D
-15. FairMOT Object Tracking 2D
-16. Deep Sort Object Tracking 2D
+2. Fall Detection
+3. 2D Object Detection
+4. Face Detection
+5. Panoptic Segmentation
+6. Face Recognition
+7. Semantic Segmentation
+8. RGBD Hand Gesture Recognition
+9. Heart Anomaly Detection
+10. Video Human Activity Recognition
+11. Landmark-based Facial Expression Recognition
+12. Skeleton-based Human Action Recognition
+13. Speech Command Recognition
+14. Voxel Object Detection 3D
+15. AB3DMOT Object Tracking 3D
+16. FairMOT Object Tracking 2D
+17. Deep Sort Object Tracking 2D

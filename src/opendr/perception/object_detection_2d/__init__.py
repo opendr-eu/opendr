@@ -11,6 +11,11 @@ from opendr.perception.object_detection_2d.datasets import transforms
 
 from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
 
+from opendr.perception.object_detection_2d.nms.cluster_nms.cluster_nms import ClusterNMS
+from opendr.perception.object_detection_2d.nms.fast_nms.fast_nms import FastNMS
+from opendr.perception.object_detection_2d.nms.soft_nms.soft_nms import SoftNMS
+from opendr.perception.object_detection_2d.nms.seq2seq_nms.seq2seq_nms_learner import Seq2SeqNMSLearner
+
 __all__ = ['CenterNetDetectorLearner', 'DetrLearner', 'GemLearner', 'RetinaFaceLearner',
            'SingleShotDetectorLearner', 'YOLOv3DetectorLearner', 'WiderPersonDataset', 'WiderFaceDataset',
-           'transforms', 'draw_bounding_boxes']
+           'transforms', 'draw_bounding_boxes', 'ClusterNMS', 'FastNMS', 'SoftNMS', 'Seq2SeqNMSLearner']
