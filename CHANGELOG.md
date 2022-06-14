@@ -1,7 +1,7 @@
 # OpenDR Toolkit Change Log
 
 ## Version 1.1
-Released on June, 13th, 2022.
+Released on June, 14th, 2022.
 
   - New Features:
     - Added end-to-end planning tool ([#223](https://github.com/opendr-eu/opendr/pull/223)).
