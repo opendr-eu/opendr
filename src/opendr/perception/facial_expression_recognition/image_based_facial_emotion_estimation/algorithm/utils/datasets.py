@@ -17,7 +17,8 @@ from os import path, listdir
 import re
 
 # OpenDR imports
-from opendr.perception.facial_expression_recognition.ensemble_based_cnn.algorithm.utils import image_processing
+from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.utils import \
+    image_processing
 from opendr.engine.datasets import DatasetIterator
 
 

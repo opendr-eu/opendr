@@ -14,9 +14,10 @@ import cv2
 
 # OpenDR Modules
 from gui.fer import FER
-from opendr.perception.facial_expression_recognition.ensemble_based_cnn.algorithm.utils import \
+from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.utils import \
      image_processing, datasets
-from opendr.perception.facial_expression_recognition.ensemble_based_cnn.algorithm.model.esr_9 import ESR
+from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.esr_9 \
+    import ESR
 from gui.grad_cam import GradCAM
 
 # Haar cascade parameters

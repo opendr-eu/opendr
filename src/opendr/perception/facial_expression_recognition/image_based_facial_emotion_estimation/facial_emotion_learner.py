@@ -41,11 +41,13 @@ from opendr.engine.learners import Learner
 from opendr.engine.data import Image
 from opendr.engine.target import Category
 from opendr.engine.constants import OPENDR_SERVER_URL
-from opendr.perception.facial_expression_recognition.ensemble_based_cnn.algorithm.model.esr_9 import ESR
-from opendr.perception.facial_expression_recognition.ensemble_based_cnn.algorithm.utils import datasets, plotting
+from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.esr_9 \
+    import ESR
+from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.utils \
+    import datasets, plotting
 
 
-class EnsembleCNNLearner(Learner):
+class FacialEmotionLearner(Learner):
     def __init__(self, lr=1e-1, batch_size=32,
                  temp_path='./temp/', device='cuda', device_ind=[0],
                  validation_interval=1, max_training_epoch=2, momentum=0.9,
@@ -53,7 +55,7 @@ class EnsembleCNNLearner(Learner):
                  dimensional_finetune=True, categorical_train=False, base_path_to_dataset='./data/AffectNet',
                  max_tuning_epoch=1
                  ):
-        super(EnsembleCNNLearner, self).__init__(lr=lr, batch_size=batch_size, temp_path=temp_path, device=device)
+        super(FacialEmotionLearner, self).__init__(lr=lr, batch_size=batch_size, temp_path=temp_path, device=device)
         # dataset_name = ''
         # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.device = device

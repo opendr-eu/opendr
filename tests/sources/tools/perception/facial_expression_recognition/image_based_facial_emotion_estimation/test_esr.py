@@ -16,7 +16,7 @@ import unittest
 import shutil
 import os
 import torch
-from opendr.perception.facial_expression_recognition import EnsembleCNNLearner
+from opendr.perception.facial_expression_recognition import FacialEmotionLearner
 from opendr.engine.data import Image
 from opendr.perception.facial_expression_recognition import datasets
 from os import path, makedirs
@@ -41,22 +41,22 @@ PATH_ = './temp'
 DATA_PATH = './data/AffectNet_tiny/'
 
 
-class TestEnsembleBasedCNNLearner(unittest.TestCase):
+class TestFacialEmotionLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         print(
-            "\n\n**********************************\nTEST Ensemble Based CNN Learner for Facial Expression and "
+            "\n\n**********************************\nTEST Facial Emotion Learner for Facial Expression and "
             "Emotion Analysis\n*"
             "*********************************")
         if not path.isdir(PATH_):
             makedirs(PATH_)
         cls.temp_dir = PATH_
 
-        cls.learner = EnsembleCNNLearner(device="cpu", temp_path=cls.temp_dir,
-                                         batch_size=2, max_training_epoch=1, ensemble_size=1,
-                                         name_experiment='esr_9', base_path_experiment=PATH_,
-                                         lr=1e-1, categorical_train=True, dimensional_finetune=True,
-                                         base_path_to_dataset=DATA_PATH, max_tuning_epoch=1)
+        cls.learner = FacialEmotionLearner(device="cpu", temp_path=cls.temp_dir,
+                                           batch_size=2, max_training_epoch=1, ensemble_size=1,
+                                           name_experiment='esr_9', base_path_experiment=PATH_,
+                                           lr=1e-1, categorical_train=True, dimensional_finetune=True,
+                                           base_path_to_dataset=DATA_PATH, max_tuning_epoch=1)
 
         cls.dataset_path = cls.learner.base_path_to_dataset
         cls.Pretrained_MODEL_PATH = './trained_models/esr_9'
