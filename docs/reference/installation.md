@@ -49,7 +49,7 @@ source ./bin/activate.sh
 ```
 Then, you are ready to use the toolkit!
 
-**NOTE:** `OPENDR_DEVICE` does not alter the inference/training device at *runtime*. 
+**NOTE:** `OPENDR_DEVICE` does not alter the inference/training device at *runtime*.
 It only affects the dependency installation.
 You can use OpenDR API to change the inference device.
 
@@ -71,7 +71,7 @@ If this enviromental variable is set during testing, it allows for easily runnin
 You can directly install the Python API of the OpenDR toolkit using pip.
 First, install the required dependencies:
 ```bash
-sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev 
+sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
 python3 -m venv venv
 source venv/bin/activate
 pip install wheel
@@ -88,12 +88,12 @@ If you have a CPU that does not support AVX2, the please also `export DISABLE_BC
 This is not needed for newer CPUs.
 
 ## Enabling GPU-acceleration
-The same OpenDR package is used for both CPU and GPU systems. 
+The same OpenDR package is used for both CPU and GPU systems.
 However, you need to have the appropriate GPU-enabled dependencies installed to use a GPU with OpenDR.
 If you plan to use GPU, then you should first install [mxnet-cuda](https://mxnet.apache.org/versions/1.4.1/install/index.html?platform=Linux&language=Python&processor=CPU) and [detectron2](https://detectron2.readthedocs.io/en/latest/tutorials/install.html).
 For example, if you stick with the default PyTorch version (1.8) and use CUDA11.2, then you can simply follow:
 ```bash
-sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev 
+sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
 python3 -m venv venv
 source venv/bin/activate
 pip install wheel
@@ -112,7 +112,7 @@ For example, if you just want to perform pose estimation you can just run:
 pip install opendr-toolkit-engine
 pip install opendr-toolkit-pose-estimation
 ```
-Note that `opendr-toolkit-engine` must be always installed in your system, while multiple tools can be installed in this way. 
+Note that `opendr-toolkit-engine` must be always installed in your system, while multiple tools can be installed in this way.
 OpenDR distributes the following packages that can be installed:
 - *opendr-toolkit-activity_recognition*
 - *opendr-toolkit-speech_recognition*
@@ -142,14 +142,14 @@ Note that `opendr-toolkit` is actually just a metapackage that includes all the 
 ## CPU docker
 After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can directly run the OpenDR image as:
 ```bash
-sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_latest
+sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_v1.1
 ```
 The docker automatically runs a Jupyter notebook server that listens at port 8888.
 When launched, you can access the Jupyter notebook by following the link provided in the console, it should be similar to [http://127.0.0.1:8888/?token=TOKEN](http://127.0.0.1:8888/?token=TOKEN). In order to stop the container, please quit the Jupyter notebook.
 
 If you do not wish to use Jupyter, you can also experiment by starting an interactive session by running:
 ```bash
-sudo docker run -it opendr/opendr-toolkit:cpu_latest /bin/bash
+sudo docker run -it opendr/opendr-toolkit:cpu_v1.1 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash
@@ -158,18 +158,18 @@ source bin/activate.sh
 If you want to display GTK-based applications from the Docker container (e.g., visualize results using OpenCV `imshow()`), then you should mount the X server socket inside the container, e.g.,
 ```bash
 xhost +local:root
-sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_latest /bin/bash
+sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_v1.1 /bin/bash
 ```
 
 ## GPU docker
 If you want to use a CUDA-enabled container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
 Then, you can directly run the latest image with the command:
 ```bash
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_latest
+sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v1.1
 ```
 or, for an interactive session:
 ```bash
-sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_latest /bin/bash
+sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v1 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash
