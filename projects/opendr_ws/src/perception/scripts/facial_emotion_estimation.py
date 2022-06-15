@@ -38,7 +38,6 @@ _HAAR_MIN_SIZE = (60, 60)
 _FACE_DETECTOR_HAAR_CASCADE = None
 
 class FacialEmotionEstimationNode:
-
     def __init__(self,
                  input_image_topic="/usb_cam/image_raw",
                  output_emotions_topic="/opendr/facial_emotion",
@@ -79,8 +78,8 @@ class FacialEmotionEstimationNode:
                                                              name_experiment='esr_9')
 
         model_saved_path = self.facial_emotion_estimator.download(self, path=None, mode="pretrained",
-                                                                  url=OPENDR_SERVER_URL +
-                                                                      "perception/ensemble_based_cnn")
+                                                                  url=
+                                                                  OPENDR_SERVER_URL + "perception/ensemble_based_cnn")
 
         self.facial_emotion_estimator.load(self, ensemble_size=9, path_to_saved_network=model_saved_path,
                                            file_name_base_network="Net-Base-Shared_Representations.pt",
@@ -131,6 +130,7 @@ class FacialEmotionEstimationNode:
         if self.string_publisher is not None:
             self.string_publisher.publish(self.bridge.to_ros_category_description(emotion))
 
+
 def detect_face(image):
     """
     Detects faces in an image.
@@ -177,6 +177,7 @@ def _haar_cascade_face_detection(image, scale_factor, neighbors, min_size):
     face_coordinates = [[[x, y], [x + w, y + h]] for (x, y, w, h) in faces] if not (faces is None) else []
 
     return np.array(face_coordinates)
+
 
 def _pre_process_input_image(image):
     """
