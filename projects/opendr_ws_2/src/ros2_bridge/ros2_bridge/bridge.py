@@ -129,3 +129,34 @@ class ROS2Bridge:
             bboxes.data.append(bbox)
 
         return bboxes
+
+    def to_ros_bounding_box_list(self, bounding_box_list):
+        detections = Detection2DArray()
+        for bounding_box in bounding_box_list:
+            detection = Detection2D()
+            detection.bbox = BoundingBox2D()
+            detection.results.append(ObjectHypothesisWithPose())
+            detection.bbox.center = Pose2D()
+            detection.bbox.center.x = bounding_box.left + bounding_box.width / 2.0
+            detection.bbox.center.y = bounding_box.top + bounding_box.height / 2.0
+            detection.bbox.size_x = bounding_box.width
+            detection.bbox.size_y = bounding_box.height
+            detection.results[0].id = str(bounding_box.name)
+            detection.results[0].score = bounding_box.confidence
+            detections.detections.append(detection)
+        return detections
+
+    def from_ros_bounding_box_list(self, ros_detection_2d_array):
+        detections = ros_detection_2d_array.detections
+        boxes = []
+
+        for detection in detections:
+            width = detection.bbox.size_x
+            height = detection.bbox.size_y
+            left = detection.bbox.center.x - width / 2.0
+            top = detection.bbox.center.y - height / 2.0
+            name = detection.results[0].id
+            score = detection.results[0].confidence
+            boxes.append(BoundingBox(name, left, top, width, height, score))
+        bounding_box_list = BoundingBoxList(boxes)
+        return bounding_box_list
