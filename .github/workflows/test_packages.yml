@@ -24,6 +24,7 @@ jobs:
     needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -74,6 +75,7 @@ jobs:
   test-wheel-separate:
     needs: cleanup-runs
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -145,6 +147,7 @@ jobs:
     needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
