@@ -37,6 +37,7 @@ _HAAR_MIN_SIZE = (60, 60)
 # Face detector method
 _FACE_DETECTOR_HAAR_CASCADE = None
 
+
 class FacialEmotionEstimationNode:
     def __init__(self,
                  input_image_topic="/usb_cam/image_raw",
