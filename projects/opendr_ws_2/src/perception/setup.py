@@ -21,9 +21,10 @@ setup(
     entry_points={
         'console_scripts': [
             'pose_estimation = perception.pose_estimation_node:main',
-            'object_detection_2d_ssd = perception.object_detection_2d_ssd_node:main',
             'object_detection_2d_centernet = perception.object_detection_2d_centernet_node:main',
             'object_detection_2d_detr = perception.object_detection_2d_detr_node:main',
+            'object_detection_2d_yolov3 = perception.object_detection_2d_yolov3_node:main',
+            'object_detection_2d_ssd = perception.object_detection_2d_ssd_node:main',
             'tester = perception.subscriber_tester:main',
         ],
     },
