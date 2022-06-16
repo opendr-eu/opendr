@@ -139,10 +139,10 @@ class ROS2Bridge:
             detection.bbox.center = Pose2D()
             detection.bbox.center.x = bounding_box.left + bounding_box.width / 2.0
             detection.bbox.center.y = bounding_box.top + bounding_box.height / 2.0
-            detection.bbox.size_x = bounding_box.width
-            detection.bbox.size_y = bounding_box.height
+            detection.bbox.size_x = float(bounding_box.width)
+            detection.bbox.size_y = float(bounding_box.height)
             detection.results[0].id = str(bounding_box.name)
-            detection.results[0].score = bounding_box.confidence
+            detection.results[0].score = float(bounding_box.confidence)
             detections.detections.append(detection)
         return detections
 
