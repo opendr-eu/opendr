@@ -56,16 +56,16 @@ jobs:
           # - perception/object_tracking_3d
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
     - name: Test Wheel
       run: |
         export DISABLE_BCOLZ_AVX2=true
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
-        python -m pip install --upgrade pip
+        python3 -m pip install --upgrade pip
         python3 -m venv venv
         source venv/bin/activate
         pip install wheel
@@ -111,14 +111,14 @@ jobs:
       with:
         submodules: true
     - name: Set up Python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
     - name: Test Wheel Separately
       run: |
         export DISABLE_BCOLZ_AVX2=true
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
-        python -m pip install --upgrade pip
+        python3 -m pip install --upgrade pip
         python3 -m venv venv
         source venv/bin/activate
         pip install wheel
