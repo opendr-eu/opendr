@@ -78,9 +78,8 @@ class FacialEmotionEstimationNode:
                                                              ensemble_size=9,
                                                              name_experiment='esr_9')
 
-        model_saved_path = self.facial_emotion_estimator.download(self, path=None, mode="pretrained",
-                                                                  url=
-                                                                  OPENDR_SERVER_URL + "perception/ensemble_based_cnn")
+        URL_PATH = OPENDR_SERVER_URL + "perception/ensemble_based_cnn"
+        model_saved_path = self.facial_emotion_estimator.download(self, path=None, mode="pretrained", url=URL_PATH)
 
         self.facial_emotion_estimator.load(self, ensemble_size=9, path_to_saved_network=model_saved_path,
                                            file_name_base_network="Net-Base-Shared_Representations.pt",
