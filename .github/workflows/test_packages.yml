@@ -64,7 +64,7 @@ jobs:
     - name: Test Wheel
       run: |
         export DISABLE_BCOLZ_AVX2=true
-        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev python3-dev
+        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
         python -m pip install --upgrade pip
         python3 -m venv venv
         source venv/bin/activate
