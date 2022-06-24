@@ -153,9 +153,10 @@ rosrun perception object_detection_2d_gem.py
 A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
 Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
 ```shell
-rosrun perception panoptic_segmentation_efficient_ps.py CHECKPOINT IMAGE_TOPIC
+rosrun perception panoptic_segmentation_efficient_ps.py IMAGE_TOPIC CHECKPOINT
 ```
-with `CHECKPOINT` pointing to the path to the trained model weights and `IMAGE_TOPIC` specifying the ROS topic, to which the node will subscribe.
+where `IMAGE_TOPIC` specifies the ROS topic, to which the node will subscribe.
+`CHECKPOINT` can be either one of ['cityscapes', 'kitti'] to download pre-trained model weights or a path to an existing checkpoint file.
 
 Additionally, the following optional arguments are available:
 - `-h, --help`: show a help message and exit

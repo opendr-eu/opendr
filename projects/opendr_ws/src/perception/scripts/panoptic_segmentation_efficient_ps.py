@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import shutil
+import sys
+from pathlib import Path
 import argparse
 from typing import Optional
 
@@ -29,8 +32,8 @@ matplotlib.use('Agg')
 
 class EfficientPsNode:
     def __init__(self,
-                 checkpoint: str,
                  input_image_topic: str,
+                 checkpoint: str,
                  output_heatmap_topic: Optional[str] = None,
                  output_visualization_topic: Optional[str] = None,
                  detailed_visualization: bool = False
@@ -46,8 +49,8 @@ class EfficientPsNode:
         :param output_visualization_topic: ROS topic for the generated visualization of the panoptic map
         :type output_visualization_topic: str
         """
-        self.checkpoint = checkpoint
         self.input_image_topic = input_image_topic
+        self.checkpoint = checkpoint
         self.output_heatmap_topic = output_heatmap_topic
         self.output_visualization_topic = output_visualization_topic
         self.detailed_visualization = detailed_visualization
@@ -59,14 +62,34 @@ class EfficientPsNode:
         self._visualization_publisher = None
 
         # Initialize the panoptic segmentation network
-        self._learner = EfficientPsLearner()
+        config_file = Path(sys.modules[
+                               EfficientPsLearner.__module__].__file__).parent / 'configs' / 'singlegpu_cityscapes.py'
+        self._learner = EfficientPsLearner(str(config_file))
+
+        # Other
+        self._tmp_folder = Path(__file__).parent / 'efficientps_tmp'
+        self._tmp_folder.mkdir(exist_ok=True)
+
+    def __del__(self):
+        """
+        Remove temporary files.
+        """
+        shutil.rmtree(self._tmp_folder)
+        print('Shut down EfficientPS node and removed all temporary files.')
 
     def _init_learner(self) -> bool:
         """
-        Load the weights from the specified checkpoint file.
+        The model can be initialized via
+        1. downloading pre-trained weights for Cityscapes or KITTI.
+        2. passing a path to an existing checkpoint file.
 
         This has not been done in the __init__() function since logging is available only once the node is registered.
         """
+        if self.checkpoint in ['cityscapes', 'kitti']:
+            file_path = EfficientPsLearner.download(str(self._tmp_folder),
+                                                    trained_on=self.checkpoint)
+            self.checkpoint = file_path
+
         if self._learner.load(self.checkpoint):
             rospy.loginfo('Successfully loaded the checkpoint.')
             return True
@@ -85,12 +108,15 @@ class EfficientPsNode:
         Set up the publishers as requested by the user.
         """
         if self.output_heatmap_topic is not None:
-            self._instance_heatmap_publisher = rospy.Publisher(f'{self.output_heatmap_topic}/instance', ROS_Image,
-                                                               queue_size=10)
-            self._semantic_heatmap_publisher = rospy.Publisher(f'{self.output_heatmap_topic}/semantic', ROS_Image,
-                                                               queue_size=10)
+            self._instance_heatmap_publisher = rospy.Publisher(
+                f'{self.output_heatmap_topic}/instance', ROS_Image,
+                queue_size=10)
+            self._semantic_heatmap_publisher = rospy.Publisher(
+                f'{self.output_heatmap_topic}/semantic', ROS_Image,
+                queue_size=10)
         if self.output_visualization_topic is not None:
-            self._visualization_publisher = rospy.Publisher(self.output_visualization_topic, ROS_Image, queue_size=10)
+            self._visualization_publisher = rospy.Publisher(self.output_visualization_topic,
+                                                            ROS_Image, queue_size=10)
 
     def listen(self):
         """
@@ -134,9 +160,11 @@ class EfficientPsNode:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('checkpoint', type=str, help='load the model weights from the provided path')
     parser.add_argument('image_topic', type=str, help='listen to images on this topic')
-    parser.add_argument('--heatmap_topic', type=str, help='publish the semantic and instance maps on this topic')
+    parser.add_argument('checkpoint', type=str,
+                        help='download pretrained models [cityscapes, kitti] or load from the provided path')
+    parser.add_argument('--heatmap_topic', type=str,
+                        help='publish the semantic and instance maps on this topic')
     parser.add_argument('--visualization_topic', type=str,
                         help='publish the panoptic segmentation map as an RGB image on this topic or a more detailed \
                               overview if using the --detailed_visualization flag')
@@ -145,8 +173,8 @@ if __name__ == '__main__':
                               panoptic segmentation maps')
     args = parser.parse_args()
 
-    efficient_ps_node = EfficientPsNode(args.checkpoint,
-                                        args.image_topic,
+    efficient_ps_node = EfficientPsNode(args.image_topic,
+                                        args.checkpoint,
                                         args.heatmap_topic,
                                         args.visualization_topic,
                                         args.detailed_visualization)
