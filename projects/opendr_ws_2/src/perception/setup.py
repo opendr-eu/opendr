@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'panoptic_segmentation = perception.panoptic_segmentation_efficient_ps:main',
             'pose_estimation = perception.pose_estimation_node:main',
             'tester = perception.subscriber_tester:main',
         ],
