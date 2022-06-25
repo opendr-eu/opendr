@@ -1068,6 +1068,14 @@ class Heatmap(Target):
         # Since this class stores the data as NumPy arrays, we can directly return the data.
         return self.data
 
+    def opencv(self):
+        """
+        Required to support the ros bridge for images.
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        return self.numpy()
+
     def shape(self) -> Tuple[int, ...]:
         """
         Returns the shape of the underlying NumPy array.
