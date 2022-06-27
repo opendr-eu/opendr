@@ -25,6 +25,7 @@ setup(
             'object_detection_2d_detr = perception.object_detection_2d_detr_node:main',
             'object_detection_2d_yolov3 = perception.object_detection_2d_yolov3_node:main',
             'object_detection_2d_ssd = perception.object_detection_2d_ssd_node:main',
+            'face_detection_retinaface = perception.face_detection_retinaface_node:main',
             'tester = perception.subscriber_tester:main',
         ],
     },
