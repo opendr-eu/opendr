@@ -18,7 +18,6 @@ from rclpy.node import Node
 
 import cv2
 import mxnet as mx
-import numpy as np
 
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
