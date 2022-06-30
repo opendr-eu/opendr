@@ -105,6 +105,8 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/object_detection_2d/detr/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
+            'projects/opendr_ws_2/src/opendr_perception/test',
+            'projects/opendr_ws_2/src/opendr_ros2_bridge/test',
         ]
 
         skippedFilePaths = [
