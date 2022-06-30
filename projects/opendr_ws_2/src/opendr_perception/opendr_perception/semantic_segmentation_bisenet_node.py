@@ -48,7 +48,7 @@ class BisenetNode(Node):
         self._learner = BisenetLearner(device=device)
         self._learner.download(path="bisenet_camvid")
         self._learner.load("bisenet_camvid")
-        
+
         self._colors = np.random.randint(0, 256, (256, 3), dtype=np.uint8)
 
     def callback(self, data):
