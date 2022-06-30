@@ -22,7 +22,7 @@ import numpy as np
 
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
-from ros2_bridge.bridge import ROS2Bridge
+from opendr_ros2_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import SingleShotDetectorLearner
@@ -37,16 +37,16 @@ class ObjectDetectionSSDNode(Node):
         super().__init__('object_detection_ssd_node')
 
         if output_image_topic is not None:
-            self.image_publisher = self.create_publisher(ROS_Image, output_image_topic, 10)
+            self.image_publisher = self.create_publisher(ROS_Image, output_image_topic, 1)
         else:
             self.image_publisher = None
 
         if detections_topic is not None:
-            self.bbox_publisher = self.create_publisher(Detection2DArray, detections_topic, 10)
+            self.bbox_publisher = self.create_publisher(Detection2DArray, detections_topic, 1)
         else:
             self.bbox_publisher = None
 
-        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, 10)
+        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, 1)
 
         self.bridge = ROS2Bridge()
 
@@ -59,15 +59,15 @@ class ObjectDetectionSSDNode(Node):
         # Initialize Seq2Seq-NMS if selected
         if nms_type == 'seq2seq-nms':
             self.custom_nms = Seq2SeqNMSLearner(fmod_map_type='EDGEMAP', iou_filtering=0.8,
-                                                app_feats='fmod', device=self.device)
-            self.custom_nms.download(model_name='seq2seq_pets_jpd', path='.')
-            self.custom_nms.load('./seq2seq_pets_jpd/', verbose=True)
+                                                app_feats='fmod', device=device)
+            self.custom_nms.download(model_name='seq2seq_pets_jpd_fmod', path='.')
+            self.custom_nms.load('./seq2seq_pets_jpd_fmod/', verbose=True)
         elif nms_type == 'soft-nms':
-            self.custom_nms = SoftNMS(nms_thres=0.45, device=self.device)
+            self.custom_nms = SoftNMS(nms_thres=0.45, device=device)
         elif nms_type == 'fast-nms':
-            self.custom_nms = FastNMS(nms_thres=0.45, device=self.device)
+            self.custom_nms = FastNMS(device=device)
         elif nms_type == 'cluster-nms':
-            self.custom_nms = ClusterNMS(nms_thres=0.45, device=self.device)
+            self.custom_nms = ClusterNMS(device=device)
 
     def callback(self, data):
         image = self.bridge.from_ros_image(data, encoding='bgr8')
