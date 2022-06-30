@@ -21,7 +21,7 @@ import cv2
 import numpy as np
 
 from sensor_msgs.msg import Image as ROS_Image
-from ros2_bridge.bridge import ROS2Bridge
+from opendr_ros2_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
 from opendr.perception.semantic_segmentation import BisenetLearner
@@ -36,11 +36,11 @@ class BisenetNode(Node):
         self.output_heatmap_topic = output_heatmap_topic
 
         if self.output_heatmap_topic is not None:
-            self._heatmap_publisher = self.create_publisher(ROS_Image, output_heatmap_topic, 10)
+            self._heatmap_publisher = self.create_publisher(ROS_Image, output_heatmap_topic, 1)
         else:
             self._heatmap_publisher = None
 
-        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, 10)
+        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, 1)
 
         self.bridge = ROS2Bridge()
 

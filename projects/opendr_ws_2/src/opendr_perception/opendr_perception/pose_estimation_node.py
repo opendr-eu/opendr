@@ -19,7 +19,7 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
-from ros2_bridge.bridge import ROS2Bridge
+from opendr_ros2_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
 from opendr.perception.pose_estimation import draw
@@ -33,16 +33,16 @@ class PoseEstimationNode(Node):
         super().__init__('pose_estimation_node')
 
         if output_image_topic is not None:
-            self.image_publisher = self.create_publisher(ROS_Image, output_image_topic, 10)
+            self.image_publisher = self.create_publisher(ROS_Image, output_image_topic, 1)
         else:
             self.image_publisher = None
 
         if pose_annotations_topic is not None:
-            self.pose_publisher = self.create_publisher(Detection2DArray, pose_annotations_topic, 10)
+            self.pose_publisher = self.create_publisher(Detection2DArray, pose_annotations_topic, 1)
         else:
             self.pose_publisher = None
 
-        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, 10)
+        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, 1)
 
         self.bridge = ROS2Bridge()
 

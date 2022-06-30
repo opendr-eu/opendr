@@ -22,36 +22,36 @@ import numpy as np
 
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
-from ros2_bridge.bridge import ROS2Bridge
+from opendr_ros2_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
-from opendr.perception.object_detection_2d import CenterNetDetectorLearner
+from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
-class ObjectDetectionCenterNetNode(Node):
+class ObjectDetectionYOLONode(Node):
 
     def __init__(self, input_image_topic="image_raw", output_image_topic="/opendr/image_boxes_annotated",
-                 detections_topic="/opendr/objects", device="cuda", backbone="resnet50_v1b", nms_type='default'):
-        super().__init__('object_detection_centernet_node')
+                 detections_topic="/opendr/objects", device="cuda", backbone="darknet53"):
+        super().__init__('object_detection_yolo_node')
 
         if output_image_topic is not None:
-            self.image_publisher = self.create_publisher(ROS_Image, output_image_topic, 10)
+            self.image_publisher = self.create_publisher(ROS_Image, output_image_topic, 1)
         else:
             self.image_publisher = None
 
         if detections_topic is not None:
-            self.bbox_publisher = self.create_publisher(Detection2DArray, detections_topic, 10)
+            self.bbox_publisher = self.create_publisher(Detection2DArray, detections_topic, 1)
         else:
             self.bbox_publisher = None
 
-        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, 10)
+        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, 1)
 
         self.bridge = ROS2Bridge()
 
-        self.object_detector = CenterNetDetectorLearner(backbone=backbone, device=device)
+        self.object_detector = YOLOv3DetectorLearner(backbone=backbone, device=device)
         self.object_detector.download(path=".", verbose=True)
-        self.object_detector.load("centernet_default")
+        self.object_detector.load("yolo_default")
         self.class_names = self.object_detector.classes
 
     def callback(self, data):
@@ -59,12 +59,12 @@ class ObjectDetectionCenterNetNode(Node):
         cv2.imshow("image", image.opencv())
         cv2.waitKey(5)
 
-        boxes = self.object_detector.infer(image, threshold=0.45, keep_size=False)
+        boxes = self.object_detector.infer(image, threshold=0.1, keep_size=False)
 
         image = np.float32(image.opencv())
 
         # Convert detected boxes to ROS type and publish
-        ros_boxes = self.bridge.to_ros_boxes(boxes)
+        ros_boxes = self.bridge.to_ros_bounding_box_list(boxes)
         if self.bbox_publisher is not None:
             self.bbox_publisher.publish(ros_boxes)
 
@@ -87,14 +87,14 @@ def main(args=None):
     except:
         device = 'cpu'
 
-    object_detection_centernet_node = ObjectDetectionCenterNetNode(device=device)
+    object_detection_node = ObjectDetectionYOLONode(device=device)
 
-    rclpy.spin(object_detection_centernet_node)
+    rclpy.spin(object_detection_node)
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    object_detection_centernet_node.destroy_node()
+    object_detection_node.destroy_node()
     rclpy.shutdown()
 
 

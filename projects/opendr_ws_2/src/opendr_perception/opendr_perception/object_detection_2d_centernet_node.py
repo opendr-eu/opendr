@@ -22,51 +22,51 @@ import numpy as np
 
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
-from ros2_bridge.bridge import ROS2Bridge
+from opendr_ros2_bridge import ROS2Bridge
 
-from opendr.perception.object_detection_2d import RetinaFaceLearner
-from opendr.perception.object_detection_2d import draw_bounding_boxes
 from opendr.engine.data import Image
+from opendr.perception.object_detection_2d import CenterNetDetectorLearner
+from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
-class FaceDetectionNode(Node):
+class ObjectDetectionCenterNetNode(Node):
 
     def __init__(self, input_image_topic="image_raw", output_image_topic="/opendr/image_boxes_annotated",
-                 face_detections_topic="/opendr/faces", device="cuda", backbone="resnet"):
-        super().__init__('face_detection_node')
+                 detections_topic="/opendr/objects", device="cuda", backbone="resnet50_v1b"):
+        super().__init__('object_detection_centernet_node')
 
         if output_image_topic is not None:
             self.image_publisher = self.create_publisher(ROS_Image, output_image_topic, 1)
         else:
             self.image_publisher = None
 
-        if face_detections_topic is not None:
-            self.face_publisher = self.create_publisher(Detection2DArray, face_detections_topic, 1)
+        if detections_topic is not None:
+            self.bbox_publisher = self.create_publisher(Detection2DArray, detections_topic, 1)
         else:
-            self.face_publisher = None
-        # Setting queue size to 1 drops frames during forward pass, thus removing delay
-        queue_size = 1
-        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, queue_size)
+            self.bbox_publisher = None
+
+        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, 1)
 
         self.bridge = ROS2Bridge()
 
-        self.face_detector = RetinaFaceLearner(backbone=backbone, device=device)
-        self.face_detector.download(path=".", verbose=True)
-        self.face_detector.load("retinaface_{}".format(backbone))
-        self.class_names = ["face", "masked_face"]
+        self.object_detector = CenterNetDetectorLearner(backbone=backbone, device=device)
+        self.object_detector.download(path=".", verbose=True)
+        self.object_detector.load("centernet_default")
+        self.class_names = self.object_detector.classes
 
     def callback(self, data):
         image = self.bridge.from_ros_image(data, encoding='bgr8')
         cv2.imshow("image", image.opencv())
-        cv2.waitKey(1)
+        cv2.waitKey(5)
 
-        boxes = self.face_detector.infer(image)
+        boxes = self.object_detector.infer(image, threshold=0.45, keep_size=False)
 
-        image = image.opencv()
+        image = np.float32(image.opencv())
 
+        # Convert detected boxes to ROS type and publish
         ros_boxes = self.bridge.to_ros_boxes(boxes)
-        if self.face_publisher is not None:
-            self.face_publisher.publish(ros_boxes)
+        if self.bbox_publisher is not None:
+            self.bbox_publisher.publish(ros_boxes)
 
         # Annotate image and publish result
         odr_boxes = self.bridge.from_ros_boxes(ros_boxes)
@@ -87,14 +87,14 @@ def main(args=None):
     except:
         device = 'cpu'
 
-    face_detection_node = FaceDetectionNode(device=device, backbone="resnet")
+    object_detection_centernet_node = ObjectDetectionCenterNetNode(device=device)
 
-    rclpy.spin(face_detection_node)
+    rclpy.spin(object_detection_centernet_node)
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    face_detection_node.destroy_node()
+    object_detection_centernet_node.destroy_node()
     rclpy.shutdown()
 
 
