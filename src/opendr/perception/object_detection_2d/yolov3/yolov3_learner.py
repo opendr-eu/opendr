@@ -572,21 +572,26 @@ class YOLOv3DetectorLearner(Learner):
                                     "yolo_voc.json")
             if verbose:
                 print("Downloading metadata...")
-            urlretrieve(file_url, os.path.join(path, "yolo_default.json"))
+            file_path = os.path.join(path, "yolo_default.json")
+            if not os.path.exists(file_path):
+                urlretrieve(file_url, file_path)
 
             if verbose:
                 print("Downloading params...")
             file_url = os.path.join(url, "pretrained", "yolo_voc",
                                          "yolo_voc.params")
 
-            urlretrieve(file_url,
-                        os.path.join(path, "yolo_voc.params"))
+            file_path = os.path.join(path, "yolo_voc.params")
+            if not os.path.exists(file_path):
+                urlretrieve(file_url, file_path)
 
         elif mode == "images":
             file_url = os.path.join(url, "images", "cat.jpg")
             if verbose:
                 print("Downloading example image...")
-            urlretrieve(file_url, os.path.join(path, "cat.jpg"))
+            file_path = os.path.join(path, "cat.jpg")
+            if not os.path.exists(file_path):
+                urlretrieve(file_url, file_path)
 
         elif mode == "test_data":
             os.makedirs(os.path.join(path, "test_data"), exist_ok=True)
@@ -596,17 +601,23 @@ class YOLOv3DetectorLearner(Learner):
             file_url = os.path.join(url, "test_data", "train.txt")
             if verbose:
                 print("Downloading filelist...")
-            urlretrieve(file_url, os.path.join(path, "test_data", "train.txt"))
+            file_path = os.path.join(path, "test_data", "train.txt")
+            if not os.path.exists(file_path):
+                urlretrieve(file_url, file_path)
             # download image
             file_url = os.path.join(url, "test_data", "Images", "000040.jpg")
             if verbose:
                 print("Downloading image...")
-            urlretrieve(file_url, os.path.join(path, "test_data", "Images", "000040.jpg"))
+            file_path = os.path.join(path, "test_data", "Images", "000040.jpg")
+            if not os.path.exists(file_path):
+                urlretrieve(file_url, file_path)
             # download annotations
             file_url = os.path.join(url, "test_data", "Annotations", "000040.jpg.txt")
             if verbose:
                 print("Downloading annotations...")
-            urlretrieve(file_url, os.path.join(path, "test_data", "Annotations", "000040.jpg.txt"))
+            file_path = os.path.join(path, "test_data", "Annotations", "000040.jpg.txt")
+            if not os.path.exists(file_path):
+                urlretrieve(file_url, file_path)
 
     def optimize(self, target_device):
         """This method is not used in this implementation."""
