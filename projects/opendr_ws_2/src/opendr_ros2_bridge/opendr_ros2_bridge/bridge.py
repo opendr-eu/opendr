@@ -23,21 +23,55 @@ from geometry_msgs.msg import Pose2D
 
 
 class ROS2Bridge:
+    """
+    This class provides an interface to convert OpenDR data types and targets into ROS2-compatible ones similar
+    to CvBridge.
+    For each data type X two methods are provided:
+    from_ros_X: which converts the ROS2 equivalent of X into OpenDR data type
+    to_ros_X: which converts the OpenDR data type into the ROS2 equivalent of X
+    """
 
     def __init__(self):
         self._cv_bridge = CvBridge()
 
     def from_ros_image(self, message: ImageMsg, encoding: str='passthrough') -> Image:
+        """
+        Converts a ROS2 image message into an OpenDR image
+        :param message: ROS2 image to be converted
+        :type message: sensor_msgs.msg.Image
+        :param encoding: encoding to be used for the conversion (inherited from CvBridge)
+        :type encoding: str
+        :return: OpenDR image (RGB)
+        :rtype: engine.data.Image
+        """
         cv_image = self._cv_bridge.imgmsg_to_cv2(message, desired_encoding=encoding)
         image = Image(np.asarray(cv_image, dtype=np.uint8))
         return image
 
     def to_ros_image(self, image: Image, encoding: str='passthrough') -> ImageMsg:
+        """
+        Converts an OpenDR image into a ROS2 image message
+        :param image: OpenDR image to be converted
+        :type image: engine.data.Image
+        :param encoding: encoding to be used for the conversion (inherited from CvBridge)
+        :type encoding: str
+        :return: ROS2 image
+        :rtype: sensor_msgs.msg.Image
+        """
         # Convert from the OpenDR standard (CHW/RGB) to OpenCV standard (HWC/BGR)
         message = self._cv_bridge.cv2_to_imgmsg(image.opencv(), encoding=encoding)
         return message
 
     def to_ros_pose(self, pose):
+        """
+        Converts an OpenDR pose into a Detection2DArray msg that can carry the same information
+        Each keypoint is represented as a bbox centered at the keypoint with zero width/height. The subject id is also
+        embedded on each keypoint (stored in ObjectHypothesisWithPose).
+        :param pose: OpenDR pose to be converted
+        :type pose: engine.target.Pose
+        :return: ROS2 message with the pose
+        :rtype: vision_msgs.msg.Detection2DArray
+        """
         data = pose.data
         keypoints = Detection2DArray()
         for i in range(data.shape[0]):
@@ -56,6 +90,13 @@ class ROS2Bridge:
         return keypoints
 
     def from_ros_pose(self, ros_pose):
+        """
+        Converts a ROS2 message with pose payload into an OpenDR pose
+        :param ros_pose: the pose to be converted (represented as vision_msgs.msg.Detection2DArray)
+        :type ros_pose: vision_msgs.msg.Detection2DArray
+        :return: an OpenDR pose
+        :rtype: engine.target.Pose
+        """
         keypoints = ros_pose.detections
         data = []
         pose_id, confidence = None, None
@@ -72,6 +113,14 @@ class ROS2Bridge:
         return pose
 
     def to_ros_boxes(self, box_list):
+        """
+        Converts an OpenDR BoundingBoxList into a Detection2DArray msg that can carry the same information.
+        Each bounding box is represented by its center coordinates as well as its width/height dimensions.
+        :param box_list: OpenDR bounding boxes to be converted
+        :type box_list: engine.target.BoundingBoxList
+        :return: ROS2 message with the bounding boxes
+        :rtype: vision_msgs.msg.Detection2DArray
+        """
         boxes = box_list.data
         ros_boxes = Detection2DArray()
         for idx, box in enumerate(boxes):
@@ -90,6 +139,13 @@ class ROS2Bridge:
         return ros_boxes
 
     def from_ros_boxes(self, ros_detections):
+        """
+        Converts a ROS2 message with bounding boxes into an OpenDR BoundingBoxList
+        :param ros_detections: the boxes to be converted (represented as vision_msgs.msg.Detection2DArray)
+        :type ros_detections: vision_msgs.msg.Detection2DArray
+        :return: an OpenDR BoundingBoxList
+        :rtype: engine.target.BoundingBoxList
+        """
         ros_boxes = ros_detections.detections
         bboxes = BoundingBoxList(boxes=[])
 
@@ -106,6 +162,14 @@ class ROS2Bridge:
         return bboxes
 
     def to_ros_bounding_box_list(self, bounding_box_list):
+        """
+        Converts an OpenDR bounding_box_list into a Detection2DArray msg that can carry the same information
+        The object class is also embedded on each bounding box (stored in ObjectHypothesisWithPose).
+        :param bounding_box_list: OpenDR bounding_box_list to be converted
+        :type bounding_box_list: engine.target.BoundingBoxList
+        :return: ROS2 message with the bounding box list
+        :rtype: vision_msgs.msg.Detection2DArray
+        """
         detections = Detection2DArray()
         for bounding_box in bounding_box_list:
             detection = Detection2D()
@@ -122,6 +186,14 @@ class ROS2Bridge:
         return detections
 
     def from_ros_bounding_box_list(self, ros_detection_2d_array):
+        """
+        Converts a ROS2 message with bounding box list payload into an OpenDR pose
+        :param ros_detection_2d_array: the bounding boxes to be converted (represented as
+                                       vision_msgs.msg.Detection2DArray)
+        :type ros_detection_2d_array: vision_msgs.msg.Detection2DArray
+        :return: an OpenDR bounding box list
+        :rtype: engine.target.BoundingBoxList
+        """
         detections = ros_detection_2d_array.detections
         boxes = []
 
