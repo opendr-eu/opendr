@@ -154,11 +154,9 @@ class ROS2Bridge:
             height = box.bbox.size_y
             left = box.bbox.center.x - width / 2.
             top = box.bbox.center.y - height / 2.
-            # _id = box.results[0].id[0]
             _id = int(float(box.results[0].id.strip('][').split(', ')[0]))
             bbox = BoundingBox(top=top, left=left, width=width, height=height, name=_id)
             bboxes.data.append(bbox)
-
         return bboxes
 
     def to_ros_bounding_box_list(self, bounding_box_list):
