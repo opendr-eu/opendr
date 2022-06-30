@@ -116,7 +116,9 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/efficientface_utils.py',
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/spatial_transforms.py',
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/transformer_timm.py',
-            'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/utils.py'
+            'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/utils.py',
+            'projects/opendr_ws_2/src/opendr_perception/setup.py',
+            'projects/opendr_ws_2/src/opendr_ros2_bridge/setup.py',
         ]
 
         skippedDirectories = [
