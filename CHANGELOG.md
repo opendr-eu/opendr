@@ -1,6 +1,13 @@
 # OpenDR Toolkit Change Log
 
-## Version 1.1
+## Version 1.1.1
+Released on June, 30th, 2022.
+
+  - Bug Fixes:
+    - Fix Efficient Panoptic Segmentation submodule commit ([#268](https://github.com/opendr-eu/opendr/pull/268)).
+    - Fix Face Recognition compilation error ([#267](https://github.com/opendr-eu/opendr/pull/267)).
+
+## Version 1.1.0
 Released on June, 14th, 2022.
 
   - New Features:
