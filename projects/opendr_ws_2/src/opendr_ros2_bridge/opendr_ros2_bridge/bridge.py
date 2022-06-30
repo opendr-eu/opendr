@@ -28,31 +28,6 @@ class ROS2Bridge:
         self._cv_bridge = CvBridge()
 
     def from_ros_image(self, message: ImageMsg, encoding: str='passthrough') -> Image:
-        # Commented code converts to opencv format without the use of cvbridge
-        # sz = (message.height, message.width)
-        # # print(msg.header.stamp)
-        #
-        # # print("{encoding} {width} {height} {step} {data_size}".format(
-        # #     encoding=msg.encoding, width=msg.width, height=msg.height,
-        # #     step=msg.step, data_size=len(msg.data)))
-        # if message.step * message.height != len(message.data):
-        #     print("bad step/height/data size")
-        #     return
-        #
-        # if message.encoding == "rgb8":
-        #     img = np.zeros([message.height, message.width, 3], dtype=np.uint8)
-        #     img[:, :, 2] = np.array(message.data[0::3]).reshape(sz)
-        #     img[:, :, 1] = np.array(message.data[1::3]).reshape(sz)
-        #     img[:, :, 0] = np.array(message.data[2::3]).reshape(sz)
-        # elif message.encoding == "mono8":
-        #     img = np.array(message.data).reshape(sz)
-        # else:
-        #     print("unsupported encoding {}".format(message.encoding))
-        #     return
-        #
-        # # Convert image from OpenCV format to OpenDR format
-        # return Image(np.asarray(img, dtype=np.uint8))
-
         cv_image = self._cv_bridge.imgmsg_to_cv2(message, desired_encoding=encoding)
         image = Image(np.asarray(cv_image, dtype=np.uint8))
         return image
