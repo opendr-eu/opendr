@@ -1,8 +1,10 @@
 # Customizing the toolkit
 
-OpenDR is fully open-source and can be readily customized to meet the needs for several different application areas. 
-Several ready-to-use examples, which are expected to cover a wide range of different needs, are provided.  
-This document provides instructions for customizing different parts of the OpenDR toolkit.
+OpenDR is fully open-source and can be readily customized to meet the needs of several different application areas, since the source code for all the developed tools is provided.
+Several ready-to-use examples, which are expected to cover a wide range of different needs, are provided.
+For example, users can readily use the existing [ROS nodes](projects/opendr_ws), e.g., by including the required triggers or by combining several nodes into one to build custom nodes that will fit their needs. 
+The rest of this document includes instructions for:
+1. Building docker images using the provided docker files
 
 
 ## Building custom docker images
