@@ -3,13 +3,15 @@
 OpenDR is fully open-source and can be readily customized to meet the needs of several different application areas, since the source code for all the developed tools is provided.
 Several ready-to-use examples, which are expected to cover a wide range of different needs, are provided.
 For example, users can readily use the existing [ROS nodes](projects/opendr_ws), e.g., by including the required triggers or by combining several nodes into one to build custom nodes that will fit their needs. 
+Furthermore, note that several tools can be combined within a ROS node, as showcased in [face recognition ROS node](projects/opendr_ws/src/perception/scripts/face_recognition.py). 
+You can use these nodes as a template for customizing the toolkit to your own needs.
 The rest of this document includes instructions for:
-1. Building docker images using the provided docker files
+1. Building docker images using the provided docker files. 
 
 
 ## Building custom docker images
 The default docker images can be too large for some applications.
-OpenDR provides the dockerfiles for customizing the images to your own needs.
+OpenDR provides the dockerfiles for customizing the images to your own needs, e.g., using OpenDR in custom third-party images.
 Therefore, you can build the docker images locally using the [Dockerfile](/Dockerfile) ([Dockerfile-cuda](/Dockerfile-cuda) for cuda) provided in the root folder of the toolkit.
 
 ### Building the CPU image
