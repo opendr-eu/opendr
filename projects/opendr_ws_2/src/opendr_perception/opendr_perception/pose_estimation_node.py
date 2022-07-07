@@ -14,6 +14,7 @@
 
 import argparse
 import torch
+
 import rclpy
 from rclpy.node import Node
 
@@ -32,7 +33,7 @@ class PoseEstimationNode(Node):
                  detections_topic="/opendr/poses", device="cuda",
                  num_refinement_stages=2, use_stride=False, half_precision=False):
         """
-        Creates a ROS2 Node for pose detection
+        Creates a ROS2 Node for pose detection.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -80,7 +81,7 @@ class PoseEstimationNode(Node):
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics
+        Callback that process the input data and publishes to the corresponding topics.
         :param data: Input image message
         :type data: sensor_msgs.msg.Image
         """
