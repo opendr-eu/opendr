@@ -32,7 +32,7 @@ class BisenetNode(Node):
 
     def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/heatmap", device="cuda"):
         """
-        Initialize the Bisenet ROS node and create an instance of the respective learner class.
+        Creates a ROS Node for semantic segmentation with Bisenet.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the heatmap image
@@ -59,7 +59,7 @@ class BisenetNode(Node):
 
     def callback(self, data):
         """
-        Predict the heatmap from the input image and publish the results.
+        Callback that process the input data and publishes to the corresponding topics.
         :param data: Input image message
         :type data: sensor_msgs.msg.Image
         """
@@ -87,7 +87,8 @@ def main(args=None):
                         type=str, default="image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
                         type=str, default="/opendr/heatmap")
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
     try:

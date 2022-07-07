@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,7 +34,7 @@ class PoseEstimationNode(Node):
                  detections_topic="/opendr/poses", device="cuda",
                  num_refinement_stages=2, use_stride=False, half_precision=False):
         """
-        Creates a ROS2 Node for pose detection.
+        Creates a ROS2 Node for pose estimation with Lightweight OpenPose.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -99,11 +100,11 @@ class PoseEstimationNode(Node):
                 # Convert OpenDR pose to ROS2 pose message using bridge and publish it
                 self.pose_publisher.publish(self.bridge.to_ros_pose(pose))
 
-        # Annotate image with pose and publish it
         if self.image_publisher is not None:
+            # Annotate image with poses
             for pose in poses:
                 draw(image, pose)
-            # Convert OpenDR image to ROS2 image message using bridge and publish it
+            # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
 
@@ -117,7 +118,8 @@ def main(args=None):
                         type=str, default="/opendr/image_pose_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=str, default="/opendr/poses")
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
     args = parser.parse_args()

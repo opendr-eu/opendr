@@ -33,7 +33,7 @@ class FaceDetectionNode(Node):
     def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_faces_annotated",
                  detections_topic="/opendr/faces", device="cuda", backbone="resnet"):
         """
-        Creates a ROS Node for face detection.
+        Creates a ROS Node for face detection with Retinaface.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -90,10 +90,10 @@ class FaceDetectionNode(Node):
         if self.face_publisher is not None:
             self.face_publisher.publish(ros_boxes)
 
-        # Annotate image with face detection boxes and publish it
         if self.image_publisher is not None:
+            # Annotate image with face detection boxes
             image = draw_bounding_boxes(image, boxes, class_names=self.class_names)
-            # Convert OpenDR image to ROS2 image message using bridge and publish it
+            # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
 
@@ -107,7 +107,8 @@ def main(args=None):
                         type=str, default="/opendr/image_pose_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=str, default="/opendr/poses")
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--backbone",
                         help="Retinaface backbone, options are either 'mnet' or 'resnet', where 'mnet' detects "
                              "masked faces as well",
