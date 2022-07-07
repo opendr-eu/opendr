@@ -35,7 +35,7 @@ class BisenetNode(Node):
         Initialize the Bisenet ROS node and create an instance of the respective learner class.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
-        :param output_rgb_image_topic: ROS topic for the predicted heatmap
+        :param output_rgb_image_topic: Topic to which we are publishing the heatmap image
         :type output_rgb_image_topic: str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
