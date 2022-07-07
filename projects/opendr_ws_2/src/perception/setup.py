@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'pose_estimation = perception.pose_estimation_node:main',
+            'object_detection_2d_detr = perception.object_detection_2d_detr:main',
             'tester = perception.subscriber_tester:main',
         ],
     },
