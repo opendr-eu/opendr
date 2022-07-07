@@ -74,6 +74,7 @@ class BisenetNode(Node):
                 heatmap_np = heatmap.numpy()
                 heatmap_o = self.colors[heatmap_np]
                 heatmap_o = cv2.resize(np.uint8(heatmap_o), (960, 720))
+                # Convert OpenDR heatmap image to ROS2 image message using bridge and publish it
                 self.heatmap_publisher.publish(self.bridge.to_ros_image(Image(heatmap_o), encoding='bgr8'))
         except Exception:
             self.get_logger().warn('Failed to generate prediction.')
