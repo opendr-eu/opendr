@@ -21,14 +21,18 @@ from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr.engine.data import Image
 from opendr_bridge import ROSBridge
-from opendr.perception.object_detection_2d.detr.algorithm.util.draw import draw
 from opendr.perception.object_detection_2d import DetrLearner
+from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
 class DetrNode:
-
-    def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_boxes_annotated",
-                 detection_annotations_topic="/opendr/objects", device="cuda"):
+    def __init__(
+        self,
+        input_image_topic="/usb_cam/image_raw",
+        output_image_topic="/opendr/image_boxes_annotated",
+        detection_annotations_topic="/opendr/objects",
+        device="cuda",
+    ):
         """
         Creates a ROS Node for object detection with DETR
         :param input_image_topic: Topic from which we are reading the input image
@@ -57,6 +61,100 @@ class DetrNode:
 
         self.bridge = ROSBridge()
 
+        self.class_names = [
+            "N/A",
+            "person",
+            "bicycle",
+            "car",
+            "motorcycle",
+            "airplane",
+            "bus",
+            "train",
+            "truck",
+            "boat",
+            "traffic light",
+            "fire hydrant",
+            "N/A",
+            "stop sign",
+            "parking meter",
+            "bench",
+            "bird",
+            "cat",
+            "dog",
+            "horse",
+            "sheep",
+            "cow",
+            "elephant",
+            "bear",
+            "zebra",
+            "giraffe",
+            "N/A",
+            "backpack",
+            "umbrella",
+            "N/A",
+            "N/A",
+            "handbag",
+            "tie",
+            "suitcase",
+            "frisbee",
+            "skis",
+            "snowboard",
+            "sports ball",
+            "kite",
+            "baseball bat",
+            "baseball glove",
+            "skateboard",
+            "surfboard",
+            "tennis racket",
+            "bottle",
+            "N/A",
+            "wine glass",
+            "cup",
+            "fork",
+            "knife",
+            "spoon",
+            "bowl",
+            "banana",
+            "apple",
+            "sandwich",
+            "orange",
+            "broccoli",
+            "carrot",
+            "hot dog",
+            "pizza",
+            "donut",
+            "cake",
+            "chair",
+            "couch",
+            "potted plant",
+            "bed",
+            "N/A",
+            "dining table",
+            "N/A",
+            "N/A",
+            "toilet",
+            "N/A",
+            "tv",
+            "laptop",
+            "mouse",
+            "remote",
+            "keyboard",
+            "cell phone",
+            "microwave",
+            "oven",
+            "toaster",
+            "sink",
+            "refrigerator",
+            "N/A",
+            "book",
+            "clock",
+            "vase",
+            "scissors",
+            "teddy bear",
+            "hair drier",
+            "toothbrush",
+        ]
+
         # Initialize the detection estimation
         self.detr_learner = DetrLearner(device=device)
         self.detr_learner.download(path=".", verbose=True)
@@ -65,7 +163,7 @@ class DetrNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('detr', anonymous=True)
+        rospy.init_node("detr", anonymous=True)
         rospy.loginfo("DETR node started!")
         rospy.spin()
 
@@ -77,7 +175,7 @@ class DetrNode:
         """
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
-        image = self.bridge.from_ros_image(data, encoding='bgr8')
+        image = self.bridge.from_ros_image(data, encoding="bgr8")
 
         # Run detection estimation
         boxes = self.detr_learner.infer(image)
@@ -93,22 +191,22 @@ class DetrNode:
             # e.g., opendr_detection = self.bridge.from_ros_bounding_box_list(ros_detection)
 
         if self.image_publisher is not None:
-            image = draw(image, boxes)
-            message = self.bridge.to_ros_image(Image(image), encoding='bgr8')
+            image = draw_bounding_boxes(image, boxes, class_names=self.class_names)
+            message = self.bridge.to_ros_image(Image(image), encoding="bgr8")
             self.image_publisher.publish(message)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Select the device for running the
     try:
         if torch.cuda.is_available():
             print("GPU found.")
-            device = 'cuda'
+            device = "cuda"
         else:
             print("GPU not found. Using CPU instead.")
-            device = 'cpu'
+            device = "cpu"
     except:
-        device = 'cpu'
+        device = "cpu"
 
     detection_estimation_node = DetrNode(device=device)
     detection_estimation_node.listen()
