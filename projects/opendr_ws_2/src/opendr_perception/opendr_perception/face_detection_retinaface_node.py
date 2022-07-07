@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import mxnet as mx
+
 import rclpy
 from rclpy.node import Node
-
-import cv2
-import mxnet as mx
 
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
@@ -30,20 +30,37 @@ from opendr.engine.data import Image
 
 class FaceDetectionNode(Node):
 
-    def __init__(self, input_image_topic="image_raw", output_image_topic="/opendr/image_boxes_annotated",
-                 face_detections_topic="/opendr/faces", device="cuda", backbone="resnet"):
+    def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_faces_annotated",
+                 detections_topic="/opendr/faces", device="cuda", backbone="resnet"):
+        """
+        Creates a ROS Node for face detection.
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
+        :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
+        image is published)
+        :type output_rgb_image_topic: str
+        :param detections_topic: Topic to which we are publishing the annotations (if None, no face detection message
+        is published)
+        :type detections_topic:  str
+        :param device: device on which we are running inference ('cpu' or 'cuda')
+        :type device: str
+        :param backbone: retinaface backbone, options are either 'mnet' or 'resnet',
+        where 'mnet' detects masked faces as well
+        :type backbone: str
+        """
         super().__init__('face_detection_node')
 
-        if output_image_topic is not None:
-            self.image_publisher = self.create_publisher(ROS_Image, output_image_topic, 1)
+        self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
+
+        if output_rgb_image_topic is not None:
+            self.image_publisher = self.create_publisher(ROS_Image, output_rgb_image_topic, 1)
         else:
             self.image_publisher = None
 
-        if face_detections_topic is not None:
-            self.face_publisher = self.create_publisher(Detection2DArray, face_detections_topic, 1)
+        if detections_topic is not None:
+            self.face_publisher = self.create_publisher(Detection2DArray, detections_topic, 1)
         else:
             self.face_publisher = None
-        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, 1)
 
         self.bridge = ROS2Bridge()
 
@@ -52,39 +69,68 @@ class FaceDetectionNode(Node):
         self.face_detector.load("retinaface_{}".format(backbone))
         self.class_names = ["face", "masked_face"]
 
-    def callback(self, data):
-        image = self.bridge.from_ros_image(data, encoding='bgr8')
-        cv2.imshow("image", image.opencv())
-        cv2.waitKey(1)
+        self.get_logger().info("Face detection retinaface node initialized.")
 
+    def callback(self, data):
+        """
+        Callback that process the input data and publishes to the corresponding topics.
+        :param data: Input image message
+        :type data: sensor_msgs.msg.Image
+        """
+        # Convert sensor_msgs.msg.Image into OpenDR Image
+        image = self.bridge.from_ros_image(data, encoding='bgr8')
+
+        # Run face detection
         boxes = self.face_detector.infer(image)
 
+        # Get an OpenCV image back
         image = image.opencv()
-
-        ros_boxes = self.bridge.to_ros_boxes(boxes)
+        # Publish detections in ROS message
+        ros_boxes = self.bridge.to_ros_boxes(boxes)  # Convert to ROS boxes
         if self.face_publisher is not None:
             self.face_publisher.publish(ros_boxes)
 
-        # Annotate image and publish result
-        odr_boxes = self.bridge.from_ros_boxes(ros_boxes)
-        image = draw_bounding_boxes(image, odr_boxes, class_names=self.class_names)
+        # Annotate image with face detection boxes and publish it
         if self.image_publisher is not None:
+            image = draw_bounding_boxes(image, boxes, class_names=self.class_names)
+            # Convert OpenDR image to ROS2 image message using bridge and publish it
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
 
 def main(args=None):
     rclpy.init(args=args)
-    try:
-        if mx.context.num_gpus() > 0:
-            print("GPU found.")
-            device = 'cuda'
-        else:
-            print("GPU not found. Using CPU instead.")
-            device = 'cpu'
-    except:
-        device = 'cpu'
 
-    face_detection_node = FaceDetectionNode(device=device, backbone="resnet")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
+                        type=str, default="image_raw")
+    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
+                        type=str, default="/opendr/image_pose_annotated")
+    parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
+                        type=str, default="/opendr/poses")
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--backbone",
+                        help="Retinaface backbone, options are either 'mnet' or 'resnet', where 'mnet' detects "
+                             "masked faces as well",
+                        type=str, default="resnet", choices=["resnet", "mnet"])
+    args = parser.parse_args()
+
+    try:
+        if args.device == "cuda" and mx.context.num_gpus() > 0:
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
+
+    face_detection_node = FaceDetectionNode(device=device, backbone=args.backbone,
+                                            input_rgb_image_topic=args.input_rgb_image_topic,
+                                            output_rgb_image_topic=args.output_rgb_image_topic,
+                                            detections_topic=args.detections_topic)
 
     rclpy.spin(face_detection_node)
 
