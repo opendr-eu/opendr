@@ -13,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import mxnet as mx
+
 import rclpy
 from rclpy.node import Node
-
-import cv2
-import mxnet as mx
-import numpy as np
 
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
@@ -31,63 +30,104 @@ from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 class ObjectDetectionCenterNetNode(Node):
 
-    def __init__(self, input_image_topic="image_raw", output_image_topic="/opendr/image_boxes_annotated",
+    def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_objects_annotated",
                  detections_topic="/opendr/objects", device="cuda", backbone="resnet50_v1b"):
+        """
+        Creates a ROS Node for object detection with Centernet.
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
+        :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
+        image is published)
+        :type output_rgb_image_topic: str
+        :param detections_topic: Topic to which we are publishing the annotations (if None, no object detection message
+        is published)
+        :type detections_topic:  str
+        :param device: device on which we are running inference ('cpu' or 'cuda')
+        :type device: str
+        :param backbone: backbone network
+        :type backbone: str
+        """
         super().__init__('object_detection_centernet_node')
 
-        if output_image_topic is not None:
-            self.image_publisher = self.create_publisher(ROS_Image, output_image_topic, 1)
+        self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
+
+        if output_rgb_image_topic is not None:
+            self.image_publisher = self.create_publisher(ROS_Image, output_rgb_image_topic, 1)
         else:
             self.image_publisher = None
 
         if detections_topic is not None:
-            self.bbox_publisher = self.create_publisher(Detection2DArray, detections_topic, 1)
+            self.object_publisher = self.create_publisher(Detection2DArray, detections_topic, 1)
         else:
-            self.bbox_publisher = None
-
-        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, 1)
+            self.object_publisher = None
 
         self.bridge = ROS2Bridge()
 
         self.object_detector = CenterNetDetectorLearner(backbone=backbone, device=device)
         self.object_detector.download(path=".", verbose=True)
         self.object_detector.load("centernet_default")
-        self.class_names = self.object_detector.classes
+
+        self.get_logger().info("Object Detection 2D Centernet node initialized.")
 
     def callback(self, data):
+        """
+        Callback that process the input data and publishes to the corresponding topics.
+        :param data: input message
+        :type data: sensor_msgs.msg.Image
+        """
+        # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8')
-        cv2.imshow("image", image.opencv())
-        cv2.waitKey(5)
 
+        # Run object detection
         boxes = self.object_detector.infer(image, threshold=0.45, keep_size=False)
 
-        image = np.float32(image.opencv())
+        # Get an OpenCV image back
+        image = image.opencv()
 
-        # Convert detected boxes to ROS type and publish
-        ros_boxes = self.bridge.to_ros_boxes(boxes)
-        if self.bbox_publisher is not None:
-            self.bbox_publisher.publish(ros_boxes)
+        # Publish detections in ROS message
+        ros_boxes = self.bridge.to_ros_boxes(boxes)  # Convert to ROS boxes
+        if self.object_publisher is not None:
+            self.object_publisher.publish(ros_boxes)
 
-        # Annotate image and publish result
-        odr_boxes = self.bridge.from_ros_boxes(ros_boxes)
-        image = draw_bounding_boxes(image, odr_boxes, class_names=self.class_names)
         if self.image_publisher is not None:
+            # Annotate image with object detection boxes
+            image = draw_bounding_boxes(image, boxes, class_names=self.object_detector.classes)
+            # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
 
 def main(args=None):
     rclpy.init(args=args)
-    try:
-        if mx.context.num_gpus() > 0:
-            print("GPU found.")
-            device = 'cuda'
-        else:
-            print("GPU not found. Using CPU instead.")
-            device = 'cpu'
-    except:
-        device = 'cpu'
 
-    object_detection_centernet_node = ObjectDetectionCenterNetNode(device=device)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
+                        type=str, default="image_raw")
+    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
+                        type=str, default="/opendr/image_objects_annotated")
+    parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
+                        type=str, default="/opendr/objects")
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--backbone", help="Backbone network, defaults to \"resnet50_v1b\"",
+                        type=str, default="resnet50_v1b", choices=["resnet50_v1b"])
+    args = parser.parse_args()
+
+    try:
+        if args.device == "cuda" and mx.context.num_gpus() > 0:
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
+
+    object_detection_centernet_node = ObjectDetectionCenterNetNode(device=device, backbone=args.backbone,
+                                                                   input_rgb_image_topic=args.input_rgb_image_topic,
+                                                                   output_rgb_image_topic=args.output_rgb_image_topic,
+                                                                   detections_topic=args.detections_topic)
 
     rclpy.spin(object_detection_centernet_node)
 
