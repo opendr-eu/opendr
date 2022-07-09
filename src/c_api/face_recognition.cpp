@@ -1,4 +1,5 @@
-// Copyright 2020-2022 OpenDR European Project
+//
+// Copyright 2020-2021 OpenDR project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -78,7 +79,7 @@ void preprocess_face_recognition(cv::Mat *image, std::vector<float> &data, int r
  * Very simple helper function to parse OpenDR model files for face recognition
  * In the future this can be done at library level using a JSON-parser
  */
-std::string json_get_key_string(std::string json, const std::string &key) {
+std::string json_get_key_string(std::string json, std::string key) {
   std::size_t start_idx = json.find(key);
   std::string value = json.substr(start_idx);
   value = value.substr(value.find(":") + 1);
@@ -289,20 +290,20 @@ void build_database_face_recognition(const char *database_folder, const char *ou
   // Write number of persons
   int n = person_names.size();
 
-  fout.write(static_cast<char *>(&n), sizeof(int));
+  fout.write((char *)(&n), sizeof(int));
   for (int i = 0; i < n; i++) {
     // Write the name of the person (along with its size)
     int name_length = person_names[i].size() + 1;
-    fout.write(static_cast<char *>(&name_length), sizeof(int));
+    fout.write((char *)(&name_length), sizeof(int));
     fout.write(person_names[i].c_str(), name_length);
   }
 
   cv::Size s = database_out.size();
 
-  fout.write(static_cast<char *>(&s.height), sizeof(int));
-  fout.write(static_cast<char *>(&s.width), sizeof(int));
-  fout.write(static_cast<char *>(database_out.data), sizeof(float) * s.height * s.width);
-  fout.write(static_cast<char *>(&database_ids[0]), sizeof(int) * s.height);
+  fout.write((char *)(&s.height), sizeof(int));
+  fout.write((char *)(&s.width), sizeof(int));
+  fout.write((char *)database_out.data, sizeof(float) * s.height * s.width);
+  fout.write((char *)(&database_ids[0]), sizeof(int) * s.height);
   fout.flush();
   fout.close();
 }
@@ -318,14 +319,14 @@ void load_database_face_recognition(const char *database_path, face_recognition_
     return;
   }
   int n;
-  fin.read(static_cast<char *>(&n), sizeof(int));
+  fin.read((char *)(&n), sizeof(int));
   char **person_names = new char *[n];
 
   for (int i = 0; i < n; i++) {
     person_names[i] = new char[512];
     // Read person name
     int name_length;
-    fin.read(static_cast<char *>(&name_length), sizeof(int));
+    fin.read((char *)(&name_length), sizeof(int));
     if (name_length > 512) {
       std::cerr << "Person name exceeds max number of characters (512)" << std::endl;
       return;
@@ -334,13 +335,13 @@ void load_database_face_recognition(const char *database_path, face_recognition_
   }
 
   int height, width;
-  fin.read(static_cast<char *>(&height), sizeof(int));
-  fin.read(static_cast<char *>(&width), sizeof(int));
+  fin.read((char *)(&height), sizeof(int));
+  fin.read((char *)(&width), sizeof(int));
 
   float *database_buff = new float[height * width];
   int *features_ids = new int[height];
-  fin.read(static_cast<char *>(database_buff), sizeof(float) * height * width);
-  fin.read(static_cast<char *>(features_ids), sizeof(int) * height);
+  fin.read((char *)(database_buff), sizeof(float) * height * width);
+  fin.read((char *)(features_ids), sizeof(int) * height);
 
   fin.close();
 
