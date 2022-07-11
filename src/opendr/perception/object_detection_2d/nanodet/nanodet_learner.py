@@ -3,6 +3,7 @@ import warnings
 import datetime
 import cv2
 import time
+from pathlib import Path
 
 import onnx
 import onnxsim
@@ -38,6 +39,9 @@ from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_
 from opendr.engine.learners import Learner
 from urllib.request import urlretrieve
 
+_MODEL_NAMES = {"EfficientNet-Lite0_320", "EfficientNet-Lite1_416", "EfficientNet-Lite2_512",
+                "RepVGG-A0_416", "t", "g", "m", "m-416", "m-0.5x", "m-1.5x", "m-1.5x-416",
+                "plus-m_320", "plus-m-1.5x_320", "plus-m_416", "plus-m-1.5x_416", "custom"}
 
 class NanodetLearner(Learner):
     def __init__(self, config, lr=None, weight_decay=None, warmup_steps=None, warmup_ratio=None,
@@ -47,8 +51,7 @@ class NanodetLearner(Learner):
 
         """Initialise the Nanodet Learner"""
 
-        load_config(cfg, config)
-        self.cfg = cfg
+        self.cfg = self._load_hparam(config)
         self.lr_schedule_T_max = lr_schedule_T_max
         self.lr_schedule_eta_min = lr_schedule_eta_min
         self.warmup_steps = warmup_steps
@@ -80,6 +83,27 @@ class NanodetLearner(Learner):
                 cfg.model.weight_averager, device=self.device
             )
         self.logger = None
+
+    def _load_hparam(self, model: str):
+        """ Load hyperparameters for nanodet models and training configuration
+
+        :parameter model: The name of the model of which we want to load the config file
+        :type model: str
+        :return: config with hyperparameters
+        :rtype: dict
+        """
+        assert (
+                model in _MODEL_NAMES
+        ), f"Invalid model selected. Choose one of {_MODEL_NAMES}."
+        full_path = list()
+        path = Path(__file__).parent / "algorithm" / "config"# / f"nanodet-{model}.yaml"
+        wanted_file = "nanodet-{}.yml".format(model)
+        for root, dir, files in os.walk(path):
+            if wanted_file in files:
+                full_path.append(os.path.join(root, wanted_file))
+        assert (len(full_path) == 1), f"You must have only one nanodet-{model}.yaml file in you config folder"
+        load_config(cfg, full_path[0])
+        return cfg
 
     def overwrite_config(self, lr=0.001, weight_decay=0.05, iters=10, batch_size=64, checkpoint_after_iter=0,
                          checkpoint_load_iter=0, temp_path='temp'):
@@ -180,8 +204,8 @@ class NanodetLearner(Learner):
             self.logger.info("Loaded model weight from {}".format(path))
         pass
 
-    def download(self, path=None, mode="image", model=None, verbose=False,
-                     url=OPENDR_SERVER_URL + "/perception/object_detection_2d/nanodet/"):
+    def download(self, path=None, mode="image", model='-plus-m_416', verbose=False,
+                 url=OPENDR_SERVER_URL + "/perception/object_detection_2d/nanodet/"):
 
         """
         Downloads all files necessary for inference, evaluation and training. Valid mode options are: ["pretrained",
@@ -189,7 +213,7 @@ class NanodetLearner(Learner):
         :param path: folder to which files will be downloaded, if None self.temp_path will be used
         :type path: str, optional
         :param mode: one of: ["pretrained", "images", "test_data"], where "pretrained" downloads a pretrained
-        network depending on the network is choosed in config file, "images" downloads example inference data,
+        network depending on the network choosed in config file, "images" downloads example inference data,
         and "test_data" downloads additional image,annotation file and pretrained network for training and testing
         :type mode: str, optional
         :param model: the specific name of the model to download, all pre-configured configs files have their pretrained
@@ -199,6 +223,7 @@ class NanodetLearner(Learner):
         :param url: URL to file location on FTP server
         :type url: str, optional
         """
+
         valid_modes = ["pretrained", "images", "test_data"]
         if mode not in valid_modes:
             raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
@@ -226,39 +251,40 @@ class NanodetLearner(Learner):
 
             if verbose:
                 print("Downloading pretrain weights if provided...")
+
             file_url = os.path.join(url, "pretrained", "nanodet{}".format(model),
                                     "nanodet{}.pth".format(model))
-
             try:
                 urlretrieve(file_url, os.path.join(path, "nanodet{}.pth".format(model)))
             except:
                 print("Pretrain weights for this model are not provided!!!")
 
         elif mode == "images":
-            file_url = os.path.join(url, "images", "default.jpg")
+            file_url = os.path.join(url, "images", "000000000036.jpg")
             if verbose:
                 print("Downloading example image...")
-            urlretrieve(file_url, os.path.join(path, "default.jpg"))
+            urlretrieve(file_url, os.path.join(path, "000000000036.jpg"))
 
         elif mode == "test_data":
             os.makedirs(os.path.join(path, "test_data"), exist_ok=True)
-            os.makedirs(os.path.join(path, "test_data", "Images"), exist_ok=True)
-            os.makedirs(os.path.join(path, "test_data", "Annotations"), exist_ok=True)
-            # download train.txt
-            file_url = os.path.join(url, "test_data", "train.txt")
-            if verbose:
-                print("Downloading filelist...")
-            urlretrieve(file_url, os.path.join(path, "test_data", "train.txt"))
+            os.makedirs(os.path.join(path, "test_data", "train"), exist_ok=True)
+            os.makedirs(os.path.join(path, "test_data", "val"), exist_ok=True)
+            os.makedirs(os.path.join(path, "test_data", "train", "JPEGImages"), exist_ok=True)
+            os.makedirs(os.path.join(path, "test_data", "train", "Annotations"), exist_ok=True)
+            os.makedirs(os.path.join(path, "test_data", "val", "JPEGImages"), exist_ok=True)
+            os.makedirs(os.path.join(path, "test_data", "val", "Annotations"), exist_ok=True)
             # download image
-            file_url = os.path.join(url, "test_data", "Images", "default.jpg")
+            file_url = os.path.join(url, "images", "000000000036.jpg")
             if verbose:
                 print("Downloading image...")
-            urlretrieve(file_url, os.path.join(path, "test_data", "Images", "default.jpg"))
+            urlretrieve(file_url, os.path.join(path, "test_data", "train", "JPEGImages", "000000000036.jpg"))
+            urlretrieve(file_url, os.path.join(path, "test_data", "val", "JPEGImages", "000000000036.jpg"))
             # download annotations
-            file_url = os.path.join(url, "test_data", "Annotations", "default.json")
+            file_url = os.path.join(url, "annotations", "000000000036.xml")
             if verbose:
                 print("Downloading annotations...")
-            urlretrieve(file_url, os.path.join(path, "test_data", "Annotations", "default.json"))
+            urlretrieve(file_url, os.path.join(path, "test_data", "train", "Annotations", "000000000036.xml"))
+            urlretrieve(file_url, os.path.join(path, "test_data", "val", "Annotations", "000000000036.xml"))
 
     def reset(self):
         """This method is not used in this implementation."""
@@ -365,7 +391,7 @@ class NanodetLearner(Learner):
             self.logger.info("Setting up data...")
 
         train_dataset = build_dataset(self.cfg.data.val, dataset, self.cfg.class_names, "train")
-        val_dataset = train_dataset if val_dataset is None else build_dataset(self.cfg.data.val, val_dataset, self.cfg.class_names, "test")
+        val_dataset = train_dataset if val_dataset is None else build_dataset(self.cfg.data.val, val_dataset, self.cfg.class_names, "val")
 
         evaluator = build_evaluator(self.cfg.evaluator, val_dataset)
 
@@ -387,10 +413,6 @@ class NanodetLearner(Learner):
             collate_fn=naive_collate,
             drop_last=False,
         )
-
-        # Load only weights
-        if self.cfg.schedule.load_model is not None:
-            self.load(self.cfg.schedule.load_model)
 
         # Load state dictionary
         model_resume_path = (
@@ -442,11 +464,11 @@ class NanodetLearner(Learner):
         mkdir(local_rank, save_dir)
         logger = NanoDetLightningLogger(save_dir)
 
-        self.cfg.update({"test_mode": "test"})
+        self.cfg.update({"test_mode": "val"})
 
         logger.info("Setting up data...")
 
-        val_dataset = build_dataset(self.cfg.data.val, dataset, self.cfg.class_names, "test")
+        val_dataset = build_dataset(self.cfg.data.val, dataset, self.cfg.class_names, "val")
 
         val_dataloader = torch.utils.data.DataLoader(
             val_dataset,
@@ -493,7 +515,7 @@ class NanodetLearner(Learner):
         :type camid: str, optional
         :param threshold: confidence threshold
         :type threshold: float, optional
-        :return: list of bounding boxes
+        :return: list of bounding boxes of last image of path or last frame of the video
         :rtype: BoundingBoxList
         """
         local_rank = 0
@@ -501,7 +523,7 @@ class NanodetLearner(Learner):
         torch.backends.cudnn.benchmark = True
 
         self.logger = Logger(local_rank, use_tensorboard=False)
-        predictor = Predictor(self.cfg, self.model, self.logger, device=self.device)
+        predictor = Predictor(self.cfg, self.model, device=self.device)
         self.logger.log('Press "Esc", "q" or "Q" to exit.')
         if mode == "image":
             if os.path.isdir(path):
@@ -566,3 +588,4 @@ class NanodetLearner(Learner):
                         break
                 else:
                     break
+        return bounding_boxes

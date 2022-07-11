@@ -59,9 +59,6 @@ model:
 class_names: &class_names ['NAME1', 'NAME2', 'NAME3', 'NAME4', '...']  #Please fill in the category names (not include background category)
 data:
   train:
-    class_names: *class_names
-    img_path: TRAIN_IMAGE_FOLDER  #Please fill in train image path
-    ann_path: TRAIN_XML_FOLDER  #Please fill in train xml path
     input_size: [320,320] #[w,h]
     keep_ratio: True
     pipeline:
@@ -77,10 +74,6 @@ data:
       saturation: [0.8, 1.2]
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
   val:
-    name: XMLDataset
-    class_names: *class_names
-    img_path: VAL_IMAGE_FOLDER #Please fill in val image path
-    ann_path: VAL_XML_FOLDER #Please fill in val xml path
     input_size: [320,320] #[w,h]
     keep_ratio: True
     pipeline:
@@ -91,7 +84,6 @@ device:
   batchsize_per_gpu: 96
 schedule:
   resume: 0
-  load_model: #your/model/path.ckpt
   optimizer:
     name: AdamW
     lr: 0.001

@@ -20,13 +20,12 @@ from opendr.perception.object_detection_2d import NanodetLearner
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--config", help="Config file", type=str)
+    parser.add_argument("--image-path", help="Path to images for inference", type=str)
+    parser.add_argument("--model", help="Model that config file will be used", type=str)
     args = parser.parse_args()
 
-    nanodet = NanodetLearner(config=args.config, device=args.device)
-
-    nanodet.download(".", mode="pretrained", model="nanodet-plus-m_416.ckpt")
-    nanodet.load("./nanodet-plus-m_416.ckpt", verbose=True)
-    nanodet.download(".", mode="images")
-    boxes = nanodet.infer(path="./default.jpg")
+    nanodet = NanodetLearner(config=args.model, device=args.device)
+    nanodet.download("./predefined_examples", mode="pretrained")
+    nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
+    boxes = nanodet.infer(path=args.image_path)
 

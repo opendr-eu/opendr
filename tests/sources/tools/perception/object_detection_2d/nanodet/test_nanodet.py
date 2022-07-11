@@ -23,8 +23,7 @@ from opendr.engine.datasets import ExternalDataset
 
 device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
-# TODO: find a filepath in src
-_DEFAULT_CFG_FILE_PATH = ""
+_DEFAULT_MODEL = "plus-m_416"
 
 def rmfile(path):
     try:
@@ -49,20 +48,20 @@ class TestNanodetLearner(unittest.TestCase):
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "nanodet", "nanodet_temp")
-        cls.detector = NanodetLearner(config=_DEFAULT_CFG_FILE_PATH, device=device, temp_path=cls.temp_dir, batch_size=1, iters=1,
-                                                 checkpoint_after_iter=0, lr=1e-4)
+        cls.detector = NanodetLearner(config=_DEFAULT_MODEL, device=device, temp_path=cls.temp_dir, batch_size=1,
+                                      iters=1, checkpoint_after_iter=0, lr=1e-4)
         # Download all required files for testing
-        cls.detector.download(mode="pretrained")
-        cls.detector.download(mode="images")
-        cls.detector.download(mode="test_data")
+        cls.detector.download(path=cls.temp_dir, model="pretrained")
+        cls.detector.download(path=cls.temp_dir, mode="images")
+        cls.detector.download(path=cls.temp_dir, mode="test_data")
 
     @classmethod
     def tearDownClass(cls):
         print('Removing temporary directories for Nanodet...')
         # Clean up downloaded files
-        rmfile(os.path.join(cls.temp_dir, "default.jpg"))
-        rmdir(os.path.join(cls.temp_dir, "nanodet-plus-m_416"))
+        rmfile(os.path.join(cls.temp_dir, "000000000036.jpg"))
         rmdir(os.path.join(cls.temp_dir, "test_data"))
+        rmdir(os.path.join(cls.temp_dir, "nanodet-plus-m_416"))
         rmdir(os.path.join(cls.temp_dir))
 
         del cls.detector
@@ -71,7 +70,7 @@ class TestNanodetLearner(unittest.TestCase):
 
     def test_fit(self):
         print('Starting training test for Nanodet...')
-        training_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "test_data"), dataset_type="coco")
+        training_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "test_data"), dataset_type="voc")
         m = list(self.detector._model.collect_params().values())[2].data().asnumpy().copy()
         self.detector.fit(dataset=training_dataset, silent=True)
         n = list(self.detector._model.collect_params().values())[2].data().asnumpy()
@@ -83,8 +82,8 @@ class TestNanodetLearner(unittest.TestCase):
 
     def test_eval(self):
         print('Starting evaluation test for Nanodet...')
-        eval_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "test_data"), dataset_type="coco")
-        self.detector.load(os.path.join(self.temp_dir, "nanodet-plus-m_416"))
+        eval_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "test_data"), dataset_type="voc")
+        self.detector.load(os.path.join(self.temp_dir, f"nanodet-{_DEFAULT_MODEL}", f"nanodet-{_DEFAULT_MODEL}.ckpt"))
         results_dict = self.detector.eval(eval_dataset)
         self.assertIsNotNone(results_dict['map'],
                              msg="Eval results dictionary not returned.")
@@ -94,20 +93,20 @@ class TestNanodetLearner(unittest.TestCase):
 
     def test_infer(self):
         print('Starting inference test for Nanodet...')
-        self.detector.load(os.path.join(self.temp_dir, "nanodet-plus-m_416"))
-        img = cv2.imread(os.path.join(self.temp_dir, "default.jpg"))
-        self.assertIsNotNone(self.detector.infer(img),
+        self.detector.load(os.path.join(self.temp_dir, f"nanodet-{_DEFAULT_MODEL}", f"nanodet-{_DEFAULT_MODEL}.ckpt"))
+        # img = cv2.imread(os.path.join(self.temp_dir, "000000000036.jpg"))
+        self.assertIsNotNone(self.detector.infer(os.path.join(self.temp_dir, "000000000036.jpg")),
                              msg="Returned empty BoundingBoxList.")
-        del img
+        # del img
         gc.collect()
         print('Finished inference test for Nanodet...')
 
     def test_save_load(self):
         print('Starting save/load test for Nanodet...')
         self.detector.save(os.path.join(self.temp_dir, "test_model"))
-        self.detector._model = None
+        self.detector.model = None
         self.detector.load(os.path.join(self.temp_dir, "test_model"))
-        self.assertIsNotNone(self.detector._model, "model is None after loading model.")
+        self.assertIsNotNone(self.detector.model, "model is None after loading model.")
         # Cleanup
         rmdir(os.path.join(self.temp_dir, "test_model"))
         print('Finished save/load test for Nanodet...')

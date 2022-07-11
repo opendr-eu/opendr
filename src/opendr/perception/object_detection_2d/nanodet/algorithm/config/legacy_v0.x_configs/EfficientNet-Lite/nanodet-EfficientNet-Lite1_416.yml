@@ -50,8 +50,6 @@ model:
           loss_weight: 2.0
 data:
   train:
-    img_path: /train2017
-    ann_path: /annotations/instances_train2017.json
     input_size: [416,416] #[w,h]
     keep_ratio: True
     pipeline:
@@ -67,8 +65,6 @@ data:
       saturation: [0.5, 1.2]
       normalize: [[127.0, 127.0, 127.0], [128.0, 128.0, 128.0]]
   val:
-    img_path: /val2017
-      ann_path: /annotations/instances_val2017.json
     input_size: [416,416] #[w,h]
     keep_ratio: True
     pipeline:
@@ -79,7 +75,6 @@ device:
   batchsize_per_gpu: 100
 schedule:
   resume: 0
-  load_model: #your/model/path.ckpt
   optimizer:
     name: SGD
     lr: 0.07

@@ -75,7 +75,8 @@ def save_model(model, path, epoch, iter, optimizer=None):
 
     torch.save(data, path)
 
-@rank_zero_only
+# @rank_zero_only
+@rank_filter
 def save_model_state(path, model, weight_averager=None, logger=None):
     if logger:
         logger.info("Saving model to {}".format(path))

@@ -63,10 +63,6 @@ model:
       reg_max: 7
 data:
   train:
-#    name: CocoDataset
-    name: coco
-    img_path: datasets/coco/train2017
-    ann_path: datasets/coco/annotations/instances_train2017.json
     input_size: [320,320] #[w,h]
     keep_ratio: False
     pipeline:
@@ -82,9 +78,6 @@ data:
       saturation: [0.5, 1.2]
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
   val:
-    name: CocoDataset
-    img_path: datasets/coco/val2017
-    ann_path: datasets/coco/annotations/instances_val2017.json
     input_size: [320,320] #[w,h]
     keep_ratio: False
     pipeline:
@@ -94,10 +87,7 @@ device:
   workers_per_gpu: 10
   batchsize_per_gpu: 48 #96
 schedule:
-  resume: False
-  load_model:
-    flag: False
-    path: /path/to/pretrain
+  resume: 0
   optimizer:
     name: AdamW
     lr: 0.001

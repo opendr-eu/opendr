@@ -20,39 +20,29 @@ from opendr.perception.object_detection_2d import NanodetLearner
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", help="Dataset to train on", type=str, default="voc", choices=["voc", "coco",
-                                                                                                   "widerperson"])
+    parser.add_argument("--dataset", help="Dataset to train on", type=str, default="coco", choices=["voc", "coco"])
     parser.add_argument("--data-root", help="Dataset root folder", type=str)
-    parser.add_argument("--config", help="Config file root folder", type=str)
+    parser.add_argument("--model", help="Model that config file will be used", type=str)
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--batch-size", help="Batch size to use for training", type=int, default=6)
     parser.add_argument("--lr", help="Learning rate to use for training", type=float, default=5e-4)
-    parser.add_argument("--val-after", help="Epochs in-between  evaluations", type=int, default=5)
-    parser.add_argument("--checkpoint-freq", help="Frequency in-between checkpoint saving", type=int, default=5)
-    parser.add_argument("--n-epochs", help="Number of total epochs", type=int, default=25)
+    parser.add_argument("--checkpoint-freq", help="Frequency in-between checkpoint saving and evaluations", type=int, default=50)
+    parser.add_argument("--n-epochs", help="Number of total epochs", type=int, default=300)
     parser.add_argument("--resume-from", help="Epoch to load checkpoint file and resume training from", type=int, default=0)
 
     args = parser.parse_args()
 
-    # if args.dataset == 'voc':
-    #     dataset = ExternalDataset(args.data_root, 'voc')
-    #     val_dataset = ExternalDataset(args.data_root, 'voc')
-    # elif args.dataset == 'coco':
-    #     dataset = ExternalDataset(args.data_root, 'coco')
-    #     val_dataset = ExternalDataset(args.data_root, 'coco')
-    # elif args.dataset == 'widerperson':
-    #     from opendr.perception.object_detection_2d.datasets import WiderPersonDataset
-    #     dataset = WiderPersonDataset(root=args.data_root, splits=['train'])
-    #     val_dataset = WiderPersonDataset(root=args.data_root, splits=['val'])
+    if args.dataset == 'voc':
+        dataset = ExternalDataset(args.data_root, 'voc')
+        val_dataset = ExternalDataset(args.data_root, 'voc')
+    elif args.dataset == 'coco':
+        dataset = ExternalDataset(args.data_root, 'coco')
+        val_dataset = ExternalDataset(args.data_root, 'coco')
 
-    dataset_root = "/home/manos/data/coco2017"
-    dataset = ExternalDataset(dataset_root, 'coco')
-    val_dataset = ExternalDataset(dataset_root, 'coco')
-
-    config = "/home/manos/new_opendr/opendr/src/opendr/perception/object_detection_2d/nanodet/algorithm/config/nanodet-plus-m_416.yml"
-    nanodet = NanodetLearner(config=config)#, weight_decay=0.05, warmup_steps=500, warmup_ratio=0.0001,
-                 #lr_schedule_T_max=300, lr_schedule_eta_min=0.00005, grad_clip=35, iters=300,
-                 #batch_size=4, checkpoint_after_iter=50, checkpoint_load_iter=0, temp_path='temp', device='cuda')
-
+    nanodet = NanodetLearner(config=args.model, iters=args.n_epochs, lr=args.lr, batch_size=args.batch_size,
+                             checkpoint_after_iter=args.checkpoint_freq, checkpoint_load_iter=args.resume_from,
+                             device=args.device)
+    nanodet.download("./predefined_examples", mode="pretrained")
+    nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
     nanodet.fit(dataset, val_dataset)
     nanodet.save()

@@ -14,30 +14,19 @@
 
 import argparse
 
-from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import NanodetLearner
-from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-
+    parser.add_argument("--model", help="Model that config file will be used", type=str)
     args = parser.parse_args()
 
-    config = "/home/manos/new_opendr/opendr/src/opendr/perception/object_detection_2d/nanodet/algorithm/config/nanodet-plus-m_416.yml"
-    load_path = "/home/manos/new_opendr/opendr/src/opendr/perception/object_detection_2d/nanodet/algorithm/pretrained_models/nanodet-plus-m_416_checkpoint.ckpt"
-    nanodet = NanodetLearner(config=config)
-    # ssd.download(".", mode="pretrained")
-    nanodet.load(load_path, verbose=True)
+    nanodet = NanodetLearner(config=args.model, device=args.device)
 
-    # ssd.download(".", mode="images")
-
-    # dataset_root = "/home/manos/data/coco2017/val2017"
-    # image_path = "{}/000000000724.jpg".format(dataset_root)
-    # boxes = nanodet.infer(path=image_path)
-
-    dataset_root = "/home/manos/Downloads"
-    video_path = "{}/temp_video.mp4".format(dataset_root)
-    boxes = nanodet.infer(path=video_path, mode="video")
+    nanodet.download("./predefined_examples", mode="pretrained")
+    nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
+    nanodet.download("./predefined_examples", mode="images")
+    boxes = nanodet.infer(path="./predefined_examples/000000000036.jpg")
 

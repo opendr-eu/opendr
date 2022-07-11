@@ -15,28 +15,20 @@
 import argparse
 
 from opendr.perception.object_detection_2d import NanodetLearner
-from opendr.perception.object_detection_2d import WiderPersonDataset
 from opendr.engine.datasets import ExternalDataset
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-root", help="Dataset root folder", type=str)
+    parser.add_argument("--model", help="Model that config file will be used", type=str)
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
 
     args = parser.parse_args()
 
-    # dataset_root = "/home/manos/data/coco2017"
-    # val_dataset = ExternalDataset(dataset_root, 'coco')
+    val_dataset = ExternalDataset(args.data_root, 'coco')
+    nanodet = NanodetLearner(config=args.model, device=args.device)
 
-    dataset_root = "/home/manos/data/cocoDataset/temp"
-    val_dataset = ExternalDataset(dataset_root, 'voc')
-
-    config = "/home/manos/new_opendr/opendr/src/opendr/perception/object_detection_2d/nanodet/algorithm/config/nanodet-plus-m_416.yml"
-    nanodet = NanodetLearner(config=config)  # , weight_decay=0.05, warmup_steps=500, warmup_ratio=0.0001,
-    # lr_schedule_T_max=300, lr_schedule_eta_min=0.00005, grad_clip=35, iters=300,
-    # batch_size=4, checkpoint_after_iter=50, checkpoint_load_iter=0, temp_path='temp', device='cuda')
-
-    # nanodet.download(".", mode="pretrained")
-    nanodet.load("/home/manos/new_opendr/opendr/src/opendr/perception/object_detection_2d/nanodet/algorithm/pretrained_models/nanodet-plus-m_416_checkpoint.ckpt", verbose=True)
+    nanodet.download("./predefined_examples", mode="pretrained")
+    nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
     nanodet.eval(val_dataset)

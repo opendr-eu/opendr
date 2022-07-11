@@ -27,19 +27,27 @@ def build_dataset(cfg, dataset, class_names, mode, verbose=True):
             if dataset.dataset_type.lower() not in supported_datasets:
                 raise UserWarning("ExternalDataset dataset_type must be one of: ", supported_datasets)
 
-            dataset_root = dataset.path
-            img_path = dataset.path + dataset_cfg.pop("img_path")
-            ann_path = dataset.path + dataset_cfg.pop("ann_path")
-
             if verbose:
                 print("Loading {} type dataset...".format(dataset.dataset_type))
-                print("From {}".format(dataset_root))
+                print("From {}".format(dataset.path))
 
             if dataset.dataset_type.lower() == 'voc':
+                if mode == "train":
+                    img_path = "/train/JPEGImages".format(dataset.path)
+                    ann_path = "/train/Annotations".format(dataset.path)
+                else:
+                    img_path = "{}/val/JPEGImages".format(dataset.path)
+                    ann_path = "{}/val/Annotations".format(dataset.path)
                 dataset = XMLDataset(img_path=img_path, ann_path=ann_path, mode=mode,
-                                     class_names=class_names ,**dataset_cfg)
+                                     class_names=class_names, **dataset_cfg)
 
             elif dataset.dataset_type.lower() == 'coco':
+                if mode == "train":
+                    img_path = "{}/train2017".format(dataset.path)
+                    ann_path = "{}/annotations/instances_train2017.json".format(dataset.path)
+                else:
+                    img_path = "{}/val2017".format(dataset.path)
+                    ann_path = "{}/annotations/instances_val2017.json".format(dataset.path)
                 dataset = CocoDataset(img_path=img_path, ann_path=ann_path, mode=mode, **dataset_cfg)
             if verbose:
                 print("ExternalDataset loaded.")
