@@ -503,7 +503,7 @@ class NanodetLearner(Learner):
         logger.info("Starting testing...")
         trainer.test(task, val_dataloader)
 
-    def infer(self, path="", mode="image", camid="0", threshold=0.35):
+    def infer(self, path="", mode="image", camid="0", threshold=0.35, time_to_open=0):
         """
         Performs inference
         :param path: path to a directory of images, a single image or a video to perform inference
@@ -515,6 +515,8 @@ class NanodetLearner(Learner):
         :type camid: str, optional
         :param threshold: confidence threshold
         :type threshold: float, optional
+        :param time_to_open: a timer for how long to stay an image open before the next one goes for inference
+        :type time_to_open: int, optional
         :return: list of bounding boxes of last image of path or last frame of the video
         :rtype: BoundingBoxList
         """
@@ -552,7 +554,7 @@ class NanodetLearner(Learner):
                 result_image = draw_bounding_boxes(img.opencv(), bounding_boxes, class_names=self.cfg.class_names, show=False)
                 cv2.imshow('detections', result_image)
                 print("visualize time: {:.3f}s".format(time.time() - time1))
-                ch = cv2.waitKey(0)
+                ch = cv2.waitKey(time_to_open)
                 if ch == 27 or ch == ord("q") or ch == ord("Q"):
                     break
         elif mode == "video" or mode == "webcam":
