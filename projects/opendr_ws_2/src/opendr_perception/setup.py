@@ -27,7 +27,6 @@ setup(
             'object_detection_2d_ssd = opendr_perception.object_detection_2d_ssd_node:main',
             'face_detection_retinaface = opendr_perception.face_detection_retinaface_node:main',
             'semantic_segmentation_bisenet = opendr_perception.semantic_segmentation_bisenet_node:main',
-            'tester = opendr_perception.subscriber_tester:main',
         ],
     },
 )
