@@ -14,7 +14,7 @@ The following table summarizes the installation options based on your system arc
 | docker                | Linux / Windows       |
 
 Note that pip installation includes only the Python API of the toolkit. 
-If you need to use all the functionalities of the toolkit (e.g., ROS nodes, etc.), then you need either to use the pre-compiled docker images or to follow the installation instruction for cloning and building the toolkit.
+If you need to use all the functionalities of the toolkit (e.g., ROS nodes, etc.), then you need either to use the pre-compiled docker images or to follow the installation instructions for cloning and building the toolkit.
 
 The toolkit is developed and tested on *Ubuntu 20.04 (x86-64)*. 
 Please make sure that you have the most recent version of all tools by running
