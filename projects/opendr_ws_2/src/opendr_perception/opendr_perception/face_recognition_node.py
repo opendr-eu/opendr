@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import cv2
 import argparse
 import torch
 
@@ -24,6 +25,7 @@ from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import ObjectHypothesisWithPose
 from opendr_ros2_bridge import ROS2Bridge
 
+from opendr.engine.data import Image
 from opendr.perception.face_recognition import FaceRecognitionLearner
 from opendr.perception.object_detection_2d import RetinaFaceLearner
 from opendr.perception.object_detection_2d.datasets.transforms import BoundingBoxListToNumpyArray
@@ -31,13 +33,16 @@ from opendr.perception.object_detection_2d.datasets.transforms import BoundingBo
 
 class FaceDetectionNode(Node):
 
-    def __init__(self, input_rgb_image_topic="image_raw", detections_topic="/opendr/face_recognition",
-                 detections_id_topic="/opendr/face_recognition_id", database_path="./database", device="cuda",
-                 backbone="mobilefacenet"):
+    def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_face_reco_annotated",
+                 detections_topic="/opendr/face_recognition", detections_id_topic="/opendr/face_recognition_id",
+                 database_path="./database", device="cuda", backbone="mobilefacenet"):
         """
         Creates a ROS Node for face recognition.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
+        :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
+        image is published)
+        :type output_rgb_image_topic: str
         :param detections_topic: Topic to which we are publishing the recognized face information (if None,
         no face recognition message is published)
         :type detections_topic:  str
@@ -54,6 +59,11 @@ class FaceDetectionNode(Node):
         super().__init__('face_recognition_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
+
+        if output_rgb_image_topic is not None:
+            self.image_publisher = self.create_publisher(ROS_Image, output_rgb_image_topic, 1)
+        else:
+            self.image_publisher = None
 
         if detections_topic is not None:
             self.face_publisher = self.create_publisher(ObjectHypothesisWithPose, detections_topic, 1)
@@ -101,8 +111,8 @@ class FaceDetectionNode(Node):
                 boxes = bounding_boxes[:, :4]
                 for idx, box in enumerate(boxes):
                     (startX, startY, endX, endY) = int(box[0]), int(box[1]), int(box[2]), int(box[3])
-                    img = image[startY:endY, startX:endX]
-                    result = self.recognizer.infer(img)
+                    frame = image[startY:endY, startX:endX]
+                    result = self.recognizer.infer(frame)
 
                     # Publish face information and ID
                     if self.face_publisher is not None:
@@ -111,6 +121,19 @@ class FaceDetectionNode(Node):
                     if self.face_id_publisher is not None:
                         self.face_id_publisher.publish(self.bridge.to_ros_face_id(result))
 
+                    if self.image_publisher is not None:
+                        if result.description != 'Not found':
+                            color = (0, 255, 0)
+                        else:
+                            color = (0, 0, 255)
+                        # Annotate image with face detection/recognition boxes
+                        cv2.rectangle(image, (startX, startY), (endX, endY), color, thickness=2)
+                        cv2.putText(image, result.description, (startX, endY - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                                    1, color, 2, cv2.LINE_AA)
+
+            # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
+            self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -118,6 +141,8 @@ def main(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
                         type=str, default="image_raw")
+    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
+                        type=str, default="/opendr/image_face_reco_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=str, default="/opendr/face_recognition")
     parser.add_argument("-id", "--detections_id_topic", help="Topic name for detection ID messages",
@@ -147,6 +172,7 @@ def main(args=None):
 
     face_detection_node = FaceDetectionNode(device=device, backbone=args.backbone, database_path=args.dataset_path,
                                             input_rgb_image_topic=args.input_rgb_image_topic,
+                                            output_rgb_image_topic=args.output_rgb_image_topic,
                                             detections_topic=args.detections_topic,
                                             detections_id_topic=args.detections_id_topic)
 
