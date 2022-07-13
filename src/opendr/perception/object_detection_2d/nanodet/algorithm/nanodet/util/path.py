@@ -17,7 +17,7 @@ import os
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.rank_filter import rank_filter
 
 
-@rank_filter
+# @rank_filter
 def mkdir(path):
     if not os.path.exists(path):
         os.makedirs(path)

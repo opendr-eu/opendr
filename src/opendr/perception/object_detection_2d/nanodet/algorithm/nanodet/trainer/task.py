@@ -1,3 +1,5 @@
+# Modified from OpenDR European Project
+#
 # Copyright 2021 RangiLyu.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +39,7 @@ class TrainingTask(LightningModule):
         evaluator: Evaluator for evaluating the model performance.
     """
 
-    def __init__(self, cfg, model, weight_averager = None, evaluator=None):
+    def __init__(self, cfg, model, evaluator=None):
         super(TrainingTask, self).__init__()
         self.cfg = cfg
         self.model = model
@@ -45,9 +47,12 @@ class TrainingTask(LightningModule):
         self.save_flag = -10
         self.log_style = "NanoDet"
         self.weight_averager = None
-        if weight_averager is not None:
-            self.weight_averager = weight_averager
+        if "weight_averager" in self.cfg.model:
+            self.weight_averager = build_weight_averager(
+                self.cfg.model.weight_averager, device=self.device
+            )
             self.avg_model = copy.deepcopy(self.model)
+
 
 
     def _preprocess_batch_input(self, batch):
@@ -68,6 +73,9 @@ class TrainingTask(LightningModule):
         preds = self.forward(batch["img"])
         results = self.model.head.post_process(preds, batch)
         return results
+
+    def save_current_model(self, path):
+        save_model_state(path=path, model=self.model, weight_averager=self.weight_averager, logger=self.logger)
 
     def training_step(self, batch, batch_idx):
         batch = self._preprocess_batch_input(batch)
@@ -102,13 +110,13 @@ class TrainingTask(LightningModule):
     def training_epoch_end(self, outputs: List[Any]) -> None:
         # save models in schedule epoches
         if self.current_epoch % self.cfg.schedule.val_intervals == 0:
-            checkpoint_save_path = os.path.join(self.cfg.save_dir, "checkpoint_iters")
-            mkdir(self.local_rank, checkpoint_save_path)
+            checkpoint_save_path = os.path.join(self.cfg.save_dir, "checkpoints")
+            mkdir(checkpoint_save_path)
             print("===" * 10)
             print("checkpoint_save_path: {} \n epoch: {}".format(checkpoint_save_path, self.current_epoch))
             print("===" * 10)
             self.trainer.save_checkpoint(
-                os.path.join(checkpoint_save_path, "model_iter{}.ckpt".format(self.current_epoch))
+                os.path.join(checkpoint_save_path, "model_iter_{}.ckpt".format(self.current_epoch))
             )
 
         self.lr_scheduler.step()
@@ -157,32 +165,30 @@ class TrainingTask(LightningModule):
         )
         if all_results:
             eval_results = self.evaluator.evaluate(
-                all_results, self.cfg.save_dir, rank=self.local_rank
-            )
+                all_results, self.cfg.save_dir)
             metric = eval_results[self.cfg.evaluator.save_key]
             # save best model
             if metric > self.save_flag:
                 self.save_flag = metric
                 best_save_path = os.path.join(self.cfg.save_dir, "model_best")
-                mkdir(self.local_rank, best_save_path)
+                mkdir(best_save_path)
                 self.trainer.save_checkpoint(
                     os.path.join(best_save_path, "model_best.ckpt")
                 )
-                save_model_state( os.path.join(best_save_path, "nanodet_model_best.pth"),
-                                  self.model, self.weight_averager, self.logger )
+                self.save_current_model(os.path.join(best_save_path, "nanodet_model_best.pth"))
                 txt_path = os.path.join(best_save_path, "eval_results.txt")
-                if self.local_rank < 1:
-                    with open(txt_path, "a") as f:
-                        f.write("Epoch:{}\n".format(self.current_epoch + 1))
-                        for k, v in eval_results.items():
-                            f.write("{}: {}\n".format(k, v))
+                with open(txt_path, "a") as f:
+                    f.write("Epoch:{}\n".format(self.current_epoch + 1))
+                    for k, v in eval_results.items():
+                        f.write("{}: {}\n".format(k, v))
             else:
                 warnings.warn(
                     "Warning! Save_key is not in eval results! Only save model last!"
                 )
             self.logger.log_metrics(eval_results, self.current_epoch + 1)
         else:
-            self.logger.info("Skip val on rank {}".format(self.local_rank))
+            # self.logger.info("Skip val on rank {}".format(self.local_rank))
+            self.logger.info("Skip val ")
 
     def test_step(self, batch, batch_idx):
         dets = self.predict(batch, batch_idx)
@@ -204,8 +210,7 @@ class TrainingTask(LightningModule):
 
             if self.cfg.test_mode == "val":
                 eval_results = self.evaluator.evaluate(
-                    all_results, self.cfg.save_dir, rank=self.local_rank
-                )
+                    all_results, self.cfg.save_dir)
                 txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
                 with open(txt_path, "a") as f:
                     for k, v in eval_results.items():
@@ -299,8 +304,8 @@ class TrainingTask(LightningModule):
             step: Step value to record
 
         """
-        if self.local_rank < 1:
-            self.logger.experiment.add_scalars(tag, {phase: value}, step)
+        # if self.local_rank < 1:
+        self.logger.experiment.add_scalars(tag, {phase: value}, step)
 
     def info(self, string):
         self.logger.info(string)
@@ -351,5 +356,4 @@ class TrainingTask(LightningModule):
                 )
                 self.weight_averager.load_state_dict(avg_params)
                 self.logger.info("Loaded average state from checkpoint.")
-
 

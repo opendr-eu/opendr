@@ -88,7 +88,6 @@ device:
   batchsize_per_gpu: 4 #96
 schedule:
   resume: 0
-  load_model:
   optimizer:
     name: AdamW
     lr: 0.001

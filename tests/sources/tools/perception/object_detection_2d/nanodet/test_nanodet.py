@@ -14,12 +14,12 @@
 
 import unittest
 import gc
-import cv2
 import shutil
 import os
 import numpy as np
 from opendr.perception.object_detection_2d import NanodetLearner
 from opendr.engine.datasets import ExternalDataset
+import torch
 
 device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
@@ -48,7 +48,7 @@ class TestNanodetLearner(unittest.TestCase):
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "nanodet", "nanodet_temp")
-        cls.detector = NanodetLearner(config=_DEFAULT_MODEL, device=device, temp_path=cls.temp_dir, batch_size=1,
+        cls.detector = NanodetLearner(model_to_use=_DEFAULT_MODEL, device=device, temp_path=cls.temp_dir, batch_size=1,
                                       iters=1, checkpoint_after_iter=0, lr=1e-4)
         # Download all required files for testing
         cls.detector.download(path=cls.temp_dir, model="pretrained")
@@ -72,7 +72,7 @@ class TestNanodetLearner(unittest.TestCase):
         print('Starting training test for Nanodet...')
         training_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "test_data"), dataset_type="voc")
         m = list(self.detector._model.collect_params().values())[2].data().asnumpy().copy()
-        self.detector.fit(dataset=training_dataset, silent=True)
+        self.detector.fit(dataset=training_dataset, verbose=False)
         n = list(self.detector._model.collect_params().values())[2].data().asnumpy()
         self.assertFalse(np.array_equal(m, n),
                          msg="Model parameters did not change after running fit.")
@@ -83,8 +83,8 @@ class TestNanodetLearner(unittest.TestCase):
     def test_eval(self):
         print('Starting evaluation test for Nanodet...')
         eval_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "test_data"), dataset_type="voc")
-        self.detector.load(os.path.join(self.temp_dir, f"nanodet-{_DEFAULT_MODEL}", f"nanodet-{_DEFAULT_MODEL}.ckpt"))
-        results_dict = self.detector.eval(eval_dataset)
+        self.detector.load(path=os.path.join(self.temp_dir, f"nanodet-{_DEFAULT_MODEL}", f"nanodet-{_DEFAULT_MODEL}.ckpt"), verbose=False)
+        results_dict = self.detector.eval(dataset=eval_dataset, verbose=False)
         self.assertIsNotNone(results_dict['map'],
                              msg="Eval results dictionary not returned.")
         del eval_dataset, results_dict
@@ -94,20 +94,24 @@ class TestNanodetLearner(unittest.TestCase):
     def test_infer(self):
         print('Starting inference test for Nanodet...')
         self.detector.load(os.path.join(self.temp_dir, f"nanodet-{_DEFAULT_MODEL}", f"nanodet-{_DEFAULT_MODEL}.ckpt"))
-        # img = cv2.imread(os.path.join(self.temp_dir, "000000000036.jpg"))
-        self.assertIsNotNone(self.detector.infer(os.path.join(self.temp_dir, "000000000036.jpg")),
+        self.assertIsNotNone(self.detector.infer(path=os.path.join(self.temp_dir, "000000000036.jpg"), show=False),
                              msg="Returned empty BoundingBoxList.")
-        # del img
         gc.collect()
         print('Finished inference test for Nanodet...')
 
     def test_save_load(self):
         print('Starting save/load test for Nanodet...')
-        self.detector.save(os.path.join(self.temp_dir, "test_model"))
+        self.detector.save(path=os.path.join(self.temp_dir, "test_model"), verbose=False)
+        starting_param_1 = list(self.detector.model.parameters())[0].clone()
         self.detector.model = None
-        self.detector.load(os.path.join(self.temp_dir, "test_model"))
-        self.assertIsNotNone(self.detector.model, "model is None after loading model.")
+        detector2 = NanodetLearner(model_to_use=_DEFAULT_MODEL, device=device, temp_path=self.temp_dir, batch_size=1,
+                                   iters=1, checkpoint_after_iter=0, lr=1e-4)
+        detector2.load(path=os.path.join(self.temp_dir, "test_model", "save.pth"), verbose=False)
+        new_param = list(detector2.model.parameters())[0].clone()
+        self.assertTrue(torch.equal(starting_param_1, new_param))
+
         # Cleanup
+        rmfile(os.path.join(self.temp_dir, "test_model", "save.pth"))
         rmdir(os.path.join(self.temp_dir, "test_model"))
         print('Finished save/load test for Nanodet...')
 

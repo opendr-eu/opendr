@@ -39,9 +39,10 @@ if __name__ == '__main__':
         dataset = ExternalDataset(args.data_root, 'coco')
         val_dataset = ExternalDataset(args.data_root, 'coco')
 
-    nanodet = NanodetLearner(config=args.model, iters=args.n_epochs, lr=args.lr, batch_size=args.batch_size,
+    nanodet = NanodetLearner(model_to_use=args.model, iters=args.n_epochs, lr=args.lr, batch_size=args.batch_size,
                              checkpoint_after_iter=args.checkpoint_freq, checkpoint_load_iter=args.resume_from,
                              device=args.device)
+
     nanodet.download("./predefined_examples", mode="pretrained")
     nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
     nanodet.fit(dataset, val_dataset)

@@ -1,3 +1,5 @@
+# Modified from OpenDR European Project
+#
 # Copyright 2021 RangiLyu.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -64,7 +66,7 @@ def load_model_weight(model, checkpoint, logger=None):
 
 
 # @rank_zero_only
-@rank_filter
+# @rank_filter
 def save_model(model, path, epoch, iter, optimizer=None):
     model_state_dict = (
         model.module.state_dict() if hasattr(model, "module") else model.state_dict()
@@ -75,8 +77,9 @@ def save_model(model, path, epoch, iter, optimizer=None):
 
     torch.save(data, path)
 
+
 # @rank_zero_only
-@rank_filter
+# @rank_filter
 def save_model_state(path, model, weight_averager=None, logger=None):
     if logger:
         logger.info("Saving model to {}".format(path))

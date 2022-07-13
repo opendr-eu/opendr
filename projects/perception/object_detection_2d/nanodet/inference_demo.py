@@ -13,9 +13,7 @@
 # limitations under the License.
 
 import argparse
-
 from opendr.perception.object_detection_2d import NanodetLearner
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -23,7 +21,7 @@ if __name__ == '__main__':
     parser.add_argument("--model", help="Model that config file will be used", type=str)
     args = parser.parse_args()
 
-    nanodet = NanodetLearner(config=args.model, device=args.device)
+    nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
 
     nanodet.download("./predefined_examples", mode="pretrained")
     nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)

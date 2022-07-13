@@ -1,3 +1,5 @@
+# Modified from OpenDR European Project
+#
 # Copyright 2021 RangiLyu.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 
 import copy
 from opendr.engine.datasets import ExternalDataset
@@ -33,8 +36,8 @@ def build_dataset(cfg, dataset, class_names, mode, verbose=True):
 
             if dataset.dataset_type.lower() == 'voc':
                 if mode == "train":
-                    img_path = "/train/JPEGImages".format(dataset.path)
-                    ann_path = "/train/Annotations".format(dataset.path)
+                    img_path = "{}/train/JPEGImages".format(dataset.path)
+                    ann_path = "{}/train/Annotations".format(dataset.path)
                 else:
                     img_path = "{}/val/JPEGImages".format(dataset.path)
                     ann_path = "{}/val/Annotations".format(dataset.path)

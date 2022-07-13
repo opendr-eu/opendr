@@ -27,7 +27,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     val_dataset = ExternalDataset(args.data_root, 'coco')
-    nanodet = NanodetLearner(config=args.model, device=args.device)
+    nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
 
     nanodet.download("./predefined_examples", mode="pretrained")
     nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
