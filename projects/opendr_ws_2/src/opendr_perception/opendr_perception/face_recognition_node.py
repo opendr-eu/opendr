@@ -170,18 +170,18 @@ def main(args=None):
         print("Using CPU.")
         device = "cpu"
 
-    face_detection_node = FaceDetectionNode(device=device, backbone=args.backbone, database_path=args.dataset_path,
-                                            input_rgb_image_topic=args.input_rgb_image_topic,
-                                            output_rgb_image_topic=args.output_rgb_image_topic,
-                                            detections_topic=args.detections_topic,
-                                            detections_id_topic=args.detections_id_topic)
+    face_recognition_node = FaceRecognitionNode(device=device, backbone=args.backbone, database_path=args.dataset_path,
+                                                input_rgb_image_topic=args.input_rgb_image_topic,
+                                                output_rgb_image_topic=args.output_rgb_image_topic,
+                                                detections_topic=args.detections_topic,
+                                                detections_id_topic=args.detections_id_topic)
 
-    rclpy.spin(face_detection_node)
+    rclpy.spin(face_recognition_node)
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    face_detection_node.destroy_node()
+    face_recognition_node.destroy_node()
     rclpy.shutdown()
 
 
