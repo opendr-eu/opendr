@@ -22,7 +22,7 @@ Please make sure that you have the most recent version of all tools by running
 sudo apt upgrade
 ```
 before installing the toolkit and then follow the installation instructions in the relevant section.
-All the required dependecies will be automatically installed (or explicit instructions are provided).
+All the required dependencies will be automatically installed (or explicit instructions are provided).
 Other platforms apart from Ubuntu 20.04, e.g., Windows, other Linux distributions, etc., are currently supported through docker images.
 
 # Installing using *pip*
