@@ -31,7 +31,7 @@ from opendr.perception.object_detection_2d import RetinaFaceLearner
 from opendr.perception.object_detection_2d.datasets.transforms import BoundingBoxListToNumpyArray
 
 
-class FaceDetectionNode(Node):
+class FaceRecognitionNode(Node):
 
     def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_face_reco_annotated",
                  detections_topic="/opendr/face_recognition", detections_id_topic="/opendr/face_recognition_id",
