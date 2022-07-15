@@ -68,7 +68,7 @@ class PoseEstimationNode:
 
         self.bridge = ROSBridge()
 
-        # Initialize the pose estimation
+        # Initialize the pose estimation learner
         self.pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=num_refinement_stages,
                                                          mobilenet_use_stride=use_stride,
                                                          half_precision=half_precision)
