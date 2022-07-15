@@ -31,14 +31,25 @@ Assuming that you have already [activated the OpenDR environment](../../../../do
 rosrun usb_cam usb_cam_node
 ```
 
-2. You are then ready to start the pose detection node
+2. You are then ready to start the pose detection node (use `-h` to print out help for various arguments)
 
 ```shell
 rosrun perception pose_estimation.py
 ```
 
 3. You can examine the annotated image stream using `rqt_image_view` (select the topic `/opendr/image_pose_annotated`) or
-   `rostopic echo /opendr/poses`
+   `rostopic echo /opendr/poses`. 
+
+Note that to use the pose messages properly, you need to create a proper subscriber that will convert the ROS pose messages back to OpenDR poses which you can access as described in the [documentation](https://github.com/opendr-eu/opendr/blob/master/docs/reference/engine-target.md#posekeypoints-confidence):
+```python
+        ... 
+        rospy.Subscriber("opendr/poses", Detection2DArray, self.callback)
+        ...
+        def callback(self, data):
+            opendr_pose = self.bridge.from_ros_pose(data)
+            print(opendr_pose)
+            print(opendr_pose['r_eye'])
+```
 
 ## Fall Detection ROS Node
 Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
