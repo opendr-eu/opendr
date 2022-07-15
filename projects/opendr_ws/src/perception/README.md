@@ -40,7 +40,7 @@ rosrun perception pose_estimation.py
 3. You can examine the annotated image stream using `rqt_image_view` (select the topic `/opendr/image_pose_annotated`) or
    `rostopic echo /opendr/poses`. 
 
-Note that to use the pose messages properly, you need to create a proper subscriber that will convert the ROS pose messages back to OpenDR poses which you can access as described in the [documentation](https://github.com/opendr-eu/opendr/blob/master/docs/reference/engine-target.md#posekeypoints-confidence):
+Note that to use the pose messages properly, you need to create an appropriate subscriber that will convert the ROS pose messages back to OpenDR poses which you can access as described in the [documentation](https://github.com/opendr-eu/opendr/blob/master/docs/reference/engine-target.md#posekeypoints-confidence):
 ```python
         ... 
         rospy.Subscriber("opendr/poses", Detection2DArray, self.callback)
