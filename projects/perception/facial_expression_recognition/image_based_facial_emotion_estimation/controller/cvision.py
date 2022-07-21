@@ -14,10 +14,8 @@ import cv2
 
 # OpenDR Modules
 from gui.fer import FER
-from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.utils import \
-     image_processing, datasets
-from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.esr_9 \
-    import ESR
+from opendr.perception.facial_expression_recognition import ESR, image_processing, datasets
+from opendr.perception.facial_expression_recognition import FacialEmotionLearner
 from gui.grad_cam import GradCAM
 
 # Haar cascade parameters
@@ -27,9 +25,6 @@ _HAAR_MIN_SIZE = (60, 60)
 
 # Face detector method
 _FACE_DETECTOR_HAAR_CASCADE = None
-
-# Facial expression recognition network: Ensemble with Shared Representations (ESR)
-_ESR_9 = None
 
 # Saliency map generation: Grad-CAM
 _GRAD_CAM = None
@@ -54,7 +49,7 @@ def detect_face(image):
     return face_coordinates[0] if (len(face_coordinates) > 0 and (np.sum(face_coordinates[0]) > 0)) else None
 
 
-def recognize_facial_expression(image, on_gpu, grad_cam):
+def recognize_facial_expression(image, on_gpu, grad_cam, model_path, ensemble_size):
     """
     Detects a face in the input image.
     If more than one face is detected, the biggest one is used.
@@ -87,11 +82,11 @@ def recognize_facial_expression(image, on_gpu, grad_cam):
 
         # Recognize facial expression
         # emotion_idx is needed to run Grad-CAM
-        emotion, affect, emotion_idx = _predict(input_face, device)
+        emotion, affect, emotion_idx, model = _predict(input_face, device, model_path, ensemble_size)
 
         # Grad-CAM
         if grad_cam:
-            saliency_maps = _generate_saliency_maps(input_face, emotion_idx, device)
+            saliency_maps = _generate_saliency_maps(input_face, emotion_idx, device, model)
 
         # Initialize GUI object
         to_return_fer = FER(image, face, face_coordinates, emotion, affect, saliency_maps)
@@ -144,7 +139,7 @@ def _pre_process_input_image(image):
     return image
 
 
-def _predict(input_face, device):
+def _predict(input_face, device, model_path, ensemble_size):
     """
     Facial expression recognition. Classifies the pre-processed input image with ESR-9.
 
@@ -153,17 +148,16 @@ def _predict(input_face, device):
     :return: Lists of emotions and affect values including the ensemble predictions based on plurality.
     """
 
-    global _ESR_9
-
-    if _ESR_9 is None:
-        _ESR_9 = ESR(device)
+    learner = FacialEmotionLearner(device=device, ensemble_size=ensemble_size)
+    learner.init_model(num_branches=ensemble_size)
+    learner.load(ensemble_size, path_to_saved_network=model_path)
 
     to_return_emotion = []
     to_return_emotion_idx = []
     to_return_affect = None
 
     # Recognizes facial expression
-    emotion, affect = _ESR_9(input_face)
+    emotion, affect = learner.infer(input_face)
 
     # Computes ensemble prediction for affect
     # Converts from Tensor to ndarray
@@ -196,10 +190,10 @@ def _predict(input_face, device):
     # Concatenates the ensemble prediction to the list of emotion predictions
     to_return_emotion.append(datasets.AffectNetCategorical.get_class(np.argmax(emotion_votes)))
 
-    return to_return_emotion, to_return_affect, to_return_emotion_idx
+    return to_return_emotion, to_return_affect, to_return_emotion_idx, learner.model
 
 
-def _generate_saliency_maps(input_face, emotion_outputs, device):
+def _generate_saliency_maps(input_face, emotion_outputs, device, model):
     """
     Generates saliency maps for every branch in the ensemble with Grad-CAM.
 
@@ -208,10 +202,10 @@ def _generate_saliency_maps(input_face, emotion_outputs, device):
     :return: (ndarray) Saliency maps.
     """
 
-    global _GRAD_CAM, _ESR_9
+    global _GRAD_CAM
 
     if _GRAD_CAM is None:
-        _GRAD_CAM = GradCAM(_ESR_9, device)
+        _GRAD_CAM = GradCAM(model, device)
 
     # Generate saliency map
     return _GRAD_CAM.grad_cam(input_face, emotion_outputs)

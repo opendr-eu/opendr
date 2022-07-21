@@ -681,26 +681,18 @@ class FacialEmotionLearner(Learner):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def download(self, path=None, mode="pretrained",
-                 url=OPENDR_SERVER_URL + "perception/ensemble_based_cnn"):
+    def download(self, path=None, mode="data", url=OPENDR_SERVER_URL + "perception/image_based_fer"):
         """
-        This method downloads files depending on mode and saves them in the path provided. It supports downloading:
-        - The pretrained models
-        - Dataset
+        This method downloads data files and saves them in the path provided.
         :param path: Local path to save the files, defaults to self.temp_path if None
         :type path: str, path, optional
-        :param mode: What file to download, can be one of "pretrained", "train_data", "val_data"
-        defaults to "pretrained"
-        :type mode: str, optional
         :param verbose: Whether to print messages in the console, defaults to False
         :type verbose: bool, optional
         :param url: URL of the FTP server, defaults to OpenDR FTP URL
         :type url: str, optional
-        :param file_name: the name of the file containing the pretrained model.
-        :type file_name: str
         """
 
-        valid_modes = ["pretrained", "data"]
+        valid_modes = ["data"]
         if mode not in valid_modes:
             raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
         if path is None:
@@ -708,35 +700,13 @@ class FacialEmotionLearner(Learner):
         if not os.path.exists(path):
             os.makedirs(path)
 
-        if mode == "pretrained":
-            print("Downloading pretrained model...")
-            # download the .json model
-            if not os.path.exists(os.path.join(path, 'trained_models/esr_9', self.name_experiment+'.json')):
-
-                file_url = os.path.join(url, 'trained_models/esr_9', self.name_experiment+'.json')
-                urlretrieve(file_url, os.path.join(path, 'trained_models/esr_9', self.name_experiment+'.json'))
-                print("Downloaded metadata json.")
-            else:
-                print("Metadata json file already exists.")
-            # download the .pt model
-            if not os.path.exists(os.path.join(path, 'trained_models/esr_9', 'Net-Base-Shared_Representations.pt')):
-                file_url = os.path.join(url, 'trained_models/esr_9', 'Net-Base-Shared_Representations.pt')
-                urlretrieve(file_url, os.path.join(path, 'trained_models/esr_9', 'Net-Base-Shared_Representations.pt'))
-                for i in range(self.ensemble_size):
-                    file_url = os.path.join(url, 'trained_models/esr_9', "Net-Branch_{}.pt".format(i))
-                    urlretrieve(file_url, os.path.join(path, 'trained_models/esr_9', "Net-Branch_{}.pt".format(i)))
-            else:
-                print("Trained model .pt file already exists.")
-            print("Pretrained model download complete.")
-            downloaded_files_path = os.path.join(path, 'trained_models/esr_9')
-
-        elif mode == "data":
+        if mode == "data":
             print("Downloading data...")
-            zip_path = os.path.join(path, 'data/AffectNet_mini.zip')
+            zip_path = os.path.join(path, 'data/AffectNet_micro.zip')
             unzip_path = os.path.join(path, 'data')
             if not os.path.exists(zip_path):
                 # Download train data
-                file_url = os.path.join(url, 'data/AffectNet_mini.zip')
+                file_url = os.path.join(url, 'data/AffectNet_micro.zip')
                 urlretrieve(file_url, zip_path)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(unzip_path)

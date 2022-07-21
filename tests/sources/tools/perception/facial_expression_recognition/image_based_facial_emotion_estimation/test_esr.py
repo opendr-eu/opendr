@@ -38,7 +38,6 @@ def rmdir(_dir):
 
 
 PATH_ = './temp'
-DATA_PATH = './data/AffectNet_tiny/'
 
 
 class TestFacialEmotionLearner(unittest.TestCase):
@@ -51,19 +50,13 @@ class TestFacialEmotionLearner(unittest.TestCase):
         if not path.isdir(PATH_):
             makedirs(PATH_)
         cls.temp_dir = PATH_
+        cls.dataset_path = cls.learner.download(mode='data')
 
         cls.learner = FacialEmotionLearner(device="cpu", temp_path=cls.temp_dir,
                                            batch_size=2, max_training_epoch=1, ensemble_size=1,
                                            name_experiment='esr_9', base_path_experiment=PATH_,
                                            lr=1e-1, categorical_train=True, dimensional_finetune=True,
-                                           base_path_to_dataset=DATA_PATH, max_tuning_epoch=1)
-
-        cls.dataset_path = cls.learner.base_path_to_dataset
-        cls.Pretrained_MODEL_PATH = './trained_models/esr_9'
-
-        # Download all required files for testing
-        # cls.dataset_path = cls.learner.download(mode='data')
-        # cls.Pretrained_MODEL_PATH = cls.learner.download(mode='pretrained')
+                                           base_path_to_dataset=cls.dataset_path, max_tuning_epoch=1)
 
     @classmethod
     def tearDownClass(cls):
@@ -85,9 +78,7 @@ class TestFacialEmotionLearner(unittest.TestCase):
     def test_eval(self):
         print("\n\n**********************************\nTest ESR eval function \n*"
               "*********************************")
-        path_to_saved_network = self.Pretrained_MODEL_PATH
         self.learner.init_model(num_branches=9)
-        self.learner.load(self.learner.ensemble_size, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         if self.learner.categorical_train:
             eval_categorical_results = self.learner.eval(eval_type='categorical')
         if self.learner.dimensional_finetune:
@@ -101,7 +92,7 @@ class TestFacialEmotionLearner(unittest.TestCase):
     def test_infer(self):
         print("\n\n**********************************\nTest ESR infer function \n*"
               "*********************************")
-        path_to_saved_network = self.Pretrained_MODEL_PATH
+        self.learner.init_model(num_branches=9)
         val_data = datasets.AffectNetCategorical(idx_set=2,
                                                  max_loaded_images_per_label=2,
                                                  transforms=None,
@@ -110,19 +101,16 @@ class TestFacialEmotionLearner(unittest.TestCase):
         val_loader = DataLoader(val_data, batch_size=32, shuffle=False, num_workers=8)
         batch = next(iter(val_loader))[0]
         self.learner.init_model(num_branches=9)
-        self.learner.load(self.learner.ensemble_size, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         # input is Tensor
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(batch[0])
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
         self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
                             msg="overall ensembled dimension results are zero")
-
         # Input is Image
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(Image(batch[0]))
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
         self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
                             msg="overall ensembled dimension results are zero")
-
         # Input is List[Image]
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer([Image(v) for v in batch])
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
@@ -148,6 +136,8 @@ class TestFacialEmotionLearner(unittest.TestCase):
         print("\n\n**********************************\nTest ESR save_load ONNX function \n*"
               "*********************************")
         path_to_saved_network = path.join(self.temp_dir, self.learner.name_experiment)
+        if not path.isdir(path_to_saved_network):
+            makedirs(path_to_saved_network)
         self.learner.model = None
         self.learner.ort_session = None
         self.learner.init_model(num_branches=1)
@@ -162,11 +152,9 @@ class TestFacialEmotionLearner(unittest.TestCase):
     def test_optimize(self):
         print("\n\n**********************************\nTest ESR optimize function \n*"
               "*********************************")
-        path_to_saved_network = self.Pretrained_MODEL_PATH
         self.learner.model = None
         self.learner.ort_session = None
         self.learner.init_model(num_branches=1)
-        self.learner.load(ensemble_size=1, path_to_saved_network=path_to_saved_network, fix_backbone=True)
         self.learner.optimize()
         self.assertIsNotNone(self.learner.ort_session, "ort_session is None after optimizing the pretrained model.")
     # Cleanup

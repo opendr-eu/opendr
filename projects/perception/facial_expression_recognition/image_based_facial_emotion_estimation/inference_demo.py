@@ -18,12 +18,12 @@ import time
 
 # OpenDR Modules
 from controller import cvalidation, cvision
-from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.utils import \
-    file_maker, image_processing
+from opendr.perception.facial_expression_recognition import image_processing, file_maker
 from gui.fer_demo import FERDemo
 
 
-def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, frames, no_plot):
+def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, frames, no_plot, pretrained_model_path,
+           ensemble_size):
     """
     Receives images from a camera and recognizes
     facial expressions of the closets face in a frame-based approach.
@@ -56,7 +56,8 @@ def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, fr
             # Get a frame
             img, _ = image_processing.get_frame()
 
-            fer = None if (img is None) else cvision.recognize_facial_expression(img, device, gradcam)
+            fer = None if (img is None) else cvision.recognize_facial_expression(img, device, gradcam,
+                                                                                 pretrained_model_path, ensemble_size)
 
             # Display blank screen if no face is detected, otherwise,
             # display detected faces and perceived facial expression labels
@@ -82,7 +83,8 @@ def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, fr
             file_maker.close_file()
 
 
-def image(input_image_path, display, gradcam, output_csv_file, screen_size, device):
+def image(input_image_path, display, gradcam, output_csv_file, screen_size, device, pretrained_model_path,
+          ensemble_size):
     """
     Receives the full path to an image file and recognizes
     facial expressions of the closets face in a frame-based approach.
@@ -92,7 +94,7 @@ def image(input_image_path, display, gradcam, output_csv_file, screen_size, devi
     img = image_processing.read(input_image_path)
 
     # Call FER method
-    fer = cvision.recognize_facial_expression(img, device, gradcam)
+    fer = cvision.recognize_facial_expression(img, device, gradcam, pretrained_model_path, ensemble_size)
 
     if write_to_file:
         file_maker.create_file(output_csv_file, input_image_path)
@@ -109,7 +111,7 @@ def image(input_image_path, display, gradcam, output_csv_file, screen_size, devi
 
 
 def video(input_video_path, display, gradcam, output_csv_file, screen_size,
-          device, frames, no_plot):
+          device, frames, no_plot, pretrained_model_path, ensemble_size):
     """
     Receives the full path to a video file and recognizes
     facial expressions of the closets face in a frame-based approach.
@@ -143,7 +145,9 @@ def video(input_video_path, display, gradcam, output_csv_file, screen_size,
             if img is None:
                 break
             else:  # Process frame
-                fer = None if (img is None) else cvision.recognize_facial_expression(img, device, gradcam)
+                fer = None if (img is None) else cvision.recognize_facial_expression(img, device, gradcam,
+                                                                                     pretrained_model_path,
+                                                                                     ensemble_size)
                 # Display blank screen if no face is detected, otherwise,
                 # display detected faces and perceived facial expression labels
                 if display:
@@ -182,6 +186,11 @@ def main():
                              "by this argument (ex. '-o ./' saves the file with the same name as the input file "
                              "in the working directory).",
                         type=str)
+    parser.add_argument("-pre", "--pretrained", help="define the full path to the pretrained model weights.",
+                        type=str)
+    parser.add_argument("-es", "--ensemble_size",
+                        help="define the size of the ensemble, the number of branches in the model",
+                        type=int, default=9)
     parser.add_argument("-s", "--size",
                         help="define the size of the window: \n1 - 1920 x 1080;\n2 - 1440 x 900;\n3 - 1024 x 768.",
                         type=int, choices=[1, 2, 3], default=1)
@@ -203,21 +212,21 @@ def main():
         try:
             cvalidation.validate_image_video_mode_arguments(args)
             image(args.input, args.display, args.gradcam, args.output,
-                  args.size, args.cuda)
+                  args.size, args.cuda, args.pretrained, args.ensemble_size)
         except RuntimeError as e:
             print(e)
     elif args.mode == "video":
         try:
             cvalidation.validate_image_video_mode_arguments(args)
             video(args.input, args.display, args.gradcam, args.output,
-                  args.size, args.cuda, args.frames, args.no_plot)
+                  args.size, args.cuda, args.frames, args.no_plot, args.pretrained, args.ensemble_size)
         except RuntimeError as e:
             print(e)
     elif args.mode == "webcam":
         try:
             cvalidation.validate_webcam_mode_arguments(args)
             webcam(args.webcam_id, args.display, args.gradcam, args.output,
-                   args.size, args.cuda, args.frames, args.no_plot)
+                   args.size, args.cuda, args.frames, args.no_plot, args.pretrained, args.ensemble_size)
         except RuntimeError as e:
             print(e)
 

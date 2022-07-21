@@ -157,14 +157,14 @@ Parameters:
 @staticmethod
 FacialEmotionLearner.download(self, path, mode, url)
 ```
-Downloads files depending on mode and saves them in the path provided. It supports downloading data and pretrained model weights.
+Downloads data and saves them in the path provided.
 
 Parameters:
 
 - **path**: *str, default=None*\
   Local path to save the files, defaults to `self.temp_dir` if None.
-- **mode**: *str, default="pretrained"*\
-  What file to download, can be one of "pretrained", "data"
+- **mode**: *str, default="data"*\
+  What file to download, can be "data".
 - **url**: *str, default=opendr FTP URL*\
   URL of the FTP server.
 
