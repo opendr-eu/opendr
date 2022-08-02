@@ -53,6 +53,8 @@ class PointCloudDatasetNode:
             message = self.bridge.to_ros_point_cloud(
                 point_cloud
             )
+            message.header.frame_id = "velodyne"
+
             self.output_point_cloud_publisher.publish(message)
 
             time.sleep(0.1)
