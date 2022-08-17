@@ -86,7 +86,7 @@ class PoseEstimationNode:
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics.
+        Callback that processes the input data and publishes to the corresponding topics.
         :param data: Input image message
         :type data: sensor_msgs.msg.Image
         """
