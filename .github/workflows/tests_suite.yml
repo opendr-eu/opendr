@@ -30,7 +30,7 @@ jobs:
           - os: ubuntu-20.04
             DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
           - os: macos-10.15
-            DEPENDENCIES_INSTALLATION: "brew install clang-format cppcheck"
+            DEPENDENCIES_INSTALLATION: "brew install clang-format@11 cppcheck; ln /usr/local/bin/clang-format-11 /usr/local/bin/clang-format"
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -67,14 +67,22 @@ jobs:
           - perception/object_tracking_2d
           - perception/object_detection_3d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
           - control/mobile_manipulation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - simulation/human_model_generation
           - perception/facial_expression_recognition
           - control/single_demo_grasp
+          - planning/end_to_end_planning
           # - perception/object_tracking_3d
         include:
           - os: ubuntu-20.04
@@ -139,9 +147,12 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: true
+    - name: Get branch name
+      id: branch-name
+      uses: tj-actions/branch-names@v5.1
     - name: Build image
       run: |
-        docker build --tag opendr/opendr-toolkit:cpu_test --file Dockerfile .
+        docker build --tag opendr/opendr-toolkit:cpu_test --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --file Dockerfile .
         docker save opendr/opendr-toolkit:cpu_test > cpu_test.zip
     - name: Upload image artifact
       uses: actions/upload-artifact@v2
@@ -165,10 +176,17 @@ jobs:
           - perception/multimodal_human_centric
           - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
           # - perception/object_detection_3d
           # - control/mobile_manipulation
@@ -194,7 +212,7 @@ jobs:
     - name: Test Wheel
       run: |
         export DISABLE_BCOLZ_AVX2=true
-        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
+        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev python3-dev
         python3 -m venv venv
         source venv/bin/activate
         pip install wheel
@@ -229,10 +247,17 @@ jobs:
           - perception/multimodal_human_centric
           - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
           # - perception/object_detection_3d
           # - control/mobile_manipulation
@@ -267,6 +292,7 @@ jobs:
         # The following two are dependecies for some other packages and pip cannot automatically install them if they are not on a repo
         pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
         pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
 
         # Install specific package for testing
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
@@ -278,7 +304,6 @@ jobs:
         # Utils contains hyperparameter tuning
         if [ "$package" == "utils" ]; then
               pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
-
         else
               pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
@@ -299,15 +324,23 @@ jobs:
           - perception/multimodal_human_centric
           - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
           - perception/object_detection_3d
           - control/mobile_manipulation
           - simulation/human_model_generation
           - control/single_demo_grasp
+          - planning/end_to_end_planning
           # - perception/object_tracking_3d
     runs-on: ubuntu-20.04
     steps:

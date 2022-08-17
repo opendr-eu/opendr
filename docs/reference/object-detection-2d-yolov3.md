@@ -5,7 +5,7 @@ The *yolov3* module contains the *YOLOv3DetectorLearner* class, which inherits f
 ### Class YOLOv3DetectorLearner
 Bases: `engine.learners.Learner`
 
-The *YOLOv3DetectorLearner* class is a wrapper of the SSD detector[[1]](#yolo-1)
+The *YOLOv3DetectorLearner* class is a wrapper of the YOLO detector[[1]](#yolo-1)
 [GluonCV implementation](https://github.com/dmlc/gluon-cv/blob/master/gluoncv/model_zoo/yolo/yolo3.py).
 It can be used to perform object detection on images (inference) as well as train new object detection models.
 
@@ -225,6 +225,51 @@ Parameters:
   draw_bounding_boxes(img.opencv(), boxes, class_names=yolo.classes, show=True)
   ```
   
+
+#### Performance Evaluation
+
+In terms of speed, the performance of YOLOv3 is summarized in the table below (in FPS).
+
+| Method | RTX 2070 | TX2 | AGX |
+|---------|----------|-----|-----|
+| YOLOv3 | 50 | 9 | 16 |
+
+Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below.
+The measurement was made on a Jetson TX2 module.
+
+| Method  | Memory (MB) | Energy (Joules)  - Total per inference  |
+|-------------------|---------|-------|
+| YOLOv3 | 5219 | 11.88  | 
+
+
+Finally, we measure the performance on the COCO dataset, using the corresponding metrics.
+
+| Metric   | YOLOv3   |
+|---------|-----------|
+| mAP     | 36.0      |
+| AP@0.5  | 57.2      |
+| AP@0.75 | 38.7      |
+| mAP (S) | 17.3      |
+| mAP (M) | 38.8      |
+| mAP (L) | 52.3      |
+| AR      | 44.5      |
+| AR (S)  | 23.6      |
+| AR (M)  | 47.2      |
+| AR (L)  | 62.5      |
+
+The platform compatibility evaluation is also reported below:
+
+| Platform  | Compatibility Evaluation |
+| ----------------------------------------------|-------|
+| x86 - Ubuntu 20.04 (bare installation - CPU)  | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (bare installation - GPU)  | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (pip installation)         | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (CPU docker)               | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (GPU docker)               | :heavy_check_mark:   |
+| NVIDIA Jetson TX2                             | :heavy_check_mark:   |
+| NVIDIA Jetson Xavier AGX                      | :heavy_check_mark:   |
+| NVIDIA Jetson Xavier NX                       | :heavy_check_mark:   |
+
 #### References
 <a name="yolo-1" href="https://arxiv.org/abs/1804.02767">[1]</a> YOLOv3: An Incremental Improvement,
 [arXiv](https://arxiv.org/abs/1804.02767).

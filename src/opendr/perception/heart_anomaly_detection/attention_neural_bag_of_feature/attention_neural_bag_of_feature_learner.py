@@ -53,6 +53,7 @@ PRETRAINED_SAMPLE_LENGTH = [30]
 PRETRAINED_N_CODEWORD = [256, 512]
 PRETRAINED_QUANT_TYPE = ['nbof', ]
 PRETRAINED_ATTENTION_TYPE = ['temporal', ]
+PRETRAINED_SA_MODELS = ['AF_nbof_temporalsa_0_30_256']
 AF_SAMPLING_RATE = 300
 
 
@@ -66,7 +67,7 @@ class AttentionNeuralBagOfFeatureLearner(Learner):
                  attention_type='spatial',
                  lr_scheduler=get_cosine_lr_scheduler(1e-3, 1e-5),
                  optimizer='adam',
-                 weight_decay=0.0,
+                 weight_decay=0,
                  dropout=0.2,
                  iters=300,
                  batch_size=32,
@@ -87,8 +88,8 @@ class AttentionNeuralBagOfFeatureLearner(Learner):
             'Parameter `quantization_type` must be "nbof" or "tnbof"\n' +\
             'Provided value: {}'.format(quantization_type)
 
-        assert attention_type in ['spatial', 'temporal'],\
-            'Parameter `attention_type` must be "spatial" or "temporal"\n' +\
+        assert attention_type in ['spatial', 'temporal', 'spatiotemporal', 'spatialsa', 'temporalsa'],\
+            'Parameter `attention_type` must be "spatial", "temporal", "spatiotemporal", "spatialsa", or "temporalsa"\n' +\
             'Provided value: {}'.format(attention_type)
 
         assert checkpoint_load_iter < iters,\
@@ -203,7 +204,7 @@ class AttentionNeuralBagOfFeatureLearner(Learner):
 
         train_loader = DataLoader(DataWrapper(train_set),
                                   batch_size=self.batch_size,
-                                  pin_memory=self.device == 'cuda',
+                                  pin_memory='cuda' in self.device,
                                   shuffle=True)
 
         if val_set is None:
@@ -211,14 +212,14 @@ class AttentionNeuralBagOfFeatureLearner(Learner):
         else:
             val_loader = DataLoader(DataWrapper(val_set),
                                     batch_size=self.batch_size,
-                                    pin_memory=self.device == 'cuda',
+                                    pin_memory='cuda' in self.device,
                                     shuffle=False)
         if test_set is None:
             test_loader = None
         else:
             test_loader = DataLoader(DataWrapper(test_set),
                                      batch_size=self.batch_size,
-                                     pin_memory=self.device == 'cuda',
+                                     pin_memory='cuda' in self.device,
                                      shuffle=False)
 
         if self.test_mode and not silent:
@@ -274,7 +275,7 @@ class AttentionNeuralBagOfFeatureLearner(Learner):
         self._validate_dataset(dataset)
         loader = DataLoader(DataWrapper(dataset),
                             batch_size=self.batch_size,
-                            pin_memory=self.device == 'cuda',
+                            pin_memory='cuda' in self.device,
                             shuffle=False)
 
         device = torch.device(self.device)
@@ -496,45 +497,51 @@ class AttentionNeuralBagOfFeatureLearner(Learner):
             'Only support pretrained model for the AF dataset, which has 4 classes.\n' +\
             'Current model specification has {} classes'.format(self.n_class)
 
-        assert fold_idx in [0, 1, 2, 3, 4],\
-            '`fold_idx` must receive a value from the list [0, 1, 2, 3, 4]\n' +\
-            'provided value: {}'.format(fold_idx)
-
         sample_length = int(self.series_length / AF_SAMPLING_RATE)
-        assert sample_length in PRETRAINED_SAMPLE_LENGTH,\
-            'Current `series_length` does not match supported `series_length`.' +\
-            'Supported values of `series_length` includes\n' +\
-            '\n'.join([str(v * AF_SAMPLING_RATE) for v in PRETRAINED_SAMPLE_LENGTH])
-
-        assert self.in_channels == 1,\
-            'The value of `in_channels` parameter must be 1.\n' +\
-            'Provided value of `in_channels`: {}'.format(self.in_channels)
-
-        assert self.n_codeword in PRETRAINED_N_CODEWORD,\
-            'Current `n_codeword` does not match supported `n_codeword`.' +\
-            'Supported values of `n_codeword` includes\n' +\
-            '\n'.join([str(v) for v in PRETRAINED_N_CODEWORD])
-
-        assert self.quantization_type in PRETRAINED_QUANT_TYPE,\
-            'Current `quantization_type` does not match supported `quantization_type`.' +\
-            'Supported values of `quantization_type` includes\n' +\
-            '\n'.join([str(v) for v in PRETRAINED_QUANT_TYPE])
-
-        assert self.attention_type in PRETRAINED_ATTENTION_TYPE,\
-            'Current `attention_type` does not match supported `attention_type`.' +\
-            'Supported values of `attention_type` includes\n' +\
-            '\n'.join([str(v) for v in PRETRAINED_ATTENTION_TYPE])
-
-        server_url = os.path.join(OPENDR_SERVER_URL,
-                                  'perception',
-                                  'heart_anomaly_detection',
-                                  'attention_neural_bag_of_feature')
 
         model_name = 'AF_{}_{}_{}_{}_{}'.format(self.quantization_type,
                                                 self.attention_type,
                                                 fold_idx,
                                                 sample_length,
                                                 self.n_codeword)
+
+        if self.attention_type in ['temporalsa', 'spatialsa', 'spatiotemporal']:
+            assert model_name in PRETRAINED_SA_MODELS,\
+                'Current configuration does not match any pre-trained model.' +\
+                'Available self-attention models: {}'.format(PRETRAINED_SA_MODELS)
+        else:
+            assert fold_idx in [0, 1, 2, 3, 4],\
+                '`fold_idx` must receive a value from the list [0, 1, 2, 3, 4]\n' +\
+                'provided value: {}'.format(fold_idx)
+
+            assert sample_length in PRETRAINED_SAMPLE_LENGTH,\
+                'Current `series_length` does not match supported `series_length`.' +\
+                'Supported values of `series_length` includes\n' +\
+                '\n'.join([str(v * AF_SAMPLING_RATE) for v in PRETRAINED_SAMPLE_LENGTH])
+
+            assert self.in_channels == 1,\
+                'The value of `in_channels` parameter must be 1.\n' +\
+                'Provided value of `in_channels`: {}'.format(self.in_channels)
+
+            assert self.n_codeword in PRETRAINED_N_CODEWORD,\
+                'Current `n_codeword` does not match supported `n_codeword`.' +\
+                'Supported values of `n_codeword` includes\n' +\
+                '\n'.join([str(v) for v in PRETRAINED_N_CODEWORD])
+
+            assert self.quantization_type in PRETRAINED_QUANT_TYPE,\
+                'Current `quantization_type` does not match supported `quantization_type`.' +\
+                'Supported values of `quantization_type` includes\n' +\
+                '\n'.join([str(v) for v in PRETRAINED_QUANT_TYPE])
+
+            assert self.attention_type in PRETRAINED_ATTENTION_TYPE,\
+                'Current `attention_type` does not match supported `attention_type`.' +\
+                'Supported values of `attention_type` includes\n' +\
+                '\n'.join([str(v) for v in PRETRAINED_ATTENTION_TYPE])
+
+        server_url = os.path.join(OPENDR_SERVER_URL,
+                                  'perception',
+                                  'heart_anomaly_detection',
+                                  'attention_neural_bag_of_feature')
 
         metadata_url = os.path.join(server_url, '{}.json'.format(model_name))
         metadata_file = os.path.join(path, 'metadata.json')
