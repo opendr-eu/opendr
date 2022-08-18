@@ -15,6 +15,11 @@
 
 
 import rospy
+import numpy as np
+from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, AgiEnv
+from std_msgs.msg import Float32MultiArray
+from geometry_msgs.msg import PoseStamped
+import os
 
 
 class EndToEndPlannerNode:
@@ -24,15 +29,33 @@ class EndToEndPlannerNode:
         Creates a ROS Node for pose detection
         """
         self.node_name = "opendr_end_to_end_planner"
+        self.input_depth_image_topic = "/range_image_raw"
+        self.pose_topic = "/mavros/local_position/pose"
+        self.current_position = PoseStamped().pose.position
+        self.env = AgiEnv()
+        self.end_to_end_planner = EndToEndPlanningRLLearner(self.env)
+        print(os.environ.get("OPENDR_HOME"))
+        self.end_to_end_planner.load(os.environ.get("OPENDR_HOME") + '/src/opendr/planning/end_to_end_planning/pretrained_model/saved_model.zip')
 
     def listen(self):
         """
         Start the node and begin processing input data
         """
         rospy.init_node('opendr_end_to_end_planner', anonymous=True)
+        rospy.Subscriber(self.input_depth_image_topic, Float32MultiArray, self.range_image_callback)
+        rospy.Subscriber(self.pose_topic, PoseStamped, self.pose_callback)
         rospy.spin()
+
+    def range_image_callback(self, data):
+        self.range_image = ((np.clip(np.array(data.data).reshape((64, 64, 1)), 0, 15) / 15.) * 255).astype(np.uint8)
+        observation = {'depth_cam': np.copy(self.range_image), 'moving_target': np.array([5, 0, 0])}
+        action = self.end_to_end_planner.infer(observation, deterministic=True)
+        # publish the action
+
+    def pose_callback(self, data):
+        self.current_position = data.pose.position
 
 
 if __name__ == '__main__':
-    pose_estimation_node = EndToEndPlannerNode()
-    pose_estimation_node.listen()
+    end_to_end_planner_node = EndToEndPlannerNode()
+    end_to_end_planner_node.listen()
