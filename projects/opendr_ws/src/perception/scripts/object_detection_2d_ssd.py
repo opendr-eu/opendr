@@ -28,6 +28,7 @@ from opendr.perception.object_detection_2d import Seq2SeqNMSLearner, SoftNMS, Fa
 
 
 class ObjectDetectionSSDNode:
+
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
                  output_rgb_image_topic="/opendr/image_objects_annotated", detections_topic="/opendr/objects",
                  device="cuda", backbone="vgg16_atrous", nms_type='default'):
@@ -98,7 +99,7 @@ class ObjectDetectionSSDNode:
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics.
+        Callback that processes the input data and publishes to the corresponding topics.
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """

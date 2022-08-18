@@ -27,6 +27,7 @@ from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
 class ObjectDetectionYOLONode:
+
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
                  output_rgb_image_topic="/opendr/image_objects_annotated", detections_topic="/opendr/objects",
                  device="cuda", backbone="darknet53"):
@@ -75,7 +76,7 @@ class ObjectDetectionYOLONode:
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics.
+        Callback that processes the input data and publishes to the corresponding topics.
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
