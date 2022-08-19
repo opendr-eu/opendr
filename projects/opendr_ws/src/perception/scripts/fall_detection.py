@@ -86,7 +86,7 @@ class FallDetectionNode:
         Start the node and begin processing input data.
         """
         rospy.init_node('fall_detection_node', anonymous=True)
-        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=5000000)
+        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
         rospy.loginfo("Fall detection node started.")
         rospy.spin()
 
