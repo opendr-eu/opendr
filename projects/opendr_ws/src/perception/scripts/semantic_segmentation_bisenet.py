@@ -14,98 +14,107 @@
 # limitations under the License.
 
 import argparse
+import numpy as np
 import torch
+import cv2
+
 import rospy
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
+
 from opendr.engine.data import Image
 from opendr.perception.semantic_segmentation import BisenetLearner
-import numpy as np
-import cv2
 
 
 class BisenetNode:
-    def __init__(self,
-                 input_image_topic,
-                 output_heatmap_topic=None,
-                 device="cuda"
-                 ):
+
+    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw", output_rgb_image_topic="/opendr/heatmap",
+                 device="cuda"):
         """
-        Initialize the Bisenet ROS node and create an instance of the respective learner class.
-        :param input_image_topic: ROS topic for the input image
-        :type input_image_topic: str
-        :param output_heatmap_topic: ROS topic for the predicted heatmap
-        :type output_heatmap_topic: str
+        Creates a ROS Node for semantic segmentation with Bisenet.
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
+        :param output_rgb_image_topic: Topic to which we are publishing the heatmap image
+        :type output_rgb_image_topic: str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
-        self.input_image_topic = input_image_topic
-        self.output_heatmap_topic = output_heatmap_topic
+        self.input_rgb_image_topic = input_rgb_image_topic
 
-        if self.output_heatmap_topic is not None:
-            self._heatmap_publisher = rospy.Publisher(f'{self.output_heatmap_topic}/semantic', ROS_Image, queue_size=10)
+        if output_rgb_image_topic is not None:
+            self.heatmap_publisher = rospy.Publisher(output_rgb_image_topic, ROS_Image, queue_size=1)
         else:
-            self._heatmap_publisher = None
+            self.heatmap_publisher = None
 
-        rospy.Subscriber(self.input_image_topic, ROS_Image, self.callback)
-
-        # Initialize OpenDR ROSBridge object
-        self._bridge = ROSBridge()
+        self.bridge = ROSBridge()
 
         # Initialize the semantic segmentation model
-        self._learner = BisenetLearner(device=device)
-        self._learner.download(path="bisenet_camvid")
-        self._learner.load("bisenet_camvid")
+        self.learner = BisenetLearner(device=device)
+        self.learner.download(path="bisenet_camvid")
+        self.learner.load("bisenet_camvid")
 
-        self._colors = np.random.randint(0, 256, (256, 3), dtype=np.uint8)
+        self.colors = np.random.randint(0, 256, (256, 3), dtype=np.uint8)
 
     def listen(self):
         """
-        Start the node and begin processing input data
+        Start the node and begin processing input data.
         """
-        rospy.init_node('bisenet', anonymous=True)
-        rospy.loginfo("Bisenet node started!")
+        rospy.init_node('semantic_segmentation_bisenet_node', anonymous=True)
+        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
+        rospy.loginfo("Semantic segmentation BiSeNet node started.")
         rospy.spin()
 
-    def callback(self, data: ROS_Image):
+    def callback(self, data):
         """
-        Predict the heatmap from the input image and publish the results.
+        Callback that processes the input data and publishes to the corresponding topics.
         :param data: Input image message
         :type data: sensor_msgs.msg.Image
         """
-        # Convert sensor_msgs.msg.Image to OpenDR Image
-        image = self._bridge.from_ros_image(data)
+        # Convert sensor_msgs.msg.Image into OpenDR Image
+        image = self.bridge.from_ros_image(data, encoding='bgr8')
 
         try:
-            # Retrieve the OpenDR heatmap
-            prediction = self._learner.infer(image)
+            # Run semantic segmentation to retrieve the OpenDR heatmap
+            heatmap = self.learner.infer(image)
 
-            if self._heatmap_publisher is not None and self._heatmap_publisher.get_num_connections() > 0:
-                heatmap_np = prediction.numpy()
-                heatmap_o = self._colors[heatmap_np]
+            if self.heatmap_publisher is not None:
+                heatmap_np = heatmap.numpy()
+                heatmap_o = self.colors[heatmap_np]
                 heatmap_o = cv2.resize(np.uint8(heatmap_o), (960, 720))
-                self._heatmap_publisher.publish(self._bridge.to_ros_image(Image(heatmap_o), encoding='bgr8'))
-
+                # Convert OpenDR heatmap image to ROS2 image message using bridge and publish it
+                self.heatmap_publisher.publish(self.bridge.to_ros_image(Image(heatmap_o), encoding='bgr8'))
         except Exception:
             rospy.logwarn('Failed to generate prediction.')
 
 
-if __name__ == '__main__':
-    # Select the device for running the
-    try:
-        if torch.cuda.is_available():
-            print("GPU found.")
-            device = "cuda"
-        else:
-            print("GPU not found. Using CPU instead.")
-            device = "cpu"
-    except:
-        device = "cpu"
-
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('image_topic', type=str, help='listen to images on this topic')
-    parser.add_argument('--heatmap_topic', type=str, help='publish the heatmap on this topic')
+    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
+                        type=str, default="/usb_cam/image_raw")
+    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
+                        type=str, default="/opendr/heatmap")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
-    bisenet_node = BisenetNode(device=device, input_image_topic=args.image_topic, output_heatmap_topic=args.heatmap_topic)
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
+
+    bisenet_node = BisenetNode(device=device,
+                               input_rgb_image_topic=args.input_rgb_image_topic,
+                               output_rgb_image_topic=args.output_rgb_image_topic)
     bisenet_node.listen()
+
+
+if __name__ == '__main__':
+    main()
