@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import shutil
 import sys
 from pathlib import Path
 import argparse
@@ -26,7 +25,6 @@ from sensor_msgs.msg import Image as ROS_Image
 
 from ros2_bridge.bridge import ROS2Bridge
 from opendr.perception.panoptic_segmentation import EfficientPsLearner
-from opendr.engine.data import Image
 
 # Avoid having a matplotlib GUI in a separate thread in the visualize() function
 matplotlib.use('Agg')
@@ -71,15 +69,8 @@ class EfficientPsNode(Node):
         self._learner = EfficientPsLearner(str(config_file))
 
         # Other
-        self._tmp_folder = Path(__file__).parent / 'efficientps_tmp'
-        self._tmp_folder.mkdir(exist_ok=True)
-
-    def __del__(self):
-        """
-        Remove temporary files.
-        """
-        shutil.rmtree(self._tmp_folder)
-        print('Shut down EfficientPS node and removed all temporary files.')
+        self._tmp_folder = Path(__file__).parent / 'tmp' / 'efficientps'
+        self._tmp_folder.mkdir(exist_ok=True, parents=True)
 
     def _init_learner(self) -> bool:
         """
