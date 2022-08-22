@@ -481,8 +481,12 @@ class EfficientPsLearner(Learner):
 
             return update_to
 
-        with tqdm(unit='B', unit_scale=True, unit_divisor=1024, miniters=1, desc=f'Downloading {filename}') as pbar:
-            urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
+        if os.path.exists(filename) and os.path.isfile(filename):
+            print(f'File already downloaded: {filename}')
+        else:
+            with tqdm(unit='B', unit_scale=True, unit_divisor=1024, miniters=1, desc=f'Downloading {filename}') \
+                    as pbar:
+                urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
         return filename
 
     @staticmethod

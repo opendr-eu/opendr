@@ -67,15 +67,8 @@ class EfficientPsNode:
         self._learner = EfficientPsLearner(str(config_file))
 
         # Other
-        self._tmp_folder = Path(__file__).parent / 'efficientps_tmp'
-        self._tmp_folder.mkdir(exist_ok=True)
-
-    def __del__(self):
-        """
-        Remove temporary files.
-        """
-        shutil.rmtree(self._tmp_folder)
-        print('Shut down EfficientPS node and removed all temporary files.')
+        self._tmp_folder = Path(__file__).parent / 'tmp' / 'efficientps'
+        self._tmp_folder.mkdir(exist_ok=True, parents=True)
 
     def _init_learner(self) -> bool:
         """
