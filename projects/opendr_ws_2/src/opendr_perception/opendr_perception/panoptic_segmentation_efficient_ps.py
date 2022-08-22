@@ -69,7 +69,7 @@ class EfficientPsNode(Node):
         self._learner = EfficientPsLearner(str(config_file))
 
         # Other
-        self._tmp_folder = Path(__file__).parent / 'tmp' / 'efficientps'
+        self._tmp_folder = Path(__file__).parent.parent / 'tmp' / 'efficientps'
         self._tmp_folder.mkdir(exist_ok=True, parents=True)
 
     def _init_learner(self) -> bool:
