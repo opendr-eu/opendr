@@ -45,5 +45,5 @@ if __name__ == '__main__':
 
     nanodet.download("./predefined_examples", mode="pretrained")
     nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
-    nanodet.fit(dataset, val_dataset)
+    # nanodet.fit(dataset, val_dataset)
     nanodet.save()

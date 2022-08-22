@@ -14,17 +14,24 @@
 
 import argparse
 from opendr.perception.object_detection_2d import NanodetLearner
+from opendr.engine.data import Image
+from opendr.perception.object_detection_2d import draw_bounding_boxes
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--model", help="Model that config file will be used", type=str)
+    parser.add_argument("--model", help="Model that config file will be used", type=str, default='m')
     args = parser.parse_args()
 
     nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
-
     nanodet.download("./predefined_examples", mode="pretrained")
-    nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
+    nanodet.load("./predefined_examples/nanodet_{}/nanodet_{}.ckpt".format(args.model, args.model), verbose=True)
     nanodet.download("./predefined_examples", mode="images")
-    boxes = nanodet.infer(path="./predefined_examples/000000000036.jpg")
+    img = Image.open("./predefined_examples/000000000036.jpg")
+    boxes = nanodet.infer(input=img, show=False)
+
+    draw_bounding_boxes(img.opencv(), boxes, class_names=nanodet.classes, show=True)
+
+
 

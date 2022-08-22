@@ -91,32 +91,6 @@ def save_model_state(path, model, weight_averager=None, logger=None):
     torch.save({"state_dict": state_dict}, path)
 
 
-def convert_old_model(old_model_dict):
-    if "pytorch-lightning_version" in old_model_dict:
-        raise ValueError("This model is not old format. No need to convert!")
-    version = pl.__version__
-    epoch = old_model_dict["epoch"]
-    global_step = old_model_dict["iter"]
-    state_dict = old_model_dict["state_dict"]
-    new_state_dict = OrderedDict()
-    for name, value in state_dict.items():
-        new_state_dict["model." + name] = value
-
-    new_checkpoint = {
-        "epoch": epoch,
-        "global_step": global_step,
-        "pytorch-lightning_version": version,
-        "state_dict": new_state_dict,
-        "lr_schedulers": [],
-    }
-
-    if "optimizer" in old_model_dict:
-        optimizer_states = [old_model_dict["optimizer"]]
-        new_checkpoint["optimizer_states"] = optimizer_states
-
-    return new_checkpoint
-
-
 def convert_avg_params(checkpoint: Dict[str, Any]) -> Dict[str, Any]:
     """Converts average state dict to the format that can be loaded to a model.
     Args:

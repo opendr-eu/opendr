@@ -28,7 +28,8 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.path i
 
 class Logger:
     def __init__(self, local_rank, save_dir="./", use_tensorboard=True):
-        mkdir(local_rank, save_dir)
+        # mkdir(local_rank, save_dir)
+        mkdir(save_dir)
         self.rank = local_rank
         fmt = (
             colored("[%(name)s]", "magenta", attrs=["bold"])

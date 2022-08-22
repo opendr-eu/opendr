@@ -83,7 +83,7 @@ class TestNanodetLearner(unittest.TestCase):
     def test_eval(self):
         print('Starting evaluation test for Nanodet...')
         eval_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "test_data"), dataset_type="voc")
-        self.detector.load(path=os.path.join(self.temp_dir, f"nanodet-{_DEFAULT_MODEL}", f"nanodet-{_DEFAULT_MODEL}.ckpt"), verbose=False)
+        self.detector.load(path=os.path.join(self.temp_dir, f"nanodet_{_DEFAULT_MODEL}", f"nanodet_{_DEFAULT_MODEL}.ckpt"), verbose=False)
         results_dict = self.detector.eval(dataset=eval_dataset, verbose=False)
         self.assertIsNotNone(results_dict['map'],
                              msg="Eval results dictionary not returned.")
@@ -93,8 +93,8 @@ class TestNanodetLearner(unittest.TestCase):
 
     def test_infer(self):
         print('Starting inference test for Nanodet...')
-        self.detector.load(os.path.join(self.temp_dir, f"nanodet-{_DEFAULT_MODEL}", f"nanodet-{_DEFAULT_MODEL}.ckpt"))
-        self.assertIsNotNone(self.detector.infer(path=os.path.join(self.temp_dir, "000000000036.jpg"), show=False),
+        self.detector.load(os.path.join(self.temp_dir, f"nanodet_{_DEFAULT_MODEL}", f"nanodet_{_DEFAULT_MODEL}.ckpt"))
+        self.assertIsNotNone(self.detector.infer(input=os.path.join(self.temp_dir, "000000000036.jpg"), show=False),
                              msg="Returned empty BoundingBoxList.")
         gc.collect()
         print('Finished inference test for Nanodet...')

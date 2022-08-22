@@ -1,7 +1,6 @@
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.box_transform import bbox2distance, distance2bbox
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.check_point import (
     convert_avg_params,
-    convert_old_model,
     load_model_weight,
     save_model,
 )
@@ -18,7 +17,6 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.visual
 __all__ = [
     "distance2bbox",
     "bbox2distance",
-    "convert_old_model",
     "load_model_weight",
     "save_model",
     "cfg",

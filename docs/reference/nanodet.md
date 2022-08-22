@@ -89,35 +89,31 @@ Parameters:
 
 #### `NanodetLearner.infer`
 ```python
-NanodetLearner.infer(self, mode, path, camid, thershold, show)
+NanodetLearner.infer(self, input, thershold)
 ```
 
-This method is used to perform object detection on an image, all images in a dictionary, a video or a live feedback from a webcam.
+This method is used to perform object detection on an image.
 Returns an `engine.target.BoundingBoxList` object, which contains bounding boxes that are described by the left-top corner and
-its width and height, or returns an empty list if no detections were made, of the last image or frame in the input.
+its width and height, or returns an empty list if no detections were made of the image in input.
 
 Parameters:
-- **mode** : *{"image", "video", "webcam"}, default="image"*\
-  Specifies what is the input of the inference.
-- **path** : *str, default="""*\
-  If mode is specified as "image" or "video" is the path to an image file, a directory of image files or a video file.
-- **camid** : *str, default="0"*\
-  If mode is specified as webcam is the specific id of the webcam in your machine
+- **input** : *Image or str*\
+  If mode is specified as "image" it can take an Image type object to perform inference on it. 
+  If mode is specified as "image" or "video" is the path to an image file, a directory of image files
+  or a video file.
 - **threshold**: *float, default=0.35*\
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
-- **show** : *bool, default=True*
-- Whether to display the resulting annotated image or not.
 
 #### `NanodetLearner.save`
 ```python
 NanodetLearner.save(self, path, verbose)
 ```
 
-This method is used to save a trained model.
+This method is used to save a trained model with its metadata.
 Provided with the path, it creates the "path" directory, if it does not already exist.
-Inside this folder, the model is saved as *"saved.pth"*.
-If the directory already exists, the *"saved.pth"* file is overwritten.
+Inside this folder, the model is saved as *"nanodet-{model_name}.pth"* and a metadata file *"nanodet-{model_name}.json"*.
+If the directory already exists, the *"nanodet-{model_name}.pth"* and *"nanodet-{model_name}.json"* files are overwritten.
 
 Parameters:
 
@@ -132,7 +128,7 @@ NanodetLearner.load(self, path, verbose)
 ```
 
 This method is used to load a previously saved model from its saved folder.
-Loads the model from inside the directory of the path provided, using the metadata .pth or .ckpt file included.
+Loads the model from inside the directory of the path provided, using the metadata .json file included.
 
 Parameters:
 
@@ -140,24 +136,6 @@ Parameters:
   Path of the model to be loaded included the file name with the extension.
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity and logger.
-
-#### `NanodetLearner.optimize`
-```python
-NanodetLearner.optimize(self, model_path, output_path, verbose)
-```
-
-This method is used to optimize a trained model to ONNX format which can be then used for inference.
-
-Parameters:
-
-- **model_path**: *str, default=""*\
-  Path of the model checkpoint that we want to optimize to ONNX format. If "" it takes the checkpoint
-  with the best evaluation score from the predefined "checkpoints" directory of the working model.
-- **output_path**: *str, default=""*
-  Path of the saved ONNX model with the file name. If "" it saved it at the working model directory as a "nanodet.onnx" file
-- **verbose**: *bool, default=True*\
-  Enables the maximum verbosity and logger.
-
 
 #### `NanodetLearner.download`
 ```python

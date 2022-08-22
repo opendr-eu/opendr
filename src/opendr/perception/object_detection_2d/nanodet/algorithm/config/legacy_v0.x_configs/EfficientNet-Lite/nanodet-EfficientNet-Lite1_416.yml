@@ -6,7 +6,7 @@
 #               AP_m = 0.321
 #               AP_l = 0.432
 save_dir: ./workspace/efficient1_416_SGD
-check_point_name: -EfficientNet-Lite1_416
+check_point_name: EfficientNet-Lite1_416
 model:
   arch:
     name: OneStageDetector

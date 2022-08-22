@@ -1,5 +1,5 @@
 save_dir: ./workspace/RepVGG-A0-416
-check_point_name: -RepVGG-A0_416
+check_point_name: RepVGG-A0_416
 model:
   arch:
     name: OneStageDetector

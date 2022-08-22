@@ -1,6 +1,6 @@
 #Config File example
 save_dir: ./workspace/nanodet_m
-check_point_name: _m
+check_point_name: m
 model:
   arch:
     name: OneStageDetector

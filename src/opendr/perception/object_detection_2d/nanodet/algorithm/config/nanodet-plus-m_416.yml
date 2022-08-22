@@ -6,7 +6,7 @@
 #               AP_m = 0.322
 #               AP_l = 0.477
 save_dir: ./workspace/nanodet-plus-m_416
-check_point_name: -plus-m_416
+check_point_name: plus-m_416
 model:
   weight_averager:
     name: ExpMovingAverager

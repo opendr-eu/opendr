@@ -13,14 +13,10 @@
 # limitations under the License.
 
 import os
-import warnings
 import datetime
-import cv2
-import time
+import json
 from pathlib import Path
 
-import onnx
-import onnxsim
 
 import pytorch_lightning as pl
 import torch
@@ -32,7 +28,7 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.collat
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.dataset import build_dataset
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.trainer.task import TrainingTask
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.evaluator import build_evaluator
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.inferencer.utilities import Predictor, get_image_list
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.inferencer.utilities import Predictor
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import (
     NanoDetLightningLogger,
     Logger,
@@ -46,7 +42,6 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import
 from opendr.engine.data import Image
 from opendr.engine.target import BoundingBox, BoundingBoxList
 from opendr.engine.constants import OPENDR_SERVER_URL
-from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
 
 from opendr.engine.learners import Learner
 from urllib.request import urlretrieve
@@ -81,6 +76,7 @@ class NanodetLearner(Learner):
         self.checkpoint_after_iter = int(self.cfg.schedule.val_intervals)
         self.checkpoint_load_iter = int(self.cfg.schedule.resume)
         self.device = device
+        self.classes = self.cfg.class_names
 
         super(NanodetLearner, self).__init__(lr=self.lr, iters=self.iters, batch_size=self.batch_size,
                                              checkpoint_after_iter=self.checkpoint_after_iter,
@@ -174,22 +170,36 @@ class NanodetLearner(Learner):
 
     def save(self, path=None, verbose=True):
         """
-        Method for saving the current model in the path provided.
+        Method for saving the current model and metadata in the path provided.
         :param path: path to folder where model will be saved
         :type path: str, optional
         :param verbose: whether to print a success message or not, defaults to False
         :type verbose: bool, optional
         """
         path = path if path is not None else self.cfg.save_dir
-        save_path = os.path.join(path, "saved.pth")
+        model = self.cfg.check_point_name
         os.makedirs(path, exist_ok=True)
+
+        metadata = {"model_paths": [], "framework": "pytorch", "format": "pth",
+                    "has_data": False, "inference_params": {}, "optimized": False,
+                    "optimizer_info": {}, "classes": self.classes}
+
+        param_filepath = "nanodet_{}.pth".format(model)
+        metadata["model_paths"].append(param_filepath)
+
         logger = self.logger if verbose else None
         if self.task is None:
             print("You do not have call a task yet, only the state of the loaded or initialized model will be saved")
-            save_model_state(save_path, self.model, None, logger)
+            save_model_state(os.path.join(path, metadata["model_paths"][0]), self.model, None, logger)
         else:
-            self.task.save_current_model(save_path)
-        pass
+            self.task.save_current_model(os.path.join(path, metadata["model_paths"][0]))
+
+        with open(os.path.join(path, "nanodet_{}.json".format(model)), 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=4)
+        if verbose:
+            print("Model metadata saved.")
+        return True
+
 
     def load(self, path=None, verbose=True):
         """
@@ -199,13 +209,18 @@ class NanodetLearner(Learner):
         :param verbose: whether to print a success message or not, defaults to False
         :type verbose: bool, optional
         """
+        path = path if path is not None else self.cfg.save_dir
+        model = self.cfg.check_point_name
+        if verbose:
+            print("Model name:", model, "-->", os.path.join(path, model + ".json"))
+        with open(os.path.join(path, "nanodet_{}.json".format(model))) as f:
+            metadata = json.load(f)
 
-        path = path if path is not None else self.cfg.schedule.load_model
-        logger = self.logger if verbose else None
-        ckpt = torch.load(path)
+        logger = Logger(-1, path, False) if verbose else None
+        ckpt = torch.load(os.path.join(path, metadata["model_paths"][0]))
         self.model = load_model_weight(self.model, ckpt, logger)
         if verbose:
-            logger.info("Loaded model weight from {}".format(path))
+            logger.log("Loaded model weight from {}".format(path))
         pass
 
     def download(self, path=None, mode="image", verbose=False,
@@ -241,7 +256,7 @@ class NanodetLearner(Learner):
 
             model = self.cfg.check_point_name
 
-            path = os.path.join(path, "nanodet{}".format(model))
+            path = os.path.join(path, "nanodet_{}".format(model))
             if not os.path.exists(path):
                 os.makedirs(path)
 
@@ -249,20 +264,32 @@ class NanodetLearner(Learner):
                 print("Downloading pretrained checkpoint...")
 
             file_url = os.path.join(url, "pretrained",
-                                    "nanodet{}".format(model),
-                                    "nanodet{}.ckpt".format(model))
+                                    "nanodet_{}".format(model),
+                                    "nanodet_{}.ckpt".format(model))
 
             urlretrieve(file_url, os.path.join(path, "nanodet{}.ckpt".format(model)))
 
             if verbose:
                 print("Downloading pretrain weights if provided...")
 
-            file_url = os.path.join(url, "pretrained", "nanodet{}".format(model),
-                                    "nanodet{}.pth".format(model))
+            file_url = os.path.join(url, "pretrained", "nanodet_{}".format(model),
+                                    "nanodet_{}.pth".format(model))
             try:
-                urlretrieve(file_url, os.path.join(path, "nanodet{}.pth".format(model)))
+                urlretrieve(file_url, os.path.join(path, "nanodet_{}.pth".format(model)))
             except:
-                print("Pretrain weights for this model are not provided!!!")
+                print("Pretrain weights for this model are not provided!!! \n"
+                      "Only the hole ckeckpoint will be download")
+
+            if verbose:
+                print("Making metadata...")
+            metadata = {"model_paths": [], "framework": "pytorch", "format": "pth",
+                        "has_data": False, "inference_params": {}, "optimized": False,
+                        "optimizer_info": {}, "classes": self.classes}
+
+            param_filepath = "nanodet_{}.pth".format(model)
+            metadata["model_paths"].append(param_filepath)
+            with open(os.path.join(path, "nanodet_{}.json".format(model)), 'w', encoding='utf-8') as f:
+                json.dump(metadata, f, ensure_ascii=False, indent=4)
 
         elif mode == "images":
             file_url = os.path.join(url, "images", "000000000036.jpg")
@@ -295,66 +322,9 @@ class NanodetLearner(Learner):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def optimize(self, model_path='', output_path='', verbose=True):
-        """
-        Method for optimizing the model with onnx.
-        :param model_path: path to the chkp file of the model to optimize (e.x. ./path/to/nanodet.ckpt)
-        :type model_path: str, optional
-        :param output_path: path to the saved onnx model (e.x. ./nanodet.onnx)
-        :type output_path: str, optional
-        :param verbose: if set to True, additional information is printed to STDOUT and logger txt output,
-        defaults to True
-        :type verbose: bool
-        """
-
-        if model_path == "" :
-            model_path = os.path.join(self.cfg.save_dir, "checkpoints/model_best.ckpt")
-        if output_path == "":
-            output_path = os.path.join(self.cfg.save_dir, "nanodet.onnx")
-
-        if verbose:
-            self.logger = Logger(-1, self.cfg.save_dir, False)
-
-        checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
-        load_model_weight(self.model, checkpoint, self.logger)
-
-        if self.cfg.model.arch.backbone.name == "RepVGG":
-            deploy_config = self.cfg.model
-            deploy_config.arch.backbone.update({"deploy": True})
-            deploy_model = build_model(deploy_config)
-            from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.backbone.repvgg import \
-                repvgg_det_model_convert
-
-            self.model = repvgg_det_model_convert(self.model, deploy_model)
-
-        input_shape = self.cfg.data.train.input_size
-        dummy_input = torch.autograd.Variable(
-            torch.randn(1, 3, input_shape[0], input_shape[1])
-        )
-
-        torch.onnx.export(
-            self.model,
-            dummy_input,
-            output_path,
-            verbose=True,
-            keep_initializers_as_inputs=True,
-            opset_version=11,
-            input_names=["data"],
-            output_names=["output"],
-        )
-        if verbose:
-            self.logger.log("finished exporting onnx ")
-
-            self.logger.log("start simplifying onnx ")
-        input_data = {"data": dummy_input.detach().cpu().numpy()}
-        model_sim, flag = onnxsim.simplify(output_path, input_data=input_data)
-        if flag:
-            onnx.save(model_sim, output_path)
-            if verbose:
-                self.logger.log("simplify onnx successfully")
-        else:
-            if verbose:
-                self.logger.log("simplify onnx failed")
+    def optimize(self):
+        """This method is not used in this implementation."""
+        return NotImplementedError
 
     def fit(self, dataset, val_dataset=None, logging_path='', verbose=True, seed=123):
         """
@@ -510,21 +480,14 @@ class NanodetLearner(Learner):
             self.logger.info("Starting testing...")
         trainer.test(self.task, val_dataloader)
 
-    def infer(self, mode="image", path="", camid="0", threshold=0.35, show=True):
+    def infer(self, input, threshold=0.35):
         """
         Performs inference
-        :param path: path to a directory of images, a single image or a video to perform inference
-        :type path: str, optional
-        :param mode: mode of the inference, it can be ["image", "video", "webcam"] and will perform inference
-        in an image or all images in a directory of the path, in a video in the path, or the feed of a camera with camid
-        :type mode: str
-        :param camid: the camid of webcam in use for inference if mode is webcam
-        :type camid: str, optional
+        :param input: input can be an Image type image to perform inference
+        :type input: str, optional
         :param threshold: confidence threshold
         :type threshold: float, optional
-        :param show: whether to display the resulting annotated image or not
-        :type show: bool, optional
-        :return: list of bounding boxes of last image of path or last frame of the video
+        :return: list of bounding boxes of last image of input or last frame of the video
         :rtype: BoundingBoxList
         """
 
@@ -533,74 +496,22 @@ class NanodetLearner(Learner):
 
         self.logger = Logger(0, use_tensorboard=False)
         predictor = Predictor(self.cfg, self.model, device=self.device)
-        self.logger.log('Press "Esc", "q" or "Q" to exit.')
-        if mode == "image":
-            if os.path.isdir(path):
-                files = get_image_list(path)
-            else:
-                files = [path]
-            files.sort()
-            for image_name in files:
-                img = Image.open(image_name)
-                meta, res = predictor.inference(img.opencv())
+        if not isinstance(input, Image):
+            input = Image(input)
+        _input = input.opencv()
+        meta, res = predictor.inference(_input)
 
-                time1 = time.time()
-                bounding_boxes = BoundingBoxList([])
-                for label in res[0]:
-                    for box in res[0][label]:
-                        score = box[-1]
-                        if score > threshold:
-                            bbox = BoundingBox(left=box[0], top=box[1],
-                                               width=box[2] - box[0],
-                                               height=box[3] - box[1],
-                                               name=label,
-                                               score=score)
-                            bounding_boxes.data.append(bbox)
-                bounding_boxes.data.sort(key=lambda v: v.confidence)
+        bounding_boxes = BoundingBoxList([])
+        for label in res[0]:
+            for box in res[0][label]:
+                score = box[-1]
+                if score > threshold:
+                    bbox = BoundingBox(left=box[0], top=box[1],
+                                       width=box[2] - box[0],
+                                       height=box[3] - box[1],
+                                       name=label,
+                                       score=score)
+                    bounding_boxes.data.append(bbox)
+        bounding_boxes.data.sort(key=lambda v: v.confidence)
 
-                result_image = draw_bounding_boxes(img.opencv(), bounding_boxes, class_names=self.cfg.class_names,
-                                                   show=False)
-                if show:
-                    cv2.imshow('detections', result_image)
-                    ch = cv2.waitKey(0)
-                else:
-                    ch = cv2.waitKey(1)
-                print("visualize time: {:.3f}s".format(time.time() - time1))
-
-                if ch == 27 or ch == ord("q") or ch == ord("Q"):
-                    break
-        elif mode == "video" or mode == "webcam":
-            cap = cv2.VideoCapture(path if mode == "video" else camid)
-            width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
-            height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            while True:
-                ret_val, frame = cap.read()
-                frame = Image(frame, guess_format=False)
-                if ret_val:
-                    meta, res = predictor.inference(frame.data)
-                    time1 = time.time()
-                    bounding_boxes = BoundingBoxList([])
-                    for label in res[0]:
-                        for box in res[0][label]:
-                            score = box[-1]
-                            if score > threshold:
-                                bbox = BoundingBox(left=box[0], top=box[1],
-                                                   width=box[2] - box[0],
-                                                   height=box[3] - box[1],
-                                                   name=label,
-                                                   score=score)
-                                bounding_boxes.data.append(bbox)
-                    bounding_boxes.data.sort(key=lambda v: v.confidence)
-
-                    result_image = draw_bounding_boxes(frame, bounding_boxes, class_names=self.cfg.class_names,
-                                                       show=False)
-                    if show:
-                        cv2.imshow('detections', result_image)
-                    print("visualize time: {:.3f}s".format(time.time() - time1))
-                    ch = cv2.waitKey(1)
-                    if ch == 27 or ch == ord("q") or ch == ord("Q"):
-                        break
-                else:
-                    break
         return bounding_boxes

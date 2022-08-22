@@ -15,4 +15,4 @@ provided by OpenDR. Specifically the following examples are provided:
    `python3 train_demo.py -h` prints information about them on stdout.
    
     Example usage:
-   `python3 train_demo.py --model plus-m_416 --dataset coco --data-root /path/to/wider_person`
+   `python3 train_demo.py --model plus-m_416 --dataset coco --data-root /path/to/coco_dataset`

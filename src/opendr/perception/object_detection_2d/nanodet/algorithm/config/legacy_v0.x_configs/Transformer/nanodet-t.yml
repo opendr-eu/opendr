@@ -7,7 +7,7 @@
 #               AP_l = 0.364
 
 save_dir: ./workspace/nanodet_t
-check_point_name: _t
+check_point_name: t
 model:
   arch:
     name: OneStageDetector

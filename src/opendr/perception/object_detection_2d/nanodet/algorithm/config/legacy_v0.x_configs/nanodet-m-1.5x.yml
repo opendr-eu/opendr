@@ -6,7 +6,7 @@
 #               AP_m = 0.235
 #               AP_l = 0.389
 save_dir: ./workspace/nanodet_m_1.5x
-check_point_name: _m_1.5x
+check_point_name: m_1.5x
 model:
   arch:
     name: OneStageDetector
