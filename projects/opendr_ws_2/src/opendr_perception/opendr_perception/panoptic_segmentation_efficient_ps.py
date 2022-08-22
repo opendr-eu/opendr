@@ -57,7 +57,7 @@ class EfficientPsNode(Node):
         self.output_visualization_topic = output_visualization_topic
         self.detailed_visualization = detailed_visualization
 
-          # Initialize all ROS related things
+        # Initialize all ROS related things
         self._bridge = ROS2Bridge()
         self._instance_heatmap_publisher = None
         self._semantic_heatmap_publisher = None
