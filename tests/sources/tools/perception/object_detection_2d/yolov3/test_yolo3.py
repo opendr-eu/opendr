@@ -21,6 +21,8 @@ import numpy as np
 from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
 from opendr.perception.object_detection_2d import WiderPersonDataset
 
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
+
 
 def rmfile(path):
     try:
@@ -45,7 +47,7 @@ class TestYOLOv3DetectorLearner(unittest.TestCase):
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "yolov3", "yolov3_temp")
-        cls.detector = YOLOv3DetectorLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
+        cls.detector = YOLOv3DetectorLearner(device=device, temp_path=cls.temp_dir, batch_size=1, epochs=1,
                                              checkpoint_after_iter=0, lr=1e-4, num_workers=0, img_size=320)
         # Download all required files for testing
         cls.detector.download(mode="pretrained")

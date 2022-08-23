@@ -5,7 +5,7 @@ The *centernet* module contains the *CenterNetDetectorLearner* class, which inhe
 ### Class CenterNetDetectorLearner
 Bases: `engine.learners.Learner`
 
-The *CenterNetDetectorLearner* class is a wrapper of the SSD detector[[1]](#centernet-1)
+The *CenterNetDetectorLearner* class is a wrapper of the CenterNet detector[[1]](#centernet-1)
 [GluonCV implementation](https://github.com/dmlc/gluon-cv/blob/master/gluoncv/model_zoo/center_net/center_net.py).
 It can be used to perform object detection on images (inference) as well as train new object detection models.
 
@@ -225,6 +225,50 @@ Parameters:
   boxes = centernet.infer(img)
   draw_bounding_boxes(img.opencv(), boxes, class_names=centernet.classes, show=True)
   ```
+  
+#### Performance Evaluation
+
+In terms of speed, the performance of CenterNet is summarized in the table below (in FPS).
+
+| Method | RTX 2070 | TX2 | AGX |
+|---------|----------|-----|-----|
+| CenterNet | 88 | 19 | 14 |
+
+Apart from the inference speed, we also report the memory usage, as well as energy consumption on a reference platform in the Table below.
+The measurement was made on a Jetson TX2 module.
+
+| Method  | Memory (MB) | Energy (Joules)  - Total per inference  |
+|-------------------|---------|-------|
+| CenterNet | 4784 | 12.01  | 
+
+
+Finally, we measure the performance on the COCO dataset, using the corresponding metrics.
+
+| Metric   | CenterNet |
+|---------|-----------|
+| mAP     | 7.5       |
+| AP@0.5  | 24.5      |
+| AP@0.75 | 1.0       |
+| mAP (S) | 0.9       |
+| mAP (M) | 5.4       |
+| mAP (L) | 17.0      |
+| AR      | 14.9      |
+| AR (S)  | 2.9       |
+| AR (M)  | 12.9      |
+| AR (L)  | 30.3      |
+
+The platform compatibility evaluation is also reported below:
+
+| Platform  | Compatibility Evaluation |
+| ----------------------------------------------|-------|
+| x86 - Ubuntu 20.04 (bare installation - CPU)  | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (bare installation - GPU)  | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (pip installation)         | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (CPU docker)               | :heavy_check_mark:   |
+| x86 - Ubuntu 20.04 (GPU docker)               | :heavy_check_mark:   |
+| NVIDIA Jetson TX2                             | :heavy_check_mark:   |
+| NVIDIA Jetson Xavier AGX                      | :heavy_check_mark:   |
+| NVIDIA Jetson Xavier NX                       | :heavy_check_mark:   |
 
 #### References
 <a name="centernet-1" href="https://arxiv.org/abs/1904.08189">[1]</a> CenterNet: Keypoint Triplets for Object Detection,
