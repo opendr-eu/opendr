@@ -85,12 +85,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             "pointpillars_ped_cycle": "pointpillars_ped_cycle_xyres_16",
         }
 
-        cls.all_configs = {
-            "tanet_car": cls.config_tanet_car,
-            "tanet_ped_cycle": cls.config_tanet_ped_cycle,
-            "pointpillars_car": cls.config_pointpillars_car,
-            "pointpillars_ped_cycle": cls.config_pointpillars_ped_cycle,
-        }
         cls.car_configs = {
             "tanet_car": cls.config_tanet_car,
             "pointpillars_car": cls.config_pointpillars_car,
@@ -102,10 +96,10 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
         print("Dataset downloaded", file=sys.stderr)
 
-        for model_name in cls.download_model_names.values():
-            VoxelObjectDetection3DLearner.download(
-                model_name, cls.temp_dir
-            )
+        # for model_name in cls.download_model_names.values():
+        #     VoxelObjectDetection3DLearner.download(
+        #         model_name, cls.temp_dir
+        #     )
 
         print("Models downloaded", file=sys.stderr)
 
@@ -181,51 +175,51 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
         for name, config in self.car_configs.items():
             test_model(name, config)
 
-    def test_eval(self):
-        def test_model(name, config):
-            print("Eval", name, "start", file=sys.stderr)
-            model_path = os.path.join(self.temp_dir, self.download_model_names[name])
-            dataset = KittiDataset(self.dataset_path, self.subsets_path)
+    # def test_eval(self):
+    #     def test_model(name, config):
+    #         print("Eval", name, "start", file=sys.stderr)
+    #         model_path = os.path.join(self.temp_dir, self.download_model_names[name])
+    #         dataset = KittiDataset(self.dataset_path, self.subsets_path)
 
-            learner = VoxelObjectDetection3DLearner(model_config_path=config, device=DEVICE)
-            learner.load(model_path)
-            mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset, count=2)
+    #         learner = VoxelObjectDetection3DLearner(model_config_path=config, device=DEVICE)
+    #         learner.load(model_path)
+    #         mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset, count=2)
 
-            self.assertTrue(mAPbbox[0][0][0] > 1 and mAPbbox[0][0][0] < 95, msg=mAPbbox[0][0][0])
+    #         self.assertTrue(mAPbbox[0][0][0] > 1 and mAPbbox[0][0][0] < 95, msg=mAPbbox[0][0][0])
 
-            # del learner # free pointer error
-            print("Eval", name, "ok", file=sys.stderr)
+    #         # del learner # free pointer error
+    #         print("Eval", name, "ok", file=sys.stderr)
 
-        for name, config in self.car_configs.items():
-            test_model(name, config)
+    #     for name, config in self.car_configs.items():
+    #         test_model(name, config)
 
-    def test_infer(self):
-        def test_model(name, config):
-            print("Infer", name, "start", file=sys.stderr)
+    # def test_infer(self):
+    #     def test_model(name, config):
+    #         print("Infer", name, "start", file=sys.stderr)
 
-            dataset = PointCloudsDatasetIterator(self.dataset_path + "/testing/velodyne_reduced")
+    #         dataset = PointCloudsDatasetIterator(self.dataset_path + "/testing/velodyne_reduced")
 
-            learner = VoxelObjectDetection3DLearner(
-                model_config_path=config, device=DEVICE
-            )
+    #         learner = VoxelObjectDetection3DLearner(
+    #             model_config_path=config, device=DEVICE
+    #         )
 
-            result = learner.infer(
-                dataset[0]
-            )
+    #         result = learner.infer(
+    #             dataset[0]
+    #         )
 
-            self.assertTrue(len(result) > 0)
+    #         self.assertTrue(len(result) > 0)
 
-            result = learner.infer(
-                [dataset[0], dataset[1], dataset[2]]
-            )
-            self.assertTrue(len(result) == 3)
-            self.assertTrue(len(result[0]) > 0)
+    #         result = learner.infer(
+    #             [dataset[0], dataset[1], dataset[2]]
+    #         )
+    #         self.assertTrue(len(result) == 3)
+    #         self.assertTrue(len(result[0]) > 0)
 
-            # del learner # free pointer error
-            print("Infer", name, "ok", file=sys.stderr)
+    #         # del learner # free pointer error
+    #         print("Infer", name, "ok", file=sys.stderr)
 
-        for name, config in self.car_configs.items():
-            test_model(name, config)
+    #     for name, config in self.car_configs.items():
+    #         test_model(name, config)
 
     def test_save(self):
         def test_model(name, config):
