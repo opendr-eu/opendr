@@ -2,10 +2,10 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>data_generation</name>
-  <version>0.0.0</version>
-  <description>ROS 2 module for synthetic multiview facial image generation/description>
+  <version>1.0.0</version>
+  <description>OpenDR ROS2 node for synthetic multiview facial image generation/description>
   <maintainer email="tefas@csd.auth.gr">tefas</maintainer>
-  <license>TODO: License declaration</license>
+  <license>Apache License v2.0</license>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
