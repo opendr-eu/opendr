@@ -104,9 +104,9 @@ def main(args=None):
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
                         type=str, default="image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
-                        type=str, default="/opendr/image_pose_annotated")
+                        type=str, default="/opendr/image_faces_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
-                        type=str, default="/opendr/poses")
+                        type=str, default="/opendr/faces")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--backbone",

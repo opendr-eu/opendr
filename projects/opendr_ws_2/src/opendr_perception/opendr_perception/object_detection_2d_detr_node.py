@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import argparse
-import mxnet as mx
+import torch
 
 import rclpy
 from rclpy.node import Node
@@ -108,7 +108,7 @@ def main(args=None):
     args = parser.parse_args()
 
     try:
-        if args.device == "cuda" and mx.context.num_gpus() > 0:
+        if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"
         elif args.device == "cuda":
             print("GPU not found. Using CPU instead.")

@@ -14,9 +14,10 @@
 
 import numpy as np
 from opendr.engine.data import Image
-from opendr.engine.target import Pose, BoundingBox, BoundingBoxList
+from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
 from cv_bridge import CvBridge
+from std_msgs.msg import String
 from sensor_msgs.msg import Image as ImageMsg
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose
 from geometry_msgs.msg import Pose2D
@@ -34,20 +35,6 @@ class ROS2Bridge:
     def __init__(self):
         self._cv_bridge = CvBridge()
 
-    def from_ros_image(self, message: ImageMsg, encoding: str='passthrough') -> Image:
-        """
-        Converts a ROS2 image message into an OpenDR image
-        :param message: ROS2 image to be converted
-        :type message: sensor_msgs.msg.Image
-        :param encoding: encoding to be used for the conversion (inherited from CvBridge)
-        :type encoding: str
-        :return: OpenDR image (RGB)
-        :rtype: engine.data.Image
-        """
-        cv_image = self._cv_bridge.imgmsg_to_cv2(message, desired_encoding=encoding)
-        image = Image(np.asarray(cv_image, dtype=np.uint8))
-        return image
-
     def to_ros_image(self, image: Image, encoding: str='passthrough') -> ImageMsg:
         """
         Converts an OpenDR image into a ROS2 image message
@@ -61,6 +48,20 @@ class ROS2Bridge:
         # Convert from the OpenDR standard (CHW/RGB) to OpenCV standard (HWC/BGR)
         message = self._cv_bridge.cv2_to_imgmsg(image.opencv(), encoding=encoding)
         return message
+
+    def from_ros_image(self, message: ImageMsg, encoding: str='passthrough') -> Image:
+        """
+        Converts a ROS2 image message into an OpenDR image
+        :param message: ROS2 image to be converted
+        :type message: sensor_msgs.msg.Image
+        :param encoding: encoding to be used for the conversion (inherited from CvBridge)
+        :type encoding: str
+        :return: OpenDR image (RGB)
+        :rtype: engine.data.Image
+        """
+        cv_image = self._cv_bridge.imgmsg_to_cv2(message, desired_encoding=encoding)
+        image = Image(np.asarray(cv_image, dtype=np.uint8))
+        return image
 
     def to_ros_pose(self, pose):
         """
@@ -205,3 +206,40 @@ class ROS2Bridge:
             boxes.append(BoundingBox(name, left, top, width, height, score))
         bounding_box_list = BoundingBoxList(boxes)
         return bounding_box_list
+
+    def to_ros_face(self, category):
+        """
+        Converts an OpenDR category into a ObjectHypothesis msg that can carry the Category.data and
+        Category.confidence.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS2 message with the category.data and category.confidence
+        :rtype: vision_msgs.msg.ObjectHypothesis
+        """
+        result = ObjectHypothesisWithPose()
+        result.id = str(category.data)
+        result.score = category.confidence
+        return result
+
+    def from_ros_face(self, ros_hypothesis):
+        """
+        Converts a ROS2 message with category payload into an OpenDR category
+        :param ros_hypothesis: the object hypothesis to be converted
+        :type ros_hypothesis: vision_msgs.msg.ObjectHypothesis
+        :return: an OpenDR category
+        :rtype: engine.target.Category
+        """
+        return Category(prediction=ros_hypothesis.id, description=None,
+                        confidence=ros_hypothesis.score)
+
+    def to_ros_face_id(self, category):
+        """
+        Converts an OpenDR category into a string msg that can carry the Category.description.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS2 message with the category.description
+        :rtype: std_msgs.msg.String
+        """
+        result = String()
+        result.data = category.description
+        return result
