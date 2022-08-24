@@ -213,7 +213,7 @@ class ROSBridge:
             ros_box.bbox.center.y = box.top + box.height / 2.
             ros_box.bbox.size_x = box.width
             ros_box.bbox.size_y = box.height
-            ros_box.results[0].id = id(box.name)
+            ros_box.results[0].id = int(box.name)
             if box.confidence:
                 ros_box.results[0].score = box.confidence
             ros_boxes.detections.append(ros_box)
