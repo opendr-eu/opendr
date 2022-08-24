@@ -3,7 +3,7 @@
 <package format="3">
   <name>data_generation</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>ROS 2 module for synthetic multiview facial image generation/description>
   <maintainer email="tefas@csd.auth.gr">tefas</maintainer>
   <license>TODO: License declaration</license>
 
