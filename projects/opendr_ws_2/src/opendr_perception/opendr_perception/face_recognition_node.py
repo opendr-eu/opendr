@@ -131,8 +131,9 @@ class FaceRecognitionNode(Node):
                         cv2.putText(image, result.description, (startX, endY - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                     1, color, 2, cv2.LINE_AA)
 
-            # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
-            self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
+            if self.image_publisher is not None:
+                # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
+                self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
 
 def main(args=None):
