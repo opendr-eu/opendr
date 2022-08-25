@@ -44,7 +44,7 @@ wget https://github.com/cleardusk/3DDFA/blob/master/models/phase1_wpdc_vdc.pth.t
 
 1.	Execute the one-step OPENDR function ```tool_synthetic_facial_generation.py``` specifying the input images folder, the output folder, the desired degrees (range -90 to 90) for generating the facial images in multiple view angles pitch and yaw as indicated in the command line: 
 ```sh
-python3 tool_synthetic_facial_generation.py -path_in ./demos/imgs_input/ -path_3ddfa ./algorithm/DDFA/ -save_path ./results -val_yaw 10, 40 -val_pitch 10, 30 -device cuda
+python3 tool_synthetic_facial_generation.py -path_in ./demos/imgs_input/ -path_3ddfa ./algorithm/DDFA/ -save_path ./results -val_yaw 10 40 -val_pitch 10 30 -device cuda
 ```
 
 3. The results can be found in ```results/rs_model/example/```, where multi-view facial images are generated for every person in a respective folder.
