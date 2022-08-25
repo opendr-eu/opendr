@@ -105,14 +105,22 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/object_detection_2d/detr/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
-            'projects/control/eagerx/eagerx',
+            'projects/opendr_ws_2/src/opendr_perception/test',
+            'projects/opendr_ws_2/src/opendr_ros2_bridge/test',
         ]
 
         skippedFilePaths = [
             'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
             'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
-            'src/opendr/perception/object_detection_2d/retinaface/Makefile'
+            'src/opendr/perception/object_detection_2d/retinaface/Makefile',
+            'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/efficientface_modulator.py',
+            'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/efficientface_utils.py',
+            'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/spatial_transforms.py',
+            'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/transformer_timm.py',
+            'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/utils.py',
+            'projects/opendr_ws_2/src/opendr_perception/setup.py',
+            'projects/opendr_ws_2/src/opendr_ros2_bridge/setup.py',
         ]
 
         skippedDirectories = [

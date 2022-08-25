@@ -11,6 +11,7 @@ ______________________________________________________________________
   <a href="docs/reference/installation.md">Installation</a> •
   <a href="#using-opendr-toolkit">Using OpenDR toolkit</a> •
   <a href="projects">Examples</a> •
+  <a href="docs/reference/customize.md">Customization</a> •
   <a href="#roadmap">Roadmap</a> •
   <a href="CHANGELOG.md">Changelog</a> •
   <a href="LICENSE">License</a>
@@ -37,7 +38,7 @@ OpenDR aims to develop, train, deploy and evaluate deep learning models that imp
 
 OpenDR can be installed in the following ways:
 1. By *cloning* this repository (CPU/GPU support)
-2. Using *pip* (CPU only)
+2. Using *pip* (CPU/GPU support only)
 3. Using *docker* (CPU/GPU support)
 
 You can find detailed installation instruction in the [documentation](docs/reference/installation.md).

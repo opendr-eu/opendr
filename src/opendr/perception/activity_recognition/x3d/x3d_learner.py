@@ -19,7 +19,7 @@ import yaml
 import os
 from pathlib import Path
 from opendr.engine.learners import Learner
-from opendr.utils.io import bump_version
+from opendr.engine.helper.io import bump_version
 from torch import onnx
 import onnxruntime as ort
 
@@ -182,6 +182,7 @@ class X3DLearner(Learner):
         names_not_loaded = set(new_model_state.keys()) - set(to_load.keys())
         if len(names_not_loaded) > 0:
             logger.warning(f"Some model weight could not be loaded: {names_not_loaded}")
+        self.model.to(self.device)
 
         return self
 
@@ -416,7 +417,7 @@ class X3DLearner(Learner):
 
         self.trainer = pl.Trainer(
             max_epochs=epochs or self.iters,
-            gpus=1 if self.device == "cuda" else 0,
+            gpus=1 if "cuda" in self.device else 0,
             callbacks=[
                 pl.callbacks.ModelCheckpoint(
                     save_top_k=1,
@@ -432,6 +433,7 @@ class X3DLearner(Learner):
         self.trainer.limit_val_batches = steps or self.trainer.limit_val_batches
 
         self.trainer.fit(self.model, train_dataloader, val_dataloader)
+        self.model.to(self.device)
 
     def eval(self, dataset: Dataset, steps: int=None) -> Dict[str, Any]:
         """Evaluate the model on the dataset
@@ -455,7 +457,7 @@ class X3DLearner(Learner):
 
         if not hasattr(self, "trainer"):
             self.trainer = pl.Trainer(
-                gpus=1 if self.device == "cuda" else 0,
+                gpus=1 if "cuda" in self.device else 0,
                 logger=_experiment_logger(),
             )
         self.trainer.limit_test_batches = steps or self.trainer.limit_test_batches
