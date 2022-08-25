@@ -90,7 +90,8 @@ class Synthetic_Data_Generation:
         self.parser.add_argument('--dlib_landmark', default='true', type=str2bool,
                                  help='whether use dlib landmark to crop image')
         self.parser.add_argument('-m', '--mode', default='gpu', type=str, help='gpu or cpu mode')
-        self.parser.add_argument('--bbox_init', default='two', type=str, help='one|two: one-step bbox initialization or two-step')
+        self.parser.add_argument('--bbox_init', default='two', type=str,
+                                 help='one|two: one-step bbox initialization or two-step')
         self.parser.add_argument('--dump_2d_img', default='true', type=str2bool, help='whether to save 3d rendered image')
         self.parser.add_argument('--dump_param', default='true', type=str2bool, help='whether to save param')
         self.parser.add_argument('--dump_lmk', default='true', type=str2bool, help='whether to save landmarks')
@@ -101,8 +102,7 @@ class Synthetic_Data_Generation:
         self.parser.add_argument('--world_size', default=1, type=int, help='used when parallel run')
         self.parser.add_argument('--resume_idx', default=0, type=int)
         self.args = self.parser.parse_args()
-        self.synthetic = MultiviewDataGeneration(self.args)                                                
-
+        self.synthetic = MultiviewDataGeneration(self.args)
 
     def callback(self, data):
         """
@@ -112,7 +112,7 @@ class Synthetic_Data_Generation:
         """
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
-        
+
         image = self.bridge.from_ros_image(data)
         self.ID = self.ID + 1
         # Get an OpenCV image back
@@ -138,6 +138,7 @@ class Synthetic_Data_Generation:
                         self.image_publisher.publish(message)
         for f in os.listdir(self.args.path_in):
             os.remove(os.path.join(self.args.path_in, f))
+
 
 def main(args=None):
     rclpy.init(args=self.args)
