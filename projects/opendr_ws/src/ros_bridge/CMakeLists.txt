@@ -14,6 +14,12 @@ catkin_python_setup()
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
+add_message_files(
+    DIRECTORY msg
+    FILES
+    OpenDRPose2DKeypoint.msg
+    OpenDRPose2D.msg
+    )
 
 generate_messages(
     DEPENDENCIES
