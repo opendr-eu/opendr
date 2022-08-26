@@ -17,8 +17,8 @@ import argparse
 import torch
 
 import rospy
-from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
+from ros_bridge.msg import OpenDRPose2D
 from opendr_bridge import ROSBridge
 
 from opendr.engine.data import Image
@@ -62,7 +62,7 @@ class PoseEstimationNode:
             self.image_publisher = None
 
         if detections_topic is not None:
-            self.pose_publisher = rospy.Publisher(detections_topic, Detection2DArray, queue_size=1)
+            self.pose_publisher = rospy.Publisher(detections_topic, OpenDRPose2D, queue_size=1)
         else:
             self.pose_publisher = None
 
