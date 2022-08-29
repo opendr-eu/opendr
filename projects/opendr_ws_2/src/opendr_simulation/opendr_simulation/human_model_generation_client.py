@@ -36,21 +36,21 @@ class Human_model_generation_client(Node):
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
         self.req = Mesh.Request()
-   
+ 
     def send_request(self, rgb_img, msk_img, extract_pose):
         extract_pose_ros = Bool()
-       extract_pose_ros.data = extract_pose
-       self.req.rgb_img = self.bridge_cv.cv2_to_imgmsg(rgb_img, encoding="bgr8")
-       self.req.msk_img = self.bridge_cv.cv2_to_imgmsg(msk_img, encoding="bgr8")
-       self.req.extract_pose = extract_pose_ros
-       self.future = self.cli.call_async(self.req)
-       rclpy.spin_until_future_complete(self, self.future)
-       resp = self.future.result()
-       pose = self.bridge_ros.from_ros_3Dpose(resp.pose)
-       vertices, triangles = self.bridge_ros.from_ros_mesh(resp.mesh)
-       vertex_colors = self.bridge_ros.from_ros_colors(resp.vertex_colors)
-       human_model = Model_3D(vertices, triangles, vertex_colors)
-       return human_model, pose
+        extract_pose_ros.data = extract_pose
+        self.req.rgb_img = self.bridge_cv.cv2_to_imgmsg(rgb_img, encoding="bgr8")
+        self.req.msk_img = self.bridge_cv.cv2_to_imgmsg(msk_img, encoding="bgr8")
+        self.req.extract_pose = extract_pose_ros
+        self.future = self.cli.call_async(self.req)
+        rclpy.spin_until_future_complete(self, self.future)
+        resp = self.future.result()
+        pose = self.bridge_ros.from_ros_3Dpose(resp.pose)
+        vertices, triangles = self.bridge_ros.from_ros_mesh(resp.mesh)
+        vertex_colors = self.bridge_ros.from_ros_colors(resp.vertex_colors)
+        human_model = Model_3D(vertices, triangles, vertex_colors)
+        return human_model, pose
 
 
 def main():
