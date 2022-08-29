@@ -9,7 +9,8 @@ import torch
 import torch.nn as nn
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.activation import act_layers
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import constant_init, kaiming_init
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights\
+    import constant_init, kaiming_init
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.norm import build_norm_layer
 
 

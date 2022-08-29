@@ -390,11 +390,7 @@ class IoULoss(nn.Module):
         """
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
-        if (
-            (weight is not None)
-            and (not torch.any(weight > 0))
-            and (reduction != "none")
-        ):
+        if (weight is not None) and (not torch.any(weight > 0)) and (reduction != "none"):
             if pred.dim() == weight.dim() + 1:
                 weight = weight.unsqueeze(1)
             return (pred * weight).sum()  # 0

@@ -114,10 +114,8 @@ class TAN(nn.Module):
 
         # build outputs
         outs = [
-            laterals[0]
-            + F.interpolate(mid_lvl, size=laterals[0].shape[2:], mode="bilinear"),
+            laterals[0] + F.interpolate(mid_lvl, size=laterals[0].shape[2:], mode="bilinear"),
             laterals[1] + mid_lvl,
-            laterals[2]
-            + F.interpolate(mid_lvl, size=laterals[2].shape[2:], mode="bilinear"),
+            laterals[2] + F.interpolate(mid_lvl, size=laterals[2].shape[2:], mode="bilinear"),
         ]
         return tuple(outs)

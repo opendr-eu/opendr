@@ -12,17 +12,18 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import
     distance2bbox,
     images_to_levels,
     multi_apply,
-    overlay_bbox_cv,
 )
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.transform.warp import warp_boxes
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.gfocal_loss import DistributionFocalLoss, QualityFocalLoss
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.gfocal_loss\
+    import DistributionFocalLoss, QualityFocalLoss
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.iou_loss import GIoULoss, bbox_overlaps
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import ConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import normal_init
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.nms import multiclass_nms
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.scale import Scale
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.assigner.atss_assigner import ATSSAssigner
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.assigner.atss_assigner\
+    import ATSSAssigner
 
 
 def reduce_mean(tensor):
@@ -575,14 +576,6 @@ class GFLHead(nn.Module):
                 ).tolist()
             det_results[img_id] = det_result
         return det_results
-
-    def show_result(
-        self, img, dets, class_names, score_thres=0.3, show=True, save_path=None
-    ):
-        result = overlay_bbox_cv(img, dets, class_names, score_thresh=score_thres)
-        if show:
-            cv2.imshow("det", result)
-        return result
 
     def get_bboxes(self, cls_preds, reg_preds, img_metas):
         """Decode the outputs to bboxes.

@@ -17,7 +17,6 @@ import datetime
 import json
 from pathlib import Path
 
-
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning.callbacks import ProgressBar
@@ -38,7 +37,6 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import
     mkdir,
 )
 
-
 from opendr.engine.data import Image
 from opendr.engine.target import BoundingBox, BoundingBoxList
 from opendr.engine.constants import OPENDR_SERVER_URL
@@ -49,6 +47,7 @@ from urllib.request import urlretrieve
 _MODEL_NAMES = {"EfficientNet-Lite0_320", "EfficientNet-Lite1_416", "EfficientNet-Lite2_512",
                 "RepVGG-A0_416", "t", "g", "m", "m-416", "m-0.5x", "m-1.5x", "m-1.5x-416",
                 "plus-m_320", "plus-m-1.5x_320", "plus-m_416", "plus-m-1.5x_416", "custom"}
+
 
 class NanodetLearner(Learner):
     def __init__(self, model_to_use="plus-m-1.5x_416", iters=None, lr=None, batch_size=None, checkpoint_after_iter=None,
@@ -65,8 +64,8 @@ class NanodetLearner(Learner):
         self.grad_clip = grad_clip
 
         self.overwrite_config(lr=lr, weight_decay=weight_decay, iters=iters, batch_size=batch_size,
-                             checkpoint_after_iter=checkpoint_after_iter, checkpoint_load_iter=checkpoint_load_iter,
-                             temp_path=temp_path)
+                              checkpoint_after_iter=checkpoint_after_iter, checkpoint_load_iter=checkpoint_load_iter,
+                              temp_path=temp_path)
 
         self.lr = float(self.cfg.schedule.optimizer.lr)
         self.weight_decay = float(self.cfg.schedule.optimizer.weight_decay)
@@ -199,7 +198,6 @@ class NanodetLearner(Learner):
         if verbose:
             print("Model metadata saved.")
         return True
-
 
     def load(self, path=None, verbose=True):
         """
@@ -351,7 +349,7 @@ class NanodetLearner(Learner):
             self.logger = NanoDetLightningLogger(self.temp_path + "/" + logging_path)
             self.logger.dump_cfg(self.cfg)
 
-        if seed !='' or seed is not None:
+        if seed != '' or seed is not None:
             if verbose:
                 self.logger.info("Set random seed to {}".format(seed))
             pl.seed_everything(seed)
@@ -360,7 +358,8 @@ class NanodetLearner(Learner):
             self.logger.info("Setting up data...")
 
         train_dataset = build_dataset(self.cfg.data.val, dataset, self.cfg.class_names, "train")
-        val_dataset = train_dataset if val_dataset is None else build_dataset(self.cfg.data.val, val_dataset, self.cfg.class_names, "val")
+        val_dataset = train_dataset if val_dataset is None else \
+            build_dataset(self.cfg.data.val, val_dataset, self.cfg.class_names, "val")
 
         evaluator = build_evaluator(self.cfg.evaluator, val_dataset)
 
@@ -484,7 +483,6 @@ class NanodetLearner(Learner):
         :return: list of bounding boxes of last image of input or last frame of the video
         :rtype: BoundingBoxList
         """
-
 
         self.logger = Logger(0, use_tensorboard=False)
         predictor = Predictor(self.cfg, self.model, device=self.device)

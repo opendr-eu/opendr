@@ -46,23 +46,22 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
     def __init__(
         self,
-        img_path: str,
-        ann_path: str,
-        input_size: Tuple[int, int],
-        pipeline: Dict,
-        keep_ratio: bool = True,
-        use_instance_mask: bool = False,
-        use_seg_mask: bool = False,
-        use_keypoint: bool = False,
-        load_mosaic: bool = False,
-        mode: str = "train",
-        multi_scale: Optional[Tuple[float, float]] = None,
+        img_path,
+        ann_path,
+        input_size,
+        pipeline,
+        keep_ratio=True,
+        use_instance_mask=False,
+        use_seg_mask=False,
+        use_keypoint=False,
+        load_mosaic=False,
+        mode="train",
+        multi_scale=None,
     ):
         assert mode in ["train", "val", "test"]
         self.img_path = img_path
         self.ann_path = ann_path
         self.input_size = input_size
-        # TODO: pipeline check
         self.pipeline = Pipeline(pipeline, keep_ratio)
         self.keep_ratio = keep_ratio
         self.use_instance_mask = use_instance_mask

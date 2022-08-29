@@ -31,12 +31,8 @@ class Logger:
         # mkdir(local_rank, save_dir)
         mkdir(save_dir)
         self.rank = local_rank
-        fmt = (
-            colored("[%(name)s]", "magenta", attrs=["bold"])
-            + colored("[%(asctime)s]", "blue")
-            + colored("%(levelname)s:", "green")
-            + colored("%(message)s", "white")
-        )
+        fmt = (colored("[%(name)s]", "magenta", attrs=["bold"]) + colored("[%(asctime)s]", "blue") +
+               colored("%(levelname)s:", "green") + colored("%(message)s", "white"))
         logging.basicConfig(
             level=logging.INFO,
             filename=os.path.join(save_dir, "logs.txt"),
@@ -179,12 +175,8 @@ class NanoDetLightningLogger(LightningLoggerBase):
         ch = logging.StreamHandler()
         ch.setLevel(logging.INFO)
         # set console formatter
-        c_fmt = (
-            colored("[%(name)s]", "magenta", attrs=["bold"])
-            + colored("[%(asctime)s]", "blue")
-            + colored("%(levelname)s:", "green")
-            + colored("%(message)s", "white")
-        )
+        c_fmt = (colored("[%(name)s]", "magenta", attrs=["bold"]) + colored("[%(asctime)s]", "blue") +
+                 colored("%(levelname)s:", "green") + colored("%(message)s", "white"))
         console_formatter = logging.Formatter(c_fmt, datefmt="%m-%d %H:%M:%S")
         ch.setFormatter(console_formatter)
 

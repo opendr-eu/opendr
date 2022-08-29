@@ -74,10 +74,8 @@ def distribution_focal_loss(pred, label):
     dis_right = dis_left + 1
     weight_left = dis_right.float() - label
     weight_right = label - dis_left.float()
-    loss = (
-        F.cross_entropy(pred, dis_left, reduction="none") * weight_left
-        + F.cross_entropy(pred, dis_right, reduction="none") * weight_right
-    )
+    loss = F.cross_entropy(pred, dis_left, reduction="none") * weight_left + \
+        F.cross_entropy(pred, dis_right, reduction="none") * weight_right
     return loss
 
 

@@ -53,8 +53,6 @@ class TrainingTask(LightningModule):
             )
             self.avg_model = copy.deepcopy(self.model)
 
-
-
     def _preprocess_batch_input(self, batch):
         batch_imgs = batch["img"]
         if isinstance(batch_imgs, list):
@@ -79,7 +77,6 @@ class TrainingTask(LightningModule):
 
     def training_step(self, batch, batch_idx):
         batch = self._preprocess_batch_input(batch)
-        # TODO: pipeline check
         preds, loss, loss_states = self.model.forward_train(batch)
 
         # log train losses
@@ -356,4 +353,3 @@ class TrainingTask(LightningModule):
                 )
                 self.weight_averager.load_state_dict(avg_params)
                 self.logger.info("Loaded average state from checkpoint.")
-

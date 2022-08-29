@@ -24,9 +24,9 @@ class ExpMovingAverager(object):
     def __init__(self, decay: float = 0.9998, device: Optional[str] = None):
         if decay < 0 or decay > 1.0:
             raise ValueError(f"Decay should be in [0, 1], {decay} was given.")
-        self.decay: float = decay
-        self.state: Dict[str, Any] = {}
-        self.device: Optional[str] = device
+        self.decay = decay
+        self.state = {}
+        self.device = device
 
     def load_from(self, model: nn.Module) -> None:
         """Load state from the model."""

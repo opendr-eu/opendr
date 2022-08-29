@@ -126,7 +126,8 @@ class AssignResult(util_mixins.NiceRepr):
             :obj:`AssignResult`: Randomly generated assign results.
 
         Example:
-            >>> from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.assigner.assign_result import AssignResult
+            >>> from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head\
+            .assigner.assign_result import AssignResult
             >>> self = AssignResult.random()
             >>> print(self.info)
         """

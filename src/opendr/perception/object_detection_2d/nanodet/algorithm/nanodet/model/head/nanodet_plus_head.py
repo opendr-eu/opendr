@@ -5,15 +5,17 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import bbox2distance, distance2bbox, multi_apply, overlay_bbox_cv
-
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util\
+    import bbox2distance, distance2bbox, multi_apply
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.transform.warp import warp_boxes
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.gfocal_loss import DistributionFocalLoss, QualityFocalLoss
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.iou_loss import GIoULoss
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import ConvModule, DepthwiseConvModule
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv \
+    import ConvModule, DepthwiseConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import normal_init
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.nms import multiclass_nms
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.assigner.dsl_assigner import DynamicSoftLabelAssigner
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.assigner.dsl_assigner \
+    import DynamicSoftLabelAssigner
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.gfl_head import Integral, reduce_mean
 
 
@@ -322,10 +324,8 @@ class NanoDetPlusHead(nn.Module):
 
         if len(pos_inds) > 0:
             bbox_targets[pos_inds, :] = pos_gt_bboxes
-            dist_targets[pos_inds, :] = (
-                bbox2distance(center_priors[pos_inds, :2], pos_gt_bboxes)
-                / center_priors[pos_inds, None, 2]
-            )
+            dist_targets[pos_inds, :] = bbox2distance(center_priors[pos_inds, :2]
+                                                      , pos_gt_bboxes) / center_priors[pos_inds, None, 2]
             dist_targets = dist_targets.clamp(min=0, max=self.reg_max - 0.1)
             labels[pos_inds] = gt_labels[pos_assigned_gt_inds]
             label_scores[pos_inds] = pos_ious
@@ -415,14 +415,6 @@ class NanoDetPlusHead(nn.Module):
                 ).tolist()
             det_results[img_id] = det_result
         return det_results
-
-    def show_result(
-        self, img, dets, class_names, score_thres=0.3, show=True, save_path=None
-    ):
-        result = overlay_bbox_cv(img, dets, class_names, score_thresh=score_thres)
-        if show:
-            cv2.imshow("det", result)
-        return result
 
     def get_bboxes(self, cls_preds, reg_preds, img_metas):
         """Decode the outputs to bboxes.

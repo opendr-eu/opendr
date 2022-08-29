@@ -74,7 +74,7 @@ class CocoDetectionEvaluator:
                     json_results.append(detection)
         return json_results
 
-    def evaluate(self, results, save_dir):#, rank=-1):
+    def evaluate(self, results, save_dir):  # rank=-1
         results_json = self.results2json(results)
         if len(results_json) == 0:
             warnings.warn(

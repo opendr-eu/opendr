@@ -213,6 +213,7 @@ def warp_boxes(boxes, M, width, height):
     else:
         return boxes
 
+
 def get_minimum_dst_shape(
     src_shape: Tuple[int, int],
     dst_shape: Tuple[int, int],
@@ -255,15 +256,15 @@ class ShapeTransform:
 
     def __init__(
         self,
-        keep_ratio: bool,
-        divisible: int = 0,
-        perspective: float = 0.0,
-        scale: Tuple[int, int] = (1, 1),
-        stretch: Tuple = ((1, 1), (1, 1)),
-        rotation: float = 0.0,
-        shear: float = 0.0,
-        translate: float = 0.0,
-        flip: float = 0.0,
+        keep_ratio,
+        divisible=0,
+        perspective=0.0,
+        scale=(1, 1),
+        stretch=((1, 1), (1, 1)),
+        rotation=0.0,
+        shear=0.0,
+        translate=0.0,
+        flip=0.0,
         **kwargs
     ):
         self.keep_ratio = keep_ratio

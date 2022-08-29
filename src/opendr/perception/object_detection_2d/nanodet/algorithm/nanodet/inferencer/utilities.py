@@ -15,8 +15,6 @@
 # limitations under the License.
 
 import os
-import time
-
 import torch
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.batch_process import stack_batch_img
@@ -27,6 +25,7 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.arch 
 image_ext = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]
 video_ext = ["mp4", "mov", "avi", "mkv"]
 
+
 class Predictor(object):
     def __init__(self, cfg, model, device="cuda:0"):
         self.cfg = cfg
@@ -36,7 +35,8 @@ class Predictor(object):
             deploy_config = self.cfg.model
             deploy_config.arch.backbone.update({"deploy": True})
             deploy_model = build_model(deploy_config)
-            from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.backbone.repvgg import repvgg_det_model_convert
+            from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.backbone.repvgg\
+                import repvgg_det_model_convert
             model = repvgg_det_model_convert(model, deploy_model)
 
         self.model = model.to(device).eval()
@@ -57,22 +57,6 @@ class Predictor(object):
         with torch.no_grad():
             results = self.model.inference(meta)
         return meta, results
-
-    def visualize(self, dets, meta, class_names, score_thres):
-        time1 = time.time()
-        all_box = []
-        for label in dets:
-            for box in dets[label]:
-                score = box[-1]
-                if score > score_thres:
-                    x0, y0, x1, y1 = [int(i) for i in box[:4]]
-                    all_box.append([label, x0, y0, x1, y1, score])
-        all_box.sort(key=lambda v: v[5])
-        result_img = self.model.head.show_result(
-            meta["raw_img"][0], dets, class_names, score_thres=score_thres, show=True
-        )
-        print("viz time: {:.3f}s".format(time.time() - time1))
-        return result_img
 
 
 def get_image_list(path):

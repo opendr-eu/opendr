@@ -29,9 +29,6 @@ if __name__ == '__main__':
     nanodet.load("./predefined_examples/nanodet_{}/nanodet_{}.ckpt".format(args.model, args.model), verbose=True)
     nanodet.download("./predefined_examples", mode="images")
     img = Image.open("./predefined_examples/000000000036.jpg")
-    boxes = nanodet.infer(input=img, show=False)
+    boxes = nanodet.infer(input=img)
 
     draw_bounding_boxes(img.opencv(), boxes, class_names=nanodet.classes, show=True)
-
-
-

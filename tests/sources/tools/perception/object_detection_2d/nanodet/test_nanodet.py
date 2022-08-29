@@ -25,6 +25,7 @@ device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 _DEFAULT_MODEL = "plus-m_416"
 
+
 def rmfile(path):
     try:
         os.remove(path)
@@ -83,7 +84,8 @@ class TestNanodetLearner(unittest.TestCase):
     def test_eval(self):
         print('Starting evaluation test for Nanodet...')
         eval_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "test_data"), dataset_type="voc")
-        self.detector.load(path=os.path.join(self.temp_dir, f"nanodet_{_DEFAULT_MODEL}", f"nanodet_{_DEFAULT_MODEL}.ckpt"), verbose=False)
+        self.detector.load(path=os.path.join(self.temp_dir, f"nanodet_{_DEFAULT_MODEL}",
+                                             f"nanodet_{_DEFAULT_MODEL}.ckpt"), verbose=False)
         results_dict = self.detector.eval(dataset=eval_dataset, verbose=False)
         self.assertIsNotNone(results_dict['map'],
                              msg="Eval results dictionary not returned.")
