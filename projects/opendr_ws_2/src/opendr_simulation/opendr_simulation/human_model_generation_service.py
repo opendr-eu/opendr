@@ -85,6 +85,6 @@ def main():
     pifu_service = Pifu_service(device=device)
     rclpy.spin(pifu_service)
     rclpy.shutdown()
-    
+
 if __name__ == '__main__':
     main()
