@@ -31,27 +31,31 @@ matplotlib.use('Agg')
 
 class EfficientPsNode:
     def __init__(self,
-                 input_image_topic: str,
+                 input_rgb_image_topic: str,
                  checkpoint: str,
                  output_heatmap_topic: Optional[str] = None,
-                 output_visualization_topic: Optional[str] = None,
+                 output_rgb_visualization_topic: Optional[str] = None,
                  detailed_visualization: bool = False
                  ):
         """
         Initialize the EfficientPS ROS node and create an instance of the respective learner class.
-        :param checkpoint: Path to a saved model
+        :param checkpoint: This is either a path to a saved model or one of [cityscapes, kitti] to download
+            pre-trained model weights.
         :type checkpoint: str
-        :param input_image_topic: ROS topic for the input image stream
-        :type input_image_topic: str
+        :param input_rgb_image_topic: ROS topic for the input image stream
+        :type input_rgb_image_topic: str
         :param output_heatmap_topic: ROS topic for the predicted semantic and instance maps
         :type output_heatmap_topic: str
-        :param output_visualization_topic: ROS topic for the generated visualization of the panoptic map
-        :type output_visualization_topic: str
+        :param output_rgb_visualization_topic: ROS topic for the generated visualization of the panoptic map
+        :type output_rgb_visualization_topic: str
+        :param detailed_visualization: if True, generate a combined overview of the input RGB image and the
+            semantic, instance, and panoptic segmentation maps and publish it on output_rgb_visualization_topic
+        :type detailed_visualization: bool
         """
-        self.input_image_topic = input_image_topic
+        self.input_rgb_image_topic = input_rgb_image_topic
         self.checkpoint = checkpoint
         self.output_heatmap_topic = output_heatmap_topic
-        self.output_visualization_topic = output_visualization_topic
+        self.output_rgb_visualization_topic = output_rgb_visualization_topic
         self.detailed_visualization = detailed_visualization
 
         # Initialize all ROS related things
@@ -93,7 +97,7 @@ class EfficientPsNode:
         """
         Subscribe to all relevant topics.
         """
-        rospy.Subscriber(self.input_image_topic, ROS_Image, self.callback)
+        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback)
 
     def _init_publisher(self):
         """
@@ -101,13 +105,11 @@ class EfficientPsNode:
         """
         if self.output_heatmap_topic is not None:
             self._instance_heatmap_publisher = rospy.Publisher(
-                f'{self.output_heatmap_topic}/instance', ROS_Image,
-                queue_size=10)
+                f'{self.output_heatmap_topic}/instance', ROS_Image, queue_size=10)
             self._semantic_heatmap_publisher = rospy.Publisher(
-                f'{self.output_heatmap_topic}/semantic', ROS_Image,
-                queue_size=10)
-        if self.output_visualization_topic is not None:
-            self._visualization_publisher = rospy.Publisher(self.output_visualization_topic,
+                f'{self.output_heatmap_topic}/semantic', ROS_Image, queue_size=10)
+        if self.output_rgb_visualization_topic is not None:
+            self._visualization_publisher = rospy.Publisher(self.output_rgb_visualization_topic,
                                                             ROS_Image, queue_size=10)
 
     def listen(self):
@@ -146,28 +148,31 @@ class EfficientPsNode:
             if self._semantic_heatmap_publisher is not None and self._semantic_heatmap_publisher.get_num_connections() > 0:
                 self._semantic_heatmap_publisher.publish(self._bridge.to_ros_image(prediction[1]))
 
-        except Exception:
-            rospy.logwarn('Failed to generate prediction.')
+        except Exception as e:
+            rospy.logwarn(f'Failed to generate prediction: {e}')
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('image_topic', type=str, help='listen to images on this topic')
-    parser.add_argument('checkpoint', type=str,
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('input_rgb_image_topic', type=str,
+                        help='listen to RGB images on this topic')
+    parser.add_argument('--checkpoint', type=str, default='cityscapes',
                         help='download pretrained models [cityscapes, kitti] or load from the provided path')
-    parser.add_argument('--heatmap_topic', type=str,
-                        help='publish the semantic and instance maps on this topic')
-    parser.add_argument('--visualization_topic', type=str,
+    parser.add_argument('--output_heatmap_topic', type=str, default='/opendr/panoptic',
+                        help='publish the semantic and instance maps on this topic as "OUTPUT_HEATMAP_TOPIC/semantic" \
+                             and "OUTPUT_HEATMAP_TOPIC/instance"')
+    parser.add_argument('--output_rgb_image_topic', type=str,
+                        default='/opendr/panoptic/rgb_visualization',
                         help='publish the panoptic segmentation map as an RGB image on this topic or a more detailed \
                               overview if using the --detailed_visualization flag')
     parser.add_argument('--detailed_visualization', action='store_true',
                         help='generate a combined overview of the input RGB image and the semantic, instance, and \
-                              panoptic segmentation maps')
+                              panoptic segmentation maps and publish it on OUTPUT_RGB_IMAGE_TOPIC')
     args = parser.parse_args()
 
-    efficient_ps_node = EfficientPsNode(args.image_topic,
+    efficient_ps_node = EfficientPsNode(args.input_rgb_image_topic,
                                         args.checkpoint,
-                                        args.heatmap_topic,
-                                        args.visualization_topic,
+                                        args.output_heatmap_topic,
+                                        args.output_rgb_image_topic,
                                         args.detailed_visualization)
     efficient_ps_node.listen()
