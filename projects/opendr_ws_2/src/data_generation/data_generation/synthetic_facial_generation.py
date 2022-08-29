@@ -25,6 +25,7 @@ import os
 import argparse
 from opendr.engine.data import Image
 from algorithm.DDFA.utils.ddfa import str2bool
+__all__ = ['rclpy.node.Node']
 
 
 class Synthetic_Data_Generation:
@@ -142,7 +143,7 @@ class Synthetic_Data_Generation:
 
 
 def main(args=None):
-    rclpy.init(args=self.args)
+    rclpy.init(args=args)
     try:
         if torch.cuda.is_available():
             print("GPU found.")
