@@ -20,10 +20,11 @@ from rclpy.node import Node
 from ros2_bridge.bridge import ROS2Bridge
 import numpy as np
 from sensor_msgs.msg import Image as ROS_Image
-from SyntheticDataGeneration import MultiviewDataGenerationLearner
+from SyntheticDataGeneration import MultiviewDataGeneration
 import os
 import argparse
 from opendr.engine.data import Image
+from algorithm.DDFA.utils.ddfa import str2bool
 
 
 class Synthetic_Data_Generation:
@@ -42,10 +43,10 @@ class Synthetic_Data_Generation:
         """
 
         if output_image_topic is not None:
-            self.image_publisher = rospy.Publisher(output_image_topic, ROS_Image, queue_size=10)
+            self.image_publisher = self.create_publisher(output_image_topic, ROS_Image, queue_size=10)
         else:
             self.image_publisher = None
-        rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
+        self.create_subscription(input_image_topic, ROS_Image, self.callback)
         self.bridge = ROS2Bridge()
         self.ID = 0
 
