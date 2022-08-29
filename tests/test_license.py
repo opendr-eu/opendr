@@ -108,7 +108,6 @@ class TestLicense(unittest.TestCase):
             'projects/opendr_ws_2/src/opendr_perception/test',
             'projects/opendr_ws_2/src/opendr_ros2_bridge/test',
             'projects/opendr_ws_2/src/opendr_simulation/test',
-            'projects/opendr_ws_2/src/opendr_interfaces/test',
         ]
 
         skippedFilePaths = [
