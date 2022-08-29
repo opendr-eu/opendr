@@ -285,7 +285,7 @@ class ROS2Bridge:
             color.r = colors[i, 0]
             color.g = colors[i, 1]
             color.b = colors[i, 2]
-            color.a =  0.0
+            color.a = 0.0
             ros_colors.append(color)
         return ros_colors
 
