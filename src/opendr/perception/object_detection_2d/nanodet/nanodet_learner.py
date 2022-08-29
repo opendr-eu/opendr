@@ -345,9 +345,6 @@ class NanodetLearner(Learner):
         :type seed: int
         """
 
-        torch.backends.cudnn.enabled = True
-        torch.backends.cudnn.benchmark = True
-
         mkdir(self.cfg.save_dir)
 
         if verbose:
@@ -430,9 +427,6 @@ class NanodetLearner(Learner):
         :type verbose: bool
         """
 
-        torch.backends.cudnn.enabled = True
-        torch.backends.cudnn.benchmark = True
-
         timestr = datetime.datetime.now().__format__("%Y_%m_%d_%H:%M:%S")
         save_dir = os.path.join(self.cfg.save_dir, timestr)
         mkdir(save_dir)
@@ -491,8 +485,6 @@ class NanodetLearner(Learner):
         :rtype: BoundingBoxList
         """
 
-        torch.backends.cudnn.enabled = True
-        torch.backends.cudnn.benchmark = True
 
         self.logger = Logger(0, use_tensorboard=False)
         predictor = Predictor(self.cfg, self.model, device=self.device)
