@@ -23,6 +23,7 @@ from opendr.simulation.human_model_generation.pifu_generator_learner import PIFu
 from opendr_interfaces.srv import Mesh
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
+
 class Pifu_service(Node):
 
     def __init__(self, service_name='human_model_generation', device="cuda", checkpoint_dir='.'):
@@ -43,7 +44,6 @@ class Pifu_service(Node):
         my_callback_group = MutuallyExclusiveCallbackGroup()
 
         self.srv = self.create_service(Mesh, 'human_model_generation', self.gen_callback, callback_group=my_callback_group)
-
 
     def gen_callback(self, request, response):
         """
@@ -69,18 +69,18 @@ class Pifu_service(Node):
         response.pose = self.bridge.to_ros_3Dpose(pose)
         return response
 
+
 def main():
-   # Select the device for running the
-   try: 
-      if torch.cuda.is_available():
-         print("GPU found.")
-         device = 'cuda'
-      else:
-         print("GPU not found. Using CPU instead.")
-         device = 'cpu'
-   except:
-      device = 'cpu'
-    
+    # Select the device for running the
+    try:
+        if torch.cuda.is_available():
+            print("GPU found.")
+            device = 'cuda'
+        else:
+            print("GPU not found. Using CPU instead.")
+            device = 'cpu'
+    except:
+        device = 'cpu'
    rclpy.init()
    pifu_service = Pifu_service(device=device)
    rclpy.spin(pifu_service)
