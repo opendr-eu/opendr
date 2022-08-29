@@ -36,7 +36,7 @@ class Human_model_generation_client(Node):
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
         self.req = Mesh.Request()
- 
+
     def send_request(self, rgb_img, msk_img, extract_pose):
         extract_pose_ros = Bool()
         extract_pose_ros.data = extract_pose
