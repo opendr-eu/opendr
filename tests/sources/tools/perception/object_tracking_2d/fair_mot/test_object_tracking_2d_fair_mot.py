@@ -18,7 +18,7 @@ import shutil
 import torch
 from opendr.perception.object_tracking_2d import (
     MotDataset,
-    # MotDatasetIterator,
+    MotDatasetIterator,
     RawMotDatasetIterator,
 )
 from opendr.perception.object_tracking_2d import ObjectTracking2DFairMotLearner
