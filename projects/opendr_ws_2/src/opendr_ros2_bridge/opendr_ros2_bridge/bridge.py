@@ -18,10 +18,9 @@ from opendr.engine.target import Pose, BoundingBox, BoundingBoxList
 
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image as ImageMsg
-from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, \
-                            ObjectHypothesisWithPose, Detection3DArray, \
-                            Pose2D, Detection3D, \
-                            BoundingBox3D as BoundingBox3DMsg,
+from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D,\
+     ObjectHypothesisWithPose, Detection3DArray, Pose2D, Detection3D,\
+     BoundingBox3D as BoundingBox3DMsg
 from shape_msgs.msg import Mesh, MeshTriangle
 from geometry_msgs.msg import Point, Pose as Pose3D
 from std_msgs.msg import ColorRGBA
