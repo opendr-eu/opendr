@@ -28,30 +28,31 @@ from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
 
 class Human_model_generation_client(Node):
 
-   def __init__(self, service_name='human_model_generation'):
-      super().__init__('human_model_generation_client')
-      self.bridge_cv = CvBridge()
-      self.bridge_ros = ROS2Bridge()
-      self.cli = self.create_client(Mesh, service_name)
-      while not self.cli.wait_for_service(timeout_sec=1.0):
+    def __init__(self, service_name='human_model_generation'):
+        super().__init__('human_model_generation_client')
+        self.bridge_cv = CvBridge()
+        self.bridge_ros = ROS2Bridge()
+        self.cli = self.create_client(Mesh, service_name)
+        while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
-      self.req = Mesh.Request()
+        self.req = Mesh.Request()
    
-   def send_request(self, rgb_img, msk_img, extract_pose):
-      extract_pose_ros = Bool()
-      extract_pose_ros.data = extract_pose
-      self.req.rgb_img = self.bridge_cv.cv2_to_imgmsg(rgb_img, encoding="bgr8")
-      self.req.msk_img = self.bridge_cv.cv2_to_imgmsg(msk_img, encoding="bgr8")
-      self.req.extract_pose = extract_pose_ros
-      self.future = self.cli.call_async(self.req)
-      rclpy.spin_until_future_complete(self, self.future)
-      resp = self.future.result()
-      pose = self.bridge_ros.from_ros_3Dpose(resp.pose)
-      vertices, triangles = self.bridge_ros.from_ros_mesh(resp.mesh)
-      vertex_colors = self.bridge_ros.from_ros_colors(resp.vertex_colors)
-      human_model = Model_3D(vertices, triangles, vertex_colors)
-      return human_model, pose
-   
+    def send_request(self, rgb_img, msk_img, extract_pose):
+        extract_pose_ros = Bool()
+       extract_pose_ros.data = extract_pose
+       self.req.rgb_img = self.bridge_cv.cv2_to_imgmsg(rgb_img, encoding="bgr8")
+       self.req.msk_img = self.bridge_cv.cv2_to_imgmsg(msk_img, encoding="bgr8")
+       self.req.extract_pose = extract_pose_ros
+       self.future = self.cli.call_async(self.req)
+       rclpy.spin_until_future_complete(self, self.future)
+       resp = self.future.result()
+       pose = self.bridge_ros.from_ros_3Dpose(resp.pose)
+       vertices, triangles = self.bridge_ros.from_ros_mesh(resp.mesh)
+       vertex_colors = self.bridge_ros.from_ros_colors(resp.vertex_colors)
+       human_model = Model_3D(vertices, triangles, vertex_colors)
+       return human_model, pose
+
+
 def main():
     rgb_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'projects/simulation/'
                                       'human_model_generation/demos/imgs_input/rgb/result_0004.jpg'))
@@ -60,7 +61,7 @@ def main():
     extract_pose = True
     rclpy.init()
     client = Human_model_generation_client()
-    [human_model, pose] =  client.send_request(rgb_img, msk_img, extract_pose=extract_pose)
+    [human_model, pose] = client.send_request(rgb_img, msk_img, extract_pose=extract_pose)
     human_model.save_obj_mesh('./human_model.obj')
     if extract_pose:
         [out_imgs, human_pose_2D] = human_model.get_img_views(rotations=[30, 120], human_pose_3D=pose, plot_kps=True)
@@ -69,6 +70,6 @@ def main():
     cv2.imwrite('./rendering.png', out_imgs[0].opencv())
     client.destroy_node()
     rclpy.shutdown()
-    
+
 if __name__ == '__main__':
     main()
