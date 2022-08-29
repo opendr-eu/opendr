@@ -18,7 +18,10 @@ from opendr.engine.target import Pose, BoundingBox, BoundingBoxList
 
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image as ImageMsg
-from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose, BoundingBox3D as BoundingBox3DMsg, Pose2D, Detection3DArray, Detection3D
+from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, \
+                            ObjectHypothesisWithPose, Detection3DArray, \
+                            Pose2D, Detection3D, \
+                            BoundingBox3D as BoundingBox3DMsg,
 from shape_msgs.msg import Mesh, MeshTriangle
 from geometry_msgs.msg import Point, Pose as Pose3D
 from std_msgs.msg import ColorRGBA
@@ -207,7 +210,7 @@ class ROS2Bridge:
             boxes.append(BoundingBox(name, left, top, width, height, score))
         bounding_box_list = BoundingBoxList(boxes)
         return bounding_box_list
-        
+
     def from_ros_mesh(self, mesh_ROS, vertex_colors_ROS=None):
         """
         Converts a ROS mesh into arrays of vertices and faces of a mesh
@@ -230,7 +233,7 @@ class ROS2Bridge:
             faces[i] = np.array([int(mesh_ROS.triangles[i].vertex_indices[0]), int(mesh_ROS.triangles[i].vertex_indices[1]),
                                  int(mesh_ROS.triangles[i].vertex_indices[2])]).astype(int)
         return vertices, faces
-        
+
     def to_ros_mesh(self, vertices, faces):
         """
         Converts a mesh into a ROS Mesh
@@ -255,7 +258,7 @@ class ROS2Bridge:
             mesh_triangle.vertex_indices[2] = int(faces[i][2])
             mesh_ROS.triangles.append(mesh_triangle)
         return mesh_ROS
-        
+
     def from_ros_colors(self, ros_colors):
         """
         Converts a list of ROS colors into a list of colors
@@ -268,7 +271,7 @@ class ROS2Bridge:
         for i in range(len(ros_colors)):
             colors[i] = np.array([ros_colors[i].r, ros_colors[i].g, ros_colors[i].b])
         return colors
-        
+
     def to_ros_colors(self, colors):
         """
         Converts an array of vertex_colors to a list of ROS colors
@@ -285,7 +288,7 @@ class ROS2Bridge:
             color.a =  0.0
             ros_colors.append(color)
         return ros_colors
-        
+
     def from_ros_3Dpose(self, ros_pose):
         """
         Converts a ROS message with pose payload into an OpenDR pose
@@ -309,7 +312,7 @@ class ROS2Bridge:
         pose = Pose(data, confidence)
         pose.id = pose_id
         return pose
-        
+
     def to_ros_3Dpose(self, pose):
         """
         Converts an OpenDR pose into a Detection3DArray msg that can carry the same information
