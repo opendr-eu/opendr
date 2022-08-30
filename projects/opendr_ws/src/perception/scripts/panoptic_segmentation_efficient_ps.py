@@ -97,7 +97,7 @@ class EfficientPsNode:
         """
         Subscribe to all relevant topics.
         """
-        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback)
+        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
 
     def _init_publisher(self):
         """
