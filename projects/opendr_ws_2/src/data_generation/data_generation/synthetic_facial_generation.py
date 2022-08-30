@@ -16,7 +16,6 @@
 import cv2
 import torch
 import rclpy
-from rclpy.node import Node
 from ros2_bridge.bridge import ROS2Bridge
 import numpy as np
 from sensor_msgs.msg import Image as ROS_Image
@@ -25,7 +24,6 @@ import os
 import argparse
 from opendr.engine.data import Image
 from algorithm.DDFA.utils.ddfa import str2bool
-__all__ = ['rclpy.node.Node']
 
 
 class Synthetic_Data_Generation:
