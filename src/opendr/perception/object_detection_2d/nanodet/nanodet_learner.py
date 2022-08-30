@@ -44,13 +44,13 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.learners import Learner
 from urllib.request import urlretrieve
 
-_MODEL_NAMES = {"EfficientNet-Lite0_320", "EfficientNet-Lite1_416", "EfficientNet-Lite2_512",
-                "RepVGG-A0_416", "t", "g", "m", "m-416", "m-0.5x", "m-1.5x", "m-1.5x-416",
-                "plus-m_320", "plus-m-1.5x_320", "plus-m_416", "plus-m-1.5x_416", "custom"}
+_MODEL_NAMES = {"EfficientNet_Lite0_320", "EfficientNet_Lite1_416", "EfficientNet_Lite2_512",
+                "RepVGG_A0_416", "t", "g", "m", "m_416", "m_0.5x", "m_1.5x", "m_1.5x_416",
+                "plus_m_320", "plus_m_1.5x_320", "plus_m_416", "plus_m_1.5x_416", "custom"}
 
 
 class NanodetLearner(Learner):
-    def __init__(self, model_to_use="plus-m-1.5x_416", iters=None, lr=None, batch_size=None, checkpoint_after_iter=None,
+    def __init__(self, model_to_use="plus_m_1.5x_416", iters=None, lr=None, batch_size=None, checkpoint_after_iter=None,
                  checkpoint_load_iter=None, temp_path='', device='cuda', weight_decay=None, warmup_steps=None,
                  warmup_ratio=None, lr_schedule_T_max=None, lr_schedule_eta_min=None, grad_clip=None):
 
@@ -99,11 +99,11 @@ class NanodetLearner(Learner):
         ), f"Invalid model selected. Choose one of {_MODEL_NAMES}."
         full_path = list()
         path = Path(__file__).parent / "algorithm" / "config"
-        wanted_file = "nanodet-{}.yml".format(model)
+        wanted_file = "nanodet_{}.yml".format(model)
         for root, dir, files in os.walk(path):
             if wanted_file in files:
                 full_path.append(os.path.join(root, wanted_file))
-        assert (len(full_path) == 1), f"You must have only one nanodet-{model}.yaml file in you config folder"
+        assert (len(full_path) == 1), f"You must have only one nanodet_{model}.yaml file in you config folder"
         load_config(cfg, full_path[0])
         return cfg
 

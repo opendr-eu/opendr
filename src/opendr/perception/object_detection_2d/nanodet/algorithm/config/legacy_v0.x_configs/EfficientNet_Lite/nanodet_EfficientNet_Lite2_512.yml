@@ -1,42 +1,39 @@
-# nanodet-plus-m_320
-# COCO mAP(0.5:0.95) = 0.270
-#             AP_50  = 0.418
-#             AP_75  = 0.281
-#           AP_small = 0.083
-#               AP_m = 0.278
-#               AP_l = 0.451
-save_dir: workspace/nanodet-plus-m_320
-check_point_name: plus-m_320
+# nanodet-EfficientNet-Lite2_512
+# COCO mAP(0.5:0.95) = 0.326
+#             AP_50  = 0.501
+#             AP_75  = 0.344
+#           AP_small = 0.152
+#               AP_m = 0.342
+#               AP_l = 0.481
+save_dir: ./workspace/efficientlite2_512
+check_point_name: EfficientNet_Lite2_512
 model:
-  weight_averager:
-    name: ExpMovingAverager
-    decay: 0.9998
   arch:
-    name: NanoDetPlus
-    detach_epoch: 10
+    name: OneStageDetector
     backbone:
-      name: ShuffleNetV2
-      model_size: 1.0x
-      out_stages: [2,3,4]
-      activation: LeakyReLU
+      name: EfficientNetLite
+      model_name: efficientnet_lite2
+      out_stages: [2,4,6]
+      activation: ReLU6
+      pretrain: True
     fpn:
-      name: GhostPAN
-      in_channels: [116, 232, 464]
-      out_channels: 96
-      kernel_size: 5
-      num_extra_level: 1
-      use_depthwise: True
-      activation: LeakyReLU
+      name: PAN
+      in_channels: [48, 120, 352]
+      out_channels: 128
+      start_level: 0
+      num_outs: 3
     head:
-      name: NanoDetPlusHead
+      name: NanoDetHead
       num_classes: 80
-      input_channel: 96
-      feat_channels: 96
-      stacked_convs: 2
-      kernel_size: 5
-      strides: [8, 16, 32, 64]
-      activation: LeakyReLU
-      reg_max: 7
+      input_channel: 128
+      feat_channels: 128
+      stacked_convs: 4
+      activation: ReLU6
+      share_cls_reg: True
+      octave_base_scale: 5
+      scales_per_octave: 1
+      strides: [8, 16, 32]
+      reg_max: 10
       norm_cfg:
         type: BN
       loss:
@@ -51,24 +48,14 @@ model:
         loss_bbox:
           name: GIoULoss
           loss_weight: 2.0
-    # Auxiliary head, only use in training time.
-    aux_head:
-      name: SimpleConvHead
-      num_classes: 80
-      input_channel: 192
-      feat_channels: 192
-      stacked_convs: 4
-      strides: [8, 16, 32, 64]
-      activation: LeakyReLU
-      reg_max: 7
 data:
   train:
-    input_size: [320,320] #[w,h]
-    keep_ratio: False
+    input_size: [512,512] #[w,h]
+    keep_ratio: True
     pipeline:
       perspective: 0.0
-      scale: [0.6, 1.4]
-      stretch: [[0.8, 1.2], [0.8, 1.2]]
+      scale: [0.5, 1.5]
+      stretch: [[1, 1], [1, 1]]
       rotation: 0
       shear: 0
       translate: 0.2
@@ -76,38 +63,39 @@ data:
       brightness: 0.2
       contrast: [0.6, 1.4]
       saturation: [0.5, 1.2]
-      normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
+      normalize: [[127.0, 127.0, 127.0], [128.0, 128.0, 128.0]]
   val:
-    input_size: [320,320] #[w,h]
-    keep_ratio: False
+    input_size: [512,512] #[w,h]
+    keep_ratio: True
     pipeline:
-      normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
+      normalize: [[127.0, 127.0, 127.0], [128.0, 128.0, 128.0]]
 device:
-  gpu_ids: [0] # Set like [0, 1, 2, 3] if you have multi-GPUs
-  workers_per_gpu: 10
-  batchsize_per_gpu: 32 #96
+  gpu_ids: [0]
+  workers_per_gpu: 12
+  batchsize_per_gpu: 60
 schedule:
   resume: 0
   optimizer:
-    name: AdamW
-    lr: 0.001
-    weight_decay: 0.05
+    name: SGD
+    lr: 0.06
+    momentum: 0.9
+    weight_decay: 0.0001
   warmup:
     name: linear
-    steps: 500
-    ratio: 0.0001
-  total_epochs: 300
+    steps: 300
+    ratio: 0.1
+  total_epochs: 135
   lr_schedule:
-    name: CosineAnnealingLR
-    T_max: 300
-    eta_min: 0.00005
-  val_intervals: 10
-grad_clip: 35
+    name: MultiStepLR
+    milestones: [90,110,120,130]
+    gamma: 0.1
+  val_intervals: 5
 evaluator:
   name: CocoDetectionEvaluator
   save_key: mAP
+
 log:
-  interval: 50
+  interval: 10
 
 class_names: ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
               'train', 'truck', 'boat', 'traffic_light', 'fire_hydrant',

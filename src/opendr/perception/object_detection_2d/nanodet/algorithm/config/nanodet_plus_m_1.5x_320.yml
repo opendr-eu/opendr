@@ -1,12 +1,12 @@
-# nanodet-plus-m-1.5x_416
-# COCO mAP(0.5:0.95) = 0.341
-#             AP_50  = 0.506
-#             AP_75  = 0.357
-#           AP_small = 0.143
-#               AP_m = 0.363
-#               AP_l = 0.539
-save_dir: ./workspace/nanodet-plus-m-1.5x_416/test_training
-check_point_name: plus-m-1.5x_416_default
+# nanodet-plus-m-1.5x_320
+# COCO mAP(0.5:0.95) = 0.299
+#             AP_50  = 0.454
+#             AP_75  = 0.312
+#           AP_small = 0.102
+#               AP_m = 0.309
+#               AP_l = 0.493
+save_dir: ./workspace/nanodet_plus_m_1.5x_320
+check_point_name: plus_m_1.5x_320
 model:
   weight_averager:
     name: ExpMovingAverager
@@ -63,7 +63,7 @@ model:
       reg_max: 7
 data:
   train:
-    input_size: [416,416] #[w,h]
+    input_size: [320,320] #[w,h]
     keep_ratio: False
     pipeline:
       perspective: 0.0
@@ -78,19 +78,19 @@ data:
       saturation: [0.5, 1.2]
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
   val:
-    input_size: [416,416] #[w,h]
+    input_size: [320,320] #[w,h]
     keep_ratio: False
     pipeline:
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
 device:
   gpu_ids: [0]
   workers_per_gpu: 10
-  batchsize_per_gpu: 12 #96
+  batchsize_per_gpu: 96
 schedule:
   resume: 0
   optimizer:
     name: AdamW
-    lr: 0.000125
+    lr: 0.001
     weight_decay: 0.05
   warmup:
     name: linear
