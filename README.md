@@ -52,7 +52,9 @@ OpenDR is built to support [Webots Open Source Robot Simulator](https://cyberbot
 
 ## How can I start using OpenDR?
 
-You can find detailed documentation in OpenDR [wiki](https://github.com/tasostefas/opendr_internal/wiki), as well as in the [tools index](docs/reference/index.md).
+You can find detailed documentation in OpenDR [wiki](https://github.com/tasostefas/opendr_internal/wiki). 
+The main point of reference after installing the toolkit is the [tools index](docs/reference/index.md).
+Starting from there, you can find detailed documentation for all the tools included in OpenDR.
 
 - If you are interested in ready-to-use ROS nodes, then you can directly jump to our [ROS1](projects/opendr_ws) and [ROS2](projects/opendr_ws_2) workspaces.
 - If you are interested for ready-to-use examples, then you can checkout the [projects](projects/python) folder, which contains examples and tutorials for [perception](projects/python/perception), [control](projects/python/control), [simulation](projects/python/simulation) and [hyperparameter tuning](projects/python/utils) tools.
