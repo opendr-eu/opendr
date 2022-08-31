@@ -7,10 +7,11 @@ ______________________________________________________________________
 
 <p align="center">
   <a href="https://www.opendr.eu/">Website</a> •
-  <a href="#about">About</a> •
   <a href="docs/reference/installation.md">Installation</a> •
-  <a href="#using-opendr-toolkit">Using OpenDR toolkit</a> •
-  <a href="projects">Examples</a> •
+  <a href="projects">Python Examples</a> •
+  <a href="projects/opendr_ws">ROS1</a> •
+  <a href="projects/opendr_ws_2">ROS2</a> •
+  <a href="projects/c_api">C API</a> •
   <a href="docs/reference/customize.md">Customization</a> •
   <a href="#roadmap">Roadmap</a> •
   <a href="CHANGELOG.md">Changelog</a> •
@@ -34,19 +35,35 @@ OpenDR focuses on the **AI and Cognition core technology** in order to provide t
 As a result, the developed OpenDR toolkit will also enable cooperative human-robot interaction as well as the development of cognitive mechatronics where sensing and actuation are closely coupled with cognitive systems thus contributing to another two core technologies beyond AI and Cognition.
 OpenDR aims to develop, train, deploy and evaluate deep learning models that improve the technical capabilities of the core technologies beyond the current state of the art.
 
-## Installing OpenDR Toolkit
 
+## Where to start?
+
+You can start by [installing](docs/reference/installation.md) the OpenDR toolkit. 
 OpenDR can be installed in the following ways:
 1. By *cloning* this repository (CPU/GPU support)
 2. Using *pip* (CPU/GPU support only)
 3. Using *docker* (CPU/GPU support)
 
-You can find detailed installation instruction in the [documentation](docs/reference/installation.md).
 
-## Using OpenDR toolkit
+## What OpenDR provides?
+
 OpenDR provides an intuitive and easy to use **[Python interface](src/opendr)**, a **[C API](src/c_api) for performance critical application**, a wealth of **[usage examples and supporting tools](projects)**, as well as **ready-to-use [ROS nodes](projects/opendr_ws)**.
 OpenDR is built to support [Webots Open Source Robot Simulator](https://cyberbotics.com/), while it also extensively follows industry standards, such as [ONNX model format](https://onnx.ai/) and [OpenAI Gym Interface](https://gym.openai.com/).
+
+## How can I start using OpenDR?
+
 You can find detailed documentation in OpenDR [wiki](https://github.com/tasostefas/opendr_internal/wiki), as well as in the [tools index](docs/reference/index.md).
+
+- If you are interested in ready-to-use ROS nodes, then you can directly jump to our [ROS1](projects/opendr_ws) and [ROS2](projects/opendr_ws_2) workspaces.
+- If you are interested for ready-to-use examples, then you can checkout the [projects](projects) folder, which contains examples and tutorials for [perception](projects/perception), [control](projects/control), [simulation](projects/simulation) and [hyperparameter tuning](projects/utils) tools.
+- If you want to explore our C API, then you explore the provided [C demos](projects/c_api).
+
+## How can I interface OpenDR?
+
+OpenDR is built upon Python.
+Therefore, the main OpenDR interface is written in Python and it is available through the [opendr](src/opendr) package.
+Furthermore, OpenDR provides [ROS1](projects/opendr_ws) and [ROS2](projects/opendr_ws_2) interfaces, as well as a [C interface](projects/c_api).
+
 
 ## Roadmap
 OpenDR has the following roadmap:
