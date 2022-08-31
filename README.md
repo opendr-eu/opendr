@@ -8,7 +8,7 @@ ______________________________________________________________________
 <p align="center">
   <a href="https://www.opendr.eu/">Website</a> •
   <a href="docs/reference/installation.md">Installation</a> •
-  <a href="projects">Python Examples</a> •
+  <a href="projects/python">Python Examples</a> •
   <a href="projects/opendr_ws">ROS1</a> •
   <a href="projects/opendr_ws_2">ROS2</a> •
   <a href="projects/c_api">C API</a> •
@@ -55,7 +55,7 @@ OpenDR is built to support [Webots Open Source Robot Simulator](https://cyberbot
 You can find detailed documentation in OpenDR [wiki](https://github.com/tasostefas/opendr_internal/wiki), as well as in the [tools index](docs/reference/index.md).
 
 - If you are interested in ready-to-use ROS nodes, then you can directly jump to our [ROS1](projects/opendr_ws) and [ROS2](projects/opendr_ws_2) workspaces.
-- If you are interested for ready-to-use examples, then you can checkout the [projects](projects) folder, which contains examples and tutorials for [perception](projects/perception), [control](projects/control), [simulation](projects/simulation) and [hyperparameter tuning](projects/utils) tools.
+- If you are interested for ready-to-use examples, then you can checkout the [projects](projects/python) folder, which contains examples and tutorials for [perception](projects/python/perception), [control](projects/python/control), [simulation](projects/python/simulation) and [hyperparameter tuning](projects/python/utils) tools.
 - If you want to explore our C API, then you explore the provided [C demos](projects/c_api).
 
 ## How can I interface OpenDR?
