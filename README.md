@@ -66,6 +66,9 @@ Starting from there, you can find detailed documentation for all the tools inclu
 OpenDR is built upon Python.
 Therefore, the main OpenDR interface is written in Python and it is available through the [opendr](src/opendr) package.
 Furthermore, OpenDR provides [ROS1](projects/opendr_ws) and [ROS2](projects/opendr_ws_2) interfaces, as well as a [C interface](projects/c_api).
+Note that you can use as many tools as you wish at the same time, since there is no hardware limitation on the number of tools that can run at the same time.
+However, hardware limitations (e.g., GPU memory) might restrict the number of tools that can run at any given moment.
+
 
 
 ## Roadmap
