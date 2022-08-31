@@ -6,10 +6,10 @@ For example, users can readily use the existing [ROS nodes](projects/opendr_ws),
 Furthermore, note that several tools can be combined within a ROS node, as showcased in [face recognition ROS node](projects/opendr_ws/src/perception/scripts/face_recognition.py). 
 You can use these nodes as a template for customizing the toolkit to your own needs.
 The rest of this document includes instructions for:
-1. Building docker images using the provided docker files. 
-2. Customizing existing docker images
-3. Changing the behavior of ROS nodes
-4. Building docker images that do not contain the whole toolkit
+1. [Building docker images using the provided docker files](#building-custom-docker-images)
+2. [Customizing existing docker images](#customizing-existing-docker-images)
+3. [Changing the behavior of ROS nodes](#changing-the-behavior-of-ros-nodes)
+4. [Building docker images that do not contain the whole toolkit](#building-docker-images-that-do-not-contain-the-whole-toolkit)
 
 
 ## Building custom docker images
