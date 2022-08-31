@@ -1,6 +1,5 @@
 import math
 
-import cv2
 import numpy as np
 import torch
 import torch.distributed as dist

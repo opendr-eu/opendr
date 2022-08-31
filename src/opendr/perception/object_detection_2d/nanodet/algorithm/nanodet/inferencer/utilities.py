@@ -1,4 +1,4 @@
-# Modified from OpenDR European Project
+# Modifications Copyright 2021 - present, OpenDR European Project
 #
 # Copyright 2021 RangiLyu.
 #
@@ -41,10 +41,9 @@ class Predictor(object):
 
         self.model = model.to(device).eval()
 
-        # TODO: pipeline check
         self.pipeline = Pipeline(self.cfg.data.val.pipeline, self.cfg.data.val.keep_ratio)
 
-    def inference(self, img):
+    def inference(self, img, verbose=True):
         img_info = {"id": 0}
         height, width = img.shape[:2]
         img_info["height"] = height
@@ -55,7 +54,7 @@ class Predictor(object):
         meta = naive_collate([meta])
         meta["img"] = stack_batch_img(meta["img"], divisible=32)
         with torch.no_grad():
-            results = self.model.inference(meta)
+            results = self.model.inference(meta, verbose)
         return meta, results
 
 

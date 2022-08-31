@@ -1,4 +1,4 @@
-# Modified from OpenDR European Project
+# Modifications Copyright 2021 - present, OpenDR European Project
 #
 # Copyright 2021 RangiLyu.
 #
@@ -14,14 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import OrderedDict
 from typing import Any, Dict
-
-from pytorch_lightning.utilities import rank_zero_only
-import pytorch_lightning as pl
 import torch
-
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.rank_filter import rank_filter
 
 
 def load_model_weight(model, checkpoint, logger=None):

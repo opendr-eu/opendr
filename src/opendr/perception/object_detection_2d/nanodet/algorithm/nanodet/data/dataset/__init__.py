@@ -1,4 +1,4 @@
-# Modified from OpenDR European Project
+# Modifications Copyright 2021 - present, OpenDR European Project
 #
 # Copyright 2021 RangiLyu.
 #
@@ -18,7 +18,6 @@
 import copy
 from opendr.engine.datasets import ExternalDataset
 
-from opendr.perception.object_detection_2d.datasets.detection_dataset import DetectionDataset
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.dataset.coco import CocoDataset
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.dataset.xml_dataset import XMLDataset
 

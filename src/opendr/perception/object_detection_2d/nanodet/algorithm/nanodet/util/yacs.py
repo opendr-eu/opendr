@@ -23,14 +23,10 @@ import copy
 import io
 import logging
 import os
-import sys
 from ast import literal_eval
 
 import yaml
-
-# Flag for py2 and py3 compatibility to use when separate code paths are necessary
-# When _PY2 is False, we assume Python 3 is in use
-_PY2 = sys.version_info.major == 2
+import importlib.util
 
 # Filename extensions for loading configs from files
 _YAML_EXTS = {"", ".yaml", ".yml"}
@@ -40,16 +36,7 @@ _FILE_TYPES = (io.IOBase,)
 
 # CfgNodes can only contain a limited set of valid types
 _VALID_TYPES = {tuple, list, str, int, float, bool, type(None)}
-# py2 allow for str and unicode
-if _PY2:
-    _VALID_TYPES = _VALID_TYPES.union({unicode})  # noqa: F821
 
-# Utilities for importing modules from file paths
-if _PY2:
-    # imp is available in both py2 and py3 for now, but is deprecated in py3
-    import imp
-else:
-    import importlib.util
 
 logger = logging.getLogger(__name__)
 
@@ -496,11 +483,6 @@ def _check_and_coerce_cfg_value_type(replacement, original, key, full_key):
     # Conditionally casts
     # list <-> tuple
     casts = [(tuple, list), (list, tuple)]
-    # For py2: allow converting from str (bytes) to a unicode string
-    try:
-        casts.append((str, unicode))  # noqa: F821
-    except Exception:
-        pass
 
     for (from_type, to_type) in casts:
         converted, converted_value = conditional_cast(from_type, to_type)
@@ -522,10 +504,7 @@ def _assert_with_logging(cond, msg):
 
 
 def _load_module_from_file(name, filename):
-    if _PY2:
-        module = imp.load_source(name, filename)
-    else:
-        spec = importlib.util.spec_from_file_location(name, filename)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+    spec = importlib.util.spec_from_file_location(name, filename)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
     return module

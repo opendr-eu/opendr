@@ -1,4 +1,4 @@
-# Modified from OpenDR European Project
+# Modifications Copyright 2021 - present, OpenDR European Project
 #
 # Copyright 2021 RangiLyu.
 #
@@ -15,7 +15,6 @@
 # limitations under the License.
 
 import copy
-import json
 import os
 import warnings
 from typing import Any, Dict, List
@@ -25,7 +24,8 @@ import torch.distributed as dist
 from pytorch_lightning import LightningModule
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.batch_process import stack_batch_img
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import convert_avg_params, gather_results, mkdir
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util\
+    import convert_avg_params, gather_results, mkdir
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.check_point import save_model_state
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.weight_averager import build_weight_averager
 
@@ -72,8 +72,8 @@ class TrainingTask(LightningModule):
         results = self.model.head.post_process(preds, batch)
         return results
 
-    def save_current_model(self, path):
-        save_model_state(path=path, model=self.model, weight_averager=self.weight_averager, logger=self.logger)
+    def save_current_model(self, path, logger):
+        save_model_state(path=path, model=self.model, weight_averager=self.weight_averager, logger=logger)
 
     def training_step(self, batch, batch_idx):
         batch = self._preprocess_batch_input(batch)
@@ -100,7 +100,8 @@ class TrainingTask(LightningModule):
                     loss_states[loss_name].mean().item(),
                     self.global_step,
                 )
-            self.logger.info(log_msg)
+            if self.logger:
+                self.logger.info(log_msg)
 
         return loss
 
@@ -138,7 +139,8 @@ class TrainingTask(LightningModule):
                 log_msg += "{}:{:.4f}| ".format(
                     loss_name, loss_states[loss_name].mean().item()
                 )
-            self.logger.info(log_msg)
+            if self.logger:
+                self.logger.info(log_msg)
 
         dets = self.model.head.post_process(preds, batch)
         return dets
@@ -172,7 +174,7 @@ class TrainingTask(LightningModule):
                 self.trainer.save_checkpoint(
                     os.path.join(best_save_path, "model_best.ckpt")
                 )
-                self.save_current_model(os.path.join(best_save_path, "nanodet_model_best.pth"))
+                self.save_current_model(os.path.join(best_save_path, "nanodet_model_best.pth"), logger=self.logger)
                 txt_path = os.path.join(best_save_path, "eval_results.txt")
                 with open(txt_path, "a") as f:
                     f.write("Epoch:{}\n".format(self.current_epoch + 1))
@@ -182,10 +184,12 @@ class TrainingTask(LightningModule):
                 warnings.warn(
                     "Warning! Save_key is not in eval results! Only save model last!"
                 )
-            self.logger.log_metrics(eval_results, self.current_epoch + 1)
+            if self.logger:
+                self.logger.log_metrics(eval_results, self.current_epoch + 1)
         else:
             # self.logger.info("Skip val on rank {}".format(self.local_rank))
-            self.logger.info("Skip val ")
+            if self.logger:
+                self.logger.info("Skip val ")
 
     def test_step(self, batch, batch_idx):
         dets = self.predict(batch, batch_idx)
@@ -201,10 +205,6 @@ class TrainingTask(LightningModule):
             else results
         )
         if all_results:
-            res_json = self.evaluator.results2json(all_results)
-            json_path = os.path.join(self.cfg.save_dir, "results.json")
-            json.dump(res_json, open(json_path, "w"))
-
             if self.cfg.test_mode == "val":
                 eval_results = self.evaluator.evaluate(
                     all_results, self.cfg.save_dir)
@@ -212,8 +212,10 @@ class TrainingTask(LightningModule):
                 with open(txt_path, "a") as f:
                     for k, v in eval_results.items():
                         f.write("{}: {}\n".format(k, v))
+
         else:
-            self.logger.info("Skip test on rank {}".format(self.local_rank))
+            if self.logger:
+                self.logger.info("Skip test on rank {}".format(self.local_rank))
 
     def configure_optimizers(self):
         """
@@ -302,10 +304,12 @@ class TrainingTask(LightningModule):
 
         """
         # if self.local_rank < 1:
-        self.logger.experiment.add_scalars(tag, {phase: value}, step)
+        if self.logger:
+            self.logger.experiment.add_scalars(tag, {phase: value}, step)
 
     def info(self, string):
-        self.logger.info(string)
+        if self.logger:
+            self.logger.info(string)
 
     # ------------Hooks-----------------
     def on_train_start(self) -> None:
@@ -314,7 +318,8 @@ class TrainingTask(LightningModule):
 
     def on_pretrain_routine_end(self) -> None:
         if "weight_averager" in self.cfg.model:
-            self.logger.info("Weight Averaging is enabled")
+            if self.logger:
+                self.logger.info("Weight Averaging is enabled")
             if self.weight_averager and self.weight_averager.has_inited():
                 self.weight_averager.to(self.weight_averager.device)
                 return
@@ -343,13 +348,15 @@ class TrainingTask(LightningModule):
         if self.weight_averager:
             avg_params = convert_avg_params(checkpointed_state)
             if len(avg_params) != len(self.model.state_dict()):
-                self.logger.info(
-                    "Weight averaging is enabled but average state does not"
-                    "match the model"
-                )
+                if self.logger:
+                    self.logger.info(
+                        "Weight averaging is enabled but average state does not"
+                        "match the model"
+                    )
             else:
                 self.weight_averager = build_weight_averager(
                     self.cfg.model.weight_averager, device=self.device
                 )
                 self.weight_averager.load_state_dict(avg_params)
-                self.logger.info("Loaded average state from checkpoint.")
+                if self.logger:
+                    self.logger.info("Loaded average state from checkpoint.")

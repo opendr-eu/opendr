@@ -13,7 +13,7 @@
 # limitations under the License.
 import random
 from abc import ABCMeta, abstractmethod
-from typing import Dict, Optional, Tuple
+from typing import Tuple
 
 import numpy as np
 from torch.utils.data import Dataset

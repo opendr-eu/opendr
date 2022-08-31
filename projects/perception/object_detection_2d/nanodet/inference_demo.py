@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
     nanodet.download("./predefined_examples", mode="pretrained")
-    nanodet.load("./predefined_examples/nanodet_{}/nanodet_{}.ckpt".format(args.model, args.model), verbose=True)
+    nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
     nanodet.download("./predefined_examples", mode="images")
     img = Image.open("./predefined_examples/000000000036.jpg")
     boxes = nanodet.infer(input=img)
