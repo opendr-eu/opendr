@@ -13,6 +13,7 @@ ______________________________________________________________________
   <a href="projects/opendr_ws_2">ROS2</a> •
   <a href="projects/c_api">C API</a> •
   <a href="docs/reference/customize.md">Customization</a> •
+  <a href="docs/reference/issues.md">Known Issues</a> •
   <a href="#roadmap">Roadmap</a> •
   <a href="CHANGELOG.md">Changelog</a> •
   <a href="LICENSE">License</a>
