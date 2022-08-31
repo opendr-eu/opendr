@@ -20,4 +20,4 @@ You can also check the [customization](develop/docs/reference/customize.md) inst
 ## Issue: I am trying to install the toolkit on Ubuntu 18.04/20.10/XX.XX, WLS, or any other linux distribution and it doesn't work.
 
 OpenDR toolkit targets native installation on Ubuntu 20.04.
-For any other system you are advised to use the docker images that are expected to work on any configuration and operating system.
+For any other system you are advised to use the docker images that are expected to work out-of-the-box on any configuration and operating system.
