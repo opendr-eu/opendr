@@ -46,6 +46,6 @@ if __name__ == '__main__':
         human_model = Model_3D(vertices, triangles, vertex_colors)
         human_model.save_obj_mesh('./human_model.obj')
         [out_imgs, human_pose_2D] = human_model.get_img_views(rotations=[30, 120], human_pose_3D=pose, plot_kps=True)
-        cv2.imwrite('./rendering.png', out_imgs[0].numpy())
+        cv2.imwrite('./rendering.png', out_imgs[0].opencv())
     except rospy.ServiceException as e:
         print("Service call failed: %s" % e)
