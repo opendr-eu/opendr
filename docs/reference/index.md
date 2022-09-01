@@ -18,7 +18,6 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 
 - [Installation](/docs/reference/installation.md)
 - [Customization](/docs/reference/customize.md)
-- [Known Issues](/docs/reference/issues.md)
 - Inference and Training API
     - `engine` Module
         - [engine.data Module](engine-data.md)
@@ -137,3 +136,4 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [Human Model Generation Demos](/projects/simulation/human_dataset_generation)
     - `utils` Module
         - [Hyperparameter Tuning Module](/projects/utils/hyperparameter_tuner)
+- [Known Issues](/docs/reference/issues.md)
