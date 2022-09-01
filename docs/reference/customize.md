@@ -80,7 +80,7 @@ To build custom docker images that do not contain the whole toolkit you should f
 2. Start from a clean clone of the repository and remove all modules under [src/opendr] that you are not using. 
 To this end, use the `rm` command from the root folder of the toolkit and write down the commands that you are issuing.
 Please note that you should NOT remove the `engine` package. 
-4. Add the `rm` commands that you have issued in the dockerfile (e.g., in the main [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile)) after the `WORKDIR command` and before the `RUN ./bin/install.sh` command
+4. Add the `rm` commands that you have issued in the dockerfile (e.g., in the main [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile)) after the `WORKDIR command` and before the `RUN ./bin/install.sh` command.
 5. Build the dockerfile as usual.
 
 By removing the tools that you are not using, you are also removing the corresponding `requirements.txt` file. 
@@ -89,5 +89,5 @@ In this way, the `install.sh` script will not pull and install the corresponding
 Things to keep in mind:
 1. ROS noetic is manually installed by the installation script. 
 If you want to install another version, you should modify both `install.sh` and `Makefile`.
-2. , `mxnet`, `torch` and `detectron` are manually installed by the `install.sh` script if you have set `OPENDR_DEVICE=gpu`.
+2. `mxnet`, `torch` and `detectron` are manually installed by the `install.sh` script if you have set `OPENDR_DEVICE=gpu`.
 If you do not need these dependencies, then you should manually remove them.
