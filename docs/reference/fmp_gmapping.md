@@ -5,7 +5,7 @@ Based on OpenSLAM GMapping, with additional functionality for computing the clos
 
 For more details on the launchers and tools, see the [FMP_Eval Readme](../../projects/python/perception/slam/full_map_posterior_gmapping/src/fmp_slam_eval/README.md).
 
-For more details on the actual SLAM algorithm and its ROS node wrapper, see the [SLAM_GMapping Readme](../../projects/perception/slam/full_map_posterior_gmapping/src/slam_gmapping/README.md).
+For more details on the actual SLAM algorithm and its ROS node wrapper, see the [SLAM_GMapping Readme](../../projects/python/perception/slam/full_map_posterior_gmapping/src/slam_gmapping/README.md).
 
 ## Demo Usage
 A demo ROSBag for a square corridor can be found in the Map Simulator submodule in `src/map_simulator/rosbags/`, as well as preconfigured ***roslaunch***
