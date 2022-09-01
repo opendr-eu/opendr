@@ -98,7 +98,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/simulation/human_model_generation/utilities/PIFu',
             'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
             'src/opendr/perception/skeleton_based_action_recognition/algorithm',
-            'projects/data_generation/synthetic_multi_view_facial_image_generation/algorithm',
+            'projects/python/simulation/synthetic_multi_view_facial_image_generation/algorithm',
             'src/opendr/perception/semantic_segmentation/bisenet/algorithm',
             'src/opendr/perception/object_detection_2d/retinaface/algorithm',
             'src/opendr/perception/object_detection_2d/gem/algorithm',
@@ -109,7 +109,7 @@ class TestLicense(unittest.TestCase):
 
         skippedFilePaths = [
             'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
-            'projects/perception/lightweight_open_pose/jetbot/utils/pid.py',
+            'projects/python/perception/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
             'src/opendr/perception/object_detection_2d/retinaface/Makefile',
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/efficientface_modulator.py',
