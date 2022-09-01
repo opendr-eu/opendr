@@ -16,6 +16,9 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
 
 ## Table of Contents
 
+- [Installation](/docs/reference/installation.md)
+- [Customization](/docs/reference/customize.md)
+- [Known Issues](/docs/reference/issues.md)
 - Inference and Training API
     - `engine` Module
         - [engine.data Module](engine-data.md)
