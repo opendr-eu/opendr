@@ -19,7 +19,7 @@ add_message_files(
     FILES
     OpenDRPose2DKeypoint.msg
     OpenDRPose2D.msg
-    )
+)
 
 generate_messages(
     DEPENDENCIES
