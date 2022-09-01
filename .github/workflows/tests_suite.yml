@@ -49,6 +49,7 @@ jobs:
   test-tools:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -157,6 +158,7 @@ jobs:
     needs: build-wheel
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -228,6 +230,7 @@ jobs:
     needs: build-wheel
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -305,6 +308,7 @@ jobs:
     needs: build-docker
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
