@@ -29,7 +29,7 @@ logger.setLevel("DEBUG")
 
 
 def benchmark_x3d():
-    temp_dir = "./projects/perception/activity_recognition/benchmark/tmp"
+    temp_dir = "./projects/python/perception/activity_recognition/benchmark/tmp"
 
     num_runs = 100
 

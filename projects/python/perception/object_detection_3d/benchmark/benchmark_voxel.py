@@ -26,7 +26,7 @@ logger.setLevel("DEBUG")
 
 
 def benchmark_voxel():
-    root_dir = "./projects/perception/object_detection_3d/benchmark"
+    root_dir = "./projects/python/perception/object_detection_3d/benchmark"
     temp_dir = root_dir + "/tmp"
     configs_dir = root_dir + "/configs"
     models_dir = root_dir + "/models"

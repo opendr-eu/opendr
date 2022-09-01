@@ -26,7 +26,7 @@ logger.setLevel("DEBUG")
 
 
 def benchmark_fair_mot():
-    root_dir = "./projects/perception/object_tracking_2d/benchmark"
+    root_dir = "./projects/python/perception/object_tracking_2d/benchmark"
     temp_dir = root_dir + "/tmp"
     models_dir = root_dir + "/models"
     media_dir = root_dir + "/media"

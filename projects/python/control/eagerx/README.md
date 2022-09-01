@@ -22,7 +22,7 @@ Specifically the following examples are provided:
    
 Example usage:
 ```bash
-cd $OPENDR_HOME/projects/control/eagerx/demos
+cd $OPENDR_HOME/projects/python/control/eagerx/demos
 python3 [demo_name]
 ```
 

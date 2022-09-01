@@ -33,13 +33,13 @@ parser.add_argument("--dataset", help="Dataset to train on", type=str, default="
                                                                                                 "TEST_MODULE"])
 parser.add_argument("--data_root", help="Dataset root folder", type=str,
                     default=os.path.join(OPENDR_HOME,
-                                         'projects/perception/object_detection_2d/nms/seq2seq-nms/datasets'))
+                                         'projects/python/perception/object_detection_2d/nms/seq2seq-nms/datasets'))
 parser.add_argument("--use_ssd", help="Train using SSD as detector", type=bool, default=False)
 parser.add_argument("--post_thres", help="Confidence threshold, used for RoI selection after seq2seq-nms rescoring",
                     type=float, default=0.0)
 
 args = parser.parse_args()
-tmp_path = os.path.join(OPENDR_HOME, 'projects/perception/object_detection_2d/nms/seq2seq-nms/tmp')
+tmp_path = os.path.join(OPENDR_HOME, 'projects/python/perception/object_detection_2d/nms/seq2seq-nms/tmp')
 seq2SeqNMSLearner = Seq2SeqNMSLearner(device=args.device, app_feats=args.app_feats, fmod_map_type=args.fmod_type,
                                       iou_filtering=args.iou_filtering,
                                       temp_path=tmp_path)

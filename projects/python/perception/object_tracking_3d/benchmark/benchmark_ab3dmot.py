@@ -25,7 +25,7 @@ logger.setLevel("DEBUG")
 
 
 def benchmark_ab3dmot():
-    root_dir = "./projects/perception/object_tracking_3d/benchmark"
+    root_dir = "./projects/python/perception/object_tracking_3d/benchmark"
     media_dir = root_dir + "/media"
     num_runs = 100
 

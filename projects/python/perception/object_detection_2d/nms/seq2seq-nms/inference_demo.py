@@ -31,7 +31,7 @@ parser.add_argument("--pretrained_model", help="Name of pretrained model", type=
                     choices=['seq2seq_pets_jpd'])
 
 args = parser.parse_args()
-tmp_path = os.path.join(OPENDR_HOME, 'projects/perception/object_detection_2d/nms/seq2seq-nms/tmp')
+tmp_path = os.path.join(OPENDR_HOME, 'projects/python/perception/object_detection_2d/nms/seq2seq-nms/tmp')
 seq2SeqNMSLearner = Seq2SeqNMSLearner(device=args.device, app_feats=args.app_feats, fmod_map_type=args.fmod_type,
                                       iou_filtering=args.iou_filtering,
                                       temp_path=tmp_path)
@@ -41,7 +41,7 @@ seq2SeqNMSLearner.load(os.path.join(tmp_path, args.pretrained_model), verbose=Tr
 ssd = SingleShotDetectorLearner(device=args.device)
 ssd.download(".", mode="pretrained")
 ssd.load("./ssd_default_person", verbose=True)
-img = Image.open(OPENDR_HOME + '/projects/perception/object_detection_2d/nms/img_temp/frame_0000.jpg')
+img = Image.open(OPENDR_HOME + '/projects/python/perception/object_detection_2d/nms/img_temp/frame_0000.jpg')
 if not isinstance(img, Image):
     img = Image(img)
 boxes = ssd.infer(img, threshold=0.3, custom_nms=seq2SeqNMSLearner)
