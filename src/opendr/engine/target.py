@@ -301,7 +301,7 @@ class Pose(Target):
         the matched kpt_names and keypoints x,y position.
         """
 
-        out_string = "Pose ID:" + str(self.id)
+        out_string = "Pose ID: " + str(self.id)
         out_string += "\nDetection confidence: " + str(self.confidence) + "\nKeypoints name-position:\n"
         # noinspection PyUnresolvedReferences
         for name, kpt in zip(Pose.kpt_names, self.data.tolist()):
