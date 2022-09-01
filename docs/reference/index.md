@@ -1,6 +1,6 @@
 # OpenDR Toolkit Reference Manual
 
-*Release 1.0*
+*Release 1.1.1*
 <div align="center">
   <img src="images/opendr_logo.png" />
 </div>
