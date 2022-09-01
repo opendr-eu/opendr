@@ -78,7 +78,7 @@ OpenDR has the following roadmap:
 - **v3.0 (2023)**: Active perception-enabled deep learning tools for improved robotic perception
 
 ## How to contribute
-Please follow the instructions provided in the [wiki](https://github.com/tasostefas/opendr_internal/wiki).
+Please follow the instructions provided in the [wiki](https://github.com/opendr-eu/opendr/wiki).
 
 ## How to cite us
 If you use OpenDR for your research, please cite the following paper that introduces OpenDR architecture and design:
