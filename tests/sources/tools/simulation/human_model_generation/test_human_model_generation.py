@@ -44,9 +44,9 @@ class TestPIFuGeneratorLearner(unittest.TestCase):
 
     def test_infer(self):
 
-        img_rgb = Image.open(os.path.join(os.environ['OPENDR_HOME'], "projects", "simulation", "human_model_generation",
+        img_rgb = Image.open(os.path.join(os.environ['OPENDR_HOME'], "projects", "python", "simulation", "human_model_generation",
                                           "demos", "imgs_input", "rgb", "result_0004.jpg"))
-        img_msk = Image.open(os.path.join(os.environ['OPENDR_HOME'], "projects", "simulation", "human_model_generation",
+        img_msk = Image.open(os.path.join(os.environ['OPENDR_HOME'], "projects", "python", "simulation", "human_model_generation",
                                           "demos", "imgs_input", "msk", "result_0004.jpg"))
         model_3D = self.learner.infer(imgs_rgb=[img_rgb], imgs_msk=[img_msk], extract_pose=False)
 
