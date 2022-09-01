@@ -112,12 +112,12 @@ class TestNanodetLearner(unittest.TestCase):
     def test_save_load(self):
         print('Starting save/load test for Nanodet...')
         self.detector.save(path=os.path.join(self.temp_dir, "test_model"), verbose=False)
-        starting_param_1 = list(self.detector._model.parameters())[0].detach().clone()
+        starting_param_1 = list(self.detector._model.parameters())[0].detach().clone().to(device)
         self.detector.model = None
         detector2 = NanodetLearner(model_to_use=_DEFAULT_MODEL, device=device, temp_path=self.temp_dir, batch_size=1,
                                    iters=1, checkpoint_after_iter=1, lr=1e-4)
         detector2.load(path=os.path.join(self.temp_dir, "test_model"), verbose=False)
-        new_param = list(detector2._model.parameters())[0].detach().clone()
+        new_param = list(detector2._model.parameters())[0].detach().clone().to(device)
         self.assertTrue(starting_param_1.allclose(new_param))
 
         # Cleanup

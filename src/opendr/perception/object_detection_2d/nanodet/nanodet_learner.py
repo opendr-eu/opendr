@@ -215,7 +215,7 @@ class NanodetLearner(Learner):
             metadata = json.load(f)
 
         logger = Logger(-1, path, False) if verbose else None
-        ckpt = torch.load(os.path.join(path, metadata["model_paths"][0]))
+        ckpt = torch.load(os.path.join(path, metadata["model_paths"][0]), map_location=torch.device(self.device))
         self.model = load_model_weight(self.model, ckpt, logger)
         if verbose:
             logger.log("Loaded model weight from {}".format(path))
