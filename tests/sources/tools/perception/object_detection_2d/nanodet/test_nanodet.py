@@ -72,9 +72,9 @@ class TestNanodetLearner(unittest.TestCase):
     def test_fit(self):
         print('Starting training test for Nanodet...')
         training_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "test_data"), dataset_type="voc")
-        m = list(self.detector._model.parameters())[0].clone()
+        m = list(self.detector._model.parameters())[0].clone().detach().clone().to(device)
         self.detector.fit(dataset=training_dataset, verbose=False)
-        n = list(self.detector._model.parameters())[0]
+        n = list(self.detector._model.parameters())[0].clone().detach().clone().to(device)
         self.assertFalse(np.array_equal(m, n),
                          msg="Model parameters did not change after running fit.")
         del training_dataset, m, n
