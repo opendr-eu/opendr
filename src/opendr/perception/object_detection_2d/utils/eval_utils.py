@@ -267,7 +267,8 @@ class DetectionDatasetCOCOEval(DetectionEvalMetric):
                 if score < self.score_threshold:
                     continue
                 img_dets.append(np.asarray([image['id'], box[0], box[1], box[2] - box[0], box[3] - box[1], score, cls]))
-            self.detections.append(np.asarray(img_dets))
+            if img_dets:
+                self.detections.append(np.asarray(img_dets))
 
             for box_idx, box in enumerate(gt_boxes[idx, :, :]):
                 cls = gt_labels[idx, box_idx]
