@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>ros2_bridge</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="test@csd.auth.gr">test</maintainer>
-  <license>TODO: License declaration</license>
+  <name>opendr_ros2_bridge</name>
+  <version>1.0.0</version>
+  <description>OpenDR ROS2 bridge package. This package provides a way to translate ROS2 messages into OpenDR data types
+      and vice versa.</description>
+  <maintainer email="tefas@csd.auth.gr">OpenDR Project Coordinator</maintainer>
+  <license>Apache License v2.0</license>
 
   <exec_depend>rclpy</exec_depend>
 
