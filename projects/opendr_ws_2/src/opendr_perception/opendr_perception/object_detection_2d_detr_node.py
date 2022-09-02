@@ -13,54 +13,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import torch
+import numpy as np
+
 import rclpy
 from rclpy.node import Node
-import numpy as np
 
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
-from ros2_bridge.bridge import ROS2Bridge
+from opendr_ros2_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import DetrLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
-class DetrNode(Node):
+class ObjectDetectionDetrNode(Node):
     def __init__(
         self,
-        input_image_topic="/image_raw",
-        output_image_topic="/opendr/image_boxes_annotated",
-        detection_annotations_topic="/opendr/objects",
+        input_rgb_image_topic="image_raw",
+        output_rgb_image_topic="/opendr/image_objects_annotated",
+        detections_topic="/opendr/objects",
         device="cuda",
     ):
         """
-        Creates a ROS2 Node for object detection with DETR
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
-        :param output_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
-        annotated image)
-        :type output_image_topic: str
-        :param detection_annotations_topic: Topic to which we are publishing the annotations (if None, we are not publishing
-        annotations)
-        :type detection_annotations_topic:  str
+        Creates a ROS Node for object detection with DETR.
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
+        :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
+        image is published)
+        :type output_rgb_image_topic: str
+        :param detections_topic: Topic to which we are publishing the annotations (if None, no object detection message
+        is published)
+        :type detections_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
-        super().__init__("detr_detection_node")
+        super().__init__('object_detection_detr_node')
 
-        if output_image_topic is not None:
-            self.image_publisher = self.create_publisher(ROS_Image, output_image_topic, 10)
+        if output_rgb_image_topic is not None:
+            self.image_publisher = self.create_publisher(ROS_Image, output_rgb_image_topic, 10)
         else:
             self.image_publisher = None
 
-        if detection_annotations_topic is not None:
-            self.detection_publisher = self.create_publisher(Detection2DArray, detection_annotations_topic, 10)
+        if detections_topic is not None:
+            self.detection_publisher = self.create_publisher(Detection2DArray, detections_topic, 10)
         else:
             self.detection_publisher = None
 
-        self.image_subscriber = self.create_subscription(ROS_Image, input_image_topic, self.callback, 10)
+        self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 10)
 
         self.bridge = ROS2Bridge()
 
@@ -192,24 +194,54 @@ class DetrNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image", type=str, default="image_raw")
+    parser.add_argument(
+        "-o",
+        "--output_rgb_image_topic",
+        help="Topic name for output annotated rgb image",
+        type=str,
+        default="/opendr/image_objects_annotated",
+    )
+    parser.add_argument(
+        "-d", "--detections_topic", help="Topic name for detection messages", type=str, default="/opendr/objects"
+    )
+    parser.add_argument(
+        "--device",
+        help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
+        type=str,
+        default="cuda",
+        choices=["cuda", "cpu"],
+    )
+    args = parser.parse_args()
+
     try:
-        if torch.cuda.is_available():
-            print("GPU found.")
+        if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"
-        else:
+        elif args.device == "cuda":
             print("GPU not found. Using CPU instead.")
             device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
     except:
+        print("Using CPU.")
         device = "cpu"
 
-    detr_node = DetrNode(device=device)
+    object_detection_detr_node = ObjectDetectionDetrNode(
+        device=device,
+        input_rgb_image_topic=args.input_rgb_image_topic,
+        output_rgb_image_topic=args.output_rgb_image_topic,
+        detections_topic=args.detections_topic,
+    )
 
-    rclpy.spin(detr_node)
+    rclpy.spin(object_detection_detr_node)
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    detr_node.destroy_node()
+    object_detection_detr_node.destroy_node()
     rclpy.shutdown()
 
 
