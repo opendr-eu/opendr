@@ -27,7 +27,7 @@ video_ext = ["mp4", "mov", "avi", "mkv"]
 
 
 class Predictor(object):
-    def __init__(self, cfg, model, device="cuda:0"):
+    def __init__(self, cfg, model, device="cuda"):
         self.cfg = cfg
         self.device = device
 

@@ -47,17 +47,8 @@ class OneStageDetector(nn.Module):
 
     def inference(self, meta, verbose=True):
         with torch.no_grad():
-            torch.cuda.synchronize()
-            time1 = time.time()
             preds = self(meta["img"])
-            torch.cuda.synchronize()
-            time2 = time.time()
-            if verbose:
-                print("forward time: {:.3f}s".format((time2 - time1)), end=" | ")
             results = self.head.post_process(preds, meta)
-            torch.cuda.synchronize()
-            if verbose:
-                print("decode time: {:.3f}s".format((time.time() - time2)), end=" | ")
         return results
 
     def forward_train(self, gt_meta):

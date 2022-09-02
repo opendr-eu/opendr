@@ -158,7 +158,7 @@ class TrainingTask(LightningModule):
         for res in validation_step_outputs:
             results.update(res)
         all_results = (
-            gather_results(results)
+            gather_results(results, self.device)
             if dist.is_available() and dist.is_initialized()
             else results
         )
@@ -200,7 +200,7 @@ class TrainingTask(LightningModule):
         for res in test_step_outputs:
             results.update(res)
         all_results = (
-            gather_results(results)
+            gather_results(results, self.device)
             if dist.is_available() and dist.is_initialized()
             else results
         )
