@@ -173,7 +173,7 @@ sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v1.1.1
 ```
 or, for an interactive session:
 ```bash
-sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v1 /bin/bash
+sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v1.1.1 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash
