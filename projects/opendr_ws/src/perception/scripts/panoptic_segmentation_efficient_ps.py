@@ -154,7 +154,7 @@ class EfficientPsNode:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('input_rgb_image_topic', type=str,
+    parser.add_argument('input_rgb_image_topic', type=str, default='/usb_cam/image_raw',
                         help='listen to RGB images on this topic')
     parser.add_argument('--checkpoint', type=str, default='cityscapes',
                         help='download pretrained models [cityscapes, kitti] or load from the provided path')

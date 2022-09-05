@@ -164,16 +164,16 @@ rosrun perception object_detection_2d_gem.py
 A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
 Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
 ```shell
-rosrun perception panoptic_segmentation_efficient_ps.py IMAGE_TOPIC CHECKPOINT
+rosrun perception panoptic_segmentation_efficient_ps.py
 ```
-where `IMAGE_TOPIC` specifies the ROS topic, to which the node will subscribe.
-`CHECKPOINT` can be either one of ['cityscapes', 'kitti'] to download pre-trained model weights or a path to an existing checkpoint file.
 
-Additionally, the following optional arguments are available:
+The following optional arguments are available:
 - `-h, --help`: show a help message and exit
-- `--heamap_topic HEATMAP_TOPIC`: publish the semantic and instance maps on `HEATMAP_TOPIC`
-- `--visualization_topic VISUALIZATION_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag
-- `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps
+- `--input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC` : listen to RGB images on this topic (default=`/usb_cam/image_raw`)
+- `--checkpoint CHECKPOINT` : download pretrained models [cityscapes, kitti] or load from the provided path (default=`cityscapes`)
+- `--output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance` (default=`/opendir/panoptic`)
+- `--visualization_topic VISUALIZATION_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag (default=`/opendr/panoptic/rgb_visualization`)
+- `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps and publish it on `OUTPUT_RGB_IMAGE_TOPIC` (default=deactivated)
 
 
 ## Semantic Segmentation ROS Node
