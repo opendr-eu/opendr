@@ -91,7 +91,7 @@ class VoxelObjectDetection3DLearner(Learner):
         threshold=0.0,
         scale=1.0,
         tanet_config_path=None,
-        optimizer_params={"weight_decay": 0.0001,},
+        optimizer_params={"weight_decay": 0.0001},
         lr_schedule_params={
             "decay_steps": 27840,
             "decay_factor": 0.8,
@@ -278,23 +278,16 @@ class VoxelObjectDetection3DLearner(Learner):
                 self.model.voxel_feature_extractor,
                 os.path.join(path, metadata["model_paths"][0]),
             )
-            self.__load_from_pth(
-                self.model.middle_feature_extractor,
-                os.path.join(path, metadata["model_paths"][1]),
-            )
+            self.__load_from_pth(self.model.middle_feature_extractor, os.path.join(path, metadata["model_paths"][1]))
             if verbose:
                 print("Loaded Pytorch VFE and MFE sub-model.")
 
             if not metadata["optimized"]:
-                self.__load_from_pth(
-                    self.model.rpn, os.path.join(path, metadata["model_paths"][2])
-                )
+                self.__load_from_pth(self.model.rpn, os.path.join(path, metadata["model_paths"][2]))
                 if verbose:
                     print("Loaded Pytorch RPN sub-model.")
             else:
-                self.__load_rpn_from_onnx(
-                    os.path.join(path, metadata["model_paths"][2])
-                )
+                self.__load_rpn_from_onnx(os.path.join(path, metadata["model_paths"][2]))
                 if verbose:
                     print("Loaded ONNX RPN sub-model.")
 
@@ -474,10 +467,7 @@ class VoxelObjectDetection3DLearner(Learner):
             example_convert_to_torch(input_data, self.float_dtype, device=self.device,)
         )
 
-        if (
-            self.model_config.rpn.module_class_name == "PSA"
-            or self.model_config.rpn.module_class_name == "RefineDet"
-        ):
+        if self.model_config.rpn.module_class_name == "PSA" or self.model_config.rpn.module_class_name == "RefineDet":
             output = output[-1]
 
         annotations = compute_lidar_kitti_output(
@@ -685,9 +675,7 @@ class VoxelObjectDetection3DLearner(Learner):
 
             if dataset.dataset_type.lower() != "kitti":
                 raise ValueError(
-                    "ExternalDataset ("
-                    + str(dataset)
-                    + ") is given as a dataset, but it is not a KITTI dataset"
+                    "ExternalDataset (" + str(dataset) + ") is given as a dataset, but it is not a KITTI dataset"
                 )
 
             dataset_path = dataset.path
@@ -730,9 +718,7 @@ class VoxelObjectDetection3DLearner(Learner):
             val_dataset_path = val_dataset.path
             if val_dataset.dataset_type.lower() != "kitti":
                 raise ValueError(
-                    "ExternalDataset ("
-                    + str(val_dataset)
-                    + ") is given as a val_dataset, but it is not a KITTI dataset"
+                    "ExternalDataset (" + str(val_dataset) + ") is given as a val_dataset, but it is not a KITTI dataset"
                 )
 
             if not self.eval_config_prepared:
@@ -746,9 +732,7 @@ class VoxelObjectDetection3DLearner(Learner):
                     val_dataset_path + "/" + eval_input_cfg.record_file_path
                 )
                 eval_input_cfg.database_sampler.database_info_path = (
-                    val_dataset_path
-                    + "/"
-                    + eval_input_cfg.database_sampler.database_info_path
+                    val_dataset_path + "/" + eval_input_cfg.database_sampler.database_info_path
                 )
                 self.eval_config_prepared = True
 
@@ -774,9 +758,7 @@ class VoxelObjectDetection3DLearner(Learner):
                 dataset_path = dataset.path
                 if dataset.dataset_type.lower() != "kitti":
                     raise ValueError(
-                        "ExternalDataset ("
-                        + str(dataset)
-                        + ") is given as a dataset, but it is not a KITTI dataset"
+                        "ExternalDataset (" + str(dataset) + ") is given as a dataset, but it is not a KITTI dataset"
                     )
 
                 if not self.eval_config_prepared:
@@ -790,9 +772,7 @@ class VoxelObjectDetection3DLearner(Learner):
                         dataset_path + "/" + eval_input_cfg.record_file_path
                     )
                     eval_input_cfg.database_sampler.database_info_path = (
-                        dataset_path
-                        + "/"
-                        + eval_input_cfg.database_sampler.database_info_path
+                        dataset_path + "/" + eval_input_cfg.database_sampler.database_info_path
                     )
                     self.eval_config_prepared = True
 
@@ -811,13 +791,11 @@ class VoxelObjectDetection3DLearner(Learner):
                     ]
             else:
                 raise ValueError(
-                    "val_dataset is None and can't be derived from"
-                    + " the dataset object because the dataset is not an ExternalDataset"
+                    "val_dataset is None and can't be derived from " +
+                    "the dataset object because the dataset is not an ExternalDataset"
                 )
         else:
-            raise ValueError(
-                "val_dataset parameter should be an ExternalDataset or a DatasetIterator or None"
-            )
+            raise ValueError("val_dataset parameter should be an ExternalDataset or a DatasetIterator or None")
 
         return input_dataset_iterator, eval_dataset_iterator, gt_annos
 
