@@ -64,10 +64,12 @@ jobs:
         python3 -m pip install --upgrade pip
         python3 -m venv venv
         source venv/bin/activate
-        pip install wheel
-        pip install opendr-toolkit-engine
-        pip install opendr-toolkit
-        pip list
+        python3 -m pip install wheel
+        python3 -m pip install opendr-toolkit-engine
+        python3 -m pip install opendr-toolkit
+        python3 -m pip list
+        python3 -m pip install pipdeptree
+        python3 -m pipdeptree
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-wheel-separate:
     strategy:
