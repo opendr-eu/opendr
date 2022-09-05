@@ -11,7 +11,6 @@ ______________________________________________________________________
   <a href="docs/reference/installation.md">Installation</a> •
   <a href="#using-opendr-toolkit">Using OpenDR toolkit</a> •
   <a href="projects">Examples</a> •
-  <a href="docs/reference/customize.md">Customization</a> •
   <a href="#roadmap">Roadmap</a> •
   <a href="CHANGELOG.md">Changelog</a> •
   <a href="LICENSE">License</a>
