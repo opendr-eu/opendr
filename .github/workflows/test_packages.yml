@@ -64,13 +64,14 @@ jobs:
         python3 -m pip install --upgrade pip
         python3 -m venv venv
         source venv/bin/activate
+        python3 -m pip install torch==1.9.0 torchvision==0.10.0
         python3 -m pip install wheel
         python3 -m pip install opendr-toolkit-engine
         python3 -m pip install opendr-toolkit
         python3 -m pip list
         python3 -m pip install pipdeptree
         python3 -m pipdeptree
-        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+        python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-wheel-separate:
     strategy:
       fail-fast: false
@@ -119,13 +120,13 @@ jobs:
         python3 -m pip install --upgrade pip
         python3 -m venv venv
         source venv/bin/activate
-        pip install wheel
+        python3 -m pip install wheel
         # Install engine and requirements for other packages
-        pip install opendr-toolkit-engine
+        python3 -m pip install opendr-toolkit-engine
         # The following two are dependecies for some other packages and pip cannot automatically install them if they are not on a repo
-        pip install opendr-toolkit-compressive-learning
-        pip install opendr-toolkit-object-detection-2d
-        pip install opendr-toolkit-pose-estimation
+        python3 -m pip install opendr-toolkit-compressive-learning
+        python3 -m pip install opendr-toolkit-object-detection-2d
+        python3 -m pip install opendr-toolkit-pose-estimation
 
         # Install specific package for testing
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
@@ -136,11 +137,11 @@ jobs:
         echo "Installing $package package"
         # Utils contains hyperparameter tuning
         if [ "$package" == "utils" ]; then
-              pip install opendr-toolkit-hyperparameter-tuner
+              python3 -m pip install opendr-toolkit-hyperparameter-tuner
         else
-              pip install opendr-toolkit-$package
+              python3 -m pip install opendr-toolkit-$package
         fi
-        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+        python3 -m python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') || github.event_name == 'schedule' }}
     strategy:
