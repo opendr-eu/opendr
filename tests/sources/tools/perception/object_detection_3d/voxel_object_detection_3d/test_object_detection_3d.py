@@ -57,33 +57,14 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
                                             "second_detector", "configs", "tanet",
                                             "car", "test_short.proto")
 
-        cls.config_tanet_ped_cycle = os.path.join(".", "src", "opendr", "perception",
-                                                  "object_detection_3d",
-                                                  "voxel_object_detection_3d",
-                                                  "second_detector", "configs", "tanet",
-                                                  "ped_cycle",
-                                                  "test_short.proto")
-
         cls.config_pointpillars_car = os.path.join(
             ".", "src", "opendr", "perception", "object_detection_3d",
             "voxel_object_detection_3d", "second_detector", "configs", "pointpillars",
             "car", "test_short.proto")
 
-        cls.config_pointpillars_ped_cycle = os.path.join(
-            ".", "src", "opendr", "perception", "object_detection_3d",
-            "voxel_object_detection_3d", "second_detector", "configs", "pointpillars",
-            "ped_cycle", "test_short.proto")
-
         cls.subsets_path = os.path.join(
             ".", "src", "opendr", "perception", "object_detection_3d",
             "datasets", "nano_kitti_subsets")
-
-        cls.download_model_names = {
-            "tanet_car": "tanet_car_xyres_16",
-            "tanet_ped_cycle": "tanet_ped_cycle_xyres_16",
-            "pointpillars_car": "pointpillars_car_xyres_16",
-            "pointpillars_ped_cycle": "pointpillars_ped_cycle_xyres_16",
-        }
 
         cls.car_configs = {
             "tanet_car": cls.config_tanet_car,
@@ -95,13 +76,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
         ).path
 
         print("Dataset downloaded", file=sys.stderr)
-
-        # for model_name in cls.download_model_names.values():
-        #     VoxelObjectDetection3DLearner.download(
-        #         model_name, cls.temp_dir
-        #     )
-
-        print("Models downloaded", file=sys.stderr)
 
     @classmethod
     def tearDownClass(cls):
@@ -132,7 +106,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             new_param = list(learner.model.parameters())[0].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
 
-            # del learner # free pointer error
             print("Fit", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
@@ -169,57 +142,10 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             new_param = list(learner.model.parameters())[0].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
 
-            # del learner # free pointer error
             print("Fit iterator", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
             test_model(name, config)
-
-    # def test_eval(self):
-    #     def test_model(name, config):
-    #         print("Eval", name, "start", file=sys.stderr)
-    #         model_path = os.path.join(self.temp_dir, self.download_model_names[name])
-    #         dataset = KittiDataset(self.dataset_path, self.subsets_path)
-
-    #         learner = VoxelObjectDetection3DLearner(model_config_path=config, device=DEVICE)
-    #         learner.load(model_path)
-    #         mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset, count=2)
-
-    #         self.assertTrue(mAPbbox[0][0][0] > 1 and mAPbbox[0][0][0] < 95, msg=mAPbbox[0][0][0])
-
-    #         # del learner # free pointer error
-    #         print("Eval", name, "ok", file=sys.stderr)
-
-    #     for name, config in self.car_configs.items():
-    #         test_model(name, config)
-
-    # def test_infer(self):
-    #     def test_model(name, config):
-    #         print("Infer", name, "start", file=sys.stderr)
-
-    #         dataset = PointCloudsDatasetIterator(self.dataset_path + "/testing/velodyne_reduced")
-
-    #         learner = VoxelObjectDetection3DLearner(
-    #             model_config_path=config, device=DEVICE
-    #         )
-
-    #         result = learner.infer(
-    #             dataset[0]
-    #         )
-
-    #         self.assertTrue(len(result) > 0)
-
-    #         result = learner.infer(
-    #             [dataset[0], dataset[1], dataset[2]]
-    #         )
-    #         self.assertTrue(len(result) == 3)
-    #         self.assertTrue(len(result[0]) > 0)
-
-    #         # del learner # free pointer error
-    #         print("Infer", name, "ok", file=sys.stderr)
-
-    #     for name, config in self.car_configs.items():
-    #         test_model(name, config)
 
     def test_save(self):
         def test_model(name, config):
@@ -243,8 +169,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             self.assertFalse(torch.equal(starting_param_1, starting_param_2))
             self.assertTrue(torch.equal(starting_param_1, new_param))
 
-            # del learner # free pointer error
-            # del learner2 # free pointer error
             print("Save", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
@@ -277,8 +201,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
             self.assertTrue(learner2.model.rpn_ort_session is not None)
 
-            # del learner # free pointer error
-            # del learner2 # free pointer error
             print("Optimize", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
