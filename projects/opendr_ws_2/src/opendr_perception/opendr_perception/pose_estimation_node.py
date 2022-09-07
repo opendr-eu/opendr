@@ -92,8 +92,6 @@ class PoseEstimationNode(Node):
         # Run pose estimation
         poses = self.pose_estimator.infer(image)
 
-        # Get an OpenCV image back
-        image = image.opencv()
         #  Publish detections in ROS message
         for pose in poses:
             if self.pose_publisher is not None:
@@ -101,6 +99,8 @@ class PoseEstimationNode(Node):
                 self.pose_publisher.publish(self.bridge.to_ros_pose(pose))
 
         if self.image_publisher is not None:
+            # Get an OpenCV image back
+            image = image.opencv()
             # Annotate image with poses
             for pose in poses:
                 draw(image, pose)
