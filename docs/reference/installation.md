@@ -1,68 +1,29 @@
 # Installing OpenDR toolkit
 
 OpenDR can be installed in the following ways:
-1. By cloning this repository (CPU/GPU support)
-2. Using *pip* (CPU/GPU support)
-3. Using *docker* (CPU/GPU support)
+1. Using *pip* (CPU/GPU support)
+2. Using *docker* (CPU/GPU support)
+3. By cloning this repository (CPU/GPU support, for advanced users only)
 
 The following table summarizes the installation options based on your system architecture and OS:
 
-| Installation Method | CPU/GPU  | OS                    |
-|---------------------|----------|-----------------------|
-| Clone & Install     | Both     | Ubuntu 20.04 (x86-64) |
-| pip                 | Both     | Ubuntu 20.04 (x86-64) |
-| docker              | Both     | Linux / Windows       |
+| Installation Method   | OS                    |
+|-----------------------|-----------------------|
+| Clone & Install       | Ubuntu 20.04 (x86-64) |
+| pip                   | Ubuntu 20.04 (x86-64) |
+| docker                | Linux / Windows       |
 
+Note that pip installation includes only the Python API of the toolkit. 
+If you need to use all the functionalities of the toolkit (e.g., ROS nodes, etc.), then you need either to use the pre-compiled docker images or to follow the installation instructions for cloning and building the toolkit.
 
-# Installing by cloning OpenDR repository (Ubuntu 20.04, x86, architecture)
-
-This is the recommended way of installing the whole toolkit, since it allows for fully exploiting all the provided functionalities.
-To install the toolkit, please first make sure that you have `git` available on your system.
+The toolkit is developed and tested on *Ubuntu 20.04 (x86-64)*. 
+Please make sure that you have the most recent version of all tools by running
 ```bash
-sudo apt install git
+sudo apt upgrade
 ```
-Then, clone the toolkit:
-```bash
-git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
-```
-You are then ready to install the toolkit:
-```bash
-cd opendr
-./bin/install.sh
-```
-The installation script automatically installs all the required dependencies.
-Note that this might take a while (~10-20min depending on your machine and network connection), while the script also makes system-wide changes.
-Using dockerfiles is strongly advised (please see below), unless you know what you are doing.
-Please also make sure that you have enough RAM available for the installation (about 4GB of free RAM is needed for the full installation/compilation).
-
-
-If you want to install GPU-related dependencies, then you can appropriately set the `OPENDR_DEVICE` variable.
-The toolkit defaults to using CPU.
-Therefore, if you want to use GPU, please set this variable accordingly *before* running the installation script:
-```bash
-export OPENDR_DEVICE=gpu
-```
-The installation script creates a *virtualenv*, where the toolkit is installed.
-To activate OpenDR environment you can just source the `activate.sh`:
-```bash
-source ./bin/activate.sh
-```
-Then, you are ready to use the toolkit!
-
-**NOTE:** `OPENDR_DEVICE` does not alter the inference/training device at *runtime*. 
-It only affects the dependency installation.
-You can use OpenDR API to change the inference device.
-
-You can also verify the installation by using the supplied Python and C unit tests:
-```bash
-make unittest
-make ctests
-```
-
-If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 11.2](https://developer.nvidia.com/cuda-11.2.0-download-archive), along with [CuDNN](https://developer.nvidia.com/cudnn).
-
-**HINT:** All tests probe for the `TEST_DEVICE` enviromental variable when running.
-If this enviromental variable is set during testing, it allows for easily running all tests on a different device (e.g., setting `TEST_DEVICE=cuda:0` runs all tests on the first GPU of the system).
+before installing the toolkit and then follow the installation instructions in the relevant section.
+All the required dependencies will be automatically installed (or explicit instructions are provided).
+Other platforms apart from Ubuntu 20.04, e.g., Windows, other Linux distributions, etc., are currently supported through docker images.
 
 # Installing using *pip*
 
@@ -179,45 +140,54 @@ In this case, do not forget to enable the virtual environment with:
 ```bash
 source bin/activate.sh
 ```
-## Build the docker images yourself _(optional)_
-Alternatively you can also build the docker images locally using the [Dockerfile](/Dockerfile) ([Dockerfile-cuda](/Dockerfile-cuda) for cuda) provided in the root folder of the toolkit.
 
-For the CPU image, execute the following commands:
+# Installing by cloning OpenDR repository (Ubuntu 20.04, x86, architecture)
+
+This is the recommended way of installing the whole toolkit, since it allows for fully exploiting all the provided functionalities.
+To install the toolkit, please first make sure that you have `git` available on your system.
+```bash
+sudo apt install git
+```
+Then, clone the toolkit:
 ```bash
 git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
-cd opendr
-sudo docker build -t opendr/opendr-toolkit:cpu .
 ```
-
-For the cuda-enabled image, first edit `/etc/docker/daemon.json` in order to set the default docker runtime:
-```
-{
-    "runtimes": {
-        "nvidia": {
-            "path": "nvidia-container-runtime",
-            "runtimeArgs": []
-        }
-    },
-    "default-runtime": "nvidia"
-}
-```
-
-Restart docker afterwards:
-```
-sudo systemctl restart docker.service
-```
-Then you can build the supplied dockerfile:
+You are then ready to install the toolkit:
 ```bash
-git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
 cd opendr
-sudo docker build -t opendr/opendr-toolkit:cuda -f Dockerfile-cuda .
+./bin/install.sh
+```
+The installation script automatically installs all the required dependencies.
+Note that this might take a while (~10-20min depending on your machine and network connection), while the script also makes system-wide changes.
+Using dockerfiles is strongly advised (please see below), unless you know what you are doing.
+Please also make sure that you have enough RAM available for the installation (about 4GB of free RAM is needed for the full installation/compilation).
+
+
+If you want to install GPU-related dependencies, then you can appropriately set the `OPENDR_DEVICE` variable.
+The toolkit defaults to using CPU.
+Therefore, if you want to use GPU, please set this variable accordingly *before* running the installation script:
+```bash
+export OPENDR_DEVICE=gpu
+```
+The installation script creates a *virtualenv*, where the toolkit is installed.
+To activate OpenDR environment you can just source the `activate.sh`:
+```bash
+source ./bin/activate.sh
+```
+Then, you are ready to use the toolkit!
+
+**NOTE:** `OPENDR_DEVICE` does not alter the inference/training device at *runtime*. 
+It only affects the dependency installation.
+You can use OpenDR API to change the inference device.
+
+You can also verify the installation by using the supplied Python and C unit tests:
+```bash
+make unittest
+make ctests
 ```
 
-In order to run them, the commands are respectively:
-```bash
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cpu
-```
-and
-```
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda
-```
+If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 11.2](https://developer.nvidia.com/cuda-11.2.0-download-archive), along with [CuDNN](https://developer.nvidia.com/cudnn).
+
+**HINT:** All tests probe for the `TEST_DEVICE` enviromental variable when running.
+If this enviromental variable is set during testing, it allows for easily running all tests on a different device (e.g., setting `TEST_DEVICE=cuda:0` runs all tests on the first GPU of the system).
+
