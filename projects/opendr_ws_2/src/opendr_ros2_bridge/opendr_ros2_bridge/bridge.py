@@ -21,6 +21,7 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image as ImageMsg
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose
 from geometry_msgs.msg import Pose2D
+from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint
 
 
 class ROS2Bridge:
@@ -63,51 +64,50 @@ class ROS2Bridge:
         image = Image(np.asarray(cv_image, dtype=np.uint8))
         return image
 
-    def to_ros_pose(self, pose):
+    def to_ros_pose(self, pose: Pose):
         """
-        Converts an OpenDR pose into a Detection2DArray msg that can carry the same information
-        Each keypoint is represented as a bbox centered at the keypoint with zero width/height. The subject id is also
-        embedded on each keypoint (stored in ObjectHypothesisWithPose).
-        :param pose: OpenDR pose to be converted
+        Converts an OpenDR Pose into a OpenDRPose2D msg that can carry the same information, i.e. a list of keypoints,
+        the pose detection confidence and the pose id.
+        Each keypoint is represented as an OpenDRPose2DKeypoint with x, y pixel position on input image with (0, 0)
+        being the top-left corner.
+        :param pose: OpenDR Pose to be converted to OpenDRPose2D
         :type pose: engine.target.Pose
-        :return: ROS2 message with the pose
-        :rtype: vision_msgs.msg.Detection2DArray
+        :return: ROS message with the pose
+        :rtype: opendr_ros2_messages.msg.OpenDRPose2D
         """
         data = pose.data
-        keypoints = Detection2DArray()
-        for i in range(data.shape[0]):
-            keypoint = Detection2D()
-            keypoint.bbox = BoundingBox2D()
-            keypoint.results.append(ObjectHypothesisWithPose())
-            keypoint.bbox.center = Pose2D()
-            keypoint.bbox.center.x = float(data[i][0])
-            keypoint.bbox.center.y = float(data[i][1])
-            keypoint.bbox.size_x = 0.0
-            keypoint.bbox.size_y = 0.0
-            keypoint.results[0].id = str(pose.id)
-            if pose.confidence:
-                keypoint.results[0].score = pose.confidence
-            keypoints.detections.append(keypoint)
-        return keypoints
+        # Setup ros pose
+        ros_pose = OpenDRPose2D()
+        ros_pose.pose_id = int(pose.id)
+        if pose.confidence:
+            ros_pose.conf = pose.confidence
 
-    def from_ros_pose(self, ros_pose):
+        # Add keypoints to pose
+        for i in range(data.shape[0]):
+            ros_keypoint = OpenDRPose2DKeypoint()
+            ros_keypoint.kpt_name = pose.kpt_names[i]
+            ros_keypoint.x = int(data[i][0])
+            ros_keypoint.y = int(data[i][1])
+            # Add keypoint to pose
+            ros_pose.keypoint_list.append(ros_keypoint)
+        return ros_pose
+
+    def from_ros_pose(self, ros_pose: OpenDRPose2D):
         """
-        Converts a ROS2 message with pose payload into an OpenDR pose
-        :param ros_pose: the pose to be converted (represented as vision_msgs.msg.Detection2DArray)
-        :type ros_pose: vision_msgs.msg.Detection2DArray
-        :return: an OpenDR pose
+        Converts an OpenDRPose2D message into an OpenDR Pose.
+        :param ros_pose: the ROS pose to be converted
+        :type ros_pose: opendr_ros2_messages.msg.OpenDRPose2D
+        :return: an OpenDR Pose
         :rtype: engine.target.Pose
         """
-        keypoints = ros_pose.detections
-        data = []
-        pose_id, confidence = None, None
+        ros_keypoints = ros_pose.keypoint_list
+        keypoints = []
+        pose_id, confidence = ros_pose.pose_id, ros_pose.conf
 
-        for keypoint in keypoints:
-            data.append(keypoint.bbox.center.x)
-            data.append(keypoint.bbox.center.y)
-            confidence = keypoint.results[0].score
-            pose_id = keypoint.results[0].id
-        data = np.asarray(data).reshape((-1, 2))
+        for ros_keypoint in ros_keypoints:
+            keypoints.append(int(ros_keypoint.x))
+            keypoints.append(int(ros_keypoint.y))
+        data = np.asarray(keypoints).reshape((-1, 2))
 
         pose = Pose(data, confidence)
         pose.id = pose_id
