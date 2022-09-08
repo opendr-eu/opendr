@@ -296,9 +296,13 @@ class Pose(Target):
             raise ValueError("Pose expects either NumPy arrays or lists as data")
 
     def __str__(self):
-        """Matches kpt_names and keypoints x,y to get the best human-readable format for pose."""
+        """
+        Returns pose in a human-readable format, that contains the pose ID, detection confidence and
+        the matched kpt_names and keypoints x,y position.
+        """
 
-        out_string = ""
+        out_string = "Pose ID: " + str(self.id)
+        out_string += "\nDetection confidence: " + str(self.confidence) + "\nKeypoints name-position:\n"
         # noinspection PyUnresolvedReferences
         for name, kpt in zip(Pose.kpt_names, self.data.tolist()):
             out_string += name + ": " + str(kpt) + "\n"
@@ -1067,6 +1071,14 @@ class Heatmap(Target):
         """
         # Since this class stores the data as NumPy arrays, we can directly return the data.
         return self.data
+
+    def opencv(self):
+        """
+        Required to support the ros bridge for images.
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        return self.numpy()
 
     def shape(self) -> Tuple[int, ...]:
         """
