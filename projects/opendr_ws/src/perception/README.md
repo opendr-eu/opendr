@@ -101,15 +101,21 @@ Reference images should be placed in a defined structure like:
 under `/opendr/face_recognition_id`.
 
 ## 2D Object Detection ROS Nodes
-ROS nodes are implemented for the SSD, YOLOv3, CenterNet and DETR generic object detectors. Steps 1, 2 from above must run first.
-Then, to initiate the SSD detector node, run:
+ROS nodes are implemented for the SSD, YOLOv3, CenterNet, DETR and Nanodet generic object detectors. Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`).
+
+1. Start the node responsible for publishing images. If you have a usb camera, then you can use the corresponding node (assuming you have installed the corresponding package):
+```shell
+rosrun usb_cam usb_cam_node
+```
+
+2. Then, to initiate the SSD detector node, run:
 
 ```shell
 rosrun perception object_detection_2d_ssd.py
 ```
 The annotated image stream can be viewed using `rqt_image_view`, and the default topic name is
 `/opendr/image_boxes_annotated`. The bounding boxes alone are also published as `/opendr/objects`.
-Similarly, the YOLOv3, CenterNet and DETR detector nodes can be run with:
+Similarly, the YOLOv3, CenterNet, DETR and Nanodet detector nodes can be run with:
 ```shell
 rosrun perception object_detection_2d_yolov3.py
 ```
@@ -120,6 +126,10 @@ rosrun perception object_detection_2d_centernet.py
 or
 ```shell
 rosrun perception object_detection_2d_detr.py
+```
+or
+```shell
+rosrun perception object_detection_2d_nanodet.py
 ```
 respectively.
 
