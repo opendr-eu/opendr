@@ -31,14 +31,25 @@ Assuming that you have already [activated the OpenDR environment](../../../../do
 rosrun usb_cam usb_cam_node
 ```
 
-2. You are then ready to start the pose detection node
+2. You are then ready to start the pose detection node (use `-h` to print out help for various arguments)
 
 ```shell
 rosrun perception pose_estimation.py
 ```
 
 3. You can examine the annotated image stream using `rqt_image_view` (select the topic `/opendr/image_pose_annotated`) or
-   `rostopic echo /opendr/poses`
+   `rostopic echo /opendr/poses`. 
+
+Note that to use the pose messages properly, you need to create an appropriate subscriber that will convert the ROS pose messages back to OpenDR poses which you can access as described in the [documentation](https://github.com/opendr-eu/opendr/blob/master/docs/reference/engine-target.md#posekeypoints-confidence):
+```python
+        ... 
+        rospy.Subscriber("opendr/poses", Detection2DArray, self.callback)
+        ...
+        def callback(self, data):
+            opendr_pose = self.bridge.from_ros_pose(data)
+            print(opendr_pose)
+            print(opendr_pose['r_eye'])
+```
 
 ## Fall Detection ROS Node
 Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
@@ -153,15 +164,16 @@ rosrun perception object_detection_2d_gem.py
 A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
 Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
 ```shell
-rosrun perception panoptic_segmentation_efficient_ps.py CHECKPOINT IMAGE_TOPIC
+rosrun perception panoptic_segmentation_efficient_ps.py
 ```
-with `CHECKPOINT` pointing to the path to the trained model weights and `IMAGE_TOPIC` specifying the ROS topic, to which the node will subscribe.
 
-Additionally, the following optional arguments are available:
+The following optional arguments are available:
 - `-h, --help`: show a help message and exit
-- `--heamap_topic HEATMAP_TOPIC`: publish the semantic and instance maps on `HEATMAP_TOPIC`
-- `--visualization_topic VISUALIZATION_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag
-- `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps
+- `--input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC` : listen to RGB images on this topic (default=`/usb_cam/image_raw`)
+- `--checkpoint CHECKPOINT` : download pretrained models [cityscapes, kitti] or load from the provided path (default=`cityscapes`)
+- `--output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance` (default=`/opendir/panoptic`)
+- `--visualization_topic VISUALIZATION_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag (default=`/opendr/panoptic/rgb_visualization`)
+- `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps and publish it on `OUTPUT_RGB_IMAGE_TOPIC` (default=deactivated)
 
 
 ## Semantic Segmentation ROS Node

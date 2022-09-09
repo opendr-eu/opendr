@@ -20,8 +20,8 @@ import rclpy
 from rclpy.node import Node
 
 from sensor_msgs.msg import Image as ROS_Image
-from vision_msgs.msg import Detection2DArray
 from opendr_ros2_bridge import ROS2Bridge
+from opendr_ros2_messages.msg import OpenDRPose2D
 
 from opendr.engine.data import Image
 from opendr.perception.pose_estimation import draw
@@ -66,7 +66,7 @@ class PoseEstimationNode(Node):
             self.image_publisher = None
 
         if detections_topic is not None:
-            self.pose_publisher = self.create_publisher(Detection2DArray, detections_topic, 1)
+            self.pose_publisher = self.create_publisher(OpenDRPose2D, detections_topic, 1)
         else:
             self.pose_publisher = None
 
@@ -92,8 +92,6 @@ class PoseEstimationNode(Node):
         # Run pose estimation
         poses = self.pose_estimator.infer(image)
 
-        # Get an OpenCV image back
-        image = image.opencv()
         #  Publish detections in ROS message
         for pose in poses:
             if self.pose_publisher is not None:
@@ -101,6 +99,8 @@ class PoseEstimationNode(Node):
                 self.pose_publisher.publish(self.bridge.to_ros_pose(pose))
 
         if self.image_publisher is not None:
+            # Get an OpenCV image back
+            image = image.opencv()
             # Annotate image with poses
             for pose in poses:
                 draw(image, pose)
@@ -114,10 +114,14 @@ def main(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
                         type=str, default="image_raw")
-    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
-                        type=str, default="/opendr/image_pose_annotated")
-    parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
-                        type=str, default="/opendr/poses")
+    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image, if \"None\" "
+                                                               "no output image is published",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/image_pose_annotated")
+    parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages, if \"None\" "
+                                                         "no detection message is published",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/poses")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,

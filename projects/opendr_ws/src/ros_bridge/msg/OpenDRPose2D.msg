@@ -12,4 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = "1.1.1"
+# This message represents a full OpenDR human pose 2D as a list of keypoints
+
+Header header
+
+# The id of the pose
+int32 pose_id
+
+# The pose detection confidence of the model
+float32 conf
+
+# A list of a human 2D pose keypoints
+OpenDRPose2DKeypoint[] keypoint_list

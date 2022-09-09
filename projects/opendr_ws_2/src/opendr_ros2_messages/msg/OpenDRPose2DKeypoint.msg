@@ -12,4 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = "1.1.1"
+# This message contains all relevant information for an OpenDR human pose 2D keypoint
+
+# The kpt_name according to https://github.com/opendr-eu/opendr/blob/master/docs/reference/lightweight-open-pose.md#notes
+string kpt_name
+
+# x and y pixel position on the input image, (0, 0) is top-left corner of image
+int32 x
+int32 y
