@@ -22,7 +22,7 @@ def validate_image_video_mode_arguments(args):
     """
     User input validation.
     Validates the arguments passed by users through the terminal when 'mode' is set to
-    'image' or 'video' in 'main_esr9.py'.
+    'image' or 'video' in 'inference_demo.py'.
 
     :param args: arguments passed through the terminal.
     :return: void
@@ -45,7 +45,7 @@ def validate_image_video_mode_arguments(args):
 
 def validate_webcam_mode_arguments(args):
     """
-    Validates the arguments passed by users through the terminal when 'mode' is set to 'webcam' in 'main_esr9.py'.
+    Validates the arguments passed by users through the terminal when 'mode' is set to 'webcam' in 'inference_demo.py'
 
     :param args: arguments passed through the terminal.
     :return: void
