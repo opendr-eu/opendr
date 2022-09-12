@@ -33,8 +33,8 @@ class SyntheticDataGeneration(Node):
                  device="cuda"):
         """
         Creates a ROS Node for SyntheticDataGeneration
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the synthetic facial image (if None, no image 
         is published)
         :type output_rgb_image_topic: str
