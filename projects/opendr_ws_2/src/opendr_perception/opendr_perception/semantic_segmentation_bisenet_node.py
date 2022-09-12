@@ -83,29 +83,29 @@ class BisenetNode(Node):
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8')
 
-        # try:
-        # Run semantic segmentation to retrieve the OpenDR heatmap
-        heatmap = self.learner.infer(image)
+        try:
+            # Run semantic segmentation to retrieve the OpenDR heatmap
+            heatmap = self.learner.infer(image)
 
-        # Publish heatmap in the form of an image containing class ids
-        if self.heatmap_publisher is not None:
-            heatmap = Heatmap(heatmap.data.astype(np.uint8))  # Convert to uint8
-            self.heatmap_publisher.publish(self.bridge.to_ros_image(heatmap))
+            # Publish heatmap in the form of an image containing class ids
+            if self.heatmap_publisher is not None:
+                heatmap = Heatmap(heatmap.data.astype(np.uint8))  # Convert to uint8
+                self.heatmap_publisher.publish(self.bridge.to_ros_image(heatmap))
 
-        # Publish heatmap color visualization blended with the input image and a class color legend
-        if self.visualization_publisher is not None:
-            heatmap_colors = Image(self.colors[heatmap.numpy()])
-            image = Image(cv2.resize(image.convert("channels_last", "bgr"), (960, 720)))
-            alpha = 0.4  # 1.0 means full input image, 0.0 means full heatmap
-            beta = (1.0 - alpha)
-            image_blended = cv2.addWeighted(image.opencv(), alpha, heatmap_colors.opencv(), beta, 0.0)
-            # Add a legend
-            image_blended = self.addLegend(image_blended, np.unique(heatmap.data))
+            # Publish heatmap color visualization blended with the input image and a class color legend
+            if self.visualization_publisher is not None:
+                heatmap_colors = Image(self.colors[heatmap.numpy()])
+                image = Image(cv2.resize(image.convert("channels_last", "bgr"), (960, 720)))
+                alpha = 0.4  # 1.0 means full input image, 0.0 means full heatmap
+                beta = (1.0 - alpha)
+                image_blended = cv2.addWeighted(image.opencv(), alpha, heatmap_colors.opencv(), beta, 0.0)
+                # Add a legend
+                image_blended = self.addLegend(image_blended, np.unique(heatmap.data))
 
-            self.visualization_publisher.publish(self.bridge.to_ros_image(Image(image_blended),
-                                                                          encoding='bgr8'))
-        # except Exception:
-        #     self.get_logger().warn('Failed to generate prediction.')
+                self.visualization_publisher.publish(self.bridge.to_ros_image(Image(image_blended),
+                                                                              encoding='bgr8'))
+        except Exception:
+            self.get_logger().warn('Failed to generate prediction.')
 
     def addLegend(self, image, unique_class_ints):
         # Text setup
@@ -155,11 +155,12 @@ def main(args=None):
                         type=str, default="image_raw")
     parser.add_argument("-o", "--output_heatmap_topic", help="Topic to which we are publishing the heatmap in the form "
                                                              "of a ROS image containing class ids",
-                        type=str, default="/opendr/heatmap")
+                        type=lambda value: value if value.lower() != "none" else None, default="/opendr/heatmap")
     parser.add_argument("-v", "--output_rgb_image_topic", help="Topic to which we are publishing the heatmap image "
                                                                "blended with the input image and a class legend for "
                                                                "visualization purposes",
-                        type=str, default="/opendr/heatmap_visualization")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/heatmap_visualization")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
