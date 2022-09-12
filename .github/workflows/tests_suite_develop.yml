@@ -375,7 +375,6 @@ jobs:
         name: docker-artifact
   delete-wheel-artifacts:
     needs: [build-wheel, test-wheel, test-wheel-separate]
-
     if: ${{ always() }}
     strategy:
       matrix:
