@@ -106,24 +106,25 @@ class FallDetectionNode(Node):
         for detection in detections:
             fallen = detection[0].data
             pose = detection[2]
+            x, y, w, h = get_bbox(pose)
 
             if fallen == 1:
-                color = (0, 0, 255)
-                x, y, w, h = get_bbox(pose)
+                if self.image_publisher is not None:
+                    # Paint person bounding box inferred from pose
+                    color = (0, 0, 255)
+                    cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
+                    cv2.putText(image, "Fallen person", (x, y + h - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                                1, color, 2, cv2.LINE_AA)
 
-                cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
-                cv2.putText(image, "Fallen person", (x, y + h - 10), cv2.FONT_HERSHEY_SIMPLEX,
-                            1, color, 2, cv2.LINE_AA)
-
-                # Convert detected boxes to ROS type and publish
-                bboxes.data.append(BoundingBox(left=x, top=y, width=w, height=h, name="fallen person"))
-                ros_boxes = self.bridge.to_ros_boxes(bboxes)
                 if self.fall_publisher is not None:
-                    self.fall_publisher.publish(ros_boxes)
+                    # Convert detected boxes to ROS type and add to list
+                    bboxes.data.append(BoundingBox(left=x, top=y, width=w, height=h, name="fallen person"))
+
+        if self.fall_publisher is not None:
+            self.fall_publisher.publish(self.bridge.to_ros_boxes(bboxes))
 
         if self.image_publisher is not None:
-            message = self.bridge.to_ros_image(Image(image), encoding='bgr8')
-            self.image_publisher.publish(message)
+            self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
 
 def main(args=None):
@@ -133,9 +134,11 @@ def main(args=None):
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
                         type=str, default="image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
-                        type=str, default="/opendr/image_fallen_annotated")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/image_fallen_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
-                        type=str, default="/opendr/fallen")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/fallen")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
