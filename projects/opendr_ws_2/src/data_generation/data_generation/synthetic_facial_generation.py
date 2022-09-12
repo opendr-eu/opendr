@@ -46,7 +46,7 @@ class SyntheticDataGeneration(Node):
             self.image_publisher = self.create_publisher(output_image_topic, ROS_Image, queue_size=10)
         else:
             self.image_publisher = None
-        self.create_subscription(input_image_topic, ROS_Image, self.callback)
+        self.create_subscription(input_image_topic, ROS_Image, self.callback, 1)
         self.bridge = ROS2Bridge()
         self.ID = 0
 
