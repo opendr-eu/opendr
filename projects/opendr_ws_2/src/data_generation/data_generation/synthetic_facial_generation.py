@@ -29,7 +29,7 @@ from algorithm.DDFA.utils.ddfa import str2bool
 
 class SyntheticDataGeneration(Node):
 
-    def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/synthetic_facial_images",
+    def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/synthetic_facial_images",
                  device="cuda"):
         """
         Creates a ROS Node for SyntheticDataGeneration
