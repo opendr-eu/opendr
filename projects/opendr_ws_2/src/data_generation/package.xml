@@ -6,12 +6,20 @@
   <description>OpenDR ROS2 node for synthetic multiview facial image generation</description>
   <maintainer email="tefas@csd.auth.gr">tefas</maintainer>
   <license>Apache License v2.0</license>
-
+  
+  <depend>rclcpp></depend>
+  <depend>sensor_msgs</depend>
+  
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>opendr_ros2_bridge</exec_depend>
+  
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
-
+  
   <export>
     <build_type>ament_python</build_type>
   </export>
