@@ -1,6 +1,6 @@
-# Skeleton-based Human Action Recognition Demo
+# Image-based Facial Expression Recognition Demo
 
-This folder contains an implemented demo of ensemble_based_facial_expression_recognition method implemented by [[1]](#1).
+This folder contains an implemented demo of image_based_facial_expression_recognition method implemented by [[1]](#1).
 The demo framework has three main features:
 - Image: recognizes facial expressions in images.
 - Video: recognizes facial expressions in videos in a frame-based approach.
