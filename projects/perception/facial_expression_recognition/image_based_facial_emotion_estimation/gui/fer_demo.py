@@ -14,7 +14,7 @@ from opendr.perception.facial_expression_recognition.image_based_facial_emotion_
     import image_processing
 
 
-class FERDisplay:
+class FERDemo:
     """
     This class implements the GUI of the facial expression recognition (FER) demo.
     """
@@ -125,7 +125,7 @@ class FERDisplay:
         # Screen
         self._window_name = window_name
         self._screen_size = screen_size - 1
-        self._width, self._height = FERDisplay._SCREEN_SIZE[self._screen_size]
+        self._width, self._height = FERDemo._SCREEN_SIZE[self._screen_size]
         self._display_graph_ensemble = display_graph_ensemble
 
         # Container parameters
@@ -138,7 +138,7 @@ class FERDisplay:
         self._output_container_initial_position = np.array([0, self._width // 2], dtype=np.int)
 
         # Output blocks
-        self._output_block_height = (self._container_height // FERDisplay._BLOCK_NUM_BLOCKS)
+        self._output_block_height = (self._container_height // FERDemo._BLOCK_NUM_BLOCKS)
         self._output_block_height_ensemble = self._container_height
         self._output_block_width = self._container_width
 
@@ -166,11 +166,11 @@ class FERDisplay:
 
         if is_blank:
             image_processing.draw_text(self._input_container,
-                                       FERDisplay._TEXT_BLANK_INPUT,
+                                       FERDemo._TEXT_BLANK_INPUT,
                                        self._container_center_position - 60,
-                                       FERDisplay._COLOUR_BGR_WHITE,
-                                       FERDisplay._TEXT_PARAM_SCALE[self._screen_size],
-                                       FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size])
+                                       FERDemo._COLOUR_BGR_WHITE,
+                                       FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                       FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
         else:
             # Compute resize factor 'f'
             h, w, c = self._fer.input_image.shape
@@ -178,15 +178,15 @@ class FERDisplay:
             h_ratio = h / h_c
             w_ratio = w / w_c
             if h_ratio > w_ratio:
-                if h < (self._container_height * FERDisplay._INPUT_IMAGE_SCALE_MIN):
-                    f = (self._container_height * FERDisplay._INPUT_IMAGE_SCALE_MIN) / float(h)
+                if h < (self._container_height * FERDemo._INPUT_IMAGE_SCALE_MIN):
+                    f = (self._container_height * FERDemo._INPUT_IMAGE_SCALE_MIN) / float(h)
                 else:
-                    f = (self._container_height * FERDisplay._INPUT_IMAGE_SCALE_MAX) / float(h)
+                    f = (self._container_height * FERDemo._INPUT_IMAGE_SCALE_MAX) / float(h)
             else:
-                if w < (self._container_height * FERDisplay._INPUT_IMAGE_SCALE_MIN):
-                    f = (self._container_width * FERDisplay._INPUT_IMAGE_SCALE_MIN) / float(w)
+                if w < (self._container_height * FERDemo._INPUT_IMAGE_SCALE_MIN):
+                    f = (self._container_width * FERDemo._INPUT_IMAGE_SCALE_MIN) / float(w)
                 else:
-                    f = (self._container_width * FERDisplay._INPUT_IMAGE_SCALE_MAX) / float(w)
+                    f = (self._container_width * FERDemo._INPUT_IMAGE_SCALE_MAX) / float(w)
 
             # Resize input image
             self._input_image = image_processing.resize(self._fer.input_image, f=f)
@@ -206,26 +206,26 @@ class FERDisplay:
 
         if is_blank:
             image_processing.draw_text(self._output_container,
-                                       FERDisplay._TEXT_BLANK_INPUT,
+                                       FERDemo._TEXT_BLANK_INPUT,
                                        self._container_center_position - 60,
-                                       FERDisplay._COLOUR_BGR_WHITE,
-                                       FERDisplay._TEXT_PARAM_SCALE[self._screen_size],
-                                       FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size])
+                                       FERDemo._COLOUR_BGR_WHITE,
+                                       FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                       FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
         else:
             if self._fer.face_image is None:
                 image_processing.draw_text(self._output_container,
-                                           FERDisplay._TEXT_NO_FACE,
+                                           FERDemo._TEXT_NO_FACE,
                                            self._container_center_position - 210,
-                                           FERDisplay._COLOUR_BGR_BLACK,
-                                           FERDisplay._TEXT_PARAM_SCALE[self._screen_size],
-                                           FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size])
+                                           FERDemo._COLOUR_BGR_BLACK,
+                                           FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                           FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
             else:
                 # Display ensemble and individual classifications
                 # Resize face image
-                face_image = image_processing.resize(self._fer.face_image, FERDisplay._BLOCK_IMAGE_SIZE[self._screen_size])
+                face_image = image_processing.resize(self._fer.face_image, FERDemo._BLOCK_IMAGE_SIZE[self._screen_size])
 
                 # Generate block of the ensemble prediction
-                block = self._generate_block(FERDisplay._TEXT_ENSEMBLE,
+                block = self._generate_block(FERDemo._TEXT_ENSEMBLE,
                                              self._fer.list_emotion[-1],
                                              self._fer.list_affect[-1][0],
                                              self._fer.list_affect[-1][1],
@@ -244,7 +244,7 @@ class FERDisplay:
                         grad_cam = image_processing.superimpose(grad_cam, face_image)
 
                     # Generate block of the branch prediction
-                    block = self._generate_block(FERDisplay._TEXT_BRANCH.format(branch + 1),
+                    block = self._generate_block(FERDemo._TEXT_BRANCH.format(branch + 1),
                                                  self._fer.list_emotion[branch],
                                                  self._fer.list_affect[branch][0],
                                                  self._fer.list_affect[branch][1],
@@ -261,58 +261,58 @@ class FERDisplay:
 
         # Image
         if not (face_image is None):
-            image_processing.draw_image(block, face_image, FERDisplay._BLOCK_INIT_POS_IMAGE[self._screen_size])
+            image_processing.draw_image(block, face_image, FERDemo._BLOCK_INIT_POS_IMAGE[self._screen_size])
 
         # Text: Ensemble
         image_processing.draw_text(block,
                                    network_name,
-                                   FERDisplay._BLOCK_INIT_POS_TEXT_NETWORK[self._screen_size],
-                                   FERDisplay._COLOUR_BGR_BLACK,
-                                   FERDisplay._TEXT_PARAM_SCALE[self._screen_size],
-                                   FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size])
+                                   FERDemo._BLOCK_INIT_POS_TEXT_NETWORK[self._screen_size],
+                                   FERDemo._COLOUR_BGR_BLACK,
+                                   FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                   FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
 
         # Text: Emotion
         image_processing.draw_text(block,
                                    emotion,
-                                   FERDisplay._BLOCK_INIT_POS_TEXT_EMOTION[self._screen_size],
-                                   FERDisplay._COLOUR_BGR_BLACK,
-                                   FERDisplay._TEXT_PARAM_SCALE[self._screen_size],
-                                   FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size])
+                                   FERDemo._BLOCK_INIT_POS_TEXT_EMOTION[self._screen_size],
+                                   FERDemo._COLOUR_BGR_BLACK,
+                                   FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                   FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
 
         # Text: Arousal
         image_processing.draw_text(block,
-                                   FERDisplay._TEXT_AROUSAL,
-                                   FERDisplay._BLOCK_INIT_POS_TEXT_AROUSAL[self._screen_size],
-                                   FERDisplay._COLOUR_BGR_BLACK,
-                                   FERDisplay._TEXT_PARAM_SCALE[self._screen_size],
-                                   FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size])
+                                   FERDemo._TEXT_AROUSAL,
+                                   FERDemo._BLOCK_INIT_POS_TEXT_AROUSAL[self._screen_size],
+                                   FERDemo._COLOUR_BGR_BLACK,
+                                   FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                   FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
 
         # Text: Valence
         image_processing.draw_text(block,
-                                   FERDisplay._TEXT_VALENCE,
-                                   FERDisplay._BLOCK_INIT_POS_TEXT_VALENCE[self._screen_size],
-                                   FERDisplay._COLOUR_BGR_BLACK,
-                                   FERDisplay._TEXT_PARAM_SCALE[self._screen_size],
-                                   FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size])
+                                   FERDemo._TEXT_VALENCE,
+                                   FERDemo._BLOCK_INIT_POS_TEXT_VALENCE[self._screen_size],
+                                   FERDemo._COLOUR_BGR_BLACK,
+                                   FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                   FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
 
         # Bar: Arousal
         image_processing.draw_horizontal_bar(block,
                                              arousal,
-                                             FERDisplay._MAX_AROUSAL,
-                                             FERDisplay._BLOCK_INIT_POS_BAR_AROUSAL[self._screen_size],
-                                             FERDisplay._BLOCK_FINAL_POS_BAR_AROUSAL[self._screen_size],
-                                             FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size],
-                                             FERDisplay._COLOUR_BGR_DARK_BLUE)
+                                             FERDemo._MAX_AROUSAL,
+                                             FERDemo._BLOCK_INIT_POS_BAR_AROUSAL[self._screen_size],
+                                             FERDemo._BLOCK_FINAL_POS_BAR_AROUSAL[self._screen_size],
+                                             FERDemo._TEXT_PARAM_THICKNESS[self._screen_size],
+                                             FERDemo._COLOUR_BGR_DARK_BLUE)
 
         # Bar: Valence
         image_processing.draw_horizontal_bar(block,
                                              np.abs(valence),
-                                             FERDisplay._MAX_VALENCE,
-                                             FERDisplay._BLOCK_INIT_POS_BAR_VALENCE[self._screen_size],
-                                             FERDisplay._BLOCK_FINAL_POS_BAR_VALENCE[self._screen_size],
-                                             FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size],
-                                             FERDisplay._COLOUR_BGR_DARK_RED if valence < 0.0 else
-                                             FERDisplay._COLOUR_BGR_DARK_GREEN)
+                                             FERDemo._MAX_VALENCE,
+                                             FERDemo._BLOCK_INIT_POS_BAR_VALENCE[self._screen_size],
+                                             FERDemo._BLOCK_FINAL_POS_BAR_VALENCE[self._screen_size],
+                                             FERDemo._TEXT_PARAM_THICKNESS[self._screen_size],
+                                             FERDemo._COLOUR_BGR_DARK_RED if valence < 0.0 else
+                                             FERDemo._COLOUR_BGR_DARK_GREEN)
 
         return block
 
@@ -321,96 +321,96 @@ class FERDisplay:
 
         # Image
         if not (face_image is None):
-            image_processing.draw_image(block, face_image, FERDisplay._BLOCK_INIT_POS_IMAGE_ENSEMBLE[self._screen_size])
+            image_processing.draw_image(block, face_image, FERDemo._BLOCK_INIT_POS_IMAGE_ENSEMBLE[self._screen_size])
 
         # Text: Ensemble
         image_processing.draw_text(block,
                                    network_name,
-                                   FERDisplay._BLOCK_INIT_POS_TEXT_NETWORK_ENSEMBLE[self._screen_size],
-                                   FERDisplay._COLOUR_BGR_BLACK,
-                                   FERDisplay._TEXT_PARAM_SCALE[self._screen_size],
-                                   FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size])
+                                   FERDemo._BLOCK_INIT_POS_TEXT_NETWORK_ENSEMBLE[self._screen_size],
+                                   FERDemo._COLOUR_BGR_BLACK,
+                                   FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                   FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
 
         # Text: Emotion
         image_processing.draw_text(block,
                                    emotion,
-                                   FERDisplay._BLOCK_INIT_POS_TEXT_EMOTION_ENSEMBLE[self._screen_size],
-                                   FERDisplay._COLOUR_BGR_BLACK,
-                                   FERDisplay._TEXT_PARAM_SCALE[self._screen_size],
-                                   FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size])
+                                   FERDemo._BLOCK_INIT_POS_TEXT_EMOTION_ENSEMBLE[self._screen_size],
+                                   FERDemo._COLOUR_BGR_BLACK,
+                                   FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                   FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
 
         # Text: Activation
         image_processing.draw_text(block,
-                                   FERDisplay._TEXT_ACTIVATION + "  {:.2f}".format(arousal),
-                                   FERDisplay._BLOCK_INIT_POS_TEXT_ACTIVATION[self._screen_size],
-                                   FERDisplay._COLOUR_BGR_BLACK,
-                                   FERDisplay._TEXT_PARAM_SCALE[self._screen_size],
-                                   FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size])
+                                   FERDemo._TEXT_ACTIVATION + "  {:.2f}".format(arousal),
+                                   FERDemo._BLOCK_INIT_POS_TEXT_ACTIVATION[self._screen_size],
+                                   FERDemo._COLOUR_BGR_BLACK,
+                                   FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                   FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
 
         # Text: Pleasant
         image_processing.draw_text(block,
-                                   FERDisplay._TEXT_PLEASANT + ("  0.00" if valence < 0 else "  {:.2f}".format(valence)),
-                                   FERDisplay._BLOCK_INIT_POS_TEXT_PLEASANT[self._screen_size],
-                                   FERDisplay._COLOUR_BGR_BLACK,
-                                   FERDisplay._TEXT_PARAM_SCALE[self._screen_size],
-                                   FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size])
+                                   FERDemo._TEXT_PLEASANT + ("  0.00" if valence < 0 else "  {:.2f}".format(valence)),
+                                   FERDemo._BLOCK_INIT_POS_TEXT_PLEASANT[self._screen_size],
+                                   FERDemo._COLOUR_BGR_BLACK,
+                                   FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                   FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
 
         # Text: Unpleasant
         image_processing.draw_text(block,
-                                   FERDisplay._TEXT_UNPLEASANT + ("  {:.2f}".format(valence) if valence < 0 else "  0.00"),
-                                   FERDisplay._BLOCK_INIT_POS_TEXT_UNPLEASANT[self._screen_size],
-                                   FERDisplay._COLOUR_BGR_BLACK,
-                                   FERDisplay._TEXT_PARAM_SCALE[self._screen_size],
-                                   FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size])
+                                   FERDemo._TEXT_UNPLEASANT + ("  {:.2f}".format(valence) if valence < 0 else "  0.00"),
+                                   FERDemo._BLOCK_INIT_POS_TEXT_UNPLEASANT[self._screen_size],
+                                   FERDemo._COLOUR_BGR_BLACK,
+                                   FERDemo._TEXT_PARAM_SCALE[self._screen_size],
+                                   FERDemo._TEXT_PARAM_THICKNESS[self._screen_size])
 
         # Bar: Activation
         image_processing.draw_horizontal_bar(block,
                                              arousal,
-                                             FERDisplay._MAX_AROUSAL,
-                                             FERDisplay._BLOCK_INIT_POS_BAR_ACTIVATION[self._screen_size],
-                                             FERDisplay._BLOCK_FINAL_POS_BAR_ACTIVATION[self._screen_size],
-                                             FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size],
-                                             FERDisplay._COLOUR_BGR_DARK_BLUE)
+                                             FERDemo._MAX_AROUSAL,
+                                             FERDemo._BLOCK_INIT_POS_BAR_ACTIVATION[self._screen_size],
+                                             FERDemo._BLOCK_FINAL_POS_BAR_ACTIVATION[self._screen_size],
+                                             FERDemo._TEXT_PARAM_THICKNESS[self._screen_size],
+                                             FERDemo._COLOUR_BGR_DARK_BLUE)
 
         # Bar: Pleasant
         image_processing.draw_horizontal_bar(block,
                                              0.0 if valence < 0.0 else valence,
-                                             FERDisplay._MAX_VALENCE,
-                                             FERDisplay._BLOCK_INIT_POS_BAR_PLEASANT[self._screen_size],
-                                             FERDisplay._BLOCK_FINAL_POS_BAR_PLEASANT[self._screen_size],
-                                             FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size],
-                                             FERDisplay._COLOUR_BGR_DARK_GREEN)
+                                             FERDemo._MAX_VALENCE,
+                                             FERDemo._BLOCK_INIT_POS_BAR_PLEASANT[self._screen_size],
+                                             FERDemo._BLOCK_FINAL_POS_BAR_PLEASANT[self._screen_size],
+                                             FERDemo._TEXT_PARAM_THICKNESS[self._screen_size],
+                                             FERDemo._COLOUR_BGR_DARK_GREEN)
 
         # Bar: Unpleasant
         image_processing.draw_horizontal_bar(block,
                                              np.abs(valence) if valence < 0.0 else 0.0,
-                                             FERDisplay._MAX_VALENCE,
-                                             FERDisplay._BLOCK_INIT_POS_BAR_UNPLEASANT[self._screen_size],
-                                             FERDisplay._BLOCK_FINAL_POS_BAR_UNPLEASANT[self._screen_size],
-                                             FERDisplay._TEXT_PARAM_THICKNESS[self._screen_size],
-                                             FERDisplay._COLOUR_BGR_DARK_RED)
+                                             FERDemo._MAX_VALENCE,
+                                             FERDemo._BLOCK_INIT_POS_BAR_UNPLEASANT[self._screen_size],
+                                             FERDemo._BLOCK_FINAL_POS_BAR_UNPLEASANT[self._screen_size],
+                                             FERDemo._TEXT_PARAM_THICKNESS[self._screen_size],
+                                             FERDemo._COLOUR_BGR_DARK_RED)
 
         # Plot: Arousal and Valence
         if self._display_graph_ensemble:
             self._plot_arousal.append(arousal)
             self._plot_valence.append(valence)
             image_processing.draw_graph(block, self._plot_arousal, self._plot_valence,
-                                        FERDisplay._BLOCK_INIT_POS_GRAPH[self._screen_size],
-                                        FERDisplay._BLOCK_SAMPLE_GRAPH,
-                                        FERDisplay._TEXT_ACTIVATION_WITHOUT_TWO_DOTS,
-                                        FERDisplay._TEXT_PLEASANT_UNPLEASANT,
-                                        FERDisplay._COLOUR_BGR_BLUE,
-                                        FERDisplay._COLOUR_BGR_ORANGE,
-                                        FERDisplay._BLOCK_THICKNESS_GRAPH[self._screen_size],
-                                        FERDisplay._BLOCK_OFFSET_GRAPH[self._screen_size],
-                                        FERDisplay._BLOCK_FONT_SIZE_GRAPH[self._screen_size],
-                                        FERDisplay._COLOUR_BGR_DARK_GREY,
-                                        FERDisplay._BLOCK_SIZE_GRAPH[self._screen_size])
+                                        FERDemo._BLOCK_INIT_POS_GRAPH[self._screen_size],
+                                        FERDemo._BLOCK_SAMPLE_GRAPH,
+                                        FERDemo._TEXT_ACTIVATION_WITHOUT_TWO_DOTS,
+                                        FERDemo._TEXT_PLEASANT_UNPLEASANT,
+                                        FERDemo._COLOUR_BGR_BLUE,
+                                        FERDemo._COLOUR_BGR_ORANGE,
+                                        FERDemo._BLOCK_THICKNESS_GRAPH[self._screen_size],
+                                        FERDemo._BLOCK_OFFSET_GRAPH[self._screen_size],
+                                        FERDemo._BLOCK_FONT_SIZE_GRAPH[self._screen_size],
+                                        FERDemo._COLOUR_BGR_DARK_GREY,
+                                        FERDemo._BLOCK_SIZE_GRAPH[self._screen_size])
         return block
 
     def _draw_background(self):
         if (self._fer is None) or (self._fer.input_image is None):
-            self._background = np.ones((self._height, self._width, 3), dtype=np.uint8) * FERDisplay._COLOUR_G_DARK_GREY
+            self._background = np.ones((self._height, self._width, 3), dtype=np.uint8) * FERDemo._COLOUR_G_DARK_GREY
         else:
             # Resize
             self._background = image_processing.resize(self._fer.input_image, f=np.maximum(

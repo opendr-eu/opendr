@@ -15,180 +15,11 @@ https://github.com/siqueira-hc/Efficient-Facial-Feature-Learning-with-Wide-Ensem
 import argparse
 from argparse import RawTextHelpFormatter
 import time
-import torch
-import numpy as np
-from torchvision import transforms
-import PIL
-import cv2
 
 # OpenDR Modules
-from opendr.perception.facial_expression_recognition import FacialEmotionLearner, ESR, image_processing, \
-    file_maker, datasets
-from gui.fer_display import FERDisplay
-from gui.grad_cam import GradCAM
-from gui import args_validation
-
-# Haar cascade parameters
-_HAAR_SCALE_FACTOR = 1.2
-_HAAR_NEIGHBORS = 9
-_HAAR_MIN_SIZE = (60, 60)
-
-
-class FER:
-    """
-    This class implements the facial expression recognition object that contains the elements
-    to be displayed on the screen such as an input image and ESR-9's outputs.
-    """
-
-    def __init__(self, image=None, face_image=None, face_coordinates=None,
-                 list_emotion=None, list_affect=None, list_grad_cam=None):
-        """
-        Initialize FER object.
-        """
-        self.input_image = image
-        self.face_coordinates = face_coordinates
-        self.face_image = face_image
-        self.list_emotion = list_emotion
-        self.list_affect = list_affect
-        self._list_grad_cam = list_grad_cam
-
-    def get_grad_cam(self, i):
-        if (self._list_grad_cam is None) or (len(self._list_grad_cam) == 0):
-            return None
-        else:
-            return self._list_grad_cam[i]
-
-
-def detect_face(image):
-    """
-    Detects faces in an image.
-    :param image: (ndarray) Raw input image.
-    :return: (list) Tuples with coordinates of a detected face.
-    """
-
-    # Converts to greyscale
-    greyscale_image = image_processing.convert_bgr_to_grey(image)
-
-    # Runs haar cascade classifiers
-    _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("/face_detector/frontal_face.xml")
-    faces = _FACE_DETECTOR_HAAR_CASCADE.detectMultiScale(greyscale_image, _HAAR_SCALE_FACTOR, _HAAR_NEIGHBORS,
-                                                         minSize=_HAAR_MIN_SIZE)
-    face_coordinates = [[[x, y], [x + w, y + h]] for (x, y, w, h) in faces] if not (faces is None) else []
-    face_coordinates = np.array(face_coordinates)
-
-    # Returns None if no face is detected
-    return face_coordinates[0] if (len(face_coordinates) > 0 and (np.sum(face_coordinates[0]) > 0)) else None
-
-
-def _pre_process_input_image(image):
-    """
-    Pre-processes an image for ESR-9.
-    :param image: (ndarray)
-    :return: (ndarray) image
-    """
-
-    image = image_processing.resize(image, ESR.INPUT_IMAGE_SIZE)
-    image = PIL.Image.fromarray(image)
-    image = transforms.Normalize(mean=ESR.INPUT_IMAGE_NORMALIZATION_MEAN,
-                                 std=ESR.INPUT_IMAGE_NORMALIZATION_STD)(transforms.ToTensor()(image)).unsqueeze(0)
-    return image
-
-
-def _predict(input_face, device, model_path, ensemble_size):
-    """
-    Facial expression recognition. Classifies the pre-processed input image with FacialEmotionLearner.
-
-    :param input_face: (ndarray) input image.
-    :param device: runs the classification on CPU or GPU
-    :param model_path: path to the saved network
-    :param model_path: number of branches in the network
-    :return: Lists of emotions and affect values including the ensemble predictions based on plurality.
-    """
-
-    learner = FacialEmotionLearner(device=device, ensemble_size=ensemble_size)
-    learner.init_model(num_branches=ensemble_size)
-    learner.load(ensemble_size, path_to_saved_network=model_path)
-
-    to_return_emotion = []
-    to_return_emotion_idx = []
-
-    # Recognizes facial expression
-    emotion, affect = learner.infer(input_face)
-
-    # Computes ensemble prediction for affect
-    # Converts from Tensor to ndarray
-    affect = np.array([a[0].cpu().detach().numpy() for a in affect])
-
-    # Normalizes arousal
-    affect[:, 1] = np.clip((affect[:, 1] + 1)/2.0, 0, 1)
-
-    # Computes mean arousal and valence as the ensemble prediction
-    ensemble_affect = np.expand_dims(np.mean(affect, 0), axis=0)
-
-    # Concatenates the ensemble prediction to the list of affect predictions
-    to_return_affect = np.concatenate((affect, ensemble_affect), axis=0)
-
-    # Computes ensemble prediction concerning emotion labels
-    # Converts from Tensor to ndarray
-    emotion = np.array([e[0].cpu().detach().numpy() for e in emotion])
-
-    # Gets number of classes
-    num_classes = emotion.shape[1]
-
-    # Computes votes and add label to the list of emotions
-    emotion_votes = np.zeros(num_classes)
-    for e in emotion:
-        e_idx = np.argmax(e)
-        to_return_emotion_idx.append(e_idx)
-        to_return_emotion.append(datasets.AffectNetCategorical.get_class(e_idx))
-        emotion_votes[e_idx] += 1
-
-    # Concatenates the ensemble prediction to the list of emotion predictions
-    to_return_emotion.append(datasets.AffectNetCategorical.get_class(np.argmax(emotion_votes)))
-
-    return to_return_emotion, to_return_affect, to_return_emotion_idx, learner.model
-
-
-def recognize_facial_expression(image, on_gpu, grad_cam, model_path, ensemble_size):
-    """
-    Detects a face in the input image.
-    If more than one face is detected, the biggest one is used.
-    The detected face is fed to the _predict function which runs FacialEmotionLearner for facial expression recognition.
-
-    :param image: (ndarray) input image.
-    :return: A FER object with the components necessary for display.
-    """
-
-    saliency_maps = []
-
-    # Detect face
-    face_coordinates = detect_face(image)
-
-    if face_coordinates is None:
-        to_return_fer = FER(image)
-    else:
-        face = image[face_coordinates[0][1]:face_coordinates[1][1], face_coordinates[0][0]:face_coordinates[1][0], :]
-
-        # Get device
-        device = torch.device("cuda" if on_gpu else "cpu")
-
-        # Pre_process detected face
-        input_face = _pre_process_input_image(face)
-        input_face = input_face.to(device)
-
-        # Recognize facial expression
-        # emotion_idx is needed to run Grad-CAM
-        emotion, affect, emotion_idx, model = _predict(input_face, device, model_path, ensemble_size)
-
-        # Grad-CAM
-        if grad_cam:
-            _GRAD_CAM = GradCAM(model, device)
-            saliency_maps = _GRAD_CAM.grad_cam(input_face, emotion_idx)
-
-        # Initialize GUI object
-        to_return_fer = FER(image, face, face_coordinates, emotion, affect, saliency_maps)
-
-    return to_return_fer
+from controller import cvalidation, cvision
+from opendr.perception.facial_expression_recognition import image_processing, file_maker
+from gui.fer_demo import FERDemo
 
 
 def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, frames, no_plot, pretrained_model_path,
@@ -198,7 +29,7 @@ def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, fr
     facial expressions of the closets face in a frame-based approach.
     """
 
-    fer_display = None
+    fer_demo = None
     write_to_file = not (output_csv_file is None)
     starting_time = time.time()
 
@@ -211,7 +42,8 @@ def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, fr
 
     # Initialize screen
     if display:
-        fer_display = FERDisplay(screen_size=screen_size, display_graph_ensemble=(not no_plot))
+        fer_demo = FERDemo(screen_size=screen_size,
+                           display_graph_ensemble=(not no_plot))
     else:
         print("Press 'Ctrl + C' to quit.")
 
@@ -220,17 +52,18 @@ def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, fr
             file_maker.create_file(output_csv_file, str(time.time()))
 
         # Loop to process each frame from a VideoCapture object.
-        while image_processing.is_video_capture_open() and ((not display) or (display and fer_display.is_running())):
+        while image_processing.is_video_capture_open() and ((not display) or (display and fer_demo.is_running())):
             # Get a frame
             img, _ = image_processing.get_frame()
-            fer = None if (img is None) else recognize_facial_expression(img, device, gradcam,
-                                                                         pretrained_model_path, ensemble_size)
+
+            fer = None if (img is None) else cvision.recognize_facial_expression(img, device, gradcam,
+                                                                                 pretrained_model_path, ensemble_size)
 
             # Display blank screen if no face is detected, otherwise,
             # display detected faces and perceived facial expression labels
             if display:
-                fer_display.update(fer)
-                fer_display.show()
+                fer_demo.update(fer)
+                fer_demo.show()
 
             if write_to_file:
                 file_maker.write_to_file(fer, time.time() - starting_time)
@@ -242,8 +75,10 @@ def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, fr
         print("Keyboard interrupt event raised.")
     finally:
         image_processing.release_video_capture()
+
         if display:
-            fer_display.quit()
+            fer_demo.quit()
+
         if write_to_file:
             file_maker.close_file()
 
@@ -259,7 +94,7 @@ def image(input_image_path, display, gradcam, output_csv_file, screen_size, devi
     img = image_processing.read(input_image_path)
 
     # Call FER method
-    fer = recognize_facial_expression(img, device, gradcam, pretrained_model_path, ensemble_size)
+    fer = cvision.recognize_facial_expression(img, device, gradcam, pretrained_model_path, ensemble_size)
 
     if write_to_file:
         file_maker.create_file(output_csv_file, input_image_path)
@@ -267,12 +102,12 @@ def image(input_image_path, display, gradcam, output_csv_file, screen_size, devi
         file_maker.close_file()
 
     if display:
-        fer_display = FERDisplay(screen_size=screen_size,
-                                 display_graph_ensemble=False)
-        fer_display.update(fer)
-        while fer_display.is_running():
-            fer_display.show()
-        fer_display.quit()
+        fer_demo = FERDemo(screen_size=screen_size,
+                           display_graph_ensemble=False)
+        fer_demo.update(fer)
+        while fer_demo.is_running():
+            fer_demo.show()
+        fer_demo.quit()
 
 
 def video(input_video_path, display, gradcam, output_csv_file, screen_size,
@@ -282,7 +117,7 @@ def video(input_video_path, display, gradcam, output_csv_file, screen_size,
     facial expressions of the closets face in a frame-based approach.
     """
 
-    fer_display = None
+    fer_demo = None
     write_to_file = not (output_csv_file is None)
 
     if not image_processing.initialize_video_capture(input_video_path):
@@ -294,14 +129,15 @@ def video(input_video_path, display, gradcam, output_csv_file, screen_size,
 
     # Initialize screen
     if display:
-        fer_display = FERDisplay(screen_size=screen_size, display_graph_ensemble=(not no_plot))
+        fer_demo = FERDemo(screen_size=screen_size,
+                           display_graph_ensemble=(not no_plot))
 
     try:
         if write_to_file:
             file_maker.create_file(output_csv_file, input_video_path)
 
         # Loop to process each frame from a VideoCapture object.
-        while image_processing.is_video_capture_open() and ((not display) or (display and fer_display.is_running())):
+        while image_processing.is_video_capture_open() and ((not display) or (display and fer_demo.is_running())):
             # Get a frame
             img, timestamp = image_processing.get_frame()
 
@@ -309,14 +145,14 @@ def video(input_video_path, display, gradcam, output_csv_file, screen_size,
             if img is None:
                 break
             else:  # Process frame
-                fer = None if (img is None) else recognize_facial_expression(img, device, gradcam,
-                                                                             pretrained_model_path,
-                                                                             ensemble_size)
+                fer = None if (img is None) else cvision.recognize_facial_expression(img, device, gradcam,
+                                                                                     pretrained_model_path,
+                                                                                     ensemble_size)
                 # Display blank screen if no face is detected, otherwise,
                 # display detected faces and perceived facial expression labels
                 if display:
-                    fer_display.update(fer)
-                    fer_display.show()
+                    fer_demo.update(fer)
+                    fer_demo.show()
 
                 if write_to_file:
                     file_maker.write_to_file(fer, timestamp)
@@ -326,8 +162,10 @@ def video(input_video_path, display, gradcam, output_csv_file, screen_size,
         raise e
     finally:
         image_processing.release_video_capture()
+
         if display:
-            fer_display.quit()
+            fer_demo.quit()
+
         if write_to_file:
             file_maker.close_file()
 
@@ -372,21 +210,21 @@ def main():
     # Calls to main methods
     if args.mode == "image":
         try:
-            args_validation.validate_image_video_mode_arguments(args)
+            cvalidation.validate_image_video_mode_arguments(args)
             image(args.input, args.display, args.gradcam, args.output,
                   args.size, args.cuda, args.pretrained, args.ensemble_size)
         except RuntimeError as e:
             print(e)
     elif args.mode == "video":
         try:
-            args_validation.validate_image_video_mode_arguments(args)
+            cvalidation.validate_image_video_mode_arguments(args)
             video(args.input, args.display, args.gradcam, args.output,
                   args.size, args.cuda, args.frames, args.no_plot, args.pretrained, args.ensemble_size)
         except RuntimeError as e:
             print(e)
     elif args.mode == "webcam":
         try:
-            args_validation.validate_webcam_mode_arguments(args)
+            cvalidation.validate_webcam_mode_arguments(args)
             webcam(args.webcam_id, args.display, args.gradcam, args.output,
                    args.size, args.cuda, args.frames, args.no_plot, args.pretrained, args.ensemble_size)
         except RuntimeError as e:
