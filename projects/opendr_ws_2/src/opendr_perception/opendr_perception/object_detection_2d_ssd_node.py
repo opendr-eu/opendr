@@ -105,15 +105,14 @@ class ObjectDetectionSSDNode(Node):
         # Run object detection
         boxes = self.object_detector.infer(image, threshold=0.45, keep_size=False, custom_nms=self.custom_nms)
 
-        # Get an OpenCV image back
-        image = image.opencv()
-
-        # Publish detections in ROS message
-        ros_boxes = self.bridge.to_ros_boxes(boxes)  # Convert to ROS boxes
         if self.object_publisher is not None:
+            # Publish detections in ROS message
+            ros_boxes = self.bridge.to_ros_boxes(boxes)  # Convert to ROS boxes
             self.object_publisher.publish(ros_boxes)
 
         if self.image_publisher is not None:
+            # Get an OpenCV image back
+            image = image.opencv()
             # Annotate image with object detection boxes
             image = draw_bounding_boxes(image, boxes, class_names=self.object_detector.classes)
             # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
@@ -127,9 +126,10 @@ def main(args=None):
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
                         type=str, default="image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
-                        type=str, default="/opendr/image_objects_annotated")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/image_objects_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
-                        type=str, default="/opendr/objects")
+                        type=lambda value: value if value.lower() != "none" else None, default="/opendr/objects")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--backbone", help="Backbone network, defaults to vgg16_atrous",
                         type=str, default="vgg16_atrous", choices=["vgg16_atrous"])
