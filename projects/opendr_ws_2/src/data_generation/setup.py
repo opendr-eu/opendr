@@ -29,8 +29,8 @@ setup(
     zip_safe=True,
     maintainer='OpenDR Project Coordinator',
     maintainer_email='tefas@csd.auth.gr',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='OpenDR ROS2 node for synthetic multiview facial image generation',
+    license='Apache License v2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
