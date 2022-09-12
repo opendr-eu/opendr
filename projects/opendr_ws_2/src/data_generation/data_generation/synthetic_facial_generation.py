@@ -17,7 +17,7 @@ import cv2
 import torch
 import rclpy
 from rclpy.node import Node
-from ros2_bridge.bridge import ROS2Bridge
+from opendr_ros2_bridge import ROS2Bridge
 import numpy as np
 from sensor_msgs.msg import Image as ROS_Image
 from SyntheticDataGeneration import MultiviewDataGeneration
