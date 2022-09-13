@@ -21,3 +21,19 @@ You can also check the [customization](develop/docs/reference/customize.md) inst
 
 OpenDR toolkit targets native installation on Ubuntu 20.04.
 For any other system you are advised to use the docker images that are expected to work out-of-the-box on any configuration and operating system.
+
+
+## Issue: I cannot install the tookit using `pip` \ I cannot install the toolkit on colab
+
+OpenDR toolkit is officially targeting Ubuntu 20.04.
+For other systems, slight modifications might be needed in order to ensure that all dependencies are in place.
+Most part of the toolkits will be probably installed without any issue on colab or any other Ubuntu-like system.
+However, the behavior of `pip`'s dependency solver might cause issues (e.g., endless loops when trying to solve dependencies).
+In this case, it is suggested to remove any package that could cause any conflict, e.g.:
+```
+pip uninstall -y torch torchaudio fastai torchvision torchtext torchsummary kapre google-cloud-bigquery-storage yellowbrick tensorflow-metadata tensorflow-datasets numba imbalanced-learn googleapis-common-protos google-api-core  imageio tensorboard
+```
+and then install the toolkit using the `--use-deprecated=legacy-resolver` flag, e.g.:
+```
+DISABLE_BCOLZ_AVX2=true pip install opendr-toolkit --use-deprecated=legacy-resolver
+```
