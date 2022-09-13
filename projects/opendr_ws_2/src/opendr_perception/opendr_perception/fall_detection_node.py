@@ -103,6 +103,7 @@ class FallDetectionNode(Node):
         image = image.opencv()
 
         bboxes = BoundingBoxList([])
+        fallen_pose_id = 0
         for detection in detections:
             fallen = detection[0].data
             pose = detection[2]
@@ -118,10 +119,12 @@ class FallDetectionNode(Node):
 
                 if self.fall_publisher is not None:
                     # Convert detected boxes to ROS type and add to list
-                    bboxes.data.append(BoundingBox(left=x, top=y, width=w, height=h, name="fallen person"))
+                    bboxes.data.append(BoundingBox(left=x, top=y, width=w, height=h, name=fallen_pose_id))
+                    fallen_pose_id += 1
 
         if self.fall_publisher is not None:
-            self.fall_publisher.publish(self.bridge.to_ros_boxes(bboxes))
+            if len(bboxes) > 0:
+                self.fall_publisher.publish(self.bridge.to_ros_boxes(bboxes))
 
         if self.image_publisher is not None:
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
