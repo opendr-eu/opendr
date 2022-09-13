@@ -31,10 +31,6 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 import argparse
 
 
-# Face detector method
-_FACE_DETECTOR_HAAR_CASCADE = None
-
-
 class FacialEmotionEstimationNode:
     def __init__(self,
                  input_image_topic="/usb_cam/image_raw",
@@ -142,7 +138,8 @@ def detect_face(image):
     _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("perception/facial_expression_recognition/"
                                                         "image_based_facial_expression_recognition/"
                                                         "face_detector/frontal_face.xml")
-    faces = _FACE_DETECTOR_HAAR_CASCADE.detectMultiScale(image, scaleFactor=1.2, minNeighbors=9, minSize=(60, 60))
+    faces = _FACE_DETECTOR_HAAR_CASCADE.detectMultiScale(greyscale_image, scaleFactor=1.2, minNeighbors=9,
+                                                         minSize=(60, 60))
     face_coordinates = [[[x, y], [x + w, y + h]] for (x, y, w, h) in faces] if not (faces is None) else []
     face_coordinates = np.array(face_coordinates)
 
