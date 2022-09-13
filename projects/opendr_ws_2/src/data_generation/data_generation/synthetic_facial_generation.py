@@ -15,15 +15,18 @@
 
 import cv2
 import torch
-import rclpy
-from rclpy.node import Node
-from opendr_ros2_bridge import ROS2Bridge
-import numpy as np
-from sensor_msgs.msg import Image as ROS_Image
-from SyntheticDataGeneration import MultiviewDataGeneration
 import os
 import argparse
+import numpy as np
+
+import rclpy
+from rclpy.node import Node
+
+from sensor_msgs.msg import Image as ROS_Image
+from opendr_ros2_bridge import ROS2Bridge
+
 from opendr.engine.data import Image
+from SyntheticDataGeneration import MultiviewDataGeneration
 from algorithm.DDFA.utils.ddfa import str2bool
 
 
