@@ -101,7 +101,8 @@ Reference images should be placed in a defined structure like:
 under `/opendr/face_recognition_id`.
 
 ## 2D Object Detection ROS Nodes
-ROS nodes are implemented for the SSD, YOLOv3, CenterNet, DETR and Nanodet generic object detectors. Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`).
+ROS nodes are implemented for the SSD, YOLOv3, CenterNet, DETR and Nanodet generic object detectors.
+Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`).
 
 1. Start the node responsible for publishing images. If you have a usb camera, then you can use the corresponding node (assuming you have installed the corresponding package):
 ```shell
