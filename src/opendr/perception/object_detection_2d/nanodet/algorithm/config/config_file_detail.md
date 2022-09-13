@@ -192,7 +192,7 @@ evaluator:
   save_key: mAP
 ```
 
-Currently only support coco eval.
+Currently only support COCO eval.
 
 `save_key`: Metric of best model. Support mAP, AP50, AP75....
 
