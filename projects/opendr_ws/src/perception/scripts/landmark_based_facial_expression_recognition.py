@@ -21,6 +21,7 @@ from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
+import argparse
 from opendr.perception.facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
 from opendr.perception.facial_expression_recognition import landmark_extractor
 from opendr.perception.facial_expression_recognition import gen_muscle_data
@@ -30,8 +31,8 @@ from opendr.perception.facial_expression_recognition import data_normalization
 class LandmarkFacialExpressionRecognitionNode:
 
     def __init__(self, input_image_topic="/usb_cam/image_raw",
-                 output_category_topic="/opendr/landmark_based_expression_recognition",
-                 output_category_description_topic="/opendr/landmark_based_expression_recognition_description",
+                 output_category_topic="/opendr/landmark_expression_recognition",
+                 output_category_description_topic="/opendr/landmark_expression_recognition_description",
                  device="cpu", model='pstbln_afew', shape_predictor='./predictor_path'):
         """
         Creates a ROS Node for pose detection
@@ -53,6 +54,8 @@ class LandmarkFacialExpressionRecognitionNode:
         """
 
         # Set up ROS topics and bridge
+        self.input_image_topic = input_image_topic
+        self.bridge = ROSBridge()
 
         if output_category_topic is not None:
             self.hypothesis_publisher = rospy.Publisher(output_category_topic, ObjectHypothesis, queue_size=10)
@@ -63,9 +66,6 @@ class LandmarkFacialExpressionRecognitionNode:
             self.string_publisher = rospy.Publisher(output_category_description_topic, String, queue_size=10)
         else:
             self.string_publisher = None
-
-        self.input_image_topic = input_image_topic
-        self.bridge = ROSBridge()
 
         # Initialize the landmark-based facial expression recognition
         if model == 'pstbln_ck+':
@@ -134,16 +134,40 @@ def _landmark2numpy(landmarks):
 
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_image_topic", help="Topic name for input image",
+                        type=str, default="/usb_cam/image_raw")
+    parser.add_argument("-o", "--output_category_topic", help="Topic name for output recognized category",
+                        type=str, default="/opendr/landmark_expression_recognition")
+    parser.add_argument("-d", "--output_category_description_topic", help="Topic name for category description",
+                        type=str, default="/opendr/landmark_expression_recognition_description")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--model", help="Model to use, either 'pstbln_ck+', 'pstbln_casia', 'pstbln_afew'",
+                        type=str, default="pstbln_afew", choices=['pstbln_ck+', 'pstbln_casia', 'pstbln_afew'])
+    parser.add_argument("-s", "--shape_predictor", help="Shape predictor (landmark_extractor) to use",
+                        type=str, default='./predictor_path')
+    args = parser.parse_args()
+
     # Select the device for running the
     try:
-        if torch.cuda.is_available():
-            print("GPU found.")
-            device = 'cuda'
-        else:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
             print("GPU not found. Using CPU instead.")
-            device = 'cpu'
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
     except:
-        device = 'cpu'
+        print("Using CPU.")
+        device = "cpu"
 
-    pose_estimation_node = LandmarkFacialExpressionRecognitionNode(device=device)
-    pose_estimation_node.listen()
+    landmark_expression_estimation_node = LandmarkFacialExpressionRecognitionNode(input_image_topic=args.input_image_topic,
+                                                                   output_category_topic=args.output_category_topic,
+                                                                   output_category_description_topic=
+                                                                   args.output_category_description_topic,
+                                                                   device=device, model=args.model,
+                                                                   shape_predictor=args.shape_predictor)
+    landmark_expression_estimation_node.listen()
