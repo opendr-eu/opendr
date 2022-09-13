@@ -27,7 +27,7 @@ For any other system you are advised to use the docker images that are expected 
 
 OpenDR toolkit is officially targeting Ubuntu 20.04.
 For other systems, slight modifications might be needed in order to ensure that all dependencies are in place.
-Most part of the toolkits will be probably installed without any issue on colab or any other Ubuntu-like system.
+Most parts of the toolkit will be probably installed without any issue on colab or any other Ubuntu-like system.
 However, the behavior of `pip`'s dependency solver might cause issues (e.g., endless loops when trying to solve dependencies).
 In this case, it is suggested to remove any package that could cause any conflict, e.g.:
 ```
