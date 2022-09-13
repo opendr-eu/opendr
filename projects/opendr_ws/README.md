@@ -61,6 +61,6 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes (categor
 ## RGBD input nodes
 1. [RGBD Hand Gesture Recognition](src/perception/README.md#rgbd-hand-gesture-recognition-ros-node)
 ## Biosignal input
-1. [Heart Anomaly Detection](src/perception/README.md#pheart-anomaly-detection-ros-node)
+1. [Heart Anomaly Detection](src/perception/README.md#heart-anomaly-detection-ros-node)
 ## Audio input
 1. [Speech Command Recognition](src/perception/README.md#speech-command-recognition-ros-node)
