@@ -73,6 +73,14 @@ However, if you need to change anything else (e.g., load a custom model), then y
 This is very easy, since the Python API of the OpenDR is used in all of the provided nodes.
 You can refer to [Python API documentation](https://github.com/opendr-eu/opendr/blob/master/docs/reference/index.md) for more details for the tool that you are interested in.
 
+### Loading a custom model
+Loading a custom model in a ROS node is very easy. 
+First, locate the node that you want to modify (e.g., [pose estimation](../../projects/opendr_ws/src/perception/scripts/pose_estimation.py)).
+Then, search for the line where the learner loads the model (i.e., calls the `load()` function). 
+For the aforementioned node, this happens at [line 63](../../projects/opendr_ws/src/perception/scripts/pose_estimation.py#L63).
+Then, replace the path to the `load()` function with the path to your custom model.
+You can also optionally remove the call to `download()` function (e.g., [line 62](../../projects/opendr_ws/src/perception/scripts/pose_estimation.py#L62)) to make the node start up faster. 
+
 
 ## Building docker images that do not contain the whole toolkit
 To build custom docker images that do not contain the whole toolkit you should follow these steps:
