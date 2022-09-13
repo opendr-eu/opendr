@@ -49,7 +49,7 @@ fpn:
 
 NanoDet using modified [PAN](http://arxiv.org/abs/1803.01534) (replace downsample convs with interpolation to reduce amount of computations).
 
-`in_channels` : a list of feature map channels extracted from backbone.
+`in_channels`: a list of feature map channels extracted from backbone.
 
 `out_channels`: output feature map channel.
 
