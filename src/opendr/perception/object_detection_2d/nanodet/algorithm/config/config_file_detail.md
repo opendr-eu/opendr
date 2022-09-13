@@ -51,7 +51,7 @@ NanoDet using modified [PAN](http://arxiv.org/abs/1803.01534) (replace downsampl
 
 `in_channels` : a list of feature map channels extracted from backbone.
 
-`out_channels` : out put feature map channel.
+`out_channels`: output feature map channel.
 
 ### Head
 
