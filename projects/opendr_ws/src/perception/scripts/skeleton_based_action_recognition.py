@@ -225,7 +225,7 @@ if __name__ == '__main__':
         print("Using CPU.")
         device = "cpu"
 
-    pose_estimation_node = SkeletonActionRecognitionNode(input_rgb_image_topic=args.input_rgb_image_topic,
+    skeleton_action_recognition_node = SkeletonActionRecognitionNode(input_rgb_image_topic=args.input_rgb_image_topic,
                                                          output_rgb_image_topic=args.output_rgb_image_topic,
                                                          pose_annotations_topic=args.pose_annotations_topic,
                                                          output_category_topic=args.output_category_topic,
@@ -233,4 +233,4 @@ if __name__ == '__main__':
                                                          args.output_category_description_topic,
                                                          device=device,
                                                          model=args.model)
-    pose_estimation_node.listen()
+    skeleton_action_recognition_node.listen()
