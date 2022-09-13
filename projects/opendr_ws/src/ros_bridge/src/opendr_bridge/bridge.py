@@ -294,7 +294,7 @@ class ROSBridge:
             detection.bbox.center.y = bounding_box.top + bounding_box.height / 2.0
             detection.bbox.size_x = bounding_box.width
             detection.bbox.size_y = bounding_box.height
-            detection.results[0].id = bounding_box.name
+            detection.results[0].id = int(bounding_box.name)
             detection.results[0].score = bounding_box.confidence
             detections.detections.append(detection)
         return detections
