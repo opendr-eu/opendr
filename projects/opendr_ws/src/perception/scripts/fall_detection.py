@@ -124,7 +124,8 @@ class FallDetectionNode:
                     bboxes.data.append(BoundingBox(left=x, top=y, width=w, height=h, name=1))
 
         if self.fall_publisher is not None:
-            self.fall_publisher.publish(self.bridge.to_ros_boxes(bboxes))
+            if len(bboxes) > 0:
+                self.fall_publisher.publish(self.bridge.to_ros_boxes(bboxes))
 
         if self.image_publisher is not None:
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
