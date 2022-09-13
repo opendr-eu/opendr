@@ -21,7 +21,7 @@ model:
         head: xxx
 ```
 
-Most detection model architecture can be devided into 3 parts: backbone, task head and connector between them(e.g. FPN, BiFPN, PAN...).
+Most detection model architecture can be devided into 3 parts: backbone, task head and connector between them (e.g., FPN, BiFPN, PAN).
 
 ### Backbone
 
@@ -72,7 +72,7 @@ head:
     loss:
 ```
 
-`name`: Task head class name
+`name`: task head class name
 
 `num_classes`: number of classes
 
@@ -119,14 +119,14 @@ data:
         multi_scale: [0.6, 1.4]
         pipeline:
     val:
-    .....
+        ...
 ```
 
 In `data` you need to set your train and validate dataset.
 
 `input_size`: [width, height]
 `keep_ratio`: whether to maintain the original image ratio when resizing to input size
-`multi_scale`: Scaling range for multi-scale training. Set to None to turn off.
+`multi_scale`: scaling range for multi-scale training. Set to None to turn off.
 `pipeline`: data preprocessing and augmentation pipeline
 
 ## Device
@@ -172,11 +172,11 @@ Set training schedule.
 
 `load_model`: path to trained weight
 
-`optimizer`: Support all optimizer provided by pytorch.
+`optimizer`: support all optimizer provided by pytorch.
 
-You should adjust the lr with batch_size. Following linear scaling rule in paper *[Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour](https://research.fb.com/wp-content/uploads/2017/06/imagenet1kin1h5.pdf)*
+You should adjust the `lr` with `batch_size`. Following linear scaling rule in paper *[Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour](https://research.fb.com/wp-content/uploads/2017/06/imagenet1kin1h5.pdf)*
 
-`warmup`: Warm up your network before training. Support `constant`, `exp` and `linear` three types of warm up.
+`warmup`: warm up your network before training. Support `constant`, `exp` and `linear` three types of warm up.
 
 `total_epochs`: total epochs to train
 
@@ -194,7 +194,7 @@ evaluator:
 
 Currently only support COCO eval.
 
-`save_key`: Metric of best model. Support mAP, AP50, AP75....
+`save_key`: metric of best model. Support mAP, AP50, AP75....
 
 ****
 

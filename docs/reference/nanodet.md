@@ -20,9 +20,9 @@ NanodetLearner(self, model_to_use, iters, lr, batch_size, checkpoint_after_iter,
 
 Constructor parameters:
 
-- **model_to_use**: *{"EfficientNet-Lite0_320", "EfficientNet-Lite1_416", "EfficientNet-Lite2_512", "RepVGG-A0_416",
-  "t", "g", "m", "m-416", "m-0.5x", "m-1.5x", "m-1.5x-416", "plus-m_320", "plus-m-1.5x_320", "plus-m_416",
-  "plus-m-1.5x_416", "custom"}*\
+- **model_to_use**: *{"EfficientNet_Lite0_320", "EfficientNet_Lite1_416", "EfficientNet_Lite2_512", "RepVGG_A0_416",
+  "t", "g", "m", "m_416", "m_0.5x", "m_1.5x", "m_1.5x_416", "plus_m_320", "plus_m_1.5x_320", "plus_m_416",
+  "plus_m_1.5x_416", "custom"}, default=plus_m_1.5x_416*\
   Specifies the model to use and the config file that contains all hyperparameters for training, evaluation and inference as the original
   [Nanodet implementation](https://github.com/RangiLyu/nanodet). If you want to overwrite some of the parameters you can
   put them as parameters in the learner.
@@ -39,8 +39,8 @@ Constructor parameters:
 - **checkpoint_load_iter**: *int, default=None*\
   Specifies which checkpoint should be loaded.
   If it is set to 0, no checkpoints will be loaded.
-- **temp_path**: *str, default='temp'*\
-  Specifies a path where the algorithm looks for saving the checkpoints along with the logging files.
+- **temp_path**: *str, default=''*\
+  Specifies a path where the algorithm looks for saving the checkpoints along with the logging files. If *''* the `cfg.save_dir` will be used instead.
 - **device**: *{'cpu', 'cuda'}, default='cuda'*\
   Specifies the device to be used.
 - **weight_decay**: *float, default=None*\
@@ -52,7 +52,7 @@ Constructor parameters:
 
 #### `NanodetLearner.fit`
 ```python
-NanodetLearner.fit(self, dataset, val_dataset, logging_path, verbose, local_rank, seed)
+NanodetLearner.fit(self, dataset, val_dataset, logging_path, verbose, seed)
 ```
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
@@ -89,7 +89,7 @@ Parameters:
 
 #### `NanodetLearner.infer`
 ```python
-NanodetLearner.infer(self, input, thershold)
+NanodetLearner.infer(self, input, thershold, verbose)
 ```
 
 This method is used to perform object detection on an image.
@@ -97,13 +97,13 @@ Returns an `engine.target.BoundingBoxList` object, which contains bounding boxes
 its width and height, or returns an empty list if no detections were made of the image in input.
 
 Parameters:
-- **input** : *Image or str*\
-  If mode is specified as "image" it can take an Image type object to perform inference on it. 
-  If mode is specified as "image" or "video" is the path to an image file, a directory of image files
-  or a video file.
-- **threshold**: *float, default=0.35*\
+- **input** : *Image*\
+  Image type object to perform inference on it. 
+  - **threshold**: *float, default=0.35*\
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
+- **verbose**: *bool, default=True*\
+  Enables the maximum verbosity and logger.
 
 #### `NanodetLearner.save`
 ```python
@@ -112,13 +112,13 @@ NanodetLearner.save(self, path, verbose)
 
 This method is used to save a trained model with its metadata.
 Provided with the path, it creates the "path" directory, if it does not already exist.
-Inside this folder, the model is saved as *"nanodet-{model_name}.pth"* and a metadata file *"nanodet-{model_name}.json"*.
-If the directory already exists, the *"nanodet-{model_name}.pth"* and *"nanodet-{model_name}.json"* files are overwritten.
+Inside this folder, the model is saved as *"nanodet_{model_name}.pth"* and a metadata file *"nanodet_{model_name}.json"*.
+If the directory already exists, the *"nanodet_{model_name}.pth"* and *"nanodet_{model_name}.json"* files are overwritten.
 
 Parameters:
 
-- **path**: *str*\
-  Path to save the model, if None it will be the "temp_folder" or the "cfg.save_dir" from learner.
+- **path**: *str, default=None*\
+  Path to save the model, if None it will be the `"temp_folder"` or the `"cfg.save_dir"` from learner.
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity and logger.
 
@@ -132,8 +132,8 @@ Loads the model from inside the directory of the path provided, using the metada
 
 Parameters:
 
-- **path**: *str*\
-  Path of the model to be loaded included the file name with the extension.
+- **path**: *str, default=None*\
+  Path of the model to be loaded.
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity and logger.
 
@@ -159,7 +159,7 @@ Parameters:
 
 #### Tutorials and Demos
 
-A tutorial on performing inference is available
+A tutorial on performing inference is available.
 Furthermore, demos on performing [training](../../projects/perception/object_detection_2d/nanodet/train_demo.py),
 [evaluation](../../projects/perception/object_detection_2d/nanodet/eval_demo.py) and
 [inference](../../projects/perception/object_detection_2d/nanodet/inference_demo.py) are also available.
@@ -207,7 +207,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
         - image2.jpg
         - ...
 
-  On the other hand If *'coco'* is choosed for *dataset* the directory must look like this:
+  On the other hand if *'coco'* is choosed for *dataset* the directory must look like this:
   
   - root folder
     - train2017
@@ -264,7 +264,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
   
 * **Inference and result drawing example on a test image.**
 
-  This example shows how to perform inference on an image and draw the resulting bounding boxes using a nanodet model that is pretrained on the coco dataset.
+  This example shows how to perform inference on an image and draw the resulting bounding boxes using a nanodet model that is pretrained on the COCO dataset.
   Moreover, inference can be used in all images in a folder, frames of a video or a webcam feedback with the provided *mode*.
   In this example first is downloaded a pre-trained model as in training example and then an image to be inference.
   With the same *path* parameter you can choose a folder or a video file to be used as inference. Last but not least, if 'webcam' is

@@ -125,7 +125,8 @@ class NanodetLearner(Learner):
         :type checkpoint_after_iter: int, optional
         :param checkpoint_load_iter: the epoch in which checkpoint we want to load
         :type checkpoint_load_iter: int, optional
-        :param temp_path: path to a temporal dictionary for saving models, logs and tensorboard graphs
+        :param temp_path: path to a temporal dictionary for saving models, logs and tensorboard graphs.
+         If temp_path='' the `cfg.save_dir` will be used instead.
         :type temp_path: str, optional
         """
         self.cfg.defrost()
@@ -221,7 +222,7 @@ class NanodetLearner(Learner):
             logger.log("Loaded model weight from {}".format(path))
         pass
 
-    def download(self, path=None, mode="image", verbose=False,
+    def download(self, path=None, mode="pretrained", verbose=False,
                  url=OPENDR_SERVER_URL + "/perception/object_detection_2d/nanodet/"):
 
         """
