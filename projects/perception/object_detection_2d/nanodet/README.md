@@ -2,7 +2,7 @@
 
 This folder contains minimal code usage examples that showcase the basic functionality of the NanodetLearner 
 provided by OpenDR. Specifically the following examples are provided:
-1. inference_demo.py: Perform inference on a single image  in a directory. Setting `--device cpu` performs inference on CPU.
+1. inference_demo.py: Perform inference on a single image in a directory. Setting `--device cpu` performs inference on CPU.
 2. eval_demo.py: Perform evaluation on the `COCO dataset`, implemented in OpenDR format. The user must first download 
    the dataset and provide the path to the dataset root via `--data-root /path/to/coco_dataset`. 
    Setting `--device cpu` performs evaluation on CPU. 
