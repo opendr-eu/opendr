@@ -1,6 +1,6 @@
 # NanoDet Config File Analysis
 
-NanoDet using [yacs](https://github.com/rbgirshick/yacs) to read yaml config file.
+NanoDet using [yacs](https://github.com/rbgirshick/yacs) to read YAML config file.
 
 ## Saving path
 
