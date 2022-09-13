@@ -19,7 +19,7 @@ import torch
 import numpy as np
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
-from vision_msgs.msg import Detection2DArray
+from ros_bridge.msg import OpenDRPose2D
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 from opendr.perception.pose_estimation import draw
@@ -27,22 +27,24 @@ from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGCNLearner
 from opendr.perception.skeleton_based_action_recognition import ProgressiveSpatioTemporalGCNLearner
 from opendr.engine.data import Image
+import argparse
 
 
 class SkeletonActionRecognitionNode:
 
-    def __init__(self, input_image_topic="/usb_cam/image_raw", output_image_topic="/opendr/image_pose_annotated",
+    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
+                 output_rgb_image_topic="/opendr/image_pose_annotated",
                  pose_annotations_topic="/opendr/poses",
-                 output_category_topic="/opendr/skeleton_based_action_recognition",
-                 output_category_description_topic="/opendr/skeleton_based_action_recognition_description",
+                 output_category_topic="/opendr/skeleton_recognized_action",
+                 output_category_description_topic="/opendr/skeleton_recognized_action_description",
                  device="cuda", model='stgcn'):
         """
         Creates a ROS Node for skeleton-based action recognition
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
-        :param output_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
+        :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
         annotated image)
-        :type output_image_topic: str
+        :type output_rgb_image_topic: str
         :param pose_annotations_topic: Topic to which we are publishing the annotations (if None, we are not publishing
         annotated pose annotations)
         :type pose_annotations_topic:  str
@@ -60,34 +62,35 @@ class SkeletonActionRecognitionNode:
         """
 
         # Set up ROS topics and bridge
+        self.input_rgb_image_topic = input_rgb_image_topic
+        self.bridge = ROSBridge()
 
-        if output_category_topic is not None:
-            self.hypothesis_publisher = rospy.Publisher(output_category_topic, ObjectHypothesis, queue_size=10)
-        else:
-            self.hypothesis_publisher = None
-
-        if output_category_description_topic is not None:
-            self.string_publisher = rospy.Publisher(output_category_description_topic, String, queue_size=10)
-        else:
-            self.string_publisher = None
-
-        if output_image_topic is not None:
-            self.image_publisher = rospy.Publisher(output_image_topic, ROS_Image, queue_size=10)
+        if output_rgb_image_topic is not None:
+            self.image_publisher = rospy.Publisher(output_rgb_image_topic, ROS_Image, queue_size=1)
         else:
             self.image_publisher = None
 
         if pose_annotations_topic is not None:
-            self.pose_publisher = rospy.Publisher(pose_annotations_topic, Detection2DArray, queue_size=10)
+            self.pose_publisher = rospy.Publisher(pose_annotations_topic, OpenDRPose2D, queue_size=1)
         else:
             self.pose_publisher = None
 
-        self.input_image_topic = input_image_topic
-        self.bridge = ROSBridge()
+        if output_category_topic is not None:
+            self.hypothesis_publisher = rospy.Publisher(output_category_topic, ObjectHypothesis, queue_size=1)
+        else:
+            self.hypothesis_publisher = None
+
+        if output_category_description_topic is not None:
+            self.string_publisher = rospy.Publisher(output_category_description_topic, String, queue_size=1)
+        else:
+            self.string_publisher = None
+
 
         # Initialize the pose estimation
-        self.pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=0,
+        self.pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=2,
                                                          mobilenet_use_stride=False,
-                                                         half_precision=False)
+                                                         half_precision=False
+                                                         )
         self.pose_estimator.download(path=".", verbose=True)
         self.pose_estimator.load("openpose_default")
 
@@ -111,8 +114,8 @@ class SkeletonActionRecognitionNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('opendr_skeleton_based_action_recognition', anonymous=True)
-        rospy.Subscriber(self.input_image_topic, ROS_Image, self.callback)
+        rospy.init_node('skeleton_action_recognition_node', anonymous=True)
+        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
         rospy.loginfo("Skeleton-based action recognition node started!")
         rospy.spin()
 
@@ -162,7 +165,6 @@ class SkeletonActionRecognitionNode:
         if self.string_publisher is not None:
             self.string_publisher.publish(self.bridge.to_ros_category_description(category))
 
-
 def _select_2_poses(poses):
     selected_poses = []
     energy = []
@@ -171,7 +173,8 @@ def _select_2_poses(poses):
         energy.append(s)
     energy = np.array(energy)
     index = energy.argsort()[::-1][0:2]
-    selected_poses.append(poses[index])
+    for i in range(len(index)):
+        selected_poses.append(poses[index[i]])
     return selected_poses
 
 
@@ -188,16 +191,46 @@ def _pose2numpy(num_current_frames, poses_list):
 
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input image",
+                        type=str, default="/usb_cam/image_raw")
+    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated image",
+                        type=str, default="/opendr/image_pose_annotated")
+    parser.add_argument("-p", "--pose_annotations_topic", help="Topic name for pose annotations",
+                        type=str, default="/opendr/poses")
+    parser.add_argument("-c", "--output_category_topic", help="Topic name for recognized action category",
+                        type=str, default="/opendr/skeleton_recognized_action")
+    parser.add_argument("-d", "--output_category_description_topic", help="Topic name for description of the "
+                                                                          "recognized action category",
+                        type=str, default="/opendr/skeleton_recognized_action_description")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--model", help="Model to use, either \"stgcn\" or \"pstgcn\"",
+                        type=str, default="stgcn", choices=["stgcn", "pstgcn"])
+
+    args = parser.parse_args()
+
     # Select the device for running the
     try:
-        if torch.cuda.is_available():
-            print("GPU found.")
-            device = 'cuda'
-        else:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
             print("GPU not found. Using CPU instead.")
-            device = 'cpu'
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
     except:
-        device = 'cpu'
+        print("Using CPU.")
+        device = "cpu"
 
-    pose_estimation_node = SkeletonActionRecognitionNode(device=device)
+    pose_estimation_node = SkeletonActionRecognitionNode(input_rgb_image_topic=args.input_rgb_image_topic,
+                                                         output_rgb_image_topic=args.output_rgb_image_topic,
+                                                         pose_annotations_topic=args.pose_annotations_topic,
+                                                         output_category_topic=args.output_category_topic,
+                                                         output_category_description_topic=
+                                                         args.output_category_description_topic,
+                                                         device=device,
+                                                         model=args.model)
     pose_estimation_node.listen()
