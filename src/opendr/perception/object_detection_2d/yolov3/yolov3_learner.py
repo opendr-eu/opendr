@@ -576,9 +576,8 @@ class YOLOv3DetectorLearner(Learner):
                 urlretrieve(file_url, os.path.join(path, "yolo_default.json"))
                 if verbose:
                     print("Downloaded metadata json.")
-            else:
-                if verbose:
-                    print("Metadata json file already exists.")
+            elif verbose:
+                print("Metadata json file already exists.")
 
             if verbose:
                 print("Downloading params...")
@@ -589,9 +588,8 @@ class YOLOv3DetectorLearner(Learner):
                 urlretrieve(file_url, os.path.join(path, "yolo_voc.params"))
                 if verbose:
                     print("Downloaded params.")
-            else:
-                if verbose:
-                    print("Params file already exists.")
+            elif verbose:
+                print("Params file already exists.")
 
         elif mode == "images":
             file_url = os.path.join(url, "images", "cat.jpg")
@@ -601,9 +599,8 @@ class YOLOv3DetectorLearner(Learner):
                 urlretrieve(file_url, os.path.join(path, "cat.jpg"))
                 if verbose:
                     print("Downloaded example image.")
-            else:
-                if verbose:
-                    print("Example image already exists.")
+            elif verbose:
+                print("Example image already exists.")
 
         elif mode == "test_data":
             os.makedirs(os.path.join(path, "test_data"), exist_ok=True)
@@ -617,9 +614,8 @@ class YOLOv3DetectorLearner(Learner):
                 urlretrieve(file_url, os.path.join(path, "test_data", "train.txt"))
                 if verbose:
                     print("Downloaded filelist.")
-            else:
-                if verbose:
-                    print("Filelist already exists.")
+            elif verbose:
+                print("Filelist already exists.")
             # download image
             file_url = os.path.join(url, "test_data", "Images", "000040.jpg")
             if verbose:
@@ -628,9 +624,8 @@ class YOLOv3DetectorLearner(Learner):
                 urlretrieve(file_url, os.path.join(path, "test_data", "Images", "000040.jpg"))
                 if verbose:
                     print("Downloaded image.")
-            else:
-                if verbose:
-                    print("Image already exists.")
+            elif verbose:
+                print("Image already exists.")
             # download annotations
             file_url = os.path.join(url, "test_data", "Annotations", "000040.jpg.txt")
             if verbose:
@@ -639,9 +634,8 @@ class YOLOv3DetectorLearner(Learner):
                 urlretrieve(file_url, os.path.join(path, "test_data", "Annotations", "000040.jpg.txt"))
                 if verbose:
                     print("Downloaded annotations.")
-            else:
-                if verbose:
-                    print("Annotations already exist.")
+            elif verbose:
+                print("Annotations already exist.")
 
     def optimize(self, target_device):
         """This method is not used in this implementation."""
