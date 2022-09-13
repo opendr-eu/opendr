@@ -184,8 +184,6 @@ jobs:
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
-          - perception/object_detection_2d
-          - perception/fall_detection
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
