@@ -1,5 +1,5 @@
 """
-Demo script of the image-based facial expression recognition framework.
+Demo script of the image-based facial emotion/expression estimation framework.
 
 It has three main features:
 Image: recognizes facial expressions in images.
@@ -96,7 +96,7 @@ def _pre_process_input_image(image):
 
 def _predict(input_face, device, model_path, ensemble_size):
     """
-    Facial expression recognition. Classifies the pre-processed input image with FacialEmotionLearner.
+    Facial emotion/expression estimation. Classifies the pre-processed input image with FacialEmotionLearner.
 
     :param input_face: (ndarray) input image.
     :param device: runs the classification on CPU or GPU
@@ -153,7 +153,8 @@ def recognize_facial_expression(image, on_gpu, grad_cam, model_path, ensemble_si
     """
     Detects a face in the input image.
     If more than one face is detected, the biggest one is used.
-    The detected face is fed to the _predict function which runs FacialEmotionLearner for facial expression recognition.
+    The detected face is fed to the _predict function which runs FacialEmotionLearner for facial emotion/expression
+    estimation.
 
     :param image: (ndarray) input image.
     :return: A FER object with the components necessary for display.

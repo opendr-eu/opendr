@@ -28,6 +28,7 @@ from opendr.perception.facial_expression_recognition import FacialEmotionLearner
 from opendr.perception.facial_expression_recognition import image_processing
 from opendr.perception.facial_expression_recognition import ESR
 from opendr.engine.constants import OPENDR_SERVER_URL
+import argparse
 
 # Haar cascade parameters
 _HAAR_SCALE_FACTOR = 1.2
@@ -61,12 +62,12 @@ class FacialEmotionEstimationNode:
         # Set up ROS topics and bridge
 
         if output_emotions_topic is not None:
-            self.hypothesis_publisher = rospy.Publisher(output_emotions_topic, ObjectHypothesis, queue_size=10)
+            self.hypothesis_publisher = rospy.Publisher(output_emotions_topic, ObjectHypothesis, queue_size=1)
         else:
             self.hypothesis_publisher = None
 
         if output_emotions_description_topic is not None:
-            self.string_publisher = rospy.Publisher(output_emotions_description_topic, String, queue_size=10)
+            self.string_publisher = rospy.Publisher(output_emotions_description_topic, String, queue_size=1)
         else:
             self.string_publisher = None
 
@@ -142,41 +143,16 @@ def detect_face(image):
     # Converts to greyscale
     greyscale_image = image_processing.convert_bgr_to_grey(image)
 
-    face_coordinates = _haar_cascade_face_detection(greyscale_image, _HAAR_SCALE_FACTOR,
-                                                    _HAAR_NEIGHBORS, _HAAR_MIN_SIZE)
+    _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("perception/facial_expression_recognition/"
+                                                        "image_based_facial_expression_recognition/"
+                                                        "face_detector/frontal_face.xml")
+    faces = _FACE_DETECTOR_HAAR_CASCADE.detectMultiScale(image, _HAAR_SCALE_FACTOR, _HAAR_NEIGHBORS,
+                                                         minSize=_HAAR_MIN_SIZE)
+    face_coordinates = [[[x, y], [x + w, y + h]] for (x, y, w, h) in faces] if not (faces is None) else []
+    face_coordinates = np.array(face_coordinates)
+
     # Returns None if no face is detected
     return face_coordinates[0] if (len(face_coordinates) > 0 and (np.sum(face_coordinates[0]) > 0)) else None
-
-
-def _haar_cascade_face_detection(image, scale_factor, neighbors, min_size):
-    """
-    Face detection using the Haar Feature-based Cascade Classifiers (Viola and Jones, 2004).
-
-    References:
-    Viola, P. and Jones, M. J. (2004). Robust real-time face detection.
-    International journal of computer vision, 57(2), 137-154.
-
-    :param image: (ndarray) Raw image.
-    :param scale_factor: Scale factor to resize input image.
-    :param neighbors: Minimum number of bounding boxes to be classified as a face.
-    :param min_size: Minimum size of the face bounding box.
-    :return: (ndarray) Coordinates of the detected face.
-    """
-    global _FACE_DETECTOR_HAAR_CASCADE
-
-    # Verifies if haar cascade classifiers are initialized
-    if _FACE_DETECTOR_HAAR_CASCADE is None:
-        _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("perception/facial_expression_recognition/"
-                                                            "image_based_facial_expression_recognition/"
-                                                            "face_detector/haar_cascade/frontal_face.xml")
-
-    # Runs haar cascade classifiers
-    faces = _FACE_DETECTOR_HAAR_CASCADE.detectMultiScale(image, scale_factor, neighbors, minSize=min_size)
-
-    # Gets coordinates
-    face_coordinates = [[[x, y], [x + w, y + h]] for (x, y, w, h) in faces] if not (faces is None) else []
-
-    return np.array(face_coordinates)
 
 
 def _pre_process_input_image(image):
@@ -197,15 +173,34 @@ def _pre_process_input_image(image):
 
 if __name__ == '__main__':
     # Select the device for running the
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--input_image_topic', type=str, help='Topic name for input rgb image',
+                        default='/usb_cam/image_raw')
+    parser.add_argument('-o', '--output_emotions_topic', type=str, help='Topic name for output emotion')
+    parser.add_argument('-m', '--output_emotions_description_topic', type=str,
+                        help='Topic to which we are publishing the description of the estimated facial emotion')
+    parser.add_argument('-d', '--device', help='Device to use, either cpu or cuda',
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    args = parser.parse_args()
+
     try:
-        if torch.cuda.is_available():
+        if args.device == "cuda" and torch.cuda.is_available():
             print("GPU found.")
             device = 'cuda'
-        else:
+        elif args.device == "cuda":
             print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU")
             device = 'cpu'
     except:
+        print("Using CPU")
         device = 'cpu'
 
-    facial_emotion_estimation_node = FacialEmotionEstimationNode(device=device)
+    facial_emotion_estimation_node = FacialEmotionEstimationNode(input_image_topic=args.input_image_topic,
+                                                                 output_emotions_topic=args.output_emotions_topic,
+                                                                 output_emotions_description_topic=
+                                                                 args.output_emotions_description_topic,
+                                                                 device=device)
     facial_emotion_estimation_node.listen()
