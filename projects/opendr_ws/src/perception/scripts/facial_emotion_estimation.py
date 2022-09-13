@@ -30,10 +30,6 @@ from opendr.perception.facial_expression_recognition import ESR
 from opendr.engine.constants import OPENDR_SERVER_URL
 import argparse
 
-# Haar cascade parameters
-_HAAR_SCALE_FACTOR = 1.2
-_HAAR_NEIGHBORS = 9
-_HAAR_MIN_SIZE = (60, 60)
 
 # Face detector method
 _FACE_DETECTOR_HAAR_CASCADE = None
@@ -146,8 +142,7 @@ def detect_face(image):
     _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("perception/facial_expression_recognition/"
                                                         "image_based_facial_expression_recognition/"
                                                         "face_detector/frontal_face.xml")
-    faces = _FACE_DETECTOR_HAAR_CASCADE.detectMultiScale(image, _HAAR_SCALE_FACTOR, _HAAR_NEIGHBORS,
-                                                         minSize=_HAAR_MIN_SIZE)
+    faces = _FACE_DETECTOR_HAAR_CASCADE.detectMultiScale(image, scaleFactor=1.2, minNeighbors=9, minSize=(60, 60))
     face_coordinates = [[[x, y], [x + w, y + h]] for (x, y, w, h) in faces] if not (faces is None) else []
     face_coordinates = np.array(face_coordinates)
 
