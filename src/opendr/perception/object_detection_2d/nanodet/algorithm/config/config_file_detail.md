@@ -8,7 +8,7 @@ NanoDet using [yacs](https://github.com/rbgirshick/yacs) to read YAML config fil
 save_dir: PATH_TO_SAVE
 ```
 
-Change save_dir to where you want to save logs and models. If path not exist, NanoDet will create it.
+Change `save_dir` to where you want to save logs and models. If path doesn't exist, NanoDet will create it.
 
 ## Model
 
