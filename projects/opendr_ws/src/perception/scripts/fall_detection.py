@@ -109,10 +109,10 @@ class FallDetectionNode:
         fallen_pose_id = 0
         for detection in detections:
             fallen = detection[0].data
-            pose = detection[2]
-            x, y, w, h = get_bbox(pose)
 
             if fallen == 1:
+                pose = detection[2]
+                x, y, w, h = get_bbox(pose)
                 if self.image_publisher is not None:
                     # Paint person bounding box inferred from pose
                     color = (0, 0, 255)
