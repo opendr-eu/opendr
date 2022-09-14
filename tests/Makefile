@@ -57,7 +57,7 @@ $(BUILD_DIR)/test_face_recognition:
 	@+echo "Building face recognition test..."
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/test_face_recognition sources/c_api/test_face_recognition.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
-FMP_INC = -I$(OPENDR_HOME)/projects/perception/slam/full_map_posterior_gmapping/src/openslam_gmapping/include
+FMP_INC = -I$(OPENDR_HOME)/projects/python/perception/slam/full_map_posterior_gmapping/src/openslam_gmapping/include
 $(BUILD_DIR)/test_fmp_gmapping:
 	@+echo "Building Full-Map-Posterior GMapping test..."
 	$(CPP)  $(CFLAGS) -o $(BUILD_DIR)/test_fmp_gmapping sources/c_api/test_fmp_gmapping.cpp -lboost_unit_test_framework $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD) $(FMP_INC)
