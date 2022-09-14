@@ -6,7 +6,10 @@ For example, users can readily use the existing [ROS nodes](projects/opendr_ws),
 Furthermore, note that several tools can be combined within a ROS node, as showcased in [face recognition ROS node](projects/opendr_ws/src/perception/scripts/face_recognition.py). 
 You can use these nodes as a template for customizing the toolkit to your own needs.
 The rest of this document includes instructions for:
-1. Building docker images using the provided docker files. 
+1. [Building docker images using the provided docker files](#building-custom-docker-images)
+2. [Customizing existing docker images](#customizing-existing-docker-images)
+3. [Changing the behavior of ROS nodes](#changing-the-behavior-of-ros-nodes)
+4. [Building docker images that do not contain the whole toolkit](#building-docker-images-that-do-not-contain-the-whole-toolkit)
 
 
 ## Building custom docker images
@@ -56,3 +59,43 @@ and
 ```
 sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda
 ```
+
+## Customizing existing docker images
+Building docker images from scratch can take a lot of time, especially for embedded systems without cross-compilation support.
+If you need to modify a docker image without rebuilding it (e.g., for changing some source files inside it or adding support for custom pipelines), then you can simply start with the image that you are interesting in, make the changes and use the [docker commit](https://docs.docker.com/engine/reference/commandline/commit/) command. In this way, the changes that have been made will be saved in a new image.
+
+
+## Changing the behavior of ROS nodes
+ROS nodes are provided as examples that demonstrate how various tools can be used. 
+As a result, customization might be needed in order to make them appropriate for your specific needs.
+Currently, all nodes support changing the input/output topics.
+However, if you need to change anything else (e.g., load a custom model), then you should appropriately modify the source code of the nodes.
+This is very easy, since the Python API of the OpenDR is used in all of the provided nodes.
+You can refer to [Python API documentation](https://github.com/opendr-eu/opendr/blob/master/docs/reference/index.md) for more details for the tool that you are interested in.
+
+### Loading a custom model
+Loading a custom model in a ROS node is very easy. 
+First, locate the node that you want to modify (e.g., [pose estimation](../../projects/opendr_ws/src/perception/scripts/pose_estimation.py)).
+Then, search for the line where the learner loads the model (i.e., calls the `load()` function). 
+For the aforementioned node, this happens at [line 63](../../projects/opendr_ws/src/perception/scripts/pose_estimation.py#L63).
+Then, replace the path to the `load()` function with the path to your custom model.
+You can also optionally remove the call to `download()` function (e.g., [line 62](../../projects/opendr_ws/src/perception/scripts/pose_estimation.py#L62)) to make the node start up faster. 
+
+
+## Building docker images that do not contain the whole toolkit
+To build custom docker images that do not contain the whole toolkit you should follow these steps:
+1. Identify the tools that are using and note them.
+2. Start from a clean clone of the repository and remove all modules under [src/opendr] that you are not using. 
+To this end, use the `rm` command from the root folder of the toolkit and write down the commands that you are issuing.
+Please note that you should NOT remove the `engine` package. 
+4. Add the `rm` commands that you have issued in the dockerfile (e.g., in the main [dockerfile](https://github.com/opendr-eu/opendr/blob/master/Dockerfile)) after the `WORKDIR command` and before the `RUN ./bin/install.sh` command.
+5. Build the dockerfile as usual.
+
+By removing the tools that you are not using, you are also removing the corresponding `requirements.txt` file. 
+In this way, the `install.sh` script will not pull and install the corresponding dependencies, allowing for having smaller and more lightweight docker images.
+
+Things to keep in mind:
+1. ROS noetic is manually installed by the installation script. 
+If you want to install another version, you should modify both `install.sh` and `Makefile`.
+2. `mxnet`, `torch` and `detectron` are manually installed by the `install.sh` script if you have set `OPENDR_DEVICE=gpu`.
+If you do not need these dependencies, then you should manually remove them.
