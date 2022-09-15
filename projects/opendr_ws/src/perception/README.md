@@ -20,25 +20,32 @@ Before you can run any of the toolkit's ROS nodes, some prerequisites need to be
 ----
 ## Dataset ROS Nodes
 
-Assuming that you have already [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can start a dataset node to publish data from the disk, which is useful to test the functionality without the use of a sensor.
-Dataset nodes take a `DatasetIterator` object that shoud returns a `(Data, Target)` pair elements.
-If the type of the `Data` object is correct, the node will transform it into a corresponding ROS message object and publish it to a desired topic.
+----
+
+The dataset nodes can be used to publish data from the disk, which is useful to test the functionality without the use of a sensor.
+Dataset nodes use a provided `DatasetIterator` object that returns a `(Data, Target)` pair.
+If the type of the `Data` object is correct, the node will transform it into a corresponding ROS message object and publish it to a desired topic. 
 
 ### Point Cloud Dataset ROS Node
 To get a point cloud from a dataset on the disk, you can start a `point_cloud_dataset.py` node as:
 ```shell
 rosrun perception point_cloud_dataset.py
 ```
-By default, it downloads a `nano_KITTI` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements.
+By default, it downloads a `nano_KITTI` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements. You can inspect [the node](./scripts/point_cloud_dataset.py) and modify it to your needs for other point cloud datasets.
 
 ### Image Dataset ROS Node
 To get an image from a dataset on the disk, you can start a `image_dataset.py` node as:
 ```shell
 rosrun perception image_dataset.py
 ```
-By default, it downloads a `nano_MOT20` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(Image, Target)` as elements.
+By default, it downloads a `nano_MOT20` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(Image, Target)` as elements. You can inspect [the node](./scripts/image_dataset.py) and modify it to your needs for other image datasets.
 
-## Pose Estimation ROS Node
+----
+## RGB input nodes
+
+----
+
+### Pose Estimation ROS Node
 Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
 
 1. Start the node responsible for publishing images. If you have a usb camera, then you can use the corresponding node (assuming you have installed the corresponding package):
