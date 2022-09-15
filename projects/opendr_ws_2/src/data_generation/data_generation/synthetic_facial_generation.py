@@ -38,7 +38,7 @@ class SyntheticDataGeneration(Node):
         Creates a ROS Node for SyntheticDataGeneration
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
-        :param output_rgb_image_topic: Topic to which we are publishing the synthetic facial image (if None, no image 
+        :param output_rgb_image_topic: Topic to which we are publishing the synthetic facial image (if None, no image
         is published)
         :type output_rgb_image_topic: str
         :param device: device on which we are running eval ('cpu' or 'cuda')
@@ -71,13 +71,13 @@ class SyntheticDataGeneration(Node):
                                                                     "",
                                                                     "results"),
                                  type=str, help='Give the path of results folder')
-        self.parser.add_argument('-val_yaw', default="10 20", nargs='+', 
+        self.parser.add_argument('-val_yaw', default="10 20", nargs='+',
                                  type=str, help='yaw poses list between [-90,90]')
         self.parser.add_argument('-val_pitch', default="30 40", nargs='+', type=str,
                                  help='pitch poses list between [-90,90] ')
         self.parser.add_argument('-f', '--files', nargs='+',
                                  help='image files paths fed into network, single or multiple images')
-        self.parser.add_argument('--show_flg', default='false', type=str2bool, 
+        self.parser.add_argument('--show_flg', default='false', type=str2bool,
                                  help='whether show the visualization result')
         self.parser.add_argument('--dump_res', default='true', type=str2bool,
                                  help='whether write out the visualization image')
@@ -92,24 +92,24 @@ class SyntheticDataGeneration(Node):
         self.parser.add_argument('--dump_paf', default='true', type=str2bool)
         self.parser.add_argument('--paf_size', default=3, type=int, help='PAF feature kernel size')
         self.parser.add_argument('--dump_obj', default='true', type=str2bool)
-        self.parser.add_argument('--dlib_bbox', default='true', type=str2bool, 
+        self.parser.add_argument('--dlib_bbox', default='true', type=str2bool,
                                  help='whether use dlib to predict bbox')
         self.parser.add_argument('--dlib_landmark', default='true', type=str2bool,
                                  help='whether use dlib landmark to crop image')
         self.parser.add_argument('-m', '--mode', default='gpu', type=str, help='gpu or cpu mode')
         self.parser.add_argument('--bbox_init', default='two', type=str,
                                  help='one|two: one-step bbox initialization or two-step')
-        self.parser.add_argument('--dump_2d_img', default='true', type=str2bool, 
+        self.parser.add_argument('--dump_2d_img', default='true', type=str2bool,
                                  help='whether to save 3d rendered image')
-        self.parser.add_argument('--dump_param', default='true', type=str2bool, 
+        self.parser.add_argument('--dump_param', default='true', type=str2bool,
                                  help='whether to save param')
-        self.parser.add_argument('--dump_lmk', default='true', type=str2bool, 
+        self.parser.add_argument('--dump_lmk', default='true', type=str2bool,
                                  help='whether to save landmarks')
-        self.parser.add_argument('--save_dir', default='./algorithm/DDFA/results', 
+        self.parser.add_argument('--save_dir', default='./algorithm/DDFA/results',
                                  type=str, help='dir to save result')
-        self.parser.add_argument('--save_lmk_dir', default='./example', type=str, 
+        self.parser.add_argument('--save_lmk_dir', default='./example', type=str,
                                  help='dir to save landmark result')
-        self.parser.add_argument('--img_list', default='./txt_name_batch.txt', 
+        self.parser.add_argument('--img_list', default='./txt_name_batch.txt',
                                  type=str, help='test image list file')
         self.parser.add_argument('--rank', default=0, type=int, help='used when parallel run')
         self.parser.add_argument('--world_size', default=1, type=int, help='used when parallel run')
