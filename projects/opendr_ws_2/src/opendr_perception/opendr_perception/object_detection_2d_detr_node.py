@@ -164,6 +164,8 @@ class ObjectDetectionDetrNode(Node):
         self.detr_learner = DetrLearner(device=device)
         self.detr_learner.download(path=".", verbose=True)
 
+        self.get_logger().info("Object Detection 2D DETR node initialized.")
+
     def callback(self, data):
         """
         Callback that process the input data and publishes to the corresponding topics
