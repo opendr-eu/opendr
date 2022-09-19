@@ -176,7 +176,7 @@ class ObjectDetectionDetrNode(Node):
         image = self.bridge.from_ros_image(data, encoding="bgr8")
 
         # Run detection estimation
-        boxes = self.detr_learner.infer(image)
+        boxes = self.object_detector.infer(image)
 
         # Get an OpenCV image back
         image = np.float32(image.opencv())
