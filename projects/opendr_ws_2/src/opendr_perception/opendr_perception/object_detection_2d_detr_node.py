@@ -50,7 +50,7 @@ class ObjectDetectionDetrNode(Node):
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
-        super().__init__('object_detection_detr_node')
+        super().__init__("object_detection_detr_node")
 
         if output_rgb_image_topic is not None:
             self.image_publisher = self.create_publisher(ROS_Image, output_rgb_image_topic, 1)
