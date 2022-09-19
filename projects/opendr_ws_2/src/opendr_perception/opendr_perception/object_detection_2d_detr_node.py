@@ -62,7 +62,7 @@ class ObjectDetectionDetrNode(Node):
         else:
             self.detection_publisher = None
 
-        self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 10)
+        self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 
         self.bridge = ROS2Bridge()
 
