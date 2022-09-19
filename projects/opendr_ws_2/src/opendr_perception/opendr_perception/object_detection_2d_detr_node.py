@@ -58,7 +58,7 @@ class ObjectDetectionDetrNode(Node):
             self.image_publisher = None
 
         if detections_topic is not None:
-            self.detection_publisher = self.create_publisher(Detection2DArray, detections_topic, 10)
+            self.detection_publisher = self.create_publisher(Detection2DArray, detections_topic, 1)
         else:
             self.detection_publisher = None
 
