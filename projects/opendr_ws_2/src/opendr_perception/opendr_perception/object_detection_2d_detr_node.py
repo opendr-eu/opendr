@@ -161,8 +161,8 @@ class ObjectDetectionDetrNode(Node):
         ]
 
         # Initialize the detection estimation
-        self.detr_learner = DetrLearner(device=device)
-        self.detr_learner.download(path=".", verbose=True)
+        self.object_detector = DetrLearner(device=device)
+        self.object_detector.download(path=".", verbose=True)
 
         self.get_logger().info("Object Detection 2D DETR node initialized.")
 
