@@ -103,7 +103,7 @@ class NanodetLearner(Learner):
         for root, dir, files in os.walk(path):
             if wanted_file in files:
                 full_path.append(os.path.join(root, wanted_file))
-        assert (len(full_path) == 1), f"You must have only one nanodet_{model}.yaml file in you config folder"
+        assert (len(full_path) == 1), f"You must have only one nanodet_{model}.yaml file in your config folder"
         load_config(cfg, full_path[0])
         return cfg
 
