@@ -81,7 +81,7 @@ def main():
     except:
         device = 'cpu'
     rclpy.init()
-    pifu_service = Pifu_service(device=device)
+    pifu_service = PifuService(device=device)
     rclpy.spin(pifu_service)
     rclpy.shutdown()
 
