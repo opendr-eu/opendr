@@ -247,13 +247,11 @@ class ROS2Bridge:
         result.data = category.description
         return result
 
-    def from_ros_mesh(self, mesh_ROS, vertex_colors_ROS=None):
+    def from_ros_mesh(self, mesh_ROS):
         """
         Converts a ROS mesh into arrays of vertices and faces of a mesh
         :param mesh_ROS: the ROS mesh to be converted
         :type mesh_ROS: shape_msgs.msg.Mesh
-        :param vertex_colors_ROS: a list of the colors of the vertices
-        :type vertex_colors_ROS: std_msgs.msg.ColorRGBA[]
         :return: Tuple that consists of numpy arrays Nx3 (vertices, faces), representing vertices and faces of the 3D model respectively 
         :rtype: tuple (np.array, np.array)
         :return vertex_colors: the colors of the vertices of the 3D model
@@ -309,6 +307,7 @@ class ROS2Bridge:
     def to_ros_colors(self, colors):
         """
         Converts an array of vertex_colors to a list of ROS colors
+        :param colors: a numpy array of RGB colors
         :type colors: numpy array (Nx3)
         :return ros_colors: a list of the colors of the vertices
         :rtype ros_colors: std_msgs.msg.ColorRGBA[]
@@ -323,7 +322,7 @@ class ROS2Bridge:
             ros_colors.append(color)
         return ros_colors
 
-    def from_ros_3Dpose(self, ros_pose):
+    def from_ros_pose_3D(self, ros_pose):
         """
         Converts a ROS message with pose payload into an OpenDR pose
         :param ros_pose: the pose to be converted (represented as vision_msgs.msg.Detection3DArray)
@@ -347,7 +346,7 @@ class ROS2Bridge:
         pose.id = pose_id
         return pose
 
-    def to_ros_3Dpose(self, pose):
+    def to_ros_pose_3D(self, pose):
         """
         Converts an OpenDR pose into a Detection3DArray msg that can carry the same information
         Each keypoint is represented as a bbox centered at the keypoint with zero radius. The subject id is also
