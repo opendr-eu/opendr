@@ -1,0 +1,14 @@
+source;share/opendr_ros2_messages/hook/cmake_prefix_path.ps1
+source;share/opendr_ros2_messages/hook/cmake_prefix_path.dsv
+source;share/opendr_ros2_messages/hook/cmake_prefix_path.sh
+source;share/opendr_ros2_messages/hook/ld_library_path_lib.ps1
+source;share/opendr_ros2_messages/hook/ld_library_path_lib.dsv
+source;share/opendr_ros2_messages/hook/ld_library_path_lib.sh
+source;share/opendr_ros2_messages/hook/pythonpath.ps1
+source;share/opendr_ros2_messages/hook/pythonpath.dsv
+source;share/opendr_ros2_messages/hook/pythonpath.sh
+source;share/opendr_ros2_messages/local_setup.bash
+source;share/opendr_ros2_messages/local_setup.dsv
+source;share/opendr_ros2_messages/local_setup.ps1
+source;share/opendr_ros2_messages/local_setup.sh
+source;share/opendr_ros2_messages/local_setup.zsh

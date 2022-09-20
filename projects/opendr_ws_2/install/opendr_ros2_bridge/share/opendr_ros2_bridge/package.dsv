@@ -1,0 +1,6 @@
+source;share/opendr_ros2_bridge/hook/pythonpath.ps1
+source;share/opendr_ros2_bridge/hook/pythonpath.dsv
+source;share/opendr_ros2_bridge/hook/pythonpath.sh
+source;share/opendr_ros2_bridge/hook/ament_prefix_path.ps1
+source;share/opendr_ros2_bridge/hook/ament_prefix_path.dsv
+source;share/opendr_ros2_bridge/hook/ament_prefix_path.sh

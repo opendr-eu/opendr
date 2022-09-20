@@ -6,7 +6,6 @@
   <description>OpenDR ROS2 nodes for the simulation package</description>
   <maintainer email="tefas@csd.auth.gr">OpenDR Project Coordinator</maintainer>
   <license>Apache License v2.0</license>
-  <depend>rclcpp></depend>
   <depend>std_msgs</depend>
   <depend>shape_msgs</depend>
   <depend>sensor_msgs</depend>
