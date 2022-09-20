@@ -28,8 +28,8 @@ class Pifu_service(Node):
     def __init__(self, service_name='human_model_generation', device="cuda", checkpoint_dir='.'):
         """
         Creates a ROS Service for human model generation
-        :param 'human_model_generation': The name of the service
-        :type input_image_topic: str
+        :param service_name: The name of the service
+        :type service_name: str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param checkpoint_dir: the directory where the PIFu weights will be downloaded/loaded
