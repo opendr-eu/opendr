@@ -2,8 +2,8 @@
 
 OpenDR is fully open-source and can be readily customized to meet the needs of several different application areas, since the source code for all the developed tools is provided.
 Several ready-to-use examples, which are expected to cover a wide range of different needs, are provided.
-For example, users can readily use the existing [ROS nodes](projects/opendr_ws), e.g., by including the required triggers or by combining several nodes into one to build custom nodes that will fit their needs. 
-Furthermore, note that several tools can be combined within a ROS node, as showcased in [face recognition ROS node](projects/opendr_ws/src/perception/scripts/face_recognition.py). 
+For example, users can readily use the existing [ROS nodes](../../projects/opendr_ws), e.g., by including the required triggers or by combining several nodes into one to build custom nodes that will fit their needs. 
+Furthermore, note that several tools can be combined within a ROS node, as showcased in [face recognition ROS node](../../projects/opendr_ws/src/perception/scripts/face_recognition.py). 
 You can use these nodes as a template for customizing the toolkit to your own needs.
 The rest of this document includes instructions for:
 1. [Building docker images using the provided docker files](#building-custom-docker-images)
@@ -68,18 +68,18 @@ If you need to modify a docker image without rebuilding it (e.g., for changing s
 ## Changing the behavior of ROS nodes
 ROS nodes are provided as examples that demonstrate how various tools can be used. 
 As a result, customization might be needed in order to make them appropriate for your specific needs.
-Currently, all nodes support changing the input/output topics.
+Currently, all nodes support changing the input/output topics (please refer to the [README](../../projects/opendr_ws/src/perception/README.md) for more information for each node).
 However, if you need to change anything else (e.g., load a custom model), then you should appropriately modify the source code of the nodes.
-This is very easy, since the Python API of the OpenDR is used in all of the provided nodes.
+This is very easy, since the Python API of OpenDR is used in all of the provided nodes.
 You can refer to [Python API documentation](https://github.com/opendr-eu/opendr/blob/master/docs/reference/index.md) for more details for the tool that you are interested in.
 
 ### Loading a custom model
 Loading a custom model in a ROS node is very easy. 
 First, locate the node that you want to modify (e.g., [pose estimation](../../projects/opendr_ws/src/perception/scripts/pose_estimation.py)).
 Then, search for the line where the learner loads the model (i.e., calls the `load()` function). 
-For the aforementioned node, this happens at [line 63](../../projects/opendr_ws/src/perception/scripts/pose_estimation.py#L63).
+For the aforementioned node, this happens at [line 76](../../projects/opendr_ws/src/perception/scripts/pose_estimation.py#L76).
 Then, replace the path to the `load()` function with the path to your custom model.
-You can also optionally remove the call to `download()` function (e.g., [line 62](../../projects/opendr_ws/src/perception/scripts/pose_estimation.py#L62)) to make the node start up faster. 
+You can also optionally remove the call to `download()` function (e.g., [line 75](../../projects/opendr_ws/src/perception/scripts/pose_estimation.py#L75)) to make the node start up faster. 
 
 
 ## Building docker images that do not contain the whole toolkit
