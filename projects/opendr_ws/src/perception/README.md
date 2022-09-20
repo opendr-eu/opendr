@@ -161,7 +161,7 @@ rosrun perception object_detection_2d_detr.py
 ```
 respectively.
 
-### Deep Sort Object Tracking 2D ROS Node
+### 2D Object Tracking Deep Sort ROS Node
 
 A ROS node for performing Object Tracking 2D using Deep Sort using either pretrained models on Market1501 dataset, or custom trained models. This is a detection-based method, and therefore the 2D object detector is needed to provide detections, which then will be used to make associations and generate tracking ids. The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`). Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
 Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
@@ -284,7 +284,7 @@ The predictied classes are published to the topic `/opendr/gestures`.
 
 ----
 
-### Voxel Object Detection 3D ROS Node
+### 3D Object Detection Voxel ROS Node
 
 A ROS node for performing Object Detection 3D using PointPillars or TANet methods with either pretrained models on KITTI dataset, or custom trained models.
 The predicted detection annotations are pushed to `output_detection3d_topic` (default `output_detection3d_topic="/opendr/detection3d"`).
@@ -299,7 +299,7 @@ rosrun perception point_cloud_dataset.py
 ```
 This will pulbish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
 
-### AB3DMOT Object Tracking 3D ROS Node
+### 3D Object Tracking AB3DMOT ROS Node
 
 A ROS node for performing Object Tracking 3D using AB3DMOT stateless method.
 This is a detection-based method, and therefore the 3D object detector is needed to provide detections, which then will be used to make associations and generate tracking ids.
@@ -315,7 +315,7 @@ rosrun perception point_cloud_dataset.py
 ```
 This will pulbish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
 
-### FairMOT Object Tracking 2D ROS Node
+### 2D Object Tracking FairMOT ROS Node
 
 A ROS node for performing Object Tracking 2D using FairMOT with either pretrained models on MOT dataset, or custom trained models. The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`). Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
 Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
