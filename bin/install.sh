@@ -39,6 +39,9 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main
 make install_compilation_dependencies
 make install_runtime_dependencies
 
+# Install additional ROS packages
+sudo apt-get install ros-noetic-vision-msgs ros-noetic-audio-common-msgs 
+
 # If working on GPU install GPU dependencies as needed
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
   pip3 uninstall -y mxnet
@@ -48,7 +51,7 @@ if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
   echo "[INFO] Replacing torch==1.9.0+cu111 to enable CUDA acceleration."
   pip3 install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
   echo "[INFO] Reinstalling detectronv2."
-  pip3 install 'git+https://github.com/facebookresearch/detectron2.git'
+  pip3 install 'git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13'
 fi
 
 make libopendr
