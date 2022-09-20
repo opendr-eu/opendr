@@ -25,7 +25,7 @@ from opendr_interfaces.srv import Mesh
 from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
 
 
-class Human_model_generation_client(Node):
+class HumanModelGenerationClient(Node):
 
     def __init__(self, service_name='human_model_generation'):
         super().__init__('human_model_generation_client')
