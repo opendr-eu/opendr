@@ -9,13 +9,15 @@ This package contains ROS nodes related to the perception package of OpenDR.
 ----
 
 Before you can run any of the toolkit's ROS nodes, some prerequisites need to be fulfilled:
-1. First of all, you need to [setup the required packages and build your workspace.](../../README.md#Setup) 
+1. First of all, you need to [set up the required packages and build your workspace.](../../README.md#Setup) 
 2. Start roscore by opening a new terminal where ROS is sourced properly (`source /opt/ros/noetic/setup.bash`) and run `roscore`.
-3. For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam` ([instructions to install](../../README.md#Setup)). You can run the webcam node in a new terminal inside `opendr_ws` and with the workspace sourced using:
+3. _(Optional for nodes with [RGB input](#rgb-input-nodes))_ 
+
+    For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam` ([instructions to install](../../README.md#Setup)). You can run the webcam node in a new terminal inside `opendr_ws` and with the workspace sourced using:
     ```shell
     rosrun usb_cam usb_cam_node
     ```
-    By default, the usb cam node publishes images on `/usb_cam/image_raw` and most nodes also subscribe to this topic. As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing images, **make sure to change the input topic accordingly.**
+    By default, the usb cam node publishes images on `/usb_cam/image_raw` and the RGB input nodes subscribe to this topic if not provided with an input topic argument. As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing images, **make sure to change the input topic accordingly.**
 
 ----
 ## Dataset ROS Nodes
@@ -26,13 +28,6 @@ The dataset nodes can be used to publish data from the disk, which is useful to 
 Dataset nodes use a provided `DatasetIterator` object that returns a `(Data, Target)` pair.
 If the type of the `Data` object is correct, the node will transform it into a corresponding ROS message object and publish it to a desired topic. 
 
-### Point Cloud Dataset ROS Node
-To get a point cloud from a dataset on the disk, you can start a `point_cloud_dataset.py` node as:
-```shell
-rosrun perception point_cloud_dataset.py
-```
-By default, it downloads a `nano_KITTI` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements. You can inspect [the node](./scripts/point_cloud_dataset.py) and modify it to your needs for other point cloud datasets.
-
 ### Image Dataset ROS Node
 To get an image from a dataset on the disk, you can start a `image_dataset.py` node as:
 ```shell
@@ -40,30 +35,41 @@ rosrun perception image_dataset.py
 ```
 By default, it downloads a `nano_MOT20` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(Image, Target)` as elements. You can inspect [the node](./scripts/image_dataset.py) and modify it to your needs for other image datasets.
 
+### Point Cloud Dataset ROS Node
+To get a point cloud from a dataset on the disk, you can start a `point_cloud_dataset.py` node as:
+```shell
+rosrun perception point_cloud_dataset.py
+```
+By default, it downloads a `nano_KITTI` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements. You can inspect [the node](./scripts/point_cloud_dataset.py) and modify it to your needs for other point cloud datasets.
+
 ----
 ## RGB input nodes
 
 ----
 
 ### Pose Estimation ROS Node
-Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
 
-1. Start the node responsible for publishing images. If you have a usb camera, then you can use the corresponding node (assuming you have installed the corresponding package):
+You can find the pose estimation ROS node python script [here](./scripts/pose_estimation.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's [pose estimation tool](../../../../src/opendr/perception/pose_estimation/lightweight_open_pose/lightweight_open_pose_learner.py) whose documentation can be found [here.](../../../../docs/reference/lightweight-open-pose.md)
 
-```shell
-rosrun usb_cam usb_cam_node
-```
+Instructions for basic usage and testing:
 
-2. You are then ready to start the pose detection node (use `-h` to print out help for various arguments)
+1. Start the node responsible for publishing images. If you have a usb camera, then you can use the `usb_cam_node` as explained in the [prerequisites above.](#prerequisites)
 
-```shell
-rosrun perception pose_estimation.py
-```
+2. You are then ready to start the pose detection node:
+    ```shell
+    rosrun perception pose_estimation.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input rgb image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated rgb image (default=`/opendr/image_pose_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/poses`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--accelerate`: Acceleration flag that causes pose estimation to run faster but with less accuracy
 
-3. You can examine the annotated image stream using `rqt_image_view` (select the topic `/opendr/image_pose_annotated`) or
-   `rostopic echo /opendr/poses`. 
+3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_pose_annotated` or by running `rostopic echo /opendr/poses`. 
 
-Note that to use the pose messages properly, you need to create an appropriate subscriber that will convert the ROS pose messages back to OpenDR poses which you can access as described in the [documentation](https://github.com/opendr-eu/opendr/blob/master/docs/reference/engine-target.md#posekeypoints-confidence):
+<!--Note that to use the pose messages properly, you need to create an appropriate subscriber that will convert the ROS pose messages back to OpenDR poses which you can access as described in the [documentation](https://github.com/opendr-eu/opendr/blob/master/docs/reference/engine-target.md#posekeypoints-confidence):
 ```python
         ... 
         rospy.Subscriber("opendr/poses", Detection2DArray, self.callback)
@@ -72,7 +78,7 @@ Note that to use the pose messages properly, you need to create an appropriate s
             opendr_pose = self.bridge.from_ros_pose(data)
             print(opendr_pose)
             print(opendr_pose['r_eye'])
-```
+```-->
 
 ### Fall Detection ROS Node
 Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
