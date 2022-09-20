@@ -23,7 +23,7 @@ from opendr_interfaces.srv import Mesh
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
 
-class Pifu_service(Node):
+class PifuService(Node):
 
     def __init__(self, service_name='human_model_generation', device="cuda", checkpoint_dir='.'):
         """
