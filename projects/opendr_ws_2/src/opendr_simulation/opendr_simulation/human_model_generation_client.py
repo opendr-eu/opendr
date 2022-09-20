@@ -59,7 +59,7 @@ def main():
                                       'human_model_generation/demos/imgs_input/msk/result_0004.jpg'))
     extract_pose = True
     rclpy.init()
-    client = Human_model_generation_client()
+    client = HumanModelGenerationClient()
     [human_model, pose] = client.send_request(rgb_img, msk_img, extract_pose=extract_pose)
     human_model.save_obj_mesh('./human_model.obj')
     if extract_pose:
