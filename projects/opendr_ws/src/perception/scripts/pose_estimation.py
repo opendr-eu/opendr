@@ -96,8 +96,6 @@ class PoseEstimationNode:
         # Run pose estimation
         poses = self.pose_estimator.infer(image)
 
-        # Get an OpenCV image back
-        image = image.opencv()
         #  Publish detections in ROS message
         if self.pose_publisher is not None:
             for pose in poses:
@@ -105,6 +103,8 @@ class PoseEstimationNode:
                 self.pose_publisher.publish(self.bridge.to_ros_pose(pose))
 
         if self.image_publisher is not None:
+            # Get an OpenCV image back
+            image = image.opencv()
             # Annotate image with poses
             for pose in poses:
                 draw(image, pose)
@@ -117,9 +117,11 @@ def main():
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
                         type=str, default="/usb_cam/image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
-                        type=str, default="/opendr/image_pose_annotated")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/image_pose_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
-                        type=str, default="/opendr/poses")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/poses")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,

@@ -11,7 +11,7 @@ if [[ -z "$ROS_DISTRO" ]]; then
 fi
 
 MODULE_PATH=${OPENDR_HOME}/src/opendr/control/mobile_manipulation
-WS_PATH=${OPENDR_HOME}/projects/control/mobile_manipulation/mobile_manipulation_ws
+WS_PATH=${OPENDR_HOME}/projects/python/control/mobile_manipulation/mobile_manipulation_ws
 
 ## ROS
 sudo apt-get update && sudo apt-get install -y \

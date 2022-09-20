@@ -572,21 +572,35 @@ class YOLOv3DetectorLearner(Learner):
                                     "yolo_voc.json")
             if verbose:
                 print("Downloading metadata...")
-            urlretrieve(file_url, os.path.join(path, "yolo_default.json"))
+            if not os.path.exists(os.path.join(path, "yolo_default.json")):
+                urlretrieve(file_url, os.path.join(path, "yolo_default.json"))
+                if verbose:
+                    print("Downloaded metadata json.")
+            elif verbose:
+                print("Metadata json file already exists.")
 
             if verbose:
                 print("Downloading params...")
             file_url = os.path.join(url, "pretrained", "yolo_voc",
                                          "yolo_voc.params")
 
-            urlretrieve(file_url,
-                        os.path.join(path, "yolo_voc.params"))
+            if not os.path.exists(os.path.join(path, "yolo_voc.params")):
+                urlretrieve(file_url, os.path.join(path, "yolo_voc.params"))
+                if verbose:
+                    print("Downloaded params.")
+            elif verbose:
+                print("Params file already exists.")
 
         elif mode == "images":
             file_url = os.path.join(url, "images", "cat.jpg")
             if verbose:
                 print("Downloading example image...")
-            urlretrieve(file_url, os.path.join(path, "cat.jpg"))
+            if not os.path.exists(os.path.join(path, "cat.jpg")):
+                urlretrieve(file_url, os.path.join(path, "cat.jpg"))
+                if verbose:
+                    print("Downloaded example image.")
+            elif verbose:
+                print("Example image already exists.")
 
         elif mode == "test_data":
             os.makedirs(os.path.join(path, "test_data"), exist_ok=True)
@@ -596,17 +610,32 @@ class YOLOv3DetectorLearner(Learner):
             file_url = os.path.join(url, "test_data", "train.txt")
             if verbose:
                 print("Downloading filelist...")
-            urlretrieve(file_url, os.path.join(path, "test_data", "train.txt"))
+            if not os.path.exists(os.path.join(path, "test_data", "train.txt")):
+                urlretrieve(file_url, os.path.join(path, "test_data", "train.txt"))
+                if verbose:
+                    print("Downloaded filelist.")
+            elif verbose:
+                print("Filelist already exists.")
             # download image
             file_url = os.path.join(url, "test_data", "Images", "000040.jpg")
             if verbose:
                 print("Downloading image...")
-            urlretrieve(file_url, os.path.join(path, "test_data", "Images", "000040.jpg"))
+            if not os.path.exists(os.path.join(path, "test_data", "Images", "000040.jpg")):
+                urlretrieve(file_url, os.path.join(path, "test_data", "Images", "000040.jpg"))
+                if verbose:
+                    print("Downloaded image.")
+            elif verbose:
+                print("Image already exists.")
             # download annotations
             file_url = os.path.join(url, "test_data", "Annotations", "000040.jpg.txt")
             if verbose:
                 print("Downloading annotations...")
-            urlretrieve(file_url, os.path.join(path, "test_data", "Annotations", "000040.jpg.txt"))
+            if not os.path.exists(os.path.join(path, "test_data", "Annotations", "000040.jpg.txt")):
+                urlretrieve(file_url, os.path.join(path, "test_data", "Annotations", "000040.jpg.txt"))
+                if verbose:
+                    print("Downloaded annotations.")
+            elif verbose:
+                print("Annotations already exist.")
 
     def optimize(self, target_device):
         """This method is not used in this implementation."""

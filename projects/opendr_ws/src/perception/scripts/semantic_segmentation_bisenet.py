@@ -107,7 +107,8 @@ class BisenetNode:
 
                 self.visualization_publisher.publish(self.bridge.to_ros_image(Image(image_blended),
                                                                               encoding='bgr8'))
-        except Exception:
+        except Exception as e:
+            print(e)
             rospy.logwarn('Failed to generate prediction.')
 
     def addLegend(self, image, unique_class_ints):
@@ -157,11 +158,13 @@ def main():
                         type=str, default="/usb_cam/image_raw")
     parser.add_argument("-o", "--output_heatmap_topic", help="Topic to which we are publishing the heatmap in the form "
                                                              "of a ROS image containing class ids",
-                        type=str, default="/opendr/heatmap")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/heatmap")
     parser.add_argument("-v", "--output_rgb_image_topic", help="Topic to which we are publishing the heatmap image "
                                                                "blended with the input image and a class legend for "
                                                                "visualization purposes",
-                        type=str, default="/opendr/heatmap_visualization")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/heatmap_visualization")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
