@@ -82,9 +82,9 @@ std::string json_get_key_string(std::string json, const std::string &key) {
   std::size_t start_idx = json.find(key);
   std::string value = json.substr(start_idx);
   value = value.substr(value.find(":") + 1);
-  value = value.substr(0, value.find(","));
+  value.resize(value.find(","));
   value = value.substr(value.find("\"") + 1);
-  value = value.substr(0, value.find("\""));
+  value.resize(value.find("\""));
   return value;
 }
 
@@ -116,7 +116,7 @@ void load_face_recognition_model(const char *model_path, face_recognition_model_
   std::string basepath = model_json_path.substr(0, split_pos);
   split_pos = basepath.find_last_of("/");
   split_pos = split_pos > 0 ? split_pos + 1 : 0;
-  basepath = basepath.substr(0, split_pos);
+  basepath.resize(split_pos);
 
   // Parse JSON
   std::string onnx_model_path = basepath + json_get_key_string(str, "model_paths");
