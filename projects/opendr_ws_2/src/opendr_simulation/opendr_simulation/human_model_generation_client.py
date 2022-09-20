@@ -63,9 +63,9 @@ def main():
     [human_model, pose] = client.send_request(rgb_img, msk_img, extract_pose=extract_pose)
     human_model.save_obj_mesh('./human_model.obj')
     if extract_pose:
-        [out_imgs, human_pose_2D] = human_model.get_img_views(rotations=[30, 120], human_pose_3D=pose, plot_kps=True)
+        [out_imgs, _] = human_model.get_img_views(rotations=[30, 120], human_pose_3D=pose, plot_kps=True)
     else:
-        [out_imgs, human_pose_2D] = human_model.get_img_views(rotations=[30, 120], human_pose_3D=None, plot_kps=False)
+        [out_imgs, _] = human_model.get_img_views(rotations=[30, 120], human_pose_3D=None, plot_kps=False)
     cv2.imwrite('./rendering.png', out_imgs[0].opencv())
     client.destroy_node()
     rclpy.shutdown()
