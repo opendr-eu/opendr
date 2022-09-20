@@ -274,7 +274,7 @@ class ROS2Bridge:
         """
         Converts an array of vertex_colors to a list of ROS colors
         :type colors: numpy array (Nx3)
-        :return colors: a list of the colors of the vertices
+        :return ros_colors: a list of the colors of the vertices
         :rtype ros_colors: std_msgs.msg.ColorRGBA[]
         """
         ros_colors = []
