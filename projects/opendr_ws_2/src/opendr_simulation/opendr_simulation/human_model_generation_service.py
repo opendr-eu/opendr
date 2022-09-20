@@ -47,10 +47,10 @@ class PifuService(Node):
     def gen_callback(self, request, response):
         """
         Callback that process the input data and publishes to the corresponding topics
-        :param request: 
-        :type request: 
-        :param response: 
-        :type response: 
+        :param request:
+        :type request:
+        :param response:
+        :type response:
         """
         rgb_img = self.bridge.from_ros_image(request.rgb_img)
         msk_img = self.bridge.from_ros_image(request.msk_img)
