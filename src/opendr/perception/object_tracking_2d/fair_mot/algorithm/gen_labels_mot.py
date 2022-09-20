@@ -18,7 +18,8 @@ def gen_labels_mot(
     tid_curr = 0
     tid_last = -1
     for seq in seqs:
-        seq_info = open(osp.join(seq_root, seq, "seqinfo.ini")).read()
+        with open(osp.join(seq_root, seq, "seqinfo.ini")) as f:
+            seq_info = f.read()
         seq_width = int(
             seq_info[seq_info.find("imWidth=") + 8: seq_info.find("\nimHeight")]
         )

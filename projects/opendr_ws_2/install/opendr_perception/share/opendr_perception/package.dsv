@@ -1,6 +1,0 @@
-source;share/opendr_perception/hook/pythonpath.ps1
-source;share/opendr_perception/hook/pythonpath.dsv
-source;share/opendr_perception/hook/pythonpath.sh
-source;share/opendr_perception/hook/ament_prefix_path.ps1
-source;share/opendr_perception/hook/ament_prefix_path.dsv
-source;share/opendr_perception/hook/ament_prefix_path.sh

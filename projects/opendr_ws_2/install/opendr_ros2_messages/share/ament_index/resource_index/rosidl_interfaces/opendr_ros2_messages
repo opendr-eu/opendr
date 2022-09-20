@@ -1,8 +1,0 @@
-msg/OpenDRPose2D.idl
-msg/OpenDRPose2D.msg
-msg/OpenDRPose2DKeypoint.idl
-msg/OpenDRPose2DKeypoint.msg
-srv/Mesh.idl
-srv/Mesh.srv
-srv/Mesh_Request.msg
-srv/Mesh_Response.msg

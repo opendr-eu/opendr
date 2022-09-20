@@ -1,4 +1,0 @@
-source;share/opendr_ros2_messages/environment/ament_prefix_path.sh
-source;share/opendr_ros2_messages/environment/library_path.sh
-source;share/opendr_ros2_messages/environment/path.sh
-source;share/opendr_ros2_messages/environment/pythonpath.sh

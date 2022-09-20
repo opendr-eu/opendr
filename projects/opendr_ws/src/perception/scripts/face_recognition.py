@@ -144,11 +144,14 @@ def main():
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
                         type=str, default="/usb_cam/image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
-                        type=str, default="/opendr/image_face_reco_annotated")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/image_face_reco_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
-                        type=str, default="/opendr/face_recognition")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/face_recognition")
     parser.add_argument("-id", "--detections_id_topic", help="Topic name for detection ID messages",
-                        type=str, default="/opendr/face_recognition_id")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/face_recognition_id")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--backbone", help="Backbone network, defaults to mobilefacenet",
