@@ -19,7 +19,7 @@ import torch
 import numpy as np
 from opendr_ros2_bridge import ROS2Bridge
 from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
-from opendr_interfaces.srv import Mesh
+from opendr_ros2_messages.srv import Mesh
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
 

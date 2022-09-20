@@ -21,12 +21,16 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(shape_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(vision_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/OpenDRPose2D.msg"
   "msg/OpenDRPose2DKeypoint.msg"
-  DEPENDENCIES std_msgs
+  "srv/Mesh.srv"
+  DEPENDENCIES std_msgs shape_msgs sensor_msgs vision_msgs
 )
 
 if(BUILD_TESTING)

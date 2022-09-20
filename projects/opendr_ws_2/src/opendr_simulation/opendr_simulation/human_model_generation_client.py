@@ -21,7 +21,7 @@ import os
 from cv_bridge import CvBridge
 from opendr_ros2_bridge import ROS2Bridge
 from std_msgs.msg import Bool
-from opendr_interfaces.srv import Mesh
+from opendr_ros2_messages.srv import Mesh
 from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
 
 
