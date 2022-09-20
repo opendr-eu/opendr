@@ -23,7 +23,7 @@ from opendr_ros2_messages.srv import Mesh
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
 
-class Pifu_service(Node):
+class PifuService(Node):
 
     def __init__(self, service_name='human_model_generation', device="cuda", checkpoint_dir='.'):
         """
@@ -81,7 +81,7 @@ def main():
     except:
         device = 'cpu'
     rclpy.init()
-    pifu_service = Pifu_service(device=device)
+    pifu_service = PifuService(device=device)
     rclpy.spin(pifu_service)
     rclpy.shutdown()
 

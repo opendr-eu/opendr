@@ -254,10 +254,8 @@ class ROS2Bridge:
         :type mesh_ROS: shape_msgs.msg.Mesh
         :param vertex_colors_ROS: a list of the colors of the vertices
         :type vertex_colors_ROS: std_msgs.msg.ColorRGBA[]
-        :return vertices: the vertices of the 3D model
-        :rtype vertices: numpy array (Nx3)
-        :return faces: the faces of the 3D model
-        :rtype faces: numpy array (Nx3)
+        :return: Tuple that consists of numpy arrays Nx3 (vertices, faces), representing vertices and faces of the 3D model respectively 
+        :rtype: tuple (np.array, np.array)
         :return vertex_colors: the colors of the vertices of the 3D model
         :rtype vertex_colors: numpy array (Nx3)
         """
