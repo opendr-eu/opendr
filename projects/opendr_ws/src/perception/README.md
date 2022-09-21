@@ -95,29 +95,55 @@ Instructions for basic usage and visualization of results:
 3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_fall_annotated` or by running `rostopic echo /opendr/fallen`, where the node publishes bounding boxes of detected fallen poses.
 
 ### Face Detection ROS Node
-A ROS node for the RetinaFace detector is implemented, supporting both the ResNet and MobileNet versions, the latter of
-which performs mask recognition as well. After setting up the environment, the detector node can be initiated as:
-```shell
-rosrun perception face_detection_retinaface.py
-```
-The annotated image stream is published under the topic name `/opendr/image_boxes_annotated`, and the bounding boxes alone
-under `/opendr/faces`.
+
+The face detection ROS node supports both the ResNet and MobileNet versions, of latter of which performs mask recognition as well.
+
+You can find the face detection ROS node python script [here](./scripts/face_detection_retinaface.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's [face detection tool](../../../../src/opendr/perception/object_detection_2d/retinaface/retinaface_learner.py) whose documentation can be found [here](../../../../docs/reference/face-detection-2d-retinaface.md).
+
+Instructions for basic usage and visualization of results:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the face detection node
+
+    ```shell
+    rosrun perception face_detection_retinaface.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input rgb image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_faces_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/faces`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--backbone BACKBONE`: Retinaface backbone, options are either 'mnet' or 'resnet', where 'mnet' detects masked faces as well (default=`resnet`)
+
+3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_faces_annotated` or by running `rostopic echo /opendr/faces`, where the node publishes bounding boxes of detected faces.
 
 ### Face Recognition ROS Node
-Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
 
+You can find the face recognition ROS node python script [here](./scripts/face_recognition.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's [face recognition tool](../../../../src/opendr/perception/face_recognition/face_recognition_learner.py) whose documentation can be found [here](../../../../docs/reference/face-recognition.md).
 
-1. Start the node responsible for publishing images. If you have a USB camera, then you can use the corresponding node (assuming you have installed the corresponding package):
+Instructions for basic usage and visualization of results:
 
-```shell
-rosrun usb_cam usb_cam_node
-```
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
-2. You are then ready to start the face recognition node. Note that you should pass the folder containing the images of known faces as argument to create the corresponding database of known persons.
+2. You are then ready to start the face recognition node
 
-```shell
-rosrun perception face_recognition.py _database_path:='./database'
-```
+    ```shell
+    rosrun perception face_recognition.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input rgb image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_face_reco_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/face_recognition`)
+   - `-id or --detections_id_topic DETECTIONS_ID_TOPIC`: topic name for detection ID messages, `None` to stop the node from publishing on this topic (default=`/opendr/face_recognition_id`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--backbone BACKBONE`: Backbone network (default=`mobilefacenet`)
+   - `--dataset_path DATASET_PATH`: Path of the directory where the images of the faces to be recognized are stored (default=`./database`)
+
+3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_face_reco_annotated` or by running `rostopic echo /opendr/face_recognition`.
+
 **Notes**
 
 Reference images should be placed in a defined structure like:
@@ -129,36 +155,61 @@ Reference images should be placed in a defined structure like:
     - ID3
     - ...
 
+The default dataset path is `./database`. Please use the `--database_path ./your/path/` argument to define a custom one. 
 Τhe name of the sub-folder, e.g. ID1, will be published under `/opendr/face_recognition_id`.
 
-4. The database entry and the returned confidence is published under the topic name `/opendr/face_recognition`, and the human-readable ID
+The database entry and the returned confidence is published under the topic name `/opendr/face_recognition`, and the human-readable ID
 under `/opendr/face_recognition_id`.
 
 ### 2D Object Detection ROS Nodes
-ROS nodes are implemented for the SSD, YOLOv3, CenterNet and DETR generic object detectors. Steps 1, 2 from above must run first.
-Then, to initiate the SSD detector node, run:
 
-```shell
-rosrun perception object_detection_2d_ssd.py
-```
-The annotated image stream can be viewed using `rqt_image_view`, and the default topic name is
-`/opendr/image_boxes_annotated`. The bounding boxes alone are also published as `/opendr/objects`.
-Similarly, the YOLOv3, CenterNet and DETR detector nodes can be run with:
-```shell
-rosrun perception object_detection_2d_yolov3.py
-```
-or
-```shell
-rosrun perception object_detection_2d_centernet.py
-```
-or
-```shell
-rosrun perception object_detection_2d_detr.py
-```
-respectively.
+For 2D object detection, there are several ROS nodes implemented using various algorithms. The generic obejct detectors are SSD, YOLOv3, CenterNet and DETR.
+
+You can find the 2D object detection ROS node python scripts here: [SSD node](./scripts/object_detection_2d_ssd.py), [YOLOv3 node](./scripts/object_detection_2d_yolov3.py), [CenterNet node](./scripts/object_detection_2d_centernet.py) and [DETR node](./scripts/object_detection_2d_detr.py), where you can inspect the code and modify it as you wish to fit your needs. The nodes makes use of the toolkit's various 2D object detection tools: [SSD tool](../../../../src/opendr/perception/object_detection_2d/ssd/ssd_learner.py), [YOLOv3 tool](../../../../src/opendr/perception/object_detection_2d/yolov3/yolov3_learner.py), [CenterNet tool](../../../../src/opendr/perception/object_detection_2d/centernet/centernet_learner.py), [DETR tool](../../../../src/opendr/perception/object_detection_2d/detr/detr_learner.py), whose documentation can be found here: [SSD docs](../../../../docs/reference/object-detection-2d-ssd.md), [YOLOv3 docs](../../../../docs/reference/object-detection-2d-yolov3.md), [CenterNet docs](../../../../docs/reference/object-detection-2d-centernet.md), [DETR docs](../../../../docs/reference/detr.md).
+
+Instructions for basic usage and visualization of results:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start a 2D object detector node:
+   1. SSD node
+      ```shell
+      rosrun perception object_detection_2d_ssd.py
+      ```
+      The following optional arguments are available for the SSD node:
+      - `--backbone BACKBONE`: Backbone network (default=`vgg16_atrous`)
+      - `--nms_type NMS_TYPE`: Non-Maximum Suppression type options are `default`, `seq2seq-nms`, `soft-nms`, `fast-nms`, `cluster-nms` (default=`default`)
+      
+   2. YOLOv3 node
+      ```shell
+      rosrun perception object_detection_2d_yolov3.py
+      ```
+      The following optional argument is available for the YOLOv3 node:
+      - `--backbone BACKBONE`: Backbone network (default=`darknet53`)
+      
+   3. CenterNet node
+      ```shell
+      rosrun perception object_detection_2d_centernet.py
+      ```
+      The following optional argument is available for the YOLOv3 node:
+      - `--backbone BACKBONE`: Backbone network (default=`resnet50_v1b`)
+      
+   4. DETR node
+      ```shell
+      rosrun perception object_detection_2d_detr.py
+      ```
+
+   The following optional arguments are available for all nodes above:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input rgb image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_objects_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+
+3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_objects_annotated` or by running `rostopic echo /opendr/objects`, where the bounding boxes alone are published.
 
 ### 2D Object Tracking Deep Sort ROS Node
-
+<!-- TODO -->
 A ROS node for performing Object Tracking 2D using Deep Sort using either pretrained models on Market1501 dataset, or custom trained models. This is a detection-based method, and therefore the 2D object detector is needed to provide detections, which then will be used to make associations and generate tracking ids. The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`). Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
 Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
 ```shell
@@ -203,7 +254,7 @@ Additionally, the following optional arguments are available:
 - `--heamap_topic HEATMAP_TOPIC`: publish the heatmap on `HEATMAP_TOPIC`
 
 ### Landmark-based Facial Expression Recognition ROS Node
-
+<!-- TODO -->
 A ROS node for performing Landmark-based Facial Expression Recognition using the pretrained model PST-BLN on AFEW, CK+ or Oulu-CASIA datasets.
 Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
 ```shell
@@ -212,7 +263,7 @@ rosrun perception landmark_based_facial_expression_recognition.py
 The predictied class id and confidence is published under the topic name `/opendr/landmark_based_expression_recognition`, and the human-readable class name under `/opendr/landmark_based_expression_recognition_description`.
 
 ### Skeleton-based Human Action Recognition ROS Node
-
+<!-- TODO -->
 A ROS node for performing Skeleton-based Human Action Recognition using either ST-GCN or PST-GCN models pretrained on NTU-RGBD-60 dataset. The human body poses of the image are first extracted by the light-weight Openpose method which is implemented in the toolkit, and they are passed to the skeleton-based action recognition method to be categorized.
 Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
 ```shell
@@ -222,7 +273,7 @@ The predictied class id and confidence is published under the topic name `/opend
 Besides, the annotated image is published in `/opendr/image_pose_annotated` as well as the corresponding poses in `/opendr/poses`.
 
 ### Video Human Activity Recognition ROS Node
-
+<!-- TODO -->
 A ROS node for performing Human Activity Recognition using either CoX3D or X3D models pretrained on Kinetics400.
 Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
 ```shell
@@ -236,6 +287,7 @@ The predictied class id and confidence is published under the topic name `/opend
 ----
 
 ### GEM ROS Node
+<!-- TODO -->
 Assuming that you have already [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
 
 
@@ -268,7 +320,7 @@ rosrun perception object_detection_2d_gem.py
 ----
 
 ### RGBD Hand Gesture Recognition ROS Node
-
+<!-- TODO -->
 A ROS node for performing hand gesture recognition using MobileNetv2 model trained on HANDS dataset. The node has been tested with Kinectv2 for depth data acquisition with the following drivers: https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2. Assuming that the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
 ```shell
 rosrun perception rgbd_hand_gesture_recognition.py
@@ -281,7 +333,7 @@ The predictied classes are published to the topic `/opendr/gestures`.
 ----
 
 ### 3D Object Detection Voxel ROS Node
-
+<!-- TODO -->
 A ROS node for performing Object Detection 3D using PointPillars or TANet methods with either pretrained models on KITTI dataset, or custom trained models.
 The predicted detection annotations are pushed to `output_detection3d_topic` (default `output_detection3d_topic="/opendr/detection3d"`).
 
@@ -296,7 +348,7 @@ rosrun perception point_cloud_dataset.py
 This will pulbish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
 
 ### 3D Object Tracking AB3DMOT ROS Node
-
+<!-- TODO -->
 A ROS node for performing Object Tracking 3D using AB3DMOT stateless method.
 This is a detection-based method, and therefore the 3D object detector is needed to provide detections, which then will be used to make associations and generate tracking ids.
 The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection3d"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking3d_id"`).
@@ -312,7 +364,7 @@ rosrun perception point_cloud_dataset.py
 This will pulbish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
 
 ### 2D Object Tracking FairMOT ROS Node
-
+<!-- TODO -->
 A ROS node for performing Object Tracking 2D using FairMOT with either pretrained models on MOT dataset, or custom trained models. The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`). Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
 Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
 ```shell
@@ -335,7 +387,7 @@ This will pulbish the dataset images to an `/opendr/dataset_image` topic by defa
 ----
 
 ### Heart Anomaly Detection ROS Node
-
+<!-- TODO -->
 A ROS node for performing heart anomaly (atrial fibrillation) detection from ecg data using GRU or ANBOF models trained on AF dataset. Assuming that the OpenDR catkin workspace has been sourced, the node can be started as:
 ```shell
 rosrun perception heart_anomaly_detection.py ECG_TOPIC MODEL
@@ -348,7 +400,7 @@ with `ECG_TOPIC` specifying the ROS topic to which the node will subscribe, and 
 ----
 
 ### Speech Command Recognition ROS Node
-
+<!-- TODO -->
 A ROS node for recognizing speech commands from an audio stream using MatchboxNet, EdgeSpeechNets or Quadratic SelfONN models, pretrained on the Google Speech Commands dataset.
 Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
 ```shell
