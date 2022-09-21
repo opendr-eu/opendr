@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-sensor_msgs/Image rgb_img
-sensor_msgs/Image msk_img
-std_msgs/Bool extract_pose
----
-shape_msgs/Mesh mesh
-std_msgs/ColorRGBA[] vertex_colors
-OpenDRPose3D pose
+# The kpt_name according to https://github.com/opendr-eu/opendr/blob/master/docs/reference/lightweight-open-pose.md#notes
+string kpt_name
+
+# This message contains all relevant information for an OpenDR human pose 3D keypoint
+
+float32 x
+float32 y
+float32 z

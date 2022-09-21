@@ -29,6 +29,8 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/OpenDRPose2D.msg"
   "msg/OpenDRPose2DKeypoint.msg"
+  "msg/OpenDRPose3D.msg"
+  "msg/OpenDRPose3DKeypoint.msg"
   "srv/Mesh.srv"
   DEPENDENCIES std_msgs shape_msgs sensor_msgs vision_msgs
 )

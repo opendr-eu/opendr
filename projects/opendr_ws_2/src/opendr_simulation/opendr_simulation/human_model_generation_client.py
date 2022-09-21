@@ -18,6 +18,7 @@ from rclpy.node import Node
 
 import cv2
 import os
+import argparse
 from cv_bridge import CvBridge
 from opendr_ros2_bridge import ROS2Bridge
 from std_msgs.msg import Bool
@@ -27,7 +28,7 @@ from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
 
 class HumanModelGenerationClient(Node):
 
-    def __init__(self, service_name='human_model_generation'):
+    def __init__(self, service_name="human_model_generation"):
         super().__init__('human_model_generation_client')
         self.bridge_cv = CvBridge()
         self.bridge_ros = ROS2Bridge()
@@ -45,7 +46,7 @@ class HumanModelGenerationClient(Node):
         self.future = self.cli.call_async(self.req)
         rclpy.spin_until_future_complete(self, self.future)
         resp = self.future.result()
-        pose = self.bridge_ros.from_ros_3Dpose(resp.pose)
+        pose = self.bridge_ros.from_ros_pose_3D(resp.pose)
         vertices, triangles = self.bridge_ros.from_ros_mesh(resp.mesh)
         vertex_colors = self.bridge_ros.from_ros_colors(resp.vertex_colors)
         human_model = Model_3D(vertices, triangles, vertex_colors)
@@ -53,20 +54,35 @@ class HumanModelGenerationClient(Node):
 
 
 def main():
-    rgb_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'projects/simulation/'
-                                      'human_model_generation/demos/imgs_input/rgb/result_0004.jpg'))
-    msk_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'projects/simulation/'
-                                      'human_model_generation/demos/imgs_input/msk/result_0004.jpg'))
-    extract_pose = True
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-srv_name", help="The name of the service",
+                        type=str, default="human_model_generation")
+    parser.add_argument("-img_rgb", help="Path for RGB image",
+                        type=str, default=os.path.join(os.environ['OPENDR_HOME'],
+                        'projects/python/simulation/human_model_generation/demos/imgs_input/rgb/result_0004.jpg'))
+    parser.add_argument("-img_msk", help="Path for mask image",
+                        type=str, default=os.path.join(os.environ['OPENDR_HOME'],
+                        'projects/python/simulation/human_model_generation/demos/imgs_input/msk/result_0004.jpg'))
+    parser.add_argument("-rot_angles", help="Yaw angles for rotating the generated model",
+                        nargs="+", default=[30, 120])
+    parser.add_argument("-extract_pose", help="Whether to extract pose or not", action='store_true')
+    parser.add_argument("-plot_kps", help="Whether to plot the keypoints of the extracted pose",
+                        action='store_true')
+    parser.add_argument("-out_path", help="Path for outputting the renderings/models",
+                        type=str, default=os.path.join(os.environ['OPENDR_HOME'],
+                        'projects/opendr_ws_2'))
+    args = parser.parse_args()
+    
+    img_rgb = cv2.imread(args.img_rgb)
+    img_msk = cv2.imread(args.img_msk)
     rclpy.init()
-    client = HumanModelGenerationClient()
-    [human_model, pose] = client.send_request(rgb_img, msk_img, extract_pose=extract_pose)
-    human_model.save_obj_mesh('./human_model.obj')
-    if extract_pose:
-        [out_imgs, _] = human_model.get_img_views(rotations=[30, 120], human_pose_3D=pose, plot_kps=True)
-    else:
-        [out_imgs, _] = human_model.get_img_views(rotations=[30, 120], human_pose_3D=None, plot_kps=False)
-    cv2.imwrite('./rendering.png', out_imgs[0].opencv())
+    client = HumanModelGenerationClient(service_name=args.srv_name)
+    [human_model, pose] = client.send_request(img_rgb, img_msk, extract_pose=args.extract_pose)
+    human_model.save_obj_mesh(os.path.join(args.out_path, 'human_model.obj'))
+    [out_imgs, _] = human_model.get_img_views(args.rot_angles, human_pose_3D=pose, plot_kps=args.plot_kps)
+    for i, out_img in enumerate(out_imgs):
+        cv2.imwrite(os.path.join(args.out_path, 'rendering' + str(args.rot_angles[i]) + '.jpg'), out_imgs[i].opencv())
     client.destroy_node()
     rclpy.shutdown()
 

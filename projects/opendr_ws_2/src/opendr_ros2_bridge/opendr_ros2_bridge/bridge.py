@@ -19,12 +19,11 @@ from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 from cv_bridge import CvBridge
 from std_msgs.msg import String, ColorRGBA
 from sensor_msgs.msg import Image as ImageMsg
-from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose, \
-    Detection3DArray, Detection3D, BoundingBox3D as BoundingBox3DMsg
+from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose
 from shape_msgs.msg import Mesh, MeshTriangle
-from geometry_msgs.msg import Point, Pose as Pose3D, Pose2D
+from geometry_msgs.msg import Point, Pose2D
 
-from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint
+from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
 
 
 class ROS2Bridge:
@@ -326,51 +325,41 @@ class ROS2Bridge:
     def from_ros_pose_3D(self, ros_pose):
         """
         Converts a ROS message with pose payload into an OpenDR pose
-        :param ros_pose: the pose to be converted (represented as vision_msgs.msg.Detection3DArray)
-        :type ros_pose: vision_msgs.msg.Detection3DArray
+        :param ros_pose: the pose to be converted (represented as opendr_ros2_messages.msg.OpenDRPose3D)
+        :type ros_pose: opendr_ros2_messages.msg.OpenDRPose3D
         :return: an OpenDR pose
         :rtype: engine.target.Pose
         """
-        keypoints = ros_pose.detections
+        keypoints = ros_pose.keypoint_list
         data = []
-        pose_id, confidence = None, None
-
-        for keypoint in keypoints:
-            data.append(keypoint.bbox.center.position.x)
-            data.append(keypoint.bbox.center.position.y)
-            data.append(keypoint.bbox.center.position.z)
-            confidence = keypoint.results[0].score
-            pose_id = int(keypoint.results[0].id)
-        data = np.asarray(data).reshape((-1, 3))
-
-        pose = Pose(data, confidence)
-        pose.id = pose_id
+        pose_id =0
+        for i, keypoint in enumerate(keypoints):
+            data.append([keypoint.x, keypoint.y, keypoint.z])
+        pose = Pose(data, 1.0)
+        pose.id = 0
         return pose
 
     def to_ros_pose_3D(self, pose):
         """
-        Converts an OpenDR pose into a Detection3DArray msg that can carry the same information
-        Each keypoint is represented as a bbox centered at the keypoint with zero radius. The subject id is also
-        embedded on each keypoint (stored in ObjectHypothesisWithPose).
+        Converts an OpenDR pose into a OpenDRPose3D msg that can carry the same information
+        Each keypoint is represented as an OpenDRPose23Keypoint with x, y, z coordinates
+        being the top-left corner.
         :param pose: OpenDR pose to be converted
         :type pose: engine.target.Pose
         :return: ROS message with the pose
-        :rtype: vision_msgs.msg.Detection3DArray
+        :rtype: opendr_ros2_messages.msg.OpenDRPose3D
         """
         data = pose.data
-        keypoints = Detection3DArray()
-        for i in range(data.shape[0]):
-            keypoint = Detection3D()
-            keypoint.bbox = BoundingBox3DMsg()
-            keypoint.results.append(ObjectHypothesisWithPose())
-            keypoint.bbox.center = Pose3D()
-            keypoint.bbox.center.position.x = float(data[i, 0])
-            keypoint.bbox.center.position.y = float(data[i, 1])
-            keypoint.bbox.center.position.z = float(data[i, 2])
-            keypoint.bbox.size.x = 0.0
-            keypoint.bbox.size.y = 0.0
-            keypoint.bbox.size.z = 0.0
-            keypoint.results[0].id = str(pose.id)
-            keypoint.results[0].score = 1.0
-            keypoints.detections.append(keypoint)
-        return keypoints
+        ros_pose = OpenDRPose3D()
+        ros_pose.pose_id = 0
+        if pose.id is not None:
+            ros_pose.pose_id = int(pose.id)
+        ros_pose.conf = 1.0
+        for i in range(len(data)):
+            keypoint = OpenDRPose3DKeypoint()
+            keypoint.kpt_name = ''
+            keypoint.x = float(data[i][0])
+            keypoint.y = float(data[i][1])
+            keypoint.z = float(data[i][2])
+            ros_pose.keypoint_list.append(keypoint)
+        return ros_pose

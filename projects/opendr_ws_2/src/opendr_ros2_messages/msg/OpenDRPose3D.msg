@@ -12,10 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-sensor_msgs/Image rgb_img
-sensor_msgs/Image msk_img
-std_msgs/Bool extract_pose
----
-shape_msgs/Mesh mesh
-std_msgs/ColorRGBA[] vertex_colors
-OpenDRPose3D pose
+# This message represents a full OpenDR human pose 3D as a list of keypoints
+
+std_msgs/Header header
+
+# The id of the pose
+int32 pose_id
+
+# The pose detection confidence of the model
+float32 conf
+
+# A list of a human 3D pose keypoints
+OpenDRPose3DKeypoint[] keypoint_list

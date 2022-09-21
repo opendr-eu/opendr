@@ -17,9 +17,12 @@ import rclpy
 from rclpy.node import Node
 import torch
 import numpy as np
+import argparse
+import os
 from opendr_ros2_bridge import ROS2Bridge
 from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
 from opendr_ros2_messages.srv import Mesh
+from opendr.engine.target import Pose
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
 
@@ -47,43 +50,57 @@ class PifuService(Node):
     def gen_callback(self, request, response):
         """
         Callback that process the input data and publishes to the corresponding topics
-        :param request: 
-        :type request: 
-        :param response: 
-        :type response: 
+        :param request:
+        :type request:
+        :param response:
+        :type response:
         """
         rgb_img = self.bridge.from_ros_image(request.rgb_img)
         msk_img = self.bridge.from_ros_image(request.msk_img)
         extract_pose = request.extract_pose.data
-        output = self.model_generator.infer([rgb_img], [msk_img], extract_pose=True)
-        pose = np.zeros([18, 3])
+        output = self.model_generator.infer([rgb_img], [msk_img], extract_pose=extract_pose)
         if extract_pose is True:
             model_3D = output[0]
             pose = output[1]
         else:
             model_3D = output
+            pose = Pose([], 0.0)
         verts = model_3D.get_vertices()
         faces = model_3D.get_faces()
         vert_colors = model_3D.vert_colors
         response.mesh = self.bridge.to_ros_mesh(verts, faces)
         response.vertex_colors = self.bridge.to_ros_colors(vert_colors)
-        response.pose = self.bridge.to_ros_3Dpose(pose)
+        response.pose = self.bridge.to_ros_pose_3D(pose)
         return response
 
 
 def main():
-    # Select the device for running the
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("-srv_name", help="The name of the service",
+                        type=str, default="human_model_generation")
+    parser.add_argument("-checkpoint_dir", help="Path to directory for the checkpoints of the method's network",
+                        type=str, default=os.path.join(os.environ['OPENDR_HOME'],
+                        'projects/opendr_ws_2'))
+    args = parser.parse_args()
+    
     try:
-        if torch.cuda.is_available():
-            print("GPU found.")
-            device = 'cuda'
-        else:
+        if args.device == "cuda" and mx.context.num_gpus() > 0:
+            device = "cuda"
+        elif args.device == "cuda":
             print("GPU not found. Using CPU instead.")
-            device = 'cpu'
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
     except:
-        device = 'cpu'
+        print("Using CPU.")
+        device = "cpu"
+        
     rclpy.init()
-    pifu_service = PifuService(device=device)
+    pifu_service = PifuService(service_name=args.srv_name, device=device, checkpoint_dir=args.checkpoint_dir)
     rclpy.spin(pifu_service)
     rclpy.shutdown()
 
