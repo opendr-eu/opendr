@@ -98,7 +98,6 @@ class HumanActivityRecognitionNode:
         )
 
         self.bridge = ROSBridge()
-        rospy.Subscriber(input_rgb_image_topic, ROS_Image, self.callback)
 
     def listen(self):
         """
