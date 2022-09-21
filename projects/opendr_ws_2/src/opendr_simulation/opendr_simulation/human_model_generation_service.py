@@ -55,6 +55,8 @@ class PifuService(Node):
         :type request: SrvTypeRequest
         :param response: SrvTypeResponse
         :type response: The service response
+        :return response: SrvTypeResponse
+        :type response: The service response
         """
         img_rgb = self.bridge.from_ros_image(request.img_rgb)
         img_msk = self.bridge.from_ros_image(request.img_msk)

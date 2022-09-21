@@ -51,7 +51,10 @@ class HumanModelGenerationClient(Node):
         :type img_msk: engine.data.Image
         :param extract_pose: Defines whether to extract the pose of the depicted human or not
         :type extract_pose: bool
-        
+        :return human_model: The generated human model.
+        :type human_model: opendr.simulation.human_model_generation.utilities.model_3D.Model_3D
+        :return pose: The extracted 3D pose
+        :type pose: engine.target.Pose
         """
         extract_pose_ros = Bool()
         extract_pose_ros.data = extract_pose
