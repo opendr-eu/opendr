@@ -1,6 +1,6 @@
 # OpenDR Toolkit Reference Manual
 
-*Release 1.1.1*
+*Release 1.0*
 <div align="center">
   <img src="images/opendr_logo.png" />
 </div>
@@ -39,6 +39,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [edgespeechnets Module](edgespeechnets.md)
             - [quadraticselfonn Module](quadratic-selfonn.md)
         - object detection 2d:
+            - [nanodet Module](nanodet.md)
             - [detr Module](detr.md)
             - [gem Module](gem.md)
             - [retinaface Module](face-detection-2d-retinaface.md)
@@ -110,6 +111,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [rgbd_hand_gesture_learner Demo](/projects/python/perception/multimodal_human_centric/rgbd_hand_gesture_recognition)
             - [audiovisual_emotion_recognition Demo](/projects/python/perception/multimodal_human_centric/audiovisual_emotion_recognition)
         - object detection 2d:
+            - [nanodet Demo](/projects/python/perception/object_detection_2d/nanodet)
             - [detr Demo](/projects/python/perception/object_detection_2d/detr)
             - [gem Demo](/projects/python/perception/object_detection_2d/gem)
             - [retinaface Demo](/projects/python/perception/object_detection_2d/retinaface)
