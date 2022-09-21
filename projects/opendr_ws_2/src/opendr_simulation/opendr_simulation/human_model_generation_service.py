@@ -22,7 +22,7 @@ import os
 import torch
 from opendr_ros2_bridge import ROS2Bridge
 from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
-from opendr_ros2_messages.srv import Mesh
+from opendr_ros2_messages.srv import ImgToMesh
 from opendr.engine.target import Pose
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
@@ -46,20 +46,20 @@ class PifuService(Node):
         self.model_generator = PIFuGeneratorLearner(device=device, checkpoint_dir=checkpoint_dir)
         my_callback_group = MutuallyExclusiveCallbackGroup()
 
-        self.srv = self.create_service(Mesh, 'human_model_generation', self.gen_callback, callback_group=my_callback_group)
+        self.srv = self.create_service(ImgToMesh, 'human_model_generation', self.gen_callback, callback_group=my_callback_group)
 
     def gen_callback(self, request, response):
         """
         Callback that process the input data and publishes to the corresponding topics
-        :param request:
-        :type request:
-        :param response:
-        :type response:
+        :param request: The service request
+        :type request: SrvTypeRequest
+        :param response: SrvTypeResponse
+        :type response: The service response
         """
-        rgb_img = self.bridge.from_ros_image(request.rgb_img)
-        msk_img = self.bridge.from_ros_image(request.msk_img)
+        img_rgb = self.bridge.from_ros_image(request.img_rgb)
+        img_msk = self.bridge.from_ros_image(request.img_msk)
         extract_pose = request.extract_pose.data
-        output = self.model_generator.infer([rgb_img], [msk_img], extract_pose=extract_pose)
+        output = self.model_generator.infer([img_rgb], [img_msk], extract_pose=extract_pose)
         if extract_pose is True:
             model_3D = output[0]
             pose = output[1]

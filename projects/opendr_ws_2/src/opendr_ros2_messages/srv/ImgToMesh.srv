@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-sensor_msgs/Image rgb_img
-sensor_msgs/Image msk_img
+sensor_msgs/Image img_rgb
+sensor_msgs/Image img_msk
 std_msgs/Bool extract_pose
 ---
 shape_msgs/Mesh mesh

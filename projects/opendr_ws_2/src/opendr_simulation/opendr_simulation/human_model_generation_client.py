@@ -22,26 +22,41 @@ import argparse
 from cv_bridge import CvBridge
 from opendr_ros2_bridge import ROS2Bridge
 from std_msgs.msg import Bool
-from opendr_ros2_messages.srv import Mesh
+from opendr_ros2_messages.srv import ImgToMesh
 from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
 
 
 class HumanModelGenerationClient(Node):
 
     def __init__(self, service_name="human_model_generation"):
+        """
+        Creates a ROS Client for human model generation
+        :param service_name: The name of the service
+        :type service_name: str
+        """
         super().__init__('human_model_generation_client')
         self.bridge_cv = CvBridge()
         self.bridge_ros = ROS2Bridge()
-        self.cli = self.create_client(Mesh, service_name)
+        self.cli = self.create_client(ImgToMesh, service_name)
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
-        self.req = Mesh.Request()
+        self.req = ImgToMesh.Request()
 
-    def send_request(self, rgb_img, msk_img, extract_pose):
+    def send_request(self, img_rgb, img_msk, extract_pose):
+        """
+        Send request to service assigned with the task to generate a human model from an image
+        :param img_rgb: The RGB image depicting a human
+        :type img_rgb: engine.data.Image
+        :param img_msk: The image, used as mask, for depicting a human's silhouette
+        :type img_msk: engine.data.Image
+        :param extract_pose: Defines whether to extract the pose of the depicted human or not
+        :type extract_pose: bool
+        
+        """
         extract_pose_ros = Bool()
         extract_pose_ros.data = extract_pose
-        self.req.rgb_img = self.bridge_cv.cv2_to_imgmsg(rgb_img, encoding="bgr8")
-        self.req.msk_img = self.bridge_cv.cv2_to_imgmsg(msk_img, encoding="bgr8")
+        self.req.img_rgb = self.bridge_cv.cv2_to_imgmsg(img_rgb, encoding="bgr8")
+        self.req.img_msk = self.bridge_cv.cv2_to_imgmsg(img_msk, encoding="bgr8")
         self.req.extract_pose = extract_pose_ros
         self.future = self.cli.call_async(self.req)
         rclpy.spin_until_future_complete(self, self.future)
@@ -63,8 +78,8 @@ def main():
                                                                         'human_model_generation/demos/'
                                                                         'imgs_input/rgb/result_0004.jpg'))
     parser.add_argument("-img_msk", help="Path for mask image", type=str,
-                        default=os.path.join(os.environ['OPENDR_HOME'], 'projects/python/simulation/
-                                                                        'human_model_generation/demos/
+                        default=os.path.join(os.environ['OPENDR_HOME'], 'projects/python/simulation/'
+                                                                        'human_model_generation/demos/'
                                                                         'imgs_input/msk/result_0004.jpg'))
     parser.add_argument("-rot_angles", help="Yaw angles for rotating the generated model",
                         nargs="+", default=[30, 120])
