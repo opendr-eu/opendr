@@ -22,7 +22,6 @@ from sensor_msgs.msg import Image as ImageMsg
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose
 from shape_msgs.msg import Mesh, MeshTriangle
 from geometry_msgs.msg import Point, Pose2D
-
 from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
 
 
