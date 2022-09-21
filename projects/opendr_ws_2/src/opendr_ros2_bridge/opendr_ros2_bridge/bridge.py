@@ -331,7 +331,6 @@ class ROS2Bridge:
         """
         keypoints = ros_pose.keypoint_list
         data = []
-        pose_id = 0
         for i, keypoint in enumerate(keypoints):
             data.append([keypoint.x, keypoint.y, keypoint.z])
         pose = Pose(data, 1.0)

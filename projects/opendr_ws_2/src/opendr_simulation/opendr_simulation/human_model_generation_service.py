@@ -15,8 +15,6 @@
 
 import rclpy
 from rclpy.node import Node
-import torch
-import numpy as np
 import argparse
 import os
 import torch
