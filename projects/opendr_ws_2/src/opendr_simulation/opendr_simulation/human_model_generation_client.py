@@ -76,7 +76,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-srv_name", help="The name of the service",
                         type=str, default="human_model_generation")
-    parser.add_argument("-img_rgb", help="Path for RGB image", type=str, 
+    parser.add_argument("-img_rgb", help="Path for RGB image", type=str,
                         default=os.path.join(os.environ['OPENDR_HOME'], 'projects/python/simulation/'
                                                                         'human_model_generation/demos/'
                                                                         'imgs_input/rgb/result_0004.jpg'))
@@ -85,23 +85,23 @@ def main():
                                                                         'human_model_generation/demos/'
                                                                         'imgs_input/msk/result_0004.jpg'))
     parser.add_argument("-rot_angles", help="Yaw angles for rotating the generated model",
-                        nargs="+", default=[30, 120])
+                        nargs="+", default=['30', '120'])
     parser.add_argument("-extract_pose", help="Whether to extract pose or not", action='store_true')
     parser.add_argument("-plot_kps", help="Whether to plot the keypoints of the extracted pose",
                         action='store_true')
-    parser.add_argument("-out_path", help="Path for outputting the renderings/models", type=str, 
+    parser.add_argument("-out_path", help="Path for outputting the renderings/models", type=str,
                         default=os.path.join(os.environ['OPENDR_HOME'], 'projects/opendr_ws_2'))
     args = parser.parse_args()
-
+    rot_angles = [int(x) for x in args.rot_angles]
     img_rgb = cv2.imread(args.img_rgb)
     img_msk = cv2.imread(args.img_msk)
     rclpy.init()
     client = HumanModelGenerationClient(service_name=args.srv_name)
     [human_model, pose] = client.send_request(img_rgb, img_msk, extract_pose=args.extract_pose)
     human_model.save_obj_mesh(os.path.join(args.out_path, 'human_model.obj'))
-    [out_imgs, _] = human_model.get_img_views(args.rot_angles, human_pose_3D=pose, plot_kps=args.plot_kps)
+    [out_imgs, _] = human_model.get_img_views(rot_angles, human_pose_3D=pose, plot_kps=args.plot_kps)
     for i, out_img in enumerate(out_imgs):
-        cv2.imwrite(os.path.join(args.out_path, 'rendering' + str(args.rot_angles[i]) + '.jpg'), out_imgs[i].opencv())
+        cv2.imwrite(os.path.join(args.out_path, 'rendering' + str(rot_angles[i]) + '.jpg'), out_imgs[i].opencv())
     client.destroy_node()
     rclpy.shutdown()
 
