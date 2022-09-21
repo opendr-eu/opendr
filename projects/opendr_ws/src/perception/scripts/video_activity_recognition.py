@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import argparse
 import rospy
 import torch
 import torchvision
@@ -31,20 +31,19 @@ from opendr.perception.activity_recognition import X3DLearner
 
 
 class HumanActivityRecognitionNode:
-
     def __init__(
         self,
-        input_image_topic="/usb_cam/image_raw",
+        input_rgb_image_topic="/usb_cam/image_raw",
         output_category_topic="/opendr/human_activity_recognition",
         output_category_description_topic="/opendr/human_activity_recognition_description",
         device="cuda",
-        model='cox3d-m'
+        model="cox3d-m",
     ):
         """
         Creates a ROS Node for face recognition
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
-        :param output_category_topic: Topic to which we are publishing the recognized face info
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
+        :param output_category_topic: Topic to which we are publishing the recognized activity
         (if None, we are not publishing the info)
         :type output_category_topic: str
         :param output_category_description_topic: Topic to which we are publishing the ID of the recognized action
@@ -52,12 +51,20 @@ class HumanActivityRecognitionNode:
         :type output_category_description_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
-        :param model:  architecture to use for human activity recognition.
+        :param model:  Architecture to use for human activity recognition.
          (Options: 'cox3d-s', 'cox3d-m', 'cox3d-l', 'x3d-xs', 'x3d-s', 'x3d-m', 'x3d-l')
         :type model: str
         """
 
-        assert model in {"cox3d-s", "cox3d-m", "cox3d-l", "x3d-xs", "x3d-s", "x3d-m", "x3d-l"}
+        assert model in {
+            "cox3d-s",
+            "cox3d-m",
+            "cox3d-l",
+            "x3d-xs",
+            "x3d-s",
+            "x3d-m",
+            "x3d-l",
+        }
         model_name, model_size = model.split("-")
         Learner = {"cox3d": CoX3DLearner, "x3d": X3DLearner}[model_name]
 
@@ -68,7 +75,9 @@ class HumanActivityRecognitionNode:
 
         # Set up preprocessing
         if model_name == "cox3d":
-            self.preprocess = _image_preprocess(image_size=self.learner.model_hparams["image_size"])
+            self.preprocess = _image_preprocess(
+                image_size=self.learner.model_hparams["image_size"]
+            )
         else:  # == x3d
             self.preprocess = _video_preprocess(
                 image_size=self.learner.model_hparams["image_size"],
@@ -76,22 +85,33 @@ class HumanActivityRecognitionNode:
             )
 
         # Set up ROS topics and bridge
+        self.input_rgb_image_topic = input_rgb_image_topic
         self.hypothesis_publisher = (
-            rospy.Publisher(output_category_topic, ObjectHypothesis, queue_size=10) if output_category_topic else None
+            rospy.Publisher(output_category_topic, ObjectHypothesis, queue_size=1)
+            if output_category_topic
+            else None
         )
         self.string_publisher = (
-            rospy.Publisher(output_category_description_topic, String, queue_size=10) if output_category_topic else None
+            rospy.Publisher(output_category_description_topic, String, queue_size=1)
+            if output_category_description_topic
+            else None
         )
 
-        rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
-
         self.bridge = ROSBridge()
+        rospy.Subscriber(input_rgb_image_topic, ROS_Image, self.callback)
 
     def listen(self):
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('opendr_human_activity_recognition', anonymous=True)
+        rospy.init_node("opendr_human_activity_recognition", anonymous=True)
+        rospy.Subscriber(
+            self.input_rgb_image_topic,
+            ROS_Image,
+            self.callback,
+            queue_size=1,
+            buff_size=10000000,
+        )
         rospy.loginfo("Human activity recognition node started!")
         rospy.spin()
 
@@ -101,23 +121,27 @@ class HumanActivityRecognitionNode:
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
-        image = self.bridge.from_ros_image(data)
+        image = self.bridge.from_ros_image(data, encoding="rgb8")
         if image is None:
             return
 
-        x = self.preprocess(image.numpy())
+        x = self.preprocess(image.convert("channel_first", "rgb"))
 
         result = self.learner.infer(x)
         assert len(result) == 1
         category = result[0]
-        category.confidence = float(max(category.confidence.max()))  # Confidence for predicted class
+        category.confidence = float(
+            max(category.confidence.max())
+        )  # Confidence for predicted class
         category.description = KINETICS400_CLASSES[category.data]  # Class name
 
         if self.hypothesis_publisher is not None:
             self.hypothesis_publisher.publish(self.bridge.to_ros_category(category))
 
         if self.string_publisher is not None:
-            self.string_publisher.publish(self.bridge.to_ros_category_description(category))
+            self.string_publisher.publish(
+                self.bridge.to_ros_category_description(category)
+            )
 
 
 def _resize(image, width=None, height=None, inter=cv2.INTER_AREA):
@@ -194,17 +218,67 @@ def _video_preprocess(image_size: int, window_size: int):
     return wrapped
 
 
-if __name__ == '__main__':
-    # Select the device for running the
-    try:
-        if torch.cuda.is_available():
-            print("GPU found.")
-            device = 'cuda'
-        else:
-            print("GPU not found. Using CPU instead.")
-            device = 'cpu'
-    except:
-        device = 'cpu'
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-i",
+        "--input_rgb_image_topic",
+        help="Topic name for input rgb image",
+        type=str,
+        default="/usb_cam/image_raw",
+    )
+    parser.add_argument(
+        "-o",
+        "--output_category_topic",
+        help="Topic to which we are publishing the recognized activity",
+        type=lambda value: value if value.lower() != "none" else None,
+        default="/opendr/human_activity_recognition",
+    )
+    parser.add_argument(
+        "-od",
+        "--output_category_description_topic",
+        help="Topic to which we are publishing the ID of the recognized action",
+        type=lambda value: value if value.lower() != "none" else None,
+        default="/opendr/human_activity_recognition_description",
+    )
+    parser.add_argument(
+        "--device",
+        help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
+        type=str,
+        default="cuda",
+        choices=["cuda", "cpu"],
+    )
+    parser.add_argument(
+        "--model",
+        help="Architecture to use for human activity recognition.",
+        type=str,
+        default="cox3d-m",
+        choices=["cox3d-s", "cox3d-m", "cox3d-l", "x3d-xs", "x3d-s", "x3d-m", "x3d-l"],
+    )
+    args = parser.parse_args()
 
-    human_activity_recognition_node = HumanActivityRecognitionNode(device=device)
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
+
+    human_activity_recognition_node = HumanActivityRecognitionNode(
+        input_rgb_image_topic=args.input_rgb_image_topic,
+        output_category_topic=args.output_category_topic,
+        output_category_description_topic=args.output_category_description_topic,
+        device=device,
+        model=args.model,
+    )
     human_activity_recognition_node.listen()
+
+
+if __name__ == "__main__":
+    main()
