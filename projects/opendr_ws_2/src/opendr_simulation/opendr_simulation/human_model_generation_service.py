@@ -19,6 +19,7 @@ import torch
 import numpy as np
 import argparse
 import os
+import torch
 from opendr_ros2_bridge import ROS2Bridge
 from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
 from opendr_ros2_messages.srv import Mesh
@@ -87,7 +88,7 @@ def main():
     args = parser.parse_args()
     
     try:
-        if args.device == "cuda" and mx.context.num_gpus() > 0:
+        if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"
         elif args.device == "cuda":
             print("GPU not found. Using CPU instead.")
