@@ -58,22 +58,23 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-srv_name", help="The name of the service",
                         type=str, default="human_model_generation")
-    parser.add_argument("-img_rgb", help="Path for RGB image",
-                        type=str, default=os.path.join(os.environ['OPENDR_HOME'],
-                        'projects/python/simulation/human_model_generation/demos/imgs_input/rgb/result_0004.jpg'))
-    parser.add_argument("-img_msk", help="Path for mask image",
-                        type=str, default=os.path.join(os.environ['OPENDR_HOME'],
-                        'projects/python/simulation/human_model_generation/demos/imgs_input/msk/result_0004.jpg'))
+    parser.add_argument("-img_rgb", help="Path for RGB image", type=str, 
+                        default=os.path.join(os.environ['OPENDR_HOME'], 'projects/python/simulation/'
+                                                                        'human_model_generation/demos/'
+                                                                        'imgs_input/rgb/result_0004.jpg'))
+    parser.add_argument("-img_msk", help="Path for mask image", type=str,
+                        default=os.path.join(os.environ['OPENDR_HOME'], 'projects/python/simulation/
+                                                                        'human_model_generation/demos/
+                                                                        'imgs_input/msk/result_0004.jpg'))
     parser.add_argument("-rot_angles", help="Yaw angles for rotating the generated model",
                         nargs="+", default=[30, 120])
     parser.add_argument("-extract_pose", help="Whether to extract pose or not", action='store_true')
     parser.add_argument("-plot_kps", help="Whether to plot the keypoints of the extracted pose",
                         action='store_true')
-    parser.add_argument("-out_path", help="Path for outputting the renderings/models",
-                        type=str, default=os.path.join(os.environ['OPENDR_HOME'],
-                        'projects/opendr_ws_2'))
+    parser.add_argument("-out_path", help="Path for outputting the renderings/models", type=str, 
+                        default=os.path.join(os.environ['OPENDR_HOME'], 'projects/opendr_ws_2'))
     args = parser.parse_args()
-    
+
     img_rgb = cv2.imread(args.img_rgb)
     img_msk = cv2.imread(args.img_msk)
     rclpy.init()

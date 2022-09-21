@@ -83,10 +83,9 @@ def main():
     parser.add_argument("-srv_name", help="The name of the service",
                         type=str, default="human_model_generation")
     parser.add_argument("-checkpoint_dir", help="Path to directory for the checkpoints of the method's network",
-                        type=str, default=os.path.join(os.environ['OPENDR_HOME'],
-                        'projects/opendr_ws_2'))
+                        type=str, default=os.path.join(os.environ['OPENDR_HOME'], 'projects/opendr_ws_2'))
     args = parser.parse_args()
-    
+
     try:
         if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"
@@ -99,7 +98,7 @@ def main():
     except:
         print("Using CPU.")
         device = "cpu"
-        
+
     rclpy.init()
     pifu_service = PifuService(service_name=args.srv_name, device=device, checkpoint_dir=args.checkpoint_dir)
     rclpy.spin(pifu_service)
