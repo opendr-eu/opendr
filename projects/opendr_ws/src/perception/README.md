@@ -212,6 +212,7 @@ Instructions for basic usage and visualization of results:
 <!-- TODO -->
 A ROS node for performing Object Tracking 2D using Deep Sort using either pretrained models on Market1501 dataset, or custom trained models. This is a detection-based method, and therefore the 2D object detector is needed to provide detections, which then will be used to make associations and generate tracking ids. The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`). Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
 Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+
 ```shell
 rosrun perception object_tracking_2d_deep_sort.py
 ```
@@ -219,8 +220,10 @@ To get images from usb_camera, you can start the camera node as:
 ```shell
 rosrun usb_cam usb_cam_node
 ```
+
 The corresponding `input_image_topic` should be `/usb_cam/image_raw`.
 If you want to use a dataset from the disk, you can start an `image_dataset.py` node as:
+
 ```shell
 rosrun perception image_dataset.py
 ```
