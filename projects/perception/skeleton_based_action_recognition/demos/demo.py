@@ -35,7 +35,7 @@ class VideoReader(object):
     def __init__(self, file_name):
         self.file_name = file_name
         try:  # OpenCV needs int to read from webcam
-            self.file_name = int(file_name)
+            self.file_name = file_name
         except ValueError:
             pass
 
@@ -61,7 +61,6 @@ def tile(a, dim, n_tile):
     order_index = torch.LongTensor(np.concatenate([init_dim * np.arange(n_tile) + i for i in range(init_dim)]))
     tiled_a = torch.index_select(a, dim, order_index)
     return tiled_a.numpy()
-
 
 def pose2numpy(args, num_current_frames, poses_list):
     C = 2
@@ -92,6 +91,7 @@ def pose2numpy(args, num_current_frames, poses_list):
     return skeleton_seq
 
 
+# TypeError: only integer scalar arrays can be converted to a scalar index (complete)
 def select_2_poses(poses):
     selected_poses = []
     energy = []
@@ -100,7 +100,8 @@ def select_2_poses(poses):
         energy.append(s)
     energy = np.array(energy)
     index = energy.argsort()[::-1][0:2]
-    selected_poses.append(poses[index])
+    # selected_poses.append(poses[index])
+    selected_poses.append(np.array(poses)[index])
     return selected_poses
 
 
@@ -125,7 +126,7 @@ def draw_preds(frame, preds: Dict):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--onnx", help="Use ONNX", default=False, action="store_true")
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cpu")
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
     parser.add_argument('--video', default=0,
