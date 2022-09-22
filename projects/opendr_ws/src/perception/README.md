@@ -50,8 +50,8 @@ Instructions for basic usage and visualization of results:
     ```
     The following optional arguments are available:
    - `-h, --help`: show a help message and exit
-   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input rgb image (default=`/usb_cam/image_raw`)
-   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated rgb image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/poses`)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--accelerate`: Acceleration flag that causes pose estimation to run faster but with less accuracy
@@ -86,7 +86,7 @@ Instructions for basic usage and visualization of results:
     ```
     The following optional arguments are available:
    - `-h, --help`: show a help message and exit
-   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input rgb image (default=`/usb_cam/image_raw`)
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_fallen_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/fallen`)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
@@ -111,7 +111,7 @@ Instructions for basic usage and visualization of results:
     ```
     The following optional arguments are available:
    - `-h, --help`: show a help message and exit
-   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input rgb image (default=`/usb_cam/image_raw`)
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_faces_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/faces`)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
@@ -134,7 +134,7 @@ Instructions for basic usage and visualization of results:
     ```
     The following optional arguments are available:
    - `-h, --help`: show a help message and exit
-   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input rgb image (default=`/usb_cam/image_raw`)
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_face_reco_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/face_recognition`)
    - `-id or --detections_id_topic DETECTIONS_ID_TOPIC`: topic name for detection ID messages, `None` to stop the node from publishing on this topic (default=`/opendr/face_recognition_id`)
@@ -201,7 +201,7 @@ Instructions for basic usage and visualization of results:
 
    The following optional arguments are available for all nodes above:
    - `-h, --help`: show a help message and exit
-   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input rgb image (default=`/usb_cam/image_raw`)
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_objects_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects`)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
@@ -227,31 +227,58 @@ rosrun perception image_dataset.py
 This will pulbish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
 
 ### Panoptic Segmentation ROS Node
-A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
-Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
-```shell
-rosrun perception panoptic_segmentation_efficient_ps.py
-```
 
-The following optional arguments are available:
-- `-h, --help`: show a help message and exit
-- `--input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC` : listen to RGB images on this topic (default=`/usb_cam/image_raw`)
-- `--checkpoint CHECKPOINT` : download pretrained models [cityscapes, kitti] or load from the provided path (default=`cityscapes`)
-- `--output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance` (default=`/opendir/panoptic`)
-- `--visualization_topic VISUALIZATION_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag (default=`/opendr/panoptic/rgb_visualization`)
-- `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps and publish it on `OUTPUT_RGB_IMAGE_TOPIC` (default=deactivated)
+You can find the panoptic segmentation ROS node python script [here](./scripts/panoptic_segmentation_efficient_ps.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's [panoptic segmentation tool](../../../../src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) whose documentation can be found [here](../../../../docs/reference/efficient-ps.md) and additional information about Efficient PS [here](../../../../src/opendr/perception/panoptic_segmentation/README.md).
 
+Instructions for basic usage and visualization of results:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the face recognition node
+
+    ```shell
+    rosrun perception panoptic_segmentation_efficient_ps.py
+    ```
+    
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `--input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC` : listen to RGB images on this topic (default=`/usb_cam/image_raw`)
+   - `--checkpoint CHECKPOINT` : download pretrained models [cityscapes, kitti] or load from the provided path (default=`cityscapes`)
+   - `--output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance`, `None` to stop the node from publishing on this topic (default=`/opendr/panoptic`)
+   - `--visualization_topic VISUALIZATION_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag, `None` to stop the node from publishing on this topic (default=`/opendr/panoptic/rgb_visualization`)
+   - `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps and publish it on `OUTPUT_RGB_IMAGE_TOPIC` (default=deactivated)
+
+3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topics `/opendr/panoptic/semantic`, `/opendr/panoptic/instance` and `/opendr/panoptic/rgb_visualization` or by running `rostopic echo /opendr/panoptic/semantic`, `rostopic echo /opendr/panoptic/instance` and `rostopic echo /opendr/panoptic/rgb_visualization`.
 
 ### Semantic Segmentation ROS Node
-A ROS node for performing semantic segmentation on an input image using the BiseNet model.
-Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
-```shell
-rosrun perception semantic_segmentation_bisenet.py IMAGE_TOPIC
-```
 
-Additionally, the following optional arguments are available:
-- `-h, --help`: show a help message and exit
-- `--heamap_topic HEATMAP_TOPIC`: publish the heatmap on `HEATMAP_TOPIC`
+You can find the semantic segmentation ROS node python script [here](./scripts/semantic_segmentation_bisenet.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's [semantic segmentation tool](../../../../src/opendr/perception/semantic_segmentation/bisenet/bisenet_learner.py) whose documentation can be found [here](../../../../docs/reference/semantic-segmentation.md).
+
+Instructions for basic usage and visualization of results:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the face recognition node
+
+    ```shell
+    rosrun perception semantic_segmentation_bisenet.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: topic to which we are publishing the heatmap in the form of a ROS image containing class IDs, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap`)
+   - `-v or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic to which we are publishing the heatmap image blended with the input image and a class legend for visualization purposes, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap_visualization`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   
+3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/heatmap_visualization` or by running `rostopic echo /opendr/heatmap`.
+
+**Notes**
+
+On the table below you can find the detectable classes and their corresponding IDs:
+
+| Class  | Bicyclist | Building | Car | Column Pole | Fence | Pedestrian | Road | Sidewalk | Sign Symbol | Sky | Tree | Unknown |
+|--------|-----------|----------|-----|-------------|-------|------------|------|----------|-------------|-----|------|---------|
+| **ID** | 0         | 1        | 2   | 3           | 4     | 5          | 6    | 7        | 8           | 9   | 10   | 11      |
 
 ### Landmark-based Facial Expression Recognition ROS Node
 <!-- TODO -->
