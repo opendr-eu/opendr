@@ -1,0 +1,8 @@
+prefix=/home/opendr/opendr/projects/python/control/mobile_manipulation/mobile_manipulation_ws/devel/.private/mobile_manipulation_rl
+
+Name: mobile_manipulation_rl
+Description: Description of mobile_manipulation_rl
+Version: 0.0.0
+Cflags: -I/home/opendr/opendr/projects/python/control/mobile_manipulation/mobile_manipulation_ws/src/mobile_manipulation/include
+Libs: -L${prefix}/lib -lmobile_manipulation_rl -lalglib -lgripper_planner
+Requires: roscpp rospy std_msgs pybind11_catkin

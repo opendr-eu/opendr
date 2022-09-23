@@ -619,3 +619,42 @@ class ROSBridge:
             box.results[0].score = boxes_3d[i].confidence
             ros_boxes_3d.detections.append(box)
         return ros_boxes_3d
+
+    def to_ros_grasp_detections(self, object_detections):
+        """
+        Converts an OpenDR pose into a Detection2DArray msg that can carry the same information
+        Each keypoint is represented as a bbox centered at the keypoint with zero width/height. The subject id is also
+        embedded on each keypoint (stored in ObjectHypothesisWithPose).
+        :param pose: OpenDR pose to be converted
+        :type pose: engine.target.Pose
+        :return: ROS message with the pose
+        :rtype: vision_msgs.msg.Detection2DArray
+        """
+        ros_detection_array = Detection2DArray()
+        for detection in object_detections:
+            ros_detection = Detection2D()
+
+            ros_detection.bbox = BoundingBox2D()
+            keypoint = ObjectHypothesisWithPose()
+            ros_detection.results.append(keypoint)
+
+            ros_detection.bbox.center = Pose2D()
+            ros_detection.bbox.center.x = detection.left + detection.width/2
+            ros_detection.bbox.center.y = detection.top + detection.height/2
+
+            ros_detection.bbox.size_x = detection.width
+            ros_detection.bbox.size_y = detection.height
+
+            ros_detection.results[0].id = detection.name
+            if detection.confidence:
+                ros_detection.results[0].score = detection.confidence
+            ros_detection.results[0].pose.pose.position.x = detection.data[0]
+            ros_detection.results[0].pose.pose.position.y = detection.data[1]
+            ros_detection_array.detections.append(ros_detection)
+        return ros_detection_array
+
+    def to_ros_grasp_pose(self, obj_id, pose_stamped):
+        grasp_pose = ObjectHypothesisWithPose()
+        grasp_pose.id = obj_id
+        grasp_pose.pose.pose = pose_stamped.pose
+        return grasp_pose

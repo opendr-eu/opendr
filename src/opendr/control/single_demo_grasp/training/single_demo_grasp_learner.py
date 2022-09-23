@@ -34,6 +34,60 @@ from opendr.engine.data import Image
 from opendr.control.single_demo_grasp.training.learner_utils import register_datasets
 
 
+def get_kps_center(input_kps) :
+    input_kps_sorted = input_kps[input_kps[:, 2].argsort()[::-1]]
+    kps_x_list = input_kps[:,0]
+    kps_y_list = input_kps[:,1]
+    kps_x_list = kps_x_list[::-1]
+    kps_y_list = kps_y_list[::-1]
+    d = {'X' : kps_x_list,
+        'Y' : kps_y_list}
+    df = pd.DataFrame(data = d)
+
+    x = np.mean(df["X"][0:2])
+    y= np.mean(df["Y"][0:2])
+    return [x,y]
+
+def get_angle(input_kps, mode):
+    input_kps_sorted = input_kps[input_kps[:, 2].argsort()[::-1]]
+    # kps_x_list = input_kps[0][:,0]
+    # kps_y_list = input_kps[0][:,1]
+    kps_x_list = input_kps_sorted[:,0]
+    kps_y_list = input_kps_sorted[:,1]
+    kps_x_list = kps_x_list[::-1]
+    kps_y_list = kps_y_list[::-1]
+
+    d = {'X' : kps_x_list,
+        'Y' : kps_y_list}
+
+    df = pd.DataFrame(data = d)
+
+
+    # move the origin
+    x = (df["X"] - df["X"][0])
+    y = (df["Y"] - df["Y"][0])
+
+    #x = x[0:2]
+    #y = y[0:2]
+    if mode == 1:
+        list_xy = (np.arctan2(y,x)*180/math.pi).astype(int)
+        occurence_count = Counter(list_xy)
+        return occurence_count.most_common(1)[0][0]
+    else:
+        x = np.mean(x)
+        y= np.mean(y)
+        return np.arctan2(y,x)*180/math.pi
+
+def correct_orientation_ref(angle):
+
+    if angle <= 90:
+        angle += 90
+    if angle > 90:
+        angle += -270
+
+    return angle
+    
+
 class SingleDemoGraspLearner(Learner):
     def __init__(self, object_name=None, data_directory=None, lr=0.0008, batch_size=512, img_per_step=2, num_workers=2,
                  num_classes=1, iters=1000, threshold=0.8, device='cuda'):
@@ -86,6 +140,24 @@ class SingleDemoGraspLearner(Learner):
             return 1, bounding_box[0], keypoints_pred[0]
         else:
             return 0, None, None
+
+
+    def infer(self, img_data):
+        if not isinstance(img_data, Image):
+            img_data = Image(img_data)
+        img_data = img_data.convert(format='channels_last', channel_order='rgb')
+
+        self.predictor = DefaultPredictor(self.cfg)
+        output = self.predictor(img_data)
+        pred_classes = output["instances"].to("cpu").pred_classes.numpy()
+        bounding_box = output["instances"].to("cpu").pred_boxes.tensor.numpy()
+        keypoints_pred = output["instances"].to("cpu").pred_keypoints.numpy()
+
+        result = []
+        for i in range(len(bounding_box)):
+            angle = correct_orientation_ref(get_angle(keypoints_pred[i],2))
+            result.append(GraspDetection(pred_classes[i], get_kps_center(keypoints_pred[i]), angle, left=bounding_box[i][0], top=bounding_box[i][1], width=bounding_box[i][2]-bounding_box[i][0], height=bounding_box[i][3]-bounding_box[i][1]))
+        return result
 
     def _prepare_datasets(self):
         bbx_train = np.load(os.path.join(self.dataset_dir, self.object_name, 'images/annotations/boxes_train.npy'),

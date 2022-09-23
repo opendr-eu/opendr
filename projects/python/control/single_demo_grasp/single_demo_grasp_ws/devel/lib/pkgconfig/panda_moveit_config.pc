@@ -1,0 +1,8 @@
+prefix=/home/opendr/opendr/projects/python/control/single_demo_grasp/simulation_ws/devel
+
+Name: panda_moveit_config
+Description: Description of panda_moveit_config
+Version: 0.7.5
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

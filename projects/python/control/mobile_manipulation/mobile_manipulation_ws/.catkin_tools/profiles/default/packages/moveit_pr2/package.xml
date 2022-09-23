@@ -1,0 +1,23 @@
+<package format="2">
+  <name>moveit_pr2</name>
+  <version>0.7.3</version>
+  <description>All PR2-specific packages for MoveIt</description>
+  <author email="isucan@willowgarage.com">Ioan Sucan</author>
+  <author email="sachinc@willowgarage.com">Sachin Chitta</author>
+
+  <maintainer email="bence.magyar.robotics@gmail.com">Bence Magyar</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://moveit.ros.org</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>pr2_moveit_config</exec_depend>
+  <exec_depend>pr2_moveit_plugins</exec_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+
+</package>

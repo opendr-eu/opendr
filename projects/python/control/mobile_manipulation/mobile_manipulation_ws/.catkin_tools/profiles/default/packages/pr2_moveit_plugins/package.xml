@@ -1,0 +1,41 @@
+<package format="2">
+  <name>pr2_moveit_plugins</name>
+  <version>0.7.3</version>
+  <description>PR2 specific plugins for MoveIt</description>
+  <author email="isucan@willowgarage.com">Ioan Sucan</author>
+  <author email="sachinc@willowgarage.com">Sachin Chitta</author>
+
+  <maintainer email="bence.magyar.robotics@gmail.com">Bence Magyar</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://moveit.ros.org</url>
+  <url type="bugtracker">https://github.com/ros-planning/moveit_ros/issues</url>
+  <url type="repository">https://github.com/ros-planning/moveit_ros</url>
+
+  <buildtool_depend>catkin</buildtool_depend> 
+
+  <build_depend>cmake_modules</build_depend>
+
+  <depend>moveit_core</depend>
+  <depend>roscpp</depend>
+  <depend>rosconsole</depend>
+  <depend>kdl_parser</depend>
+  <depend>urdf</depend>
+  <depend>tf</depend>
+  <depend>tf_conversions</depend>
+  <depend>eigen_conversions</depend>
+  <depend>pluginlib</depend>
+  <depend>control_msgs</depend> 
+  <depend>pr2_mechanism_msgs</depend>
+  <depend>pr2_controllers_msgs</depend>
+  <depend>actionlib</depend> 
+  <depend>angles</depend>
+
+  <export>
+    <moveit_core plugin="${prefix}/pr2_moveit_sensor_manager_plugin_description.xml"/>
+    <moveit_core plugin="${prefix}/pr2_moveit_controller_manager_plugin_description.xml"/> 
+    <moveit_core plugin="${prefix}/pr2_moveit_kinematics_plugin_description.xml"/>
+  </export>
+
+</package>
