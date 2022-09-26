@@ -67,7 +67,7 @@ def main(
     rclpy.init(args=args)
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dataset_path", help="Path to a dataset. If does not exist, nano KITTI dataset will be downloaded there.",
-                        type=str, default="image_raw")
+                        type=str, default="KITTI/opendr_nano_kitti")
     parser.add_argument("-ks", "--kitti_subsets_path", help="Path to kitti subsets. Used only if a KITTI dataset is downloaded",
                         type=str, default="../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets")
     args = parser.parse_args()
