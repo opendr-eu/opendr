@@ -78,11 +78,11 @@ class PifuService(Node):
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("-srv_name", help="The name of the service",
+    parser.add_argument("--srv_name", help="The name of the service",
                         type=str, default="human_model_generation")
-    parser.add_argument("-checkpoint_dir", help="Path to directory for the checkpoints of the method's network",
+    parser.add_argument("--checkpoint_dir", help="Path to directory for the checkpoints of the method's network",
                         type=str, default=os.path.join(os.environ['OPENDR_HOME'], 'projects/opendr_ws_2'))
     args = parser.parse_args()
 
