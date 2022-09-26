@@ -63,9 +63,6 @@ class PointCloudDatasetNode(Node):
 
 def main(
     args=None,
-    dataset_path="KITTI/opendr_nano_kitti",
-    kitti_subsets_path="../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets",
-    # kitti_subsets_path Only used if a KITTI dataset is downloaded
 ):
     rclpy.init(args=args)
     parser = argparse.ArgumentParser()
@@ -74,6 +71,9 @@ def main(
     parser.add_argument("-ks", "--kitti_subsets_path", help="Path to kitti subsets. Used only if a KITTI dataset is downloaded",
                         type=str, default="../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets")
     args = parser.parse_args()
+
+    dataset_path = args.dataset_path
+    kitti_subsets_path = args.kitti_subsets_path
 
     if not os.path.exists(dataset_path):
         dataset_path = KittiDataset.download_nano_kitti(
