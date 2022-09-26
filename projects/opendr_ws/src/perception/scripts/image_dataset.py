@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import os
 import rospy
 import time
@@ -27,6 +28,7 @@ class ImageDatasetNode:
         self,
         dataset: DatasetIterator,
         output_image_topic="/opendr/dataset_image",
+        data_fps=30,
     ):
         """
         Creates a ROS Node for publishing dataset images
@@ -36,6 +38,7 @@ class ImageDatasetNode:
         self.dataset = dataset
         # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
+        self.delay = 1.0 / data_fps
 
         if output_image_topic is not None:
             self.output_image_publisher = rospy.Publisher(
@@ -57,14 +60,32 @@ class ImageDatasetNode:
             )
             self.output_image_publisher.publish(message)
 
-            time.sleep(0.1)
+            time.sleep(self.delay)
 
             i += 1
 
 
-if __name__ == "__main__":
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--dataset_path", help="Path to a dataset",
+                        type=str, default="KITTI/opendr_nano_kitti")
+    parser.add_argument(
+        "-ks", "--mot20_subsets_path", help="Path to mot20 subsets",
+        type=str, default=os.path.join(
+            "..", "..", "src", "opendr", "perception", "object_tracking_2d",
+            "datasets", "splits", "nano_mot20.train"
+        )
+    )
+    parser.add_argument("-o", "--output_image_topic", help="Topic name to upload the data",
+                        type=str, default="/opendr/dataset_image")
+    parser.add_argument("-f", "--fps", help="Data FPS",
+                        type=float, default=30)
+    args = parser.parse_args()
 
-    rospy.init_node('opendr_image_dataset')
+    dataset_path = args.dataset_path
+    mot20_subsets_path = args.mot20_subsets_path
+    output_image_topic = args.output_image_topic
+    data_fps = args.fps
 
     dataset_path = MotDataset.download_nano_mot20(
         "MOT", True
@@ -73,12 +94,17 @@ if __name__ == "__main__":
     dataset = RawMotDatasetIterator(
         dataset_path,
         {
-            "mot20": os.path.join(
-                "..", "..", "src", "opendr", "perception", "object_tracking_2d",
-                "datasets", "splits", "nano_mot20.train"
-            )
+            "mot20": mot20_subsets_path
         },
         scan_labels=False
     )
-    dataset_node = ImageDatasetNode(dataset)
+    dataset_node = ImageDatasetNode(
+        dataset,
+        output_image_topic=output_image_topic,
+        data_fps=data_fps,
+    )
+
     dataset_node.start()
+
+if __name__ == '__main__':
+    main()
