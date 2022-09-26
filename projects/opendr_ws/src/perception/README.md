@@ -26,7 +26,10 @@ Before you can run any of the toolkit's ROS nodes, some prerequisites need to be
 ---
 
 - ### Increase performance by disabling output
-    Optionally, nodes can be modified via command line arguments, which are presented for each node separately below. Generally, arguments give the option to change the input and output topics, the device the node runs on (CPU or GPU), etc. When a node publishes on several topics, where applicable, a user can opt to disable one or more of the outputs by providing `None` in the corresponding output topic. This disables publishing on that topic, forgoing some operations in the node, which might increase its performance. 
+Optionally, nodes can be modified via command line arguments, which are presented for each node separately below.
+Generally, arguments give the option to change the input and output topics, the device the node runs on (CPU or GPU), etc.
+When a node publishes on several topics, where applicable, a user can opt to disable one or more of the outputs by providing `None` in the corresponding output topic.
+This disables publishing on that topic, forgoing some operations in the node, which might increase its performance. 
 
     _An example would be to disable the output annotated image topic in a node when visualization is not needed and only use the detection message in another node, thus eliminating the OpenCV operations._ 
 <!-- - ### Other notes -->
@@ -239,7 +242,8 @@ This will pulbish the dataset images to an `/opendr/dataset_image` topic by defa
 
 ### Panoptic Segmentation ROS Node
 
-You can find the panoptic segmentation ROS node python script [here](./scripts/panoptic_segmentation_efficient_ps.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's [panoptic segmentation tool](../../../../src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) whose documentation can be found [here](../../../../docs/reference/efficient-ps.md) and additional information about Efficient PS [here](../../../../src/opendr/perception/panoptic_segmentation/README.md).
+You can find the panoptic segmentation ROS node python script [here](./scripts/panoptic_segmentation_efficient_ps.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [panoptic segmentation tool](../../../../src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) whose documentation can be found [here](../../../../docs/reference/efficient-ps.md) and additional information about Efficient PS [here](../../../../src/opendr/perception/panoptic_segmentation/README.md).
 
 Instructions for basic usage and visualization of results:
 
