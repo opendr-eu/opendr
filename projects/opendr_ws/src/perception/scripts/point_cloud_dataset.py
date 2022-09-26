@@ -62,6 +62,7 @@ class PointCloudDatasetNode:
 
             i += 1
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dataset_path",
