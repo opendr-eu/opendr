@@ -15,6 +15,7 @@
 
 import argparse
 import cv2
+import torch
 import os
 from opendr.engine.target import TrackingAnnotation
 import rclpy
@@ -23,25 +24,30 @@ from vision_msgs.msg import Detection2DArray
 from std_msgs.msg import Int32MultiArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_ros2_bridge import ROS2Bridge
+from opendr.engine.learners import Learner
 from opendr.perception.object_tracking_2d import (
-    ObjectTracking2DFairMotLearner,
+    ObjectTracking2DDeepSortLearner,
+    ObjectTracking2DFairMotLearner
 )
-from opendr.engine.data import Image
+from opendr.engine.data import Image, ImageWithDetections
 
 
-class ObjectTracking2DFairMotNode(Node):
+class ObjectTracking2DDeepSortNode(Node):
     def __init__(
         self,
+        detector: Learner,
         input_image_topic="/usb_cam/image_raw",
         output_detection_topic="/opendr/detection",
         output_tracking_id_topic="/opendr/tracking_id",
         output_image_topic="/opendr/image_annotated",
         device="cuda:0",
-        model_name="fairmot_dla34",
+        model_name="deep_sort",
         temp_dir="temp",
     ):
         """
-        Creates a ROS Node for 2D object tracking
+        Creates a ROS2 Node for 2D object tracking
+        :param detector: Learner to generate object detections
+        :type detector: Learner
         :param input_image_topic: Topic from which we are reading the input image
         :type input_image_topic: str
         :param output_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
@@ -59,23 +65,21 @@ class ObjectTracking2DFairMotNode(Node):
         :type temp_dir: str
         """
 
-        super().__init__('object_tracking_2d_fair_mot_node')
+        super().__init__('object_tracking_2d_deep_sort_node')
 
-        # # Initialize the face detector
-        self.learner = ObjectTracking2DFairMotLearner(
+        self.get_logger().info("Using model_name: {}".format(model_name))
+
+        self.detector = detector
+        self.learner = ObjectTracking2DDeepSortLearner(
             device=device, temp_path=temp_dir,
         )
         if not os.path.exists(os.path.join(temp_dir, model_name)):
-            ObjectTracking2DFairMotLearner.download(model_name, temp_dir)
+            ObjectTracking2DDeepSortLearner.download(model_name, temp_dir)
 
         self.learner.load(os.path.join(temp_dir, model_name), verbose=True)
 
         # Initialize OpenDR ROSBridge object
         self.bridge = ROS2Bridge()
-
-        self.detection_publisher = self.create_publisher(
-            Detection2DArray, output_detection_topic, 1
-        )
         self.tracking_id_publisher = self.create_publisher(
             Int32MultiArray, output_tracking_id_topic, 1
         )
@@ -84,6 +88,10 @@ class ObjectTracking2DFairMotNode(Node):
             self.output_image_publisher = self.create_publisher(
                 ROS_Image, output_image_topic, 1
             )
+
+        self.detection_publisher = self.create_publisher(
+            Detection2DArray, output_detection_topic, 1
+        )
 
         self.create_subscription(ROS_Image, input_image_topic, self.callback, 1)
 
@@ -96,7 +104,9 @@ class ObjectTracking2DFairMotNode(Node):
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding="bgr8")
-        tracking_boxes = self.learner.infer(image)
+        detection_boxes = self.detector.infer(image)
+        image_with_detections = ImageWithDetections(image.numpy(), detection_boxes)
+        tracking_boxes = self.learner.infer(image_with_detections)
 
         if self.output_image_publisher is not None:
             frame = image.opencv()
@@ -107,8 +117,7 @@ class ObjectTracking2DFairMotNode(Node):
             self.output_image_publisher.publish(message)
             self.get_logger().info("Published annotated image")
 
-        detection_boxes = tracking_boxes.bounding_box_list()
-        ids = [tracking_box.id for tracking_box in tracking_boxes]
+        ids = [int(tracking_box.id) for tracking_box in tracking_boxes]
 
         # Convert detected boxes to ROS type and publish
         ros_boxes = self.bridge.to_ros_boxes(detection_boxes)
@@ -175,7 +184,7 @@ def main(
     rclpy.init(args=args)
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--model_name", help="Name of the trained model",
-                        type=str, default="fairmot_dla34")
+                        type=str, default="deep_sort")
     parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
                         type=str, default="temp")
     parser.add_argument("-i", "--input_image_topic",
@@ -194,7 +203,16 @@ def main(
                     type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
-    fair_mot_node = ObjectTracking2DFairMotNode(
+    detection_learner = ObjectTracking2DFairMotLearner(
+        device=args.device, temp_path=args.temp_dir,
+    )
+    if not os.path.exists(os.path.join(args.temp_dir, "fairmot_dla34")):
+        ObjectTracking2DFairMotLearner.download("fairmot_dla34", args.temp_dir)
+
+    detection_learner.load(os.path.join(args.temp_dir, "fairmot_dla34"), verbose=True)
+
+    deep_sort_node = ObjectTracking2DDeepSortNode(
+        detector=detection_learner,
         device=args.device,
         model_name=args.model_name,
         input_image_topic=args.input_image_topic,
@@ -203,12 +221,11 @@ def main(
         output_tracking_id_topic=args.output_tracking_id_topic,
         output_image_topic=args.output_image_topic if args.output_image_topic is not "None" else None,
     )
-
-    rclpy.spin(fair_mot_node)
+    rclpy.spin(deep_sort_node)
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    fair_mot_node.destroy_node()
+    deep_sort_node.destroy_node()
     rclpy.shutdown()
 
 

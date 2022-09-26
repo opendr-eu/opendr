@@ -34,6 +34,7 @@ setup(
             'object_detection_3d_voxel = opendr_perception.object_detection_3d_voxel_node:main',
             'object_tracking_3d_ab3dmot = opendr_perception.object_tracking_3d_ab3dmot_node:main',
             'object_tracking_2d_fair_mot = opendr_perception.object_tracking_2d_fair_mot_node:main',
+            'object_tracking_2d_deep_sort = opendr_perception.object_tracking_2d_deep_sort_node:main',
         ],
     },
 )
