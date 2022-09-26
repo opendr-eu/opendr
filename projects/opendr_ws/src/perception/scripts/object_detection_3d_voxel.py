@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import torch
 import os
 import rospy
@@ -62,7 +63,7 @@ class ObjectDetection3DVoxelNode:
         self.bridge = ROSBridge()
 
         self.detection_publisher = rospy.Publisher(
-            output_detection3d_topic, Detection3DArray, queue_size=10
+            output_detection3d_topic, Detection3DArray, queue_size=1
         )
 
         rospy.Subscriber(input_point_cloud_topic, ROS_PointCloud, self.callback)
@@ -84,35 +85,53 @@ class ObjectDetection3DVoxelNode:
             self.detection_publisher.publish(ros_boxes)
             rospy.loginfo("Published detection boxes")
 
-if __name__ == "__main__":
-    # Automatically run on GPU/CPU
-    device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-    # initialize ROS node
-    rospy.init_node("opendr_voxel_detection_3d", anonymous=True)
-    rospy.loginfo("Voxel Detection 3D node started")
-
-    model_name = rospy.get_param("~model_name", "tanet_car_xyres_16")
-    model_config_path = rospy.get_param(
-        "~model_config_path", os.path.join(
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-n", "--model_name", help="Name of the trained model",
+                        type=str, default="tanet_car_xyres_16")
+    parser.add_argument(
+        "-c", "--model_config_path", help="Path to a model .proto config",
+        type=str, default=os.path.join(
             "..", "..", "src", "opendr", "perception", "object_detection_3d",
             "voxel_object_detection_3d", "second_detector", "configs", "tanet",
-            "car", "test_short.proto"
+            "car", "xyres_16.proto"
         )
     )
-    temp_dir = rospy.get_param("~temp_dir", "temp")
-    input_point_cloud_topic = rospy.get_param(
-        "~input_point_cloud_topic", "/opendr/dataset_point_cloud"
-    )
-    rospy.loginfo("Using model_name: {}".format(model_name))
+    parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
+                        type=str, default="temp")
+    parser.add_argument("-i", "--input_point_cloud_topic",
+                        help="Point Cloud topic provdied by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
+                        type=str, default="/opendr/dataset_point_cloud")
+    parser.add_argument("-o", "--output_detection3d_topic",
+                        help="Output detections topic",
+                        type=str, default="/opendr/detection3d")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    args = parser.parse_args()
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
 
-    # created node object
     voxel_node = ObjectDetection3DVoxelNode(
         device=device,
-        model_name=model_name,
-        model_config_path=model_config_path,
-        input_point_cloud_topic=input_point_cloud_topic,
-        temp_dir=temp_dir,
+        model_name=args.model_name,
+        model_config_path=args.model_config_path,
+        input_point_cloud_topic=args.input_point_cloud_topic,
+        temp_dir=args.temp_dir,
+        output_detection3d_topic=args.output_detection3d_topic,
     )
-    # begin ROS communications
-    rospy.spin()
+
+    voxel_node.listen()
+
+if __name__ == '__main__':
+    main()
