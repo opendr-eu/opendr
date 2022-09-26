@@ -62,17 +62,6 @@ Instructions for basic usage and visualization of results:
 
 3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_pose_annotated` or by running `rostopic echo /opendr/poses`, where the node publishes the detected poses in [OpenDR's 2D pose message format](../ros_bridge/msg/OpenDRPose2D.msg).
 
-<!--Note that to use the pose messages properly, you need to create an appropriate subscriber that will convert the ROS pose messages back to OpenDR poses which you can access as described in the [documentation](https://github.com/opendr-eu/opendr/blob/master/docs/reference/engine-target.md#posekeypoints-confidence):
-```python
-        ... 
-        rospy.Subscriber("opendr/poses", Detection2DArray, self.callback)
-        ...
-        def callback(self, data):
-            opendr_pose = self.bridge.from_ros_pose(data)
-            print(opendr_pose)
-            print(opendr_pose['r_eye'])
-```-->
-
 ### Fall Detection ROS Node
 
 You can find the fall detection ROS node python script [here](./scripts/fall_detection.py) to inspect the code and modify it as you wish to fit your needs.
