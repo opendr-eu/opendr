@@ -13,14 +13,22 @@
 # limitations under the License.
 
 import numpy as np
-from opendr.engine.data import Image
-from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
-
+from opendr.engine.data import Image, PointCloud
+from opendr.engine.target import (
+    Pose, BoundingBox, BoundingBoxList, Category,
+    BoundingBox3D, BoundingBox3DList
+)
 from cv_bridge import CvBridge
 from std_msgs.msg import String, Header
 from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg
-from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose
-from geometry_msgs.msg import Pose2D, Point32 as Point32Msg
+from vision_msgs.msg import (
+    Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,
+    Detection3D, Detection3DArray, BoundingBox3D as BoundingBox3DMsg
+)
+from geometry_msgs.msg import (
+    Pose2D, Point32 as Point32Msg,
+    Quaternion as QuaternionMsg, Pose as Pose3D
+)
 from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint
 
 
@@ -244,6 +252,32 @@ class ROS2Bridge:
         result.data = category.description
         return result
 
+    def from_ros_point_cloud(self, point_cloud: PointCloudMsg):
+        """
+        Converts a ROS PointCloud message into an OpenDR PointCloud
+        :param message: ROS PointCloud to be converted
+        :type message: sensor_msgs.msg.PointCloud
+        :return: OpenDR PointCloud
+        :rtype: engine.data.PointCloud
+        """
+
+        points = np.empty([len(point_cloud.points), 3 + len(point_cloud.channels)], dtype=np.float32)
+
+        for i in range(len(point_cloud.points)):
+            point = point_cloud.points[i]
+            x, y, z = point.x, point.y, point.z
+
+            points[i, 0] = x
+            points[i, 1] = y
+            points[i, 2] = z
+
+            for q in range(len(point_cloud.channels)):
+                points[i, 3 + q] = point_cloud.channels[q].values[i]
+
+        result = PointCloud(points)
+
+        return result
+
     def to_ros_point_cloud(self, point_cloud, time_stamp):
         """
         Converts an OpenDR PointCloud message into a ROS2 PointCloud
@@ -278,3 +312,65 @@ class ROS2Bridge:
         ros_point_cloud.channels = channels
 
         return ros_point_cloud
+    
+    def from_ros_boxes_3d(self, ros_boxes_3d):
+        """
+        Converts a ROS2 Detection3DArray message into an OpenDR BoundingBox3D object.
+        :param ros_boxes_3d: The ROS boxes to be converted.
+        :type ros_boxes_3d: vision_msgs.msg.Detection3DArray
+        :return: An OpenDR BoundingBox3DList object.
+        :rtype: engine.target.BoundingBox3DList
+        """
+        boxes = []
+
+        for ros_box in ros_boxes_3d:
+
+            box = BoundingBox3D(
+                name=ros_box.results[0].id,
+                truncated=0,
+                occluded=0,
+                bbox2d=None,
+                dimensions=np.array([
+                    ros_box.bbox.size.position.x,
+                    ros_box.bbox.size.position.y,
+                    ros_box.bbox.size.position.z,
+                ]),
+                location=np.array([
+                    ros_box.bbox.center.position.x,
+                    ros_box.bbox.center.position.y,
+                    ros_box.bbox.center.position.z,
+                ]),
+                rotation_y=ros_box.bbox.center.rotation.y,
+                score=ros_box.results[0].score,
+            )
+            boxes.append(box)
+
+        result = BoundingBox3DList(boxes)
+        return result
+
+    def to_ros_boxes_3d(self, boxes_3d):
+        """
+        Converts an OpenDR BoundingBox3DList object into a ROS2 Detection3DArray message.
+        :param boxes_3d: The OpenDR boxes to be converted.
+        :type boxes_3d: engine.target.BoundingBox3DList
+        :param classes: The array of classes to transform from string name into an index.
+        :return: ROS message with the boxes
+        :rtype: vision_msgs.msg.Detection3DArray
+        """
+        ros_boxes_3d = Detection3DArray()
+        for i in range(len(boxes_3d)):
+            box = Detection3D()
+            box.bbox = BoundingBox3DMsg()
+            box.results.append(ObjectHypothesisWithPose())
+            box.bbox.center = Pose3D()
+            box.bbox.center.position.x = float(boxes_3d[i].location[0])
+            box.bbox.center.position.y = float(boxes_3d[i].location[1])
+            box.bbox.center.position.z = float(boxes_3d[i].location[2])
+            box.bbox.center.orientation = QuaternionMsg(x=0.0, y=float(boxes_3d[i].rotation_y), z=0.0, w=0.0)
+            box.bbox.size.x = float(boxes_3d[i].dimensions[0])
+            box.bbox.size.y = float(boxes_3d[i].dimensions[1])
+            box.bbox.size.z = float(boxes_3d[i].dimensions[2])
+            box.results[0].id = boxes_3d[i].name
+            box.results[0].score = float(boxes_3d[i].confidence)
+            ros_boxes_3d.detections.append(box)
+        return ros_boxes_3d

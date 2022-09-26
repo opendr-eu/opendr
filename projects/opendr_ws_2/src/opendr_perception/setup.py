@@ -30,6 +30,7 @@ setup(
             'face_recognition = opendr_perception.face_recognition_node:main',
             'fall_detection = opendr_perception.fall_detection_node:main',
             'point_cloud_dataset = opendr_perception.point_cloud_dataset_node:main',
+            'object_detection_3d_voxel = opendr_perception.object_detection_3d_voxel_node:main',
         ],
     },
 )

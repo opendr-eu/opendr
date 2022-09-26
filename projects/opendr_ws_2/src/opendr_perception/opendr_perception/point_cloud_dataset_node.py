@@ -70,10 +70,16 @@ def main(
                         type=str, default="KITTI/opendr_nano_kitti")
     parser.add_argument("-ks", "--kitti_subsets_path", help="Path to kitti subsets. Used only if a KITTI dataset is downloaded",
                         type=str, default="../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets")
+    parser.add_argument("-o", "--output_point_cloud_topic", help="Topic name to upload the data",
+                        type=str, default="/opendr/dataset_point_cloud")
+    parser.add_argument("-f", "--fps", help="Data FPS",
+                        type=float, default=10)
     args = parser.parse_args()
 
     dataset_path = args.dataset_path
     kitti_subsets_path = args.kitti_subsets_path
+    output_point_cloud_topic = args.output_point_cloud_topic
+    data_fps = args.fps
 
     if not os.path.exists(dataset_path):
         dataset_path = KittiDataset.download_nano_kitti(
@@ -87,7 +93,9 @@ def main(
         dataset_path + "/training/calib",
     )
 
-    dataset_node = PointCloudDatasetNode(dataset)
+    dataset_node = PointCloudDatasetNode(
+        dataset, output_point_cloud_topic=output_point_cloud_topic, data_fps=data_fps
+    )
 
     rclpy.spin(dataset_node)
 
