@@ -17,10 +17,10 @@ from opendr.engine.data import Image
 from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
 from cv_bridge import CvBridge
-from std_msgs.msg import String
-from sensor_msgs.msg import Image as ImageMsg
+from std_msgs.msg import String, Header
+from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose
-from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import Pose2D, Point32 as Point32Msg
 from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint
 
 
@@ -243,3 +243,38 @@ class ROS2Bridge:
         result = String()
         result.data = category.description
         return result
+
+    def to_ros_point_cloud(self, point_cloud, time_stamp):
+        """
+        Converts an OpenDR PointCloud message into a ROS2 PointCloud
+        :param: OpenDR PointCloud
+        :type: engine.data.PointCloud
+        :return message: ROS PointCloud
+        :rtype message: sensor_msgs.msg.PointCloud
+        """
+
+        ros_point_cloud = PointCloudMsg()
+
+        header = Header()
+        
+        header.stamp = time_stamp
+        ros_point_cloud.header = header
+
+        channels_count = point_cloud.data.shape[-1] - 3
+
+        channels = [ChannelFloat32Msg(name="channel_" + str(i), values=[]) for i in range(channels_count)]
+        points = []
+
+        for point in point_cloud.data:
+            point_msg = Point32Msg()
+            point_msg.x = float(point[0])
+            point_msg.y = float(point[1])
+            point_msg.z = float(point[2])
+            points.append(point_msg)
+            for i in range(channels_count):
+                channels[i].values.append(float(point[3 + i]))
+
+        ros_point_cloud.points = points
+        ros_point_cloud.channels = channels
+
+        return ros_point_cloud

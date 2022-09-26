@@ -29,6 +29,7 @@ setup(
             'semantic_segmentation_bisenet = opendr_perception.semantic_segmentation_bisenet_node:main',
             'face_recognition = opendr_perception.face_recognition_node:main',
             'fall_detection = opendr_perception.fall_detection_node:main',
+            'point_cloud_dataset = opendr_perception.point_cloud_dataset_node:main',
         ],
     },
 )

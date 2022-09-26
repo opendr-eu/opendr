@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <boost/geometry.hpp>
 #include <vector>
+#include <iostream>
 namespace py = pybind11;
 using namespace pybind11::literals;
 template<typename DType, typename ShapeContainer> inline py::array_t<DType> constant(ShapeContainer shape, DType value) {
