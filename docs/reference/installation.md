@@ -64,6 +64,10 @@ pip install mxnet-cu112==1.8.0post0
 pip install opendr-toolkit-engine
 pip install opendr-toolkit
 ```
+If you encounter any issue installing the latest version of detectron, then you can try installing a previous commit:
+```bash
+pip install 'git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13'
+```
 
 ## Installing only a *particular* tool using *pip* (CPU/GPU)
 
