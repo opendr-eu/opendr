@@ -6,8 +6,8 @@
 #include <pybind11/stl.h>
 #include <algorithm>
 #include <boost/geometry.hpp>
-#include <vector>
 #include <iostream>
+#include <vector>
 
 namespace py = pybind11;
 using namespace pybind11::literals;
