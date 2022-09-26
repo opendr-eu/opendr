@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import torch
 import argparse
 import cv2
 import os
@@ -202,8 +203,21 @@ def main(
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
+
     detection_learner = ObjectTracking2DFairMotLearner(
-        device=args.device, temp_path=args.temp_dir,
+        device=device, temp_path=args.temp_dir,
     )
     if not os.path.exists(os.path.join(args.temp_dir, "fairmot_dla34")):
         ObjectTracking2DFairMotLearner.download("fairmot_dla34", args.temp_dir)
@@ -212,7 +226,7 @@ def main(
 
     deep_sort_node = ObjectTracking2DDeepSortNode(
         detector=detection_learner,
-        device=args.device,
+        device=device,
         model_name=args.model_name,
         input_image_topic=args.input_image_topic,
         temp_dir=args.temp_dir,

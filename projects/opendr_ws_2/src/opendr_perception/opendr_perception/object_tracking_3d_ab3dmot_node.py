@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import torch
 import argparse
 import os
 from opendr.engine.learners import Learner
@@ -133,6 +134,19 @@ def main(
     detector_model_config_path = args.detector_model_config_path
     output_detection3d_topic = args.output_detection3d_topic
     output_tracking3d_id_topic = args.output_tracking3d_id_topic
+
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
 
     detector = VoxelObjectDetection3DLearner(
         device=device,
