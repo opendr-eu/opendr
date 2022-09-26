@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import argparse
-import torch
 import os
 import rclpy
 from rclpy.node import Node
