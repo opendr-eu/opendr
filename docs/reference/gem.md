@@ -216,8 +216,8 @@ Parameters:
 
 #### Demo and Tutorial
 
-An inference [demo](../../projects/perception/object_detection_2d/gem/inference_demo.py) and
-[tutorial](../../projects/perception/object_detection_2d/gem/inference_tutorial.ipynb) are available.
+An inference [demo](../../projects/python/perception/object_detection_2d/gem/inference_demo.py) and
+[tutorial](../../projects/python/perception/object_detection_2d/gem/inference_tutorial.ipynb) are available.
 
 #### Examples
 
