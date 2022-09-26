@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import os
 import torch
 from opendr.engine.learners import Learner
@@ -91,29 +92,59 @@ class ObjectTracking3DAb3dmotNode:
             self.tracking_id_publisher.publish(ros_ids)
             rospy.loginfo("Published tracking ids")
 
-if __name__ == "__main__":
-    # Automatically run on GPU/CPU
-    device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-    # initialize ROS node
-    rospy.init_node("opendr_voxel_detection_3d", anonymous=True)
-    rospy.loginfo("AB3DMOT node started")
-
-    input_point_cloud_topic = rospy.get_param(
-        "~input_point_cloud_topic", "/opendr/dataset_point_cloud"
-    )
-    temp_dir = rospy.get_param("~temp_dir", "temp")
-    detector_model_name = rospy.get_param("~detector_model_name", "tanet_car_xyres_16")
-    detector_model_config_path = rospy.get_param(
-        "~detector_model_config_path", os.path.join(
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-dn", "--detector_model_name", help="Name of the trained model",
+                        type=str, default="tanet_car_xyres_16")
+    parser.add_argument(
+        "-dc", "--detector_model_config_path", help="Path to a model .proto config",
+        type=str, default=os.path.join(
             "..", "..", "src", "opendr", "perception", "object_detection_3d",
             "voxel_object_detection_3d", "second_detector", "configs", "tanet",
-            "car", "test_short.proto"
+            "car", "xyres_16.proto"
         )
     )
+    parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
+                        type=str, default="temp")
+    parser.add_argument("-i", "--input_point_cloud_topic",
+                        help="Point Cloud topic provdied by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
+                        type=str, default="/opendr/dataset_point_cloud")
+    parser.add_argument("-od", "--output_detection3d_topic",
+                        help="Output detections topic",
+                        type=str, default="/opendr/detection3d")
+    parser.add_argument("-ot", "--output_tracking3d_id_topic",
+                        help="Output tracking topic",
+                        type=str, default="/opendr/tracking3d_id")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    args = parser.parse_args()
+
+    input_point_cloud_topic = args.input_point_cloud_topic
+    detector_model_name = args.detector_model_name
+    temp_dir = args.temp_dir
+    device = args.device
+    detector_model_config_path = args.detector_model_config_path
+    output_detection3d_topic = args.output_detection3d_topic
+    output_tracking3d_id_topic = args.output_tracking3d_id_topic
+
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
 
     detector = VoxelObjectDetection3DLearner(
-        device=device, temp_path=temp_dir, model_config_path=detector_model_config_path
+        device=device,
+        temp_path=temp_dir,
+        model_config_path=detector_model_config_path
     )
     if not os.path.exists(os.path.join(temp_dir, detector_model_name)):
         VoxelObjectDetection3DLearner.download(detector_model_name, temp_dir)
@@ -125,6 +156,11 @@ if __name__ == "__main__":
         detector=detector,
         device=device,
         input_point_cloud_topic=input_point_cloud_topic,
+        output_detection3d_topic=output_detection3d_topic,
+        output_tracking3d_id_topic=output_tracking3d_id_topic,
     )
-    # begin ROS communications
-    rospy.spin()
+
+    ab3dmot_node.listen()
+
+if __name__ == '__main__':
+    main()
