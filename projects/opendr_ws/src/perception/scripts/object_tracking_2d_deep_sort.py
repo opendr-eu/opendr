@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import cv2
 import torch
 import os
@@ -174,36 +175,61 @@ def draw_predictions(frame, predictions: TrackingAnnotation, is_centered=False, 
         )
 
 
-if __name__ == "__main__":
-    # Automatically run on GPU/CPU
-    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-n", "--model_name", help="Name of the trained model",
+                        type=str, default="deep_sort")
+    parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
+                        type=str, default="temp")
+    parser.add_argument("-i", "--input_image_topic",
+                        help="Input Image topic provdied by either an image_dataset_node, webcam or any other image node",
+                        type=str, default="/opendr/dataset_image")
+    parser.add_argument("-od", "--output_detection_topic",
+                        help="Output detections topic",
+                        type=str, default="/opendr/detection")
+    parser.add_argument("-ot", "--output_tracking_id_topic",
+                        help="Output detections topic",
+                        type=str, default="/opendr/tracking_id")
+    parser.add_argument("-oi", "--output_image_topic",
+                        help="Output detections topic",
+                        type=str, default="/opendr/image_annotated")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    args = parser.parse_args()
 
-    # initialize ROS node
-    rospy.init_node("opendr_deep_sort", anonymous=True)
-    rospy.loginfo("Deep Sort node started")
-
-    model_name = rospy.get_param("~model_name", "deep_sort")
-    temp_dir = rospy.get_param("~temp_dir", "temp")
-    input_image_topic = rospy.get_param(
-        "~input_image_topic", "/opendr/dataset_image"
-    )
-    rospy.loginfo("Using model_name: {}".format(model_name))
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
 
     detection_learner = ObjectTracking2DFairMotLearner(
-        device=device, temp_path=temp_dir,
+        device=device, temp_path=args.temp_dir,
     )
-    if not os.path.exists(os.path.join(temp_dir, "fairmot_dla34")):
-        ObjectTracking2DFairMotLearner.download("fairmot_dla34", temp_dir)
+    if not os.path.exists(os.path.join(args.temp_dir, "fairmot_dla34")):
+        ObjectTracking2DFairMotLearner.download("fairmot_dla34", args.temp_dir)
 
-    detection_learner.load(os.path.join(temp_dir, "fairmot_dla34"), verbose=True)
+    detection_learner.load(os.path.join(args.temp_dir, "fairmot_dla34"), verbose=True)
 
-    # created node object
     deep_sort_node = ObjectTracking2DDeepSortNode(
         detector=detection_learner,
         device=device,
-        model_name=model_name,
-        input_image_topic=input_image_topic,
-        temp_dir=temp_dir,
+        model_name=args.model_name,
+        input_image_topic=args.input_image_topic,
+        temp_dir=args.temp_dir,
+        output_detection_topic=args.output_detection_topic,
+        output_tracking_id_topic=args.output_tracking_id_topic,
+        output_image_topic=args.output_image_topic if args.output_image_topic != "None" else None,
     )
-    # begin ROS communications
-    rospy.spin()
+
+    deep_sort_node.listen()
+
+if __name__ == '__main__':
+    main()
