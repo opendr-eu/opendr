@@ -11,7 +11,7 @@ if [[ -z "$ROS_DISTRO" ]]; then
 fi
 
 MODULE_PATH=${OPENDR_HOME}/src/opendr/control/single_demo_grasp
-WS_PATH=${OPENDR_HOME}/projects/control/single_demo_grasp/simulation_ws
+WS_PATH=${OPENDR_HOME}/projects/python/control/single_demo_grasp/simulation_ws
 BRIDGE_PATH=${OPENDR_HOME}/projects/opendr_ws/src/ros_bridge
 
 

@@ -39,6 +39,7 @@ jobs:
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
@@ -87,6 +88,7 @@ jobs:
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms

@@ -6,10 +6,10 @@ This folder contains code for:
 <br> 
 
 <p float="left">
-  <img src="./../../projects/simulation/SMPL+D_human_models/examples/model_1.png" width=150 />
-  <img src="./../../projects/simulation/SMPL+D_human_models/examples/model_4.png" width=150 />
-  <img src="./../../projects/simulation/SMPL+D_human_models/examples/model_3.png" width=150 />
-  <img src="./../../projects/simulation/SMPL+D_human_models/examples/model_2.png" width=150 />
+  <img src="./../../projects/python/simulation/SMPL+D_human_models/examples/model_1.png" width=150 />
+  <img src="./../../projects/python/simulation/SMPL+D_human_models/examples/model_4.png" width=150 />
+  <img src="./../../projects/python/simulation/SMPL+D_human_models/examples/model_3.png" width=150 />
+  <img src="./../../projects/python/simulation/SMPL+D_human_models/examples/model_2.png" width=150 />
 </p>
 
 ### Download the raw SMPL+D models only (≈12.5Gb)
