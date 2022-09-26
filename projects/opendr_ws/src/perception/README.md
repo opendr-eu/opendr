@@ -38,7 +38,8 @@ Before you can run any of the toolkit's ROS nodes, some prerequisites need to be
 
 ### Pose Estimation ROS Node
 
-You can find the pose estimation ROS node python script [here](./scripts/pose_estimation.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's [pose estimation tool](../../../../src/opendr/perception/pose_estimation/lightweight_open_pose/lightweight_open_pose_learner.py) whose documentation can be found [here](../../../../docs/reference/lightweight-open-pose.md).
+You can find the pose estimation ROS node python script [here](./scripts/pose_estimation.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [pose estimation tool](../../../../src/opendr/perception/pose_estimation/lightweight_open_pose/lightweight_open_pose_learner.py) whose documentation can be found [here](../../../../docs/reference/lightweight-open-pose.md).
 
 Instructions for basic usage and visualization of results:
 
@@ -71,7 +72,9 @@ Instructions for basic usage and visualization of results:
 
 ### Fall Detection ROS Node
 
-You can find the fall detection ROS node python script [here](./scripts/fall_detection.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's [fall detection tool](../../../../src/opendr/perception/fall_detection/fall_detector_learner.py) whose documentation can be found [here](../../../../docs/reference/fall-detection.md). Fall detection uses the toolkit's pose estimation tool internally.
+You can find the fall detection ROS node python script [here](./scripts/fall_detection.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [fall detection tool](../../../../src/opendr/perception/fall_detection/fall_detector_learner.py) whose documentation can be found [here](../../../../docs/reference/fall-detection.md).
+Fall detection uses the toolkit's pose estimation tool internally.
 
 <!-- TODO Should add information about taking advantage of the pose estimation ros node when running fall detection, see issue https://github.com/opendr-eu/opendr/issues/282 -->
 
@@ -121,7 +124,8 @@ Instructions for basic usage and visualization of results:
 
 ### Face Recognition ROS Node
 
-You can find the face recognition ROS node python script [here](./scripts/face_recognition.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's [face recognition tool](../../../../src/opendr/perception/face_recognition/face_recognition_learner.py) whose documentation can be found [here](../../../../docs/reference/face-recognition.md).
+You can find the face recognition ROS node python script [here](./scripts/face_recognition.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [face recognition tool](../../../../src/opendr/perception/face_recognition/face_recognition_learner.py) whose documentation can be found [here](../../../../docs/reference/face-recognition.md).
 
 Instructions for basic usage and visualization of results:
 
@@ -165,7 +169,8 @@ under `/opendr/face_recognition_id`.
 
 For 2D object detection, there are several ROS nodes implemented using various algorithms. The generic obejct detectors are SSD, YOLOv3, CenterNet and DETR.
 
-You can find the 2D object detection ROS node python scripts here: [SSD node](./scripts/object_detection_2d_ssd.py), [YOLOv3 node](./scripts/object_detection_2d_yolov3.py), [CenterNet node](./scripts/object_detection_2d_centernet.py) and [DETR node](./scripts/object_detection_2d_detr.py), where you can inspect the code and modify it as you wish to fit your needs. The nodes makes use of the toolkit's various 2D object detection tools: [SSD tool](../../../../src/opendr/perception/object_detection_2d/ssd/ssd_learner.py), [YOLOv3 tool](../../../../src/opendr/perception/object_detection_2d/yolov3/yolov3_learner.py), [CenterNet tool](../../../../src/opendr/perception/object_detection_2d/centernet/centernet_learner.py), [DETR tool](../../../../src/opendr/perception/object_detection_2d/detr/detr_learner.py), whose documentation can be found here: [SSD docs](../../../../docs/reference/object-detection-2d-ssd.md), [YOLOv3 docs](../../../../docs/reference/object-detection-2d-yolov3.md), [CenterNet docs](../../../../docs/reference/object-detection-2d-centernet.md), [DETR docs](../../../../docs/reference/detr.md).
+You can find the 2D object detection ROS node python scripts here: [SSD node](./scripts/object_detection_2d_ssd.py), [YOLOv3 node](./scripts/object_detection_2d_yolov3.py), [CenterNet node](./scripts/object_detection_2d_centernet.py) and [DETR node](./scripts/object_detection_2d_detr.py), where you can inspect the code and modify it as you wish to fit your needs.
+The nodes makes use of the toolkit's various 2D object detection tools: [SSD tool](../../../../src/opendr/perception/object_detection_2d/ssd/ssd_learner.py), [YOLOv3 tool](../../../../src/opendr/perception/object_detection_2d/yolov3/yolov3_learner.py), [CenterNet tool](../../../../src/opendr/perception/object_detection_2d/centernet/centernet_learner.py), [DETR tool](../../../../src/opendr/perception/object_detection_2d/detr/detr_learner.py), whose documentation can be found here: [SSD docs](../../../../docs/reference/object-detection-2d-ssd.md), [YOLOv3 docs](../../../../docs/reference/object-detection-2d-yolov3.md), [CenterNet docs](../../../../docs/reference/object-detection-2d-centernet.md), [DETR docs](../../../../docs/reference/detr.md).
 
 Instructions for basic usage and visualization of results:
 
@@ -210,7 +215,10 @@ Instructions for basic usage and visualization of results:
 
 ### 2D Object Tracking Deep Sort ROS Node
 <!-- TODO -->
-A ROS node for performing Object Tracking 2D using Deep Sort using either pretrained models on Market1501 dataset, or custom trained models. This is a detection-based method, and therefore the 2D object detector is needed to provide detections, which then will be used to make associations and generate tracking ids. The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`). Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
+A ROS node for performing Object Tracking 2D using Deep Sort using either pretrained models on Market1501 dataset, or custom trained models.
+This is a detection-based method, and therefore the 2D object detector is needed to provide detections, which then will be used to make associations and generate tracking ids.
+The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`).
+Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
 Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
 
 ```shell
@@ -351,7 +359,9 @@ rosrun perception object_detection_2d_gem.py
 
 ### RGBD Hand Gesture Recognition ROS Node
 <!-- TODO -->
-A ROS node for performing hand gesture recognition using MobileNetv2 model trained on HANDS dataset. The node has been tested with Kinectv2 for depth data acquisition with the following drivers: https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2. Assuming that the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+A ROS node for performing hand gesture recognition using MobileNetv2 model trained on HANDS dataset.
+The node has been tested with Kinectv2 for depth data acquisition with the following drivers: https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2.
+Assuming that the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
 ```shell
 rosrun perception rgbd_hand_gesture_recognition.py
 ```
@@ -458,11 +468,15 @@ To get an image from a dataset on the disk, you can start a `image_dataset.py` n
 ```shell
 rosrun perception image_dataset.py
 ```
-By default, it downloads a `nano_MOT20` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(Image, Target)` as elements. You can inspect [the node](./scripts/image_dataset.py) and modify it to your needs for other image datasets.
+By default, it downloads a `nano_MOT20` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic.
+You can create an instance of this node with any `DatasetIterator` object that returns `(Image, Target)` as elements.
+You can inspect [the node](./scripts/image_dataset.py) and modify it to your needs for other image datasets.
 
 ### Point Cloud Dataset ROS Node
 To get a point cloud from a dataset on the disk, you can start a `point_cloud_dataset.py` node as:
 ```shell
 rosrun perception point_cloud_dataset.py
 ```
-By default, it downloads a `nano_KITTI` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic. You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements. You can inspect [the node](./scripts/point_cloud_dataset.py) and modify it to your needs for other point cloud datasets.
+By default, it downloads a `nano_KITTI` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic.
+You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements.
+You can inspect [the node](./scripts/point_cloud_dataset.py) and modify it to your needs for other point cloud datasets.
