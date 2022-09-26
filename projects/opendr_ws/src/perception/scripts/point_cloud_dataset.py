@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import os
 import rospy
 import time
@@ -27,6 +28,7 @@ class PointCloudDatasetNode:
         self,
         dataset: DatasetIterator,
         output_point_cloud_topic="/opendr/dataset_point_cloud",
+        data_fps=10,
     ):
         """
         Creates a ROS Node for publishing dataset point clouds
@@ -36,6 +38,7 @@ class PointCloudDatasetNode:
         self.dataset = dataset
         # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
+        self.delay = 1.0 / data_fps
 
         if output_point_cloud_topic is not None:
             self.output_point_cloud_publisher = rospy.Publisher(
@@ -55,20 +58,33 @@ class PointCloudDatasetNode:
             )
             self.output_point_cloud_publisher.publish(message)
 
-            time.sleep(0.1)
+            time.sleep(self.delay)
 
             i += 1
 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--dataset_path",
+                        help="Path to a dataset. If does not exist, nano KITTI dataset will be downloaded there.",
+                        type=str, default="KITTI/opendr_nano_kitti")
+    parser.add_argument("-ks", "--kitti_subsets_path",
+                        help="Path to kitti subsets. Used only if a KITTI dataset is downloaded",
+                        type=str,
+                        default="../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets")
+    parser.add_argument("-o", "--output_point_cloud_topic", help="Topic name to upload the data",
+                        type=str, default="/opendr/dataset_point_cloud")
+    parser.add_argument("-f", "--fps", help="Data FPS",
+                        type=float, default=10)
+    args = parser.parse_args()
 
-if __name__ == "__main__":
-
-    rospy.init_node('opendr_point_cloud_dataset')
-
-    dataset_path = "KITTI/opendr_nano_kitti"
+    dataset_path = args.dataset_path
+    kitti_subsets_path = args.kitti_subsets_path
+    output_point_cloud_topic = args.output_point_cloud_topic
+    data_fps = args.fps
 
     if not os.path.exists(dataset_path):
         dataset_path = KittiDataset.download_nano_kitti(
-            "KITTI", kitti_subsets_path="../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets",
+            "KITTI", kitti_subsets_path=kitti_subsets_path,
             create_dir=True,
         ).path
 
@@ -78,5 +94,11 @@ if __name__ == "__main__":
         dataset_path + "/training/calib",
     )
 
-    dataset_node = PointCloudDatasetNode(dataset)
+    dataset_node = PointCloudDatasetNode(
+        dataset, output_point_cloud_topic=output_point_cloud_topic, data_fps=data_fps
+    )
+
     dataset_node.start()
+
+if __name__ == '__main__':
+    main()
