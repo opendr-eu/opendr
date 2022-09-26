@@ -87,10 +87,10 @@ class ObjectDetection3DVoxelNode(Node):
         detection_boxes = self.learner.infer(point_cloud)
 
         # Convert detected boxes to ROS type and publish
-        ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes, classes=["Car", "Van", "Truck", "Pedestrian", "Cyclist"])
+        ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes)
         if self.detection_publisher is not None:
             self.detection_publisher.publish(ros_boxes)
-            self.get_logger().info("Published " + str(len(detection_boxes)) + "detection boxes")
+            self.get_logger().info("Published " + str(len(detection_boxes)) + " detection boxes")
 
 def main(
     args=None,
@@ -112,6 +112,9 @@ def main(
     parser.add_argument("-i", "--input_point_cloud_topic",
                         help="Point Cloud topic provdied by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
                         type=str, default="/opendr/dataset_point_cloud")
+    parser.add_argument("-o", "--output_detection3d_topic",
+                        help="Output detections topic",
+                        type=str, default="/opendr/detection3d")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                     type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
@@ -122,6 +125,7 @@ def main(
         model_config_path=args.model_config_path,
         input_point_cloud_topic=args.input_point_cloud_topic,
         temp_dir=args.temp_dir,
+        output_detection3d_topic=args.output_detection3d_topic,
     )
 
     rclpy.spin(voxel_node)
