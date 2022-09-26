@@ -50,7 +50,8 @@ class ImageDatasetNode(Node):
 
     def timer_callback(self):
 
-        image = self.dataset[self.sample_index % len(self.dataset)][0]  # Dataset should have an (Image, Target) pair as elements
+        image = self.dataset[self.sample_index % len(self.dataset)][0]
+        # Dataset should have an (Image, Target) pair as elements
 
         self.get_logger().info("Publishing image [" + str(self.sample_index) + "]")
         message = self.bridge.to_ros_image(
@@ -59,6 +60,7 @@ class ImageDatasetNode(Node):
         self.output_image_publisher.publish(message)
 
         self.sample_index += 1
+
 
 def main(
     args=None,

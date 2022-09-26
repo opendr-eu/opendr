@@ -290,7 +290,7 @@ class ROS2Bridge:
         ros_point_cloud = PointCloudMsg()
 
         header = Header()
-        
+
         header.stamp = time_stamp
         ros_point_cloud.header = header
 
@@ -312,7 +312,7 @@ class ROS2Bridge:
         ros_point_cloud.channels = channels
 
         return ros_point_cloud
-    
+
     def from_ros_boxes_3d(self, ros_boxes_3d):
         """
         Converts a ROS2 Detection3DArray message into an OpenDR BoundingBox3D object.

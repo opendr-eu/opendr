@@ -71,7 +71,7 @@ class ObjectDetection3DVoxelNode(Node):
         )
 
         self.create_subscription(ROS_PointCloud, input_point_cloud_topic, self.callback, 1)
-    
+
         self.get_logger().info("Ready to listen")
 
     def callback(self, data):
@@ -90,6 +90,7 @@ class ObjectDetection3DVoxelNode(Node):
         if self.detection_publisher is not None:
             self.detection_publisher.publish(ros_boxes)
             self.get_logger().info("Published " + str(len(detection_boxes)) + " detection boxes")
+
 
 def main(
     args=None,
@@ -115,7 +116,7 @@ def main(
                         help="Output detections topic",
                         type=str, default="/opendr/detection3d")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
-                    type=str, default="cuda", choices=["cuda", "cpu"])
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
     voxel_node = ObjectDetection3DVoxelNode(

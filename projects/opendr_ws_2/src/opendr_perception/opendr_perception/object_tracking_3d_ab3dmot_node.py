@@ -15,7 +15,6 @@
 
 import argparse
 import os
-import torch
 from opendr.engine.learners import Learner
 import rclpy
 from rclpy.node import Node
@@ -96,6 +95,7 @@ class ObjectTracking3DAb3dmotNode(Node):
             self.tracking_id_publisher.publish(ros_ids)
             self.get_logger().info("Published " + str(len(ids)) + " tracking ids")
 
+
 def main(
     args=None,
 ):
@@ -123,7 +123,7 @@ def main(
                         help="Output tracking topic",
                         type=str, default="/opendr/tracking3d_id")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
-                    type=str, default="cuda", choices=["cuda", "cpu"])
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
     input_point_cloud_topic = args.input_point_cloud_topic

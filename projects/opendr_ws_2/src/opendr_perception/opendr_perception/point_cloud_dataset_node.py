@@ -15,7 +15,6 @@
 
 import argparse
 import os
-import time
 from sensor_msgs.msg import PointCloud as ROS_PointCloud
 import rclpy
 from rclpy.node import Node
@@ -51,7 +50,8 @@ class PointCloudDatasetNode(Node):
 
     def timer_callback(self):
 
-        point_cloud = self.dataset[self.sample_index % len(self.dataset)][0]  # Dataset should have a (PointCloud, Target) pair as elements
+        point_cloud = self.dataset[self.sample_index % len(self.dataset)][0]
+        # Dataset should have a (PointCloud, Target) pair as elements
 
         self.get_logger().info("Publishing point_cloud [" + str(self.sample_index) + "]")
         message = self.bridge.to_ros_point_cloud(
@@ -61,15 +61,19 @@ class PointCloudDatasetNode(Node):
 
         self.sample_index += 1
 
+
 def main(
     args=None,
 ):
     rclpy.init(args=args)
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset_path", help="Path to a dataset. If does not exist, nano KITTI dataset will be downloaded there.",
+    parser.add_argument("-d", "--dataset_path",
+                        help="Path to a dataset. If does not exist, nano KITTI dataset will be downloaded there.",
                         type=str, default="KITTI/opendr_nano_kitti")
-    parser.add_argument("-ks", "--kitti_subsets_path", help="Path to kitti subsets. Used only if a KITTI dataset is downloaded",
-                        type=str, default="../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets")
+    parser.add_argument("-ks", "--kitti_subsets_path",
+                        help="Path to kitti subsets. Used only if a KITTI dataset is downloaded",
+                        type=str,
+                        default="../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets")
     parser.add_argument("-o", "--output_point_cloud_topic", help="Topic name to upload the data",
                         type=str, default="/opendr/dataset_point_cloud")
     parser.add_argument("-f", "--fps", help="Data FPS",

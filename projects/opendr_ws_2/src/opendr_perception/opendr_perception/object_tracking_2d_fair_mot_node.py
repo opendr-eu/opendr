@@ -191,7 +191,7 @@ def main(
                         help="Output detections topic",
                         type=str, default="/opendr/image_annotated")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
-                    type=str, default="cuda", choices=["cuda", "cpu"])
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
     fair_mot_node = ObjectTracking2DFairMotNode(
@@ -201,7 +201,7 @@ def main(
         temp_dir=args.temp_dir,
         output_detection_topic=args.output_detection_topic,
         output_tracking_id_topic=args.output_tracking_id_topic,
-        output_image_topic=args.output_image_topic if args.output_image_topic is not "None" else None,
+        output_image_topic=args.output_image_topic if args.output_image_topic != "None" else None,
     )
 
     rclpy.spin(fair_mot_node)
