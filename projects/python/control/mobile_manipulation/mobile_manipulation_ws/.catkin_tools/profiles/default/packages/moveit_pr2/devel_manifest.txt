@@ -1,2 +1,0 @@
-moveit_pr2/moveit_pr2
-/home/opendr/opendr/projects/python/control/mobile_manipulation/mobile_manipulation_ws/devel/.private/moveit_pr2/cmake.lock /home/opendr/opendr/projects/python/control/mobile_manipulation/mobile_manipulation_ws/devel/./cmake.lock

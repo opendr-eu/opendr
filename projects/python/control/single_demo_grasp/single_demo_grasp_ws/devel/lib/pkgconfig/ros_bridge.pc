@@ -1,8 +1,0 @@
-prefix=/home/opendr/opendr/projects/python/control/single_demo_grasp/simulation_ws/devel
-
-Name: ros_bridge
-Description: Description of ros_bridge
-Version: 1.1.1
-Cflags: -I/home/opendr/opendr/projects/python/control/single_demo_grasp/simulation_ws/devel/include
-Libs: -L${prefix}/lib 
-Requires: roscpp rospy std_msgs

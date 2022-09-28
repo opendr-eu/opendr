@@ -1,1 +1,0 @@
-/home/opendr/opendr/projects/python/control/mobile_manipulation/mobile_manipulation_ws/devel/.private/mobile_manipulation_rl/lib/pkgconfig/mobile_manipulation_rl.pc

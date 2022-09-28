@@ -1,5 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-   <!-- camera stream and inference -->
-   <node name="SingleDemoGraspInference" pkg="single_demo_grasping_demo" type="single_demo_grasp_camera_stream.py" output="screen" /> 
-</launch>
