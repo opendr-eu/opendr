@@ -34,85 +34,25 @@ from opendr.engine.data import Image
 from opendr.control.single_demo_grasp.training.learner_utils import register_datasets
 
 
-def get_kps_center(input_kps) :
-    input_kps_sorted = input_kps[input_kps[:, 2].argsort()[::-1]]
-    kps_x_list = input_kps[:,0]
-    kps_y_list = input_kps[:,1]
-    kps_x_list = kps_x_list[::-1]
-    kps_y_list = kps_y_list[::-1]
-    d = {'X' : kps_x_list,
-        'Y' : kps_y_list}
-    df = pd.DataFrame(data = d)
-
-    x = np.mean(df["X"][0:2])
-    y= np.mean(df["Y"][0:2])
-    return [x,y]
-
-def get_angle(input_kps, mode):
-    input_kps_sorted = input_kps[input_kps[:, 2].argsort()[::-1]]
-    # kps_x_list = input_kps[0][:,0]
-    # kps_y_list = input_kps[0][:,1]
-    kps_x_list = input_kps_sorted[:,0]
-    kps_y_list = input_kps_sorted[:,1]
-    kps_x_list = kps_x_list[::-1]
-    kps_y_list = kps_y_list[::-1]
-
-    d = {'X' : kps_x_list,
-        'Y' : kps_y_list}
-
-    df = pd.DataFrame(data = d)
-
-
-    # move the origin
-    x = (df["X"] - df["X"][0])
-    y = (df["Y"] - df["Y"][0])
-
-    #x = x[0:2]
-    #y = y[0:2]
-    if mode == 1:
-        list_xy = (np.arctan2(y,x)*180/math.pi).astype(int)
-        occurence_count = Counter(list_xy)
-        return occurence_count.most_common(1)[0][0]
-    else:
-        x = np.mean(x)
-        y= np.mean(y)
-        return np.arctan2(y,x)*180/math.pi
-
-def correct_orientation_ref(angle):
-
-    if angle <= 90:
-        angle += 90
-    if angle > 90:
-        angle += -270
-
-    return angle
-    
-
 class Detectron2Learner(Learner):
     def __init__(self, object_name=None, data_directory=None, lr=0.0008, batch_size=512, img_per_step=2, num_workers=2,
                  num_classes=8, num_keypoints=25, iters=1000, threshold=0.8, device='cuda'):
-        super(SingleDemoGraspLearner, self).__init__(lr=lr, threshold=threshold, batch_size=batch_size, device=device,
-                                                     iters=iters)
+        super(Detectron2Learner, self).__init__(lr=lr, threshold=threshold, batch_size=batch_size, device=device, iters=iters)
         self.dataset_dir = data_directory
         self.object_name = object_name
-        self.output_dir = os.path.join(self.dataset_dir, self.object_name, "output")
-        self.num_workers = num_workers
-        self.num_classes = num_classes
         self.temp_dir = os.path.join(self.dataset_dir, "download_temp")
         self.cfg = get_cfg()
-        self.cfg.merge_from_file(model_zoo.get_config_file(
-            "COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
-        self.cfg.DATALOADER.NUM_WORKERS = self.num_workers
-        self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
-            "COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml")
-        self.cfg.MODEL.DEVICE = device
-        self.cfg.SOLVER.IMS_PER_BATCH = img_per_step
+        self.cfg.merge_from_file(model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
+        self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml")
         self.cfg.SOLVER.BASE_LR = lr
+        self.cfg.MODEL.DEVICE = device
         self.cfg.SOLVER.MAX_ITER = iters
+        self.cfg.SOLVER.IMS_PER_BATCH = img_per_step
+        self.cfg.DATALOADER.NUM_WORKERS = num_workers
         self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
         self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.NUM_KEYPOINTS = num_keypoints
-        self.cfg.OUTPUT_DIR = self.output_dir
+        self.cfg.OUTPUT_DIR = os.path.join(self.dataset_dir, self.object_name, "output")
         os.makedirs(self.cfg.OUTPUT_DIR, exist_ok=True)
 
     def fit(self):
@@ -157,6 +97,7 @@ class Detectron2Learner(Learner):
         for i in range(len(bounding_box)):
             angle = correct_orientation_ref(get_angle(keypoints_pred[i],2))
             result.append(GraspDetection(pred_classes[i], get_kps_center(keypoints_pred[i]), angle, left=bounding_box[i][0], top=bounding_box[i][1], width=bounding_box[i][2]-bounding_box[i][0], height=bounding_box[i][3]-bounding_box[i][1]))
+        # TODO: change result to standard bbox/keypoint - the rest will be done further down the line
         return result
 
     def _prepare_datasets(self):
@@ -171,7 +112,6 @@ class Detectron2Learner(Learner):
         vars()[self.object_name + '_metadata'], train_set, val_set = register_datasets(DatasetCatalog, MetadataCatalog,
                                                                                        self.dataset_dir, self.object_name,
                                                                                        bbx_train, kps_train, bbx_val, kps_val)
-
         self.num_train = len(bbx_train)
         self.num_val = len(bbx_val)
         self.num_kps = len(kps_train[0][0])
@@ -188,14 +128,14 @@ class Detectron2Learner(Learner):
             assert os.path.isfile(path_to_model), "Checkpoint {} not found!".format(path_to_model)
 
     def save(self, path):
-        if os.path.isfile(os.path.join(self.output_dir, "model_final.pth")):
-            print("found the trained model at: " + os.path.join(self.output_dir, "model_final.pth"))
-            if path != self.output_dir:
+        if os.path.isfile(os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth")):
+            print("found the trained model at: " + os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth"))
+            if path != self.cfg.OUTPUT_DIR:
                 print("copying the trained model to your desired directory at: ")
                 print(path)
-                shutil.copyfile(os.path.join(self.output_dir, "model_final.pth"), os.path.join(path, "model_final.pth"))
+                shutil.copyfile(os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth"), os.path.join(path, "model_final.pth"))
             else:
-                print("model is already saved at: " + os.path.join(self.output_dir, "model_final.pth"))
+                print("model is already saved at: " + os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth"))
         else:
             print("no trained model was found...")
 

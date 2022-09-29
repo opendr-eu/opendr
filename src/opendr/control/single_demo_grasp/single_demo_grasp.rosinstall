@@ -1,4 +1,3 @@
-- git: {local-name: libfranka,           uri: 'https://github.com/frankaemika/libfranka.git',            version: '0.10.0'}
 - git: {local-name: franka_ros,          uri: 'https://github.com/frankaemika/franka_ros.git'          , version: 'noetic-devel'}
 - git: {local-name: panda_moveit_config, uri: 'https://github.com/ros-planning/panda_moveit_config.git', version: 'noetic-devel'}
 - git: {local-name: moveit,              uri: 'https://github.com/ros-planning/moveit.git',              version: 'noetic-devel'}

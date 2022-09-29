@@ -31,6 +31,7 @@ from geometry_msgs.msg import PoseStamped
 
 
 
+    
 # executing a sequence of actions to demonstrate a grasping action based on
 # single demo grasp model
 def main():

@@ -38,6 +38,60 @@ import message_filters
 import cv2
 
 
+def get_kps_center(input_kps) :
+    input_kps_sorted = input_kps[input_kps[:, 2].argsort()[::-1]]
+    kps_x_list = input_kps[:,0]
+    kps_y_list = input_kps[:,1]
+    kps_x_list = kps_x_list[::-1]
+    kps_y_list = kps_y_list[::-1]
+    d = {'X' : kps_x_list,
+        'Y' : kps_y_list}
+    df = pd.DataFrame(data = d)
+
+    x = np.mean(df["X"][0:2])
+    y= np.mean(df["Y"][0:2])
+    return [x,y]
+
+def get_angle(input_kps, mode):
+    input_kps_sorted = input_kps[input_kps[:, 2].argsort()[::-1]]
+    # kps_x_list = input_kps[0][:,0]
+    # kps_y_list = input_kps[0][:,1]
+    kps_x_list = input_kps_sorted[:,0]
+    kps_y_list = input_kps_sorted[:,1]
+    kps_x_list = kps_x_list[::-1]
+    kps_y_list = kps_y_list[::-1]
+
+    d = {'X' : kps_x_list,
+        'Y' : kps_y_list}
+
+    df = pd.DataFrame(data = d)
+
+
+    # move the origin
+    x = (df["X"] - df["X"][0])
+    y = (df["Y"] - df["Y"][0])
+
+    #x = x[0:2]
+    #y = y[0:2]
+    if mode == 1:
+        list_xy = (np.arctan2(y,x)*180/math.pi).astype(int)
+        occurence_count = Counter(list_xy)
+        return occurence_count.most_common(1)[0][0]
+    else:
+        x = np.mean(x)
+        y= np.mean(y)
+        return np.arctan2(y,x)*180/math.pi
+
+def correct_orientation_ref(angle):
+
+    if angle <= 90:
+        angle += 90
+    if angle > 90:
+        angle += -270
+
+    return angle
+
+
 class Detectron2ObjectRecognitionNode:
 
     def __init__(self, input_image_topic="/usb_cam/image_raw", input_depth_image_topic="/usb_cam/image_raw", camera_info_topic="/camera/color/camera_info",
@@ -140,6 +194,18 @@ class Detectron2ObjectRecognitionNode:
         x_dist = (object_detection_2D.data[0]-self.ctrX) * to_world_scale
         y_dist = (self.ctrY-object_detection_2D.data[1]) * to_world_scale
 
+        '''
+        ctr_X = int((bbx[0] + bbx[2]) / 2)
+        ctr_Y = int((bbx[1] + bbx[3]) / 2)
+        angle = pred_angle
+        ref_x = 640 / 2
+        ref_y = 480 / 2
+        # distance to the center of bounding box representing the center of object
+        dist = [ctr_X - ref_x, ref_y - ctr_Y]
+        # distance center of keypoints representing the grasp location of the object
+        dist_kps_ctr = [pred_kps_center[0] - ref_x, ref_y - pred_kps_center[1]]
+        '''    
+        
         my_point = PoseStamped()
         my_point.header.frame_id = self._camera_tf_frame
         my_point.header.stamp = rospy.Time(0)
