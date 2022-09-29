@@ -40,7 +40,7 @@ class HumanActivityRecognitionNode:
         model="cox3d-m",
     ):
         """
-        Creates a ROS Node for face recognition
+        Creates a ROS Node for video-based human activity recognition.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_category_topic: Topic to which we are publishing the recognized activity
@@ -124,7 +124,7 @@ class HumanActivityRecognitionNode:
         if image is None:
             return
 
-        x = self.preprocess(image.convert("channel_first", "rgb"))
+        x = self.preprocess(image.convert("channels_first", "rgb"))
 
         result = self.learner.infer(x)
         assert len(result) == 1
