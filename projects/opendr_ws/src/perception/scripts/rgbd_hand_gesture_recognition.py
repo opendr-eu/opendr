@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 
 import rospy
 import torch
@@ -117,11 +118,24 @@ class RgbdHandGestureNode:
         return img
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+
+    args = parser.parse_args()
+
     # Select the device for running
     try:
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU")
+            device = "cpu"
     except:
-        device = 'cpu'
+        print("Using CPU")
+        device = "cpu"
 
     # default topics are according to kinectv2 drivers at https://github.com/OpenKinect/libfreenect2
     # and https://github.com/code-iai-iai_kinect2
