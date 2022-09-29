@@ -143,31 +143,23 @@ class HumanActivityRecognitionNode:
             )
 
 
-def _resize(image, width=None, height=None, inter=cv2.INTER_AREA):
+def _resize(image, size=None, inter=cv2.INTER_AREA):
     # initialize the dimensions of the image to be resized and
     # grab the image size
     dim = None
     (h, w) = image.shape[:2]
 
-    # if both the width and height are None, then return the
-    # original image
-    if width is None and height is None:
-        return image
-
-    # check to see if the width is None
-    if width is None:
-        # calculate the ratio of the height and construct the
-        # dimensions
-        r = height / float(h)
-        dim = (int(w * r), height)
-
-    # otherwise, the height is None
-    else:
+    if h > w:
         # calculate the ratio of the width and construct the
         # dimensions
-        r = width / float(w)
-        dim = (width, int(h * r))
-
+        r = size / float(w)
+        dim = (size, int(h * r))
+    else:
+        # calculate the ratio of the height and construct the
+        # dimensions
+        r = size / float(h)
+        dim = (int(w * r), size)
+        
     # resize the image
     resized = cv2.resize(image, dim, interpolation=inter)
 
@@ -183,7 +175,7 @@ def _image_preprocess(image_size: int):
     def wrapped(frame):
         nonlocal standardize
         frame = frame.transpose((1, 2, 0))  # C, H, W -> H, W, C
-        frame = _resize(frame, height=image_size, width=image_size)
+        frame = _resize(frame, size=image_size)
         frame = torch.tensor(frame).permute((2, 0, 1))  # H, W, C -> C, H, W
         frame = frame / 255.0  # [0, 255] -> [0.0, 1.0]
         frame = standardize(frame)
@@ -202,7 +194,7 @@ def _video_preprocess(image_size: int, window_size: int):
     def wrapped(frame):
         nonlocal frames, standardize
         frame = frame.transpose((1, 2, 0))  # C, H, W -> H, W, C
-        frame = _resize(frame, height=image_size, width=image_size)
+        frame = _resize(frame, size=image_size)
         frame = torch.tensor(frame).permute((2, 0, 1))  # H, W, C -> C, H, W
         frame = frame / 255.0  # [0, 255] -> [0.0, 1.0]
         frame = standardize(frame)
