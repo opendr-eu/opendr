@@ -18,7 +18,6 @@ import rospy
 import torch
 import torchvision
 import cv2
-import numpy as np
 from pathlib import Path
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
