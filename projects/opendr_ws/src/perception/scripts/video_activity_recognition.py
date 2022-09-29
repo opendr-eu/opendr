@@ -129,9 +129,7 @@ class HumanActivityRecognitionNode:
         result = self.learner.infer(x)
         assert len(result) == 1
         category = result[0]
-        category.confidence = float(
-            max(category.confidence.max())
-        )  # Confidence for predicted class
+        category.confidence = float(category.confidence.max())  # Confidence for predicted class
         category.description = KINETICS400_CLASSES[category.data]  # Class name
 
         if self.hypothesis_publisher is not None:
@@ -179,7 +177,7 @@ def _image_preprocess(image_size: int):
         frame = torch.tensor(frame).permute((2, 0, 1))  # H, W, C -> C, H, W
         frame = frame / 255.0  # [0, 255] -> [0.0, 1.0]
         frame = standardize(frame)
-        return Image(frame, dtype=np.float)
+        return Image(frame, dtype=float)
 
     return wrapped
 
