@@ -304,15 +304,26 @@ The predictied class id and confidence is published under the topic name `/opend
 Besides, the annotated image is published in `/opendr/image_pose_annotated` as well as the corresponding poses in `/opendr/poses`.
 
 ### Video Human Activity Recognition ROS Node
-<!-- TODO -->
 A ROS node for performing Human Activity Recognition using either CoX3D or X3D models pretrained on Kinetics400.
-Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
-```shell
-rosrun perception video_activity_recognition.py
-```
-The predictied class id and confidence is published under the topic name `/opendr/human_activity_recognition`, and the human-readable class name under `/opendr/human_activity_recognition_description`.
+Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as follows:
 
-----
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the pose detection node:
+    ```shell
+    rosrun perception pose_estimation.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_category_topic OUTPUT_CATEGORY_TOPIC`: Topic to which we are publishing the recognized activity (default=`"/opendr/human_activity_recognition"`)
+   - `-od or --output_category_description_topic OUTPUT_CATEGORY_DESRIPTION_TOPIC`: Topic to which we are publishing the ID of the recognized action (default=`/opendr/human_activity_recognition_description`)
+   - `--model`: Architecture to use for human activity recognition. Choices are "cox3d-s", "cox3d-m", "cox3d-l", "x3d-xs", "x3d-s", "x3d-m", or "x3d-l" (Default: "cox3d-m").
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+
+3. In a new terminal you can view predictions by running `rostopic echo /opendr/human_activity_recognition`.
+
+
 ## RGB + Infrared input
 
 ----
