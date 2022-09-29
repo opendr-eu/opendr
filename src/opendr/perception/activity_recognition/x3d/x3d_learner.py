@@ -154,9 +154,11 @@ class X3DLearner(Learner):
         """
         weights_path = Path(weights_path)
 
-        assert (
-            weights_path.is_file() and weights_path.suffix in {".pyth", ".pth", ".onnx"}
-        ), (
+        assert weights_path.is_file() and weights_path.suffix in {
+            ".pyth",
+            ".pth",
+            ".onnx",
+        }, (
             f"weights_path ({str(weights_path)}) should be a .pth or .onnx file."
             "Pretrained weights can be downloaded using `self.download(...)`"
         )
@@ -167,16 +169,18 @@ class X3DLearner(Learner):
 
         # Check for configuration mismatches, loading only matching weights
         new_model_state = self.model.state_dict()
-        loaded_state_dict = torch.load(weights_path, map_location=torch.device(self.device))
-        if "model_state" in loaded_state_dict:  # As found in the official pretrained X3D models
+        loaded_state_dict = torch.load(
+            weights_path, map_location=torch.device(self.device)
+        )
+        if (
+            "model_state" in loaded_state_dict
+        ):  # As found in the official pretrained X3D models
             loaded_state_dict = loaded_state_dict["model_state"]
 
         def size_ok(k):
             return new_model_state[k].size() == loaded_state_dict[k].size()
 
-        to_load = {
-            k: v for k, v in loaded_state_dict.items() if size_ok(k)
-        }
+        to_load = {k: v for k, v in loaded_state_dict.items() if size_ok(k)}
         self.model.load_state_dict(to_load, strict=False)
 
         names_not_loaded = set(new_model_state.keys()) - set(to_load.keys())
@@ -329,9 +333,7 @@ class X3DLearner(Learner):
         return self
 
     @staticmethod
-    def download(
-        path: Union[str, Path], model_names: Iterable[str] = _MODEL_NAMES
-    ):
+    def download(path: Union[str, Path], model_names: Iterable[str] = _MODEL_NAMES):
         """Download pretrained X3D models
 
         Args:
@@ -346,7 +348,9 @@ class X3DLearner(Learner):
             assert m in _MODEL_NAMES
             filename = path / f"x3d_{m}.pyth"
             if filename.exists():
-                logger.info(f"Skipping download of X3D-{m} (already exists at {str(filename)})")
+                logger.info(
+                    f"Skipping download of X3D-{m} (already exists at {str(filename)})"
+                )
             else:
                 logger.info(f"Downloading pretrained X3D-{m} weight to {str(filename)}")
                 urlretrieve(
@@ -360,7 +364,15 @@ class X3DLearner(Learner):
     def reset(self):
         pass
 
-    def fit(self, dataset: Dataset, val_dataset: Dataset=None, epochs: int=None, steps: int=None, *args, **kwargs):
+    def fit(
+        self,
+        dataset: Dataset,
+        val_dataset: Dataset = None,
+        epochs: int = None,
+        steps: int = None,
+        *args,
+        **kwargs,
+    ):
         """Fit the model to a dataset
 
         Args:
@@ -379,19 +391,26 @@ class X3DLearner(Learner):
             pin_memory=self.pin_memory,
             drop_last=self.drop_last,
         )
-        val_dataloader = torch.utils.data.DataLoader(
-            val_dataset,
-            batch_size=self.batch_size,
-            num_workers=self.num_workers,
-            shuffle=False,
-            pin_memory=self.pin_memory,
-            drop_last=self.drop_last,
-        ) if val_dataset else None
+        val_dataloader = (
+            torch.utils.data.DataLoader(
+                val_dataset,
+                batch_size=self.batch_size,
+                num_workers=self.num_workers,
+                shuffle=False,
+                pin_memory=self.pin_memory,
+                drop_last=self.drop_last,
+            )
+            if val_dataset
+            else None
+        )
 
         optimisation_metric = "val/loss" if val_dataset else "train/loss"
 
         # Patch model optimizer
-        assert self.optimizer in {"adam", "sgd"}, f"Invalid optimizer '{self.optimizer}'. Must be 'adam' or 'sgd'."
+        assert self.optimizer in {
+            "adam",
+            "sgd",
+        }, f"Invalid optimizer '{self.optimizer}'. Must be 'adam' or 'sgd'."
         if self.optimizer == "adam":
             Optimizer = partial(
                 torch.optim.Adam,
@@ -410,8 +429,14 @@ class X3DLearner(Learner):
         def configure_optimizers():
             # nonlocal Optimizer, optimisation_metric
             optimizer = Optimizer(self.model.parameters())
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=10)
-            return {"optimizer": optimizer, "lr_scheduler": scheduler, "monitor": optimisation_metric}
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer, patience=10
+            )
+            return {
+                "optimizer": optimizer,
+                "lr_scheduler": scheduler,
+                "monitor": optimisation_metric,
+            }
 
         self.model.configure_optimizers = configure_optimizers
 
@@ -435,7 +460,7 @@ class X3DLearner(Learner):
         self.trainer.fit(self.model, train_dataloader, val_dataloader)
         self.model.to(self.device)
 
-    def eval(self, dataset: Dataset, steps: int=None) -> Dict[str, Any]:
+    def eval(self, dataset: Dataset, steps: int = None) -> Dict[str, Any]:
         """Evaluate the model on the dataset
 
         Args:
@@ -485,10 +510,16 @@ class X3DLearner(Learner):
             batch = torch.stack([torch.tensor(v.data) for v in batch])
 
         batch = batch.to(device=self.device, dtype=torch.float)
-
-        self.model.eval()
-        results = self.model.forward(batch)
-        results = [Category(prediction=int(r.argmax(dim=0)), confidence=r) for r in results]
+        if self.ort_session is not None:
+            results = torch.tensor(
+                self.ort_session.run(None, {"video": batch.cpu().numpy()})[0]
+            )
+        else:
+            self.model.eval()
+            results = self.model.forward(batch)
+        results = [
+            Category(prediction=int(r.argmax(dim=0)), confidence=r) for r in results
+        ]
         return results
 
     def optimize(self, do_constant_folding=False):
@@ -499,11 +530,15 @@ class X3DLearner(Learner):
             do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.
         """
 
-        if getattr(self.model, "rpn_ort_session", None):
+        if getattr(self.model, "ort_session", None):
             logger.info("Model is already optimized. Skipping redundant optimization")
             return
 
-        path = Path(self.temp_path or os.getcwd()) / "weights" / f"x3d_{self.backbone}.onnx"
+        path = (
+            Path(self.temp_path or os.getcwd())
+            / "weights"
+            / f"x3d_{self.backbone}.onnx"
+        )
         if not path.exists():
             self._save_onnx(path, do_constant_folding)
         self._load_onnx(path)
@@ -517,9 +552,13 @@ class X3DLearner(Learner):
 
     @_example_input.setter
     def _example_input(self):
-        raise ValueError("_example_input is set thorugh 'frames_per_clip' 'image_size' in `self.model_hparams`")
+        raise ValueError(
+            "_example_input is set thorugh 'frames_per_clip' 'image_size' in `self.model_hparams`"
+        )
 
-    def _save_onnx(self, path: Union[str, Path], do_constant_folding=False, verbose=False):
+    def _save_onnx(
+        self, path: Union[str, Path], do_constant_folding=False, verbose=False
+    ):
         """Save model in the ONNX format
 
         Args:
@@ -538,6 +577,7 @@ class X3DLearner(Learner):
             path,
             input_names=["video"],
             output_names=["classes"],
+            dynamic_axes={"video": {0: "batch_size"}, "classes": {0: "batch_size"}},
             do_constant_folding=do_constant_folding,
             verbose=verbose,
             opset_version=11,
