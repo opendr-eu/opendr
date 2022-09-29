@@ -130,7 +130,7 @@ The dependencies for this module automatically set up and compile a catkin works
 To start required ROS nodes, please run the following before using the `MobileRLLearner` class:
 
 ```sh
-source ${OPENDR_HOME}/projects/control/mobile_manipulation/mobile_manipulation_ws/devel/setup.bash
+source ${OPENDR_HOME}/projects/python/control/mobile_manipulation/mobile_manipulation_ws/devel/setup.bash
 roslaunch mobile_manipulation_rl [pr2,tiago]_analytical.launch
 ````
 
@@ -255,6 +255,40 @@ Then source the catkin workspace and run the launch file as described in the `RO
   ```
 * **Execution in different environments**:\
   The trained agent and environment can also be directly executed in the real world or the gazebo simulator. For this first start the appropriate ros nodes for your robot. Then pass `world_type='world'` for real world execution or `world_type='gazebo'` for gazebo to the `evaluate_on_task()` function.
+
+
+#### Performance Evaluation
+
+Note that test time inference can be directly performed on a standard CPU.
+As this achieves very high control frequencies, we do not expect any benefits through the use of accelerators (GPUs).
+
+TABLE-1: Control frequency in Hertz.
+
+| Model    | AMD Ryzen 9 5900X (Hz) |
+| -------- | ---------------------- | 
+| MobileRL | 2200                   |
+
+
+TABLE-2: Success rates in percent.
+
+| Model    | GoalReaching | Pick&Place | Door Opening | Drawer Opening |
+| -------- | ------------ | ---------- | ------------ | -------------- |
+| PR2      | 90.2%        | 97.0%      | 94.2%        | 95.4%          |
+| Tiago    | 71.6%        | 91.4%      | 95.3%        | 94.9%          |
+| HSR      | 75.2%        | 93.4%      | 91.2%        | 90.6%          |
+
+
+TABLE-3: Platform compatibility evaluation.
+
+| Platform                                     | Test results  |
+| -------------------------------------------- | ------------- |
+| x86 - Ubuntu 20.04 (bare installation - CPU) | Pass          |
+| x86 - Ubuntu 20.04 (bare installation - GPU) | Pass          |
+| x86 - Ubuntu 20.04 (pip installation)        | Not supported |
+| x86 - Ubuntu 20.04 (CPU docker)              | Pass          |
+| x86 - Ubuntu 20.04 (GPU docker)              | Pass          |
+| NVIDIA Jetson TX2                            | Not tested    |
+| NVIDIA Jetson Xavier AGX                     | Not tested    |
 
 
 #### Notes

@@ -7,21 +7,17 @@ on:
   schedule:
     - cron:  '0 23 * * *'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: bash
 
 
 jobs:
-  cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') || github.event_name == 'schedule' }}
-    runs-on: ubuntu-latest
-    steps:
-    - uses: rokroskar/workflow-run-cleanup-action@master
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
   test-wheel:
-    needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') || github.event_name == 'schedule' }}
     strategy:
       matrix:
@@ -39,13 +35,20 @@ jobs:
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
-          # - perception/object_detection_3d
+          - perception/object_detection_3d
           # - control/mobile_manipulation
           # - simulation/human_model_generation
           # - control/single_demo_grasp
-          # - perception/object_tracking_3d
+          - perception/object_tracking_3d
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -64,7 +67,6 @@ jobs:
         pip install opendr-toolkit
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
-    needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') || github.event_name == 'schedule' }}
     strategy:
       matrix:
@@ -82,13 +84,20 @@ jobs:
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
           - perception/object_detection_3d
           - control/mobile_manipulation
           - simulation/human_model_generation
           - control/single_demo_grasp
-          # - perception/object_tracking_3d
+          - perception/object_tracking_3d
     runs-on: ${{ matrix.os }}
     steps:
     - name: Set up Python 3.8

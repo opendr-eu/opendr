@@ -77,7 +77,7 @@ Documentation on how to use this node can be found [here](../../projects/opendr_
 #### Tutorials and Demos
 
 A demo in the form of a Jupyter Notebook is available
-[here](../../projects/simulation/human_model_generation/demos/model_generation.ipynb).
+[here](../../projects/python/simulation/human_model_generation/demos/model_generation.ipynb).
 
 #### Example 
 
@@ -95,14 +95,36 @@ A demo in the form of a Jupyter Notebook is available
   OPENDR_HOME = os.environ["OPENDR_HOME"]
 
   # We load a full-body image of a human as well as an image depicting its corresponding silhouette. 
-  rgb_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_generation/demos', 'imgs_input/rgb/result_0004.jpg'))
-  msk_img = Image.open(os.path.join(OPENDR_HOME, 'projects/simulation/human_model_generation/demos', 'imgs_input/msk/result_0004.jpg'))
+  rgb_img = Image.open(os.path.join(OPENDR_HOME, 'projects/python/simulation/human_model_generation/demos', 'imgs_input/rgb/result_0004.jpg'))
+  msk_img = Image.open(os.path.join(OPENDR_HOME, 'projects/python/simulation/human_model_generation/demos', 'imgs_input/msk/result_0004.jpg'))
 
   # We initialize learner. Using the infer method, we generate human 3D model. 
   model_generator = PIFuGeneratorLearner(device='cuda', checkpoint_dir='./temp')
   model_3D = model_generator.infer(imgs_rgb=[rgb_img], imgs_msk=[msk_img], extract_pose=False)
   ```
 
+#### Performance Evaluation
+
+TABLE-1: OpenDR 3D human model generation speed evaluation.
+| Method                                          | CPU i7-9700K (ms) | RTX 2070 (ms) |
+| ----------------------------------------------- | ----------------- | ------------- |
+| Human Model Generation only                     | 488.2       | 212.3    | 
+| Human Model Generation + 3D pose approximation  | 679.8       | 531.6     |
+
+
+
+TABLE-2: 3D Human Model Generation platform compatibility evaluation.
+| Platform                                     | Test results |
+| -------------------------------------------- | ------------ |
+| x86 - Ubuntu 20.04 (bare installation - CPU) | Pass         |
+| x86 - Ubuntu 20.04 (bare installation - GPU) | Pass         |
+| x86 - Ubuntu 20.04 (pip installation)        | Pass         |
+| x86 - Ubuntu 20.04 (CPU docker)              | Pass*        |
+| x86 - Ubuntu 20.04 (GPU docker)              | Pass*        |
+| NVIDIA Jetson TX2                            | Not tested   |
+| NVIDIA Jetson Xavier NX                      | Not tested   |
+
+*On docker installation, the skeleton approximation of the 3D human models is not available.
 
 #### References
 <a name="pifu-paper" href="https://shunsukesaito.github.io/PIFu/">[1]</a>

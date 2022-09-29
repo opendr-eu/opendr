@@ -145,7 +145,7 @@ class QuadraticSelfOnnLearner(Learner):
         return predictions
 
     def fit(self, dataset, val_dataset=None, logging_path='', silent=True, verbose=True):
-        dataloader = DataLoader(dataset, batch_size=self.batch_size, pin_memory=self.device == "cuda", shuffle=True)
+        dataloader = DataLoader(dataset, batch_size=self.batch_size, pin_memory="cuda" in self.device, shuffle=True)
         if not self.checkpoint_load_iter == 0:
             checkpoint_filename = os.path.join(
                 self.temp_path + f"QuadraticSelfONN-{self.checkpoint_load_iter}.pth")
@@ -184,7 +184,7 @@ class QuadraticSelfOnnLearner(Learner):
         return statistics
 
     def eval(self, dataset):
-        dataloader = DataLoader(dataset, batch_size=self.batch_size, pin_memory=self.device == "cuda")
+        dataloader = DataLoader(dataset, batch_size=self.batch_size, pin_memory="cuda" in self.device)
         self.model.eval()
         test_loss = 0
         correct_predictions = 0

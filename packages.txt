@@ -3,6 +3,7 @@ perception/speech_recognition
 perception/semantic_segmentation
 perception/face_recognition
 perception/pose_estimation
+perception/fall_detection
 perception/compressive_learning
 perception/heart_anomaly_detection
 simulation/human_model_generation

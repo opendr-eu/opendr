@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import json
-import os
 import shutil
 import unittest
 from urllib.request import urlretrieve
@@ -27,6 +26,9 @@ from opendr.perception.speech_recognition import MatchboxNetLearner
 from opendr.engine.data import Timeseries
 from opendr.engine.datasets import DatasetIterator
 from opendr.engine.target import Category
+import os
+
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 TEST_BATCH_SIZE = 2
 TEST_EPOCHS = 1
@@ -56,7 +58,7 @@ class MatchboxNetTest(unittest.TestCase):
     def setUpClass(cls):
         print("\n\n**********************************\nTEST Speech command recognition MatchboxNetLearner\n"
               "**********************************")
-        cls.learner = MatchboxNetLearner(device="cpu", output_classes_n=TEST_CLASSES_N, iters=TEST_EPOCHS)
+        cls.learner = MatchboxNetLearner(device=device, output_classes_n=TEST_CLASSES_N, iters=TEST_EPOCHS)
         if not os.path.exists(TEMP_SAVE_DIR):
             os.makedirs(TEMP_SAVE_DIR, exist_ok=True)
 

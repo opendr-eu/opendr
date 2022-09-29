@@ -1,23 +1,21 @@
 name: Test Suite (develop)
 
+# note: this workflow is only triggered by the nightly scheduled run.
+# it is identical to master's workflow, but targets the develop branch.
 on:
   schedule:
     - cron:  '0 23 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 defaults:
   run:
     shell: bash
 
 jobs:
-  cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') || contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
-    runs-on: ubuntu-latest
-    steps:
-    - uses: rokroskar/workflow-run-cleanup-action@master
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
   test-sources:
-    needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || github.event_name == 'schedule' }}
     strategy:
       matrix:
@@ -28,7 +26,7 @@ jobs:
           - os: ubuntu-20.04
             DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
           - os: macos-10.15
-            DEPENDENCIES_INSTALLATION: "brew install clang-format cppcheck"
+            DEPENDENCIES_INSTALLATION: "brew install clang-format@11 cppcheck; ln /usr/local/bin/clang-format-11 /usr/local/bin/clang-format"
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -50,9 +48,9 @@ jobs:
         pip install -r tests/requirements.txt
         python -m unittest discover -s tests
   test-tools:
-    needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -66,14 +64,23 @@ jobs:
           - perception/object_tracking_2d
           - perception/object_detection_3d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
           - control/mobile_manipulation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - simulation/human_model_generation
           - perception/facial_expression_recognition
           - control/single_demo_grasp
+          - planning/end_to_end_planning
           # - perception/object_tracking_3d
         include:
           - os: ubuntu-20.04
@@ -107,7 +114,6 @@ jobs:
             python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
   build-wheel:
-    needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     runs-on: ubuntu-20.04
     steps:
@@ -129,10 +135,10 @@ jobs:
     - name: Upload wheel as artifact
       uses: actions/upload-artifact@v2
       with:
+        name: wheel-artifact
         path:
           dist/*.tar.gz
   build-docker:
-    needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     runs-on: ubuntu-20.04
     steps:
@@ -140,19 +146,24 @@ jobs:
       with:
         submodules: true
         ref: develop
+    - name: Get branch name
+      id: branch-name
+      uses: tj-actions/branch-names@v5.1
     - name: Build image
       run: |
-        docker build --tag opendr/opendr-toolkit:cpu_test --file Dockerfile .
+        docker build --tag opendr/opendr-toolkit:cpu_test --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --file Dockerfile .
         docker save opendr/opendr-toolkit:cpu_test > cpu_test.zip
     - name: Upload image artifact
       uses: actions/upload-artifact@v2
       with:
+        name: docker-artifact
         path:
           cpu_test.zip
   test-wheel:
     needs: build-wheel
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -165,10 +176,18 @@ jobs:
           - perception/multimodal_human_centric
           - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
           # - perception/object_detection_3d
           # - control/mobile_manipulation
@@ -208,9 +227,9 @@ jobs:
           fi
           echo "Installing $package package"
           if [ "$package" == "opendr" ]; then
-            pip install ./artifact/artifact/opendr-toolkit-*.tar.gz
+            pip install ./artifact/wheel-artifact/opendr-toolkit-*.tar.gz
           else
-            pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz
+            pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
           fi
         done < packages.txt
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
@@ -218,6 +237,7 @@ jobs:
     needs: build-wheel
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -230,10 +250,18 @@ jobs:
           - perception/multimodal_human_centric
           - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
           # - perception/object_detection_3d
           # - control/mobile_manipulation
@@ -265,11 +293,11 @@ jobs:
         source venv/bin/activate
         pip install wheel
         # Install engine and requirements for other packages
-        pip install ./artifact/artifact/opendr-toolkit-engine-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
         # The following two are dependecies for some other packages and pip cannot automatically install them if they are not on a repo
-        pip install ./artifact/artifact/opendr-toolkit-compressive-learning-*.tar.gz
-        pip install ./artifact/artifact/opendr-toolkit-object-detection-2d-*.tar.gz
-
+        pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
         # Install specific package for testing
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
         arr=(${package//// })
@@ -279,16 +307,16 @@ jobs:
         echo "Installing $package package"
         # Utils contains hyperparameter tuning
         if [ "$package" == "utils" ]; then
-              pip install ./artifact/artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
-
+              pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
         else
-              pip install ./artifact/artifact/opendr-toolkit-$package-*.tar.gz
+              pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
     needs: build-docker
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -301,15 +329,24 @@ jobs:
           - perception/multimodal_human_centric
           - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
-          - perception/object_detection_2d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
           - perception/object_detection_3d
           - control/mobile_manipulation
           - simulation/human_model_generation
           - control/single_demo_grasp
+          - planning/end_to_end_planning
           # - perception/object_tracking_3d
     runs-on: ubuntu-20.04
     steps:
@@ -319,7 +356,31 @@ jobs:
         path: artifact
     - name: Test docker
       run: |
-        docker load < ./artifact/artifact/cpu_test.zip
+        docker load < ./artifact/docker-artifact/cpu_test.zip
         docker run --name toolkit -i opendr/opendr-toolkit:cpu_test bash
         docker start toolkit
         docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+  delete-docker-artifacts:
+    needs: [build-docker, test-docker]
+    if: ${{ always() }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Delete docker artifacts
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: docker-artifact
+  delete-wheel-artifacts:
+    needs: [build-wheel, test-wheel, test-wheel-separate]
+    if: ${{ always() }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Delete wheel artifacts
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wheel-artifact

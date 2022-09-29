@@ -56,7 +56,7 @@ class DeepSortTracker(object):
         if frame_id is not None:
             self.frame = frame_id
 
-        image = imageWithDetections.numpy().transpose(1, 2, 0)
+        image = imageWithDetections.numpy().transpose(2, 1, 0)
         detections = imageWithDetections.boundingBoxList
 
         bbox_xywh = []

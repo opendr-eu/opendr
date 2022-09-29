@@ -70,4 +70,4 @@ temp/
 # ROS interface
 projects/opendr_ws/.catkin_workspace
 projects/opendr_ws/devel/
-projects/control/eagerx/eagerx_ws/
+projects/python/control/eagerx/eagerx_ws/

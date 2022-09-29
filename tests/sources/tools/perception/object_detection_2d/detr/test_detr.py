@@ -15,16 +15,15 @@
 import sys
 import unittest
 import shutil
-import os
 import torch
 import warnings
 from torch.jit import TracerWarning
 from opendr.engine.datasets import ExternalDataset
 from opendr.perception.object_detection_2d import DetrLearner
 from PIL import Image
+import os
 
-
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+DEVICE = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 print("Using device:", DEVICE)
 print("Using device:", DEVICE, file=sys.stderr)
