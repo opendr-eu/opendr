@@ -54,7 +54,6 @@ class Synthetic_Data_Generation(Node):
         self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
         self._cv_bridge = CvBridge()
         self.ID = 0
-
         self.args = args
         self.path_in = args.path_in
         self.key = str(args.path_3ddfa + "/example/Images/")
