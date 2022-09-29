@@ -31,10 +31,12 @@ import cv2
 
 class RgbdHandGestureNode:
 
-    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw", input_depth_image_topic="/usb_cam/image_raw",
+    def __init__(self, input_rgb_image_topic="/kinect2/qhd/image_color_rect",
+                 input_depth_image_topic="/kinect2/qhd/image_depth_rect",
                  gesture_annotations_topic="/opendr/gestures", device="cuda"):
         """
-        Creates a ROS Node for gesture recognition from RGBD
+        Creates a ROS Node for gesture recognition from RGBD. Assuming that the following drivers have been installed:
+        https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param input_depth_image_topic: Topic from which we are reading the input depth image
@@ -118,8 +120,15 @@ class RgbdHandGestureNode:
         return img
 
 if __name__ == '__main__':
+    # default topics are according to kinectv2 drivers at https://github.com/OpenKinect/libfreenect2
+    # and https://github.com/code-iai-iai_kinect2
     parser = argparse.ArgumentParser()
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--input_rgb_image_topic", help="Topic name for input rgb image",
+                        type=str, default="/kinect2/qhd/image_color_rect")
+    parser.add_argument("--input_depth_image_topic", help="Topic name for input depth image",
+                        type=str, default="/kinect2/qhd/image_depth_rect")
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
+                        choices=["cuda", "cpu"])
 
     args = parser.parse_args()
 
@@ -137,9 +146,6 @@ if __name__ == '__main__':
         print("Using CPU")
         device = "cpu"
 
-    # default topics are according to kinectv2 drivers at https://github.com/OpenKinect/libfreenect2
-    # and https://github.com/code-iai-iai_kinect2
-    depth_topic = "/kinect2/qhd/image_depth_rect"
-    image_topic = "/kinect2/qhd/image_color_rect"
-    gesture_node = RgbdHandGestureNode(input_rgb_image_topic=image_topic, input_depth_image_topic=depth_topic, device=device)
+    gesture_node = RgbdHandGestureNode(input_rgb_image_topic=args.input_rgb_image_topic,
+                                       input_depth_image_topic=args.input_depth_image_topic, device=device)
     gesture_node.listen()
