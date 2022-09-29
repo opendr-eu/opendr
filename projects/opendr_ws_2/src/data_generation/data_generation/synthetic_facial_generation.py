@@ -30,7 +30,6 @@ from opendr.projects.data_generation.synthetic_multi_view_facial_image_generatio
 from opendr.src.opendr.engine.data import Image
 from opendr.projects.data_generation.synthetic_multi_view_facial_image_generation.SyntheticDataGeneration \
     import MultiviewDataGeneration
-from opendr_ros2_bridge import ROS2Bridge
 
 
 class Synthetic_Data_Generation(Node):
