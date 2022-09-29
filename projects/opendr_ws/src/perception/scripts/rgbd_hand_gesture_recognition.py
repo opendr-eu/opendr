@@ -31,12 +31,12 @@ import cv2
 
 class RgbdHandGestureNode:
 
-    def __init__(self, input_image_topic="/usb_cam/image_raw", input_depth_image_topic="/usb_cam/image_raw",
+    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw", input_depth_image_topic="/usb_cam/image_raw",
                  gesture_annotations_topic="/opendr/gestures", device="cuda"):
         """
         Creates a ROS Node for gesture recognition from RGBD
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
         :param input_depth_image_topic: Topic from which we are reading the input depth image
         :type input_depth_image_topic: str
         :param gesture_annotations_topic: Topic to which we are publishing the predicted gesture class
@@ -47,7 +47,7 @@ class RgbdHandGestureNode:
 
         self.gesture_publisher = rospy.Publisher(gesture_annotations_topic, Classification2D, queue_size=10)
 
-        image_sub = message_filters.Subscriber(input_image_topic, ROS_Image)
+        image_sub = message_filters.Subscriber(input_rgb_image_topic, ROS_Image)
         depth_sub = message_filters.Subscriber(input_depth_image_topic, ROS_Image)
         # synchronize image and depth data topics
         ts = message_filters.TimeSynchronizer([image_sub, depth_sub], 10)
@@ -141,5 +141,5 @@ if __name__ == '__main__':
     # and https://github.com/code-iai-iai_kinect2
     depth_topic = "/kinect2/qhd/image_depth_rect"
     image_topic = "/kinect2/qhd/image_color_rect"
-    gesture_node = RgbdHandGestureNode(input_image_topic=image_topic, input_depth_image_topic=depth_topic, device=device)
+    gesture_node = RgbdHandGestureNode(input_rgb_image_topic=image_topic, input_depth_image_topic=depth_topic, device=device)
     gesture_node.listen()
