@@ -124,7 +124,7 @@ class HumanActivityRecognitionNode:
         if image is None:
             return
 
-        x = self.preprocess(image.convert("channel_first", "rgb"))
+        x = self.preprocess(image.convert("channels_first", "rgb"))
 
         result = self.learner.infer(x)
         assert len(result) == 1
