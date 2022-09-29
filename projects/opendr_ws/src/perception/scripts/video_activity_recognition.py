@@ -159,7 +159,7 @@ def _resize(image, size=None, inter=cv2.INTER_AREA):
         # dimensions
         r = size / float(h)
         dim = (int(w * r), size)
-        
+
     # resize the image
     resized = cv2.resize(image, dim, interpolation=inter)
 
