@@ -148,7 +148,7 @@ class X3DLearner(Learner):
         """
         weights_path = Path(weights_path)
 
-        assert weights_path.is_file() and weights_path.suffix in {".pyth", ".pth", ".onnx",}, (
+        assert weights_path.is_file() and weights_path.suffix in {".pyth", ".pth", ".onnx"}, (
             f"weights_path ({str(weights_path)}) should be a .pth or .onnx file."
             "Pretrained weights can be downloaded using `self.download(...)`"
         )
