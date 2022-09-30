@@ -106,14 +106,11 @@ class CoX3DLearner(X3DLearner):
         Returns:
             CoX3D: model
         """
-        assert hasattr(
-            self, "model_hparams"
-        ), "`self.model_hparams` not found. Did you forget to call `_load_hparams`?"
+        assert hasattr(self, "model_hparams"), "`self.model_hparams` not found. Did you forget to call `_load_hparams`?"
         self.model = CoX3D(
             dim_in=3,
             image_size=self.model_hparams["image_size"],
-            frames_per_clip=getattr(self, "temporal_window_size", None)
-            or self.model_hparams["frames_per_clip"],
+            frames_per_clip=getattr(self, "temporal_window_size", None) or self.model_hparams["frames_per_clip"],
             num_classes=self.num_classes,
             conv1_dim=self.model_hparams["conv1_dim"],
             conv5_dim=self.model_hparams["conv5_dim"],
@@ -137,9 +134,7 @@ class CoX3DLearner(X3DLearner):
         S = self.model_hparams["image_size"]
         return torch.randn(1, C, S, S).to(device=self.device)
 
-    def infer(
-        self, batch: Union[data.Image, List[data.Image], torch.Tensor]
-    ) -> List[Category]:
+    def infer(self, batch: Union[data.Image, List[data.Image], torch.Tensor]) -> List[Category]:
         """Run inference on a batch of data
 
         Args:
@@ -158,13 +153,9 @@ class CoX3DLearner(X3DLearner):
         batch = batch.to(device=self.device, dtype=torch.float)
         batch = batch.to(device=self.device, dtype=torch.float)
         if self.ort_session is not None:
-            results = torch.tensor(
-                self.ort_session.run(None, {"video": batch.cpu().numpy()})[0]
-            )
+            results = torch.tensor(self.ort_session.run(None, {"video": batch.cpu().numpy()})[0])
         else:
             self.model.eval()
             results = self.model.forward(batch)
-        results = [
-            Category(prediction=int(r.argmax(dim=0)), confidence=r) for r in results
-        ]
+        results = [Category(prediction=int(r.argmax(dim=0)), confidence=r) for r in results]
         return results
