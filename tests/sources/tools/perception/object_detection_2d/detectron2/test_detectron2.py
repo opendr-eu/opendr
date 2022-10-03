@@ -23,13 +23,11 @@ from detectron2.config import get_cfg
 from detectron2 import model_zoo
 
 # OpenDR dependencies
-from opendr.control.single_demo_grasp import SingleDemoGraspLearner
+from opendr.perception.object_detection_2d import Detectron2Learner
 from opendr.engine.data import Image
 import os
 
 device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
-# variable definitions here
-dir_temp = os.path.join(".", "tests", "sources", "tools", "control", "single_demo_grasp", "sdg_temp")
 
 
 def load_old_weights():
@@ -67,31 +65,32 @@ def rmdir(_dir):
         print("Error: %s - %s." % (e.filename, e.strerror))
 
 
-class TestSingleDemoGraspLearner(unittest.TestCase):
+class TestDetectron2Learner(unittest.TestCase):
     learner = None
 
     @classmethod
     def setUpClass(cls):
-        print("\n\n**********************************\nTEST SingleDemoGrasp Learner\n"
+        print("\n\n**********************************\nTEST Detectron2 Learner\n"
               "**********************************")
-        cls.learner = SingleDemoGraspLearner(object_name='pendulum', data_directory=dir_temp, lr=0.0008, batch_size=1,
+        cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
+                                    "detectron2", "detectron2_temp")
+        cls.learner = Detectron2Learner(object_name='pendulum', data_directory=cls.temp_dir, lr=0.0008, batch_size=1,
                                              num_workers=2, num_classes=1, iters=10, threshold=0.8, device=device,
                                              img_per_step=2)
-
         # Download all required files for testing
-        cls.learner.download(path=dir_temp, object_name="pendulum")
+        cls.learner.download(path=cls.temp_dir, object_name="pendulum")
         shutil.copy(os.path.join(cls.learner.output_dir, "model_final.pth"), os.path.join(cls.learner.output_dir,
                                                                                           "pretrained.pth"))
 
     @classmethod
     def tearDownClass(cls):
-        print('Removing temporary directories for SingleDemoGrasp...')
+        print('Removing temporary directories for Detectron2...')
         # Clean up downloaded files
-        rmdir(dir_temp)
+        rmdir(cls.temp_dir)
         del cls.learner
 
     def test_fit(self):
-        print('Starting training test for SingleDemoGrasp...')
+        print('Starting training test for Detectron2...')
         self.learner.fit()
         old_weights = load_old_weights()
         new_weights = load_weights_from_file(os.path.join(self.learner.output_dir, "model_final.pth"))
@@ -100,9 +99,8 @@ class TestSingleDemoGraspLearner(unittest.TestCase):
                          msg="Fit method did not alter model weights")
 
     def test_infer(self):
-
-        print('Starting inference test for SingleDemoGrasp...')
-        sample_image = Image.open(os.path.join(dir_temp, "pendulum", "images", "val", "0.jpg"))
+        print('Starting inference test for Detectron2...')
+        sample_image = Image.open(os.path.join(self.temp_dir, "pendulum", "images", "val", "0.jpg"))
         self.learner.load(os.path.join(self.learner.output_dir, "pretrained.pth"))
 
         flag, _, _ = self.learner.infer(sample_image)
@@ -114,13 +112,12 @@ class TestSingleDemoGraspLearner(unittest.TestCase):
          so we check whether the saved and loaded files after running these functions
          to make sure the files are correctly updated in the directory
         """
-
-        print('Starting save_load test for SingleDemoGrasp...')
-        self.learner.save(dir_temp)
-        self.learner.load(os.path.join(dir_temp, self.learner.object_name, "output", "model_final.pth"))
+        print('Starting save_load test for Detectron2...')
+        self.learner.save(self.temp_dir)
+        self.learner.load(os.path.join(self.temp_dir, self.learner.object_name, "output", "model_final.pth"))
 
         old_weights = load_old_weights()
-        new_weights = load_weights_from_file(os.path.join(dir_temp, "model_final.pth"))
+        new_weights = load_weights_from_file(os.path.join(self.temp_dir, "model_final.pth"))
 
         self.assertFalse(torch.equal(old_weights, new_weights),
                          msg="load method did not alter model weights")
