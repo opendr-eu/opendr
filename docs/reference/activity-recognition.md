@@ -483,7 +483,7 @@ following public methods:
 #### `CoTransEncLearner` constructor
 
 ```python
-CoX3DLearner(self, lr, iters, batch_size, optimizer, lr_schedule, network_head, num_layers, input_dims, hidden_dims, sequence_len, num_heads, dropout, num_classes, positional_encoding, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, loss, weight_decay, momentum, drop_last, pin_memory, num_workers, seed)
+CoX3DLearner(self, lr, iters, batch_size, optimizer, lr_schedule, network_head, num_layers, input_dims, hidden_dims, sequence_len, num_heads, dropout, num_classes, positional_encoding_learned, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, loss, weight_decay, momentum, drop_last, pin_memory, num_workers, seed)
 ```
 
 Constructor parameters:
@@ -514,7 +514,7 @@ Constructor parameters:
     Dropout probability.
   - **num_classes**: *int, default=400*\
     Number of classes to predict among.
-  - **positional_encoding**: *string, default="fixed"*\
+  - **positional_encoding_learned**: *bool, default=False*\
     Positional encoding type.
   - **checkpoint_after_iter**: *int, default=0*\
     Unused parameter.

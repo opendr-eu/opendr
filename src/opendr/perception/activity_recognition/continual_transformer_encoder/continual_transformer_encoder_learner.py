@@ -61,7 +61,7 @@ class CoTransEncLearner(Learner):
         num_heads=8,
         dropout=0.1,
         num_classes=22,
-        positional_encoding="fixed",
+        positional_encoding_learned=False,
         checkpoint_after_iter=0,
         checkpoint_load_iter=0,
         temp_path="",
@@ -98,7 +98,7 @@ class CoTransEncLearner(Learner):
             num_heads (int, optional): Number of attention heads. Defaults to 8.
             dropout (float, optional): Dropout probability. Defaults to 0.1.
             num_classes (int, optional): Number of classes to predict. Defaults to 22.
-            positional_encoding (string, optional): Positional encoding type. Only "fixed" is supported at this point.
+            positional_encoding_learned (bool, optional): Whether positional encoding is learned. Defaults to False.
             checkpoint_after_iter (int, optional): Unused parameter. Defaults to 0.
             checkpoint_load_iter (int, optional): Unused parameter. Defaults to 0.
             temp_path (str, optional): Path in which to store temporary files. Defaults to "".
@@ -135,8 +135,10 @@ class CoTransEncLearner(Learner):
         }, "Only 1 or 2 Transformer Encoder layers are supported."
         self._num_layers = num_layers
 
-        assert positional_encoding == "fixed", "Positional Encoding must be 'fixed'."
-        self._positional_encoding = positional_encoding
+        assert (
+            positional_encoding_learned == "fixed"
+        ), "Positional Encoding must be 'fixed'."
+        self._positional_encoding_learned = positional_encoding_learned
 
         self._input_dims = input_dims
         self._hidden_dims = hidden_dims
@@ -179,11 +181,11 @@ class CoTransEncLearner(Learner):
         pos_enc = co.RecyclingPositionalEncoding(
             embed_dim=self._input_dims,
             num_embeds=self._sequence_len * 2 - 1,
-            learned=True,
-        ).to(device=self.device)
+            learned=self._positional_encoding_learned,
+        )
         trans_enc = co.TransformerEncoder.build_from(
             regenc, sequence_len=self._sequence_len
-        ).to(device=self.device)
+        )
         lin = co.Linear(self._input_dims, self._num_classes, channel_dim=-1)
 
         self.model = co.Sequential(
@@ -215,6 +217,7 @@ class CoTransEncLearner(Learner):
                 return slf.__add__(other)
 
         self.model[0].forward_update_index_steps = AddIfTraining(1)
+        self.model = self.model.to(device=self.device)
 
         self._plmodel = _LightningModuleWithCrossEntropy(self.model)
         return self.model
@@ -260,7 +263,7 @@ class CoTransEncLearner(Learner):
                 "num_heads": self._num_heads,
                 "dropout": self._dropout,
                 "num_classes": self._num_classes,
-                "positional_encoding": self._positional_encoding,
+                "positional_encoding_learned": self._positional_encoding_learned,
             },
             "optimized": bool(self._ort_session),
             "optimizer_info": {
@@ -326,7 +329,7 @@ class CoTransEncLearner(Learner):
             sequence_len=inference_params["sequence_len"],
             num_heads=inference_params["num_heads"],
             num_classes=inference_params["num_classes"],
-            positional_encoding=inference_params["positional_encoding"],
+            positional_encoding_learned=inference_params["positional_encoding_learned"],
             dropout=optimizer_info["dropout"],
             loss=optimizer_info["loss"],
             checkpoint_after_iter=optimizer_info["checkpoint_after_iter"],
