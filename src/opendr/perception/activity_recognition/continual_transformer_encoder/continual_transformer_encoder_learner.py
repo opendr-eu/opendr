@@ -134,12 +134,7 @@ class CoTransEncLearner(Learner):
             2,
         }, "Only 1 or 2 Transformer Encoder layers are supported."
         self._num_layers = num_layers
-
-        assert (
-            positional_encoding_learned == "fixed"
-        ), "Positional Encoding must be 'fixed'."
         self._positional_encoding_learned = positional_encoding_learned
-
         self._input_dims = input_dims
         self._hidden_dims = hidden_dims
         self._sequence_len = sequence_len
