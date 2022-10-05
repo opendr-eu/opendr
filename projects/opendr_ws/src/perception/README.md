@@ -31,7 +31,7 @@ Generally, arguments give the option to change the input and output topics, the 
 When a node publishes on several topics, where applicable, a user can opt to disable one or more of the outputs by providing `None` in the corresponding output topic.
 This disables publishing on that topic, forgoing some operations in the node, which might increase its performance. 
 
-    _An example would be to disable the output annotated image topic in a node when visualization is not needed and only use the detection message in another node, thus eliminating the OpenCV operations._ 
+_An example would be to disable the output annotated image topic in a node when visualization is not needed and only use the detection message in another node, thus eliminating the OpenCV operations._ 
 <!-- - ### Other notes -->
 
 ----
