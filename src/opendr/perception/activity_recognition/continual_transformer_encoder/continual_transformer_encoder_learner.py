@@ -173,7 +173,7 @@ class CoTransEncLearner(Learner):
         )
         regenc = torch.nn.TransformerEncoder(
             encoder_layer,
-            num_layers=1,
+            num_layers=self._num_layers,
             norm=torch.nn.LayerNorm(self._input_dims),
         )
         pos_enc = co.RecyclingPositionalEncoding(
@@ -534,21 +534,35 @@ class CoTransEncLearner(Learner):
             x = torch.tensor(x.data)
             # assert len(data) == self._input_dims
             forward_mode = "step"
+            x = x.unsqueeze(0)  # Add batch dim
         elif isinstance(x, Timeseries):
             x = torch.tensor(x.data).permute(1, 0)
             assert x.shape == (self._input_dims, self._sequence_len)
             forward_mode = "regular"
+            x = x.unsqueeze(0)  # Add batch dim
         else:
             assert isinstance(x, torch.Tensor)
             if len(x.shape) == 1:
                 assert x.shape == (self._input_dims,)
                 forward_mode = "step"
+                x = x.unsqueeze(0)  # Add batch dim
+            elif len(x.shape) == 2:
+                if x.shape == (self.batch_size, self._input_dims):
+                    forward_mode = "step"
+                else:
+                    assert x.shape == (self._input_dims, self._sequence_len)
+                    forward_mode = "regular"
+                    x = x.unsqueeze(0)  # Add batch dim
             else:
-                assert len(x.shape) == 2
-                assert x.shape == (self._input_dims, self._sequence_len)
+                assert len(x.shape) == 3
+                assert x.shape == (
+                    self.batch_size,
+                    self._input_dims,
+                    self._sequence_len,
+                )
                 forward_mode = "regular"
 
-        x = x.unsqueeze(0).to(device=self.device, dtype=torch.float)
+        x = x.to(device=self.device, dtype=torch.float)
 
         if self._ort_session is not None and forward_mode == "regular":
             # assert (
