@@ -1,6 +1,6 @@
 from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
 from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
-from opendr.perception.activity_recognition.continual_transformer_decoder.continual_transformer_decoder_learner import (
+from opendr.perception.activity_recognition.continual_transformer_encoder.continual_transformer_encoder_learner import (
     CoTransEncLearner,
 )
 
