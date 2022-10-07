@@ -50,8 +50,8 @@ class RgbdHandGestureNode:
 
         self.gesture_publisher = rospy.Publisher(gesture_annotations_topic, Classification2D, queue_size=10)
 
-        image_sub = message_filters.Subscriber(input_rgb_image_topic, ROS_Image)
-        depth_sub = message_filters.Subscriber(input_depth_image_topic, ROS_Image)
+        image_sub = message_filters.Subscriber(input_rgb_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
+        depth_sub = message_filters.Subscriber(input_depth_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
         # synchronize image and depth data topics
         ts = message_filters.TimeSynchronizer([image_sub, depth_sub], 10)
         ts.registerCallback(self.callback)
