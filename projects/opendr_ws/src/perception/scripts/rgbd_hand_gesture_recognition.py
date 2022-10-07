@@ -15,18 +15,19 @@
 # limitations under the License.
 
 import argparse
+import os
+import cv2
+import numpy as np
+import torch
 
 import rospy
-import torch
-import numpy as np
-from sensor_msgs.msg import Image as ROS_Image
-from opendr_bridge import ROSBridge
-import os
-from opendr.perception.multimodal_human_centric import RgbdHandGestureLearner
-from opendr.engine.data import Image
-from vision_msgs.msg import Classification2D
 import message_filters
-import cv2
+from sensor_msgs.msg import Image as ROS_Image
+from vision_msgs.msg import Classification2D
+
+from opendr.engine.data import Image
+from opendr.perception.multimodal_human_centric import RgbdHandGestureLearner
+from opendr_bridge import ROSBridge
 
 
 class RgbdHandGestureNode:
