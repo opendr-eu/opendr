@@ -34,7 +34,7 @@ class RgbdHandGestureNode:
 
     def __init__(self, input_rgb_image_topic="/kinect2/qhd/image_color_rect",
                  input_depth_image_topic="/kinect2/qhd/image_depth_rect",
-                 gesture_annotations_topic="/opendr/gestures", device="cuda"):
+                 gesture_topic="/opendr/gestures", device="cuda"):
         """
         Creates a ROS Node for gesture recognition from RGBD. Assuming that the following drivers have been installed:
         https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2.
@@ -42,13 +42,13 @@ class RgbdHandGestureNode:
         :type input_rgb_image_topic: str
         :param input_depth_image_topic: Topic from which we are reading the input depth image
         :type input_depth_image_topic: str
-        :param gesture_annotations_topic: Topic to which we are publishing the predicted gesture class
-        :type gesture_annotations_topic: str
+        :param gesture_topic: Topic to which we are publishing the predicted gesture class
+        :type gesture_topic: str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
 
-        self.gesture_publisher = rospy.Publisher(gesture_annotations_topic, Classification2D, queue_size=10)
+        self.gesture_publisher = rospy.Publisher(gesture_topic, Classification2D, queue_size=10)
 
         image_sub = message_filters.Subscriber(input_rgb_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
         depth_sub = message_filters.Subscriber(input_depth_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
