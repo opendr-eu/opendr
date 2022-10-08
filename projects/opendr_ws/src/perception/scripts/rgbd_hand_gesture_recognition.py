@@ -100,13 +100,13 @@ class RgbdHandGestureNode:
         self.gesture_publisher.publish(ros_gesture)
 
     def preprocess(self, image, depth_img):
-        '''
+        """
         Preprocess image, depth_image and concatenate them
         :param image_data: input image
         :type image_data: engine.data.Image
         :param depth_data: input depth image
         :type depth_data: engine.data.Image
-        '''
+        """
         image = image.convert(format='channels_last') / (2**8 - 1)
         depth_img = depth_img.convert(format='channels_last') / (2**16 - 1)
 
@@ -119,6 +119,7 @@ class RgbdHandGestureNode:
         img = (img - self.mean) / self.std
         img = Image(img, dtype=np.float32)
         return img
+
 
 if __name__ == '__main__':
     # default topics are according to kinectv2 drivers at https://github.com/OpenKinect/libfreenect2
@@ -150,3 +151,5 @@ if __name__ == '__main__':
     gesture_node = RgbdHandGestureNode(input_rgb_image_topic=args.input_rgb_image_topic,
                                        input_depth_image_topic=args.input_depth_image_topic, device=device)
     gesture_node.listen()
+
+
