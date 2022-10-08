@@ -129,6 +129,8 @@ if __name__ == '__main__':
                         type=str, default="/kinect2/qhd/image_color_rect")
     parser.add_argument("--input_depth_image_topic", help="Topic name for input depth image",
                         type=str, default="/kinect2/qhd/image_depth_rect")
+    parser.add_argument("--output_gesture_topic", help="Topic name for predicted gesture class",
+                        type=str, default="/opendr/gestures")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
                         choices=["cuda", "cpu"])
 
@@ -149,5 +151,6 @@ if __name__ == '__main__':
         device = "cpu"
 
     gesture_node = RgbdHandGestureNode(input_rgb_image_topic=args.input_rgb_image_topic,
-                                       input_depth_image_topic=args.input_depth_image_topic, device=device)
+                                       input_depth_image_topic=args.input_depth_image_topic,
+                                       gesture_topic=args.output_gesture_topic, device=device)
     gesture_node.listen()
