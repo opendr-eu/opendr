@@ -99,23 +99,23 @@ class RgbdHandGestureNode:
         ros_gesture = self.bridge.from_category_to_rosclass(gesture_class)
         self.gesture_publisher.publish(ros_gesture)
 
-    def preprocess(self, image, depth_img):
+    def preprocess(self, rgb_image, depth_img):
         """
-        Preprocess image, depth_image and concatenate them
-        :param image_data: input image
-        :type image_data: engine.data.Image
+        Preprocess rgb_image, depth_image and concatenate them
+        :param rgb_image: input RGB image
+        :type rgb_image: engine.data.Image
         :param depth_data: input depth image
         :type depth_data: engine.data.Image
         """
-        image = image.convert(format='channels_last') / (2**8 - 1)
+        rgb_image = rgb_image.convert(format='channels_last') / (2**8 - 1)
         depth_img = depth_img.convert(format='channels_last') / (2**16 - 1)
 
         # resize the images to 224x224
-        image = cv2.resize(image, (224, 224))
+        rgb_image = cv2.resize(rgb_image, (224, 224))
         depth_img = cv2.resize(depth_img, (224, 224))
 
         # concatenate and standardize
-        img = np.concatenate([image, np.expand_dims(depth_img, axis=-1)], axis=-1)
+        img = np.concatenate([rgb_image, np.expand_dims(depth_img, axis=-1)], axis=-1)
         img = (img - self.mean) / self.std
         img = Image(img, dtype=np.float32)
         return img
@@ -151,5 +151,3 @@ if __name__ == '__main__':
     gesture_node = RgbdHandGestureNode(input_rgb_image_topic=args.input_rgb_image_topic,
                                        input_depth_image_topic=args.input_depth_image_topic, device=device)
     gesture_node.listen()
-
-
