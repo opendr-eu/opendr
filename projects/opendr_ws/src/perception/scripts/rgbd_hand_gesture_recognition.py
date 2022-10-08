@@ -77,20 +77,20 @@ class RgbdHandGestureNode:
         rospy.loginfo("RGBD gesture recognition node started!")
         rospy.spin()
 
-    def callback(self, image_data, depth_data):
+    def callback(self, rgb_data, depth_data):
         """
         Callback that process the input data and publishes to the corresponding topics
-        :param image_data: input image message
-        :type image_data: sensor_msgs.msg.Image
+        :param rgb_data: input image message
+        :type rgb_data: sensor_msgs.msg.Image
         :param depth_data: input depth image message
         :type depth_data: sensor_msgs.msg.Image
         """
 
         # Convert sensor_msgs.msg.Image into OpenDR Image and preprocess
-        image = self.bridge.from_ros_image(image_data, encoding='bgr8')
+        rgb_image = self.bridge.from_ros_image(rgb_data, encoding='bgr8')
         depth_data.encoding = 'mono16'
         depth_image = self.bridge.from_ros_image_to_depth(depth_data, encoding='mono16')
-        img = self.preprocess(image, depth_image)
+        img = self.preprocess(rgb_image, depth_image)
 
         # Run gesture recognition
         gesture_class = self.gesture_learner.infer(img)
