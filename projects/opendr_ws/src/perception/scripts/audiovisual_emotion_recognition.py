@@ -19,6 +19,7 @@ import argparse
 import numpy as np
 import torch
 import librosa
+import cv2
 
 import rospy
 import message_filters
@@ -91,7 +92,10 @@ class AudiovisualEmotionNode:
         """
         audio_data = np.reshape(np.frombuffer(audio_data.data, dtype=np.int16)/32768.0, (1, -1))
         self.data_buffer = np.append(self.data_buffer, audio_data)
+
         image_data = self.bridge.from_ros_image(image_data, encoding='bgr8').convert(format='channels_last')
+        image_data = cv2.resize(image_data, (224, 224))
+
         self.video_buffer = np.append(self.video_buffer, np.expand_dims(image_data.data, 0), axis=0)
 
         if self.data_buffer.shape[0] > 16000*self.buffer_size:
