@@ -34,7 +34,7 @@ class RgbdHandGestureNode:
 
     def __init__(self, input_rgb_image_topic="/kinect2/qhd/image_color_rect",
                  input_depth_image_topic="/kinect2/qhd/image_depth_rect",
-                 gesture_topic="/opendr/gestures", device="cuda"):
+                 output_gestures_topic="/opendr/gestures", device="cuda"):
         """
         Creates a ROS Node for gesture recognition from RGBD. Assuming that the following drivers have been installed:
         https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2.
@@ -42,13 +42,13 @@ class RgbdHandGestureNode:
         :type input_rgb_image_topic: str
         :param input_depth_image_topic: Topic from which we are reading the input depth image
         :type input_depth_image_topic: str
-        :param gesture_topic: Topic to which we are publishing the predicted gesture class
-        :type gesture_topic: str
+        :param output_gestures_topic: Topic to which we are publishing the predicted gesture class
+        :type output_gestures_topic: str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
 
-        self.gesture_publisher = rospy.Publisher(gesture_topic, Classification2D, queue_size=10)
+        self.gesture_publisher = rospy.Publisher(output_gestures_topic, Classification2D, queue_size=10)
 
         image_sub = message_filters.Subscriber(input_rgb_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
         depth_sub = message_filters.Subscriber(input_depth_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
@@ -129,7 +129,7 @@ if __name__ == '__main__':
                         type=str, default="/kinect2/qhd/image_color_rect")
     parser.add_argument("--input_depth_image_topic", help="Topic name for input depth image",
                         type=str, default="/kinect2/qhd/image_depth_rect")
-    parser.add_argument("--output_gesture_topic", help="Topic name for predicted gesture class",
+    parser.add_argument("--output_gestures_topic", help="Topic name for predicted gesture class",
                         type=str, default="/opendr/gestures")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
                         choices=["cuda", "cpu"])
@@ -152,5 +152,5 @@ if __name__ == '__main__':
 
     gesture_node = RgbdHandGestureNode(input_rgb_image_topic=args.input_rgb_image_topic,
                                        input_depth_image_topic=args.input_depth_image_topic,
-                                       gesture_topic=args.output_gesture_topic, device=device)
+                                       output_gestures_topic=args.output_gestures_topic, device=device)
     gesture_node.listen()
