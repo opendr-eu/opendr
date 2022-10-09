@@ -36,22 +36,22 @@ from opendr.engine.data import Video, Timeseries
 class AudiovisualEmotionNode:
 
     def __init__(self, input_video_topic="/usb_cam/image_raw", input_audio_topic="/audio/audio",
-                 annotations_topic="/opendr/audiovisual_emotion", buffer_size=3.6, device="cuda"):
+                 output_emotions_topic="/opendr/audiovisual_emotion", buffer_size=3.6, device="cuda"):
         """
         Creates a ROS Node for audiovisual emotion recognition
         :param input_video_topic: Topic from which we are reading the input video. Expects detected face of size 224x224
         :type input_video_topic: str
         :param input_audio_topic: Topic from which we are reading the input audio
         :type input_audio_topic: str
-        :param annotations_topic: Topic to which we are publishing the predicted class
-        :type annotations_topic: str
+        :param output_emotions_topic: Topic to which we are publishing the predicted class
+        :type output_emotions_topic: str
         :param buffer_size: length of audio and video in sec
         :type buffer_size: float
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
 
-        self.publisher = rospy.Publisher(annotations_topic, Classification2D, queue_size=10)
+        self.publisher = rospy.Publisher(output_emotions_topic, Classification2D, queue_size=10)
 
         video_sub = message_filters.Subscriber(input_video_topic, ROS_Image)
         audio_sub = message_filters.Subscriber(input_audio_topic, AudioData)
@@ -122,11 +122,16 @@ def select_distributed(m, n): return [i*n//m + n//(2*m) for i in range(m)]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--video_topic', type=str, help='listen to video input data on this topic')
-    parser.add_argument('--audio_topic', type=str, help='listen to audio input data on this topic')
-    parser.add_argument('--buffer_size', type=float, default=3.6, help='size of the audio buffer in seconds')
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
-                        choices=["cuda", "cpu"])
+    parser.add_argument("--input_video_topic", type=str, default="/usb_cam/image_raw",
+                        help="Listen to video input data on this topic")
+    parser.add_argument("--input_audio_topic", type=str, default="/audio/audio",
+                        help="Listen to audio input data on this topic")
+    parser.add_argument("--output_emotions_topic", type=str, default="/output/output_emotions_topic",
+                        help="Topic name for output emotions recognition")
+    parser.add_argument("--buffer_size", type=float, default=3.6,
+                        help="Size of the audio buffer in seconds")
+    parser.add_argument("--device", type=str, default="cuda",
+                        help="Device to use (cpu, cuda)", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
     # Select the device for running
@@ -143,7 +148,7 @@ if __name__ == '__main__':
         print("Using CPU")
         device = "cpu"
 
-    avnode = AudiovisualEmotionNode(input_video_topic=args.video_topic, input_audio_topic=args.audio_topic,
-                                    annotations_topic="/opendr/audiovisual_emotion",
+    avnode = AudiovisualEmotionNode(input_video_topic=args.input_video_topic, input_audio_topic=args.input_audio_topic,
+                                    output_emotions_topic=args.output_emotions_topic,
                                     buffer_size=args.buffer_size, device=device)
     avnode.listen()
