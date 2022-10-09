@@ -25,11 +25,12 @@ from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner,
 
 class HeartAnomalyNode:
 
-    def __init__(self, input_topic="/ecg/ecg", prediction_topic="/opendr/heartanomaly", device="cuda", model='anbof'):
+    def __init__(self, input_ecg_topic="/ecg/ecg", prediction_topic="/opendr/heart_anomaly", device="cuda",
+                 model='anbof'):
         """
         Creates a ROS Node for heart anomaly (atrial fibrillation) detection from ecg data
-        :param input_topic: Topic from which we are reading the input array data
-        :type input_topic: str
+        :param input_ecg_topic: Topic from which we are reading the input array data
+        :type input_ecg_topic: str
         :param prediction_topic: Topic to which we are publishing the predicted class
         :type prediction_topic: str
         :param device: device on which we are running inference ('cpu' or 'cuda')
@@ -40,7 +41,7 @@ class HeartAnomalyNode:
 
         self.publisher = rospy.Publisher(prediction_topic, Classification2D, queue_size=10)
 
-        rospy.Subscriber(input_topic, Float32MultiArray, self.callback)
+        rospy.Subscriber(input_ecg_topic, Float32MultiArray, self.callback)
 
         self.bridge = ROSBridge()
 
@@ -85,7 +86,7 @@ class HeartAnomalyNode:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('input_topic', type=str, help='listen to input data on this topic')
+    parser.add_argument('input_ecg_topic', type=str, help='listen to input data on this topic')
     parser.add_argument('model', type=str, help='model to be used for prediction: anbof or gru')
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
                         choices=["cuda", "cpu"])
@@ -106,5 +107,5 @@ if __name__ == '__main__':
         print("Using CPU")
         device = "cpu"
 
-    gesture_node = HeartAnomalyNode(input_topic=args.input_topic, model=args.model, device=device)
+    gesture_node = HeartAnomalyNode(input_ecg_topic=args.input_ecg_topic, model=args.model, device=device)
     gesture_node.listen()
