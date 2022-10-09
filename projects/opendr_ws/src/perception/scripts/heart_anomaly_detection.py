@@ -71,8 +71,8 @@ class HeartAnomalyNode:
     def callback(self, msg_data):
         """
         Callback that process the input data and publishes to the corresponding topics
-        :param data: input message
-        :type data: std_msgs.msg.Float32MultiArray
+        :param msg_data: input message
+        :type msg_data: std_msgs.msg.Float32MultiArray
         """
         # Convert Float32MultiArray to OpenDR Timeseries
         data = self.bridge.from_rosarray_to_timeseries(msg_data, self.channels, self.series_length)
