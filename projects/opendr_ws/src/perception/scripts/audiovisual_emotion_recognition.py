@@ -85,7 +85,7 @@ class AudiovisualEmotionNode:
     def callback(self, image_data, audio_data):
         """
         Callback that process the input data and publishes to the corresponding topics
-        :param image_data: input image message, face image of size 224x224
+        :param image_data: input image message, face image
         :type image_data: sensor_msgs.msg.Image
         :param audio_data: input audio message, speech
         :type audio_data: audio_common_msgs.msg.AudioData
