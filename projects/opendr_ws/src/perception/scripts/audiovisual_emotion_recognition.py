@@ -121,13 +121,27 @@ class AudiovisualEmotionNode:
 def select_distributed(m, n): return [i*n//m + n//(2*m) for i in range(m)]
 
 if __name__ == '__main__':
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--video_topic', type=str, help='listen to video input data on this topic')
     parser.add_argument('--audio_topic', type=str, help='listen to audio input data on this topic')
     parser.add_argument('--buffer_size', type=float, default=3.6, help='size of the audio buffer in seconds')
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
+                        choices=["cuda", "cpu"])
     args = parser.parse_args()
+
+    # Select the device for running
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU")
+            device = "cpu"
+    except:
+        print("Using CPU")
+        device = "cpu"
 
     avnode = AudiovisualEmotionNode(input_video_topic=args.video_topic, input_audio_topic=args.audio_topic,
                                     annotations_topic="/opendr/audiovisual_emotion",
