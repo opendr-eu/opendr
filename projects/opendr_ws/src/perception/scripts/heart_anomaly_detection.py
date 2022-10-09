@@ -25,8 +25,8 @@ from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner,
 
 class HeartAnomalyNode:
 
-    def __init__(self, input_ecg_topic="/ecg/ecg", prediction_topic="/opendr/heart_anomaly", device="cuda",
-                 model='anbof'):
+    def __init__(self, input_ecg_topic="/ecg/ecg", output_heart_anomaly_topic="/opendr/heart_anomaly",
+                 device="cuda", model="anbof"):
         """
         Creates a ROS Node for heart anomaly (atrial fibrillation) detection from ecg data
         :param input_ecg_topic: Topic from which we are reading the input array data
@@ -39,7 +39,7 @@ class HeartAnomalyNode:
         :type model: str
         """
 
-        self.publisher = rospy.Publisher(prediction_topic, Classification2D, queue_size=10)
+        self.publisher = rospy.Publisher(output_heart_anomaly_topic, Classification2D, queue_size=10)
 
         rospy.Subscriber(input_ecg_topic, Float32MultiArray, self.callback)
 
@@ -84,11 +84,14 @@ class HeartAnomalyNode:
         ros_class = self.bridge.from_category_to_rosclass(class_pred)
         self.publisher.publish(ros_class)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_ecg_topic", type=str, default="/ecg/ecg",
                         help="listen to input ECG data on this topic")
-    parser.add_argument("--model", type=str, default="anbof", help='model to be used for prediction: anbof or gru')
+    parser.add_argument("--model", type=str, default="anbof", help="model to be used for prediction: anbof or gru")
+    parser.add_argument("--output_heart_anomaly_topic", type=str, default="/opendr/heart_anomaly",
+                        help="Topic name for heart anomaly detection topic")
     parser.add_argument("--device", type=str, default="cuda", help="Device to use (cpu, cuda)",
                         choices=["cuda", "cpu"])
 
