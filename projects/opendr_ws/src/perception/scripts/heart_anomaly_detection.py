@@ -86,9 +86,10 @@ class HeartAnomalyNode:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('input_ecg_topic', type=str, help='listen to input data on this topic')
-    parser.add_argument('model', type=str, help='model to be used for prediction: anbof or gru')
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
+    parser.add_argument("--input_ecg_topic", type=str, default="/ecg/ecg",
+                        help="listen to input ECG data on this topic")
+    parser.add_argument("--model", type=str, default="anbof", help='model to be used for prediction: anbof or gru')
+    parser.add_argument("--device", type=str, default="cuda", help="Device to use (cpu, cuda)",
                         choices=["cuda", "cpu"])
 
     args = parser.parse_args()
