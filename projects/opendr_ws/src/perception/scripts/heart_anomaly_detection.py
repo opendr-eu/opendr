@@ -84,16 +84,27 @@ class HeartAnomalyNode:
         self.publisher.publish(ros_class)
 
 if __name__ == '__main__':
-    # Select the device for running
-    try:
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    except:
-        device = 'cpu'
-
     parser = argparse.ArgumentParser()
     parser.add_argument('input_topic', type=str, help='listen to input data on this topic')
     parser.add_argument('model', type=str, help='model to be used for prediction: anbof or gru')
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
+                        choices=["cuda", "cpu"])
+
     args = parser.parse_args()
+
+    # Select the device for running
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU")
+            device = "cpu"
+    except:
+        print("Using CPU")
+        device = "cpu"
 
     gesture_node = HeartAnomalyNode(input_topic=args.input_topic, model=args.model, device=device)
     gesture_node.listen()
