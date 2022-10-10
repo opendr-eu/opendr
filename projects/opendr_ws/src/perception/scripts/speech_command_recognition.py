@@ -107,14 +107,15 @@ class SpeechRecognitionNode:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("input_audio_topic", type=str, help="listen to input data on this topic")
-    parser.add_argument("--buffer_size", type=float, default=1.5, help="size of the audio buffer in seconds")
-    parser.add_argument("--model", choices=["matchboxnet", "edgespeechnets", "quad_selfonn"], default="matchboxnet",
+    parser.add_argument("--input_audio_topic", type=str, default="audio/audio",
+                        help="Listen to input data on this topic")
+    parser.add_argument("--buffer_size", type=float, default=1.5, help="Size of the audio buffer in seconds")
+    parser.add_argument("--model", default="matchboxnet", choices=["matchboxnet", "edgespeechnets", "quad_selfonn"],
                         help="model to be used for prediction: matchboxnet or quad_selfonn")
     parser.add_argument("--model_path", type=str,
                         help="path to the model files, if not given, the pretrained model will be downloaded")
-    parser.add_argument("--device", type=str, default="cuda", help="Device to use (cpu, cuda)",
-                        choices=["cuda", "cpu"])
+    parser.add_argument("--device", type=str, default="cuda", choices=["cuda", "cpu"],
+                        help="Device to use (cpu, cuda)")
     args = parser.parse_args()
 
     # Select the device for running
