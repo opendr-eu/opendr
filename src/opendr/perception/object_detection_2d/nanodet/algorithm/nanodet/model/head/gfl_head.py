@@ -608,12 +608,10 @@ class GFLHead(nn.Module):
         center_priors = torch.cat(mlvl_center_priors, dim=1)
         dis_preds = self.distribution_project(reg_preds) * center_priors[..., 2, None]
         bboxes = distance2bbox(center_priors[..., :2], dis_preds, max_shape=input_shape)
-        scores = cls_preds.sigmoid()
         result_list = []
         for i in range(b):
             # add a dummy background class at the end of all labels
-            # same with mmdetection2.0
-            score, bbox = scores[i], bboxes[i]
+            score, bbox = cls_preds[i], bboxes[i]
             padding = score.new_zeros(score.shape[0], 1)
             score = torch.cat([score, padding], dim=1)
             results = multiclass_nms(
@@ -641,7 +639,7 @@ class GFLHead(nn.Module):
         h, w = featmap_size
         x_range = (torch.arange(w, dtype=dtype, device=device) + 0.5) * stride
         y_range = (torch.arange(h, dtype=dtype, device=device) + 0.5) * stride
-        y, x = torch.meshgrid(y_range, x_range)
+        y, x = torch.meshgrid(y_range, x_range, indexing="ij")
         if flatten:
             y = y.flatten()
             x = x.flatten()

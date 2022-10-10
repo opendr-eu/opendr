@@ -178,21 +178,22 @@ class NanodetLearner(Learner):
         """
         path = path if path is not None else self.cfg.save_dir
         model = self.cfg.check_point_name
+        if verbose and not self.logger:
+            self.logger = Logger(-1, path, False)
+
         os.makedirs(path, exist_ok=True)
 
         metadata = {"model_paths": [], "framework": "pytorch", "format": "pth",
                     "has_data": False, "inference_params": {}, "optimized": False,
                     "optimizer_info": {}, "classes": self.classes}
 
-        param_filepath = "nanodet_{}.pth".format(model)
-        metadata["model_paths"].append(param_filepath)
+        metadata["model_paths"].append("nanodet_{}.pth".format(model))
 
-        logger = self.logger if verbose else None
         if self.task is None:
             print("You do not have call a task yet, only the state of the loaded or initialized model will be saved")
-            save_model_state(os.path.join(path, metadata["model_paths"][0]), self.model, None, logger)
+            save_model_state(os.path.join(path, metadata["model_paths"][0]), self.model, None, self.logger)
         else:
-            self.task.save_current_model(os.path.join(path, metadata["model_paths"][0]), logger)
+            self.task.save_current_model(os.path.join(path, metadata["model_paths"][0]), self.logger)
 
         with open(os.path.join(path, "nanodet_{}.json".format(model)), 'w', encoding='utf-8') as f:
             json.dump(metadata, f, ensure_ascii=False, indent=4)
@@ -208,21 +209,25 @@ class NanodetLearner(Learner):
         :param verbose: whether to print a success message or not, defaults to False
         :type verbose: bool, optional
         """
+
         path = path if path is not None else self.cfg.save_dir
+
+        if verbose and not self.logger:
+            self.logger = Logger(-1, path, False)
+
         model = self.cfg.check_point_name
         if verbose:
-            print("Model name:", model, "-->", os.path.join(path, model + ".json"))
+            print("Model name:", model, "-->", os.path.join(path, "nanodet_" + model + ".json"))
         with open(os.path.join(path, "nanodet_{}.json".format(model))) as f:
             metadata = json.load(f)
 
-        logger = Logger(-1, path, False) if verbose else None
         ckpt = torch.load(os.path.join(path, metadata["model_paths"][0]), map_location=torch.device(self.device))
-        self.model = load_model_weight(self.model, ckpt, logger)
+        self.model = load_model_weight(self.model, ckpt, self.logger)
         if verbose:
-            logger.log("Loaded model weight from {}".format(path))
+            self.logger.log("Loaded model weight from {}".format(path))
         pass
 
-    def download(self, path=None, mode="pretrained", verbose=False,
+    def download(self, path=None, mode="pretrained", verbose=True,
                  url=OPENDR_SERVER_URL + "/perception/object_detection_2d/nanodet/"):
 
         """
@@ -448,7 +453,7 @@ class NanodetLearner(Learner):
 
         self.cfg.update({"test_mode": "val"})
 
-        if verbose:
+        if self.logger:
             self.logger.info("Setting up data...")
 
         val_dataset = build_dataset(self.cfg.data.val, dataset, self.cfg.class_names, "val")
@@ -464,7 +469,7 @@ class NanodetLearner(Learner):
         )
         evaluator = build_evaluator(self.cfg.evaluator, val_dataset)
 
-        if verbose:
+        if self.logger:
             self.logger.info("Creating task...")
         self.task = TrainingTask(self.cfg, self.model, evaluator)
 
@@ -483,7 +488,7 @@ class NanodetLearner(Learner):
             num_sanity_val_steps=0,
             logger=self.logger,
         )
-        if verbose:
+        if self.logger:
             self.logger.info("Starting testing...")
         return trainer.test(self.task, val_dataloader, verbose=verbose)
 
@@ -501,15 +506,16 @@ class NanodetLearner(Learner):
         :rtype: BoundingBoxList
         """
 
-        if verbose:
-            self.logger = Logger(0, use_tensorboard=False)
+        if verbose and not self.logger:
+            self.logger = Logger(-1, "./last_infer", False)
+
         predictor = Predictor(self.cfg, self.model, device=self.device)
         if not isinstance(input, Image):
             input = Image(input)
         _input = input.opencv()
-        meta, res = predictor.inference(_input, verbose)
+        meta, res = predictor.inference(_input)
 
-        bounding_boxes = BoundingBoxList([])
+        bounding_boxes = []
         for label in res[0]:
             for box in res[0][label]:
                 score = box[-1]
@@ -519,7 +525,8 @@ class NanodetLearner(Learner):
                                        height=box[3] - box[1],
                                        name=label,
                                        score=score)
-                    bounding_boxes.data.append(bbox)
+                    bounding_boxes.append(bbox)
+        bounding_boxes = BoundingBoxList(bounding_boxes)
         bounding_boxes.data.sort(key=lambda v: v.confidence)
 
         return bounding_boxes

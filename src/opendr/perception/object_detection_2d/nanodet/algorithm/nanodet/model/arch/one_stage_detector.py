@@ -43,7 +43,7 @@ class OneStageDetector(nn.Module):
             x = self.head(x)
         return x
 
-    def inference(self, meta, verbose=True):
+    def inference(self, meta):
         with torch.no_grad():
             preds = self(meta["img"])
             results = self.head.post_process(preds, meta)

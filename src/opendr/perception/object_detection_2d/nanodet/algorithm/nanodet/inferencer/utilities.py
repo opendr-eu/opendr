@@ -14,16 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import torch
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.batch_process import stack_batch_img
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.collate import naive_collate
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.transform import Pipeline
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.arch import build_model
-
-image_ext = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]
-video_ext = ["mp4", "mov", "avi", "mkv"]
 
 
 class Predictor(object):
@@ -38,12 +34,10 @@ class Predictor(object):
             from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.backbone.repvgg\
                 import repvgg_det_model_convert
             model = repvgg_det_model_convert(model, deploy_model)
-
         self.model = model.to(device).eval()
-
         self.pipeline = Pipeline(self.cfg.data.val.pipeline, self.cfg.data.val.keep_ratio)
 
-    def inference(self, img, verbose=True):
+    def inference(self, img):
         img_info = {"id": 0}
         height, width = img.shape[:2]
         img_info["height"] = height
@@ -54,16 +48,5 @@ class Predictor(object):
         meta = naive_collate([meta])
         meta["img"] = stack_batch_img(meta["img"], divisible=32)
         with torch.no_grad():
-            results = self.model.inference(meta, verbose)
+            results = self.model.inference(meta)
         return meta, results
-
-
-def get_image_list(path):
-    image_names = []
-    for maindir, subdir, file_name_list in os.walk(path):
-        for filename in file_name_list:
-            apath = os.path.join(maindir, filename)
-            ext = os.path.splitext(apath)[1]
-            if ext in image_ext:
-                image_names.append(apath)
-    return image_names

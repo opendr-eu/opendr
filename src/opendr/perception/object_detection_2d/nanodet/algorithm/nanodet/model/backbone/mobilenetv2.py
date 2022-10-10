@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import warnings
-
 import torch.nn as nn
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.activation import act_layers
@@ -79,7 +77,6 @@ class MobileNetV2(nn.Module):
         out_stages=(1, 2, 4, 6),
         last_channel=1280,
         activation="ReLU",
-        act=None,
     ):
         super(MobileNetV2, self).__init__()
         # TODO: support load torchvison pretrained weight
@@ -89,11 +86,6 @@ class MobileNetV2(nn.Module):
         input_channel = 32
         self.last_channel = last_channel
         self.activation = activation
-        if act is not None:
-            warnings.warn(
-                "Warning! act argument has been deprecated, " "use activation instead!"
-            )
-            self.activation = act
         self.interverted_residual_setting = [
             # t, c, n, s
             [1, 16, 1, 1],

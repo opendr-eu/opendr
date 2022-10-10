@@ -10,7 +10,6 @@ and https://github.com/rwightman/pytorch-image-models
 """
 import logging
 import math
-import warnings
 
 import torch
 import torch.nn as nn
@@ -222,7 +221,6 @@ class GhostNet(nn.Module):
         out_stages=(4, 6, 9),
         activation="ReLU",
         pretrain=True,
-        act=None,
     ):
         super(GhostNet, self).__init__()
         assert set(out_stages).issubset(i for i in range(10))
@@ -260,11 +258,6 @@ class GhostNet(nn.Module):
         #  ------conv+bn+act----------# 9  1/32
 
         self.activation = activation
-        if act is not None:
-            warnings.warn(
-                "Warning! act argument has been deprecated, " "use activation instead!"
-            )
-            self.activation = act
 
         # building first layer
         output_channel = _make_divisible(16 * width_mult, 4)

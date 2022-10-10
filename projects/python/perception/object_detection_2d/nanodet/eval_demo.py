@@ -30,5 +30,5 @@ if __name__ == '__main__':
     nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
 
     nanodet.download("./predefined_examples", mode="pretrained")
-    nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
+    nanodet.load("./predefined_examples/nanodet-{}".format(args.model), verbose=True)
     nanodet.eval(val_dataset)

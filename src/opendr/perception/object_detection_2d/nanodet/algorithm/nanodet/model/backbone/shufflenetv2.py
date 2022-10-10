@@ -15,7 +15,7 @@ model_urls = {
 def channel_shuffle(x, groups):
     # type: (torch.Tensor, int) -> torch.Tensor
     batchsize, num_channels, height, width = x.data.size()
-    channels_per_group = num_channels // groups
+    channels_per_group = torch.div(num_channels, groups, rounding_mode='floor')
 
     # reshape
     x = x.view(batchsize, groups, channels_per_group, height, width)
