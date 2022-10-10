@@ -106,12 +106,6 @@ class SpeechRecognitionNode:
 
 
 if __name__ == '__main__':
-    # Select the device for running
-    try:
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    except:
-        device = 'cpu'
-
     parser = argparse.ArgumentParser()
     parser.add_argument('input_topic', type=str, help='listen to input data on this topic')
     parser.add_argument('--buffer_size', type=float, default=1.5, help='size of the audio buffer in seconds')
@@ -119,7 +113,23 @@ if __name__ == '__main__':
                         help='model to be used for prediction: matchboxnet or quad_selfonn')
     parser.add_argument('--model_path', type=str,
                         help='path to the model files, if not given, the pretrained model will be downloaded')
+    parser.add_argument("--device", type=str, default="cuda", help="Device to use (cpu, cuda)",
+                        choices=["cuda", "cpu"])
     args = parser.parse_args()
+
+    # Select the device for running
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU")
+            device = "cpu"
+    except:
+        print("Using CPU")
+        device = "cpu"
 
     speech_node = SpeechRecognitionNode(input_topic=args.input_topic, buffer_size=args.buffer_size,
                                         model=args.model, model_path=args.model_path, device=device)
