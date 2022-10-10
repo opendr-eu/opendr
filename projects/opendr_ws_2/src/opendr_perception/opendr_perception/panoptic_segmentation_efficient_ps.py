@@ -32,32 +32,36 @@ matplotlib.use('Agg')
 
 class EfficientPsNode(Node):
     def __init__(self,
-                 input_image_topic: str,
+                 input_rgb_image_topic: str,
                  checkpoint: str,
                  output_heatmap_topic: Optional[str] = None,
-                 output_visualization_topic: Optional[str] = None,
+                 output_rgb_visualization_topic: Optional[str] = None,
                  detailed_visualization: bool = False
                  ):
         """
         Initialize the EfficientPS ROS node and create an instance of the respective learner class.
-        :param checkpoint: Path to a saved model
+        :param checkpoint: This is either a path to a saved model or one of [Cityscapes, KITTI] to download
+            pre-trained model weights.
         :type checkpoint: str
-        :param input_image_topic: ROS topic for the input image stream
-        :type input_image_topic: str
+        :param input_rgb_image_topic: ROS topic for the input image stream
+        :type input_rgb_image_topic: str
         :param output_heatmap_topic: ROS topic for the predicted semantic and instance maps
         :type output_heatmap_topic: str
-        :param output_visualization_topic: ROS topic for the generated visualization of the panoptic map
-        :type output_visualization_topic: str
+        :param output_rgb_visualization_topic: ROS topic for the generated visualization of the panoptic map
+        :type output_rgb_visualization_topic: str
+        :param detailed_visualization: if True, generate a combined overview of the input RGB image and the
+            semantic, instance, and panoptic segmentation maps and publish it on output_rgb_visualization_topic
+        :type detailed_visualization: bool
         """
         super().__init__('efficient_ps')
 
-        self.input_image_topic = input_image_topic
+        self.input_rgb_image_topic = input_rgb_image_topic
         self.checkpoint = checkpoint
         self.output_heatmap_topic = output_heatmap_topic
-        self.output_visualization_topic = output_visualization_topic
+        self.output_rgb_visualization_topic = output_rgb_visualization_topic
         self.detailed_visualization = detailed_visualization
 
-        # Initialize all ROS related things
+        # Initialize all ROS2 related things
         self._bridge = ROS2Bridge()
         self._instance_heatmap_publisher = None
         self._semantic_heatmap_publisher = None
@@ -110,9 +114,9 @@ class EfficientPsNode(Node):
             self._semantic_heatmap_publisher = self.create_publisher(ROS_Image,
                                                                      f'{self.output_heatmap_topic}/semantic',
                                                                      10)
-        if self.output_visualization_topic is not None:
+        if self.output_rgb_visualization_topic is not None:
             self._visualization_publisher = self.create_publisher(ROS_Image,
-                                                                  self.output_visualization_topic,
+                                                                  self.output_rgb_visualization_topic,
                                                                   10)
 
     def listen(self):
@@ -120,10 +124,18 @@ class EfficientPsNode(Node):
         Start the node and begin processing input data. The order of the function calls ensures that the node does not
         try to process input images without being in a trained state.
         """
+        rclpy.init("efficient_ps")
         self.get_logger().info('EfficientPS node started!')
         if self._init_learner():
             self._init_publisher()
             self._init_subscriber()
+            rclpy.spin(self)
+
+            # Destroy the node explicitly
+            # (optional - otherwise it will be done automatically
+            # when the garbage collector destroys the node object)
+            self.destroy_node()
+            rclpy.shutdown()
 
     def callback(self, data: ROS_Image):
         """
@@ -150,40 +162,31 @@ class EfficientPsNode(Node):
                 self._semantic_heatmap_publisher.publish(self._bridge.to_ros_image(prediction[1]))
 
         except Exception as e:
-            self.get_logger().error('Failed to generate prediction.')
-            print(e)
+            self.get_logger().error(f'Failed to generate prediction: {e}')
+            
 
 
-def main(argv=sys.argv[1:]):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('image_topic', type=str, help='listen to images on this topic')
-    parser.add_argument('checkpoint', type=str,
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('input_rgb_image_topic', type=str, default='/usb_cam/image_raw',
+                        help='listen to RGB images on this topic')
+    parser.add_argument('--checkpoint', type=str, default='cityscapes',
                         help='download pretrained models [cityscapes, kitti] or load from the provided path')
-    parser.add_argument('--heatmap_topic', type=str,
-                        help='publish the semantic and instance maps on this topic')
-    parser.add_argument('--visualization_topic', type=str,
+    parser.add_argument('--output_heatmap_topic', type=str, default='/opendr/panoptic',
+                        help='publish the semantic and instance maps on this topic as "OUTPUT_HEATMAP_TOPIC/semantic" \
+                             and "OUTPUT_HEATMAP_TOPIC/instance"')
+    parser.add_argument('--output_rgb_image_topic', type=str,
+                        default='/opendr/panoptic/rgb_visualization',
                         help='publish the panoptic segmentation map as an RGB image on this topic or a more detailed \
                               overview if using the --detailed_visualization flag')
     parser.add_argument('--detailed_visualization', action='store_true',
                         help='generate a combined overview of the input RGB image and the semantic, instance, and \
-                              panoptic segmentation maps')
-    args = parser.parse_args(argv)
+                              panoptic segmentation maps and publish it on OUTPUT_RGB_IMAGE_TOPIC')
+    args = parser.parse_args()
 
-    rclpy.init()
-    efficient_ps_node = EfficientPsNode(args.image_topic,
+    efficient_ps_node = EfficientPsNode(args.input_rgb_image_topic,
                                         args.checkpoint,
-                                        args.heatmap_topic,
-                                        args.visualization_topic,
+                                        args.output_heatmap_topic,
+                                        args.output_rgb_image_topic,
                                         args.detailed_visualization)
     efficient_ps_node.listen()
-    rclpy.spin(efficient_ps_node)
-
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
-    efficient_ps_node.destroy_node()
-    rclpy.shutdown()
-
-
-if __name__ == '__main__':
-    main()
