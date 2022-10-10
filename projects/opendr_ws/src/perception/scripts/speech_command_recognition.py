@@ -85,8 +85,8 @@ class SpeechRecognitionNode:
     def callback(self, msg_data):
         """
         Callback that processes the input data and publishes predictions to the output topic
-        :param data: incoming message
-        :type data: audio_common_msgs.msg.AudioData
+        :param msg_data: incoming message
+        :type msg_data: audio_common_msgs.msg.AudioData
         """
         # Accumulate data until the buffer is full
         data = np.reshape(np.frombuffer(msg_data.data, dtype=np.int16)/32768.0, (1, -1))
