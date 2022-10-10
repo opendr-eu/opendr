@@ -120,6 +120,7 @@ class AudiovisualEmotionNode:
 
 def select_distributed(m, n): return [i*n//m + n//(2*m) for i in range(m)]
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_video_topic", type=str, default="/usb_cam/image_raw",
