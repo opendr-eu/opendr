@@ -28,14 +28,14 @@ from opendr.perception.speech_recognition import MatchboxNetLearner, EdgeSpeechN
 
 class SpeechRecognitionNode:
 
-    def __init__(self, input_topic='/audio/audio', prediction_topic="/opendr/speech_recognition",
+    def __init__(self, input_audio_topic='/audio/audio', output_speech_command_topic="/opendr/speech_recognition",
                  buffer_size=1.5, model='matchboxnet', model_path=None, device='cuda'):
         """
         Creates a ROS Node for speech command recognition
-        :param input_topic: Topic from which the audio data is received
-        :type input_topic: str
-        :param prediction_topic: Topic to which the predictions are published
-        :type prediction_topic: str
+        :param input_audio_topic: Topic from which the audio data is received
+        :type input_audio_topic: str
+        :param output_speech_command_topic: Topic to which the predictions are published
+        :type output_speech_command_topic: str
         :param buffer_size: Length of the audio buffer in seconds
         :type buffer_size: float
         :param model: base speech command recognition model: matchboxnet or quad_selfonn
@@ -45,9 +45,9 @@ class SpeechRecognitionNode:
 
         """
 
-        self.publisher = rospy.Publisher(prediction_topic, Classification2D, queue_size=10)
+        self.publisher = rospy.Publisher(output_speech_command_topic, Classification2D, queue_size=10)
 
-        rospy.Subscriber(input_topic, AudioData, self.callback)
+        rospy.Subscriber(input_audio_topic, AudioData, self.callback)
 
         self.bridge = ROSBridge()
 
@@ -107,7 +107,7 @@ class SpeechRecognitionNode:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('input_topic', type=str, help='listen to input data on this topic')
+    parser.add_argument('input_audio_topic', type=str, help='listen to input data on this topic')
     parser.add_argument('--buffer_size', type=float, default=1.5, help='size of the audio buffer in seconds')
     parser.add_argument('--model', choices=["matchboxnet", "edgespeechnets", "quad_selfonn"], default="matchboxnet",
                         help='model to be used for prediction: matchboxnet or quad_selfonn')
@@ -131,6 +131,6 @@ if __name__ == '__main__':
         print("Using CPU")
         device = "cpu"
 
-    speech_node = SpeechRecognitionNode(input_topic=args.input_topic, buffer_size=args.buffer_size,
+    speech_node = SpeechRecognitionNode(input_audio_topic=args.input_audio_topic, buffer_size=args.buffer_size,
                                         model=args.model, model_path=args.model_path, device=device)
     speech_node.listen()
