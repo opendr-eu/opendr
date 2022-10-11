@@ -1,3 +1,4 @@
+# Copyright 2017 Open Source Robotics Foundation, Inc.
 from ament_flake8.main import main_with_errors
 import pytest
 
