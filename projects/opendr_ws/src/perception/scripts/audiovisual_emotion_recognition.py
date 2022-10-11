@@ -127,7 +127,7 @@ if __name__ == '__main__':
                         help="Listen to video input data on this topic")
     parser.add_argument("--input_audio_topic", type=str, default="/audio/audio",
                         help="Listen to audio input data on this topic")
-    parser.add_argument("--output_emotions_topic", type=str, default="/output/output_emotions_topic",
+    parser.add_argument("--output_emotions_topic", type=str, default="/opendr/audiovisual_emotion",
                         help="Topic name for output emotions recognition")
     parser.add_argument("--buffer_size", type=float, default=3.6,
                         help="Size of the audio buffer in seconds")
