@@ -1,3 +1,4 @@
+# Copyright 2017 Open Source Robotics Foundation, Inc.
 from ament_pep257.main import main
 import pytest
 
