@@ -39,6 +39,7 @@ jobs:
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
@@ -87,6 +88,7 @@ jobs:
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
@@ -104,6 +106,6 @@ jobs:
         python-version: 3.8
     - name: Test Docker
       run: |
-        docker run --name toolkit -i opendr/opendr-toolkit:cpu_latest bash
+        docker run --name toolkit -i opendr/opendr-toolkit:cpu_v1.1.1 bash
         docker start toolkit
         docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
