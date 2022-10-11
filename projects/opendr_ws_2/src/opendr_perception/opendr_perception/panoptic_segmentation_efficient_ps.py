@@ -163,7 +163,6 @@ class EfficientPsNode(Node):
 
         except Exception as e:
             self.get_logger().error(f'Failed to generate prediction: {e}')
-            
 
 
 if __name__ == '__main__':
