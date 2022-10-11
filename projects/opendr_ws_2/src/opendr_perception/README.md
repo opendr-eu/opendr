@@ -15,7 +15,7 @@ Before you can run any of the toolkit's ROS2 nodes, some prerequisites need to b
 
     For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam` ([instructions to install](../../README.md#Setup)). You can run the webcam node in a new terminal inside `opendr_ws` and with the workspace sourced using:
     ```shell
-    rosrun usb_cam usb_cam_node
+    ros2 run usb_cam usb_cam_node_exe
     ```
     By default, the USB cam node publishes images on `/usb_cam/image_raw` and the RGB input nodes subscribe to this topic if not provided with an input topic argument. As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing images, **make sure to change the input topic accordingly.**
 
