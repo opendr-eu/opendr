@@ -28,6 +28,9 @@ setup(
             'face_detection_retinaface = opendr_perception.face_detection_retinaface_node:main',
             'semantic_segmentation_bisenet = opendr_perception.semantic_segmentation_bisenet_node:main',
             'panoptic_segmentation = opendr_perception.panoptic_segmentation_efficient_ps:main',
+            'face_recognition = opendr_perception.face_recognition_node:main',
+            'fall_detection = opendr_perception.fall_detection_node:main',
+            'video_activity_recognition = opendr_perception.video_activity_recognition_node:main'
         ],
     },
 )
