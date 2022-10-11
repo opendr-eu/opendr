@@ -340,8 +340,7 @@ class ROS2Bridge:
     def to_ros_pose_3D(self, pose):
         """
         Converts an OpenDR pose into a OpenDRPose3D msg that can carry the same information
-        Each keypoint is represented as an OpenDRPose23Keypoint with x, y, z coordinates
-        being the top-left corner.
+        Each keypoint is represented as an OpenDRPose3DKeypoint with x, y, z coordinates.
         :param pose: OpenDR pose to be converted
         :type pose: engine.target.Pose
         :return: ROS message with the pose
