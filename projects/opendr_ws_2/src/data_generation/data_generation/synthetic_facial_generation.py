@@ -166,16 +166,15 @@ def main(args=None):
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():
-            device = "cuda"
+            print("GPU found.")
         elif args.device == "cuda":
             print("GPU not found. Using CPU instead.")
-            device = "cpu"
         else:
             print("Using CPU.")
-            device = "cpu"
     except:
         print("Using CPU.")
-
+        
+        
     syntheticdatageneration_node = Synthetic_Data_Generation(args=args,
                                                              input_rgb_image_topic=args.input_rgb_image_topic,
                                                              output_rgb_image_topic=args.output_rgb_image_topic)
