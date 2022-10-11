@@ -250,11 +250,10 @@ class ROS2Bridge:
         Converts a ROS mesh into arrays of vertices and faces of a mesh
         :param mesh_ROS: the ROS mesh to be converted
         :type mesh_ROS: shape_msgs.msg.Mesh
-        :return: Tuple that consists of numpy arrays Nx3 (vertices, faces),
-         representing vertices and faces of the 3D model respectively
-        :rtype: tuple (np.array, np.array)
-        :return vertex_colors: the colors of the vertices of the 3D model
-        :rtype vertex_colors: numpy array (Nx3)
+        :return vertices: Numpy array Nx3 representing vertices of the 3D model respectively
+        :rtype vertices: np.array
+        :return faces: Numpy array Nx3 representing the IDs of the vertices of each face of the 3D model
+        :rtype faces: numpy array (Nx3)
         """
         vertices = np.zeros([len(mesh_ROS.vertices), 3])
         faces = np.zeros([len(mesh_ROS.triangles), 3]).astype(int)
