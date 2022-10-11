@@ -13,14 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import cv2
+import torch
 
 import rospy
-import torch
-from vision_msgs.msg import ObjectHypothesis
 from std_msgs.msg import String
+from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 
+from opendr.engine.data import Image
 from opendr.perception.face_recognition import FaceRecognitionLearner
 from opendr.perception.object_detection_2d import RetinaFaceLearner
 from opendr.perception.object_detection_2d.datasets.transforms import BoundingBoxListToNumpyArray
@@ -28,24 +31,48 @@ from opendr.perception.object_detection_2d.datasets.transforms import BoundingBo
 
 class FaceRecognitionNode:
 
-    def __init__(self, input_image_topic="/usb_cam/image_raw",
-                 face_recognition_topic="/opendr/face_recognition",
-                 face_id_topic="/opendr/face_recognition_id",
-                 database_path="./database", device="cuda",
-                 backbone='mobilefacenet'):
+    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
+                 output_rgb_image_topic="/opendr/image_face_reco_annotated",
+                 detections_topic="/opendr/face_recognition", detections_id_topic="/opendr/face_recognition_id",
+                 database_path="./database", device="cuda", backbone="mobilefacenet"):
         """
-        Creates a ROS Node for face recognition
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
-        :param face_recognition_topic: Topic to which we are publishing the recognized face info
-        (if None, we are not publishing the info)
-        :type face_recognition_topic: str
-        :param face_id_topic: Topic to which we are publishing the ID of the recognized person
-         (if None, we are not publishing the ID)
-        :type face_id_topic:  str
-        :param device: device on which we are running inference ('cpu' or 'cuda')
+        Creates a ROS Node for face recognition.
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
+        :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
+        image is published)
+        :type output_rgb_image_topic: str
+        :param detections_topic: Topic to which we are publishing the recognized face information (if None,
+        no face recognition message is published)
+        :type detections_topic:  str
+        :param detections_id_topic: Topic to which we are publishing the ID of the recognized person (if None,
+        no ID message is published)
+        :type detections_id_topic:  str
+        :param device: Device on which we are running inference ('cpu' or 'cuda')
         :type device: str
+        :param backbone: Backbone network
+        :type backbone: str
+        :param database_path: Path of the directory where the images of the faces to be recognized are stored
+        :type database_path: str
         """
+        self.input_rgb_image_topic = input_rgb_image_topic
+
+        if output_rgb_image_topic is not None:
+            self.image_publisher = rospy.Publisher(output_rgb_image_topic, ROS_Image, queue_size=1)
+        else:
+            self.image_publisher = None
+
+        if detections_topic is not None:
+            self.face_publisher = rospy.Publisher(detections_topic, ObjectHypothesis, queue_size=1)
+        else:
+            self.face_publisher = None
+
+        if detections_id_topic is not None:
+            self.face_id_publisher = rospy.Publisher(detections_id_topic, String, queue_size=1)
+        else:
+            self.face_id_publisher = None
+
+        self.bridge = ROSBridge()
 
         # Initialize the face recognizer
         self.recognizer = FaceRecognitionLearner(device=device, mode='backbone_only', backbone=backbone)
@@ -59,27 +86,24 @@ class FaceRecognitionNode:
         self.face_detector.load("retinaface_{}".format('mnet'))
         self.class_names = ["face", "masked_face"]
 
-        if face_recognition_topic is not None:
-            self.face_publisher = rospy.Publisher(face_recognition_topic, ObjectHypothesis, queue_size=10)
-        else:
-            self.face_publisher = None
-
-        if face_id_topic is not None:
-            self.face_id_publisher = rospy.Publisher(face_id_topic, String, queue_size=10)
-        else:
-            self.face_id_publisher = None
-
-        self.bridge = ROSBridge()
-        rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
+    def listen(self):
+        """
+        Start the node and begin processing input data.
+        """
+        rospy.init_node('face_recognition_node', anonymous=True)
+        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
+        rospy.loginfo("Face recognition node started.")
+        rospy.spin()
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics
-        :param data: input message
+        Callback that processes the input data and publishes to the corresponding topics.
+        :param data: Input image message
         :type data: sensor_msgs.msg.Image
         """
         # Convert sensor_msgs.msg.Image into OpenDR Image
-        image = self.bridge.from_ros_image(data)
+        image = self.bridge.from_ros_image(data, encoding='bgr8')
+        # Get an OpenCV image back
         image = image.opencv()
 
         # Run face detection and recognition
@@ -90,59 +114,74 @@ class FaceRecognitionNode:
                 boxes = bounding_boxes[:, :4]
                 for idx, box in enumerate(boxes):
                     (startX, startY, endX, endY) = int(box[0]), int(box[1]), int(box[2]), int(box[3])
-                    img = image[startY:endY, startX:endX]
-                    result = self.recognizer.infer(img)
+                    frame = image[startY:endY, startX:endX]
+                    result = self.recognizer.infer(frame)
 
-                    if result.data is not None:
-                        if self.face_publisher is not None:
-                            ros_face = self.bridge.to_ros_face(result)
-                            self.face_publisher.publish(ros_face)
+                    # Publish face information and ID
+                    if self.face_publisher is not None:
+                        self.face_publisher.publish(self.bridge.to_ros_face(result))
 
-                        if self.face_id_publisher is not None:
-                            ros_face_id = self.bridge.to_ros_face_id(result)
-                            self.face_id_publisher.publish(ros_face_id.data)
+                    if self.face_id_publisher is not None:
+                        self.face_id_publisher.publish(self.bridge.to_ros_face_id(result))
 
-                    else:
-                        result.description = "Unknown"
-                        if self.face_publisher is not None:
-                            ros_face = self.bridge.to_ros_face(result)
-                            self.face_publisher.publish(ros_face)
+                    if self.image_publisher is not None:
+                        if result.description != 'Not found':
+                            color = (0, 255, 0)
+                        else:
+                            color = (0, 0, 255)
+                        # Annotate image with face detection/recognition boxes
+                        cv2.rectangle(image, (startX, startY), (endX, endY), color, thickness=2)
+                        cv2.putText(image, result.description, (startX, endY - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                                    1, color, 2, cv2.LINE_AA)
 
-                        if self.face_id_publisher is not None:
-                            ros_face_id = self.bridge.to_ros_face_id(result)
-                            self.face_id_publisher.publish(ros_face_id.data)
+            if self.image_publisher is not None:
+                # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
+                self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
-                # We get can the data back using self.bridge.from_ros_face(ros_face)
-                # e.g.
-                # face = self.bridge.from_ros_face(ros_face)
-                # face.description = self.recognizer.database[face.id][0]
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
+                        type=str, default="/usb_cam/image_raw")
+    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/image_face_reco_annotated")
+    parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/face_recognition")
+    parser.add_argument("-id", "--detections_id_topic", help="Topic name for detection ID messages",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/face_recognition_id")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--backbone", help="Backbone network, defaults to mobilefacenet",
+                        type=str, default="mobilefacenet", choices=["mobilefacenet"])
+    parser.add_argument("--dataset_path",
+                        help="Path of the directory where the images of the faces to be recognized are stored, "
+                             "defaults to \"./database\"",
+                        type=str, default="./database")
+    args = parser.parse_args()
+
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
+
+    face_recognition_node = FaceRecognitionNode(device=device, backbone=args.backbone, database_path=args.dataset_path,
+                                                input_rgb_image_topic=args.input_rgb_image_topic,
+                                                output_rgb_image_topic=args.output_rgb_image_topic,
+                                                detections_topic=args.detections_topic,
+                                                detections_id_topic=args.detections_id_topic)
+    face_recognition_node.listen()
 
 
 if __name__ == '__main__':
-    # Select the device for running the
-    try:
-        if torch.cuda.is_available():
-            print("GPU found.")
-            device = 'cuda'
-        else:
-            print("GPU not found. Using CPU instead.")
-            device = 'cpu'
-    except:
-        device = 'cpu'
-
-    # initialize ROS node
-    rospy.init_node('opendr_face_recognition', anonymous=True)
-    rospy.loginfo("Face recognition node started!")
-
-    # get network backbone
-    backbone = rospy.get_param("~backbone", "mobilefacenet")
-    input_image_topic = rospy.get_param("~input_image_topic", "/usb_cam/image_raw")
-    database_path = rospy.get_param('~database_path', './')
-    rospy.loginfo("Using backbone: {}".format(backbone))
-    assert backbone in ["mobilefacenet", "ir_50"], "backbone should be one of ['mobilefacenet', 'ir_50']"
-
-    face_recognition_node = FaceRecognitionNode(device=device, backbone=backbone,
-                                                input_image_topic=input_image_topic,
-                                                database_path=database_path)
-    # begin ROS communications
-    rospy.spin()
+    main()

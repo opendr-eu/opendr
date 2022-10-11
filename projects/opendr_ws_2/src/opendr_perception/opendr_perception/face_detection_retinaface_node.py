@@ -83,14 +83,14 @@ class FaceDetectionNode(Node):
         # Run face detection
         boxes = self.face_detector.infer(image)
 
-        # Get an OpenCV image back
-        image = image.opencv()
-        # Publish detections in ROS message
-        ros_boxes = self.bridge.to_ros_boxes(boxes)  # Convert to ROS boxes
         if self.face_publisher is not None:
+            # Publish detections in ROS message
+            ros_boxes = self.bridge.to_ros_boxes(boxes)  # Convert to ROS boxes
             self.face_publisher.publish(ros_boxes)
 
         if self.image_publisher is not None:
+            # Get an OpenCV image back
+            image = image.opencv()
             # Annotate image with face detection boxes
             image = draw_bounding_boxes(image, boxes, class_names=self.class_names)
             # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
@@ -104,9 +104,11 @@ def main(args=None):
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
                         type=str, default="image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
-                        type=str, default="/opendr/image_pose_annotated")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/image_faces_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
-                        type=str, default="/opendr/poses")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/faces")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--backbone",
