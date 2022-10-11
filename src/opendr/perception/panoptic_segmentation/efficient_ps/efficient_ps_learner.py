@@ -306,17 +306,18 @@ class EfficientPsLearner(Learner):
             warnings.warn('The current model has not been trained.')
         self.model.eval()
 
-        # Build the data pipeline
-        test_pipeline = Compose(self._cfg.test_pipeline[1:])
-        device = next(self.model.parameters()).device
-
-        # Convert to the format expected by the mmdetection API
         single_image_mode = False
         if isinstance(batch, Image):
             batch = [batch]
             single_image_mode = True
+
+        # Convert to the format expected by the mmdetection API
         mmdet_batch = []
+        device = next(self.model.parameters()).device
         for img in batch:
+            # Change the processing size according to the input image
+            self._cfg.test_pipeline[1:][0]['img_scale'] = batch[0].data.shape[1:]
+            test_pipeline = Compose(self._cfg.test_pipeline[1:])
             # Convert from OpenDR convention (CHW/RGB) to the expected format (HWC/BGR)
             img_ = img.convert('channels_last', 'bgr')
             mmdet_img = {'filename': None, 'img': img_, 'img_shape': img_.shape, 'ori_shape': img_.shape}

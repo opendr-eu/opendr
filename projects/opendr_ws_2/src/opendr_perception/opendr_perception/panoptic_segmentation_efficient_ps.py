@@ -23,7 +23,7 @@ from rclpy.node import Node
 import matplotlib
 from sensor_msgs.msg import Image as ROS_Image
 
-from ros2_bridge.bridge import ROS2Bridge
+from opendr_ros2_bridge.opendr_ros2_bridge.bridge import ROS2Bridge
 from opendr.perception.panoptic_segmentation import EfficientPsLearner
 
 # Avoid having a matplotlib GUI in a separate thread in the visualize() function
@@ -101,7 +101,7 @@ class EfficientPsNode(Node):
         Subscribe to all relevant topics.
         """
         self.image_subscriber = self.create_subscription(ROS_Image, self.input_image_topic,
-                                                         self.callback, 10)
+                                                         self.callback, 1)
 
     def _init_publisher(self):
         """
