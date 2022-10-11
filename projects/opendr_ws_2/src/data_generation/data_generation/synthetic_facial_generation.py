@@ -175,7 +175,7 @@ def main(args=None):
             device = "cpu"
     except:
         print("Using CPU.")
-        device = "cpu"
+        
 
     syntheticdatageneration_node = Synthetic_Data_Generation(args=args,
                                                              input_rgb_image_topic=args.input_rgb_image_topic,
