@@ -31,8 +31,8 @@ class HeartAnomalyNode:
         Creates a ROS Node for heart anomaly (atrial fibrillation) detection from ecg data
         :param input_ecg_topic: Topic from which we are reading the input array data
         :type input_ecg_topic: str
-        :param prediction_topic: Topic to which we are publishing the predicted class
-        :type prediction_topic: str
+        :param output_heart_anomaly_topic: Topic to which we are publishing the predicted class
+        :type output_heart_anomaly_topic: str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param model: model to use: anbof or gru
