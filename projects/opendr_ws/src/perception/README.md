@@ -6,8 +6,6 @@ This package contains ROS nodes related to the perception package of OpenDR.
 
 ## Prerequisites
 
----
-
 Before you can run any of the toolkit's ROS nodes, some prerequisites need to be fulfilled:
 1. First of all, you need to [set up the required packages and build your workspace.](../../README.md#Setup) 
 2. Start roscore by opening a new terminal where ROS is sourced properly (`source /opt/ros/noetic/setup.bash`) and run `roscore`.
@@ -23,8 +21,6 @@ Before you can run any of the toolkit's ROS nodes, some prerequisites need to be
 
 ## Notes
 
----
-
 - ### Increase performance by disabling output
 Optionally, nodes can be modified via command line arguments, which are presented for each node separately below.
 Generally, arguments give the option to change the input and output topics, the device the node runs on (CPU or GPU), etc.
@@ -36,8 +32,6 @@ _An example would be to disable the output annotated image topic in a node when 
 
 ----
 ## RGB input nodes
-
-----
 
 ### Pose Estimation ROS Node
 
@@ -332,8 +326,6 @@ Instructions for basic usage and visualization of results:
 
 ## RGB + Infrared input
 
-----
-
 ### GEM ROS Node
 <!-- TODO -->
 Assuming that you have already [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
@@ -379,8 +371,6 @@ The predictied classes are published to the topic `/opendr/gestures`.
 
 ----
 ## Point cloud input
-
-----
 
 ### 3D Object Detection Voxel ROS Node
 <!-- TODO -->
@@ -434,8 +424,6 @@ This will pulbish the dataset images to an `/opendr/dataset_image` topic by defa
 ----
 ## Biosignal input
 
-----
-
 ### Heart Anomaly Detection ROS Node
 <!-- TODO -->
 A ROS node for performing heart anomaly (atrial fibrillation) detection from ecg data using GRU or ANBOF models trained on AF dataset. Assuming that the OpenDR catkin workspace has been sourced, the node can be started as:
@@ -446,8 +434,6 @@ with `ECG_TOPIC` specifying the ROS topic to which the node will subscribe, and 
 
 ----
 ## Audio input
-
-----
 
 ### Speech Command Recognition ROS Node
 <!-- TODO -->
@@ -466,8 +452,6 @@ The predictions (class id and confidence) are published to the topic `/opendr/sp
 
 ----
 ## Dataset ROS Nodes
-
-----
 
 The dataset nodes can be used to publish data from the disk, which is useful to test the functionality without the use of a sensor.
 Dataset nodes use a provided `DatasetIterator` object that returns a `(Data, Target)` pair.
