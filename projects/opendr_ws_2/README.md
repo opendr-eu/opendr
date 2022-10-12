@@ -9,62 +9,36 @@ ones similar to CvBridge. The workspace also contains the `opendr_ros2_interface
 
 For running a minimal working example you can follow the instructions below:
 
-0. Make sure that [ROS2-foxy is installed.](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html)
-1. Install some dependencies:
+1. Make sure that [ROS2-foxy is installed.](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html)
+2. Source the necessary distribution tools:
+    ```shell
+    source /opt/ros/foxy/setup.bash
+    ```
+   _For convenience, you can add this line to your `.bashrc` so you don't have to source the tools each time you open a  terminal window._
+3. Install some dependencies:
     ```shell
     # Install colcon https://docs.ros.org/en/foxy/Tutorials/Colcon-Tutorial.html
     sudo apt install python3-colcon-common-extensions
     # Install vision messages
     sudo apt-get install ros-foxy-vision-msgs
     ```
-2. (Optional) Most nodes with visual input are set up to run with a default usb camera. 
-If you want to use it install [ros2 usb cam](https://index.ros.org/r/usb_cam/) to test with local webcam.
-3. Install `cv_bridge` via the instructions in its [README](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge#installation), excluding the last step (build), as it will get built later with the rest of the workspace.
+4. Install `cv_bridge` via the instructions in its [README](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge#installation), excluding the last step (build), as it will get built later with the rest of the workspace.
+5. (Optional) Most nodes with visual input are set up to run with a default USB camera. 
+If you want to use it install [ROS2 USB cam](https://index.ros.org/r/usb_cam/).
 
 Building and Running
 ====
-1. Navigate to your OpenDR installation and activate it as usual
-2. Navigate to workspace root, `opendr_ws_2` directory
-3. Install `cv_bridge` via the instructions in its [README](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge#installation), excluding the last step(build). There seems to be no need to build it, as it will get built along with the rest of the packages later.
-5. Navigate to the workspace root (`opendr_ws_2`) as the previous step leaves you inside `vision_opencv` dir
-6. Run `colcon build`
-7. Run `. install/setup.bash`
-8. Run `ros2 run opendr_perception pose_estimation` to start the pose estimation node (or any other existing node)
-9. In a new terminal run `ros2 run usb_cam usb_cam_node_exe` to grab images from a webcam
-10. In a new terminal run `ros2 run rqt_image_view rqt_image_view` and select the corresponding topic to view the image result
-11. In a new terminal run `ros2 topic echo opendr/poses` to view the pose message. Note that it is not really human readable in that form, it should be read in another node and converted into an OpenDR pose object to have access to human-friendly print methods.
-
-
-## Instructions to be added
-<!--
-For running a minimal working example you can follow the instructions below:
-
-0. Source the necessary distribution tools:
-
-   ```source /opt/ros/noetic/setup.bash```
-
-1. Make sure you are inside opendr_ws
-2. If you are planning to use a usb camera for the demos, install the corresponding package and its dependencies:
-
-```shell
-cd src
-git clone https://github.com/ros-drivers/usb_cam
-cd ..
-rosdep install --from-paths src/ --ignore-src
-```
-3. Install the following dependencies, required in order to use the OpenDR ROS tools:
-```shell
-sudo apt-get install ros-noetic-vision-msgs ros-noetic-geometry-msgs ros-noetic-sensor-msgs ros-noetic-audio-common-msgs
-```
-4. Build the packages inside workspace
-```shell
-catkin_make
-```
-5. Source the workspace and you are ready to go!
-```shell
-source devel/setup.bash
-```
--->
+1. Navigate to `~/opendr` and activate it as usual using `source bin/activate.sh`
+2. Navigate to workspace root, `~/opendr/projects/opendr_ws_2` directory
+3. Build the workspace:
+    ```shell
+    colcon build
+    ```
+4. Source the workspace and you are ready to go!
+    ```shell
+    . install/setup.bash
+    ```
+   Take a look at the list of tools below and click on the links to navigate to specific nodes' documentation with instructions on how to run them.
 
 ## Structure
 
@@ -72,26 +46,26 @@ Currently, apart from tools, opendr_ws_2 contains the following ROS2 nodes (cate
 
 ### [Perception](src/opendr_perception/README.md)
 ## RGB input
-1. [Pose Estimation](src/opendr_perception/README.md#pose-estimation-ros-node)
-2. [Fall Detection](src/opendr_perception/README.md#fall-detection-ros-node)
-3. [Face Detection](src/opendr_perception/README.md#face-detection-ros-node)
-4. [Face Recognition](src/opendr_perception/README.md#face-recognition-ros-node)
-5. [2D Object Detection](src/opendr_perception/README.md#2d-object-detection-ros-nodes)
-6. [2D Object Tracking - Deep Sort](src/opendr_perception/README.md#2d-object-tracking-deep-sort-ros-node)
-7. [Panoptic Segmentation](src/opendr_perception/README.md#panoptic-segmentation-ros-node)
-8. [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros-node)
-9. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros-node)
-10. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros-node)
-11. [Video Human Activity Recognition](src/opendr_perception/README.md#video-human-activity-recognition-ros-node)
+1. [Pose Estimation](src/opendr_perception/README.md#pose-estimation-ros2-node)
+2. [Fall Detection](src/opendr_perception/README.md#fall-detection-ros2-node)
+3. [Face Detection](src/opendr_perception/README.md#face-detection-ros2-node)
+4. [Face Recognition](src/opendr_perception/README.md#face-recognition-ros2-node)
+5. [2D Object Detection](src/opendr_perception/README.md#2d-object-detection-ros2-nodes)
+6. [2D Object Tracking - Deep Sort](src/opendr_perception/README.md#2d-object-tracking-deep-sort-ros2-node)
+7. [Panoptic Segmentation](src/opendr_perception/README.md#panoptic-segmentation-ros2-node)
+8. [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros2-node)
+9. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros2-node)
+10. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros2-node)
+11. [Video Human Activity Recognition](src/opendr_perception/README.md#video-human-activity-recognition-ros2-node)
 ## RGB + Infrared input
-1. [End-to-End Multi-Modal Object Detection (GEM)](src/opendr_perception/README.md#gem-ros-node)
+1. [End-to-End Multi-Modal Object Detection (GEM)](src/opendr_perception/README.md#gem-ros2-node)
 ## RGBD input
-1. [RGBD Hand Gesture Recognition](src/opendr_perception/README.md#rgbd-hand-gesture-recognition-ros-node)
+1. [RGBD Hand Gesture Recognition](src/opendr_perception/README.md#rgbd-hand-gesture-recognition-ros2-node)
 ## Point cloud input
-1. [3D Object Detection Voxel](src/opendr_perception/README.md#3d-object-detection-voxel-ros-node)
-2. [3D Object Tracking AB3DMOT](src/opendr_perception/README.md#3d-object-tracking-ab3dmot-ros-node)
-3. [2D Object Tracking FairMOT](src/opendr_perception/README.md#2d-object-tracking-fairmot-ros-node)
+1. [3D Object Detection Voxel](src/opendr_perception/README.md#3d-object-detection-voxel-ros2-node)
+2. [3D Object Tracking AB3DMOT](src/opendr_perception/README.md#3d-object-tracking-ab3dmot-ros2-node)
+3. [2D Object Tracking FairMOT](src/opendr_perception/README.md#2d-object-tracking-fairmot-ros2-node)
 ## Biosignal input
-1. [Heart Anomaly Detection](src/opendr_perception/README.md#heart-anomaly-detection-ros-node)
+1. [Heart Anomaly Detection](src/opendr_perception/README.md#heart-anomaly-detection-ros2-node)
 ## Audio input
-1. [Speech Command Recognition](src/opendr_perception/README.md#speech-command-recognition-ros-node)
+1. [Speech Command Recognition](src/opendr_perception/README.md#speech-command-recognition-ros2-node)
