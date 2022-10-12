@@ -1,12 +1,41 @@
 # opendr_ws_2
 
 ## Description
-This ROS2 workspace contains ROS2 nodes and tools developed by OpenDR project. Currently, ROS2 nodes are compatible with ROS Foxy.
-This workspace contains the `opendr_ros2_bridge` package, which contains the `ROS2Bridge` class which provides an interface to convert OpenDR data types and targets into ROS-compatible
-ones similar to CvBridge. The workspace also contains the `opendr_ros2_interfaces` which provides message and service definitions for ROS-compatible OpenDR data types. You can find more information in the corresponding [documentation](../../docs/reference/ros2bridge.md).
+This ROS2 workspace contains ROS2 nodes and tools developed by OpenDR project. Currently, ROS2 nodes are compatible with ROS2 Foxy.
+This workspace contains the `opendr_ros2_bridge` package, which contains the `ROS2Bridge` class that provides an interface to convert OpenDR data types and targets into ROS-compatible
+ones similar to CvBridge. The workspace also contains the `opendr_ros2_interfaces` which provides message and service definitions for ROS-compatible OpenDR data types. You can find more information in the corresponding [opendr_ros2_bridge documentation](../../docs/reference/ros2bridge.md) and [opendr_ros2_interfaces documentation](). <!-- add interfaces readme link -->
 
 ## Setup
-Instructions to be added
+
+For running a minimal working example you can follow the instructions below:
+
+0. Make sure that [ROS2-foxy is installed.](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html)
+1. Install some dependencies:
+    ```shell
+    # Install colcon https://docs.ros.org/en/foxy/Tutorials/Colcon-Tutorial.html
+    sudo apt install python3-colcon-common-extensions
+    # Install vision messages
+    sudo apt-get install ros-foxy-vision-msgs
+    ```
+2. (Optional) Most nodes with visual input are set up to run with a default usb camera. 
+If you want to use it install [ros2 usb cam](https://index.ros.org/r/usb_cam/) to test with local webcam.
+3. Install `cv_bridge` via the instructions in its [README](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge#installation), excluding the last step (build), as it will get built later with the rest of the workspace.
+
+Building and Running
+====
+1. Navigate to your OpenDR installation and activate it as usual
+2. Navigate to workspace root, `opendr_ws_2` directory
+3. Install `cv_bridge` via the instructions in its [README](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge#installation), excluding the last step(build). There seems to be no need to build it, as it will get built along with the rest of the packages later.
+5. Navigate to the workspace root (`opendr_ws_2`) as the previous step leaves you inside `vision_opencv` dir
+6. Run `colcon build`
+7. Run `. install/setup.bash`
+8. Run `ros2 run opendr_perception pose_estimation` to start the pose estimation node (or any other existing node)
+9. In a new terminal run `ros2 run usb_cam usb_cam_node_exe` to grab images from a webcam
+10. In a new terminal run `ros2 run rqt_image_view rqt_image_view` and select the corresponding topic to view the image result
+11. In a new terminal run `ros2 topic echo opendr/poses` to view the pose message. Note that it is not really human readable in that form, it should be read in another node and converted into an OpenDR pose object to have access to human-friendly print methods.
+
+
+## Instructions to be added
 <!--
 For running a minimal working example you can follow the instructions below:
 
