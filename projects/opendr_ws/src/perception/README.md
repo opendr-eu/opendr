@@ -21,13 +21,28 @@ Before you can run any of the toolkit's ROS nodes, some prerequisites need to be
 
 ## Notes
 
-- ### Increase performance by disabling output
-Optionally, nodes can be modified via command line arguments, which are presented for each node separately below.
-Generally, arguments give the option to change the input and output topics, the device the node runs on (CPU or GPU), etc.
-When a node publishes on several topics, where applicable, a user can opt to disable one or more of the outputs by providing `None` in the corresponding output topic.
-This disables publishing on that topic, forgoing some operations in the node, which might increase its performance. 
+- ### Display output images with rqt_image_view
+    For any node that outputs images, `rqt_image_view` can be used to display them by running the following command in a new terminal:
+    ```shell
+    rosrun rqt_image_view rqt_image_view
+    ```
+    A window will appear, where the topic that you want to view can be selected from the drop-down menu on the top-left area of the window. 
+    Refer to each node's documentation below to find out the default output image topic, where applicable, and select it on the drop-down menu of rqt_image_view.
 
-_An example would be to disable the output annotated image topic in a node when visualization is not needed and only use the detection message in another node, thus eliminating the OpenCV operations._ 
+- ### Echo node output
+    All OpenDR nodes publish some kind of detection message, which can be echoed by running the following command in a new terminal:
+    ```shell
+    rostopic echo /topic_name
+    ```
+    You can find out the default topic name for each node, in its documentation below.
+
+- ### Increase performance by disabling output
+    Optionally, nodes can be modified via command line arguments, which are presented for each node separately below.
+    Generally, arguments give the option to change the input and output topics, the device the node runs on (CPU or GPU), etc.
+    When a node publishes on several topics, where applicable, a user can opt to disable one or more of the outputs by providing `None` in the corresponding output topic.
+    This disables publishing on that topic, forgoing some operations in the node, which might increase its performance. 
+
+    _An example would be to disable the output annotated image topic in a node when visualization is not needed and only use the detection message in another node, thus eliminating the OpenCV operations._ 
 <!-- - ### Other notes -->
 
 ----
@@ -36,9 +51,9 @@ _An example would be to disable the output annotated image topic in a node when 
 ### Pose Estimation ROS Node
 
 You can find the pose estimation ROS node python script [here](./scripts/pose_estimation.py) to inspect the code and modify it as you wish to fit your needs.
-The node makes use of the toolkit's [pose estimation tool](../../../../src/opendr/perception/pose_estimation/lightweight_open_pose/lightweight_open_pose_learner.py) whose documentation can be found [here](../../../../docs/reference/lightweight-open-pose.md).
+The node makes use of the toolkit's [pose estimation tool](../../../../src/opendr/perception/pose_estimation/lightweight_open_pose/lightweight_open_pose_learner.py) whose documentation can be found [here](../../../../docs/reference/lightweight-open-pose.md). The node publishes the detected poses in [OpenDR's 2D pose message format](../ros_bridge/msg/OpenDRPose2D.msg).
 
-Instructions for basic usage and visualization of results:
+#### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
@@ -54,7 +69,9 @@ Instructions for basic usage and visualization of results:
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--accelerate`: Acceleration flag that causes pose estimation to run faster but with less accuracy
 
-3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_pose_annotated` or by running `rostopic echo /opendr/poses`, where the node publishes the detected poses in [OpenDR's 2D pose message format](../ros_bridge/msg/OpenDRPose2D.msg).
+3. Default output topics:
+   - Output images: `/opendr/image_pose_annotated` 
+   - Detection messages:`/opendr/poses`
 
 ### Fall Detection ROS Node
 
