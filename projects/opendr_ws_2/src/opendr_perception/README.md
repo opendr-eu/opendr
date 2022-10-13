@@ -6,24 +6,20 @@ This package contains ROS2 nodes related to the perception package of OpenDR.
 
 ## Prerequisites
 
----
-
 Before you can run any of the toolkit's ROS2 nodes, some prerequisites need to be fulfilled:
 1. First of all, you need to [set up the required packages and build your workspace.](../../README.md#Setup) 
 2. _Add more?_
 3. _(Optional for nodes with [RGB input](#rgb-input-nodes))_ 
 
-    For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam` ([instructions to install](../../README.md#Setup)). You can run the webcam node in a new terminal inside `opendr_ws` and with the workspace sourced using:
+    For basic usage and testing, all the toolkit's ROS2 nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam` ([instructions to install](../../README.md#Setup)). You can run the webcam node in a new terminal:
     ```shell
     ros2 run usb_cam usb_cam_node_exe
     ```
-    By default, the USB cam node publishes images on `/usb_cam/image_raw` and the RGB input nodes subscribe to this topic if not provided with an input topic argument. As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing images, **make sure to change the input topic accordingly.**
+    By default, the USB cam node publishes images on `/image_raw` and the RGB input nodes subscribe to this topic if not provided with an input topic argument. As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing images, **make sure to change the input topic accordingly.**
 
 ---
 
 ## Notes
-
----
 
 - ### Increase performance by disabling output
 Optionally, nodes can be modified via command line arguments, which are presented for each node separately below.
@@ -35,13 +31,12 @@ _An example would be to disable the output annotated image topic in a node when 
 <!-- - ### Other notes -->
 
 ----
-## RGB input nodes
 
-----
+## RGB input nodes
 
 ### Pose Estimation ROS2 Node
 
-You can find the pose estimation ROS2 node python script [here](./scripts/pose_estimation.py) to inspect the code and modify it as you wish to fit your needs.
+You can find the pose estimation ROS2 node python script [here](./opendr_perception/pose_estimation_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's [pose estimation tool](../../../../src/opendr/perception/pose_estimation/lightweight_open_pose/lightweight_open_pose_learner.py) whose documentation can be found [here](../../../../docs/reference/lightweight-open-pose.md).
 
 Instructions for basic usage and visualization of results:
@@ -54,13 +49,13 @@ Instructions for basic usage and visualization of results:
     ```
     The following optional arguments are available:
    - `-h, --help`: show a help message and exit
-   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/poses`)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--accelerate`: Acceleration flag that causes pose estimation to run faster but with less accuracy
 
-3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_pose_annotated` or by running `rostopic echo /opendr/poses`, where the node publishes the detected poses in [OpenDR's 2D pose message format](../ros_bridge/msg/OpenDRPose2D.msg).
+3. In a new terminal you can view the annotated image stream by running `ros2 run rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_pose_annotated` or by running `ros2 topic echo /opendr/poses` in a terminal where `opendr_ws_2` is sourced, where the node publishes the detected poses in [OpenDR's 2D pose message format](../ros_bridge/msg/OpenDRPose2D.msg).
 
 ### Fall Detection ROS2 Node
 
@@ -330,9 +325,8 @@ Instructions for basic usage and visualization of results:
    
 3. In a new terminal you can view predictions by running `rostopic echo /opendr/human_activity_recognition` and `rostopic echo /opendr/human_activity_recognition_description`.
 
+---
 ## RGB + Infrared input
-
-----
 
 ### GEM ROS2 Node
 <!-- TODO -->
@@ -365,8 +359,6 @@ rosrun perception object_detection_2d_gem.py
 ----
 ## RGBD input
 
-----
-
 ### RGBD Hand Gesture Recognition ROS2 Node
 <!-- TODO -->
 A ROS2 node for performing hand gesture recognition using MobileNetv2 model trained on HANDS dataset.
@@ -379,8 +371,6 @@ The predictied classes are published to the topic `/opendr/gestures`.
 
 ----
 ## Point cloud input
-
-----
 
 ### 3D Object Detection Voxel ROS2 Node
 <!-- TODO -->
@@ -434,8 +424,6 @@ This will pulbish the dataset images to an `/opendr/dataset_image` topic by defa
 ----
 ## Biosignal input
 
-----
-
 ### Heart Anomaly Detection ROS2 Node
 <!-- TODO -->
 A ROS2 node for performing heart anomaly (atrial fibrillation) detection from ecg data using GRU or ANBOF models trained on AF dataset. Assuming that the OpenDR catkin workspace has been sourced, the node can be started as:
@@ -446,8 +434,6 @@ with `ECG_TOPIC` specifying the ROS2 topic to which the node will subscribe, and
 
 ----
 ## Audio input
-
-----
 
 ### Speech Command Recognition ROS2 Node
 <!-- TODO -->
@@ -466,8 +452,6 @@ The predictions (class id and confidence) are published to the topic `/opendr/sp
 
 ----
 ## Dataset ROS2 Nodes
-
-----
 
 The dataset nodes can be used to publish data from the disk, which is useful to test the functionality without the use of a sensor.
 Dataset nodes use a provided `DatasetIterator` object that returns a `(Data, Target)` pair.
