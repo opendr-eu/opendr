@@ -71,7 +71,7 @@ The node makes use of the toolkit's [pose estimation tool](../../../../src/opend
 
 3. Default output topics:
    - Output images: `/opendr/image_pose_annotated` 
-   - Detection messages:`/opendr/poses`
+   - Detection messages: `/opendr/poses`
 
 ### Fall Detection ROS Node
 
