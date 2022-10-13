@@ -357,8 +357,6 @@ rosrun perception object_detection_2d_gem.py
 ----
 ## RGBD input
 
-----
-
 ### RGBD Hand Gesture Recognition ROS Node
 <!-- TODO -->
 A ROS node for performing hand gesture recognition using MobileNetv2 model trained on HANDS dataset.
