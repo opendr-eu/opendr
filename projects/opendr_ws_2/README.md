@@ -22,8 +22,9 @@ For running a minimal working example you can follow the instructions below:
     # Install vision messages
     sudo apt-get install ros-foxy-vision-msgs
     ```
-4. Install `cv_bridge` via the instructions in its [README](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge#installation), excluding the last step (build), as it will get built later with the rest of the workspace.
-5. (Optional) Most nodes with visual input are set up to run with a default USB camera. 
+<!--4. Install `cv_bridge` via the instructions in its [README](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge#installation), excluding the last step (build), as it will get built later with the rest of the workspace. TODO is this needed?-->
+
+4. (Optional) Most nodes with visual input are set up to run with a default USB camera. 
 If you want to use it install [ROS2 USB cam](https://index.ros.org/r/usb_cam/).
 
 Building and Running
