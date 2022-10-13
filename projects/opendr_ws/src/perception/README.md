@@ -72,6 +72,8 @@ The node makes use of the toolkit's [pose estimation tool](../../../../src/opend
 3. Default output topics:
    - Output images: `/opendr/image_pose_annotated` 
    - Detection messages: `/opendr/poses`
+   
+   For viewing the output, refer to the [notes above.](#notes)
 
 ### Fall Detection ROS Node
 
@@ -81,11 +83,11 @@ Fall detection uses the toolkit's pose estimation tool internally.
 
 <!-- TODO Should add information about taking advantage of the pose estimation ros node when running fall detection, see issue https://github.com/opendr-eu/opendr/issues/282 -->
 
-Instructions for basic usage and visualization of results:
+#### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
-2. You are then ready to start the fall detection node
+2. You are then ready to start the fall detection node:
 
     ```shell
     rosrun perception fall_detection.py
@@ -98,15 +100,19 @@ Instructions for basic usage and visualization of results:
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--accelerate`: Acceleration flag that causes pose estimation that runs internally to run faster but with less accuracy
 
-3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_fall_annotated` or by running `rostopic echo /opendr/fallen`, where the node publishes bounding boxes of detected fallen poses.
+3. Default output topics:
+   - Output images: `/opendr/image_fallen_annotated` 
+   - Detection messages: `/opendr/fallen`
+   
+   For viewing the output, refer to the [notes above.](#notes)
 
 ### Face Detection ROS Node
 
-The face detection ROS node supports both the ResNet and MobileNet versions, of latter of which performs mask recognition as well.
+The face detection ROS node supports both the ResNet and MobileNet versions, the latter of which performs masked face detection as well.
 
 You can find the face detection ROS node python script [here](./scripts/face_detection_retinaface.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's [face detection tool](../../../../src/opendr/perception/object_detection_2d/retinaface/retinaface_learner.py) whose documentation can be found [here](../../../../docs/reference/face-detection-2d-retinaface.md).
 
-Instructions for basic usage and visualization of results:
+#### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
@@ -123,18 +129,22 @@ Instructions for basic usage and visualization of results:
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--backbone BACKBONE`: Retinaface backbone, options are either 'mnet' or 'resnet', where 'mnet' detects masked faces as well (default=`resnet`)
 
-3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_faces_annotated` or by running `rostopic echo /opendr/faces`, where the node publishes bounding boxes of detected faces.
+3. Default output topics:
+   - Output images: `/opendr/image_faces_annotated` 
+   - Detection messages: `/opendr/faces`
+   
+   For viewing the output, refer to the [notes above.](#notes)
 
 ### Face Recognition ROS Node
 
 You can find the face recognition ROS node python script [here](./scripts/face_recognition.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's [face recognition tool](../../../../src/opendr/perception/face_recognition/face_recognition_learner.py) whose documentation can be found [here](../../../../docs/reference/face-recognition.md).
 
-Instructions for basic usage and visualization of results:
+#### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
-2. You are then ready to start the face recognition node
+2. You are then ready to start the face recognition node:
 
     ```shell
     rosrun perception face_recognition.py
@@ -149,7 +159,11 @@ Instructions for basic usage and visualization of results:
    - `--backbone BACKBONE`: Backbone network (default=`mobilefacenet`)
    - `--dataset_path DATASET_PATH`: Path of the directory where the images of the faces to be recognized are stored (default=`./database`)
 
-3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_face_reco_annotated` or by running `rostopic echo /opendr/face_recognition`.
+3. Default output topics:
+   - Output images: `/opendr/image_face_reco_annotated` 
+   - Detection messages: `/opendr/face_recognition` and `/opendr/face_recognition_id`
+   
+   For viewing the output, refer to the [notes above.](#notes)
 
 **Notes**
 
@@ -170,12 +184,12 @@ under `/opendr/face_recognition_id`.
 
 ### 2D Object Detection ROS Nodes
 
-For 2D object detection, there are several ROS nodes implemented using various algorithms. The generic obejct detectors are SSD, YOLOv3, CenterNet and DETR.
+For 2D object detection, there are several ROS nodes implemented using various algorithms. The generic object detectors are SSD, YOLOv3, CenterNet and DETR.
 
 You can find the 2D object detection ROS node python scripts here: [SSD node](./scripts/object_detection_2d_ssd.py), [YOLOv3 node](./scripts/object_detection_2d_yolov3.py), [CenterNet node](./scripts/object_detection_2d_centernet.py) and [DETR node](./scripts/object_detection_2d_detr.py), where you can inspect the code and modify it as you wish to fit your needs.
 The nodes makes use of the toolkit's various 2D object detection tools: [SSD tool](../../../../src/opendr/perception/object_detection_2d/ssd/ssd_learner.py), [YOLOv3 tool](../../../../src/opendr/perception/object_detection_2d/yolov3/yolov3_learner.py), [CenterNet tool](../../../../src/opendr/perception/object_detection_2d/centernet/centernet_learner.py), [DETR tool](../../../../src/opendr/perception/object_detection_2d/detr/detr_learner.py), whose documentation can be found here: [SSD docs](../../../../docs/reference/object-detection-2d-ssd.md), [YOLOv3 docs](../../../../docs/reference/object-detection-2d-yolov3.md), [CenterNet docs](../../../../docs/reference/object-detection-2d-centernet.md), [DETR docs](../../../../docs/reference/detr.md).
 
-Instructions for basic usage and visualization of results:
+#### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
@@ -214,7 +228,11 @@ Instructions for basic usage and visualization of results:
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects`)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
-3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/image_objects_annotated` or by running `rostopic echo /opendr/objects`, where the bounding boxes alone are published.
+3. Default output topics:
+   - Output images: `/opendr/image_objects_annotated` 
+   - Detection messages: `/opendr/objects`
+   
+   For viewing the output, refer to the [notes above.](#notes)
 
 ### 2D Object Tracking Deep Sort ROS Node
 <!-- TODO -->
@@ -245,11 +263,11 @@ This will pulbish the dataset images to an `/opendr/dataset_image` topic by defa
 You can find the panoptic segmentation ROS node python script [here](./scripts/panoptic_segmentation_efficient_ps.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's [panoptic segmentation tool](../../../../src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) whose documentation can be found [here](../../../../docs/reference/efficient-ps.md) and additional information about Efficient PS [here](../../../../src/opendr/perception/panoptic_segmentation/README.md).
 
-Instructions for basic usage and visualization of results:
+#### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
-2. You are then ready to start the panoptic segmentation node
+2. You are then ready to start the panoptic segmentation node:
 
     ```shell
     rosrun perception panoptic_segmentation_efficient_ps.py
@@ -263,17 +281,21 @@ Instructions for basic usage and visualization of results:
    - `--visualization_topic VISUALIZATION_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag, `None` to stop the node from publishing on this topic (default=`/opendr/panoptic/rgb_visualization`)
    - `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps and publish it on `OUTPUT_RGB_IMAGE_TOPIC` (default=deactivated)
 
-3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topics `/opendr/panoptic/semantic`, `/opendr/panoptic/instance` and `/opendr/panoptic/rgb_visualization` or by running `rostopic echo /opendr/panoptic/semantic`, `rostopic echo /opendr/panoptic/instance` and `rostopic echo /opendr/panoptic/rgb_visualization`.
+3. Default output topics:
+   - Output images: `/opendr/panoptic/semantic`, `/opendr/panoptic/instance`, `/opendr/panoptic/rgb_visualization`   
+   - Detection messages: `/opendr/panoptic/semantic`, `/opendr/panoptic/instance`, `/opendr/panoptic/rgb_visualization`
+   
+   For viewing the output, refer to the [notes above.](#notes)
 
 ### Semantic Segmentation ROS Node
 
 You can find the semantic segmentation ROS node python script [here](./scripts/semantic_segmentation_bisenet.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's [semantic segmentation tool](../../../../src/opendr/perception/semantic_segmentation/bisenet/bisenet_learner.py) whose documentation can be found [here](../../../../docs/reference/semantic-segmentation.md).
 
-Instructions for basic usage and visualization of results:
+#### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
-2. You are then ready to start the semantic segmentation node
+2. You are then ready to start the semantic segmentation node:
 
     ```shell
     rosrun perception semantic_segmentation_bisenet.py
@@ -285,7 +307,11 @@ Instructions for basic usage and visualization of results:
    - `-v or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic to which we are publishing the heatmap image blended with the input image and a class legend for visualization purposes, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap_visualization`)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    
-3. In a new terminal you can view the annotated image stream by running `rosrun rqt_image_view rqt_image_view` and selecting the topic `/opendr/heatmap_visualization` or by running `rostopic echo /opendr/heatmap`.
+3. Default output topics:
+   - Output images: `/opendr/heatmap`, `/opendr/heatmap_visualization`
+   - Detection messages: `/opendr/heatmap`
+   
+   For viewing the output, refer to the [notes above.](#notes)
 
 **Notes**
 
@@ -322,7 +348,7 @@ You can find the video human activity recognition ROS node python script [here](
 The node makes use of the toolkit's video human activity recognition tools which can be found [here for CoX3D](../../../../src/opendr/perception/activity_recognition/cox3d/cox3d_learner.py) and 
 [here for X3D](../../../../src/opendr/perception/activity_recognition/x3d/x3d_learner.py) whose documentation can be found [here](../../../../docs/reference/activity-recognition.md).
 
-Instructions for basic usage and visualization of results:
+#### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
@@ -338,8 +364,11 @@ Instructions for basic usage and visualization of results:
    - `-od or --output_category_description_topic OUTPUT_CATEGORY_DESRIPTION_TOPIC`: Topic to which we are publishing the ID of the recognized action (default=`/opendr/human_activity_recognition_description`)
    - `--model`: Architecture to use for human activity recognition. Choices are "cox3d-s", "cox3d-m", "cox3d-l", "x3d-xs", "x3d-s", "x3d-m", or "x3d-l" (Default: "cox3d-m").
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+
+3. Default output topics:
+   - Detection messages: `/opendr/human_activity_recognition`, `/opendr/human_activity_recognition_description`
    
-3. In a new terminal you can view predictions by running `rostopic echo /opendr/human_activity_recognition` and `rostopic echo /opendr/human_activity_recognition_description`.
+   For viewing the output, refer to the [notes above.](#notes)
 
 ## RGB + Infrared input
 
