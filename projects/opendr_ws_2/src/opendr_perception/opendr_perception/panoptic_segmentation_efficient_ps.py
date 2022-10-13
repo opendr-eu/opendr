@@ -23,7 +23,7 @@ from rclpy.node import Node
 import matplotlib
 from sensor_msgs.msg import Image as ROS_Image
 
-from opendr_ros2_bridge.opendr_ros2_bridge.bridge import ROS2Bridge
+from opendr_ros2_bridge import ROS2Bridge
 from opendr.perception.panoptic_segmentation import EfficientPsLearner
 
 # Avoid having a matplotlib GUI in a separate thread in the visualize() function
@@ -100,7 +100,7 @@ class EfficientPsNode(Node):
         """
         Subscribe to all relevant topics.
         """
-        self.image_subscriber = self.create_subscription(ROS_Image, self.input_image_topic,
+        self.image_subscriber = self.create_subscription(ROS_Image, self.input_rgb_image_topic,
                                                          self.callback, 1)
 
     def _init_publisher(self):
@@ -124,7 +124,6 @@ class EfficientPsNode(Node):
         Start the node and begin processing input data. The order of the function calls ensures that the node does not
         try to process input images without being in a trained state.
         """
-        rclpy.init("efficient_ps")
         self.get_logger().info('EfficientPS node started!')
         if self._init_learner():
             self._init_publisher()
@@ -165,27 +164,29 @@ class EfficientPsNode(Node):
             self.get_logger().error(f'Failed to generate prediction: {e}')
 
 
-if __name__ == '__main__':
+def main(args=None):
+    rclpy.init(args=args)
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('input_rgb_image_topic', type=str, default='/usb_cam/image_raw',
+    parser.add_argument('-i', '--input_rgb_image_topic', type=str, default='/usb_cam/image_raw',
                         help='listen to RGB images on this topic')
     parser.add_argument('--checkpoint', type=str, default='cityscapes',
                         help='download pretrained models [cityscapes, kitti] or load from the provided path')
-    parser.add_argument('--output_heatmap_topic', type=str, default='/opendr/panoptic',
+    parser.add_argument('-o', '--output_heatmap_topic', type=str, default='/opendr/panoptic',
                         help='publish the semantic and instance maps on this topic as "OUTPUT_HEATMAP_TOPIC/semantic" \
-                             and "OUTPUT_HEATMAP_TOPIC/instance"')
-    parser.add_argument('--output_rgb_image_topic', type=str,
+                                 and "OUTPUT_HEATMAP_TOPIC/instance"')
+    parser.add_argument('-v', '--output_rgb_image_topic', type=str,
                         default='/opendr/panoptic/rgb_visualization',
                         help='publish the panoptic segmentation map as an RGB image on this topic or a more detailed \
-                              overview if using the --detailed_visualization flag')
+                                  overview if using the --detailed_visualization flag')
     parser.add_argument('--detailed_visualization', action='store_true',
                         help='generate a combined overview of the input RGB image and the semantic, instance, and \
-                              panoptic segmentation maps and publish it on OUTPUT_RGB_IMAGE_TOPIC')
+                                  panoptic segmentation maps and publish it on OUTPUT_RGB_IMAGE_TOPIC')
     args = parser.parse_args()
-
     efficient_ps_node = EfficientPsNode(args.input_rgb_image_topic,
                                         args.checkpoint,
                                         args.output_heatmap_topic,
                                         args.output_rgb_image_topic,
                                         args.detailed_visualization)
     efficient_ps_node.listen()
+if __name__ == '__main__':
+    main()
