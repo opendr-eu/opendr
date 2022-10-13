@@ -456,8 +456,8 @@ class EfficientPsLearner(Learner):
         """
         if mode == 'model':
             models = {
-                'cityscapes': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/models/model_cityscapes.pth',
-                'kitti': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/models/model_kitti.pth'
+                'cityscapes': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_ps/models/model_cityscapes.pth',
+                'kitti': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_ps/models/model_kitti.pth'
             }
             if trained_on not in models.keys():
                 raise ValueError(f'Could not find model weights pre-trained on {trained_on}. '
