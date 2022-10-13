@@ -53,11 +53,8 @@ class AudiovisualEmotionNode:
 
         self.publisher = rospy.Publisher(output_emotions_topic, Classification2D, queue_size=10)
 
-        video_sub = message_filters.Subscriber(input_video_topic, ROS_Image)
-        audio_sub = message_filters.Subscriber(input_audio_topic, AudioData)
-        # synchronize video and audio data topics
-        ts = message_filters.ApproximateTimeSynchronizer([video_sub, audio_sub], 10, 0.1, allow_headerless=True)
-        ts.registerCallback(self.callback)
+        self.input_video_topic = input_video_topic
+        self.input_audio_topic = input_audio_topic
 
         self.bridge = ROSBridge()
 
@@ -79,6 +76,13 @@ class AudiovisualEmotionNode:
         Start the node and begin processing input data
         """
         rospy.init_node('opendr_audiovisualemotion_recognition', anonymous=True)
+
+        video_sub = message_filters.Subscriber(self.input_video_topic, ROS_Image)
+        audio_sub = message_filters.Subscriber(self.input_audio_topic, AudioData)
+        # synchronize video and audio data topics
+        ts = message_filters.ApproximateTimeSynchronizer([video_sub, audio_sub], 10, 0.1, allow_headerless=True)
+        ts.registerCallback(self.callback)
+
         rospy.loginfo("Audiovisual emotion recognition node started!")
         rospy.spin()
 
