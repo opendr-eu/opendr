@@ -464,7 +464,7 @@ class EfficientPsLearner(Learner):
                                  f'Valid options are {list(models.keys())}')
             url = models[trained_on]
         elif mode == 'test_data':
-            url = f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/test_data/test_data.zip'
+            url = f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_ps/test_data.zip'
         else:
             raise ValueError('Invalid mode. Valid options are ["model", "test_data"]')
 
