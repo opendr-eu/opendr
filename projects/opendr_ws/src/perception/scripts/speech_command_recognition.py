@@ -113,7 +113,7 @@ if __name__ == "__main__":
                         help="Topic name for speech command output")
     parser.add_argument("--buffer_size", type=float, default=1.5, help="Size of the audio buffer in seconds")
     parser.add_argument("--model", default="matchboxnet", choices=["matchboxnet", "edgespeechnets", "quad_selfonn"],
-                        help="Model to be used for prediction: matchboxnet or quad_selfonn")
+                        help="Model to be used for prediction: matchboxnet, edgespeechnets or quad_selfonn")
     parser.add_argument("--model_path", type=str,
                         help="Path to the model files, if not given, the pretrained model will be downloaded")
     parser.add_argument("--device", type=str, default="cuda", choices=["cuda", "cpu"],
