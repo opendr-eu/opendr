@@ -7,11 +7,11 @@ This package contains ROS nodes related to the perception package of OpenDR.
 ## Prerequisites
 
 Before you can run any of the toolkit's ROS nodes, some prerequisites need to be fulfilled:
-1. First of all, you need to [set up the required packages and build your workspace.](../../README.md#Setup) 
+1. First of all, you need to [set up the required packages and build your workspace.](../../README.md#first-time-setup) 
 2. Start roscore by opening a new terminal where ROS is sourced properly (`source /opt/ros/noetic/setup.bash`) and run `roscore`.
 3. _(Optional for nodes with [RGB input](#rgb-input-nodes))_ 
 
-    For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam` ([instructions to install](../../README.md#Setup)). You can run the webcam node in a new terminal inside `opendr_ws` and with the workspace sourced using:
+    For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam` ([instructions to install, step 5.](../../README.md#first-time-setup)). You can run the webcam node in a new terminal inside `opendr_ws` and with the workspace sourced using:
     ```shell
     rosrun usb_cam usb_cam_node
     ```
