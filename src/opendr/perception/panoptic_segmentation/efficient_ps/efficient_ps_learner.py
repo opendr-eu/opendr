@@ -456,15 +456,15 @@ class EfficientPsLearner(Learner):
         """
         if mode == 'model':
             models = {
-                'cityscapes': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/models/model_cityscapes.pth',
-                'kitti': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/models/model_kitti.pth'
+                'cityscapes': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_ps/models/model_cityscapes.pth',
+                'kitti': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_ps/models/model_kitti.pth'
             }
             if trained_on not in models.keys():
                 raise ValueError(f'Could not find model weights pre-trained on {trained_on}. '
                                  f'Valid options are {list(models.keys())}')
             url = models[trained_on]
         elif mode == 'test_data':
-            url = f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/test_data/test_data.zip'
+            url = f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_ps/test_data.zip'
         else:
             raise ValueError('Invalid mode. Valid options are ["model", "test_data"]')
 
