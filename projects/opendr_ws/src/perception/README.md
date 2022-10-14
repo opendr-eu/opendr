@@ -362,7 +362,7 @@ The node makes use of the toolkit's video human activity recognition tools which
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_category_topic OUTPUT_CATEGORY_TOPIC`: Topic to which we are publishing the recognized activity (default=`"/opendr/human_activity_recognition"`)
    - `-od or --output_category_description_topic OUTPUT_CATEGORY_DESRIPTION_TOPIC`: Topic to which we are publishing the ID of the recognized action (default=`/opendr/human_activity_recognition_description`)
-   - `--model`: Architecture to use for human activity recognition. Choices are "cox3d-s", "cox3d-m", "cox3d-l", "x3d-xs", "x3d-s", "x3d-m", or "x3d-l" (Default: "cox3d-m").
+   - `--model`: Architecture to use for human activity recognition. Choices are `cox3d-s`, `cox3d-m`, `cox3d-l`, `x3d-xs`, `x3d-s`, `x3d-m`, or `x3d-l` (default=`cox3d-m`)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 3. Default output topics:
@@ -421,7 +421,7 @@ The node makes use of the toolkit's [hand gesture recognition tool](../../../../
     The following optional arguments are available:
    - `-h, --help`: show a help message and exit
    - `--input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/kinect2/qhd/image_color_rect`)
-   - `--input_depth_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input depth image (default=`/kinect2/qhd/image_depth_rect`)
+   - `--input_depth_image_topic INPUT_DEPTH_IMAGE_TOPIC`: topic name for input depth image (default=`/kinect2/qhd/image_depth_rect`)
    - `--output_gestures_topic OUTPUT_GESTURES_TOPIC`: Topic name for predicted gesture class (default=`/opendr/gestures`)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
@@ -497,19 +497,36 @@ with `ECG_TOPIC` specifying the ROS topic to which the node will subscribe, and 
 ## Audio input
 
 ### Speech Command Recognition ROS Node
-<!-- TODO -->
-A ROS node for recognizing speech commands from an audio stream using MatchboxNet, EdgeSpeechNets or Quadratic SelfONN models, pretrained on the Google Speech Commands dataset.
-Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
-```shell
-rosrun perception speech_command_recognition.py INPUT_AUDIO_TOPIC
-```
-The following optional arguments are available:
-- `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds, default value **1.5**
-- `--model MODEL`: choose the model to use: `matchboxnet` (default value), `edgespeechnets` or `quad_selfonn`
-- `--model_path MODEL_PATH`: if given, the pretrained model will be loaded from the specified local path, otherwise it will be downloaded from an OpenDR FTP server
 
-The predictions (class id and confidence) are published to the topic `/opendr/speech_recognition`.
-**Note:** EdgeSpeechNets currently does not have a pretrained model available for download, only local files may be used.
+A ROS node for recognizing speech commands from an audio stream using MatchboxNet, EdgeSpeechNets or Quadratic SelfONN models, pretrained on the Google Speech Commands dataset.
+
+You can find the speech command recognition ROS node python script [here](./scripts/speech_command_recognition.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's speech command recognition tools: [EdgeSpeechNets tool](../../../../src/opendr/perception/speech_recognition/edgespeechnets/edgespeechnets_learner.py), [MatchboxNet tool](../../../../src/opendr/perception/speech_recognition/matchboxnet/matchboxnet_learner.py), [Quadratic SelfONN tool](../../../../src/opendr/perception/speech_recognition/quadraticselfonn/quadraticselfonn_learner.py) whose documentation can be found here: [EdgeSpeechNet docs](../../../../docs/reference/edgespeechnets.md), [MatchboxNet docs](../../../../docs/reference/matchboxnet.md), [Quadratic SelfONN docs](../../../../docs/reference/quadratic-selfonn.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2. if needed.
+
+2. You are then ready to start the face detection node
+
+    ```shell
+    rosrun perception speech_command_recognition.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `--input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
+   - `--output_speech_command_topic OUTPUT_SPEECH_COMMAND_TOPIC`: topic name for speech command output (default=`/opendr/speech_recognition`)
+   - `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds, default value **1.5**
+   - `--model MODEL`: the model to use, choices are `matchboxnet`, `edgespeechnets` or `quad_selfonn` (default=`matchboxnet`)
+   - `--model_path MODEL_PATH`: if given, the pretrained model will be loaded from the specified local path, otherwise it will be downloaded from an OpenDR FTP server
+
+3. Default output topics:
+   - Detection messages, class id and confidence: `/opendr/speech_recognition`
+   
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes** 
+
+EdgeSpeechNets currently does not have a pretrained model available for download, only local files may be used.
 
 ----
 ## Dataset ROS Nodes
