@@ -404,14 +404,31 @@ rosrun perception object_detection_2d_gem.py
 ## RGBD input
 
 ### RGBD Hand Gesture Recognition ROS Node
-<!-- TODO -->
-A ROS node for performing hand gesture recognition using MobileNetv2 model trained on HANDS dataset.
+A ROS node for performing hand gesture recognition using a MobileNetv2 model trained on HANDS dataset.
 The node has been tested with Kinectv2 for depth data acquisition with the following drivers: https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2.
-Assuming that the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
-```shell
-rosrun perception rgbd_hand_gesture_recognition.py
-```
-The predictied classes are published to the topic `/opendr/gestures`.
+
+You can find the RGBD hand gesture recognition ROS node python script [here](./scripts/rgbd_hand_gesture_recognition.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [hand gesture recognition tool](../../../../src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/rgbd_hand_gesture_learner.py) whose documentation can be found [here](../../../../docs/reference/rgbd-hand-gesture-learner.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images from an RGBD camera. Remember to modify the input topics using the arguments in step 2. if needed.
+
+2. You are then ready to start the hand gesture recognition node:
+    ```shell
+    rosrun perception rgbd_hand_gesture_recognition.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `--input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/kinect2/qhd/image_color_rect`)
+   - `--input_depth_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input depth image (default=`/kinect2/qhd/image_depth_rect`)
+   - `--output_gestures_topic OUTPUT_GESTURES_TOPIC`: Topic name for predicted gesture class (default=`/opendr/gestures`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+
+3. Default output topics:
+   - Detection messages:`/opendr/gestures`
+   
+   For viewing the output, refer to the [notes above.](#notes)
 
 ----
 ## Point cloud input
