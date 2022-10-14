@@ -48,13 +48,10 @@ class RgbdHandGestureNode:
         :type device: str
         """
 
-        self.gesture_publisher = rospy.Publisher(output_gestures_topic, Classification2D, queue_size=10)
+        self.input_rgb_image_topic = input_rgb_image_topic
+        self.input_depth_image_topic = input_depth_image_topic
 
-        image_sub = message_filters.Subscriber(input_rgb_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
-        depth_sub = message_filters.Subscriber(input_depth_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
-        # synchronize image and depth data topics
-        ts = message_filters.TimeSynchronizer([image_sub, depth_sub], 10)
-        ts.registerCallback(self.callback)
+        self.gesture_publisher = rospy.Publisher(output_gestures_topic, Classification2D, queue_size=10)
 
         self.bridge = ROSBridge()
 
@@ -74,6 +71,13 @@ class RgbdHandGestureNode:
         Start the node and begin processing input data
         """
         rospy.init_node('opendr_gesture_recognition', anonymous=True)
+
+        image_sub = message_filters.Subscriber(self.input_rgb_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
+        depth_sub = message_filters.Subscriber(self.input_depth_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
+        # synchronize image and depth data topics
+        ts = message_filters.TimeSynchronizer([image_sub, depth_sub], 10)
+        ts.registerCallback(self.callback)
+
         rospy.loginfo("RGBD gesture recognition node started!")
         rospy.spin()
 
