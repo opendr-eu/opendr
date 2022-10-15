@@ -13,13 +13,14 @@
 # limitations under the License.
 
 import numpy as np
-from opendr.engine.data import Image
+from opendr.engine.data import Image, Timeseries
 from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
 from cv_bridge import CvBridge
-from std_msgs.msg import String
+from std_msgs.msg import String, Header
 from sensor_msgs.msg import Image as ImageMsg
-from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesis, ObjectHypothesisWithPose
+from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesis, ObjectHypothesisWithPose, \
+    Classification2D
 from geometry_msgs.msg import Pose2D
 from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint
 
@@ -280,3 +281,41 @@ class ROS2Bridge:
         result = String()
         result.data = category.description
         return result
+
+    def from_rosarray_to_timeseries(self, ros_array, dim1, dim2):
+        '''
+        Converts ROS2 array into OpenDR Timeseries object
+        :param ros_array: data to be converted
+        :type ros_array: std_msgs.msg.Float32MultiArray
+        :param dim1: 1st dimension
+        :type dim1: int
+        :param dim2: 2nd dimension
+        :type dim2: int
+        :rtype: engine.data.Timeseries
+        '''
+        data = np.reshape(ros_array.data, (dim1, dim2))
+        data = Timeseries(data)
+        return data
+
+    def from_category_to_rosclass(self, prediction, timestamp, source_data=None):
+        '''
+        Converts OpenDR Category into Classification2D message with class label, confidence, timestamp and corresponding input
+        :param prediction: classification prediction
+        :type prediction: engine.target.Category
+        :param timestamp: time stamp for header message
+        :type timestamp: str
+        :param source_data: corresponding input or None
+        :return classification
+        :rtype: vision_msgs.msg.Classification2D
+        '''
+        classification = Classification2D()
+        classification.header = Header()
+        classification.header.stamp = timestamp
+
+        result = ObjectHypothesis()
+        result.id = str(prediction.data)
+        result.score = prediction.confidence
+        classification.results.append(result)
+        if source_data is not None:
+            classification.source_img = source_data
+        return classification

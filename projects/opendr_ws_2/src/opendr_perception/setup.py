@@ -29,7 +29,8 @@ setup(
             'semantic_segmentation_bisenet = opendr_perception.semantic_segmentation_bisenet_node:main',
             'face_recognition = opendr_perception.face_recognition_node:main',
             'fall_detection = opendr_perception.fall_detection_node:main',
-            'video_activity_recognition = opendr_perception.video_activity_recognition_node:main'
+            'video_activity_recognition = opendr_perception.video_activity_recognition_node:main',
+            'heart_anomaly_detection = opendr_perception.heart_anomaly_detection_node:main',
         ],
     },
 )
