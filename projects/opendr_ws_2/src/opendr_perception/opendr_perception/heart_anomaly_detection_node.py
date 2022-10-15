@@ -67,7 +67,6 @@ class HeartAnomalyNode(Node):
 
         self.get_logger().info("Heart anomaly detection node initialized.")
 
-
     def callback(self, msg_data):
         """
         Callback that process the input data and publishes to the corresponding topics
