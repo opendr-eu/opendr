@@ -18,11 +18,9 @@ import torch
 
 import rclpy
 from rclpy.node import Node
-
-import torch
 from vision_msgs.msg import Classification2D
-import argparse
 from std_msgs.msg import Float32MultiArray
+
 from opendr_ros2_bridge import ROS2Bridge
 from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner, AttentionNeuralBagOfFeatureLearner
 
