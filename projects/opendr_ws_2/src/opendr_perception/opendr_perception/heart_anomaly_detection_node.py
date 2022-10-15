@@ -30,7 +30,7 @@ class HeartAnomalyNode(Node):
     def __init__(self, input_ecg_topic="/ecg/ecg", output_heart_anomaly_topic="/opendr/heart_anomaly",
                  device="cuda", model="anbof"):
         """
-        Creates a ROS Node for heart anomaly (atrial fibrillation) detection from ecg data
+        Creates a ROS2 Node for heart anomaly (atrial fibrillation) detection from ecg data
         :param input_ecg_topic: Topic from which we are reading the input array data
         :type input_ecg_topic: str
         :param output_heart_anomaly_topic: Topic to which we are publishing the predicted class
@@ -94,7 +94,6 @@ def main(args=None):
                         help="Topic name for heart anomaly detection topic")
     parser.add_argument("--device", type=str, default="cuda", help="Device to use (cpu, cuda)",
                         choices=["cuda", "cpu"])
-
     args = parser.parse_args()
 
     try:
