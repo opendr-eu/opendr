@@ -247,10 +247,10 @@ class KittiTrackingDatasetIterator(DatasetIterator):
 
                 if frame not in results:
                     results[frame] = []
+                    max_frame = max(max_frame, frame)
 
                 if not (remove_dontcare and box.name == "DontCare"):
                     results[frame].append(box)
-                    max_frame = max(max_frame, frame)
 
             if return_format == "tracking":
 
