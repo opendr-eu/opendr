@@ -31,7 +31,7 @@ from opendr.perception.speech_recognition import MatchboxNetLearner, EdgeSpeechN
 
 class SpeechRecognitionNode(Node):
 
-    def __init__(self, input_audio_topic="/audio/audio", output_speech_command_topic="/opendr/speech_recognition",
+    def __init__(self, input_audio_topic="/audio", output_speech_command_topic="/opendr/speech_recognition",
                  buffer_size=1.5, model="matchboxnet", model_path=None, device="cuda"):
         """
         Creates a ROS2 Node for speech command recognition
@@ -108,7 +108,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_audio_topic", type=str, default="audio/audio",
+    parser.add_argument("--input_audio_topic", type=str, default="/audio",
                         help="Listen to input data on this topic")
     parser.add_argument("--output_speech_command_topic", type=str, default="/opendr/speech_recognition",
                         help="Topic name for speech command output")
