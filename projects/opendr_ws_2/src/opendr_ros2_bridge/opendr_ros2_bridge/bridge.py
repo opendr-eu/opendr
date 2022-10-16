@@ -17,9 +17,10 @@ from opendr.engine.data import Image
 from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
 from cv_bridge import CvBridge
-from std_msgs.msg import String
+from std_msgs.msg import String, Header
 from sensor_msgs.msg import Image as ImageMsg
-from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesis, ObjectHypothesisWithPose
+from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesis, ObjectHypothesisWithPose, \
+    Classification2D
 from geometry_msgs.msg import Pose2D
 from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint
 
@@ -280,3 +281,26 @@ class ROS2Bridge:
         result = String()
         result.data = category.description
         return result
+
+    def from_category_to_rosclass(self, prediction, timestamp, source_data=None):
+        '''
+        Converts OpenDR Category into Classification2D message with class label, confidence, timestamp and corresponding input
+        :param prediction: classification prediction
+        :type prediction: engine.target.Category
+        :param timestamp: time stamp for header message
+        :type timestamp: str
+        :param source_data: corresponding input or None
+        :return classification
+        :rtype: vision_msgs.msg.Classification2D
+        '''
+        classification = Classification2D()
+        classification.header = Header()
+        classification.header.stamp = timestamp
+
+        result = ObjectHypothesis()
+        result.id = str(prediction.data)
+        result.score = prediction.confidence
+        classification.results.append(result)
+        if source_data is not None:
+            classification.source_img = source_data
+        return classification
