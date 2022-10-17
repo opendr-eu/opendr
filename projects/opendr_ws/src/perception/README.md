@@ -431,6 +431,70 @@ The node makes use of the toolkit's [hand gesture recognition tool](../../../../
    For viewing the output, refer to the [notes above.](#notes)
 
 ----
+## RGB + Audio input
+
+### Audiovisual Emotion Recognition ROS Node
+
+You can find the audiovisual emotion recognition ROS node python script [here](./scripts/audiovisual_emotion_recognition.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's [audiovisual emotion recognition tool](../../../../src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/avlearner.py), whose documentation can be found [here](../../../../docs/reference/audiovisual-emotion-recognition-learner.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+2. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2. if needed.
+3. You are then ready to start the face detection node
+
+    ```shell
+    rosrun perception speech_command_recognition.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `--input_video_topic INPUT_VIDEO_TOPIC`: topic name for input video, expects detected face of size 224x224 (default=`/usb_cam/image_raw`)
+   - `--input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
+   - `--output_emotions_topic OUTPUT_EMOTIONS_TOPIC`: topic to which we are publishing the predicted emotion (default=`/opendr/audiovisual_emotion`)
+   - `--buffer_size BUFFER_SIZE`: length of audio and video in seconds, (default=`3.6`)
+   - `--model_path MODEL_PATH`: if given, the pretrained model will be loaded from the specified local path, otherwise it will be downloaded from an OpenDR FTP server
+
+4. Default output topics:
+   - Detection messages: `/opendr/audiovisual_emotion`
+   
+   For viewing the output, refer to the [notes above.](#notes)
+
+----
+## Audio input
+
+### Speech Command Recognition ROS Node
+
+A ROS node for recognizing speech commands from an audio stream using MatchboxNet, EdgeSpeechNets or Quadratic SelfONN models, pretrained on the Google Speech Commands dataset.
+
+You can find the speech command recognition ROS node python script [here](./scripts/speech_command_recognition.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's speech command recognition tools: [EdgeSpeechNets tool](../../../../src/opendr/perception/speech_recognition/edgespeechnets/edgespeechnets_learner.py), [MatchboxNet tool](../../../../src/opendr/perception/speech_recognition/matchboxnet/matchboxnet_learner.py), [Quadratic SelfONN tool](../../../../src/opendr/perception/speech_recognition/quadraticselfonn/quadraticselfonn_learner.py) whose documentation can be found here: [EdgeSpeechNet docs](../../../../docs/reference/edgespeechnets.md), [MatchboxNet docs](../../../../docs/reference/matchboxnet.md), [Quadratic SelfONN docs](../../../../docs/reference/quadratic-selfonn.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2, if needed.
+
+2. You are then ready to start the face detection node
+
+    ```shell
+    rosrun perception speech_command_recognition.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `--input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
+   - `--output_speech_command_topic OUTPUT_SPEECH_COMMAND_TOPIC`: topic name for speech command output (default=`/opendr/speech_recognition`)
+   - `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds (default=`1.5`)
+   - `--model MODEL`: the model to use, choices are `matchboxnet`, `edgespeechnets` or `quad_selfonn` (default=`matchboxnet`)
+   - `--model_path MODEL_PATH`: if given, the pretrained model will be loaded from the specified local path, otherwise it will be downloaded from an OpenDR FTP server
+
+3. Default output topics:
+   - Detection messages, class id and confidence: `/opendr/speech_recognition`
+   
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes** 
+
+EdgeSpeechNets currently does not have a pretrained model available for download, only local files may be used.
+
+----
 ## Point cloud input
 
 ### 3D Object Detection Voxel ROS Node
@@ -512,41 +576,6 @@ The node makes use of the toolkit's heart anomaly detection tools: [ANBOF tool](
    - Detection messages: `/opendr/heart_anomaly`
    
    For viewing the output, refer to the [notes above.](#notes)
-
-----
-## Audio input
-
-### Speech Command Recognition ROS Node
-
-A ROS node for recognizing speech commands from an audio stream using MatchboxNet, EdgeSpeechNets or Quadratic SelfONN models, pretrained on the Google Speech Commands dataset.
-
-You can find the speech command recognition ROS node python script [here](./scripts/speech_command_recognition.py) to inspect the code and modify it as you wish to fit your needs. The node makes use of the toolkit's speech command recognition tools: [EdgeSpeechNets tool](../../../../src/opendr/perception/speech_recognition/edgespeechnets/edgespeechnets_learner.py), [MatchboxNet tool](../../../../src/opendr/perception/speech_recognition/matchboxnet/matchboxnet_learner.py), [Quadratic SelfONN tool](../../../../src/opendr/perception/speech_recognition/quadraticselfonn/quadraticselfonn_learner.py) whose documentation can be found here: [EdgeSpeechNet docs](../../../../docs/reference/edgespeechnets.md), [MatchboxNet docs](../../../../docs/reference/matchboxnet.md), [Quadratic SelfONN docs](../../../../docs/reference/quadratic-selfonn.md).
-
-#### Instructions for basic usage:
-
-1. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2. if needed.
-
-2. You are then ready to start the face detection node
-
-    ```shell
-    rosrun perception speech_command_recognition.py
-    ```
-    The following optional arguments are available:
-   - `-h, --help`: show a help message and exit
-   - `--input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
-   - `--output_speech_command_topic OUTPUT_SPEECH_COMMAND_TOPIC`: topic name for speech command output (default=`/opendr/speech_recognition`)
-   - `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds, default value **1.5**
-   - `--model MODEL`: the model to use, choices are `matchboxnet`, `edgespeechnets` or `quad_selfonn` (default=`matchboxnet`)
-   - `--model_path MODEL_PATH`: if given, the pretrained model will be loaded from the specified local path, otherwise it will be downloaded from an OpenDR FTP server
-
-3. Default output topics:
-   - Detection messages, class id and confidence: `/opendr/speech_recognition`
-   
-   For viewing the output, refer to the [notes above.](#notes)
-
-**Notes** 
-
-EdgeSpeechNets currently does not have a pretrained model available for download, only local files may be used.
 
 ----
 ## Dataset ROS Nodes
