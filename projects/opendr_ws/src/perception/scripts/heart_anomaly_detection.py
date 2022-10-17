@@ -112,8 +112,8 @@ if __name__ == '__main__':
         print("Using CPU")
         device = "cpu"
 
-    heart_anomaly_detection_node = HeartAnomalyNode(input_ecg_topic=args.input_ecg_topic,
-                                    output_heart_anomaly_topic=args.output_heart_anomaly_topic,
-                                    model=args.model, device=device)
-    
+    heart_anomaly_detection_node = HeartAnomalyNode(input_ecg_topic=args.input_ecg_topic, 
+                                                    output_heart_anomaly_topic=args.output_heart_anomaly_topic, 
+                                                    model=args.model, device=device)
+                                                    
     heart_anomaly_detection_node.listen()
