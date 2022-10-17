@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-_
 # Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +41,7 @@ class HeartAnomalyNode(Node):
         :param model: model to use: anbof or gru
         :type model: str
         """
-        super().__init__('opendr_heart_anomaly_detection')
+        super().__init__("heart_anomaly_detection_node")
 
         self.publisher = self.create_publisher(Classification2D, output_heart_anomaly_topic, 1)
 
@@ -52,7 +53,6 @@ class HeartAnomalyNode(Node):
         self.channels = 1
         self.series_length = 9000
 
-        # Initialize the gesture recognition
         if model == 'gru':
             self.learner = GatedRecurrentUnitLearner(in_channels=self.channels, series_length=self.series_length,
                                                      n_class=4, device=device)
