@@ -78,11 +78,13 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes (categor
 1. [End-to-End Multi-Modal Object Detection (GEM)](src/perception/README.md#gem-ros-node)
 ## RGBD input
 1. [RGBD Hand Gesture Recognition](src/perception/README.md#rgbd-hand-gesture-recognition-ros-node)
+## RGB + Audio input
+1. [Audiovisual Emotion Recognition](src/perception/README.md#audiovisual-emotion-recognition-ros-node)
+## Audio input
+1. [Speech Command Recognition](src/perception/README.md#speech-command-recognition-ros-node)
 ## Point cloud input
 1. [3D Object Detection Voxel](src/perception/README.md#3d-object-detection-voxel-ros-node)
 2. [3D Object Tracking AB3DMOT](src/perception/README.md#3d-object-tracking-ab3dmot-ros-node)
 3. [2D Object Tracking FairMOT](src/perception/README.md#2d-object-tracking-fairmot-ros-node)
 ## Biosignal input
 1. [Heart Anomaly Detection](src/perception/README.md#heart-anomaly-detection-ros-node)
-## Audio input
-1. [Speech Command Recognition](src/perception/README.md#speech-command-recognition-ros-node)
