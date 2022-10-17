@@ -283,7 +283,7 @@ class ROS2Bridge:
         return result
 
     def from_rosarray_to_timeseries(self, ros_array, dim1, dim2):
-        '''
+        """
         Converts ROS2 array into OpenDR Timeseries object
         :param ros_array: data to be converted
         :type ros_array: std_msgs.msg.Float32MultiArray
@@ -292,13 +292,13 @@ class ROS2Bridge:
         :param dim2: 2nd dimension
         :type dim2: int
         :rtype: engine.data.Timeseries
-        '''
+        """
         data = np.reshape(ros_array.data, (dim1, dim2))
         data = Timeseries(data)
         return data
 
     def from_category_to_rosclass(self, prediction, timestamp, source_data=None):
-        '''
+        """
         Converts OpenDR Category into Classification2D message with class label, confidence, timestamp and corresponding input
         :param prediction: classification prediction
         :type prediction: engine.target.Category
@@ -307,7 +307,7 @@ class ROS2Bridge:
         :param source_data: corresponding input or None
         :return classification
         :rtype: vision_msgs.msg.Classification2D
-        '''
+        """
         classification = Classification2D()
         classification.header = Header()
         classification.header.stamp = timestamp
