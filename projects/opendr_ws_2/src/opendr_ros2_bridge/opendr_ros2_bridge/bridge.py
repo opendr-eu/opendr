@@ -283,7 +283,7 @@ class ROS2Bridge:
         return result
 
     def from_category_to_rosclass(self, prediction, timestamp, source_data=None):
-        '''
+        """
         Converts OpenDR Category into Classification2D message with class label, confidence, timestamp and corresponding input
         :param prediction: classification prediction
         :type prediction: engine.target.Category
@@ -292,7 +292,7 @@ class ROS2Bridge:
         :param source_data: corresponding input or None
         :return classification
         :rtype: vision_msgs.msg.Classification2D
-        '''
+        """
         classification = Classification2D()
         classification.header = Header()
         classification.header.stamp = timestamp
