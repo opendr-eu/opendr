@@ -23,7 +23,7 @@ import torch
 import rclpy
 from rclpy.node import Node
 import message_filters
-from sensor_msgs.msg import Image as ROS2_Image
+from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Classification2D
 
 from opendr_ros2_bridge import ROS2Bridge
@@ -52,13 +52,10 @@ class RgbdHandGestureNode(Node):
         """
         super().__init__("rgbd_hand_gesture_recognition_node")
 
-        self.input_rgb_image_topic = input_rgb_image_topic
-        self.input_depth_image_topic = input_depth_image_topic
-
         self.gesture_publisher = self.create_publisher(Classification2D, output_gestures_topic, 1)
 
-        image_sub = message_filters.Subscriber(self, ROS2_Image, self.input_rgb_image_topic, qos_profile=1)
-        depth_sub = message_filters.Subscriber(self, ROS2_Image, self.input_depth_image_topic, qos_profile=1)
+        image_sub = message_filters.Subscriber(self, ROS_Image, input_rgb_image_topic, qos_profile=1)
+        depth_sub = message_filters.Subscriber(self, ROS_Image, input_depth_image_topic, qos_profile=1)
         # synchronize image and depth data topic1s
         ts = message_filters.ApproximateTimeSynchronizer([image_sub, depth_sub], queue_size=10, slop=delay)
         ts.registerCallback(self.callback)
