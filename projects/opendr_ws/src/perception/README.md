@@ -486,12 +486,32 @@ This will pulbish the dataset images to an `/opendr/dataset_image` topic by defa
 ## Biosignal input
 
 ### Heart Anomaly Detection ROS Node
-<!-- TODO -->
-A ROS node for performing heart anomaly (atrial fibrillation) detection from ecg data using GRU or ANBOF models trained on AF dataset. Assuming that the OpenDR catkin workspace has been sourced, the node can be started as:
-```shell
-rosrun perception heart_anomaly_detection.py ECG_TOPIC MODEL
-```
-with `ECG_TOPIC` specifying the ROS topic to which the node will subscribe, and `MODEL` set to either *gru* or *anbof*. The predictied classes are published to the topic `/opendr/heartanomaly`.
+
+A ROS node for performing heart anomaly (atrial fibrillation) detection from ECG data using GRU or ANBOF models trained on AF dataset. 
+
+You can find the heart anomaly detection ROS node python script [here](./scripts/heart_anomaly_detection.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's heart anomaly detection tools: [ANBOF tool](../../../../src/opendr/perception/heart_anomaly_detection/attention_neural_bag_of_feature/attention_neural_bag_of_feature_learner.py) and [GRU tool](../../../../src/opendr/perception/heart_anomaly_detection/gated_recurrent_unit/gated_recurrent_unit_learner.py), whose documentation can be found here: [ANBOF docs](../../../../docs/reference/attention-neural-bag-of-feature-learner.md) and [GRU docs](../../../../docs/reference/gated-recurrent-unit-learner.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing ECG data.
+
+2. You are then ready to start the heart anomaly detection node:
+
+    ```shell
+    rosrun perception heart_anomaly_detection.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `--input_ecg_topic INPUT_ECG_TOPIC`: topic name for input ECG data (default=`/ecg/ecg`)
+   - `--output_heart_anomaly_topic OUTPUT_HEART_ANOMALY_TOPIC`: topic name for heart anomaly detection (default=`/opendr/heart_anomaly`)
+   - `--model MODEL`: the model to use, choices are `anbof` or `gru` (default=`anbof`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   
+3. Default output topics:
+   - Detection messages: `/opendr/heart_anomaly`
+   
+   For viewing the output, refer to the [notes above.](#notes)
 
 ----
 ## Audio input
