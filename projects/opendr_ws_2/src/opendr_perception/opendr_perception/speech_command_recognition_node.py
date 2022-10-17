@@ -47,7 +47,7 @@ class SpeechRecognitionNode(Node):
         :type device: str
 
         """
-        super().__init__("opendr_speech_command_recognition")
+        super().__init__("speech_command_recognition_node")
 
         self.publisher = self.create_publisher(Classification2D, output_speech_command_topic, 1)
 
