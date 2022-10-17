@@ -109,13 +109,13 @@ def main(args=None):
         print("Using CPU")
         device = "cpu"
 
-    gesture_node = HeartAnomalyNode(input_ecg_topic=args.input_ecg_topic,
-                                    output_heart_anomaly_topic=args.output_heart_anomaly_topic,
-                                    model=args.model, device=device)
+    heart_anomaly_detection_node = HeartAnomalyNode(input_ecg_topic=args.input_ecg_topic,
+                                                    output_heart_anomaly_topic=args.output_heart_anomaly_topic,
+                                                    model=args.model, device=device)
 
-    rclpy.spin(gesture_node)
+    rclpy.spin(heart_anomaly_detection_node)
 
-    gesture_node.destroy_node()
+    heart_anomaly_detection_node.destroy_node()
     rclpy.shutdown()
 
 
