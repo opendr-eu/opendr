@@ -17,9 +17,10 @@ from opendr.engine.data import Image
 from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
 from cv_bridge import CvBridge
-from std_msgs.msg import String, ColorRGBA
+from std_msgs.msg import String, ColorRGBA, Header
 from sensor_msgs.msg import Image as ImageMsg
-from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesis, ObjectHypothesisWithPose
+from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesis, ObjectHypothesisWithPose, \
+    Classification2D
 from shape_msgs.msg import Mesh, MeshTriangle
 from geometry_msgs.msg import Point, Pose2D
 from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
@@ -396,3 +397,41 @@ class ROS2Bridge:
         result = String()
         result.data = category.description
         return result
+
+    def from_ros_image_to_depth(self, message, encoding='mono16'):
+        """
+        Converts a ROS2 image message into an OpenDR grayscale depth image
+        :param message: ROS2 image to be converted
+        :type message: sensor_msgs.msg.Image
+        :param encoding: encoding to be used for the conversion
+        :type encoding: str
+        :return: OpenDR image
+        :rtype: engine.data.Image
+        """
+        cv_image = self._cv_bridge.imgmsg_to_cv2(message, desired_encoding=encoding)
+        cv_image = np.expand_dims(cv_image, axis=-1)
+        image = Image(np.asarray(cv_image, dtype=np.uint8))
+        return image
+
+    def from_category_to_rosclass(self, prediction, timestamp, source_data=None):
+        """
+        Converts OpenDR Category into Classification2D message with class label, confidence, timestamp and corresponding input
+        :param prediction: classification prediction
+        :type prediction: engine.target.Category
+        :param timestamp: time stamp for header message
+        :type timestamp: str
+        :param source_data: corresponding input or None
+        :return classification
+        :rtype: vision_msgs.msg.Classification2D
+        """
+        classification = Classification2D()
+        classification.header = Header()
+        classification.header.stamp = timestamp
+
+        result = ObjectHypothesis()
+        result.id = str(prediction.data)
+        result.score = prediction.confidence
+        classification.results.append(result)
+        if source_data is not None:
+            classification.source_img = source_data
+        return classification

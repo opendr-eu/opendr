@@ -20,23 +20,24 @@ import cv2
 import numpy as np
 import torch
 
-import rospy
+import rclpy
+from rclpy.node import Node
 import message_filters
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Classification2D
 
+from opendr_ros2_bridge import ROS2Bridge
 from opendr.engine.data import Image
 from opendr.perception.multimodal_human_centric import RgbdHandGestureLearner
-from opendr_bridge import ROSBridge
 
 
-class RgbdHandGestureNode:
+class RgbdHandGestureNode(Node):
 
     def __init__(self, input_rgb_image_topic="/kinect2/qhd/image_color_rect",
                  input_depth_image_topic="/kinect2/qhd/image_depth_rect",
-                 output_gestures_topic="/opendr/gestures", device="cuda"):
+                 output_gestures_topic="/opendr/gestures", device="cuda", delay=0.1):
         """
-        Creates a ROS Node for gesture recognition from RGBD. Assuming that the following drivers have been installed:
+        Creates a ROS2 Node for gesture recognition from RGBD. Assuming that the following drivers have been installed:
         https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
@@ -44,16 +45,22 @@ class RgbdHandGestureNode:
         :type input_depth_image_topic: str
         :param output_gestures_topic: Topic to which we are publishing the predicted gesture class
         :type output_gestures_topic: str
-        :param device: device on which we are running inference ('cpu' or 'cuda')
+        :param device: Device on which we are running inference ('cpu' or 'cuda')
         :type device: str
+        :param delay: Define the delay (in seconds) with which rgb message and depth message can be synchronized
+        :type delay: float
         """
+        super().__init__("rgbd_hand_gesture_recognition_node")
 
-        self.input_rgb_image_topic = input_rgb_image_topic
-        self.input_depth_image_topic = input_depth_image_topic
+        self.gesture_publisher = self.create_publisher(Classification2D, output_gestures_topic, 1)
 
-        self.gesture_publisher = rospy.Publisher(output_gestures_topic, Classification2D, queue_size=10)
+        image_sub = message_filters.Subscriber(self, ROS_Image, input_rgb_image_topic, qos_profile=1)
+        depth_sub = message_filters.Subscriber(self, ROS_Image, input_depth_image_topic, qos_profile=1)
+        # synchronize image and depth data topics
+        ts = message_filters.ApproximateTimeSynchronizer([image_sub, depth_sub], queue_size=10, slop=delay)
+        ts.registerCallback(self.callback)
 
-        self.bridge = ROSBridge()
+        self.bridge = ROS2Bridge()
 
         # Initialize the gesture recognition
         self.gesture_learner = RgbdHandGestureLearner(n_class=16, architecture="mobilenet_v2", device=device)
@@ -66,20 +73,7 @@ class RgbdHandGestureNode:
         self.mean = np.asarray([0.485, 0.456, 0.406, 0.0303]).reshape(1, 1, 4)
         self.std = np.asarray([0.229, 0.224, 0.225, 0.0353]).reshape(1, 1, 4)
 
-    def listen(self):
-        """
-        Start the node and begin processing input data
-        """
-        rospy.init_node('opendr_gesture_recognition', anonymous=True)
-
-        image_sub = message_filters.Subscriber(self.input_rgb_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
-        depth_sub = message_filters.Subscriber(self.input_depth_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
-        # synchronize image and depth data topics
-        ts = message_filters.TimeSynchronizer([image_sub, depth_sub], 10)
-        ts.registerCallback(self.callback)
-
-        rospy.loginfo("RGBD gesture recognition node started!")
-        rospy.spin()
+        self.get_logger().info("RGBD gesture recognition node started!")
 
     def callback(self, rgb_data, depth_data):
         """
@@ -100,7 +94,7 @@ class RgbdHandGestureNode:
         gesture_class = self.gesture_learner.infer(img)
 
         #  Publish results
-        ros_gesture = self.bridge.from_category_to_rosclass(gesture_class)
+        ros_gesture = self.bridge.from_category_to_rosclass(gesture_class, self.get_clock().now().to_msg())
         self.gesture_publisher.publish(ros_gesture)
 
     def preprocess(self, rgb_image, depth_image):
@@ -125,8 +119,10 @@ class RgbdHandGestureNode:
         return img
 
 
-if __name__ == '__main__':
-    # default topics are according to kinectv2 drivers at https://github.com/OpenKinect/libfreenect2
+def main(args=None):
+    rclpy.init(args=args)
+
+    # Default topics are according to kinectv2 drivers at https://github.com/OpenKinect/libfreenect2
     # and https://github.com/code-iai-iai_kinect2
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_rgb_image_topic", help="Topic name for input rgb image",
@@ -137,6 +133,8 @@ if __name__ == '__main__':
                         type=str, default="/opendr/gestures")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
                         choices=["cuda", "cpu"])
+    parser.add_argument("--delay", help="The delay (in seconds) with which RGB message and"
+                        "depth message can be synchronized", type=float, default=0.1)
 
     args = parser.parse_args()
 
@@ -156,5 +154,14 @@ if __name__ == '__main__':
 
     gesture_node = RgbdHandGestureNode(input_rgb_image_topic=args.input_rgb_image_topic,
                                        input_depth_image_topic=args.input_depth_image_topic,
-                                       output_gestures_topic=args.output_gestures_topic, device=device)
-    gesture_node.listen()
+                                       output_gestures_topic=args.output_gestures_topic, device=device,
+                                       delay=args.delay)
+
+    rclpy.spin(gesture_node)
+
+    gesture_node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
