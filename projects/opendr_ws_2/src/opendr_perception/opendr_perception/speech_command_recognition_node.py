@@ -18,7 +18,6 @@ import argparse
 import torch
 import numpy as np
 
-
 import rclpy
 from rclpy.node import Node
 from audio_common_msgs.msg import AudioData
@@ -56,7 +55,6 @@ class SpeechRecognitionNode(Node):
         self.bridge = ROS2Bridge()
 
         # Initialize the internal audio buffer
-
         self.buffer_size = buffer_size
         self.data_buffer = np.zeros((1, 1))
 
@@ -139,6 +137,7 @@ def main(args=None):
                                         output_speech_command_topic=args.output_speech_command_topic,
                                         buffer_size=args.buffer_size, model=args.model, model_path=args.model_path,
                                         device=device)
+                                        
     rclpy.spin(speech_node)
 
     speech_node.destroy_node()
