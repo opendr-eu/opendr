@@ -153,7 +153,7 @@ class EfficientPsNode(Node):
             if self._visualization_publisher is not None and self._visualization_publisher.get_subscription_count() > 0:
                 panoptic_image = EfficientPsLearner.visualize(image, prediction, show_figure=False,
                                                               detailed=self.detailed_visualization)
-                self._visualization_publisher.publish(self._bridge.to_ros_image(panoptic_image))
+                self._visualization_publisher.publish(self._bridge.to_ros_image(panoptic_image, encoder="rgb8"))
 
             if self._instance_heatmap_publisher is not None and self._instance_heatmap_publisher.get_subscription_count() > 0:
                 self._instance_heatmap_publisher.publish(self._bridge.to_ros_image(prediction[0]))
@@ -167,7 +167,7 @@ class EfficientPsNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', '--input_rgb_image_topic', type=str, default='/usb_cam/image_raw',
+    parser.add_argument('-i', '--input_rgb_image_topic', type=str, default='/image_raw',
                         help='listen to RGB images on this topic')
     parser.add_argument('--checkpoint', type=str, default='cityscapes',
                         help='download pretrained models [cityscapes, kitti] or load from the provided path')
