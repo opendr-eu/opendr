@@ -306,17 +306,18 @@ class EfficientPsLearner(Learner):
             warnings.warn('The current model has not been trained.')
         self.model.eval()
 
-        # Build the data pipeline
-        test_pipeline = Compose(self._cfg.test_pipeline[1:])
-        device = next(self.model.parameters()).device
-
-        # Convert to the format expected by the mmdetection API
         single_image_mode = False
         if isinstance(batch, Image):
             batch = [batch]
             single_image_mode = True
+
+        # Convert to the format expected by the mmdetection API
         mmdet_batch = []
+        device = next(self.model.parameters()).device
         for img in batch:
+            # Change the processing size according to the input image
+            self._cfg.test_pipeline[1:][0]['img_scale'] = batch[0].data.shape[1:]
+            test_pipeline = Compose(self._cfg.test_pipeline[1:])
             # Convert from OpenDR convention (CHW/RGB) to the expected format (HWC/BGR)
             img_ = img.convert('channels_last', 'bgr')
             mmdet_img = {'filename': None, 'img': img_, 'img_shape': img_.shape, 'ori_shape': img_.shape}
@@ -455,15 +456,15 @@ class EfficientPsLearner(Learner):
         """
         if mode == 'model':
             models = {
-                'cityscapes': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/models/model_cityscapes.pth',
-                'kitti': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/models/model_kitti.pth'
+                'cityscapes': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_ps/models/model_cityscapes.pth',
+                'kitti': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_ps/models/model_kitti.pth'
             }
             if trained_on not in models.keys():
                 raise ValueError(f'Could not find model weights pre-trained on {trained_on}. '
                                  f'Valid options are {list(models.keys())}')
             url = models[trained_on]
         elif mode == 'test_data':
-            url = f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/test_data/test_data.zip'
+            url = f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_ps/test_data.zip'
         else:
             raise ValueError('Invalid mode. Valid options are ["model", "test_data"]')
 
@@ -481,8 +482,12 @@ class EfficientPsLearner(Learner):
 
             return update_to
 
-        with tqdm(unit='B', unit_scale=True, unit_divisor=1024, miniters=1, desc=f'Downloading {filename}') as pbar:
-            urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
+        if os.path.exists(filename) and os.path.isfile(filename):
+            print(f'File already downloaded: {filename}')
+        else:
+            with tqdm(unit='B', unit_scale=True, unit_divisor=1024, miniters=1, desc=f'Downloading {filename}') \
+                    as pbar:
+                urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
         return filename
 
     @staticmethod

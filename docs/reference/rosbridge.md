@@ -59,25 +59,28 @@ ROSBridge.from_ros_pose(self,
                         ros_pose)
 ```
 
-Converts a ROS pose into an OpenDR pose.
+Converts an OpenDRPose2D message into an OpenDR Pose.
 
 Parameters:
 
-- **message**: *ros_bridge.msg.Pose*\
-  ROS pose to be converted into an OpenDR pose.
+- **ros_pose**: *ros_bridge.msg.OpenDRPose2D*\
+  ROS pose to be converted into an OpenDR Pose.
 
 #### `ROSBridge.to_ros_pose`
 
 ```python
 ROSBridge.to_ros_pose(self,
-                      ros_pose)
+                      pose)
 ```
-Converts an OpenDR pose into a ROS pose.
+Converts an OpenDR Pose into a OpenDRPose2D msg that can carry the same information, i.e. a list of keypoints, 
+the pose detection confidence and the pose id.
+Each keypoint is represented as an OpenDRPose2DKeypoint with x, y pixel position on input image with (0, 0) 
+being the top-left corner.
 
 Parameters:
 
-- **message**: *engine.target.Pose*\
-  OpenDR pose to be converted to ROS pose.
+- **pose**: *engine.target.Pose*\
+  OpenDR Pose to be converted to ROS OpenDRPose2D.
 
 
 #### `ROSBridge.to_ros_category`

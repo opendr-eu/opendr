@@ -130,7 +130,7 @@ The dependencies for this module automatically set up and compile a catkin works
 To start required ROS nodes, please run the following before using the `MobileRLLearner` class:
 
 ```sh
-source ${OPENDR_HOME}/projects/control/mobile_manipulation/mobile_manipulation_ws/devel/setup.bash
+source ${OPENDR_HOME}/projects/python/control/mobile_manipulation/mobile_manipulation_ws/devel/setup.bash
 roslaunch mobile_manipulation_rl [pr2,tiago]_analytical.launch
 ````
 
