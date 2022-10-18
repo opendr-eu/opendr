@@ -189,6 +189,6 @@ def main(args=None):
                                         args.detailed_visualization)
     efficient_ps_node.listen()
 
-    
+
 if __name__ == '__main__':
     main()
