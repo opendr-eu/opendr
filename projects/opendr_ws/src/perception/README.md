@@ -370,6 +370,10 @@ The node makes use of the toolkit's video human activity recognition tools which
    
    For viewing the output, refer to the [notes above.](#notes)
 
+**Notes**
+
+You can find the corresponding IDs regarding activity recognition [here](https://github.com/opendr-eu/opendr/blob/master/src/opendr/perception/activity_recognition/datasets/kinetics400_classes.csv).
+
 ## RGB + Infrared input
 
 ### GEM ROS Node
