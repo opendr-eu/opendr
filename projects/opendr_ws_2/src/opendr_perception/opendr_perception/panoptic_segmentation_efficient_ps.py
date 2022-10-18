@@ -124,10 +124,10 @@ class EfficientPsNode(Node):
         Start the node and begin processing input data. The order of the function calls ensures that the node does not
         try to process input images without being in a trained state.
         """
-        self.get_logger().info('EfficientPS node started!')
         if self._init_learner():
             self._init_publisher()
             self._init_subscriber()
+            self.get_logger().info('EfficientPS node started!')
             rclpy.spin(self)
 
             # Destroy the node explicitly
@@ -188,5 +188,7 @@ def main(args=None):
                                         args.output_rgb_image_topic,
                                         args.detailed_visualization)
     efficient_ps_node.listen()
+
+    
 if __name__ == '__main__':
     main()
