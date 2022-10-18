@@ -56,7 +56,7 @@ class RgbdHandGestureNode(Node):
 
         image_sub = message_filters.Subscriber(self, ROS_Image, input_rgb_image_topic, qos_profile=1)
         depth_sub = message_filters.Subscriber(self, ROS_Image, input_depth_image_topic, qos_profile=1)
-        # synchronize image and depth data topic1s
+        # synchronize image and depth data topics
         ts = message_filters.ApproximateTimeSynchronizer([image_sub, depth_sub], queue_size=10, slop=delay)
         ts.registerCallback(self.callback)
 
