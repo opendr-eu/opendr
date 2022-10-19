@@ -85,7 +85,6 @@ class SkeletonActionRecognitionNode:
         else:
             self.string_publisher = None
 
-
         # Initialize the pose estimation
         self.pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=2,
                                                          mobilenet_use_stride=False,
