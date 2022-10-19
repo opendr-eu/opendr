@@ -123,7 +123,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/transformer_timm.py',
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/utils.py',
             'projects/opendr_ws_2/src/opendr_perception/setup.py',
-            'projects/opendr_ws_2/src/opendr_ros2_bridge/setup.py',n
+            'projects/opendr_ws_2/src/opendr_ros2_bridge/setup.py',
             'projects/opendr_ws_2/src/data_generation/setup.py',
             'projects/opendr_ws_2/src/opendr_simulation/setup.py',
 
