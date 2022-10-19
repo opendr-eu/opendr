@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-_
 # Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,20 +17,21 @@
 import argparse
 import torch
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from vision_msgs.msg import Classification2D
 from std_msgs.msg import Float32MultiArray
 
-from opendr_bridge import ROSBridge
+from opendr_ros2_bridge import ROS2Bridge
 from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner, AttentionNeuralBagOfFeatureLearner
 
 
-class HeartAnomalyNode:
+class HeartAnomalyNode(Node):
 
     def __init__(self, input_ecg_topic="/ecg/ecg", output_heart_anomaly_topic="/opendr/heart_anomaly",
                  device="cuda", model="anbof"):
         """
-        Creates a ROS Node for heart anomaly (atrial fibrillation) detection from ecg data
+        Creates a ROS2 Node for heart anomaly (atrial fibrillation) detection from ecg data
         :param input_ecg_topic: Topic from which we are reading the input array data
         :type input_ecg_topic: str
         :param output_heart_anomaly_topic: Topic to which we are publishing the predicted class
@@ -40,12 +41,13 @@ class HeartAnomalyNode:
         :param model: model to use: anbof or gru
         :type model: str
         """
+        super().__init__("heart_anomaly_detection_node")
 
-        self.publisher = rospy.Publisher(output_heart_anomaly_topic, Classification2D, queue_size=10)
+        self.publisher = self.create_publisher(Classification2D, output_heart_anomaly_topic, 1)
 
-        rospy.Subscriber(input_ecg_topic, Float32MultiArray, self.callback)
+        self.subscriber = self.create_subscription(Float32MultiArray, input_ecg_topic, self.callback, 1)
 
-        self.bridge = ROSBridge()
+        self.bridge = ROS2Bridge()
 
         # AF dataset
         self.channels = 1
@@ -61,13 +63,7 @@ class HeartAnomalyNode:
         self.learner.download(path='.', fold_idx=0)
         self.learner.load(path='.')
 
-    def listen(self):
-        """
-        Start the node and begin processing input data
-        """
-        rospy.init_node('opendr_heart_anomaly_detection', anonymous=True)
-        rospy.loginfo("Heart anomaly detection node started!")
-        rospy.spin()
+        self.get_logger().info("Heart anomaly detection node initialized.")
 
     def callback(self, msg_data):
         """
@@ -82,11 +78,13 @@ class HeartAnomalyNode:
         class_pred = self.learner.infer(data)
 
         # Publish results
-        ros_class = self.bridge.from_category_to_rosclass(class_pred)
+        ros_class = self.bridge.from_category_to_rosclass(class_pred, self.get_clock().now().to_msg())
         self.publisher.publish(ros_class)
 
 
-if __name__ == '__main__':
+def main(args=None):
+    rclpy.init(args=args)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_ecg_topic", type=str, default="/ecg/ecg",
                         help="listen to input ECG data on this topic")
@@ -96,7 +94,6 @@ if __name__ == '__main__':
                         help="Topic name for heart anomaly detection topic")
     parser.add_argument("--device", type=str, default="cuda", help="Device to use (cpu, cuda)",
                         choices=["cuda", "cpu"])
-
     args = parser.parse_args()
 
     try:
@@ -116,4 +113,11 @@ if __name__ == '__main__':
                                                     output_heart_anomaly_topic=args.output_heart_anomaly_topic,
                                                     model=args.model, device=device)
 
-    heart_anomaly_detection_node.listen()
+    rclpy.spin(heart_anomaly_detection_node)
+
+    heart_anomaly_detection_node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
