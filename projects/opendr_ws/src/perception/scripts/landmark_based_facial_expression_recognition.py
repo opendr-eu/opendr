@@ -138,10 +138,10 @@ if __name__ == '__main__':
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input image",
                         type=str, default="/usb_cam/image_raw")
     parser.add_argument("-o", "--output_category_topic", help="Topic name for output recognized category",
-                        type=lambda value: value if value.lower() != "none" else None, 
+                        type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/landmark_expression_recognition")
     parser.add_argument("-d", "--output_category_description_topic", help="Topic name for category description",
-                        type=lambda value: value if value.lower() != "none" else None, 
+                        type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/landmark_expression_recognition_description")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
@@ -164,7 +164,7 @@ if __name__ == '__main__':
         print("Using CPU.")
         device = "cpu"
 
-    landmark_expression_estimation_node =     landmark_expression_estimation_node = \
+    landmark_expression_estimation_node = \
         LandmarkFacialExpressionRecognitionNode(input_image_topic=args.input_image_topic,
                                                 output_category_topic=args.output_category_topic,
                                                 output_category_description_topic=
