@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import argparse
 import rospy
 import torch
 import numpy as np
@@ -21,7 +21,6 @@ from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-import argparse
 from opendr.perception.facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
 from opendr.perception.facial_expression_recognition import landmark_extractor
 from opendr.perception.facial_expression_recognition import gen_muscle_data
