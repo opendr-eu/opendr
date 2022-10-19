@@ -165,6 +165,7 @@ class SkeletonActionRecognitionNode:
         if self.string_publisher is not None:
             self.string_publisher.publish(self.bridge.to_ros_category_description(category))
 
+
 def _select_2_poses(poses):
     selected_poses = []
     energy = []
