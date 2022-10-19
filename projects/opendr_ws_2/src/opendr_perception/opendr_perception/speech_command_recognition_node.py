@@ -137,7 +137,7 @@ def main(args=None):
                                         output_speech_command_topic=args.output_speech_command_topic,
                                         buffer_size=args.buffer_size, model=args.model, model_path=args.model_path,
                                         device=device)
-                                        
+
     rclpy.spin(speech_node)
 
     speech_node.destroy_node()
