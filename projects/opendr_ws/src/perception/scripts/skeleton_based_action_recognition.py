@@ -196,14 +196,18 @@ if __name__ == '__main__':
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input image",
                         type=str, default="/usb_cam/image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated image",
-                        type=str, default="/opendr/image_pose_annotated")
+                        type=lambda value: value if value.lower() != "none" else None, 
+                        default="/opendr/image_pose_annotated")
     parser.add_argument("-p", "--pose_annotations_topic", help="Topic name for pose annotations",
-                        type=str, default="/opendr/poses")
+                        type=lambda value: value if value.lower() != "none" else None, 
+                        default="/opendr/poses")
     parser.add_argument("-c", "--output_category_topic", help="Topic name for recognized action category",
-                        type=str, default="/opendr/skeleton_recognized_action")
+                        type=lambda value: value if value.lower() != "none" else None, 
+                        default="/opendr/skeleton_recognized_action")
     parser.add_argument("-d", "--output_category_description_topic", help="Topic name for description of the "
                                                                           "recognized action category",
-                        type=str, default="/opendr/skeleton_recognized_action_description")
+                        type=lambda value: value if value.lower() != "none" else None, 
+                        default="/opendr/skeleton_recognized_action_description")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model to use, either \"stgcn\" or \"pstgcn\"",
