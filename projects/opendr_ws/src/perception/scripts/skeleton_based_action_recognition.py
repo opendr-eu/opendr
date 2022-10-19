@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import argparse
 import rospy
 import torch
 import numpy as np
@@ -27,7 +27,6 @@ from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGCNLearner
 from opendr.perception.skeleton_based_action_recognition import ProgressiveSpatioTemporalGCNLearner
 from opendr.engine.data import Image
-import argparse
 
 
 class SkeletonActionRecognitionNode:
