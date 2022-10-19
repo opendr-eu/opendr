@@ -54,7 +54,7 @@ class LandmarkFacialExpressionRecognitionNode:
         """
 
         # Set up ROS topics and bridge
-        self.input_image_topic = input_image_topic
+        self.input_rgb_image_topic = input_rgb_image_topic
         self.bridge = ROSBridge()
 
         if output_category_topic is not None:
