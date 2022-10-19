@@ -97,7 +97,6 @@ class AudiovisualEmotionNode(Node):
 
         self.video_buffer = np.append(self.video_buffer, np.expand_dims(image_data.data, 0), axis=0)
 
-        print(self.data_buffer.shape[0], "      ", 16000 * self.buffer_size)
         if self.data_buffer.shape[0] > 16000*self.buffer_size:
             audio = librosa.feature.mfcc(self.data_buffer[1:], sr=16000, n_mfcc=10)
             audio = Timeseries(audio)
