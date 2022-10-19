@@ -31,6 +31,7 @@ setup(
             'face_recognition = opendr_perception.face_recognition_node:main',
             'fall_detection = opendr_perception.fall_detection_node:main',
             'video_activity_recognition = opendr_perception.video_activity_recognition_node:main',
+            'heart_anomaly_detection = opendr_perception.heart_anomaly_detection_node:main',
             'rgbd_hand_gestures_recognition = opendr_perception.rgbd_hand_gesture_recognition_node:main',
         ],
     },
