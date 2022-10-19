@@ -136,7 +136,7 @@ def _landmark2numpy(landmarks):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input_image_topic", help="Topic name for input image",
+    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input image",
                         type=str, default="/usb_cam/image_raw")
     parser.add_argument("-o", "--output_category_topic", help="Topic name for output recognized category",
                         type=str, default="/opendr/landmark_expression_recognition")
