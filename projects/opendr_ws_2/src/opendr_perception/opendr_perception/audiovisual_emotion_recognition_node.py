@@ -36,7 +36,7 @@ from opendr.engine.data import Video, Timeseries
 
 class AudiovisualEmotionNode(Node):
 
-    def __init__(self, input_video_topic="/usb_cam/image_raw", input_audio_topic="/audio/audio",
+    def __init__(self, input_video_topic="/image_raw", input_audio_topic="/audio",
                  output_emotions_topic="/opendr/audiovisual_emotion", buffer_size=3.6, device="cuda",
                  delay=0.1):
         """
