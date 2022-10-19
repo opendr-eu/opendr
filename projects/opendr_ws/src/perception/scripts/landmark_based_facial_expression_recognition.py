@@ -165,10 +165,10 @@ if __name__ == '__main__':
         device = "cpu"
 
     landmark_expression_estimation_node = \
-        LandmarkFacialExpressionRecognitionNode(input_image_topic=args.input_image_topic,
-                                                output_category_topic=args.output_category_topic,
-                                                output_category_description_topic=
-                                                args.output_category_description_topic,
-                                                device=device, model=args.model,
-                                                shape_predictor=args.shape_predictor)
+        LandmarkFacialExpressionRecognitionNode(
+            input_image_topic=args.input_image_topic,
+            output_category_topic=args.output_category_topic,
+            output_category_description_topic=args.output_category_description_topic,
+            device=device, model=args.model,
+            shape_predictor=args.shape_predictor)
     landmark_expression_estimation_node.listen()
