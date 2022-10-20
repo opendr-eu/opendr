@@ -218,4 +218,3 @@ class DiversifiedESR(nn.Module):
         attn_heads = [attn_heads_sp, attn_heads_ch]
 
         return emotions, affect_values, attn_heads
-
