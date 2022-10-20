@@ -34,14 +34,14 @@ from opendr.perception.facial_expression_recognition import ESR
 
 class FacialEmotionEstimationNode:
     def __init__(self,
-                 input_image_topic="/usb_cam/image_raw",
+                 input_rgb_image_topic="/usb_cam/image_raw",
                  output_emotions_topic="/opendr/facial_emotion",
                  output_emotions_description_topic="/opendr/facial_emotion_estimation_description",
                  device="cuda"):
         """
         Creates a ROS Node for facial emotion estimation
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
         :param output_emotions_topic: Topic to which we are publishing the facial emotion results
         (if None, we are not publishing the info)
         :type output_emotions_topic: str
@@ -53,7 +53,7 @@ class FacialEmotionEstimationNode:
         """
 
         # Set up ROS topics and bridge
-        self.input_image_topic = input_image_topic
+        self.input_rgb_image_topic = input_rgb_image_topic
         self.bridge = ROSBridge()
 
         if output_emotions_topic is not None:
