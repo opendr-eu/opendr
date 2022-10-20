@@ -194,9 +194,10 @@ if __name__ == '__main__':
         print("Using CPU")
         device = 'cpu'
 
-    facial_emotion_estimation_node = FacialEmotionEstimationNode(input_image_topic=args.input_image_topic,
-                                                                 output_emotions_topic=args.output_emotions_topic,
-                                                                 output_emotions_description_topic=
-                                                                 args.output_emotions_description_topic,
-                                                                 device=device)
+    facial_emotion_estimation_node = FacialEmotionEstimationNode(
+        input_image_topic=args.input_image_topic,
+        output_emotions_topic=args.output_emotions_topic,
+        output_emotions_description_topic=args.output_emotions_description_topic,
+        device=device)
+
     facial_emotion_estimation_node.listen()

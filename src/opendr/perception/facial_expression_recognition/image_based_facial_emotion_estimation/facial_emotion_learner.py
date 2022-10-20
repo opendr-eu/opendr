@@ -43,8 +43,12 @@ from opendr.engine.target import Category
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.esr_9 \
     import ESR
+from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.\
+    diversified_esr import DiversifiedESR
 from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.utils \
     import datasets, plotting
+from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.utils.diversity \
+    import BranchDiversity
 
 
 class FacialEmotionLearner(Learner):
@@ -53,7 +57,7 @@ class FacialEmotionLearner(Learner):
                  validation_interval=1, max_training_epoch=2, momentum=0.9,
                  ensemble_size=9, base_path_experiment='./experiments/', name_experiment='esr_9',
                  dimensional_finetune=True, categorical_train=False, base_path_to_dataset='./data/AffectNet',
-                 max_tuning_epoch=1
+                 max_tuning_epoch=1, diversify=False
                  ):
         super(FacialEmotionLearner, self).__init__(lr=lr, batch_size=batch_size, temp_path=temp_path, device=device)
         # dataset_name = ''
@@ -73,10 +77,12 @@ class FacialEmotionLearner(Learner):
         self.ensemble_size = ensemble_size
         self.dimensional_finetune = dimensional_finetune
         self.categorical_train = categorical_train
+        self.diversify = diversify
         self.ort_session = None
         self.max_tuning_epoch = max_tuning_epoch
         self.criterion_cat = nn.CrossEntropyLoss()
         self.criterion_dim = nn.MSELoss(reduction='mean')
+        self.criterion_div = BranchDiversity()
 
     def init_model(self, num_branches):
         """
@@ -84,7 +90,10 @@ class FacialEmotionLearner(Learner):
 
         :param num_branches: Specifies the number of ensemble branches in the model.
         """
-        self.model = ESR(device=self.device, ensemble_size=num_branches)
+        if self.diversify:
+            self.model = DiversifiedESR(device=self.device, ensemble_size=num_branches)
+        else:
+            self.model = ESR(device=self.device, ensemble_size=num_branches)
         self.model.to_device(self.device)
 
     def save(self, state_dicts, base_path_to_save_model):
@@ -214,7 +223,7 @@ class FacialEmotionLearner(Learner):
                         inputs, labels = inputs.to(self.device), labels.to(self.device)
                         self.optimizer_.zero_grad()
                         # Forward
-                        out_emotions, out_va = self.model(inputs)
+                        out_emotions, out_va, attn = self.model(inputs)
                         confs_preds = [torch.max(o, 1) for o in out_emotions]
                         # Compute loss
                         loss = 0.0
@@ -222,6 +231,17 @@ class FacialEmotionLearner(Learner):
                             preds = confs_preds[i_4][1]
                             running_corrects[i_4] += torch.sum(preds == labels).cpu().numpy()
                             loss += self.criterion_cat(out_emotions[i_4], labels)
+
+                        if self.diversify and self.model.get_ensemble_size() > 1:
+                            attn_sp = attn[0]
+                            attn_ch = attn[1]
+                            # spatial diversity
+                            div_sp = self.criterion_div(attn_sp, type='spatial').det_div
+                            loss += div_sp
+                            # channel diversity
+                            div_ch = self.criterion_div(attn_ch, type='channel').det_div
+                            loss += div_ch
+
                         # Backward
                         loss.backward()
                         # Optimize
@@ -341,7 +361,7 @@ class FacialEmotionLearner(Learner):
                     labels_arousal = labels[:, 1].view(len(labels[:, 1]), 1)
                     self.optimizer_.zero_grad()
                     # Forward
-                    out_emotions, out_va = self.model(inputs)
+                    out_emotions, out_va, _ = self.model(inputs)
                     # Compute loss of affect_values
                     loss = 0.0
                     for i_4 in range(current_branch_on_training + 1):
@@ -447,7 +467,7 @@ class FacialEmotionLearner(Learner):
             # evaluate
             for inputs_eval, labels_eval in val_loader:
                 inputs_eval, labels_eval = inputs_eval.to(self.device), labels_eval.to(self.device)
-                out_emotion_eval, out_va_eval = self.model(inputs_eval)
+                out_emotion_eval, out_va_eval, _ = self.model(inputs_eval)
                 outputs_eval = out_emotion_eval[:current_branch_on_training + 1]
                 # Ensemble prediction
                 overall_preds = torch.zeros(outputs_eval[0].size()).to(self.device)
@@ -480,7 +500,7 @@ class FacialEmotionLearner(Learner):
                 inputs_eval, labels_eval = inputs_eval.to(self.device), labels_eval
                 labels_eval_valence = labels_eval[:, 0].view(len(labels_eval[:, 0]), 1)
                 labels_eval_arousal = labels_eval[:, 1].view(len(labels_eval[:, 1]), 1)
-                out_emotion_eval, out_va_eval = self.model(inputs_eval)
+                out_emotion_eval, out_va_eval, _ = self.model(inputs_eval)
                 outputs_eval = out_va_eval[:current_branch_on_training + 1]
 
                 # Ensemble prediction
@@ -603,7 +623,7 @@ class FacialEmotionLearner(Learner):
 
         input_batch = input_batch.to(device=self.device, dtype=torch.float)
         self.model.eval()
-        out_emotions, out_va = self.model(input_batch)
+        out_emotions, out_va, _ = self.model(input_batch)
 
         # categorical result
         softmax_ = nn.Softmax(dim=0)

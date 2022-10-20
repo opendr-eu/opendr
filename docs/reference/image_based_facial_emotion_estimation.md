@@ -14,7 +14,7 @@ The [FacialEmotionLearner](/src/opendr/perception/facial_expression_recognition/
 ```python
 FacialEmotionLearner(self, lr, batch_size, temp_path, device, device_ind, validation_interval, 
                      max_training_epoch, momentum, ensemble_size, base_path_experiment, name_experiment,
-                     dimensional_finetune, categorical_train, base_path_to_dataset, max_tuning_epoch)
+                     dimensional_finetune, categorical_train, base_path_to_dataset, max_tuning_epoch, diversify)
 ```
 
 Constructor parameters:
@@ -49,6 +49,8 @@ Constructor parameters:
   Specifies the dataset path. 
 - **max_tuning_epoch**: *int, default=20*\
   Specifies the maximum number of epochs the model should be finetuned on dimensional data. 
+- **max_tuning_epoch**: *bool, default=False*\
+  Specifies if the learner diversifies the features of different branches or not.
 
 #### `FacialEmotionLearner.fit`
 ```python
