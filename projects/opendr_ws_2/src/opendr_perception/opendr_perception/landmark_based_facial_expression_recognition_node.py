@@ -18,6 +18,7 @@ import torch
 import numpy as np
 
 import rclpy
+from rclpy.node import Node
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
@@ -29,7 +30,7 @@ from opendr.perception.facial_expression_recognition import gen_muscle_data
 from opendr.perception.facial_expression_recognition import data_normalization
 
 
-class LandmarkFacialExpressionRecognitionNode:
+class LandmarkFacialExpressionRecognitionNode(Node):
 
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
                  output_category_topic="/opendr/landmark_expression_recognition",
