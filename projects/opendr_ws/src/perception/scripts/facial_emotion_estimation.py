@@ -13,22 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import rospy
+import argparse
 import torch
 import numpy as np
 import cv2
 from torchvision import transforms
 import PIL
+
+import rospy
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
+
+from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.perception.facial_expression_recognition import FacialEmotionLearner
 from opendr.perception.facial_expression_recognition import image_processing
 from opendr.perception.facial_expression_recognition import ESR
-from opendr.engine.constants import OPENDR_SERVER_URL
-import argparse
 
 
 class FacialEmotionEstimationNode:
@@ -52,6 +53,8 @@ class FacialEmotionEstimationNode:
         """
 
         # Set up ROS topics and bridge
+        self.input_image_topic = input_image_topic
+        self.bridge = ROSBridge()
 
         if output_emotions_topic is not None:
             self.hypothesis_publisher = rospy.Publisher(output_emotions_topic, ObjectHypothesis, queue_size=1)
@@ -62,9 +65,6 @@ class FacialEmotionEstimationNode:
             self.string_publisher = rospy.Publisher(output_emotions_description_topic, String, queue_size=1)
         else:
             self.string_publisher = None
-
-        self.input_image_topic = input_image_topic
-        self.bridge = ROSBridge()
 
         # Initialize the facial emotion estimator
         self.facial_emotion_estimator = FacialEmotionLearner(device=device, batch_size=2,
@@ -169,9 +169,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input_image_topic', type=str, help='Topic name for input rgb image',
                         default='/usb_cam/image_raw')
-    parser.add_argument('-o', '--output_emotions_topic', type=str, help='Topic name for output emotion')
-    parser.add_argument('-m', '--output_emotions_description_topic', type=str,
-                        help='Topic to which we are publishing the description of the estimated facial emotion')
+    parser.add_argument("-o", "--output_emotions_topic", help="Topic name for output emotion",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/facial_emotion_estimation")
+    parser.add_argument('-m', '--output_emotions_description_topic',
+                        help='Topic to which we are publishing the description of the estimated facial emotion',
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/facial_emotion_estimation_description")
     parser.add_argument('-d', '--device', help='Device to use, either cpu or cuda',
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
