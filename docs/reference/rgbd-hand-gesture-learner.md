@@ -13,7 +13,8 @@ The naming convention of the gestures classes is as follow:
 - F identifies the version of the gesture where the front of the hand is facing the camera, while B identifies the version where the back of the hand is facing the camera.
 - R is used for right-hand gestures, while L is used for left-hand gestures.
 
-More information about gesture classes structure and illustration images can be found in [[1]](#dataset).
+Below is an illustration image of hand gestures, the image is copied from [[1]](#dataset).
+![Hand gesture examples](images/hand_gesture_examples.png)
 
 ### Class RgbdHandGestureLearner 
 Bases: `opendr.engine.learners.Learner`
