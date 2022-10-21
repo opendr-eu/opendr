@@ -35,8 +35,8 @@ class LandmarkFacialExpressionRecognitionNode:
                  device="cpu", model='pstbln_afew', shape_predictor='./predictor_path'):
         """
         Creates a ROS Node for landmark-based facial expression recognition.
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
         :param output_category_topic: Topic to which we are publishing the recognized facial expression category info
         (if None, we are not publishing the info)
         :type output_category_topic: str
