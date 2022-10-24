@@ -659,9 +659,9 @@ def test_rotated_pp_siamese_infer(
     device=DEVICE,
     backbone="pp",
     params_file=None,
-    object_ids=[0, 10, 43],  # [0, 3]
-    start_frame=10,
-    track_id="0011",
+    object_ids=[0],  # [0, 3]
+    start_frame=0,
+    track_id="0000",
     **kwargs,
 ):
 

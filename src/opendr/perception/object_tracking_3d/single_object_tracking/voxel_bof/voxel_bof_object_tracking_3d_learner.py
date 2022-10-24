@@ -108,7 +108,7 @@ def warn(warning, *args, **kwargs):
         original_warn(warning, *args, **kwargs)
 
 
-warnings.warn = warn
+# warnings.warn = warn
 
 
 class VoxelBofObjectTracking3DLearner(Learner):
@@ -154,6 +154,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         search_type="normal",
         target_type="normal",
         bof_mode="none",
+        bof_training_steps=2000,
         extrapolation_mode="none",  # "none", "linear"
         offset_interpolation=1,
         vertical_offset_interpolation=1,
@@ -221,6 +222,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         self.vertical_offset_interpolation = vertical_offset_interpolation
         self.vertical_regressor_type = vertical_regressor_type
         self.vertical_regressor_kwargs = vertical_regressor_kwargs
+        self.bof_training_steps = bof_training_steps
 
         if tanet_config_path is not None:
             set_tanet_config(tanet_config_path)
@@ -434,7 +436,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         verbose=False,
         model_dir=None,
         image_shape=(1224, 370),
-        evaluate=True,
+        evaluate=False,
         debug=False,
         load_optimizer=True,
     ):
@@ -522,6 +524,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             regression_training_isolation=self.regression_training_isolation,
             overwrite_strides=self.overwrite_strides,
             upscaling_mode=self.upscaling_mode,
+            bof_training_steps=0 if self.bof_mode == "none" else self.bof_training_steps,
         )
 
         logger.close()

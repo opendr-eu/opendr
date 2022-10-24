@@ -129,7 +129,7 @@ def plot_realtime():
     plot_frame(frame, "realtime")
 
 
-def plot_ablation():
+def plot_ablation(lines_count):
 
     frames = [
         {
@@ -198,26 +198,26 @@ def plot_ablation():
                 }
             ),
         },
-        {
-            "x": "Target feature merge scale",
-            "data": DataFrame(
-                {
-                    "Target feature merge scale": Categorical(
-                        ["0", "0.005", "0.01"], ["0", "0.005", "0.01"]
-                    ),
-                    "Success": [42.02, 42.75, 41.51],
-                }
-            ),
-        },
-        {
-            "x": "Window influence",
-            "data": DataFrame(
-                {
-                    "Window influence": [0.35, 0.45, 0.5, 0.65, 0.85, 0.9],
-                    "Success": [40.83, 41.86, 41.15, 42.58, 42.75, 42.47],
-                }
-            ),
-        },
+        # {
+        #     "x": "Target feature merge scale",
+        #     "data": DataFrame(
+        #         {
+        #             "Target feature merge scale": Categorical(
+        #                 ["0", "0.005", "0.01"], ["0", "0.005", "0.01"]
+        #             ),
+        #             "Success": [42.02, 42.75, 41.51],
+        #         }
+        #     ),
+        # },
+        # {
+        #     "x": "Window influence",
+        #     "data": DataFrame(
+        #         {
+        #             "Window influence": [0.35, 0.45, 0.5, 0.65, 0.85, 0.9],
+        #             "Success": [40.83, 41.86, 41.15, 42.58, 42.75, 42.47],
+        #         }
+        #     ),
+        # },
         {
             "x": "Score upscale",
             "data": DataFrame(
@@ -227,15 +227,15 @@ def plot_ablation():
                 }
             ),
         },
-        {
-            "x": "Search region scale",
-            "data": DataFrame(
-                {
-                    "Search region scale": [1.5, 2],
-                    "Success": [42.75, 40.04],
-                }
-            ),
-        },
+        # {
+        #     "x": "Search region scale",
+        #     "data": DataFrame(
+        #         {
+        #             "Search region scale": [1.5, 2],
+        #             "Success": [42.75, 40.04],
+        #         }
+        #     ),
+        # },
         {
             "x": "Position extrapolation",
             "data": DataFrame(
@@ -263,21 +263,21 @@ def plot_ablation():
                     "Training steps": Categorical(
                         [
                             "Pretrained",
-                            "8000",
-                            "16000",
-                            "32000",
-                            "64000",
-                            "86000",
-                            "128000",
+                            "8k",
+                            "16k",
+                            "32k",
+                            "64k",
+                            "86k",
+                            "128k",
                         ],
                         [
                             "Pretrained",
-                            "8000",
-                            "16000",
-                            "32000",
-                            "64000",
-                            "86000",
-                            "128000",
+                            "8k",
+                            "16k",
+                            "32k",
+                            "64k",
+                            "86k",
+                            "128k",
                         ],
                     ),
                     "Success": [22.18, 37.55, 38.71, 40.86, 42.75, 40.40, 39.77],
@@ -304,7 +304,7 @@ def plot_ablation():
 
             plot.save("plots/" + output_file_name + str(i) + ".png", dpi=600)
 
-    def combine_plots(input_file_name, output_file_name, lines_count=3):
+    def combine_plots(input_file_name, output_file_name, lines_count=2):
 
         import cv2
         import numpy as np
@@ -352,7 +352,7 @@ def plot_ablation():
             cv2.resize(all, None, fx=0.5, fy=0.5),
         )
 
-    plot_frames(frames, "ablation")
+    plot_frames(frames, "ablation", lines_count=lines_count)
     combine_plots("ablation", "all_ablation")
 
 

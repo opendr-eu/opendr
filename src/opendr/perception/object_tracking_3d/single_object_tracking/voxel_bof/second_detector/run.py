@@ -2021,7 +2021,7 @@ def train_siamese(
     regression_training_isolation=False,
     overwrite_strides=None,
     upscaling_mode="none",
-    steps_per_val=8000,
+    steps_per_val=9000,
     val_steps=1000,
 ):
 
@@ -2058,6 +2058,7 @@ def train_siamese(
         shuffle=False,
         num_workers=eval_input_cfg.num_workers,
         pin_memory=False,
+        worker_init_fn=_worker_init_fn,
         # collate_fn=merge_second_batch,
     )
     data_iter = iter(dataloader)

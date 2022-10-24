@@ -126,12 +126,25 @@ class SiameseTrackingDatasetIterator(DatasetIterator):
             count=-1,
         ).reshape([-1, self.num_point_features])
 
-        target_label = [
-            x for x in self.labels[track_id][target_frame_id] if x.id == object_id
-        ][0]
-        search_label = [
-            x for x in self.labels[track_id][search_frame_id] if x.id == object_id
-        ][0]
+        target_label = None
+
+        for x in self.labels[track_id][target_frame_id]:
+            if x.id == object_id:
+                target_label = x
+                break
+        # target_label = [
+        #     x for x in self.labels[track_id][target_frame_id] if x.id == object_id
+        # ][0]
+
+        search_label = None
+        for x in self.labels[track_id][search_frame_id]:
+            if x.id == object_id:
+                search_label = x
+                break
+
+        # search_label = [
+        #     x for x in self.labels[track_id][search_frame_id] if x.id == object_id
+        # ][0]
 
         result = (
             PointCloudWithCalibration(target_points, self.calibs[track_id], None),
