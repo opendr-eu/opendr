@@ -35,6 +35,8 @@ setup(
             'speech_command_recognition = opendr_perception.speech_command_recognition_node:main',
             'heart_anomaly_detection = opendr_perception.heart_anomaly_detection_node:main',
             'rgbd_hand_gestures_recognition = opendr_perception.rgbd_hand_gesture_recognition_node:main',
+            'landmark_based_facial_expression_recognition = \
+            opendr_perception.landmark_based_facial_expression_recognition_node:main',
         ],
     },
 )
