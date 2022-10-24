@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import argparse
 import rospy
 import torch
 import numpy as np
@@ -29,14 +29,14 @@ from opendr.perception.facial_expression_recognition import data_normalization
 
 class LandmarkFacialExpressionRecognitionNode:
 
-    def __init__(self, input_image_topic="/usb_cam/image_raw",
-                 output_category_topic="/opendr/landmark_based_expression_recognition",
-                 output_category_description_topic="/opendr/landmark_based_expression_recognition_description",
+    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
+                 output_category_topic="/opendr/landmark_expression_recognition",
+                 output_category_description_topic="/opendr/landmark_expression_recognition_description",
                  device="cpu", model='pstbln_afew', shape_predictor='./predictor_path'):
         """
-        Creates a ROS Node for pose detection
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
+        Creates a ROS Node for landmark-based facial expression recognition.
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
         :param output_category_topic: Topic to which we are publishing the recognized facial expression category info
         (if None, we are not publishing the info)
         :type output_category_topic: str
@@ -53,6 +53,8 @@ class LandmarkFacialExpressionRecognitionNode:
         """
 
         # Set up ROS topics and bridge
+        self.input_rgb_image_topic = input_rgb_image_topic
+        self.bridge = ROSBridge()
 
         if output_category_topic is not None:
             self.hypothesis_publisher = rospy.Publisher(output_category_topic, ObjectHypothesis, queue_size=10)
@@ -63,9 +65,6 @@ class LandmarkFacialExpressionRecognitionNode:
             self.string_publisher = rospy.Publisher(output_category_description_topic, String, queue_size=10)
         else:
             self.string_publisher = None
-
-        self.input_image_topic = input_image_topic
-        self.bridge = ROSBridge()
 
         # Initialize the landmark-based facial expression recognition
         if model == 'pstbln_ck+':
@@ -134,16 +133,42 @@ def _landmark2numpy(landmarks):
 
 
 if __name__ == '__main__':
-    # Select the device for running the
-    try:
-        if torch.cuda.is_available():
-            print("GPU found.")
-            device = 'cuda'
-        else:
-            print("GPU not found. Using CPU instead.")
-            device = 'cpu'
-    except:
-        device = 'cpu'
 
-    pose_estimation_node = LandmarkFacialExpressionRecognitionNode(device=device)
-    pose_estimation_node.listen()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input image",
+                        type=str, default="/usb_cam/image_raw")
+    parser.add_argument("-o", "--output_category_topic", help="Topic name for output recognized category",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/landmark_expression_recognition")
+    parser.add_argument("-d", "--output_category_description_topic", help="Topic name for category description",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/landmark_expression_recognition_description")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--model", help="Model to use, either 'pstbln_ck+', 'pstbln_casia', 'pstbln_afew'",
+                        type=str, default="pstbln_afew", choices=['pstbln_ck+', 'pstbln_casia', 'pstbln_afew'])
+    parser.add_argument("-s", "--shape_predictor", help="Shape predictor (landmark_extractor) to use",
+                        type=str, default='./predictor_path')
+    args = parser.parse_args()
+
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
+
+    landmark_expression_estimation_node = \
+        LandmarkFacialExpressionRecognitionNode(
+            input_rgb_image_topic=args.input_rgb_image_topic,
+            output_category_topic=args.output_category_topic,
+            output_category_description_topic=args.output_category_description_topic,
+            device=device, model=args.model,
+            shape_predictor=args.shape_predictor)
+    landmark_expression_estimation_node.listen()
