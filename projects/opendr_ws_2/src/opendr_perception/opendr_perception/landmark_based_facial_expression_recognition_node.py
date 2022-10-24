@@ -54,7 +54,7 @@ class LandmarkFacialExpressionRecognitionNode(Node):
         :param shape_predictor: pretrained model to use for landmark extraction from a facial image
         :type model: str
         """
-
+super().__init__('landmark_based_facial_expression_recognition_node')
         # Set up ROS topics and bridge
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
