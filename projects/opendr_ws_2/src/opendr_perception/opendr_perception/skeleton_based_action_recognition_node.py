@@ -34,7 +34,7 @@ from opendr.perception.skeleton_based_action_recognition import ProgressiveSpati
 
 class SkeletonActionRecognitionNode(Node):
 
-    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
+    def __init__(self, input_rgb_image_topic="image_raw",
                  output_rgb_image_topic="/opendr/image_pose_annotated",
                  pose_annotations_topic="/opendr/poses",
                  output_category_topic="/opendr/skeleton_recognized_action",
