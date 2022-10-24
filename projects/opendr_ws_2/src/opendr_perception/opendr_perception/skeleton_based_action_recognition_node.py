@@ -62,7 +62,7 @@ class SkeletonActionRecognitionNode(Node):
          (Options: 'stgcn', 'pstgcn')
         :type model: str
         """
-
+        super().__init__('skeleton_based_action_recognition_node')
         # Set up ROS topics and bridge
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
