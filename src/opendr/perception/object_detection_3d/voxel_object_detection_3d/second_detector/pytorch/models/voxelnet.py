@@ -6,6 +6,7 @@ import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.models.pruning_rnp import PRPN
 
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.nn import (
     one_hot as tp_one_hot
@@ -650,7 +651,7 @@ class VoxelNet(nn.Module):
             else:
                 num_rpn_input_filters = int(middle_num_filters_d2[-1] * 2)
 
-        rpn_class_dict = {"RPN": RPN, "PSA": PSA}
+        rpn_class_dict = {"RPN": RPN, "PSA": PSA, "PRPN": PRPN}
         self.rpn_class_name = rpn_class_name
         rpn_class = rpn_class_dict[rpn_class_name]
         self.rpn = rpn_class(
