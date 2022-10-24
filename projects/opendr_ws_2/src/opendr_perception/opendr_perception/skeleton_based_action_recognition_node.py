@@ -188,11 +188,12 @@ def _pose2numpy(num_current_frames, poses_list):
     return skeleton_seq
 
 
-if __name__ == '__main__':
+def main(args=None):
+    rclpy.init(args=args)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input image",
-                        type=str, default="/usb_cam/image_raw")
+                        type=str, default="image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated image",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/image_pose_annotated")
@@ -242,3 +243,8 @@ if __name__ == '__main__':
     # when the garbage collector destroys the node object)
     skeleton_action_recognition_node.destroy_node()
     rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+
