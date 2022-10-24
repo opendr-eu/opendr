@@ -87,12 +87,8 @@ class X3DLearner(Learner):
             seed (int, optional): Random seed. Defaults to 123.
             num_classes (int, optional): Number of classes to predict among. Defaults to 400.
         """
-        assert (
-            backbone in _MODEL_NAMES
-        ), f"Invalid model selected. Choose one of {_MODEL_NAMES}."
-        assert network_head in {
-            "classification"
-        }, "Currently, only 'classification' head is supported."
+        assert backbone in _MODEL_NAMES, f"Invalid model selected. Choose one of {_MODEL_NAMES}."
+        assert network_head in {"classification"}, "Currently, only 'classification' head is supported."
 
         assert optimizer in {"sgd", "adam"}, "Supported optimizers are Adam and SGD."
 
@@ -137,9 +133,7 @@ class X3DLearner(Learner):
             Dict[str, Any]: Dictionary with model hyperparameters
         """
         model_name = model_name or self.backbone
-        assert (
-            model_name in _MODEL_NAMES
-        ), f"Invalid model selected. Choose one of {_MODEL_NAMES}."
+        assert model_name in _MODEL_NAMES, f"Invalid model selected. Choose one of {_MODEL_NAMES}."
         path = Path(__file__).parent / "hparams" / f"{model_name}.yaml"
         with open(path, "r") as f:
             self.model_hparams = yaml.load(f, Loader=yaml.FullLoader)
@@ -154,9 +148,7 @@ class X3DLearner(Learner):
         """
         weights_path = Path(weights_path)
 
-        assert (
-            weights_path.is_file() and weights_path.suffix in {".pyth", ".pth", ".onnx"}
-        ), (
+        assert weights_path.is_file() and weights_path.suffix in {".pyth", ".pth", ".onnx"}, (
             f"weights_path ({str(weights_path)}) should be a .pth or .onnx file."
             "Pretrained weights can be downloaded using `self.download(...)`"
         )
@@ -174,9 +166,7 @@ class X3DLearner(Learner):
         def size_ok(k):
             return new_model_state[k].size() == loaded_state_dict[k].size()
 
-        to_load = {
-            k: v for k, v in loaded_state_dict.items() if size_ok(k)
-        }
+        to_load = {k: v for k, v in loaded_state_dict.items() if size_ok(k)}
         self.model.load_state_dict(to_load, strict=False)
 
         names_not_loaded = set(new_model_state.keys()) - set(to_load.keys())
@@ -192,9 +182,7 @@ class X3DLearner(Learner):
         Returns:
             X3D: model
         """
-        assert hasattr(
-            self, "model_hparams"
-        ), "`self.model_hparams` not found. Did you forget to call `_load_hparams`?"
+        assert hasattr(self, "model_hparams"), "`self.model_hparams` not found. Did you forget to call `_load_hparams`?"
         self.model = X3D(
             dim_in=3,
             image_size=self.model_hparams["image_size"],
@@ -225,9 +213,7 @@ class X3DLearner(Learner):
         Returns:
             self
         """
-        assert hasattr(
-            self, "model"
-        ), "Cannot save model because no model was found. Did you forget to call `__init__`?"
+        assert hasattr(self, "model"), "Cannot save model because no model was found. Did you forget to call `__init__`?"
 
         root_path = Path(path)
         root_path.mkdir(parents=True, exist_ok=True)
@@ -292,9 +278,7 @@ class X3DLearner(Learner):
             return self
         if path.is_dir():
             path = path / f"x3d_{self.backbone}.json"
-        assert (
-            path.is_file() and path.suffix == ".json"
-        ), "The provided metadata path should be a .json file"
+        assert path.is_file() and path.suffix == ".json", "The provided metadata path should be a .json file"
 
         logger.debug(f"Loading X3DLearner metadata from {str(path)}")
         with open(path, "r") as f:
@@ -329,9 +313,7 @@ class X3DLearner(Learner):
         return self
 
     @staticmethod
-    def download(
-        path: Union[str, Path], model_names: Iterable[str] = _MODEL_NAMES
-    ):
+    def download(path: Union[str, Path], model_names: Iterable[str] = _MODEL_NAMES):
         """Download pretrained X3D models
 
         Args:
@@ -353,14 +335,20 @@ class X3DLearner(Learner):
                     url=f"https://dl.fbaipublicfiles.com/pyslowfast/x3d_models/x3d_{m}.pyth",
                     filename=str(filename),
                 )
-                assert (
-                    filename.is_file()
-                ), f"Something wen't wrong when downloading {str(filename)}"
+                assert filename.is_file(), f"Something wen't wrong when downloading {str(filename)}"
 
     def reset(self):
         pass
 
-    def fit(self, dataset: Dataset, val_dataset: Dataset=None, epochs: int=None, steps: int=None, *args, **kwargs):
+    def fit(
+        self,
+        dataset: Dataset,
+        val_dataset: Dataset = None,
+        epochs: int = None,
+        steps: int = None,
+        *args,
+        **kwargs,
+    ):
         """Fit the model to a dataset
 
         Args:
@@ -379,19 +367,26 @@ class X3DLearner(Learner):
             pin_memory=self.pin_memory,
             drop_last=self.drop_last,
         )
-        val_dataloader = torch.utils.data.DataLoader(
-            val_dataset,
-            batch_size=self.batch_size,
-            num_workers=self.num_workers,
-            shuffle=False,
-            pin_memory=self.pin_memory,
-            drop_last=self.drop_last,
-        ) if val_dataset else None
+        val_dataloader = (
+            torch.utils.data.DataLoader(
+                val_dataset,
+                batch_size=self.batch_size,
+                num_workers=self.num_workers,
+                shuffle=False,
+                pin_memory=self.pin_memory,
+                drop_last=self.drop_last,
+            )
+            if val_dataset
+            else None
+        )
 
         optimisation_metric = "val/loss" if val_dataset else "train/loss"
 
         # Patch model optimizer
-        assert self.optimizer in {"adam", "sgd"}, f"Invalid optimizer '{self.optimizer}'. Must be 'adam' or 'sgd'."
+        assert self.optimizer in {
+            "adam",
+            "sgd",
+        }, f"Invalid optimizer '{self.optimizer}'. Must be 'adam' or 'sgd'."
         if self.optimizer == "adam":
             Optimizer = partial(
                 torch.optim.Adam,
@@ -411,7 +406,11 @@ class X3DLearner(Learner):
             # nonlocal Optimizer, optimisation_metric
             optimizer = Optimizer(self.model.parameters())
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=10)
-            return {"optimizer": optimizer, "lr_scheduler": scheduler, "monitor": optimisation_metric}
+            return {
+                "optimizer": optimizer,
+                "lr_scheduler": scheduler,
+                "monitor": optimisation_metric,
+            }
 
         self.model.configure_optimizers = configure_optimizers
 
@@ -435,7 +434,7 @@ class X3DLearner(Learner):
         self.trainer.fit(self.model, train_dataloader, val_dataloader)
         self.model.to(self.device)
 
-    def eval(self, dataset: Dataset, steps: int=None) -> Dict[str, Any]:
+    def eval(self, dataset: Dataset, steps: int = None) -> Dict[str, Any]:
         """Evaluate the model on the dataset
 
         Args:
@@ -485,9 +484,11 @@ class X3DLearner(Learner):
             batch = torch.stack([torch.tensor(v.data) for v in batch])
 
         batch = batch.to(device=self.device, dtype=torch.float)
-
-        self.model.eval()
-        results = self.model.forward(batch)
+        if self.ort_session is not None:
+            results = torch.tensor(self.ort_session.run(None, {"video": batch.cpu().numpy()})[0])
+        else:
+            self.model.eval()
+            results = self.model.forward(batch)
         results = [Category(prediction=int(r.argmax(dim=0)), confidence=r) for r in results]
         return results
 
@@ -499,7 +500,7 @@ class X3DLearner(Learner):
             do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.
         """
 
-        if getattr(self.model, "rpn_ort_session", None):
+        if getattr(self.model, "ort_session", None):
             logger.info("Model is already optimized. Skipping redundant optimization")
             return
 
@@ -538,6 +539,7 @@ class X3DLearner(Learner):
             path,
             input_names=["video"],
             output_names=["classes"],
+            dynamic_axes={"video": {0: "batch_size"}, "classes": {0: "batch_size"}},
             do_constant_folding=do_constant_folding,
             verbose=verbose,
             opset_version=11,
