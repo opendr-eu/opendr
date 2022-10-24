@@ -32,7 +32,7 @@ from opendr.perception.facial_expression_recognition import data_normalization
 
 class LandmarkFacialExpressionRecognitionNode(Node):
 
-    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
+    def __init__(self, input_rgb_image_topic="image_raw",
                  output_category_topic="/opendr/landmark_expression_recognition",
                  output_category_description_topic="/opendr/landmark_expression_recognition_description",
                  device="cpu", model='pstbln_afew', shape_predictor='./predictor_path'):
