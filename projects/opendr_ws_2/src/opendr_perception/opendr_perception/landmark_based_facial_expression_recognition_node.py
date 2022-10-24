@@ -130,11 +130,12 @@ def _landmark2numpy(landmarks):
     return numpy_data
 
 
-if __name__ == '__main__':
+def main(args=None):
+    rclpy.init(args=args)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input image",
-                        type=str, default="/usb_cam/image_raw")
+                        type=str, default="image_raw")
     parser.add_argument("-o", "--output_category_topic", help="Topic name for output recognized category",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/landmark_expression_recognition")
@@ -164,7 +165,7 @@ if __name__ == '__main__':
 
     landmark_expression_estimation_node = \
         LandmarkFacialExpressionRecognitionNode(
-            input_image_topic=args.input_image_topic,
+            input_rgb_image_topic=args.input_rgb_image_topic,
             output_category_topic=args.output_category_topic,
             output_category_description_topic=args.output_category_description_topic,
             device=device, model=args.model,
@@ -177,3 +178,8 @@ if __name__ == '__main__':
     # when the garbage collector destroys the node object)
     landmark_expression_estimation_node.destroy_node()
     rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+
