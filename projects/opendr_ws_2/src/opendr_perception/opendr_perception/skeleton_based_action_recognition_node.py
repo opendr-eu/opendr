@@ -154,6 +154,7 @@ class SkeletonActionRecognitionNode(Node):
 
         # Run action recognition
         category = self.action_classifier.infer(skeleton_seq)
+        category.confidence = float(category.confidence.max())
 
         if self.hypothesis_publisher is not None:
             self.hypothesis_publisher.publish(self.bridge.to_ros_category(category))
