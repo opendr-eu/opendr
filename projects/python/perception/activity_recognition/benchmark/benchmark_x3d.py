@@ -74,14 +74,16 @@ def benchmark_x3d():
             device="cuda" if torch.cuda.is_available() else "cpu",
             temp_path=temp_dir,
             backbone=backbone,
+            batch_size=batch_size[backbone],
         )
+        learner.optimize()
         learner.model.eval()
 
         sample = torch.randn(
             batch_size[backbone], *input_shape[backbone]
         )  # (B, C, T, H, W)
-        video_samples = [Video(v) for v in sample]
-        video_sample = [Video(sample[0])]
+        # video_samples = [Video(v) for v in sample]
+        # video_sample = [Video(sample[0])]
 
         def get_device_fn(*args):
             nonlocal learner
@@ -102,15 +104,18 @@ def benchmark_x3d():
 
             assert isinstance(sample[0], Category)
             return [
-                Category(prediction=s.data, confidence=s.confidence.to(device=device),)
+                Category(
+                    prediction=s.data,
+                    confidence=s.confidence.to(device=device),
+                )
                 for s in sample
             ]
 
         print("== Benchmarking learner.infer ==")
         results1 = benchmark(
             model=learner.infer,
-            sample=video_samples,
-            sample_with_batch_size1=video_sample,
+            sample=sample,
+            # sample_with_batch_size1=sample[0].unsqueeze(0),
             num_runs=num_runs,
             get_device_fn=get_device_fn,
             transfer_to_device_fn=transfer_to_device_fn,
@@ -118,10 +123,6 @@ def benchmark_x3d():
             print_fn=print,
         )
         print(yaml.dump({"learner.infer": results1}))
-
-        print("== Benchmarking model directly ==")
-        results2 = benchmark(learner.model, sample, num_runs=num_runs, print_fn=print)
-        print(yaml.dump({"learner.model.forward": results2}))
 
 
 if __name__ == "__main__":
