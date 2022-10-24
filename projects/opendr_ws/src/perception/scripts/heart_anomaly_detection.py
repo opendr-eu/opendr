@@ -14,11 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import rospy
-import torch
-from vision_msgs.msg import Classification2D
 import argparse
+import torch
+
+import rospy
+from vision_msgs.msg import Classification2D
 from std_msgs.msg import Float32MultiArray
+
 from opendr_bridge import ROSBridge
 from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner, AttentionNeuralBagOfFeatureLearner
 
@@ -49,7 +51,6 @@ class HeartAnomalyNode:
         self.channels = 1
         self.series_length = 9000
 
-        # Initialize the gesture recognition
         if model == 'gru':
             self.learner = GatedRecurrentUnitLearner(in_channels=self.channels, series_length=self.series_length,
                                                      n_class=4, device=device)
@@ -111,5 +112,8 @@ if __name__ == '__main__':
         print("Using CPU")
         device = "cpu"
 
-    gesture_node = HeartAnomalyNode(input_ecg_topic=args.input_ecg_topic, model=args.model, device=device)
-    gesture_node.listen()
+    heart_anomaly_detection_node = HeartAnomalyNode(input_ecg_topic=args.input_ecg_topic,
+                                                    output_heart_anomaly_topic=args.output_heart_anomaly_topic,
+                                                    model=args.model, device=device)
+
+    heart_anomaly_detection_node.listen()
