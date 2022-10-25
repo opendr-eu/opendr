@@ -160,11 +160,12 @@ def main(args=None):
     args = parser.parse_args()
 
 
-    syntheticdatageneration_node = Synthetic_Data_Generation(args=args,
-                                                             input_rgb_image_topic=args.input_rgb_image_topic,
+    synthetic_data_generation_node = SyntheticDataGeneration(args=args, 
+                                                             input_rgb_image_topic=args.input_rgb_image_topic, 
                                                              output_rgb_image_topic=args.output_rgb_image_topic)
 
-    rclpy.spin(syntheticdatageneration_node)
+    rclpy.spin(synthetic_data_generation_node)
+
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
