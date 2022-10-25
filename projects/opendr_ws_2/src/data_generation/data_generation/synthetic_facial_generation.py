@@ -44,10 +44,7 @@ class SyntheticDataGeneration(Node):
         :type output_rgb_image_topic: str
         """
         super().__init__('synthetic_facial_image_generation_node')
-        if output_rgb_image_topic is not None:
-            self.image_publisher = self.create_publisher(ROS_Image, output_rgb_image_topic, 10)
-        else:
-            self.image_publisher = None
+        self.image_publisher = self.create_publisher(ROS_Image, output_rgb_image_topic, 10)
         self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
         self._cv_bridge = CvBridge()
         self.ID = 0
