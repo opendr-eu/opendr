@@ -82,7 +82,7 @@ class SyntheticDataGeneration(Node):
         name = str(f"{self.ID:02d}" + "_single.jpg")
         cv2.imwrite(os.path.join(self.path_in, name), image)
 
-        if (self.ID == 10):
+        if self.ID == 10:
             # Run SyntheticDataGeneration
             self.synthetic.eval()
             self.ID = 0
