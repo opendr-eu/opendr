@@ -156,20 +156,17 @@ def main(args=None):
     parser.add_argument('--resume_idx', default=0, type=int)
     args = parser.parse_args()
 
-
-    synthetic_data_generation_node = SyntheticDataGenerator(args=args, 
-                                                             input_rgb_image_topic=args.input_rgb_image_topic, 
-                                                             output_rgb_image_topic=args.output_rgb_image_topic)
+    synthetic_data_generation_node = SyntheticDataGenerator(args=args,
+                                                            input_rgb_image_topic=args.input_rgb_image_topic,
+                                                            output_rgb_image_topic=args.output_rgb_image_topic)
 
     rclpy.spin(synthetic_data_generation_node)
-
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
     synthetic_data_generation_node.destroy_node()
     rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()
