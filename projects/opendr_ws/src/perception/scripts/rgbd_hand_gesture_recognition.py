@@ -34,7 +34,7 @@ class RgbdHandGestureNode:
 
     def __init__(self, input_rgb_image_topic="/kinect2/qhd/image_color_rect",
                  input_depth_image_topic="/kinect2/qhd/image_depth_rect",
-                 output_gestures_topic="/opendr/gestures", device="cuda"):
+                 output_gestures_topic="/opendr/gestures", device="cuda", delay=0.1):
         """
         Creates a ROS Node for gesture recognition from RGBD. Assuming that the following drivers have been installed:
         https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2.
@@ -46,10 +46,13 @@ class RgbdHandGestureNode:
         :type output_gestures_topic: str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
+        :param delay: Define the delay (in seconds) with which rgb message and depth message can be synchronized
+        :type delay: float
         """
 
         self.input_rgb_image_topic = input_rgb_image_topic
         self.input_depth_image_topic = input_depth_image_topic
+        self.delay = delay
 
         self.gesture_publisher = rospy.Publisher(output_gestures_topic, Classification2D, queue_size=10)
 
@@ -75,7 +78,8 @@ class RgbdHandGestureNode:
         image_sub = message_filters.Subscriber(self.input_rgb_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
         depth_sub = message_filters.Subscriber(self.input_depth_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
         # synchronize image and depth data topics
-        ts = message_filters.TimeSynchronizer([image_sub, depth_sub], 10)
+        ts = message_filters.ApproximateTimeSynchronizer([image_sub, depth_sub], queue_size=10, slop=self.delay,
+                                                         allow_headerless=True)
         ts.registerCallback(self.callback)
 
         rospy.loginfo("RGBD gesture recognition node started!")
@@ -137,6 +141,8 @@ if __name__ == '__main__':
                         type=str, default="/opendr/gestures")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
                         choices=["cuda", "cpu"])
+    parser.add_argument("--delay", help="The delay (in seconds) with which RGB message and"
+                        "depth message can be synchronized", type=float, default=0.1)
 
     args = parser.parse_args()
 
@@ -156,5 +162,7 @@ if __name__ == '__main__':
 
     gesture_node = RgbdHandGestureNode(input_rgb_image_topic=args.input_rgb_image_topic,
                                        input_depth_image_topic=args.input_depth_image_topic,
-                                       output_gestures_topic=args.output_gestures_topic, device=device)
+                                       output_gestures_topic=args.output_gestures_topic, device=device,
+                                       delay=args.delay)
+
     gesture_node.listen()

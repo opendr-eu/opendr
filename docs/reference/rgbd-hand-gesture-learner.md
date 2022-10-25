@@ -2,6 +2,20 @@
 
 The *rgbd_hand_gesture_learner* module contains the *RgbdHandGestureLearner* class, which inherits from the abstract class *Learner*.
 
+On the table below you can find the gesture classes and their corresponding IDs:
+
+| **ID** |    0   |   1   |   2  |   3  |        4       |        5       |   6  |  7  |   8   |   9   |  10 |  11  |   12  |    13   |  14 |   15  |
+|:------:|:------:|:-----:|:----:|:----:|:--------------:|:--------------:|:----:|:---:|:-----:|:-----:|:---:|:----:|:-----:|:-------:|:---:|:-----:|
+|  Class | COLLAB | Eight | Five | Four | Horiz HBL, HFR | Horiz HFL, HBR | Nine | One | Punch | Seven | Six | Span | Three | TimeOut | Two | XSign |
+
+The naming convention of the gestures classes is as follow:
+- V is used for vertical gestures, while H is used for horizontal gestures.
+- F identifies the version of the gesture where the front of the hand is facing the camera, while B identifies the version where the back of the hand is facing the camera.
+- R is used for right-hand gestures, while L is used for left-hand gestures.
+
+Below is an illustration image of hand gestures, the image is copied from [[1]](#dataset).
+![Hand gesture examples](images/hand_gesture_examples.png)
+
 ### Class RgbdHandGestureLearner 
 Bases: `opendr.engine.learners.Learner`
 
