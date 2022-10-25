@@ -122,6 +122,7 @@ def main(args=None):
                         type=str, help='Give the path of results folder')
     parser.add_argument('--val_yaw', default="10 20", nargs='+', type=str, help='yaw poses list between [-90,90]')
     parser.add_argument('--val_pitch', default="30 40", nargs='+', type=str, help='pitch poses list between [-90,90]')
+    parser.add_argument("--device", default="cuda", type=str, help="choose between cuda or cpu ")
     parser.add_argument('-f', '--files', nargs='+',
                         help='image files paths fed into network, single or multiple images')
     parser.add_argument('--show_flg', default='false', type=str2bool, help='whether show the visualization result')
