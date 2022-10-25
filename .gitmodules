@@ -8,3 +8,4 @@
 [submodule "src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS"]
 	path = src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS
 	url = https://github.com/robot-learning-freiburg/EfficientLPS.git
+	branch = opendr
