@@ -146,7 +146,6 @@ Parameters:
   Path to metadata file in json format or to weights path.
 
 
-
 #### `X3DLearner.optimize`
 ```python
 X3DLearner.optimize(self, do_constant_folding)
@@ -396,7 +395,6 @@ Inherited from [X3DLearner](/src/opendr/perception/activity_recognition/x3d/x3d_
   ```
 
 
-
 #### Performance Evaluation
 
 TABLE-1: Input shapes, prediction accuracy on Kinetics 400, floating point operations (FLOPs), parameter count and maximum allocated memory of activity recognition learners at inference.
@@ -424,7 +422,7 @@ TABLE-2: Speed (evaluations/second) of activity recognition learner inference on
 
 
 TABLE-3: Throughput (evaluations/second) of activity recognition learner inference on various computational devices.
-The largest fitting power of two was used as batch size for each device. 
+The largest fitting power of two was used as batch size for each device.
 | Model   | CPU   | TX2  | Xavier | RTX 2080 Ti |
 | ------- | ----- | ---- | ------ | ----------- |
 | X3D-L   | 0.22  | 0.21 | 1.73   | 3.55        |
@@ -436,7 +434,7 @@ The largest fitting power of two was used as batch size for each device.
 | CoX3D-S | 11.60 | 8.22 | 64.91  | 196.54      |
 
 
-TABLE-4: Energy (Joules) of activity recognition learner inference on embedded devices. 
+TABLE-4: Energy (Joules) of activity recognition learner inference on embedded devices.
 | Model   | TX2    | Xavier |
 | ------- | ------ | ------ |
 | X3D-L   | 187.89 | 23.54  |
@@ -470,15 +468,13 @@ Model inference works as expected.
 [arXiv](https://arxiv.org/abs/2004.04730).
 
 
-
 ### Class CoTransEncLearner
 Bases: `engine.learners.Learner`
 
-The *CoTransEncLearner* class provides a Continual Transformer Encoder learner, which can be used for time-series processing of user-provided features. This module was originally proposed by Hedegaard et al. in "Continual Transformers: Redundancy-Free Attention for Online Inference", 2022, https://arxiv.org/abs/2201.06268"
+The *CoTransEncLearner* class provides a Continual Transformer Encoder learner, which can be used for time-series processing of user-provided features.
+This module was originally proposed by Hedegaard et al. in "Continual Transformers: Redundancy-Free Attention for Online Inference", 2022, https://arxiv.org/abs/2201.06268"
 
-The [CoTransEncLearner](src/opendr/perception/activity_recognition/continual_transformer_decoder/continual_transformer_decoder_learner.py) class has the
-following public methods:
-
+The [CoTransEncLearner](src/opendr/perception/activity_recognition/continual_transformer_decoder/continual_transformer_decoder_learner.py) class has the following public methods:
 
 #### `CoTransEncLearner` constructor
 
@@ -494,7 +490,7 @@ Constructor parameters:
     Number of epochs to train for.
   - **batch_size**: *int, default=64*\
     Dataloader batch size. Defaults to 64.
-  - **optimizer**: *str, default="adam"*\
+  - **optimizer**: *str, default="sgd"*\
     Name of optimizer to use ("sgd" or "adam").
   - **lr_schedule**: *str, default="ReduceLROnPlateau"*\
     Schedule for training the model.
@@ -540,7 +536,6 @@ Constructor parameters:
     Random seed.
 
 
-
 #### `CoTransEncLearner.fit`
 ```python
 CoTransEncLearner.fit(self, dataset, val_dataset, epochs, steps)
@@ -583,7 +578,6 @@ Returns a `engine.target.Category` objects, where each holds a category.
 Parameters:
 - **batch**: *Union[Timeseries, Vector, torch.Tensor]*
   Either a single time instance (Vector) or a Timeseries. Data can also be passed as a torch.Tensor.
-  
 
 
 #### `CoTransEncLearner.save`
@@ -592,12 +586,11 @@ CoTransEncLearner.save(self, path)
 ```
 
 Save model weights and metadata to path.
-Provided with the path "/my/path/name" (absolute or relative), it creates the "name" directory, if it does not already
-exist. Inside this folder, the model is saved as "model_name.pth" and the metadata file as "name.json".
+Provided with the path "/my/path/name" (absolute or relative), it creates the "name" directory, if it does not already exist.
+Inside this folder, the model is saved as "model_name.pth" and the metadata file as "name.json".
 If the files already exist, their names are versioned with a suffix.
 
-If `self.optimize` was run previously, it saves the optimized ONNX model in
-a similar fashion with an ".onnx" extension.
+If `self.optimize` was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension.
 
 Parameters:
 - **path**: *str*
@@ -616,7 +609,6 @@ Parameters:
   Path to metadata file in json format or to weights path.
 
 
-
 #### `CoTransEncLearner.optimize`
 ```python
 CoTransEncLearner.optimize(self, do_constant_folding)
@@ -629,7 +621,6 @@ Parameters:
   ONNX format optimization.
   If True, the constant-folding optimization is applied to the model during export.
   Constant-folding optimization will replace some of the ops that have all constant inputs, with pre-computed constant nodes.
-
 
 
 #### Examples
@@ -679,8 +670,6 @@ Parameters:
   )
   results = learner.eval(test_ds)  # Dict with accuracy and loss
   ```
-
-
 
 
 #### References
