@@ -126,7 +126,6 @@ class TestLicense(unittest.TestCase):
             'projects/opendr_ws_2/src/opendr_ros2_bridge/setup.py',
             'projects/opendr_ws_2/src/data_generation/setup.py',
             'projects/opendr_ws_2/src/opendr_simulation/setup.py',
-
         ]
 
         skippedDirectories = [
