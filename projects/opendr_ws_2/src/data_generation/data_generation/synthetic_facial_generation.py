@@ -80,7 +80,6 @@ class SyntheticDataGeneration(Node):
         # Get an OpenCV image back
         image = cv2.cvtColor(image.opencv(), cv2.COLOR_RGBA2BGR)
         name = str(f"{self.ID:02d}" + "_single.jpg")
-        print(image)
         cv2.imwrite(os.path.join(self.path_in, name), image)
 
         if (self.ID == 10):
