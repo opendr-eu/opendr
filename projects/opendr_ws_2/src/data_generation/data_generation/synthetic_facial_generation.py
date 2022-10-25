@@ -109,7 +109,6 @@ def main(args=None):
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/synthetic_facial_images")
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--path_in", default=os.path.join("opendr", "projects",
                                                           "data_generation",
                                                           "synthetic_multi_view_facial_image_generation",
