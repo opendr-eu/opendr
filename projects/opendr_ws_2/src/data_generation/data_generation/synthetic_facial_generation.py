@@ -170,7 +170,7 @@ def main(args=None):
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    syntheticdatageneration_node.destroy_node()
+    synthetic_data_generation_node.destroy_node()
     rclpy.shutdown()
 
 
