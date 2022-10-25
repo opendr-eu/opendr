@@ -20,9 +20,9 @@ import sys
 import numpy as np
 from tqdm import tqdm
 
-from mmdet.datasets import CityscapesDataset as MmdetCityscapesDataset
-from mmdet.datasets import build_dataset
-from mmdet.datasets.eval_np import PanopticEval
+from mmdet2.datasets import CityscapesDataset as MmdetCityscapesDataset
+from mmdet2.datasets import build_dataset
+from mmdet2.datasets.eval_np import PanopticEval
 
 from opendr.engine.data import PointCloud
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
@@ -81,7 +81,7 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 		super().__init__(path=str(path), dataset_type="SemanticKITTIDataset")
 
 		self._pipeline = None
-		self._mmdet_dataset = (None, None)
+		self._mmdet2_dataset = (None, None)
 		self._file_list = None
 		self.split = split
 
@@ -154,7 +154,7 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
             - Intersection over Union (IOU)
 
         This function contains modified code from '_evaluate_panoptic()' in
-            src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS/mmdet/datasets/semantic_kitti.py
+            src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS/mmdet2/datasets/semantic_kitti.py
 
         :param prediction_path: path to the predicted stuffandthing maps.
         :type prediction_path: str | pathlib.Path
@@ -171,7 +171,7 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 		if not prediction_path.exists():
 			raise ValueError('The provided prediction_path does not exist.')
 
-		dataset = self.get_mmdet_dataset()
+		dataset = self.get_mmdet2_dataset()
 		ignore_class = [k for k, ignored in dataset.class_ignore.items() if ignored]
 		# Redirect stdout to /dev/null for less verbosity
 		prev_stdout = sys.stdout
@@ -237,7 +237,7 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
         :rtype: Tuple of (PointCloud, None)
         """
 
-		dataset = self._get_mmdet_dataset(test_mode=not self.split == "train", ignore_pipeline=True)
+		dataset = self._get_mmdet2_dataset(test_mode=not self.split == "train", ignore_pipeline=True)
 		item_path = dataset.vel_seq_infos[idx]
 		point_cloud = self.load_point_cloud(item_path)
 
@@ -252,13 +252,13 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
         :rtype: int
         """
 
-		return len(self._get_mmdet_dataset(test_mode=not self.split == "train", ignore_pipeline=True))
+		return len(self._get_mmdet2_dataset(test_mode=not self.split == "train", ignore_pipeline=True))
 
-	def get_mmdet_dataset(self,
+	def get_mmdet2_dataset(self,
 						  test_mode: bool = False,
 						  ) -> MmdetCityscapesDataset:
 		"""
-		Returns the dataset in a format compatible with the mmdet dataloader.
+		Returns the dataset in a format compatible with the mmdet2 dataloader.
 
         :param test_mode: Whether to use the train or test data pipelines.
 						  If set to True, the panoptic ground truth data has to be present
@@ -268,14 +268,14 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 		:rtype: MmdetCityscapesDataset
 		"""
 
-		return self._get_mmdet_dataset(test_mode=test_mode, ignore_pipeline=False)
+		return self._get_mmdet2_dataset(test_mode=test_mode, ignore_pipeline=False)
 
-	def _get_mmdet_dataset(self,
+	def _get_mmdet2_dataset(self,
 						   test_mode: bool = False,
 						   ignore_pipeline: bool = False,
 						   ) -> MmdetCityscapesDataset:
 		"""
-		Private version of the get_mmdet_dataset that can ignore the pipeline.
+		Private version of the get_mmdet2_dataset that can ignore the pipeline.
 
 		:param test_mode: Whether to use the train or test data pipelines.
 						  If set to True, the panoptic ground truth data has to be present
@@ -288,16 +288,16 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 		:rtype: MmdetCityscapesDataset
 		"""
 
-		if self._mmdet_dataset[0] is None or self._mmdet_dataset[1] != test_mode:
-			self._mmdet_dataset = (self._build_mmdet_dataset(test_mode, ignore_pipeline=ignore_pipeline), test_mode)
-		return self._mmdet_dataset[0]
+		if self._mmdet2_dataset[0] is None or self._mmdet2_dataset[1] != test_mode:
+			self._mmdet2_dataset = (self._build_mmdet2_dataset(test_mode, ignore_pipeline=ignore_pipeline), test_mode)
+		return self._mmdet2_dataset[0]
 
-	def _build_mmdet_dataset(self,
+	def _build_mmdet2_dataset(self,
 							 test_mode: bool = False,
 							 ignore_pipeline: bool = False,
 							 ) -> MmdetCityscapesDataset:
 		"""
-		Generates the mmdet representation of the dataset to be used with the mmdet API.
+		Generates the mmdet2 representation of the dataset to be used with the mmdet2 API.
 
 		:param test_mode: Whether to use the train or test data pipelines.
 						  If set to True, the panoptic ground truth data has to be present
@@ -327,11 +327,11 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 		}
 
 		if test_mode:
-			mmdet_dataset = build_dataset(cfg, {"test_mode": test_mode})
+			mmdet2_dataset = build_dataset(cfg, {"test_mode": test_mode})
 		else:
-			mmdet_dataset = build_dataset(cfg)
+			mmdet2_dataset = build_dataset(cfg)
 
-		return mmdet_dataset
+		return mmdet2_dataset
 
 	@staticmethod
 	def load_point_cloud(path):

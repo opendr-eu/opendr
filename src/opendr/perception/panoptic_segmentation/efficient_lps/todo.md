@@ -3,7 +3,7 @@ ___
 ## Coding
 - -[X] Add EfficientLPS submodule
 - -[ ] Create Learner class in `src/opendr/perception/panoptic_segmentation/efficient_lps`
-    - -[ ] Implement & test download method.
+    - -[X] Implement & test download method.
     - -[X] Implement & test fit() method.
     - -[X] Implement & test eval() method.
     - -[X] Implement & test infer() method.
@@ -11,7 +11,7 @@ ___
     - -[X] Docstrings and Type-Hints
     
 ### CONFLICTS:
-- -[ ] Check installation and dependency conflicts between MMDet and EfficientNet in EfficientLPS and EfficientPS.
+- -[X] Check installation and dependency conflicts between mmdet2 and EfficientNet in EfficientLPS and EfficientPS.
 ### ROS
 - -[X] Create ROS Node in `projects/opendr_ws/perception/scripts`
    - -[X] Docstrings and Type-Hints
@@ -38,7 +38,7 @@ ___
 
     
 ### Tests
-- -[X] Create Unit tests in `tests/tools/perception/panoptic_segmentation/efficient_lps`
+- -[X] Create Unit tests in `tests/sources/tools/perception/panoptic_segmentation/efficient_lps`
 - -[ ] Add tests to be executed to some file
 
 ## Documentation

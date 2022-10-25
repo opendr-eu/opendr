@@ -37,16 +37,16 @@ from opendr.engine.data import PointCloud, Image
 from opendr.engine.learners import Learner
 from opendr.engine.target import Heatmap
 
-from mmdet.apis import single_gpu_test
-from mmdet.apis.train import batch_processor
-from mmdet.core import get_classes, build_optimizer, EvalHook
-from mmdet.datasets import build_dataloader
-from mmdet.datasets.semantic_kitti import STUFF_START_ID
-from mmdet.datasets.cityscapes import PALETTE
-from mmdet.datasets.pipelines import Compose
-from mmdet.datasets.laserscan_unfolding import LaserScan
-from mmdet.models import build_detector
-from mmdet.utils import collect_env, get_root_logger
+from mmdet2.apis import single_gpu_test
+from mmdet2.apis.train import batch_processor
+from mmdet2.core import get_classes, build_optimizer, EvalHook
+from mmdet2.datasets import build_dataloader
+from mmdet2.datasets.semantic_kitti import STUFF_START_ID
+from mmdet2.datasets.cityscapes import PALETTE
+from mmdet2.datasets.pipelines import Compose
+from mmdet2.datasets.laserscan_unfolding import LaserScan
+from mmdet2.models import build_detector
+from mmdet2.utils import collect_env, get_root_logger
 
 from opendr.perception.panoptic_segmentation.datasets import SemanticKittiDataset, NuscenesDataset
 
@@ -61,6 +61,7 @@ class EfficientLpsLearner(Learner):
 	"""
 
 	def __init__(self,
+				 config_file: Union[str, Path],
 				 lr: float = 0.07,
 				 iters: int = 160,
 				 batch_size: int = 1,
@@ -74,7 +75,6 @@ class EfficientLpsLearner(Learner):
 				 device: str = "cuda:0",
 				 num_workers: int = 1,
 				 seed: Optional[float] = None,
-				 config_file: Union[str, Path] = Path(__file__).parent / "configs" / "singlegpu_sample.py"
 				 ):
 		"""
 		Constructor
@@ -210,7 +210,7 @@ class EfficientLpsLearner(Learner):
 
 		dataset.pipeline = self._cfg.train_pipeline
 		dataloaders = [build_dataloader(
-			dataset.get_mmdet_dataset(),
+			dataset.get_mmdet2_dataset(),
 			self.batch_size,
 			self.num_workers,
 			self._cfg.gpus,
@@ -249,7 +249,7 @@ class EfficientLpsLearner(Learner):
 		if val_dataset is not None:
 			val_dataset.pipeline = self._cfg.test_pipeline
 			val_dataloader = build_dataloader(
-				val_dataset.get_mmdet_dataset(test_mode=True),
+				val_dataset.get_mmdet2_dataset(test_mode=True),
 				imgs_per_gpu=1,
 				workers_per_gpu=self.num_workers,
 				dist=False,
@@ -298,7 +298,7 @@ class EfficientLpsLearner(Learner):
 
 		dataset.pipeline = self._cfg.test_pipeline
 		dataloader = build_dataloader(
-			dataset.get_mmdet_dataset(test_mode=True),
+			dataset.get_mmdet2_dataset(test_mode=True),
 			imgs_per_gpu=1,
 			workers_per_gpu=self.num_workers,
 			dist=False,
@@ -622,7 +622,7 @@ class EfficientLpsLearner(Learner):
 		Valid modes include pre-trained model weights and data used in the unit tests.
 	
 		Currently, the following pre-trained models are available:
-			- KITTI panoptic segmentation dataset
+			- SemanticKITTI panoptic segmentation dataset
 			- NuScenes (# TODO)
 	
 		:param path: Path to save the model weights
@@ -665,9 +665,13 @@ class EfficientLpsLearner(Learner):
 				prev_b[0] = b
 	
 			return update_to
-	
-		with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1, desc=f"Downloading {filename}") as pbar:
-			urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
+
+		if os.path.exists(filename) and os.path.isfile(filename):
+			print(f'File already downloaded: {filename}')
+		else:
+			with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1, desc=f"Downloading {filename}")\
+				 as pbar:
+				urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
 		return str(filename)
 
 	@staticmethod
@@ -749,9 +753,9 @@ class EfficientLpsLearner(Learner):
 	@property
 	def config(self) -> dict:
 		"""
-		Getter of internal configurations required by the mmdet API.
+		Getter of internal configurations required by the mmdet2 API.
 
-		:return: mmdet configuration
+		:return: mmdet2 configuration
 		:rtype: dict
 		"""
 		return self._cfg
