@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import cv2
-import torch
 import os
 import argparse
 import numpy as np
