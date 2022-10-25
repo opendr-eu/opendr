@@ -43,8 +43,6 @@ class SyntheticDataGeneration(Node):
         :param output_rgb_image_topic: Topic to which we are publishing the synthetic facial image (if None, no image
         is published)
         :type output_rgb_image_topic: str
-        :param device: device on which we are running eval ('cpu' or 'cuda')
-        :type device: str
         """
         super().__init__('synthetic_facial_image_generation_node')
         if output_rgb_image_topic is not None:
