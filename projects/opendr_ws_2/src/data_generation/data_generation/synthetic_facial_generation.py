@@ -159,15 +159,6 @@ def main(args=None):
     parser.add_argument('--resume_idx', default=0, type=int)
     args = parser.parse_args()
 
-    try:
-        if args.device == "cuda" and torch.cuda.is_available():
-            print("GPU found.")
-        elif args.device == "cuda":
-            print("GPU not found. Using CPU instead.")
-        else:
-            print("Using CPU.")
-    except:
-        print("Using CPU.")
 
     syntheticdatageneration_node = Synthetic_Data_Generation(args=args,
                                                              input_rgb_image_topic=args.input_rgb_image_topic,
