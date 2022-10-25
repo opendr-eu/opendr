@@ -32,7 +32,7 @@ from opendr.projects.data_generation.synthetic_multi_view_facial_image_generatio
     import MultiviewDataGeneration
 
 
-class Synthetic_Data_Generation(Node):
+class SyntheticDataGeneration(Node):
 
     def __init__(self, args, input_rgb_image_topic="/image_raw",
                  output_rgb_image_topic="/opendr/synthetic_facial_images"):
