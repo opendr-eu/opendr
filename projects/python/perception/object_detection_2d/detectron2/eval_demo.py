@@ -25,10 +25,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    val_dataset = ExternalDataset(args.data_root, 'voc')
+    temp = "/home/opendr/Gaurang/engineAssembly/Dataset/"
 
     detectron2 = Detectron2Learner(device=args.device)
-    detectron2.download(".", mode="pretrained")
-    detectron2.load("./yolo_default", verbose=True)
+    detectron2.download(temp, mode="pretrained", verbose=True)
+    detectron2.load(temp + "detectron2_default", verbose=True)
 
-    detectron2.eval(val_dataset)
+    detectron2.eval()

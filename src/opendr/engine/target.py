@@ -428,19 +428,7 @@ class CocoBoundingBox(BoundingBox):
 
     def __str__(self):
         return str(self.coco())
-
-
-class GraspDetection(Keypoint, BoundingBox):
-    def __init__(self, name, keypoint, angle, left, top, width, height, score=0):
-        self.data = keypoint
-        self.name = name
-        self.angle = angle
-        self.left = left
-        self.top = top
-        self.width = width
-        self.height = height
-        self.confidence = score
-        
+    
 
 class BoundingBoxList(Target):
     """

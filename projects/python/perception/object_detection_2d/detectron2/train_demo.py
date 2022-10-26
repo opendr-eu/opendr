@@ -14,33 +14,25 @@
 
 import argparse
 
-from opendr.engine.datasets import ExternalDataset
 from opendr.perception.object_detection_2d import Detectron2Learner
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", help="Dataset to train on", type=str, default="diesel_engine", choices=["diesel_engine"])
-    parser.add_argument("--data-root", help="Dataset root folder", type=str)
+    parser.add_argument("--json-file", help="Dataset root folder", type=str)
+    parser.add_argument("--image-root", help="Dataset root folder", type=str)
+    parser.add_argument("--dataset", help="Dataset to train on", type=str)
+    parser.add_argument("--backbone", help="Backbone network", type=str, default="resnet", choices=["resnet"])
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--batch-size", help="Batch size to use for training", type=int, default=6)
     parser.add_argument("--lr", help="Learning rate to use for training", type=float, default=1e-4)
     parser.add_argument("--val-after", help="Epochs in-between  evaluations", type=int, default=5)
-    parser.add_argument("--checkpoint-freq", help="Frequency in-between checkpoint saving", type=int, default=5)
     parser.add_argument("--n-epochs", help="Number of total epochs", type=int, default=25)
-    parser.add_argument("--resume-from", help="Epoch to load checkpoint file and resume training from", type=int, default=0)
 
     args = parser.parse_args()
-
-    if args.dataset == 'diesel_engine':
-        #from opendr.perception.object_detection_2d.datasets import DieselEngineDataset
-        dataset = ExternalDataset(args.data_root, 'diesel_engine')
-        val_dataset = ExternalDataset(args.data_root, 'diesel_engine')
-        #dataset = WiderPersonDataset(root=args.data_root, splits=['train'])
-        #val_dataset = WiderPersonDataset(root=args.data_root, splits=['val'])
 
     detectron2 = Detectron2Learner(device=args.device, batch_size=args.batch_size, lr=args.lr, val_after=args.val_after,
                                  epochs=args.n_epochs, backbone=args.backbone)
 
-    detectron2.fit(dataset, val_dataset)
+    detectron2.fit(args.json_file, args.image_root, args.dataset)
     detectron2.save("./detectron2_saved_model")

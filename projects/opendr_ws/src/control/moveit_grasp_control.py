@@ -16,380 +16,233 @@
 
 
 import sys
-import copy
-import rospy
-import numpy as np
-import time
-import tf
+import argparse
 import moveit_commander
-import moveit_msgs.msg
-import geometry_msgs.msg
-import random
-from math import pi
-from moveit_commander.conversions import pose_to_list
-from std_msgs.msg import Int16, Float32MultiArray
-from geometry_msgs.msg import PoseStamped
 
 
-def all_close(goal, actual, tolerance):
-
-    if type(goal) is list:
-        for index in range(len(goal)):
-            if abs(actual[index] - goal[index]) > tolerance:
-                return False
-
-    elif type(goal) is geometry_msgs.msg.PoseStamped:
-        return all_close(goal.pose, actual.pose, tolerance)
-
-    elif type(goal) is geometry_msgs.msg.Pose:
-        return all_close(pose_to_list(goal), pose_to_list(actual), tolerance)
-
-    return True
-
-
-class SingleDemoGraspAction(object):
+class RobotControlNode(object):
 
     """MoveIt_Commander"""
-    def __init__(self):
-        moveit_commander.roscpp_initialize(sys.argv)
-        robot = moveit_commander.RobotCommander()
-        scene = moveit_commander.PlanningSceneInterface()
-        group_name = "panda_arm"
-        group = moveit_commander.MoveGroupCommander(group_name)
-        hand_grp = moveit_commander.MoveGroupCommander("hand")
-        display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
-                                                       moveit_msgs.msg.DisplayTrajectory,
-                                                       queue_size=20)
-        rospy.Subscriber("/commands", Float32MultiArray, self.callback_cmd)
-        request_publisher = rospy.Publisher('/request_detection', Int16, queue_size=10)
-
-        planning_frame = group.get_planning_frame()
-        eef_link = group.get_end_effector_link()
-        group_names = robot.get_group_names()
-
-        self.robot = robot
-        self.scene = scene
+    def __init__(self, group):
         self.group = group
-        self.hand_grp = hand_grp
-        self.display_trajectory_publisher = display_trajectory_publisher
-        self.planning_frame = planning_frame
-        self.eef_link = eef_link
-        self.group_names = group_names
-        self.request_publisher = request_publisher
-        self.last_msg_idx = 1e10
-        self.last_msg_used = 1e10
-        self.detections = [1e10, 1e10, 1e10, 1e10, 1e10]
-        self.camera_focal = 550
+        self.group.set_max_velocity_scaling_factor(0.2)
 
-    # callback to receive commands in x-y plane
-    def callback_cmd(self, data):
-        # global xy_cmd
-        if data.data[3] != 1e10:
+    def rotate_ee(self, angle):
+        try:     
+            wpose = self.group.get_current_pose().pose
+            roll, pitch, yaw = tf.transformations.euler_from_quaternion([wpose.orientation.x, wpose.orientation.y, wpose.orientation.z, wpose.orientation.w])
+            print("Original yaw - {}".format(yaw))
+            #if angle < 0: 
+            #    angle = angle + math.pi/2
+            yaw = angle + math.pi/4 
+            print("Intermediate yaw - {}".format(yaw))
+            print("comparison {}".format(-math.pi + math.pi/4))
+            if yaw > math.pi/4:
+                yaw = yaw - math.pi
+            print("New yaw - {}".format(yaw))
+            quat_rotcmd = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+            #q_tf = [quaternion[0], quaternion[1], quaternion[2], quaternion[3]]
+            #q_rot = quaternion_from_euler(0, -math.pi, 2*math.pi)
+            #quat = quaternion_multiply(q_rot, q_tf)
+            wpose.orientation.x = quat_rotcmd[0]
+            wpose.orientation.y = quat_rotcmd[1]
+            wpose.orientation.z = quat_rotcmd[2]
+            wpose.orientation.w = quat_rotcmd[3]
+            self.group.set_pose_target(wpose)
+            self.group.go(wait=True)
+            self.group.stop()
+            self.group.clear_pose_targets()
+        except Exception as e:
+            print("Error in rotate_ee")
+            print(e)
+        finally:
+            ee_pose = self.group.get_current_pose()
+            ee_position = ee_pose.pose.position
+            ee_orientation = ee_pose.pose.orientation
+            return ([ee_position.x, ee_position.y, ee_position.z], [ee_orientation.x, ee_orientation.y, ee_orientation.z, ee_orientation.w])
 
-            rotcmd = data.data[3]
-            if (rotcmd > 180):
-                rotcmd = -360 + rotcmd
-            if (rotcmd > 0 and rotcmd > 90):
-                rotcmd = -180 + rotcmd
-            if (rotcmd < 0 and rotcmd < -90):
-                rotcmd = 180 + rotcmd
+    def modify_plan(self, plan, speed_factor=0.1):
+        new_plan = RobotTrajectory()
+        new_plan.joint_trajectory.joint_names = plan.joint_trajectory.joint_names
+        new_plan.joint_trajectory.header = plan.joint_trajectory.header
+        for p in plan.joint_trajectory.points:
+            new_p = JointTrajectoryPoint()
+            new_p.time_from_start = p.time_from_start/speed_factor
+            new_p.positions = p.positions
+            for i in range(len(p.velocities)):
+                new_p.velocities.append(p.velocities[i]*speed_factor)
+            for i in range(len(p.accelerations)):
+                new_p.accelerations.append(p.accelerations[i]*speed_factor)
+            new_plan.joint_trajectory.points.append(new_p)
+        return new_plan
+            
+    def move_to_joint_target(self, joint_values):
+        print("GOAL")
+        print(list(joint_values))
+        # self.group.allow_replanning(True)
+        self.group.go(list(joint_values), wait=True)
+        self.group.stop()
+        self.group.clear_pose_targets()
+        ee_pose = self.group.get_current_pose()
+        # print("EE_POSE", ee_pose)
+        ee_position = ee_pose.pose.position
+        ee_orientation = ee_pose.pose.orientation
+        return ([ee_position.x, ee_position.y, ee_position.z], [ee_orientation.x, ee_orientation.y, ee_orientation.z, ee_orientation.w])
 
-            self.last_msg_idx = data.data[0]
-            self.detections = np.asarray([data.data[1], data.data[2], rotcmd,
-                                         data.data[4], data.data[5]])
-        else:
-            self.last_msg_idx = data.data[0]
-            self.detections = np.asarray([1e10, 1e10, 1e10, 1e10, 1e10])
-
-    def home_pose(self):
-
-        self.go_to_joint_state((-0.00028, -0.391437, -0.000425, -1.178905,
-                                0.000278, 0.785362, 0.8))
-        self.gripper_move((-8.584933242598848e-05, 0.00019279284))
-        self.open_hand()
-        cartesian_plan, fraction = self.plan_linear_x(0.17)
-        self.execute_plan(cartesian_plan)
-        cartesian_plan, fraction = self.plan_linear_z(-0.3)
-        self.execute_plan(cartesian_plan)
-
-    def open_hand(self, wait=True):
-        joint_goal = self.hand_grp.get_current_joint_values()
-        joint_goal[0] = 0.0399
-
-        self.hand_grp.set_goal_joint_tolerance(0.001)
-        self.hand_grp.go(joint_goal, wait=wait)
-
-        self.hand_grp.stop()
-
-        current_joints = self.hand_grp.get_current_joint_values()
-        return all_close(joint_goal, current_joints, 0.01)
-
-    def close_hand(self, wait=True):
-        joint_goal = self.hand_grp.get_current_joint_values()
-        joint_goal[0] = 0.0001
-
-        self.hand_grp.set_goal_joint_tolerance(0.001)
-        self.hand_grp.go(joint_goal, wait=wait)
-
-        if (not wait):
-            return
-
-        self.hand_grp.stop()
-        current_joints = self.hand_grp.get_current_joint_values()
-        return all_close(joint_goal, current_joints, 0.01)
-
-    # function to control the gripper by setting width
-    def gripper_move(self, cmd):
-
-        group = self.hand_grp
-        joint_goal = group.get_current_joint_values()
-        joint_goal[0] = cmd[0]
-        joint_goal[1] = cmd[1]
-        group.go(joint_goal, wait=True)
-        group.stop()
-        current_joints = self.hand_grp.get_current_joint_values()
-        return all_close(joint_goal, current_joints, 0.01)
-
-    # joint space
-    def go_to_joint_state(self, cmd):
-
-        group = self.group
-        joint_goal = group.get_current_joint_values()
-        joint_goal[0] = cmd[0]
-        joint_goal[1] = cmd[1]
-        joint_goal[2] = cmd[2]
-        joint_goal[3] = cmd[3]
-        joint_goal[4] = cmd[4]
-        joint_goal[5] = cmd[5]
-        joint_goal[6] = cmd[6]
-        group.go(joint_goal, wait=True)
-        group.stop()
-        current_joints = self.group.get_current_joint_values()
-        return all_close(joint_goal, current_joints, 0.01)
-
-    # cartesian target
-    def go_to_pose_goal(self, target):
-
-        group = self.group
-        group.get_current_pose().pose
+    def move_to_cartesian_target(self, cartesian_values):
+        """
+        cartesian_values: 7 dimensional vecotr, [cartesian_position, cartesian_Quaternion]
+                          [x, y, z, quat_x, quat_y, quat_z, quat_w]
+        """
+        print("CARTESIAN GOAL")
+        print(cartesian_values)
         pose_goal = geometry_msgs.msg.Pose()
-        pose_goal.orientation.x = target.pose.orientation.x
-        pose_goal.orientation.y = target.pose.orientation.y
-        pose_goal.orientation.z = target.pose.orientation.z
-        pose_goal.orientation.w = target.pose.orientation.w
-        pose_goal.position.x = target.pose.position.x
-        pose_goal.position.y = target.pose.position.y
-        pose_goal.position.z = target.pose.position.z
-        print(pose_goal)
-        group.set_pose_target(pose_goal)
-        group.go(wait=True)
-        group.stop()
-        group.clear_pose_targets()
-        current_pose = self.group.get_current_pose().pose
-        return all_close(pose_goal, current_pose, 0.01)
+        pose_goal.orientation.x = cartesian_values[-4]
+        pose_goal.orientation.y = cartesian_values[-3]
+        pose_goal.orientation.z = cartesian_values[-2]
+        pose_goal.orientation.w = cartesian_values[-1]
+        pose_goal.position.x = cartesian_values[0]
+        pose_goal.position.y = cartesian_values[1]
+        pose_goal.position.z = cartesian_values[2]
+        self.group.set_pose_target(pose_goal)
 
-    # get cartesian pose
-    def get_current_pose(self):
+        self.group.go(wait=True)
+        self.group.stop()
+        self.group.clear_pose_targets()
+        
+        ee_pose = self.group.get_current_pose()
+        # print("EE_POSE", ee_pose)
+        ee_position = ee_pose.pose.position
+        ee_orientation = ee_pose.pose.orientation
+        return ([ee_position.x, ee_position.y, ee_position.z], [ee_orientation.x, ee_orientation.y, ee_orientation.z, ee_orientation.w])
 
-        group = self.group
-        wpose = group.get_current_pose().pose
-        return wpose
+    def move_to_2D_cartesian_target(self, pose, slow=False):
+        try:
+            waypoints = []
+            next_point = self.group.get_current_pose().pose
+            next_point.position.x = pose[0]
+            next_point.position.y = pose[1]
+            waypoints.append(copy.deepcopy(next_point))
+            (plan, fraction) = self.group.compute_cartesian_path(
+                                   waypoints,   # waypoints to follow
+                                   0.01,        # eef_step
+                                   0.0)         # jump_threshold
+            if slow:
+                plan = self.modify_plan(plan)
+            self.group.execute(plan, wait=True) 
+            self.group.stop()
+            self.group.clear_pose_targets()
+        except Exception as e:
+            print("Error in move_to_2D_cartesian_target")
+            print(e)
+        finally: 
+            ee_pose = self.group.get_current_pose()
+            ee_position = ee_pose.pose.position
+            ee_orientation = ee_pose.pose.orientation
+            return ([ee_position.x, ee_position.y, ee_position.z], [ee_orientation.x, ee_orientation.y, ee_orientation.z, ee_orientation.w])
 
-    # linear movemonet planning along x axis of the reference frame
-    def plan_linear_x(self, dist):
+    # linear movement planning along z axis of the reference frame
+    def plan_linear_z(self, dist, slow=False):
+        try:
+            waypoints = []
+            wpose = self.group.get_current_pose().pose
+            wpose.position.z = dist
+            print("move z to ", wpose.position.z)
+            waypoints.append(copy.deepcopy(wpose))
+            (plan, fraction) = self.group.compute_cartesian_path(waypoints, 0.01, 0.0)
+            if slow:
+                plan = self.modify_plan(plan)
+            self.group.execute(plan)
+            self.group.stop()
+            self.group.clear_pose_targets()
+        except Exception as e:
+            print("Error in move_to_1D_cartesian_target")
+            print(e)
+        finally:
+            ee_pose = self.group.get_current_pose()
+            ee_position = ee_pose.pose.position
+            ee_orientation = ee_pose.pose.orientation
+            return ([ee_position.x, ee_position.y, ee_position.z], [ee_orientation.x, ee_orientation.y, ee_orientation.z, ee_orientation.w])
 
-        group = self.group
-        waypoints = []
-        wpose = group.get_current_pose().pose
-        wpose.position.x += dist
-        waypoints.append(copy.deepcopy(wpose))
-        (plan, fraction) = group.compute_cartesian_path(waypoints, 0.01, 0.0)
-        return plan, fraction
+    def stop(self):
+        #try:
+        self.group.stop()
+        ee_pose = self.group.get_current_pose()
+        # print("EE_POSE", ee_pose)
+        ee_position = ee_pose.pose.position
+        ee_orientation = ee_pose.pose.orientation
+        return ([ee_position.x, ee_position.y, ee_position.z], [ee_orientation.x, ee_orientation.y, ee_orientation.z, ee_orientation.w])
 
-    # linear movemonet planning along y axis of the reference frame
-    def plan_linear_y(self, dist):
+    def pause(self):
+        pass 
 
-        group = self.group
-        waypoints = []
-        wpose = group.get_current_pose().pose
-        wpose.position.y += dist
-        waypoints.append(copy.deepcopy(wpose))
-        (plan, fraction) = group.compute_cartesian_path(waypoints, 0.01, 0.0)
-        return plan, fraction
+    def resume(self):
+        pass 
 
-    # linear movemonet planning along z axis of the reference frame
-    def plan_linear_z(self, dist):
 
-        group = self.group
-        waypoints = []
-        wpose = group.get_current_pose().pose
-        wpose.position.z += dist
-        waypoints.append(copy.deepcopy(wpose))
-        (plan, fraction) = group.compute_cartesian_path(waypoints, 0.01, 0.0)
-        return plan, fraction
+    def handle_move_to_target(self, req):
+        ee_pose, ee_orientation = self.move_to_joint_target(req.q)
+        return TakeActionResponse(ee_pose, ee_orientation)
 
-    # execute planned movements
-    def execute_plan(self, plan):
+    def handle_move_to_cartesian_target(self, req):
+        ee_pose, ee_orientation = self.move_to_cartesian_target(req.pose)
+        return TakeCartesianActionResponse(ee_pose, ee_orientation)
 
-        group = self.group
-        group.execute(plan, wait=True)
+    def handle_stop(self, req):
+        ee_pose, ee_orientation = self.stop()
+        return StopActionResponse(ee_pose, ee_orientation)
 
-    # rotation in camera frame (not only last revolut joint)
-    def fix_angle(self, rotcmd):
+    def handle_move_to_2D_cartesian_target(self, req):
+        ee_pose, ee_orientation = self.move_to_2D_cartesian_target(req.pose, req.slow)
+        return Take2DCartesianActionResponse(ee_pose, ee_orientation)
 
-        ps = listener_tf.lookupTransform('/camera_optical_frame', '/panda_link8', rospy.Time(0))
-        my_point = PoseStamped()
-        my_point.header.frame_id = "camera_optical_frame"
-        my_point.header.stamp = rospy.Time(0)
-        my_point.pose.position.x = ps[0][0]
-        my_point.pose.position.y = ps[0][1]
-        my_point.pose.position.z = ps[0][2]
+    def handle_move_to_1D_cartesian_target(self, req):
+        ee_pose, ee_orientation = self.plan_linear_z(req.z_pose, req.slow)
+        return Take1DCartesianActionResponse(ee_pose, ee_orientation)
 
-        theta = rotcmd / 180 * pi
-        quat_rotcmd = tf.transformations.quaternion_from_euler(theta, 0, 0)
-        quat = tf.transformations.quaternion_multiply(quat_rotcmd, ps[1])
+    def handle_rotate_ee(self, req):
+        ee_pose, ee_orientation = self.rotate_ee(req.angle)
+        return RotateEEResponse(ee_pose, ee_orientation)
 
-        my_point.pose.orientation.x = quat[0]
-        my_point.pose.orientation.y = quat[1]
-        my_point.pose.orientation.z = quat[2]
-        my_point.pose.orientation.w = quat[3]
 
-        ps = listener_tf.transformPose("/panda_link0", my_point)
-        self.go_to_pose_goal(ps)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--group_name', type=str, help='MoveIt group name of the robot to control')
+    args = parser.parse_args()
 
-    # using center of keypoints as target pose, translates the 2D coordinate of
-    # Target pose in camera frame into world frame and execute grasping action in 3D
-    def reach_grasp_hover_kps(self):
+    rospy.init_node('opendr_robot_control', anonymous=True)
+    
+    moveit_commander.roscpp_initialize(sys.argv)
+    # group_name = "panda_arm"
 
-        (trans1, rot1) = listener_tf.lookupTransform('/panda_link0', '/camera_optical_frame', rospy.Time(0))
-        z_to_surface = trans1[2]
-        to_world_scale = z_to_surface / self.camera_focal
-        x_dist = self.detections[3] * to_world_scale
-        y_dist = self.detections[4] * to_world_scale
-        my_point = PoseStamped()
-        my_point.header.frame_id = "camera_optical_frame"
-        my_point.header.stamp = rospy.Time(0)
-        my_point.pose.position.x = 0
-        my_point.pose.position.y = -x_dist
-        my_point.pose.position.z = y_dist  # 0.1
-        theta = 0
-        quat = tf.transformations.quaternion_from_euler(0, 0, theta)
-        my_point.pose.orientation.x = quat[0]
-        my_point.pose.orientation.y = quat[1]
-        my_point.pose.orientation.z = quat[2]
-        my_point.pose.orientation.w = quat[3]
-        ps = listener_tf.transformPose("/panda_link0", my_point)
+    robot = moveit_commander.RobotCommander()
+    scene = moveit_commander.PlanningSceneInterface()
+    group = moveit_commander.MoveGroupCommander(args.group_name)
 
-        my_point1 = PoseStamped()
-        my_point1.header.frame_id = "/panda_link8"
-        my_point1.header.stamp = rospy.Time(0)
-        my_point1.pose.position.x = 0
-        my_point1.pose.position.y = 0
-        my_point1.pose.position.z = 0
-        theta1 = 0
-        quat1 = tf.transformations.quaternion_from_euler(0, 0, theta1)
-        my_point1.pose.orientation.x = quat1[0]
-        my_point1.pose.orientation.y = quat1[1]
-        my_point1.pose.orientation.z = quat1[2]
-        my_point1.pose.orientation.w = quat1[3]
-        ps1 = listener_tf.transformPose("/panda_link0", my_point1)
-        ps1.pose.position.x = ps.pose.position.x
-        ps1.pose.position.y = ps.pose.position.y
-        ps1.pose.position.z = ps.pose.position.z
+    robot_arm = RobotControlNode(group)
 
-        self.go_to_pose_goal(ps1)
-        print("reached pose")
-        print(self.get_current_pose())
-        self.approach_grasp()
-        self.close_hand()
+    action_service = rospy.Service('/take_action', TakeAction, arm.handle_move_to_target)
+    rospy.wait_for_service('/take_action')
+    print("/take_action ready")
 
-    # Using the center of bounding box as target, approach the target pose and translates
-    # 2D to 3D from image frame to world frame respectively
-    def reach_hover(self):
+    cartesian_action_service = rospy.Service('/take_cartesian_action', TakeCartesianAction, arm.handle_move_to_cartesian_target)
+    rospy.wait_for_service('/take_cartesian_action')
+    print("/take_cartesian_action ready")
 
-        print("self.detections")
-        print(self.detections)
+    cartesian_action_service_2d = rospy.Service('/take_2D_cartesian_action', Take2DCartesianAction, arm.handle_move_to_2D_cartesian_target)
+    rospy.wait_for_service('/take_2D_cartesian_action')
+    print("/take_2D_cartesian_action")
 
-        (trans1, rot1) = listener_tf.lookupTransform('/panda_link0', '/camera_optical_frame', rospy.Time(0))
-        z_to_surface = trans1[2]
-        to_world_scale = z_to_surface / self.camera_focal
+    cartesian_action_service_1d = rospy.Service('/take_1D_cartesian_action', Take1DCartesianAction, arm.handle_move_to_1D_cartesian_target)
+    rospy.wait_for_service('/take_1D_cartesian_action')
+    print("/take_1D_cartesian_action")
 
-        x_dist = self.detections[0] * to_world_scale
-        y_dist = self.detections[1] * to_world_scale
+    stop_action_service = rospy.Service('/stop_actions', StopAction, arm.handle_stop)
+    rospy.wait_for_service('/stop_actions')
+    print("/stop_actions ready")
 
-        my_point = PoseStamped()
-        my_point.header.frame_id = "camera_optical_frame"
-        my_point.header.stamp = rospy.Time(0)
-        my_point.pose.position.x = 0
-        my_point.pose.position.y = -x_dist
-        my_point.pose.position.z = y_dist
-        theta = 0
-        quat = tf.transformations.quaternion_from_euler(0, 0, theta)
-        my_point.pose.orientation.x = quat[0]
-        my_point.pose.orientation.y = quat[1]
-        my_point.pose.orientation.z = quat[2]
-        my_point.pose.orientation.w = quat[3]
-        ps = listener_tf.transformPose("/panda_link0", my_point)
+    rotate_ee_service = rospy.Service("/rotate_ee", RotateEE, arm.handle_rotate_ee)
+    rospy.wait_for_service('/rotate_ee')
+    print("/rotate_ee ready")
 
-        (trans, rot) = listener_tf.lookupTransform('/panda_link0', '/camera_optical_frame', rospy.Time(0))
-        data = (ps.pose.position.x - trans[0], ps.pose.position.y - trans[1])
-
-        cartesian_plan, fraction = self.plan_linear_x(data[0])
-        self.execute_plan(cartesian_plan)
-        cartesian_plan, fraction = self.plan_linear_y(data[1])
-        self.execute_plan(cartesian_plan)
-
-    def approach_grasp(self):
-
-        my_point = PoseStamped()
-        my_point.header.frame_id = "camera_optical_frame"
-        my_point.header.stamp = rospy.Time(0)
-        my_point.pose.position.x = 0.48
-        my_point.pose.position.y = 0.005  # TODO y element should be "0"
-        my_point.pose.position.z = 0
-        theta = 0
-        quat = tf.transformations.quaternion_from_euler(0, 0, theta)
-        my_point.pose.orientation.x = quat[0]
-        my_point.pose.orientation.y = quat[1]
-        my_point.pose.orientation.z = quat[2]
-        my_point.pose.orientation.w = quat[3]
-        ps = listener_tf.transformPose("/panda_link0", my_point)
-
-        (trans, rot) = listener_tf.lookupTransform('/panda_link0', '/camera_optical_frame', rospy.Time(0))
-        data = (ps.pose.position.x - trans[0], ps.pose.position.y - trans[1], ps.pose.position.z - trans[2])
-        cartesian_plan, fraction = self.plan_linear_x(data[0])
-        self.execute_plan(cartesian_plan)
-        cartesian_plan, fraction = self.plan_linear_y(data[1])
-        self.execute_plan(cartesian_plan)
-        cartesian_plan, fraction = self.plan_linear_z(data[2])
-        self.execute_plan(cartesian_plan)
-
-    # sending a rquesst message to detection server and waits for a detection reply
-    # TODO: change the request request method to a more robust one
-    def request_detection(self):
-        while (True):
-            msg_identifier = random.randint(0, 1000)
-            print(msg_identifier)
-            if msg_identifier == self.last_msg_used:
-                print("new id not generated")
-                continue
-            else:
-                print("new id generated")
-                break
-        print(msg_identifier)
-        self.request_publisher.publish(msg_identifier)
-
-        print("waiting for detection to be received:")
-        start_time = time.time()
-
-        while (time.time() - start_time < 10):
-
-            print("wait for the message")
-            time.sleep(1)
-            if self.last_msg_idx != self.last_msg_used:
-                self.last_msg_used = self.last_msg_idx
-                print("detections received:")
-                print(self.detections)
-                break
-            else:
-                print("waiting for a reply...")
+    rospy.spin()

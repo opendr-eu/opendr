@@ -13,158 +13,258 @@
 # limitations under the License.
 
 import os
-import numpy as np
-import zipfile
-from urllib.request import urlretrieve
+import cv2
+import json
 import shutil
+import zipfile
+import warnings
+import numpy as np
+from urllib.request import urlretrieve
 
 # Detectron imports
-from detectron2.engine import DefaultPredictor
-from detectron2.config import get_cfg
+import detectron2
 from detectron2 import model_zoo
-from detectron2.data import MetadataCatalog, DatasetCatalog
+from detectron2.config import get_cfg
+from detectron2.structures import BoxMode
 from detectron2.engine import DefaultTrainer
+from detectron2.engine import DefaultPredictor
+from detectron2.utils.logger import setup_logger
+from detectron2.utils.visualizer import Visualizer
+from detectron2.data import MetadataCatalog, DatasetCatalog
+from detectron2.data.datasets import register_coco_instances
 
 # OpenDR engine imports
+from opendr.engine.data import Image
 from opendr.engine.learners import Learner
 from opendr.engine.constants import OPENDR_SERVER_URL
-from opendr.engine.data import Image
-
-# single demo grasp module imports
-from opendr.control.single_demo_grasp.training.learner_utils import register_datasets
+from opendr.engine.target import Keypoint, BoundingBox
 
 
 class Detectron2Learner(Learner):
-    def __init__(self, object_name=None, data_directory=None, lr=0.0008, batch_size=512, img_per_step=2, num_workers=2,
-                 num_classes=8, num_keypoints=25, iters=1000, threshold=0.8, device='cuda'):
-        super(Detectron2Learner, self).__init__(lr=lr, threshold=threshold, batch_size=batch_size, device=device, iters=iters)
-        self.dataset_dir = data_directory
-        self.object_name = object_name
-        self.temp_dir = os.path.join(self.dataset_dir, "download_temp")
+    supported_backbones = ["resnet"]
+
+    def __init__(self, lr=0.00025, batch_size=200, img_per_step=2, weight_decay=0.00008,
+                       momentum=0.98, gamma=0.0005, norm="GN", num_workers=2, num_keypoints=25, 
+                       iters=4000, threshold=0.9, loss_weight=1.0, device='cuda', temp_path="temp", backbone='resnet'):
+        super(Detectron2Learner, self).__init__(lr=lr, threshold=threshold, 
+                                                batch_size=batch_size, device=device, 
+                                                iters=iters, temp_path=temp_path, 
+                                                backbone=backbone)
         self.cfg = get_cfg()
         self.cfg.merge_from_file(model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
         self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml")
-        self.cfg.SOLVER.BASE_LR = lr
-        self.cfg.MODEL.DEVICE = device
-        self.cfg.SOLVER.MAX_ITER = iters
-        self.cfg.SOLVER.IMS_PER_BATCH = img_per_step
+        self.cfg.MODEL.MASK_ON = True
+        self.cfg.MODEL.KEYPOINT_ON = True
+        self.cfg.DATASETS.TEST = ()  
         self.cfg.DATALOADER.NUM_WORKERS = num_workers
-        self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
-        self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size
+        self.cfg.SOLVER.IMS_PER_BATCH = img_per_step
+        self.cfg.SOLVER.BASE_LR = lr
+        self.cfg.SOLVER.WEIGHT_DECAY = weight_decay
+        self.cfg.SOLVER.GAMMA = gamma
+        self.cfg.SOLVER.MOMENTUM = momentum
+        self.cfg.SOLVER.MAX_ITER = iters
+        self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size   # faster, and good enough for this toy dataset
+        self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(classes)
+        self.cfg.MODEL.SEM_SEG_HEAD.NORM = "GN"
+        self.cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = len(classes)
+        self.cfg.MODEL.ROI_KEYPOINT_HEAD.NORMALIZE_LOSS_BY_VISIBLE_KEYPOINTS = False
+        self.cfg.MODEL.ROI_KEYPOINT_HEAD.LOSS_WEIGHT = loss_weight
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.NUM_KEYPOINTS = num_keypoints
-        self.cfg.OUTPUT_DIR = os.path.join(self.dataset_dir, self.object_name, "output")
-        os.makedirs(self.cfg.OUTPUT_DIR, exist_ok=True)
+        self.cfg.TEST.KEYPOINT_OKS_SIGMAS = np.ones((num_keypoints, 1), dtype=float).tolist()
+        # Set backbone
+        if self.backbone not in self.supported_backbones:
+            raise ValueError(self.backbone + " backbone is not supported.")
+        # Initialize temp path
+        self.cfg.OUTPUT_DIR = temp_path
+        if not os.path.exists(temp_path):
+            os.makedirs(temp_path, exist_ok=True)
+        
 
-    def fit(self):
-        self.metadata = self._prepare_datasets()
-        self.cfg.DATASETS.TRAIN = (self.object_name + "_train",)
-        self.cfg.DATASETS.TEST = ()
+    def fit(self, json_file, image_root, dataset_name="customTrainingDataset", verbose=True):
+        """
+        This method is used to train the detector (). Validation if performed if a val_dataset is
+        provided.
+        :param json_file: full path to the json file in COCO instances annotation format.
+        :type json_file: DetectionDataset or ExternalDataset
+        :param image_root: the directory where the images in this json file exists.
+        :type image_root: str or path-like
+        :param verbose: if set to True, additional information is printed to STDOUT, defaults to True
+        :type verbose: bool
+        :return: returns stats regarding the training and validation process
+        :rtype: dict
+        """
+        self.__prepare_dataset(dataset_name, json_file, image_root)
+        cfg.DATASETS.TRAIN = (dataset_name,)
+        training_dict = {"ObjLoss": [], "BoxCenterLoss": [], "BoxScaleLoss": [], "ClassLoss": [], "val_map": []}
 
-        self.trainer = DefaultTrainer(self.cfg)
-        self.trainer.resume_or_load(resume=False)
-        self.trainer.train()
+        trainer = DefaultTrainer(self.cfg) 
+        trainer.resume_or_load(resume=False)
+        trainer.train()
+
+        return training_dict
+
 
     def infer(self, img_data):
+        """
+        Performs inference on a single image and returns the resulting bounding boxes.
+        :param img: image to perform inference on
+        :type img: opendr.engine.data.Image
+        :param threshold: confidence threshold
+        :type threshold: float, optional
+        :param keep_size: if True, the image is not resized to fit the data shape used during training
+        :type keep_size: bool, optional
+        :return: list of keypoints, bounding boxes and segmentation masks
+        :rtype: 
+        """
+
         if not isinstance(img_data, Image):
             img_data = Image(img_data)
         img_data = img_data.convert(format='channels_last', channel_order='rgb')
-
-        self.predictor = DefaultPredictor(self.cfg)
-        self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = self.threshold
-
-        output = self.predictor(img_data)
-        bounding_box = output["instances"].to("cpu").pred_boxes.tensor.numpy()
-        keypoints_pred = output["instances"].to("cpu").pred_keypoints.numpy()
-
-        if len(bounding_box) > 0:
-            return 1, bounding_box[0], keypoints_pred[0]
-        else:
-            return 0, None, None
-
-
-    def infer(self, img_data):
-        if not isinstance(img_data, Image):
-            img_data = Image(img_data)
-        img_data = img_data.convert(format='channels_last', channel_order='rgb')
-
-        self.predictor = DefaultPredictor(self.cfg)
         output = self.predictor(img_data)
         pred_classes = output["instances"].to("cpu").pred_classes.numpy()
         bounding_box = output["instances"].to("cpu").pred_boxes.tensor.numpy()
         keypoints_pred = output["instances"].to("cpu").pred_keypoints.numpy()
-
         result = []
         for i in range(len(bounding_box)):
-            angle = correct_orientation_ref(get_angle(keypoints_pred[i],2))
-            result.append(GraspDetection(pred_classes[i], get_kps_center(keypoints_pred[i]), angle, left=bounding_box[i][0], top=bounding_box[i][1], width=bounding_box[i][2]-bounding_box[i][0], height=bounding_box[i][3]-bounding_box[i][1]))
-        # TODO: change result to standard bbox/keypoint - the rest will be done further down the line
+            result.append((Keypoint(keypoints_pred[i]), BoundingBox(name=pred_classes[i], left=bounding_box[i][0], top=bounding_box[i][1], width=bounding_box[i][2]-bounding_box[i][0], height=bounding_box[i][3]-bounding_box[i][1])))
         return result
 
-    def _prepare_datasets(self):
-        bbx_train = np.load(os.path.join(self.dataset_dir, self.object_name, 'images/annotations/boxes_train.npy'),
-                            encoding='bytes')
-        bbx_val = np.load(os.path.join(self.dataset_dir, self.object_name, 'images/annotations/boxes_val.npy'),
-                          encoding='bytes')
-        kps_train = np.load(os.path.join(self.dataset_dir, self.object_name, 'images/annotations/kps_train.npy'),
-                            encoding='bytes')
-        kps_val = np.load(os.path.join(self.dataset_dir, self.object_name, 'images/annotations/kps_val.npy'),
-                          encoding='bytes')
-        vars()[self.object_name + '_metadata'], train_set, val_set = register_datasets(DatasetCatalog, MetadataCatalog,
-                                                                                       self.dataset_dir, self.object_name,
-                                                                                       bbx_train, kps_train, bbx_val, kps_val)
-        self.num_train = len(bbx_train)
-        self.num_val = len(bbx_val)
-        self.num_kps = len(kps_train[0][0])
-        self.train_set = train_set
-        self.val_set = val_set
-        return vars()[self.object_name + '_metadata']
 
-    def load(self, path_to_model):
-        if os.path.isfile(path_to_model):
-            self.cfg.MODEL.WEIGHTS = path_to_model
+    def __prepare_dataset(self, dataset_name, json_file, image_root):
+        register_coco_instances(dataset_name, {}, json_file, image_root)
+
+        with open(json_file) as f:
+            imgs_anns = json.load(f)
+
+        classes = []
+        kps = []
+        for Count,val in enumerate(imgs_anns['categories']):
+            classes.append(val['name'])
+            kpsList = val['keypoints']
+
+        MetadataCatalog.get(dataset_name).set(thing_classes=classes)
+        MetadataCatalog.get(dataset_name).set(keypoint_names = kpsList)
+        MetadataCatalog.get(dataset_name).set(keypoint_flip_map = [])
+
+
+    def load(self, verbose=True):
+        model_name = "model_final"
+        model_file = os.path.join(self.cfg.OUTPUT_DIR, model_name + ".pth")
+        if os.path.isfile(model_file):
+            self.cfg.MODEL.WEIGHTS = model_file            
             self.predictor = DefaultPredictor(self.cfg)
-            print("Model loaded!")
+         print("Model loaded!")
         else:
-            assert os.path.isfile(path_to_model), "Checkpoint {} not found!".format(path_to_model)
+            assert os.path.isfile(model_file), "Checkpoint {} not found!".format(model_file)
+        if verbose:
+            print("Loaded parameters and metadata.")
+        return True
 
-    def save(self, path):
-        if os.path.isfile(os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth")):
-            print("found the trained model at: " + os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth"))
-            if path != self.cfg.OUTPUT_DIR:
-                print("copying the trained model to your desired directory at: ")
-                print(path)
-                shutil.copyfile(os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth"), os.path.join(path, "model_final.pth"))
-            else:
-                print("model is already saved at: " + os.path.join(self.cfg.OUTPUT_DIR, "model_final.pth"))
-        else:
-            print("no trained model was found...")
 
-    def download(self, path=None, object_name=None):
+    def save(self, path, verbose=False):
+        """
+        Method for saving the current model in the path provided.
+        :param path: path to folder where model will be saved
+        :type path: str
+        :param verbose: whether to print a success message or not, defaults to False
+        :type verbose: bool, optional
+        """
+        os.makedirs(path, exist_ok=True)
+        model_name = os.path.basename(path)
+        if verbose:
+            print(model_name)
+        metadata = {"model_paths": [model_name + ".params"], "framework": "mxnet", "format": "params",
+                    "has_data": False, "inference_params": {}, "optimized": False,
+                    "optimizer_info": {}, "backbone": self.backbone, "classes": self.classes}
+        self._model.save_parameters(os.path.join(path, metadata["model_paths"][0]))
+        if verbose:
+            print("Model parameters saved.")
+
+        with open(os.path.join(path, model_name + '.json'), 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=4)
+        if verbose:
+            print("Model metadata saved.")
+        return True
+
+    def download(self, path=None, mode="pretrained", verbose=False, 
+                        url=OPENDR_SERVER_URL + "/perception/object_detection_2d/detectron2/"):
+        """
+        Downloads all files necessary for inference, evaluation and training. Valid mode options are: ["pretrained",
+        "images", "test_data"].
+        :param path: folder to which files will be downloaded, if None self.temp_path will be used
+        :type path: str, optional
+        :param mode: one of: ["pretrained", "images", "test_data"], where "pretrained" downloads a pretrained
+        network depending on the self.backbone type, "images" downloads example inference data, "backbone" downloads a
+        pretrained resnet backbone for training, and "annotations" downloads additional annotation files for training
+        :type mode: str, optional
+        :param verbose: if True, additional information is printed on stdout
+        :type verbose: bool, optional
+        :param url: URL to file location on FTP server
+        :type url: str, optional
+        """
+        valid_modes = ["pretrained", "images", "test_data"]
+        if mode not in valid_modes:
+            raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
+
         if path is None:
-            path = self.temp_dir
-        if object_name is None:
-            object_name = "pendulum"
+            path = self.temp_path
+
         if not os.path.exists(path):
             os.makedirs(path)
 
-        print("Downloading pretrained model, training data and samples for: " + object_name)
+        if mode == "pretrained":
+            path = os.path.join(path, "detectron2_default")
+            if not os.path.exists(path):
+                os.makedirs(path)
+            
+            if not os.path.exists(os.path.join(path, "model_final.pth")):
+                if verbose:
+                    print("Downloading pretrained model...")
+                file_url = os.path.join(url, "pretrained", "detectron2_diesel_engine", "detectron2_diesel_engine.params")
+                urlretrieve(file_url, os.path.join(path, "detectron2_diesel_engine.params"))
+            elif verbose:
+                print("Pretrained model already exists.")
 
-        filename = object_name + ".zip"
-        url = os.path.join(OPENDR_SERVER_URL, "control/single_demo_grasp/", filename)
-        destination_file = os.path.join(path, filename)
-        urlretrieve(url, destination_file)
 
-        with zipfile.ZipFile(destination_file, 'r') as zip_ref:
-            zip_ref.extractall(path)
+        elif mode == "images":
+            file_url = os.path.join(url, "images", "bolt.jpg")
+            if verbose:
+                print("Downloading example image...")
+            if os.path.exists(os.path.join(path, "bolt.jpg")):
+                urlretrieve(file_url, os.path.join(path, "bolt.jpg"))
+                if verbose:
+                    print("Downloaded example image.")
+            elif verbose:
+                print("Example image already exists.")
 
-        """
-            removing zip file after extracting contents
-            """
-        os.remove(destination_file)
+        elif mode == "test_data":
+            os.makedirs(os.path.join(path, "test_data"), exist_ok=True)
+            os.makedirs(os.path.join(path, "test_data", "Images"), exist_ok=True)
+            os.makedirs(os.path.join(path, "test_data", "Annotations"), exist_ok=True)
+            # download train.txt
+            file_url = os.path.join(url, "test_data", "train.txt")
+            if verbose:
+                print("Downloading filelist...")
+            urlretrieve(file_url, os.path.join(path, "test_data", "train.txt"))
+            # download image
+            file_url = os.path.join(url, "test_data", "Images", "000040.jpg")
+            if verbose:
+                print("Downloading image...")
+            urlretrieve(file_url, os.path.join(path, "test_data", "Images", "000040.jpg"))
+            # download annotations
+            file_url = os.path.join(url, "test_data", "Annotations", "000040.jpg.txt")
+            if verbose:
+                print("Downloading annotations...")
+            urlretrieve(file_url, os.path.join(path, "test_data", "Annotations", "000040.jpg.txt"))
 
-    def eval(self):
-        """This method is not used in this implementation."""
-        raise NotImplementedError()
+    def eval(self, json_file, image_root):
+        dataset_name = "customValidationDataset"
+        self.__prepare_dataset(dataset_name, json_file, image_root)
+        cfg.DATASETS.TEST = (dataset_name,)
+        output_folder = os.path.join(self.cfg.OUTPUT_DIR, "eval")
+        evaluator = COCOEvaluator(dataset_name, self.cfg, False, output_folder)
+        data_loader = build_detection_test_loader(self.cfg, dataset_name)
+        inference_on_dataset(self.predictor.model, data_loader, evaluator)
 
     def optimize(self):
         """This method is not used in this implementation."""

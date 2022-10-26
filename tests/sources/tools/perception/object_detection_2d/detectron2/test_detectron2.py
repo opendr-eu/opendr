@@ -74,11 +74,9 @@ class TestDetectron2Learner(unittest.TestCase):
               "**********************************")
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "detectron2", "detectron2_temp")
-        cls.learner = Detectron2Learner(object_name='pendulum', data_directory=cls.temp_dir, lr=0.0008, batch_size=1,
-                                             num_workers=2, num_classes=1, iters=10, threshold=0.8, device=device,
-                                             img_per_step=2)
+        cls.learner = Detectron2Learner(data_directory=cls.temp_dir, device=device)
         # Download all required files for testing
-        cls.learner.download(path=cls.temp_dir, object_name="pendulum")
+        cls.learner.download(cls.temp_dir)
         shutil.copy(os.path.join(cls.learner.output_dir, "model_final.pth"), os.path.join(cls.learner.output_dir,
                                                                                           "pretrained.pth"))
 
@@ -103,8 +101,10 @@ class TestDetectron2Learner(unittest.TestCase):
         sample_image = Image.open(os.path.join(self.temp_dir, "pendulum", "images", "val", "0.jpg"))
         self.learner.load(os.path.join(self.learner.output_dir, "pretrained.pth"))
 
-        flag, _, _ = self.learner.infer(sample_image)
-        self.assertTrue(flag == 1, msg="predictions are available with confidence more than threshold")
+        detections = self.learner.infer(sample_image)
+        bboxes = BoundingBoxList([box for kp,box in detections])
+        self.assertIsNotNone(bboxes,
+                             msg="Returned empty BoundingBoxList.")
 
     def test_save_load(self):
         """

@@ -28,6 +28,7 @@ from opendr.control.single_demo_grasp import SingleDemoGraspLearner, GraspDetect
 from detectron2.data import MetadataCatalog, DatasetCatalog
 from visualization_msgs.msg import Marker
 from opendr.engine.data import Image
+from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 import tf 
 
@@ -94,11 +95,12 @@ def correct_orientation_ref(angle):
 
 class Detectron2ObjectRecognitionNode:
 
-    def __init__(self, input_image_topic="/usb_cam/image_raw", input_depth_image_topic="/usb_cam/image_raw", camera_info_topic="/camera/color/camera_info",
+    def __init__(self, camera_tf_frame, robot_tf_frame, ee_tf_frame,
+                 input_image_topic="/usb_cam/image_raw", input_depth_image_topic="/usb_cam/image_raw", 
+                 camera_info_topic="/camera/color/camera_info",
                  output_image_topic="/opendr/image_grasp_pose_annotated",
                  object_detection_topic="/opendr/object_detected",
                  grasp_detection_topic="/opendr/grasp_detected",
-                 camera_tf_frame='/camera_color_frame', robot_tf_frame='panda_link0', ee_tf_frame='/panda_link8',
                  device="cuda", model="detectron"):
         """
         Creates a ROS Node for objects detection from RGBD
@@ -112,9 +114,9 @@ class Detectron2ObjectRecognitionNode:
         :type device: str
         """
 
-        self.object_detection_publisher = rospy.Publisher(object_detection_topic, Detection2DArray, queue_size=10)
+        self.object_publisher = rospy.Publisher(object_detection_topic, Detection2DArray, queue_size=1)
         self.grasp_publisher = rospy.Publisher(grasp_detection_topic, ObjectHypothesisWithPose, queue_size=10)
-        self.image_publisher = rospy.Publisher(output_image_topic, ROS_Image, queue_size=10)
+        self.image_publisher = rospy.Publisher(output_image_topic, ROS_Image, queue_size=1)
         self.marker_pub = rospy.Publisher("/visualization_marker", Marker, queue_size = 2)
 
         sub = rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
@@ -123,14 +125,13 @@ class Detectron2ObjectRecognitionNode:
         self.bridge = ROSBridge()
 
         # Initialize the object detection        
-        model_path = pathlib.Path("detectron5")
-        print(model_path.exists())
+        model_path = pathlib.Path("detectron")
         
         if model == "detectron":
-            self.learner = SingleDemoGraspLearner(object_name='pendulum', data_directory=model_path, num_classes=8, num_keypoints=25, device=device)
+            self.learner = SingleDemoGraspLearner(data_directory=model_path, device=device)
             if not model_path.exists():
-                self.learner.download(path=model_path, object_name="pendulum")
-            self.learner.load(model_path / "pendulum" / "output"/ "model_final.pth")
+                self.learner.download(path=model_path)
+            self.learner.load(model_path / "output"/ "model_final.pth")
     
         self._classes = ["RockerArm","BoltHoles","Big_PushRodHoles","Small_PushRodHoles", "Engine", "Bolt","PushRod","RockerArmObject"]
         self._colors = []
@@ -146,20 +147,6 @@ class Detectron2ObjectRecognitionNode:
         self.camera_focal = msg.K[0]
         self.ctrX = msg.K[2]
         self.ctrY = msg.K[5]
-
-    def annotate(self, data, outputs):
-        image = data.opencv()
-        radius = 1
-        thickness = 4
-        if not self._colors:
-            for i in range(len(self._classes)):
-                self._colors.append(tuple(np.random.choice(range(255),size=3)))
-        for detection in outputs:
-            color = ( int(self._colors[detection.name][ 0 ]), int(self._colors[detection.name][ 1 ]), int(self._colors[detection.name][ 2 ])) 
-            image = cv2.circle(image, (int(detection.data[0]),int(detection.data[1])), radius, color, thickness)
-            clone = cv2.putText(image, "{}".format(int(detection.angle)), (int(detection.left+detection.width), int(detection.top+detection.height)), cv2.FONT_HERSHEY_PLAIN, 1, color, 1)
-            image = cv2.rectangle(image, (int(detection.left), int(detection.top)), (int(detection.left+detection.width), int(detection.top+detection.height)), color, 2)
-        return image
 
     def create_rviz_marker(self, ros_pose):
         marker = Marker()
@@ -243,14 +230,26 @@ class Detectron2ObjectRecognitionNode:
         """
         # Convert sensor_msgs.msg.Image into OpenDR Image and preprocess
         image = self.bridge.from_ros_image(image_data)
-        # Run gesture recognition
+        
+        # Run object detection
         object_detections = self.learner.infer(image)
-        #  Publish results
-        annotated_image = self.annotate(image, object_detections)
-        image_message = self.bridge.to_ros_image(Image(annotated_image), encoding='bgr8')
-        self.image_publisher.publish(image_message)
-        ros_object_detections = self.bridge.to_ros_grasp_detections(object_detections)
-        self.object_detection_publisher.publish(ros_object_detections)
+        boxes = BoundingBoxList([box for kp,box in detections])
+        
+        # Get an OpenCV image back
+        image = image.opencv()
+
+        # Publish detections in ROS message
+        ros_boxes = self.bridge.to_ros_bounding_box_list(boxes)  # Convert to ROS bounding_box_list
+        if self.object_publisher is not None:
+            self.object_publisher.publish(ros_boxes)
+
+        if self.image_publisher is not None:
+            # Annotate image with object detection boxes
+            image = draw_bounding_boxes(image, boxes)
+            # Convert the annotated OpenDR image to ROS image message using bridge and publish it
+            self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
+
+
         # If a robot is connected, convert poses
         try:
             (trans, rot) = self._listener_tf.lookupTransform(self._robot_tf_frame, self._camera_tf_frame, rospy.Time(0))
@@ -261,32 +260,20 @@ class Detectron2ObjectRecognitionNode:
             for detection in object_detections:
                 ros_pose = self.convert_detection_pose(detection, trans[2]-0.10, rot, i)
                 self.create_rviz_marker(ros_pose)
-                ros_grasp_detection = self.bridge.to_ros_grasp_pose(detection.name, ros_pose)
+                ros_grasp_detection = self.bridg#e.to_ros_grasp_pose(detection.name, ros_pose)
                 self.grasp_publisher.publish(ros_grasp_detection)
                 i+=1
 
-    def preprocess(self, image, depth_img):
-        '''
-        Preprocess image, depth_image and concatenate them
-        :param image_data: input image
-        :type image_data: engine.data.Image
-        :param depth_data: input depth image
-        :type depth_data: engine.data.Image
-        '''
-        image = image.convert(format='channels_last') / (2**8 - 1)
-        depth_img = depth_img.convert(format='channels_last') / (2**16 - 1)
-
-        # resize the images to 224x224
-        image = cv2.resize(image, (224, 224))
-        depth_img = cv2.resize(depth_img, (224, 224))
-
-        # concatenate and standardize
-        img = np.concatenate([image, np.expand_dims(depth_img, axis=-1)], axis=-1)
-        img = (img - self.mean) / self.std
-        img = Image(img, dtype=np.float32)
-        return img
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--camera_tf_frame', type=str, help='Tf frame in which objects are detected')
+    parser.add_argument('--robot_tf_frame', type=str, help='Tf frame of reference for commands sent to the robot')
+    parser.add_argument('--ee_tf_frame', type=str, help='Tf frame of reference for the robot end effector')
+    parser.add_argument('--depth_topic', type=str, help='ROS topic containing depth information')
+    parser.add_argument('--image_topic', type=str, help='ROS topic containing RGB information')
+    args = parser.parse_args()
+
     rospy.init_node('opendr_object_detection', anonymous=True)
     # Select the device for running
     try:
@@ -296,6 +283,6 @@ if __name__ == '__main__':
     # default topics for intel realsense - https://github.com/IntelRealSense/realsense-ros
     depth_topic = "/camera/depth/image_rect_raw"
     image_topic = "/camera/color/image_raw"  
-    object_node = Detectron2ObjectRecognitionNode(input_image_topic=image_topic, input_depth_image_topic=depth_topic, device=device)
+    object_node = Detectron2ObjectRecognitionNode(camera_tf_frame='/camera_color_frame', robot_tf_frame='panda_link0', ee_tf_frame='/panda_link8', input_image_topic=image_topic, input_depth_image_topic=depth_topic, device=device)
     rospy.loginfo("Detectron2 object detection node started!")
     rospy.spin()

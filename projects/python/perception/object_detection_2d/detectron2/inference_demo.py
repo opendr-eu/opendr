@@ -15,6 +15,7 @@
 import argparse
 
 from opendr.engine.data import Image
+from opendr.engine.target import BoundingBoxList
 from opendr.perception.object_detection_2d import Detectron2Learner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
@@ -25,12 +26,16 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    temp = "/home/opendr/Gaurang/engineAssembly/Dataset/"
+
     detectron2 = Detectron2Learner(device=args.device)
-    detectron2.download(".", mode="pretrained")
-    detectron2.load("./detectron2_default", verbose=True)
+    detectron2.download(temp, mode="pretrained", verbose=True)
+    detectron2.load(temp + "detectron2_default", verbose=True)
 
-    detectron2.download(".", mode="images", verbose=True)
-    img = Image.open("./cat.jpg")
+    detectron2.download(temp, mode="images", verbose=True)
+    img = Image.open(temp + "detectron2_default/" + "bolt.jpg")
 
-    boxes = detectron2.infer(img)
+    preds = detectron2.infer(img)
+    print(preds)
+    boxes = BoundingBoxList([box for kp,box in preds])
     draw_bounding_boxes(img.opencv(), boxes, class_names=detectron2.classes, show=True)
