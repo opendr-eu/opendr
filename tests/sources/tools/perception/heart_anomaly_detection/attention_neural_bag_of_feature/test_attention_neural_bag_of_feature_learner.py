@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ class TestAttentionNeuralBagOfFeatureLearner(unittest.TestCase):
         series_length = random.choice([30 * 300, 40 * 300])
         n_class = np.random.randint(low=2, high=100)
         quantization_type = random.choice(['nbof', 'tnbof'])
-        attention_type = random.choice(['spatial', 'temporal'])
+        attention_type = random.choice(['spatial', 'temporal', 'spatialsa', 'temporalsa', 'spatiotemporal'])
 
         train_set = DummyDataset(in_channels, series_length, n_class)
         val_set = DummyDataset(in_channels, series_length, n_class)
@@ -85,7 +85,7 @@ class TestAttentionNeuralBagOfFeatureLearner(unittest.TestCase):
         series_length = random.choice([30 * 300, 40 * 300])
         n_class = np.random.randint(low=2, high=100)
         quantization_type = random.choice(['nbof', 'tnbof'])
-        attention_type = random.choice(['spatial', 'temporal'])
+        attention_type = random.choice(['spatial', 'temporal', 'spatialsa', 'temporalsa', 'spatiotemporal'])
 
         learner = AttentionNeuralBagOfFeatureLearner(in_channels,
                                                      series_length,
@@ -110,7 +110,7 @@ class TestAttentionNeuralBagOfFeatureLearner(unittest.TestCase):
         series_length = random.choice([30 * 300, 40 * 300])
         n_class = np.random.randint(low=2, high=100)
         quantization_type = random.choice(['nbof', 'tnbof'])
-        attention_type = random.choice(['spatial', 'temporal'])
+        attention_type = random.choice(['spatial', 'temporal', 'spatialsa', 'temporalsa', 'spatiotemporal'])
 
         learner = AttentionNeuralBagOfFeatureLearner(in_channels,
                                                      series_length,
@@ -132,7 +132,7 @@ class TestAttentionNeuralBagOfFeatureLearner(unittest.TestCase):
         series_length = random.choice([30 * 300, 40 * 300])
         n_class = np.random.randint(low=2, high=100)
         quantization_type = random.choice(['nbof', 'tnbof'])
-        attention_type = random.choice(['spatial', 'temporal'])
+        attention_type = random.choice(['spatial', 'temporal', 'spatialsa', 'temporalsa', 'spatiotemporal'])
 
         learner = AttentionNeuralBagOfFeatureLearner(in_channels,
                                                      series_length,

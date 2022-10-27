@@ -42,6 +42,7 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main
 make install_compilation_dependencies
 make install_runtime_dependencies
 
+
 # Install additional ROS packages
 sudo apt-get install ros-noetic-vision-msgs ros-noetic-audio-common-msgs 
 

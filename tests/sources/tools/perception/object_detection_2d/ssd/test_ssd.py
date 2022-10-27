@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import os
 import numpy as np
 from opendr.perception.object_detection_2d import SingleShotDetectorLearner
 from opendr.perception.object_detection_2d import WiderPersonDataset
+
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 
 def rmfile(path):
@@ -45,7 +47,7 @@ class TestSSDLearner(unittest.TestCase):
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "ssd", "ssd_temp")
-        cls.detector = SingleShotDetectorLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
+        cls.detector = SingleShotDetectorLearner(device=device, temp_path=cls.temp_dir, batch_size=1, epochs=1,
                                                  checkpoint_after_iter=0, lr=1e-4, num_workers=0)
         # Download all required files for testing
         cls.detector.download(mode="pretrained")

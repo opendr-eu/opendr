@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
 
 
 if __name__ == '__main__':
-    rgb_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'projects/simulation/'
+    rgb_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'projects/python/simulation/'
                                       'human_model_generation/demos/imgs_input/rgb/result_0004.jpg'))
-    msk_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'projects/simulation/'
+    msk_img = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], 'projects/python/simulation/'
                                       'human_model_generation/demos/imgs_input/msk/result_0004.jpg'))
     bridge_cv = CvBridge()
     bridge_ros = ROSBridge()
@@ -46,6 +46,6 @@ if __name__ == '__main__':
         human_model = Model_3D(vertices, triangles, vertex_colors)
         human_model.save_obj_mesh('./human_model.obj')
         [out_imgs, human_pose_2D] = human_model.get_img_views(rotations=[30, 120], human_pose_3D=pose, plot_kps=True)
-        cv2.imwrite('./rendering.png', out_imgs[0].numpy())
+        cv2.imwrite('./rendering.png', out_imgs[0].opencv())
     except rospy.ServiceException as e:
         print("Service call failed: %s" % e)

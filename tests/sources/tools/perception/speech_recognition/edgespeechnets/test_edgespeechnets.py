@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import json
-import os
 import shutil
 import unittest
 
@@ -24,6 +23,9 @@ from opendr.perception.speech_recognition import EdgeSpeechNetsLearner
 from opendr.engine.data import Timeseries
 from opendr.engine.datasets import DatasetIterator
 from opendr.engine.target import Category
+import os
+
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 TEST_BATCH_SIZE = 2
 TEST_EPOCHS = 1
@@ -53,7 +55,7 @@ class EdgeSpeechNetsTest(unittest.TestCase):
     def setUpClass(cls):
         print("\n\n**********************************\nTEST Edge Speech Nets Learner\n"
               "**********************************")
-        cls.learner = EdgeSpeechNetsLearner(device="cpu", output_classes_n=TEST_CLASSES_N, iters=TEST_EPOCHS)
+        cls.learner = EdgeSpeechNetsLearner(device=device, output_classes_n=TEST_CLASSES_N, iters=TEST_EPOCHS)
 
     @classmethod
     def tearDownClass(cls):

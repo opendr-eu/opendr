@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@ import unittest
 import gc
 import cv2
 import shutil
-import os
 import numpy as np
 from opendr.perception.object_detection_2d import RetinaFaceLearner
 from opendr.perception.object_detection_2d import WiderFaceDataset
+import os
+
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 
 def rmfile(path):
@@ -43,9 +45,9 @@ class TestRetinaFaceLearner(unittest.TestCase):
         print("\n\n**********************************\nTEST RetinaFace Learner\n"
               "**********************************")
 
-        cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
+        cls.temp_dir = os.path.join("", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "retinaface", "retinaface_temp")
-        cls.detector = RetinaFaceLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
+        cls.detector = RetinaFaceLearner(device=device, temp_path=cls.temp_dir, batch_size=1, epochs=1,
                                          checkpoint_after_iter=0, lr=1e-4)
         # Download all required files for testing
         cls.detector.download(mode="pretrained")

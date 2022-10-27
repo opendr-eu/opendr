@@ -39,7 +39,6 @@ install_compilation_dependencies:
 	@+cd dependencies; ./install_onnx.sh
 	@+make --silent -C src/opendr/control/mobile_manipulation $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
 	@+make --silent -C src/opendr/control/single_demo_grasp $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
-	@+make --silent -C projects/control/eagerx $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
 
 styletest:
 	@+echo "Testing file licences and code-style"
@@ -77,4 +76,3 @@ help:
 	@+echo
 	@+echo -e "\033[32;1mNote:\033[0m You seem to have a processor with $(NUMBER_OF_PROCESSORS) virtual cores,"
 	@+echo -e "      hence the \033[33;1m-j$(THREADS)\033[0m option to speed-up the compilation."
-

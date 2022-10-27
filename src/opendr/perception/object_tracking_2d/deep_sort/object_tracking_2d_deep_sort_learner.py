@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
 import os
 import json
 import torch
@@ -75,6 +76,9 @@ class ObjectTracking2DDeepSortLearner(Learner):
         self.model_optimizer = torch.optim.SGD(
             self.tracker.deepsort.extractor.net.parameters(), lr, momentum=0.9, weight_decay=5e-4
         )
+
+        self.infers_count = 0
+        self.infers_time = 0
 
     def save(self, path, verbose=False):
         """
@@ -280,8 +284,14 @@ class ObjectTracking2DDeepSortLearner(Learner):
 
         for image, frame_id in zip(batch, frame_ids):
 
+            t0 = time.time()
+
             result = self.tracker.infer(image, frame_id)
             results.append(result)
+
+            t0 = time.time() - t0
+            self.infers_count += 1
+            self.infers_time += t0
 
         if is_single_image:
             results = results[0]

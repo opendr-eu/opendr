@@ -113,7 +113,7 @@ $ make install_runtime_dependencies
 after installing dependencies, the user must source the workspace in the shell in order to detect the packages:
 
 ```
-$ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
+$ source projects/python/control/single_demo_grasp/simulation_ws/devel/setup.bash
 ```
 
 ## Demos
@@ -125,7 +125,7 @@ Three different nodes must be launched consecutively in order to properly run th
 ```
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
-3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
+3. $ source projects/python/control/single_demo_grasp/simulation_ws/devel/setup.bash
 4. $ export WEBOTS_HOME=/usr/local/webots
 5. $ roslaunch single_demo_grasping_demo panda_sim.launch
 ```
@@ -134,7 +134,7 @@ Three different nodes must be launched consecutively in order to properly run th
 ```
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
-3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
+3. $ source projects/python/control/single_demo_grasp/simulation_ws/devel/setup.bash
 4. $ roslaunch single_demo_grasping_demo camera_stream_inference.launch
 ```
 
@@ -142,7 +142,7 @@ Three different nodes must be launched consecutively in order to properly run th
 ```
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
-3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
+3. $ source projects/python/control/single_demo_grasp/simulation_ws/devel/setup.bash
 4. $ roslaunch single_demo_grasping_demo panda_sim_control.launch
 ```
 
@@ -150,15 +150,68 @@ Three different nodes must be launched consecutively in order to properly run th
 
 You can find an example on how to use the learner class to run inference and see the result in the following directory:
 ```
-$ cd projects/control/single_demo_grasp/simulation_ws/src/single_demo_grasping_demo/inference/
+$ cd projects/python/control/single_demo_grasp/simulation_ws/src/single_demo_grasping_demo/inference/
 ```
 simply run:
 ```
 1. $ cd path/to/opendr/home # change accordingly
 2. $ source bin/setup.bash
-3. $ source projects/control/single_demo_grasp/simulation_ws/devel/setup.bash
-4. $ cd projects/control/single_demo_grasp/simulation_ws/src/single_demo_grasping_demo/inference/
+3. $ source projects/python/control/single_demo_grasp/simulation_ws/devel/setup.bash
+4. $ cd projects/python/control/single_demo_grasp/simulation_ws/src/single_demo_grasping_demo/inference/
 5. $ ./single_demo_inference.py
 ```
 
+## Performance Evaluation
 
+TABLE-1: OpenDR Single Demonstration Grasping platform inference speeds.
+| Platform              | Inference speed (FPS)  |
+| --------------------- | ---------------------- | 
+| Nvidia GTX 1080 ti    | 20                     |
+| Nvidia Geforce 940mx  | 2.5                    | 
+| Jetson Xavier NX      | 4                      | 
+| CPU                   | 0.4                    | 
+
+
+
+The energy consumption of the detection model during inference was also measured on Xavier NX and reported accordingly.
+It is worth mentioning that the inference on the first iteration requires more energy for initialization which as it can be seen in TABLE-2.
+
+TABLE-2: OpenDR Single Demonstration Grasping energy consumptions and memory usage.
+| Stage                       | Energy (Joules)  |
+| --------------------------- | ---------------- | 
+| First step (initialization) | 12               |
+| Normal                      | 3.4              | 
+
+
+TABLE-3: OpenDR Single Demonstration Grasping training.
+|   Model        | Dataset size                      | Training Time <br> (hr:min:sec) | Model size (MB)               | 
+|--------------- |---------------------------------- |-------------------------------- |------------------------------ |
+| A              | Faster R-CNN: 1500 <br> CNN: 5000 | 00:14:00 <br> 00:02:00          | Faster R-CNN: 300 <br> CNN: 8 |              
+| B              | 1500                              | 00:07:30                        | 450                           |                              
+| C (simulation) | 1500                              | 00:07:00                        | 450                           | 
+
+
+TABLE-4: OpenDR Single Demonstration Grasping inferences success evaluation. 
+|   Model        | Success rate  |
+|--------------- |-------------- |
+| A              | 0.913         |
+| B              | 0.825         |
+| C (simulation) | 0.935         | 
+
+
+Finally, we evaluated the ability of the provided tool to run on different platforms.
+The tool has been verified to run correctly on the platforms reported in Table TABLE-5. 
+
+TABLE-5: OpenDR Single Demonstration Grasping platform compatibility evaluation.
+| Platform                                     | Test results           |
+| -------------------------------------------- | ---------------------- | 
+| x86 - Ubuntu 20.04 (bare installation - CPU) | Pass                   |
+| x86 - Ubuntu 20.04 (bare installation - GPU) | Pass                   | 
+| x86 - Ubuntu 20.04 (pip installation)        | Not supported          | 
+| x86 - Ubuntu 20.04 (CPU docker)              | Pass*                  |  
+| x86 - Ubuntu 20.04 (GPU docker)              | Pass*                  | 
+| NVIDIA Jetson TX2                            | Not tested             |
+| NVIDIA Jetson Xavier AGX                     | Not tested             |
+| NVIDIA Jetson Xavier NX                      | Pass**                 |
+
+\* Installation only considers the learner class. For running the simulation, extra steps are required. \*\* The installation script did not include detectron2 module and webots installation which had to be installed manually with slight modifications and building the detectron2 from source as there was no prebuilt wheel for aarch64 architecture.

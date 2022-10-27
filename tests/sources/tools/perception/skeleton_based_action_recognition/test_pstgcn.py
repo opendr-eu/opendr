@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,13 @@
 
 import unittest
 import shutil
-import os
 import torch
 import numpy as np
 from opendr.perception.skeleton_based_action_recognition import ProgressiveSpatioTemporalGCNLearner
 from opendr.engine.datasets import ExternalDataset
+import os
+
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 
 def rmfile(path):
@@ -48,7 +50,7 @@ class TestSkeletonBasedActionRecognition(unittest.TestCase):
         cls.temp_dir = PATH_
         cls.logging_path = LOG_PATH_
         cls.pstgcn_action_classifier = ProgressiveSpatioTemporalGCNLearner(
-                                       device="cpu", temp_path=cls.temp_dir,
+                                       device=device, temp_path=cls.temp_dir,
                                        batch_size=2, epochs=1,
                                        checkpoint_after_iter=1, val_batch_size=2,
                                        dataset_name='nturgbd_cv',

@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 import os
 import json
+import time
 import torch
 import ntpath
 import shutil
@@ -125,6 +126,8 @@ class ObjectTracking2DFairMotLearner(Learner):
         main_batch_size = self.batch_size // len(self.gpus)
         rest_batch_size = (self.batch_size - main_batch_size)
         self.chunk_sizes = [main_batch_size]
+        self.infers_count = 0
+        self.infers_time = 0
 
         for i in range(len(self.gpus) - 1):
             worker_chunk_size = rest_batch_size // (len(self.gpus) - 1)
@@ -385,6 +388,7 @@ class ObjectTracking2DFairMotLearner(Learner):
 
             blob = torch.from_numpy(img).to(self.device).unsqueeze(0)
 
+            t0 = time.time()
             online_targets = self.tracker.update(blob, img0)
             online_tlwhs = []
             online_ids = []
@@ -414,6 +418,10 @@ class ObjectTracking2DFairMotLearner(Learner):
                     online_scores
                 )
             ])
+
+            t0 = time.time() - t0
+            self.infers_count += 1
+            self.infers_time += t0
 
             results.append(result)
 

@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -267,7 +267,8 @@ class DetectionDatasetCOCOEval(DetectionEvalMetric):
                 if score < self.score_threshold:
                     continue
                 img_dets.append(np.asarray([image['id'], box[0], box[1], box[2] - box[0], box[3] - box[1], score, cls]))
-            self.detections.append(np.asarray(img_dets))
+            if img_dets:
+                self.detections.append(np.asarray(img_dets))
 
             for box_idx, box in enumerate(gt_boxes[idx, :, :]):
                 cls = gt_labels[idx, box_idx]

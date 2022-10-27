@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ import torch
 import numpy as np
 import time
 
-import opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.kitti_common as kitti
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data import kitti_common as kitti
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.data.preprocess import (
     merge_second_batch, )
 

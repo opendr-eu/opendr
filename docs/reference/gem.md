@@ -208,7 +208,7 @@ Parameters:
   Valid values are: "weights_detr", "pretrained_detr", "pretrained_gem", "test_data_l515" and "test_data_sample_images".
   In case of "weights_detr", the weigths for single modal DETR with *resnet50* backbone are downloaded.
   In case of "pretrained_detr", the weigths for single modal pretrained DETR with *resnet50* backbone are downloaded.
-  In case of "pretrained_gem", the weights from *'gem_scavg_e294_mAP0983_rn50_l515_7cls.pth'* (backbone: *'resnet50'*, fusion_method: *'scalar averaged'*, trained on *RGB-Infrared l515_dataset* are downloaded.
+  In case of "pretrained_gem", the weights (backbone: *'resnet50' or 'mobilenetv2'*, fusion_method: *'scalar averaged'*, trained on *RGB-Infrared l515_dataset*) are downloaded.
   In case of "test_data_l515", the *RGB-Infrared l515* dataset is downloaded from the OpenDR server.
   In case of "test_data_sample images", two sample images for testing the *infer* function are downloaded.
 - **verbose** : *bool, default=False*
@@ -216,8 +216,8 @@ Parameters:
 
 #### Demo and Tutorial
 
-An inference [demo](../../projects/perception/object_detection_2d/gem/inference_demo.py) and
-[tutorial](../../projects/perception/object_detection_2d/gem/inference_tutorial.ipynb) are available.
+An inference [demo](../../projects/python/perception/object_detection_2d/gem/inference_demo.py) and
+[tutorial](../../projects/python/perception/object_detection_2d/gem/inference_tutorial.ipynb) are available.
 
 #### Examples
 
@@ -269,6 +269,47 @@ bounding_box_list, w_sensor1, _ = learner.infer(m1_img, m2_img)
 cv2.imshow('Detections', draw(m1_img.opencv(), bounding_box_list, w_sensor1))
 cv2.waitKey(0)
 ```
+
+#### Performance Evaluation
+
+The performance evaluation results of the *GemLearner* are reported in the Table below.
+These tests have been performed on several platforms, i.e. a laptop CPU, laptop GPU and on the Jetson TX2.
+Also, the results for two different backbones are shown, i.e. ResNet-50 and MobileNet-v2.
+Inference was performed on a 1280x720 RGB image and a 1280x720 infrared image.
+
+| Method       | CPU i7-10870H  (FPS) | RTX 3080 Laptop (FPS) | Jetson TX2 (FPS) |
+|--------------|:--------------------:|:---------------------:|:----------------:|
+| ResNet-50    |         0.87         |         11.83         |       0.83       |
+| MobileNet-v2 |         2.44         |         18.70         |       2.19       |
+
+
+Apart from the inference speed, which is reported in FPS, we also report the memory usage, as well as energy consumption on a reference platform in the Table below.
+Again, inference was performed on a 1280x720 RGB image and a 1280x720 infrared image.
+
+| Method       | Memory (MB) RTX 3080 Laptop | Energy (Joules)  - Total per inference Jetson TX2 |
+|--------------|:---------------------------:|:-------------------------------------------------:|
+| ResNet-50    |            1853.4           |                        28.2                       |
+| MobileNet-v2 |            931.2            |                        8.4                        |
+
+Below, the performance of GEM is in terms of accuracy is presented.
+These results were obtained on the L515-Indoor dataset, which can also be downloaded using the GemLearner class from OpenDR.
+
+| Method       | Mean Average Precision | Energy (Joules)  - Total per inference Jetson TX2 |
+|--------------|:----------------------:|:-------------------------------------------------:|
+| Resnet-50    |          0.982         |                        28.2                       |
+| MobileNet-v2 |          0.833         |                        8.4                        |
+
+The platform compatibility evaluation is also reported below:
+
+|                   Platform                   | Test results |
+|----------------------------------------------|:------------:|
+| x86 - Ubuntu 20.04 (bare installation - CPU) |     Pass     |
+| x86 - Ubuntu 20.04 (bare installation - GPU) |     Pass     |
+| x86 - Ubuntu 20.04 (pip installation)        |     Pass     |
+| x86 - Ubuntu 20.04 (CPU docker)              |     Pass     |
+| x86 - Ubuntu 20.04 (GPU docker)              |     Pass     |
+| NVIDIA Jetson TX2                            |     Pass     |
+
 #### References
 <a name="detr-paper" href="https://ai.facebook.com/research/publications/end-to-end-object-detection-with-transformers">[1]</a> Carion N., Massa F., Synnaeve G., Usunier N., Kirillov A., Zagoruyko S. (2020) End-to-End Object Detection with Transformers. In: Vedaldi A., Bischof H., Brox T., Frahm JM. (eds) Computer Vision – ECCV 2020. ECCV 2020. Lecture Notes in Computer Science, vol 12346. Springer, Cham. [doi](https://doi.org/10.1007/978-3-030-58452-8_13),
 [arXiv](https://arxiv.org/abs/2005.12872).

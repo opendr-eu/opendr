@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import os
 import shutil
 import unittest
 import torch
@@ -27,7 +25,9 @@ from detectron2 import model_zoo
 # OpenDR dependencies
 from opendr.control.single_demo_grasp import SingleDemoGraspLearner
 from opendr.engine.data import Image
+import os
 
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 # variable definitions here
 dir_temp = os.path.join(".", "tests", "sources", "tools", "control", "single_demo_grasp", "sdg_temp")
 
@@ -36,7 +36,7 @@ def load_old_weights():
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml")
-    cfg.MODEL.DEVICE = 'cpu'
+    cfg.MODEL.DEVICE = device
     model = build_model(cfg)
 
     return list(model.parameters())[0].clone()
@@ -46,7 +46,7 @@ def load_weights_from_file(path_to_model):
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
     cfg.MODEL.WEIGHTS = path_to_model  # check if it's necessary
-    cfg.MODEL.DEVICE = 'cpu'
+    cfg.MODEL.DEVICE = device
     model = build_model(cfg)
     DetectionCheckpointer(model).load(path_to_model)
 
@@ -75,7 +75,7 @@ class TestSingleDemoGraspLearner(unittest.TestCase):
         print("\n\n**********************************\nTEST SingleDemoGrasp Learner\n"
               "**********************************")
         cls.learner = SingleDemoGraspLearner(object_name='pendulum', data_directory=dir_temp, lr=0.0008, batch_size=1,
-                                             num_workers=2, num_classes=1, iters=10, threshold=0.8, device='cpu',
+                                             num_workers=2, num_classes=1, iters=10, threshold=0.8, device=device,
                                              img_per_step=2)
 
         # Download all required files for testing

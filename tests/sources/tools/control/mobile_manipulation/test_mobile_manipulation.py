@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ from opendr.control.mobile_manipulation import create_env
 from opendr.control.mobile_manipulation import MobileRLLearner
 from pathlib import Path
 
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 TEST_ITERS = 3
 TEMP_SAVE_DIR = Path(__file__).parent / "mobile_manipulation_tmp"
 EVAL_ENV_CONFIG = {
@@ -56,7 +57,7 @@ class MobileManipulationTest(unittest.TestCase):
               "**********************************")
         cls.env = create_env(EVAL_ENV_CONFIG, task='rndstartrndgoal', node_handle="train_env", wrap_in_dummy_vec=True,
                              flatten_obs=True)
-        cls.learner = MobileRLLearner(cls.env, device="cpu", iters=TEST_ITERS, temp_path=str(TEMP_SAVE_DIR))
+        cls.learner = MobileRLLearner(cls.env, device=device, iters=TEST_ITERS, temp_path=str(TEMP_SAVE_DIR))
 
     @classmethod
     def tearDownClass(cls):

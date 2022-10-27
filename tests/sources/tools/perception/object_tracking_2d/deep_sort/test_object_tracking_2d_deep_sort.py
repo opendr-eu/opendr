@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 import sys
 import unittest
 import shutil
-import os
 import torch
 from opendr.perception.object_tracking_2d import ObjectTracking2DDeepSortLearner
 from opendr.perception.object_tracking_2d import (
@@ -26,8 +25,9 @@ from opendr.perception.object_tracking_2d import (
     MotDataset,
     RawMotWithDetectionsDatasetIterator,
 )
+import os
 
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+DEVICE = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 print("Using device:", DEVICE)
 print("Using device:", DEVICE, file=sys.stderr)
