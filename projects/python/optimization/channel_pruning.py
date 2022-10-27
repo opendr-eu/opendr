@@ -61,8 +61,9 @@ class ChannelPruner:
             for a in self.collection
         ]
 
-        for layer in self.collection:
-            layer.apply_pruning(False, to_prune)
+        for i, (layer, local_to_prune) in enumerate(zip(self.collection, to_prune)):
+            print(i, "/", len(self.collection), end='\r')
+            layer.apply_pruning(False, local_to_prune)
 
         self.steps += 1
 

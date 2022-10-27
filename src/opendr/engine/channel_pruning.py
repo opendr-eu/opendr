@@ -1,5 +1,7 @@
+import math
 import torch
 from torch import nn
+from torch.nn import init
 
 
 class ChannelPruningBase(nn.Module):
@@ -57,38 +59,45 @@ class ChannelPruningBase(nn.Module):
 
     def compute_rankings(self, is_input):
 
-        dim = self.input_dim if is_input else self.output_dim
-        other_dims = [x for x in range(self.total_dims) if x != dim]
-        self.rankings = torch.norm(self.weights, dim=other_dims, p=self.norm)
+        with torch.no_grad():
+            dim = self.input_dim if is_input else self.output_dim
+            other_dims = [x for x in range(self.total_dims) if x != dim]
+            self.rankings = torch.norm(self.weights, dim=other_dims, p=self.norm)
 
-        return self.rankings
+            return self.rankings
 
     def apply_pruning(self, is_input, num_to_prune):
 
-        dim = self.input_dim if is_input else self.output_dim
+        with torch.no_grad():
+            dim = self.input_dim if is_input else self.output_dim
 
-        if self.rankings is None:
-            self.compute_rankings(is_input)
+            if self.rankings is None:
+                self.compute_rankings(is_input)
 
-        if len(self.rankings) <= num_to_prune:
-            raise ValueError("Cannot prune more than we have")
+            if len(self.rankings) <= num_to_prune:
+                raise ValueError("Cannot prune more than we have")
 
-        _, lowest_layer_ids = torch.topk(self.rankings, num_to_prune, largest=False)
-        other_ids = [x for x in range(self.total_dims) if x not in lowest_layer_ids]
-        all_index = [None if x != dim else other_ids for x in range(self.total_dims)]
-        new_weights = self.weights[all_index]
-        # old_weights = self.weights
-        self.weights = new_weights
-        # del old_weights
+            if num_to_prune <= 0:
+                return
 
-        self.rankings = None
+            _, lowest_layer_ids = torch.topk(self.rankings, num_to_prune, largest=False)
+            other_ids = [x for x in range(self.weights.shape[dim]) if x not in lowest_layer_ids]
+            all_index = [slice(None) if x != dim else other_ids for x in range(self.total_dims)]
+            new_weights = self.weights[all_index]
+            self.weights = nn.Parameter(new_weights).to(new_weights.device)
 
-        if not is_input:
-            self.propagate_pruning(num_to_prune)
+            if self.biases is not None and not is_input:
+                new_biases = self.biases[other_ids]
+                self.biases = nn.Parameter(new_biases).to(new_biases.device)
+
+            self.rankings = None
+
+            if not is_input:
+                self.propagate_pruning(num_to_prune)
 
     def propagate_pruning(self, num_to_prune):
         for link in self.links:
-            if not issubclass(link, ChannelPruningBase):
+            if not isinstance(link, ChannelPruningBase):
                 raise ValueError(str(link) + " is not a Pruning layer")
 
             link.apply_pruning(True, num_to_prune)
@@ -110,6 +119,7 @@ class ChannelPruningConvolution2D(ChannelPruningBase):
         kernel_size: int,
         stride: int = 1,
         bias=True,
+        targetable=True,
         **kwargs,
     ) -> None:
 
@@ -119,7 +129,7 @@ class ChannelPruningConvolution2D(ChannelPruningBase):
             kernel_size = (kernel_size, kernel_size)
 
         weights = nn.Parameter(
-            torch.randn([
+            torch.empty([
                     out_channels,
                     in_channels,
                     kernel_size[0],
@@ -133,7 +143,7 @@ class ChannelPruningConvolution2D(ChannelPruningBase):
 
         if bias:
             biases = nn.Parameter(
-                torch.randn([
+                torch.empty([
                         out_channels,
                     ],
                 ),
@@ -156,7 +166,24 @@ class ChannelPruningConvolution2D(ChannelPruningBase):
             input_dim=1,
             output_dim=0,
             total_dims=4,
+            targetable=targetable,
         )
+        
+        self.reset_parameters()
+
+    def reset_parameters(self) -> None:
+        #
+        # From ConvND
+        #
+        # Setting a=sqrt(5) in kaiming_uniform is the same as initializing with
+        # uniform(-1/sqrt(k), 1/sqrt(k)), where k = weight.size(1) * prod(*kernel_size)
+        # For more details see: https://github.com/pytorch/pytorch/issues/15314#issuecomment-477448573
+        init.kaiming_uniform_(self.weights, a=math.sqrt(5))
+        if self.biases is not None:
+            fan_in, _ = init._calculate_fan_in_and_fan_out(self.weights)
+            if fan_in != 0:
+                bound = 1 / math.sqrt(fan_in)
+                init.uniform_(self.biases, -bound, bound)
 
 
 class ChannelPruningLinear(ChannelPruningBase):
@@ -185,6 +212,7 @@ class ChannelPruningConvolutionTranspose2D(ChannelPruningBase):
         kernel_size: int,
         stride: int = 1,
         bias=True,
+        targetable=True,
         **kwargs,
     ) -> None:
 
@@ -194,7 +222,7 @@ class ChannelPruningConvolutionTranspose2D(ChannelPruningBase):
             kernel_size = (kernel_size, kernel_size)
 
         weights = nn.Parameter(
-            torch.randn([
+            torch.empty([
                     in_channels,
                     out_channels,
                     kernel_size[0],
@@ -208,7 +236,7 @@ class ChannelPruningConvolutionTranspose2D(ChannelPruningBase):
 
         if bias:
             biases = nn.Parameter(
-                torch.randn([
+                torch.empty([
                         out_channels,
                     ],
                 ),
@@ -231,8 +259,24 @@ class ChannelPruningConvolutionTranspose2D(ChannelPruningBase):
             input_dim=0,
             output_dim=1,
             total_dims=4,
+            targetable=targetable,
         )
 
+        self.reset_parameters()
+
+    def reset_parameters(self) -> None:
+        #
+        # From ConvND
+        #
+        # Setting a=sqrt(5) in kaiming_uniform is the same as initializing with
+        # uniform(-1/sqrt(k), 1/sqrt(k)), where k = weight.size(1) * prod(*kernel_size)
+        # For more details see: https://github.com/pytorch/pytorch/issues/15314#issuecomment-477448573
+        init.kaiming_uniform_(self.weights, a=math.sqrt(5))
+        if self.biases is not None:
+            fan_in, _ = init._calculate_fan_in_and_fan_out(self.weights)
+            if fan_in != 0:
+                bound = 1 / math.sqrt(fan_in)
+                init.uniform_(self.biases, -bound, bound)
 
 class ChannelPruningBatchNorm2D(ChannelPruningBase):
     def __init__(
@@ -273,13 +317,13 @@ class ChannelPruningBatchNorm2D(ChannelPruningBase):
 
         self.in_features -= num_to_prune
 
-        self.body = nn.BatchNorm2d(self.in_features, eps=self.eps, momentum=self.momentum, **self.kwargs)
+        self.body = nn.BatchNorm2d(self.in_features, eps=self.eps, momentum=self.momentum, **self.kwargs).to(self.body.weight.device)
 
         self.propagate_pruning(num_to_prune)
 
     def propagate_pruning(self, num_to_prune):
         for link in self.links:
-            if not issubclass(link, ChannelPruningBase):
+            if not isinstance(link, ChannelPruningBase):
                 raise ValueError(str(link) + " is not a Pruning layer")
 
             link.apply_pruning(True, num_to_prune)

@@ -177,6 +177,9 @@ class PRPN(nn.Module):
         )
         b3_dbnorm = BatchNorm2d(num_upsample_filters[2])
 
+        b3_bnorm.add_link(b3_dconv)
+        b3_dconv.add_link(b3_dbnorm)
+
         self.deconv3 = Sequential(b3_dconv, b3_dbnorm, nn.ReLU(),)
         if encode_background_as_zeros:
             num_cls = num_anchor_per_loc * num_class
@@ -184,10 +187,12 @@ class PRPN(nn.Module):
             num_cls = num_anchor_per_loc * (num_class + 1)
 
         self.conv_cls = ChannelPruningConvolution2D(
-            sum(num_upsample_filters), num_cls, 1
+            sum(num_upsample_filters), num_cls, 1, 
+            targetable=False,
         )
         self.conv_box = ChannelPruningConvolution2D(
-            sum(num_upsample_filters), num_anchor_per_loc * box_code_size, 1
+            sum(num_upsample_filters), num_anchor_per_loc * box_code_size, 1,
+            targetable=False,
         )
 
         b1_dconv.add_link(self.conv_cls)
@@ -200,7 +205,8 @@ class PRPN(nn.Module):
 
         if use_direction_classifier:
             self.conv_dir_cls = ChannelPruningConvolution2D(
-                sum(num_upsample_filters), num_anchor_per_loc * 2, 1
+                sum(num_upsample_filters), num_anchor_per_loc * 2, 1,
+                targetable=False,
             )
             b1_dconv.add_link(self.conv_dir_cls)
             b2_dconv.add_link(self.conv_dir_cls)
