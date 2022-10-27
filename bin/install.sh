@@ -16,14 +16,16 @@ sudo apt-get install --yes libfreetype6-dev lsb-release git python3-pip curl wge
 git submodule init
 git submodule update
 
-case $(lsb_release -r |cut -f2) in
-  "18.04")
-    export ROS_DISTRO=melodic;;
-  "20.04")
-    export ROS_DISTRO=noetic;;
-  *)
-    echo "Not tested for this ubuntu version" && exit 1;;
-esac
+# case $(lsb_release -r |cut -f2) in
+#   "18.04")
+#     export ROS_DISTRO=melodic;;
+#   "20.04")
+#     export ROS_DISTRO=noetic;;
+#   *)
+#     echo "Not tested for this ubuntu version" && exit 1;;
+# esac
+
+export ROS_DISTRO = noetic
 
 # Create a virtual environment and update
 python3 -m venv venv
