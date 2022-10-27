@@ -28,11 +28,6 @@ from gui.fer_display import FERDisplay
 from gui.grad_cam import GradCAM
 from gui import args_validation
 
-# Haar cascade parameters
-_HAAR_SCALE_FACTOR = 1.2
-_HAAR_NEIGHBORS = 9
-_HAAR_MIN_SIZE = (60, 60)
-
 
 class FER:
     """

@@ -1,16 +1,5 @@
 """
-Implementation of ESR-9 (Siqueira et al., 2020) trained on AffectNet (Mollahosseini et al., 2017) for emotion
-and affect perception.
-
-Reference:
-    - Siqueira, H., Magg, S. and Wermter, S., 2020. Efficient Facial Feature Learning with Wide Ensemble-based
-      Convolutional Neural Networks. Proceedings of the Thirty-Fourth AAAI Conference on Artificial Intelligence
-      (AAAI-20), pages 1–1, New York, USA.
-
-    - Mollahosseini, A., Hasani, B. and Mahoor, M.H., 2017. AffectNet: A database for facial expression, valence,
-       and arousal computing in the wild. IEEE Transactions on Affective Computing, 10(1), pp.18-31.
-
-Adopted from:
+Implementation of GradCAM, code adopted from:
 https://github.com/siqueira-hc/Efficient-Facial-Feature-Learning-with-Wide-Ensemble-based-Convolutional-Neural-Networks
 """
 
