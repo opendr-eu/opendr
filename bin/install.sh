@@ -3,7 +3,6 @@ export OPENDR_HOME=$PWD
 export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
 export PYTHON=python3
 export DISABLE_BCOLZ_AVX2=true
-export ROS_DISTRO=noetic
 
 if [[ -z "${OPENDR_DEVICE}" ]]; then
   echo "[INFO] Set available device to CPU. You can manually change this by running 'export OPENDR_DEVICE=gpu'."
@@ -17,16 +16,14 @@ sudo apt-get install --yes libfreetype6-dev lsb-release git python3-pip curl wge
 git submodule init
 git submodule update
 
-# case $(lsb_release -r |cut -f2) in
-#   "18.04")
-#     export ROS_DISTRO=melodic;;
-#   "20.04")
-#     export ROS_DISTRO=noetic;;
-#   *)
-#     echo "Not tested for this ubuntu version" && exit 1;;
-# esac
-
-
+case $(lsb_release -r |cut -f2) in
+  "18.04")
+    export ROS_DISTRO=melodic;;
+  "20.04")
+    export ROS_DISTRO=noetic;;
+  *)
+    echo "Not tested for this ubuntu version" && exit 1;;
+esac
 
 # Create a virtual environment and update
 python3 -m venv venv
@@ -41,7 +38,6 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main
 # Build OpenDR
 make install_compilation_dependencies
 make install_runtime_dependencies
-
 
 # Install additional ROS packages
 sudo apt-get install ros-noetic-vision-msgs ros-noetic-audio-common-msgs 
