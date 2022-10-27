@@ -3,6 +3,7 @@ export OPENDR_HOME=$PWD
 export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
 export PYTHON=python3
 export DISABLE_BCOLZ_AVX2=true
+export ROS_DISTRO=noetic
 
 if [[ -z "${OPENDR_DEVICE}" ]]; then
   echo "[INFO] Set available device to CPU. You can manually change this by running 'export OPENDR_DEVICE=gpu'."
@@ -25,7 +26,7 @@ git submodule update
 #     echo "Not tested for this ubuntu version" && exit 1;;
 # esac
 
-export ROS_DISTRO = noetic
+
 
 # Create a virtual environment and update
 python3 -m venv venv
