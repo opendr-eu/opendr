@@ -39,11 +39,11 @@ class EfficientPsNode:
                  ):
         """
         Initialize the EfficientPS ROS node and create an instance of the respective learner class.
+        :param input_rgb_image_topic: ROS topic for the input image stream
+        :type input_rgb_image_topic: str
         :param checkpoint: This is either a path to a saved model or one of [cityscapes, kitti] to download
             pre-trained model weights.
         :type checkpoint: str
-        :param input_rgb_image_topic: ROS topic for the input image stream
-        :type input_rgb_image_topic: str
         :param output_heatmap_topic: ROS topic for the predicted semantic and instance maps
         :type output_heatmap_topic: str
         :param output_rgb_visualization_topic: ROS topic for the generated visualization of the panoptic map
