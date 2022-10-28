@@ -44,7 +44,7 @@ def benchmark_esr(args):
         learner.model.cuda()
 
     num_runs = 100
-    batch_size = 1
+    batch_size = 32
     C = 3
     H = 96
     W = 96
