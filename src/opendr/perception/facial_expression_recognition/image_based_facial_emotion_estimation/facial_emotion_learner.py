@@ -557,8 +557,10 @@ class FacialEmotionLearner(Learner):
                       limits_axis_y=(0.2, 0.6, 0.025))
 
         np.save(path.join(base_path_his, 'Loss_Branch_{}'.format(branch_idx)), np.array(his_loss))
-        np.save(path.join(base_path_his, 'Loss_Val_Branch_{}_Valence'.format(branch_idx)), np.array(his_val_loss_valence))
-        np.save(path.join(base_path_his, 'Loss_Val_Branch_{}_Arousal'.format(branch_idx)), np.array(his_val_loss_arousal))
+        np.save(path.join(base_path_his, 'Loss_Val_Branch_{}_Valence'.format(branch_idx)),
+                np.array(his_val_loss_valence))
+        np.save(path.join(base_path_his, 'Loss_Val_Branch_{}_Arousal'.format(branch_idx)),
+                np.array(his_val_loss_arousal))
 
     def __plot_categorical(self, his_loss, his_acc, his_val_loss, his_val_acc, branch_idx, base_path_his):
         accuracies_plot = []
