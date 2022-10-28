@@ -53,8 +53,8 @@ def benchmark_esr(args):
     input_batch = []
     for i in range(batch_size):
         input_batch.append(input_img)
-    '''if type(input_batch) is list:
-        input_batch = torch.stack([torch.tensor(v.data) for v in input_batch])'''
+    if type(input_batch) is list:
+        input_batch = torch.stack([torch.tensor(v.data) for v in input_batch])
 
     def get_device_fn(*args):
         # nonlocal learner
