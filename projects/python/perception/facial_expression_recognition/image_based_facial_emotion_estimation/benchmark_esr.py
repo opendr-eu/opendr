@@ -35,7 +35,7 @@ def benchmark_esr(args):
         os.makedirs(results_dir)
     device = args.device
 
-    # print(f"==== Benchmarking {args.method} ====")
+    print(f"==== Benchmarking {args.method} ====")
 
     learner = FacialEmotionLearner(device=device, ensemble_size=args.ensemble_size)
     learner.init_model(num_branches=args.ensemble_size)
@@ -71,15 +71,15 @@ def benchmark_esr(args):
                          get_device_fn=get_device_fn,
                          transfer_to_device_fn=transfer_to_device_fn,
                          batch_size=batch_size,
-                         # print_fn=print,
+                         print_fn=print,
                          )
-    '''with open(results_dir + f"/benchmark_{args.method}_{device}.txt", "a") as f:
+    with open(results_dir + f"/benchmark_{args.method}_{device}.txt", "a") as f:
         print("== Benchmarking learner.infer ==", file=f)
         print(yaml.dump({"learner.infer": results1}), file=f)
         print("\n\n", file=f)
-        print("== Benchmarking model directly ==", file=f)'''
-    results2 = benchmark(learner.model, input_batch, num_runs=num_runs) #, print_fn=print)
-        # print(yaml.dump({"learner.model.forward": results2}))
+        print("== Benchmarking model directly ==", file=f)
+        results2 = benchmark(learner.model, input_batch, num_runs=num_runs) #, print_fn=print)
+        print(yaml.dump({"learner.model.forward": results2}))
 
 
 if __name__ == '__main__':
