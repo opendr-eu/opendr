@@ -48,13 +48,13 @@ def benchmark_esr(args):
     C = 3
     H = 96
     W = 96
-    input_face = torch.randn(batch_size, C, H, W)
-    '''input_img = Image(input_face)
+    input_face = torch.randn(C, H, W)
+    input_img = Image(input_face)
     input_batch = []
     for i in range(batch_size):
         input_batch.append(input_img)
     if type(input_batch) is list:
-        input_batch = torch.stack([torch.tensor(v.data) for v in input_batch])'''
+        input_batch = torch.stack([torch.tensor(v.data) for v in input_batch])
 
     def get_device_fn(*args):
         # nonlocal learner
@@ -65,7 +65,7 @@ def benchmark_esr(args):
 
     print("== Benchmarking learner.infer ==")
     results1 = benchmark(model=learner.infer,
-                         sample=input_face,
+                         sample=input_batch,
                          sample_with_batch_size1=None,
                          num_runs=num_runs,
                          get_device_fn=get_device_fn,
@@ -78,7 +78,7 @@ def benchmark_esr(args):
         print(yaml.dump({"learner.infer": results1}), file=f)
         print("\n\n", file=f)
         print("== Benchmarking model directly ==", file=f)
-        results2 = benchmark(learner.model, input_face, num_runs=num_runs, print_fn=print)
+        results2 = benchmark(learner.model, input_batch, num_runs=num_runs, print_fn=print)
         print(yaml.dump({"learner.model.forward": results2}))
 
 

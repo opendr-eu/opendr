@@ -614,12 +614,12 @@ class FacialEmotionLearner(Learner):
         :param input_batch: a batch of images
         :return: dimensional and categorical emotion results.
         """
-        if not isinstance(input_batch, (Image, list)):
+        '''if not isinstance(input_batch, (Image, list)):
             input_batch = Image(input_batch)
         if type(input_batch) is Image:
             input_batch = [input_batch]
         if type(input_batch) is list:
-            input_batch = torch.stack([torch.tensor(v.data) for v in input_batch])
+            input_batch = torch.stack([torch.tensor(v.data) for v in input_batch])'''
         # print('input_batch shape', input_batch.shape)
         cpu_device = torch.device('cpu')
 
