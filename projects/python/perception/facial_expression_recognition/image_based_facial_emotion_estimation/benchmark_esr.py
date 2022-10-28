@@ -57,7 +57,7 @@ def benchmark_esr(args):
         input_batch = torch.stack([torch.tensor(v.data) for v in input_batch])'''
 
     def get_device_fn(*args):
-        nonlocal learner
+        # nonlocal learner
         return next(learner.model.parameters()).device
 
     def transfer_to_device_fn(sample, device,):
