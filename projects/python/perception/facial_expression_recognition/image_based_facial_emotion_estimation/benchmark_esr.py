@@ -71,7 +71,7 @@ def benchmark_esr(args):
                          get_device_fn=get_device_fn,
                          transfer_to_device_fn=transfer_to_device_fn,
                          batch_size=batch_size,
-                         print_fn=print("== Benchmarking learner.infer =="),
+                         # print_fn=print,
                          )
     with open(results_dir + f"/benchmark_{args.method}_{device}.txt", "a") as f:
         print("== Benchmarking learner.infer ==", file=f)
