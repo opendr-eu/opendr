@@ -35,7 +35,7 @@ def benchmark_esr(args):
         os.makedirs(results_dir)
     device = args.device
 
-    print(f"==== Benchmarking {args.method} ====")
+    # print(f"==== Benchmarking {args.method} ====")
 
     learner = FacialEmotionLearner(device=device, ensemble_size=args.ensemble_size)
     learner.init_model(num_branches=args.ensemble_size)
