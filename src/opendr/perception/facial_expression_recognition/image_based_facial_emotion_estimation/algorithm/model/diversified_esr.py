@@ -12,7 +12,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 import torch
 import copy
-from cbam import CBAM
+from .cbam import CBAM
 
 
 class Base(nn.Module):

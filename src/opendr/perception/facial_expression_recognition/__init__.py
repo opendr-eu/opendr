@@ -13,8 +13,8 @@ from opendr.perception.facial_expression_recognition.\
 
 from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.facial_emotion_learner \
     import FacialEmotionLearner
-from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.cbam \
-    import CBAM
+from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model \
+    import cbam
 from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.\
     diversified_esr import DiversifiedESR
 from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.esr_9 \
@@ -29,5 +29,5 @@ from opendr.perception.facial_expression_recognition.image_based_facial_emotion_
 
 
 __all__ = ['ProgressiveSpatioTemporalBLNLearner', 'CK_CLASSES', 'CASIA_CLASSES', 'landmark_extractor',
-           'gen_muscle_data', 'data_normalization', 'FacialEmotionLearner', 'CBAM', 'datasets',
+           'gen_muscle_data', 'data_normalization', 'FacialEmotionLearner', 'cbam', 'datasets',
            'file_maker', 'image_processing', 'ESR', 'DiversifiedESR']
