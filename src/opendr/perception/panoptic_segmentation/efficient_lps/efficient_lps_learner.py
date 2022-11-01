@@ -639,7 +639,7 @@ class EfficientLpsLearner(Learner):
 			models = {
 				# TODO: No NuScenes pre-trained model yet.
 				# "nuscenes": f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_lps/models/model_nuscenes.pth",
-				"kitti": f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_lps/models/model_semantickitti.pth"
+				"semantickitti": f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_lps/models/model_semantickitti.pth"
 			}
 			if trained_on not in models.keys():
 				raise ValueError(f"Could not find model weights pre-trained on {trained_on}. "
