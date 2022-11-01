@@ -37,7 +37,7 @@ def benchmark_esr(args):
 
     print(f"==== Benchmarking {args.method} ====")
 
-    learner = FacialEmotionLearner(device=device, ensemble_size=args.ensemble_size)
+    learner = FacialEmotionLearner(device=device, ensemble_size=args.ensemble_size, diversify=True)
     learner.init_model(num_branches=args.ensemble_size)
 
     if device == 'cuda':
@@ -85,7 +85,7 @@ def benchmark_esr(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
-    parser.add_argument('--method', type=str, default='esr_9',
+    parser.add_argument('--method', type=str, default='div_esr_9',
                         help='action detection method')
     parser.add_argument('--ensemble_size', type=int, default=9,
                         help='number of ensemble branches')
