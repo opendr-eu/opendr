@@ -27,14 +27,14 @@ from opendr.perception.object_detection_2d import draw_bounding_boxes
 from opendr.engine.data import Image
 
 
-class GemNode:
+class ObjectDetectionGemNode:
     def __init__(
         self,
-        input_color_topic="/camera/color/image_raw",
-        input_infra_topic="/camera/infra/image_raw",
-        output_color_topic="/opendr/color_detection_annotated",
-        output_infra_topic="/opendr/infra_detection_annotated",
-        detection_annotations_topic="/opendr/detections",
+        input_rgb_image_topic="/camera/color/image_raw",
+        input_infra_image_topic="/camera/infra/image_raw",
+        output_rgb_image_topic="/opendr/color_detection_annotated",
+        output_infra_image_topic="/opendr/infra_detection_annotated",
+        detection_annotations_topic="/opendr/objects",
         device="cuda",
         pts_color=None,
         pts_infra=None,
