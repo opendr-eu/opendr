@@ -259,7 +259,7 @@ def main(args=None):
         print("Using CPU.")
         device = "cpu"
 
-    gem_node = GemNode(
+    gem_node = ObjectDetectionGemNode(
         device=device,
         input_rgb_image_topic=args.input_rgb_image_topic,
         output_rgb_image_topic=args.output_rgb_image_topic,
