@@ -34,26 +34,26 @@ class ObjectDetectionGemNode:
         input_infra_image_topic="/camera/infra/image_raw",
         output_rgb_image_topic="/opendr/color_detection_annotated",
         output_infra_image_topic="/opendr/infra_detection_annotated",
-        detection_annotations_topic="/opendr/objects",
+        detections_topic="/opendr/objects",
         device="cuda",
         pts_color=None,
         pts_infra=None,
     ):
         """
         Creates a ROS Node for object detection with GEM
-        :param input_color_topic: Topic from which we are reading the input color image
-        :type input_color_topic: str
-        :param input_infra_topic: Topic from which we are reading the input infrared image
-        :type: input_infra_topic: str
-        :param output_color_topic: Topic to which we are publishing the annotated color image (if None, we are not
+        :param input_rgb_image_topic: Topic from which we are reading the input color image
+        :type input_rgb_image_topic: str
+        :param input_infra_image_topic: Topic from which we are reading the input infrared image
+        :type: input_infra_image_topic: str
+        :param output_rgb_image_topic: Topic to which we are publishing the annotated color image (if None, we are not
         publishing annotated image)
-        :type output_color_topic: str
-        :param output_infra_topic: Topic to which we are publishing the annotated infrared image (if None, we are not
+        :type output_rgb_image_topic: str
+        :param output_infra_image_topic: Topic to which we are publishing the annotated infrared image (if None, we are not
         publishing annotated image)
-        :type output_infra_topic: str
-        :param detection_annotations_topic: Topic to which we are publishing the annotations (if None, we are
+        :type output_infra_image_topic: str
+        :param detections_topic: Topic to which we are publishing the annotations (if None, we are
         not publishing annotations)
-        :type detection_annotations_topic:  str
+        :type detections_topic:  str
         :param device: Device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param pts_color: Point on the color image that define alignment with the infrared image. These are camera
@@ -75,8 +75,8 @@ class ObjectDetectionGemNode:
         else:
             self.ir_publisher = None
 
-        if detection_annotations_topic is not None:
-            self.detection_publisher = rospy.Publisher(detection_annotations_topic, Detection2DArray, queue_size=10)
+        if detections_topic is not None:
+            self.detection_publisher = rospy.Publisher(detections_topic, Detection2DArray, queue_size=10)
         else:
             self.detection_publisher = None
         if pts_infra is None:
@@ -183,8 +183,8 @@ class ObjectDetectionGemNode:
         self.gem_learner.download(path=".", verbose=True)
 
         # Subscribers
-        msg_rgb = message_filters.Subscriber(input_color_topic, ROS_Image)
-        msg_ir = message_filters.Subscriber(input_infra_topic, ROS_Image)
+        msg_rgb = message_filters.Subscriber(input_color_topic, ROS_Image, queue_size=1, buff_size=10000000)
+        msg_ir = message_filters.Subscriber(input_infra_topic, ROS_Image, queue_size=1, buff_size=10000000)
 
         sync = message_filters.TimeSynchronizer([msg_rgb, msg_ir], 1)
         sync.registerCallback(self.callback)
@@ -231,15 +231,41 @@ class ObjectDetectionGemNode:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input_rgb_image_topic", help="Topic name for input rgb image",
+                        type=str, default="/camera/color/image_raw")
+    parser.add_argument("--output_rgb_image_topic", help="Topic name for output annotated rgb image",
+                        type=str, default="/opendr/rgb_objects_annotated")
+    parser.add_argument("--input_infra_image_topic", help="Topic name for input infra image",
+                        type=str, default="/camera/infra/image_raw")
+    parser.add_argument("--output_infra_image_topic", help="Topic name for output annotated infra image",
+                        type=str, default="/opendr/infra_objects_annotated")
+    parser.add_argument("--detections_topic", help="Topic name for detection messages",
+                        type=str, default="/opendr/objects")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    args = parser.parse_args()
+    
     # Select the device for running the
     try:
-        if torch.cuda.is_available():
-            print("GPU found.")
+        if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"
-        else:
+        elif args.device == "cuda":
             print("GPU not found. Using CPU instead.")
             device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
     except:
+        print("Using CPU.")
         device = "cpu"
-    detection_estimation_node = GemNode(device=device)
+
+    detection_estimation_node = ObjectDetectionGemNode(
+        device=device,
+        input_rgb_image_topic=args.input_rgb_image_topic,
+        output_rgb_image_topic=args.output_rgb_image_topic,
+        input_infra_image_topic=args.input_infra_image_topic,
+        output_infra_image_topic=args.output_infra_image_topic,
+        detections_topic=args.detections_topic,
+    )
     detection_estimation_node.listen()
