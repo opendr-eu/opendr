@@ -152,8 +152,8 @@ class DiversifiedESR(nn.Module):
         self.device = device
         self.ensemble_size = ensemble_size
 
-        self.base.to(self.device)
         self.base = Base()
+        self.base.to(self.device)
 
         self.convolutional_branches = []
         for i in range(ensemble_size):
