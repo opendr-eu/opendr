@@ -96,7 +96,7 @@ class SpatialGate(nn.Module):
     def forward(self, x):   # x shape is NxCxHxW
         x_compress = self.compress(x)   # Shape: Nx2xHxW
         x_out = self.spatial(x_compress)    # Shape: Nx1xHxW
-        scale = torch.sigmoid(x_out).unsqueeze(1).expand_as(x)
+        scale = torch.sigmoid(x_out).expand_as(x)
 
         return x * scale, torch.sigmoid(x_out)  # Shape: NxCxHxW
 
