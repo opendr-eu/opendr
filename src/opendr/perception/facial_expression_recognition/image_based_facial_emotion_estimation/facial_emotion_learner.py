@@ -127,7 +127,7 @@ class FacialEmotionLearner(Learner):
         with open(json_model_path, 'w') as outfile:
             json.dump(model_metadata, outfile)
 
-    def load(self, ensemble_size, path_to_saved_network="./trained_models/esr_9",
+    def load(self, ensemble_size=9, path_to_saved_network="./trained_models/esr_9",
              file_name_base_network="Net-Base-Shared_Representations.pt",
              file_name_conv_branch="Net-Branch_{}.pt", fix_backbone=True):
         """
@@ -703,18 +703,18 @@ class FacialEmotionLearner(Learner):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def download(self, path=None, mode="data", url=OPENDR_SERVER_URL + "perception/image_based_fer"):
+    def download(self, path=None, mode="data", url=OPENDR_SERVER_URL + "perception/facial_emotion_estimation"):
         """
         This method downloads data files and saves them in the path provided.
         :param path: Local path to save the files, defaults to self.temp_path if None
         :type path: str, path, optional
-        :param verbose: Whether to print messages in the console, defaults to False
-        :type verbose: bool, optional
+        :param mode: Whether to download data or the pretrained model
+        :type mode: It can be an item in ["data", "pretrained"]
         :param url: URL of the FTP server, defaults to OpenDR FTP URL
         :type url: str, optional
         """
 
-        valid_modes = ["data"]
+        valid_modes = ["data", "pretrained"]
         if mode not in valid_modes:
             raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
         if path is None:
@@ -727,7 +727,7 @@ class FacialEmotionLearner(Learner):
             zip_path = os.path.join(path, 'data/AffectNet_micro.zip')
             unzip_path = os.path.join(path, 'data')
             if not os.path.exists(zip_path):
-                # Download train data
+                # Download data
                 file_url = os.path.join(url, 'data/AffectNet_micro.zip')
                 urlretrieve(file_url, zip_path)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
@@ -736,6 +736,22 @@ class FacialEmotionLearner(Learner):
             else:
                 print("data files already exists.")
             print("Data download complete.")
-            downloaded_files_path = os.path.join(path, self.dataset_name)
+            downloaded_files_path = unzip_path
+
+        elif mode == "pretrained":
+            print("Downloading pretrained model weights...")
+            zip_path = os.path.join(path, 'pretrained/esr_9.zip')
+            unzip_path = os.path.join(path, 'pretrained')
+            if not os.path.exists(zip_path):
+                # Download data
+                file_url = os.path.join(url, 'pretrained/esr_9.zip')
+                urlretrieve(file_url, zip_path)
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    zip_ref.extractall(unzip_path)
+                os.remove(zip_path)
+            else:
+                print("pretrained files already exists.")
+            print("Pretrained model weights download complete.")
+            downloaded_files_path = unzip_path
 
         return downloaded_files_path

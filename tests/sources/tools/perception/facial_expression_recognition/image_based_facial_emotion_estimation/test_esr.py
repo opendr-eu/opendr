@@ -51,6 +51,7 @@ class TestFacialEmotionLearner(unittest.TestCase):
             makedirs(PATH_)
         cls.temp_dir = PATH_
         cls.dataset_path = cls.learner.download(mode='data')
+        cls.pretrained_path = cls.learner.download(mode='pretrained')
 
         cls.learner = FacialEmotionLearner(device="cpu", temp_path=cls.temp_dir,
                                            batch_size=2, max_training_epoch=1, ensemble_size=1,
@@ -79,6 +80,7 @@ class TestFacialEmotionLearner(unittest.TestCase):
         print("\n\n**********************************\nTest ESR eval function \n*"
               "*********************************")
         self.learner.init_model(num_branches=9)
+        self.learner.load(ensemble_size=9, path_to_saved_network=self.pretrained_path)
         if self.learner.categorical_train:
             eval_categorical_results = self.learner.eval(eval_type='categorical')
         if self.learner.dimensional_finetune:
@@ -93,14 +95,14 @@ class TestFacialEmotionLearner(unittest.TestCase):
         print("\n\n**********************************\nTest ESR infer function \n*"
               "*********************************")
         self.learner.init_model(num_branches=9)
+        self.learner.load(ensemble_size=9, path_to_saved_network=self.pretrained_path)
         val_data = datasets.AffectNetCategorical(idx_set=2,
                                                  max_loaded_images_per_label=2,
                                                  transforms=None,
                                                  is_norm_by_mean_std=False,
-                                                 base_path_to_affectnet=self.learner.base_path_to_dataset)
+                                                 base_path_to_affectnet=self.dataset_path)
         val_loader = DataLoader(val_data, batch_size=32, shuffle=False, num_workers=8)
         batch = next(iter(val_loader))[0]
-        self.learner.init_model(num_branches=9)
         # input is Tensor
         ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(batch[0])
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
