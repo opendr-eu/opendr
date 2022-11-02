@@ -27,7 +27,6 @@ from opendr.perception.facial_expression_recognition.image_based_facial_emotion_
     import image_processing
 
 
-
 __all__ = ['ProgressiveSpatioTemporalBLNLearner', 'CK_CLASSES', 'CASIA_CLASSES', 'landmark_extractor',
            'gen_muscle_data', 'data_normalization', 'FacialEmotionLearner', 'cbam', 'datasets',
            'file_maker', 'image_processing', 'ESR', 'DiversifiedESR']
