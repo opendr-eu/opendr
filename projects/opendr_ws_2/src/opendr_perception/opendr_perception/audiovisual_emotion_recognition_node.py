@@ -21,24 +21,26 @@ import torch
 import librosa
 import cv2
 
-import rospy
+import rclpy
+from rclpy.node import Node
 import message_filters
 from sensor_msgs.msg import Image as ROS_Image
 from audio_common_msgs.msg import AudioData
 from vision_msgs.msg import Classification2D
 
-from opendr_bridge import ROSBridge
+from opendr_ros2_bridge import ROS2Bridge
 from opendr.perception.multimodal_human_centric import AudiovisualEmotionLearner
 from opendr.perception.multimodal_human_centric import spatial_transforms as transforms
 from opendr.engine.data import Video, Timeseries
 
 
-class AudiovisualEmotionNode:
+class AudiovisualEmotionNode(Node):
 
-    def __init__(self, input_video_topic="/usb_cam/image_raw", input_audio_topic="/audio/audio",
-                 output_emotions_topic="/opendr/audiovisual_emotion", buffer_size=3.6, device="cuda"):
+    def __init__(self, input_video_topic="/image_raw", input_audio_topic="/audio",
+                 output_emotions_topic="/opendr/audiovisual_emotion", buffer_size=3.6, device="cuda",
+                 delay=0.1):
         """
-        Creates a ROS Node for audiovisual emotion recognition
+        Creates a ROS2 Node for audiovisual emotion recognition
         :param input_video_topic: Topic from which we are reading the input video. Expects detected face of size 224x224
         :type input_video_topic: str
         :param input_audio_topic: Topic from which we are reading the input audio
@@ -49,16 +51,22 @@ class AudiovisualEmotionNode:
         :type buffer_size: float
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
+        :param delay: Define the delay (in seconds) with which rgb message and depth message can be synchronized
+        :type delay: float
         """
+        super().__init__("audiovisual_emotion_recognition_node")
 
-        self.publisher = rospy.Publisher(output_emotions_topic, Classification2D, queue_size=10)
+        self.publisher = self.create_publisher(Classification2D, output_emotions_topic, 1)
 
-        self.input_video_topic = input_video_topic
-        self.input_audio_topic = input_audio_topic
+        video_sub = message_filters.Subscriber(self, ROS_Image, input_video_topic, qos_profile=1)
+        audio_sub = message_filters.Subscriber(self, AudioData, input_audio_topic, qos_profile=1)
+        # synchronize video and audio data topics
+        ts = message_filters.ApproximateTimeSynchronizer([video_sub, audio_sub], queue_size=10, slop=delay,
+                                                         allow_headerless=True)
+        ts.registerCallback(self.callback)
 
-        self.bridge = ROSBridge()
+        self.bridge = ROS2Bridge()
 
-        # Initialize the gesture recognition
         self.avlearner = AudiovisualEmotionLearner(device=device, fusion='ia', mod_drop='zerodrop')
         if not os.path.exists('model'):
             self.avlearner.download('model')
@@ -71,20 +79,7 @@ class AudiovisualEmotionNode:
         self.video_transform = transforms.Compose([
                               transforms.ToTensor(255)])
 
-    def listen(self):
-        """
-        Start the node and begin processing input data
-        """
-        rospy.init_node('opendr_audiovisualemotion_recognition', anonymous=True)
-
-        video_sub = message_filters.Subscriber(self.input_video_topic, ROS_Image)
-        audio_sub = message_filters.Subscriber(self.input_audio_topic, AudioData)
-        # synchronize video and audio data topics
-        ts = message_filters.ApproximateTimeSynchronizer([video_sub, audio_sub], 10, 0.1, allow_headerless=True)
-        ts.registerCallback(self.callback)
-
-        rospy.loginfo("Audiovisual emotion recognition node started!")
-        rospy.spin()
+        self.get_logger().info("Audiovisual emotion recognition node started!")
 
     def callback(self, image_data, audio_data):
         """
@@ -115,7 +110,7 @@ class AudiovisualEmotionNode:
             class_pred = self.avlearner.infer(audio, video)
 
             # Publish output
-            ros_class = self.bridge.from_category_to_rosclass(class_pred)
+            ros_class = self.bridge.from_category_to_rosclass(class_pred, self.get_clock().now().to_msg())
             self.publisher.publish(ros_class)
 
             self.data_buffer = np.zeros((1))
@@ -125,11 +120,13 @@ class AudiovisualEmotionNode:
 def select_distributed(m, n): return [i*n//m + n//(2*m) for i in range(m)]
 
 
-if __name__ == '__main__':
+def main(args=None):
+    rclpy.init(args=args)
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_video_topic", type=str, default="/usb_cam/image_raw",
+    parser.add_argument("--input_video_topic", type=str, default="/image_raw",
                         help="Listen to video input data on this topic")
-    parser.add_argument("--input_audio_topic", type=str, default="/audio/audio",
+    parser.add_argument("--input_audio_topic", type=str, default="/audio",
                         help="Listen to audio input data on this topic")
     parser.add_argument("--output_emotions_topic", type=str, default="/opendr/audiovisual_emotion",
                         help="Topic name for output emotions recognition")
@@ -137,6 +134,9 @@ if __name__ == '__main__':
                         help="Size of the audio buffer in seconds")
     parser.add_argument("--device", type=str, default="cuda",
                         help="Device to use (cpu, cuda)", choices=["cuda", "cpu"])
+    parser.add_argument("--delay", help="The delay (in seconds) with which RGB message and"
+                        "depth message can be synchronized", type=float, default=0.1)
+
     args = parser.parse_args()
 
     # Select the device for running
@@ -153,7 +153,16 @@ if __name__ == '__main__':
         print("Using CPU")
         device = "cpu"
 
-    avnode = AudiovisualEmotionNode(input_video_topic=args.input_video_topic, input_audio_topic=args.input_audio_topic,
-                                    output_emotions_topic=args.output_emotions_topic,
-                                    buffer_size=args.buffer_size, device=device)
-    avnode.listen()
+    emotion_node = AudiovisualEmotionNode(input_video_topic=args.input_video_topic,
+                                          input_audio_topic=args.input_audio_topic,
+                                          output_emotions_topic=args.output_emotions_topic,
+                                          buffer_size=args.buffer_size, device=device, delay=args.delay)
+
+    rclpy.spin(emotion_node)
+
+    emotion_node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()

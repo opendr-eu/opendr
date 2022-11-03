@@ -47,7 +47,7 @@ class CoX3DLearner(X3DLearner):
         num_workers=0,
         seed=123,
         num_classes=400,
-        temporal_window_size: int=None,
+        temporal_window_size: int = None,
         *args,
         **kwargs,
     ):
@@ -76,9 +76,27 @@ class CoX3DLearner(X3DLearner):
                 If None, size will be automically chosen according to the backbone. Defaults to None.
         """
         super().__init__(
-            lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head, checkpoint_after_iter,
-            checkpoint_load_iter, temp_path, device, loss, weight_decay, momentum, drop_last, pin_memory,
-            num_workers, seed, num_classes, *args, **kwargs,
+            lr,
+            iters,
+            batch_size,
+            optimizer,
+            lr_schedule,
+            backbone,
+            network_head,
+            checkpoint_after_iter,
+            checkpoint_load_iter,
+            temp_path,
+            device,
+            loss,
+            weight_decay,
+            momentum,
+            drop_last,
+            pin_memory,
+            num_workers,
+            seed,
+            num_classes,
+            *args,
+            **kwargs,
         )
         self.temporal_window_size = temporal_window_size
 
@@ -88,9 +106,7 @@ class CoX3DLearner(X3DLearner):
         Returns:
             CoX3D: model
         """
-        assert hasattr(
-            self, "model_hparams"
-        ), "`self.model_hparams` not found. Did you forget to call `_load_hparams`?"
+        assert hasattr(self, "model_hparams"), "`self.model_hparams` not found. Did you forget to call `_load_hparams`?"
         self.model = CoX3D(
             dim_in=3,
             image_size=self.model_hparams["image_size"],
@@ -135,8 +151,11 @@ class CoX3DLearner(X3DLearner):
             batch = torch.stack([torch.tensor(v.data) for v in batch])
 
         batch = batch.to(device=self.device, dtype=torch.float)
-
-        self.model.eval()
-        results = self.model.forward(batch)
+        batch = batch.to(device=self.device, dtype=torch.float)
+        if self.ort_session is not None:
+            results = torch.tensor(self.ort_session.run(None, {"video": batch.cpu().numpy()})[0])
+        else:
+            self.model.eval()
+            results = self.model.forward(batch)
         results = [Category(prediction=int(r.argmax(dim=0)), confidence=r) for r in results]
         return results

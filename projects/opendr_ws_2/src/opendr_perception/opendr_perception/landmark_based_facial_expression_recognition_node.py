@@ -14,22 +14,25 @@
 # limitations under the License.
 
 import argparse
-import rospy
 import torch
 import numpy as np
+
+import rclpy
+from rclpy.node import Node
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_bridge import ROSBridge
+from opendr_ros2_bridge import ROS2Bridge
+
 from opendr.perception.facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
 from opendr.perception.facial_expression_recognition import landmark_extractor
 from opendr.perception.facial_expression_recognition import gen_muscle_data
 from opendr.perception.facial_expression_recognition import data_normalization
 
 
-class LandmarkFacialExpressionRecognitionNode:
+class LandmarkFacialExpressionRecognitionNode(Node):
 
-    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
+    def __init__(self, input_rgb_image_topic="image_raw",
                  output_category_topic="/opendr/landmark_expression_recognition",
                  output_category_description_topic="/opendr/landmark_expression_recognition_description",
                  device="cpu", model='pstbln_afew', shape_predictor='./predictor_path'):
@@ -51,20 +54,22 @@ class LandmarkFacialExpressionRecognitionNode:
         :param shape_predictor: pretrained model to use for landmark extraction from a facial image
         :type model: str
         """
-
+        super().__init__('landmark_based_facial_expression_recognition_node')
         # Set up ROS topics and bridge
-        self.input_rgb_image_topic = input_rgb_image_topic
-        self.bridge = ROSBridge()
+
+        self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 
         if output_category_topic is not None:
-            self.hypothesis_publisher = rospy.Publisher(output_category_topic, ObjectHypothesis, queue_size=10)
+            self.hypothesis_publisher = self.create_publisher(ObjectHypothesis, output_category_topic, 1)
         else:
             self.hypothesis_publisher = None
 
         if output_category_description_topic is not None:
-            self.string_publisher = rospy.Publisher(output_category_description_topic, String, queue_size=10)
+            self.string_publisher = self.create_publisher(String, output_category_description_topic, 1)
         else:
             self.string_publisher = None
+
+        self.bridge = ROS2Bridge()
 
         # Initialize the landmark-based facial expression recognition
         if model == 'pstbln_ck+':
@@ -81,18 +86,11 @@ class LandmarkFacialExpressionRecognitionNode:
                                                                          num_class=num_class, num_point=num_point,
                                                                          num_person=1, in_channels=2,
                                                                          blocksize=5, topology=[15, 10, 15, 5, 5, 10])
-        model_saved_path = "./pretrained_models/"+model
+        model_saved_path = "./pretrained_models/" + model
         self.expression_classifier.load(model_saved_path, model)
         self.shape_predictor = shape_predictor
 
-    def listen(self):
-        """
-        Start the node and begin processing input data
-        """
-        rospy.init_node('opendr_landmark_based_facial_expression_recognition', anonymous=True)
-        rospy.Subscriber(self.input_image_topic, ROS_Image, self.callback)
-        rospy.loginfo("landmark-based facial expression recognition node started!")
-        rospy.spin()
+        self.get_logger().info("landmark-based facial expression recognition node started!")
 
     def callback(self, data):
         """
@@ -132,11 +130,12 @@ def _landmark2numpy(landmarks):
     return numpy_data
 
 
-if __name__ == '__main__':
+def main(args=None):
+    rclpy.init(args=args)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input image",
-                        type=str, default="/usb_cam/image_raw")
+                        type=str, default="image_raw")
     parser.add_argument("-o", "--output_category_topic", help="Topic name for output recognized category",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/landmark_expression_recognition")
@@ -171,4 +170,15 @@ if __name__ == '__main__':
             output_category_description_topic=args.output_category_description_topic,
             device=device, model=args.model,
             shape_predictor=args.shape_predictor)
-    landmark_expression_estimation_node.listen()
+
+    rclpy.spin(landmark_expression_estimation_node)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    landmark_expression_estimation_node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
