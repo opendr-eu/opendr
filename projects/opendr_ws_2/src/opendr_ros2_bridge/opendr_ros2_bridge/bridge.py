@@ -27,8 +27,6 @@ from geometry_msgs.msg import Point, Pose2D
 from ...opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
 
 
-
-
 class ROS2Bridge:
     """
     This class provides an interface to convert OpenDR data types and targets into ROS2-compatible ones similar
