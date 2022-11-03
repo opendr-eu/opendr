@@ -15,7 +15,7 @@
 from pathlib import Path
 import cv2
 from abc import ABC, abstractmethod
-from opendr.src.opendr.engine.target import BoundingBoxList
+from opendr.engine.target import BoundingBoxList
 import numpy as np
 import torch
 from typing import Union
