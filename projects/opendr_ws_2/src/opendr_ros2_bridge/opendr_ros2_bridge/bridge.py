@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import numpy as np
-from opendr.engine.data import Image
-from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
+from opendr.src.opendr.engine.data import Image
+from opendr.src.opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
 from cv_bridge import CvBridge
 from std_msgs.msg import String, ColorRGBA, Header
@@ -23,7 +23,9 @@ from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, Object
     Classification2D
 from shape_msgs.msg import Mesh, MeshTriangle
 from geometry_msgs.msg import Point, Pose2D
-from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
+from ...opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
+
+
 
 
 class ROS2Bridge:
