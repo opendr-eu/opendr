@@ -26,7 +26,7 @@ from cv_bridge import CvBridge
 
 from opendr.projects.python.simulation.synthetic_multi_view_facial_image_generation.algorithm.DDFA.utils.ddfa \
     import str2bool
-from opendr.engine.data import Image
+from opendr.src.opendr.engine.data import Image
 from opendr.projects.python.simulation.synthetic_multi_view_facial_image_generation.SyntheticDataGeneration \
     import MultiviewDataGeneration
 
