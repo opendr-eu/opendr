@@ -25,10 +25,12 @@ from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, Object
 from geometry_msgs.msg import Pose2D, Point, Pose as Pose3D
 from shape_msgs.msg import Mesh, MeshTriangle
 from std_msgs.msg import ColorRGBA, String, Header
-from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg
+from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, PointCloud2 as PointCloud2Msg,\
+     ChannelFloat32 as ChannelFloat32Msg, PointField as PointFieldMsg
 import rospy
 from geometry_msgs.msg import Point32 as Point32Msg, Quaternion as QuaternionMsg
 from ros_bridge.msg import OpenDRPose2D, OpenDRPose2DKeypoint
+from sensor_msgs import point_cloud2 as pc2
 
 
 class ROSBridge:
@@ -554,6 +556,59 @@ class ROSBridge:
         ros_point_cloud.channels = channels
 
         return ros_point_cloud
+    
+    def from_ros_point_cloud2(self, point_cloud: PointCloud2Msg):
+
+        """
+        Converts a ROS PointCloud2 message into an OpenDR PointCloud
+        :param message: ROS PointCloud2 to be converted
+        :type message: sensor_msgs.msg.PointCloud2
+        :return: OpenDR PointCloud
+        :rtype: engine.data.PointCloud
+        """
+
+        points = np.empty([len(point_cloud.data), 3 + len(point_cloud.fields) - 3], dtype=np.float32)
+
+        for i in range(len(point_cloud.data)):
+            point = point_cloud.data[i]
+            x, y, z = point.x, point.y, point.z
+
+            points[i, 0] = x
+            points[i, 1] = y
+            points[i, 2] = z
+
+            for q in range(len(point_cloud.fields) - 3):
+                points[i, 3 + q] = point_cloud.fields[3 + q]
+
+        result = PointCloud(points)
+
+        return result
+
+    def to_ros_point_cloud2(self, point_cloud: PointCloud):
+
+        """
+        Converts an OpenDR PointCloud message into a ROS PointCloud2
+        :param: OpenDR PointCloud
+        :type: engine.data.PointCloud
+        :return message: ROS PointCloud2
+        :rtype message: sensor_msgs.msg.PointCloud2
+        """
+
+        header = Header()
+        header.stamp = rospy.Time.now()
+
+        fields = [PointFieldMsg("x", 0, PointFieldMsg.FLOAT32, 1),
+                  PointFieldMsg("y", 0, PointFieldMsg.FLOAT32, 1),
+                  PointFieldMsg("z", 0, PointFieldMsg.FLOAT32, 1),
+                  PointFieldMsg("rgba", 0, PointFieldMsg.FLOAT32, 1)]
+        points = []
+
+        for point in point_cloud.data:
+            pt = [point[0], point[1], point[2], point[3]]
+            points.append(pt)
+        
+
+        return pc2.create_cloud(header, fields, points)
 
     def from_ros_boxes_3d(self, ros_boxes_3d: Detection3DArray, classes):
         """
