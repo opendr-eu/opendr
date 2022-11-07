@@ -16,7 +16,6 @@ import numpy as np
 from opendr.engine.data import Image, Timeseries
 from opendr.engine.target import Pose, BoundingBox, BoundingBoxList, Category
 
-
 from cv_bridge import CvBridge
 from std_msgs.msg import String, ColorRGBA, Header
 from sensor_msgs.msg import Image as ImageMsg
