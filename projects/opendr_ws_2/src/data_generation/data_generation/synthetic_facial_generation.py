@@ -168,5 +168,6 @@ def main(args=None):
     synthetic_data_generation_node.destroy_node()
     rclpy.shutdown()
 
+
 if __name__ == '__main__':
     main()
