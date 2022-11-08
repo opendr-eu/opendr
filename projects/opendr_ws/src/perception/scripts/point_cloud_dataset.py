@@ -34,16 +34,13 @@ class PointCloudDatasetNode:
         Creates a ROS Node for publishing dataset point clouds
         """
 
-        # Initialize the face detector
         self.dataset = dataset
-        # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
         self.delay = 1.0 / data_fps
 
-        if output_point_cloud_topic is not None:
-            self.output_point_cloud_publisher = rospy.Publisher(
-                output_point_cloud_topic, ROS_PointCloud, queue_size=10
-            )
+        self.output_point_cloud_publisher = rospy.Publisher(
+            output_point_cloud_topic, ROS_PointCloud, queue_size=10
+        )
 
     def start(self):
         i = 0
@@ -95,11 +92,16 @@ def main():
         dataset_path + "/training/calib",
     )
 
+    rospy.init_node('point_cloud_dataset')
+    rospy.loginfo("PointCloudDatasetNode started.")
+
     dataset_node = PointCloudDatasetNode(
         dataset, output_point_cloud_topic=output_point_cloud_topic, data_fps=data_fps
     )
 
     dataset_node.start()
+    rospy.spin()
+
 
 if __name__ == '__main__':
     main()
