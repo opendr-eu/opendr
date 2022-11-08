@@ -56,7 +56,7 @@ class ImageDatasetNode:
 
             rospy.loginfo("Publishing image [" + str(i) + "]")
             message = self.bridge.to_ros_image(
-                image, encoding="rgb8"
+                image, encoding="bgr8"
             )
             self.output_image_publisher.publish(message)
 
