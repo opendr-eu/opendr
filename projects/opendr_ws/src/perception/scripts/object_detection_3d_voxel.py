@@ -59,14 +59,12 @@ class ObjectDetection3DVoxelNode:
 
         self.learner.load(os.path.join(temp_dir, model_name), verbose=True)
 
-        # Initialize OpenDR ROSBridge object
+        self.input_point_cloud_topic = input_point_cloud_topic
         self.bridge = ROSBridge()
 
         self.detection_publisher = rospy.Publisher(
             output_detection3d_topic, Detection3DArray, queue_size=1
         )
-
-        rospy.Subscriber(input_point_cloud_topic, ROS_PointCloud, self.callback)
 
     def callback(self, data):
         """
@@ -81,9 +79,18 @@ class ObjectDetection3DVoxelNode:
 
         # Convert detected boxes to ROS type and publish
         ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes, classes=["Car", "Van", "Truck", "Pedestrian", "Cyclist"])
-        if self.detection_publisher is not None:
-            self.detection_publisher.publish(ros_boxes)
-            rospy.loginfo("Published detection boxes")
+        self.detection_publisher.publish(ros_boxes)
+        rospy.loginfo("Published detection boxes")
+
+    def listen(self):
+        """
+        Start the node and begin processing input data.
+        """
+        rospy.init_node('voxel_detection_3d', anonymous=True)
+        rospy.Subscriber(self.input_point_cloud_topic, ROS_PointCloud, self.callback, queue_size=1, buff_size=10000000)
+
+        rospy.loginfo("Object Detection 3D Voxel Node started.")
+        rospy.spin()
 
 
 def main():
@@ -98,7 +105,7 @@ def main():
             "car", "xyres_16.proto"
         )
     )
-    parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
+    parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
     parser.add_argument("-i", "--input_point_cloud_topic",
                         help="Point Cloud topic provdied by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
@@ -132,6 +139,7 @@ def main():
     )
 
     voxel_node.listen()
+
 
 if __name__ == '__main__':
     main()
