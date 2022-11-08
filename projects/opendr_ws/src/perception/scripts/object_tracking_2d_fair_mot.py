@@ -68,8 +68,8 @@ class ObjectTracking2DFairMotNode:
 
         self.learner.load(os.path.join(temp_dir, model_name), verbose=True)
 
-        # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
+        self.input_image_topic = input_image_topic
 
         self.detection_publisher = rospy.Publisher(
             output_detection_topic, Detection2DArray, queue_size=10
@@ -82,8 +82,6 @@ class ObjectTracking2DFairMotNode:
             self.output_image_publisher = rospy.Publisher(
                 output_image_topic, ROS_Image, queue_size=10
             )
-
-        rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
 
     def callback(self, data):
         """
@@ -120,6 +118,16 @@ class ObjectTracking2DFairMotNode:
         if self.tracking_id_publisher is not None:
             self.tracking_id_publisher.publish(ros_ids)
             rospy.loginfo("Published tracking ids")
+
+    def listen(self):
+        """
+        Start the node and begin processing input data.
+        """
+        rospy.init_node('object_tracking_2d_fair_mot_node', anonymous=True)
+        rospy.Subscriber(self.input_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
+
+        rospy.loginfo("Object Tracking 2D Fair Mot Node started.")
+        rospy.spin()
 
 
 colors = [
@@ -171,7 +179,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--model_name", help="Name of the trained model",
                         type=str, default="fairmot_dla34")
-    parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
+    parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
     parser.add_argument("-i", "--input_image_topic",
                         help="Input Image topic provdied by either an image_dataset_node, webcam or any other image node",
