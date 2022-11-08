@@ -98,6 +98,9 @@ def main():
         },
         scan_labels=False
     )
+
+    rospy.init_node("image_dataset", anonymous=True)
+
     dataset_node = ImageDatasetNode(
         dataset,
         output_image_topic=output_image_topic,
@@ -105,6 +108,7 @@ def main():
     )
 
     dataset_node.start()
+
 
 if __name__ == '__main__':
     main()
