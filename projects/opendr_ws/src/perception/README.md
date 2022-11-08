@@ -8,7 +8,7 @@ This package contains ROS nodes related to the perception package of OpenDR.
 
 Before you can run any of the toolkit's ROS nodes, some prerequisites need to be fulfilled:
 1. First of all, you need to [set up the required packages and build your workspace.](../../README.md#first-time-setup) 
-2. Start roscore by opening a new terminal where ROS is sourced properly (`source /opt/ros/noetic/setup.bash`) and run `roscore`.
+2. Start roscore by opening a new terminal where ROS is sourced properly (`source /opt/ros/noetic/setup.bash`) and run `roscore`, if you haven't already done so.
 3. _(Optional for nodes with [RGB input](#rgb-input-nodes))_ 
 
     For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam` ([instructions to install, step 5.](../../README.md#first-time-setup)). You can run the webcam node in a new terminal inside `opendr_ws` and with the workspace sourced using:
@@ -51,7 +51,8 @@ Before you can run any of the toolkit's ROS nodes, some prerequisites need to be
 ### Pose Estimation ROS Node
 
 You can find the pose estimation ROS node python script [here](./scripts/pose_estimation.py) to inspect the code and modify it as you wish to fit your needs.
-The node makes use of the toolkit's [pose estimation tool](../../../../src/opendr/perception/pose_estimation/lightweight_open_pose/lightweight_open_pose_learner.py) whose documentation can be found [here](../../../../docs/reference/lightweight-open-pose.md). The node publishes the detected poses in [OpenDR's 2D pose message format](../ros_bridge/msg/OpenDRPose2D.msg).
+The node makes use of the toolkit's [pose estimation tool](../../../../src/opendr/perception/pose_estimation/lightweight_open_pose/lightweight_open_pose_learner.py) whose documentation can be found [here](../../../../docs/reference/lightweight-open-pose.md). 
+The node publishes the detected poses in [OpenDR's 2D pose message format](../ros_bridge/msg/OpenDRPose2D.msg), which saves a list of [OpenDR's keypoint message format](../ros_bridge/msg/OpenDRPose2DKeypoint.msg).
 
 #### Instructions for basic usage:
 

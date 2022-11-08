@@ -10,6 +10,8 @@ ones similar to CvBridge. You can find more information in the corresponding [do
 ## First time setup
 For the initial setup you can follow the instructions below:
 
+0. Make sure ROS noetic is installed: http://wiki.ros.org/noetic/Installation/Ubuntu (desktop full install)
+
 1. Open a new terminal window and source the necessary distribution tools:
     ```shell
     source /opt/ros/noetic/setup.bash
@@ -39,14 +41,15 @@ For the initial setup you can follow the instructions below:
     ```shell
     catkin_make
     ```
-7. Before running a node, the ROS master node needs to be running, so in a new terminal repeat step 1. and then:
+7. Before running a node, the ROS master node needs to be running, so in a new terminal repeat step 1. and then run:
     ```shell
     roscore
     ```
-8. Return to the original terminal and source the workspace. You are now ready to run an OpenDR ROS node:
+8. Return to the original terminal and source the workspace:
     ```shell
     source devel/setup.bash
     ```
+   You are now ready to run an OpenDR ROS node. Keep reading below.
 
 #### After first time setup
 For running OpenDR nodes after you have completed the initial setup, you can skip steps 2. and 5. from the list above. You can also skip building the workspace (step 6.) granted it's been already built and no changes were made to the code inside the workspace, e.g. you modified the source code of a node.
@@ -56,6 +59,8 @@ After completing the setup you can read more information on the [perception pack
 
 #### Node documentation
 You can also take a look at the list of tools [below](#structure) and click on the links to navigate directly to documentation for specific nodes with instructions on how to run and modify them.
+
+**For first time users we suggest reading the introductory sections (prerequisites and notes) first.**
 
 ## Structure
 
