@@ -567,18 +567,18 @@ class ROSBridge:
         :rtype: engine.data.PointCloud
         """
 
-        points = np.empty([len(point_cloud.data), 3 + len(point_cloud.fields) - 3], dtype=np.float32)
+        points = np.empty([len(point_cloud.data), len(point_cloud.fields)], dtype=np.float32)
 
         for i in range(len(point_cloud.data)):
             point = point_cloud.data[i]
-            x, y, z = point.x, point.y, point.z
+            x, y, z = point[0], point[1], point[2]
 
             points[i, 0] = x
             points[i, 1] = y
             points[i, 2] = z
 
             for q in range(len(point_cloud.fields) - 3):
-                points[i, 3 + q] = point_cloud.fields[3 + q]
+                points[i, 3 + q] = point[3 + q]
 
         result = PointCloud(points)
 
@@ -597,18 +597,25 @@ class ROSBridge:
         header = Header()
         header.stamp = rospy.Time.now()
 
+        channel_count = point_cloud.data.shape[-1] - 3
+
         fields = [PointFieldMsg("x", 0, PointFieldMsg.FLOAT32, 1),
-                  PointFieldMsg("y", 0, PointFieldMsg.FLOAT32, 1),
-                  PointFieldMsg("z", 0, PointFieldMsg.FLOAT32, 1),
-                  PointFieldMsg("rgba", 0, PointFieldMsg.FLOAT32, 1)]
+                  PointFieldMsg("y", 4, PointFieldMsg.FLOAT32, 1),
+                  PointFieldMsg("z", 8, PointFieldMsg.FLOAT32, 1)]
+        for i in range(channel_count):
+                fields.append(PointFieldMsg("channel_" + str(i), 12 + i * 4, PointFieldMsg.FLOAT32, 1))
         points = []
 
         for point in point_cloud.data:
-            pt = [point[0], point[1], point[2], point[3]]
+            pt = []
+            for channel in point:
+                pt.append(channel)
             points.append(pt)
-        
+ 
 
-        return pc2.create_cloud(header, fields, points)
+        ros_point_cloud2 = pc2.create_cloud(header, fields, points)
+
+        return ros_point_cloud2
 
     def from_ros_boxes_3d(self, ros_boxes_3d: Detection3DArray, classes):
         """

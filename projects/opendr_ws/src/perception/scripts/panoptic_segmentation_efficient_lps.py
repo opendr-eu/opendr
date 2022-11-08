@@ -21,7 +21,7 @@ from typing import Optional, List
 import numpy as np
 import matplotlib
 import rospy
-from sensor_msgs.msg import PointCloud as ROS_PointCloud
+from sensor_msgs.msg import PointCloud2 as ROS_PointCloud2
 from sensor_msgs.msg import Image as ROS_Image
 
 from opendr_bridge import ROSBridge
@@ -102,7 +102,7 @@ class EfficientLpsNode:
         Initialize the Subscribers to all relevant topics.
         """
 
-        rospy.Subscriber(self.input_rgb_pcl_topic, ROS_PointCloud, self.callback)
+        rospy.Subscriber(self.input_rgb_pcl_topic, ROS_PointCloud2, self.callback)
 
     def _init_publisher(self):
         """
@@ -116,7 +116,7 @@ class EfficientLpsNode:
                     f"{self.output_heatmap_pointcloud_topic}/semantic", ROS_Image, queue_size=10)
             else:
                 self._instance_heatmap_publisher = rospy.Publisher(
-                    self.output_heatmap_pointcloud_topic, ROS_PointCloud, queue_size=10)
+                    self.output_heatmap_pointcloud_topic, ROS_PointCloud2, queue_size=10)
                 self._semantic_heatmap_publisher = None
         if self.output_rgb_visualization_topic is not None:
             self._visualization_publisher = rospy.Publisher(self.output_rgb_visualization_topic,
@@ -158,7 +158,7 @@ class EfficientLpsNode:
             self._init_subscribers()
             rospy.spin()
 
-    def callback(self, data: ROS_PointCloud):
+    def callback(self, data: ROS_PointCloud2):
         """
         Predict the panoptic segmentation map from the input point cloud and publish the results.
 
@@ -189,7 +189,7 @@ class EfficientLpsNode:
                 if self.projected_output:
                     self._instance_heatmap_publisher.publish(self._bridge.to_ros_image(prediction[0]))
                 else:
-                    labeled_pc = ROS_PointCloud(self._join_arrays([pointcloud.data, prediction[0], prediction[1]]))
+                    labeled_pc = ROS_PointCloud2(self._join_arrays([pointcloud.data, prediction[0], prediction[1]]))
                     self._instance_heatmap_publisher.publish(self._bridge.to_ros_point_cloud(labeled_pc))
 
             if self._semantic_heatmap_publisher is not None and \

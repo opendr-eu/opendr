@@ -41,6 +41,9 @@ class PointCloud2DatasetNode:
             message = self.bridge.to_ros_point_cloud2(
                 point_cloud
             )
+            print(len(message.data))
+            print(len(message.fields))
+            print(message.data[0])
             self.output_point_cloud_2_publisher.publish(message)
 
             time.sleep(0.1)
