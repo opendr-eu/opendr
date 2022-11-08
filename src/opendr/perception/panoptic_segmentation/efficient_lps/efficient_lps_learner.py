@@ -615,7 +615,7 @@ class EfficientLpsLearner(Learner):
 	@staticmethod
 	def download(path: Union[str, Path],
 				 mode: str = "model",
-				 trained_on: str = "kitti"
+				 trained_on: str = "semantickitti"
 				 ) -> str:
 		"""
 		Download data from the OpenDR server.

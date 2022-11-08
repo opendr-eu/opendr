@@ -147,23 +147,23 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
                  min_points: int = 50,
                  ) -> Dict[str, Any]:
         """
-This method is used to evaluate the predictions versus the ground truth returns the following stats:
-    - Panoptic Quality (PQ)
-    - Segmentation Quality (SQ)
-    - Recognition Quality (RQ)
-    - Intersection over Union (IOU)
+        This method is used to evaluate the predictions versus the ground truth returns the following stats:
+            - Panoptic Quality (PQ)
+            - Segmentation Quality (SQ)
+            - Recognition Quality (RQ)
+            - Intersection over Union (IOU)
 
-This function contains modified code from '_evaluate_panoptic()' in
-    src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS/mmdet2/datasets/semantic_kitti.py
+        This function contains modified code from '_evaluate_panoptic()' in
+            src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS/mmdet2/datasets/semantic_kitti.py
 
-:param prediction_path: path to the predicted stuffandthing maps.
-:type prediction_path: str | pathlib.Path
-:param min_points:
-:type min_points: int
+        :param prediction_path: path to the predicted stuffandthing maps.
+        :type prediction_path: str | pathlib.Path
+        :param min_points:
+        :type min_points: int
 
-:return: Evaluation statistics.
-:rtype: dict
-"""
+        :return: Evaluation statistics.
+        :rtype: dict
+        """
 
         if not isinstance(prediction_path, Path):
             prediction_path = Path(prediction_path)
@@ -227,15 +227,15 @@ This function contains modified code from '_evaluate_panoptic()' in
                     idx: int
                     ) -> Tuple[PointCloud, None]:
         """
-Method is used for loading the idx-th sample of a dataset along with its annotation.
-In this case, the annotation is split up into different files and, thus, a different interface is used.
+        Method is used for loading the idx-th sample of a dataset along with its annotation.
+        In this case, the annotation is split up into different files and, thus, a different interface is used.
 
-:param idx: Index of the sample to load.
-:type idx: int
+        :param idx: Index of the sample to load.
+        :type idx: int
 
-:return: The idx-th sample and the corresponding annotation.
-:rtype: Tuple of (PointCloud, None)
-"""
+        :return: The idx-th sample and the corresponding annotation.
+        :rtype: Tuple of (PointCloud, None)
+        """
 
         dataset = self._get_mmdet2_dataset(test_mode=not self.split == "train", ignore_pipeline=True)
         item_path = dataset.vel_seq_infos[idx]
@@ -246,11 +246,11 @@ In this case, the annotation is split up into different files and, thus, a diffe
     def __len__(self
                 ) -> int:
         """
-This method returns the size of the dataset in terms of number of data points (scan frames).
+        This method returns the size of the dataset in terms of number of data points (scan frames).
 
-:return: the size of the dataset
-:rtype: int
-"""
+        :return: the size of the dataset
+        :rtype: int
+        """
 
         return len(self._get_mmdet2_dataset(test_mode=not self.split == "train", ignore_pipeline=True))
 
@@ -260,8 +260,8 @@ This method returns the size of the dataset in terms of number of data points (s
         """
         Returns the dataset in a format compatible with the mmdet2 dataloader.
 
-:param test_mode: Whether to use the train or test data pipelines.
-                                          If set to True, the panoptic ground truth data has to be present
+        :param test_mode: Whether to use the train or test data pipelines.
+                          If set to True, the panoptic ground truth data has to be present
         :type test_mode: bool
 
         :return: MMDet compatible dataset
