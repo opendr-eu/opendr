@@ -188,7 +188,7 @@ def main(
     parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
                         type=str, default="temp")
     parser.add_argument("-i", "--input_image_topic",
-                        help="Input Image topic provdied by either an image_dataset_node, webcam or any other image node",
+                        help="Input Image topic provided by either an image_dataset_node, webcam or any other image node",
                         type=str, default="/opendr/dataset_image")
     parser.add_argument("-od", "--output_detection_topic",
                         help="Output detections topic",

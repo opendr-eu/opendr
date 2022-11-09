@@ -132,7 +132,6 @@ def main(
     input_point_cloud_topic = args.input_point_cloud_topic
     detector_model_name = args.detector_model_name
     temp_dir = args.temp_dir
-    device = args.device
     detector_model_config_path = args.detector_model_config_path
     output_detection3d_topic = args.output_detection3d_topic
     output_tracking3d_id_topic = args.output_tracking3d_id_topic
