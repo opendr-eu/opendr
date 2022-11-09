@@ -17,7 +17,7 @@ import torch
 import argparse
 import cv2
 import os
-from opendr.engine.target import TrackingAnnotation
+from opendr.engine.target import TrackingAnnotationList
 import rclpy
 from rclpy.node import Node
 from vision_msgs.msg import Detection2DArray
@@ -37,9 +37,9 @@ class ObjectTracking2DDeepSortNode(Node):
         self,
         detector: Learner,
         input_image_topic="/usb_cam/image_raw",
-        output_detection_topic="/opendr/detection",
-        output_tracking_id_topic="/opendr/tracking_id",
-        output_image_topic="/opendr/image_annotated",
+        output_detection_topic="/opendr/deep_sort_detection",
+        output_tracking_id_topic="/opendr/deep_sort_tracking_id",
+        output_image_topic="/opendr/deep_sort_image_annotated",
         device="cuda:0",
         model_name="deep_sort",
         temp_dir="temp",
@@ -78,20 +78,22 @@ class ObjectTracking2DDeepSortNode(Node):
 
         self.learner.load(os.path.join(temp_dir, model_name), verbose=True)
 
-        # Initialize OpenDR ROSBridge object
         self.bridge = ROS2Bridge()
-        self.tracking_id_publisher = self.create_publisher(
-            Int32MultiArray, output_tracking_id_topic, 1
-        )
+        
+        if output_tracking_id_topic is not None:
+            self.tracking_id_publisher = self.create_publisher(
+                Int32MultiArray, output_tracking_id_topic, 1
+            )
 
         if output_image_topic is not None:
             self.output_image_publisher = self.create_publisher(
                 ROS_Image, output_image_topic, 1
             )
 
-        self.detection_publisher = self.create_publisher(
-            Detection2DArray, output_detection_topic, 1
-        )
+        if output_detection_topic is not None:
+            self.detection_publisher = self.create_publisher(
+                Detection2DArray, output_detection_topic, 1
+            )
 
         self.create_subscription(ROS_Image, input_image_topic, self.callback, 1)
 
@@ -117,18 +119,15 @@ class ObjectTracking2DDeepSortNode(Node):
             self.output_image_publisher.publish(message)
             self.get_logger().info("Published annotated image")
 
-        ids = [int(tracking_box.id) for tracking_box in tracking_boxes]
-
-        # Convert detected boxes to ROS type and publish
-        ros_boxes = self.bridge.to_ros_boxes(detection_boxes)
         if self.detection_publisher is not None:
+            ros_boxes = self.bridge.to_ros_boxes(detection_boxes)
             self.detection_publisher.publish(ros_boxes)
             self.get_logger().info("Published " + str(len(detection_boxes)) + " detection boxes")
 
-        ros_ids = Int32MultiArray()
-        ros_ids.data = ids
-
         if self.tracking_id_publisher is not None:
+            ids = [int(tracking_box.id) for tracking_box in tracking_boxes]
+            ros_ids = Int32MultiArray()
+            ros_ids.data = ids
             self.tracking_id_publisher.publish(ros_ids)
             self.get_logger().info("Published " + str(len(ids)) + " tracking ids")
 
@@ -143,7 +142,7 @@ colors = [
 ]
 
 
-def draw_predictions(frame, predictions: TrackingAnnotation, is_centered=False, is_flipped_xy=True):
+def draw_predictions(frame, predictions: TrackingAnnotationList, is_centered=False, is_flipped_xy=True):
     global colors
     w, h, _ = frame.shape
 
@@ -192,13 +191,13 @@ def main(
                         type=str, default="/opendr/dataset_image")
     parser.add_argument("-od", "--output_detection_topic",
                         help="Output detections topic",
-                        type=str, default="/opendr/detection")
+                        type=str, default="/opendr/deep_sort_detection")
     parser.add_argument("-ot", "--output_tracking_id_topic",
                         help="Output detections topic",
-                        type=str, default="/opendr/tracking_id")
+                        type=str, default="/opendr/deep_sort_tracking_id")
     parser.add_argument("-oi", "--output_image_topic",
                         help="Output detections topic",
-                        type=str, default="/opendr/image_annotated")
+                        type=str, default="/opendr/deep_sort_image_annotated")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
@@ -230,8 +229,8 @@ def main(
         model_name=args.model_name,
         input_image_topic=args.input_image_topic,
         temp_dir=args.temp_dir,
-        output_detection_topic=args.output_detection_topic,
-        output_tracking_id_topic=args.output_tracking_id_topic,
+        output_detection_topic=args.output_detection_topic if args.output_detection_topic != "None" else None,
+        output_tracking_id_topic=args.output_tracking_id_topic if args.output_tracking_id_topic != "None" else None,
         output_image_topic=args.output_image_topic if args.output_image_topic != "None" else None,
     )
     rclpy.spin(deep_sort_node)
