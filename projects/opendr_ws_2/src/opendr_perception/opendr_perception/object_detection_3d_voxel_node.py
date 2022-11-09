@@ -41,7 +41,7 @@ class ObjectDetection3DVoxelNode(Node):
         """
         Creates a ROS2 Node for 3D object detection
         :param input_point_cloud_topic: Topic from which we are reading the input point cloud
-        :type input_image_topic: str
+        :type input_point_cloud_topic: str
         :param output_detection3d_topic: Topic to which we are publishing the annotations
         :type output_detection3d_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
@@ -88,9 +88,8 @@ class ObjectDetection3DVoxelNode(Node):
 
         # Convert detected boxes to ROS type and publish
         ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes)
-        if self.detection_publisher is not None:
-            self.detection_publisher.publish(ros_boxes)
-            self.get_logger().info("Published " + str(len(detection_boxes)) + " detection boxes")
+        self.detection_publisher.publish(ros_boxes)
+        self.get_logger().info("Published " + str(len(detection_boxes)) + " detection boxes")
 
 
 def main(
@@ -111,7 +110,7 @@ def main(
     parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
                         type=str, default="temp")
     parser.add_argument("-i", "--input_point_cloud_topic",
-                        help="Point Cloud topic provdied by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
+                        help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
                         type=str, default="/opendr/dataset_point_cloud")
     parser.add_argument("-o", "--output_detection3d_topic",
                         help="Output detections topic",
