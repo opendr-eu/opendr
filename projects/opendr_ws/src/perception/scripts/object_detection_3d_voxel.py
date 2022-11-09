@@ -108,7 +108,7 @@ def main():
     parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
     parser.add_argument("-i", "--input_point_cloud_topic",
-                        help="Point Cloud topic provdied by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
+                        help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
                         type=str, default="/opendr/dataset_point_cloud")
     parser.add_argument("-o", "--output_detection3d_topic",
                         help="Output detections topic",
