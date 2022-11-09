@@ -40,7 +40,7 @@ class ObjectTracking3DAb3dmotNode:
         :param detector: Learner that proides 3D object detections
         :type detector: Learner
         :param input_point_cloud_topic: Topic from which we are reading the input point cloud
-        :type input_image_topic: str
+        :type input_point_cloud_topic: str
         :param output_detection3d_topic: Topic to which we are publishing the annotations
         :type output_detection3d_topic:  str
         :param output_tracking3d_id_topic: Topic to which we are publishing the tracking ids
@@ -54,15 +54,18 @@ class ObjectTracking3DAb3dmotNode:
             device=device
         )
 
-        # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
+        self.input_point_cloud_topic = input_point_cloud_topic
 
-        self.detection_publisher = rospy.Publisher(
-            output_detection3d_topic, Detection3DArray, queue_size=10
-        )
-        self.tracking_id_publisher = rospy.Publisher(
-            output_tracking3d_id_topic, Int32MultiArray, queue_size=10
-        )
+        if output_detection3d_topic is not None:
+            self.detection_publisher = rospy.Publisher(
+                output_detection3d_topic, Detection3DArray, queue_size=10
+            )
+
+        if output_tracking3d_id_topic is not None:
+            self.tracking_id_publisher = rospy.Publisher(
+                output_tracking3d_id_topic, Int32MultiArray, queue_size=10
+            )
 
         rospy.Subscriber(input_point_cloud_topic, ROS_PointCloud, self.callback)
 
@@ -77,20 +80,29 @@ class ObjectTracking3DAb3dmotNode:
         point_cloud = self.bridge.from_ros_point_cloud(data)
         detection_boxes = self.detector.infer(point_cloud)
         tracking_boxes = self.learner.infer(detection_boxes)
-        ids = [tracking_box.id for tracking_box in tracking_boxes]
 
-        # Convert detected boxes to ROS type and publish
-        ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes, classes=["Car", "Van", "Truck", "Pedestrian", "Cyclist"])
         if self.detection_publisher is not None:
+            # Convert detected boxes to ROS type and publish
+            ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes, classes=["Car", "Van", "Truck", "Pedestrian", "Cyclist"])
             self.detection_publisher.publish(ros_boxes)
             rospy.loginfo("Published detection boxes")
 
-        ros_ids = Int32MultiArray()
-        ros_ids.data = ids
-
         if self.tracking_id_publisher is not None:
+            ids = [tracking_box.id for tracking_box in tracking_boxes]
+            ros_ids = Int32MultiArray()
+            ros_ids.data = ids
             self.tracking_id_publisher.publish(ros_ids)
             rospy.loginfo("Published tracking ids")
+
+    def listen(self):
+        """
+        Start the node and begin processing input data.
+        """
+        rospy.init_node('ab3dmot_tracking_3d', anonymous=True)
+        rospy.Subscriber(self.input_point_cloud_topic, ROS_PointCloud, self.callback, queue_size=1, buff_size=10000000)
+
+        rospy.loginfo("Object Tracking 3D Ab3dmot Node started.")
+        rospy.spin()
 
 
 def main():
@@ -105,10 +117,10 @@ def main():
             "car", "xyres_16.proto"
         )
     )
-    parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
+    parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
     parser.add_argument("-i", "--input_point_cloud_topic",
-                        help="Point Cloud topic provdied by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
+                        help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
                         type=str, default="/opendr/dataset_point_cloud")
     parser.add_argument("-od", "--output_detection3d_topic",
                         help="Output detections topic",
@@ -123,7 +135,6 @@ def main():
     input_point_cloud_topic = args.input_point_cloud_topic
     detector_model_name = args.detector_model_name
     temp_dir = args.temp_dir
-    device = args.device
     detector_model_config_path = args.detector_model_config_path
     output_detection3d_topic = args.output_detection3d_topic
     output_tracking3d_id_topic = args.output_tracking3d_id_topic
@@ -156,11 +167,12 @@ def main():
         detector=detector,
         device=device,
         input_point_cloud_topic=input_point_cloud_topic,
-        output_detection3d_topic=output_detection3d_topic,
-        output_tracking3d_id_topic=output_tracking3d_id_topic,
+        output_detection3d_topic=output_detection3d_topic if output_detection3d_topic != "None" else None,
+        output_tracking3d_id_topic=output_tracking3d_id_topic if output_tracking3d_id_topic != "None" else None,
     )
 
     ab3dmot_node.listen()
+
 
 if __name__ == '__main__':
     main()
