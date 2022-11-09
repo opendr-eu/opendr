@@ -36,17 +36,14 @@ class PointCloudDatasetNode(Node):
 
         super().__init__('point_cloud_dataset_node')
 
-        # Initialize the face detector
         self.dataset = dataset
-        # Initialize OpenDR ROSBridge object
         self.bridge = ROS2Bridge()
         self.timer = self.create_timer(1.0 / data_fps, self.timer_callback)
         self.sample_index = 0
 
-        if output_point_cloud_topic is not None:
-            self.output_point_cloud_publisher = self.create_publisher(
-                ROS_PointCloud, output_point_cloud_topic, 1
-            )
+        self.output_point_cloud_publisher = self.create_publisher(
+            ROS_PointCloud, output_point_cloud_topic, 1
+        )
 
     def timer_callback(self):
 
