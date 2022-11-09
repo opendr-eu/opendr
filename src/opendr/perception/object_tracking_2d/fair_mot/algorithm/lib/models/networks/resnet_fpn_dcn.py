@@ -282,8 +282,8 @@ class PoseResNet(nn.Module):
             ret[head] = self.__getattr__(head)(p1)
         return [ret]
 
-    def init_weights(self, num_layers):
-        if 1:
+    def init_weights(self, pretrained, num_layers):
+        if pretrained:
             url = model_urls["resnet{}".format(num_layers)]
             pretrained_state_dict = model_zoo.load_url(url)
             print("=> loading pretrained model {}".format(url))
@@ -326,9 +326,9 @@ resnet_spec = {
 }
 
 
-def get_pose_net(num_layers, heads, head_conv=256):
+def get_pose_net(pretrained, num_layers, heads, head_conv=256):
     block_class, layers = resnet_spec[num_layers]
 
     model = PoseResNet(block_class, layers, heads, head_conv=head_conv)
-    model.init_weights(num_layers)
+    model.init_weights(pretrained, num_layers)
     return model
