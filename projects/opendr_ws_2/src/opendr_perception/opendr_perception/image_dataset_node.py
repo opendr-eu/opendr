@@ -36,17 +36,14 @@ class ImageDatasetNode(Node):
 
         super().__init__('image_dataset_node')
 
-        # Initialize the face detector
         self.dataset = dataset
-        # Initialize OpenDR ROSBridge object
         self.bridge = ROS2Bridge()
         self.timer = self.create_timer(1.0 / data_fps, self.timer_callback)
         self.sample_index = 0
 
-        if output_image_topic is not None:
-            self.output_image_publisher = self.create_publisher(
-                ROS_Image, output_image_topic, 1
-            )
+        self.output_image_publisher = self.create_publisher(
+            ROS_Image, output_image_topic, 1
+        )
 
     def timer_callback(self):
 
@@ -55,7 +52,7 @@ class ImageDatasetNode(Node):
 
         self.get_logger().info("Publishing image [" + str(self.sample_index) + "]")
         message = self.bridge.to_ros_image(
-            image, encoding="rgb8"
+            image, encoding="bgr8"
         )
         self.output_image_publisher.publish(message)
 
@@ -87,9 +84,10 @@ def main(
     output_image_topic = args.output_image_topic
     data_fps = args.fps
 
-    dataset_path = MotDataset.download_nano_mot20(
-        "MOT", True
-    ).path
+    if not os.path.exists(dataset_path):
+        dataset_path = MotDataset.download_nano_mot20(
+            "MOT", True
+        ).path
 
     dataset = RawMotDatasetIterator(
         dataset_path,
