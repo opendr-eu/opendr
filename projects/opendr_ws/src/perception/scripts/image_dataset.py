@@ -68,7 +68,7 @@ class ImageDatasetNode:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dataset_path", help="Path to a dataset",
-                        type=str, default="KITTI/opendr_nano_kitti")
+                        type=str, default="MOT")
     parser.add_argument(
         "-ks", "--mot20_subsets_path", help="Path to mot20 subsets",
         type=str, default=os.path.join(
@@ -87,9 +87,10 @@ def main():
     output_image_topic = args.output_image_topic
     data_fps = args.fps
 
-    dataset_path = MotDataset.download_nano_mot20(
-        "MOT", True
-    ).path
+    if not os.path.exists(dataset_path):
+        dataset_path = MotDataset.download_nano_mot20(
+            "MOT", True
+        ).path
 
     dataset = RawMotDatasetIterator(
         dataset_path,
