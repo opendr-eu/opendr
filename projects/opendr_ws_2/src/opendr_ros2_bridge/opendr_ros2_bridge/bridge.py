@@ -24,13 +24,13 @@ from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, Chan
 from vision_msgs.msg import (
     Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,
     Detection3D, Detection3DArray, BoundingBox3D as BoundingBox3DMsg,
-    Classification2D
+    Classification2D, ObjectHypothesis
 )
 from shape_msgs.msg import Mesh, MeshTriangle
 from geometry_msgs.msg import (
     Pose2D, Point32 as Point32Msg,
     Quaternion as QuaternionMsg, Pose as Pose3D,
-    Point, Pose2D
+    Point
 )
 from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
 
@@ -378,6 +378,7 @@ class ROS2Bridge:
             box.results[0].score = float(boxes_3d[i].confidence)
             ros_boxes_3d.detections.append(box)
         return ros_boxes_3d
+
     def from_ros_mesh(self, mesh_ROS):
         """
         Converts a ROS mesh into arrays of vertices and faces of a mesh

@@ -79,7 +79,7 @@ class ObjectTracking2DDeepSortNode(Node):
         self.learner.load(os.path.join(temp_dir, model_name), verbose=True)
 
         self.bridge = ROS2Bridge()
-        
+
         if output_tracking_id_topic is not None:
             self.tracking_id_publisher = self.create_publisher(
                 Int32MultiArray, output_tracking_id_topic, 1
