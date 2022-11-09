@@ -17,7 +17,7 @@ import argparse
 import cv2
 import torch
 import os
-from opendr.engine.target import TrackingAnnotation
+from opendr.engine.target import TrackingAnnotationList
 import rospy
 from vision_msgs.msg import Detection2DArray
 from std_msgs.msg import Int32MultiArray
@@ -36,9 +36,9 @@ class ObjectTracking2DDeepSortNode:
         self,
         detector: Learner,
         input_image_topic="/usb_cam/image_raw",
-        output_detection_topic="/opendr/detection",
-        output_tracking_id_topic="/opendr/tracking_id",
-        output_image_topic="/opendr/image_annotated",
+        output_detection_topic="/opendr/deep_sort_detection",
+        output_tracking_id_topic="/opendr/deep_sort_tracking_id",
+        output_image_topic="/opendr/deep_sort_image_annotated",
         device="cuda:0",
         model_name="deep_sort",
         temp_dir="temp",
@@ -64,7 +64,6 @@ class ObjectTracking2DDeepSortNode:
         :type temp_dir: str
         """
 
-        # # Initialize the face detector
         self.detector = detector
         self.learner = ObjectTracking2DDeepSortLearner(
             device=device, temp_path=temp_dir,
@@ -74,8 +73,9 @@ class ObjectTracking2DDeepSortNode:
 
         self.learner.load(os.path.join(temp_dir, model_name), verbose=True)
 
-        # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
+        self.input_image_topic = input_image_topic
+
         self.tracking_id_publisher = rospy.Publisher(
             output_tracking_id_topic, Int32MultiArray, queue_size=10
         )
@@ -129,6 +129,16 @@ class ObjectTracking2DDeepSortNode:
             self.tracking_id_publisher.publish(ros_ids)
             rospy.loginfo("Published tracking ids")
 
+    def listen(self):
+        """
+        Start the node and begin processing input data.
+        """
+        rospy.init_node('object_tracking_2d_deep_sort_node', anonymous=True)
+        rospy.Subscriber(self.input_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
+
+        rospy.loginfo("Object Tracking 2D Deep Sort Node started.")
+        rospy.spin()
+
 
 colors = [
     (255, 0, 255),
@@ -140,7 +150,7 @@ colors = [
 ]
 
 
-def draw_predictions(frame, predictions: TrackingAnnotation, is_centered=False, is_flipped_xy=True):
+def draw_predictions(frame, predictions: TrackingAnnotationList, is_centered=False, is_flipped_xy=True):
     global colors
     w, h, _ = frame.shape
 
@@ -179,20 +189,20 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--model_name", help="Name of the trained model",
                         type=str, default="deep_sort")
-    parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
+    parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
     parser.add_argument("-i", "--input_image_topic",
-                        help="Input Image topic provdied by either an image_dataset_node, webcam or any other image node",
+                        help="Input Image topic provided by either an image_dataset_node, webcam or any other image node",
                         type=str, default="/opendr/dataset_image")
     parser.add_argument("-od", "--output_detection_topic",
                         help="Output detections topic",
-                        type=str, default="/opendr/detection")
+                        type=str, default="/opendr/deep_sort_detection")
     parser.add_argument("-ot", "--output_tracking_id_topic",
                         help="Output detections topic",
-                        type=str, default="/opendr/tracking_id")
+                        type=str, default="/opendr/deep_sort_tracking_id")
     parser.add_argument("-oi", "--output_image_topic",
                         help="Output detections topic",
-                        type=str, default="/opendr/image_annotated")
+                        type=str, default="/opendr/deep_sort_image_annotated")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
@@ -224,12 +234,13 @@ def main():
         model_name=args.model_name,
         input_image_topic=args.input_image_topic,
         temp_dir=args.temp_dir,
-        output_detection_topic=args.output_detection_topic,
-        output_tracking_id_topic=args.output_tracking_id_topic,
+        output_detection_topic=args.output_detection_topic if args.output_detection_topic != "None" else None,
+        output_tracking_id_topic=args.output_tracking_id_topic if args.output_tracking_id_topic != "None" else None,
         output_image_topic=args.output_image_topic if args.output_image_topic != "None" else None,
     )
 
     deep_sort_node.listen()
+
 
 if __name__ == '__main__':
     main()
