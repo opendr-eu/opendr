@@ -41,7 +41,7 @@ class ObjectTracking3DAb3dmotNode(Node):
         :param detector: Learner that proides 3D object detections
         :type detector: Learner
         :param input_point_cloud_topic: Topic from which we are reading the input point cloud
-        :type input_image_topic: str
+        :type input_point_cloud_topic: str
         :param output_detection3d_topic: Topic to which we are publishing the annotations
         :type output_detection3d_topic:  str
         :param output_tracking3d_id_topic: Topic to which we are publishing the tracking ids
