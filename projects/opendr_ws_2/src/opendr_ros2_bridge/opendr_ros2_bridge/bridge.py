@@ -13,23 +13,26 @@
 # limitations under the License.
 
 import numpy as np
-from opendr.engine.data import Image, PointCloud
+from opendr.engine.data import Image, PointCloud, Timeseries
 from opendr.engine.target import (
     Pose, BoundingBox, BoundingBoxList, Category,
     BoundingBox3D, BoundingBox3DList
 )
 from cv_bridge import CvBridge
-from std_msgs.msg import String, Header
+from std_msgs.msg import String, ColorRGBA, Header
 from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg
 from vision_msgs.msg import (
     Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,
-    Detection3D, Detection3DArray, BoundingBox3D as BoundingBox3DMsg
+    Detection3D, Detection3DArray, BoundingBox3D as BoundingBox3DMsg,
+    Classification2D
 )
+from shape_msgs.msg import Mesh, MeshTriangle
 from geometry_msgs.msg import (
     Pose2D, Point32 as Point32Msg,
-    Quaternion as QuaternionMsg, Pose as Pose3D
+    Quaternion as QuaternionMsg, Pose as Pose3D,
+    Point, Pose2D
 )
-from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint
+from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
 
 
 class ROS2Bridge:
@@ -375,3 +378,207 @@ class ROS2Bridge:
             box.results[0].score = float(boxes_3d[i].confidence)
             ros_boxes_3d.detections.append(box)
         return ros_boxes_3d
+    def from_ros_mesh(self, mesh_ROS):
+        """
+        Converts a ROS mesh into arrays of vertices and faces of a mesh
+        :param mesh_ROS: the ROS mesh to be converted
+        :type mesh_ROS: shape_msgs.msg.Mesh
+        :return vertices: Numpy array Nx3 representing vertices of the 3D model respectively
+        :rtype vertices: np.array
+        :return faces: Numpy array Nx3 representing the IDs of the vertices of each face of the 3D model
+        :rtype faces: numpy array (Nx3)
+        """
+        vertices = np.zeros([len(mesh_ROS.vertices), 3])
+        faces = np.zeros([len(mesh_ROS.triangles), 3]).astype(int)
+        for i in range(len(mesh_ROS.vertices)):
+            vertices[i] = np.array([mesh_ROS.vertices[i].x, mesh_ROS.vertices[i].y, mesh_ROS.vertices[i].z])
+        for i in range(len(mesh_ROS.triangles)):
+            faces[i] = np.array([int(mesh_ROS.triangles[i].vertex_indices[0]), int(mesh_ROS.triangles[i].vertex_indices[1]),
+                                 int(mesh_ROS.triangles[i].vertex_indices[2])]).astype(int)
+        return vertices, faces
+
+    def to_ros_mesh(self, vertices, faces):
+        """
+        Converts a mesh into a ROS Mesh
+        :param vertices: the vertices of the 3D model
+        :type vertices: numpy array (Nx3)
+        :param faces: the faces of the 3D model
+        :type faces: numpy array (Nx3)
+        :return mesh_ROS: a ROS mesh
+        :rtype mesh_ROS: shape_msgs.msg.Mesh
+        """
+        mesh_ROS = Mesh()
+        for i in range(vertices.shape[0]):
+            point = Point()
+            point.x = vertices[i, 0]
+            point.y = vertices[i, 1]
+            point.z = vertices[i, 2]
+            mesh_ROS.vertices.append(point)
+        for i in range(faces.shape[0]):
+            mesh_triangle = MeshTriangle()
+            mesh_triangle.vertex_indices[0] = int(faces[i][0])
+            mesh_triangle.vertex_indices[1] = int(faces[i][1])
+            mesh_triangle.vertex_indices[2] = int(faces[i][2])
+            mesh_ROS.triangles.append(mesh_triangle)
+        return mesh_ROS
+
+    def from_ros_colors(self, ros_colors):
+        """
+        Converts a list of ROS colors into a list of colors
+        :param ros_colors: a list of the colors of the vertices
+        :type ros_colors: std_msgs.msg.ColorRGBA[]
+        :return colors: the colors of the vertices of the 3D model
+        :rtype colors: numpy array (Nx3)
+        """
+        colors = np.zeros([len(ros_colors), 3])
+        for i in range(len(ros_colors)):
+            colors[i] = np.array([ros_colors[i].r, ros_colors[i].g, ros_colors[i].b])
+        return colors
+
+    def to_ros_colors(self, colors):
+        """
+        Converts an array of vertex_colors to a list of ROS colors
+        :param colors: a numpy array of RGB colors
+        :type colors: numpy array (Nx3)
+        :return ros_colors: a list of the colors of the vertices
+        :rtype ros_colors: std_msgs.msg.ColorRGBA[]
+        """
+        ros_colors = []
+        for i in range(colors.shape[0]):
+            color = ColorRGBA()
+            color.r = colors[i, 0]
+            color.g = colors[i, 1]
+            color.b = colors[i, 2]
+            color.a = 0.0
+            ros_colors.append(color)
+        return ros_colors
+
+    def from_ros_pose_3D(self, ros_pose):
+        """
+        Converts a ROS message with pose payload into an OpenDR pose
+        :param ros_pose: the pose to be converted (represented as opendr_ros2_messages.msg.OpenDRPose3D)
+        :type ros_pose: opendr_ros2_messages.msg.OpenDRPose3D
+        :return: an OpenDR pose
+        :rtype: engine.target.Pose
+        """
+        keypoints = ros_pose.keypoint_list
+        data = []
+        for i, keypoint in enumerate(keypoints):
+            data.append([keypoint.x, keypoint.y, keypoint.z])
+        pose = Pose(data, 1.0)
+        pose.id = 0
+        return pose
+
+    def to_ros_pose_3D(self, pose):
+        """
+        Converts an OpenDR pose into a OpenDRPose3D msg that can carry the same information
+        Each keypoint is represented as an OpenDRPose3DKeypoint with x, y, z coordinates.
+        :param pose: OpenDR pose to be converted
+        :type pose: engine.target.Pose
+        :return: ROS message with the pose
+        :rtype: opendr_ros2_messages.msg.OpenDRPose3D
+        """
+        data = pose.data
+        ros_pose = OpenDRPose3D()
+        ros_pose.pose_id = 0
+        if pose.id is not None:
+            ros_pose.pose_id = int(pose.id)
+        ros_pose.conf = 1.0
+        for i in range(len(data)):
+            keypoint = OpenDRPose3DKeypoint()
+            keypoint.kpt_name = ''
+            keypoint.x = float(data[i][0])
+            keypoint.y = float(data[i][1])
+            keypoint.z = float(data[i][2])
+            ros_pose.keypoint_list.append(keypoint)
+        return ros_pose
+
+    def to_ros_category(self, category):
+        """
+        Converts an OpenDR category into a ObjectHypothesis msg that can carry the Category.data and Category.confidence.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.data and category.confidence
+        :rtype: vision_msgs.msg.ObjectHypothesis
+        """
+        result = ObjectHypothesis()
+        result.id = str(category.data)
+        result.score = category.confidence
+        return result
+
+    def from_ros_category(self, ros_hypothesis):
+        """
+        Converts a ROS message with category payload into an OpenDR category
+        :param ros_hypothesis: the object hypothesis to be converted
+        :type ros_hypothesis: vision_msgs.msg.ObjectHypothesis
+        :return: an OpenDR category
+        :rtype: engine.target.Category
+        """
+        category = Category(prediction=ros_hypothesis.id, description=None,
+                            confidence=ros_hypothesis.score)
+        return category
+
+    def to_ros_category_description(self, category):
+        """
+        Converts an OpenDR category into a string msg that can carry the Category.description.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.description
+        :rtype: std_msgs.msg.String
+        """
+        result = String()
+        result.data = category.description
+        return result
+
+    def from_rosarray_to_timeseries(self, ros_array, dim1, dim2):
+        """
+        Converts ROS2 array into OpenDR Timeseries object
+        :param ros_array: data to be converted
+        :type ros_array: std_msgs.msg.Float32MultiArray
+        :param dim1: 1st dimension
+        :type dim1: int
+        :param dim2: 2nd dimension
+        :type dim2: int
+        :rtype: engine.data.Timeseries
+        """
+        data = np.reshape(ros_array.data, (dim1, dim2))
+        data = Timeseries(data)
+        return data
+
+    def from_ros_image_to_depth(self, message, encoding='mono16'):
+        """
+        Converts a ROS2 image message into an OpenDR grayscale depth image
+        :param message: ROS2 image to be converted
+        :type message: sensor_msgs.msg.Image
+        :param encoding: encoding to be used for the conversion
+        :type encoding: str
+        :return: OpenDR image
+        :rtype: engine.data.Image
+        """
+        cv_image = self._cv_bridge.imgmsg_to_cv2(message, desired_encoding=encoding)
+        cv_image = np.expand_dims(cv_image, axis=-1)
+        image = Image(np.asarray(cv_image, dtype=np.uint8))
+        return image
+
+    def from_category_to_rosclass(self, prediction, timestamp, source_data=None):
+        """
+        Converts OpenDR Category into Classification2D message with class label, confidence, timestamp and corresponding input
+        :param prediction: classification prediction
+        :type prediction: engine.target.Category
+        :param timestamp: time stamp for header message
+        :type timestamp: str
+        :param source_data: corresponding input or None
+        :return classification
+        :rtype: vision_msgs.msg.Classification2D
+        """
+        classification = Classification2D()
+        classification.header = Header()
+        classification.header.stamp = timestamp
+
+        result = ObjectHypothesis()
+        result.id = str(prediction.data)
+        result.score = prediction.confidence
+        classification.results.append(result)
+        if source_data is not None:
+            classification.source_img = source_data
+        return classification

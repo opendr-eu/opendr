@@ -110,6 +110,8 @@ class TestLicense(unittest.TestCase):
             'projects/opendr_ws_2/src/opendr_ros2_bridge/test',
             'projects/opendr_ws_2/src/vision_opencv',
             'projects/opendr_ws_2/install',
+            'projects/opendr_ws_2/src/data_generation/test',
+            'projects/opendr_ws_2/src/opendr_simulation/test',
         ]
 
         skippedFilePaths = [
@@ -124,6 +126,8 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/utils.py',
             'projects/opendr_ws_2/src/opendr_perception/setup.py',
             'projects/opendr_ws_2/src/opendr_ros2_bridge/setup.py',
+            'projects/opendr_ws_2/src/data_generation/setup.py',
+            'projects/opendr_ws_2/src/opendr_simulation/setup.py',
         ]
 
         skippedDirectories = [

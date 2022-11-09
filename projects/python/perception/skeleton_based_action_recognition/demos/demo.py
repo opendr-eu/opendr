@@ -100,7 +100,8 @@ def select_2_poses(poses):
         energy.append(s)
     energy = np.array(energy)
     index = energy.argsort()[::-1][0:2]
-    selected_poses.append(poses[index])
+    for i in range(len(index)):
+        selected_poses.append(poses[index[i]])
     return selected_poses
 
 
