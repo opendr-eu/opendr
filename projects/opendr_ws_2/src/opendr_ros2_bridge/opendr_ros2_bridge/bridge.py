@@ -255,8 +255,8 @@ class ROS2Bridge:
     def from_ros_point_cloud(self, point_cloud: PointCloudMsg):
         """
         Converts a ROS PointCloud message into an OpenDR PointCloud
-        :param message: ROS PointCloud to be converted
-        :type message: sensor_msgs.msg.PointCloud
+        :param point_cloud: ROS PointCloud to be converted
+        :type point_cloud: sensor_msgs.msg.PointCloud
         :return: OpenDR PointCloud
         :rtype: engine.data.PointCloud
         """
@@ -281,10 +281,12 @@ class ROS2Bridge:
     def to_ros_point_cloud(self, point_cloud, time_stamp):
         """
         Converts an OpenDR PointCloud message into a ROS2 PointCloud
-        :param: OpenDR PointCloud
-        :type: engine.data.PointCloud
-        :return message: ROS PointCloud
-        :rtype message: sensor_msgs.msg.PointCloud
+        :param point_cloud: OpenDR PointCloud
+        :type point_cloud: engine.data.PointCloud
+        :param time_stamp: Time stamp
+        :type time_stamp: ROS Time
+        :return: ROS PointCloud
+        :rtype: sensor_msgs.msg.PointCloud
         """
 
         ros_point_cloud = PointCloudMsg()
@@ -353,7 +355,6 @@ class ROS2Bridge:
         Converts an OpenDR BoundingBox3DList object into a ROS2 Detection3DArray message.
         :param boxes_3d: The OpenDR boxes to be converted.
         :type boxes_3d: engine.target.BoundingBox3DList
-        :param classes: The array of classes to transform from string name into an index.
         :return: ROS message with the boxes
         :rtype: vision_msgs.msg.Detection3DArray
         """
