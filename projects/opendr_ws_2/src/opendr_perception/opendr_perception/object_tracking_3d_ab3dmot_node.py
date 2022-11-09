@@ -59,12 +59,15 @@ class ObjectTracking3DAb3dmotNode(Node):
         # Initialize OpenDR ROSBridge object
         self.bridge = ROS2Bridge()
 
-        self.detection_publisher = self.create_publisher(
-            Detection3DArray, output_detection3d_topic, 1
-        )
-        self.tracking_id_publisher = self.create_publisher(
-            Int32MultiArray, output_tracking3d_id_topic, 1
-        )
+        if output_detection3d_topic is not None:
+            self.detection_publisher = self.create_publisher(
+                Detection3DArray, output_detection3d_topic, 1
+            )
+
+        if output_tracking3d_id_topic is not None:
+            self.tracking_id_publisher = self.create_publisher(
+                Int32MultiArray, output_tracking3d_id_topic, 1
+            )
 
         self.create_subscription(ROS_PointCloud, input_point_cloud_topic, self.callback, 1)
 
@@ -81,18 +84,17 @@ class ObjectTracking3DAb3dmotNode(Node):
         point_cloud = self.bridge.from_ros_point_cloud(data)
         detection_boxes = self.detector.infer(point_cloud)
         tracking_boxes = self.learner.infer(detection_boxes)
-        ids = [tracking_box.id for tracking_box in tracking_boxes]
 
         # Convert detected boxes to ROS type and publish
-        ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes)
         if self.detection_publisher is not None:
+            ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes)
             self.detection_publisher.publish(ros_boxes)
             self.get_logger().info("Published " + str(len(detection_boxes)) + " detection boxes")
 
-        ros_ids = Int32MultiArray()
-        ros_ids.data = ids
-
         if self.tracking_id_publisher is not None:
+            ids = [tracking_box.id for tracking_box in tracking_boxes]
+            ros_ids = Int32MultiArray()
+            ros_ids.data = ids
             self.tracking_id_publisher.publish(ros_ids)
             self.get_logger().info("Published " + str(len(ids)) + " tracking ids")
 
@@ -115,7 +117,7 @@ def main(
     parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
                         type=str, default="temp")
     parser.add_argument("-i", "--input_point_cloud_topic",
-                        help="Point Cloud topic provdied by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
+                        help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
                         type=str, default="/opendr/dataset_point_cloud")
     parser.add_argument("-od", "--output_detection3d_topic",
                         help="Output detections topic",
@@ -163,8 +165,8 @@ def main(
         detector=detector,
         device=device,
         input_point_cloud_topic=input_point_cloud_topic,
-        output_detection3d_topic=output_detection3d_topic,
-        output_tracking3d_id_topic=output_tracking3d_id_topic,
+        output_detection3d_topic=output_detection3d_topic if output_detection3d_topic != "None" else None,
+        output_tracking3d_id_topic=output_tracking3d_id_topic if output_tracking3d_id_topic != "None" else None,
     )
 
     rclpy.spin(ab3dmot_node)
