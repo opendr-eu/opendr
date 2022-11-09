@@ -92,8 +92,7 @@ def main():
         dataset_path + "/training/calib",
     )
 
-    rospy.init_node('point_cloud_dataset')
-    rospy.loginfo("PointCloudDatasetNode started.")
+    rospy.init_node('point_cloud_dataset', anonymous=True)
 
     dataset_node = PointCloudDatasetNode(
         dataset, output_point_cloud_topic=output_point_cloud_topic, data_fps=data_fps
