@@ -76,7 +76,7 @@ def main():
             "datasets", "splits", "nano_mot20.train"
         )
     )
-    parser.add_argument("-o", "--output_image_topic", help="Topic name to upload the data",
+    parser.add_argument("-o", "--output_image_topic", help="Topic name to publish the data",
                         type=str, default="/opendr/dataset_image")
     parser.add_argument("-f", "--fps", help="Data FPS",
                         type=float, default=30)
