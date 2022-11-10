@@ -332,7 +332,7 @@ On the table below you can find the detectable classes and their corresponding I
 
 ### Landmark-based Facial Expression Recognition ROS Node
 
-A ROS node for performing Landmark-based Facial Expression Recognition using the pretrained model PST-BLN on AFEW, CK+ or Oulu-CASIA datasets.
+A ROS node for performing landmark-based facial expression recognition using the pretrained model PST-BLN on AFEW, CK+ or Oulu-CASIA datasets.
 
 You can find the landmark-based facial expression recognition ROS node python script [here](./scripts/landmark_based_facial_expression_recognition.py) to inspect the code and modify it as you wish to fit your needs. 
 The node makes use of the toolkit's landmark-based facial expression recognition tool which can be found [here](../../../../src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/progressive_spatio_temporal_bln_learner.py) 
@@ -362,19 +362,43 @@ whose documentation can be found [here](../../../../docs/reference/landmark-base
    For viewing the output, refer to the [notes above.](#notes)
 
 ### Skeleton-based Human Action Recognition ROS Node
-<!-- TODO -->
-A ROS node for performing Skeleton-based Human Action Recognition using either ST-GCN or PST-GCN models pretrained on NTU-RGBD-60 dataset. 
-The human body poses of the image are first extracted by the light-weight Openpose method which is implemented in the toolkit, and they are passed to the skeleton-based action recognition method to be categorized.
-Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
-```shell
-rosrun perception skeleton_based_action_recognition.py
-```
-The predictied class id and confidence is published under the topic name `/opendr/skeleton_based_action_recognition`, and the human-readable class name under `/opendr/skeleton_based_action_recognition_description`.
-Besides, the annotated image is published in `/opendr/image_pose_annotated` as well as the corresponding poses in `/opendr/poses`.
+
+A ROS node for performing skeleton-based human action recognition using either ST-GCN or PST-GCN models pretrained on NTU-RGBD-60 dataset.
+The human body poses of the image are first extracted by the lightweight OpenPose method which is implemented in the toolkit, and they are passed to the skeleton-based action recognition method to be categorized.
+
+You can find the skeleton-based human action recognition ROS node python script [here](./scripts/skeleton_based_action_recognition.py) to inspect the code and modify it as you wish to fit your needs. 
+The node makes use of the toolkit's skeleton-based human action recognition tool which can be found [here for ST-GCN](../../../../src/opendr/perception/skeleton_based_action_recognition/spatio_temporal_gcn_learner.py)
+and [here for PST-GCN](../../../../src/opendr/perception/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_learner.py)
+whose documentation can be found [here](../../../../docs/reference/skeleton-based-action-recognition.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the skeleton-based human action recognition node:
+
+    ```shell
+    rosrun perception skeleton_based_action_recognition.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-c or --output_category_topic OUTPUT_CATEGORY_TOPIC`: topic name for recognized action category, `None` to stop the node from publishing on this topic (default=`"/opendr/skeleton_recognized_action"`)
+   - `-d or --output_category_description_topic OUTPUT_CATEGORY_DESRIPTION_TOPIC`: topic name for description of the recognized action category, `None` to stop the node from publishing on this topic (default=`/opendr/skeleton_recognized_action_description`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output pose-annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
+   - `-p or --pose_annotations_topic POSE_ANNOTATIONS_TOPIC`: topic name for pose annotations, `None` to stop the node from publishing on this topic (default=`/opendr/poses`)
+   - `--model`: model to use, options are `stgcn` or `pstgcn`, (default=`stgcn`)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+
+3. Default output topics:
+   - Detection messages: `/opendr/skeleton_based_action_recognition`, `/opendr/skeleton_based_action_recognition_description`, `/opendr/poses`
+   - Output images: `/opendr/image_pose_annotated` 
+   
+   For viewing the output, refer to the [notes above.](#notes)
 
 ### Video Human Activity Recognition ROS Node
 
-A ROS node for performing Human Activity Recognition using either CoX3D or X3D models pretrained on Kinetics400.
+A ROS node for performing human activity recognition using either CoX3D or X3D models pretrained on Kinetics400.
 
 You can find the video human activity recognition ROS node python script [here](./scripts/video_activity_recognition.py) to inspect the code and modify it as you wish to fit your needs. 
 The node makes use of the toolkit's video human activity recognition tools which can be found [here for CoX3D](../../../../src/opendr/perception/activity_recognition/cox3d/cox3d_learner.py) and 
