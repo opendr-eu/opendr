@@ -22,15 +22,16 @@ from std_msgs.msg import Float32MultiArray, String
 from nav_msgs.msg import Path
 from webots_ros.msg import BoolStamped
 from sensor_msgs.msg import Imu, Image, LaserScan
-from gym_depth_planning.utils.obstacle_randomizer import ObstacleRandomizer
-from gym_depth_planning.utils.euler_quaternion_transformations import euler_from_quaternion, euler_to_quaternion
+from opendr.planning.end_to_end_planning.utils.obstacle_randomizer import ObstacleRandomizer
+from opendr.planning.end_to_end_planning.utils.euler_quaternion_transformations import euler_from_quaternion
+from opendr.planning.end_to_end_planning.utils.euler_quaternion_transformations import euler_to_quaternion
 
 
-class UAVDepthPlanningEnv_v0(gym.Env):
+class UAVDepthPlanningEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, no_dynamics=False, discrete_actions=False):
-        super(UAVDepthPlanningEnv_v0, self).__init__()
+    def __init__(self, no_dynamics=True, discrete_actions=False):
+        super(UAVDepthPlanningEnv, self).__init__()
 
         # Gym elements
         self.observation_space = spaces.Dict(
@@ -155,8 +156,6 @@ class UAVDepthPlanningEnv_v0(gym.Env):
                 print("Service did not process request: " + str(exc))
             self.robot_translation_field = resp1.field
             self.robot_rotation_field = resp2.field
-            print("robot id, field-t and field-r:", self.robot_node_id, self.robot_translation_field,
-                  self.robot_rotation_field)
 
     def step(self, action):
         # if self.current_position == PoseStamped().pose.position:

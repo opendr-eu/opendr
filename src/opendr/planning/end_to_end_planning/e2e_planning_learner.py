@@ -22,6 +22,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.results_plotter import load_results, ts2xy
+from stable_baselines3.common.callbacks import CheckpointCallback
 
 from opendr.engine.learners import LearnerRL
 from opendr.engine.constants import OPENDR_SERVER_URL
@@ -30,22 +31,26 @@ __all__ = ["rospy", ]
 
 
 class EndToEndPlanningRLLearner(LearnerRL):
-    def __init__(self, env, lr=3e-4, n_steps=1024, iters=int(5e4), batch_size=64, checkpoint_after_iter=500,
+    def __init__(self, env, lr=3e-4, n_steps=1024, iters=int(1e5), batch_size=64, checkpoint_after_iter=500,
                  temp_path='', device='cuda'):
         """
         Specifies a proximal policy optimization (PPO) agent that can be trained for end to end planning for obstacle avoidance.
-        Internally uses Stable-Baselines (https://github.com/hill-a/stable-baselines).
+        Internally uses Stable-Baselines 3 (https://github.com/DLR-RM/stable-baselines3.git).
         """
         super(EndToEndPlanningRLLearner, self).__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer='adam',
                                                         network_head='', temp_path=temp_path,
                                                         checkpoint_after_iter=checkpoint_after_iter,
                                                         device=device, threshold=0.0, scale=1.0)
-        self.env = env
-        if isinstance(self.env, DummyVecEnv):
-            self.env = self.env.envs[0]
-        self.env = DummyVecEnv([lambda: self.env])
-        self.agent = PPO("MultiInputPolicy", self.env, learning_rate=self.lr, n_steps=n_steps,
-                         batch_size=self.batch_size, verbose=1)
+        if env is None:
+            self.agent = PPO.load(os.environ.get(
+                "OPENDR_HOME") + '/src/opendr/planning/end_to_end_planning/pretrained_model/saved_model.zip')
+        else:
+            self.env = env
+            if isinstance(self.env, DummyVecEnv):
+                self.env = self.env.envs[0]
+            self.env = DummyVecEnv([lambda: self.env])
+            self.agent = PPO("MultiInputPolicy", self.env, learning_rate=self.lr, n_steps=n_steps,
+                             batch_size=self.batch_size, verbose=1)
 
     def download(self, path=None,
                  url=OPENDR_SERVER_URL + "planning/end_to_end_planning"):
@@ -67,7 +72,6 @@ class EndToEndPlanningRLLearner(LearnerRL):
         :param logging_path: str, path for logging and checkpointing
         :param silent: bool, disable verbosity
         :param verbose: bool, enable verbosity
-        :return:
         """
         if env is not None:
             if isinstance(env, gym.Env):
@@ -76,7 +80,7 @@ class EndToEndPlanningRLLearner(LearnerRL):
                 print('env should be gym.Env')
                 return
         self.last_checkpoint_time_step = 0
-        self.mean_reward = -10
+        # self.mean_reward = -10
         self.logdir = logging_path
         if isinstance(self.env, DummyVecEnv):
             self.env = self.env.envs[0]
@@ -85,8 +89,9 @@ class EndToEndPlanningRLLearner(LearnerRL):
         self.env = Monitor(self.env, filename=self.logdir)
         self.env = DummyVecEnv([lambda: self.env])
         self.agent.set_env(self.env)
-        self.agent.learn(total_timesteps=self.iters, callback=self.callback)
-        return {"last_20_episodes_mean_reward": self.mean_reward}
+        checkpoint_callback = CheckpointCallback(save_freq=1000, save_path=self.logdir, name_prefix='rl_model')
+        self.agent.learn(total_timesteps=self.iters, callback=checkpoint_callback)
+        # return {"last_20_episodes_mean_reward": self.mean_reward}
 
     def eval(self, env):
         """
@@ -159,18 +164,18 @@ class EndToEndPlanningRLLearner(LearnerRL):
     def optimize(self, target_device):
         raise NotImplementedError()
 
-    def callback(self, _locals, _globals):
-        x, y = ts2xy(load_results(self.logdir), 'timesteps')
-
-        if len(y) > 20:
-            self.mean_reward = np.mean(y[-20:])
-        else:
-            return True
-
-        if x[-1] - self.last_checkpoint_time_step > self.checkpoint_after_iter:
-            self.last_checkpoint_time_step = x[-1]
-            check_point_path = Path(self.logdir,
-                                    'checkpoint_save' + str(x[-1]) + 'with_mean_rew' + str(self.mean_reward))
-            self.save(str(check_point_path))
-
-        return True
+    # def callback(self, _locals, _globals):
+    #     x, y = ts2xy(load_results(self.logdir), 'timesteps')
+    #
+    #     if len(y) > 20:
+    #         self.mean_reward = np.mean(y[-20:])
+    #     else:
+    #         return True
+    #
+    #     if x[-1] - self.last_checkpoint_time_step > self.checkpoint_after_iter:
+    #         self.last_checkpoint_time_step = x[-1]
+    #         check_point_path = Path(self.logdir,
+    #                                 'checkpoint_save' + str(x[-1]) + 'with_mean_rew' + str(self.mean_reward))
+    #         self.save(str(check_point_path))
+    #
+    #     return True
