@@ -28,6 +28,7 @@ from opendr.engine.datasets import (
 from opendr.engine.data import PointCloud
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.load import (
     create_model as second_create_model,
+    create_optimizer as second_create_optimizer,
     load_from_checkpoint,
 )
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.run import (
@@ -250,7 +251,7 @@ class VoxelObjectDetection3DLearner(Learner):
             json.dump(model_metadata, outfile)
 
     def load(
-        self, path, verbose=False,
+        self, path, verbose=False, reshape_rpn_to_fit=False,
     ):
         """
         Loads the model from inside the path provided, based on the metadata .json file included.
@@ -283,7 +284,11 @@ class VoxelObjectDetection3DLearner(Learner):
                 print("Loaded Pytorch VFE and MFE sub-model.")
 
             if not metadata["optimized"]:
-                self.__load_from_pth(self.model.rpn, os.path.join(path, metadata["model_paths"][2]))
+                if reshape_rpn_to_fit:
+                    self.__load_rpn_with_reshape(self.model.rpn, os.path.join(path, metadata["model_paths"][2]))
+                else:
+                    self.__load_from_pth(self.model.rpn, os.path.join(path, metadata["model_paths"][2]))
+
                 if verbose:
                     print("Loaded Pytorch RPN sub-model.")
             else:
@@ -351,6 +356,8 @@ class VoxelObjectDetection3DLearner(Learner):
                 self.lr_schedule_params,
                 self.device,
             )
+
+        self.model.train()
 
         train(
             self.model,
@@ -621,9 +628,34 @@ class VoxelObjectDetection3DLearner(Learner):
 
     def __load_from_pth(self, model, path, use_original_dict=False):
         all_params = torch.load(path, map_location=self.device)
+        all_params = all_params if use_original_dict else all_params["state_dict"]
+
         model.load_state_dict(
-            all_params if use_original_dict else all_params["state_dict"]
+            all_params 
         )
+
+    def __load_rpn_with_reshape(self, model, path, use_original_dict=False):
+        all_params = torch.load(path, map_location=self.device)
+        all_params = all_params if use_original_dict else all_params["state_dict"]
+
+        def apply_element(name, weight):
+            subnames = name.split(".")
+
+            module = model
+
+            for i, subname in enumerate(subnames[:-1]):
+                if i == 1:
+                    module = module[int(subname)]
+                else:
+                    module = module.__getattr__(subname)
+            
+            weight_to_apply = weight
+            if isinstance(module.__getattr__(subnames[-1]), torch.nn.Parameter):
+                weight_to_apply = torch.nn.Parameter(weight_to_apply)
+            module.__setattr__(subnames[-1], weight_to_apply)
+        
+        for name, weight in all_params.items():
+            apply_element(name, weight)
 
     def __prepare_datasets(
         self,
@@ -798,6 +830,24 @@ class VoxelObjectDetection3DLearner(Learner):
             raise ValueError("val_dataset parameter should be an ExternalDataset or a DatasetIterator or None")
 
         return input_dataset_iterator, eval_dataset_iterator, gt_annos
+
+    def _recreate_optimizer(self, lr=None, step=0):
+
+        self.model.global_step += step - self.model.global_step
+
+        mixed_optimizer, lr_scheduler, float_dtype = second_create_optimizer(
+            self.model, self.train_config,
+            optimizer_name=self.optimizer,
+            optimizer_params=self.optimizer_params,
+            lr=self.lr if lr is None else lr,
+            lr_schedule_name=self.lr_schedule,
+            lr_schedule_params=self.lr_schedule_params,
+        )
+
+        self.mixed_optimizer = mixed_optimizer
+        self.lr_scheduler = lr_scheduler
+
+        self.float_dtype = float_dtype
 
     def __create_model(self):
         (

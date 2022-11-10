@@ -34,6 +34,30 @@ from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_dete
 )
 
 
+def create_optimizer(net, train_cfg, optimizer_name, optimizer_params, lr, lr_schedule_name, lr_schedule_params):
+    ######################
+    # BUILD OPTIMIZER
+    ######################
+    gstep = net.get_global_step() - 1
+    if train_cfg.enable_mixed_precision:
+        net.half()
+        net.metrics_to_float()
+        net.convert_norm_to_float(net)
+    optimizer = optimizer_builder.build_online(optimizer_name, optimizer_params, lr, net.parameters())
+    if train_cfg.enable_mixed_precision:
+        loss_scale = train_cfg.loss_scale_factor
+        mixed_optimizer = MixedPrecisionWrapper(optimizer, loss_scale)
+    else:
+        mixed_optimizer = optimizer
+    lr_scheduler = lr_scheduler_builder.build_online(lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep)
+    if train_cfg.enable_mixed_precision:
+        float_dtype = torch.float16
+    else:
+        float_dtype = torch.float32
+
+    return mixed_optimizer, lr_scheduler, float_dtype
+
+
 def create_model(
     config_path, device, optimizer_name,
     optimizer_params, lr, lr_schedule_name, lr_schedule_params,
@@ -76,25 +100,10 @@ def create_model(
         log("num_trainable parameters:", len(list(net.parameters())))
         for n, p in net.named_parameters():
             log(n, p.shape)
-    ######################
-    # BUILD OPTIMIZER
-    ######################
-    gstep = net.get_global_step() - 1
-    if train_cfg.enable_mixed_precision:
-        net.half()
-        net.metrics_to_float()
-        net.convert_norm_to_float(net)
-    optimizer = optimizer_builder.build_online(optimizer_name, optimizer_params, lr, net.parameters())
-    if train_cfg.enable_mixed_precision:
-        loss_scale = train_cfg.loss_scale_factor
-        mixed_optimizer = MixedPrecisionWrapper(optimizer, loss_scale)
-    else:
-        mixed_optimizer = optimizer
-    lr_scheduler = lr_scheduler_builder.build_online(lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep)
-    if train_cfg.enable_mixed_precision:
-        float_dtype = torch.float16
-    else:
-        float_dtype = torch.float32
+
+    mixed_optimizer, lr_scheduler, float_dtype = create_optimizer(
+        net, train_cfg, optimizer_name, optimizer_params, lr, lr_schedule_name, lr_schedule_params
+    )
 
     return (
         net,

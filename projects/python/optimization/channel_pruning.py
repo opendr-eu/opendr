@@ -28,6 +28,8 @@ class ChannelPruner:
     def prune(self, steps, eval, fine_tune, save):
 
         results = []
+        
+        results.append(eval(self.learner))
 
         for i in range(steps):
 
@@ -57,13 +59,15 @@ class ChannelPruner:
 
         pruning_probability = self.pruning_probability_per_step(self.steps)
         to_prune = [
-            int(pruning_probability * a.number_of_channels(False))
+            int(pruning_probability * a.number_of_channels(False)) if pruning_probability > 0 else (min(-pruning_probability, a.number_of_channels(False) - 1))
             for a in self.collection
         ]
 
         for i, (layer, local_to_prune) in enumerate(zip(self.collection, to_prune)):
             print(i, "/", len(self.collection), end='\r')
             layer.apply_pruning(False, local_to_prune)
+
+        print("Pruned", sum(to_prune), "channels in total")
 
         self.steps += 1
 
@@ -90,4 +94,4 @@ def prune_learner(
         ranking=ranking,
     )
 
-    pruner.prune(steps, eval, fine_tune, save)
+    return pruner.prune(steps, eval, fine_tune, save)

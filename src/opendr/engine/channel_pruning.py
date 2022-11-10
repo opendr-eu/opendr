@@ -66,7 +66,7 @@ class ChannelPruningBase(nn.Module):
 
             return self.rankings
 
-    def apply_pruning(self, is_input, num_to_prune):
+    def apply_pruning(self, is_input, num_to_prune, parent_pruned_channel_ids=None):
 
         with torch.no_grad():
             dim = self.input_dim if is_input else self.output_dim
@@ -84,23 +84,29 @@ class ChannelPruningBase(nn.Module):
             other_ids = [x for x in range(self.weights.shape[dim]) if x not in lowest_layer_ids]
             all_index = [slice(None) if x != dim else other_ids for x in range(self.total_dims)]
             new_weights = self.weights[all_index]
+            old_weights = self.weights
             self.weights = nn.Parameter(new_weights).to(new_weights.device)
+            
+            del old_weights
 
             if self.biases is not None and not is_input:
                 new_biases = self.biases[other_ids]
+                old_biases = self.weights
                 self.biases = nn.Parameter(new_biases).to(new_biases.device)
+
+                del old_biases
 
             self.rankings = None
 
             if not is_input:
-                self.propagate_pruning(num_to_prune)
+                self.propagate_pruning(num_to_prune, other_ids)
 
-    def propagate_pruning(self, num_to_prune):
+    def propagate_pruning(self, num_to_prune, parent_pruned_channel_ids):
         for link in self.links:
             if not isinstance(link, ChannelPruningBase):
                 raise ValueError(str(link) + " is not a Pruning layer")
 
-            link.apply_pruning(True, num_to_prune)
+            link.apply_pruning(True, num_to_prune, parent_pruned_channel_ids)
 
     @staticmethod
     def collect():
@@ -310,14 +316,23 @@ class ChannelPruningBatchNorm2D(ChannelPruningBase):
     def compute_rankings(self, _):
         pass
 
-    def apply_pruning(self, _, num_to_prune):
+    def apply_pruning(self, _, num_to_prune, parent_pruned_channel_ids):
 
         if self.in_features <= num_to_prune:
             raise ValueError("Cannot prune more than we have")
 
         self.in_features -= num_to_prune
+        self.body.num_features -= num_to_prune
+        
+        old_weights = self.body.weight
+        old_biases = self.body.bias
+        self.body.weight = nn.Parameter(self.body.weight[parent_pruned_channel_ids])
+        self.body.bias = nn.Parameter(self.body.bias[parent_pruned_channel_ids])
+        self.body.running_mean = self.body.running_mean[parent_pruned_channel_ids]
+        self.body.running_var = self.body.running_var[parent_pruned_channel_ids]
 
-        self.body = nn.BatchNorm2d(self.in_features, eps=self.eps, momentum=self.momentum, **self.kwargs).to(self.body.weight.device)
+        del old_weights
+        del old_biases
 
         self.propagate_pruning(num_to_prune)
 

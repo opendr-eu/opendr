@@ -2,6 +2,7 @@ import sys
 import os
 import torch
 import fire
+import numpy as np
 from opendr.engine.datasets import PointCloudsDatasetIterator
 from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
 from opendr.perception.object_detection_3d import (
@@ -109,7 +110,7 @@ def test_model(
     learner = VoxelObjectDetection3DLearner(
         model_config_path=config, device=device, checkpoint_after_iter=1000
     )
-    learner.load(model_path)
+    learner.load(model_path, reshape_rpn_to_fit=True)
 
     with open(os.path.join(model_path, "eval.txt"), "w") as f:
         result = learner.eval(dataset, verbose=True)
@@ -195,11 +196,14 @@ def prune_model(
     model_type,
     device="cuda:0",
     name="pointpillars_car",
-    config="prune_xyres_16.proto",
-    steps=5,
+    config="prune5_xyres_16.proto",
+    steps=25,
+    to_prune=0.1,
+    prune_sufix="",
     **kwargs,
 ):
 
+    config_name = config.replace(".proto", "").replace("_xyres_16", "")
     config = os.path.join(config_roots[model_type], config,)
     model_path = os.path.join(temp_dir, name)
 
@@ -208,30 +212,49 @@ def prune_model(
     )
     learner.load(model_path)
 
-    with open(os.path.join(model_path, "prune.txt"), "w") as f:
+    prune_name = "prune_p" + str(to_prune).replace(".", "") + "_" + config_name + prune_sufix
 
-        def eval(learner: VoxelObjectDetection3DLearner):
-            result = learner.eval(dataset, verbose=True)
-            log = "3d AP: " + str(result[2][0, :, 0])
+    open(os.path.join(model_path, prune_name + ".txt"), "w").close()
+
+    def eval(learner: VoxelObjectDetection3DLearner):
+
+        learner.model.clear_time_metrics()
+
+        result = learner.eval(dataset, verbose=False)
+
+        inner_fps = (
+            learner.model._total_inference_count /
+            (learner.model._total_forward_time + learner.model._total_postprocess_time)
+        )
+
+        log = (
+            "3d AP: " + str(np.mean(result[2][0, :, 0])) + " " + str(result[2][0, :, 0]) +
+            " FPS: " + str(inner_fps)
+        )
+        with open(os.path.join(model_path, prune_name + ".txt"), "a") as f:
             f.write(log)
-            return log, result
+            f.write("\n")
+        return log, result
 
-        def fine_tune(learner: VoxelObjectDetection3DLearner, i):
-            model_dir = os.path.join(model_path, "prune_" + str(i))
-            learner.fit(dataset, verbose=True, model_dir=model_dir)
+    def fine_tune(learner: VoxelObjectDetection3DLearner, i):
+        model_dir = os.path.join(model_path, prune_name, str(i))
+        learner._recreate_optimizer()
+        learner.fit(dataset, verbose=False, model_dir=model_dir, evaluate=False)
 
-        def save(learner: VoxelObjectDetection3DLearner, i):
-            model_dir = os.path.join(model_path, "prune_" + str(i))
-            learner.save(model_dir)
+    def save(learner: VoxelObjectDetection3DLearner, i):
+        model_dir = os.path.join(model_path, prune_name, "prune_" + str(i))
+        learner.save(model_dir)
 
-        result = prune_learner(learner, steps, eval, fine_tune, save, "local", **kwargs)
+    results = prune_learner(learner, steps, eval, fine_tune, save, "local", pruning_probability_per_step=lambda n: to_prune, **kwargs)
 
-        f.write(str(result))
-        f.write("\n\n")
+    with open(os.path.join(model_path, "prune.txt"), "a") as f:
+        for r in results:
+            f.write(str(r))
+            f.write("\n\n")
 
 
 def prune_pointpillars(
-    device="cuda:0", name="pointpillars_car", config="prune_xyres_16.proto", **kwargs,
+    device="cuda:0", name="pointpillars_car", config="prune5_xyres_16.proto", **kwargs,
 ):
     return prune_model(
         "pointpillars", device=device, name=name, config=config, **kwargs,
