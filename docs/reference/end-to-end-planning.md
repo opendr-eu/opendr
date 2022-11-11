@@ -103,7 +103,10 @@ Parameters:
 
 ### Simulation environment setup
 
-The environment includes an Ardupilot controlled quadrotor in Webots simulation. 
+The environment is provided with a [world](src/opendr/planning/end_to_end_planning/envs/webots/worlds/train-no-dynamic-random-obstacles.wbt)
+that needs to be opened with Webots version 2021a in order to demonstrate the end-to-end planner.
+
+The environment includes an optional Ardupilot controlled quadrotor for simulating dynamics. 
 For the installation of Ardupilot instructions are available [here](https://github.com/ArduPilot/ardupilot).
 
 The required files to complete Ardupilot setup can be downloaded by running [`download_ardupilot_files.py`](src/opendr/planning/end_to_end_planning/download_ardupilot_files.py) script.
@@ -113,7 +116,7 @@ The world file for the environment is provided under `/ardupilot/libraries/SITL/
 
 Install `mavros` package for ROS communication with Ardupilot.
 Instructions are available [here](https://github.com/mavlink/mavros/blob/master/mavros/README.md#installation).
-Source installation is recomended.
+Source installation is recommended.
 
 ### Running the environment
 
@@ -135,9 +138,9 @@ After these steps the [AgiEnv](src/opendr/planning/end_to_end_planning/envs/agi_
 Training in Webots environment:
 
 ```python
-from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, AgiEnv
+from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, UAVDepthPlanningEnv
 
-env = AgiEnv()
+env = UAVDepthPlanningEnv()
 learner = EndToEndPlanningRLLearner(env, n_steps=1024)
 learner.fit(logging_path='./end_to_end_planning_tmp')
 ```
@@ -146,9 +149,9 @@ learner.fit(logging_path='./end_to_end_planning_tmp')
 Running a pretrained model:
 
 ```python
-from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, AgiEnv
+from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, UAVDepthPlanningEnv
 
-env = AgiEnv()
+env = UAVDepthPlanningEnv()
 learner = EndToEndPlanningRLLearner(env)
 learner.load('{$OPENDR_HOME}/src/opendr/planning/end_to_end_planning/pretrained_model/saved_model.zip')
 obs = env.reset()
