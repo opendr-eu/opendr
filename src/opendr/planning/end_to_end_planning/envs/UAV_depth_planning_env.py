@@ -62,7 +62,7 @@ class UAVDepthPlanningEnv(gym.Env):
         self.model_name = ""
 
         # ROS connection
-        rospy.init_node('agi_gym_environment')
+        rospy.init_node('gym_depth_planning_environment')
         self.r = rospy.Rate(25)
         self.ros_pub_pose = rospy.Publisher('mavros/setpoint_position/local', PoseStamped, queue_size=10)
         self.ros_pub_target = rospy.Publisher('target_position', PoseStamped, queue_size=10)

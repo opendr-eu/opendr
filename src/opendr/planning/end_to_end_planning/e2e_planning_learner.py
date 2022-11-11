@@ -31,7 +31,7 @@ __all__ = ["rospy", ]
 
 
 class EndToEndPlanningRLLearner(LearnerRL):
-    def __init__(self, env, lr=3e-4, n_steps=1024, iters=int(1e5), batch_size=64, checkpoint_after_iter=500,
+    def __init__(self, env=None, lr=3e-4, n_steps=1024, iters=int(1e5), batch_size=64, checkpoint_after_iter=500,
                  temp_path='', device='cuda'):
         """
         Specifies a proximal policy optimization (PPO) agent that can be trained for end to end planning for obstacle avoidance.
@@ -41,15 +41,17 @@ class EndToEndPlanningRLLearner(LearnerRL):
                                                         network_head='', temp_path=temp_path,
                                                         checkpoint_after_iter=checkpoint_after_iter,
                                                         device=device, threshold=0.0, scale=1.0)
-        if env is None:
+        self.env = env
+        self.n_steps = n_steps
+        if self.env is None:
             self.agent = PPO.load(os.environ.get(
                 "OPENDR_HOME") + '/src/opendr/planning/end_to_end_planning/pretrained_model/saved_model.zip')
+            print("Learner is initiated with pretrained model without a gym model.")
         else:
-            self.env = env
             if isinstance(self.env, DummyVecEnv):
                 self.env = self.env.envs[0]
             self.env = DummyVecEnv([lambda: self.env])
-            self.agent = PPO("MultiInputPolicy", self.env, learning_rate=self.lr, n_steps=n_steps,
+            self.agent = PPO("MultiInputPolicy", self.env, learning_rate=self.lr, n_steps=self.n_steps,
                              batch_size=self.batch_size, verbose=1)
 
     def download(self, path=None,
@@ -64,18 +66,22 @@ class EndToEndPlanningRLLearner(LearnerRL):
             urlretrieve(url=url, filename=file_destination)
         return file_destination
 
-    def fit(self, env=None, logging_path='', silent=False, verbose=True):
+    def fit(self, env=None, logging_path='', verbose=True):
         """
         Train the agent on the environment.
 
         :param env: gym.Env, optional, if specified use this env to train
         :param logging_path: str, path for logging and checkpointing
-        :param silent: bool, disable verbosity
         :param verbose: bool, enable verbosity
         """
         if env is not None:
             if isinstance(env, gym.Env):
-                self.env = env
+                if isinstance(self.env, gym.Env):
+                    self.env = env
+                else:
+                    self.env = env
+                    self.agent = PPO("MultiInputPolicy", self.env, learning_rate=self.lr, n_steps=self.n_steps,
+                                     batch_size=self.batch_size, verbose=verbose)
             else:
                 print('env should be gym.Env')
                 return
@@ -138,7 +144,8 @@ class EndToEndPlanningRLLearner(LearnerRL):
         :rtype: bool
         """
         self.agent = PPO.load(path)
-        self.agent.set_env(self.env)
+        if isinstance(self.env, gym.Env):
+            self.agent.set_env(self.env)
 
     def infer(self, batch, deterministic: bool = True):
         """
