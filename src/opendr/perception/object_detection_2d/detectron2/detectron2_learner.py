@@ -21,6 +21,10 @@ import warnings
 import numpy as np
 from urllib.request import urlretrieve
 
+# fiftyone imports 
+import fiftyone as fo
+import fiftyone.utils.random as four
+
 # Detectron imports
 import detectron2
 from detectron2 import model_zoo
@@ -45,7 +49,7 @@ class Detectron2Learner(Learner):
 
     def __init__(self, lr=0.00025, batch_size=200, img_per_step=2, weight_decay=0.00008,
                        momentum=0.98, gamma=0.0005, norm="GN", num_workers=2, num_keypoints=25, 
-                       iters=4000, threshold=0.9, loss_weight=1.0, device='cuda', temp_path="temp", backbone='resnet'):
+                       iters=4000, threshold=0.7, loss_weight=1.0, device='cuda', temp_path="temp", backbone='resnet'):
         super(Detectron2Learner, self).__init__(lr=lr, threshold=threshold, 
                                                 batch_size=batch_size, device=device, 
                                                 iters=iters, temp_path=temp_path, 
@@ -55,6 +59,7 @@ class Detectron2Learner(Learner):
         self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml")
         self.cfg.MODEL.MASK_ON = True
         self.cfg.MODEL.KEYPOINT_ON = True
+        self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = threshold
         self.cfg.DATASETS.TEST = ()  
         self.cfg.DATALOADER.NUM_WORKERS = num_workers
         self.cfg.SOLVER.IMS_PER_BATCH = img_per_step
@@ -64,13 +69,12 @@ class Detectron2Learner(Learner):
         self.cfg.SOLVER.MOMENTUM = momentum
         self.cfg.SOLVER.MAX_ITER = iters
         self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size   # faster, and good enough for this toy dataset
-        self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(classes)
         self.cfg.MODEL.SEM_SEG_HEAD.NORM = "GN"
-        self.cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = len(classes)
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.NORMALIZE_LOSS_BY_VISIBLE_KEYPOINTS = False
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.LOSS_WEIGHT = loss_weight
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.NUM_KEYPOINTS = num_keypoints
         self.cfg.TEST.KEYPOINT_OKS_SIGMAS = np.ones((num_keypoints, 1), dtype=float).tolist()
+        self.classes = ["RockerArm","BoltHoles","Big_PushRodHoles","Small_PushRodHoles", "Engine", "Bolt","PushRod","RockerArmObject"]
         # Set backbone
         if self.backbone not in self.supported_backbones:
             raise ValueError(self.backbone + " backbone is not supported.")
@@ -80,7 +84,7 @@ class Detectron2Learner(Learner):
             os.makedirs(temp_path, exist_ok=True)
         
 
-    def fit(self, json_file, image_root, dataset_name="customTrainingDataset", verbose=True):
+    def fit(self, dataset, val_dataset=None, verbose=True):
         """
         This method is used to train the detector (). Validation if performed if a val_dataset is
         provided.
@@ -93,9 +97,7 @@ class Detectron2Learner(Learner):
         :return: returns stats regarding the training and validation process
         :rtype: dict
         """
-        self.__prepare_dataset(dataset_name, json_file, image_root)
-        cfg.DATASETS.TRAIN = (dataset_name,)
-        training_dict = {"ObjLoss": [], "BoxCenterLoss": [], "BoxScaleLoss": [], "ClassLoss": [], "val_map": []}
+        self.__prepare_dataset(dataset)
 
         trainer = DefaultTrainer(self.cfg) 
         trainer.resume_or_load(resume=False)
@@ -122,38 +124,39 @@ class Detectron2Learner(Learner):
         img_data = img_data.convert(format='channels_last', channel_order='rgb')
         output = self.predictor(img_data)
         pred_classes = output["instances"].to("cpu").pred_classes.numpy()
-        bounding_box = output["instances"].to("cpu").pred_boxes.tensor.numpy()
-        keypoints_pred = output["instances"].to("cpu").pred_keypoints.numpy()
+        bounding_boxes = output["instances"].to("cpu").pred_boxes.tensor.numpy()
+        keypoints_preds = output["instances"].to("cpu").pred_keypoints.numpy()
+        seg_masks = output["instances"].to("cpu").pred_masks.numpy()
+        #seg_masks = seg_masks.transpose((1,2,0))
+        masks = seg_masks.astype('uint8')*255
         result = []
-        for i in range(len(bounding_box)):
-            result.append((Keypoint(keypoints_pred[i]), BoundingBox(name=pred_classes[i], left=bounding_box[i][0], top=bounding_box[i][1], width=bounding_box[i][2]-bounding_box[i][0], height=bounding_box[i][3]-bounding_box[i][1])))
+        for pred_class, bbox, kp, seg_mask in zip(pred_classes, bounding_boxes, keypoints_preds, masks):
+            result.append((Keypoint(kp), BoundingBox(name=pred_class, left=bbox[0], top=bbox[1], width=bbox[2]-bbox[0], height=bbox[3]-bbox[1]), seg_mask))
         return result
 
 
     def __prepare_dataset(self, dataset_name, json_file, image_root):
-        register_coco_instances(dataset_name, {}, json_file, image_root)
+        # Split the dataset
+        '''
+        four.random_split(dataset, {"train": 0.8, "val": 0.2})
+        
+        # Register the dataset
+        for d in ["train", "val"]:
+            view = dataset.match_tags(d)
+            DatasetCatalog.register("diesel_engine_" + d, lambda view=view: get_fiftyone_dicts(view))
+            MetadataCatalog.get("diesel_engine_" + d).set(thing_classes=["bolt, rocker_arm"])
+        '''
+        return True
 
-        with open(json_file) as f:
-            imgs_anns = json.load(f)
-
-        classes = []
-        kps = []
-        for Count,val in enumerate(imgs_anns['categories']):
-            classes.append(val['name'])
-            kpsList = val['keypoints']
-
-        MetadataCatalog.get(dataset_name).set(thing_classes=classes)
-        MetadataCatalog.get(dataset_name).set(keypoint_names = kpsList)
-        MetadataCatalog.get(dataset_name).set(keypoint_flip_map = [])
-
-
-    def load(self, verbose=True):
-        model_name = "model_final"
-        model_file = os.path.join(self.cfg.OUTPUT_DIR, model_name + ".pth")
-        if os.path.isfile(model_file):
-            self.cfg.MODEL.WEIGHTS = model_file            
+    def load(self, model, verbose=True):
+        # model_name = "model_final"
+        # model_file = os.path.join(self.cfg.OUTPUT_DIR, model_name + ".pth")
+        if os.path.isfile(model):
+            self.cfg.MODEL.WEIGHTS = str(model)      
+            self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(self.classes)
+            self.cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = len(self.classes)      
             self.predictor = DefaultPredictor(self.cfg)
-         print("Model loaded!")
+            print("Model loaded!")
         else:
             assert os.path.isfile(model_file), "Checkpoint {} not found!".format(model_file)
         if verbose:
