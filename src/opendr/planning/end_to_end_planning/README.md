@@ -37,4 +37,4 @@ The simulation time should stop at first time step and wait for Ardupilot softwa
   - `take_off` which takes off the quadrotor.
   - `range_image` which converts the depth image into array format to be input for the learner.
   
-After these steps the [AgiEnv](src/opendr/planning/end_to_end_planning/envs/agi_env.py) gym environment can send action comments to the simulated drone and receive depth image and pose information from simulation.
+After these steps the [UAVDepthPlanningEnv](../../../../src/opendr/planning/end_to_end_planning/envs/UAV_depth_planning_env.py) gym environment can send action comments to the simulated drone and receive depth image and pose information from simulation.

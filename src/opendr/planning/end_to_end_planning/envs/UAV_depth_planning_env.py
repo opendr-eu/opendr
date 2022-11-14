@@ -146,22 +146,18 @@ class UAVDepthPlanningEnv(gym.Env):
                 print("Service did not process request: " + str(exc))
             try:
                 resp1 = self.ros_srv_get_self(True)
+                self.robot_node_id = resp1.value
             except rospy.ServiceException as exc:
                 print("Service did not process request: " + str(exc))
-            self.robot_node_id = resp1.value
             try:
                 resp1 = self.ros_srv_get_field(self.robot_node_id, 'translation', False)
                 resp2 = self.ros_srv_get_field(self.robot_node_id, 'rotation', False)
+                self.robot_translation_field = resp1.field
+                self.robot_rotation_field = resp2.field
             except rospy.ServiceException as exc:
                 print("Service did not process request: " + str(exc))
-            self.robot_translation_field = resp1.field
-            self.robot_rotation_field = resp2.field
 
     def step(self, action):
-        # if self.current_position == PoseStamped().pose.position:
-        #     rospy.loginfo("Gym environment is not reading mavros position")
-        #     return self.observation_space.sample(), np.random.random(1), False, {}
-        # encode the action
         if self.is_discrete_actions:
             action = self.action_dictionary[action]
         forward_step = np.cos(action[0] * 22.5 / 180 * np.pi)
@@ -355,7 +351,6 @@ class UAVDepthPlanningEnv(gym.Env):
 
             goal.header.seq = 1
             goal.header.stamp = rospy.Time.now()
-            # goal.header.frame_id = "map"
 
             goal.pose.position.x = x
             goal.pose.position.y = y

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import numpy as np
-import rospy
+# import rospy
 import gym
 import os
 from pathlib import Path
@@ -26,7 +26,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 from opendr.engine.learners import LearnerRL
 from opendr.engine.constants import OPENDR_SERVER_URL
 
-__all__ = ["rospy", ]
+# __all__ = ["rospy", ]
 
 
 class EndToEndPlanningRLLearner(LearnerRL):
