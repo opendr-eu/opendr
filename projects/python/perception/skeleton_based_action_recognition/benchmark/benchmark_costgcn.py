@@ -56,6 +56,9 @@ def benchmark_cox3d():
 
         # Warm up model state
         full_sample = sample.unsqueeze(2).repeat(1, 1, 300, 1, 1)
+        if torch.cuda.is_available():
+            full_sample = full_sample.to(device="cuda")
+
         learner.model.forward_steps(full_sample)
 
         def get_device_fn(*args):
