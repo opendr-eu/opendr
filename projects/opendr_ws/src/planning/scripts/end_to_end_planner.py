@@ -24,7 +24,6 @@ from geometry_msgs.msg import PoseStamped, PointStamped
 from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner
 from opendr.planning.end_to_end_planning.utils.euler_quaternion_transformations import euler_from_quaternion
 from opendr.planning.end_to_end_planning.utils.euler_quaternion_transformations import euler_to_quaternion
-import os
 
 
 class EndToEndPlannerNode:

@@ -29,7 +29,7 @@ def euler_to_quaternion(roll, pitch, yaw):
     """
     Convert euler angles (roll, pitch, yaw) into a quaternion
     """
-    # to fix the issue that when q is (0, 0, 0, 1) exaxtly, webots considers it as NaN value.
+    # to fix the issue that when q is (0, 0, 0, 1) exactly, webots considers it as NaN value.
     if roll == 0 and pitch == 0 and yaw == 0:
         pitch = 0.000001
     q = Quaternion()

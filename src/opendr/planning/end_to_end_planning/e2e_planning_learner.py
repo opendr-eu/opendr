@@ -21,7 +21,6 @@ from urllib.request import urlretrieve
 from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
-from stable_baselines3.common.results_plotter import load_results, ts2xy
 from stable_baselines3.common.callbacks import CheckpointCallback
 
 from opendr.engine.learners import LearnerRL
@@ -86,7 +85,6 @@ class EndToEndPlanningRLLearner(LearnerRL):
                 print('env should be gym.Env')
                 return
         self.last_checkpoint_time_step = 0
-        # self.mean_reward = -10
         self.logdir = logging_path
         if isinstance(self.env, DummyVecEnv):
             self.env = self.env.envs[0]
@@ -97,7 +95,6 @@ class EndToEndPlanningRLLearner(LearnerRL):
         self.agent.set_env(self.env)
         checkpoint_callback = CheckpointCallback(save_freq=1000, save_path=self.logdir, name_prefix='rl_model')
         self.agent.learn(total_timesteps=self.iters, callback=checkpoint_callback)
-        # return {"last_20_episodes_mean_reward": self.mean_reward}
 
     def eval(self, env):
         """
@@ -171,18 +168,3 @@ class EndToEndPlanningRLLearner(LearnerRL):
     def optimize(self, target_device):
         raise NotImplementedError()
 
-    # def callback(self, _locals, _globals):
-    #     x, y = ts2xy(load_results(self.logdir), 'timesteps')
-    #
-    #     if len(y) > 20:
-    #         self.mean_reward = np.mean(y[-20:])
-    #     else:
-    #         return True
-    #
-    #     if x[-1] - self.last_checkpoint_time_step > self.checkpoint_after_iter:
-    #         self.last_checkpoint_time_step = x[-1]
-    #         check_point_path = Path(self.logdir,
-    #                                 'checkpoint_save' + str(x[-1]) + 'with_mean_rew' + str(self.mean_reward))
-    #         self.save(str(check_point_path))
-    #
-    #     return True

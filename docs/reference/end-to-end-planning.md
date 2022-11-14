@@ -103,13 +103,13 @@ Parameters:
 
 ### Simulation environment setup
 
-The environment is provided with a [world](src/opendr/planning/end_to_end_planning/envs/webots/worlds/train-no-dynamic-random-obstacles.wbt)
+The environment is provided with a [world](../../src/opendr/planning/end_to_end_planning/envs/webots/worlds/train-no-dynamic-random-obstacles.wbt)
 that needs to be opened with Webots version 2021a in order to demonstrate the end-to-end planner.
 
 The environment includes an optional Ardupilot controlled quadrotor for simulating dynamics. 
 For the installation of Ardupilot instructions are available [here](https://github.com/ArduPilot/ardupilot).
 
-The required files to complete Ardupilot setup can be downloaded by running [`download_ardupilot_files.py`](src/opendr/planning/end_to_end_planning/download_ardupilot_files.py) script.
+The required files to complete Ardupilot setup can be downloaded by running [download_ardupilot_files.py](../../src/opendr/planning/end_to_end_planning/download_ardupilot_files.py) script.
 The downloaded files (zipped as `ardupilot.zip`) should be replaced under the installation of Ardupilot.
 In order to run Ardupilot in Webots 2021a, controller codes should be replaced. (For older versions of Webots, these files can be skipped.)
 The world file for the environment is provided under `/ardupilot/libraries/SITL/examples/webots/worlds/` for training and testing.
