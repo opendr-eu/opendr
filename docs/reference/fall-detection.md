@@ -5,8 +5,17 @@ The *fall_detection* module contains the *FallDetectorLearner* class, which inhe
 ### Class FallDetectorLearner
 Bases: `engine.learners.Learner`
 
-The *FallDetectorLearner* class contains the implementation of a naive fall detector algorithm.
+The *FallDetectorLearner* class contains the implementation of a rule-based fall detector algorithm.
 It can be used to perform fall detection on images (inference) using a pose estimator.
+
+This rule-based method can provide **cheap and fast** fall detection capabilities when pose estimation
+is already being used. Its inference time cost is ~0.1% of pose estimation, adding negligible overhead.
+
+However, it **has known limitations** due to its nature. Working with 2D poses means that depending on the 
+orientation of the person, it cannot detect most fallen poses that face the camera. 
+Another example of known false-positive detection occurs when a person is sitting with their knees 
+detectable, but ankles obscured or undetectable, this however is critical for detecting a fallen person
+whose ankles are not visible.
 
 The [FallDetectorLearner](/src/opendr/perception/fall_detection/fall_detector_learner.py) class has the
 following public methods:

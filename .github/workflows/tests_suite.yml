@@ -6,20 +6,16 @@ on:
   schedule:
     - cron:  '0 23 * * *'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: bash
 
 jobs:
-  cleanup-runs:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || contains(github.event.pull_request.labels.*.name, 'test tools') || contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
-    runs-on: ubuntu-latest
-    steps:
-    - uses: rokroskar/workflow-run-cleanup-action@master
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
   test-sources:
-    needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || github.event_name == 'schedule' }}
     strategy:
       matrix:
@@ -51,9 +47,9 @@ jobs:
         pip install -r tests/requirements.txt
         python -m unittest discover -s tests
   test-tools:
-    needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -76,6 +72,7 @@ jobs:
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
@@ -115,7 +112,6 @@ jobs:
             python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
   build-wheel:
-    needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     runs-on: ubuntu-20.04
     steps:
@@ -140,7 +136,6 @@ jobs:
         path:
           dist/*.tar.gz
   build-docker:
-    needs: cleanup-runs
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     runs-on: ubuntu-20.04
     steps:
@@ -164,6 +159,7 @@ jobs:
     needs: build-wheel
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -184,6 +180,7 @@ jobs:
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
@@ -235,6 +232,7 @@ jobs:
     needs: build-wheel
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -255,6 +253,7 @@ jobs:
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
@@ -312,6 +311,7 @@ jobs:
     needs: build-docker
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -332,6 +332,7 @@ jobs:
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms

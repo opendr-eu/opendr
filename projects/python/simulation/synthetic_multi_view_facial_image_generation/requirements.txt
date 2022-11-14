@@ -1,0 +1,11 @@
+torch>=1.0.0
+torchvision
+dominate>=2.3.1
+dill
+scikit-image>0.16.2
+numpy>=1.15.4
+scipy>=1.1.0
+matplotlib>=2.2.2
+opencv-python>=3.4.3.18
+tensorboard>=1.14.0
+face-alignment==1.0.0

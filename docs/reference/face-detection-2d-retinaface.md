@@ -175,7 +175,7 @@ Parameters:
   The WIDER Face detection dataset is supported for training, implemented as a `DetectionDataset` subclass. This example assumes the data has been downloaded and placed in the directory referenced by `data_root`.
 
   ```python
-  from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
+  from opendr.perception.object_detection_2d import RetinaFaceLearner, WiderFaceDataset
   from opendr.engine.datasets import ExternalDataset
   
   dataset = WiderFaceDataset(root=data_root, splits=['train'])

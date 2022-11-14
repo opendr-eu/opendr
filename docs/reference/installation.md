@@ -64,6 +64,10 @@ pip install mxnet-cu112==1.8.0post0
 pip install opendr-toolkit-engine
 pip install opendr-toolkit
 ```
+If you encounter any issue installing the latest version of detectron, then you can try installing a previous commit:
+```bash
+pip install 'git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13'
+```
 
 ## Installing only a *particular* tool using *pip* (CPU/GPU)
 
@@ -119,18 +123,18 @@ source bin/activate.sh
 If you want to display GTK-based applications from the Docker container (e.g., visualize results using OpenCV `imshow()`), then you should mount the X server socket inside the container, e.g.,
 ```bash
 xhost +local:root
-sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_latest /bin/bash
+sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_v1.1.1 /bin/bash
 ```
 
 ## GPU docker
 If you want to use a CUDA-enabled container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
 Then, you can directly run the latest image with the command:
 ```bash
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_latest
+sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v1.1.1
 ```
 or, for an interactive session:
 ```bash
-sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_latest /bin/bash
+sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v1.1.1 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash
