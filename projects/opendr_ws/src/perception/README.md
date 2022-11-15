@@ -171,7 +171,7 @@ rosrun perception object_detection_2d_gem.py
 5. You can examine the annotated image stream using `rqt_image_view` (select one of the topics `/opendr/color_detection_annotated` or `/opendr/infra_detection_annotated`) or `rostopic echo /opendr/detections`
 
 
-## Panoptic Segmentation ROS Node
+## Visual Based Panoptic Segmentation ROS Node
 A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
 Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
 ```shell
@@ -182,9 +182,26 @@ The following optional arguments are available:
 - `-h, --help`: show a help message and exit
 - `--input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC` : listen to RGB images on this topic (default=`/usb_cam/image_raw`)
 - `--checkpoint CHECKPOINT` : download pretrained models [cityscapes, kitti] or load from the provided path (default=`cityscapes`)
-- `--output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance` (default=`/opendir/panoptic`)
+- `--output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance` (default=`/opendr/panoptic`)
 - `--visualization_topic VISUALIZATION_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag (default=`/opendr/panoptic/rgb_visualization`)
 - `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps and publish it on `OUTPUT_RGB_IMAGE_TOPIC` (default=deactivated)
+
+
+## LiDAR Based Panoptic Segmentation ROS Node
+A ROS node for performing panoptic segmentation on a specified pointcloud stream using the [EfficientLPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
+Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
+```shell
+rosrun perception panoptic_segmentation_efficient_lps.py
+```
+
+The following optional arguments are available:
+- `-h, --help`: show a help message and exit
+- `--input_rgb_pcl_topic INPUT_RGB_PCL_TOPIC` : listen to RGB pointclouds on this topic (default=`/usb_cam/pcl_raw`)
+- `--checkpoint CHECKPOINT` : download pretrained models [semantickitti, nuscenes (future)] or load from the provided path (default=`semantickitti`)
+- `--output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance` (default=`/opendr/panoptic`)
+- `--output_rgb_visualization_topic OUTPUT_RGB_VISUALIZATION_TOPIC`: publish the panoptic segmentation map as an RGB image on `OUTPUT_RGB_VISUALIZATION_TOPIC` (default=`/opendr/panoptic/rgb_visualization`)
+- `--projected_output`: compute the predictions and visualizations as 2D projected maps if True, otherwise as additional channels in a Point Cloud (default=deactivated)
+
 
 
 ## Semantic Segmentation ROS Node

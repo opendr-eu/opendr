@@ -20,11 +20,13 @@ The *EfficientLpsLearner* class is a wrapper around the EfficientLPS implementat
 The [EfficientLpsLearner](/src/opendr/perception/panoptic_segmentation/efficient_lps/efficient_lps_learner.py) class has the following public methods:
 #### `EfficientLpsLearner` constructor
 ```python
-EfficientLpsLearner(lr, iters, batch_size, optimizer, lr_schedule, momentum, weight_decay, optimizer_config, checkpoint_after_iter, temp_path, device, num_workers, seed, config_file)
+EfficientLpsLearner(config_file, lr, iters, batch_size, optimizer, lr_schedule, momentum, weight_decay, optimizer_config, checkpoint_after_iter, temp_path, device, num_workers, seed)
 ```
 
 Constructor parameters:
 
+- **config_file**: *str*\
+  Path to the config file that contains the model architecture and the data loading pipelines.
 - **lr**: *float, default=0.07*\
   Specifies the learning rate used during training.
 - **iters**: *int, default=160*\
@@ -51,8 +53,6 @@ Constructor parameters:
   Specifies the number of workers used by the data loaders.
 - **seed**: *float, default=None*\
   Specifies the seed to shuffle the data during training.
-- **config_file**: *str, default='../configs/singlegpu_sample.py*\
-  Path to the config file that contains the model architecture and the data loading pipelines.
 
 #### `EfficientLpsLearner.fit`
 ```python
@@ -70,6 +70,10 @@ Parameters:
 - **silent**: *bool, default=False*\
   If True, disables printing the training progress reports to STDOUT. The validation will still be shown.
   
+Return:
+
+- **results**: *dict*\
+  Dictionary with "train" and "val" keys containing the training progress (e.g. losses) and, if a val_dataset is provided, the evaluation results.
 #### `EfficientLpsLearner.eval`
 ```python
 EfficientLpsLearner.eval(dataset, print_results)
@@ -86,6 +90,24 @@ Return:
 
 - **evaluation_results**: *dict*\
   Contains the panoptic quality (PQ), segmentation quality (SQ), recognition quality (RQ) and Intersection over Union (IoU).
+
+
+#### `EfficientLpsLearner.pcl_to_mmdet`
+```python
+EfficientLpsLearner.pcl_to_mmdet(point_cloud, frame_id)
+```
+
+Parameters:
+
+- **point_cloud**: *PointCloud*\
+  Specifies the OpenDR PointCloud object that will be used to converted for MMDetector compatible object.
+- **frame_id**: *int, default=0*\
+  Number of the scan frame to be used as its filename. Inferences will use the same filename.
+  
+Return:
+
+- **results**: *dict*\
+  An MMDetector compatible dictionary containing the PointCloud data and some additional metadata.
 
 #### `EfficientLpsLearner.infer`
 ```python
@@ -154,7 +176,7 @@ Parameters:
   Specifies the location to save the downloaded file.
 - **mode**: *str, default='model'*\
   Valid options are *'model'* to download pre-trained model weights and *'test_data'* to run the unit tests.
-- **trained_on**: *str, default='kitti'*\
+- **trained_on**: *str, default='semantickitti'*\
   Specifies which model weights to download. Pre-trained models are available for the SemanticKITTI and NuScenes (Future) datasets.
 
 Return:
