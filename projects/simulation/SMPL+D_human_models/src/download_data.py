@@ -66,7 +66,7 @@ def download_data(raw_data_only):
         tar.extractall(path, members, numeric_owner=numeric_owner)
 
     with tarfile.open(downloaded_human_data_path) as tar:
-        safe_extract(tar, path=os.path.join(OPENDR_HOME, "projects/simulation/SMPL+D_human_models"))
+        safe_extract(tar, path=os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_human_models'))
     tar.close()
     os.remove(downloaded_human_data_path)
 
@@ -80,7 +80,7 @@ def download_data(raw_data_only):
     last_print = 0
     urlretrieve(model_url, downloaded_model_path, reporthook=reporthook)
     with tarfile.open(downloaded_model_path) as tar:
-        safe_extract(tar, path=os.path.join(OPENDR_HOME, "projects/simulation/SMPL+D_human_models"))
+        safe_extract(tar, path=os.path.join(OPENDR_HOME, 'projects/simulation/SMPL+D_human_models'))
     tar.close()
     os.remove(downloaded_model_path)
 
