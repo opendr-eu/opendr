@@ -76,21 +76,21 @@ class UAVDepthPlanningEnv(gym.Env):
             self.r.sleep()
             print("Waiting for webots model to start!")
         self.randomizer = ObstacleRandomizer(self.model_name)
-        rospy.Subscriber("/" + self.model_name + "/touch_sensor_collision/value", BoolStamped, self.collision_callback)
-        rospy.Subscriber("/" + self.model_name + "/touch_sensor_safety1/value", BoolStamped, self.safety1_callback)
-        rospy.Subscriber("/" + self.model_name + "/touch_sensor_safety2/value", BoolStamped, self.safety2_callback)
-        rospy.Subscriber("/" + self.model_name + "/range_finder/range_image", Image, self.range_callback, queue_size=1)
-        rospy.Subscriber("/" + self.model_name + "/lidar/range_image", Image, self.laser_callback, queue_size=1)
+        rospy.Subscriber("/touch_sensor_collision/value", BoolStamped, self.collision_callback)
+        rospy.Subscriber("/touch_sensor_safety1/value", BoolStamped, self.safety1_callback)
+        rospy.Subscriber("/touch_sensor_safety2/value", BoolStamped, self.safety2_callback)
+        rospy.Subscriber("/range_finder/range_image", Image, self.range_callback, queue_size=1)
+        rospy.Subscriber("/lidar/range_image", Image, self.laser_callback, queue_size=1)
         self.ros_srv_touch_sensor_collision_enable = rospy.ServiceProxy(
-            "/" + self.model_name + "/touch_sensor_collision/enable", webots_ros.srv.set_int)
+            "/touch_sensor_collision/enable", webots_ros.srv.set_int)
         self.ros_srv_touch_sensor_safety1_enable = rospy.ServiceProxy(
-            "/" + self.model_name + "/touch_sensor_safety1/enable", webots_ros.srv.set_int)
+            "/touch_sensor_safety1/enable", webots_ros.srv.set_int)
         self.ros_srv_touch_sensor_safety2_enable = rospy.ServiceProxy(
-            "/" + self.model_name + "/touch_sensor_safety2/enable", webots_ros.srv.set_int)
+            "/touch_sensor_safety2/enable", webots_ros.srv.set_int)
         self.ros_srv_range_sensor_enable = rospy.ServiceProxy(
-            "/" + self.model_name + "/range_finder/enable", webots_ros.srv.set_int)
+            "/range_finder/enable", webots_ros.srv.set_int)
         self.ros_srv_laser_sensor_enable = rospy.ServiceProxy(
-            "/" + self.model_name + "/lidar/enable", webots_ros.srv.set_int)
+            "/lidar/enable", webots_ros.srv.set_int)
         try:
             self.ros_srv_touch_sensor_collision_enable(1)
             self.ros_srv_range_sensor_enable(1)
@@ -126,19 +126,19 @@ class UAVDepthPlanningEnv(gym.Env):
         self.no_dynamics = no_dynamics
         if no_dynamics:
             self.ros_srv_gps1_sensor_enable = rospy.ServiceProxy(
-                "/" + self.model_name + "/gps1/enable", webots_ros.srv.set_int)
+                "/gps1/enable", webots_ros.srv.set_int)
             self.ros_srv_inertial_unit_enable = rospy.ServiceProxy(
-                "/" + self.model_name + "/inertial_unit/enable", webots_ros.srv.set_int)
+                "/inertial_unit/enable", webots_ros.srv.set_int)
             self.ros_srv_get_self = rospy.ServiceProxy(
-                "/" + self.model_name + "/supervisor/get_self", webots_ros.srv.get_uint64)
+                "/supervisor/get_self", webots_ros.srv.get_uint64)
             self.ros_srv_get_field = rospy.ServiceProxy(
-                "/" + self.model_name + "/supervisor/node/get_field", webots_ros.srv.node_get_field)
+                "/supervisor/node/get_field", webots_ros.srv.node_get_field)
             self.ros_srv_field_set_v3 = rospy.ServiceProxy(
-                "/" + self.model_name + "/supervisor/field/set_vec3f", webots_ros.srv.field_set_vec3f)
+                "/supervisor/field/set_vec3f", webots_ros.srv.field_set_vec3f)
             self.ros_srv_field_set_rotation = rospy.ServiceProxy(
-                "/" + self.model_name + "/supervisor/field/set_rotation", webots_ros.srv.field_set_rotation)
-            rospy.Subscriber("/" + self.model_name + "/inertial_unit/quaternion", Imu, self.imu_callback)
-            rospy.Subscriber("/" + self.model_name + "/gps1/values", PointStamped, self.gps_callback)
+                "/supervisor/field/set_rotation", webots_ros.srv.field_set_rotation)
+            rospy.Subscriber("/inertial_unit/quaternion", Imu, self.imu_callback)
+            rospy.Subscriber("/gps1/values", PointStamped, self.gps_callback)
             try:
                 self.ros_srv_gps1_sensor_enable(1)
                 self.ros_srv_inertial_unit_enable(1)
@@ -320,9 +320,9 @@ class UAVDepthPlanningEnv(gym.Env):
             self.safety2_flag = True
 
     def gps_callback(self, data):  # for no dynamics
-        self.current_position.x = data.point.z
-        self.current_position.y = data.point.x
-        self.current_position.z = data.point.y
+        self.current_position.x = -data.point.x
+        self.current_position.y = data.point.y
+        self.current_position.z = data.point.z
 
     def imu_callback(self, data):  # for no dynamics
         self.current_orientation = data.orientation
@@ -335,11 +335,11 @@ class UAVDepthPlanningEnv(gym.Env):
             goal.header.seq = 1
             goal.header.stamp = rospy.Time.now()
 
-            goal.pose.position.x = y
-            goal.pose.position.y = z
-            goal.pose.position.z = x
+            goal.pose.position.x = -x
+            goal.pose.position.y = y
+            goal.pose.position.z = z
 
-            goal.pose.orientation = euler_to_quaternion(0, yaw, 0)
+            goal.pose.orientation = euler_to_quaternion(0, 0, yaw)
             try:
                 self.ros_srv_field_set_v3(self.robot_translation_field, 0, goal.pose.position)
                 self.ros_srv_field_set_rotation(self.robot_rotation_field, 0, goal.pose.orientation)
