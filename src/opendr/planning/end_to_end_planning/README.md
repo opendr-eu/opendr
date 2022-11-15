@@ -22,7 +22,7 @@ The world file for the environment is provided under `/ardupilot/libraries/SITL/
 
 Install `mavros` package for ROS communication with Ardupilot.
 Instructions are available [here](https://github.com/mavlink/mavros/blob/master/mavros/README.md#installation).
-Source installation is recomended.
+Source installation is recommended.
 
 ### Running Ardupilot environment
 
