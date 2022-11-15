@@ -35,10 +35,10 @@ class ObjectTracking2DDeepSortNode:
     def __init__(
         self,
         detector: Learner,
-        input_image_topic="/usb_cam/image_raw",
+        input_rgb_image_topic="/usb_cam/image_raw",
         output_detection_topic="/opendr/deep_sort_detection",
         output_tracking_id_topic="/opendr/deep_sort_tracking_id",
-        output_image_topic="/opendr/deep_sort_image_annotated",
+        output_rgb_image_topic="/opendr/deep_sort_image_annotated",
         device="cuda:0",
         model_name="deep_sort",
         temp_dir="temp",
@@ -187,10 +187,10 @@ def draw_predictions(frame, predictions: TrackingAnnotationList, is_centered=Fal
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--model_name", help="Name of the trained model",
-                        type=str, default="deep_sort")
+                        type=str, default="deep_sort", choices=["deep_sort"])
     parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
-    parser.add_argument("-i", "--input_image_topic",
+    parser.add_argument("-i", "--input_rgb_image_topic",
                         help="Input Image topic provided by either an image_dataset_node, webcam or any other image node",
                         type=str, default="/opendr/dataset_image")
     parser.add_argument("-od", "--output_detection_topic",
@@ -199,7 +199,7 @@ def main():
     parser.add_argument("-ot", "--output_tracking_id_topic",
                         help="Output detections topic",
                         type=str, default="/opendr/deep_sort_tracking_id")
-    parser.add_argument("-oi", "--output_image_topic",
+    parser.add_argument("-oi", "--output_rgb_image_topic",
                         help="Output detections topic",
                         type=str, default="/opendr/deep_sort_image_annotated")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",

@@ -37,7 +37,7 @@ class ObjectTracking3DAb3dmotNode:
     ):
         """
         Creates a ROS Node for 3D object tracking
-        :param detector: Learner that proides 3D object detections
+        :param detector: Learner that provides 3D object detections
         :type detector: Learner
         :param input_point_cloud_topic: Topic from which we are reading the input point cloud
         :type input_point_cloud_topic: str
@@ -108,7 +108,7 @@ class ObjectTracking3DAb3dmotNode:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-dn", "--detector_model_name", help="Name of the trained model",
-                        type=str, default="tanet_car_xyres_16")
+                        type=str, default="tanet_car_xyres_16", choices =["tanet_car_xyres_16"])
     parser.add_argument(
         "-dc", "--detector_model_config_path", help="Path to a model .proto config",
         type=str, default=os.path.join(
@@ -126,7 +126,7 @@ def main():
                         help="Output detections topic",
                         type=str, default="/opendr/detection3d")
     parser.add_argument("-ot", "--output_tracking3d_id_topic",
-                        help="Output tracking topic",
+                        help="Output tracking id topic",
                         type=str, default="/opendr/tracking3d_id")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
