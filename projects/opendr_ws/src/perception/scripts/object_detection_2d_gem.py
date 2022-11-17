@@ -19,6 +19,7 @@ import torch
 import message_filters
 import cv2
 import numpy as np
+import argparse
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
@@ -30,9 +31,9 @@ from opendr.engine.data import Image
 class ObjectDetectionGemNode:
     def __init__(
         self,
-        input_rgb_image_topic="/camera/color/image_raw",
+        input_color_image_topic="/camera/color/image_raw",
         input_infra_image_topic="/camera/infra/image_raw",
-        output_rgb_image_topic="/opendr/color_detection_annotated",
+        output_color_image_topic="/opendr/color_detection_annotated",
         output_infra_image_topic="/opendr/infra_detection_annotated",
         detections_topic="/opendr/objects",
         device="cuda",
@@ -41,13 +42,13 @@ class ObjectDetectionGemNode:
     ):
         """
         Creates a ROS Node for object detection with GEM
-        :param input_rgb_image_topic: Topic from which we are reading the input color image
-        :type input_rgb_image_topic: str
+        :param input_color_image_topic: Topic from which we are reading the input color image
+        :type input_color_image_topic: str
         :param input_infra_image_topic: Topic from which we are reading the input infrared image
         :type: input_infra_image_topic: str
-        :param output_rgb_image_topic: Topic to which we are publishing the annotated color image (if None, we are not
+        :param output_color_image_topic: Topic to which we are publishing the annotated color image (if None, we are not
         publishing annotated image)
-        :type output_rgb_image_topic: str
+        :type output_color_image_topic: str
         :param output_infra_image_topic: Topic to which we are publishing the annotated infrared image (if None, we are not
         publishing annotated image)
         :type output_infra_image_topic: str
@@ -66,12 +67,12 @@ class ObjectDetectionGemNode:
         :type pts_infra: {list, numpy.ndarray}
         """
         rospy.init_node("gem", anonymous=True)
-        if output_color_topic is not None:
-            self.rgb_publisher = rospy.Publisher(output_color_topic, ROS_Image, queue_size=10)
+        if output_color_image_topic is not None:
+            self.color_publisher = rospy.Publisher(output_color_image_topic, ROS_Image, queue_size=10)
         else:
-            self.rgb_publisher = None
-        if output_infra_topic is not None:
-            self.ir_publisher = rospy.Publisher(output_infra_topic, ROS_Image, queue_size=10)
+            self.color_publisher = None
+        if output_infra_image_topic is not None:
+            self.ir_publisher = rospy.Publisher(output_infra_image_topic, ROS_Image, queue_size=10)
         else:
             self.ir_publisher = None
 
@@ -183,11 +184,12 @@ class ObjectDetectionGemNode:
         self.gem_learner.download(path=".", verbose=True)
 
         # Subscribers
-        msg_rgb = message_filters.Subscriber(input_color_topic, ROS_Image, queue_size=1, buff_size=10000000)
-        msg_ir = message_filters.Subscriber(input_infra_topic, ROS_Image, queue_size=1, buff_size=10000000)
+        msg_color = message_filters.Subscriber(output_color_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
+        msg_ir = message_filters.Subscriber(output_infra_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
 
-        sync = message_filters.TimeSynchronizer([msg_rgb, msg_ir], 1)
+        sync = message_filters.TimeSynchronizer([msg_color, msg_ir], 1)
         sync.registerCallback(self.callback)
+        rospy.loginfo("GEM node Initialized!")
 
     def listen(self):
         """
@@ -197,21 +199,21 @@ class ObjectDetectionGemNode:
         rospy.loginfo("GEM node started!")
         rospy.spin()
 
-    def callback(self, msg_rgb, msg_ir):
+    def callback(self, msg_color, msg_ir):
         """
         Callback that process the input data and publishes to the corresponding topics
-        :param msg_rgb: input color image message
-        :type msg_rgb: sensor_msgs.msg.Image
+        :param msg_color: input color image message
+        :type msg_color: sensor_msgs.msg.Image
         :param msg_ir: input infrared image message
         :type msg_ir: sensor_msgs.msg.Image
         """
         # Convert images to OpenDR standard
-        image_rgb = self.bridge.from_ros_image(msg_rgb).opencv()
+        image_color = self.bridge.from_ros_image(msg_color).opencv()
         image_ir_raw = self.bridge.from_ros_image(msg_ir, "bgr8").opencv()
-        image_ir = cv2.warpPerspective(image_ir_raw, self.h, (image_rgb.shape[1], image_rgb.shape[0]))
+        image_ir = cv2.warpPerspective(image_ir_raw, self.h, (image_color.shape[1], image_color.shape[0]))
 
         # Perform inference on images
-        boxes, w_sensor1, _ = self.gem_learner.infer(image_rgb, image_ir)
+        boxes, w_sensor1, _ = self.gem_learner.infer(image_color, image_ir)
 
         #  Annotate image and publish results:
         if self.detection_publisher is not None:
@@ -220,10 +222,10 @@ class ObjectDetectionGemNode:
             # We get can the data back using self.bridge.from_ros_bounding_box_list(ros_detection)
             # e.g., opendr_detection = self.bridge.from_ros_bounding_box_list(ros_detection)
 
-        if self.rgb_publisher is not None:
-            plot_rgb = draw_bounding_boxes(image_rgb, boxes, class_names=self.classes)
-            message = self.bridge.to_ros_image(Image(np.uint8(plot_rgb)))
-            self.rgb_publisher.publish(message)
+        if self.color_publisher is not None:
+            plot_color = draw_bounding_boxes(image_color, boxes, class_names=self.classes)
+            message = self.bridge.to_ros_image(Image(np.uint8(plot_color)))
+            self.color_publisher.publish(message)
         if self.ir_publisher is not None:
             plot_ir = draw_bounding_boxes(image_ir, boxes, class_names=self.classes)
             message = self.bridge.to_ros_image(Image(np.uint8(plot_ir)))
@@ -232,10 +234,10 @@ class ObjectDetectionGemNode:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_rgb_image_topic", help="Topic name for input rgb image",
+    parser.add_argument("--input_color_image_topic", help="Topic name for input color image",
                         type=str, default="/camera/color/image_raw")
-    parser.add_argument("--output_rgb_image_topic", help="Topic name for output annotated rgb image",
-                        type=str, default="/opendr/rgb_objects_annotated")
+    parser.add_argument("--output_color_image_topic", help="Topic name for output annotated color image",
+                        type=str, default="/opendr/color_objects_annotated")
     parser.add_argument("--input_infra_image_topic", help="Topic name for input infra image",
                         type=str, default="/camera/infra/image_raw")
     parser.add_argument("--output_infra_image_topic", help="Topic name for output annotated infra image",
@@ -262,8 +264,8 @@ if __name__ == "__main__":
 
     detection_estimation_node = ObjectDetectionGemNode(
         device=device,
-        input_rgb_image_topic=args.input_rgb_image_topic,
-        output_rgb_image_topic=args.output_rgb_image_topic,
+        input_color_image_topic=args.input_color_image_topic,
+        output_color_image_topic=args.output_color_image_topic,
         input_infra_image_topic=args.input_infra_image_topic,
         output_infra_image_topic=args.output_infra_image_topic,
         detections_topic=args.detections_topic,
