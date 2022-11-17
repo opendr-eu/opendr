@@ -567,20 +567,8 @@ class ROSBridge:
         :rtype: engine.data.PointCloud
         """
 
-        points = np.empty([len(point_cloud.data), len(point_cloud.fields)], dtype=np.float32)
-
-        for i in range(len(point_cloud.data)):
-            point = point_cloud.data[i]
-            x, y, z = point[0], point[1], point[2]
-
-            points[i, 0] = x
-            points[i, 1] = y
-            points[i, 2] = z
-
-            for q in range(len(point_cloud.fields) - 3):
-                points[i, 3 + q] = point[3 + q]
-
-        result = PointCloud(points)
+        points = pc2.read_points_list(point_cloud, field_names = [f.name for f in point_cloud.fields])
+        result = PointCloud(np.array(points))
 
         return result
 
@@ -596,6 +584,7 @@ class ROSBridge:
 
         header = Header()
         header.stamp = rospy.Time.now()
+        header.frame_id = "base_link"
 
         channel_count = point_cloud.data.shape[-1] - 3
 
@@ -603,7 +592,7 @@ class ROSBridge:
                   PointFieldMsg("y", 4, PointFieldMsg.FLOAT32, 1),
                   PointFieldMsg("z", 8, PointFieldMsg.FLOAT32, 1)]
         for i in range(channel_count):
-                fields.append(PointFieldMsg("channel_" + str(i), 12 + i * 4, PointFieldMsg.FLOAT32, 1))
+                    fields.append(PointFieldMsg("channel_" + str(i), 12 + i * 4, PointFieldMsg.FLOAT32, 1))
         points = []
 
         for point in point_cloud.data:
