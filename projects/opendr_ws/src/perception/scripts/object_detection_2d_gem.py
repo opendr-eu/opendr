@@ -184,8 +184,8 @@ class ObjectDetectionGemNode:
         self.gem_learner.download(path=".", verbose=True)
 
         # Subscribers
-        msg_color = message_filters.Subscriber(output_color_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
-        msg_ir = message_filters.Subscriber(output_infra_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
+        msg_color = message_filters.Subscriber(input_color_image_topic, ROS_Image)
+        msg_ir = message_filters.Subscriber(input_infra_image_topic, ROS_Image)
 
         sync = message_filters.TimeSynchronizer([msg_color, msg_ir], 1)
         sync.registerCallback(self.callback)
@@ -207,6 +207,7 @@ class ObjectDetectionGemNode:
         :param msg_ir: input infrared image message
         :type msg_ir: sensor_msgs.msg.Image
         """
+        rospy.logwarn("Entered callback!")
         # Convert images to OpenDR standard
         image_color = self.bridge.from_ros_image(msg_color).opencv()
         image_ir_raw = self.bridge.from_ros_image(msg_ir, "bgr8").opencv()
@@ -234,20 +235,34 @@ class ObjectDetectionGemNode:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_color_image_topic", help="Topic name for input color image",
-                        type=str, default="/camera/color/image_raw")
-    parser.add_argument("--output_color_image_topic", help="Topic name for output annotated color image",
-                        type=str, default="/opendr/color_objects_annotated")
-    parser.add_argument("--input_infra_image_topic", help="Topic name for input infra image",
-                        type=str, default="/camera/infra/image_raw")
-    parser.add_argument("--output_infra_image_topic", help="Topic name for output annotated infra image",
-                        type=str, default="/opendr/infra_objects_annotated")
-    parser.add_argument("--detections_topic", help="Topic name for detection messages",
-                        type=str, default="/opendr/objects")
-    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
-                        type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument(
+        "--input_color_image_topic", help="Topic name for input color image", type=str, default="/camera/color/image_raw"
+    )
+    parser.add_argument(
+        "--output_color_image_topic",
+        help="Topic name for output annotated color image",
+        type=str,
+        default="/opendr/color_objects_annotated",
+    )
+    parser.add_argument(
+        "--input_infra_image_topic", help="Topic name for input infra image", type=str, default="/camera/infra/image_raw"
+    )
+    parser.add_argument(
+        "--output_infra_image_topic",
+        help="Topic name for output annotated infra image",
+        type=str,
+        default="/opendr/infra_objects_annotated",
+    )
+    parser.add_argument("--detections_topic", help="Topic name for detection messages", type=str, default="/opendr/objects")
+    parser.add_argument(
+        "--device",
+        help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
+        type=str,
+        default="cuda",
+        choices=["cuda", "cpu"],
+    )
     args = parser.parse_args()
-    
+
     # Select the device for running the
     try:
         if args.device == "cuda" and torch.cuda.is_available():
