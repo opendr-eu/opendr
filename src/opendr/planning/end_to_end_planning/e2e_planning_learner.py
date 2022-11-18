@@ -104,7 +104,6 @@ class EndToEndPlanningRLLearner(LearnerRL):
             env = env.envs[0]
         if isinstance(env, Monitor):
             env = env.env
-        # env = Monitor(env, filename=self.logdir)
         env = DummyVecEnv([lambda: env])
         self.agent.set_env(env)
         obs = env.reset()
