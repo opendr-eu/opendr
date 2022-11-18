@@ -78,7 +78,6 @@ class EndToEndPlannerNode:
         self.range_image = ((np.clip(image_arr.reshape((64, 64, 1)), 0, 15) / 15.) * 255).astype(np.uint8)
         observation = {'depth_cam': np.copy(self.range_image), 'moving_target': np.array([5, 0, 0])}
         action = self.end_to_end_planner.infer(observation, deterministic=True)[0]
-        print(action)  # publish the action
         self.publish_poses(action)
 
     def gps_callback(self, data):  # for no dynamics
