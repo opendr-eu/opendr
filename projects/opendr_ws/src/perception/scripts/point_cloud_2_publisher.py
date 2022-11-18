@@ -51,7 +51,7 @@ class PointCloud2DatasetNode:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # I have defined the default path in the place where I have my example data, this should be adjusted later on
-    parser.add_argument('--dataset_path', type=str, default='/home/canakcia/datasets/semantickitti/test_data',
+    parser.add_argument('--dataset_path', type=str, default='/export/home/voedisch_local/datasets/test_data',
                         help='listen to RGB pointclouds on this topic')
 
     rospy.init_node('opendr_point_cloud_2_dataset')

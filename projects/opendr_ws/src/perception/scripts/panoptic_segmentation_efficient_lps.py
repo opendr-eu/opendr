@@ -22,7 +22,6 @@ import numpy as np
 import matplotlib
 import rospy
 from sensor_msgs.msg import PointCloud2 as ROS_PointCloud2
-from sensor_msgs.msg import Image as ROS_Image
 
 from opendr_bridge import ROSBridge
 from opendr.perception.panoptic_segmentation import EfficientLpsLearner
@@ -109,18 +108,12 @@ class EfficientLpsNode:
         Set up the publishers as requested by the user.
         """
         if self.output_heatmap_pointcloud_topic is not None:
-            if self.projected_output:
-                self._instance_heatmap_publisher = rospy.Publisher(
-                    f"{self.output_heatmap_pointcloud_topic}/instance", ROS_Image, queue_size=10)
                 self._semantic_heatmap_publisher = rospy.Publisher(
-                    f"{self.output_heatmap_pointcloud_topic}/semantic", ROS_Image, queue_size=10)
-            else:
-                self._instance_heatmap_publisher = rospy.Publisher(
                     self.output_heatmap_pointcloud_topic, ROS_PointCloud2, queue_size=10)
-                self._semantic_heatmap_publisher = None
+                self._instance_heatmap_publisher = None
         if self.output_rgb_visualization_topic is not None:
             self._visualization_publisher = rospy.Publisher(self.output_rgb_visualization_topic,
-                                                            ROS_Image, queue_size=10)
+                                                            ROS_PointCloud2, queue_size=10)
 
     def _join_arrays(self, arrays: List[np.ndarray]):
         """
@@ -166,38 +159,18 @@ class EfficientLpsNode:
         :type data: sensor_msgs.msg.PointCloud
         """
         # Convert sensor_msgs.msg.Image to OpenDR Image
-        pointcloud = self._bridge.from_ros_point_cloud(data)
+        pointcloud = self._bridge.from_ros_point_cloud2(data)
 
         try:
             # Get a list of two OpenDR heatmaps: [instance map, semantic map, depth map] if projected_output is True,
             # or a list of numpy arrays: [instance labels, semantic labels] otherwise.
-            prediction = self._learner.infer(pointcloud, projected=self.projected_output)
+            prediction = self._learner.infer(pointcloud)
 
             # The output topics are only published if there is at least one subscriber
             if self._visualization_publisher is not None and \
                     self._visualization_publisher.get_num_connections() > 0:
-                if self.projected_output:
-                    projected_output = prediction[2]
-                    panoptic_image = EfficientLpsLearner.visualize(projected_output, prediction[:2], show_figure=False)
-                else:
-                    panoptic_image = EfficientLpsLearner.visualize(pointcloud, prediction[:2], show_figure=False)
-
-                self._visualization_publisher.publish(self._bridge.to_ros_image(panoptic_image))
-            if self._instance_heatmap_publisher is not None and \
-                    self._instance_heatmap_publisher.get_num_connections() > 0:
-
-                if self.projected_output:
-                    self._instance_heatmap_publisher.publish(self._bridge.to_ros_image(prediction[0]))
-                else:
-                    labeled_pc = ROS_PointCloud2(self._join_arrays([pointcloud.data, prediction[0], prediction[1]]))
-                    self._instance_heatmap_publisher.publish(self._bridge.to_ros_point_cloud(labeled_pc))
-
-            if self._semantic_heatmap_publisher is not None and \
-                    self._semantic_heatmap_publisher.get_num_connections() > 0:
-                if self.projected_output:
-                    self._semantic_heatmap_publisher.publish(self._bridge.to_ros_image(prediction[1]))
-                else:
-                    rospy.logwarn("Semantic heatmap cannot be published in non-projected mode.")
+                pointcloud_visualization = EfficientLpsLearner.visualize(pointcloud, prediction, return_pc=True)
+                self._visualization_publisher.publish(self._bridge.to_ros_point_cloud2(pointcloud_visualization, channels='rgb'))
 
         except Exception as e:
             rospy.logwarn(f'Failed to generate prediction: {e}')

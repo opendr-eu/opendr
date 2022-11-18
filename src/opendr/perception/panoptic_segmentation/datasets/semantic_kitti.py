@@ -27,6 +27,8 @@ from mmdet2.datasets.eval_np import PanopticEval
 from opendr.engine.data import PointCloud
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
 
+PALETTE = np.random.randint(0, 255, (28, 3))
+
 
 class SemanticKittiDataset(ExternalDataset, DatasetIterator):
     """

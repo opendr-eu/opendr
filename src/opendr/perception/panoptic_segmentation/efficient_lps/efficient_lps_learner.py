@@ -42,7 +42,6 @@ from mmdet2.apis.train import batch_processor
 from mmdet2.core import get_classes, build_optimizer, EvalHook
 from mmdet2.datasets import build_dataloader
 from mmdet2.datasets.semantic_kitti import STUFF_START_ID
-from mmdet2.datasets.cityscapes import PALETTE
 from mmdet2.datasets.pipelines import Compose
 from mmdet2.datasets.laserscan_unfolding import LaserScan
 from mmdet2.models import build_detector
@@ -52,7 +51,34 @@ from opendr.perception.panoptic_segmentation.datasets import SemanticKittiDatase
 
 
 Prediction = Union[Tuple[Heatmap, Heatmap, Image], Tuple[np.ndarray, np.ndarray, None]]
-
+PALETTE = np.array([[183,  24,  47],
+                    [240,  82, 227],
+                    [105, 118,   0],
+                    [10, 213,  94],
+                    [238, 230,   4],
+                    [212, 158,  48],
+                    [1,  74, 171],
+                    [137, 163, 146],
+					[255, 0, 255], # ROAD
+                    [251,  63,  76],
+                    [47, 230,  27],
+                    [222, 142, 202],
+                    [14,  43,  57],
+                    [47, 212,  41],
+                    [0,  255, 0], # SIDEWALK
+                    [26,  12,  79], 
+                    [27,  85, 252],
+                    [36, 150, 185],
+                    [127,  62, 162],
+                    [229, 163,  93],
+                    [227, 120, 181],
+                    [82,  72, 187],
+                    [249, 190, 165],
+                    [144,   3, 226],
+                    [202, 218,  31],
+                    [171, 184,  70],
+                    [63, 242, 235],
+                    [0, 0, 0]])
 
 class EfficientLpsLearner(Learner):
 	"""
@@ -674,6 +700,8 @@ class EfficientLpsLearner(Learner):
 				urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
 		return str(filename)
 
+	# from numpy.typing import ArrayLike
+
 	@staticmethod
 	def visualize(pointcloud: PointCloud,
 				  predictions: Tuple[np.ndarray, np.ndarray],
@@ -684,6 +712,7 @@ class EfficientLpsLearner(Learner):
 				  max_inst: int = 20,
 				  min_alpha: float = 0.25,
 				  dpi: int = 600,
+				  return_pc: bool = False,
 				  ) -> Image:
 		"""
 		Create a visualization of the predicted panoptic segmentation as a colored 3D Scatter Plot.
@@ -721,6 +750,26 @@ class EfficientLpsLearner(Learner):
 
 		inst = predictions[0]
 		sem = predictions[1]
+		if return_pc:
+
+			colors = np.array(PALETTE, dtype=np.float) / 255.
+			sem[sem==255] = 19
+			colors = colors[sem]   # Use the mod of the sem. label in case some values aren't in the colors
+
+			# Re-color instances
+			inst[sem>=8] = -1
+			n_inst = np.unique(inst)[-2]
+			new_palette = np.random.randint(0, 255, size=(n_inst, 3), dtype=np.uint8)
+			new_colors = np.array(new_palette, dtype=np.float) / 255.
+			# Assign new colors to instances
+			for i in range(new_colors.shape[0]):
+				color = new_colors[i]
+				if color in PALETTE:
+					color = np.random.randint(0, 255, size=(1, 3), dtype=np.uint8)/255.
+				colors[inst == i] = color
+			points = np.c_[x, y, z, colors]
+			pc = PointCloud(points)
+			return pc
 
 		fig = plt.figure(figsize=figure_size, dpi=dpi)
 		ax = fig.add_subplot(111, projection="3d")
