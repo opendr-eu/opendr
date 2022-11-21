@@ -117,10 +117,10 @@ class ObjectDetectionGemNode:
                 ]
             )
             rospy.logwarn(
-                "\nUsing default calibration values for pts_infra!"
-                + "\nThese are probably incorrect."
-                + "\nThe correct values for pts_infra can be found by running get_color_infra_alignment.py."
-                + "\nThis file is located in the opendr/perception/object_detection2d/utils module."
+                "\nUsing default calibration values for pts_infra!" +
+                "\nThese are probably incorrect." +
+                "\nThe correct values for pts_infra can be found by running get_color_infra_alignment.py." +
+                "\nThis file is located in the opendr/perception/object_detection2d/utils module."
             )
         if pts_color is None:
             pts_color = np.array(
@@ -159,10 +159,10 @@ class ObjectDetectionGemNode:
                 ]
             )
             rospy.logwarn(
-                "\nUsing default calibration values for pts_color!"
-                + "\nThese are probably incorrect."
-                + "\nThe correct values for pts_color can be found by running get_color_infra_alignment.py."
-                + "\nThis file is located in the opendr/perception/object_detection2d/utils module."
+                "\nUsing default calibration values for pts_color!" +
+                "\nThese are probably incorrect." +
+                "\nThe correct values for pts_color can be found by running get_color_infra_alignment.py." +
+                "\nThis file is located in the opendr/perception/object_detection2d/utils module."
             )
         # Object classes
         self.classes = ["N/A", "chair", "cycle", "bin", "laptop", "drill", "rocker"]
