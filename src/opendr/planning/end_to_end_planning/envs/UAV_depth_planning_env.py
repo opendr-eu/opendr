@@ -18,10 +18,10 @@ from gym import spaces
 import numpy as np
 import rospy
 from geometry_msgs.msg import PoseStamped, PointStamped
-from std_msgs.msg import Float32MultiArray, String
+from std_msgs.msg import String
 from nav_msgs.msg import Path
 from webots_ros.msg import BoolStamped
-from sensor_msgs.msg import Imu, Image, LaserScan
+from sensor_msgs.msg import Imu, Image
 from opendr.planning.end_to_end_planning.utils.obstacle_randomizer import ObstacleRandomizer
 from opendr.planning.end_to_end_planning.utils.euler_quaternion_transformations import euler_from_quaternion
 from opendr.planning.end_to_end_planning.utils.euler_quaternion_transformations import euler_to_quaternion
