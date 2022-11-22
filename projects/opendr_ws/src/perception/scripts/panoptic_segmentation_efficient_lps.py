@@ -51,7 +51,6 @@ class EfficientLpsNode:
         self.checkpoint = checkpoint
         self.input_pcl_topic = input_pcl_topic
         self.output_rgb_visualization_topic = output_rgb_visualization_pointcloud_topic
-        
 
         # Initialize all ROS related things
         self._bridge = ROSBridge()
@@ -101,7 +100,7 @@ class EfficientLpsNode:
 
         if self.output_rgb_visualization_topic is not None:
             self._visualization_pointcloud_publisher = rospy.Publisher(self.output_rgb_visualization_topic,
-                                                                      ROS_PointCloud2, queue_size=10)
+                                                                       ROS_PointCloud2, queue_size=10)
 
     def _join_arrays(self, arrays: List[np.ndarray]):
         """
@@ -157,8 +156,9 @@ class EfficientLpsNode:
             # The output topics are only published if there is at least one subscriber
             if self._visualization_pointcloud_publisher is not None and \
                     self._visualization_pointcloud_publisher.get_num_connections() > 0:
-                # Get the RGB visualization of the panoptic map as pointcloud in OpenDR format  
-                pointcloud_visualization = EfficientLpsLearner.visualize(pointcloud, prediction, return_pointcloud=True, return_pointcloud_type="panoptic")
+                # Get the RGB visualization of the panoptic map as pointcloud in OpenDR format
+                pointcloud_visualization = EfficientLpsLearner.visualize(
+                    pointcloud, prediction, return_pointcloud=True, return_pointcloud_type="panoptic")
                 # Convert OpenDR Image to sensor_msgs.msg.PointCloud2
                 ros_pointcloud2_msg = self._bridge.to_ros_point_cloud2(pointcloud_visualization, channels='rgb')
                 # Publish the visualization
@@ -176,7 +176,6 @@ if __name__ == "__main__":
                         help='download pretrained models [semantickitti] or load from the provided path')
     parser.add_argument('--output_rgb_visualization_topic', type=str, default="/opendr/panoptic",
                         help='publish the rgb visualization on this topic')
-    
 
     args = parser.parse_args()
 
