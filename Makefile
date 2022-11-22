@@ -37,7 +37,7 @@ install_compilation_dependencies:
 	@+echo "#"; echo "# * Install Compilation Dependencies *"; echo "#"
 	@+cd dependencies; ./install.sh compilation
 	@+cd dependencies; ./install_onnx.sh
-	@+cd dependencies; ./install_torch.sh
+	@+cd dependencies; ./install_torch_c_api.sh
 	@+make --silent -C src/opendr/control/mobile_manipulation $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
 	@+make --silent -C src/opendr/control/single_demo_grasp $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
 
