@@ -36,10 +36,10 @@ class ObjectTracking2DDeepSortNode(Node):
     def __init__(
         self,
         detector: Learner,
-        input_image_topic="/usb_cam/image_raw",
+        input_rgb_image_topic="image_raw",
         output_detection_topic="/opendr/deep_sort_detection",
         output_tracking_id_topic="/opendr/deep_sort_tracking_id",
-        output_image_topic="/opendr/deep_sort_image_annotated",
+        output_rgb_image_topic="/opendr/deep_sort_image_annotated",
         device="cuda:0",
         model_name="deep_sort",
         temp_dir="temp",
