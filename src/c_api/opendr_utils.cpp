@@ -35,3 +35,15 @@ void free_image(opendr_image_t *image) {
     delete opencv_image;
   }
 }
+
+void load_detections(opendr_detection_target_list_t *detections, opendr_detection_target_t *vectorDataPtr, int vectorSize) {
+  detections->size = vectorSize;
+  int sizeOfOutput = (vectorSize) * sizeof(opendr_detection_target_t);
+  detections->starting_pointer = (opendr_detection_target_t *)malloc(sizeOfOutput);
+  std::memcpy(detections->starting_pointer, vectorDataPtr, sizeOfOutput);
+}
+
+void free_detections(opendr_detection_target_list_t *detections) {
+  if (detections->starting_pointer != NULL)
+    free(detections->starting_pointer);
+}

@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+OPENDR_HOME= /home/manos/develop/final/opendr
 
 SHELL := /bin/bash
 CPP = g++
@@ -33,7 +34,10 @@ OPENDR_LD = -L$(OPENDR_HOME)/lib -lopendr
 
 all: download demos
 
-demos: $(BUILD_DIR)/face_recognition_demo
+demos: $(BUILD_DIR)/face_recognition_demo $(BUILD_DIR)/nanodet_demo
+
+face: $(BUILD_DIR)/face_recognition_demo
+nano: $(BUILD_DIR)/nanodet_demo
 
 download:
 	@+if [ -a $(DATA_DIR) ] ; \
@@ -47,6 +51,11 @@ download:
 		$(MV) opendrdata.csd.auth.gr/perception/face_recognition/test_data/images  $(DATA_DIR)/database; \
 		$(WGET) ftp://opendrdata.csd.auth.gr/perception/face_recognition/optimized_model/*; \
 		$(MV) opendrdata.csd.auth.gr/perception/face_recognition/optimized_model  $(DATA_DIR)/optimized_model; \
+		$(MKDIR_P) $(DATA_DIR)/nanodet; \
+		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images/*; \
+		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images  $(DATA_DIR)/nanodet/database; \
+		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model/*; \
+		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model  $(DATA_DIR)/nanodet/optimized_model; \
 		$(RM) -r opendrdata.csd.auth.gr; \
 	fi;
 
@@ -54,6 +63,12 @@ $(BUILD_DIR)/face_recognition_demo:
 	$(MKDIR_P) $(BUILD_DIR)
 	@+echo "Building face recognition demo..."
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/face_recognition_demo samples/face_recognition/face_recognition_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
+
+$(BUILD_DIR)/nanodet_demo:
+	$(MKDIR_P) $(BUILD_DIR)
+	@+echo "Building nanodet object detection demo..."
+	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/nanodet_libtorch_demo samples/nanodet/nanodet_jit_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
+
 
 clean:
 	@+echo "Cleaning C API demo binaries and temporary files..."

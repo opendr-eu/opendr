@@ -74,7 +74,7 @@ class CocoDetectionEvaluator:
                     json_results.append(detection)
         return json_results
 
-    def evaluate(self, results, save_dir):  # rank=-1
+    def evaluate(self, results, save_dir, rank=-1):
         results_json = self.results2json(results)
         if len(results_json) == 0:
             warnings.warn(
@@ -87,8 +87,10 @@ class CocoDetectionEvaluator:
             for key in self.metric_names:
                 empty_eval_results[key] = 0
             return empty_eval_results
-        # json_path = os.path.join(save_dir, "results{}.json".format(rank))
-        json_path = os.path.join(save_dir, "results.json")
+        if rank > 0:
+            json_path = os.path.join(save_dir, "results{}.json".format(rank))
+        else:
+            json_path = os.path.join(save_dir, "results.json")
         json.dump(results_json, open(json_path, "w"))
         coco_dets = self.coco_api.loadRes(json_path)
         coco_eval = COCOeval(

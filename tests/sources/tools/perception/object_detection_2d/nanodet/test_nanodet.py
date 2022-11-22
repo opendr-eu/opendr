@@ -17,13 +17,15 @@ import unittest
 import gc
 import shutil
 import os
+import warnings
+from torch.jit import TracerWarning
 import numpy as np
 from opendr.perception.object_detection_2d import NanodetLearner
 from opendr.engine.datasets import ExternalDataset
 
 device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
-_DEFAULT_MODEL = "plus_m_416"
+_DEFAULT_MODEL = "m"
 
 
 def rmfile(path):
@@ -47,8 +49,7 @@ class TestNanodetLearner(unittest.TestCase):
         print("\n\n**********************************\nTEST Nanodet Learner\n"
               "**********************************")
 
-        cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
-                                    "nanodet", "nanodet_temp")
+        cls.temp_dir = os.path.join(".", "nanodet_temp")
         cls.detector = NanodetLearner(model_to_use=_DEFAULT_MODEL, device=device, temp_path=cls.temp_dir, batch_size=1,
                                       iters=1, checkpoint_after_iter=2, lr=1e-4)
         # Download all required files for testing
@@ -111,6 +112,8 @@ class TestNanodetLearner(unittest.TestCase):
 
     def test_save_load(self):
         print('Starting save/load test for Nanodet...')
+        self.detector.ort_session = None
+        self.detector.jit_model = None
         self.detector.save(path=os.path.join(self.temp_dir, "test_model"), verbose=False)
         starting_param_1 = list(self.detector._model.parameters())[0].detach().clone().to(device)
         self.detector.model = None
@@ -120,11 +123,41 @@ class TestNanodetLearner(unittest.TestCase):
         new_param = list(detector2._model.parameters())[0].detach().clone().to(device)
         self.assertTrue(starting_param_1.allclose(new_param))
 
+        del starting_param_1, new_param
         # Cleanup
         rmfile(os.path.join(self.temp_dir, "test_model", "nanodet_{}.json".format(_DEFAULT_MODEL)))
         rmfile(os.path.join(self.temp_dir, "test_model", "nanodet_{}.pth".format(_DEFAULT_MODEL)))
         rmdir(os.path.join(self.temp_dir, "test_model"))
         print('Finished save/load test for Nanodet...')
+
+    def test_optimize(self):
+        # Tracing will issue TracerWarnings, but these can be ignored safely
+        # because we use this function to create tensors out of constant
+        # variables that are the same every time we call this function.
+        warnings.simplefilter("ignore",  TracerWarning)
+        warnings.simplefilter("ignore",  RuntimeWarning)
+
+        self.detector.ort_session = None
+        self.detector.jit_model = None
+
+        img = cv2.imread(os.path.join(self.temp_dir, "000000000036.jpg"))
+
+        self.detector.optimize(os.path.join(self.temp_dir, "onnx"), initial_img=img, verbose=False, optimization="onnx")
+        self.assertIsNotNone(self.detector.ort_session)
+
+        self.detector.optimize(os.path.join(self.temp_dir, "jit"), initial_img=img, verbose=False, optimization="jit")
+        self.assertIsNotNone(self.detector.jit_model)
+
+        # Cleanup
+        rmfile(os.path.join(self.temp_dir, "onnx", "nanodet_{}.onnx".format(_DEFAULT_MODEL)))
+        rmfile(os.path.join(self.temp_dir, "onnx", "nanodet_{}.json".format(_DEFAULT_MODEL)))
+        rmfile(os.path.join(self.temp_dir, "jit", "nanodet_{}.pth".format(_DEFAULT_MODEL)))
+        rmfile(os.path.join(self.temp_dir, "jit", "nanodet_{}.json".format(_DEFAULT_MODEL)))
+        rmdir(os.path.join(self.temp_dir, "onnx"))
+        rmdir(os.path.join(self.temp_dir, "jit"))
+
+        warnings.simplefilter("default",  TracerWarning)
+        warnings.simplefilter("default",  RuntimeWarning)
 
 
 if __name__ == "__main__":

@@ -22,7 +22,7 @@ Constructor parameters:
 
 - **model_to_use**: *{"EfficientNet_Lite0_320", "EfficientNet_Lite1_416", "EfficientNet_Lite2_512", "RepVGG_A0_416",
   "t", "g", "m", "m_416", "m_0.5x", "m_1.5x", "m_1.5x_416", "plus_m_320", "plus_m_1.5x_320", "plus_m_416",
-  "plus_m_1.5x_416", "custom"}, default=plus_m_1.5x_416*\
+  "plus_m_1.5x_416", "custom"}, default=m*\
   Specifies the model to use and the config file that contains all hyperparameters for training, evaluation and inference as the original
   [Nanodet implementation](https://github.com/RangiLyu/nanodet). If you want to overwrite some of the parameters you can
   put them as parameters in the learner.
@@ -52,7 +52,7 @@ Constructor parameters:
 
 #### `NanodetLearner.fit`
 ```python
-NanodetLearner.fit(self, dataset, val_dataset, logging_path, verbose, seed)
+NanodetLearner.fit(self, dataset, val_dataset, logging_path, verbose, seed, local_rank)
 ```
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
@@ -71,10 +71,12 @@ Parameters:
   Enables the maximum verbosity and the logger.
 - **seed** : *int, default=123*\
   Seed for repeatability.
+- **local_rank** : *int, default=1*\
+  Is needed if train to multiple machines is wanted.
 
 #### `NanodetLearner.eval`
 ```python
-NanodetLearner.eval(self, dataset, verbose)
+NanodetLearner.eval(self, dataset, verbose, local_rank)
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
@@ -86,6 +88,8 @@ Parameters:
   Object that holds the evaluation dataset.
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity and logger.
+- **local_rank** : *int, default=1*\
+  Is needed if evaluation to multiple machines is wanted.
 
 #### `NanodetLearner.infer`
 ```python
@@ -105,6 +109,33 @@ Parameters:
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity and logger.
 
+#### `NanodetLearner.optimize`
+```python
+NanodetLearner.optimize(self, export_path, initial_img=None, verbose=True, optimization="jit")
+```
+
+This method is used to perform jir or onnx optimizations and save a trained model with its metadata.
+If a models is already saves in export_path, the model will be loaded instead. Provided with the "export_path", it creates
+the "export_path" directory, if it does already exist it try to load the optimized model in the path.
+Inside this folder, the model is saved as *"nanodet_{model_name}.pth"* for Jit models or *"nanodet_{model_name}.onnx"* for ONNX 
+and a metadata file *"nanodet_{model_name}.json"*.
+
+Note: Onnx optimization, optimize and saves only the actual model inference. This is important if the user wants to use
+the model for C API. It will be needed to make a preproccess and postproccess that will work exactly the same as our python
+implementation to have the exact same results.
+For C API it is recomended the Jit optimization and the example that is provided in our [c_api](../../projects/c_api/samples/nanodet/nanodet_jit_demo.c)
+
+Parameters:
+
+- **export_path**: *str*\
+  Path to save or load the optimized model.
+- **initial_img**: *Image*\
+  If optimize is called for the first time is needed a dummy input of opendr Image.
+- **verbose**: *bool, default=True*\
+  Enables the maximum verbosity and logger.
+- **optimization**: *str, default="Jit"*\
+  It can be Jit or Onnx. It determines what kind of optimization is used.
+
 #### `NanodetLearner.save`
 ```python
 NanodetLearner.save(self, path, verbose)
@@ -114,6 +145,7 @@ This method is used to save a trained model with its metadata.
 Provided with the path, it creates the "path" directory, if it does not already exist.
 Inside this folder, the model is saved as *"nanodet_{model_name}.pth"* and a metadata file *"nanodet_{model_name}.json"*.
 If the directory already exists, the *"nanodet_{model_name}.pth"* and *"nanodet_{model_name}.json"* files are overwritten.
+If optimization is performed the optimized model is saved instead.
 
 Parameters:
 
@@ -129,6 +161,7 @@ NanodetLearner.load(self, path, verbose)
 
 This method is used to load a previously saved model from its saved folder.
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
+If optimization is performed the optimized model is loaded instead.
 
 Parameters:
 
@@ -171,7 +204,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 * **Training example using an `ExternalDataset`.**
 
   To train properly, the architecture weights must be downloaded in a predefined directory before fit is called, in this case the directory name is "predefined_examples".
-  Default architecture is *'plus-m-1.5x_416'*.
+  Default architecture is *'m'*.
   The training and evaluation dataset root should be present in the path provided, along with the annotation files.
   The default COCO 2017 training data can be found [here](https://cocodataset.org/#download) (train, val, annotations).
   All training parameters (optimizer, lr schedule, losses, model parameters etc.) can be changed in the model config file 
@@ -232,58 +265,98 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
   
   
   if __name__ == '__main__':
-      parser = argparse.ArgumentParser()
-      parser.add_argument("--dataset", help="Dataset to train on", type=str, default="coco", choices=["voc", "coco"])
-      parser.add_argument("--data-root", help="Dataset root folder", type=str)
-      parser.add_argument("--model", help="Model that config file will be used", type=str)
-      parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-      parser.add_argument("--batch-size", help="Batch size to use for training", type=int, default=6)
-      parser.add_argument("--lr", help="Learning rate to use for training", type=float, default=5e-4)
-      parser.add_argument("--checkpoint-freq", help="Frequency in-between checkpoint saving and evaluations", type=int, default=50)
-      parser.add_argument("--n-epochs", help="Number of total epochs", type=int, default=300)
-      parser.add_argument("--resume-from", help="Epoch to load checkpoint file and resume training from", type=int, default=0)
-  
-      args = parser.parse_args()
-  
-      if args.dataset == 'voc':
-          dataset = ExternalDataset(args.data_root, 'voc')
-          val_dataset = ExternalDataset(args.data_root, 'voc')
-      elif args.dataset == 'coco':
-          dataset = ExternalDataset(args.data_root, 'coco')
-          val_dataset = ExternalDataset(args.data_root, 'coco')
-  
-      nanodet = NanodetLearner(model_to_use=args.model, iters=args.n_epochs, lr=args.lr, batch_size=args.batch_size,
-                               checkpoint_after_iter=args.checkpoint_freq, checkpoint_load_iter=args.resume_from,
-                               device=args.device)
-  
-      nanodet.download("./predefined_examples", mode="pretrained")
-      nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
-      nanodet.fit(dataset, val_dataset)
-      nanodet.save()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", help="Dataset to train on", type=str, default="coco", choices=["voc", "coco"])
+    parser.add_argument("--data-root", help="Dataset root folder", type=str)
+    parser.add_argument("--model", help="Model that config file will be used", type=str, default="m")
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--batch-size", help="Batch size to use for training", type=int, default=6)
+    parser.add_argument("--lr", help="Learning rate to use for training", type=float, default=5e-4)
+    parser.add_argument("--checkpoint-freq", help="Frequency in-between checkpoint saving and evaluations",
+                        type=int, default=50)
+    parser.add_argument("--n-epochs", help="Number of total epochs", type=int, default=300)
+    parser.add_argument("--resume-from", help="Epoch to load checkpoint file and resume training from",
+                        type=int, default=0)
+
+    args = parser.parse_args()
+
+    if args.dataset == 'voc':
+        dataset = ExternalDataset(args.data_root, 'voc')
+        val_dataset = ExternalDataset(args.data_root, 'voc')
+    elif args.dataset == 'coco':
+        dataset = ExternalDataset(args.data_root, 'coco')
+        val_dataset = ExternalDataset(args.data_root, 'coco')
+
+    nanodet = NanodetLearner(model_to_use=args.model, iters=args.n_epochs, lr=args.lr, batch_size=args.batch_size,
+                             checkpoint_after_iter=args.checkpoint_freq, checkpoint_load_iter=args.resume_from,
+                             device=args.device)
+
+    nanodet.download("./predefined_examples", mode="pretrained")
+    nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
+    nanodet.fit(dataset, val_dataset)
+    nanodet.save()
+
   ```
   
 * **Inference and result drawing example on a test image.**
 
   This example shows how to perform inference on an image and draw the resulting bounding boxes using a nanodet model that is pretrained on the COCO dataset.
-  Moreover, inference can be used in all images in a folder, frames of a video or a webcam feedback with the provided *mode*.
   In this example first is downloaded a pre-trained model as in training example and then an image to be inference.
-  With the same *path* parameter you can choose a folder or a video file to be used as inference. Last but not least, if 'webcam' is
-  used in *mode* the *camid* parameter of inference must be used to determine the webcam device in your machine.
+  With the *path* parameter you can choose an image file to be used as inference.
   
   ```python
   import argparse
   from opendr.perception.object_detection_2d import NanodetLearner
+  from opendr.engine.data import Image
+  from opendr.perception.object_detection_2d import draw_bounding_boxes
+
+  if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--model", help="Model that config file will be used", type=str, default='m')
+    args = parser.parse_args()
+
+    nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
+    nanodet.download("./predefined_examples", mode="pretrained")
+    nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
+    nanodet.download("./predefined_examples", mode="images")
+    img = Image.open("./predefined_examples/000000000036.jpg")
+    boxes = nanodet.infer(input=img)
+
+    draw_bounding_boxes(img.opencv(), boxes, class_names=nanodet.classes, show=True)
+  ```
+  
+* **Optimization framework with Inference and result drawing example on a test image.**
+
+  This example shows how to perform optimization on a pretrained model and then inference and draw the resulting
+  bounding boxes using a nanodet model that is pretrained on the COCO dataset. In this example first is loaded a
+  pretrained model and then an opendr Image is used to perform optimization, in this exampel we use onnx optimization but
+  with `--optimization` can be used one of `[jit, onnx]`.
+  With the *path* parameter you can choose an image file to be used as dummy input in optimization and after in inference.
+  The optimized model will be saves in `./optimization_models` folder
+  ```python
+  import argparse
+  from opendr.perception.object_detection_2d import NanodetLearner
+  from opendr.engine.data import Image
+  from opendr.perception.object_detection_2d import draw_bounding_boxes
+  
   
   if __name__ == '__main__':
-      parser = argparse.ArgumentParser()
-      parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-      parser.add_argument("--model", help="Model that config file will be used", type=str)
-      args = parser.parse_args()
-  
-      nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
-  
-      nanodet.download("./predefined_examples", mode="pretrained")
-      nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
-      nanodet.download("./predefined_examples", mode="images")
-      boxes = nanodet.infer(path="./predefined_examples/000000000036.jpg")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--model", help="Model that config file will be used", type=str, default='m')
+    parser.add_argument("--optimization", help="Optimization framework that will be used", type=str, default='onnx')
+    parser.add_argument("--path", help="Path to the dummy image that will be used for optimization and inference", type=str)
+    args = parser.parse_args()
+
+    nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
+    nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
+
+    # First read an openDR image from your dataset and run the optimizer:
+    img = Image.open(args.path)
+    nanodet.optimize("./optimization_models", img, optimization=args.optimization)
+
+    boxes = nanodet.infer(input=img)
+
+    draw_bounding_boxes(img.opencv(), boxes, class_names=nanodet.classes, show=True)
   ```

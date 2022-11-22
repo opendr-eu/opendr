@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "nanodet_c.h"
+#include "opendr_utils.h"
+
+int main(int argc, char** argv)
+{
+
+    if (argc != 6)
+    {
+        fprintf(stderr, "usage: %s [model_path] [device] [images_path] [input_sizes].\n"
+         "model_path = path/to/your/libtorch/model.pth \n device = cuda or cpu \n"
+          "images_path = \"xxx/xxx/*.jpg\" \n input_size = width height.\n", argv[0]);
+        return -1;
+    }
+
+    nanodet_model_t model;
+
+    int height = atoi(argv[4]);
+    int width = atoi(argv[5]);
+    printf("start init model\n");
+    load_nanodet_model(argv[1], argv[2], height, width, 0.35, &model);
+    printf("success\n");
+
+    //Initialize opendr image
+    opendr_image_t image;
+
+    //Load opendr image
+    load_image(argv[3], &image);
+    if (!image.data)
+    {
+        printf("Image not found!");
+        return 1;
+    }
+
+    //Initialize opendr detection target list;
+    opendr_detection_target_list_t results;
+
+    //Infer nanodet model
+    results = infer_nanodet(&image, &model);
+
+    //Draw the results
+    drawBboxes(&image, &model, &results);
+
+    //Free the memory
+    free_detections(&results);
+    free_image(&image);
+    free_nanodet_model(&model);
+
+    return 0;
+}

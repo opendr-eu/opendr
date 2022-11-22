@@ -3,10 +3,13 @@ import math
 import numpy as np
 import torch
 import torch.nn as nn
+from torch import Tensor
+from typing import List, Tuple, Dict
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util\
     import bbox2distance, distance2bbox, multi_apply
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.transform.warp import warp_boxes
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.transform.warp \
+    import warp_boxes, scriptable_warp_boxes
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.gfocal_loss \
     import DistributionFocalLoss, QualityFocalLoss
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.iou_loss import GIoULoss
@@ -133,15 +136,10 @@ class NanoDetPlusHead(nn.Module):
             normal_init(self.gfl_cls[i], std=0.01, bias=bias_cls)
         print("Finish initialize NanoDet-Plus Head.")
 
-    def forward(self, feats):
-        if torch.onnx.is_in_onnx_export():
-            return self._forward_onnx(feats)
+    def forward(self, feats: List[Tensor]):
         outputs = []
-        for feat, cls_convs, gfl_cls in zip(
-            feats,
-            self.cls_convs,
-            self.gfl_cls,
-        ):
+        for idx, (cls_convs, gfl_cls) in enumerate(zip(self.cls_convs, self.gfl_cls)):
+            feat = feats[idx]
             for conv in cls_convs:
                 feat = conv(feat)
             output = gfl_cls(feat)
@@ -166,7 +164,7 @@ class NanoDetPlusHead(nn.Module):
         batch_size = preds.shape[0]
         input_height, input_width = gt_meta["img"].shape[2:]
         featmap_sizes = [
-            (math.ceil(input_height / stride), math.ceil(input_width) / stride)
+            (math.ceil(input_height / stride), math.ceil(input_width / stride))
             for stride in self.strides
         ]
         # get grid cells of one image
@@ -361,17 +359,51 @@ class NanoDetPlusHead(nn.Module):
             pos_gt_bboxes = gt_bboxes[pos_assigned_gt_inds, :]
         return pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds
 
-    def post_process(self, preds, meta):
-        """Prediction results post processing. Decode bboxes and rescale
+    def post_process(self, preds, meta: Dict[str, Tensor], mode: str = "infer"):
+        """Prediction results postprocessing. Decode bboxes and rescale
         to original image size.
         Args:
             preds (Tensor): Prediction output.
             meta (dict): Meta info.
+            mode (str): Determines if it uses batches and numpy or tensors for scripting.
         """
+        if mode == "eval" and not torch.jit.is_scripting():
+            # Inference do not use batches and tries to have
+            # tensors exclusively for better optimization during scripting.
+            return self._eval_post_process(preds, meta)
+
         cls_scores, bbox_preds = preds.split(
             [self.num_classes, 4 * (self.reg_max + 1)], dim=-1
         )
-        result_list = self.get_bboxes(cls_scores, bbox_preds, meta)
+        results = self.get_bboxes(cls_scores, bbox_preds, meta["img"])
+        (det_bboxes, det_labels) = results
+
+        det_bboxes[:, :4] = scriptable_warp_boxes(
+            det_bboxes[:, :4],
+            torch.linalg.inv(meta["warp_matrix"]), meta["width"], meta["height"]
+        )
+
+        # constant output of model every time for tracing
+        det_result = torch.zeros((self.num_classes, 100, 5))
+        for i in range(self.num_classes):
+            inds = det_labels == i
+            det = torch.cat((
+                det_bboxes[inds, :4],
+                det_bboxes[inds, 4:5]
+            ),
+                dim=1
+            )
+
+            pad = det.new_zeros((100 - det.size(0), 5))
+            det = torch.cat([det, pad], dim=0)
+            det_result[i] = det
+        return det_result
+
+    def _eval_post_process(self, preds, meta):
+        cls_scores, bbox_preds = preds.split(
+            [self.num_classes, 4 * (self.reg_max + 1)], dim=-1
+        )
+        result_list = self.get_bboxes(cls_scores, bbox_preds, meta["img"], mode="eval")
         det_results = {}
         warp_matrixes = (
             meta["warp_matrix"]
@@ -395,7 +427,7 @@ class NanoDetPlusHead(nn.Module):
         )
 
         for result, img_width, img_height, img_id, warp_matrix in zip(
-            result_list, img_widths, img_heights, img_ids, warp_matrixes
+                result_list, img_widths, img_heights, img_ids, warp_matrixes
         ):
             det_result = {}
             det_bboxes, det_labels = result
@@ -416,59 +448,71 @@ class NanoDetPlusHead(nn.Module):
             det_results[img_id] = det_result
         return det_results
 
-    def get_bboxes(self, cls_preds, reg_preds, img_metas):
+    def get_bboxes(self, cls_preds, reg_preds, input_img, mode: str = "infer"):
         """Decode the outputs to bboxes.
         Args:
             cls_preds (Tensor): Shape (num_imgs, num_points, num_classes).
             reg_preds (Tensor): Shape (num_imgs, num_points, 4 * (regmax + 1)).
-            img_metas (dict): Dict of image info.
-
+            input_img (Tensor): Input image to net.
+            mode (str): Determines if it uses batches and numpy or tensors for scripting.
         Returns:
             results_list (list[tuple]): List of detection bboxes and labels.
         """
         device = cls_preds.device
         b = cls_preds.shape[0]
-        input_height, input_width = img_metas["img"].shape[2:]
+        input_height, input_width = input_img.shape[2:]
         input_shape = (input_height, input_width)
 
         featmap_sizes = [
-            (math.ceil(input_height / stride), math.ceil(input_width) / stride)
+            (int(math.ceil(input_height / stride)), int(math.ceil(input_width / stride)))
             for stride in self.strides
         ]
         # get grid cells of one image
-        mlvl_center_priors = [
-            self.get_single_level_center_priors(
-                b,
-                featmap_sizes[i],
-                stride,
-                dtype=torch.float32,
-                device=device,
+        mlvl_center_priors = []
+        for i, stride in enumerate(self.strides):
+            proiors = self.get_single_level_center_priors(
+                b, featmap_sizes[i], stride, torch.float32, device
             )
-            for i, stride in enumerate(self.strides)
-        ]
+            mlvl_center_priors.append(proiors)
+
         center_priors = torch.cat(mlvl_center_priors, dim=1)
         dis_preds = self.distribution_project(reg_preds) * center_priors[..., 2, None]
         bboxes = distance2bbox(center_priors[..., :2], dis_preds, max_shape=input_shape)
-        scores = cls_preds.sigmoid()
+        cls_preds = cls_preds.sigmoid()
+        # add a dummy background class at the end of all labels
+        if torch.jit.is_scripting() or mode == "infer":
+            # for faster inference and jit scripting in most common cases we do not try to go through for statement
+            score, bbox = cls_preds[0], bboxes[0]
+            padding = score.new_zeros(score.shape[0], 1)
+            score = torch.cat([score, padding], dim=1)
+
+            return multiclass_nms(bbox, score, score_thr=0.05, nms_cfg=dict(iou_threshold=0.6), max_num=100)
+
         result_list = []
         for i in range(b):
             # add a dummy background class at the end of all labels
             # same with mmdetection2.0
-            score, bbox = scores[i], bboxes[i]
+            score, bbox = cls_preds[i], bboxes[i]
             padding = score.new_zeros(score.shape[0], 1)
             score = torch.cat([score, padding], dim=1)
             results = multiclass_nms(
                 bbox,
                 score,
                 score_thr=0.05,
-                nms_cfg=dict(type="nms", iou_threshold=0.6),
+                nms_cfg=dict(iou_threshold=0.6),
                 max_num=100,
             )
             result_list.append(results)
         return result_list
 
     def get_single_level_center_priors(
-        self, batch_size, featmap_size, stride, dtype, device
+            self,
+            batch_size: int,
+            featmap_size: Tuple[int, int],
+            stride: int,
+            dtype: torch.dtype,
+            device: torch.device,
+            flatten: bool = True
     ):
         """Generate centers of a single stage feature map.
         Args:
@@ -477,6 +521,7 @@ class NanoDetPlusHead(nn.Module):
             stride (int): down sample stride of the feature map
             dtype (obj:`torch.dtype`): data type of the tensors
             device (obj:`torch.device`): device of the tensors
+            flatten (bool): flatten the x and y tensors
         Return:
             priors (Tensor): center priors of a single level feature map.
         """
@@ -484,27 +529,9 @@ class NanoDetPlusHead(nn.Module):
         x_range = (torch.arange(w, dtype=dtype, device=device)) * stride
         y_range = (torch.arange(h, dtype=dtype, device=device)) * stride
         y, x = torch.meshgrid(y_range, x_range)
-        y = y.flatten()
-        x = x.flatten()
+        if flatten:
+            y = y.flatten()
+            x = x.flatten()
         strides = x.new_full((x.shape[0],), stride)
         proiors = torch.stack([x, y, strides, strides], dim=-1)
         return proiors.unsqueeze(0).repeat(batch_size, 1, 1)
-
-    def _forward_onnx(self, feats):
-        """only used for onnx export"""
-        outputs = []
-        for feat, cls_convs, gfl_cls in zip(
-            feats,
-            self.cls_convs,
-            self.gfl_cls,
-        ):
-            for conv in cls_convs:
-                feat = conv(feat)
-            output = gfl_cls(feat)
-            cls_pred, reg_pred = output.split(
-                [self.num_classes, 4 * (self.reg_max + 1)], dim=1
-            )
-            cls_pred = cls_pred.sigmoid()
-            out = torch.cat([cls_pred, reg_pred], dim=1)
-            outputs.append(out.flatten(start_dim=2))
-        return torch.cat(outputs, dim=2).permute(0, 2, 1)

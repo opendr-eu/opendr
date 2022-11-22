@@ -13,6 +13,16 @@ provided by OpenDR. Specifically the following examples are provided:
    model is done with `--model "wanted model name"`. Setting `--device cpu` performs training on CPU. Additional command
    line arguments can be set to overwrite various training hyperparameters from the provided config file, and running 
    `python3 train_demo.py -h` prints information about them on stdout.
-   
+
     Example usage:
    `python3 train_demo.py --model plus-m_416 --dataset coco --data-root /path/to/coco_dataset`
+
+4. export_onnx: Export the pretrained model into the onnx optimization format. Setting the config file for the specific
+   model is done with `--model "wanted model name"`. Setting `--device cpu` performs the optimization inference on CPU.
+   Notes! Onnx model is only run the inference of the actual model. If you want the preprocessing of the output you must use jit optimization.
+   It is recomended to install additional the onnxsim dependencies with `pip install onnxsim` for smaller and better optimized models.
+5. export_torchscript: Export the pretrained model into the Jit optimization format. Setting the config file for the specific
+   model is done with `--model "wanted model name"`. Setting `--device cpu` performs the optimization inference on CPU. 
+   Note! If you're planning on using c api, Jit optimization is preferred, so it can be used for the same postprocessing of the output 
+   and have same exact detection as the python api.
+6. inference_tutorial: A simple tutorial in jupyter for easier use of Nanodet in inference.

@@ -30,6 +30,10 @@ LD =  -L/usr/lib/ -L/usr/local/lib/ -lstdc++ -lm -lonnxruntime `pkg-config --lib
 OPENDR_INC = -I$(OPENDR_HOME)/include
 OPENDR_LD = -L$(OPENDR_HOME)//lib -lopendr
 
+LIBTORCH_DIR = /usr/local/libtorch
+TORCHSCRIPT_INC = -I$(LIBTORCH_DIR)/include -I$(LIBTORCH_DIR)/include/torch/csrc/api/include
+TORCHSCRIPT_LD = -L$(LIBTORCH_DIR)/lib -L$(LIBTORCH_DIR)/share -ltorchvision -ltorch
+
 all: libopendr
 
 libopendr: $(OPENDR_HOME)/lib/libopendr.so
@@ -39,9 +43,9 @@ $(OPENDR_HOME)/lib/libopendr.so:
 	@+$(MKDIR_P) $(BUILD_DIR)
 	$(CPP) $(CFLAGS) -c opendr_utils.cpp -o $(BUILD_DIR)/opendr_utils.o $(INC) $(OPENDR_INC)
 	$(CPP) $(CFLAGS) -c face_recognition.cpp -o $(BUILD_DIR)/opendr_face_recognition.o $(INC) $(OPENDR_INC)
+	$(CPP) $(CFLAGS) -c nanodet_libtorch.cpp -o $(BUILD_DIR)/opendr_nanodet_libtorch.o $(INC) $(OPENDR_INC) $(TORCHSCRIPT_INC)
 	@$(MKDIR_P) $(LIB_DIR)
-	$(CPP) $(CFLAGS)  -o $(OPENDR_HOME)/lib/libopendr.so $(BUILD_DIR)/opendr_utils.o $(BUILD_DIR)/opendr_face_recognition.o $(LD)  --shared
-
+	$(CPP) $(CFLAGS)  -o $(OPENDR_HOME)/lib/libopendr.so $(BUILD_DIR)/opendr_utils.o $(BUILD_DIR)/opendr_face_recognition.o $(BUILD_DIR)/opendr_nanodet_libtorch.o $(LD) $(TORCHSCRIPT_LD) --shared
 clean:
 	@+echo "Cleaning C API binaries and temporary files..."
 	@+$(RM) $(BUILD_DIR)/*

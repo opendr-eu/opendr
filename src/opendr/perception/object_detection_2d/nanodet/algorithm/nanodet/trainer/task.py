@@ -25,7 +25,7 @@ from pytorch_lightning import LightningModule
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.batch_process import stack_batch_img
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util\
-    import convert_avg_params, gather_results, mkdir
+    import convert_avg_params, gather_results, mkdir, rank_filter
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.check_point import save_model_state
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.weight_averager import build_weight_averager
 
@@ -69,12 +69,17 @@ class TrainingTask(LightningModule):
     def predict(self, batch, batch_idx=None, dataloader_idx=None):
         batch = self._preprocess_batch_input(batch)
         preds = self.forward(batch["img"])
-        results = self.model.head.post_process(preds, batch)
+        results = self.model.head.post_process(preds, batch, "eval")
         return results
+
+    @rank_filter
+    def _save_current_model(self, path, logger):
+        save_model_state(path=path, model=self.model, weight_averager=self.weight_averager, logger=logger)
 
     def save_current_model(self, path, logger):
         save_model_state(path=path, model=self.model, weight_averager=self.weight_averager, logger=logger)
 
+    @torch.jit.unused
     def training_step(self, batch, batch_idx):
         batch = self._preprocess_batch_input(batch)
         preds, loss, loss_states = self.model.forward_train(batch)
@@ -109,7 +114,7 @@ class TrainingTask(LightningModule):
         # save models in schedule epoches
         if self.current_epoch % self.cfg.schedule.val_intervals == 0:
             checkpoint_save_path = os.path.join(self.cfg.save_dir, "checkpoints")
-            mkdir(checkpoint_save_path)
+            mkdir(self.local_rank, checkpoint_save_path)
             print("===" * 10)
             print("checkpoint_save_path: {} \n epoch: {}".format(checkpoint_save_path, self.current_epoch))
             print("===" * 10)
@@ -142,7 +147,7 @@ class TrainingTask(LightningModule):
             if self.logger:
                 self.logger.info(log_msg)
 
-        dets = self.model.head.post_process(preds, batch)
+        dets = self.model.head.post_process(preds, batch, "eval")
         return dets
 
     def validation_epoch_end(self, validation_step_outputs):
@@ -170,11 +175,12 @@ class TrainingTask(LightningModule):
             if metric > self.save_flag:
                 self.save_flag = metric
                 best_save_path = os.path.join(self.cfg.save_dir, "model_best")
-                mkdir(best_save_path)
+                mkdir(self.local_rank, best_save_path)
                 self.trainer.save_checkpoint(
                     os.path.join(best_save_path, "model_best.ckpt")
                 )
-                self.save_current_model(os.path.join(best_save_path, "nanodet_model_best.pth"), logger=self.logger)
+                self._save_current_model(self.local_rank, os.path.join(best_save_path, "nanodet_model_state_best.pth"),
+                                         logger=self.logger)
                 txt_path = os.path.join(best_save_path, "eval_results.txt")
                 with open(txt_path, "a") as f:
                     f.write("Epoch:{}\n".format(self.current_epoch + 1))
@@ -187,9 +193,8 @@ class TrainingTask(LightningModule):
             if self.logger:
                 self.logger.log_metrics(eval_results, self.current_epoch + 1)
         else:
-            # self.logger.info("Skip val on rank {}".format(self.local_rank))
             if self.logger:
-                self.logger.info("Skip val ")
+                self.logger.info("Skip val on rank {}".format(self.local_rank))
 
     def test_step(self, batch, batch_idx):
         dets = self.predict(batch, batch_idx)
@@ -207,7 +212,8 @@ class TrainingTask(LightningModule):
         if all_results:
             if self.cfg.test_mode == "val":
                 eval_results = self.evaluator.evaluate(
-                    all_results, self.cfg.save_dir)
+                    all_results, self.cfg.save_dir, rank=self.local_rank
+                )
                 txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
                 with open(txt_path, "a") as f:
                     for k, v in eval_results.items():

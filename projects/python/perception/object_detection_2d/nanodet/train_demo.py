@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", help="Dataset to train on", type=str, default="coco", choices=["voc", "coco"])
     parser.add_argument("--data-root", help="Dataset root folder", type=str)
-    parser.add_argument("--model", help="Model that config file will be used", type=str)
+    parser.add_argument("--model", help="Model that config file will be used", type=str, default="m")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--batch-size", help="Batch size to use for training", type=int, default=6)
     parser.add_argument("--lr", help="Learning rate to use for training", type=float, default=5e-4)
@@ -46,6 +46,6 @@ if __name__ == '__main__':
                              device=args.device)
 
     nanodet.download("./predefined_examples", mode="pretrained")
-    nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
+    nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
     nanodet.fit(dataset, val_dataset)
     nanodet.save()

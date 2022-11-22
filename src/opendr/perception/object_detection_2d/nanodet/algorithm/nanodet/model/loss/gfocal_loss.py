@@ -101,6 +101,7 @@ class QualityFocalLoss(nn.Module):
         self.reduction = reduction
         self.loss_weight = loss_weight
 
+    @torch.jit.unused
     def forward(
         self, pred, target, weight=None, avg_factor=None, reduction_override=None
     ):
@@ -151,6 +152,7 @@ class DistributionFocalLoss(nn.Module):
         self.reduction = reduction
         self.loss_weight = loss_weight
 
+    @torch.jit.unused
     def forward(
         self, pred, target, weight=None, avg_factor=None, reduction_override=None
     ):

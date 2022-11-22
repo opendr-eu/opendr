@@ -15,6 +15,7 @@
 import torch
 import torch.nn as nn
 
+from typing import Dict
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.backbone import build_backbone
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.fpn import build_fpn
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head import build_head
@@ -43,9 +44,16 @@ class OneStageDetector(nn.Module):
             x = self.head(x)
         return x
 
-    def inference(self, meta, verbose=True):
+    def inference(self, meta: Dict[str, torch.Tensor]):
         with torch.no_grad():
             preds = self(meta["img"])
+            if torch.jit.is_tracing():
+                return preds
+            if torch.onnx.is_in_onnx_export():
+                # torch.linalg.inv is not supported from onnx opset 11.
+                # problem with constant folding although is set to false.
+                # export scriptable model have problem with barchnorm2d
+                return preds
             results = self.head.post_process(preds, meta)
         return results
 

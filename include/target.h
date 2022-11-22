@@ -29,6 +29,28 @@ struct opendr_category_target {
 };
 typedef struct opendr_category_target opendr_category_target_t;
 
+/***
+ * OpenDR data type for representing detection targets
+ */
+struct opendr_detection_target {
+  int name;
+  float left;
+  float top;
+  float width;
+  float height;
+  float score;
+};
+typedef struct opendr_detection_target opendr_detection_target_t;
+
+/***
+ * OpenDR data type for representing a structure of detections targets
+ */
+struct opendr_detection_target_list {
+  opendr_detection_target_t *starting_pointer;
+  int size;
+};
+typedef struct opendr_detection_target_list opendr_detection_target_list_t;
+
 #ifdef __cplusplus
 }
 #endif

@@ -48,9 +48,9 @@ class NanoDetPlus(OneStageDetector):
             )
         else:
             aux_fpn_feat = self.aux_fpn(feat)
-            dual_fpn_feat = (
+            dual_fpn_feat = [
                 torch.cat([f, aux_f], dim=1) for f, aux_f in zip(fpn_feat, aux_fpn_feat)
-            )
+            ]
         head_out = self.head(fpn_feat)
         aux_head_out = self.aux_head(dual_fpn_feat)
         loss, loss_states = self.head.loss(head_out, gt_meta, aux_preds=aux_head_out)

@@ -46,6 +46,11 @@ download:
 		$(MV) opendrdata.csd.auth.gr/perception/face_recognition/test_data/images  $(DATA_DIR)/database; \
 		$(WGET) ftp://opendrdata.csd.auth.gr/perception/face_recognition/optimized_model/*; \
 		$(MV) opendrdata.csd.auth.gr/perception/face_recognition/optimized_model  $(DATA_DIR)/optimized_model; \
+		$(MKDIR_P) $(DATA_DIR)/nanodet; \
+		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images/*; \
+		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images  $(DATA_DIR)/nanodet/database; \
+		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model/*; \
+		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model  $(DATA_DIR)/nanodet/optimized_model; \
 		$(RM) -r opendrdata.csd.auth.gr; \
 	fi;
 
@@ -57,6 +62,10 @@ $(BUILD_DIR)/test_face_recognition:
 	@+echo "Building face recognition test..."
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/test_face_recognition sources/c_api/test_face_recognition.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
+$(BUILD_DIR)/test_nanodet:
+	@+echo "Building Nanodet object detection test..."
+	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/test_nanodet sources/c_api/test_nanodet.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
+
 FMP_INC = -I$(OPENDR_HOME)/projects/python/perception/slam/full_map_posterior_gmapping/src/openslam_gmapping/include
 $(BUILD_DIR)/test_fmp_gmapping:
 	@+echo "Building Full-Map-Posterior GMapping test..."
@@ -66,6 +75,7 @@ tests: $(BUILD_DIR)/test_opendr_utils $(BUILD_DIR)/test_face_recognition $(BUILD
 
 runtests: download tests
 	@+$(LD_RUN) $(BUILD_DIR)/test_opendr_utils 2>/dev/null
+	@+$(LD_RUN) $(BUILD_DIR)/test_nanodet 2>/dev/null
 	@+$(LD_RUN) $(BUILD_DIR)/test_face_recognition 2>/dev/null
 	@+$(LD_RUN) $(BUILD_DIR)/test_fmp_gmapping
 
@@ -73,6 +83,7 @@ clean:
 	@+echo "Cleaning C tests binaries and temporary files..."
 	@+$(RM) $(BUILD_DIR)/test_opendr_utils
 	@+$(RM) $(BUILD_DIR)/test_face_recognition
+	@+$(RM) $(BUILD_DIR)/test_nanodet
 	@+$(RM) $(BUILD_DIR)/test_fmp_gmapping
 	@+$(RM) -rf $(DATA_DIR)
 	@+echo "Done!"

@@ -14,20 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import torch
+import torch.nn as nn
 
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.batch_process import stack_batch_img
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.collate import naive_collate
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.batch_process import divisible_padding
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.transform import Pipeline
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.arch import build_model
 
-image_ext = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]
-video_ext = ["mp4", "mov", "avi", "mkv"]
 
-
-class Predictor(object):
+class Predictor(nn.Module):
     def __init__(self, cfg, model, device="cuda"):
+        super(Predictor, self).__init__()
         self.cfg = cfg
         self.device = device
 
@@ -41,9 +38,33 @@ class Predictor(object):
 
         self.model = model.to(device).eval()
 
-        self.pipeline = Pipeline(self.cfg.data.val.pipeline, self.cfg.data.val.keep_ratio)
+        for para in self.model.parameters():
+            para.requires_grad = False
 
-    def inference(self, img, verbose=True):
+        self.pipeline = Pipeline(self.cfg.data.val.pipeline, self.cfg.data.val.keep_ratio)
+        self.traced_model = None
+
+    def trace_model(self, dummy_input):
+        self.traced_model = torch.jit.trace(self, dummy_input)
+        return True
+
+    def script_model(self, img, height, width, warp_matrix):
+        preds = self.traced_model(img, height, width, warp_matrix)
+        scripted_model = self.postprocessing(preds, img, height, width, warp_matrix)
+        return scripted_model
+
+    def forward(self, img, height, width, warp_matrix):
+        if torch.jit.is_scripting():
+            return self.script_model(img, height, width, warp_matrix)
+        # In tracing (Jit and Onnx optimizations) we must first run the pipeline before the graf,
+        # cv2 is needed, and it is installed with abi cxx11 but torch is in cxx<11
+        meta = {"height": height, "width": width, "img": img, "warp_matrix": warp_matrix}
+        meta["img"] = divisible_padding(meta["img"], divisible=torch.tensor(32))
+        with torch.no_grad():
+            results = self.model.inference(meta)
+        return results
+
+    def preprocessing(self, img):
         img_info = {"id": 0}
         height, width = img.shape[:2]
         img_info["height"] = height
@@ -51,19 +72,17 @@ class Predictor(object):
         meta = dict(img_info=img_info, raw_img=img, img=img)
         meta = self.pipeline(None, meta, self.cfg.data.val.input_size)
         meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1)).to(self.device)
-        meta = naive_collate([meta])
-        meta["img"] = stack_batch_img(meta["img"], divisible=32)
-        with torch.no_grad():
-            results = self.model.inference(meta, verbose)
-        return meta, results
 
+        _input = meta["img"]
+        print(f"[{_input[0][50][50]}, {_input[1][50][50]}, {_input[2][50][50]}]")
+        _height = torch.tensor(height)
+        _width = torch.tensor(width)
+        _warp_matrix = torch.from_numpy(meta["warp_matrix"])
 
-def get_image_list(path):
-    image_names = []
-    for maindir, subdir, file_name_list in os.walk(path):
-        for filename in file_name_list:
-            apath = os.path.join(maindir, filename)
-            ext = os.path.splitext(apath)[1]
-            if ext in image_ext:
-                image_names.append(apath)
-    return image_names
+        return _input, _height, _width, _warp_matrix
+
+    def postprocessing(self, preds, input, height, width, warp_matrix):
+        meta = {"height": height, "width": width, 'img': input, 'warp_matrix': warp_matrix}
+        meta["img"] = divisible_padding(meta["img"], divisible=torch.tensor(32))
+        res = self.model.head.post_process(preds, meta)
+        return res

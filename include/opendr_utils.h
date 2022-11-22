@@ -18,6 +18,7 @@
 #define C_API_OPENDR_UTILS_H
 
 #include "data.h"
+#include "target.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,6 +36,20 @@ void load_image(const char *path, opendr_image_t *image);
  * @param image OpenDR image structure to release
  */
 void free_image(opendr_image_t *image);
+
+/**
+ * Loads an OpenDR detection target list to be used in C api
+ * @param detections OpenDR detection_target_list structure to be loaded
+ * @param vectorDataPtr the pointer of the first OpenDR detection target in a vector
+ * @param vectorSize the size of the vector
+ */
+void load_detections(opendr_detection_target_list_t *detections, opendr_detection_target_t *vectorDataPtr, int vectorSize);
+
+/**
+ * Releases the memory allocated for a detection list structure
+ * @param detections OpenDR detection_target_list structure to release
+ */
+void free_detections(opendr_detection_target_list_t *detections);
 
 #ifdef __cplusplus
 }

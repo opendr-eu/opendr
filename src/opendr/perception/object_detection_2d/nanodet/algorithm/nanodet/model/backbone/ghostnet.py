@@ -10,7 +10,6 @@ and https://github.com/rwightman/pytorch-image-models
 """
 import logging
 import math
-import warnings
 
 import torch
 import torch.nn as nn
@@ -39,7 +38,7 @@ def _make_divisible(v, divisor, min_value=None):
     new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
     # Make sure that round down does not go down by more than 10%.
     if new_v < 0.9 * v:
-        new_v += divisor
+        new_v = new_v + divisor
     return new_v
 
 
@@ -193,6 +192,7 @@ class GhostBottleneck(nn.Module):
                 nn.BatchNorm2d(out_chs),
             )
 
+    @torch.jit.unused
     def forward(self, x):
         residual = x
 
@@ -211,7 +211,7 @@ class GhostBottleneck(nn.Module):
         # 2nd ghost bottleneck
         x = self.ghost2(x)
 
-        x += self.shortcut(residual)
+        x = x + self.shortcut(residual)
         return x
 
 
@@ -222,7 +222,6 @@ class GhostNet(nn.Module):
         out_stages=(4, 6, 9),
         activation="ReLU",
         pretrain=True,
-        act=None,
     ):
         super(GhostNet, self).__init__()
         assert set(out_stages).issubset(i for i in range(10))
@@ -260,11 +259,6 @@ class GhostNet(nn.Module):
         #  ------conv+bn+act----------# 9  1/32
 
         self.activation = activation
-        if act is not None:
-            warnings.warn(
-                "Warning! act argument has been deprecated, " "use activation instead!"
-            )
-            self.activation = act
 
         # building first layer
         output_channel = _make_divisible(16 * width_mult, 4)
@@ -315,7 +309,7 @@ class GhostNet(nn.Module):
             x = self.blocks[i](x)
             if i in self.out_stages:
                 output.append(x)
-        return tuple(output)
+        return output
 
     def _initialize_weights(self, pretrain=True):
         print("init weights...")

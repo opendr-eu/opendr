@@ -52,6 +52,7 @@ class TinyResBlock(nn.Module):
                 activation=activation,
             )
 
+    @torch.jit.unused
     def forward(self, x):
         x = self.in_conv(x)
         x1 = self.mid_conv(x)
@@ -96,6 +97,7 @@ class CspBlock(nn.Module):
             activation=activation,
         )
 
+    @torch.jit.unused
     def forward(self, x):
         x = self.in_conv(x)
         x1 = self.res_blocks(x)
@@ -145,13 +147,14 @@ class CustomCspNet(nn.Module):
             self.stages.append(stage)
         self._init_weight()
 
+    @torch.jit.unused
     def forward(self, x):
         output = []
         for i, stage in enumerate(self.stages):
             x = stage(x)
             if i in self.out_stages:
                 output.append(x)
-        return tuple(output)
+        return output
 
     def _init_weight(self):
         for m in self.modules():

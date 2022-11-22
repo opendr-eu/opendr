@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.rank_filter import rank_filter
 from typing import Any, Dict
 import torch
 
@@ -59,8 +59,7 @@ def load_model_weight(model, checkpoint, logger=None):
     return model
 
 
-# @rank_zero_only
-# @rank_filter
+@rank_filter
 def save_model(model, path, epoch, iter, optimizer=None):
     model_state_dict = (
         model.module.state_dict() if hasattr(model, "module") else model.state_dict()
@@ -72,8 +71,6 @@ def save_model(model, path, epoch, iter, optimizer=None):
     torch.save(data, path)
 
 
-# @rank_zero_only
-# @rank_filter
 def save_model_state(path, model, weight_averager=None, logger=None):
     if logger:
         logger.info("Saving model to {}".format(path))
