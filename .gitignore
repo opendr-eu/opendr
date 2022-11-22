@@ -71,3 +71,5 @@ temp/
 projects/opendr_ws/.catkin_workspace
 projects/opendr_ws/devel/
 projects/python/control/eagerx/eagerx_ws/
+
+src/opendr_toolkit*.egg-info/

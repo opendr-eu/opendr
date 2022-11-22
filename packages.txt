@@ -18,4 +18,5 @@ perception/object_tracking_3d
 perception/panoptic_segmentation
 utils/hyperparameter_tuner
 control/single_demo_grasp
+control/mobile_manipulation
 opendr
