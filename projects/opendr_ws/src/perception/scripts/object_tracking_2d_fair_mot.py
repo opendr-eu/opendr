@@ -42,11 +42,11 @@ class ObjectTracking2DFairMotNode:
     ):
         """
         Creates a ROS Node for 2D object tracking
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
-        :param output_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
+        :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
         annotated image)
-        :type output_image_topic: str
+        :type output_rgb_image_topic: str
         :param output_detection_topic: Topic to which we are publishing the detections
         :type output_detection_topic:  str
         :param output_tracking_id_topic: Topic to which we are publishing the tracking ids
@@ -68,18 +68,21 @@ class ObjectTracking2DFairMotNode:
         self.learner.load(os.path.join(temp_dir, model_name), verbose=True)
 
         self.bridge = ROSBridge()
-        self.input_image_topic = input_image_topic
+        self.input_rgb_image_topic = input_rgb_image_topic
 
+        if output_detection_topic is not None:
         self.detection_publisher = rospy.Publisher(
             output_detection_topic, Detection2DArray, queue_size=10
         )
+
+        if output_tracking_id_topic is not None:
         self.tracking_id_publisher = rospy.Publisher(
             output_tracking_id_topic, Int32MultiArray, queue_size=10
         )
 
-        if output_image_topic is not None:
+        if output_rgb_image_topic is not None:
             self.output_image_publisher = rospy.Publisher(
-                output_image_topic, ROS_Image, queue_size=10
+                output_rgb_image_topic, ROS_Image, queue_size=10
             )
 
     def callback(self, data):
@@ -120,7 +123,7 @@ class ObjectTracking2DFairMotNode:
         Start the node and begin processing input data.
         """
         rospy.init_node('object_tracking_2d_fair_mot_node', anonymous=True)
-        rospy.Subscriber(self.input_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
+        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
 
         rospy.loginfo("Object Tracking 2D Fair Mot Node started.")
         rospy.spin()
@@ -209,11 +212,11 @@ def main():
     fair_mot_node = ObjectTracking2DFairMotNode(
         device=device,
         model_name=args.model_name,
-        input_image_topic=args.input_image_topic,
+        input_rgb_image_topic=args.input_rgb_image_topic,
         temp_dir=args.temp_dir,
         output_detection_topic=args.output_detection_topic if args.output_detection_topic != "None" else None,
         output_tracking_id_topic=args.output_tracking_id_topic if args.output_tracking_id_topic != "None" else None,
-        output_image_topic=args.output_image_topic if args.output_image_topic != "None" else None,
+        output_rgb_image_topic=args.output_rgb_image_topic if args.output_rgb_image_topic != "None" else None,
     )
 
     fair_mot_node.listen()

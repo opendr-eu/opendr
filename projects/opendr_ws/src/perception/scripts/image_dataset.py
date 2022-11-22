@@ -27,7 +27,7 @@ class ImageDatasetNode:
     def __init__(
         self,
         dataset: DatasetIterator,
-        output_image_topic="/opendr/dataset_image",
+        output_rgb_image_topic="/opendr/dataset_image",
         data_fps=30,
     ):
         """
@@ -40,10 +40,9 @@ class ImageDatasetNode:
         self.bridge = ROSBridge()
         self.delay = 1.0 / data_fps
 
-        if output_image_topic is not None:
-            self.output_image_publisher = rospy.Publisher(
-                output_image_topic, ROS_Image, queue_size=10
-            )
+        self.output_image_publisher = rospy.Publisher(
+            output_rgb_image_topic, ROS_Image, queue_size=10
+        )
 
     def start(self):
         rospy.loginfo("Timing images")
@@ -76,7 +75,7 @@ def main():
             "datasets", "splits", "nano_mot20.train"
         )
     )
-    parser.add_argument("-o", "--output_image_topic", help="Topic name to publish the data",
+    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name to publish the data",
                         type=str, default="/opendr/dataset_image")
     parser.add_argument("-f", "--fps", help="Data FPS",
                         type=float, default=30)
@@ -84,7 +83,7 @@ def main():
 
     dataset_path = args.dataset_path
     mot20_subsets_path = args.mot20_subsets_path
-    output_image_topic = args.output_image_topic
+    output_rgb_image_topic = args.output_rgb_image_topic
     data_fps = args.fps
 
     if not os.path.exists(dataset_path):
@@ -104,7 +103,7 @@ def main():
 
     dataset_node = ImageDatasetNode(
         dataset,
-        output_image_topic=output_image_topic,
+        output_rgb_image_topic=output_rgb_image_topic,
         data_fps=data_fps,
     )
 
