@@ -27,9 +27,30 @@ from mmdet2.datasets.eval_np import PanopticEval
 from opendr.engine.data import PointCloud
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
 
-PALETTE = np.random.randint(0, 255, (28, 3))
 
-
+# Palette values are taken from https://github.com/PRBonn/semantic-kitti-api/blob/master/config/semantic-kitti.yaml
+PALETTE = np.array([
+                    [245, 150, 100], # Car - 0
+                    [245, 230, 100], # Bycicle - 1
+                    [250, 80, 100], # Motorcycle - 2
+                    [180, 30, 80],  # Truck - 3
+                    [255, 0, 0], # Other vehicle - 4
+                    [30, 30, 255], # Person - 5
+                    [200, 40, 255], # Bicyclist - 6
+                    [90, 30, 150], # Motorcyclist - 7
+					[255, 0, 255], # Road - 8
+                    [255, 150, 255], # Parking - 9
+                    [75, 0, 75], # Sidewalk - 10
+                    [75, 0, 175], # Other ground - 11
+                    [0, 200, 255], # Building - 12
+                    [50, 120, 255], # Fence - 13
+                    [0, 175, 0], # Vegetation - 14
+                    [0, 60, 135], # Trunk - 15
+                    [80, 240, 150], # Terrain - 16
+                    [150, 240, 255], # Pole - 17
+                    [0, 0, 255], # Traffic sign - 18
+                    [0, 0, 0], # Unlabelled - 18
+                    ])
 class SemanticKittiDataset(ExternalDataset, DatasetIterator):
     """
     The SemanticKittiDataset class provides interfaces to the OpenDR and MMDetector API for different use cases.

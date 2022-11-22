@@ -48,37 +48,10 @@ from mmdet2.models import build_detector
 from mmdet2.utils import collect_env, get_root_logger
 
 from opendr.perception.panoptic_segmentation.datasets import SemanticKittiDataset, NuscenesDataset
+from opendr.perception.panoptic_segmentation.datasets.semantic_kitti import PALETTE
 
 
 Prediction = Union[Tuple[Heatmap, Heatmap, Image], Tuple[np.ndarray, np.ndarray, None]]
-PALETTE = np.array([[183,  24,  47],
-                    [240,  82, 227],
-                    [105, 118,   0],
-                    [10, 213,  94],
-                    [238, 230,   4],
-                    [212, 158,  48],
-                    [1,  74, 171],
-                    [137, 163, 146],
-					[255, 0, 255], # ROAD
-                    [251,  63,  76],
-                    [47, 230,  27],
-                    [222, 142, 202],
-                    [14,  43,  57],
-                    [47, 212,  41],
-                    [0,  255, 0], # SIDEWALK
-                    [26,  12,  79], 
-                    [27,  85, 252],
-                    [36, 150, 185],
-                    [127,  62, 162],
-                    [229, 163,  93],
-                    [227, 120, 181],
-                    [82,  72, 187],
-                    [249, 190, 165],
-                    [144,   3, 226],
-                    [202, 218,  31],
-                    [171, 184,  70],
-                    [63, 242, 235],
-                    [0, 0, 0]])
 
 class EfficientLpsLearner(Learner):
 	"""
@@ -712,8 +685,9 @@ class EfficientLpsLearner(Learner):
 				  max_inst: int = 20,
 				  min_alpha: float = 0.25,
 				  dpi: int = 600,
-				  return_pc: bool = False,
-				  ) -> Image:
+				  return_pointcloud: Optional[bool] = False,
+				  return_pointcloud_type: Optional[str] = None,
+				  ) -> Union[PointCloud, Image]:
 		"""
 		Create a visualization of the predicted panoptic segmentation as a colored 3D Scatter Plot.
 
@@ -735,9 +709,14 @@ class EfficientLpsLearner(Learner):
 		:type min_alpha: float
 		:param dpi: Resolution of the resulting image, in Dots per Inch.
 		:type dpi: int
+		:param return_pointcloud: If True, returns a PointCloud object with the predicted labels as colors.
+		:type return_pointcloud: bool
+		:param return_pointcloud_type: If return_pointcloud is True, this parameter specifies the type of the returned
+			PointCloud object. Valid options are "semantic", "instance" and "panoptic".
+		:type return_pointcloud_type: str
 
-		:return: OpenDR Image of the generated visualization
-		:rtype: OpenDR Image
+		:return: OpenDR Image of the generated visualization or OpenDR PointCloud with the predicted labels
+		:rtype: OpenDR Image or OpenDR PointCloud
 		"""
 
 		if save_figure and figure_filename is None:
@@ -750,25 +729,41 @@ class EfficientLpsLearner(Learner):
 
 		inst = predictions[0]
 		sem = predictions[1]
-		if return_pc:
 
-			colors = np.array(PALETTE, dtype=np.float) / 255.
-			sem[sem==255] = 19
-			colors = colors[sem]   # Use the mod of the sem. label in case some values aren't in the colors
+		if return_pointcloud: # Return the pointcloud with panoptic labels
+			colors = np.array(PALETTE, dtype=np.uint8)
+			sem[sem==255] = 19 # Convert unlabelled points into the last index of the palette
+			colors = colors[sem] # Get the colors for each semantic label
+			if return_pointcloud_type == "panoptic":
+				inst[sem>=8] = -1 # Set the instance labels of the stuff classes to -1
 
-			# Re-color instances
-			inst[sem>=8] = -1
-			n_inst = np.unique(inst)[-2]
-			new_palette = np.random.randint(0, 255, size=(n_inst, 3), dtype=np.uint8)
-			new_colors = np.array(new_palette, dtype=np.float) / 255.
-			# Assign new colors to instances
-			for i in range(new_colors.shape[0]):
-				color = new_colors[i]
-				if color in PALETTE:
-					color = np.random.randint(0, 255, size=(1, 3), dtype=np.uint8)/255.
-				colors[inst == i] = color
-			points = np.c_[x, y, z, colors]
-			pc = PointCloud(points)
+				n_inst = np.unique(inst)[-2] # Get the number of instances
+				new_palette = np.random.randint(0, 255, size=(n_inst, 3), dtype=np.uint8) # Generate a new palette for the instances
+				for i in range(new_palette.shape[0]): # Assign new color into instances
+					color = new_palette[i] # Get the color from new PALETTE
+					while color in PALETTE: # Make sure that the new color is not in the semantic palette
+						color = np.random.randint(0, 255, size=(1, 3), dtype=np.uint8)
+					colors[inst == i] = color # Assign the new color to the instance
+				points = np.c_[x, y, z, colors] # Concatenate the points with the colors
+
+			elif return_pointcloud_type == "semantic":
+				points = np.c_[x, y, z, colors] # Concatenate the points with the colors
+
+			elif return_pointcloud_type == "instance":
+				colors[sem>=8] = np.array([0, 0, 0]).reshape(1, 3) # Set the colors of the stuff classes to black
+				n_inst = np.unique(inst)[-2] # Get the number of instances
+				new_palette = np.random.randint(0, 255, size=(n_inst, 3), dtype=np.uint8) # Generate a new palette for the instances
+				for i in range(new_palette.shape[0]): # Assign new color into instances
+					color = new_palette[i] # Get the color from new PALETTE
+					if color == np.array([0, 0, 0]).reshape(1, 3): # Make sure that the new color is not black
+						color = np.random.randint(0, 255, size=(1, 3), dtype=np.uint8)
+					colors[inst == i] = color # Assign the new color to the instance
+				points = np.c_[x, y, z, colors] # Concatenate the points with the colors
+
+			else:
+				raise ValueError("Argument return_pointcloud_type must be one of 'panoptic', 'semantic', or 'instance'.")
+
+			pc = PointCloud(points) # Create RGBXYZ pointcloud input 
 			return pc
 
 		fig = plt.figure(figsize=figure_size, dpi=dpi)

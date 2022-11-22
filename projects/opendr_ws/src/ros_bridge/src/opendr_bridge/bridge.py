@@ -573,12 +573,14 @@ class ROSBridge:
 
         return result
 
-    def to_ros_point_cloud2(self, point_cloud: PointCloud, channels=None):
+    def to_ros_point_cloud2(self, point_cloud: PointCloud, channels: str = None):
 
         """
         Converts an OpenDR PointCloud message into a ROS PointCloud2
         :param: OpenDR PointCloud
         :type: engine.data.PointCloud
+        :param: channels to be included in the PointCloud2 message. Available channels names are ["rgb", "rgba"]
+        :type: str
         :return message: ROS PointCloud2
         :rtype message: sensor_msgs.msg.PointCloud2
         """
@@ -593,10 +595,7 @@ class ROSBridge:
                   PointFieldMsg("y", 4, PointFieldMsg.FLOAT32, 1),
                   PointFieldMsg("z", 8, PointFieldMsg.FLOAT32, 1)]
         if channels == 'rgb' or channels == 'rgba':
-            if channels == 'rgb':
-                fields.append(PointFieldMsg("rgb", 12, PointFieldMsg.UINT32, 1))
-            else:
-                fields.append(PointFieldMsg("rgba", 12, PointFieldMsg.UINT32, 1))
+            fields.append(PointFieldMsg("rgba", 12, PointFieldMsg.UINT32, 1))
         else:
             for i in range(channel_count):
                 fields.append(PointFieldMsg("channel_" + str(i), 12 + 4 * i, PointFieldMsg.FLOAT32, 1))
@@ -607,22 +606,19 @@ class ROSBridge:
             pt = [point[0], point[1], point[2]]
             for channel in range(channel_count):
                 if channels == 'rgb' or channels == 'rgba':
+                    r = int(point[3])
+                    g = int(point[4])
+                    b = int(point[5])
+
                     if channels == 'rgb':
-                        r = int(point[3] * 255)
-                        g = int(point[4] * 255)
-                        b = int(point[5] * 255)
                         a = 255
-                        rgb = struct.unpack('I', struct.pack('BBBB', b, g, r, a))[0]
-                        pt.append(rgb)
-                        break
                     else:
-                        r = int(point[3])
-                        g = int(point[4])
-                        b = int(point[5])
                         a = int(point[6])
-                        rgba = struct.unpack('I', struct.pack('BBBB', b, g, r, a))[0]
-                        pt.append(rgba)
-                        break
+
+                    rgba = struct.unpack('I', struct.pack('BBBB', b, g, r, a))[0]
+                    pt.append(rgba)
+                    break
+
                 else:
                     pt.append(point[3 + channel])
             points.append(pt)
