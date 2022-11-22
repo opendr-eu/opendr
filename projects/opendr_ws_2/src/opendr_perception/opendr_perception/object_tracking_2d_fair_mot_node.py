@@ -33,21 +33,21 @@ from opendr.engine.data import Image
 class ObjectTracking2DFairMotNode(Node):
     def __init__(
         self,
-        input_image_topic="/usb_cam/image_raw",
+        input_rgb_image_topic="image_raw",
         output_detection_topic="/opendr/fairmot_detection",
         output_tracking_id_topic="/opendr/fairmot_tracking_id",
-        output_image_topic="/opendr/fairmot_image_annotated",
+        output_rgb_image_topic="/opendr/fairmot_image_annotated",
         device="cuda:0",
         model_name="fairmot_dla34",
         temp_dir="temp",
     ):
         """
         Creates a ROS Node for 2D object tracking
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
-        :param output_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
+        :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
         annotated image)
-        :type output_image_topic: str
+        :type output_rgb_image_topic: str
         :param output_detection_topic: Topic to which we are publishing the detections
         :type output_detection_topic:  str
         :param output_tracking_id_topic: Topic to which we are publishing the tracking ids
@@ -84,12 +84,12 @@ class ObjectTracking2DFairMotNode(Node):
                 Int32MultiArray, output_tracking_id_topic, 1
             )
 
-        if output_image_topic is not None:
+        if output_rgb_image_topic is not None:
             self.output_image_publisher = self.create_publisher(
-                ROS_Image, output_image_topic, 1
+                ROS_Image, output_rgb_image_topic, 1
             )
 
-        self.create_subscription(ROS_Image, input_image_topic, self.callback, 1)
+        self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 
     def callback(self, data):
         """
@@ -179,7 +179,7 @@ def main(
                         type=str, default="fairmot_dla34")
     parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
                         type=str, default="temp")
-    parser.add_argument("-i", "--input_image_topic",
+    parser.add_argument("-i", "--input_rgb_image_topic",
                         help="Input Image topic provided by either an image_dataset_node, webcam or any other image node",
                         type=str, default="/opendr/dataset_image")
     parser.add_argument("-od", "--output_detection_topic",
@@ -188,7 +188,7 @@ def main(
     parser.add_argument("-ot", "--output_tracking_id_topic",
                         help="Output detections topic",
                         type=str, default="/opendr/fairmot_tracking_id")
-    parser.add_argument("-oi", "--output_image_topic",
+    parser.add_argument("-oi", "--output_rgb_image_topic",
                         help="Output detections topic",
                         type=str, default="/opendr/fairmot_image_annotated")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
@@ -211,11 +211,11 @@ def main(
     fair_mot_node = ObjectTracking2DFairMotNode(
         device=device,
         model_name=args.model_name,
-        input_image_topic=args.input_image_topic,
+        input_rgb_image_topic=args.input_rgb_image_topic,
         temp_dir=args.temp_dir,
         output_detection_topic=args.output_detection_topic if args.output_detection_topic != "None" else None,
         output_tracking_id_topic=args.output_tracking_id_topic if args.output_tracking_id_topic != "None" else None,
-        output_image_topic=args.output_image_topic if args.output_image_topic != "None" else None,
+        output_rgb_image_topic=args.output_rgb_image_topic if args.output_rgb_image_topic != "None" else None,
     )
 
     rclpy.spin(fair_mot_node)

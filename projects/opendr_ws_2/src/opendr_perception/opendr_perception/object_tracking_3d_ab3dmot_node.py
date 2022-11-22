@@ -38,7 +38,7 @@ class ObjectTracking3DAb3dmotNode(Node):
     ):
         """
         Creates a ROS2 Node for 3D object tracking
-        :param detector: Learner that proides 3D object detections
+        :param detector: Learner that provides 3D object detections
         :type detector: Learner
         :param input_point_cloud_topic: Topic from which we are reading the input point cloud
         :type input_point_cloud_topic: str
