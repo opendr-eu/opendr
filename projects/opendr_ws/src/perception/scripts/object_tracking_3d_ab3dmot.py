@@ -108,7 +108,7 @@ class ObjectTracking3DAb3dmotNode:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-dn", "--detector_model_name", help="Name of the trained model",
-                        type=str, default="tanet_car_xyres_16", choices =["tanet_car_xyres_16"])
+                        type=str, default="tanet_car_xyres_16", choices=["tanet_car_xyres_16"])
     parser.add_argument(
         "-dc", "--detector_model_config_path", help="Path to a model .proto config",
         type=str, default=os.path.join(
