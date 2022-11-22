@@ -71,14 +71,14 @@ class ObjectTracking2DFairMotNode:
         self.input_rgb_image_topic = input_rgb_image_topic
 
         if output_detection_topic is not None:
-        self.detection_publisher = rospy.Publisher(
-            output_detection_topic, Detection2DArray, queue_size=10
-        )
+            self.detection_publisher = rospy.Publisher(
+                output_detection_topic, Detection2DArray, queue_size=10
+            )
 
         if output_tracking_id_topic is not None:
-        self.tracking_id_publisher = rospy.Publisher(
-            output_tracking_id_topic, Int32MultiArray, queue_size=10
-        )
+            self.tracking_id_publisher = rospy.Publisher(
+                output_tracking_id_topic, Int32MultiArray, queue_size=10
+            )
 
         if output_rgb_image_topic is not None:
             self.output_image_publisher = rospy.Publisher(
@@ -187,10 +187,10 @@ def main():
                         help="Output detections topic",
                         type=str, default="/opendr/fairmot_detection")
     parser.add_argument("-ot", "--output_tracking_id_topic",
-                        help="Output detections topic",
+                        help="Output tracking ids topic with the same element cound as in output_detection_topic",
                         type=str, default="/opendr/fairmot_tracking_id")
     parser.add_argument("-oi", "--output_rgb_image_topic",
-                        help="Output detections topic",
+                        help="Output annotated image topic with a visualization of detections and their ids",
                         type=str, default="/opendr/fairmot_image_annotated")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
