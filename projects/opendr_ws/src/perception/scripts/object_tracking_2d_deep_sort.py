@@ -102,7 +102,7 @@ class ObjectTracking2DDeepSortNode:
         image = self.bridge.from_ros_image(data, encoding="bgr8")
         detection_boxes = self.detector.infer(image)
         image_with_detections = ImageWithDetections(image.numpy(), detection_boxes)
-        tracking_boxes = self.learner.infer(image_with_detections)
+        tracking_boxes = self.learner.infer(image_with_detections, swap_left_top=True)
 
         if self.output_image_publisher is not None:
             frame = image.opencv()
