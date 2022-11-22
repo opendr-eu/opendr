@@ -36,10 +36,10 @@ class ObjectTracking2DDeepSortNode(Node):
     def __init__(
         self,
         detector: Learner,
-        input_image_topic="/usb_cam/image_raw",
+        input_rgb_image_topic="/usb_cam/image_raw",
         output_detection_topic="/opendr/deep_sort_detection",
         output_tracking_id_topic="/opendr/deep_sort_tracking_id",
-        output_image_topic="/opendr/deep_sort_image_annotated",
+        output_rgb_image_topic="/opendr/deep_sort_image_annotated",
         device="cuda:0",
         model_name="deep_sort",
         temp_dir="temp",
@@ -85,7 +85,7 @@ class ObjectTracking2DDeepSortNode(Node):
                 Int32MultiArray, output_tracking_id_topic, 1
             )
 
-        if output_image_topic is not None:
+        if output_rgb_image_topic is not None:
             self.output_image_publisher = self.create_publisher(
                 ROS_Image, output_rgb_image_topic, 1
             )

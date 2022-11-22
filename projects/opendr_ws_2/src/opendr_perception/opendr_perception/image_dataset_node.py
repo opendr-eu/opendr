@@ -27,7 +27,7 @@ class ImageDatasetNode(Node):
     def __init__(
         self,
         dataset: DatasetIterator,
-        output_image_topic="/opendr/dataset_image",
+        output_rgb_image_topic="/opendr/dataset_image",
         data_fps=10,
     ):
         """
@@ -42,7 +42,7 @@ class ImageDatasetNode(Node):
         self.sample_index = 0
 
         self.output_image_publisher = self.create_publisher(
-            ROS_Image, output_image_topic, 1
+            ROS_Image, output_rgb_image_topic, 1
         )
 
     def timer_callback(self):
@@ -73,7 +73,7 @@ def main(
             "datasets", "splits", "nano_mot20.train"
         )
     )
-    parser.add_argument("-o", "--output_image_topic", help="Topic name to upload the data",
+    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name to upload the data",
                         type=str, default="/opendr/dataset_image")
     parser.add_argument("-f", "--fps", help="Data FPS",
                         type=float, default=30)
@@ -81,7 +81,7 @@ def main(
 
     dataset_path = args.dataset_path
     mot20_subsets_path = args.mot20_subsets_path
-    output_image_topic = args.output_image_topic
+    output_rgb_image_topic = args.output_rgb_image_topic
     data_fps = args.fps
 
     if not os.path.exists(dataset_path):
@@ -98,7 +98,7 @@ def main(
     )
     dataset_node = ImageDatasetNode(
         dataset,
-        output_image_topic=output_image_topic,
+        output_rgb_image_topic=output_rgb_image_topic,
         data_fps=data_fps,
     )
 
