@@ -331,8 +331,8 @@ jobs:
         if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
 
         # install specific package
-        if [ "$package" != "engine" ] && [ "$package" != "utils" ]; then
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+        if [ "$package" == "engine" ] && [ "$package" == "utils" ]; then
+          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
         else
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
