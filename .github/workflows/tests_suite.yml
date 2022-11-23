@@ -208,8 +208,9 @@ jobs:
       uses: tj-actions/branch-names@v5.1
     - name: Test Wheel
       run: |
-        export DISABLE_BCOLZ_AVX2=true
         export OPENDR_HOME=$PWD
+        export DISABLE_BCOLZ_AVX2=true
+        export OPENDR_DEVICE=cpu
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev python3-dev
         python3 -m venv venv
         source venv/bin/activate
@@ -296,7 +297,9 @@ jobs:
       uses: tj-actions/branch-names@v5.1
     - name: Test Wheel
       run: |
+        export OPENDR_HOME=$PWD
         export DISABLE_BCOLZ_AVX2=true
+        export OPENDR_DEVICE=cpu
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
         python3 -m venv venv
         source venv/bin/activate
@@ -331,22 +334,20 @@ jobs:
         package=(${package//// })
         if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
 
+        # all packages require the engine
+        python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
         # install specific package
-        if [ "$package" == "engine" ] && [ "$package" == "utils" ]; then
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
+        if [ "$package" == "utils" ]; then
+          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
         else
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
 
           if [ "$package" != "mobile-manipulation" ] || [ "$package" != "simple-demo-grasp" ]; then
             sudo sh -c 'echo deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main > /etc/apt/sources.list.d/ros-latest.list'
             curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
-            export OPENDR_HOME=$PWD
-            export OPENDR_DEVICE=cpu
             export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
-            export DISABLE_BCOLZ_AVX2=true
             export ROS_DISTRO=noetic
-            # TODO: this is overkill, shoud split them more
+            # TODO: this is overkill, should split them
             make install_compilation_dependencies
             make install_runtime_dependencies
           fi
