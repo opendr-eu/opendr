@@ -3,11 +3,10 @@
 ## Version 2.0
 Released on December, XX, 2022.
 
-  - Enhancements:
-    - Fix detectron2 installation and scikit-image deprecated functions ([#287](https://github.com/opendr-eu/opendr/pull/287)).
   - Bug Fixes:
     - Fixed missing dependency in `opendr-toolkit-object_detection_2d` ([#321](https://github.com/opendr-eu/opendr/pull/321)).
     - Fixed bug in evaluation with empty detection arrays ([285](https://github.com/opendr-eu/opendr/pull/285)).
+    - Fix detectron2 installation and scikit-image deprecated functions ([#287](https://github.com/opendr-eu/opendr/pull/287)).
 
 ## Version 1.1.1
 Released on June, 30th, 2022.
