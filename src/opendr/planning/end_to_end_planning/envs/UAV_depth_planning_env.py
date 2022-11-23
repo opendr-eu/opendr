@@ -60,6 +60,14 @@ class UAVDepthPlanningEnv(gym.Env):
         self.safety2_flag = False
         self.enable_safety_reward = True
         self.model_name = ""
+        self.target_y = 0
+        self.target_z = 2.5
+        self.start_x = -10
+        self.forward_direction = True
+        self.parkour_length = 30
+        self.episode_counter = 0
+        self.closer_object_length = 5
+        self.no_dynamics = no_dynamics
 
         # ROS connection
         rospy.init_node('gym_depth_planning_environment')
@@ -72,9 +80,16 @@ class UAVDepthPlanningEnv(gym.Env):
         self.uav_trajectory = Path()
         rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.pose_callback)
         rospy.Subscriber("/model_name", String, self.model_name_callback)
+        counter = 0
+        rospy.loginfo("Waiting for webots model to start!")
         while self.model_name == "":
             self.r.sleep()
-            print("Waiting for webots model to start!")
+            counter += 1
+            if counter > 25:
+                break
+        if self.model_name == "":
+            rospy.loginfo("Webots model is not started!")
+            return
         self.randomizer = ObstacleRandomizer(self.model_name)
         rospy.Subscriber("/" + self.model_name + "/touch_sensor_collision/value", BoolStamped, self.collision_callback)
         rospy.Subscriber("/" + self.model_name + "/touch_sensor_safety1/value", BoolStamped, self.safety1_callback)
@@ -103,14 +118,6 @@ class UAVDepthPlanningEnv(gym.Env):
         except rospy.ServiceException as exc:
             print("Service did not process request: " + str(exc))
 
-        self.target_y = 0
-        self.target_z = 2.5
-        self.start_x = -10
-        self.forward_direction = True
-        self.parkour_length = 30
-        self.episode_counter = 0
-        self.closer_object_length = 5
-
         self.set_target()
         self.r.sleep()
         vo = self.difference_between_points(self.target_position, self.current_position)
@@ -122,8 +129,6 @@ class UAVDepthPlanningEnv(gym.Env):
         self.observation = {'depth_cam': np.copy(self.range_image), 'moving_target': np.copy(self.vector_observation)}
         self.r.sleep()
 
-        self.image_count = 50000
-        self.no_dynamics = no_dynamics
         if no_dynamics:
             self.ros_srv_gps1_sensor_enable = rospy.ServiceProxy(
                 "/" + self.model_name + "/gps1/enable", webots_ros.srv.set_int)
@@ -158,6 +163,9 @@ class UAVDepthPlanningEnv(gym.Env):
                 print("Service did not process request: " + str(exc))
 
     def step(self, action):
+        if self.model_name == "":
+            rospy.loginfo("Gym environment cannot connect to Webots")
+            return self.observation_space.sample(), np.random.random(1), False, {}
         if self.is_discrete_actions:
             action = self.action_dictionary[action]
         forward_step = np.cos(action[0] * 22.5 / 180 * np.pi)
@@ -247,8 +255,8 @@ class UAVDepthPlanningEnv(gym.Env):
         return self.observation, reward, done, info
 
     def reset(self):
-        if self.current_position == PoseStamped().pose.position:
-            rospy.loginfo("Gym environment is not reading mavros position")
+        if self.model_name == "":
+            rospy.loginfo("Gym environment cannot connect to Webots")
             return self.observation_space.sample()
         if self.no_dynamics:
             self.go_position(self.start_x, self.target_y + np.random.uniform(-0.5, 0.5), self.target_z,
