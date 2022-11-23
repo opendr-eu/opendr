@@ -233,7 +233,7 @@ jobs:
 
         while read f; do
           package=$(sed "s/_/-/g" <<< $f)
-          package=(${a//// })
+          package=(${package//// })
           if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
 
           if [ "$package" != "opendr" ]; then
@@ -327,7 +327,7 @@ jobs:
 
         # get the name of the wheel to install based on the test being run
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
-        package=(${a//// })
+        package=(${package//// })
         if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
 
         # install specific package
