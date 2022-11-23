@@ -265,6 +265,26 @@ rosrun perception image_dataset.py
 ```
 This will pulbish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
 
+### 2D Object Tracking FairMOT ROS Node
+<!-- TODO -->
+A ROS node for performing Object Tracking 2D using FairMOT with either pretrained models on MOT dataset, or custom trained models. 
+The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`). 
+Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
+Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
+```shell
+rosrun perception object_tracking_2d_fair_mot.py
+```
+To get images from usb_camera, you can start the camera node as:
+```shell
+rosrun usb_cam usb_cam_node
+```
+The corresponding `input_image_topic` should be `/usb_cam/image_raw`.
+If you want to use a dataset from the disk, you can start a `image_dataset.py` node as:
+```shell
+rosrun perception image_dataset.py
+```
+This will pulbish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
+
 ### Panoptic Segmentation ROS Node
 
 You can find the panoptic segmentation ROS node python script [here](./scripts/panoptic_segmentation_efficient_ps.py) to inspect the code and modify it as you wish to fit your needs.
@@ -590,26 +610,6 @@ To get a point cloud from a dataset on the disk, you can start a `point_cloud_da
 rosrun perception point_cloud_dataset.py
 ```
 This will pulbish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
-
-### 2D Object Tracking FairMOT ROS Node
-<!-- TODO -->
-A ROS node for performing Object Tracking 2D using FairMOT with either pretrained models on MOT dataset, or custom trained models. 
-The predicted tracking annotations are split into two topics with detections (default `output_detection_topic="/opendr/detection"`) and tracking ids (default `output_tracking_id_topic="/opendr/tracking_id"`). 
-Additionally, an annotated image is generated if the `output_image_topic` is not None (default `output_image_topic="/opendr/image_annotated"`)
-Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
-```shell
-rosrun perception object_tracking_2d_fair_mot.py
-```
-To get images from usb_camera, you can start the camera node as:
-```shell
-rosrun usb_cam usb_cam_node
-```
-The corresponding `input_image_topic` should be `/usb_cam/image_raw`.
-If you want to use a dataset from the disk, you can start a `image_dataset.py` node as:
-```shell
-rosrun perception image_dataset.py
-```
-This will pulbish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
 
 ----
 ## Biosignal input
