@@ -233,7 +233,9 @@ jobs:
 
         while read f; do
           package=$(sed "s/_/-/g" <<< $f)
-          package=$(basename $package)
+          package=(${a//// })
+          if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
+
           if [ "$package" != "opendr" ]; then
             python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
           fi
@@ -325,7 +327,8 @@ jobs:
 
         # get the name of the wheel to install based on the test being run
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
-        package=$(basename $package)
+        package=(${a//// })
+        if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
 
         # install specific package
         if [ "$package" != "engine" ] && [ "$package" != "utils" ]; then
