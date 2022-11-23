@@ -188,8 +188,8 @@ jobs:
           - perception/object_detection_3d
           - perception/facial_expression_recognition
           - simulation/human_model_generation
-          # - control/mobile_manipulation
-          # - control/single_demo_grasp
+          - control/mobile_manipulation
+          - control/single_demo_grasp
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
@@ -242,6 +242,17 @@ jobs:
             python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
           fi
         done < packages.txt
+
+        if [ "$package" != "mobile-manipulation" ] || [ "$package" != "simple-demo-grasp" ]; then
+          sudo sh -c 'echo deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main > /etc/apt/sources.list.d/ros-latest.list'
+          curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+          export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+          export ROS_DISTRO=noetic
+          # TODO: this is overkill, should split them
+          make install_compilation_dependencies
+          make install_runtime_dependencies
+          source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+        fi
 
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-wheel-separate:
@@ -350,6 +361,7 @@ jobs:
             # TODO: this is overkill, should split them
             make install_compilation_dependencies
             make install_runtime_dependencies
+            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
           fi
         fi
 
