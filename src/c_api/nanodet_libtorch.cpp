@@ -239,7 +239,6 @@ opendr_detection_target_list_t infer_nanodet(opendr_image_t *image, nanodet_mode
   if (!opencv_image) {
     std::cerr << "Cannot load image for inference." << std::endl;
 
-    load_detections(&detections, dets.data(), (int)dets.size());
     return detections;
   }
 
