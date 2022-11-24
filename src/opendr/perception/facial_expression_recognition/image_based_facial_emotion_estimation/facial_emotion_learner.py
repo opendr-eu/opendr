@@ -724,34 +724,40 @@ class FacialEmotionLearner(Learner):
 
         if mode == "data":
             print("Downloading data...")
+            data_path = os.path.join(path, 'data')
+            if not os.path.exists(data_path):
+                os.makedirs(data_path)
+
             zip_path = os.path.join(path, 'data/AffectNet_micro.zip')
-            unzip_path = os.path.join(path, 'data')
             if not os.path.exists(zip_path):
                 # Download data
                 file_url = os.path.join(url, 'data/AffectNet_micro.zip')
                 urlretrieve(file_url, zip_path)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(unzip_path)
+                    zip_ref.extractall(data_path)
                 os.remove(zip_path)
             else:
                 print("data files already exists.")
             print("Data download complete.")
-            downloaded_files_path = unzip_path
+            downloaded_files_path = data_path
 
         elif mode == "pretrained":
             print("Downloading pretrained model weights...")
+            model_path = os.path.join(path, 'pretrained')
+            if not os.path.exists(model_path):
+                os.makedirs(model_path)
+
             zip_path = os.path.join(path, 'pretrained/esr_9.zip')
-            unzip_path = os.path.join(path, 'pretrained')
             if not os.path.exists(zip_path):
                 # Download data
                 file_url = os.path.join(url, 'pretrained/esr_9.zip')
                 urlretrieve(file_url, zip_path)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(unzip_path)
+                    zip_ref.extractall(model_path)
                 os.remove(zip_path)
             else:
                 print("pretrained files already exists.")
             print("Pretrained model weights download complete.")
-            downloaded_files_path = unzip_path
+            downloaded_files_path = model_path
 
         return downloaded_files_path
