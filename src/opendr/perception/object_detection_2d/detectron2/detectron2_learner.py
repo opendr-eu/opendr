@@ -49,7 +49,7 @@ class Detectron2Learner(Learner):
 
     def __init__(self, lr=0.00025, batch_size=200, img_per_step=2, weight_decay=0.00008,
                        momentum=0.98, gamma=0.0005, norm="GN", num_workers=2, num_keypoints=25, 
-                       iters=4000, threshold=0.7, loss_weight=1.0, device='cuda', temp_path="temp", backbone='resnet'):
+                       iters=4000, threshold=0.8, loss_weight=1.0, device='cuda', temp_path="temp", backbone='resnet'):
         super(Detectron2Learner, self).__init__(lr=lr, threshold=threshold, 
                                                 batch_size=batch_size, device=device, 
                                                 iters=iters, temp_path=temp_path, 
@@ -75,6 +75,7 @@ class Detectron2Learner(Learner):
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.NUM_KEYPOINTS = num_keypoints
         self.cfg.TEST.KEYPOINT_OKS_SIGMAS = np.ones((num_keypoints, 1), dtype=float).tolist()
         self.classes = ["RockerArm","BoltHoles","Big_PushRodHoles","Small_PushRodHoles", "Engine", "Bolt","PushRod","RockerArmObject"]
+        #self.classes = ["bolt", "rocker_arm"]
         # Set backbone
         if self.backbone not in self.supported_backbones:
             raise ValueError(self.backbone + " backbone is not supported.")
@@ -125,13 +126,11 @@ class Detectron2Learner(Learner):
         output = self.predictor(img_data)
         pred_classes = output["instances"].to("cpu").pred_classes.numpy()
         bounding_boxes = output["instances"].to("cpu").pred_boxes.tensor.numpy()
-        keypoints_preds = output["instances"].to("cpu").pred_keypoints.numpy()
         seg_masks = output["instances"].to("cpu").pred_masks.numpy()
-        #seg_masks = seg_masks.transpose((1,2,0))
         masks = seg_masks.astype('uint8')*255
         result = []
-        for pred_class, bbox, kp, seg_mask in zip(pred_classes, bounding_boxes, keypoints_preds, masks):
-            result.append((Keypoint(kp), BoundingBox(name=pred_class, left=bbox[0], top=bbox[1], width=bbox[2]-bbox[0], height=bbox[3]-bbox[1]), seg_mask))
+        for pred_class, bbox, seg_mask in zip(pred_classes, bounding_boxes, masks):
+            result.append((BoundingBox(name=pred_class, left=bbox[0], top=bbox[1], width=bbox[2]-bbox[0], height=bbox[3]-bbox[1]), seg_mask))
         return result
 
 

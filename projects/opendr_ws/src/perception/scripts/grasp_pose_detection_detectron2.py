@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 # -*- coding: utf-8 -*-
 # Copyright 2020-2022 OpenDR European Project
 #
@@ -14,88 +15,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-import argparse
-import rospy
-import torch
-import numpy as np
-from sensor_msgs.msg import Image as ROS_Image
-from sensor_msgs.msg import Image as CameraInfo
-from opendr_bridge import ROSBridge
-import matplotlib.pyplot as plt
 import os
-import pathlib
+import cv2
 import math
+import torch
+import pathlib
+import argparse
+import numpy as np
 from math import pi
-from opendr.perception.object_detection_2d import Detectron2Learner
-from detectron2.data import MetadataCatalog, DatasetCatalog
-from visualization_msgs.msg import Marker
+import message_filters
+import matplotlib.pyplot as plt
+
+
 from opendr.engine.data import Image
 from opendr.engine.target import BoundingBoxList
+from opendr.perception.object_detection_2d import Detectron2Learner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 import tf 
-
-from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose
-from geometry_msgs.msg import Pose2D, PoseStamped
-
-import message_filters
-import cv2
-
-
-def get_kps_center(input_kps) :
-    input_kps_sorted = input_kps[input_kps[:, 2].argsort()[::-1]]
-    kps_x_list = input_kps[:,0]
-    kps_y_list = input_kps[:,1]
-    kps_x_list = kps_x_list[::-1]
-    kps_y_list = kps_y_list[::-1]
-    d = {'X' : kps_x_list,
-        'Y' : kps_y_list}
-    df = pd.DataFrame(data = d)
-
-    x = np.mean(df["X"][0:2])
-    y= np.mean(df["Y"][0:2])
-    return [x,y]
-
-def get_angle(input_kps, mode):
-    input_kps_sorted = input_kps[input_kps[:, 2].argsort()[::-1]]
-    # kps_x_list = input_kps[0][:,0]
-    # kps_y_list = input_kps[0][:,1]
-    kps_x_list = input_kps_sorted[:,0]
-    kps_y_list = input_kps_sorted[:,1]
-    kps_x_list = kps_x_list[::-1]
-    kps_y_list = kps_y_list[::-1]
-
-    d = {'X' : kps_x_list,
-        'Y' : kps_y_list}
-
-    df = pd.DataFrame(data = d)
-
-
-    # move the origin
-    x = (df["X"] - df["X"][0])
-    y = (df["Y"] - df["Y"][0])
-
-    #x = x[0:2]
-    #y = y[0:2]
-    if mode == 1:
-        list_xy = (np.arctan2(y,x)*180/math.pi).astype(int)
-        occurence_count = Counter(list_xy)
-        return occurence_count.most_common(1)[0][0]
-    else:
-        x = np.mean(x)
-        y= np.mean(y)
-        return np.arctan2(y,x)*180/math.pi
-
-def correct_orientation_ref(angle):
-
-    if angle <= 90:
-        angle += 90
-    if angle > 90:
-        angle += -270
-
-    return angle
+import rospy
+from opendr_bridge import ROSBridge
+from sensor_msgs.msg import CameraInfo
+from visualization_msgs.msg import Marker
+from sensor_msgs.msg import Image as ROS_Image
+from geometry_msgs.msg import Pose2D, PoseStamped, PoseWithCovariance
+from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose, VisionInfo
 
 
 class Detectron2GraspDetectionNode:
@@ -107,7 +51,7 @@ class Detectron2GraspDetectionNode:
                  output_mask_topic="/opendr/image_mask_annotated",
                  object_detection_topic="/opendr/object_detected",
                  grasp_detection_topic="/opendr/grasp_detected",
-                 device="cuda", model="detectron"):
+                 device="cuda", only_visualize=False, model="detectron"):
         """
         Creates a ROS Node for objects detection from RGBD
         :param input_image_topic: Topic from which we are reading the input image
@@ -119,45 +63,46 @@ class Detectron2GraspDetectionNode:
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
-        # camera_info_sub = rospy.Subscriber(camera_info_topic, CameraInfo, self.camera_info_callback)
-
         self.bridge = ROSBridge()
 
         # Initialize the object detection        
         model_path = pathlib.Path("/home/opendr/Gaurang/engineAssembly/new_dataset/output_level2")
-        
+        # model_path = pathlib.Path("/home/opendr/augmentation/output")
         if model == "detectron":
             self.learner = Detectron2Learner(device=device)
             if not model_path.exists():
                 self.learner.download(path=model_path)
             self.learner.load(model_path / "model_final.pth")
-    
-        self.object_publisher = rospy.Publisher(object_detection_topic, Detection2DArray, queue_size=1)
+
+        self.mask_publisher = rospy.Publisher(output_mask_topic, ROS_Image, queue_size=10)
+        self.marker_pub = rospy.Publisher("/visualization_marker", Marker, queue_size = 10)
+        self.image_publisher = rospy.Publisher(output_image_topic, ROS_Image, queue_size=10)
+        self.object_publisher = rospy.Publisher(object_detection_topic, Detection2DArray, queue_size=10)
         self.grasp_publisher = rospy.Publisher(grasp_detection_topic, ObjectHypothesisWithPose, queue_size=10)
-        self.image_publisher = rospy.Publisher(output_image_topic, ROS_Image, queue_size=1)
-        self.mask_publisher = rospy.Publisher(output_mask_topic, ROS_Image, queue_size=1)
-        self.marker_pub = rospy.Publisher("/visualization_marker", Marker, queue_size = 2)
+        
+        self.camera_info_sub = rospy.Subscriber(camera_info_topic, CameraInfo, self.camera_info_callback)
 
-
-        self.depth_sub = message_filters.Subscriber(input_depth_image_topic, ROS_Image)
         self.rgb_sub = message_filters.Subscriber(input_image_topic, ROS_Image)
-        self.ts = message_filters.ApproximateTimeSynchronizer([self.rgb_sub, self.depth_sub], queue_size=5, slop=20.0,allow_headerless=True)
+        self.depth_sub = message_filters.Subscriber(input_depth_image_topic, ROS_Image)
+        self.ts = message_filters.ApproximateTimeSynchronizer([self.rgb_sub, self.depth_sub], queue_size=5, slop=20.0, allow_headerless=True)
         self.ts.registerCallback(self.callback)
 
+        self.only_visualize = only_visualize
 
-        self._colors = []
-        self._listener_tf = tf.TransformListener()
-        self._camera_tf_frame = camera_tf_frame
-        self._robot_tf_frame = robot_tf_frame
+        self._refX = 0 
+        self._refY = 0 
+        self._camera_focal = 0
+
         self._ee_tf_frame = ee_tf_frame
-        self._camera_focal = 904
-        self._ctrX = 630
-        self._ctrY = 345
+        self._robot_tf_frame = robot_tf_frame
+        self._camera_tf_frame = camera_tf_frame
+        self._listener_tf = tf.TransformListener()
+       
 
     def camera_info_callback(self, msg):
-        self._camera_focal = 904 # msg.K[0]
-        self._ctrX = 630 # msg.K[2]
-        self._ctrY = 345 # msg.K[5]
+        self._camera_focal = msg.K[0]
+        self._refX = msg.K[2]
+        self._refY = msg.K[5]
 
     def create_rviz_marker(self, ros_pose, marker_id):
         marker = Marker()
@@ -187,7 +132,6 @@ class Detectron2GraspDetectionNode:
         self.marker_pub.publish(marker)
 
     def compute_orientation(self, seg_mask):
-
         M = cv2.moments(seg_mask)
 
         # calculate x,y coordinate of center
@@ -209,61 +153,59 @@ class Detectron2GraspDetectionNode:
         # theta = math.degrees(theta)
         return theta
 
-    def compute_depth(self, seg_mask):
-        unique, frequency = np.unique(seg_mask, return_counts = True)
+    def compute_depth(self, depth_image, seg_mask):
+        seg_mask = seg_mask.astype('bool')
+        object_depth_map = depth_image[seg_mask].tolist()
+        depth_values = [x for x in object_depth_map if x != 0]
+        unique, frequency = np.unique(depth_values, return_counts = True)
         depth = unique[np.where(frequency == max(frequency))]
-        return depth
+        real_z = depth[0]/1000
+        return real_z
 
-    def convert_detection_pose(self, bbox, z_to_surface, rot, marker_id):
-        to_world_scale = z_to_surface/ self._camera_focal
-        x_dist = ((bbox.left+bbox.width/2)-self._ctrX) * to_world_scale
-        y_dist = (self._ctrY-bbox.top+bbox.height/2) * to_world_scale
-        #x_dist = (object_detection_2D.data[0]-self.ctrX) * to_world_scale
-        #y_dist = (self.ctrY-object_detection_2D.data[1]) * to_world_scale
+    def get_center_bbox(self, bbox):
+        ctr_x = bbox.left+bbox.width/2
+        ctr_y = bbox.top+bbox.height/2
+        return (ctr_x, ctr_y)
 
-        '''
-        ctr_X = int((bbx[0] + bbx[2]) / 2)
-        ctr_Y = int((bbx[1] + bbx[3]) / 2)
-        angle = pred_angle
-        ref_x = 640 / 2
-        ref_y = 480 / 2
-        # distance to the center of bounding box representing the center of object
-        dist = [ctr_X - ref_x, ref_y - ctr_Y]
-        # distance center of keypoints representing the grasp location of the object
-        dist_kps_ctr = [pred_kps_center[0] - ref_x, ref_y - pred_kps_center[1]]
-        '''    
+    def convert_detection_pose(self, bbox, depth_image, seg_mask):
+        assert self._camera_focal>0, "camera info not found"
+        assert self._refX>0, "camera info not found"
+        assert self._refY>0, "camera info not found"
+
+        theta = self.compute_orientation(seg_mask)
+        
+        mask = np.asarray(seg_mask)
+        z_to_surface = self.compute_depth(depth_image, mask)  
+        to_world_scale = z_to_surface / self._camera_focal
+        
+        ctr_x, ctr_y = self.get_center_bbox(bbox)
+        x_dist = (ctr_x - self._refX) * to_world_scale
+        y_dist = (self._refY - ctr_y) * to_world_scale
         
         my_point = PoseStamped()
         my_point.header.frame_id = self._camera_tf_frame
         my_point.header.stamp = rospy.Time(0)
-        
-        my_point.pose.position.x = y_dist
-        my_point.pose.position.y = x_dist
+        my_point.pose.position.x = -x_dist  
+        my_point.pose.position.y = y_dist 
         my_point.pose.position.z = z_to_surface
         
-        #my_point.pose.position.x = 0
-        #my_point.pose.position.y = x_dist
-        #my_point.pose.position.z = y_dist
-
-        # theta = object_detection_2D.angle / 180 * pi
-        theta = 0
-        ps = self._listener_tf.lookupTransform(self._camera_tf_frame, self._ee_tf_frame, rospy.Time(0))
-        quat_rotcmd = tf.transformations.quaternion_from_euler(theta, 0, 0)
-        quat = tf.transformations.quaternion_multiply(quat_rotcmd, ps[1])
-
-        my_point.pose.orientation.x = quat[0]
-        my_point.pose.orientation.y = quat[1]
-        my_point.pose.orientation.z = quat[2]
-        my_point.pose.orientation.w = quat[3]
+        quat_rotcmd = tf.transformations.quaternion_from_euler(0, 0, 0)
+        my_point.pose.orientation.x = quat_rotcmd[0]
+        my_point.pose.orientation.y = quat_rotcmd[1]
+        my_point.pose.orientation.z = quat_rotcmd[2]
+        my_point.pose.orientation.w = quat_rotcmd[3]
         
         ps=self._listener_tf.transformPose(self._robot_tf_frame,my_point)
-        return ps
+
+        return ps.pose
 
     def draw_seg_masks(self, image, masks):
-        masked_image = np.full_like(masks[0], 0)
-        for mask in masks:
-            mask = np.asarray(mask)
-            masked_image += mask
+        masked_image = np.array([])
+        if masks:
+            masked_image = np.full_like(masks[0], 0)
+            for mask in masks:
+                mask = np.asarray(mask)
+                masked_image += mask
         return masked_image
 
     def callback(self, image_data, depth_data):
@@ -277,12 +219,12 @@ class Detectron2GraspDetectionNode:
         # Convert sensor_msgs.msg.Image into OpenDR Image and preprocess
         image = self.bridge.from_ros_image(image_data)
         depth_data.encoding = "mono16"
-        depth_image = self.bridge.from_ros_image_to_depth(depth_data)
-        print("image converted")
+        depth_image = self.bridge._cv_bridge.imgmsg_to_cv2(depth_data, desired_encoding='mono16')
+
         # Run object detection
         object_detections = self.learner.infer(image)
-        boxes = BoundingBoxList([box for kp,box,seg_mask in object_detections])
-        seg_masks = [seg_mask for kp,box,seg_mask in object_detections]
+        boxes = BoundingBoxList([box for box,seg_mask in object_detections])
+        seg_masks = [seg_mask for box,seg_mask in object_detections]
 
         # Get an OpenCV image back
         image = image.opencv()
@@ -298,25 +240,25 @@ class Detectron2GraspDetectionNode:
             masks = self.draw_seg_masks(image, seg_masks)
             # Convert the annotated OpenDR image to ROS image message using bridge and publish it
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
-            masked_image = np.zeros_like(image)
-            masked_image[:,:,0] = masks[:]
-            masked_image[:,:,1] = masks[:] 
-            masked_image[:,:,2] = masks[:]  
-            self.mask_publisher.publish(self.bridge.to_ros_image(Image(masked_image)))
-        i = 0
+            if not masks.size == 0:
+                masked_image = np.zeros_like(image)
+                masked_image[:,:,0] = masks[:]
+                masked_image[:,:,1] = masks[:] 
+                masked_image[:,:,2] = masks[:]  
+                self.mask_publisher.publish(self.bridge.to_ros_image(Image(masked_image)))
+            else:
+                self.mask_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
         
-        for bbox, mask in zip(boxes, seg_masks):
-            theta = self.compute_orientation(mask)
-            depth = self.compute_depth(mask)
-            print(theta, depth)
-
-        (trans, rot) = self._listener_tf.lookupTransform(self._robot_tf_frame, self._camera_tf_frame, rospy.Time(0))
-        for bbox, mask in zip(boxes, seg_masks):    
-            ros_pose = self.convert_detection_pose(bbox, trans[2]-0.10, theta, i)
-            self.create_rviz_marker(ros_pose, i)
-            # ros_grasp_detection = self.bridge.to_ros_grasp_pose(detection.name, ros_pose)
-            # self.grasp_publisher.publish(ros_grasp_detection)
-            i+=1
+        if not self.only_visualize:
+            for bbox, mask in zip(boxes, seg_masks):
+                try: 
+                    obj_pose = ObjectHypothesisWithPose()
+                    obj_pose.id = bbox.name
+                    obj_pose.pose.pose = self.convert_detection_pose(bbox, depth_image, mask)
+                    self.grasp_publisher.publish(obj_pose)
+                except:
+                    pass 
+                    # print("[Warning: skipping a conversion. Pose not valid.]")
 
 
 if __name__ == '__main__':
@@ -335,8 +277,19 @@ if __name__ == '__main__':
     except:
         device = 'cpu'
     # default topics for intel realsense - https://github.com/IntelRealSense/realsense-ros
-    depth_topic = "/camera/depth/image_rect_raw"
+    depth_topic = "/camera/aligned_depth_to_color/image_raw"
     image_topic = "/camera/color/image_raw"  
-    object_node = Detectron2GraspDetectionNode(camera_tf_frame='/camera_color_optical_frame', robot_tf_frame='panda_link0', ee_tf_frame='/panda_link8', input_image_topic=image_topic, input_depth_image_topic=depth_topic, device=device)
+    grasp_detection_node = Detectron2GraspDetectionNode(camera_tf_frame='/camera_color_optical_frame', robot_tf_frame='panda_link0', 
+                                                            ee_tf_frame='/panda_link8', input_image_topic=image_topic, 
+                                                            input_depth_image_topic=depth_topic, device=device)
     rospy.loginfo("Detectron2 object detection node started!")
-    rospy.spin()
+
+    try:
+        rospy.set_param('/opendr/object_catagories', {'1':'rocker arm', '2':'bolt holes', '3':'big pushrod holes', '4':'small pushrod holes', '5':'engine', '6':'bolt', '7':'pushrod', '8':'rocker arm object'})
+        obj_cat_pub = rospy.Publisher("/opendr/object_catagories", VisionInfo, queue_size=1)
+        rate = rospy.Rate(1) 
+        while not rospy.is_shutdown():
+            obj_cat_pub.publish(VisionInfo(method="object categories", database_location="/opendr/object_catagories"))
+            rate.sleep()
+    except rospy.ROSInterruptException:
+        pass
