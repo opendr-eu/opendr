@@ -227,7 +227,7 @@ void load_nanodet_model(char *model_path, char *device, int height, int width, f
 
   NanoDet *detector = new NanoDet(net, meanTensor, stdValues, torch_device, labels);
 
-  model->net = (void *)detector;
+  model->net = static_cast<void *>detector;
 }
 
 opendr_detection_target_list_t infer_nanodet(opendr_image_t *image, nanodet_model_t *model) {
