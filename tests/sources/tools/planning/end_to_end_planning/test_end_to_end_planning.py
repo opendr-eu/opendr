@@ -15,7 +15,7 @@
 import numpy as np
 import unittest
 from pathlib import Path
-from gym.spaces import Box, Discrete
+from gym.spaces import Box
 
 from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, UAVDepthPlanningEnv
 import opendr

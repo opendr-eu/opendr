@@ -7,22 +7,22 @@ class *LearnerRL*.
 Bases: `engine.learners.LearnerRL`
 
 The *EndToEndPlanningRLLearner* is an agent that can be used to train quadrotor robots equipped with a depth sensor to
-follow a provided trajectory while avoiding obstacles.
+follow a provided trajectory while avoiding obstacles. Originally published in [[1]](#safe-e2e-planning),
 
-The [EndToEndPlanningRLLearner](/src/opendr/planning/end_to_end_planning/e2e_planning_learner.py) class has the 
+The [EndToEndPlanningRLLearner](../../src/opendr/planning/end_to_end_planning/e2e_planning_learner.py) class has the 
 following public methods:
 
 #### `EndToEndPlanningRLLearner` constructor
 
 Constructor parameters:
 
-- **env**: *gym.Env*\
-  Reinforcment learning environment to train or evaluate the agent on.
+- **env**: *gym.Env, default=None*\
+  Reinforcement learning environment to train or evaluate the agent on.
 - **lr**: *float, default=3e-4*\
   Specifies the initial learning rate to be used during training.
 - **n_steps**: *int, default=1024*\
   Specifies the number of steps to run for environment per update.
-- **iters**: *int, default=5e4*\
+- **iters**: *int, default=1e5*\
   Specifies the number of steps the training should run for.
 - **batch_size**: *int, default=64*\
   Specifies the batch size during training.
@@ -35,7 +35,7 @@ Constructor parameters:
 
 #### `EndToEndPlanningRLLearner.fit`
 ```python
-EndToEndPlanningRLLearner.fit(self, env, logging_path, silent, verbose)
+EndToEndPlanningRLLearner.fit(self, env, logging_path, verbose)
 ```
 
 Train the agent on the environment.
@@ -46,8 +46,6 @@ Parameters:
   If specified use this env to train.
 - **logging_path**: *str, default=''*\
   Path for logging and checkpointing.
-- **silent**: *bool, default=False*\
-  Disable verbosity.
 - **verbose**: *bool, default=True*\
   Enable verbosity.
 
@@ -186,3 +184,7 @@ TABLE 2: Platform compatibility evaluation.
 | x86 - Ubuntu 20.04 (GPU docker)              | Pass         |
 | NVIDIA Jetson TX2                            | Pass         |
 | NVIDIA Jetson Xavier AGX                     | Pass         |
+
+#### References
+<a name="safe-e2e-planning" href="https://github.com/open-airlab/gym-depth-planning.git">[1]</a> Ugurlu, H.I.; Pham, X.H.; Kayacan, E. Sim-to-Real Deep Reinforcement Learning for Safe End-to-End Planning of Aerial Robots. Robotics 2022, 11, 109. 
+[DOI](https://doi.org/10.3390/robotics11050109). [GitHub](https://github.com/open-airlab/gym-depth-planning.git)

@@ -90,9 +90,9 @@ class LightweightOpenPoseLearner(Learner):
         self.backbone = backbone.lower()
         self.half = half_precision
 
-        supportedBackbones = ["mobilenet", "mobilenetv2", "shufflenet"]
-        if self.backbone not in supportedBackbones:
-            raise ValueError(self.backbone + " not a valid backbone. Supported backbones:" + str(supportedBackbones))
+        supported_backbones = ["mobilenet", "mobilenetv2", "shufflenet"]
+        if self.backbone not in supported_backbones:
+            raise ValueError(self.backbone + " not a valid backbone. Supported backbones:" + str(supported_backbones))
         if self.backbone == "mobilenet":
             self.use_stride = mobilenet_use_stride
         else:
@@ -126,6 +126,9 @@ class LightweightOpenPoseLearner(Learner):
 
         self.ort_session = None  # ONNX runtime inference session
         self.model_train_state = True
+
+        if self.device == "cpu":
+            torch.set_flush_denormal(True)
 
     def fit(self, dataset, val_dataset=None, logging_path='', logging_flush_secs=30,
             silent=False, verbose=True, epochs=None, use_val_subset=True, val_subset_size=250,
@@ -307,11 +310,11 @@ class LightweightOpenPoseLearner(Learner):
             batch_per_iter_idx = 0
 
             pbar = None
-            pbarDesc = ""
+            pbar_desc = ""
             batch_index = 0
             if not silent:
-                pbarDesc = "Epoch #" + str(epochId) + " progress"
-                pbar = tqdm(desc=pbarDesc, total=batches, bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
+                pbar_desc = "Epoch #" + str(epochId) + " progress"
+                pbar = tqdm(desc=pbar_desc, total=batches, bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
             for batch_data in train_loader:
                 if batch_per_iter_idx == 0:
                     optimizer.zero_grad()
@@ -396,7 +399,7 @@ class LightweightOpenPoseLearner(Learner):
                     eval_results_list.append(eval_results)
                     if not silent:
                         # Re-initialize outer tqdm
-                        pbar = tqdm(desc=pbarDesc, initial=batch_index, total=batches,
+                        pbar = tqdm(desc=pbar_desc, initial=batch_index, total=batches,
                                     bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
                     if logging:
                         file_writer.add_scalar(tag="Average Precision @IoU=0.5:0.95, area = all",
@@ -530,8 +533,8 @@ class LightweightOpenPoseLearner(Learner):
 
         pbar_eval = None
         if not silent:
-            pbarDesc = "Evaluation progress"
-            pbar_eval = tqdm(desc=pbarDesc, total=len(data), bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
+            pbar_desc = "Evaluation progress"
+            pbar_eval = tqdm(desc=pbar_desc, total=len(data), bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
         for sample in data:
             file_name = sample['file_name']
             img = sample['img']
