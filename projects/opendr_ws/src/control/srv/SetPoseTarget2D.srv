@@ -1,0 +1,5 @@
+float64[2] point
+bool slow
+---
+bool success
+string message

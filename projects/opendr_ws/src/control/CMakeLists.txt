@@ -3,7 +3,19 @@ project(control)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  message_generation
 )
+
+add_service_files(
+  FILES
+  RotateEE.srv
+  SetJointState.srv
+  SetPoseTarget.srv
+  SetPoseTarget1D.srv
+  SetPoseTarget2D.srv
+)
+
+generate_messages()
 
 ###################################
 ## catkin specific configuration ##

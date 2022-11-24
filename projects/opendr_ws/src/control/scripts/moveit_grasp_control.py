@@ -14,25 +14,36 @@
 
 
 import sys
+import copy
+import math
 import argparse
 import moveit_commander
 
+import tf
 import rospy 
+from std_srvs.srv import Trigger
+from moveit_msgs.msg import RobotTrajectory
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
+from control.srv import *
 
-class RobotControlNode(object):
+class RobotControlNode:
 
-    def __init__(self, group="panda_arm"):
+    def __init__(self, group_name="panda_arm"):
+        moveit_commander.roscpp_initialize(sys.argv)
 
-        self.group = group
+        robot = moveit_commander.RobotCommander()
+        scene = moveit_commander.PlanningSceneInterface()
+        self.group = moveit_commander.MoveGroupCommander(group_name)
+
         self.group.set_max_velocity_scaling_factor(0.2)
 
-        self.rotate_ee_service = rospy.Service("/rotate_ee", RotateEE, self.handle_rotate_ee)
-        self.stop_action_service = rospy.Service('/stop_actions', StopAction, self.handle_stop)
-        self.action_service = rospy.Service('/take_action', TakeAction, self.handle_move_to_target)
-        self.cartesian_action_service = rospy.Service('/take_cartesian_action', TakeCartesianAction, self.handle_move_to_cartesian_target)
-        self.cartesian_action_service_2d = rospy.Service('/take_2D_cartesian_action', Take2DCartesianAction, self.handle_move_to_2D_cartesian_target)
-        self.cartesian_action_service_1d = rospy.Service('/take_1D_cartesian_action', Take1DCartesianAction, self.handle_move_to_1D_cartesian_target)
+        self.rotate_ee_service = rospy.Service("/opendr/rotate_ee", RotateEE, self.handle_rotate_ee)
+        self.stop_action_service = rospy.Service('/opendr/stop_action', Trigger, self.handle_stop)
+        self.action_service = rospy.Service('/opendr/set_joint_state', SetJointState, self.handle_move_to_target)
+        self.cartesian_action_service = rospy.Service('/opendr/set_pose_target', SetPoseTarget, self.handle_move_to_cartesian_target)
+        self.cartesian_action_service_2d = rospy.Service('/opendr/set_pose_target_2D', SetPoseTarget2D, self.handle_move_to_2D_cartesian_target)
+        self.cartesian_action_service_1d = rospy.Service('/opendr/set_pose_target_1D', SetPoseTarget1D, self.handle_move_to_1D_cartesian_target)
 
     def rotate_ee(self, angle):  
         wpose = self.group.get_current_pose().pose
@@ -109,7 +120,6 @@ class RobotControlNode(object):
         waypoints = []
         wpose = self.group.get_current_pose().pose
         wpose.position.z = dist
-        print("move z to ", wpose.position.z)
         waypoints.append(copy.deepcopy(wpose))
         (plan, fraction) = self.group.compute_cartesian_path(waypoints, 0.01, 0.0)
         if slow:
@@ -120,7 +130,6 @@ class RobotControlNode(object):
 
     def stop(self):
         self.group.stop()
-        ee_pose = self.group.get_current_pose()
 
     def pause(self):
         pass 
@@ -129,28 +138,49 @@ class RobotControlNode(object):
         pass 
 
     def handle_move_to_target(self, req):
-        self.move_to_joint_target(req.q)
-        return TakeActionResponse()
+        success = True
+        try:
+            self.move_to_joint_target(req.q)
+        except:
+            success = False
+        return SetJointStateResponse(success=success)
 
     def handle_move_to_cartesian_target(self, req):
-        self.move_to_cartesian_target(req.pose)
-        return TakeCartesianActionResponse()
+        success = True
+        try:        
+            self.move_to_cartesian_target(req.pose)
+        except:
+            success = False
+        return SetPoseTargetResponse(success=success)
 
     def handle_stop(self, req):
-        self.stop()
-        return StopActionResponse()
+        success = True
+        try:
+            self.stop()
+        except:
+            success = False
+        return TriggerResponse(success=success)
 
     def handle_move_to_2D_cartesian_target(self, req):
-        self.move_to_2D_cartesian_target(req.pose, req.slow)
-        return Take2DCartesianActionResponse()
+        success = True
+        try:
+            self.move_to_2D_cartesian_target(req.point, req.slow)
+        except:
+            success = False
+        return SetPoseTarget2DResponse(success=success)
 
     def handle_move_to_1D_cartesian_target(self, req):
-        self.plan_linear_z(req.z_pose, req.slow)
-        return Take1DCartesianActionResponse()
+        success = True
+        try:
+            self.plan_linear_z(req.z, req.slow)
+        except:
+            success = False
+        return SetPoseTarget1DResponse(success=success)
 
     def handle_rotate_ee(self, req):
+        success = True
         self.rotate_ee(req.angle)
-        return RotateEEResponse()
+        return RotateEEResponse(success=success)
 
 
 if __name__ == '__main__':
@@ -160,12 +190,8 @@ if __name__ == '__main__':
 
     rospy.init_node('opendr_robot_control', anonymous=True)
     
-    moveit_commander.roscpp_initialize(sys.argv)
+    robot_arm = RobotControlNode(args.group_name)
 
-    robot = moveit_commander.RobotCommander()
-    scene = moveit_commander.PlanningSceneInterface()
-    group = moveit_commander.MoveGroupCommander(args.group_name)
-
-    robot_arm = RobotControlNode(group)
+    rospy.loginfo("MoveIt! grasp control node started!")
 
     rospy.spin()
