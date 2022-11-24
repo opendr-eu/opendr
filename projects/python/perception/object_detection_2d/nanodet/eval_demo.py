@@ -25,11 +25,11 @@ if __name__ == '__main__':
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
 
     args = parser.parse_args()
+    data_root = "/home/manos/data/coco2017"
 
-    val_dataset = ExternalDataset(args.data_root, 'coco')
+    val_dataset = ExternalDataset(data_root, 'coco')
     nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
 
-    nanodet.download("./predefined_examples", mode="pretrained")
-    nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
-    nanodet.eval(val_dataset)
-    nanodet.save("./temp")
+    nanodet.download("./predefined_examples", mode="pretrained", verbose=False)
+    nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=False)
+    nanodet.eval(val_dataset, verbose=False)

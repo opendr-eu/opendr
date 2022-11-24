@@ -26,6 +26,7 @@ import numpy as np
 from pycocotools.cocoeval import COCOeval
 from tabulate import tabulate
 
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import mkdir
 logger = logging.getLogger("NanoDet")
 
 
@@ -91,7 +92,11 @@ class CocoDetectionEvaluator:
             json_path = os.path.join(save_dir, "results{}.json".format(rank))
         else:
             json_path = os.path.join(save_dir, "results.json")
-        json.dump(results_json, open(json_path, "w"))
+
+        mkdir(rank, save_dir)
+        with open(json_path, 'w') as f:
+            json.dump(results_json, f)
+
         coco_dets = self.coco_api.loadRes(json_path)
         coco_eval = COCOeval(
             copy.deepcopy(self.coco_api), copy.deepcopy(coco_dets), "bbox"
