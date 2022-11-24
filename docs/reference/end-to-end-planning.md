@@ -7,22 +7,22 @@ class *LearnerRL*.
 Bases: `engine.learners.LearnerRL`
 
 The *EndToEndPlanningRLLearner* is an agent that can be used to train quadrotor robots equipped with a depth sensor to
-follow a provided trajectory while avoiding obstacles.
+follow a provided trajectory while avoiding obstacles. Originally published in [[1]](#safe-e2e-planning),
 
-The [EndToEndPlanningRLLearner](/src/opendr/planning/end_to_end_planning/e2e_planning_learner.py) class has the 
+The [EndToEndPlanningRLLearner](../../src/opendr/planning/end_to_end_planning/e2e_planning_learner.py) class has the 
 following public methods:
 
 #### `EndToEndPlanningRLLearner` constructor
 
 Constructor parameters:
 
-- **env**: *gym.Env*\
-  Reinforcment learning environment to train or evaluate the agent on.
+- **env**: *gym.Env, default=None*\
+  Reinforcement learning environment to train or evaluate the agent on.
 - **lr**: *float, default=3e-4*\
   Specifies the initial learning rate to be used during training.
 - **n_steps**: *int, default=1024*\
   Specifies the number of steps to run for environment per update.
-- **iters**: *int, default=5e4*\
+- **iters**: *int, default=1e5*\
   Specifies the number of steps the training should run for.
 - **batch_size**: *int, default=64*\
   Specifies the batch size during training.
@@ -35,7 +35,7 @@ Constructor parameters:
 
 #### `EndToEndPlanningRLLearner.fit`
 ```python
-EndToEndPlanningRLLearner.fit(self, env, logging_path, silent, verbose)
+EndToEndPlanningRLLearner.fit(self, env, logging_path, verbose)
 ```
 
 Train the agent on the environment.
@@ -46,8 +46,6 @@ Parameters:
   If specified use this env to train.
 - **logging_path**: *str, default=''*\
   Path for logging and checkpointing.
-- **silent**: *bool, default=False*\
-  Disable verbosity.
 - **verbose**: *bool, default=True*\
   Enable verbosity.
 
@@ -103,17 +101,20 @@ Parameters:
 
 ### Simulation environment setup
 
-The environment includes an Ardupilot controlled quadrotor in Webots simulation. 
+The environment is provided with a [world](../../src/opendr/planning/end_to_end_planning/envs/webots/worlds/train-no-dynamic-random-obstacles.wbt)
+that needs to be opened with Webots version 2021a in order to demonstrate the end-to-end planner.
+
+The environment includes an optional Ardupilot controlled quadrotor for simulating dynamics. 
 For the installation of Ardupilot instructions are available [here](https://github.com/ArduPilot/ardupilot).
 
-The required files to complete Ardupilot setup can be downloaded by running [`download_ardupilot_files.py`](src/opendr/planning/end_to_end_planning/download_ardupilot_files.py) script.
+The required files to complete Ardupilot setup can be downloaded by running [download_ardupilot_files.py](../../src/opendr/planning/end_to_end_planning/download_ardupilot_files.py) script.
 The downloaded files (zipped as `ardupilot.zip`) should be replaced under the installation of Ardupilot.
 In order to run Ardupilot in Webots 2021a, controller codes should be replaced. (For older versions of Webots, these files can be skipped.)
 The world file for the environment is provided under `/ardupilot/libraries/SITL/examples/webots/worlds/` for training and testing.
 
 Install `mavros` package for ROS communication with Ardupilot.
 Instructions are available [here](https://github.com/mavlink/mavros/blob/master/mavros/README.md#installation).
-Source installation is recomended.
+Source installation is recommended.
 
 ### Running the environment
 
@@ -128,16 +129,16 @@ The simulation time should stop at first time step and wait for Ardupilot softwa
   - `take_off` which takes off the quadrotor.
   - `range_image` which converts the depth image into array format to be input for the learner.
   
-After these steps the [AgiEnv](src/opendr/planning/end_to_end_planning/envs/agi_env.py) gym environment can send action comments to the simulated drone and receive depth image and pose information from simulation. 
+After these steps the [UAVDepthPlanningEnv](../../src/opendr/planning/end_to_end_planning/envs/UAV_depth_planning_env.py) gym environment can send action comments to the simulated drone and receive depth image and pose information from simulation. 
 
 ### Examples
 
 Training in Webots environment:
 
 ```python
-from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, AgiEnv
+from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, UAVDepthPlanningEnv
 
-env = AgiEnv()
+env = UAVDepthPlanningEnv()
 learner = EndToEndPlanningRLLearner(env, n_steps=1024)
 learner.fit(logging_path='./end_to_end_planning_tmp')
 ```
@@ -146,9 +147,9 @@ learner.fit(logging_path='./end_to_end_planning_tmp')
 Running a pretrained model:
 
 ```python
-from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, AgiEnv
+from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, UAVDepthPlanningEnv
 
-env = AgiEnv()
+env = UAVDepthPlanningEnv()
 learner = EndToEndPlanningRLLearner(env)
 learner.load('{$OPENDR_HOME}/src/opendr/planning/end_to_end_planning/pretrained_model/saved_model.zip')
 obs = env.reset()
@@ -183,3 +184,7 @@ TABLE 2: Platform compatibility evaluation.
 | x86 - Ubuntu 20.04 (GPU docker)              | Pass         |
 | NVIDIA Jetson TX2                            | Pass         |
 | NVIDIA Jetson Xavier AGX                     | Pass         |
+
+#### References
+<a name="safe-e2e-planning" href="https://github.com/open-airlab/gym-depth-planning.git">[1]</a> Ugurlu, H.I.; Pham, X.H.; Kayacan, E. Sim-to-Real Deep Reinforcement Learning for Safe End-to-End Planning of Aerial Robots. Robotics 2022, 11, 109. 
+[DOI](https://doi.org/10.3390/robotics11050109). [GitHub](https://github.com/open-airlab/gym-depth-planning.git)
