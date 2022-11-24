@@ -53,7 +53,7 @@ void initialize_detections(opendr_detection_target_list_t *detections) {
 void load_detections(opendr_detection_target_list_t *detections, opendr_detection_target_t *vectorDataPtr, int vectorSize) {
   detections->size = vectorSize;
   int sizeOfOutput = (vectorSize) * sizeof(opendr_detection_target_t);
-  detections->starting_pointer = static_cast<opendr_detection_target_t *>malloc(sizeOfOutput);
+  detections->starting_pointer = static_cast<opendr_detection_target_t *> malloc(sizeOfOutput);
   std::memcpy(detections->starting_pointer, vectorDataPtr, sizeOfOutput);
 }
 
