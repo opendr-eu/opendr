@@ -50,14 +50,15 @@ class TestFacialEmotionLearner(unittest.TestCase):
         if not path.isdir(PATH_):
             makedirs(PATH_)
         cls.temp_dir = PATH_
-        cls.dataset_path = cls.learner.download(mode='data')
-        cls.pretrained_path = cls.learner.download(mode='pretrained')
 
         cls.learner = FacialEmotionLearner(device="cpu", temp_path=cls.temp_dir,
                                            batch_size=2, max_training_epoch=1, ensemble_size=1,
                                            name_experiment='esr_9', base_path_experiment=PATH_,
                                            lr=1e-1, categorical_train=True, dimensional_finetune=True,
                                            base_path_to_dataset=cls.dataset_path, max_tuning_epoch=1)
+
+        cls.dataset_path = cls.learner.download(mode='data')
+        cls.pretrained_path = cls.learner.download(mode='pretrained')
 
     @classmethod
     def tearDownClass(cls):
