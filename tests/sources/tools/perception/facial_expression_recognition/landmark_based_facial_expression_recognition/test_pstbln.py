@@ -167,7 +167,6 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
                              "ort_session is None after optimizing the pretrained model.")
         # Cleanup
         self.pstbln_facial_expression_classifier.ort_session = None
-        # rmfile(os.path.join(self.temp_dir, self.experiment_name))
 
     def test_save_load_onnx(self):
         print(
