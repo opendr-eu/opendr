@@ -227,7 +227,7 @@ void load_nanodet_model(char *model_path, char *device, int height, int width, f
 
   NanoDet *detector = new NanoDet(net, meanTensor, stdValues, torch_device, labels);
 
-  model->net = static_cast<void *> detector;
+  model->net = static_cast<void *>(detector);
 }
 
 opendr_detection_target_list_t infer_nanodet(opendr_image_t *image, nanodet_model_t *model) {
@@ -312,9 +312,9 @@ void drawBboxes(opendr_image_t *opendr_image, nanodet_model_t *model, opendr_det
 
   cv::Mat image = (*opencv_image).clone();
   for (size_t i = 0; i < detections->size; i++) {
+    const opendr_detection_target bbox = (detections->starting_pointer)[i];
     float score = bbox.score > 1 ? 1 : bbox.score;
     if (score > model->scoreThreshold) {
-      const opendr_detection_target bbox = (detections->starting_pointer)[i];
       cv::Scalar color = cv::Scalar(colorList[bbox.name][0], colorList[bbox.name][1], colorList[bbox.name][2]);
       cv::rectangle(
         image, cv::Rect(cv::Point(bbox.left, bbox.top), cv::Point((bbox.left + bbox.width), (bbox.top + bbox.height))), color);
