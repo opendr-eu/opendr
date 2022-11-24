@@ -34,7 +34,6 @@ class ImageDatasetNode:
         Creates a ROS Node for publishing dataset images
         """
 
-        # Initialize the face detector
         self.dataset = dataset
         # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()

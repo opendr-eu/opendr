@@ -187,7 +187,7 @@ def main():
                         help="Output detections topic",
                         type=str, default="/opendr/fairmot_detection")
     parser.add_argument("-ot", "--output_tracking_id_topic",
-                        help="Output tracking ids topic with the same element cound as in output_detection_topic",
+                        help="Output tracking ids topic with the same element count as in output_detection_topic",
                         type=str, default="/opendr/fairmot_tracking_id")
     parser.add_argument("-oi", "--output_rgb_image_topic",
                         help="Output annotated image topic with a visualization of detections and their ids",
