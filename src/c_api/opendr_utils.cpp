@@ -36,6 +36,20 @@ void free_image(opendr_image_t *image) {
   }
 }
 
+void initialize_detections(opendr_detection_target_list_t *detections) {
+  std::vector<opendr_detection_target> dets;
+  opendr_detection_target_t det;
+  det.name = -1;
+  det.left = 0.0;
+  det.top = 0.0;
+  det.width = 0.0;
+  det.height = 0.0;
+  det.score = 0.0;
+  dets.push_back(det);
+
+  load_detections(&detections, dets.data(), (int)dets.size());
+}
+
 void load_detections(opendr_detection_target_list_t *detections, opendr_detection_target_t *vectorDataPtr, int vectorSize) {
   detections->size = vectorSize;
   int sizeOfOutput = (vectorSize) * sizeof(opendr_detection_target_t);

@@ -239,6 +239,8 @@ opendr_detection_target_list_t infer_nanodet(opendr_image_t *image, nanodet_mode
   if (!opencv_image) {
     std::cerr << "Cannot load image for inference." << std::endl;
 
+    // Initialize an empty detection to return.
+    initialize_detections(&detections);
     return detections;
   }
 
@@ -275,7 +277,11 @@ opendr_detection_target_list_t infer_nanodet(opendr_image_t *image, nanodet_mode
   }
 
   // Put vector detection as C pointer and size
-  load_detections(&detections, dets.data(), (int)dets.size());
+  if ((int)dets.size() > 0)
+    load_detections(&detections, dets.data(), (int)dets.size());
+  else
+    initialize_detections(&detections);
+
   return detections;
 }
 
@@ -306,27 +312,30 @@ void drawBboxes(opendr_image_t *opendr_image, nanodet_model_t *model, opendr_det
 
   cv::Mat image = (*opencv_image).clone();
   for (size_t i = 0; i < detections->size; i++) {
-    const opendr_detection_target bbox = (detections->starting_pointer)[i];
-    cv::Scalar color = cv::Scalar(colorList[bbox.name][0], colorList[bbox.name][1], colorList[bbox.name][2]);
-    cv::rectangle(
-      image, cv::Rect(cv::Point(bbox.left, bbox.top), cv::Point((bbox.left + bbox.width), (bbox.top + bbox.height))), color);
-
-    char text[256];
     float score = bbox.score > 1 ? 1 : bbox.score;
-    sprintf(text, "%s %.1f%%", (classNames)[bbox.name].c_str(), score * 100);
+    if (score > model->scoreThreshold) {
+      const opendr_detection_target bbox = (detections->starting_pointer)[i];
+      cv::Scalar color = cv::Scalar(colorList[bbox.name][0], colorList[bbox.name][1], colorList[bbox.name][2]);
+      cv::rectangle(
+        image, cv::Rect(cv::Point(bbox.left, bbox.top), cv::Point((bbox.left + bbox.width), (bbox.top + bbox.height))), color);
 
-    int baseLine = 0;
-    cv::Size labelSize = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseLine);
+      char text[256];
 
-    int x = (int)bbox.left;
-    int y = (int)bbox.top;
-    if (y < 0)
-      y = 0;
-    if (x + labelSize.width > image.cols)
-      x = image.cols - labelSize.width;
+      sprintf(text, "%s %.1f%%", (classNames)[bbox.name].c_str(), score * 100);
 
-    cv::rectangle(image, cv::Rect(cv::Point(x, y), cv::Size(labelSize.width, labelSize.height + baseLine)), color, -1);
-    cv::putText(image, text, cv::Point(x, y + labelSize.height), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255, 255, 255));
+      int baseLine = 0;
+      cv::Size labelSize = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseLine);
+
+      int x = (int)bbox.left;
+      int y = (int)bbox.top;
+      if (y < 0)
+        y = 0;
+      if (x + labelSize.width > image.cols)
+        x = image.cols - labelSize.width;
+
+      cv::rectangle(image, cv::Rect(cv::Point(x, y), cv::Size(labelSize.width, labelSize.height + baseLine)), color, -1);
+      cv::putText(image, text, cv::Point(x, y + labelSize.height), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255, 255, 255));
+    }
   }
 
   cv::imshow("image", image);
