@@ -25,7 +25,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
-
     nanodet.download("./predefined_examples", mode="pretrained")
     nanodet.load(f"./predefined_examples/nanodet_{args.model}", verbose=True)
 
@@ -33,7 +32,7 @@ if __name__ == '__main__':
     # First read an openDR image from your dataset and run the optimizer:
     img = Image.open("./predefined_examples/000000000036.jpg")
     nanodet.optimize(f"./jit/nanodet_{args.model}", img, optimization="jit")
-    img = Image.open("./predefined_examples/000000000036.jpg")
+
     boxes = nanodet.infer(input=img)
 
     draw_bounding_boxes(img.opencv(), boxes, class_names=nanodet.classes, show=True)
