@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import json
-import yaml
 import os
 from functools import partial
 from pathlib import Path
@@ -23,31 +22,33 @@ from torch import onnx
 import onnxruntime as ort
 import pytorch_lightning as pl
 import torch.nn.functional as F
-from opendr.engine import data
 from opendr.engine.target import Category
 from opendr.engine.learners import Learner
 from opendr.engine.helper.io import bump_version
 from opendr.engine.datasets import Dataset
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
+from continual.utils import temporary_parameter
 
-from urllib.request import urlretrieve
 from logging import getLogger
-from typing import Any, Iterable, Union, Dict, List
+from typing import Any, Union, Dict, List
 
 from opendr.perception.skeleton_based_action_recognition.spatio_temporal_gcn_learner import (
     SpatioTemporalGCNLearner,
 )
-from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.feeder import Feeder
-from opendr.perception.skeleton_based_action_recognition.algorithm.models.co_stgcn import CoStGcnMod
-from opendr.perception.skeleton_based_action_recognition.algorithm.models.co_agcn import CoAGcnMod
-from opendr.perception.skeleton_based_action_recognition.algorithm.models.co_str import CoSTrMod
-from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.ntu_gendata import (
-    NTU60_CLASSES,
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.feeder import (
+    Feeder,
 )
-from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_gendata import (
-    KINETICS400_CLASSES,
+from opendr.perception.skeleton_based_action_recognition.algorithm.models.co_stgcn import (
+    CoStGcnMod,
 )
+from opendr.perception.skeleton_based_action_recognition.algorithm.models.co_agcn import (
+    CoAGcnMod,
+)
+from opendr.perception.skeleton_based_action_recognition.algorithm.models.co_str import (
+    CoSTrMod,
+)
+
 
 _MODEL_NAMES = {"costgcn", "costr", "coagcn"}
 
@@ -147,11 +148,6 @@ class CoSTGCNLearner(Learner):
                 self.backbone + f"is not a valid dataset name. Supported methods: {_MODEL_NAMES}"
             )
 
-        # if self.dataset_name in ["nturgbd_cv", "nturgbd_cs"]:
-        #     self.classes_dict = NTU60_CLASSES
-        # elif self.dataset_name == "kinetics":
-        #     self.classes_dict = KINETICS400_CLASSES
-
         pl.seed_everything(self.seed)
         self.init_model()
 
@@ -192,7 +188,7 @@ class CoSTGCNLearner(Learner):
         mode="pretrained",
         verbose=True,
         url=OPENDR_SERVER_URL + "perception/skeleton_based_action_recognition/",
-        file_name="stgcn_nturgbd_cv_joint-49-29400",
+        file_name="costgcn_ntu60_xview_joint.ckpt",
     ):
 
         # Use download method from SpatioTemporalGCNLearner
@@ -263,8 +259,8 @@ class CoSTGCNLearner(Learner):
 
         Args:
             batch (torch.Tensor): batch of skeletons for a single time-step.
-                The batch should have shape (C, V, S) or (B, C, V, S) if a batch dimension (B) is supplied.
-                here, C is the number of input channels, V is the number of vertices, and S is the number of skeletons
+                The batch should have shape (C, V, S), (C, T, V, S), or (B, C, T, V, S).
+                Here, B is the batch size, C is the number of input channels, V is the number of vertices, and S is the number of skeletons
 
         Returns:
             List[target.Category]: List of output categories
@@ -274,82 +270,67 @@ class CoSTGCNLearner(Learner):
         batch = batch.to(device=self.device, dtype=torch.float)
         if len(batch.shape) == 3:
             batch = batch.unsqueeze(0)  # (C, V, S) -> (B, C, V, S)
-
-        batch = batch.unsqueeze(2)  # (B, C, V, S) -> (B, C, T, V, S)
+        if len(batch.shape) == 4:
+            batch = batch.unsqueeze(2)  # (B, C, V, S) -> (B, C, T, V, S)
 
         if self.ort_session is not None:
-            results = torch.tensor(self.ort_session.run(None, {"video": batch.cpu().numpy()})[0])
+            results = torch.tensor(self.ort_session.run(None, {"skeleton": batch.cpu().numpy()})[0])
         else:
             self.model.eval()
             results = self.model.forward_steps(batch)
         results = [
-            Category(prediction=int(r.argmax(dim=0)), confidence=F.softmax(r)) for r in results
+            Category(prediction=int(r.argmax(dim=0)), confidence=F.softmax(r, dim=-1))
+            for r in results
         ]
         return results
 
-    #     def _load_model_hparams(self, model_name: str = None) -> Dict[str, Any]:
-    #         """Load hyperparameters for an X3D model
+    def _load_model_weights(self, weights_path: Union[str, Path]):
+        """Load pretrained model weights
 
-    #         Args:
-    #             model_name (str, optional): Name of the model (one of {"xs", "s", "m", "l"}).
-    #                 If none, `self.backbon`e is used. Defaults to None.
+        Args:
+            weights_path (Union[str, Path]): Path to model weights file.
+                Type of file must be one of {".pyth", ".pth", ".onnx"}
+        """
+        weights_path = Path(weights_path)
 
-    #         Returns:
-    #             Dict[str, Any]: Dictionary with model hyperparameters
-    #         """
-    #         model_name = model_name or self.backbone
-    #         assert (
-    #             model_name in _MODEL_NAMES
-    #         ), f"Invalid model selected. Choose one of {_MODEL_NAMES}."
-    #         path = Path(__file__).parent / "hparams" / f"{model_name}.yaml"
-    #         with open(path, "r") as f:
-    #             self.model_hparams = yaml.load(f, Loader=yaml.FullLoader)
-    #         return self.model_hparams
+        assert weights_path.is_file() and weights_path.suffix in {
+            ".pyth",
+            ".pth",
+            ".onnx",
+            ".ckpt",
+        }, (
+            f"weights_path ({str(weights_path)}) should be a .pth or .onnx file."
+            "Pretrained weights can be downloaded using `self.download(...)`"
+        )
+        if weights_path.suffix == ".onnx":
+            return self._load_onnx(weights_path)
 
-    #     def _load_model_weights(self, weights_path: Union[str, Path]):
-    #         """Load pretrained model weights
+        logger.debug(f"Loading model weights from {str(weights_path)}")
 
-    #         Args:
-    #             weights_path (Union[str, Path]): Path to model weights file.
-    #                 Type of file must be one of {".pyth", ".pth", ".onnx"}
-    #         """
-    #         weights_path = Path(weights_path)
+        # Check for configuration mismatches, loading only matching weights
+        new_model_state = self.model.state_dict()
+        loaded_state_dict = torch.load(weights_path, map_location=torch.device(self.device))
+        # As found in the official pretrained X3D models
+        if "model_state" in loaded_state_dict:
+            loaded_state_dict = loaded_state_dict["model_state"]
+        # As found in PyTorch Lightning checkpoints
+        if "state_dict" in loaded_state_dict:
+            loaded_state_dict = loaded_state_dict["state_dict"]
 
-    #         assert weights_path.is_file() and weights_path.suffix in {
-    #             ".pyth",
-    #             ".pth",
-    #             ".onnx",
-    #         }, (
-    #             f"weights_path ({str(weights_path)}) should be a .pth or .onnx file."
-    #             "Pretrained weights can be downloaded using `self.download(...)`"
-    #         )
-    #         if weights_path.suffix == ".onnx":
-    #             return self._load_onnx(weights_path)
+        loaded_state_dict = self.model.map_state_dict(loaded_state_dict)
 
-    #         logger.debug(f"Loading model weights from {str(weights_path)}")
+        def size_ok(k):
+            return new_model_state[k].size() == loaded_state_dict[k].size()
 
-    #         # Check for configuration mismatches, loading only matching weights
-    #         new_model_state = self.model.state_dict()
-    #         loaded_state_dict = torch.load(
-    #             weights_path, map_location=torch.device(self.device)
-    #         )
-    #         if (
-    #             "model_state" in loaded_state_dict
-    #         ):  # As found in the official pretrained X3D models
-    #             loaded_state_dict = loaded_state_dict["model_state"]
+        to_load = {k: v for k, v in loaded_state_dict.items() if size_ok(k)}
+        self.model.load_state_dict(to_load, strict=False)
 
-    #         def size_ok(k):
-    #             return new_model_state[k].size() == loaded_state_dict[k].size()
+        names_not_loaded = set(new_model_state.keys()) - set(to_load.keys())
+        if len(names_not_loaded) > 0:
+            logger.warning(f"Some model weight could not be loaded: {names_not_loaded}")
+        self.model.to(self.device)
 
-    #         to_load = {k: v for k, v in loaded_state_dict.items() if size_ok(k)}
-    #         self.model.load_state_dict(to_load, strict=False)
-
-    #         names_not_loaded = set(new_model_state.keys()) - set(to_load.keys())
-    #         if len(names_not_loaded) > 0:
-    #             logger.warning(f"Some model weight could not be loaded: {names_not_loaded}")
-    #         self.model.to(self.device)
-
-    #         return self
+        return self
 
     def save(self, path: Union[str, Path]):
         """Save model weights and metadata to path.
@@ -360,57 +341,60 @@ class CoSTGCNLearner(Learner):
         Returns:
             self
         """
-        return None
+        assert hasattr(
+            self, "model"
+        ), "Cannot save model because no model was found. Did you forget to call `__init__`?"
 
-    #         assert hasattr(
-    #             self, "model"
-    #         ), "Cannot save model because no model was found. Did you forget to call `__init__`?"
+        root_path = Path(path)
+        root_path.mkdir(parents=True, exist_ok=True)
+        name = f"{self.backbone}"
+        ext = ".onnx" if self.ort_session else ".pth"
+        weights_path = bump_version(root_path / f"model_{name}{ext}")
+        meta_path = bump_version(root_path / f"{name}.json")
 
-    #         root_path = Path(path)
-    #         root_path.mkdir(parents=True, exist_ok=True)
-    #         name = f"x3d_{self.backbone}"
-    #         ext = ".onnx" if self.ort_session else ".pth"
-    #         weights_path = bump_version(root_path / f"model_{name}{ext}")
-    #         meta_path = bump_version(root_path / f"{name}.json")
+        logger.info(f"Saving model weights to {str(weights_path)}")
+        if self.ort_session:
+            self._save_onnx(weights_path)
+        else:
+            torch.save(self.model.state_dict(), weights_path)
 
-    #         logger.info(f"Saving model weights to {str(weights_path)}")
-    #         if self.ort_session:
-    #             self._save_onnx(weights_path)
-    #         else:
-    #             torch.save(self.model.state_dict(), weights_path)
+        logger.info(f"Saving meta-data to {str(meta_path)}")
+        meta_data = {
+            "model_paths": weights_path.name,
+            "framework": "pytorch",
+            "format": "pth",
+            "has_data": False,
+            "inference_params": {
+                "backbone": self.backbone,
+                "network_head": self.network_head,
+                "num_classes": self.num_classes,
+                "num_point": self.num_point,
+                "num_person": self.num_person,
+                "in_channels": self.in_channels,
+                "graph_type": self.graph_type,
+                "sequence_len": self.sequence_len,
+            },
+            "optimized": bool(self.ort_session),
+            "optimizer_info": {
+                "lr": self.lr,
+                "iters": self.iters,
+                "batch_size": self.batch_size,
+                "optimizer": self.optimizer,
+                "checkpoint_after_iter": self.checkpoint_after_iter,
+                "checkpoint_load_iter": self.checkpoint_load_iter,
+                "loss": self.loss,
+                "weight_decay": self.weight_decay,
+                "momentum": self.momentum,
+                "drop_last": self.drop_last,
+                "pin_memory": self.pin_memory,
+                "num_workers": self.num_workers,
+                "seed": self.seed,
+            },
+        }
+        with open(str(meta_path), "w", encoding="utf-8") as f:
+            json.dump(meta_data, f, sort_keys=True, indent=4)
 
-    #         logger.info(f"Saving meta-data to {str(meta_path)}")
-    #         meta_data = {
-    #             "model_paths": weights_path.name,
-    #             "framework": "pytorch",
-    #             "format": "pth",
-    #             "has_data": False,
-    #             "inference_params": {
-    #                 "backbone": self.backbone,
-    #                 "network_head": self.network_head,
-    #                 "threshold": self.threshold,
-    #             },
-    #             "optimized": bool(self.ort_session),
-    #             "optimizer_info": {
-    #                 "lr": self.lr,
-    #                 "iters": self.iters,
-    #                 "batch_size": self.batch_size,
-    #                 "optimizer": self.optimizer,
-    #                 "checkpoint_after_iter": self.checkpoint_after_iter,
-    #                 "checkpoint_load_iter": self.checkpoint_load_iter,
-    #                 "loss": self.loss,
-    #                 "weight_decay": self.weight_decay,
-    #                 "momentum": self.momentum,
-    #                 "drop_last": self.drop_last,
-    #                 "pin_memory": self.pin_memory,
-    #                 "num_workers": self.num_workers,
-    #                 "seed": self.seed,
-    #             },
-    #         }
-    #         with open(str(meta_path), "w", encoding="utf-8") as f:
-    #             json.dump(meta_data, f, sort_keys=True, indent=4)
-
-    #         return self
+        return self
 
     def load(self, path: Union[str, Path]):
         """Load model.
@@ -421,80 +405,54 @@ class CoSTGCNLearner(Learner):
         Returns:
             self
         """
-        return None
+        path = Path(path)
 
-    #         path = Path(path)
+        # Allow direct loading of weights, omitting the metadatafile
+        if path.suffix in {".pyth", ".pth", ".onnx", ".ckpt"}:
+            self._load_model_weights(path)
+            return self
+        if path.is_dir():
+            path = path / f"{self.backbone}.json"
+        assert (
+            path.is_file() and path.suffix == ".json"
+        ), "The provided metadata path should be a .json file"
 
-    #         # Allow direct loading of weights, omitting the metadatafile
-    #         if path.suffix in {".pyth", ".pth", ".onnx"}:
-    #             self._load_model_weights(path)
-    #             return self
-    #         if path.is_dir():
-    #             path = path / f"x3d_{self.backbone}.json"
-    #         assert (
-    #             path.is_file() and path.suffix == ".json"
-    #         ), "The provided metadata path should be a .json file"
+        logger.debug(f"Loading ContinualSTGCNLearner metadata from {str(path)}")
+        with open(path, "r") as f:
+            meta_data = json.load(f)
 
-    #         logger.debug(f"Loading X3DLearner metadata from {str(path)}")
-    #         with open(path, "r") as f:
-    #             meta_data = json.load(f)
+        inference_params = meta_data["inference_params"]
+        optimizer_info = meta_data["optimizer_info"]
 
-    #         inference_params = meta_data["inference_params"]
-    #         optimizer_info = meta_data["optimizer_info"]
+        self.__init__(
+            lr=optimizer_info["lr"],
+            iters=optimizer_info["iters"],
+            batch_size=optimizer_info["batch_size"],
+            optimizer=optimizer_info["optimizer"],
+            device=getattr(self, "device", "cpu"),
+            backbone=inference_params["backbone"],
+            network_head=inference_params["network_head"],
+            loss=optimizer_info["loss"],
+            checkpoint_after_iter=optimizer_info["checkpoint_after_iter"],
+            checkpoint_load_iter=optimizer_info["checkpoint_load_iter"],
+            weight_decay=optimizer_info["weight_decay"],
+            momentum=optimizer_info["momentum"],
+            drop_last=optimizer_info["drop_last"],
+            pin_memory=optimizer_info["pin_memory"],
+            num_workers=optimizer_info["num_workers"],
+            seed=optimizer_info["seed"],
+            num_classes=inference_params["num_classes"],
+            num_point=inference_params["num_point"],
+            num_person=inference_params["num_person"],
+            in_channels=inference_params["in_channels"],
+            graph_type=inference_params["graph_type"],
+            sequence_len=inference_params["sequence_len"],
+        )
 
-    #         self.__init__(
-    #             lr=optimizer_info["lr"],
-    #             iters=optimizer_info["iters"],
-    #             batch_size=optimizer_info["batch_size"],
-    #             optimizer=optimizer_info["optimizer"],
-    #             device=getattr(self, "device", "cpu"),
-    #             threshold=inference_params["threshold"],
-    #             backbone=inference_params["backbone"],
-    #             network_head=inference_params["network_head"],
-    #             loss=optimizer_info["loss"],
-    #             checkpoint_after_iter=optimizer_info["checkpoint_after_iter"],
-    #             checkpoint_load_iter=optimizer_info["checkpoint_load_iter"],
-    #             weight_decay=optimizer_info["weight_decay"],
-    #             momentum=optimizer_info["momentum"],
-    #             drop_last=optimizer_info["drop_last"],
-    #             pin_memory=optimizer_info["pin_memory"],
-    #             num_workers=optimizer_info["num_workers"],
-    #             seed=optimizer_info["seed"],
-    #         )
+        weights_path = path.parent / meta_data["model_paths"]
+        self._load_model_weights(weights_path)
 
-    #         weights_path = path.parent / meta_data["model_paths"]
-    #         self._load_model_weights(weights_path)
-
-    #         return self
-
-    #     @staticmethod
-    #     def download(path: Union[str, Path], model_names: Iterable[str] = _MODEL_NAMES):
-    #         """Download pretrained X3D models
-
-    #         Args:
-    #             path (Union[str, Path], optional): Directory in which to store model weights. Defaults to None.
-    #             model_names (Iterable[str], optional): iterable with model names to download.
-    #                 The iterable may contain {"xs", "s", "m", "l"}.
-    #                 Defaults to _MODEL_NAMES.
-    #         """
-    #         path = Path(path)
-    #         path.mkdir(parents=True, exist_ok=True)
-    #         for m in model_names:
-    #             assert m in _MODEL_NAMES
-    #             filename = path / f"x3d_{m}.pyth"
-    #             if filename.exists():
-    #                 logger.info(
-    #                     f"Skipping download of X3D-{m} (already exists at {str(filename)})"
-    #                 )
-    #             else:
-    #                 logger.info(f"Downloading pretrained X3D-{m} weight to {str(filename)}")
-    #                 urlretrieve(
-    #                     url=f"https://dl.fbaipublicfiles.com/pyslowfast/x3d_models/x3d_{m}.pyth",
-    #                     filename=str(filename),
-    #                 )
-    #                 assert (
-    #                     filename.is_file()
-    #                 ), f"Something wen't wrong when downloading {str(filename)}"
+        return self
 
     def reset(self):
         pass
@@ -632,70 +590,67 @@ class CoSTGCNLearner(Learner):
         Args:
             do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.
         """
-        return None
 
+        if getattr(self.model, "ort_session", None):
+            logger.info("Model is already optimized. Skipping redundant optimization")
+            return
 
-#         if getattr(self.model, "ort_session", None):
-#             logger.info("Model is already optimized. Skipping redundant optimization")
-#             return
+        path = Path(self.temp_path or os.getcwd()) / "weights" / f"{self.backbone}.onnx"
+        if not path.exists():
+            self._save_onnx(path, do_constant_folding)
+        self._load_onnx(path)
 
-#         path = (
-#             Path(self.temp_path or os.getcwd())
-#             / "weights"
-#             / f"x3d_{self.backbone}.onnx"
-#         )
-#         if not path.exists():
-#             self._save_onnx(path, do_constant_folding)
-#         self._load_onnx(path)
+    @property
+    def _example_input(self):
+        return torch.randn(self.batch_size, self.in_channels, 1, self.num_point, self.num_person).to(
+            device=self.device
+        )
 
-#     @property
-#     def _example_input(self):
-#         C = 3  # RGB
-#         T = self.model_hparams["frames_per_clip"]
-#         S = self.model_hparams["image_size"]
-#         return torch.randn(1, C, T, S, S).to(device=self.device)
+    @_example_input.setter
+    def _example_input(self):
+        raise ValueError(
+            "_example_input is set through 'num_point', 'num_person', and 'in_channels' in constructor"
+        )
 
-#     @_example_input.setter
-#     def _example_input(self):
-#         raise ValueError(
-#             "_example_input is set thorugh 'frames_per_clip' 'image_size' in `self.model_hparams`"
-#         )
+    def _save_onnx(self, path: Union[str, Path], do_constant_folding=False, verbose=False):
+        """Save model in the ONNX format
 
-#     def _save_onnx(
-#         self, path: Union[str, Path], do_constant_folding=False, verbose=False
-#     ):
-#         """Save model in the ONNX format
+        Args:
+            path (Union[str, Path]): Directory in which to save ONNX model
+            do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.
+        """
+        path.parent.mkdir(exist_ok=True, parents=True)
 
-#         Args:
-#             path (Union[str, Path]): Directory in which to save ONNX model
-#             do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.
-#         """
-#         path.parent.mkdir(exist_ok=True, parents=True)
+        self.model.eval()
+        self.model.to(device=self.device)
+        self.model.forward_steps(self._example_input.repeat(1, 1, self.sequence_len - 1, 1, 1))
 
-#         self.model.eval()
-#         self.model.to(device=self.device)
+        logger.info(f"Saving model to ONNX format at {str(path)}")
+        with temporary_parameter(self.model, "forward", self.model.forward_steps):
+            onnx.export(
+                self.model,
+                # self._example_input.repeat(1, 1, self.sequence_len, 1, 1),
+                self._example_input,
+                path,
+                input_names=["skeleton"],
+                output_names=["classes"],
+                dynamic_axes={
+                    "skeleton": {0: "batch_size"},
+                    "classes": {0: "batch_size"},
+                },
+                do_constant_folding=do_constant_folding,
+                verbose=verbose,
+                opset_version=11,
+            )
 
-#         logger.info(f"Saving model to ONNX format at {str(path)}")
-#         onnx.export(
-#             self.model,
-#             self._example_input,
-#             path,
-#             input_names=["video"],
-#             output_names=["classes"],
-#             dynamic_axes={"video": {0: "batch_size"}, "classes": {0: "batch_size"}},
-#             do_constant_folding=do_constant_folding,
-#             verbose=verbose,
-#             opset_version=11,
-#         )
+    def _load_onnx(self, path: Union[str, Path]):
+        """Loads ONNX model into an onnxruntime inference session.
 
-#     def _load_onnx(self, path: Union[str, Path]):
-#         """Loads ONNX model into an onnxruntime inference session.
-
-#         Args:
-#             path (Union[str, Path]): Path to ONNX model
-#         """
-#         logger.info(f"Loading ONNX runtime inference session from {str(path)}")
-#         self.ort_session = ort.InferenceSession(str(path))
+        Args:
+            path (Union[str, Path]): Path to ONNX model
+        """
+        logger.info(f"Loading ONNX runtime inference session from {str(path)}")
+        self.ort_session = ort.InferenceSession(str(path))
 
 
 def _experiment_logger():

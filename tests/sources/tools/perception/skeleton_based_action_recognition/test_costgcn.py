@@ -48,14 +48,13 @@ class TestCoSTGCNLearner(unittest.TestCase):
             num_workers=0,
         )
 
-        cls.experiment_name = "stgcn_nturgbd_cv_joint"
-
         # Download all required files for testing
-        # cls.Pretrained_MODEL_PATH_J = cls.learner.download(
-        #     path=os.path.join(cls.temp_dir, "pretrained_models", "stgcn"),
-        #     method_name="stgcn",
+        cls.pretrained_weights_path = cls.temp_dir / "weights" / "costgcn_ntu60_xview_joint.ckpt"
+        # cls.pretrained_weights_path = cls.learner.download(
+        #     path=os.path.join(cls.temp_dir, "pretrained_models", "costgcn"),
+        #     method_name="costgcn",
         #     mode="pretrained",
-        #     file_name="stgcn_nturgbd_cv_joint-49-29400",
+        #     file_name="stgcn_ntu60_xview_joint.ckpt",
         # )
         cls.Train_DATASET_PATH = cls.learner.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data")
@@ -71,7 +70,7 @@ class TestCoSTGCNLearner(unittest.TestCase):
     #     except OSError as e:
     #         logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
 
-    def test_fit(self):
+    def xtest_fit(self):
         print(
             "\n\n**********************************\nTest CoSTGCNLearner fit \n*"
             "*********************************"
@@ -108,7 +107,7 @@ class TestCoSTGCNLearner(unittest.TestCase):
         # Check that parameters changed
         assert not torch.equal(m, list(self.learner.model.parameters())[0])
 
-    def test_eval(self):
+    def xtest_eval(self):
         test_ds = self.learner._prepare_dataset(
             ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD"),
             data_filename="val_joints.npy",
@@ -118,13 +117,20 @@ class TestCoSTGCNLearner(unittest.TestCase):
             verbose=False,
         )
 
-        # self.learner.load(self.temp_dir / "weights" / "stgcnmod_ntu60_xview_joint.pyth")
+        self.learner.model.load_state_dict(
+            self.learner.model.map_state_dict(
+                torch.load(self.pretrained_weights_path, map_location=torch.device("cpu"))[
+                    "state_dict"
+                ]
+            ),
+            strict=True,
+        )
         results = self.learner.eval(test_ds, steps=2)
 
-        # assert results["accuracy"] > 0.2
-        # assert results["loss"] < 20
+        assert results["accuracy"] > 0.5
+        assert results["loss"] < 1
 
-    def test_infer(self):
+    def xtest_infer(self):
         ds = self.learner._prepare_dataset(
             ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD"),
             data_filename="val_joints.npy",
@@ -137,42 +143,49 @@ class TestCoSTGCNLearner(unittest.TestCase):
         batch = next(iter(dl))[0]
         frame = batch[:, :, -1]  # Select a single frame
 
-        # self.learner.load(self.temp_dir / "weights" / "stgcnmod_ntu60_xview_joint.pyth")
         self.learner.model.clean_state()
-        self.learner.model.forward_steps(batch)  # Init model state
+        self.learner.model.forward_steps(batch[:, :, :-1])  # Init model state
 
         # Input is Tensor
         results1 = self.learner.infer(frame)
         # Results is a batch with each item summing to 1.0
         assert all([torch.isclose(torch.sum(r.confidence), torch.tensor(1.0)) for r in results1])
 
-        # Input is Image
-        # results2 = self.learner.infer(
-        #     [Image(batch[0], dtype=np.float32), Image(batch[1], dtype=np.float32)]
-        # )
-        # assert torch.allclose(results1[0].confidence, results2[0].confidence, atol=1e-4)
+    def test_optimize(self):
+        ds = self.learner._prepare_dataset(
+            ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD"),
+            data_filename="val_joints.npy",
+            labels_filename="val_labels.pkl",
+            skeleton_data_type="joint",
+            phase="val",
+            verbose=False,
+        )
+        dl = torch.utils.data.DataLoader(ds, batch_size=2, num_workers=0)
+        it = iter(dl)
+        batch = next(it)[0]
 
-    # def test_optimize(self):
-    #     self.learner.ort_session = None
-    #     self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
-    #     self.learner.optimize()
+        self.learner.ort_session = None
+        self.learner.load(self.temp_dir / "weights" / f"{_BACKBONE}_ntu60_xview_joint.ckpt")
 
-    #     assert self.learner.ort_session is not None
+        target = self.learner.infer(batch)
 
-    #     # Clean up
-    #     self.learner.ort_session = None
+        self.learner.optimize()
 
-    # def test_save_and_load(self):
-    #     assert self.learner.model is not None
-    #     self.learner.save(self.temp_dir)
-    #     # Make changes to check subsequent load
-    #     self.learner.model = None
-    #     self.learner.batch_size = 42
-    #     self.learner.load(self.temp_dir)
-    #     self.assertIsNotNone(
-    #         self.learner.model, "model is None after loading pth model."
-    #     )
-    #     assert self.learner.batch_size == 2
+        assert self.learner.ort_session is not None
+        result = self.learner.infer(batch)
+
+        # Clean up
+        self.learner.ort_session = None
+
+    def xtest_save_and_load(self):
+        assert self.learner.model is not None
+        self.learner.save(self.temp_dir)
+        # Make changes to check subsequent load
+        self.learner.model = None
+        self.learner.batch_size = 42
+        self.learner.load(self.temp_dir)
+        self.assertIsNotNone(self.learner.model, "model is None after loading pth model.")
+        assert self.learner.batch_size == 2
 
 
 if __name__ == "__main__":
