@@ -69,7 +69,7 @@ void free_nanodet_model(nanodet_model_t *model);
 
 /**
  * draw the bounding boxes from detections in the given image
- * @param opendr_image image that has been used for inference and wanted to be printed
+ * @param opendr_image image that has been used for inference
  * @param model nanodet model that has been used for inference
  * @param detections output of the inference
  */
