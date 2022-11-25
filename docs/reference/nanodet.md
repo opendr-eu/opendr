@@ -337,7 +337,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model that config file will be used", type=str, default='m')
-    parser.add_argument("--optimization", help="Optimization framework that will be used", type=str, default='onnx')
+    parser.add_argument("--optimization", help="Optimization framework to be used", type=str, default='onnx', choices=['jit', 'onnx'])
     parser.add_argument("--path", help="Path to the dummy image that will be used for optimization and inference", type=str)
     args = parser.parse_args()
 
