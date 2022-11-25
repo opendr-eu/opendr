@@ -298,7 +298,6 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
   This example shows how to perform inference on an image and draw the resulting bounding boxes using a nanodet model that is pretrained on the COCO dataset.
   In this example first is downloaded a pre-trained model as in training example and then an image to be inference.
-  With the *path* parameter you can choose an image file to be used as inference.
   
   ```python
   import argparse
