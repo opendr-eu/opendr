@@ -54,10 +54,10 @@ typedef struct nanodet_model nanodet_model_t;
 void load_nanodet_model(char *model_path, char *device, int height, int width, float scoreThreshold, nanodet_model_t *model);
 
 /**
- * This function perform inference using a nanodet object detection model and an input image
+ * This function performs inference using a nanodet object detection model and an input image
  * @param model nanodet model to be used for inference
  * @param image OpenDR image
- * @return vecter of OpenDR bounding box target containing the bounding boxes of the detected objectes
+ * @return vecter of OpenDR bounding box target containing the bounding boxes of the detected objects
  */
 opendr_detection_target_list_t infer_nanodet(opendr_image_t *image, nanodet_model_t *model);
 
