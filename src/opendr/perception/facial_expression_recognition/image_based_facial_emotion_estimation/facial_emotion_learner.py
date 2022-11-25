@@ -735,6 +735,7 @@ class FacialEmotionLearner(Learner):
                 urlretrieve(file_url, zip_path)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(data_path)
+                    print(os.listdir(data_path))
                 os.remove(zip_path)
             else:
                 print("data files already exists.")
@@ -754,6 +755,7 @@ class FacialEmotionLearner(Learner):
                 urlretrieve(file_url, zip_path)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(model_path)
+                    print(os.listdir(model_path))
                 os.remove(zip_path)
             else:
                 print("pretrained files already exists.")
