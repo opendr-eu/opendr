@@ -1,18 +1,18 @@
 import torch
-from algorithm.Rotate_and_Render.models.networks.base_network import BaseNetwork
-from algorithm.Rotate_and_Render.models.networks import loss
-from algorithm.Rotate_and_Render.models.networks import discriminator
-from algorithm.Rotate_and_Render.models.networks import generator
-from algorithm.Rotate_and_Render.models.networks import encoder
-from algorithm.Rotate_and_Render.models.networks.render import Render
-import algorithm.Rotate_and_Render.util.util as util
+from .base_network import BaseNetwork
+from . import loss
+from . import discriminator
+from . import generator
+from . import encoder
+from .render import Render
+from ...util.util import find_class_in_module
 __all__ = ['loss', 'discriminator', 'generator', 'encoder', 'Render']
 
 
 def find_network_using_name(target_network_name, filename):
     target_class_name = target_network_name + filename
     module_name = 'algorithm.Rotate_and_Render.models.networks.' + filename
-    network = util.find_class_in_module(target_class_name, module_name)
+    network = find_class_in_module(target_class_name, module_name)
 
     assert issubclass(network, BaseNetwork), \
         "Class %s should be a subclass of BaseNetwork" % network

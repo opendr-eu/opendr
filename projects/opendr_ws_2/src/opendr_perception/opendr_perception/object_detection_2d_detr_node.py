@@ -13,24 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import argparse
 import torch
+import numpy as np
 
-import rospy
-from vision_msgs.msg import Detection2DArray
+import rclpy
+from rclpy.node import Node
+
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_bridge import ROSBridge
+from vision_msgs.msg import Detection2DArray
+from opendr_ros2_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import DetrLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
-class ObjectDetectionDetrNode:
+class ObjectDetectionDetrNode(Node):
     def __init__(
         self,
-        input_rgb_image_topic="/usb_cam/image_raw",
+        input_rgb_image_topic="image_raw",
         output_rgb_image_topic="/opendr/image_objects_annotated",
         detections_topic="/opendr/objects",
         device="cuda",
@@ -48,19 +50,21 @@ class ObjectDetectionDetrNode:
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
-        self.input_rgb_image_topic = input_rgb_image_topic
+        super().__init__("object_detection_detr_node")
 
         if output_rgb_image_topic is not None:
-            self.image_publisher = rospy.Publisher(output_rgb_image_topic, ROS_Image, queue_size=1)
+            self.image_publisher = self.create_publisher(ROS_Image, output_rgb_image_topic, 1)
         else:
             self.image_publisher = None
 
         if detections_topic is not None:
-            self.object_publisher = rospy.Publisher(detections_topic, Detection2DArray, queue_size=1)
+            self.detection_publisher = self.create_publisher(Detection2DArray, detections_topic, 1)
         else:
-            self.object_publisher = None
+            self.detection_publisher = None
 
-        self.bridge = ROSBridge()
+        self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
+
+        self.bridge = ROS2Bridge()
 
         self.class_names = [
             "N/A",
@@ -157,55 +161,61 @@ class ObjectDetectionDetrNode:
         ]
 
         # Initialize the detection estimation
-        self.detr_learner = DetrLearner(device=device)
-        self.detr_learner.download(path=".", verbose=True)
+        self.object_detector = DetrLearner(device=device)
+        self.object_detector.download(path=".", verbose=True)
 
-    def listen(self):
-        """
-        Start the node and begin processing input data.
-        """
-        rospy.init_node('object_detection_detr_node', anonymous=True)
-        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
-        rospy.loginfo("Object detection DETR node started.")
-        rospy.spin()
+        self.get_logger().info("Object Detection 2D DETR node initialized.")
 
     def callback(self, data):
         """
-        Callback that processes the input data and publishes to the corresponding topics.
+        Callback that process the input data and publishes to the corresponding topics
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding="bgr8")
 
-        # Run object detection
-        boxes = self.detr_learner.infer(image)
+        # Run detection estimation
+        boxes = self.object_detector.infer(image)
 
         # Get an OpenCV image back
-        image = image.opencv()
+        image = np.float32(image.opencv())
 
-        # Publish detections in ROS message
-        ros_boxes = self.bridge.to_ros_bounding_box_list(boxes)  # Convert to ROS bounding_box_list
-        if self.object_publisher is not None:
-            self.object_publisher.publish(ros_boxes)
+        #  Annotate image and publish results:
+        if self.detection_publisher is not None:
+            ros_detection = self.bridge.to_ros_bounding_box_list(boxes)
+            self.detection_publisher.publish(ros_detection)
+            # We get can the data back using self.bridge.from_ros_bounding_box_list(ros_detection)
+            # e.g., opendr_detection = self.bridge.from_ros_bounding_box_list(ros_detection)
 
         if self.image_publisher is not None:
-            # Annotate image with object detection boxes
             image = draw_bounding_boxes(image, boxes, class_names=self.class_names)
-            # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
-            self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
+            message = self.bridge.to_ros_image(Image(image), encoding="bgr8")
+            self.image_publisher.publish(message)
 
 
-def main():
+def main(args=None):
+    rclpy.init(args=args)
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
-                        type=str, default="/usb_cam/image_raw")
-    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
-                        type=str, default="/opendr/image_objects_annotated")
-    parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
-                        type=str, default="/opendr/objects")
-    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
-                        type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image", type=str, default="image_raw")
+    parser.add_argument(
+        "-o",
+        "--output_rgb_image_topic",
+        help="Topic name for output annotated rgb image",
+        type=str,
+        default="/opendr/image_objects_annotated",
+    )
+    parser.add_argument(
+        "-d", "--detections_topic", help="Topic name for detection messages", type=str, default="/opendr/objects"
+    )
+    parser.add_argument(
+        "--device",
+        help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
+        type=str,
+        default="cuda",
+        choices=["cuda", "cpu"],
+    )
     args = parser.parse_args()
 
     try:
@@ -221,12 +231,21 @@ def main():
         print("Using CPU.")
         device = "cpu"
 
-    object_detection_detr_node = ObjectDetectionDetrNode(device=device,
-                                                         input_rgb_image_topic=args.input_rgb_image_topic,
-                                                         output_rgb_image_topic=args.output_rgb_image_topic,
-                                                         detections_topic=args.detections_topic)
-    object_detection_detr_node.listen()
+    object_detection_detr_node = ObjectDetectionDetrNode(
+        device=device,
+        input_rgb_image_topic=args.input_rgb_image_topic,
+        output_rgb_image_topic=args.output_rgb_image_topic,
+        detections_topic=args.detections_topic,
+    )
+
+    rclpy.spin(object_detection_detr_node)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    object_detection_detr_node.destroy_node()
+    rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

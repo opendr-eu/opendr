@@ -4,8 +4,8 @@ import math
 import os
 from ..util import util
 import torch
-from algorithm.Rotate_and_Render import models
-from algorithm.Rotate_and_Render import data
+from .. import models
+from .. import data
 import pickle
 __all__ = ['math']
 
