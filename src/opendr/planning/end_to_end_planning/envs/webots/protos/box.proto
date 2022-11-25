@@ -1,16 +1,13 @@
-#VRML_SIM R2021a utf8
+#VRML_SIM R2022b utf8
 # license: Copyright Cyberbotics Ltd. Licensed for use only with Webots.
 # license url: https://cyberbotics.com/webots_assets_license
-# tags: static
 # This bounding object with a pipe shape is formed by a group of boxes.
-
 PROTO box [
-  field SFFloat    height          0.2
-         # Defines the height of the pipe.
-  field SFFloat    radius          0.5       # Defines the radius of the pipe.
-  field SFFloat    thickness       0.05     # Defines the thickness of the pipe.
+  field SFFloat    height          0.2    # Defines the height of the pipe.
+  field SFFloat    radius          0.5    # Defines the radius of the pipe.
+  field SFFloat    thickness       0.05   # Defines the thickness of the pipe.
   field SFInt32    subdivision     8      # Defines the number of polygons used to represent the pipe and so its resolution.
-  field SFFloat    accuracy        0.0001  # Defines how much boxes position can differ on y axis: a 0 value represents an error-free model but it will slow down the simulation.
+  field SFFloat    accuracy        0.0001 # Defines how much boxes position can differ on y axis: a 0 value represents an error-free model but it will slow down the simulation.
 ]
 {
   %{
@@ -73,7 +70,7 @@ PROTO box [
           local az = boxRadius * math.cos(gamma)
           local angle = gamma + 0.5 * math.pi
           -- add small offset to boxes y translation to reduce constraints
-          -- on the top and bottm face due to co-planarity
+          -- on the top and bottom face due to co-planarity
           local offset = wbrandom.real(-1.0, 1.0) * fields.accuracy.value;
         }%
         Transform {

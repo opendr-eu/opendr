@@ -329,12 +329,12 @@ class UAVDepthPlanningEnv(gym.Env):
 
     def gps_callback(self, data):  # for no dynamics
         self.current_position.x = -data.point.x
-        self.current_position.y = data.point.y
+        self.current_position.y = -data.point.y
         self.current_position.z = data.point.z
 
     def imu_callback(self, data):  # for no dynamics
         self.current_orientation = data.orientation
-        self.current_yaw = euler_from_quaternion(data.orientation)["roll"]
+        self.current_yaw = euler_from_quaternion(data.orientation)["yaw"]
 
     def go_position(self, x, y, z, yaw=0, check_collision=False):
         if self.no_dynamics:
@@ -344,10 +344,10 @@ class UAVDepthPlanningEnv(gym.Env):
             goal.header.stamp = rospy.Time.now()
 
             goal.pose.position.x = -x
-            goal.pose.position.y = y
+            goal.pose.position.y = -y
             goal.pose.position.z = z
 
-            goal.pose.orientation = euler_to_quaternion(0, 0, yaw)
+            goal.pose.orientation = euler_to_quaternion(np.pi/2, 0, -np.pi/2+yaw)
             try:
                 self.ros_srv_field_set_v3(self.robot_translation_field, 0, goal.pose.position)
                 self.ros_srv_field_set_rotation(self.robot_rotation_field, 0, goal.pose.orientation)
