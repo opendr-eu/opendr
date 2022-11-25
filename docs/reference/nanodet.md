@@ -118,8 +118,7 @@ NanodetLearner.optimize(self, export_path, initial_img=None, verbose=True, optim
 This method is used to perform Jit or Onnx optimizations and save a trained model with its metadata.
 If a model is not present in the location specified by "export_path", the optimizer will save it there.
 If a model is already present, it will load it instead.
-Inside this folder, the model is saved as *"nanodet_{model_name}.pth"* for Jit models or *"nanodet_{model_name}.onnx"* for ONNX 
-and a metadata file *"nanodet_{model_name}.json"*.
+Inside this folder, the model is saved as *"nanodet_{model_name}.pth"* for Jit models or *"nanodet_{model_name}.onnx"* for ONNX and a metadata file *"nanodet_{model_name}.json"*.
 
 Note: Onnx optimization, optimize and saves only the actual model inference. This is important if the user wants to use
 the model for C API. It will be needed to make a preproccess and postproccess that will work exactly the same as our python
