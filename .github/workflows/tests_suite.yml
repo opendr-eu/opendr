@@ -146,35 +146,38 @@ jobs:
         export OPENDR_HOME=$PWD
         export DISABLE_BCOLZ_AVX2=true
         export OPENDR_DEVICE=cpu
-
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev python3-dev
         python3 -m venv venv
         source venv/bin/activate
-
         python3 -m pip install -U pip
         python3 -m pip install wheel
 
-        while read f; do
-          package=$(sed "s/_/-/g" <<< $f)
-          package=(${package//// })
-          if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
+        # install all tools one at a time
+        #while read f; do
+        #  package=$(sed "s/_/-/g" <<< $f)
+        #  package=(${package//// })
+        #  if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
+        #
+        #  if [ "$package" != "opendr" ]; then
+        #    python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+        #  fi
+        #done < packages.txt
 
-          if [ "$package" != "opendr" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
-          fi
-        done < packages.txt
+        #if [ "$package" != "mobile-manipulation" ] || [ "$package" != "simple-demo-grasp" ]; then
+        #  sudo sh -c 'echo deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main > /etc/apt/sources.list.d/ros-latest.list'
+        #  curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+        #  export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+        #  export ROS_DISTRO=noetic
+        #  # TODO: this is overkill, should split them
+        #  make install_compilation_dependencies
+        #  make install_runtime_dependencies
+        #  source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+        #fi
 
-        if [ "$package" != "mobile-manipulation" ] || [ "$package" != "simple-demo-grasp" ]; then
-          sudo sh -c 'echo deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main > /etc/apt/sources.list.d/ros-latest.list'
-          curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
-          export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
-          export ROS_DISTRO=noetic
-          # TODO: this is overkill, should split them
-          make install_compilation_dependencies
-          make install_runtime_dependencies
-          source tests/sources/tools/control/mobile_manipulation/run_ros.sh
-        fi
+        python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
+        python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-?.?.?.tar.gz
 
+        # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-wheel-separate:
     needs: build-wheel
@@ -235,15 +238,12 @@ jobs:
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
         python3 -m venv venv
         source venv/bin/activate
-
         python3 -m pip install -U pip
         python3 -m pip install wheel
-
         # get the name of the wheel to install based on the test being run
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
         package=(${package//// })
         if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
-
         # all packages require the engine
         python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
         # install specific package

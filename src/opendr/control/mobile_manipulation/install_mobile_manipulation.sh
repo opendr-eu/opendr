@@ -24,7 +24,7 @@ sudo apt-get update && sudo apt-get install -y \
   ros-${ROS_DISTRO}-pr2-mechanism-msgs \
   ros-${ROS_DISTRO}-pr2-description \
   ros-${ROS_DISTRO}-gazebo-msgs \
-  python3-rosdep python3-catkin-tools || exit;
+  python3-rosdep || exit;
 source /opt/ros/${ROS_DISTRO}/setup.bash
 
 ## packages to install from source
