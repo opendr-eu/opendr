@@ -1,7 +1,5 @@
 #!/bin/bash
 
-OPENDR_DEVICE="gpu"
-
 if [ ! -f /usr/local/lib/libtorchvision.so ]; then
   CUDA_VERSION="116"
   TORCH_VERSION="1.13.0"
