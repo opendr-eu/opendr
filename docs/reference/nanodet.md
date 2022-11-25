@@ -323,11 +323,9 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
   
 * **Optimization framework with Inference and result drawing example on a test image.**
 
-  This example shows how to perform optimization on a pretrained model and then inference and draw the resulting
-  bounding boxes using a nanodet model that is pretrained on the COCO dataset. In this example first is loaded a
-  pretrained model and then an opendr Image is used to perform optimization, in this exampel we use onnx optimization but
-  with `--optimization` can be used one of `[jit, onnx]`.
-  With the *path* parameter you can choose an image file to be used as dummy input in optimization and after in inference.
+  This example shows how to perform optimization on a pretrained model, inference and draw the resulting bounding boxes using a nanodet model that is pretrained on the COCO dataset.
+  In this example first a pretrained model is loaded and then an image is used to perform the optimization, in this example we use onnx optimization but Jit can also be used by passing `--optimization=jit`.
+  With the *path* parameter you can define the image file to be used as dummy input for the optimization and inference.
   The optimized model will be saves in `./optimization_models` folder
   ```python
   import argparse
