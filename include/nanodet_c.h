@@ -49,7 +49,7 @@ typedef struct nanodet_model nanodet_model_t;
  * @param height the height of model input
  * @param width the width of model input
  * @param scoreThreshold a threshold for score to be infered
- * @param model the loaded model
+ * @param model the model to be loaded
  */
 void load_nanodet_model(char *model_path, char *device, int height, int width, float scoreThreshold, nanodet_model_t *model);
 
