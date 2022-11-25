@@ -298,7 +298,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
   This example shows how to perform inference on an image and draw the resulting bounding boxes using a nanodet model that is pretrained on the COCO dataset.
   In this example first is downloaded a pre-trained model as in training example and then an image to be inference.
-  
+  With the *path* parameter you can define the image file to be used in inference.
   ```python
   import argparse
   from opendr.perception.object_detection_2d import NanodetLearner
@@ -309,13 +309,15 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model that config file will be used", type=str, default='m')
+    parser.add_argument("--path", help="Path to the image that will be used for inference", type=str, 
+                        default="./predefined_examples/000000000036.jpg")
     args = parser.parse_args()
 
     nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
     nanodet.download("./predefined_examples", mode="pretrained")
     nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
     nanodet.download("./predefined_examples", mode="images")
-    img = Image.open("./predefined_examples/000000000036.jpg")
+    img = Image.open(args.path)
     boxes = nanodet.infer(input=img)
 
     draw_bounding_boxes(img.opencv(), boxes, class_names=nanodet.classes, show=True)
@@ -338,7 +340,8 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model that config file will be used", type=str, default='m')
     parser.add_argument("--optimization", help="Optimization framework to be used", type=str, default='onnx', choices=['jit', 'onnx'])
-    parser.add_argument("--path", help="Path to the dummy image that will be used for optimization and inference", type=str)
+    parser.add_argument("--path", help="Path to the dummy image that will be used for optimization and inference", type=str, 
+                        default="./predefined_examples/000000000036.jpg")
     args = parser.parse_args()
 
     nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
@@ -346,7 +349,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
     # First read an openDR image from your dataset and run the optimizer:
     img = Image.open(args.path)
-    nanodet.optimize("./optimization_models", img, optimization=args.optimization)
+    nanodet.optimize("./optimization_models/{}/nanodet_{}/".format(args.optimization, args.model), img, optimization=args.optimization)
 
     boxes = nanodet.infer(input=img)
 
