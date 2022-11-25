@@ -44,7 +44,7 @@ void free_image(opendr_image_t *image);
 void initialize_detections(opendr_detection_target_list_t *detections);
 
 /**
- * Loads an OpenDR detection target list to be used in C api
+ * Loads an OpenDR detection target list to be used in C API
  * @param detections OpenDR detection_target_list structure to be loaded
  * @param vectorDataPtr the pointer of the first OpenDR detection target in a vector
  * @param vectorSize the size of the vector
