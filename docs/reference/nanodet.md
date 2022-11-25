@@ -76,7 +76,8 @@ Parameters:
 
 #### `NanodetLearner.eval`
 ```python
-NanodetLearner.eval(self, dataset, verbose, local_rank)
+NanodetLearner.eval(self, dataset, verbose, 
+)
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
@@ -89,7 +90,7 @@ Parameters:
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity and logger.
 - **local_rank** : *int, default=1*\
-  Is needed if evaluation to multiple machines is wanted.
+ Needed if evaluating on multiple machines.
 
 #### `NanodetLearner.infer`
 ```python
