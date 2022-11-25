@@ -280,12 +280,8 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
     args = parser.parse_args()
 
-    if args.dataset == 'voc':
-        dataset = ExternalDataset(args.data_root, 'voc')
-        val_dataset = ExternalDataset(args.data_root, 'voc')
-    elif args.dataset == 'coco':
-        dataset = ExternalDataset(args.data_root, 'coco')
-        val_dataset = ExternalDataset(args.data_root, 'coco')
+    dataset = ExternalDataset(args.data_root, args.dataset)
+    val_dataset = ExternalDataset(args.data_root, args.dataset)
 
     nanodet = NanodetLearner(model_to_use=args.model, iters=args.n_epochs, lr=args.lr, batch_size=args.batch_size,
                              checkpoint_after_iter=args.checkpoint_freq, checkpoint_load_iter=args.resume_from,
