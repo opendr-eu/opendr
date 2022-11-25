@@ -23,6 +23,6 @@ provided by OpenDR. Specifically the following examples are provided:
    It is recommended to additionally install the onnxsim dependencies with `pip install onnxsim` for smaller and better optimized models.
 5. export_torchscript: Export the pretrained model into the Jit optimization format. Setting the config file for the specific
    model is done with `--model "wanted model name"`. Setting `--device cpu` performs the optimization inference on CPU. 
-   Note! If you're planning on using c api, Jit optimization is preferred, so it can be used for the same postprocessing of the output 
+   Note: if you're planning on using C api, Jit optimization is preferred, so it can be used for the same postprocessing of the output 
    and have same exact detection as the python api.
 6. inference_tutorial: A simple tutorial in jupyter for easier use of Nanodet in inference.
