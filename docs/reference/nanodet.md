@@ -72,7 +72,7 @@ Parameters:
 - **seed** : *int, default=123*\
   Seed for repeatability.
 - **local_rank** : *int, default=1*\
-  Is needed if train to multiple machines is wanted.
+  Needed if training on multiple machines.
 
 #### `NanodetLearner.eval`
 ```python
