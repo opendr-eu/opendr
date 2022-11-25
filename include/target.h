@@ -43,7 +43,7 @@ struct opendr_detection_target {
 typedef struct opendr_detection_target opendr_detection_target_t;
 
 /***
- * OpenDR data type for representing a structure of detections targets
+ * OpenDR data type for representing a structure of detection targets
  */
 struct opendr_detection_target_list {
   opendr_detection_target_t *starting_pointer;
