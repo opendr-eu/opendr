@@ -145,7 +145,7 @@ This method is used to save a trained model with its metadata.
 Provided with the path, it creates the "path" directory, if it does not already exist.
 Inside this folder, the model is saved as *"nanodet_{model_name}.pth"* and a metadata file *"nanodet_{model_name}.json"*.
 If the directory already exists, the *"nanodet_{model_name}.pth"* and *"nanodet_{model_name}.json"* files are overwritten.
-If optimization is performed the optimized model is saved instead.
+If optimization is performed, the optimized model is saved instead.
 
 Parameters:
 
