@@ -161,7 +161,7 @@ NanodetLearner.load(self, path, verbose)
 
 This method is used to load a previously saved model from its saved folder.
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
-If optimization is performed the optimized model is loaded instead.
+If optimization is performed, the optimized model is loaded instead.
 
 Parameters:
 
