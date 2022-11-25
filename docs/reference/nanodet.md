@@ -326,7 +326,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
   This example shows how to perform optimization on a pretrained model, inference and draw the resulting bounding boxes using a nanodet model that is pretrained on the COCO dataset.
   In this example first a pretrained model is loaded and then an image is used to perform the optimization, in this example we use onnx optimization but Jit can also be used by passing `--optimization=jit`.
   With the *path* parameter you can define the image file to be used as dummy input for the optimization and inference.
-  The optimized model will be saves in `./optimization_models` folder
+  The optimized model will be saved in the `./optimization_models` folder
   ```python
   import argparse
   from opendr.perception.object_detection_2d import NanodetLearner
