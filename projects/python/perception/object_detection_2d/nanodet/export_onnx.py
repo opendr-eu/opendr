@@ -13,9 +13,8 @@
 # limitations under the License.
 
 import argparse
-from opendr.perception.object_detection_2d import NanodetLearner
 from opendr.engine.data import Image
-from opendr.perception.object_detection_2d import draw_bounding_boxes
+from opendr.perception.object_detection_2d import NanodetLearner, draw_bounding_boxes
 
 
 if __name__ == '__main__':
