@@ -4,10 +4,21 @@ project(control)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   message_generation
+  actionlib_msgs
+)
+
+catkin_python_setup()
+
+
+add_message_files(
+  FILES 
+  Grasp.msg
 )
 
 add_service_files(
   FILES
+  Grasp.srv
+  MoveGripper.srv
   RotateEE.srv
   SetJointState.srv
   SetPoseTarget.srv
@@ -15,13 +26,25 @@ add_service_files(
   SetPoseTarget2D.srv
 )
 
-generate_messages()
+add_action_files(
+  FILES 
+  Pick.action
+  Place.action
+)
+
+generate_messages(
+  DEPENDENCIES 
+  actionlib_msgs
+  geometry_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS actionlib_msgs
+)
 
 ###########
 ## Build ##
@@ -36,6 +59,6 @@ include_directories(
 #############
 
 catkin_install_python(PROGRAMS
-   scripts/moveit_grasp_control.py
+   scripts/pick_and_place_example.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
