@@ -27,7 +27,7 @@ class ObjectDetection3DVoxelNode:
     def __init__(
         self,
         input_point_cloud_topic="/opendr/dataset_point_cloud",
-        output_detection3d_topic="/opendr/detection3d",
+        detections_topic="/opendr/objects3d",
         device="cuda:0",
         model_name="tanet_car_xyres_16",
         model_config_path=os.path.join(
@@ -41,8 +41,8 @@ class ObjectDetection3DVoxelNode:
         Creates a ROS Node for 3D object detection
         :param input_point_cloud_topic: Topic from which we are reading the input point cloud
         :type input_point_cloud_topic: str
-        :param output_detection3d_topic: Topic to which we are publishing the annotations
-        :type output_detection3d_topic:  str
+        :param detections_topic: Topic to which we are publishing the annotations
+        :type detections_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param model_name: the pretrained model to download or a trained model in temp_dir
@@ -63,7 +63,7 @@ class ObjectDetection3DVoxelNode:
         self.bridge = ROSBridge()
 
         self.detection_publisher = rospy.Publisher(
-            output_detection3d_topic, Detection3DArray, queue_size=1
+            detections_topic, Detection3DArray, queue_size=1
         )
 
     def callback(self, data):
@@ -110,9 +110,9 @@ def main():
     parser.add_argument("-i", "--input_point_cloud_topic",
                         help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
                         type=str, default="/opendr/dataset_point_cloud")
-    parser.add_argument("-o", "--output_detection3d_topic",
+    parser.add_argument("-o", "--detections_topic",
                         help="Output detections topic",
-                        type=str, default="/opendr/detection3d")
+                        type=str, default="/opendr/objects3d")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
@@ -135,7 +135,7 @@ def main():
         model_config_path=args.model_config_path,
         input_point_cloud_topic=args.input_point_cloud_topic,
         temp_dir=args.temp_dir,
-        output_detection3d_topic=args.output_detection3d_topic,
+        detections_topic=args.detections_topic,
     )
 
     voxel_node.listen()
