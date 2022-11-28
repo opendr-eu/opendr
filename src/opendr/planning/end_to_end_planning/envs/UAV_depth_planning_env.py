@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import gym
-import ros_numpy
+from cv_bridge import CvBridge
 import webots_ros.srv
 from gym import spaces
 import numpy as np
@@ -70,6 +70,7 @@ class UAVDepthPlanningEnv(gym.Env):
         self.no_dynamics = no_dynamics
 
         # ROS connection
+        self.bridge = CvBridge()
         rospy.init_node('gym_depth_planning_environment')
         self.r = rospy.Rate(25)
         self.ros_pub_pose = rospy.Publisher('mavros/setpoint_position/local', PoseStamped, queue_size=10)
@@ -95,7 +96,6 @@ class UAVDepthPlanningEnv(gym.Env):
         rospy.Subscriber("/touch_sensor_safety1/value", BoolStamped, self.safety1_callback)
         rospy.Subscriber("/touch_sensor_safety2/value", BoolStamped, self.safety2_callback)
         rospy.Subscriber("/range_finder/range_image", Image, self.range_callback, queue_size=1)
-        rospy.Subscriber("/lidar/range_image", Image, self.laser_callback, queue_size=1)
         self.ros_srv_touch_sensor_collision_enable = rospy.ServiceProxy(
             "/touch_sensor_collision/enable", webots_ros.srv.set_int)
         self.ros_srv_touch_sensor_safety1_enable = rospy.ServiceProxy(
@@ -104,8 +104,6 @@ class UAVDepthPlanningEnv(gym.Env):
             "/touch_sensor_safety2/enable", webots_ros.srv.set_int)
         self.ros_srv_range_sensor_enable = rospy.ServiceProxy(
             "/range_finder/enable", webots_ros.srv.set_int)
-        self.ros_srv_laser_sensor_enable = rospy.ServiceProxy(
-            "/lidar/enable", webots_ros.srv.set_int)
         try:
             self.ros_srv_touch_sensor_collision_enable(1)
             self.ros_srv_range_sensor_enable(1)
@@ -114,7 +112,6 @@ class UAVDepthPlanningEnv(gym.Env):
         try:
             self.ros_srv_touch_sensor_safety1_enable(1)
             self.ros_srv_touch_sensor_safety2_enable(1)
-            self.ros_srv_laser_sensor_enable(1)
         except rospy.ServiceException as exc:
             print("Service did not process request: " + str(exc))
 
@@ -302,12 +299,8 @@ class UAVDepthPlanningEnv(gym.Env):
         self.current_yaw = euler_from_quaternion(data.pose.orientation)["yaw"]
 
     def range_callback(self, data):
-        image_arr = ros_numpy.numpify(data)
+        image_arr = self.bridge.imgmsg_to_cv2(data)
         self.range_image = ((np.clip(image_arr.reshape((64, 64, 1)), 0, 15) / 15.) * 255).astype(np.uint8)
-
-    def laser_callback(self, data):
-        image_arr = ros_numpy.numpify(data)
-        self.closer_object_length = np.min(np.clip(image_arr, 0, 5))
 
     def model_name_callback(self, data):
         if data.data[:5] == "robot":
