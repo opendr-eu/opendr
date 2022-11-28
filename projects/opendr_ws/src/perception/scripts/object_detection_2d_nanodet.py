@@ -106,9 +106,11 @@ def main():
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
                         type=str, default="/usb_cam/image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
-                        type=str, default="/opendr/image_objects_annotated")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/image_objects_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
-                        type=str, default="/opendr/objects")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/objects")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model that config file will be used", type=str, default="plus_m_1.5x_416")
     args = parser.parse_args()
