@@ -17,7 +17,7 @@
 import rospy
 import numpy as np
 import webots_ros.srv
-import ros_numpy
+from cv_bridge import CvBridge
 from std_msgs.msg import String
 from sensor_msgs.msg import Imu, Image
 from geometry_msgs.msg import PoseStamped, PointStamped
@@ -33,6 +33,7 @@ class EndToEndPlannerNode:
         Creates a ROS Node for end-to-end planner
         """
         self.node_name = "opendr_end_to_end_planner"
+        self.bridge = CvBridge()
         self.model_name = ""
         self.current_pose = PoseStamped()
         self.target_pose = PoseStamped()
@@ -80,7 +81,7 @@ class EndToEndPlannerNode:
         rospy.spin()
 
     def range_callback(self, data):
-        image_arr = ros_numpy.numpify(data)
+        image_arr = self.bridge.imgmsg_to_cv2(data)
         self.range_image = ((np.clip(image_arr.reshape((64, 64, 1)), 0, 15) / 15.) * 255).astype(np.uint8)
         observation = {'depth_cam': np.copy(self.range_image), 'moving_target': np.array([5, 0, 0])}
         action = self.end_to_end_planner.infer(observation, deterministic=True)[0]
