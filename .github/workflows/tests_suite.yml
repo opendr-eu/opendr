@@ -315,7 +315,7 @@ jobs:
         docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
   delete-docker-artifacts:
     needs: [build-docker, test-docker]
-    if: ${{ always() }}
+    if: ${{ success() }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
@@ -327,7 +327,7 @@ jobs:
         name: docker-artifact
   delete-wheel-artifacts:
     needs: [build-wheel, test-wheel, test-wheel-separate]
-    if: ${{ always() }}
+    if: ${{ success() }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
