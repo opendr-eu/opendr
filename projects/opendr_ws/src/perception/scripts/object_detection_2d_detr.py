@@ -24,14 +24,17 @@ from opendr_bridge import ROSBridge
 
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import DetrLearner
-from opendr.perception.object_detection_2d.detr.algorithm.util.draw import draw
+from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
 class ObjectDetectionDetrNode:
-
-    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
-                 output_rgb_image_topic="/opendr/image_objects_annotated", detections_topic="/opendr/objects",
-                 device="cuda"):
+    def __init__(
+        self,
+        input_rgb_image_topic="/usb_cam/image_raw",
+        output_rgb_image_topic="/opendr/image_objects_annotated",
+        detections_topic="/opendr/objects",
+        device="cuda",
+    ):
         """
         Creates a ROS Node for object detection with DETR.
         :param input_rgb_image_topic: Topic from which we are reading the input image
@@ -59,6 +62,100 @@ class ObjectDetectionDetrNode:
 
         self.bridge = ROSBridge()
 
+        self.class_names = [
+            "N/A",
+            "person",
+            "bicycle",
+            "car",
+            "motorcycle",
+            "airplane",
+            "bus",
+            "train",
+            "truck",
+            "boat",
+            "traffic light",
+            "fire hydrant",
+            "N/A",
+            "stop sign",
+            "parking meter",
+            "bench",
+            "bird",
+            "cat",
+            "dog",
+            "horse",
+            "sheep",
+            "cow",
+            "elephant",
+            "bear",
+            "zebra",
+            "giraffe",
+            "N/A",
+            "backpack",
+            "umbrella",
+            "N/A",
+            "N/A",
+            "handbag",
+            "tie",
+            "suitcase",
+            "frisbee",
+            "skis",
+            "snowboard",
+            "sports ball",
+            "kite",
+            "baseball bat",
+            "baseball glove",
+            "skateboard",
+            "surfboard",
+            "tennis racket",
+            "bottle",
+            "N/A",
+            "wine glass",
+            "cup",
+            "fork",
+            "knife",
+            "spoon",
+            "bowl",
+            "banana",
+            "apple",
+            "sandwich",
+            "orange",
+            "broccoli",
+            "carrot",
+            "hot dog",
+            "pizza",
+            "donut",
+            "cake",
+            "chair",
+            "couch",
+            "potted plant",
+            "bed",
+            "N/A",
+            "dining table",
+            "N/A",
+            "N/A",
+            "toilet",
+            "N/A",
+            "tv",
+            "laptop",
+            "mouse",
+            "remote",
+            "keyboard",
+            "cell phone",
+            "microwave",
+            "oven",
+            "toaster",
+            "sink",
+            "refrigerator",
+            "N/A",
+            "book",
+            "clock",
+            "vase",
+            "scissors",
+            "teddy bear",
+            "hair drier",
+            "toothbrush",
+        ]
+
         # Initialize the detection estimation
         self.detr_learner = DetrLearner(device=device)
         self.detr_learner.download(path=".", verbose=True)
@@ -79,7 +176,7 @@ class ObjectDetectionDetrNode:
         :type data: sensor_msgs.msg.Image
         """
         # Convert sensor_msgs.msg.Image into OpenDR Image
-        image = self.bridge.from_ros_image(data, encoding='bgr8')
+        image = self.bridge.from_ros_image(data, encoding="bgr8")
 
         # Run object detection
         boxes = self.detr_learner.infer(image)
@@ -94,7 +191,7 @@ class ObjectDetectionDetrNode:
 
         if self.image_publisher is not None:
             # Annotate image with object detection boxes
-            image = draw(image, boxes)
+            image = draw_bounding_boxes(image, boxes, class_names=self.class_names)
             # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
