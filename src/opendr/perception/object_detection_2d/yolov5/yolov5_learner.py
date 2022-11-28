@@ -95,20 +95,3 @@ class YOLOv5DetectorLearner(Learner):
     def save(self):
         """This method is not used in this implementation."""
         return NotImplementedError
-
-
-if __name__ == '__main__':
-    learner = YOLOv5DetectorLearner('yolov5m')
-
-    import cv2
-    import torch
-    from opendr.perception.object_detection_2d.utils.vis_utils import draw_bounding_boxes
-
-    # Images
-    for f in 'zidane.jpg', 'bus.jpg':
-        torch.hub.download_url_to_file('https://ultralytics.com/images/' + f, f)  # download 2 images
-    im1 = Image.open('zidane.jpg')  # OpenDR image
-    # im2 = cv2.imread('bus.jpg')  # OpenCV image (BGR to RGB)
-
-    results = learner.infer(im1)
-    draw_bounding_boxes(im1.opencv(), results, learner.classes, show=True)
