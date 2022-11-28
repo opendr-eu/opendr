@@ -302,7 +302,6 @@ Parameters:
 - **file_name**: *str*  
   The name of the file containing the pretrained model. 
 
-
 #### Examples
 
 * **Training example using an `ExternalDataset`**.  
@@ -737,6 +736,185 @@ Parameters:
   The name of the file containing the pretrained model. 
 
 
+### Class CoSTGCNLearner
+Bases: `engine.learners.Learner`
+
+The *CoSTGCNLearner* class is an implementation of the proposed method CoSTGCN [[8]](#8) for Continual-Skeleton-based Human 
+Action Recognition.
+It performs skeleton-based action recognition continuously in a frame-wise manner. 
+The [CoSTGCNLearner](/src/opendr/perception/skeleton_based_action_recognition/continual_stgcn_learner.py) class has the
+following public methods:
+
+
+#### `CoSTGCNLearner` constructor
+```python
+CoSTGCNLearner(self, lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head, 
+               checkpoint_after_iter, checkpoint_load_iter, temp_path,
+               device, loss, weight_decay, momentun, drop_last, pin_memory, num_workers, seed, 
+               num_classes, num_point, num_person, in_channels, graph_type, sequence_len
+               )
+```
+
+Constructor parameters:
+- **lr**: *float, default=0.001*  
+  Specifies the learning rate to be used during training.
+- **iters**: *int, default=10* 
+  Number of epochs to train for. Defaults to 10.
+- **batch_size**: *int, default=64*  
+  Specifies number of skeleton sequences to be bundled up in a batch during training. This heavily affects memory usage, adjust according to your system.
+- **optimizer**: *str {'sgd', 'adam'}, default='adam'*  
+  Name of optimizer to use ("sgd" or "adam"). Defaults to "adam".
+- **lr_schedule**: *str, default=' '*  
+  Specifies the learning rate scheduler.
+- **network_head**: *str, default='classification'*
+  Head of network (only "classification" is currently available).
+- **checkpoint_after_iter**: *int, default=0*
+  Unused parameter. Defaults to 0.
+- **checkpoint_load_iter**: *int, default=0*  
+  Unused parameter. Defaults to 0.
+- **temp_path**: *str, default=''*  
+  Path in which to store temporary files. Defaults to "".
+- **device**: *{'cpu', 'cuda'}, default='cuda'*  
+  Specifies the device to be used.
+- **num_workers**: *int, default=0*  
+  Specifies the number of workers to be used by the data loader.
+- **num_class**: *int, default=60*  
+  Specifies the number of classes for the action dataset. 
+- **num_point**: *int, default=25*  
+  Specifies the number of body joints in each skeleton. 
+- **num_person**: *int, default=2*  
+  Specifies the number of body skeletons in each frame.
+- **in_channels**: *int, default=3*  
+  Specifies the number of input channels for each body joint.  
+- **graph_type**: *str {'ntu', 'openpose'}, default='ntu'*  
+  Specifies the type of graph structure associated with the dataset. 
+
+#### `CoSTGCNLearner.fit`
+```python
+CoSTGCNLearner.fit(self, dataset, val_dataset, epochs, steps)
+```
+
+This method is used for training the algorithm on a train dataset and validating on a val dataset.
+Parameters:
+- **dataset**: *object*  
+  Object that holds the training dataset.
+  Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+- **val_dataset**: *object*
+  Object that holds the validation dataset.
+- **epochs**: *int, default=None*
+  Number of epochs. If none is supplied, self.iters will be used. Defaults to None. 
+- **steps**: *int, default=None*
+  Number of training steps to conduct. If none, this is determined by epochs. Defaults to None.
+
+
+#### `CoSTGCNLearner.eval`
+```python
+CoSTGCNLearner.eval(self, dataset, steps)
+```
+
+This method is used to evaluate a trained model on an evaluation dataset.
+Returns a dictionary containing stats regarding evaluation.  
+Parameters:
+
+- **dataset**: *object*  
+  Dataset on which to evaluate model
+- **steps**: *int, default=None*  
+  Number of validation batches to evaluate. If None, all batches are evaluated. Defaults to None.
+
+
+#### `CoSTGCNLearner.init_model`
+```python
+CoSTGCNLearner.init_model(self)
+```
+This method is used to initialise model with random parameters
+
+#### `ProgressiveSpatioTemporalGCNLearner.infer`
+```python
+ProgressiveSpatioTemporalGCNLearner.infer(self, SkeletonSeq_batch)
+```
+This method is used to perform action recognition on a sequence of skeletons. 
+It returns the action category as an object of `engine.target.Category` if a proper input object `engine.data.SkeletonSequence` is given. 
+
+Parameters:
+- **SkeletonSeq_batch**: *object***  
+  Object of type engine.data.SkeletonSequence.
+
+#### `CoSTGCNLearner.save`
+```python
+CoSTGCNLearner.save(self, path)
+```
+This method is used to save model weights and metadata to path.
+
+Parameters:
+- **path**: *str*  
+  Directory in which to save model weights and meta data.
+
+
+#### `CoSTGCNLearner.load`
+```python
+CoSTGCNLearner.load(self, path)
+```
+
+This method is used to load a previously saved model from its saved folder.
+Loads the model from inside the directory of the path provided, using the metadata .json file included.
+
+Parameters:
+- **path**: *str*  
+  Path to metadata file in json format or path to model weights
+
+
+#### `CoSTGCNLearner.optimize`
+```python
+CoSTGCNLearner.optimize(self, do_constant_folding)
+```
+
+This method is used to optimize a trained model to ONNX format which can be then used for inference.
+
+Parameters:
+- **do_constant_folding**: *bool, default=False*  
+  ONNX format optimization.
+  If True, the constant-folding optimization is applied to the model during export.
+
+
+#### `CoSTGCNLearner.download`
+```python
+@staticmethod
+CoSTGCNLearner.download(self, dataset_name, experiment_name, path, method_name, mode, verbose, url, file_name)
+```
+
+Downloads files depending on mode and saves them in the path provided. It supports downloading:
+1. the pretrained weights for stgcn model.
+2. a small sample dataset and its labels.  
+
+Parameters:
+- **dataset_name**: *str, default='nturgbd_cv'*  
+  The name of dataset that should be downloaded. 
+- **experiment_name**: *str, default='stgcn_nturgbd'*  
+  The name of experiment for which the pretrained model is saved.
+- **path**: *str, default=None*  
+  Local path to save the files, defaults to self.parent_dir if None.
+- **mode**: *str, default="pretrained"*  
+  What file to download, can be one of "pretrained", "train_data", "val_data", "test_data"
+- **verbose**: *bool, default=False*  
+  Whether to print messages in the console.
+- **url**: *str, default=OpenDR FTP URL*  
+  URL of the FTP server.
+- **file_name**: *str*  
+  The name of the file containing the pretrained model. 
+
+#### `CoSTGCNLearner.infer`
+```python
+CoSTGCNLearner.infer(self, batch)
+```
+This method is used to perform inference on a batch of data. 
+It returns a list of output categories
+
+Parameters:
+- **batch**: *object***  
+  Batch of skeletons for a single time-step.
+  The batch should have shape (C, V, S), (C, T, V, S), or (B, C, T, V, S). Here, B is the batch size, C is the number of input channels, V is the number of vertices, and S is the number of skeletons
+
+
 #### Examples
 
 * **Finding an optimized spatio-temporal GCN architecture based on training dataset defined as an `ExternalDataset`**.  
@@ -828,13 +1006,19 @@ The noted memory is the maximum allocated memory on GPU during inference.
 The performance evaluation results of the *SpatioTemporalGCNLearner* and *ProgressiveSpatioTemporalGCNLearner* in terms of prediction accuracy on NTU-RGBD-60, parameter count and maximum allocated memory are reported in the following Tables.
 The performance of TA-GCN is reported when it selects 100 frames out of 300 (T=100). PST-GCN finds different architectures for two different dataset settings (CV and CS) which leads to different classification accuracy, number of parameters and memory allocation. 
 
-| Method            | Acc. (%) | Params (M) | Mem. (MB) | 
-|-------------------|----------|------------|-----------|
-| ST-GCN            | 88.3     | 3.12       | 47.37     | 
-| TA-GCN (T=100)    | 94.2     | 2.24       | 42.65     | 
-| ST-BLN            | 93.8     | 5.3        | 55.77     |
-| PST-GCN (CV)      | 94.33    | 0.63       | 31.65     |
-| PST-GCN (CS)      | 87.9     | 0.92       | 32.2      | 
+| Method         | Acc. (%) | Params (M) | Mem. (MB) | 
+|----------------|----------|------------|-----------|
+| ST-GCN         | 88.3     | 3.12       | 47.37     | 
+| TA-GCN (T=100) | 94.2     | 2.24       | 42.65     | 
+| ST-BLN         | 93.8     | 5.3        | 55.77     |
+| PST-GCN (CV)   | 94.33    | 0.63       | 31.65     |
+| PST-GCN (CS)   | 87.9     | 0.92       | 32.2      | 
+| CoST-GCN (CV)  | 93.8     | 3.1        | 36.1      | 
+| CoST-GCN (CS)  | 86.3     | 3.1        | 36.1      | 
+| CoA-GCN (CV)   | 92.6     | 3.5        | 37.4      | 
+| CoA-GCN (CS)   | 84.1     | 3.5        | 37.4      | 
+| CoS-TR (CV)    | 92.4     | 3.1        | 36.1      | 
+| CoS-TR (CS)    | 86.3     | 3.1        | 36.1      | 
 
 The inference speed (evaluations/second) of both learners on various computational devices are as follows:
 
@@ -845,16 +1029,22 @@ The inference speed (evaluations/second) of both learners on various computation
 | ST-BLN         | 7.69  | 3.57       | 12.56         | 55.98       |
 | PST-GCN (CV)   | 15.38 | 6.57       | 20.25         | 83.10       | 
 | PST-GCN (CS)   | 13.07 | 5.53       | 19.41         | 77.57       | 
+| CoST-GCN       | 34.26 | 11.22      | 20.91         | -           | 
+| CoA-GCN        | 23.09 | 7.24       | 15.28         | -           | 
+| CoS-TR         | 30.12 | 10.49      | 20.87         | -           | 
 
 Energy (Joules) of both learners’ inference on embedded devices is shown in the following: 
 
-| Method            | Jetson TX2  | Jetson Xavier  | 
-|-------------------|-------------|----------------|
-| ST-GCN            | 6.07        | 1.38           | 
-| TA-GCN (T=100)    | 2.23        | 0.59           | 
-| ST-BLN            | 9.26        | 2.01           |
-| PST-GCN (CV)      | 4.13        | 1.00           | 
-| PST-GCN (CS)      | 5.54        | 1.12           |
+| Method         | Jetson TX2 | Jetson Xavier | 
+|----------------|------------|---------------|
+| ST-GCN         | 6.07       | 1.38          | 
+| TA-GCN (T=100) | 2.23       | 0.59          | 
+| ST-BLN         | 9.26       | 2.01          |
+| PST-GCN (CV)   | 4.13       | 1.00          | 
+| PST-GCN (CS)   | 5.54       | 1.12          |
+| CoST-GCN       | 1.95       | 0.57          |
+| CoA-GCN        | 3.33       | 0.91          |
+| CoS-TR         | 2.28       | 0.55          |
 
 The platform compatibility evaluation is also reported below:
 
@@ -899,3 +1089,7 @@ The kinetics human action video dataset. arXiv preprint arXiv:1705.06950.](https
 [Cao, Z., Simon, T., Wei, S. E., & Sheikh, Y. (2017). Realtime multi-person 2d pose estimation using part affinity 
 fields. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7291-7299).](
 https://openaccess.thecvf.com/content_cvpr_2017/html/Cao_Realtime_Multi-Person_2D_CVPR_2017_paper.html)
+
+<a id="8">[8]</a>
+[Hedegaard, Lukas, Negar Heidari, and Alexandros Iosifidis. "Online Skeleton-based Action Recognition with Continual Spatio-Temporal Graph Convolutional Networks." arXiv preprint arXiv:2203.11009 (2022).](
+https://arxiv.org/abs/2203.11009)
