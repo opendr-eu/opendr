@@ -29,10 +29,10 @@ Constructor parameters:
   Specifies the path to where the weights will be downloaded when using pretrained models.
   
 
-#### `YOLOv3DetectorLearner.infer`
+#### `YOLOv5DetectorLearner.infer`
 The `infer` method:
 ```python
-YOLOv3DetectorLearner.infer(self, img)
+YOLOv5DetectorLearner.infer(self, img)
 ```
 
 performs inference on a single image.
