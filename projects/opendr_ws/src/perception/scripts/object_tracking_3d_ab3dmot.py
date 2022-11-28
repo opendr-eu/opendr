@@ -160,7 +160,6 @@ def main():
 
     detector.load(os.path.join(temp_dir, detector_model_name), verbose=True)
 
-    # created node object
     ab3dmot_node = ObjectTracking3DAb3dmotNode(
         detector=detector,
         device=device,

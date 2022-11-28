@@ -120,7 +120,6 @@ if __name__ == "__main__":
                         help="Device to use (cpu, cuda)")
     args = parser.parse_args()
 
-    # Select the device for running
     try:
         if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"
