@@ -66,7 +66,7 @@ class BisenetNode:
 
         self.class_names = ["Bicyclist", "Building", "Car", "Column Pole", "Fence", "Pedestrian", "Road", "Sidewalk",
                             "Sign Symbol", "Sky", "Tree", "Unknown"]
-        self.colors = self.getDistinctColors(len(self.class_names))  # Generate n distinct colors
+        self.colors = self.get_distinct_colors(len(self.class_names))  # Generate n distinct colors
 
     def listen(self):
         """
@@ -103,7 +103,7 @@ class BisenetNode:
                 beta = (1.0 - alpha)
                 image_blended = cv2.addWeighted(image.opencv(), alpha, heatmap_colors.opencv(), beta, 0.0)
                 # Add a legend
-                image_blended = self.addLegend(image_blended, np.unique(heatmap.data))
+                image_blended = self.add_legend(image_blended, np.unique(heatmap.data))
 
                 self.visualization_publisher.publish(self.bridge.to_ros_image(Image(image_blended),
                                                                               encoding='bgr8'))
@@ -111,7 +111,7 @@ class BisenetNode:
             print(e)
             rospy.logwarn('Failed to generate prediction.')
 
-    def addLegend(self, image, unique_class_ints):
+    def add_legend(self, image, unique_class_ints):
         # Text setup
         origin_x, origin_y = 5, 5  # Text origin x, y
         color_rectangle_size = 25
@@ -143,13 +143,13 @@ class BisenetNode:
         return image
 
     @staticmethod
-    def HSVToRGB(h, s, v):
+    def hsv_to_rgb(h, s, v):
         (r, g, b) = colorsys.hsv_to_rgb(h, s, v)
         return np.array([int(255 * r), int(255 * g), int(255 * b)])
 
-    def getDistinctColors(self, n):
-        huePartition = 1.0 / (n + 1)
-        return np.array([self.HSVToRGB(huePartition * value, 1.0, 1.0) for value in range(0, n)]).astype(np.uint8)
+    def get_distinct_colors(self, n):
+        hue_partition = 1.0 / (n + 1)
+        return np.array([self.hsv_to_rgb(hue_partition * value, 1.0, 1.0) for value in range(0, n)]).astype(np.uint8)
 
 
 def main():
