@@ -32,7 +32,7 @@ class ObjectDetectionNanodetNode:
                  output_rgb_image_topic="/opendr/image_objects_annotated", detections_topic="/opendr/objects",
                  device="cuda", model="plus_m_1.5x_416"):
         """
-        Creates a ROS Node for object detection with SSD.
+        Creates a ROS Node for object detection with Nanodet.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -69,9 +69,9 @@ class ObjectDetectionNanodetNode:
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('object_detection_ssd_node', anonymous=True)
+        rospy.init_node('opendr_object_detection_2d_nanodet_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
-        rospy.loginfo("Object detection SSD node started.")
+        rospy.loginfo("Object detection 2D Nanodet node started.")
         rospy.spin()
 
     def callback(self, data):

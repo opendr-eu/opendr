@@ -92,7 +92,7 @@ def main():
         scan_labels=False
     )
 
-    rospy.init_node("image_dataset", anonymous=True)
+    rospy.init_node("opendr_image_dataset_node", anonymous=True)
 
     dataset_node = ImageDatasetNode(
         dataset,

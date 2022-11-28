@@ -117,8 +117,8 @@ class EfficientPsNode:
         Start the node and begin processing input data. The order of the function calls ensures that the node does not
         try to process input images without being in a trained state.
         """
-        rospy.init_node('efficient_ps', anonymous=True)
-        rospy.loginfo("EfficientPS node started.")
+        rospy.init_node('opendr_efficient_panoptic_segmentation_node', anonymous=True)
+        rospy.loginfo("Panoptic segmentation EfficientPS node started.")
         if self._init_learner():
             self._init_publisher()
             self._init_subscribers()

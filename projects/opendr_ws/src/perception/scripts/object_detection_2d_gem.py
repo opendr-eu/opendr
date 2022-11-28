@@ -66,7 +66,7 @@ class ObjectDetectionGemNode:
         opendr/perception/object_detection2d/utils module.
         :type pts_infra: {list, numpy.ndarray}
         """
-        rospy.init_node("gem", anonymous=True)
+        rospy.init_node("opendr_object_detection_2d_gem_node", anonymous=True)
         if output_rgb_image_topic is not None:
             self.rgb_publisher = rospy.Publisher(output_rgb_image_topic, ROS_Image, queue_size=10)
         else:
@@ -189,13 +189,13 @@ class ObjectDetectionGemNode:
 
         sync = message_filters.TimeSynchronizer([msg_rgb, msg_ir], 1)
         sync.registerCallback(self.callback)
-        rospy.loginfo("GEM node Initialized!")
+        rospy.loginfo("GEM node initialized.")
 
     def listen(self):
         """
         Start the node and begin processing input data
         """
-        rospy.loginfo("Object detection GEM node started.")
+        rospy.loginfo("Object detection 2D GEM node started.")
         rospy.spin()
 
     def callback(self, msg_rgb, msg_ir):

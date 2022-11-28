@@ -85,7 +85,7 @@ class ObjectDetection3DVoxelNode:
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('voxel_detection_3d', anonymous=True)
+        rospy.init_node('opendr_object_detection_3d_voxel_node', anonymous=True)
         rospy.Subscriber(self.input_point_cloud_topic, ROS_PointCloud, self.callback, queue_size=1, buff_size=10000000)
 
         rospy.loginfo("Object Detection 3D Voxel Node started.")

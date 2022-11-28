@@ -73,7 +73,7 @@ class RgbdHandGestureNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('opendr_gesture_recognition', anonymous=True)
+        rospy.init_node('opendr_rgbd_hand_gesture_recognition_node', anonymous=True)
 
         image_sub = message_filters.Subscriber(self.input_rgb_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
         depth_sub = message_filters.Subscriber(self.input_depth_image_topic, ROS_Image, queue_size=1, buff_size=10000000)

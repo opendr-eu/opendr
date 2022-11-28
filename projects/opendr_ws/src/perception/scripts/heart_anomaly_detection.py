@@ -65,7 +65,7 @@ class HeartAnomalyNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('opendr_heart_anomaly_detection', anonymous=True)
+        rospy.init_node('opendr_heart_anomaly_detection_node', anonymous=True)
         rospy.loginfo("Heart anomaly detection node started.")
         rospy.spin()
 

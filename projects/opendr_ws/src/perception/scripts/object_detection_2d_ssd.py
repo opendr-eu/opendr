@@ -92,9 +92,9 @@ class ObjectDetectionSSDNode:
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('object_detection_ssd_node', anonymous=True)
+        rospy.init_node('opendr_object_detection_2d_ssd_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
-        rospy.loginfo("Object detection SSD node started.")
+        rospy.loginfo("Object detection 2D SSD node started.")
         rospy.spin()
 
     def callback(self, data):

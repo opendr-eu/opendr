@@ -96,7 +96,7 @@ class ObjectTracking3DAb3dmotNode:
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('ab3dmot_tracking_3d', anonymous=True)
+        rospy.init_node('opendr_object_ab3dmot_tracking_3d_node', anonymous=True)
         rospy.Subscriber(self.input_point_cloud_topic, ROS_PointCloud, self.callback, queue_size=1, buff_size=10000000)
 
         rospy.loginfo("Object Tracking 3D Ab3dmot Node started.")

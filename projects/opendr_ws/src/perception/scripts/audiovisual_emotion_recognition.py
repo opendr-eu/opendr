@@ -75,7 +75,7 @@ class AudiovisualEmotionNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('opendr_audiovisualemotion_recognition', anonymous=True)
+        rospy.init_node('opendr_audiovisual_emotion_recognition_node', anonymous=True)
 
         video_sub = message_filters.Subscriber(self.input_video_topic, ROS_Image)
         audio_sub = message_filters.Subscriber(self.input_audio_topic, AudioData)
@@ -139,7 +139,6 @@ if __name__ == '__main__':
                         help="Device to use (cpu, cuda)", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
-    # Select the device for running
     try:
         if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"

@@ -102,7 +102,7 @@ class HumanActivityRecognitionNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node("opendr_human_activity_recognition", anonymous=True)
+        rospy.init_node("opendr_human_activity_recognition_node", anonymous=True)
         rospy.Subscriber(
             self.input_rgb_image_topic,
             ROS_Image,

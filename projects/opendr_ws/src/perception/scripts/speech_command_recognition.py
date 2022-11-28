@@ -78,7 +78,7 @@ class SpeechRecognitionNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node("opendr_speech_command_recognition", anonymous=True)
+        rospy.init_node("opendr_speech_command_recognition_node", anonymous=True)
         rospy.loginfo("Speech command recognition node started.")
         rospy.spin()
 

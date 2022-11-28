@@ -126,7 +126,7 @@ class ObjectTracking2DDeepSortNode:
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('object_tracking_2d_deep_sort_node', anonymous=True)
+        rospy.init_node('opendr_object_tracking_2d_deep_sort_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
 
         rospy.loginfo("Object Tracking 2D Deep Sort Node started.")
