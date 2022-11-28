@@ -1,26 +1,41 @@
 #!/bin/bash
 
+if [[ -z "$TORCH_VERSION" ]];
+then
+  echo "Specific Torch Version is not defined. Torch version 1.9.0 will be installed"
+  echo "For specific Torch Version plz defined variable TORCH_VERSION with export TORCH_VERSION=x.x.x."
+  TORCH_VERSION="1.9.0"
+fi
+
 if [ ! -f /usr/local/lib/libtorchvision.so ]; then
-  CUDA_VERSION="116"
-  TORCH_VERSION="1.13.0"
   TORCH_DIRECTORY="/usr/local/libtorch"
 
   VISION_VERSION="0.14.0"
   if [[ "$OPENDR_DEVICE" == "gpu" ]]
   then
-      echo "Downloading and installing libtorch and torchvision (gpu support) ..."
-      GPU="on"
-      DEVICE="cu"${CUDA_VERSION}
-      CUDA_COMPILER="/usr/local/cuda/bin/nvcc"
+    echo "Downloading and installing libtorch and torchvision (gpu support) ..."
+    GPU="on"
+    DEVICE="cu"${CUDA_VERSION}
+    CUDA_COMPILER="/usr/local/cuda/bin/nvcc"
   else
-      echo "Downloading and installing libtorch and torchvsion (cpu-only) ..."
-      GPU="off"
-      DEVICE="cpu"
+    echo "Downloading and installing libtorch and torchvsion (cpu-only) ..."
+    GPU="off"
+    DEVICE="cpu"
   fi
 
+  # Find CUDA version and download torch and vision
+  echo "Downloading Libtorch and torchvision ..."
+  # Make sure that we can download files
+  if [[ -z "$CUDA_PATH" ]];
+  then
+      python3 ./download_torch.py --opendr_device "$OPENDR_DEVICE" --torch_version "$TORCH_VERSION"
+  else
+      python3 ./download_torch.py --opendr_device "$OPENDR_DEVICE" --torch_version "$TORCH_VERSION" --cuda_path "$CUDA_PATH"
+  fi
+  echo "Downloading Libtorch and torchvision ... FINIS"
+
   # TORCH INSTALLATION
-  wget https://download.pytorch.org/libtorch/${DEVICE}/libtorch-cxx11-abi-shared-with-deps-${TORCH_VERSION}%2B${DEVICE}.zip --quiet
-  unzip -qq libtorch-cxx11-abi-shared-with-deps-${TORCH_VERSION}+${DEVICE}.zip
+  unzip -qq libtorch.zip
   cd libtorch
 
   sudo mkdir -p ${TORCH_DIRECTORY}
@@ -28,8 +43,7 @@ if [ ! -f /usr/local/lib/libtorchvision.so ]; then
   cd ..
 
   # TORCH VISION INSTALLATION
-  wget https://github.com/pytorch/vision/archive/refs/tags/v${VISION_VERSION}.tar.gz --quiet
-  tar zxf v${VISION_VERSION}.tar.gz
+  tar zxf vision.tar.gz
   cd vision-${VISION_VERSION}
   sudo mkdir -p build
   cd build
@@ -40,12 +54,11 @@ if [ ! -f /usr/local/lib/libtorchvision.so ]; then
 
   # CLEAN
   sudo rm -rf libtorch
-  sudo rm -rf libtorch-cxx11-abi-shared-with-deps-${TORCH_VERSION}+${DEVICE}.zip
+  sudo rm -rf libtorch.zip
 
   sudo rm -rf vision-${VISION_VERSION}
-  sudo rm -rf v${VISION_VERSION}.tar.gz
+  sudo rm -rf vision.tar.gz
 
   sudo ldconfig
 
 fi
-
