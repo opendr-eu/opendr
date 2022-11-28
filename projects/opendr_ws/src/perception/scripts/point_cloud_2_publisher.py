@@ -15,7 +15,7 @@ class PointCloud2DatasetNode:
         self,
         dataset: DatasetIterator,
         output_point_cloud_2_topic="/opendr/dataset_point_cloud2"
-    ) :
+    ):
         """
         Creates a ROS Node for publishing dataset point clouds
         """
@@ -29,7 +29,7 @@ class PointCloud2DatasetNode:
             self.output_point_cloud_2_publisher = rospy.Publisher(
                 output_point_cloud_2_topic, ROS_PointCloud2, queue_size=10
             )
-        
+
     def start(self):
         i = 0
 

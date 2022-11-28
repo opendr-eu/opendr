@@ -557,7 +557,7 @@ class ROSBridge:
         ros_point_cloud.channels = channels
 
         return ros_point_cloud
-    
+
     def from_ros_point_cloud2(self, point_cloud: PointCloud2Msg):
 
         """
@@ -568,7 +568,7 @@ class ROSBridge:
         :rtype: engine.data.PointCloud
         """
 
-        points = pc2.read_points_list(point_cloud, field_names = [f.name for f in point_cloud.fields])
+        points = pc2.read_points_list(point_cloud, field_names=[f.name for f in point_cloud.fields])
         result = PointCloud(np.array(points))
 
         return result
