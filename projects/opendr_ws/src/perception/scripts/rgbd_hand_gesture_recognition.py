@@ -82,7 +82,7 @@ class RgbdHandGestureNode:
                                                          allow_headerless=True)
         ts.registerCallback(self.callback)
 
-        rospy.loginfo("RGBD gesture recognition node started!")
+        rospy.loginfo("RGBD hand gesture recognition node started.")
         rospy.spin()
 
     def callback(self, rgb_data, depth_data):

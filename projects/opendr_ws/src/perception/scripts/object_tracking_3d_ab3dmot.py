@@ -85,14 +85,12 @@ class ObjectTracking3DAb3dmotNode:
             # Convert detected boxes to ROS type and publish
             ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes, classes=["Car", "Van", "Truck", "Pedestrian", "Cyclist"])
             self.detection_publisher.publish(ros_boxes)
-            rospy.loginfo("Published detection boxes")
 
         if self.tracking_id_publisher is not None:
             ids = [tracking_box.id for tracking_box in tracking_boxes]
             ros_ids = Int32MultiArray()
             ros_ids.data = ids
             self.tracking_id_publisher.publish(ros_ids)
-            rospy.loginfo("Published tracking ids")
 
     def listen(self):
         """

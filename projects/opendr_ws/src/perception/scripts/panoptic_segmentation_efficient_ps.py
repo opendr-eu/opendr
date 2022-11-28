@@ -118,7 +118,7 @@ class EfficientPsNode:
         try to process input images without being in a trained state.
         """
         rospy.init_node('efficient_ps', anonymous=True)
-        rospy.loginfo("EfficientPS node started!")
+        rospy.loginfo("EfficientPS node started.")
         if self._init_learner():
             self._init_publisher()
             self._init_subscribers()

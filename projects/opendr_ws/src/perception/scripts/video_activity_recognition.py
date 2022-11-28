@@ -110,7 +110,7 @@ class HumanActivityRecognitionNode:
             queue_size=1,
             buff_size=10000000,
         )
-        rospy.loginfo("Human activity recognition node started!")
+        rospy.loginfo("Human activity recognition node started.")
         rospy.spin()
 
     def callback(self, data):

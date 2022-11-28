@@ -114,7 +114,7 @@ class SkeletonActionRecognitionNode:
         """
         rospy.init_node('skeleton_action_recognition_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
-        rospy.loginfo("Skeleton-based action recognition node started!")
+        rospy.loginfo("Skeleton-based action recognition node started.")
         rospy.spin()
 
     def callback(self, data):

@@ -83,7 +83,7 @@ class AudiovisualEmotionNode:
         ts = message_filters.ApproximateTimeSynchronizer([video_sub, audio_sub], 10, 0.1, allow_headerless=True)
         ts.registerCallback(self.callback)
 
-        rospy.loginfo("Audiovisual emotion recognition node started!")
+        rospy.loginfo("Audiovisual emotion recognition node started.")
         rospy.spin()
 
     def callback(self, image_data, audio_data):

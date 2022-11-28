@@ -43,20 +43,16 @@ class PointCloudDatasetNode:
         )
 
     def start(self):
+        rospy.loginfo("Timing point cloud images")
         i = 0
-
         while not rospy.is_shutdown():
-
             point_cloud = self.dataset[i % len(self.dataset)][0]  # Dataset should have a (PointCloud, Target) pair as elements
-
-            rospy.loginfo("Publishing point_cloud [" + str(i) + "]")
             message = self.bridge.to_ros_point_cloud(
                 point_cloud
             )
             self.output_point_cloud_publisher.publish(message)
 
             time.sleep(self.delay)
-
             i += 1
 
 
@@ -99,6 +95,7 @@ def main():
     )
 
     dataset_node.start()
+    rospy.loginfo("Point cloud dataset node started.")
     rospy.spin()
 
 
