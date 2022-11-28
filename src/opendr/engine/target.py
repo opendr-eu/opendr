@@ -361,7 +361,7 @@ class BoundingBox(Target):
             ], dtype=np.float32)
         else:
             result = np.array([
-                self.frame,
+                frame,
                 self.left,
                 self.top,
                 self.width,

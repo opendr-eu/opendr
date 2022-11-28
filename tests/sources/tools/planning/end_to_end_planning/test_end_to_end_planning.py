@@ -15,8 +15,9 @@
 import numpy as np
 import unittest
 from pathlib import Path
+from gym.spaces import Box
 
-from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, AgiEnv
+from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, UAVDepthPlanningEnv
 import opendr
 import torch
 import os
@@ -44,7 +45,7 @@ class EndToEndPlanningTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.env = AgiEnv()
+        cls.env = UAVDepthPlanningEnv()
         cls.learner = EndToEndPlanningRLLearner(cls.env, device=device)
 
     @classmethod
@@ -54,8 +55,12 @@ class EndToEndPlanningTest(unittest.TestCase):
     def test_infer(self):
         obs = self.env.observation_space.sample()
         action = self.learner.infer(obs)[0]
-        self.assertTrue((action >= 0), "Actions below 0")
-        self.assertTrue((action < self.env.action_space.n), "Actions above discrete action space dimensions")
+        if isinstance(self.env.action_space, Box):
+            self.assertTrue((np.abs(action[0]) <= 1), "Action not between -1 and 1")
+            self.assertTrue((np.abs(action[1]) <= 1), "Action not between -1 and 1")
+        else:
+            self.assertTrue((action >= 0), "Actions below 0")
+            self.assertTrue((action < self.env.action_space.n), "Actions above discrete action space dimensions")
 
     def test_eval(self):
         episode_reward = self.learner.eval(self.env)["rewards_collected"]

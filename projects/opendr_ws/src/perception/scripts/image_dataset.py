@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import os
 import rospy
 import time
@@ -26,21 +27,21 @@ class ImageDatasetNode:
     def __init__(
         self,
         dataset: DatasetIterator,
-        output_image_topic="/opendr/dataset_image",
+        output_rgb_image_topic="/opendr/dataset_image",
+        data_fps=30,
     ):
         """
         Creates a ROS Node for publishing dataset images
         """
 
-        # Initialize the face detector
         self.dataset = dataset
         # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
+        self.delay = 1.0 / data_fps
 
-        if output_image_topic is not None:
-            self.output_image_publisher = rospy.Publisher(
-                output_image_topic, ROS_Image, queue_size=10
-            )
+        self.output_image_publisher = rospy.Publisher(
+            output_rgb_image_topic, ROS_Image, queue_size=10
+        )
 
     def start(self):
         rospy.loginfo("Timing images")
@@ -53,32 +54,60 @@ class ImageDatasetNode:
 
             rospy.loginfo("Publishing image [" + str(i) + "]")
             message = self.bridge.to_ros_image(
-                image, encoding="rgb8"
+                image, encoding="bgr8"
             )
             self.output_image_publisher.publish(message)
 
-            time.sleep(0.1)
+            time.sleep(self.delay)
 
             i += 1
 
 
-if __name__ == "__main__":
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--dataset_path", help="Path to a dataset",
+                        type=str, default="MOT")
+    parser.add_argument(
+        "-ks", "--mot20_subsets_path", help="Path to mot20 subsets",
+        type=str, default=os.path.join(
+            "..", "..", "src", "opendr", "perception", "object_tracking_2d",
+            "datasets", "splits", "nano_mot20.train"
+        )
+    )
+    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name to publish the data",
+                        type=str, default="/opendr/dataset_image")
+    parser.add_argument("-f", "--fps", help="Data FPS",
+                        type=float, default=30)
+    args = parser.parse_args()
 
-    rospy.init_node('opendr_image_dataset')
+    dataset_path = args.dataset_path
+    mot20_subsets_path = args.mot20_subsets_path
+    output_rgb_image_topic = args.output_rgb_image_topic
+    data_fps = args.fps
 
-    dataset_path = MotDataset.download_nano_mot20(
-        "MOT", True
-    ).path
+    if not os.path.exists(dataset_path):
+        dataset_path = MotDataset.download_nano_mot20(
+            "MOT", True
+        ).path
 
     dataset = RawMotDatasetIterator(
         dataset_path,
         {
-            "mot20": os.path.join(
-                "..", "..", "src", "opendr", "perception", "object_tracking_2d",
-                "datasets", "splits", "nano_mot20.train"
-            )
+            "mot20": mot20_subsets_path
         },
         scan_labels=False
     )
-    dataset_node = ImageDatasetNode(dataset)
+
+    rospy.init_node("image_dataset", anonymous=True)
+
+    dataset_node = ImageDatasetNode(
+        dataset,
+        output_rgb_image_topic=output_rgb_image_topic,
+        data_fps=data_fps,
+    )
+
     dataset_node.start()
+
+
+if __name__ == '__main__':
+    main()
