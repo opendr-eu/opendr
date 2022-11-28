@@ -30,7 +30,7 @@ if __name__ == '__main__':
     nanodet.download("./predefined_examples", mode="images")
     # First read an openDR image from your dataset and run the optimizer:
     img = Image.open("./predefined_examples/000000000036.jpg")
-    nanodet.optimize("./onnx", img, optimization="onnx")
+    nanodet.optimize("./onnx/nanodet_{}".format(args.model), img, optimization="onnx")
 
     boxes = nanodet.infer(input=img)
 

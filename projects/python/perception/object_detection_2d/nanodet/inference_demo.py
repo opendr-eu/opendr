@@ -22,13 +22,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model that config file will be used", type=str, default='m')
+    parser.add_argument("--path", help="Path to the image that want to infer", type=str,
+                        default="./predefined_examples/000000000036.jpg")
     args = parser.parse_args()
 
     nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
     nanodet.download("./predefined_examples", mode="pretrained")
     nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
     nanodet.download("./predefined_examples", mode="images")
-    img = Image.open("./predefined_examples/000000000036.jpg")
+    img = Image.open(args.path)
     boxes = nanodet.infer(input=img)
 
     draw_bounding_boxes(img.opencv(), boxes, class_names=nanodet.classes, show=True)
