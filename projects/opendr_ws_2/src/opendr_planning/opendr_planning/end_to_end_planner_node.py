@@ -16,9 +16,7 @@
 import rclpy
 from rclpy.node import Node
 import numpy as np
-import webots_ros.srv
 from cv_bridge import CvBridge
-from std_msgs.msg import String
 from sensor_msgs.msg import Imu, Image
 from geometry_msgs.msg import PoseStamped, PointStamped
 from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner
