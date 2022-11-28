@@ -737,6 +737,61 @@ Parameters:
   The name of the file containing the pretrained model. 
 
 
+### Class CoSTGCNLearner
+Bases: `engine.learners.Learner`
+
+The *CoSTGCNLearner* class is an implementation of the proposed method CoSTGCN [[8]](#8) for Continual-Skeleton-based Human 
+Action Recognition.
+It performs skeleton-based action recognition continuously in a frame-wise manner. 
+The [CoSTGCNLearner](/src/opendr/perception/skeleton_based_action_recognition/continual_stgcn_learner.py) class has the
+following public methods:
+
+
+#### `CoSTGCNLearner` constructor
+```python
+CoSTGCNLearner(self, lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head, 
+               checkpoint_after_iter, checkpoint_load_iter, temp_path,
+               device, loss, weight_decay, momentun, drop_last, pin_memory, num_workers, seed, 
+               num_classes, num_point, num_person, in_channels, graph_type, sequence_len
+               )
+```
+
+Constructor parameters:
+- **lr**: *float, default=0.001*  
+  Specifies the learning rate to be used during training.
+- **iters**: *int, default=10* 
+  Number of epochs to train for. Defaults to 10.
+- **batch_size**: *int, default=64*  
+  Specifies number of skeleton sequences to be bundled up in a batch during training. This heavily affects memory usage, adjust according to your system.
+- **optimizer**: *str {'sgd', 'adam'}, default='adam'*  
+  Name of optimizer to use ("sgd" or "adam"). Defaults to "adam".
+- **lr_schedule**: *str, default=' '*  
+  Specifies the learning rate scheduler.
+- **network_head**: *str, default='classification'*
+  Head of network (only "classification" is currently available).
+- **checkpoint_after_iter**: *int, default=0*
+  Unused parameter. Defaults to 0.
+- **checkpoint_load_iter**: *int, default=0*  
+  Unused parameter. Defaults to 0.
+- **temp_path**: *str, default=''*  
+  Path in which to store temporary files. Defaults to "".
+- **device**: *{'cpu', 'cuda'}, default='cuda'*  
+  Specifies the device to be used.
+- **num_workers**: *int, default=0*  
+  Specifies the number of workers to be used by the data loader.
+- **num_class**: *int, default=60*  
+  Specifies the number of classes for the action dataset. 
+- **num_point**: *int, default=25*  
+  Specifies the number of body joints in each skeleton. 
+- **num_person**: *int, default=2*  
+  Specifies the number of body skeletons in each frame.
+- **in_channels**: *int, default=3*  
+  Specifies the number of input channels for each body joint.  
+- **graph_type**: *str {'ntu', 'openpose'}, default='ntu'*  
+  Specifies the type of graph structure associated with the dataset. 
+
+
+  
 #### Examples
 
 * **Finding an optimized spatio-temporal GCN architecture based on training dataset defined as an `ExternalDataset`**.  
@@ -899,3 +954,7 @@ The kinetics human action video dataset. arXiv preprint arXiv:1705.06950.](https
 [Cao, Z., Simon, T., Wei, S. E., & Sheikh, Y. (2017). Realtime multi-person 2d pose estimation using part affinity 
 fields. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7291-7299).](
 https://openaccess.thecvf.com/content_cvpr_2017/html/Cao_Realtime_Multi-Person_2D_CVPR_2017_paper.html)
+
+<a id="8">[8]</a>
+[Hedegaard, Lukas, Negar Heidari, and Alexandros Iosifidis. "Online Skeleton-based Action Recognition with Continual Spatio-Temporal Graph Convolutional Networks." arXiv preprint arXiv:2203.11009 (2022).](
+https://arxiv.org/abs/2203.11009)
