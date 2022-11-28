@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    yolo = YOLOv5DetectorLearner(model_name='yolov5s', device=args.device, temp_path='/home/administrator')
+    yolo = YOLOv5DetectorLearner(model_name='yolov5s', device=args.device)
 
     for f in 'zidane.jpg', 'bus.jpg':
         torch.hub.download_url_to_file('https://ultralytics.com/images/' + f, f)  # download 2 images
