@@ -90,7 +90,7 @@ Parameters:
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity and logger.
 - **local_rank** : *int, default=1*\
- Needed if evaluating on multiple machines.
+  Needed if evaluating on multiple machines.
 
 #### `NanodetLearner.infer`
 ```python
@@ -120,10 +120,10 @@ If a model is not present in the location specified by "export_path", the optimi
 If a model is already present, it will load it instead.
 Inside this folder, the model is saved as *"nanodet_{model_name}.pth"* for Jit models or *"nanodet_{model_name}.onnx"* for ONNX and a metadata file *"nanodet_{model_name}.json"*.
 
-Note: Onnx optimization, optimize and saves only the actual model inference. This is important if the user wants to use
-the model for C API. It will be needed to make a preproccess and postproccess that will work exactly the same as our python
-implementation to have the exact same results.
-For C API it is recomended the Jit optimization and the example that is provided in our [c_api](../../projects/c_api/samples/nanodet/nanodet_jit_demo.c)
+Note: In Onnx optimization, the output model executes the original model's feed forward.
+The user must create his or her own pre- and post-processes in order to use the Onnx model in the C API.
+On the other side, in Jit optimization the output model does the feed forward and post-processing.
+For C API it is recommended the Jit optimization and the example that is provided in our [c_api](../../projects/c_api/samples/nanodet/nanodet_jit_demo.c)
 
 Parameters:
 
@@ -349,7 +349,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
     # First read an openDR image from your dataset and run the optimizer:
     img = Image.open(args.path)
-    nanodet.optimize("./optimization_models/{}/nanodet_{}/".format(args.optimization, args.model), img, optimization=args.optimization)
+    nanodet.optimize("./{}/nanodet_{}/".format(args.optimization, args.model), img, optimization=args.optimization)
 
     boxes = nanodet.infer(input=img)
 
