@@ -231,32 +231,37 @@ class ObjectDetectionGemNode:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--input_rgb_image_topic", help="Topic name for input rgb image", type=str, default="/camera/color/image_raw"
-    )
-    parser.add_argument(
-        "--output_rgb_image_topic",
-        help="Topic name for output annotated rgb image",
-        type=str,
-        default="/opendr/rgb_image_objects_annotated",
-    )
-    parser.add_argument(
-        "--input_infra_image_topic", help="Topic name for input infra image", type=str, default="/camera/infra/image_raw"
-    )
-    parser.add_argument(
-        "--output_infra_image_topic",
-        help="Topic name for output annotated infra image",
-        type=str,
-        default="/opendr/infra_image_objects_annotated",
-    )
-    parser.add_argument("--detections_topic", help="Topic name for detection messages", type=str, default="/opendr/objects")
-    parser.add_argument(
-        "--device",
-        help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
-        type=str,
-        default="cuda",
-        choices=["cuda", "cpu"],
-    )
+    parser.add_argument("-ic", "--input_rgb_image_topic",
+                        help="Topic name for input rgb image",
+                        type=str,
+                        default="/camera/color/image_raw"
+                        )
+    parser.add_argument("-ii", "--input_infra_image_topic",
+                        help="Topic name for input infrared image",
+                        type=str,
+                        default="/camera/infra/image_raw"
+                        )
+    parser.add_argument("-oc", "--output_rgb_image_topic",
+                        help="Topic name for output annotated rgb image",
+                        type=str,
+                        default="/opendr/rgb_image_objects_annotated"
+                        )
+    parser.add_argument("-oi", "--output_infra_image_topic",
+                        help="Topic name for output annotated infrared image",
+                        type=str,
+                        default="/opendr/infra_image_objects_annotated"
+                        )
+    parser.add_argument("-d", "--detections_topic",
+                        help="Topic name for detection messages",
+                        type=str,
+                        default="/opendr/objects"
+                        )
+    parser.add_argument("--device",
+                        help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
+                        type=str,
+                        default="cuda",
+                        choices=["cuda", "cpu"]
+                        )
     args = parser.parse_args()
 
     try:

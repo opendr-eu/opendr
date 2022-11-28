@@ -160,9 +160,9 @@ def main():
                                                              "of a ROS image containing class ids",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/heatmap")
-    parser.add_argument("-v", "--output_rgb_image_topic", help="Topic to which we are publishing the heatmap image "
-                                                               "blended with the input image and a class legend for "
-                                                               "visualization purposes",
+    parser.add_argument("-ov", "--output_rgb_image_topic", help="Topic to which we are publishing the heatmap image "
+                                                                "blended with the input image and a class legend for "
+                                                                "visualization purposes",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/heatmap_visualization")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",

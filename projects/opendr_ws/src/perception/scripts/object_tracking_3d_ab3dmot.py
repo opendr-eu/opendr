@@ -105,6 +105,17 @@ class ObjectTracking3DAb3dmotNode:
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_point_cloud_topic",
+                        help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
+                        type=str, default="/opendr/dataset_point_cloud")
+    parser.add_argument("-d", "--detections_topic",
+                        help="Output detections topic",
+                        type=lambda value: value if value.lower() != "none" else None, default="/opendr/objects3d")
+    parser.add_argument("-t", "--tracking3d_id_topic",
+                        help="Output tracking ids topic with the same element count as in output_detection_topic",
+                        type=lambda value: value if value.lower() != "none" else None, default="/opendr/objects_tracking_id")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("-dn", "--detector_model_name", help="Name of the trained model",
                         type=str, default="tanet_car_xyres_16", choices=["tanet_car_xyres_16"])
     parser.add_argument(
@@ -117,25 +128,14 @@ def main():
     )
     parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
-    parser.add_argument("-i", "--input_point_cloud_topic",
-                        help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
-                        type=str, default="/opendr/dataset_point_cloud")
-    parser.add_argument("-od", "--output_detection3d_topic",
-                        help="Output detections topic",
-                        type=str, default="/opendr/detection3d")
-    parser.add_argument("-ot", "--output_tracking3d_id_topic",
-                        help="Output tracking id topic",
-                        type=str, default="/opendr/tracking3d_id")
-    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
-                        type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
     input_point_cloud_topic = args.input_point_cloud_topic
     detector_model_name = args.detector_model_name
     temp_dir = args.temp_dir
     detector_model_config_path = args.detector_model_config_path
-    output_detection3d_topic = args.output_detection3d_topic
-    output_tracking3d_id_topic = args.output_tracking3d_id_topic
+    output_detection3d_topic = args.detections_topic
+    output_tracking3d_id_topic = args.tracking3d_id_topic
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():
@@ -164,8 +164,8 @@ def main():
         detector=detector,
         device=device,
         input_point_cloud_topic=input_point_cloud_topic,
-        output_detection3d_topic=output_detection3d_topic if output_detection3d_topic != "None" else None,
-        output_tracking3d_id_topic=output_tracking3d_id_topic if output_tracking3d_id_topic != "None" else None,
+        output_detection3d_topic=output_detection3d_topic,
+        output_tracking3d_id_topic=output_tracking3d_id_topic,
     )
 
     ab3dmot_node.listen()

@@ -173,24 +173,27 @@ def draw_predictions(frame, predictions: TrackingAnnotationList, is_centered=Fal
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_rgb_image_topic",
+                        help="Input Image topic provided by either an image_dataset_node, webcam or any other image node",
+                        type=str, default="/usb_cam/image_raw")
+    parser.add_argument("-o", "--output_rgb_image_topic",
+                        help="Output annotated image topic with a visualization of detections and their ids",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/image_objects_annotated")
+    parser.add_argument("-d", "--detections_topic",
+                        help="Output detections topic",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/objects")
+    parser.add_argument("-t", "--tracking_id_topic",
+                        help="Output tracking ids topic with the same element count as in output_detection_topic",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/objects_tracking_id")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("-n", "--model_name", help="Name of the trained model",
                         type=str, default="fairmot_dla34", choices=["fairmot_dla34"])
     parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
-    parser.add_argument("-i", "--input_rgb_image_topic",
-                        help="Input Image topic provided by either an image_dataset_node, webcam or any other image node",
-                        type=str, default="/opendr/dataset_image")
-    parser.add_argument("-od", "--output_detection_topic",
-                        help="Output detections topic",
-                        type=str, default="/opendr/fairmot_detection")
-    parser.add_argument("-ot", "--output_tracking_id_topic",
-                        help="Output tracking ids topic with the same element count as in output_detection_topic",
-                        type=str, default="/opendr/fairmot_tracking_id")
-    parser.add_argument("-oi", "--output_rgb_image_topic",
-                        help="Output annotated image topic with a visualization of detections and their ids",
-                        type=str, default="/opendr/fairmot_image_annotated")
-    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
-                        type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
     try:
@@ -211,9 +214,9 @@ def main():
         model_name=args.model_name,
         input_rgb_image_topic=args.input_rgb_image_topic,
         temp_dir=args.temp_dir,
-        output_detection_topic=args.output_detection_topic if args.output_detection_topic != "None" else None,
-        output_tracking_id_topic=args.output_tracking_id_topic if args.output_tracking_id_topic != "None" else None,
-        output_rgb_image_topic=args.output_rgb_image_topic if args.output_rgb_image_topic != "None" else None,
+        output_detection_topic=args.detections_topic,
+        output_tracking_id_topic=args.tracking_id_topic,
+        output_rgb_image_topic=args.output_rgb_image_topic,
     )
 
     fair_mot_node.listen()
