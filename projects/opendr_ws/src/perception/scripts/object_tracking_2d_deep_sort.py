@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import cv2
 import torch
 import os
-from opendr.engine.target import TrackingAnnotation
+from opendr.engine.target import TrackingAnnotationList
 import rospy
 from vision_msgs.msg import Detection2DArray
 from std_msgs.msg import Int32MultiArray
@@ -34,10 +35,10 @@ class ObjectTracking2DDeepSortNode:
     def __init__(
         self,
         detector: Learner,
-        input_image_topic="/usb_cam/image_raw",
-        output_detection_topic="/opendr/detection",
-        output_tracking_id_topic="/opendr/tracking_id",
-        output_image_topic="/opendr/image_annotated",
+        input_rgb_image_topic="/usb_cam/image_raw",
+        output_detection_topic="/opendr/deep_sort_detection",
+        output_tracking_id_topic="/opendr/deep_sort_tracking_id",
+        output_rgb_image_topic="/opendr/deep_sort_image_annotated",
         device="cuda:0",
         model_name="deep_sort",
         temp_dir="temp",
@@ -46,11 +47,11 @@ class ObjectTracking2DDeepSortNode:
         Creates a ROS Node for 2D object tracking
         :param detector: Learner to generate object detections
         :type detector: Learner
-        :param input_image_topic: Topic from which we are reading the input image
-        :type input_image_topic: str
-        :param output_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
+        :param input_rgb_image_topic: Topic from which we are reading the input image
+        :type input_rgb_image_topic: str
+        :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
         annotated image)
-        :type output_image_topic: str
+        :type output_rgb_image_topic: str
         :param output_detection_topic: Topic to which we are publishing the detections
         :type output_detection_topic:  str
         :param output_tracking_id_topic: Topic to which we are publishing the tracking ids
@@ -63,7 +64,6 @@ class ObjectTracking2DDeepSortNode:
         :type temp_dir: str
         """
 
-        # # Initialize the face detector
         self.detector = detector
         self.learner = ObjectTracking2DDeepSortLearner(
             device=device, temp_path=temp_dir,
@@ -73,22 +73,23 @@ class ObjectTracking2DDeepSortNode:
 
         self.learner.load(os.path.join(temp_dir, model_name), verbose=True)
 
-        # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
-        self.tracking_id_publisher = rospy.Publisher(
-            output_tracking_id_topic, Int32MultiArray, queue_size=10
-        )
+        self.input_rgb_image_topic = input_rgb_image_topic
 
-        if output_image_topic is not None:
-            self.output_image_publisher = rospy.Publisher(
-                output_image_topic, ROS_Image, queue_size=10
+        if output_tracking_id_topic is not None:
+            self.tracking_id_publisher = rospy.Publisher(
+                output_tracking_id_topic, Int32MultiArray, queue_size=10
             )
 
-        self.detection_publisher = rospy.Publisher(
-            output_detection_topic, Detection2DArray, queue_size=10
-        )
+        if output_rgb_image_topic is not None:
+            self.output_image_publisher = rospy.Publisher(
+                output_rgb_image_topic, ROS_Image, queue_size=10
+            )
 
-        rospy.Subscriber(input_image_topic, ROS_Image, self.callback)
+        if output_detection_topic is not None:
+            self.detection_publisher = rospy.Publisher(
+                output_detection_topic, Detection2DArray, queue_size=10
+            )
 
     def callback(self, data):
         """
@@ -101,8 +102,7 @@ class ObjectTracking2DDeepSortNode:
         image = self.bridge.from_ros_image(data, encoding="bgr8")
         detection_boxes = self.detector.infer(image)
         image_with_detections = ImageWithDetections(image.numpy(), detection_boxes)
-        print(image_with_detections.data.shape)
-        tracking_boxes = self.learner.infer(image_with_detections)
+        tracking_boxes = self.learner.infer(image_with_detections, swap_left_top=True)
 
         if self.output_image_publisher is not None:
             frame = image.opencv()
@@ -113,20 +113,27 @@ class ObjectTracking2DDeepSortNode:
             self.output_image_publisher.publish(message)
             rospy.loginfo("Published annotated image")
 
-        ids = [tracking_box.id for tracking_box in tracking_boxes]
-
-        # Convert detected boxes to ROS type and publish
-        ros_boxes = self.bridge.to_ros_boxes(detection_boxes)
         if self.detection_publisher is not None:
+            ros_boxes = self.bridge.to_ros_boxes(detection_boxes)
             self.detection_publisher.publish(ros_boxes)
             rospy.loginfo("Published detection boxes")
 
-        ros_ids = Int32MultiArray()
-        ros_ids.data = ids
-
         if self.tracking_id_publisher is not None:
+            ids = [tracking_box.id for tracking_box in tracking_boxes]
+            ros_ids = Int32MultiArray()
+            ros_ids.data = ids
             self.tracking_id_publisher.publish(ros_ids)
             rospy.loginfo("Published tracking ids")
+
+    def listen(self):
+        """
+        Start the node and begin processing input data.
+        """
+        rospy.init_node('object_tracking_2d_deep_sort_node', anonymous=True)
+        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
+
+        rospy.loginfo("Object Tracking 2D Deep Sort Node started.")
+        rospy.spin()
 
 
 colors = [
@@ -139,7 +146,7 @@ colors = [
 ]
 
 
-def draw_predictions(frame, predictions: TrackingAnnotation, is_centered=False, is_flipped_xy=True):
+def draw_predictions(frame, predictions: TrackingAnnotationList, is_centered=False, is_flipped_xy=True):
     global colors
     w, h, _ = frame.shape
 
@@ -174,36 +181,62 @@ def draw_predictions(frame, predictions: TrackingAnnotation, is_centered=False, 
         )
 
 
-if __name__ == "__main__":
-    # Automatically run on GPU/CPU
-    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-n", "--model_name", help="Name of the trained model",
+                        type=str, default="deep_sort", choices=["deep_sort"])
+    parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
+                        type=str, default="temp")
+    parser.add_argument("-i", "--input_rgb_image_topic",
+                        help="Input Image topic provided by either an image_dataset_node, webcam or any other image node",
+                        type=str, default="/opendr/dataset_image")
+    parser.add_argument("-od", "--output_detection_topic",
+                        help="Output detections topic",
+                        type=str, default="/opendr/deep_sort_detection")
+    parser.add_argument("-ot", "--output_tracking_id_topic",
+                        help="Output tracking ids topic with the same element count as in output_detection_topic",
+                        type=str, default="/opendr/deep_sort_tracking_id")
+    parser.add_argument("-oi", "--output_rgb_image_topic",
+                        help="Output annotated image topic with a visualization of detections and their ids",
+                        type=str, default="/opendr/deep_sort_image_annotated")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    args = parser.parse_args()
 
-    # initialize ROS node
-    rospy.init_node("opendr_deep_sort", anonymous=True)
-    rospy.loginfo("Deep Sort node started")
-
-    model_name = rospy.get_param("~model_name", "deep_sort")
-    temp_dir = rospy.get_param("~temp_dir", "temp")
-    input_image_topic = rospy.get_param(
-        "~input_image_topic", "/opendr/dataset_image"
-    )
-    rospy.loginfo("Using model_name: {}".format(model_name))
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
 
     detection_learner = ObjectTracking2DFairMotLearner(
-        device=device, temp_path=temp_dir,
+        device=device, temp_path=args.temp_dir,
     )
-    if not os.path.exists(os.path.join(temp_dir, "fairmot_dla34")):
-        ObjectTracking2DFairMotLearner.download("fairmot_dla34", temp_dir)
+    if not os.path.exists(os.path.join(args.temp_dir, "fairmot_dla34")):
+        ObjectTracking2DFairMotLearner.download("fairmot_dla34", args.temp_dir)
 
-    detection_learner.load(os.path.join(temp_dir, "fairmot_dla34"), verbose=True)
+    detection_learner.load(os.path.join(args.temp_dir, "fairmot_dla34"), verbose=True)
 
-    # created node object
     deep_sort_node = ObjectTracking2DDeepSortNode(
         detector=detection_learner,
         device=device,
-        model_name=model_name,
-        input_image_topic=input_image_topic,
-        temp_dir=temp_dir,
+        model_name=args.model_name,
+        input_rgb_image_topic=args.input_rgb_image_topic,
+        temp_dir=args.temp_dir,
+        output_detection_topic=args.output_detection_topic if args.output_detection_topic != "None" else None,
+        output_tracking_id_topic=args.output_tracking_id_topic if args.output_tracking_id_topic != "None" else None,
+        output_rgb_image_topic=args.output_rgb_image_topic if args.output_rgb_image_topic != "None" else None,
     )
-    # begin ROS communications
-    rospy.spin()
+
+    deep_sort_node.listen()
+
+
+if __name__ == '__main__':
+    main()
