@@ -1,5 +1,4 @@
-float64[3] ee_pose
-float64[4] ee_orientation
+geometry_msg/Pose pose
 ---
 bool success
 string message

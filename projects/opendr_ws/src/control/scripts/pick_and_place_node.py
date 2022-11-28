@@ -29,8 +29,8 @@ def start_pick_and_place():
 
     rospy.init_node('opendr_pick_and_place_server', anonymous=False)  # initialize ros node
 
-    arm_srvs = ['set_joint_state', 'set_pose_target', 'set_pose_target_1D', 'set_pose_target_2D', 'rotate_ee', 'stop_action', 'resume_action'] 
-    gripper_srvs = ['move_gripper', 'grasp'] 
+    arm_srvs = ['set_joint_state', 'set_pose_target', 'set_pose_target_1D', 'set_pose_target_2D', 'rotate_ee', 'stop_action', 'resume_action']
+    gripper_srvs = ['move_gripper', 'grasp']
 
     arm_srvs = [build_srv_name(args.arm, x) for x in arm_srvs]
     gripper_srvs = [build_srv_name(args.gripper, x) for x in gripper_srvs]
@@ -38,7 +38,7 @@ def start_pick_and_place():
     for i in arm_srvs:
         rospy.wait_for_service(i)
 
-    for i in gripper_srvs:   
+    for i in gripper_srvs:
         rospy.wait_for_service(i)
 
     rotate_EE = rospy.ServiceProxy('rotate_ee', RotateEE)
@@ -51,8 +51,11 @@ def start_pick_and_place():
 
     grasp = rospy.ServiceProxy('grasp', Grasp)
     move_gripper = rospy.ServiceProxy('move_gripper', MoveGripper)
-    
-    pick_and_place_server = PickAndPlaceServer(args.arm, args.gripper)
+
+    pick_and_place_server = PickAndPlaceServer(rotate_EE, stop_action, resume_action,
+                                                move_joint_space, move_cartesian_space,
+                                                move_cartesian_space_1D, move_cartesian_space_2D,
+                                                grasp, move_gripper)
     pick_and_place_server.start()
 
     def stop_pick_and_place_server():
@@ -60,7 +63,7 @@ def start_pick_and_place():
 
     rospy.on_shutdown(stop_pick_and_place_server)
 
-    rospy.spin() 
+    rospy.spin()
 
 
 if __name__ == '__main__':

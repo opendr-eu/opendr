@@ -19,7 +19,7 @@ import argparse
 import moveit_commander
 
 import tf
-import rospy 
+import rospy
 from geometry_msgs.msg import Pose
 from std_srvs.srv import Trigger, TriggerResponse
 from moveit_msgs.msg import RobotTrajectory
@@ -30,7 +30,7 @@ from control.srv import *
 
 class RobotController:
 
-    def __init__(self, moveit_group): 
+    def __init__(self, moveit_group):
         self.group = moveit_group
         self.gripper = Gripper()
         self.group.set_max_velocity_scaling_factor(0.1)
@@ -38,14 +38,14 @@ class RobotController:
 
         self._last_goal = self.group.get_current_pose().pose
 
-    def rotate_ee(self, angle): 
+    def rotate_ee(self, angle):
         '''
         45 is neutral math.pi/4
         -45 rotate to the left -math.pi/4
         135 rotate to the right 3*math.pi/4
         '''
-        joint_goal = self.group.get_current_joint_values() 
-        yaw = angle + math.pi/4 
+        joint_goal = self.group.get_current_joint_values()
+        yaw = angle + math.pi/4
         if yaw > 3*math.pi/4:
             yaw = yaw - math.pi
         elif yaw < -math.pi/4:
@@ -68,7 +68,7 @@ class RobotController:
                 new_p.accelerations.append(p.accelerations[i]*speed_factor)
             new_plan.joint_trajectory.points.append(new_p)
         return new_plan
-            
+
     def move_to_joint_target(self, joint_values):
         self.group.go(list(joint_values), wait=True)
         self.stop()
@@ -108,7 +108,7 @@ class RobotController:
                                0.0)         # jump_threshold
         if slow:
             plan = self.modify_plan(plan)
-        self.group.execute(plan, wait=True) 
+        self.group.execute(plan, wait=True)
         self.stop()
 
     def plan_linear_z(self, dist, slow=False):
@@ -135,10 +135,3 @@ class RobotController:
         else:
             self.move_to_joint_target(self._last_goal)
         self._last_goal = self.group.get_current_pose().pose
-
-    def pick(self, pose, width, force):
-        pass 
-
-    def place(self, pose):
-        pass 
-
