@@ -735,12 +735,12 @@ class FacialEmotionLearner(Learner):
                 urlretrieve(file_url, zip_path)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(data_path)
-                    print(os.listdir(data_path))
+                    # print(os.listdir(data_path))
                 os.remove(zip_path)
             else:
                 print("data files already exists.")
             print("Data download complete.")
-            downloaded_files_path = data_path
+            downloaded_files_path = os.path.join(data_path, 'AffectNet_micro')
 
         elif mode == "pretrained":
             print("Downloading pretrained model weights...")
@@ -755,11 +755,11 @@ class FacialEmotionLearner(Learner):
                 urlretrieve(file_url, zip_path)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(model_path)
-                    print(os.listdir(model_path))
+                    # print(os.listdir(model_path))
                 os.remove(zip_path)
             else:
                 print("pretrained files already exists.")
             print("Pretrained model weights download complete.")
-            downloaded_files_path = model_path
+            downloaded_files_path = os.path.join(model_path, 'esr_9')
 
         return downloaded_files_path
