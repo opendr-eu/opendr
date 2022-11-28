@@ -898,7 +898,3 @@ The kinetics human action video dataset. arXiv preprint arXiv:1705.06950.](https
 [Cao, Z., Simon, T., Wei, S. E., & Sheikh, Y. (2017). Realtime multi-person 2d pose estimation using part affinity 
 fields. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7291-7299).](
 https://openaccess.thecvf.com/content_cvpr_2017/html/Cao_Realtime_Multi-Person_2D_CVPR_2017_paper.html)
-
-<a id="8">[8]</a>
-[Hedegaard, Lukas, Negar Heidari, and Alexandros Iosifidis. "Online Skeleton-based Action Recognition with Continual Spatio-Temporal Graph Convolutional Networks." arXiv preprint arXiv:2203.11009 (2022).](
-https://arxiv.org/abs/2203.11009)
