@@ -73,15 +73,14 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes (categor
 3. [Face Detection](src/perception/README.md#face-detection-ros-node)
 4. [Face Recognition](src/perception/README.md#face-recognition-ros-node)
 5. [2D Object Detection](src/perception/README.md#2d-object-detection-ros-nodes)
-6. [2D Object Tracking - Deep Sort](src/perception/README.md#2d-object-tracking-deep-sort-ros-node)
-7. [2D Object Tracking FairMOT](src/perception/README.md#2d-object-tracking-fairmot-ros-node)
+6. [2D Object Tracking](src/perception/README.md#2d-object-tracking-ros-nodes)
 8. [Panoptic Segmentation](src/perception/README.md#panoptic-segmentation-ros-node)
 9. [Semantic Segmentation](src/perception/README.md#semantic-segmentation-ros-node)
 10. [Landmark-based Facial Expression Recognition](src/perception/README.md#landmark-based-facial-expression-recognition-ros-node)
 11. [Skeleton-based Human Action Recognition](src/perception/README.md#skeleton-based-human-action-recognition-ros-node)
 12. [Video Human Activity Recognition](src/perception/README.md#video-human-activity-recognition-ros-node)
 ## RGB + Infrared input
-1. [End-to-End Multi-Modal Object Detection (GEM)](src/perception/README.md#gem-ros-node)
+1. [End-to-End Multi-Modal Object Detection (GEM)](src/perception/README.md#2d-object-detection-gem-ros-node)
 ## RGBD input
 1. [RGBD Hand Gesture Recognition](src/perception/README.md#rgbd-hand-gesture-recognition-ros-node)
 ## RGB + Audio input
