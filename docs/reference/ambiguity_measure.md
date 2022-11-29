@@ -38,7 +38,7 @@ Parameters:
 
 #### Demos and tutorial
 
-A demo showcasing the usage and functionality of the *AmbiguityMeasure* is available [here]().
+A demo showcasing the usage and functionality of the *AmbiguityMeasure* is available [here](https://colab.research.google.com/github/opendr-eu/opendr/blob/ambiguity_measure/projects/python/utils/ambiguity_measure/ambiguity_measure_tutorial.ipynb).
 
 
 #### Examples
