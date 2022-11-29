@@ -20,7 +20,18 @@ YOLOv5DetectorLearner(self, model_name, path, device)
 Constructor parameters:
 
 - **model_name**: *str*\
-  Specifies the name of the model to be used. See `YOLOv5DetectorLearner.available_models` for a list of available architectures.
+  Specifies the name of the model to be used. Available models: 
+-   'yolov5n' (46.0% mAP,  1.9M parameters)
+-   'yolov5s' (56.0% mAP,  7.2M parameters)
+-   'yolov5m' (63.9% mAP,  21.2M parameters)
+-   'yolov5l' (67.2% mAP,  46.5M parameters)
+-   'yolov5x' (68.9% mAP,  86.7M parameters)
+-   'yolov5n6'  (50.7% mAP, 3.2M parameters)
+-   'yolov5s6' (63.0% mAP,  16.8M parameters)
+-   'yolov5m6' (69.0% mAP,  35.7 parameters)
+-   'yolov5l6' (71.6% mAP, 76.8M parameters)
+-   'custom' (for custom models, the ```path``` parameter must be set to point to the location of the weights file.)
+Note that mAP (0.5) is reported on the [COCO val2017 dataset](https://github.com/ultralytics/yolov5/releases).
 - **path**: *str, default=None*\
   For custom-trained models, specifies the path to the weights to be loaded.
 - **device**: *{'cuda', 'cpu'}, default='cuda'*
