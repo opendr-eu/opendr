@@ -55,11 +55,11 @@ class YOLOv5DetectorLearner(Learner):
         self.model.to(device)
         self.classes = [self.model.names[i] for i in range(len(self.model.names.keys()))]
 
-    def infer(self, img):
+    def infer(self, img, size=640):
         if isinstance(img, Image):
             img = img.convert("channels_last", "rgb")
 
-        results = self.model(img)
+        results = self.model(img, size=size)
 
         bounding_boxes = BoundingBoxList([])
         for idx, box in enumerate(results.xyxy[0]):

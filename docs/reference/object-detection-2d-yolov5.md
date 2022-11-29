@@ -54,6 +54,8 @@ Parameters:
 
 - **img**: *object*\
   Object of type engine.data.Image or OpenCV.
+- **size**: *int, default=640*\
+  Size of image for inference. The image is resized to this in both sides before being fed to the model.
   
 #### Examples
 
