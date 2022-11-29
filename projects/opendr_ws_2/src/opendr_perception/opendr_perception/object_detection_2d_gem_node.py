@@ -14,29 +14,31 @@
 # limitations under the License.
 
 
-import rospy
-import torch
-import message_filters
-import cv2
-import numpy as np
 import argparse
-from vision_msgs.msg import Detection2DArray
+import cv2
+import message_filters
+import numpy as np
+import rclpy
+import torch
+from rclpy.node import Node
+from opendr_ros2_bridge import ROS2Bridge
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_bridge import ROSBridge
+from vision_msgs.msg import Detection2DArray
+
+from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import GemLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
-from opendr.engine.data import Image
 
 
-class ObjectDetectionGemNode:
+class ObjectDetectionGemNode(Node):
     def __init__(
         self,
-        input_rgb_image_topic="/camera/color/image_raw",
-        input_infra_image_topic="/camera/infra/image_raw",
-        output_rgb_image_topic="/opendr/rgb_detection_annotated",
-        output_infra_image_topic="/opendr/infra_detection_annotated",
-        detections_topic="/opendr/objects",
-        device="cuda",
+        input_rgb_image_topic,
+        input_infra_image_topic,
+        output_rgb_image_topic,
+        output_infra_image_topic,
+        detections_topic,
+        device,
         pts_rgb=None,
         pts_infra=None,
     ):
@@ -62,22 +64,23 @@ class ObjectDetectionGemNode:
         opendr/perception/object_detection2d/utils module.
         :type pts_rgb: {list, numpy.ndarray}
         :param pts_infra: Points on the infrared image that define alignment with rgb image. These are camera specific
-        and can be obtained using get_rgb_infra_alignment.py which is located in the
+        and can be obtained using get_color_infra_alignment.py which is located in the
         opendr/perception/object_detection2d/utils module.
         :type pts_infra: {list, numpy.ndarray}
         """
-        rospy.init_node("gem", anonymous=True)
+        super().__init__("gem_node")
+
         if output_rgb_image_topic is not None:
-            self.rgb_publisher = rospy.Publisher(output_rgb_image_topic, ROS_Image, queue_size=10)
+            self.rgb_publisher = self.create_publisher(msg_type=ROS_Image, topic=output_rgb_image_topic, qos_profile=10)
         else:
             self.rgb_publisher = None
         if output_infra_image_topic is not None:
-            self.ir_publisher = rospy.Publisher(output_infra_image_topic, ROS_Image, queue_size=10)
+            self.ir_publisher = self.create_publisher(msg_type=ROS_Image, topic=output_infra_image_topic, qos_profile=10)
         else:
             self.ir_publisher = None
 
         if detections_topic is not None:
-            self.detection_publisher = rospy.Publisher(detections_topic, Detection2DArray, queue_size=10)
+            self.detection_publisher = self.create_publisher(msg_type=Detection2DArray, topic=detections_topic, qos_profile=10)
         else:
             self.detection_publisher = None
         if pts_infra is None:
@@ -116,10 +119,10 @@ class ObjectDetectionGemNode:
                     [415, 364],
                 ]
             )
-            rospy.logwarn(
+            self.get_logger().warn(
                 "\nUsing default calibration values for pts_infra!" +
                 "\nThese are probably incorrect." +
-                "\nThe correct values for pts_infra can be found by running get_color_infra_alignment.py." +
+                "\nThe correct values for pts_infra can be found by running get_rgb_infra_alignment.py." +
                 "\nThis file is located in the opendr/perception/object_detection2d/utils module."
             )
         if pts_rgb is None:
@@ -158,7 +161,7 @@ class ObjectDetectionGemNode:
                     [787, 630],
                 ]
             )
-            rospy.logwarn(
+            self.get_logger().warn(
                 "\nUsing default calibration values for pts_rgb!" +
                 "\nThese are probably incorrect." +
                 "\nThe correct values for pts_rgb can be found by running get_color_infra_alignment.py." +
@@ -167,10 +170,10 @@ class ObjectDetectionGemNode:
         # Object classes
         self.classes = ["N/A", "chair", "cycle", "bin", "laptop", "drill", "rocker"]
 
-        # Estimating Homography matrix for aligning infra with RGB
+        # Estimating Homography matrix for aligning infra with rgb
         self.h, status = cv2.findHomography(pts_infra, pts_rgb)
 
-        self.bridge = ROSBridge()
+        self.bridge = ROS2Bridge()
 
         # Initialize the detection estimation
         model_backbone = "resnet50"
@@ -184,20 +187,11 @@ class ObjectDetectionGemNode:
         self.gem_learner.download(path=".", verbose=True)
 
         # Subscribers
-        msg_rgb = message_filters.Subscriber(input_rgb_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
-        msg_ir = message_filters.Subscriber(input_infra_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
+        msg_rgb = message_filters.Subscriber(self, ROS_Image, input_rgb_image_topic, 1)
+        msg_ir = message_filters.Subscriber(self, ROS_Image, input_infra_image_topic, 1)
 
         sync = message_filters.TimeSynchronizer([msg_rgb, msg_ir], 1)
         sync.registerCallback(self.callback)
-        rospy.loginfo("GEM node Initialized!")
-
-    def listen(self):
-        """
-        Start the node and begin processing input data
-        """
-        self.fps_list = []
-        rospy.loginfo("GEM node started!")
-        rospy.spin()
 
     def callback(self, msg_rgb, msg_ir):
         """
@@ -219,7 +213,7 @@ class ObjectDetectionGemNode:
         if self.detection_publisher is not None:
             ros_detection = self.bridge.to_ros_bounding_box_list(boxes)
             self.detection_publisher.publish(ros_detection)
-            # We get can the data back using self.bridge.from_ros_bounding_box_list(ros_detection)
+            # We can get the data back using self.bridge.from_ros_bounding_box_list(ros_detection)
             # e.g., opendr_detection = self.bridge.from_ros_bounding_box_list(ros_detection)
 
         if self.rgb_publisher is not None:
@@ -232,7 +226,9 @@ class ObjectDetectionGemNode:
             self.ir_publisher.publish(message)
 
 
-if __name__ == "__main__":
+def main(args=None):
+    rclpy.init(args=args)
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--input_rgb_image_topic", help="Topic name for input rgb image", type=str, default="/camera/color/image_raw"
@@ -244,7 +240,7 @@ if __name__ == "__main__":
         default="/opendr/rgb_image_objects_annotated",
     )
     parser.add_argument(
-        "--input_infra_image_topic", help="Topic name for input infra image", type=str, default="/camera/infra/image_raw"
+        "--input_infra_image_topic", help="Topic name for input infra image", type=str, default="/camera/infra/image_rect_raw"
     )
     parser.add_argument(
         "--output_infra_image_topic",
@@ -262,7 +258,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # Select the device for running the
     try:
         if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"
@@ -276,7 +271,7 @@ if __name__ == "__main__":
         print("Using CPU.")
         device = "cpu"
 
-    detection_estimation_node = ObjectDetectionGemNode(
+    gem_node = ObjectDetectionGemNode(
         device=device,
         input_rgb_image_topic=args.input_rgb_image_topic,
         output_rgb_image_topic=args.output_rgb_image_topic,
@@ -284,4 +279,15 @@ if __name__ == "__main__":
         output_infra_image_topic=args.output_infra_image_topic,
         detections_topic=args.detections_topic,
     )
-    detection_estimation_node.listen()
+
+    rclpy.spin(gem_node)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    gem_node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == "__main__":
+    main()
