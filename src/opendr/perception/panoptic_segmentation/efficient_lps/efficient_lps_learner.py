@@ -277,7 +277,7 @@ class EfficientLpsLearner(Learner):
         return results
 
     def eval(self,
-             dataset: Union[SemanticKittiDataset, NuscenesDataset],
+             dataset: SemanticKittiDataset,
              print_results: bool = False
              ) -> Dict[str, Any]:
         """
