@@ -14,7 +14,9 @@
 
 
 #goal definition
-control/Grasp grasp
+float32 width
+float32 force
+geometry_msgs/Pose pose
 ---
 #result definition
 bool success

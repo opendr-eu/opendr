@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,88 +27,91 @@ from std_srvs.srv import Trigger, TriggerResponse
 from moveit_msgs.msg import RobotTrajectory
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
+from control.arm_controller import RobotController
 from control.srv import *
 
 
-def handle_move_to_target(req):
+def handle_move_to_target(req, robot_arm):
     success = True
     try:
-        self.move_to_joint_target(req.q)
+        robot_arm.move_to_joint_target(req.q)
     except:
         success = False
     return SetJointStateResponse(success=success)
 
-def handle_move_to_cartesian_target(req):
+def handle_move_to_cartesian_target(req, robot_arm):
     success = True
     try:        
-        self.move_to_cartesian_target(req.pose)
+        robot_arm.move_to_cartesian_target(req.pose)
     except:
         success = False
     return SetPoseTargetResponse(success=success)
 
-def handle_stop(self, req):
+def handle_stop(req, robot_arm):
     success = True
     try:
-        self.stop()
+        robot_arm.stop(pause=True)
     except:
         success = False
     return TriggerResponse(success=success)
 
-def handle_resume(req):
+def handle_resume(req, robot_arm):
     success = True
     try:
-        self.resume()
+        robot_arm.resume()
     except Exception as e:
         print(e)
         success = False
     return TriggerResponse(success=success)
 
-def handle_move_to_2D_cartesian_target(req):
+def handle_move_to_2D_cartesian_target(req, robot_arm):
     success = True
     try:
-        self.move_to_2D_cartesian_target(req.point, req.slow)
+        robot_arm.move_to_2D_cartesian_target(req.point, req.slow)
     except:
         success = False
     return SetPoseTarget2DResponse(success=success)
 
-def handle_move_to_1D_cartesian_target(req):
+def handle_move_to_1D_cartesian_target(req, robot_arm):
     success = True
     try:
-        self.plan_linear_z(req.z, req.slow)
+        robot_arm.plan_linear_z(req.z, req.slow)
     except:
         success = False
     return SetPoseTarget1DResponse(success=success)
 
-def handle_rotate_ee(req):
+def handle_rotate_ee(req, robot_arm):
     success = True
     try:
-        self.rotate_ee(req.angle)
+        robot_arm.rotate_ee(req.angle)
     except:
         success = False
     return RotateEEResponse(success=success)
 
 
 if __name__ == '__main__':
+    '''
     parser = argparse.ArgumentParser()
     parser.add_argument('--group_name', type=str, help='MoveIt group name of the robot to control')
     args = parser.parse_args()
+    '''
 
     rospy.init_node('arm_control', anonymous=True)
     moveit_commander.roscpp_initialize(sys.argv)
 
     robot = moveit_commander.RobotCommander()
     scene = moveit_commander.PlanningSceneInterface()
-    group = moveit_commander.MoveGroupCommander(args.group_name)
+    group = moveit_commander.MoveGroupCommander(rospy.get_param('/arm_control/group_name'))
 
     robot_arm = RobotController(group)
 
-    rotate_ee_service = rospy.Service('/opendr/rotate_ee', RotateEE, handle_rotate_ee)
-    stop_action_service = rospy.Service('/opendr/stop_action', Trigger, handle_stop)
-    resume_action_service = rospy.Service('/opendr/resume_action', Trigger, handle_resume)
-    action_service = rospy.Service('/opendr/set_joint_state', SetJointState, handle_move_to_target)
-    cartesian_action_service = rospy.Service('/opendr/set_pose_target', SetPoseTarget, handle_move_to_cartesian_target)
-    cartesian_action_service_2d = rospy.Service('/opendr/set_pose_target_2D', SetPoseTarget2D, handle_move_to_2D_cartesian_target)
-    cartesian_action_service_1d = rospy.Service('/opendr/set_pose_target_1D', SetPoseTarget1D, handle_move_to_1D_cartesian_target)
+    rotate_ee_service = rospy.Service('/opendr/rotate_ee', RotateEE, lambda msg: handle_rotate_ee(msg,robot_arm) )
+    stop_action_service = rospy.Service('/opendr/stop_action', Trigger, lambda msg: handle_stop(msg,robot_arm))
+    resume_action_service = rospy.Service('/opendr/resume_action', Trigger, lambda msg: handle_resume(msg,robot_arm))
+    action_service = rospy.Service('/opendr/set_joint_state', SetJointState, lambda msg: handle_move_to_target(msg,robot_arm))
+    cartesian_action_service = rospy.Service('/opendr/set_pose_target', SetPoseTarget, lambda msg: handle_move_to_cartesian_target(msg,robot_arm))
+    cartesian_action_service_2d = rospy.Service('/opendr/set_pose_target_2D', SetPoseTarget2D, lambda msg: handle_move_to_2D_cartesian_target(msg,robot_arm))
+    cartesian_action_service_1d = rospy.Service('/opendr/set_pose_target_1D', SetPoseTarget1D, lambda msg: handle_move_to_1D_cartesian_target(msg,robot_arm))
 
     rospy.loginfo("Arm control node started!")
 

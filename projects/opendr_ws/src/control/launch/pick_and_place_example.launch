@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+
+<launch>
+
+  <include file="$(find control)/launch/robot_control.launch"/>
+
+  <node name="opendr_grasp_example" type="opendr_grasp_example.py" pkg="control" output="screen"/>
+
+</launch>

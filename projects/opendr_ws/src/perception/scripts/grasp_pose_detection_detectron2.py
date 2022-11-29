@@ -66,8 +66,7 @@ class Detectron2GraspDetectionNode:
         self.bridge = ROSBridge()
 
         # Initialize the object detection        
-        model_path = pathlib.Path("/home/opendr/Gaurang/engineAssembly/new_dataset/output_level2")
-        # model_path = pathlib.Path("/home/opendr/augmentation/output")
+        model_path = pathlib.Path("/home/alex/Documents")
         if model == "detectron":
             self.learner = Detectron2Learner(device=device)
             if not model_path.exists():
@@ -189,7 +188,7 @@ class Detectron2GraspDetectionNode:
         my_point.pose.position.y = y_dist 
         my_point.pose.position.z = z_to_surface
         
-        quat_rotcmd = tf.transformations.quaternion_from_euler(0, 0, 0)
+        quat_rotcmd = tf.transformations.quaternion_from_euler(0, 0, theta)
         my_point.pose.orientation.x = quat_rotcmd[0]
         my_point.pose.orientation.y = quat_rotcmd[1]
         my_point.pose.orientation.z = quat_rotcmd[2]
@@ -257,8 +256,7 @@ class Detectron2GraspDetectionNode:
                     obj_pose.pose.pose = self.convert_detection_pose(bbox, depth_image, mask)
                     self.grasp_publisher.publish(obj_pose)
                 except:
-                    pass 
-                    # print("[Warning: skipping a conversion. Pose not valid.]")
+                    print("[Warning: skipping a conversion. Pose not valid.]")
 
 
 if __name__ == '__main__':
@@ -285,7 +283,7 @@ if __name__ == '__main__':
     rospy.loginfo("Detectron2 object detection node started!")
 
     try:
-        rospy.set_param('/opendr/object_catagories', {'1':'rocker arm', '2':'bolt holes', '3':'big pushrod holes', '4':'small pushrod holes', '5':'engine', '6':'bolt', '7':'pushrod', '8':'rocker arm object'})
+        rospy.set_param('/opendr/object_catagories', {'0':'rocker arm', '1':'bolt holes', '2':'big pushrod holes', '3':'small pushrod holes', '4':'engine', '5':'bolt', '6':'pushrod', '7':'rocker arm object'})
         obj_cat_pub = rospy.Publisher("/opendr/object_catagories", VisionInfo, queue_size=1)
         rate = rospy.Rate(1) 
         while not rospy.is_shutdown():

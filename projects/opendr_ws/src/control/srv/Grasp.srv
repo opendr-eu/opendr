@@ -1,4 +1,5 @@
-control/Grasp grasp
+float32 width
+float32 force
 ---
 bool success
 string message

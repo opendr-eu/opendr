@@ -15,7 +15,7 @@
 import rospy
 import actionlib
 from std_msgs.msg import Empty
-from control.msg import PickAction, PlaceAction, PickGoal, PlaceGoal
+from control.msg import PickAction, PlaceAction, PickGoal, PlaceGoal, PickActionResult
 
 
 class PickAndPlaceClient(object):
@@ -35,29 +35,24 @@ class PickAndPlaceClient(object):
 
     def pick(self, grasp_msg):
         try:
-            goal = PickGoal(grasp=grasp_msg)
-            self.pick_client.send_goal(goal,
+            self.pick_client.send_goal(grasp_msg,
                                         active_cb=self._pick_active,
-                                        feedback_cb=self.pick_feedback,
-                                        done_cb=self.pick_done)
+                                        feedback_cb=self._pick_feedback,
+                                        done_cb=self._pick_done)
 
             self._loginfo('pick has been sent')
-
         except Exception as e:
-            print(e.message)
-            traceback.print_exc()
+            print(e)
             self._loginfo('Error sending pick')
-            self.pick_client.wait_for_server(rospy.Duration.from_sec(15))
-            self.pick(grasp_msg)
 
-    def pick_active(self):
+    def _pick_active(self):
         self._loginfo('Pick has transitioned to active state')
 
-    def pick_feedback(self, feedback):
+    def _pick_feedback(self, feedback):
         # type: (DoSomethingFeedback) -> None
         self._loginfo('Pick feedback received: {}'.format(feedback))
 
-    def pick_done(self, state, result):
+    def _pick_done(self, state, result):
         # type: (actionlib.GoalStatus, DoSomethingResult) -> None
         self._loginfo('Pick done callback triggered')
         self._loginfo(str(state))
@@ -65,18 +60,15 @@ class PickAndPlaceClient(object):
 
     def place(self, pose_msg):
         try:
-            goal = PlaceGoal(pose=pose)
+            goal = PlaceGoal(pose=pose_msg)
             self.place_client.send_goal(goal,
-                                                    active_cb=self.place_active,
-                                                    feedback_cb=self.place_feedback,
-                                                    done_cb=self.place_done)
-
+                                            active_cb=self.place_active,
+                                            feedback_cb=self.place_feedback,
+                                            done_cb=self.place_done)
+            self._loginfo('place has been sent')
         except Exception as e:
-            print(e.message)
-            traceback.print_exc()
+            print(e)
             self._loginfo('Error sending place')
-            self.place_client.wait_for_server(rospy.Duration.from_sec(15))
-            self.place(pose_msg)
 
     def place_active(self):
         self._loginfo('Place has transitioned to active state')
@@ -90,6 +82,12 @@ class PickAndPlaceClient(object):
         self._loginfo('Place done callback triggered')
         self._loginfo(str(state))
         self._loginfo(str(result))
+
+    def pick_and_place(self, pick_goal, place_goal):
+        self.pick(pick_goal)
+        pick_result = rospy.wait_for_message("/opendr/pick/result", PickActionResult)
+        if pick_result.result.success:
+            self.place(place_goal)
 
     @staticmethod
     def _loginfo(message):

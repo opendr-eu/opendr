@@ -13,43 +13,55 @@
 # limitations under the License.
 
 
+from math import sqrt
+
 import rospy
-from vision_msgs.msg import ObjectHypothesisWithPose
-from geometry_msg.msgs import Pose
+from geometry_msgs.msg import Pose
 
 class Detections:
 
     def __init__(self):
         self.objects = dict()
         self._distance_threshold = 0.01 # in m
+        self._category_database = " "
 
     def process_detection(self, msg):
         if msg.id in self.objects:
-            if (not self.object_already_stored(msg.id, robot_pose.position.x, robot_pose.position.y)):
+            if (not self.object_already_stored(msg.id, msg.pose.pose)):
                 self.objects[msg.id].append(msg.pose.pose)
         else:
             self.objects[msg.id] = [msg.pose.pose]
-
-    def __calculate_distance(self, pose1, pose2):
-        return sqrt( (pose2.position.x - pose1.position.x)**2 + (pose2.position.y - pose1.position.y)**2 )
-
-	def object_already_stored(self, pred_class, pose1):
-		result = False
-		for pose2 in self.detections[pred_class]:
-			if (self.__calculate_distance(pose1, pose2) < self._distance_threshold):
-				result = True
-				break
-		return result
 
     def save_categories(self, msg):
         self._category_database = msg.database_location
 
     def find_object_by_category(self, category_name):
         if rospy.has_param(self._category_database):
-            for key, item in rospy.get_param(self._category_database):
+            for key, item in rospy.get_param(self._category_database).items():
                  if item == category_name:
-                     return key
+                     return int(key)
 
     def get_object_pose(self, object_id):
-        result = self.objects[object_id][0] if object_id in self.objects else Pose()
+        result = False
+        if object_id in self.objects:
+            result = self.objects[object_id][-1]
+            '''
+            for pose in self.objects[object_id]:
+                print(pose)
+                answer = input("Use this pose? (y/n)")
+                if answer == 'y':
+                    result = pose
+                    break
+            '''
+        return result
+
+    def __calculate_distance(self, pose1, pose2):
+        return sqrt( (pose2.position.x - pose1.position.x)**2 + (pose2.position.y - pose1.position.y)**2 )
+
+    def object_already_stored(self, pred_class, pose1):
+        result = False
+        for pose2 in self.objects[pred_class]:
+            if (self.__calculate_distance(pose1, pose2) < self._distance_threshold):
+                result = True
+                break
         return result

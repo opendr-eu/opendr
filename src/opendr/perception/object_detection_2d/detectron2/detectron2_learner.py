@@ -68,6 +68,7 @@ class Detectron2Learner(Learner):
         self.cfg.SOLVER.GAMMA = gamma
         self.cfg.SOLVER.MOMENTUM = momentum
         self.cfg.SOLVER.MAX_ITER = iters
+        self.cfg.MODEL.DEVICE = device
         self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size   # faster, and good enough for this toy dataset
         self.cfg.MODEL.SEM_SEG_HEAD.NORM = "GN"
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.NORMALIZE_LOSS_BY_VISIBLE_KEYPOINTS = False

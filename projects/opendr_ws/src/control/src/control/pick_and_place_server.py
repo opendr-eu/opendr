@@ -15,9 +15,11 @@
 
 import sys
 
+import tf
 import rospy
 import actionlib
-
+from control.srv import *
+from std_msgs.msg import Empty
 from control.msg import PickResult, PlaceResult, PickAction, PlaceAction
 
 
@@ -48,6 +50,7 @@ class PickAndPlaceServer(object):
 
         self.pause_sub = rospy.Subscriber('request_pause', Empty, self.request_pause)
         self.resume_sub = rospy.Subscriber('request_resume', Empty, self.request_resume)
+        self._table_level = 0.115
 
     def __del__(self):
         self.pick_server = None
@@ -67,26 +70,27 @@ class PickAndPlaceServer(object):
         # type: (DoSomethingGoal) -> None
         self._loginfo('PickAndPlace Server received do_something pick() request')
         success = True
-        z_final = goal.pose.position.z
-        z_intermediate = goal.pose.position.z + 0.3
-        goal.pose.position.z = z_intermediate
+        z_final = goal.pose.position.z if goal.pose.position.z > self._table_level else self._table_level
+        z_intermediate = z_final + 0.15
+        print("zs")
+        print(z_final)
+        print(z_intermediate)
         # Aproach
-        self.move_cartesian_space(goal.pose)
+        self.move_cartesian_space_2D([goal.pose.position.x, goal.pose.position.y], False)
+        self.move_cartesian_space_1D(z_intermediate, False)
+        orientation_list = [goal.pose.orientation.x, goal.pose.orientation.y, goal.pose.orientation.z, goal.pose.orientation.w]
+        (roll,pitch,yaw) = tf.transformations.euler_from_quaternion(orientation_list)
+        self.rotate_EE(yaw)
         # Pre-grasp
-        self.move_cartesian_space_1D(z_final)
+        self.move_cartesian_space_1D(z_final, True)
         # Grasp
-        self.grasp(Grasp(width= , force= , pose=))
+        self.grasp(goal.width, goal.force)
         # Post-grasp
-        self.move_cartesian_space_1D(z_intermediate)
-
-        if self.pick_server.is_preempt_requested():
-            self.pick_server.set_preempted()
-            success = False
-            break
+        self.move_cartesian_space_1D(z_intermediate, False)
 
         if success:
             self._loginfo('do_something action succeeded')
-            result = PickResult()
+            result = PickResult(True)
             self.pick_server.set_succeeded(result)
 
     def place(self, goal):
@@ -94,20 +98,26 @@ class PickAndPlaceServer(object):
         self._loginfo('PickAndPlace server received place() request')
         success = True
 
+        z_final = goal.pose.position.z
+        z_intermediate = goal.pose.position.z + 0.3
+        goal.pose.position.z = z_intermediate
 
-        if self.place_server.is_preempt_requested():
-            self._loginfo('do_something_else action preempted')
-            self.place_server.set_preempted()
-            success = False
-            break
+        # Aproach
+        self.move_cartesian_space(goal.pose)
 
+        self.move_cartesian_space_1D(z_final, True)
+
+        self.move_gripper(0.08)
+
+        self.move_cartesian_space_1D(z_intermediate, False)
         if success:
             self._loginfo('do_something_else action succeeded')
-            result = PlaceResult()
+            result = PlaceResult(True)
             self.place_server.set_succeeded(result)
 
     def request_pause(self, msg):
         self.stop_action()
+        self._pause = True
 
     def request_resume(self, msg):
         self.resume_action()

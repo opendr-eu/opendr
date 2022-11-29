@@ -15,6 +15,7 @@
 import sys
 import copy
 import math
+import time
 import argparse
 import moveit_commander
 
@@ -27,16 +28,16 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 from control.srv import *
 
-
 class RobotController:
 
     def __init__(self, moveit_group):
         self.group = moveit_group
-        self.gripper = Gripper()
         self.group.set_max_velocity_scaling_factor(0.1)
         self.group.set_max_acceleration_scaling_factor(0.1)
 
         self._last_goal = self.group.get_current_pose().pose
+        self._resumed = False
+        self._paused = False
 
     def rotate_ee(self, angle):
         '''
@@ -54,7 +55,7 @@ class RobotController:
         self.group.go(joint_goal, wait=True)
         self.stop()
 
-    def modify_plan(self, plan, speed_factor=0.1):
+    def modify_plan(self, plan, speed_factor=0.05):
         new_plan = RobotTrajectory()
         new_plan.joint_trajectory.joint_names = plan.joint_trajectory.joint_names
         new_plan.joint_trajectory.header = plan.joint_trajectory.header
@@ -92,6 +93,10 @@ class RobotController:
         self._last_goal = pose_goal
         self.group.set_pose_target(pose_goal)
         self.group.go(wait=True)
+        if self._paused:
+            while not self._resumed:
+                print("[stop] waiting..")
+                time.sleep(1)
         self.stop()
 
 
@@ -109,6 +114,10 @@ class RobotController:
         if slow:
             plan = self.modify_plan(plan)
         self.group.execute(plan, wait=True)
+        if self._paused:
+            while not self._resumed:
+                print("[stop] waiting..")
+                time.sleep(1)
         self.stop()
 
     def plan_linear_z(self, dist, slow=False):
@@ -121,17 +130,26 @@ class RobotController:
         if slow:
             plan = self.modify_plan(plan)
         self.group.execute(plan)
+        if self._paused:
+            while not self._resumed:
+                print("[stop] waiting..")
+                time.sleep(1)
         self.stop()
 
-    def stop(self):
+    def stop(self, pause = False):
+        if pause:
+            self._resumed = False
+            self._paused = True  
         self.group.stop()
         self.group.clear_pose_targets()
+        
 
     def resume(self):
-        print(type(Pose()))
-        print(type(self._last_goal))
+        self._resumed = True
         if type(self._last_goal) == type(Pose()):
             self.move_to_cartesian_target(self._last_goal)
         else:
             self.move_to_joint_target(self._last_goal)
         self._last_goal = self.group.get_current_pose().pose
+        
+        self._paused = False

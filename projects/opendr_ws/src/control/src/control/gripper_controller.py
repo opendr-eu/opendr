@@ -55,7 +55,7 @@ class Gripper():
         self.homing_client.wait_for_result()
         return self.homing_client.get_result()
 
-    def move(self, speed=20.0, width=0.8):
+    def move(self, width=0.8, speed=20.0):
         print(width)
         self.move_client.send_goal(
             franka_gripper.msg.MoveGoal(

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +15,8 @@
 
 
 import rospy
+import argparse
+from std_srvs.srv import Trigger
 from control.srv import *
 from control.pick_and_place_server import PickAndPlaceServer
 
@@ -22,18 +25,13 @@ def build_srv_name(namespace, body):
     return '/' + namespace + '/' + body
 
 def start_pick_and_place():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--arm', type=str, help='Namespace of the robot to control')
-    parser.add_argument('--gripper', type=str, help='Namespace of the gripper to control')
-    args = parser.parse_args()
-
     rospy.init_node('opendr_pick_and_place_server', anonymous=False)  # initialize ros node
 
-    arm_srvs = ['set_joint_state', 'set_pose_target', 'set_pose_target_1D', 'set_pose_target_2D', 'rotate_ee', 'stop_action', 'resume_action']
-    gripper_srvs = ['move_gripper', 'grasp']
+    arm_srvs = ['rotate_ee', 'stop_action', 'resume_action', 'set_joint_state', 'set_pose_target', 'set_pose_target_1D', 'set_pose_target_2D']
+    gripper_srvs = ['grasp', 'move_gripper']
 
-    arm_srvs = [build_srv_name(args.arm, x) for x in arm_srvs]
-    gripper_srvs = [build_srv_name(args.gripper, x) for x in gripper_srvs]
+    arm_srvs = [build_srv_name(rospy.get_param('/opendr_pick_and_place_server/arm'), x) for x in arm_srvs]
+    gripper_srvs = [build_srv_name(rospy.get_param('/opendr_pick_and_place_server/gripper'), x) for x in gripper_srvs]
 
     for i in arm_srvs:
         rospy.wait_for_service(i)
@@ -41,16 +39,16 @@ def start_pick_and_place():
     for i in gripper_srvs:
         rospy.wait_for_service(i)
 
-    rotate_EE = rospy.ServiceProxy('rotate_ee', RotateEE)
-    stop_action = rospy.ServiceProxy('stop_action', Trigger)
-    resume_action = rospy.ServiceProxy('resume_action', Trigger)
-    move_joint_space = rospy.ServiceProxy('set_joint_state', SetJointState)
-    move_cartesian_space = rospy.ServiceProxy('set_pose_target', SetPoseTarget)
-    move_cartesian_space_1D = rospy.ServiceProxy('set_pose_target_1D', SetPoseTarget1D)
-    move_cartesian_space_2D = rospy.ServiceProxy('set_pose_target_2D', SetPoseTarget2D)
+    rotate_EE = rospy.ServiceProxy(arm_srvs[0], RotateEE)
+    stop_action = rospy.ServiceProxy(arm_srvs[1], Trigger)
+    resume_action = rospy.ServiceProxy(arm_srvs[2], Trigger)
+    move_joint_space = rospy.ServiceProxy(arm_srvs[3], SetJointState)
+    move_cartesian_space = rospy.ServiceProxy(arm_srvs[4], SetPoseTarget)
+    move_cartesian_space_1D = rospy.ServiceProxy(arm_srvs[5], SetPoseTarget1D)
+    move_cartesian_space_2D = rospy.ServiceProxy(arm_srvs[6], SetPoseTarget2D)
 
-    grasp = rospy.ServiceProxy('grasp', Grasp)
-    move_gripper = rospy.ServiceProxy('move_gripper', MoveGripper)
+    grasp = rospy.ServiceProxy(gripper_srvs[0], Grasp)
+    move_gripper = rospy.ServiceProxy(gripper_srvs[1], MoveGripper)
 
     pick_and_place_server = PickAndPlaceServer(rotate_EE, stop_action, resume_action,
                                                 move_joint_space, move_cartesian_space,

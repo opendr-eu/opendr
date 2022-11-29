@@ -1,4 +1,4 @@
-uint8 width
+float32 width
 ---
 bool success
 string message

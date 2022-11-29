@@ -5,15 +5,11 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   message_generation
   actionlib_msgs
+  geometry_msgs
 )
 
 catkin_python_setup()
 
-
-add_message_files(
-  FILES 
-  Grasp.msg
-)
 
 add_service_files(
   FILES
@@ -59,6 +55,6 @@ include_directories(
 #############
 
 catkin_install_python(PROGRAMS
-   scripts/pick_and_place_example.py
+   scripts/opendr_grasp_example.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
