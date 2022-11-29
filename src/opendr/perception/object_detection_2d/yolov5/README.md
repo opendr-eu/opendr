@@ -14,3 +14,4 @@ Usage
 - The ```model_name``` parameter is used to specify which model will be loaded. Available models: ```['yolov5s', 'yolov5n', 'yolov5m', 'yolov5l', 'yolov5x', 'yolov5n6', 'yolov5s6', 'yolov5m6', 'yolov5l6', 'custom']```
 - For custom models, the ```path``` parameter must be set to point to the location of the weights file.
 - The ```temp_path``` folder is used to save the downloaded weights when using pretrained models.
+- The ```force_reload``` parameter redownloads the pretrained model when set to `True`. This fixes issues with caching.

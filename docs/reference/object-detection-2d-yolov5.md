@@ -38,6 +38,8 @@ Note that mAP (0.5) is reported on the [COCO val2017 dataset](https://github.com
   Specifies the device used for inference.
 - **temp_path**: *str, default=None*\
   Specifies the path to where the weights will be downloaded when using pretrained models.
+- **force_reload**: *bool, default=False*\
+  Sets the `force_reload` parameter of the pytorch hub `load` method. This fixes issues with caching when set to `True`.
   
 
 #### `YOLOv5DetectorLearner.infer`

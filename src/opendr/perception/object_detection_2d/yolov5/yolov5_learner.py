@@ -35,7 +35,7 @@ class YOLOv5DetectorLearner(Learner):
     available_models = ['yolov5s', 'yolov5n', 'yolov5m', 'yolov5l', 'yolov5x',
                         'yolov5n6', 'yolov5s6', 'yolov5m6', 'yolov5l6', 'custom']
 
-    def __init__(self, model_name, path=None, device='cuda', temp_path='.'):
+    def __init__(self, model_name, path=None, device='cuda', temp_path='.', force_reload=False):
         super(YOLOv5DetectorLearner, self).__init__(device=device, temp_path=temp_path)
         if model_name not in self.available_models:
             model_name = 'yolov5s'
@@ -46,10 +46,10 @@ class YOLOv5DetectorLearner(Learner):
 
         if path is None:
             self.model = torch.hub.load('ultralytics/yolov5:master', 'custom', f'{temp_path}/{model_name}',
-                                        force_reload=True)
+                                        force_reload=force_reload)
         else:
             self.model = torch.hub.load('ultralytics/yolov5:master', 'custom', path=path,
-                                        force_reload=True)
+                                        force_reload=force_reload)
         torch.hub.set_dir(default_dir)
 
         self.model.to(device)
