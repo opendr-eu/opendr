@@ -672,8 +672,6 @@ class EfficientLpsLearner(Learner):
                 urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
         return str(filename)
 
-    # from numpy.typing import ArrayLike
-
     @staticmethod
     def visualize(pointcloud: PointCloud,
                   predictions: Tuple[np.ndarray, np.ndarray],
