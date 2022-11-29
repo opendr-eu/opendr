@@ -47,7 +47,7 @@ from mmdet2.datasets.laserscan_unfolding import LaserScan
 from mmdet2.models import build_detector
 from mmdet2.utils import collect_env, get_root_logger
 
-from opendr.perception.panoptic_segmentation.datasets import SemanticKittiDataset, NuscenesDataset
+from opendr.perception.panoptic_segmentation.datasets import SemanticKittiDataset
 from opendr.perception.panoptic_segmentation.datasets.semantic_kitti import PALETTE
 
 
@@ -178,8 +178,8 @@ class EfficientLpsLearner(Learner):
         shutil.rmtree(self.temp_path, ignore_errors=True)
 
     def fit(self,
-            dataset: Union[SemanticKittiDataset, NuscenesDataset],
-            val_dataset: Optional[Union[SemanticKittiDataset, NuscenesDataset]]=None,
+            dataset: SemanticKittiDataset,
+            val_dataset: Optional[SemanticKittiDataset]=None,
             logging_path: Union[str, Path]=Path(__file__).parent / "logging",
             silent: bool=True,
             verbose: Optional[bool]=True
@@ -623,7 +623,6 @@ class EfficientLpsLearner(Learner):
 
         Currently, the following pre-trained models are available:
             - SemanticKITTI panoptic segmentation dataset
-            - NuScenes (# TODO)
 
         :param path: Path to save the model weights
         :type path: str | Path
@@ -637,8 +636,6 @@ class EfficientLpsLearner(Learner):
         """
         if mode == "model":
             models = {
-                # TODO: No NuScenes pre-trained model yet.
-                # "nuscenes": f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_lps/models/model_nuscenes.pth",
                 "semantickitti": f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_lps / \
                 models/model_semantickitti.pth"
             }
