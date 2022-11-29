@@ -53,7 +53,7 @@ class TestEfficientLpsLearner(unittest.TestCase):
         os.makedirs(cls.temp_dir)
 
         # Download all required files for testing
-        cls.model_weights = EfficientLpsLearner.download(path=cls.temp_dir, trained_on="kitti")
+        cls.model_weights = EfficientLpsLearner.download(path=cls.temp_dir, trained_on="semantickitti")
         test_data_zipped = EfficientLpsLearner.download(path=cls.temp_dir, mode="test_data")
         cls.test_data = os.path.join(cls.temp_dir, "test_data")
         with zipfile.ZipFile(test_data_zipped, "r") as f:
