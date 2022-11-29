@@ -77,7 +77,7 @@ class AmbiguityMeasure(object):
         heatmap: np.ndarray,
         locs: List[List[int]],
         probs: Union[List[float], np.ndarray],
-        img: Optional[Union[Image, np.ndarray]] = None,
+        img: Image = None,
         img_offset: float = -250.0,
         view_init: List[int] = [30, 30],
         plot_threshold: float = 0.05,
@@ -110,7 +110,7 @@ class AmbiguityMeasure(object):
         ax = plt.axes(projection="3d")
         ax.computed_zorder = False
         trans_offset = transforms.offset_copy(ax.transData, fig=fig, y=2, units="dots")
-        X, Y = np.mgrid[0 : heatmap.shape[0], 0 : heatmap.shape[1]]
+        X, Y = np.mgrid[0:heatmap.shape[0], 0:heatmap.shape[1]]
         Z = heatmap
         ax.set_title(title)
         ax.plot_surface(X, Y, Z, cmap=cm.viridis, linewidth=0, antialiased=False, shade=False, zorder=-1)
@@ -122,7 +122,7 @@ class AmbiguityMeasure(object):
             img = deepcopy(img)
             if np.max(img) > 1:
                 img = img / 255
-            x_image, y_image = np.mgrid[0 : img.shape[0], 0 : img.shape[1]]
+            x_image, y_image = np.mgrid[0:img.shape[0], 0:img.shape[1]]
             ax.plot_surface(
                 x_image,
                 y_image,
