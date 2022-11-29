@@ -22,9 +22,10 @@ from opendr.perception.panoptic_segmentation import EfficientLpsLearner, Semanti
 DATA_ROOT = '/home/USER/data/efficientLPS'
 SEMANTIC_KITTI_ROOT = f'{DATA_ROOT}/converted_datasets/semantickitti_panoptic'
 
+
 def download_models():
     EfficientLpsLearner.download(f'{DATA_ROOT}/checkpoints', trained_on='semantickitti')
-        
+
 
 def train():
     train_dataset = SemanticKittiDataset(path=os.path.join(SEMANTIC_KITTI_ROOT, "eval_data"), split="train")
