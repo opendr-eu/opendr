@@ -55,3 +55,5 @@ if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
 fi
 
 make libopendr
+
+deactivate
