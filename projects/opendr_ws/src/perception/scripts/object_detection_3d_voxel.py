@@ -27,7 +27,7 @@ class ObjectDetection3DVoxelNode:
     def __init__(
         self,
         input_point_cloud_topic="/opendr/dataset_point_cloud",
-        output_detection3d_topic="/opendr/detection3d",
+        detections_topic="/opendr/objects3d",
         device="cuda:0",
         model_name="tanet_car_xyres_16",
         model_config_path=os.path.join(
@@ -41,8 +41,8 @@ class ObjectDetection3DVoxelNode:
         Creates a ROS Node for 3D object detection
         :param input_point_cloud_topic: Topic from which we are reading the input point cloud
         :type input_point_cloud_topic: str
-        :param output_detection3d_topic: Topic to which we are publishing the annotations
-        :type output_detection3d_topic:  str
+        :param detections_topic: Topic to which we are publishing the annotations
+        :type detections_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param model_name: the pretrained model to download or a trained model in temp_dir
@@ -63,7 +63,7 @@ class ObjectDetection3DVoxelNode:
         self.bridge = ROSBridge()
 
         self.detection_publisher = rospy.Publisher(
-            output_detection3d_topic, Detection3DArray, queue_size=1
+            detections_topic, Detection3DArray, queue_size=1
         )
 
     def callback(self, data):
@@ -80,13 +80,12 @@ class ObjectDetection3DVoxelNode:
         # Convert detected boxes to ROS type and publish
         ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes, classes=["Car", "Van", "Truck", "Pedestrian", "Cyclist"])
         self.detection_publisher.publish(ros_boxes)
-        rospy.loginfo("Published detection boxes")
 
     def listen(self):
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('voxel_detection_3d', anonymous=True)
+        rospy.init_node('opendr_object_detection_3d_voxel_node', anonymous=True)
         rospy.Subscriber(self.input_point_cloud_topic, ROS_PointCloud, self.callback, queue_size=1, buff_size=10000000)
 
         rospy.loginfo("Object Detection 3D Voxel Node started.")
@@ -95,6 +94,14 @@ class ObjectDetection3DVoxelNode:
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_point_cloud_topic",
+                        help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
+                        type=str, default="/opendr/dataset_point_cloud")
+    parser.add_argument("-d", "--detections_topic",
+                        help="Output detections topic",
+                        type=str, default="/opendr/objects3d")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("-n", "--model_name", help="Name of the trained model",
                         type=str, default="tanet_car_xyres_16", choices=["tanet_car_xyres_16"])
     parser.add_argument(
@@ -107,15 +114,8 @@ def main():
     )
     parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
-    parser.add_argument("-i", "--input_point_cloud_topic",
-                        help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
-                        type=str, default="/opendr/dataset_point_cloud")
-    parser.add_argument("-o", "--output_detection3d_topic",
-                        help="Output detections topic",
-                        type=str, default="/opendr/detection3d")
-    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
-                        type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
+
     try:
         if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"
@@ -135,7 +135,7 @@ def main():
         model_config_path=args.model_config_path,
         input_point_cloud_topic=args.input_point_cloud_topic,
         temp_dir=args.temp_dir,
-        output_detection3d_topic=args.output_detection3d_topic,
+        detections_topic=args.detections_topic,
     )
 
     voxel_node.listen()
