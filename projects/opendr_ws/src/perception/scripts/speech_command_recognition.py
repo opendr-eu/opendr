@@ -78,8 +78,8 @@ class SpeechRecognitionNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node("opendr_speech_command_recognition", anonymous=True)
-        rospy.loginfo("Speech command recognition node started!")
+        rospy.init_node("opendr_speech_command_recognition_node", anonymous=True)
+        rospy.loginfo("Speech command recognition node started.")
         rospy.spin()
 
     def callback(self, msg_data):
@@ -107,20 +107,19 @@ class SpeechRecognitionNode:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_audio_topic", type=str, default="audio/audio",
+    parser.add_argument("-i", "--input_audio_topic", type=str, default="audio/audio",
                         help="Listen to input data on this topic")
-    parser.add_argument("--output_speech_command_topic", type=str, default="/opendr/speech_recognition",
+    parser.add_argument("-o", "--output_speech_command_topic", type=str, default="/opendr/speech_recognition",
                         help="Topic name for speech command output")
+    parser.add_argument("--device", type=str, default="cuda", choices=["cuda", "cpu"],
+                        help="Device to use (cpu, cuda)")
     parser.add_argument("--buffer_size", type=float, default=1.5, help="Size of the audio buffer in seconds")
     parser.add_argument("--model", default="matchboxnet", choices=["matchboxnet", "edgespeechnets", "quad_selfonn"],
                         help="Model to be used for prediction: matchboxnet, edgespeechnets or quad_selfonn")
     parser.add_argument("--model_path", type=str,
                         help="Path to the model files, if not given, the pretrained model will be downloaded")
-    parser.add_argument("--device", type=str, default="cuda", choices=["cuda", "cpu"],
-                        help="Device to use (cpu, cuda)")
     args = parser.parse_args()
 
-    # Select the device for running
     try:
         if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"
