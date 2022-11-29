@@ -40,4 +40,3 @@ if __name__ == '__main__':
 
     results = yolo.infer(im2)
     draw_bounding_boxes(im2, results, yolo.classes, show=True)
-

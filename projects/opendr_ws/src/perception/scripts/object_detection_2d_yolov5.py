@@ -111,7 +111,8 @@ def main():
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model_name", help="Network architecture, defaults to \"yolov5s\"",
-                        type=str, default="yolov5s", choices=['yolov5s', 'yolov5n', 'yolov5m', 'yolov5l', 'yolov5x', 'yolov5n6', 'yolov5s6', 'yolov5m6', 'yolov5l6', 'custom'])
+                        type=str, default="yolov5s", choices=['yolov5s', 'yolov5n', 'yolov5m', 'yolov5l', 'yolov5x',
+                                                              'yolov5n6', 'yolov5s6', 'yolov5m6', 'yolov5l6', 'custom'])
     args = parser.parse_args()
 
     try:
