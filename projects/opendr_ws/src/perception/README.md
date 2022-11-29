@@ -189,19 +189,22 @@ The following optional arguments are available:
 
 ## LiDAR Based Panoptic Segmentation ROS Node
 A ROS node for performing panoptic segmentation on a specified pointcloud stream using the [EfficientLPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
-Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
+Assuming that the OpenDR catkin workspace has been sourced, the node can be started with the following sequence.
+
+First one needs to download SemanticKITTI dataset into POINTCLOUD_LOCATION as it is described in the [Panoptic Segmentation Datasets](../../../../src/opendr/perception/panoptic_segmentation/datasets/README.md). Then, **PointCloud2 Publisher** can be started using the following line:
 ```shell
-rosrun perception panoptic_segmentation_efficient_lps.py
+rosrun perception point_cloud_2_publisher.py POINTCLOUD_LOCATION
+```
+After starting the **PointCloud2 Publisher**, one can start **EfficientLPS Node** using the following line:
+```shell
+rosrun perception panoptic_segmentation_efficient_lps.py /opendr/dataset_point_cloud2
 ```
 
 The following optional arguments are available:
 - `-h, --help`: show a help message and exit
-- `--input_rgb_pcl_topic INPUT_RGB_PCL_TOPIC` : listen to RGB pointclouds on this topic (default=`/usb_cam/pcl_raw`)
+- `--input_pcl_topic INPUT_PCL_TOPIC` : listen to pointclouds on this topic (default=`/usb_cam/pcl_raw`)
 - `--checkpoint CHECKPOINT` : download pretrained models [semantickitti, nuscenes (future)] or load from the provided path (default=`semantickitti`)
-- `--output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance` (default=`/opendr/panoptic`)
-- `--output_rgb_visualization_topic OUTPUT_RGB_VISUALIZATION_TOPIC`: publish the panoptic segmentation map as an RGB image on `OUTPUT_RGB_VISUALIZATION_TOPIC` (default=`/opendr/panoptic/rgb_visualization`)
-- `--projected_output`: compute the predictions and visualizations as 2D projected maps if True, otherwise as additional channels in a Point Cloud (default=deactivated)
-
+- `--output_rgb_visualization_topic OUTPUT_RGB_VISUALIZATION_TOPIC`: publish the rgb visualization on this topic on `OUTPUT_RGB_VISUALIZATION_TOPIC` (default=`/opendr/panoptic`) 
 
 
 ## Semantic Segmentation ROS Node

@@ -209,8 +209,12 @@ Parameters:
   Minimum value that a point's alpha value can take, so that it is never fully transparent.
 - **dpi**: *int, default=600*\
   Resolution of the resulting image, in Dots per Inch.
+- **return_pointcloud**: *Optional[bool], default=False*\
+  If True, returns a PointCloud object with the predicted labels as colors.
+- **return_pointcloud_type**: *int, default=600*\
+  If return_pointcloud is True, this parameter specifies the type of the returned PointCloud object. Valid options are "semantic", "instance" and "panoptic".
 
 Return:
 
-- **visualization**: *Image*\
-  OpenDR compliant BGR Image of the visualization of the inferred panoptic segmentation as a as a colored 3D Scatter Plot.
+- **visualization**: *Union[PointCloud, Image]*\
+  OpenDR Image of the generated visualization or OpenDR PointCloud with the predicted labels.
