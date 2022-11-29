@@ -36,7 +36,7 @@ if __name__ == '__main__':
     im2 = cv2.imread('bus.jpg')  # OpenCV image (BGR to RGB)
 
     results = yolo.infer(im1)
-    draw_bounding_boxes(im1.opencv(), results, yolo.classes, show=False)
+    draw_bounding_boxes(im1.opencv(), results, yolo.classes, show=True, line_thickness=3)
 
     results = yolo.infer(im2)
-    draw_bounding_boxes(im2, results, yolo.classes, show=True)
+    draw_bounding_boxes(im2, results, yolo.classes, show=True, line_thickness=3)
