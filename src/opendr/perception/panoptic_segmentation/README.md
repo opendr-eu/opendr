@@ -123,7 +123,7 @@ Please note that the original repository is heavily based on
 
 #### Example Usage
 
-More code snippets can be found in [example_usage.py](../../../../projects/perception/panoptic_segmentation/efficient_lps/example_usage.py) with the corresponding [readme](../../../../projects/perception/panoptic_segmentation/efficient_lps/README.md).
+More code snippets can be found in [example_usage.py](../../../../projects/python/perception/panoptic_segmentation/efficient_lps/example_usage.py) with the corresponding [readme](../../../../projects/python/perception/panoptic_segmentation/efficient_lps/README.md).
 
 **Download the SemanticKitti dataset** (see the [datasets' readme](./datasets/README.md) as well)
 
