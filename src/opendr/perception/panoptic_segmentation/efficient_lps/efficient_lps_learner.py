@@ -46,6 +46,7 @@ from mmdet2.datasets.pipelines import Compose
 from mmdet2.datasets.laserscan_unfolding import LaserScan
 from mmdet2.models import build_detector
 from mmdet2.utils import collect_env, get_root_logger
+from mmdet2.datasets.cityscapes import PALETTE as PALETTE2
 
 from opendr.perception.panoptic_segmentation.datasets import SemanticKittiDataset
 from opendr.perception.panoptic_segmentation.datasets.semantic_kitti import PALETTE
@@ -636,8 +637,8 @@ class EfficientLpsLearner(Learner):
         """
         if mode == "model":
             models = {
-                "semantickitti": f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_lps / \
-                models/model_semantickitti.pth"
+                "semantickitti":
+                f"{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_lps/models/model_semantickitti.pth"
             }
             if trained_on not in models.keys():
                 raise ValueError(f"Could not find model weights pre-trained on {trained_on}. "
@@ -769,8 +770,8 @@ class EfficientLpsLearner(Learner):
         ax = fig.add_subplot(111, projection="3d")
         ax.set_box_aspect((np.ptp(x), np.ptp(y), np.ptp(z)))  # Set aspect ratio to 1:1:1 in data space
 
-        PALETTE.append([0, 0, 0])
-        colors = np.array(PALETTE, dtype=np.float) / 255.
+        PALETTE2.append([0, 0, 0])
+        colors = np.array(PALETTE2, dtype=np.float) / 255.
         colors = colors[sem % colors.shape[0]]  # Use the mod of the sem. label in case some values aren't in the colors
         alphas = ((min_alpha - 1) / max_inst) * inst + 1
         alphas = np.clip(alphas, min_alpha, 1)
