@@ -12,20 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# General imports
-import os
-import time
-import json
-import numpy as np
-import warnings
-from tqdm import tqdm
-from urllib.request import urlretrieve
-
 # OpenDR engine imports
 from opendr.engine.learners import Learner
 from opendr.engine.data import Image
 from opendr.engine.target import BoundingBox, BoundingBoxList
-from opendr.engine.constants import OPENDR_SERVER_URL
 
 # yolov5 imports
 import torch
