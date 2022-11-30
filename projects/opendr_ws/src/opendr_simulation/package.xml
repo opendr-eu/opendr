@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>simulation</name>
+  <name>opendr_simulation</name>
   <version>1.1.1</version>
   <description>OpenDR's ROS nodes for simulation package</description>
   <maintainer email="tefas@csd.auth.gr">OpenDR Project Coordinator</maintainer>
