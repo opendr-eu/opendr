@@ -451,6 +451,8 @@ class BoundingBoxList(Target):
         for i in range(count):
             if 'segmentation' in boxes_coco[i]:
                 segmentation = boxes_coco[i]['segmentation']
+            else:
+                segmentation = []
             if 'iscrowd' in boxes_coco[i]:
                 iscrowd = boxes_coco[i]['iscrowd']
             else:
