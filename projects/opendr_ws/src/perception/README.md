@@ -193,15 +193,15 @@ The following optional arguments are available:
 - `-h, --help`: show a help message and exit 
 - `--image_topic`:  listen to RGB images on this topic (default=`/camera/color/image_raw`)
 - `--depth_topic `: listen to depth images on this topic (default=`/camera/aligned_depth_to_color/image_raw`)
+- `--camera_info_topic`: listen to meta information on this topic (default=`/camera/color/camera_info`)
 - `--camera_tf_frame ` : Tf frame in which objects are detected (default=`/camera_color_optical_frame`)
-- `--robot_tf_frame ` : Tf frame of reference for commands sent to the robot (default=`panda_link0`)
-- `--ee_tf_frame `: Tf frame of reference for the robot end effector (default=`panda_link8`)
+- `--robot_tf_frame ` : Tf frame of reference for commands sent to the robot (default=`/panda_link0`)
+- `--ee_tf_frame `: Tf frame of reference for the robot end effector (default=`/panda_link8`)
 - `--only_visualize`: True if running the detection for visualizing purposes only, False to convert detections to a robot coordinates frame (default=`True`)
 
 3. You can examine the annotated image stream using `rqt_image_view` or `rviz`(select one of the topics `/opendr/image_grasp_pose_annotated` or `/opendr/image_mask_annotated`) or `rostopic echo /opendr/object_detected`
 
-### Use custom dataset 
-
+This node also publishes a `VisionInfo` message in `/opendr/object_catagories` containing the name of a ROS parameter on the server where can be found the correspondance between class ids and class names.
 
 ## Panoptic Segmentation ROS Node
 A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
