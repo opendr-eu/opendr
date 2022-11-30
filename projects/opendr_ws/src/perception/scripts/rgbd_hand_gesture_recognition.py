@@ -73,7 +73,7 @@ class RgbdHandGestureNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('opendr_gesture_recognition', anonymous=True)
+        rospy.init_node('opendr_rgbd_hand_gesture_recognition_node', anonymous=True)
 
         image_sub = message_filters.Subscriber(self.input_rgb_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
         depth_sub = message_filters.Subscriber(self.input_depth_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
@@ -82,7 +82,7 @@ class RgbdHandGestureNode:
                                                          allow_headerless=True)
         ts.registerCallback(self.callback)
 
-        rospy.loginfo("RGBD gesture recognition node started!")
+        rospy.loginfo("RGBD hand gesture recognition node started.")
         rospy.spin()
 
     def callback(self, rgb_data, depth_data):
@@ -146,7 +146,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # Select the device for running
     try:
         if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"

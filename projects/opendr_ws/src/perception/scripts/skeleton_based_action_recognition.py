@@ -112,9 +112,9 @@ class SkeletonActionRecognitionNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('skeleton_action_recognition_node', anonymous=True)
+        rospy.init_node('opendr_skeleton_action_recognition_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
-        rospy.loginfo("Skeleton-based action recognition node started!")
+        rospy.loginfo("Skeleton-based action recognition node started.")
         rospy.spin()
 
     def callback(self, data):
@@ -204,8 +204,8 @@ if __name__ == '__main__':
     parser.add_argument("-c", "--output_category_topic", help="Topic name for recognized action category",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/skeleton_recognized_action")
-    parser.add_argument("-d", "--output_category_description_topic", help="Topic name for description of the "
-                                                                          "recognized action category",
+    parser.add_argument("-d", "--output_category_description_topic",
+                        help="Topic name for description of the recognized action category",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/skeleton_recognized_action_description")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\"",
