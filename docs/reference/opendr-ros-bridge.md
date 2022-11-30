@@ -1,7 +1,7 @@
-## ROSBridge Package
+## opendr_ros_bridge package
 
 
-This *ROSBridge* package provides an interface to convert OpenDR data types and targets into ROS-compatible ones similar to CvBridge.
+This *opendr_ros_bridge* package provides an interface to convert OpenDR data types and targets into ROS-compatible ones similar to CvBridge.
 The *ROSBridge* class provides two methods for each data type X:
 1. *from_ros_X()* : converts the ROS equivalent of X into OpenDR data type
 2. *to_ros_X()* : converts the OpenDR data type into the ROS equivalent of X
