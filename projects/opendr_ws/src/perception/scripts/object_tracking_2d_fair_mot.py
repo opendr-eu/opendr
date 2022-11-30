@@ -33,9 +33,9 @@ class ObjectTracking2DFairMotNode:
     def __init__(
         self,
         input_rgb_image_topic="/usb_cam/image_raw",
-        output_detection_topic="/opendr/fairmot_detection",
-        output_tracking_id_topic="/opendr/fairmot_tracking_id",
-        output_rgb_image_topic="/opendr/fairmot_image_annotated",
+        output_detection_topic="/opendr/objects",
+        output_tracking_id_topic="/opendr/objects_tracking_id",
+        output_rgb_image_topic="/opendr/image_objects_annotated",
         device="cuda:0",
         model_name="fairmot_dla34",
         temp_dir="temp",
