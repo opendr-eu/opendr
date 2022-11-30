@@ -199,7 +199,7 @@ def main():
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("-n", "--model_name", help="Name of the trained model",
                         type=str, default="deep_sort", choices=["deep_sort"])
-    parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
+    parser.add_argument("-td", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
     args = parser.parse_args()
 
