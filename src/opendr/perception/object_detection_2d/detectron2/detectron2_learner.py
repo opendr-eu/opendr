@@ -45,15 +45,13 @@ from opendr.engine.target import Keypoint, BoundingBox
 
 
 class Detectron2Learner(Learner):
-    supported_backbones = ["resnet"]
 
     def __init__(self, lr=0.00025, batch_size=200, img_per_step=2, weight_decay=0.00008,
                        momentum=0.98, gamma=0.0005, norm="GN", num_workers=2, num_keypoints=25, 
-                       iters=4000, threshold=0.8, loss_weight=1.0, device='cuda', temp_path="temp", backbone='resnet'):
+                       iters=4000, threshold=0.8, loss_weight=1.0, device='cuda', temp_path="temp"):
         super(Detectron2Learner, self).__init__(lr=lr, threshold=threshold, 
                                                 batch_size=batch_size, device=device, 
-                                                iters=iters, temp_path=temp_path, 
-                                                backbone=backbone)
+                                                iters=iters, temp_path=temp_path)
         self.cfg = get_cfg()
         self.cfg.merge_from_file(model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
         self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml")
@@ -69,17 +67,14 @@ class Detectron2Learner(Learner):
         self.cfg.SOLVER.MOMENTUM = momentum
         self.cfg.SOLVER.MAX_ITER = iters
         self.cfg.MODEL.DEVICE = device
-        self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size   # faster, and good enough for this toy dataset
+        self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size   
         self.cfg.MODEL.SEM_SEG_HEAD.NORM = "GN"
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.NORMALIZE_LOSS_BY_VISIBLE_KEYPOINTS = False
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.LOSS_WEIGHT = loss_weight
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.NUM_KEYPOINTS = num_keypoints
         self.cfg.TEST.KEYPOINT_OKS_SIGMAS = np.ones((num_keypoints, 1), dtype=float).tolist()
         self.classes = ["RockerArm","BoltHoles","Big_PushRodHoles","Small_PushRodHoles", "Engine", "Bolt","PushRod","RockerArmObject"]
-        #self.classes = ["bolt", "rocker_arm"]
-        # Set backbone
-        if self.backbone not in self.supported_backbones:
-            raise ValueError(self.backbone + " backbone is not supported.")
+
         # Initialize temp path
         self.cfg.OUTPUT_DIR = temp_path
         if not os.path.exists(temp_path):
@@ -87,18 +82,7 @@ class Detectron2Learner(Learner):
         
 
     def fit(self, dataset, val_dataset=None, verbose=True):
-        """
-        This method is used to train the detector (). Validation if performed if a val_dataset is
-        provided.
-        :param json_file: full path to the json file in COCO instances annotation format.
-        :type json_file: DetectionDataset or ExternalDataset
-        :param image_root: the directory where the images in this json file exists.
-        :type image_root: str or path-like
-        :param verbose: if set to True, additional information is printed to STDOUT, defaults to True
-        :type verbose: bool
-        :return: returns stats regarding the training and validation process
-        :rtype: dict
-        """
+
         self.__prepare_dataset(dataset)
 
         trainer = DefaultTrainer(self.cfg) 
@@ -107,6 +91,15 @@ class Detectron2Learner(Learner):
 
         return training_dict
 
+    def __prepare_dataset(self, dataset_name, json_file, image_root):
+        # Split the dataset
+        four.random_split(dataset, {"train": 0.8, "val": 0.2})
+        # Register the dataset
+        for d in ["train", "val"]:
+            view = dataset.match_tags(d)
+            DatasetCatalog.register("diesel_engine_" + d, lambda view=view: get_fiftyone_dicts(view))
+            MetadataCatalog.get("diesel_engine_" + d).set(thing_classes=["RockerArm","BoltHoles","Big_PushRodHoles","Small_PushRodHoles", "Engine", "Bolt","PushRod","RockerArmObject"])
+        return True
 
     def infer(self, img_data):
         """
@@ -135,22 +128,7 @@ class Detectron2Learner(Learner):
         return result
 
 
-    def __prepare_dataset(self, dataset_name, json_file, image_root):
-        # Split the dataset
-        '''
-        four.random_split(dataset, {"train": 0.8, "val": 0.2})
-        
-        # Register the dataset
-        for d in ["train", "val"]:
-            view = dataset.match_tags(d)
-            DatasetCatalog.register("diesel_engine_" + d, lambda view=view: get_fiftyone_dicts(view))
-            MetadataCatalog.get("diesel_engine_" + d).set(thing_classes=["bolt, rocker_arm"])
-        '''
-        return True
-
     def load(self, model, verbose=True):
-        # model_name = "model_final"
-        # model_file = os.path.join(self.cfg.OUTPUT_DIR, model_name + ".pth")
         if os.path.isfile(model):
             self.cfg.MODEL.WEIGHTS = str(model)      
             self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(self.classes)
@@ -172,22 +150,8 @@ class Detectron2Learner(Learner):
         :param verbose: whether to print a success message or not, defaults to False
         :type verbose: bool, optional
         """
-        os.makedirs(path, exist_ok=True)
-        model_name = os.path.basename(path)
-        if verbose:
-            print(model_name)
-        metadata = {"model_paths": [model_name + ".params"], "framework": "mxnet", "format": "params",
-                    "has_data": False, "inference_params": {}, "optimized": False,
-                    "optimizer_info": {}, "backbone": self.backbone, "classes": self.classes}
-        self._model.save_parameters(os.path.join(path, metadata["model_paths"][0]))
-        if verbose:
-            print("Model parameters saved.")
-
-        with open(os.path.join(path, model_name + '.json'), 'w', encoding='utf-8') as f:
-            json.dump(metadata, f, ensure_ascii=False, indent=4)
-        if verbose:
-            print("Model metadata saved.")
-        return True
+        # TODO
+        pass
 
     def download(self, path=None, mode="pretrained", verbose=False, 
                         url=OPENDR_SERVER_URL + "/perception/object_detection_2d/detectron2/"):
@@ -205,60 +169,8 @@ class Detectron2Learner(Learner):
         :param url: URL to file location on FTP server
         :type url: str, optional
         """
-        valid_modes = ["pretrained", "images", "test_data"]
-        if mode not in valid_modes:
-            raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
-
-        if path is None:
-            path = self.temp_path
-
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        if mode == "pretrained":
-            path = os.path.join(path, "detectron2_default")
-            if not os.path.exists(path):
-                os.makedirs(path)
-            
-            if not os.path.exists(os.path.join(path, "model_final.pth")):
-                if verbose:
-                    print("Downloading pretrained model...")
-                file_url = os.path.join(url, "pretrained", "detectron2_diesel_engine", "detectron2_diesel_engine.params")
-                urlretrieve(file_url, os.path.join(path, "detectron2_diesel_engine.params"))
-            elif verbose:
-                print("Pretrained model already exists.")
-
-
-        elif mode == "images":
-            file_url = os.path.join(url, "images", "bolt.jpg")
-            if verbose:
-                print("Downloading example image...")
-            if os.path.exists(os.path.join(path, "bolt.jpg")):
-                urlretrieve(file_url, os.path.join(path, "bolt.jpg"))
-                if verbose:
-                    print("Downloaded example image.")
-            elif verbose:
-                print("Example image already exists.")
-
-        elif mode == "test_data":
-            os.makedirs(os.path.join(path, "test_data"), exist_ok=True)
-            os.makedirs(os.path.join(path, "test_data", "Images"), exist_ok=True)
-            os.makedirs(os.path.join(path, "test_data", "Annotations"), exist_ok=True)
-            # download train.txt
-            file_url = os.path.join(url, "test_data", "train.txt")
-            if verbose:
-                print("Downloading filelist...")
-            urlretrieve(file_url, os.path.join(path, "test_data", "train.txt"))
-            # download image
-            file_url = os.path.join(url, "test_data", "Images", "000040.jpg")
-            if verbose:
-                print("Downloading image...")
-            urlretrieve(file_url, os.path.join(path, "test_data", "Images", "000040.jpg"))
-            # download annotations
-            file_url = os.path.join(url, "test_data", "Annotations", "000040.jpg.txt")
-            if verbose:
-                print("Downloading annotations...")
-            urlretrieve(file_url, os.path.join(path, "test_data", "Annotations", "000040.jpg.txt"))
+        # TODO
+        pass
 
     def eval(self, json_file, image_root):
         dataset_name = "customValidationDataset"

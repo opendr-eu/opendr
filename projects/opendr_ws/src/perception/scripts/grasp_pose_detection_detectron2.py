@@ -98,7 +98,6 @@ class Detectron2GraspDetectionNode:
         self._camera_tf_frame = camera_tf_frame
         self._listener_tf = tf.TransformListener()
        
-
     def camera_info_callback(self, msg):
         self._camera_focal = msg.K[0]
         self._refX = msg.K[2]
@@ -264,6 +263,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--image_topic', default="/camera/color/image_raw", type=str, help='ROS topic containing RGB information')
     parser.add_argument('--depth_topic', default="/camera/aligned_depth_to_color/image_raw", type=str, help='ROS topic containing depth information')
+    parser.add_argument('--camera_info_topic', default="/camera/color/camera_info", type=str, help='ROS topic containing meta information')
     parser.add_argument('--camera_tf_frame', default="/camera_color_optical_frame", type=str, help='Tf frame in which objects are detected')
     parser.add_argument('--robot_tf_frame', default="panda_link0", type=str, help='Tf frame of reference for commands sent to the robot')
     parser.add_argument('--ee_tf_frame', default="/panda_link8", type=str, help='Tf frame of reference for the robot end effector')
@@ -281,7 +281,7 @@ if __name__ == '__main__':
     grasp_detection_node = Detectron2GraspDetectionNode(camera_tf_frame=args.camera_tf_frame, robot_tf_frame=args.robot_tf_frame, 
                                                             ee_tf_frame=args.ee_tf_frame, input_image_topic=args.image_topic, 
                                                             input_depth_image_topic=args.depth_topic, device=device,
-                                                            only_visualize=args.only_visualize)
+                                                            only_visualize=args.only_visualize, camera_info_topic=args.camera_info_topic)
     rospy.loginfo("Detectron2 object detection node started!")
 
     try:
@@ -289,7 +289,7 @@ if __name__ == '__main__':
         obj_cat_pub = rospy.Publisher("/opendr/object_catagories", VisionInfo, queue_size=1)
         rate = rospy.Rate(1) 
         while not rospy.is_shutdown():
-            obj_cat_pub.publish(VisionInfo(method="object categories", database_location="/opendr/object_catagories"))
+            obj_cat_pub.publish(VisionInfo(method="object categories", database_location="/opendr/object_categories"))
             rate.sleep()
     except rospy.ROSInterruptException:
         pass

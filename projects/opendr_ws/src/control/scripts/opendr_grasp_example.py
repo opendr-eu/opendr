@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     detections = Detections()
     detection_sub = rospy.Subscriber('/opendr/grasp_detected', ObjectHypothesisWithPose, detections.process_detection)
-    obj_cat_sub = rospy.Subscriber("/opendr/object_catagories", VisionInfo, detections.save_categories)
+    obj_cat_sub = rospy.Subscriber("/opendr/object_categories", VisionInfo, detections.save_categories)
 
     pick_and_place_client = PickAndPlaceClient()
     pick_and_place_client.start()
@@ -50,6 +50,7 @@ if __name__ == '__main__':
     grasp_msg.force = 20.0
     # Send pick goal to server
     #pick_and_place_client.pick(grasp_msg)
+
     # Create place goal
     place_msg = Pose()
     pushrod_hole_id = detections.find_object_by_category("bolt holes")
@@ -57,6 +58,7 @@ if __name__ == '__main__':
     # Send place goal to server
     #pick_and_place_client.place(pushrod_hole_pose)
 
+    # Send pick and place goals to server
     pick_and_place_client.pick_and_place(grasp_msg, pushrod_hole_pose)
 
 

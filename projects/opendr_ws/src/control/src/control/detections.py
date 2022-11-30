@@ -36,23 +36,29 @@ class Detections:
         self._category_database = msg.database_location
 
     def find_object_by_category(self, category_name):
+        '''
+        Use the object's name to find its class id.
+        :param category_name: name of the object
+        :type category_name: str
+        :return: class id
+        :rtype: int
+        '''
         if rospy.has_param(self._category_database):
             for key, item in rospy.get_param(self._category_database).items():
                  if item == category_name:
                      return int(key)
 
     def get_object_pose(self, object_id):
+        '''
+        Use the class id to find the pose of one of the corresponding objects.
+        :param object_id: class id of the objects to look fo
+        :type category_name: int
+        :return: object pose
+        :rtype: geometry_msgs/Pose
+        '''
         result = False
         if object_id in self.objects:
             result = self.objects[object_id][-1]
-            '''
-            for pose in self.objects[object_id]:
-                print(pose)
-                answer = input("Use this pose? (y/n)")
-                if answer == 'y':
-                    result = pose
-                    break
-            '''
         return result
 
     def __calculate_distance(self, pose1, pose2):
