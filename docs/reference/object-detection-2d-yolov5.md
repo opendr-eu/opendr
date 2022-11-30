@@ -49,7 +49,7 @@ The `infer` method:
 YOLOv5DetectorLearner.infer(self, img)
 ```
 
-performs inference on a single image.
+Performs inference on a single image.
 
 Parameters:
 
