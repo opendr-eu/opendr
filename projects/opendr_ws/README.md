@@ -46,7 +46,7 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes (categor
 3. [Face Recognition](src/perception/README.md#face-recognition-ros-node)
 4. [2D Object Detection](src/perception/README.md#2d-object-detection-ros-nodes)
 5. [Face Detection](src/perception/README.md#face-detection-ros-node)
-6. [Visual Based Panoptic Segmentation](src/perception/README.md#visual-based-panoptic-segmentation-ros-node)
+6. [Vision Based Panoptic Segmentation](src/perception/README.md#vision-based-panoptic-segmentation-ros-node)
 7. [LiDAR Based Panoptic Segmentation](src/perception/README.md#lidar-based-panoptic-segmentation-ros-node)
 8. [Semantic Segmentation](src/perception/README.md#semantic-segmentation-ros-node)
 9. [Video Human Activity Recognition](src/perception/README.md#human-action-recognition-ros-node)

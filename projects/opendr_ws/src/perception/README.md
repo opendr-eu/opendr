@@ -171,7 +171,7 @@ rosrun perception object_detection_2d_gem.py
 5. You can examine the annotated image stream using `rqt_image_view` (select one of the topics `/opendr/color_detection_annotated` or `/opendr/infra_detection_annotated`) or `rostopic echo /opendr/detections`
 
 
-## Visual Based Panoptic Segmentation ROS Node
+## Vision Based Panoptic Segmentation ROS Node
 A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
 Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
 ```shell
