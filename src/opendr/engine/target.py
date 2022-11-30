@@ -437,13 +437,13 @@ class BoundingBoxList(Target):
     """
     def __init__(
         self,
-        boxes = [],
-        image_id = -1,
+        boxes=[],
+        image_id=-1,
     ):
         super().__init__()
         self.data = boxes
-        self.confidence = np.mean([box.confidence for box in self.data])
         self.image_id = image_id
+        self.__compute_confidence()
 
     @staticmethod
     def from_coco(boxes_coco, image_id=0):
@@ -485,9 +485,16 @@ class BoundingBoxList(Target):
 
         return result
 
+    def add_box(self, box: BoundingBox):
+        self.data.append(box)
+        self.__compute_confidence()
+
     @property
     def boxes(self):
         return self.data
+
+    def __compute_confidence(self):
+        self.confidence = sum([box.confidence for box in self.data], 0) / max(1, len(self.data))
 
     def __getitem__(self, idx):
         return self.boxes[idx]
@@ -586,7 +593,7 @@ class TrackingAnnotationList(Target):
     ):
         super().__init__()
         self.data = boxes
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.__compute_confidence()
 
     @staticmethod
     def from_mot(data):
@@ -607,9 +614,16 @@ class TrackingAnnotationList(Target):
     def bounding_box_list(self):
         return BoundingBoxList([box.bounding_box() for box in self.data])
 
+    def add_annotation(self, annotation: TrackingAnnotation):
+        self.data.append(annotation)
+        self.__compute_confidence()
+
     @property
     def boxes(self):
         return self.data
+
+    def __compute_confidence(self):
+        self.confidence = sum([box.confidence for box in self.data], 0) / max(1, len(self.data))
 
     def __getitem__(self, idx):
         return self.boxes[idx]
@@ -732,7 +746,7 @@ class BoundingBox3DList(Target):
     ):
         super().__init__()
         self.data = bounding_boxes_3d
-        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
+        self.__compute_confidence()
 
     @staticmethod
     def from_kitti(boxes_kitti):
@@ -807,9 +821,16 @@ class BoundingBox3DList(Target):
 
         return result
 
+    def add_box(self, box: BoundingBox3D):
+        self.data.append(box)
+        self.__compute_confidence()
+
     @property
     def boxes(self):
         return self.data
+
+    def __compute_confidence(self):
+        self.confidence = sum([box.confidence for box in self.data], 0) / max(1, len(self.data))
 
     def __getitem__(self, idx):
         return self.boxes[idx]
@@ -918,7 +939,7 @@ class TrackingAnnotation3DList(Target):
     ):
         super().__init__()
         self.data = tracking_bounding_boxes_3d
-        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
+        self.__compute_confidence()
 
     @staticmethod
     def from_kitti(boxes_kitti, ids, frames=None):
@@ -1008,8 +1029,15 @@ class TrackingAnnotation3DList(Target):
     def boxes(self):
         return self.data
 
+    def add_annotation(self, annotation: TrackingAnnotation3D):
+        self.data.append(annotation)
+        self.__compute_confidence()
+
     def bounding_box_3d_list(self):
         return BoundingBox3DList([box.bounding_box_3d() for box in self.data])
+
+    def __compute_confidence(self):
+        self.confidence = sum([box.confidence for box in self.data], 0) / max(1, len(self.data))
 
     def __getitem__(self, idx):
         return self.boxes[idx]
