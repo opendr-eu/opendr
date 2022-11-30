@@ -437,11 +437,13 @@ class BoundingBoxList(Target):
     """
     def __init__(
         self,
-        boxes,
+        boxes = [],
+        image_id = -1,
     ):
         super().__init__()
         self.data = boxes
         self.confidence = np.mean([box.confidence for box in self.data])
+        self.image_id = image_id
 
     @staticmethod
     def from_coco(boxes_coco, image_id=0):
