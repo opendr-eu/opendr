@@ -44,14 +44,15 @@ from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, Object
 
 class Detectron2GraspDetectionNode:
 
-    def __init__(self, camera_tf_frame, robot_tf_frame, ee_tf_frame,
-                 input_image_topic="/usb_cam/image_raw", input_depth_image_topic="/usb_cam/image_raw", 
-                 camera_info_topic="/camera/color/camera_info",
-                 output_image_topic="/opendr/image_grasp_pose_annotated",
-                 output_mask_topic="/opendr/image_mask_annotated",
-                 object_detection_topic="/opendr/object_detected",
-                 grasp_detection_topic="/opendr/grasp_detected",
-                 device="cuda", only_visualize=False, model="detectron"):
+    def __init__(self, camera_tf_frame="/camera_color_optical_frame", robot_tf_frame="/panda_link0", 
+                        ee_tf_frame="/panda_link8", input_image_topic="/camera/color/image_raw", 
+                        input_depth_image_topic="/camera/aligned_depth_to_color/image_raw", 
+                        camera_info_topic="/camera/color/camera_info",
+                        output_image_topic="/opendr/image_grasp_pose_annotated",
+                        output_mask_topic="/opendr/image_mask_annotated",
+                        object_detection_topic="/opendr/object_detected",
+                        grasp_detection_topic="/opendr/grasp_detected",
+                        device="cuda", only_visualize=True, model="detectron"):
         """
         Creates a ROS Node for objects detection from RGBD
         :param input_image_topic: Topic from which we are reading the input image
@@ -261,25 +262,26 @@ class Detectron2GraspDetectionNode:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--camera_tf_frame', type=str, help='Tf frame in which objects are detected')
-    parser.add_argument('--robot_tf_frame', type=str, help='Tf frame of reference for commands sent to the robot')
-    parser.add_argument('--ee_tf_frame', type=str, help='Tf frame of reference for the robot end effector')
-    parser.add_argument('--depth_topic', type=str, help='ROS topic containing depth information')
-    parser.add_argument('--image_topic', type=str, help='ROS topic containing RGB information')
+    parser.add_argument('--image_topic', default="/camera/color/image_raw", type=str, help='ROS topic containing RGB information')
+    parser.add_argument('--depth_topic', default="/camera/aligned_depth_to_color/image_raw", type=str, help='ROS topic containing depth information')
+    parser.add_argument('--camera_tf_frame', default="/camera_color_optical_frame", type=str, help='Tf frame in which objects are detected')
+    parser.add_argument('--robot_tf_frame', default="panda_link0", type=str, help='Tf frame of reference for commands sent to the robot')
+    parser.add_argument('--ee_tf_frame', default="/panda_link8", type=str, help='Tf frame of reference for the robot end effector')
+    parser.add_argument('--only_visualize', default=True, type=bool, help='True if running the detection for visualizing purposes only, False to convert detections to a robot coordinates frame')
+
     args = parser.parse_args()
 
-    rospy.init_node('opendr_object_detection', anonymous=True)
+    rospy.init_node('opendr_grasp_pose_detection', anonymous=True)
     # Select the device for running
     try:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
     except:
         device = 'cpu'
-    # default topics for intel realsense - https://github.com/IntelRealSense/realsense-ros
-    depth_topic = "/camera/aligned_depth_to_color/image_raw"
-    image_topic = "/camera/color/image_raw"  
-    grasp_detection_node = Detectron2GraspDetectionNode(camera_tf_frame='/camera_color_optical_frame', robot_tf_frame='panda_link0', 
-                                                            ee_tf_frame='/panda_link8', input_image_topic=image_topic, 
-                                                            input_depth_image_topic=depth_topic, device=device)
+ 
+    grasp_detection_node = Detectron2GraspDetectionNode(camera_tf_frame=args.camera_tf_frame, robot_tf_frame=args.robot_tf_frame, 
+                                                            ee_tf_frame=args.ee_tf_frame, input_image_topic=args.image_topic, 
+                                                            input_depth_image_topic=args.depth_topic, device=device,
+                                                            only_visualize=args.only_visualize)
     rospy.loginfo("Detectron2 object detection node started!")
 
     try:

@@ -170,6 +170,38 @@ rosrun perception object_detection_2d_gem.py
 
 5. You can examine the annotated image stream using `rqt_image_view` (select one of the topics `/opendr/color_detection_annotated` or `/opendr/infra_detection_annotated`) or `rostopic echo /opendr/detections`
 
+## Grasp Pose Detection ROS Node
+
+
+Assuming that you have already [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`), then you can
+
+
+1. Start the node responsible for publishing images. If you have a RealSense camera, then you can use the corresponding node (assuming you have installed [realsense2_camera](http://wiki.ros.org/realsense2_camera)):
+
+```shell
+roslaunch realsense2_camera rs_camera.launch color_width:=1280 color_height:=720 align_depth:=True color_fps:=30
+
+```
+
+2. You are then ready to start the grasp pose detection node
+
+```shell
+rosrun perception grasp_pose_detection_detectron2.py
+```
+
+The following optional arguments are available:
+- `-h, --help`: show a help message and exit 
+- `--image_topic`:  listen to RGB images on this topic (default=`/camera/color/image_raw`)
+- `--depth_topic `: listen to depth images on this topic (default=`/camera/aligned_depth_to_color/image_raw`)
+- `--camera_tf_frame ` : Tf frame in which objects are detected (default=`/camera_color_optical_frame`)
+- `--robot_tf_frame ` : Tf frame of reference for commands sent to the robot (default=`panda_link0`)
+- `--ee_tf_frame `: Tf frame of reference for the robot end effector (default=`panda_link8`)
+- `--only_visualize`: True if running the detection for visualizing purposes only, False to convert detections to a robot coordinates frame (default=`True`)
+
+3. You can examine the annotated image stream using `rqt_image_view` or `rviz`(select one of the topics `/opendr/image_grasp_pose_annotated` or `/opendr/image_mask_annotated`) or `rostopic echo /opendr/object_detected`
+
+### Use custom dataset 
+
 
 ## Panoptic Segmentation ROS Node
 A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
