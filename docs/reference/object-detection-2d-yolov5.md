@@ -74,7 +74,7 @@ Parameters:
   im1 = Image.open('zidane.jpg')  # OpenDR image
 
   results = yolo.infer(im1)
-  draw_bounding_boxes(im1.opencv(), results, yolo.classes, show=False)
+  draw_bounding_boxes(im1.opencv(), results, yolo.classes, show=True, line_thickness=3)
   ```
 
 #### References
