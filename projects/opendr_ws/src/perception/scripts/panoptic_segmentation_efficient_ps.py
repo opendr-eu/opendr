@@ -117,8 +117,8 @@ class EfficientPsNode:
         Start the node and begin processing input data. The order of the function calls ensures that the node does not
         try to process input images without being in a trained state.
         """
-        rospy.init_node('efficient_ps', anonymous=True)
-        rospy.loginfo("EfficientPS node started!")
+        rospy.init_node('opendr_efficient_panoptic_segmentation_node', anonymous=True)
+        rospy.loginfo("Panoptic segmentation EfficientPS node started.")
         if self._init_learner():
             self._init_publisher()
             self._init_subscribers()
@@ -154,20 +154,23 @@ class EfficientPsNode:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('input_rgb_image_topic', type=str, default='/usb_cam/image_raw',
+    parser.add_argument('-i', '--input_rgb_image_topic', type=str, default='/usb_cam/image_raw',
                         help='listen to RGB images on this topic')
-    parser.add_argument('--checkpoint', type=str, default='cityscapes',
-                        help='download pretrained models [cityscapes, kitti] or load from the provided path')
-    parser.add_argument('--output_heatmap_topic', type=str, default='/opendr/panoptic',
+    parser.add_argument('-oh', '--output_heatmap_topic',
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default='/opendr/panoptic',
                         help='publish the semantic and instance maps on this topic as "OUTPUT_HEATMAP_TOPIC/semantic" \
                              and "OUTPUT_HEATMAP_TOPIC/instance"')
-    parser.add_argument('--output_rgb_image_topic', type=str,
+    parser.add_argument('-ov', '--output_rgb_image_topic',
+                        type=lambda value: value if value.lower() != "none" else None,
                         default='/opendr/panoptic/rgb_visualization',
                         help='publish the panoptic segmentation map as an RGB image on this topic or a more detailed \
                               overview if using the --detailed_visualization flag')
     parser.add_argument('--detailed_visualization', action='store_true',
                         help='generate a combined overview of the input RGB image and the semantic, instance, and \
                               panoptic segmentation maps and publish it on OUTPUT_RGB_IMAGE_TOPIC')
+    parser.add_argument('--checkpoint', type=str, default='cityscapes',
+                        help='download pretrained models [cityscapes, kitti] or load from the provided path')
     args = parser.parse_args()
 
     efficient_ps_node = EfficientPsNode(args.input_rgb_image_topic,
