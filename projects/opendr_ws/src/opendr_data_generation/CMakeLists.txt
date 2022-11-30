@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(data_generation)
+project(opendr_data_generation)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -27,6 +27,6 @@ include_directories(
 #############
 
 catkin_install_python(PROGRAMS
-   scripts/synthetic_facial_generation.py
+   scripts/synthetic_facial_generation_node.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
