@@ -392,10 +392,10 @@ class DLA(nn.Module):
 
             return x
 
-    def load_pretrained_model(self, load=True, data="imagenet", name="dla34", hash="ba72cf86", num_classes=None):
+    def load_model(self, pretrained=True, data="imagenet", name="dla34", hash="ba72cf86", num_classes=None):
         fc = self.fc
 
-        if load:
+        if pretrained:
             if name.endswith(".pth"):
                 model_weights = torch.load(data + name)
             else:
@@ -412,7 +412,7 @@ class DLA(nn.Module):
             bias=True,
         )
 
-        if load:
+        if pretrained:
             self.load_state_dict(model_weights)
         self.fc = fc
 
@@ -421,7 +421,7 @@ def dla34(pretrained, num_classes=None, **kwargs):  # DLA-34
     model = DLA(
         [1, 1, 1, 2, 2, 1], [16, 32, 64, 128, 256, 512], block=BasicBlock, **kwargs
     )
-    model.load_pretrained_model(data="imagenet", name="dla34", hash="ba72cf86", num_classes=num_classes, load=pretrained)
+    model.load_model(data="imagenet", name="dla34", hash="ba72cf86", num_classes=num_classes, pretrained=pretrained)
     return model
 
 
@@ -430,7 +430,7 @@ def dla46_c(pretrained=False, num_classes=None, **kwargs):  # DLA-46-C
     model = DLA(
         [1, 1, 1, 2, 2, 1], [16, 32, 64, 64, 128, 256], block=Bottleneck, **kwargs
     )
-    model.load_pretrained_model(pretrained, "dla46_c", num_classes=num_classes, load=pretrained)
+    model.load_model(pretrained, "dla46_c", num_classes=num_classes)
     return model
 
 
@@ -439,7 +439,7 @@ def dla46x_c(pretrained=False, num_classes=None, **kwargs):  # DLA-X-46-C
     model = DLA(
         [1, 1, 1, 2, 2, 1], [16, 32, 64, 64, 128, 256], block=BottleneckX, **kwargs
     )
-    model.load_pretrained_model(pretrained, "dla46x_c", num_classes=num_classes, load=pretrained)
+    model.load_model(pretrained, "dla46x_c", num_classes=num_classes)
     return model
 
 
@@ -448,7 +448,7 @@ def dla60x_c(pretrained, num_classes=None, **kwargs):  # DLA-X-60-C
     model = DLA(
         [1, 1, 1, 2, 3, 1], [16, 32, 64, 64, 128, 256], block=BottleneckX, **kwargs
     )
-    model.load_pretrained_model(data="imagenet", name="dla60x_c", hash="b870c45c", num_classes=num_classes, load=pretrained)
+    model.load_model(data="imagenet", name="dla60x_c", hash="b870c45c", num_classes=num_classes, pretrained=pretrained)
     return model
 
 
@@ -457,7 +457,7 @@ def dla60(pretrained=False, num_classes=None, **kwargs):  # DLA-60
     model = DLA(
         [1, 1, 1, 2, 3, 1], [16, 32, 128, 256, 512, 1024], block=Bottleneck, **kwargs
     )
-    model.load_pretrained_model(pretrained, "dla60", num_classes=num_classes, load=pretrained)
+    model.load_model(pretrained, "dla60", num_classes=num_classes)
     return model
 
 
@@ -466,7 +466,7 @@ def dla60x(pretrained=False, num_classes=None, **kwargs):  # DLA-X-60
     model = DLA(
         [1, 1, 1, 2, 3, 1], [16, 32, 128, 256, 512, 1024], block=BottleneckX, **kwargs
     )
-    model.load_pretrained_model(pretrained, "dla60x", num_classes=num_classes, load=pretrained)
+    model.load_model(pretrained, "dla60x", num_classes=num_classes)
     return model
 
 
@@ -479,7 +479,7 @@ def dla102(pretrained=False, num_classes=None, **kwargs):  # DLA-102
         residual_root=True,
         **kwargs
     )
-    model.load_pretrained_model(pretrained, "dla102", num_classes=num_classes, load=pretrained)
+    model.load_model(pretrained, "dla102", num_classes=num_classes)
     return model
 
 
@@ -492,7 +492,7 @@ def dla102x(pretrained=False, num_classes=None, **kwargs):  # DLA-X-102
         residual_root=True,
         **kwargs
     )
-    model.load_pretrained_model(pretrained, "dla102x", num_classes=num_classes, load=pretrained)
+    model.load_model(pretrained, "dla102x", num_classes=num_classes)
     return model
 
 
@@ -505,7 +505,7 @@ def dla102x2(pretrained=False, num_classes=None, **kwargs):  # DLA-X-102 64
         residual_root=True,
         **kwargs
     )
-    model.load_pretrained_model(pretrained, "dla102x2", num_classes=num_classes, load=pretrained)
+    model.load_model(pretrained, "dla102x2", num_classes=num_classes)
     return model
 
 
@@ -518,7 +518,7 @@ def dla169(pretrained=False, num_classes=None, **kwargs):  # DLA-169
         residual_root=True,
         **kwargs
     )
-    model.load_pretrained_model(pretrained, "dla169", num_classes=num_classes, load=pretrained)
+    model.load_model(pretrained, "dla169", num_classes=num_classes)
     return model
 
 

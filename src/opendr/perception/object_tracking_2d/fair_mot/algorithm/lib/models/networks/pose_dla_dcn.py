@@ -372,9 +372,9 @@ class DLA(nn.Module):
             y.append(x)
         return y
 
-    def load_pretrained_model(self, load=True, data="imagenet", name="dla34", hash="ba72cf86", num_classes=1000):
+    def load_model(self, pretrained=True, data="imagenet", name="dla34", hash="ba72cf86", num_classes=1000):
         
-        if load:
+        if pretrained:
             if name.endswith(".pth"):
                 model_weights = torch.load(data + name)
             else:
@@ -391,7 +391,7 @@ class DLA(nn.Module):
             bias=True,
         )
 
-        if load:
+        if pretrained:
             self.load_state_dict(model_weights)
 
 
@@ -399,7 +399,7 @@ def dla34(pretrained=True, **kwargs):  # DLA-34
     model = DLA(
         [1, 1, 1, 2, 2, 1], [16, 32, 64, 128, 256, 512], block=BasicBlock, **kwargs
     )
-    model.load_pretrained_model(data="imagenet", name="dla34", hash="ba72cf86", load=pretrained)
+    model.load_model(data="imagenet", name="dla34", hash="ba72cf86", pretrained=pretrained)
     return model
 
 
