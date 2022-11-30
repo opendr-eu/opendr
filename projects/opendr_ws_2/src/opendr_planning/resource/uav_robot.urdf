@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
-<robot name="My robot">
+<robot name="End-to-end planning uav robot">
     <webots>
-        <device reference="gps1" type="GPS">
+        <device reference="gps" type="GPS">
             <ros>
                 <enabled>true</enabled>
                 <alwaysOn>true</alwaysOn>
@@ -29,6 +29,6 @@
             <inertialUnitName>inertial_unit</inertialUnitName>
         </plugin>
 
-        <plugin type="minimal_example.my_robot_driver.MyRobotDriver" />
+        <plugin type="opendr_planning.e2e_planning_robot_driver.EndToEndPlanningUAVRobotDriver" />
     </webots>
 </robot>

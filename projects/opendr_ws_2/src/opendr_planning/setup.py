@@ -6,7 +6,7 @@ data_files.append(('share/ament_index/resource_index/packages', ['resource/' + p
 data_files.append(('share/' + package_name + '/launch', ['launch/e2e_planning_robot_launch.py']))
 data_files.append(('share/' + package_name + '/worlds', ['worlds/train-no-dynamic-random-obstacles.wbt']))
 data_files.append(('share/' + package_name + '/protos', ['protos/box.proto']))
-data_files.append(('share/' + package_name + '/resource', ['resource/my_robot.urdf']))
+data_files.append(('share/' + package_name + '/resource', ['resource/uav_robot.urdf']))
 data_files.append(('share/' + package_name, ['package.xml']))
 
 

@@ -38,7 +38,7 @@ class EndToEndPlannerNode(Node):
         self.target_pose.header.frame_id = "map"
         self.bridge = CvBridge()
         self.input_depth_image_topic = "/quad_plus_sitl/range_finder"
-        self.position_topic = "/quad_plus_sitl/gps1"
+        self.position_topic = "/quad_plus_sitl/gps"
         self.orientation_topic = "/imu"
         self.end_to_end_planner = EndToEndPlanningRLLearner(env=None)
 

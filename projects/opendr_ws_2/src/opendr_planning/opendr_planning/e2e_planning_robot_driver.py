@@ -16,15 +16,15 @@
 import rclpy
 
 
-class MyRobotDriver:
+class EndToEndPlanningUAVRobotDriver:
     def init(self, webots_node, properties):
         self.__robot = webots_node.robot
 
-        self.__gps = self.__robot.getDevice('gps1')
+        self.__gps = self.__robot.getDevice('gps')
         self.__imu = self.__robot.getDevice('inertial_unit')
 
         rclpy.init(args=None)
-        self.__node = rclpy.create_node('my_robot_driver')
+        self.__node = rclpy.create_node('end_to_end_planning_uav_robot_driver')
 
     def step(self):
         rclpy.spin_once(self.__node, timeout_sec=0)

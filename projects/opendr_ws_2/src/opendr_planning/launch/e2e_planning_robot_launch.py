@@ -24,7 +24,7 @@ from webots_ros2_driver.webots_launcher import WebotsLauncher, Ros2SupervisorLau
 
 def generate_launch_description():
     package_dir = get_package_share_directory('opendr_planning')
-    robot_description = pathlib.Path(os.path.join(package_dir, 'resource', 'my_robot.urdf')).read_text()
+    robot_description = pathlib.Path(os.path.join(package_dir, 'resource', 'uav_robot.urdf')).read_text()
 
     webots = WebotsLauncher(
         world=os.path.join(package_dir, 'worlds', 'train-no-dynamic-random-obstacles.wbt')
