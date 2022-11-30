@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>planning</name>
+  <name>opendr_planning</name>
   <version>1.0.0</version>
   <description>OpenDR's ROS planning package</description>
   <maintainer email="tefas@csd.auth.gr">OpenDR Project Coordinator</maintainer>
