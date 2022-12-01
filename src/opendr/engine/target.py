@@ -437,11 +437,11 @@ class BoundingBoxList(Target):
     """
     def __init__(
         self,
-        boxes=[],
+        boxes=None,
         image_id=-1,
     ):
         super().__init__()
-        self.data = boxes
+        self.data = [] if boxes is None else boxes
         self.image_id = image_id
         self.__compute_confidence()
 
@@ -589,10 +589,10 @@ class TrackingAnnotationList(Target):
     """
     def __init__(
         self,
-        boxes,
+        annotations=None,
     ):
         super().__init__()
-        self.data = boxes
+        self.data = [] if annotations is None else annotations
         self.__compute_confidence()
 
     @staticmethod
@@ -741,11 +741,11 @@ class BoundingBox3DList(Target):
     """
 
     def __init__(
-            self,
-            bounding_boxes_3d
+        self,
+        bounding_boxes_3d=None
     ):
         super().__init__()
-        self.data = bounding_boxes_3d
+        self.data = [] if bounding_boxes_3d is None else bounding_boxes_3d
         self.__compute_confidence()
 
     @staticmethod
@@ -935,10 +935,10 @@ class TrackingAnnotation3DList(Target):
     """
     def __init__(
         self,
-        tracking_bounding_boxes_3d
+        annotations_3d=None
     ):
         super().__init__()
-        self.data = tracking_bounding_boxes_3d
+        self.data = [] if annotations_3d is None else annotations_3d
         self.__compute_confidence()
 
     @staticmethod
