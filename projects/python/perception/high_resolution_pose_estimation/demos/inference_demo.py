@@ -14,9 +14,9 @@ if __name__ == '__main__':
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
-    parser.add_argument("--height1", help="Base height of resizing in first inference", default=540)
+    parser.add_argument("--height1", help="Base height of resizing in first inference", default=360)
     parser.add_argument("--height2", help="Base height of resizing in second inference", default=540)
-    parser.add_argument("--hrdata",help="Select the image resolution for inference",default=1440)
+    parser.add_argument("--hrdata",help="Select the image resolution for inference",default=1080)
 
     args = parser.parse_args()
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     # Download one sample image
     pose_estimator.download(path=".", mode="test_data")
 
-    image_path = join("temp2", "dataset", "image", image_file)
+    image_path = join("temp", "dataset", "image", image_file)
 
     img = Image.open(image_path)
 

@@ -12,21 +12,13 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("--height1", help="Base height of resizing in first inference", default=360)
     parser.add_argument("--height2", help="Base height of resizing in second inference", default=540)
-    parser.add_argument("--hrdata", help="Select the image resolution for inference", default=1440)
+    parser.add_argument("--hrdata", help="Select the image resolution for inference", default=1080)
 
     args = parser.parse_args()
 
     onnx, device, accelerate,base_height1,base_height2,hrdata = args.onnx, args.device, args.accelerate, args.height1, args.height2,args.hrdata
 
 
-    if hrdata == 1440:
-        data_file="data_1440"
-    elif hrdata == 1080:
-        data_file="data_1080"
-    elif hrdata == 720:
-        data_file="data_720"
-    else:
-        raise Exception("The inference image resolution is not valid")
 
 
     if accelerate:
@@ -50,7 +42,7 @@ if __name__ == '__main__':
     # Download a sample dataset
     pose_estimator.download(path=".", mode="test_data")
 
-    eval_dataset = ExternalDataset(path=join("temp2", "dataset",data_file), dataset_type="COCO")
+    eval_dataset = ExternalDataset(path=join("temp", "dataset"), dataset_type="COCO")
 
     t0=time.time()
     results_dict = pose_estimator.eval(eval_dataset,base_height1,base_height2, use_subset=False, verbose=True, silent=True,

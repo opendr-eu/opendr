@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     # Download one sample image
     pose_estimator.download(path=".", mode="test_data")
-    image_path = join("temp2", "dataset", "image", "000000000785_1440.jpg")
+    image_path = join("temp", "dataset", "image", "000000000785_1080.jpg")
     img = cv2.imread(image_path)
 
     if onnx:
