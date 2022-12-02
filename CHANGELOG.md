@@ -5,7 +5,7 @@ Released on December, XX, 2022.
 
   - New Features:
     - Added YOLOv5 as an inference-only tool ([#360](https://github.com/opendr-eu/opendr/pull/360)).
-    - Added SiamRPN 2D tracking tool ([#???](???))
+    - Added SiamRPN 2D tracking tool ([#367](https://github.com/opendr-eu/opendr/pull/367))
 
 ## Version 1.1.1
 Released on June, 30th, 2022.
