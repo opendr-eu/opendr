@@ -53,6 +53,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - object tracking 2d:
             - [fair_mot Module](object-tracking-2d-fair-mot.md)
             - [deep_sort Module](object-tracking-2d-deep-sort.md)
+            - [siamrpn Module](object-tracking-2d-siamrpn.md)
         - object tracking 3d:
             - [ab3dmot Module](object-tracking-3d-ab3dmot.md)
         - multimodal human centric:
@@ -119,11 +120,13 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [centernet Demo](/projects/python/perception/object_detection_2d/centernet)
             - [ssd Demo](/projects/python/perception/object_detection_2d/ssd)
             - [yolov3 Demo](/projects/python/perception/object_detection_2d/yolov3)
+              [yolov5 Demo](/projects/python/perception/object_detection_2d/yolov5)
             - [seq2seq-nms Demo](/projects/python/perception/object_detection_2d/nms/seq2seq-nms)
         - object detection 3d:
             - [voxel Demo](/projects/python/perception/object_detection_3d/demos/voxel_object_detection_3d)
         - object tracking 2d:
             - [fair_mot Demo](/projects/python/perception/object_tracking_2d/demos/fair_mot_deep_sort)
+            - [siamrpn Demo](/projects/python/perception/object_tracking_2d/demos/siamrpn)
         - panoptic segmentation:
             - [efficient_ps Demo](/projects/python/perception/panoptic_segmentation/efficient_ps)
         - semantic segmentation:

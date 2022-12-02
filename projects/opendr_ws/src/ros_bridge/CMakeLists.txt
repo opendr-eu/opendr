@@ -21,6 +21,12 @@ add_message_files(
     OpenDRPose2D.msg
 )
 
+ add_service_files(
+    DIRECTORY srv
+    FILES
+    OpenDRSingleObjectTracking.srv
+ )
+
 generate_messages(
     DEPENDENCIES
     std_msgs

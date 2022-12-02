@@ -35,5 +35,6 @@ catkin_install_python(PROGRAMS
    scripts/object_detection_2d_detr.py
    scripts/object_detection_2d_gem.py
    scripts/semantic_segmentation_bisenet.py
+   scripts/object_tracking_2d_siamrpn.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )

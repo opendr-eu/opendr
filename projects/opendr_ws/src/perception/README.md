@@ -329,3 +329,56 @@ rosrun perception image_dataset.py
 ```
 This will publish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
 
+## SiamRPN Object Tracking 2D ROS Node
+
+The `object_tracking_2d_siamrpn.py` node implements an object tracking node using the SiamRPN
+single object tracker. The node works by providing a tracking service which can be called from
+another node (i.e., a detection node) or from the terminal. A `Detection2D` message is required
+to begin the tracking process, and the tracker is subscribed to a corresponding input image topic.
+Example usage:
+```shell
+# first start a video, e.g. using video_stream_opencv or usb_cam
+roslaunch video_stream_opencv camera.launch video_stream_provider:=/path/to/video.mp4 loop_videofile:=true
+```
+The default topic for this stream publisher is `/camera/image_raw`, which must be given as an 
+input argument to the SiamRPN node:
+```shell
+# change the input image topic here to reflect your chosen publisher
+rosrun perception object_tracking_2d_siamrpn.py -i /camera/image_raw
+```
+The tracker node will subscribe to the image topic and start tracking after the tracking service is called.
+The provided service is called `/opendr/siamrpn_tracking_srv` and a `Detection2D` message is expected in 
+order to get an initial bounding box. The service can be called from another node, such as an object detection
+node (note: most object detectors publish `Detection2DArray` messages, so the object of interest must be
+specified first), or from the terminal using `rosservice call` as follows:
+```shell
+rosservice call /opendr/siamrpn_tracking_srv "init_box:
+  header:
+    seq: 0
+    stamp:
+      secs: 0
+      nsecs: 0
+    frame_id: ''
+  results:
+  - id: 0
+    score: 0.0
+    pose:
+      pose:
+        position: {x: 0.0, y: 0.0, z: 0.0}
+        orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+      covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  bbox:
+    center: {x: 645.5, y: 312.0, theta: 0.0}
+    size_x: 75.0
+    size_y: 200.0
+  source_img:
+    header:
+      seq: 0
+      stamp: {secs: 0, nsecs: 0}
+    data: !!binary """
+```
+The `bbox` parameters must be set to point to the object to be tracked.
+The tracked locations are visualized and published by default to the `/opendr/image_tracking_annotated`
+topic which can be visualized using for example `rqt_image_view`.

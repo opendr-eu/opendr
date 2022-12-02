@@ -386,12 +386,42 @@ Parameters:
   The tracking ids corresponding to the boxes.
 - **frame**: *int, default=-1*\
   The frame index to assign to the tracking boxes.
+  
+#### `ROSBridge.to_ros_single_tracking_annotation`
+
+```python
+ROSBridge.to_ros_single_tracking_annotation(self, tracking_annotation)
+```
+
+Converts a `TrackingAnnotation` object to a `Detection2D` ROS message. This method is intended for 
+single object tracking methods.
+Parameters:
+- **tracking_annotation**: *opendr.engine.target.TrackingAnnotation*\
+  The box to be converted.
+  
+#### `ROSBridge.from_ros_single_tracking_annotation`
+
+```python
+ROSBridge.from_ros_single_tracking_annotation(self, ros_detection_box)
+```
+
+Converts a `Detection2D` ROS message object to a `TrackingAnnotation` object. This method is intended for 
+single object tracking methods.
+Parameters:
+- **ros_detection_box**: *vision_msgs.Detection2D*\
+  The box to be converted.
 
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
 2. `ros_bridge.msg.Pose` is used as an equivelant to `engine.target.Pose`
 3. `vision_msgs.msg.Detection2DArray` is used as an equivalent to `engine.target.BoundingBoxList`
-4. `vision_msgs.msg.Detection2D` is used as an equivalent to `engine.target.BoundingBox`
+4. `vision_msgs.msg.Detection2D` is used as an equivalent to `engine.target.BoundingBox` and
+   to `egine.target.TrackingAnnotation` in single object tracking
 5. `geometry_msgs.msg.Pose`  is used as an equivelant to `engine.target.Pose` for 3D poses conversion only.
 6. `vision_msgs.msg.Detection3DArray`  is used as an equivelant to `engine.target.BoundingBox3DList`.
 7. `sensor_msgs.msg.PointCloud`  is used as an equivelant to `engine.data.PointCloud`.
+
+## ROS services
+The following ROS services are implemented (`srv` folder):
+1. `ros_bridge.OpenDRSingleObjectTracking`: can be used to initialize the tracking process of single
+   object trackers, by providing a `Detection2D` bounding box
