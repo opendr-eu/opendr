@@ -95,9 +95,10 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
 
-            starting_param = list(learner.model.parameters())[0].clone()
+            starting_param = list(learner.model.parameters())[-1].clone()
 
             learner.fit(
                 dataset,
@@ -106,7 +107,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 val_split_paths=self.train_split_paths,
                 verbose=True,
             )
-            new_param = list(learner.model.parameters())[0].clone()
+            new_param = list(learner.model.parameters())[-1].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
 
             print("Fit", name, "ok", file=sys.stderr)
@@ -125,6 +126,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
 
             starting_param = list(learner.model.parameters())[0].clone()
@@ -156,6 +158,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
             learner.load(model_path, verbose=True)
             result = learner.eval(eval_dataset)
@@ -176,6 +179,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
             learner.load(model_path, verbose=True)
             result = learner.infer(eval_dataset[0][0], 10)
@@ -204,6 +208,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
 
             learner.save(save_path, True)
@@ -215,6 +220,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
             learner2.load(save_path)
 
@@ -233,6 +239,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
 
             with self.assertRaises(Exception):
