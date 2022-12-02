@@ -109,7 +109,8 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
             'projects/opendr_ws_2/src/opendr_perception/test',
             'projects/opendr_ws_2/src/opendr_ros2_bridge/test',
-            'projects/opendr_ws_2/src/data_generation/test',
+            'projects/opendr_ws_2/src/opendr_ros2_interface/test',
+            'projects/opendr_ws_2/src/opendr_data_generation/test',
             'projects/opendr_ws_2/src/opendr_simulation/test',
         ]
 
