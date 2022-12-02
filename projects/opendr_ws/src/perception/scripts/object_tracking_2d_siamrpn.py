@@ -63,9 +63,9 @@ class ObjectTrackingSiamRPNNode:
         self.image = None
         self.initialized = False
 
-        tracking_srv = rospy.Service("/opendr/siamrpn_tracking_srv",
-                                     OpenDRSingleObjectTracking,
-                                     self.init_box_srv_callback)
+        rospy.Service("/opendr/siamrpn_tracking_srv",
+                      OpenDRSingleObjectTracking,
+                      self.init_box_srv_callback)
 
     def listen(self):
         """

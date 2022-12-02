@@ -36,6 +36,12 @@ data_root
 │   ├── ...
 └── ...
 ```
+
+#### Custom training datasets
+
+Support for custom datasets is implemented by inheriting the `opendr.engine.datasets.DatasetIterator` class as shown in
+[otb_dataset.py](/src/opendr/perception/object_tracking_2d/datasets/otb_dataset.py). 
+
 ### Evaluation datasets
 
 The [OTB](http://cvlab.hanyang.ac.kr/tracker_benchmark/datasets.html) dataset is supported

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+#
 # general imports
 import os
 import time
@@ -23,7 +23,6 @@ from tqdm import tqdm
 from urllib.request import urlretrieve
 
 # gluoncv imports
-os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
 import mxnet as mx
 from mxnet import gluon, nd, autograd
 from gluoncv import utils as gutils
@@ -42,8 +41,10 @@ from opendr.engine.data import Image
 from opendr.engine.target import TrackingAnnotation
 from opendr.engine.datasets import ExternalDataset
 from opendr.engine.constants import OPENDR_SERVER_URL
+from opendr.engine.datasets import DatasetIterator
 
 gutils.random.seed(0)
+os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
 
 
 class SiamRPNLearner(Learner):
@@ -205,7 +206,7 @@ class SiamRPNLearner(Learner):
         """
         Train the tracker on a new dataset.
         :param dataset: training dataset
-        :type dataset: ExternalDataset
+        :type dataset: ExternalDataset or supported DatasetIterator
         :param log_interval: Train loss is printed after log_interval iterations
         :type log_interval: int
         :param n_gpus: Number of GPUs to train with if device is set to GPU
@@ -308,9 +309,9 @@ class SiamRPNLearner(Learner):
                 loss_total_val += sum([l.mean().asscalar() for l in total_losses]) / len(total_losses)
                 loss_loc_val += sum([l.mean().asscalar() for l in loc_losses]) / len(loc_losses)
                 loss_cls_val += sum([l.mean().asscalar() for l in cls_losses]) / len(cls_losses)
-                if i % log_interval == 0 and (verbose and (not silent)):
+                if i % log_interval == 0 and verbose:
                     print('Epoch %d iteration %04d/%04d: loc loss %.3f, cls loss %.3f, \
-                                     training loss %.3f, batch time %.3f' % \
+                                     training loss %.3f, batch time %.3f' %
                           (epoch, i, len(train_loader), loss_loc_val / (i + 1), loss_cls_val / (i + 1),
                            loss_total_val / (i + 1), time.time() - batch_time))
                     batch_time = time.time()
@@ -383,9 +384,6 @@ class SiamRPNLearner(Learner):
         for tracker_name in success_ret.keys():
             auc = np.mean(list(success_ret[tracker_name].values()))
             tracker_auc[tracker_name] = auc
-        tracker_auc_ = sorted(tracker_auc.items(),
-                              key=lambda x: x[1],
-                              reverse=True)[:20]
 
         tracker_name_len = max((max([len(x) for x in success_ret.keys()]) + 2), 12)
         header = ("|{:^" + str(tracker_name_len) + "}|{:^9}|{:^9}|").format("Tracker name", "Success", "FPS")
@@ -458,8 +456,11 @@ class SiamRPNLearner(Learner):
                                  train_epoch=self.n_epochs)
             return dataset
 
+        if issubclass(type(dataset), DatasetIterator):
+            return dataset
+
         if not isinstance(dataset, ExternalDataset):
-            raise TypeError("Only `ExternalDataset` types are supported.")
+            raise TypeError("Only `ExternalDataset` and modified `DatasetIterator` types are supported.")
 
     def __prepare_validation_dataset(self, dataset):
         """
