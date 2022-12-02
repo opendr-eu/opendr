@@ -16,7 +16,7 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("--height1", help="Base height of resizing in first inference", default=360)
     parser.add_argument("--height2", help="Base height of resizing in second inference", default=540)
-    parser.add_argument("--hrdata", help="Select the image resolution (1080 or 1440) for inference", default=1080)
+    parser.add_argument("--hrdata", help="Select the image resolution (1080 or 1440) for inference", type=int, default=1080)
 
     args = parser.parse_args()
 
