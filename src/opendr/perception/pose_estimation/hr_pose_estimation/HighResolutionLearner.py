@@ -47,13 +47,19 @@ class HighResolutionPoseEstimationLearner(Learner):
 
     def __init__(self, device='cuda', backbone='mobilenet',
                  temp_path='temp', mobilenet_use_stride=True, mobilenetv2_width=1.0, shufflenet_groups=3,
-                 num_refinement_stages=2, batches_per_iter=1,base_height=256,
+                 num_refinement_stages=2, batches_per_iter=1,base_height=256, first_pass_height = 360, second_pass_height = 540,
+                 img_resol=1080,
                  experiment_name='default', num_workers=8, weights_only=True, output_name='detections.json',
                  multiscale=False, scales=None, visualize=False,
                  img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256), pad_value=(0, 0, 0),
                  half_precision=False):
 
         super(HighResolutionPoseEstimationLearner, self).__init__(temp_path=temp_path, device=device, backbone=backbone)
+
+        self.first_pass_height = first_pass_height
+        self.second_pass_height = second_pass_height
+        self.img_resol=img_resol
+
         self.parent_dir = temp_path  # Parent dir should be filled by the user according to README
 
         self.num_refinement_stages = num_refinement_stages  # How many extra refinement stages to add
@@ -250,7 +256,7 @@ class HighResolutionPoseEstimationLearner(Learner):
         with open(os.path.join(full_path_to_model_folder, folder_name_no_ext + ".json"), 'w') as outfile:
             json.dump(model_metadata, outfile)
 
-    def eval(self, dataset, first_pass_height, second_pass_height, silent=False, verbose=True, use_subset=True,
+    def eval(self, dataset,  silent=False, verbose=True, use_subset=True,
              subset_size=250,
              images_folder_name="val2017", annotations_filename="person_keypoints_val2017.json"):
 
@@ -321,7 +327,7 @@ class HighResolutionPoseEstimationLearner(Learner):
             img = sample['img']
             h, w, _ = img.shape
             max_width = w
-            kernel = int(h / first_pass_height)
+            kernel = int(h / self.first_pass_height)
             if kernel > 0:
                 pool_img = HighResolutionPoseEstimationLearner.Pooling(self, img, kernel)
                 base_height = pool_img.shape[0]
@@ -383,7 +389,7 @@ class HighResolutionPoseEstimationLearner(Learner):
                 # ------- Second pass of the image, inference for pose estimation -------
                 avg_heatmaps, avg_pafs, scale, pad = HighResolutionPoseEstimationLearner.second_pass_infer(self, self.net,
                                                                                                            crop_img,
-                                                                                                           second_pass_height,
+                                                                                                           self.second_pass_height,
                                                                                                            max_width,
                                                                                                            self.stride,
                                                                                                            self.upsample_ratio,
@@ -437,7 +443,7 @@ class HighResolutionPoseEstimationLearner(Learner):
             if self.visualize:
                 for keypoints in coco_keypoints:
                     for idx in range(len(keypoints) // 3):
-                        cv2.circle(img, (int(keypoints[idx * 3]), int(keypoints[idx * 3 + 1])),
+                        cv2.circle(img, (int(keypoints[idx * 3]+offset), int(keypoints[idx * 3 + 1])+offset),
                                    3, (255, 0, 255), -1)
                 cv2.imshow('keypoints', img)
                 key = cv2.waitKey()
@@ -461,7 +467,7 @@ class HighResolutionPoseEstimationLearner(Learner):
                 print("Evaluation ended with no detections.")
             return {"average_precision": [0.0 for _ in range(5)], "average_recall": [0.0 for _ in range(5)]}
 
-    def infer(self, img, first_pass_height, second_pass_height, upsample_ratio=4, stride=8, track=True, smooth=True,
+    def infer(self, img, upsample_ratio=4, stride=8, track=True, smooth=True,
               multiscale=False, visualize=False):
         self.net = self.model
         current_poses = []
@@ -477,7 +483,7 @@ class HighResolutionPoseEstimationLearner(Learner):
 
         h, w, _ = img.shape
         max_width = w
-        kernel = int(h / first_pass_height)
+        kernel = int(h / self.first_pass_height)
         if kernel > 0:
             pool_img = HighResolutionPoseEstimationLearner.Pooling(self, img, kernel)
             base_height = pool_img.shape[0]
@@ -539,7 +545,7 @@ class HighResolutionPoseEstimationLearner(Learner):
             # ------- Second pass of the image, inference for pose estimation -------
             avg_heatmaps, avg_pafs, scale, pad = HighResolutionPoseEstimationLearner.second_pass_infer(self, self.net,
                                                                                                        crop_img,
-                                                                                                       second_pass_height,
+                                                                                                       self.second_pass_height,
                                                                                                        max_width,
                                                                                                        stride,
                                                                                                        upsample_ratio,
@@ -860,13 +866,23 @@ class HighResolutionPoseEstimationLearner(Learner):
                 os.makedirs(os.path.join(self.temp_path, "dataset"))
             if not os.path.exists(os.path.join(self.temp_path, "dataset", "image")):
                 os.makedirs(os.path.join(self.temp_path, "dataset", "image"))
+            # Path for high resolution data
+            url = OPENDR_SERVER_URL + "perception/pose_estimation/high_resolution_pose_estimation/"
             # Download annotation file
             file_url = os.path.join(url, "dataset", "annotation.json")
             urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "annotation.json"))
             # Download test image
-            url=OPENDR_SERVER_URL + "/perception/pose_estimation/high_resolution_pose_estimation/"
-            file_url = os.path.join(url, "dataset", "image", "000000000785_1080.jpg")
-            urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000000785_1080.jpg"))
+            if self.img_resol == 1080:
+                file_url = os.path.join(url, "dataset", "image", "000000000785_1080.jpg")
+                urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000000785_1080.jpg"))
+            elif self.img_resol == 1440:
+                file_url = os.path.join(url, "dataset", "image", "000000000785_1440.jpg")
+                urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000000785_1440.jpg"))
+            else:
+                raise UserWarning("There are no data for this image resolution")
+
+
+
 
             if verbose:
                 print("Test data download complete.")

@@ -16,18 +16,16 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("--height1", help="Base height of resizing in first inference", default=360)
     parser.add_argument("--height2", help="Base height of resizing in second inference", default=540)
-    parser.add_argument("--hrdata",help="Select the image resolution for inference",default=1080)
+    parser.add_argument("--hrdata", help="Select the image resolution (1080 or 1440) for inference", default=1080)
 
     args = parser.parse_args()
 
-    onnx, device, accelerate,base_height1,base_height2,hrdata = args.onnx, args.device, args.accelerate, args.height1, args.height2,args.hrdata
+    onnx, device, accelerate, base_height1, base_height2, hrdata = args.onnx, args.device, args.accelerate, args.height1, args.height2, args.hrdata
 
     if hrdata == 1440:
-        image_file="000000000785_1440.jpg"
+        image_file = "000000000785_1440.jpg"
     elif hrdata == 1080:
-        image_file="000000000785_1080.jpg"
-    elif hrdata == 720:
-        image_file="000000000785_720.jpg"
+        image_file = "000000000785_1080.jpg"
     else:
         raise Exception("The inference image resolution is not valid")
 
@@ -41,7 +39,8 @@ if __name__ == '__main__':
         half_precision = False
 
     pose_estimator = HighResolutionPoseEstimationLearner(device=device, num_refinement_stages=stages,
-                                                mobilenet_use_stride=stride, half_precision=half_precision)
+                                                mobilenet_use_stride=stride, half_precision=half_precision,
+                                                first_pass_height=base_height1, second_pass_height= base_height2, img_resol=hrdata)
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
@@ -55,7 +54,7 @@ if __name__ == '__main__':
     if onnx:
         pose_estimator.optimize()
 
-    poses = pose_estimator.infer(img,base_height1,base_height2)
+    poses = pose_estimator.infer(img)
 
     img_cv = img.opencv()
     for pose in poses:

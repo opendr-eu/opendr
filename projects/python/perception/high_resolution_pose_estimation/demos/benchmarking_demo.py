@@ -49,7 +49,8 @@ if __name__ == '__main__':
         half_precision = False
 
     pose_estimator = HighResolutionPoseEstimationLearner(device=device, num_refinement_stages=stages,
-                                                mobilenet_use_stride=stride, half_precision=half_precision)
+                                                mobilenet_use_stride=stride, half_precision=half_precision,
+                                                first_pass_height=base_height1,second_pass_height=base_height2)
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
@@ -67,7 +68,7 @@ if __name__ == '__main__':
         start_time = time.perf_counter()
         # Perform inference
 
-        poses = pose_estimator.infer(img, base_height1, base_height2)
+        poses = pose_estimator.infer(img)
 
         end_time = time.perf_counter()
         fps_list.append(1.0 / (end_time - start_time))
