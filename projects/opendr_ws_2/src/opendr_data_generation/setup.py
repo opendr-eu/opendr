@@ -14,7 +14,7 @@
 
 from setuptools import setup
 
-package_name = 'data_generation'
+package_name = 'opendr_data_generation'
 
 setup(
     name=package_name,
@@ -29,12 +29,12 @@ setup(
     zip_safe=True,
     maintainer='OpenDR Project Coordinator',
     maintainer_email='tefas@csd.auth.gr',
-    description='OpenDR ROS2 node for synthetic multiview facial image generation',
+    description='OpenDR\'s ROS2 nodes for data generation package',
     license='Apache License v2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'synthetic_facial_generation = data_generation.synthetic_facial_generation:main'
+            'synthetic_facial_generation = opendr_data_generation.synthetic_facial_generation_node:main'
         ],
     },
 )
