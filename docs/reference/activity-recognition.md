@@ -522,7 +522,7 @@ Constructor parameters:
     Name of computational device ("cpu" or "cuda").
   - **loss**: *str, default="cross_entropy"*\
     Loss function used during optimization.
-  - **weight_decay**: *[type], default=1e-5*\
+  - **weight_decay**: *[type], default=1e-4*\
     Weight decay used for optimization.
   - **momentum**: *float, default=0.9*\
     Momentum used for optimization.
