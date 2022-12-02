@@ -560,6 +560,7 @@ CoTransEncLearner.eval(self, dataset, steps)
 ```
 This method is used to evaluate a trained model on an evaluation dataset.
 Returns a dictionary containing stats regarding evaluation.
+
 Parameters:
   - **dataset**: *Dataset*
     Dataset on which to evaluate model.
