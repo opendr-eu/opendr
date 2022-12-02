@@ -31,9 +31,10 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - pose estimation:
             - [lightweight_open_pose Module](lightweight-open-pose.md)
         - activity recognition:
-            - [activity_recognition Module](activity-recognition.md)
-        - action recognition:
             - [skeleton_based_action_recognition](skeleton-based-action-recognition.md)
+            - [x3d Module](activity-recognition.md#class-x3dlearner)
+            - [continual x3d Module](activity-recognition.md#class-cox3dlearner)
+            - [continual transformer encoder Module](activity-recognition.md)
         - speech recognition:
             - [matchboxnet Module](matchboxnet.md)
             - [edgespeechnets Module](edgespeechnets.md)
