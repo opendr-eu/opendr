@@ -50,7 +50,7 @@ class RgbdHandGestureNode(Node):
         :param delay: Define the delay (in seconds) with which rgb message and depth message can be synchronized
         :type delay: float
         """
-        super().__init__("rgbd_hand_gesture_recognition_node")
+        super().__init__("opendr_rgbd_hand_gesture_recognition_node")
 
         self.gesture_publisher = self.create_publisher(Classification2D, output_gestures_topic, 1)
 
@@ -125,11 +125,11 @@ def main(args=None):
     # Default topics are according to kinectv2 drivers at https://github.com/OpenKinect/libfreenect2
     # and https://github.com/code-iai-iai_kinect2
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_rgb_image_topic", help="Topic name for input rgb image",
+    parser.add_argument("-ic", "--input_rgb_image_topic", help="Topic name for input rgb image",
                         type=str, default="/kinect2/qhd/image_color_rect")
-    parser.add_argument("--input_depth_image_topic", help="Topic name for input depth image",
+    parser.add_argument("-id", "--input_depth_image_topic", help="Topic name for input depth image",
                         type=str, default="/kinect2/qhd/image_depth_rect")
-    parser.add_argument("--output_gestures_topic", help="Topic name for predicted gesture class",
+    parser.add_argument("-o", "--output_gestures_topic", help="Topic name for predicted gesture class",
                         type=str, default="/opendr/gestures")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
                         choices=["cuda", "cpu"])
@@ -138,7 +138,6 @@ def main(args=None):
 
     args = parser.parse_args()
 
-    # Select the device for running
     try:
         if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"

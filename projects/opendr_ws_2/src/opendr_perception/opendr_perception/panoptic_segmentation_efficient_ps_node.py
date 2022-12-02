@@ -39,7 +39,7 @@ class EfficientPsNode(Node):
                  detailed_visualization: bool = False
                  ):
         """
-        Initialize the EfficientPS ROS node and create an instance of the respective learner class.
+        Initialize the EfficientPS ROS2 node and create an instance of the respective learner class.
         :param checkpoint: This is either a path to a saved model or one of [Cityscapes, KITTI] to download
             pre-trained model weights.
         :type checkpoint: str
@@ -53,7 +53,7 @@ class EfficientPsNode(Node):
             semantic, instance, and panoptic segmentation maps and publish it on output_rgb_visualization_topic
         :type detailed_visualization: bool
         """
-        super().__init__('efficient_ps')
+        super().__init__('opendr_efficient_panoptic_segmentation_node')
 
         self.input_rgb_image_topic = input_rgb_image_topic
         self.checkpoint = checkpoint
@@ -169,19 +169,23 @@ def main(args=None):
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-i', '--input_rgb_image_topic', type=str, default='/image_raw',
                         help='listen to RGB images on this topic')
-    parser.add_argument('--checkpoint', type=str, default='cityscapes',
-                        help='download pretrained models [cityscapes, kitti] or load from the provided path')
-    parser.add_argument('-o', '--output_heatmap_topic', type=str, default='/opendr/panoptic',
+    parser.add_argument('-oh', '--output_heatmap_topic',
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default='/opendr/panoptic',
                         help='publish the semantic and instance maps on this topic as "OUTPUT_HEATMAP_TOPIC/semantic" \
                                  and "OUTPUT_HEATMAP_TOPIC/instance"')
-    parser.add_argument('-v', '--output_rgb_image_topic', type=str,
+    parser.add_argument('-ov', '--output_rgb_image_topic',
+                        type=lambda value: value if value.lower() != "none" else None,
                         default='/opendr/panoptic/rgb_visualization',
                         help='publish the panoptic segmentation map as an RGB image on this topic or a more detailed \
                                   overview if using the --detailed_visualization flag')
     parser.add_argument('--detailed_visualization', action='store_true',
                         help='generate a combined overview of the input RGB image and the semantic, instance, and \
                                   panoptic segmentation maps and publish it on OUTPUT_RGB_IMAGE_TOPIC')
+    parser.add_argument('--checkpoint', type=str, default='cityscapes',
+                        help='download pretrained models [cityscapes, kitti] or load from the provided path')
     args = parser.parse_args()
+
     efficient_ps_node = EfficientPsNode(args.input_rgb_image_topic,
                                         args.checkpoint,
                                         args.output_heatmap_topic,

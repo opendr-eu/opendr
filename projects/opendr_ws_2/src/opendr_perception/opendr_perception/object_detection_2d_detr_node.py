@@ -38,7 +38,7 @@ class ObjectDetectionDetrNode(Node):
         device="cuda",
     ):
         """
-        Creates a ROS Node for object detection with DETR.
+        Creates a ROS2 Node for object detection with DETR.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -50,7 +50,7 @@ class ObjectDetectionDetrNode(Node):
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
-        super().__init__("object_detection_detr_node")
+        super().__init__("opendr_object_detection_2d_detr_node")
 
         if output_rgb_image_topic is not None:
             self.image_publisher = self.create_publisher(ROS_Image, output_rgb_image_topic, 1)
@@ -178,9 +178,6 @@ class ObjectDetectionDetrNode(Node):
         # Run detection estimation
         boxes = self.object_detector.infer(image)
 
-        # Get an OpenCV image back
-        image = np.float32(image.opencv())
-
         #  Annotate image and publish results:
         if self.detection_publisher is not None:
             ros_detection = self.bridge.to_ros_bounding_box_list(boxes)
@@ -189,6 +186,8 @@ class ObjectDetectionDetrNode(Node):
             # e.g., opendr_detection = self.bridge.from_ros_bounding_box_list(ros_detection)
 
         if self.image_publisher is not None:
+            # Get an OpenCV image back
+            image = np.float32(image.opencv())
             image = draw_bounding_boxes(image, boxes, class_names=self.class_names)
             message = self.bridge.to_ros_image(Image(image), encoding="bgr8")
             self.image_publisher.publish(message)
@@ -198,24 +197,16 @@ def main(args=None):
     rclpy.init(args=args)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image", type=str, default="image_raw")
-    parser.add_argument(
-        "-o",
-        "--output_rgb_image_topic",
-        help="Topic name for output annotated rgb image",
-        type=str,
-        default="/opendr/image_objects_annotated",
-    )
-    parser.add_argument(
-        "-d", "--detections_topic", help="Topic name for detection messages", type=str, default="/opendr/objects"
-    )
-    parser.add_argument(
-        "--device",
-        help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
-        type=str,
-        default="cuda",
-        choices=["cuda", "cpu"],
-    )
+    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
+                        type=str, default="/image_raw")
+    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/image_objects_annotated")
+    parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/objects")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
     try:

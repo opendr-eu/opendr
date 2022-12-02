@@ -37,7 +37,7 @@ class FaceRecognitionNode(Node):
                  detections_topic="/opendr/face_recognition", detections_id_topic="/opendr/face_recognition_id",
                  database_path="./database", device="cuda", backbone="mobilefacenet"):
         """
-        Creates a ROS Node for face recognition.
+        Creates a ROS2 Node for face recognition.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -56,7 +56,7 @@ class FaceRecognitionNode(Node):
         :param database_path: Path of the directory where the images of the faces to be recognized are stored
         :type database_path: str
         """
-        super().__init__('face_recognition_node')
+        super().__init__('opendr_face_recognition_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 

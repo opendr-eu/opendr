@@ -59,7 +59,7 @@ class FallDetectionNode(Node):
         Valid only for GPU-based inference
         :type half_precision: bool
         """
-        super().__init__('fall_detection_node')
+        super().__init__('opendr_fall_detection_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 

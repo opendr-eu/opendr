@@ -33,7 +33,7 @@ class ObjectDetectionYOLONode(Node):
     def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_objects_annotated",
                  detections_topic="/opendr/objects", device="cuda", backbone="darknet53"):
         """
-        Creates a ROS Node for object detection with YOLOV3
+        Creates a ROS2 Node for object detection with YOLOV3
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -47,7 +47,7 @@ class ObjectDetectionYOLONode(Node):
         :param backbone: backbone network
         :type backbone: str
         """
-        super().__init__('object_detection_yolov3_node')
+        super().__init__('object_detection_2d_yolov3_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 

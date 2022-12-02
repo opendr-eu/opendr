@@ -46,7 +46,7 @@ class SpeechRecognitionNode(Node):
         :type device: str
 
         """
-        super().__init__("speech_command_recognition_node")
+        super().__init__("opendr_speech_command_recognition_node")
 
         self.publisher = self.create_publisher(Classification2D, output_speech_command_topic, 1)
 
@@ -106,20 +106,19 @@ def main(args=None):
     rclpy.init(args=args)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_audio_topic", type=str, default="/audio",
+    parser.add_argument("-i", "--input_audio_topic", type=str, default="audio/audio",
                         help="Listen to input data on this topic")
-    parser.add_argument("--output_speech_command_topic", type=str, default="/opendr/speech_recognition",
+    parser.add_argument("-o", "--output_speech_command_topic", type=str, default="/opendr/speech_recognition",
                         help="Topic name for speech command output")
+    parser.add_argument("--device", type=str, default="cuda", choices=["cuda", "cpu"],
+                        help="Device to use (cpu, cuda)")
     parser.add_argument("--buffer_size", type=float, default=1.5, help="Size of the audio buffer in seconds")
     parser.add_argument("--model", default="matchboxnet", choices=["matchboxnet", "edgespeechnets", "quad_selfonn"],
                         help="Model to be used for prediction: matchboxnet, edgespeechnets or quad_selfonn")
     parser.add_argument("--model_path", type=str,
                         help="Path to the model files, if not given, the pretrained model will be downloaded")
-    parser.add_argument("--device", type=str, default="cuda", choices=["cuda", "cpu"],
-                        help="Device to use (cpu, cuda)")
     args = parser.parse_args()
 
-    # Select the device for running
     try:
         if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"

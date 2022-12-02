@@ -37,7 +37,7 @@ class LandmarkFacialExpressionRecognitionNode(Node):
                  output_category_description_topic="/opendr/landmark_expression_recognition_description",
                  device="cpu", model='pstbln_afew', shape_predictor='./predictor_path'):
         """
-        Creates a ROS Node for landmark-based facial expression recognition.
+        Creates a ROS2 Node for landmark-based facial expression recognition.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_category_topic: Topic to which we are publishing the recognized facial expression category info
@@ -54,7 +54,7 @@ class LandmarkFacialExpressionRecognitionNode(Node):
         :param shape_predictor: pretrained model to use for landmark extraction from a facial image
         :type model: str
         """
-        super().__init__('landmark_based_facial_expression_recognition_node')
+        super().__init__('opendr_landmark_based_facial_expression_recognition_node')
         # Set up ROS topics and bridge
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)

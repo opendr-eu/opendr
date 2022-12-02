@@ -56,7 +56,7 @@ class PoseEstimationNode(Node):
         Valid only for GPU-based inference
         :type half_precision: bool
         """
-        super().__init__('pose_estimation_node')
+        super().__init__('opendr_pose_estimation_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 
