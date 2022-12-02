@@ -484,7 +484,7 @@ CoX3DLearner(self, lr, iters, batch_size, optimizer, lr_schedule, network_head, 
 
 Constructor parameters:
 
-  - **lr**: *float, default=1e-3*\
+  - **lr**: *float, default=1e-2*\
     Learning rate during optimization.
   - **iters**: *int, default=10*\
     Number of epochs to train for.
