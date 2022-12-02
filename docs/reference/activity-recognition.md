@@ -492,7 +492,7 @@ Constructor parameters:
     Dataloader batch size. Defaults to 64.
   - **optimizer**: *str, default="sgd"*\
     Name of optimizer to use ("sgd" or "adam").
-  - **lr_schedule**: *str, default="ReduceLROnPlateau"*\
+  - **lr_schedule**: *str, default=""*\
     Schedule for training the model.
   - **network_head**: *str, default="classification"*\
     Head of network (only "classification" is currently available).
