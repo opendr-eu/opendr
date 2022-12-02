@@ -71,7 +71,7 @@ class FaceDetectionNode:
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('face_detection_node', anonymous=True)
+        rospy.init_node('opendr_face_detection_retinaface_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
         rospy.loginfo("Face detection RetinaFace node started.")
         rospy.spin()

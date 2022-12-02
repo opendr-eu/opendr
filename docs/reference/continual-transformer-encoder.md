@@ -1,5 +1,6 @@
 ## Continual Transformer Encoder module
 
+
 ### Class CoTransEncLearner
 Bases: `engine.learners.Learner`
 
@@ -16,7 +17,7 @@ CoX3DLearner(self, lr, iters, batch_size, optimizer, lr_schedule, network_head, 
 
 Constructor parameters:
 
-  - **lr**: *float, default=1e-3*\
+  - **lr**: *float, default=1e-2*\
     Learning rate during optimization.
   - **iters**: *int, default=10*\
     Number of epochs to train for.
@@ -24,7 +25,7 @@ Constructor parameters:
     Dataloader batch size. Defaults to 64.
   - **optimizer**: *str, default="sgd"*\
     Name of optimizer to use ("sgd" or "adam").
-  - **lr_schedule**: *str, default="ReduceLROnPlateau"*\
+  - **lr_schedule**: *str, default=""*\
     Schedule for training the model.
   - **network_head**: *str, default="classification"*\
     Head of network (only "classification" is currently available).
@@ -40,7 +41,7 @@ Constructor parameters:
     Number of attention heads.
   - **dropout**: *float, default=0.1*\
     Dropout probability.
-  - **num_classes**: *int, default=400*\
+  - **num_classes**: *int, default=22*\
     Number of classes to predict among.
   - **positional_encoding_learned**: *bool, default=False*\
     Positional encoding type.
@@ -54,7 +55,7 @@ Constructor parameters:
     Name of computational device ("cpu" or "cuda").
   - **loss**: *str, default="cross_entropy"*\
     Loss function used during optimization.
-  - **weight_decay**: *[type], default=1e-5*\
+  - **weight_decay**: *[type], default=1e-4*\
     Weight decay used for optimization.
   - **momentum**: *float, default=0.9*\
     Momentum used for optimization.
@@ -92,6 +93,7 @@ CoTransEncLearner.eval(self, dataset, steps)
 ```
 This method is used to evaluate a trained model on an evaluation dataset.
 Returns a dictionary containing stats regarding evaluation.
+
 Parameters:
   - **dataset**: *Dataset*
     Dataset on which to evaluate model.

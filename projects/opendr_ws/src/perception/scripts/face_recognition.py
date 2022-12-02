@@ -90,7 +90,7 @@ class FaceRecognitionNode:
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('face_recognition_node', anonymous=True)
+        rospy.init_node('opendr_face_recognition_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
         rospy.loginfo("Face recognition node started.")
         rospy.spin()

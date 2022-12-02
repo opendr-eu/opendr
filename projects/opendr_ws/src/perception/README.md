@@ -38,11 +38,11 @@ rosrun perception pose_estimation.py
 ```
 
 3. You can examine the annotated image stream using `rqt_image_view` (select the topic `/opendr/image_pose_annotated`) or
-   `rostopic echo /opendr/poses`. 
+   `rostopic echo /opendr/poses`.
 
 Note that to use the pose messages properly, you need to create an appropriate subscriber that will convert the ROS pose messages back to OpenDR poses which you can access as described in the [documentation](https://github.com/opendr-eu/opendr/blob/master/docs/reference/engine-target.md#posekeypoints-confidence):
 ```python
-        ... 
+        ...
         rospy.Subscriber("opendr/poses", Detection2DArray, self.callback)
         ...
         def callback(self, data):
@@ -101,7 +101,7 @@ Reference images should be placed in a defined structure like:
 under `/opendr/face_recognition_id`.
 
 ## 2D Object Detection ROS Nodes
-ROS nodes are implemented for the SSD, YOLOv3, CenterNet, DETR and Nanodet generic object detectors.
+ROS nodes are implemented for the SSD, YOLOv3, CenterNet, DETR, Nanodet and YOLOv5 generic object detectors.
 Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`).
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the corresponding node (assuming you have installed the corresponding package):
@@ -116,7 +116,7 @@ rosrun perception object_detection_2d_ssd.py
 ```
 The annotated image stream can be viewed using `rqt_image_view`, and the default topic name is
 `/opendr/image_boxes_annotated`. The bounding boxes alone are also published as `/opendr/objects`.
-Similarly, the YOLOv3, CenterNet, DETR and Nanodet detector nodes can be run with:
+Similarly, the YOLOv3, CenterNet, DETR, Nanodet and YOLOv5 detector nodes can be run with:
 ```shell
 rosrun perception object_detection_2d_yolov3.py
 ```
@@ -131,6 +131,10 @@ rosrun perception object_detection_2d_detr.py
 or
 ```shell
 rosrun perception object_detection_2d_nanodet.py
+```
+or
+```shell
+rosrun perception object_detection_2d_yolov5.py
 ```
 respectively.
 
@@ -212,7 +216,7 @@ A ROS node for performing heart anomaly (atrial fibrillation) detection from ecg
 ```shell
 rosrun perception heart_anomaly_detection.py ECG_TOPIC MODEL
 ```
-with `ECG_TOPIC` specifying the ROS topic to which the node will subscribe, and `MODEL` set to either *gru* or *anbof*. The predictied classes are published to the topic `/opendr/heartanomaly`.
+with `ECG_TOPIC` specifying the ROS topic to which the node will subscribe, and `MODEL` set to either *gru* or *anbof*. The predicted classes are published to the topic `/opendr/heartanomaly`.
 
 ## Human Action Recognition ROS Node
 
@@ -221,7 +225,7 @@ Assuming the drivers have been installed and OpenDR catkin workspace has been so
 ```shell
 rosrun perception video_activity_recognition.py
 ```
-The predictied class id and confidence is published under the topic name `/opendr/human_activity_recognition`, and the human-readable class name under `/opendr/human_activity_recognition_description`.
+The predicted class id and confidence is published under the topic name `/opendr/human_activity_recognition`, and the human-readable class name under `/opendr/human_activity_recognition_description`.
 
 ## Landmark-based Facial Expression Recognition ROS Node
 
@@ -230,16 +234,16 @@ Assuming the drivers have been installed and OpenDR catkin workspace has been so
 ```shell
 rosrun perception landmark_based_facial_expression_recognition.py
 ```
-The predictied class id and confidence is published under the topic name `/opendr/landmark_based_expression_recognition`, and the human-readable class name under `/opendr/landmark_based_expression_recognition_description`.
+The predicted class id and confidence is published under the topic name `/opendr/landmark_based_expression_recognition`, and the human-readable class name under `/opendr/landmark_based_expression_recognition_description`.
 
 ## Skeleton-based Human Action Recognition ROS Node
 
-A ROS node for performing Skeleton-based Human Action Recognition using either ST-GCN or PST-GCN models pretrained on NTU-RGBD-60 dataset. The human body poses of the image are first extracted by the light-weight Openpose method which is implemented in the toolkit, and they are passed to the skeleton-based action recognition method to be categorized.
+A ROS node for performing Skeleton-based Human Action Recognition using either ST-GCN or PST-GCN models pretrained on NTU-RGBD-60 dataset. The human body poses of the image are first extracted by the light-weight Open-pose method which is implemented in the toolkit, and they are passed to the skeleton-based action recognition method to be categorized.
 Assuming the drivers have been installed and OpenDR catkin workspace has been sourced, the node can be started as:
 ```shell
 rosrun perception skeleton_based_action_recognition.py
 ```
-The predictied class id and confidence is published under the topic name `/opendr/skeleton_based_action_recognition`, and the human-readable class name under `/opendr/skeleton_based_action_recognition_description`.
+The predicted class id and confidence is published under the topic name `/opendr/skeleton_based_action_recognition`, and the human-readable class name under `/opendr/skeleton_based_action_recognition_description`.
 Besides, the annotated image is published in `/opendr/image_pose_annotated` as well as the corresponding poses in `/opendr/poses`.
 
 ## Speech Command Recognition ROS Node
@@ -270,7 +274,7 @@ To get a point cloud from a dataset on the disk, you can start a `point_cloud_da
 ```shell
 rosrun perception point_cloud_dataset.py
 ```
-This will pulbish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
+This will publish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
 
 ## AB3DMOT Object Tracking 3D ROS Node
 
@@ -286,7 +290,7 @@ To get a point cloud from a dataset on the disk, you can start a `point_cloud_da
 ```shell
 rosrun perception point_cloud_dataset.py
 ```
-This will pulbish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
+This will publish the dataset point clouds to a `/opendr/dataset_point_cloud` topic by default, which means that the `input_point_cloud_topic` should be set to `/opendr/dataset_point_cloud`.
 
 
 ## FairMOT Object Tracking 2D ROS Node
@@ -305,7 +309,7 @@ If you want to use a dataset from the disk, you can start a `image_dataset.py` n
 ```shell
 rosrun perception image_dataset.py
 ```
-This will pulbish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
+This will publish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
 
 ## Deep Sort Object Tracking 2D ROS Node
 
@@ -323,5 +327,5 @@ If you want to use a dataset from the disk, you can start an `image_dataset.py` 
 ```shell
 rosrun perception image_dataset.py
 ```
-This will pulbish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
+This will publish the dataset images to an `/opendr/dataset_image` topic by default, which means that the `input_image_topic` should be set to `/opendr/dataset_image`.
 
