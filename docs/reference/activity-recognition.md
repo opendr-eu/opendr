@@ -508,7 +508,7 @@ Constructor parameters:
     Number of attention heads.
   - **dropout**: *float, default=0.1*\
     Dropout probability.
-  - **num_classes**: *int, default=400*\
+  - **num_classes**: *int, default=22*\
     Number of classes to predict among.
   - **positional_encoding_learned**: *bool, default=False*\
     Positional encoding type.
