@@ -65,8 +65,8 @@ class HeartAnomalyNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('opendr_heart_anomaly_detection', anonymous=True)
-        rospy.loginfo("Heart anomaly detection node started!")
+        rospy.init_node('opendr_heart_anomaly_detection_node', anonymous=True)
+        rospy.loginfo("Heart anomaly detection node started.")
         rospy.spin()
 
     def callback(self, msg_data):
@@ -88,14 +88,14 @@ class HeartAnomalyNode:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_ecg_topic", type=str, default="/ecg/ecg",
+    parser.add_argument("-i", "--input_ecg_topic", type=str, default="/ecg/ecg",
                         help="listen to input ECG data on this topic")
-    parser.add_argument("--model", type=str, default="anbof", help="model to be used for prediction: anbof or gru",
-                        choices=["anbof", "gru"])
-    parser.add_argument("--output_heart_anomaly_topic", type=str, default="/opendr/heart_anomaly",
+    parser.add_argument("-o", "--output_heart_anomaly_topic", type=str, default="/opendr/heart_anomaly",
                         help="Topic name for heart anomaly detection topic")
     parser.add_argument("--device", type=str, default="cuda", help="Device to use (cpu, cuda)",
                         choices=["cuda", "cpu"])
+    parser.add_argument("--model", type=str, default="anbof", help="model to be used for prediction: anbof or gru",
+                        choices=["anbof", "gru"])
 
     args = parser.parse_args()
 
