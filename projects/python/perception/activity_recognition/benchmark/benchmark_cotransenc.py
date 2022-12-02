@@ -40,7 +40,7 @@ def benchmark_cotransenc():
             )
             learner = CoTransEncLearner(
                 device="cuda" if torch.cuda.is_available() else "cpu",
-                temp_path=temp_dir,
+                temp_path=temp_dir + f"/{num_layers}_{input_dims}_{sequence_len}",
                 num_layers=num_layers,
                 input_dims=input_dims,
                 hidden_dims=input_dims // 2,
@@ -52,9 +52,9 @@ def benchmark_cotransenc():
 
             sample = torch.randn(1, input_dims)
 
-            # Warm-up continual inference:
-            for _ in range(sequence_len - 1):
-                learner.infer(sample)
+            # Warm-up continual inference not needed for optimized version:
+            # for _ in range(sequence_len - 1):
+            #     learner.infer(sample)
 
             def get_device_fn(*args):
                 nonlocal learner

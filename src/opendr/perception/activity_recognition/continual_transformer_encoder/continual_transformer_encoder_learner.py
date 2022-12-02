@@ -16,10 +16,10 @@ from functools import partial
 import json
 import torch
 import os
+import pickle
 from pathlib import Path
 from opendr.engine.learners import Learner
 from opendr.engine.helper.io import bump_version
-from torch import onnx
 import onnxruntime as ort
 from collections import OrderedDict
 
@@ -32,6 +32,7 @@ from typing import Any, Union, Dict
 
 import pytorch_lightning as pl
 import continual as co
+from continual import onnx
 
 logger = getLogger(__name__)
 
@@ -160,26 +161,20 @@ class CoTransEncLearner(Learner):
             torch.nn.Module: Continual Transformer Encoder with
                 Recycling Positional Encoding
         """
-
-        encoder_layer = torch.nn.TransformerEncoderLayer(
-            d_model=self._input_dims,
-            nhead=self._num_heads,
-            dim_feedforward=self._hidden_dims,
-            dropout=self._dropout,
-            batch_first=True,
-        )
-        regenc = torch.nn.TransformerEncoder(
-            encoder_layer,
-            num_layers=self._num_layers,
-            norm=torch.nn.LayerNorm(self._input_dims),
-        )
         pos_enc = co.RecyclingPositionalEncoding(
             embed_dim=self._input_dims,
             num_embeds=self._sequence_len * 2 - 1,
             learned=self._positional_encoding_learned,
         )
-        trans_enc = co.TransformerEncoder.build_from(
-            regenc, sequence_len=self._sequence_len
+        trans_enc = co.TransformerEncoder(
+            co.TransformerEncoderLayerFactory(
+                d_model=self._input_dims,
+                nhead=self._num_heads,
+                dim_feedforward=self._hidden_dims,
+                dropout=self._dropout,
+                sequence_len=self._sequence_len,
+            ),
+            num_layers=self._num_layers,
         )
         lin = co.Linear(self._input_dims, self._num_classes, channel_dim=-1)
 
@@ -351,22 +346,16 @@ class CoTransEncLearner(Learner):
         """
         weights_path = Path(weights_path)
 
-        assert weights_path.is_file() and weights_path.suffix in {
-            ".pyth",
-            ".pth",
-            ".onnx",
-        }, (
+        assert weights_path.is_file() and weights_path.suffix in {".pyth", ".pth", ".onnx"}, (
             f"weights_path ({str(weights_path)}) should be a .pth or .onnx file."
             "Pretrained weights can be downloaded using `self.download(...)`"
         )
         if weights_path.suffix == ".onnx":
-            return self._load_onnx(weights_path)
+            return self._load_onnx(weights_path.parent)
 
         logger.debug(f"Loading model weights from {str(weights_path)}")
 
-        loaded_state_dict = torch.load(
-            weights_path, map_location=torch.device(self.device)
-        )
+        loaded_state_dict = torch.load(weights_path, map_location=torch.device(self.device))
         self.model.load_state_dict(loaded_state_dict, strict=False)
 
         return self
@@ -453,9 +442,7 @@ class CoTransEncLearner(Learner):
         def configure_optimizers():
             # nonlocal Optimizer, optimisation_metric
             optimizer = Optimizer(self.model.parameters())
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-                optimizer, patience=10
-            )
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=10)
             return {
                 "optimizer": optimizer,
                 "lr_scheduler": scheduler,
@@ -562,18 +549,17 @@ class CoTransEncLearner(Learner):
 
         x = x.to(device=self.device, dtype=torch.float)
 
-        if self._ort_session is not None and forward_mode == "regular":
-            # assert (
-            #     forward_mode == "regular"
-            # ), "Only forward_mode 'regular' is supported for ONNX Runtime inference."
-            r = torch.tensor(self._ort_session.run(None, {"data": x.cpu().numpy()})[0])
+        if self._ort_session is not None and self._ort_state is not None and forward_mode == "step":
+            inputs = {
+                "input": x.cpu().detach().numpy(),
+                **self._ort_state,
+            }
+            r, *next_state = self._ort_session.run(None, inputs)
+            r = torch.tensor(r)
+            self._ort_state = {k: v for k, v in zip(self._ort_state.keys(), next_state)}
         else:
             self.model.eval()
-            r = (
-                self.model.forward
-                if forward_mode == "regular"
-                else self.model.forward_step
-            )(x)
+            r = (self.model.forward if forward_mode == "regular" else self.model.forward_step)(x)
         if isinstance(r, torch.Tensor):
             r = torch.nn.functional.softmax(r[0], dim=-1)
             result = Category(prediction=int(r.argmax(dim=0)), confidence=r)
@@ -593,71 +579,96 @@ class CoTransEncLearner(Learner):
         Args:
             do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.
         """
-
         if getattr(self.model, "_ort_session", None):
             logger.info("Model is already optimized. Skipping redundant optimization")
             return
 
-        path = (
-            Path(self.temp_path or os.getcwd()) / "weights" / "cotransenc_weights.onnx"
-        )
+        path = Path(self.temp_path or os.getcwd()) / "weights"
         if not path.exists():
             self._save_onnx(path, do_constant_folding)
         self._load_onnx(path)
 
     @property
     def _example_input(self):
-        return torch.randn(1, self._input_dims, self._sequence_len).to(
-            device=self.device
-        )
+        return torch.randn(1, self._input_dims, self._sequence_len).to(device=self.device)
 
     @_example_input.setter
     def _example_input(self):
-        raise ValueError(
-            "_example_input is set thorugh 'sequence_len' and 'input_dims' parameters"
-        )
+        raise ValueError("_example_input is set thorugh 'sequence_len' and 'input_dims' parameters")
 
-    def _save_onnx(
-        self, path: Union[str, Path], do_constant_folding=False, verbose=False
-    ):
+    def _save_onnx(self, path: Union[str, Path], do_constant_folding=False, verbose=False):
         """Save model in the ONNX format
 
         Args:
             path (Union[str, Path]): Directory in which to save ONNX model
             do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.
         """
-        path.parent.mkdir(exist_ok=True, parents=True)
+        assert (
+            int(torch.__version__.split(".")[1]) >= 10
+        ), "ONNX optimization of the Continual Transformer Encoder requires torch >= 1.10.0."
+
+        assert (
+            int(getattr(co, "__version__", "0.0.0").split(".")[0]) >= 1
+        ), "ONNX optimization of the Continual Transformer Encoder requires continual-inference >= 1.0.0."
+
+        path = Path(path)
+        path.mkdir(exist_ok=True, parents=True)
 
         self.model.eval()
-        self.model.to(device=self.device)
+        self.model.to(device="cpu")
 
-        logger.info(f"Saving model to ONNX format at {str(path)}")
+        # Prepare state
+        state0 = None
+        with torch.no_grad():
+            for i in range(self._sequence_len):
+                _, state0 = self.model._forward_step(self._example_input[:, :, i], state0)
+        state0 = co.utils.flatten(state0)
+
+        # Export to ONNX
+        onnx_path = path / "cotransenc_weights.onnx"
+        logger.info(f"Saving model to ONNX format at {str(onnx_path)}")
         onnx.export(
             self.model,
-            self._example_input,
-            path,
-            input_names=["data"],
-            output_names=["classes"],
+            (self._example_input[:, :, -1], *state0),
+            onnx_path,
+            input_names=["input"],
+            output_names=["output"],
             do_constant_folding=do_constant_folding,
             verbose=verbose,
-            opset_version=11,
-            enable_onnx_checker=True,
+            opset_version=14,
         )
+
+        # Save default state and name mappings for later use
+        state_path = path.parent / "cotransenc_state.pickle"
+        logger.info(f"Saving ONNX model states at {str(state_path)}")
+        omodel = onnx.OnnxWrapper(self.model)
+        state = {k: v.detach().numpy() for k, v in zip(omodel.state_input_names, state0)}
+        with open(state_path, "wb") as f:
+            pickle.dump(state, f)
 
     def _load_onnx(self, path: Union[str, Path]):
         """Loads ONNX model into an onnxruntime inference session.
 
         Args:
-            path (Union[str, Path]): Path to ONNX model
+            path (Union[str, Path]): Path to ONNX model folder
         """
-        logger.info(f"Loading ONNX runtime inference session from {str(path)}")
-        self._ort_session = ort.InferenceSession(str(path))
+        assert (
+            int(getattr(ort, "__version__", "0.0.0").split(".")[1]) >= 11
+        ), "ONNX inference of the Continual Transformer Encoder requires onnxruntime >= 1.11.0."
+
+        onnx_path = path / "cotransenc_weights.onnx"
+        state_path = path.parent / "cotransenc_state.pickle"
+
+        logger.info(f"Loading ONNX runtime inference session from {str(onnx_path)}")
+        self._ort_session = ort.InferenceSession(str(onnx_path))
+
+        logger.info(f"Loading ONNX state from {str(state_path)}")
+        with open(state_path, "rb") as f:
+            self._ort_state = pickle.load(f)
 
 
 def _experiment_logger():
-    return pl.loggers.TensorBoardLogger(
-        save_dir=Path(os.getcwd()) / "logs", name="cotransenc"
-    )
+    return pl.loggers.TensorBoardLogger(save_dir=Path(os.getcwd()) / "logs", name="cotransenc")
 
 
 def _accuracy(x, y):
