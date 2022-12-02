@@ -23,7 +23,7 @@ from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, Object
     Classification2D
 from shape_msgs.msg import Mesh, MeshTriangle
 from geometry_msgs.msg import Point, Pose2D
-from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
+from opendr_ros2_interface.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
 
 
 class ROS2Bridge:
@@ -75,7 +75,7 @@ class ROS2Bridge:
         :param pose: OpenDR Pose to be converted to OpenDRPose2D
         :type pose: engine.target.Pose
         :return: ROS message with the pose
-        :rtype: opendr_ros2_messages.msg.OpenDRPose2D
+        :rtype: opendr_ros2_interface.msg.OpenDRPose2D
         """
         data = pose.data
         # Setup ros pose
@@ -98,7 +98,7 @@ class ROS2Bridge:
         """
         Converts an OpenDRPose2D message into an OpenDR Pose.
         :param ros_pose: the ROS pose to be converted
-        :type ros_pose: opendr_ros2_messages.msg.OpenDRPose2D
+        :type ros_pose: opendr_ros2_interface.msg.OpenDRPose2D
         :return: an OpenDR Pose
         :rtype: engine.target.Pose
         """
@@ -324,8 +324,8 @@ class ROS2Bridge:
     def from_ros_pose_3D(self, ros_pose):
         """
         Converts a ROS message with pose payload into an OpenDR pose
-        :param ros_pose: the pose to be converted (represented as opendr_ros2_messages.msg.OpenDRPose3D)
-        :type ros_pose: opendr_ros2_messages.msg.OpenDRPose3D
+        :param ros_pose: the pose to be converted (represented as opendr_ros2_interface.msg.OpenDRPose3D)
+        :type ros_pose: opendr_ros2_interface.msg.OpenDRPose3D
         :return: an OpenDR pose
         :rtype: engine.target.Pose
         """
@@ -344,7 +344,7 @@ class ROS2Bridge:
         :param pose: OpenDR pose to be converted
         :type pose: engine.target.Pose
         :return: ROS message with the pose
-        :rtype: opendr_ros2_messages.msg.OpenDRPose3D
+        :rtype: opendr_ros2_interface.msg.OpenDRPose3D
         """
         data = pose.data
         ros_pose = OpenDRPose3D()
