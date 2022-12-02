@@ -89,9 +89,9 @@ class LandmarkFacialExpressionRecognitionNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('opendr_landmark_based_facial_expression_recognition', anonymous=True)
-        rospy.Subscriber(self.input_image_topic, ROS_Image, self.callback)
-        rospy.loginfo("landmark-based facial expression recognition node started!")
+        rospy.init_node('opendr_landmark_based_facial_expression_recognition_node', anonymous=True)
+        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback)
+        rospy.loginfo("Landmark-based facial expression recognition node started.")
         rospy.spin()
 
     def callback(self, data):

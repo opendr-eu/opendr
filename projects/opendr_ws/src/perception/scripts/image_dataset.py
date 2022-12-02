@@ -45,21 +45,15 @@ class ImageDatasetNode:
 
     def start(self):
         rospy.loginfo("Timing images")
-
         i = 0
-
         while not rospy.is_shutdown():
-
             image = self.dataset[i % len(self.dataset)][0]  # Dataset should have an (Image, Target) pair as elements
-
-            rospy.loginfo("Publishing image [" + str(i) + "]")
             message = self.bridge.to_ros_image(
                 image, encoding="bgr8"
             )
             self.output_image_publisher.publish(message)
 
             time.sleep(self.delay)
-
             i += 1
 
 
@@ -98,7 +92,7 @@ def main():
         scan_labels=False
     )
 
-    rospy.init_node("image_dataset", anonymous=True)
+    rospy.init_node("opendr_image_dataset_node", anonymous=True)
 
     dataset_node = ImageDatasetNode(
         dataset,
@@ -106,6 +100,7 @@ def main():
         data_fps=data_fps,
     )
 
+    rospy.loginfo("Image dataset node started.")
     dataset_node.start()
 
 
